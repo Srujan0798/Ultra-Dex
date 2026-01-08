@@ -215,7 +215,7 @@
 
 ### Commit Message Convention
 
-```
+```text
 [TYPE] Brief description (max 50 chars)
 
 Detailed explanation of changes:

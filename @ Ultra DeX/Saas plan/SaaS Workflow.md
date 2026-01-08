@@ -2,7 +2,7 @@
 
 ## 🚀 The Pipeline
 
-```
+```text
 💡 IDEA
     ↓
 📋 IMPLEMENTATION PLAN (what to build, in what order)
