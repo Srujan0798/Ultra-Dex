@@ -1,0 +1,39 @@
+IDEA 
+  ↓
++ IMPLEMENTATION PLAN (what to build, in what order)
+  ↓
++ THESE RULES (how to build with quality)
+  ↓
++ EXECUTION (AI agents + your guidance)
+  ↓
+<<<<<<< HEAD
+<<<<<<< HEAD
++ DEVELOPER VAULT (real bugs, fixes + working App)
+=======
++ DEVELOPER REALITY VAULT (real bugs, fixes + working App))
+>>>>>>> origin/graphite-base/31
+=======
++ DEVELOPER VAULT (real bugs, fixes + working App)
+>>>>>>> restored-fixes
+  ↓
++ USER FEEDBACK (validate, iterate)
+  ↓
+= PRODUCTION-READY PRODUCT
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> restored-fixes
+
+
+
+from tuna taung 
+1. meta prompt
+2. PRD 
+3. implementation plan4. debugging
+<<<<<<< HEAD
+5. DEPLOYMENT
+=======
+>>>>>>> origin/graphite-base/31
+=======
+5. DEPLOYMENT
+>>>>>>> restored-fixes
