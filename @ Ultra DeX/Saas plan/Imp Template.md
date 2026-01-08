@@ -1048,15 +1048,7 @@ Bottleneck Identification:
 Bottleneck 1: [Task that blocks many others]
 Mitigation: [How to resolve or parallelize]
 Risk Tasks (Complex/Uncertain):
-<<<<<<< HEAD
-<<<<<<< HEAD
-TASK-XXX: [Why its risky, mitigation plan]
-=======
 TASK-XXX: [Why it's risky, mitigation plan]
->>>>>>> origin/graphite-base/31
-=======
-TASK-XXX: [Why its risky, mitigation plan]
->>>>>>> restored-fixes
 16.F EXAMPLE COMPLETE TASK WITH 21-STEP STATUS
 ═══════════════════════════════════════════════════════════════
 TASK-004: Implement User Registration API Endpoint
@@ -2363,15 +2355,7 @@ In Transit:
 21.4 Performance Optimization Techniques
 Frontend Optimization:
 ✅ Code Splitting:
-<<<<<<< HEAD
-<<<<<<< HEAD
-   - Load only whats needed
-=======
    - Load only what's needed
->>>>>>> origin/graphite-base/31
-=======
-   - Load only whats needed
->>>>>>> restored-fixes
    - Dynamic imports for routes
    - Lazy load components
 
@@ -2507,15 +2491,7 @@ const users = await db.user.findMany({
   select: {
     id: true,
     email: true,
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // Dont fetch unnecessary fields
-=======
     // Don't fetch unnecessary fields
->>>>>>> origin/graphite-base/31
-=======
-    // Dont fetch unnecessary fields
->>>>>>> restored-fixes
   }
 });
 
