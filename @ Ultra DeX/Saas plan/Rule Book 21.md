@@ -23,30 +23,42 @@
 ---
 
 ## 📋 21-STEP VERIFICATION CHECKLIST
+
 >
 > Execute for EVERY Task Without Exception
 
 | Step | Action | Description | Est. Time |
+
 |------|--------|-------------|-----------|
 | □ 1 | UNDERSTAND | Read and comprehend full requirement | 5-10 min |
+
 | □ 2 | ASSUMPTIONS | List all assumptions explicitly | 3-5 min |
 | □ 3 | ANALYZE | Map logic flow and data dependencies | 10-15 min |
+
 | □ 4 | DECOMPOSE | Break into atomic sub-steps | 5-10 min |
 | □ 5 | PREPARE | Set up environment, configs, dependencies | 10-20 min |
+
 | □ 6 | IMPLEMENT | Write clean, modular, maintainable code | 30-120 min |
 | □ 7 | DOCUMENT | Add inline comments and follow naming conventions | 10-15 min |
+
 | □ 8 | UNIT TEST | Write and run unit tests (Target: 80%+ coverage) | 20-30 min |
 | □ 9 | DEBUG | Identify and fix all issues | 15-45 min |
+
 | □ 10 | INTEGRATE | Run integration tests with existing systems | 15-30 min |
 | □ 11 | VALIDATE | Verify outputs match expected results | 10-15 min |
+
 | □ 12 | UX CHECK | Ensure usability and WCAG 2.1 accessibility | 15-20 min |
 | □ 13 | OPTIMIZE | Improve performance (Target: <3s load, <200ms response) | 20-40 min |
+
 | □ 14 | SECURE | Check for security vulnerabilities (OWASP Top 10) | 15-25 min |
 | □ 15 | REFACTOR | Improve code quality and maintainability | 15-30 min |
+
 | □ 16 | ERROR HANDLE | Add comprehensive error handling | 15-20 min |
 | □ 17 | DOCUMENT API | Document all functions, APIs, interfaces | 20-30 min |
+
 | □ 18 | VERSION CONTROL | Commit with clear, descriptive message | 5 min |
 | □ 19 | BUILD | Compile/bundle and validate build | 5-15 min |
+
 | □ 20 | DEPLOY READY | Prepare for deployment or final delivery | 10-20 min |
 | □ 21 | FINAL VERIFY | Run complete end-to-end verification | 15-30 min |
 
@@ -57,16 +69,22 @@
 ## 🚫 NON-NEGOTIABLE RULES
 
 | Rule | Description |
+
 |------|-------------|
 | NO STEP SKIPPING | All 21 steps must be completed for every task |
+
 | NO MULTITASKING | Work on one task at a time until completion |
 | PROGRESS TRACKING | Update status only after step 21 verification |
+
 | EXPLICIT VERIFICATION | Never assume—always verify each step |
 | NO PREMATURE COMPLETION | Even if task seems done, complete all verification steps |
+
 | CONSISTENT FRAMEWORK | Apply 21-step process universally across all tasks |
 | DOCUMENTATION REQUIRED | Document decisions, issues, and solutions |
+
 | CODE REVIEW MANDATORY | Peer review required before marking task complete |
 | CI/CD INTEGRATION | Automated tests must pass before deployment |
+
 | ROLLBACK PLAN | Document rollback procedure for every deployment |
 
 ---
@@ -122,23 +140,31 @@
 ## 📊 QUALITY TARGETS & BENCHMARKS
 
 | Area | Target Standard | Measurement |
+
 |------|-----------------|-------------|
 | Code Quality | Clean, modular, well-documented | SonarQube score >80 |
+
 | UI | Polished, professional, responsive | Design system compliance 100% |
 | UX | Intuitive, accessible, user-friendly | WCAG 2.1 AA compliance |
+
 | API | Fast, secure, RESTful/GraphQL best practices | Response time <200ms (p95) |
 | Performance | Optimized load times and resource usage | Load time <3s, FCP <1.5s |
+
 | Security | Industry-standard security practices | Zero critical vulnerabilities |
 | Testing | Comprehensive test coverage | >80% code coverage |
+
 | Documentation | Complete and up-to-date | 100% API documentation |
 | Maintainability | Easy to understand and modify | Cyclomatic complexity <10 |
+
 | Accessibility | Keyboard navigation, screen readers | WCAG 2.1 Level AA |
 | Build Time | Fast compilation | <5 minutes |
+
 | Bundle Size | Optimized assets | <500KB initial load |
 
 ---
 
 ## 🎯 CODE REVIEW CHECKLIST
+
 >
 > Before marking any task as complete, verify:
 
@@ -228,21 +254,28 @@ Coverage: 85%
 Performance: Load time improved by 15%
 Verification: All 21 steps completed
 Reviewed-by: @reviewer-name
+
 ```
 
 ### Types
 
 | Type | Description |
+
 |------|-------------|
 | feat | New feature |
+
 | fix | Bug fix |
 | docs | Documentation only |
+
 | style | Code style (formatting, etc.) |
 | refactor | Code refactoring |
+
 | perf | Performance improvement |
 | test | Adding tests |
+
 | chore | Maintenance tasks |
 | security | Security fixes |
+
 | a11y | Accessibility improvements |
 
 ---
@@ -250,28 +283,37 @@ Reviewed-by: @reviewer-name
 ## 🏷️ STATUS INDICATORS
 
 | Symbol | Status | Description | Action Required |
+
 |--------|--------|-------------|-----------------|
 | ○ | Not Started | Task not yet begun | Start planning |
+
 | ◔ | Planning | Steps 1-4 in progress | Complete analysis |
 | ◐ | In Progress | Steps 5-15 active | Continue implementation |
+
 | ◕ | Testing | Steps 16-19 in progress | Complete all tests |
 | ◙ | Review | Step 20, awaiting review | Conduct code review |
+
 | ● | Completed | Step 21, not yet verified | Run final verification |
 | ✓ | Verified | All 21 steps completed | Move to next task |
+
 | ⚠ | Needs Review | Issues found in review | Address feedback |
 | 🔄 | Rework | Needs to be redone | Restart from step 1 |
+
 | ✗ | Blocked | Cannot proceed | Resolve blocker |
 | 🔒 | Deployed | Live in production | Monitor metrics |
 
 ---
 
 ## 📊 RISK REGISTER TEMPLATE
+
 >
 > Maintain for each phase/task:
 
 | Risk ID | Description | Probability | Impact | Mitigation Strategy | Owner | Status |
+
 |---------|-------------|-------------|--------|---------------------|-------|--------|
 | R-001 | Example: API rate limits | Medium | High | Implement caching | Dev Team | Active |
+
 | R-002 | Example: Third-party dependency | Low | Critical | Have backup solution | Tech Lead | Mitigated |
 
 **Probability:** Low / Medium / High  
@@ -351,6 +393,7 @@ Reviewed-by: @reviewer-name
 ### API Documentation Template
 
 ```markdown
+
 ## Endpoint Name
 
 **Method:** GET/POST/PUT/DELETE
@@ -358,18 +401,23 @@ Reviewed-by: @reviewer-name
 **Authentication:** Required/Not Required
 
 ### Description
+
 Brief description of what this endpoint does.
 
 ### Request Parameters
+
 | Parameter | Type | Required | Description |
+
 |-----------|------|----------|-------------|
 | id | string | Yes | Resource identifier |
 
 ### Request Body Example
+
 ```json
 {
   "field": "value"
 }
+
 ```
 
 ### Response Example
@@ -379,13 +427,16 @@ Brief description of what this endpoint does.
   "status": "success",
   "data": {}
 }
+
 ```
 
 ### Error Responses
 
 | Code | Description |
+
 |------|-------------|
 | 400 | Bad Request |
+
 | 401 | Unauthorized |
 | 404 | Not Found |
 
@@ -396,6 +447,7 @@ Brief description of what this endpoint does.
 ```
 
 ### Function Documentation Template:
+
 ```javascript
 /**
  * Brief description of function purpose
@@ -411,6 +463,7 @@ Brief description of what this endpoint does.
  * @complexity O(n)
  * @tested Yes - see tests/functionName.test.js
  */
+
 ```
 
 ---
@@ -487,10 +540,13 @@ Brief description of what this endpoint does.
 ### Alert Thresholds
 
 | Metric | Warning | Critical |
+
 |--------|---------|----------|
 | Error Rate | >1% | >5% |
+
 | Response Time (p95) | >500ms | >1000ms |
 | CPU Usage | >70% | >90% |
+
 | Memory Usage | >80% | >95% |
 | Disk Usage | >80% | >90% |
 
@@ -533,14 +589,19 @@ Brief description of what this endpoint does.
 ### Target Metrics
 
 | Metric | Target | Measurement Tool |
+
 |--------|--------|------------------|
 | First Contentful Paint (FCP) | <1.5s | Lighthouse |
+
 | Largest Contentful Paint (LCP) | <2.5s | Web Vitals |
 | Time to Interactive (TTI) | <3.5s | Lighthouse |
+
 | Cumulative Layout Shift (CLS) | <0.1 | Web Vitals |
 | First Input Delay (FID) | <100ms | Web Vitals |
+
 | Total Blocking Time (TBT) | <300ms | Lighthouse |
 | Speed Index | <3.0s | Lighthouse |
+
 | API Response Time (p95) | <200ms | APM Tool |
 | Database Query Time (p95) | <50ms | DB Profiler |
 
@@ -559,6 +620,7 @@ Brief description of what this endpoint does.
 ---
 
 ## 📌 AGENT-SPECIFIC INSTRUCTIONS
+
 >
 > For AI Code Editors/Agents:
 
@@ -603,10 +665,13 @@ Brief description of what this endpoint does.
 ## 🔐 VERSION CONTROL
 
 | Field | Value |
+
 |-------|-------|
 | Version | 3.0 (Universal - Complete Edition) |
+
 | Last Updated | December 2024 |
 | Applies To | All projects using this framework |
+
 | Authority | Immutable unless explicitly modified by project owner |
 | Review Cycle | Quarterly or after major project completion |
 
@@ -615,16 +680,22 @@ Brief description of what this endpoint does.
 ## 📖 GLOSSARY
 
 | Term | Definition |
+
 |------|------------|
 | FCP | First Contentful Paint - time to first content render |
+
 | LCP | Largest Contentful Paint - time to main content render |
 | TTI | Time to Interactive - when page becomes fully interactive |
+
 | CLS | Cumulative Layout Shift - visual stability metric |
 | FID | First Input Delay - interactivity metric |
+
 | WCAG | Web Content Accessibility Guidelines |
 | OWASP | Open Web Application Security Project |
+
 | DRY | Don't Repeat Yourself principle |
 | SRP | Single Responsibility Principle |
+
 | CI/CD | Continuous Integration/Continuous Deployment |
 | APM | Application Performance Monitoring |
 
