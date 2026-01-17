@@ -50,9 +50,9 @@ const QUICK_START_TEMPLATE = `# {{PROJECT_NAME}} - Quick Start
 - {{PROBLEM_2}}
 - {{PROBLEM_3}}
 
-## 3. MVP Features (5 max)
+## 3. Core Production Features (5 max)
 
-| Feature | Priority | Why it's MVP? |
+| Feature | Priority | Justification |
 |---------|----------|---------------|
 | {{FEATURE_1}} | P0 | |
 | | P0 | |
@@ -118,7 +118,7 @@ program
   .option('-d, --dir <directory>', 'Output directory', '.')
   .action(async (options) => {
     console.log(chalk.cyan(banner));
-    console.log(chalk.bold('\nWelcome to Ultra-Dex! Let\'s plan your SaaS.\n'));
+    console.log(chalk.bold('\nWelcome to Ultra-Dex! Let\'s plan your production-ready SaaS.\n'));
 
     // Gather project info
     const answers = await inquirer.prompt([
@@ -162,7 +162,7 @@ program
       {
         type: 'input',
         name: 'feature1',
-        message: 'Most important MVP feature:',
+        message: 'Critical production feature:',
         default: '',
       },
       {

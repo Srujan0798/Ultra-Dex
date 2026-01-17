@@ -10,12 +10,12 @@ INSTRUCTIONS FOR AI AGENTS:
 - Provide actionable, specific information (no generic placeholders)
 - Break down features into atomic tasks (4-9 hours each)
 - Include examples and templates where applicable
-- Output must be ready for immediate implementation with 21-step rules
+- Output must be ready for immediate production implementation with 21-step rules
 
 **Quality Standards:**
 - All acceptance criteria MUST be measurable (avoid "should work well" → use "<200ms response time")
 - All estimates MUST include buffer (+20% minimum for unknowns)
-- All code examples MUST be production-ready (error handling, edge cases)
+- All code examples MUST be production-ready (error handling, edge cases, security)
 - All API endpoints MUST include request/response examples
 - All database schemas MUST include indexes and constraints
 
@@ -76,9 +76,9 @@ INSTRUCTIONS FOR AI AGENTS:
 
 ------------------------------------------------------------------
 
-### 2.1 MVP Features (Must-Have - P0)
+### 2.1 Core Production Features (Critical - P0)
 
-List core features required for minimum viable product:
+List core features required for the full production release:
 
 **Feature 1: [Name]**
 - Simple Description: [What it does in one sentence]
@@ -97,7 +97,7 @@ List core features required for minimum viable product:
 
 ### 2.2 Enhanced Features (Important - P1)
 
-[Features for launch but not MVP critical]
+[Features for launch but not P0 critical]
 
 ### 2.3 Future Features (Nice-to-Have - P2/P3)
 
@@ -366,7 +366,7 @@ Client stores token → Save to secure storage → Redirect to dashboard
 
 ### Feature 1: [Feature Name]
 
-**Priority:** P0 (MVP Critical)
+**Priority:** P0 (Production Critical)
 **Complexity:** Low/Medium/High
 **Estimated Time:** [X hours/days]
 
@@ -822,7 +822,7 @@ Quality:
 [Explicitly list features NOT being built in first version]
 **Feature X:** Will be added in V2
 **Feature Y:** Requires more research
-**Feature Z:** Not aligned with MVP goals
+**Feature Z:** Not aligned with V1 goals
 
 ---
 
@@ -1044,12 +1044,12 @@ Users can register and log in
 Basic app structure in place
 CI/CD working
 Phase 2: Core Features Development (Week 3-6)
-**Goal:** MVP features implemented
+**Goal:** Core production features implemented
 **Duration:** 4 weeks
 Key Features:
 [List P0 features from Section 2]
 Completion Criteria:
-All MVP features functional
+All P0 features functional
 Basic testing complete
 No critical bugs
 Phase 3: Enhanced Features & Integration (Week 7-9)
@@ -1430,7 +1430,7 @@ TASK-014: [Feature 1 - Frontend Component] [Full task specification...]
 
 ### 16.D TASK PRIORITY MATRIX
 
-P0 - CRITICAL (MVP Blockers): Must be completed for MVP to function. These are non-negotiable.
+P0 - CRITICAL (Production Blockers): Must be completed for full production release. These are non-negotiable.
 TASK-000: Git setup
 TASK-001: Dev environment
 TASK-002: CI/CD pipeline
@@ -1997,7 +1997,7 @@ Week 5-6: Core Features (Part 2)
 Week 5: [Primary feature group 3]
 Week 6: [Primary feature group 4]
 
-**Focus:** Complete MVP feature set
+**Focus:** Complete Core feature set
 
 Week 7-8: Integration & Testing
 Week 7: Third-party integrations
@@ -2051,7 +2051,7 @@ Success Criteria:
 Users can sign up and log in
 Authentication flow works E2E
 Security requirements met
-Milestone 3: MVP Feature Complete ✓
+Milestone 3: Core Features Complete ✓
 
 **Date:** End of Week 6 (Day 42)
 
@@ -2176,7 +2176,7 @@ Communicate with stakeholders
 ### 18.F CRITICAL DEADLINES
 
 Hard Deadlines (Non-Negotiable):
-Week 6 (Day 42): MVP Demo to stakeholders
+Week 6 (Day 42): Core Features Demo to stakeholders
 Week 12 (Day 84): Public Launch
 Soft Deadlines (Flexible):
 Week 9 (Day 63): Beta release (can slip to Week 10)
@@ -2187,7 +2187,7 @@ Week 8: Payment gateway approval (if applicable)
 Week 10: App store submission (if mobile)
 Contingency Plans:
 If behind schedule by Week 4: Drop P2 features
-If behind by Week 6: Drop P1 features, focus MVP only
+If behind by Week 6: Drop P1 features, focus Core only
 If behind by Week 10: Delay launch, extend testing
 
 ---
@@ -4420,7 +4420,7 @@ Trial Start → Feature Exploration → Upgrade Page → Checkout → Paid
 
 ### 26.5 Implementation Checklist
 
-**Phase 1 (MVP):**
+**Phase 1 (Core):**
 - [ ] Basic event tracking (signup, login, core actions)
 - [ ] Signup funnel instrumentation
 - [ ] Error event tracking
