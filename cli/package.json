@@ -14,9 +14,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anthropics/ultra-dex"
+    "url": "https://github.com/Srujan0798/Ultra-Dex"
   },
-  "homepage": "https://github.com/anthropics/ultra-dex",
+  "homepage": "https://github.com/Srujan0798/Ultra-Dex",
   "bin": {
     "ultra-dex": "./bin/ultra-dex.js"
   },

@@ -102,8 +102,8 @@ const CONTEXT_TEMPLATE = `# {{PROJECT_NAME}} - Context
 Setting up the implementation plan.
 
 ## Resources
-- [Ultra-Dex Template](https://github.com/anthropics/ultra-dex)
-- [TaskFlow Example](https://github.com/anthropics/ultra-dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
+- [Ultra-Dex Template](https://github.com/Srujan0798/Ultra-Dex)
+- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
 `;
 
 program
@@ -255,9 +255,9 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 
 ## Resources
 
-- [Full Template](https://github.com/anthropics/ultra-dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Imp%20Template.md)
-- [TaskFlow Example](https://github.com/anthropics/ultra-dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
-- [Methodology](https://github.com/anthropics/ultra-dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
+- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Imp%20Template.md)
+- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
+- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
 `;
 
       await fs.writeFile(path.join(outputDir, 'IMPLEMENTATION-PLAN.md'), planContent);
@@ -276,7 +276,7 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
       console.log(chalk.cyan('  3. Start building! 🚀'));
 
       console.log('\n' + chalk.gray('Need the full template? Visit:'));
-      console.log(chalk.blue('  https://github.com/anthropics/ultra-dex'));
+      console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex'));
 
     } catch (error) {
       spinner.fail(chalk.red('Failed to create project'));
@@ -295,17 +295,17 @@ program
       {
         name: 'TaskFlow',
         type: 'Task Management',
-        url: 'https://github.com/anthropics/ultra-dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md',
       },
       {
         name: 'InvoiceFlow',
         type: 'Invoicing',
-        url: 'https://github.com/anthropics/ultra-dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/InvoiceFlow-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/InvoiceFlow-Complete.md',
       },
       {
         name: 'HabitStack',
         type: 'Habit Tracking',
-        url: 'https://github.com/anthropics/ultra-dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/HabitStack-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/HabitStack-Complete.md',
       },
     ];
 
