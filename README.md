@@ -36,6 +36,61 @@ A comprehensive framework for building complete, production-grade applications. 
 
 ---
 
+## 🤔 Is Ultra-Dex Right for You?
+
+**✅ USE Ultra-Dex if:**
+- Building a SaaS with users, auth, payments
+- Complex data model (5+ database tables)
+- Team of 2+ developers OR solo with 3+ month timeline
+- Targeting production users, not just a demo
+
+**❌ DON'T use Ultra-Dex if:**
+- Static website / blog
+- Simple CRUD app (<3 features)
+- Weekend hackathon project
+- Solo dev with <1 month timeline
+
+---
+
+## 🚀 Your First 30 Minutes
+
+| Time | Do This |
+|------|---------|
+| **0-5 min** | Read "Core Philosophy" below → decide if this fits |
+| **5-10 min** | Fill [01-QUICK-START.md](./@ Ultra DeX/Saas plan/01-QUICK-START.md) |
+| **10-15 min** | Read [02-HOW-TO-USE.md](./@ Ultra DeX/Saas plan/02-HOW-TO-USE.md) → understand phasing |
+| **15-30 min** | Skim [TaskFlow Sections 1-3](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) |
+| **After 30 min** | Fill Phase 1 sections (4-5 hours) → **START CODING** |
+
+---
+
+## 💻 CLI Quick Start
+
+```bash
+npx ultra-dex init
+```
+
+**This generates:**
+```
+your-project/
+├── QUICK-START.md         ← Your idea captured
+├── CONTEXT.md             ← Project context for AI
+├── IMPLEMENTATION-PLAN.md ← Starter sections
+├── docs/
+│   ├── CHECKLIST.md       ← 21-step verification
+│   └── AI-PROMPTS.md      ← Agent instructions
+└── .cursor/rules/         ← (optional) AI rules
+```
+
+**CLI Options:**
+```bash
+npx ultra-dex init              # Interactive setup
+npx ultra-dex audit             # Check project completeness
+npx ultra-dex examples          # Show example projects
+```
+
+---
+
 ## Folder Structure
 
 ```
