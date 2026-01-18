@@ -20,6 +20,7 @@ A complete system for planning and building production-ready SaaS applications. 
 | Your Goal | Start With |
 |-----------|------------|
 | **Just starting?** | [QUICK-START.md](./QUICK-START.md) (5 minutes) |
+| **How to use this correctly?** | [HOW-TO-USE.md](./HOW-TO-USE.md) (10 minutes) |
 | **Understand the system?** | [METHODOLOGY.md](./METHODOLOGY.md) (10 minutes) |
 | **See a real example?** | [TaskFlow-Complete.md](./Examples/TaskFlow-Complete.md) |
 | **Ready for full planning?** | [Imp Template.md](./Imp%20Template.md) |
@@ -33,12 +34,15 @@ A complete system for planning and building production-ready SaaS applications. 
 │
 ├── README.md              ← You are here
 ├── QUICK-START.md         ← 5-minute entry point
+├── HOW-TO-USE.md          ← Phased approach & workflows
 ├── METHODOLOGY.md         ← The 21-step verification system
 ├── Imp Template.md        ← Full 34-section template (5,500 lines)
 ├── SaaS Workflow.md       ← Pipeline visualization
 │
 └── Examples/
-    └── TaskFlow-Complete.md  ← Fully filled example (3,000 lines)
+    ├── TaskFlow-Complete.md   ← Task management SaaS (3,000 lines)
+    ├── InvoiceFlow-Complete.md ← Invoice/billing SaaS
+    └── HabitStack-Complete.md  ← Habit tracker SaaS
 ```
 
 ---
