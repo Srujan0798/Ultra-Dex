@@ -92,9 +92,9 @@ Use this to track which sections you've completed:
 
 ------------------------------------------------------------------
 
-### 2.1 MVP Features (Must-Have - P0)
+### 2.1 Core Production Features (Critical - P0)
 
-List core features required for minimum viable product:
+List core features required for the full production release:
 
 **Feature 1: [Name]**
 - Simple Description: [What it does in one sentence]
