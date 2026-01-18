@@ -36,8 +36,9 @@ OUTPUT FORMAT:
 - Provide ASCII diagrams for architecture and flows
 
 QUALITY STANDARDS:
+- Do NOT generate an "MVP" or "prototype" plan. Generate a FULL PRODUCTION plan.
 - Every task must be verifiable with the 21-step framework
-- Estimates must be realistic (4-9 hours per task)
+- Estimates must be realistic (4-9 hours per task) and account for testing
 - Dependencies must be clearly mapped
 - Critical path must be identified
 
@@ -201,7 +202,8 @@ Requirements:
 4. Break into atomic tasks (4-9 hours each)
 5. Define acceptance criteria for all features
 6. Consider security, performance, accessibility
-7. Output must be ready for immediate implementation
+7. Output must be ready for immediate production implementation
+8. Do NOT design an MVP. Design the full application.
 
 Start now.
 ```
