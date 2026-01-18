@@ -2855,7 +2855,7 @@ Phase Level:
 When all phase tasks complete:
 
 □ All features in phase working
-□ Quality metrics met (Section 20.5.2)
+□ Quality metrics met (Section 20.8.2)
 □ Stakeholder demo completed
 □ Phase retrospective done
 
