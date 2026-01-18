@@ -64,9 +64,13 @@ Ultra-Dex/
         │   └── HabitStack-Complete.md
         │
         └── Templates/             ← Supplementary templates
-            ├── Rule Book 21.md
-            ├── SaaS Workflow.md
-            └── *-TEMPLATE.md files
+            ├── 01-CONTEXT-TEMPLATE.md
+            ├── 02-STATUS-TEMPLATE.md
+            ├── 03-CONSTRAINTS-TEMPLATE.md
+            ├── 04-INTEGRATIONS-TEMPLATE.md
+            ├── 05-CHANGELOG-TEMPLATE.md
+            ├── 06-SaaS-Workflow.md
+            └── 07-Rule-Book-21.md
 ```
 
 ---
