@@ -51,16 +51,23 @@
 
 ---
 
-## Done? Next Steps:
+## ✅ Done? Here's Your Next Step:
 
-**Ready for full planning?**
-Copy this into [04-Imp-Template.md](./04-Imp-Template.md) Section 1 and continue filling out the detailed sections.
+**FIRST:** Understand the phased approach (5 min)
+→ Read [02-HOW-TO-USE.md](./02-HOW-TO-USE.md)
+   Learn: "Fill 8 sections → Start coding" strategy
 
-**Want to see a real example?**
-Check [TaskFlow-Complete.md](./Examples/TaskFlow-Complete.md) - a fully filled 34-section implementation plan.
+**THEN:** See a real example
+→ Browse [TaskFlow-Complete.md](./Examples/TaskFlow-Complete.md)
+   See how Quick-Start expands into full implementation
 
-**Understand the methodology first?**
-Read [03-METHODOLOGY.md](./03-METHODOLOGY.md) - the 21-step verification that makes Ultra-Dex different.
+**FINALLY:** Fill your foundation sections
+→ Open [04-Imp-Template.md](./04-Imp-Template.md)
+   Fill Sections 1, 2, 4, 6, 10, 11, 12, 15 (Phase 1)
+   Then **START CODING**
+
+**REFERENCE:** Understand the methodology
+→ [03-METHODOLOGY.md](./03-METHODOLOGY.md) - How 21-step works
 
 ---
 

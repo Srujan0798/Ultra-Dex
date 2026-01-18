@@ -4,6 +4,24 @@
 > **Purpose:** Prove the template works by showing real, specific content for ALL 34 sections.
 > **SaaS:** TaskFlow - A modern task management application with teams, real-time sync, and AI features.
 
+> ⚠️ **DON'T BE INTIMIDATED BY THE LENGTH!**
+> This is a **COMPLETE** example (3,000+ lines). You do NOT need to fill all 34 sections before coding.
+> Use this as a **REFERENCE**, not a **PREREQUISITE**.
+
+## How to Use This Example
+
+**As a New User:**
+1. Don't read all 3,000 lines — that's not the point
+2. Open it **side-by-side** with your own template
+3. Copy the **structure** for sections you're filling
+4. Pattern-match: "Oh, so Section 10 should look like THIS"
+
+**When You're Stuck:**
+- "What should Section 11 (API) contain?" → Search for "SECTION 11" here
+- "How detailed should tasks be?" → See Section 16
+
+**What to Copy:** Structure and format, NOT content (it's a different app!)
+
 ---
 
 # SECTION 1: PRODUCT DEFINITION & AI INSTRUCTIONS
