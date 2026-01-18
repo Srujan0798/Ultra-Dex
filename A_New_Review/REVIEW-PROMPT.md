@@ -4,6 +4,14 @@
 
 **Ultra-Dex is NOT an MVP/startup framework.** It is designed for **FULL, PRODUCTION-READY APPLICATION DEVELOPMENT**.
 
+### Core Philosophy: "Your Skeleton, Not Your Cage"
+
+Ultra-Dex is a **backbone** that works with ANY AI/LLM:
+- Users bring their own AI (Claude, GPT, Gemini, Copilot, etc.)
+- The template is 100% flexible — add, remove, modify anything
+- It prevents AI from losing focus during long conversations
+- Users own their implementation plan completely
+
 ### What This Means:
 - ✅ The 34-section template is **INTENTIONALLY comprehensive** - we WANT all sections
 - ✅ The 21-step verification is **INTENTIONALLY rigorous** - quality gates matter for production
@@ -39,7 +47,7 @@ Does the framework successfully guide a developer/team through building a COMPLE
 ### 3. CURSOR RULES (cursor-rules/)
 - Are the 11 modular .mdc files properly organized?
 - Does each rule file work standalone with its domain?
-- Is the "selective loading" guidance clear?
+- Is the "selective loading" guidance and `load.sh` script clear?
 - Do the rules actually help AI assistants code better?
 
 ### 4. EXAMPLES (TaskFlow, InvoiceFlow, HabitStack)
@@ -50,18 +58,24 @@ Does the framework successfully guide a developer/team through building a COMPLE
 ### 5. CLI TOOL (npx ultra-dex init)
 - Does the CLI output make sense?
 - Are the generated files (QUICK-START, CONTEXT, IMPLEMENTATION-PLAN) useful starting points?
-- Should the CLI do more? (suggestion: copy cursor-rules automatically?)
+- Does the cursor-rules copy prompt work correctly?
 
 ### 6. 21-STEP VERIFICATION
 - Is each step clearly defined with time estimates?
 - Does the checklist make sense for different task sizes?
 - Is the adaptation for different roles (solo vs team) clear?
+- Is the `VERIFICATION.md` PR checklist template useful?
 
 ### 7. LINKING & NAVIGATION
 - Can a user find their way from any document to any other?
 - Are all cross-references working?
-- Is the folder structure intuitive?
+- Is the folder structure intuitive (numbered prefixes)?
 - Does the README provide a clear entry point?
+
+### 8. PHILOSOPHY ALIGNMENT
+- Does the "Core Philosophy" section clearly explain Ultra-Dex's purpose?
+- Is it clear that Ultra-Dex is AI-agnostic (works with any LLM)?
+- Does it effectively communicate "backbone, not straitjacket"?
 
 ---
 
@@ -72,7 +86,7 @@ Does the framework successfully guide a developer/team through building a COMPLE
 ❌ "21-step is performative" - **NO, it's quality assurance for production**
 ❌ "Just build an MVP" - **NO, this is for FULL applications**
 ❌ "Sell code instead of templates" - **Templates ARE the product**
-❌ "Rename from Ultra-Dex" - **Brand is established, SEO is a known tradeoff**
+❌ "Rename from Ultra-Dex" - **Brand is established**
 
 ---
 
@@ -85,6 +99,7 @@ Does the framework successfully guide a developer/team through building a COMPLE
 ✅ "The example doesn't show how to handle [specific scenario]"
 ✅ "The phased approach could be improved by..."
 ✅ "For full-app development, you should also cover..."
+✅ "The philosophy section could be clearer about..."
 
 ---
 
@@ -98,7 +113,8 @@ A developer should be able to:
 5. START CODING with cursor-rules loaded
 6. Reference remaining sections as they build
 7. Use 21-step for quality verification on each task
-8. End up with a PRODUCTION-READY application
+8. Use `VERIFICATION.md` checklist in PRs
+9. End up with a PRODUCTION-READY application
 
 **Review whether this flow actually works end-to-end.**
 
@@ -108,14 +124,16 @@ A developer should be able to:
 
 | File | Purpose |
 |------|---------|
-| `README.md` | Entry point, navigation |
+| `README.md` | Entry point, navigation, Core Philosophy |
+| `VERIFICATION.md` | PR checklist template |
+| `AGENT-INSTRUCTIONS.md` | AI agent prompts |
 | `@ Ultra DeX/Saas plan/01-QUICK-START.md` | 5-minute capture |
 | `@ Ultra DeX/Saas plan/02-HOW-TO-USE.md` | Phased approach guidance |
 | `@ Ultra DeX/Saas plan/03-METHODOLOGY.md` | 21-step explanation |
 | `@ Ultra DeX/Saas plan/04-Imp-Template.md` | Full 34-section template |
-| `@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md` | Primary example |
-| `cursor-rules/` | All 11 .mdc files |
-| `AGENT-INSTRUCTIONS.md` | AI agent prompts |
+| `@ Ultra DeX/Saas plan/Examples/` | 3 complete examples |
+| `@ Ultra DeX/Saas plan/Templates/` | 7 support templates (01-07) |
+| `cursor-rules/` | 11 .mdc files + load.sh |
 | `cli/bin/ultra-dex.js` | CLI implementation |
 
 ---
