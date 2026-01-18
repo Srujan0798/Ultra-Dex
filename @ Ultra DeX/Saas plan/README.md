@@ -37,12 +37,20 @@ A complete system for planning and building production-ready SaaS applications. 
 ├── HOW-TO-USE.md          ← Phased approach & workflows
 ├── METHODOLOGY.md         ← The 21-step verification system
 ├── Imp Template.md        ← Full 34-section template (5,500 lines)
-├── SaaS Workflow.md       ← Pipeline visualization
 │
-└── Examples/
-    ├── TaskFlow-Complete.md   ← Task management SaaS (3,000 lines)
-    ├── InvoiceFlow-Complete.md ← Invoice/billing SaaS
-    └── HabitStack-Complete.md  ← Habit tracker SaaS
+├── Examples/              ← Complete filled examples
+│   ├── TaskFlow-Complete.md
+│   ├── InvoiceFlow-Complete.md
+│   └── HabitStack-Complete.md
+│
+└── Templates/             ← Supplementary templates
+    ├── Rule Book 21.md
+    ├── SaaS Workflow.md
+    ├── CONTEXT-TEMPLATE.md
+    ├── STATUS-TEMPLATE.md
+    ├── CHANGELOG-TEMPLATE.md
+    ├── CONSTRAINTS-TEMPLATE.md
+    └── INTEGRATIONS-TEMPLATE.md
 ```
 
 ---
