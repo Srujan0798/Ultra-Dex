@@ -48,6 +48,20 @@ Use this to track which sections you've completed:
 
 > **Tip:** Don't fill all sections upfront! See [02-HOW-TO-USE.md](./02-HOW-TO-USE.md) for the phased approach.
 
+## 📚 QUICK NAVIGATION
+
+**Foundation (Fill FIRST):**
+[Section 1](#section-1-high-level-summary) | [Section 2](#section-2-core-features) | [Section 4](#section-4-user-personas) | [Section 6](#section-6-screen-map) | [Section 10](#section-10-data-model) | [Section 11](#section-11-api-blueprint) | [Section 12](#section-12-system-architecture) | [Section 15](#section-15-tech-stack)
+
+**Core Development:**
+[Section 9](#section-9-uiux-specifications) | [Section 16](#section-16-implementation-plan-enhanced) | [Section 20](#section-20-testing-strategy)
+
+**Production Prep:**
+[Section 19](#section-19-deployment-plan) | [Section 21](#section-21-security-guidelines) | [Section 22](#section-22-performance-requirements) | [Section 27](#section-27-error-handling)
+
+**Advanced:**
+[Section 28](#section-28-legal--compliance) | [Section 29](#section-29-seo) | [Section 30](#section-30-i18n) | [Section 33](#section-33-ai-agent-architecture)
+
 ═══════════════════════════════════════════════════════════════
 
 ------------------------------------------------------------------
