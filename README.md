@@ -113,6 +113,53 @@ Ultra-Dex/
 
 ---
 
+## 🦴 Core Philosophy: Your Skeleton, Not Your Cage
+
+**Ultra-Dex is a backbone, not a straitjacket.**
+
+### The Problem Ultra-Dex Solves
+
+When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely experienced this:
+
+1. You start with a clear plan
+2. A few conversations later, you're deep in some tangent
+3. The AI forgets the main architecture
+4. You waste tokens re-explaining context
+5. You lose the structured path you started with
+
+**Ultra-Dex prevents this.** It gives every AI a shared, transparent structure to follow.
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  YOUR IDEA  +  ANY AI/LLM  +  ULTRA-DEX STRUCTURE      │
+│                      ↓                                  │
+│            STRUCTURED IMPLEMENTATION PLAN               │
+│                      ↓                                  │
+│            PRODUCTION-READY APPLICATION                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Key Principles
+
+| Principle | What It Means |
+|-----------|---------------|
+| **Use ANY AI** | Claude, GPT, Gemini, Copilot, local LLMs — your choice |
+| **100% Flexible** | Add sections, remove sections, modify anything |
+| **You Own the Plan** | The AI fills the template, but YOU control what stays |
+| **Never Lose Focus** | The structure keeps AI on track, even after 50+ messages |
+| **No Lock-in** | Export your plan, use it anywhere, no dependencies |
+
+### What Ultra-Dex Is NOT
+
+- ❌ **Not a code generator** — It's a planning framework
+- ❌ **Not restrictive** — Modify anything you want
+- ❌ **Not AI-specific** — Works with ANY LLM or without AI
+- ❌ **Not a product** — It's open-source infrastructure
+
+---
+
 ## Using with AI Agents
 
 See [AGENT-INSTRUCTIONS.md](./AGENT-INSTRUCTIONS.md) for prompts:
