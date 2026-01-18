@@ -201,6 +201,18 @@ program
         message: 'Include cursor-rules for AI assistants? (Cursor, Copilot)',
         default: true,
       },
+      {
+        type: 'confirm',
+        name: 'includeFullTemplate',
+        message: 'Copy full 34-section template locally?',
+        default: false,
+      },
+      {
+        type: 'confirm',
+        name: 'includeDocs',
+        message: 'Copy VERIFICATION.md & AGENT-INSTRUCTIONS.md to docs/?',
+        default: true,
+      },
     ]);
 
     const spinner = ora('Creating project files...').start();
@@ -289,6 +301,30 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         }
       }
 
+      // Copy full template if requested
+      if (answers.includeFullTemplate) {
+        const templatePath = path.resolve(__dirname, '../../@ Ultra DeX/Saas plan/04-Imp-Template.md');
+        try {
+          await fs.copyFile(templatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
+        } catch (err) {
+          console.log(chalk.yellow('\n  Note: Full template not bundled. Download from GitHub:'));
+          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md'));
+        }
+      }
+
+      // Copy docs if requested
+      if (answers.includeDocs) {
+        const verificationPath = path.resolve(__dirname, '../../VERIFICATION.md');
+        const agentPath = path.resolve(__dirname, '../../AGENT-INSTRUCTIONS.md');
+        try {
+          await fs.copyFile(verificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
+          await fs.copyFile(agentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
+        } catch (err) {
+          console.log(chalk.yellow('\n  Note: Docs not bundled. Download from GitHub:'));
+          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex'));
+        }
+      }
+
       spinner.succeed(chalk.green('Project created successfully!'));
 
       console.log('\n' + chalk.bold('Files created:'));
@@ -296,6 +332,13 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
       console.log(chalk.gray('  ├── QUICK-START.md'));
       console.log(chalk.gray('  ├── CONTEXT.md'));
       console.log(chalk.gray('  ├── IMPLEMENTATION-PLAN.md'));
+      if (answers.includeFullTemplate) {
+        console.log(chalk.gray('  ├── docs/MASTER-PLAN.md (34 sections)'));
+      }
+      if (answers.includeDocs) {
+        console.log(chalk.gray('  ├── docs/CHECKLIST.md'));
+        console.log(chalk.gray('  ├── docs/AI-PROMPTS.md'));
+      }
       if (answers.includeCursorRules) {
         console.log(chalk.gray('  └── .cursor/rules/ (11 AI rule files)'));
       }
@@ -305,7 +348,7 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
       console.log(chalk.cyan('  2. Open QUICK-START.md and complete it'));
       console.log(chalk.cyan('  3. Start building! 🚀'));
 
-      console.log('\n' + chalk.gray('Need the full template? Visit:'));
+      console.log('\n' + chalk.gray('Full Ultra-Dex repo:'));
       console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex'));
 
     } catch (error) {
