@@ -22,6 +22,29 @@
 
 **What to Copy:** Structure and format, NOT content (it's a different app!)
 
+## 📚 Jump to Section
+
+**Product & Planning:**
+[1. Product Definition](#section-1-product-definition--ai-instructions) | [2. Tech Stack](#section-2-tech-stack) | [3. Database](#section-3-database-design) | [4. User Personas](#section-4-user-personas) | [5. User Stories](#section-5-user-stories)
+
+**Core Development:**
+[6. Screen Map](#section-6-screen-map) | [7. UX/UI](#section-7-uxui-specifications) | [8. Navigation](#section-8-navigation) | [9. Components](#section-9-component-library) | [10. Data Model](#section-10-data-model)
+
+**APIs & Architecture:**
+[11. API Blueprint](#section-11-api-blueprint) | [12. Payments](#section-12-payment-integration) | [13. Auth](#section-13-authentication) | [14. Realtime](#section-14-realtime-features) | [15. Third-party](#section-15-third-party-integrations)
+
+**Implementation:**
+[16. Tasks](#section-16-implementation-plan) | [17. Milestones](#section-17-milestones) | [18. Timeline](#section-18-timeline) | [19. Deployment](#section-19-deployment) | [20. Testing](#section-20-testing-strategy)
+
+**Production Prep:**
+[21. Security](#section-21-security) | [22. Performance](#section-22-performance) | [23. Monitoring](#section-23-monitoring) | [24. Scaling](#section-24-scaling-strategy)
+
+**Polish & Legal:**
+[25. Docs](#section-25-documentation) | [26. Support](#section-26-support) | [27. Error Handling](#section-27-error-handling) | [28. Legal](#section-28-legal) | [29. SEO](#section-29-seo)
+
+**Advanced:**
+[30. i18n](#section-30-internationalization) | [31. Analytics](#section-31-analytics) | [32. AI Features](#section-32-ai-features) | [33. Mobile](#section-33-mobile) | [34. Future](#section-34-future-roadmap)
+
 ---
 
 # SECTION 1: PRODUCT DEFINITION & AI INSTRUCTIONS

@@ -4,6 +4,21 @@
 
 ---
 
+## 🎯 Which Checklist Should I Use?
+
+| Task Type | Use This | Why |
+|-----------|----------|-----|
+| **New feature** (4-9 hours) | Full 21-step | Production quality required |
+| **Bug fix** (<2 hours) | Quick 5-step | Full version is overkill |
+| **UI tweak** (no logic change) | Quick 5-step | Low risk change |
+| **Database migration** | Full 21-step | High risk, needs all gates |
+| **API change** (new/breaking) | Full 21-step | Affects other systems |
+| **Security fix** | Full 21-step | Critical - no shortcuts |
+| **Docs update** | Skip checklist | Not code |
+| **Config change** | Quick 5-step | Low complexity |
+
+---
+
 ## For Every Task (Copy & Paste)
 
 ```markdown
