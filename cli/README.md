@@ -99,9 +99,9 @@ Next steps:
 
 ## Links
 
-- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Imp%20Template.md)
-- [Examples](https://github.com/Srujan0798/Ultra-Dex/tree/main/%40%20Ultra%20DeX/Saas%20plan/Examples)
-- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
+- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Imp%20Template.md)
+- [Examples](https://github.com/Srujan0798/Ultra-Dex/tree/main/@%20Ultra%20DeX/Saas%20plan/Examples)
+- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
 
 ## License
 

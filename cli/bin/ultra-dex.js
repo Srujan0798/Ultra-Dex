@@ -103,7 +103,7 @@ Setting up the implementation plan.
 
 ## Resources
 - [Ultra-Dex Template](https://github.com/Srujan0798/Ultra-Dex)
-- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
+- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
 `;
 
 program
@@ -255,9 +255,9 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 
 ## Resources
 
-- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Imp%20Template.md)
-- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
-- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
+- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Imp%20Template.md)
+- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
+- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
 `;
 
       await fs.writeFile(path.join(outputDir, 'IMPLEMENTATION-PLAN.md'), planContent);
@@ -295,17 +295,17 @@ program
       {
         name: 'TaskFlow',
         type: 'Task Management',
-        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md',
       },
       {
         name: 'InvoiceFlow',
         type: 'Invoicing',
-        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/InvoiceFlow-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/InvoiceFlow-Complete.md',
       },
       {
         name: 'HabitStack',
         type: 'Habit Tracking',
-        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/HabitStack-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/HabitStack-Complete.md',
       },
     ];
 
