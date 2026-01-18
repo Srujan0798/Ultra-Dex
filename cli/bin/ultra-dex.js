@@ -195,6 +195,12 @@ program
         message: 'Hosting:',
         choices: ['Vercel', 'Railway', 'Fly.io', 'AWS', 'Other'],
       },
+      {
+        type: 'confirm',
+        name: 'includeCursorRules',
+        message: 'Include cursor-rules for AI assistants? (Cursor, Copilot)',
+        default: true,
+      },
     ]);
 
     const spinner = ora('Creating project files...').start();
@@ -262,13 +268,37 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 
       await fs.writeFile(path.join(outputDir, 'IMPLEMENTATION-PLAN.md'), planContent);
 
+      // Copy cursor-rules if requested
+      if (answers.includeCursorRules) {
+        const rulesDir = path.join(outputDir, '.cursor', 'rules');
+        await fs.mkdir(rulesDir, { recursive: true });
+
+        const cursorRulesPath = path.resolve(__dirname, '../../cursor-rules');
+        try {
+          const ruleFiles = await fs.readdir(cursorRulesPath);
+          for (const file of ruleFiles.filter(f => f.endsWith('.mdc'))) {
+            await fs.copyFile(
+              path.join(cursorRulesPath, file),
+              path.join(rulesDir, file)
+            );
+          }
+        } catch (err) {
+          // Cursor rules not available (npm package, not local)
+          console.log(chalk.yellow('\n  Note: cursor-rules not bundled. Download from GitHub:'));
+          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/tree/main/cursor-rules'));
+        }
+      }
+
       spinner.succeed(chalk.green('Project created successfully!'));
 
       console.log('\n' + chalk.bold('Files created:'));
       console.log(chalk.gray(`  ${outputDir}/`));
       console.log(chalk.gray('  ├── QUICK-START.md'));
       console.log(chalk.gray('  ├── CONTEXT.md'));
-      console.log(chalk.gray('  └── IMPLEMENTATION-PLAN.md'));
+      console.log(chalk.gray('  ├── IMPLEMENTATION-PLAN.md'));
+      if (answers.includeCursorRules) {
+        console.log(chalk.gray('  └── .cursor/rules/ (11 AI rule files)'));
+      }
 
       console.log('\n' + chalk.bold('Next steps:'));
       console.log(chalk.cyan(`  1. cd ${answers.projectName}`));

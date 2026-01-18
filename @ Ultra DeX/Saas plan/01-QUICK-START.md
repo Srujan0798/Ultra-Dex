@@ -54,10 +54,18 @@
 ## Done? Next Steps:
 
 **Ready for full planning?**
-Copy this into [Imp Template.md](./Imp%20Template.md) Section 1 and continue filling out the detailed sections.
+Copy this into [04-Imp-Template.md](./04-Imp-Template.md) Section 1 and continue filling out the detailed sections.
 
 **Want to see a real example?**
 Check [TaskFlow-Complete.md](./Examples/TaskFlow-Complete.md) - a fully filled 34-section implementation plan.
 
 **Understand the methodology first?**
-Read [METHODOLOGY.md](./METHODOLOGY.md) - the 21-step verification that makes Ultra-Dex different.
+Read [03-METHODOLOGY.md](./03-METHODOLOGY.md) - the 21-step verification that makes Ultra-Dex different.
+
+---
+
+## Navigation
+
+| ← Previous | Current | Next → |
+|------------|---------|--------|
+| [00-README](./00-README.md) | **01-QUICK-START** | [02-HOW-TO-USE](./02-HOW-TO-USE.md) |

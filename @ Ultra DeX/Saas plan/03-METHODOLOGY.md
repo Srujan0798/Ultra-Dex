@@ -127,6 +127,14 @@ A feature is DONE when ALL are true:
 
 ## Apply It
 
-1. **Start small:** Use the [QUICK-START.md](./QUICK-START.md)
+1. **Start small:** Use the [01-QUICK-START.md](./01-QUICK-START.md)
 2. **See it in action:** Read [TaskFlow-Complete.md](./Examples/TaskFlow-Complete.md)
-3. **Go deep:** Fill out [Imp Template.md](./Imp%20Template.md)
+3. **Go deep:** Fill out [04-Imp-Template.md](./04-Imp-Template.md)
+
+---
+
+## Navigation
+
+| ← Previous | Current | Next → |
+|------------|---------|--------|
+| [02-HOW-TO-USE](./02-HOW-TO-USE.md) | **03-METHODOLOGY** | [04-Imp-Template](./04-Imp-Template.md) |
