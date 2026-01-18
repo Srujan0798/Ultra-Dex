@@ -83,13 +83,22 @@ Verification (16-21):     QA/staging check
 ```
 1. Fill Sections 1-12 only (2-3 hours)
 2. Skip to Section 16 for tasks
-3. Use 5-step mini-checklist:
-   - Plan (30 min)
-   - Code (4-8 hours)
-   - Test (1 hour)
-   - Document (30 min)
-   - Deploy
+3. Use 5-step mini-checklist (below)
 ```
+
+#### Solo Developer: 5-Step Mini-Checklist
+
+For bug fixes and small changes, use this simplified version:
+
+| Step | Question | Time |
+|------|----------|------|
+| 1. Plan | What exactly am I changing? | 5 min |
+| 2. Code | Does it work? Manual test passed? | 4-8 hours |
+| 3. Test | Did I add/update tests? | 30 min |
+| 4. Document | Any comments needed for complex logic? | 10 min |
+| 5. Deploy | Can I deploy this without breaking things? | 15 min |
+
+**Use full 21-step for:** New features, security changes, database migrations, API changes.
 
 **Skip these entirely:** Sections 23-26, 31-34 (unless specifically needed)
 

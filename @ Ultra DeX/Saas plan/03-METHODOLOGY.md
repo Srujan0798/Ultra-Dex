@@ -22,41 +22,43 @@ Every task must be completable in **one focused session**.
 
 ### 2. The 21-Step Verification
 
-Every completed task MUST pass this checklist:
+Every completed task MUST pass this checklist.
+
+**Total Time: ~2-3 hours of verification per feature task**
 
 ```
-PLANNING
-[ ] 1. Requirements clearly defined
-[ ] 2. Acceptance criteria written
-[ ] 3. Dependencies identified
-[ ] 4. Estimated hours realistic (4-9h)
+PLANNING (~20 min)
+[ ] 1. Requirements clearly defined (5 min)
+[ ] 2. Acceptance criteria written (10 min)
+[ ] 3. Dependencies identified (3 min)
+[ ] 4. Estimated hours realistic 4-9h (2 min)
 
-IMPLEMENTATION
-[ ] 5. Code follows project conventions
-[ ] 6. No hardcoded values (use env/constants)
-[ ] 7. Error handling complete
-[ ] 8. Input validation present
-[ ] 9. TypeScript types (no `any`)
+IMPLEMENTATION (~30 min review)
+[ ] 5. Code follows project conventions (5 min)
+[ ] 6. No hardcoded values - use env/constants (5 min)
+[ ] 7. Error handling complete (10 min)
+[ ] 8. Input validation present (5 min)
+[ ] 9. TypeScript types - no `any` (5 min)
 
-QUALITY
-[ ] 10. Unit tests written
-[ ] 11. Integration test (if API/DB)
-[ ] 12. Edge cases handled
-[ ] 13. No console.logs left
-[ ] 14. No commented-out code
+QUALITY (~45 min)
+[ ] 10. Unit tests written (included in dev time)
+[ ] 11. Integration test if API/DB (15 min)
+[ ] 12. Edge cases handled (15 min)
+[ ] 13. No console.logs left (2 min)
+[ ] 14. No commented-out code (2 min)
 
-SECURITY
-[ ] 15. No secrets in code
-[ ] 16. Auth/permissions checked
-[ ] 17. Input sanitized
+SECURITY (~15 min)
+[ ] 15. No secrets in code (5 min)
+[ ] 16. Auth/permissions checked (5 min)
+[ ] 17. Input sanitized (5 min)
 
-DOCUMENTATION
-[ ] 18. Code is self-documenting
-[ ] 19. Complex logic has comments
-[ ] 20. API changes documented
+DOCUMENTATION (~10 min)
+[ ] 18. Code is self-documenting (3 min)
+[ ] 19. Complex logic has comments (5 min)
+[ ] 20. API changes documented (2 min)
 
-FINAL
-[ ] 21. Works in production environment
+FINAL (~15 min)
+[ ] 21. Works in production environment (15 min)
 ```
 
 **Rule:** If any box is unchecked, the task is NOT complete.

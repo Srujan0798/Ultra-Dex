@@ -34,6 +34,22 @@ INSTRUCTIONS FOR AI AGENTS:
 
 ═══════════════════════════════════════════════════════════════
 
+## 📊 PROGRESS TRACKER
+
+Use this to track which sections you've completed:
+
+| Phase | Sections | Est. Time | Status |
+|-------|----------|-----------|--------|
+| **Foundation** | 1, 2, 4, 6, 10, 11, 12, 15 | 4-5 hours | [ ] |
+| **Core Development** | 9, 16, 20 | As you build | [ ] |
+| **Production Prep** | 19, 21, 22, 27 | 2-3 hours | [ ] |
+| **Polish** | 28, 29, 30, 31 | As needed | [ ] |
+| **Advanced** | 23-26, 32-34 | As needed | [ ] |
+
+> **Tip:** Don't fill all sections upfront! See [02-HOW-TO-USE.md](./02-HOW-TO-USE.md) for the phased approach.
+
+═══════════════════════════════════════════════════════════════
+
 ------------------------------------------------------------------
 
 ---
