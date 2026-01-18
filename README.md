@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@ Ultra DeX/Saas plan/Imp%20Template.md)
+[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@ Ultra DeX/Saas plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md)
 
 > **From Idea to Production-Ready SaaS**
@@ -17,6 +17,7 @@ A complete framework for building production-ready SaaS applications. Not a simp
 - **21-Step Verification Framework** - Quality gates for every task
 - **Atomic Task Methodology** - 4-9 hour tasks with realistic estimates
 - **AI Agent Instructions** - Prompts for Claude, GPT, Gemini
+- **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot
 
 ---
 
@@ -24,10 +25,12 @@ A complete framework for building production-ready SaaS applications. Not a simp
 
 | Your Goal | Go Here |
 |-----------|---------|
-| **Start in 5 minutes** | [QUICK-START.md](./@ Ultra DeX/Saas plan/QUICK-START.md) |
+| **Start in 5 minutes** | [01-QUICK-START.md](./@ Ultra DeX/Saas plan/01-QUICK-START.md) |
+| **How to use correctly** | [02-HOW-TO-USE.md](./@ Ultra DeX/Saas plan/02-HOW-TO-USE.md) |
+| **Understand the methodology** | [03-METHODOLOGY.md](./@ Ultra DeX/Saas plan/03-METHODOLOGY.md) |
+| **Full template** | [04-Imp-Template.md](./@ Ultra DeX/Saas plan/04-Imp-Template.md) |
 | **See a real example** | [TaskFlow-Complete.md](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) |
-| **Understand the methodology** | [METHODOLOGY.md](./@ Ultra DeX/Saas plan/METHODOLOGY.md) |
-| **Full template** | [Imp Template.md](./@ Ultra DeX/Saas plan/Imp%20Template.md) |
+| **AI-ready rules** | [cursor-rules/](./cursor-rules/) |
 
 ---
 
@@ -37,29 +40,31 @@ A complete framework for building production-ready SaaS applications. Not a simp
 Ultra-Dex/
 ├── README.md                      ← You are here
 ├── AGENT-INSTRUCTIONS.md          ← AI agent prompts
+├── cursor-rules/                  ← Modular AI rules
+│   ├── 00-ultra-dex-core.mdc
+│   ├── 01-database.mdc
+│   ├── 02-api.mdc
+│   └── ... (10 domain-specific rules)
 │
 └── @ Ultra DeX/
     └── Saas plan/
         │
-        │  # Start Here
-        ├── README.md              ← Navigation hub
-        ├── QUICK-START.md         ← 5-minute entry point
-        ├── METHODOLOGY.md         ← 21-step system explained
+        │  # Core (numbered for order)
+        ├── 00-README.md           ← Navigation hub
+        ├── 01-QUICK-START.md      ← 5-minute entry point
+        ├── 02-HOW-TO-USE.md       ← Phased approach & workflows
+        ├── 03-METHODOLOGY.md      ← 21-step system explained
+        ├── 04-Imp-Template.md     ← Full 34-section template (5,500 lines)
         │
-        │  # Core Templates
-        ├── Imp Template.md        ← Full 34-section template (5,500 lines)
-        ├── Rule Book 21.md        ← 21-step verification framework
-        ├── SaaS Workflow.md       ← Pipeline visualization
+        ├── Examples/              ← Complete filled examples
+        │   ├── TaskFlow-Complete.md
+        │   ├── InvoiceFlow-Complete.md
+        │   └── HabitStack-Complete.md
         │
-        │  # Support Templates
-        ├── CONTEXT-TEMPLATE.md    ← AI memory template
-        ├── STATUS-TEMPLATE.md     ← Project state tracker
-        ├── CONSTRAINTS-TEMPLATE.md← Business/tech rules
-        ├── INTEGRATIONS-TEMPLATE.md← Modular features
-        ├── CHANGELOG-TEMPLATE.md  ← Decision history
-        │
-        └── Examples/
-            └── TaskFlow-Complete.md ← Fully filled example (3,000 lines)
+        └── Templates/             ← Supplementary templates
+            ├── Rule Book 21.md
+            ├── SaaS Workflow.md
+            └── *-TEMPLATE.md files
 ```
 
 ---
@@ -130,9 +135,9 @@ See [AGENT-INSTRUCTIONS.md](./AGENT-INSTRUCTIONS.md) for prompts:
 
 ## Get Started
 
-1. **New to Ultra-Dex?** → Start with [QUICK-START.md](./@ Ultra DeX/Saas plan/QUICK-START.md)
+1. **New to Ultra-Dex?** → Start with [01-QUICK-START.md](./@ Ultra DeX/Saas plan/01-QUICK-START.md)
 2. **Want to see it in action?** → Read [TaskFlow-Complete.md](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md)
-3. **Ready for full planning?** → Use [Imp Template.md](./@ Ultra DeX/Saas plan/Imp%20Template.md)
+3. **Ready for full planning?** → Use [04-Imp-Template.md](./@ Ultra DeX/Saas plan/04-Imp-Template.md)
 
 ---
 

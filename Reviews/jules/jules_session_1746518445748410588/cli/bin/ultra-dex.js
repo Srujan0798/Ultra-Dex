@@ -50,9 +50,9 @@ const QUICK_START_TEMPLATE = `# {{PROJECT_NAME}} - Quick Start
 - {{PROBLEM_2}}
 - {{PROBLEM_3}}
 
-## 3. MVP Features (5 max)
+## 3. Core Production Features (5 max)
 
-| Feature | Priority | Why it's MVP? |
+| Feature | Priority | Justification |
 |---------|----------|---------------|
 | {{FEATURE_1}} | P0 | |
 | | P0 | |
@@ -103,7 +103,7 @@ Setting up the implementation plan.
 
 ## Resources
 - [Ultra-Dex Template](https://github.com/Srujan0798/Ultra-Dex)
-- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
+- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
 `;
 
 program
@@ -118,7 +118,7 @@ program
   .option('-d, --dir <directory>', 'Output directory', '.')
   .action(async (options) => {
     console.log(chalk.cyan(banner));
-    console.log(chalk.bold('\nWelcome to Ultra-Dex! Let\'s plan your SaaS.\n'));
+    console.log(chalk.bold('\nWelcome to Ultra-Dex! Let\'s plan your production-ready SaaS.\n'));
 
     // Gather project info
     const answers = await inquirer.prompt([
@@ -162,7 +162,7 @@ program
       {
         type: 'input',
         name: 'feature1',
-        message: 'Most important MVP feature:',
+        message: 'Critical production feature:',
         default: '',
       },
       {
@@ -255,9 +255,9 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 
 ## Resources
 
-- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
-- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
-- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md)
+- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Imp%20Template.md)
+- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
+- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
 `;
 
       await fs.writeFile(path.join(outputDir, 'IMPLEMENTATION-PLAN.md'), planContent);
@@ -295,17 +295,17 @@ program
       {
         name: 'TaskFlow',
         type: 'Task Management',
-        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md',
       },
       {
         name: 'InvoiceFlow',
         type: 'Invoicing',
-        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/InvoiceFlow-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/InvoiceFlow-Complete.md',
       },
       {
         name: 'HabitStack',
         type: 'Habit Tracking',
-        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/HabitStack-Complete.md',
+        url: 'https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/HabitStack-Complete.md',
       },
     ];
 
