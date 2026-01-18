@@ -310,4 +310,4 @@ Provide the fix with explanation.
 
 ---
 
-*Created by Ultra-Dex | Master OG: Srujan Sai Karna*
+*Created by the Ultra-Dex Team*

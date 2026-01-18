@@ -715,4 +715,4 @@ This framework ensures consistent, high-quality implementation across all projec
 
 ---
 
-*~ by Srujan Sai Karna {Master OG}*
+*~ Ultra-Dex Team*

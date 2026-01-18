@@ -1,9 +1,11 @@
 # Ultra-Dex
 
+[![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@ Ultra DeX/Saas plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md)
+[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-11_Modules-green.svg)](./cursor-rules/)
 
 > **From Idea to Production-Ready SaaS**
 
@@ -168,4 +170,4 @@ If Ultra-Dex helps you build your SaaS, give it a star!
 
 ---
 
-*Created by Ultra-Dex | Master OG: Srujan Sai Karna*
+*Created by the Ultra-Dex Team*
