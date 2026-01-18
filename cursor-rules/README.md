@@ -26,16 +26,16 @@ Only load rules relevant to your current task:
 
 | Working On | Load These |
 |------------|------------|
-| Database schema | `00-core.mdc` + `01-database.mdc` |
-| API endpoints | `00-core.mdc` + `02-api.mdc` |
-| Authentication | `00-core.mdc` + `03-auth.mdc` |
-| Frontend components | `00-core.mdc` + `04-frontend.mdc` |
-| Payments | `00-core.mdc` + `05-payments.mdc` |
-| Testing | `00-core.mdc` + `06-testing.mdc` |
-| Security review | `00-core.mdc` + `07-security.mdc` |
-| Deployment | `00-core.mdc` + `08-deployment.mdc` |
-| Error handling | `00-core.mdc` + `09-error-handling.mdc` |
-| Performance | `00-core.mdc` + `10-performance.mdc` |
+| Database schema | `00-ultra-dex-core.mdc` + `01-database.mdc` |
+| API endpoints | `00-ultra-dex-core.mdc` + `02-api.mdc` |
+| Authentication | `00-ultra-dex-core.mdc` + `03-auth.mdc` |
+| Frontend components | `00-ultra-dex-core.mdc` + `04-frontend.mdc` |
+| Payments | `00-ultra-dex-core.mdc` + `05-payments.mdc` |
+| Testing | `00-ultra-dex-core.mdc` + `06-testing.mdc` |
+| Security review | `00-ultra-dex-core.mdc` + `07-security.mdc` |
+| Deployment | `00-ultra-dex-core.mdc` + `08-deployment.mdc` |
+| Error handling | `00-ultra-dex-core.mdc` + `09-error-handling.mdc` |
+| Performance | `00-ultra-dex-core.mdc` + `10-performance.mdc` |
 
 ## Files
 

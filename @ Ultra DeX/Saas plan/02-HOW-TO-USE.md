@@ -278,3 +278,11 @@ Then **start coding**.
 ---
 
 *"Do it right the first time, verify it the 21st time - but only for things that matter."*
+
+---
+
+## Navigation
+
+| ← Previous | Current | Next → |
+|------------|---------|--------|
+| [01-QUICK-START](./01-QUICK-START.md) | **02-HOW-TO-USE** | [03-METHODOLOGY](./03-METHODOLOGY.md) |
