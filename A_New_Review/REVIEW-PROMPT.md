@@ -47,30 +47,32 @@ Does the framework successfully guide a developer/team through building a COMPLE
 ### 3. CURSOR RULES (cursor-rules/)
 - Are the 11 modular .mdc files properly organized?
 - Does each rule file work standalone with its domain?
-- Is the "selective loading" guidance and `load.sh` script clear?
+- Is the "selective loading" guidance and scripts (load.sh, load.ps1) clear?
 - Do the rules actually help AI assistants code better?
 
 ### 4. EXAMPLES (TaskFlow, InvoiceFlow, HabitStack)
 - Are the filled examples actually usable as reference?
 - Do they demonstrate all 34 sections properly?
+- Does the "Jump to Section" TOC help navigation?
 - Would a developer be able to pattern-match from these?
 
 ### 5. CLI TOOL (npx ultra-dex init)
 - Does the CLI output make sense?
-- Are the generated files (QUICK-START, CONTEXT, IMPLEMENTATION-PLAN) useful starting points?
+- Are the generated files (QUICK-START, CONTEXT, IMPLEMENTATION-PLAN) useful?
+- Do the new options (copy full template, copy docs) work correctly?
 - Does the cursor-rules copy prompt work correctly?
 
 ### 6. 21-STEP VERIFICATION
 - Is each step clearly defined with time estimates?
-- Does the checklist make sense for different task sizes?
-- Is the adaptation for different roles (solo vs team) clear?
-- Is the `VERIFICATION.md` PR checklist template useful?
+- Does the decision tree (when to use 21-step vs 5-step) make sense?
+- Is the `CHECKLIST-21-STEP.md` standalone file useful?
+- Is the `VERIFICATION.md` PR checklist template practical?
 
 ### 7. LINKING & NAVIGATION
 - Can a user find their way from any document to any other?
 - Are all cross-references working?
 - Is the folder structure intuitive (numbered prefixes)?
-- Does the README provide a clear entry point?
+- Does the README provide a clear entry point with "First 30 Minutes" path?
 
 ### 8. PHILOSOPHY ALIGNMENT
 - Does the "Core Philosophy" section clearly explain Ultra-Dex's purpose?
@@ -106,15 +108,16 @@ Does the framework successfully guide a developer/team through building a COMPLE
 ## SUCCESS CRITERIA
 
 A developer should be able to:
-1. Start with just an idea
-2. Use `01-QUICK-START.md` to capture core concept (5 min)
-3. Follow `02-HOW-TO-USE.md` to understand the phased approach
-4. Fill sections 1-12 from `04-Imp-Template.md` (4-5 hours)
-5. START CODING with cursor-rules loaded
-6. Reference remaining sections as they build
-7. Use 21-step for quality verification on each task
-8. Use `VERIFICATION.md` checklist in PRs
-9. End up with a PRODUCTION-READY application
+1. Read "Is Ultra-Dex Right for You?" to decide if it fits
+2. Follow "Your First 30 Minutes" path in README
+3. Use `01-QUICK-START.md` to capture core concept (5 min)
+4. Follow `02-HOW-TO-USE.md` to understand the phased approach
+5. Use `PHASE-1-FOUNDATION.md` for focused 8-section fill (4-5 hours)
+6. START CODING with cursor-rules loaded
+7. Reference remaining sections as they build
+8. Use 21-step for quality verification on each task
+9. Use `VERIFICATION.md` checklist in PRs
+10. End up with a PRODUCTION-READY application
 
 **Review whether this flow actually works end-to-end.**
 
@@ -122,19 +125,41 @@ A developer should be able to:
 
 ## FILES TO REVIEW
 
+### Root Level
 | File | Purpose |
 |------|---------|
-| `README.md` | Entry point, navigation, Core Philosophy |
-| `VERIFICATION.md` | PR checklist template |
+| `README.md` | Entry point, Core Philosophy, CLI docs, First 30 Min |
+| `VERIFICATION.md` | PR checklist with decision tree |
+| `CHECKLIST-21-STEP.md` | Standalone 21-step with adaptive timing |
+| `TROUBLESHOOTING.md` | Common problems and solutions |
+| `CUSTOMIZATION.md` | How to add/remove/modify sections |
 | `AGENT-INSTRUCTIONS.md` | AI agent prompts |
-| `@ Ultra DeX/Saas plan/01-QUICK-START.md` | 5-minute capture |
-| `@ Ultra DeX/Saas plan/02-HOW-TO-USE.md` | Phased approach guidance |
-| `@ Ultra DeX/Saas plan/03-METHODOLOGY.md` | 21-step explanation |
-| `@ Ultra DeX/Saas plan/04-Imp-Template.md` | Full 34-section template |
-| `@ Ultra DeX/Saas plan/Examples/` | 3 complete examples |
-| `@ Ultra DeX/Saas plan/Templates/` | 7 support templates (01-07) |
-| `cursor-rules/` | 11 .mdc files + load.sh |
-| `cli/bin/ultra-dex.js` | CLI implementation |
+
+### Framework Core (`@ Ultra DeX/Saas plan/`)
+| File | Purpose |
+|------|---------|
+| `01-QUICK-START.md` | 5-minute capture with step-by-step next |
+| `02-HOW-TO-USE.md` | Phased approach guidance |
+| `03-METHODOLOGY.md` | 21-step explanation |
+| `04-Imp-Template.md` | 34-section template with STOP marker |
+
+### Examples & Templates
+| File | Purpose |
+|------|---------|
+| `Examples/TaskFlow-Complete.md` | Full example with TOC and usage guide |
+| `Templates/PHASE-1-FOUNDATION.md` | 8 essential sections only (4-5 hours) |
+
+### Cursor Rules (`cursor-rules/`)
+| File | Purpose |
+|------|---------|
+| `00-10.mdc files` | 11 domain-specific rule files |
+| `load.sh` + `load.ps1` | Selective loading scripts |
+| `README.md` | Usage documentation |
+
+### CLI (`cli/`)
+| File | Purpose |
+|------|---------|
+| `bin/ultra-dex.js` | CLI with init, audit, docs copy options |
 
 ---
 
