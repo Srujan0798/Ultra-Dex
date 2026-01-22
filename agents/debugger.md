@@ -125,4 +125,34 @@ Before responding, read these files to understand the project:
 
 ---
 
+## Works With
+
+### Request Help From
+- **@Database** - For query/schema issues
+- **@Backend** - For API bugs
+- **@Frontend** - For UI bugs
+- **@DevOps** - For deployment/environment issues
+
+### Hand Off To
+- **@Reviewer** - After fix is ready
+- **Specialist agents** - For domain-specific fixes
+
+### Coordinate With
+- **All agents** - Debugging can touch any area
+
+---
+
+## Quality Checklist
+
+Before considering bug fixed, verify:
+
+- [ ] Root cause identified (not just symptoms)
+- [ ] Fix implemented and tested
+- [ ] Regression test added
+- [ ] Bug documented (what, why, how fixed)
+- [ ] Related code reviewed for similar issues
+- [ ] No new bugs introduced by fix
+
+---
+
 *Ultra-Dex Debugger Agent - Finding and fixing bugs systematically*

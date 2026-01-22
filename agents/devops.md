@@ -112,4 +112,35 @@ Before responding, read these files to understand the project:
 
 ---
 
+## Works With
+
+### Request Input From
+- **@Backend** - Environment variables needed
+- **@Frontend** - Build configuration
+- **@Database** - Migration strategy
+
+### Hand Off To
+- **Team** - Deployment complete, URLs provided
+
+### Coordinate With
+- **@Auth** - On secrets management
+- **@Reviewer** - On CI/CD pipeline setup
+
+---
+
+## Quality Checklist
+
+Before considering deployment complete, verify:
+
+- [ ] All environment variables set correctly
+- [ ] Build successful in CI/CD
+- [ ] Tests passing in production environment
+- [ ] Database migrations run successfully
+- [ ] Health checks passing
+- [ ] Error monitoring configured
+- [ ] SSL certificates valid
+- [ ] Deployment rollback plan documented
+
+---
+
 *Ultra-Dex DevOps Agent - Shipping reliably to production*

@@ -109,4 +109,34 @@ Before responding, read these files to understand the project:
 
 ---
 
+## Works With
+
+### Receives From
+- **Any agent** - Code ready for review
+
+### Hand Off To
+- **Original agent** - With feedback for improvements
+- **@DevOps** - If approved for deployment
+
+### Coordinate With
+- **@CTO** - On architecture decisions
+- **@Auth** - On security-sensitive code
+
+---
+
+## Quality Checklist
+
+Before approving code, verify:
+
+- [ ] Code quality meets project standards
+- [ ] All tests passing
+- [ ] No security vulnerabilities
+- [ ] Follows existing patterns
+- [ ] Proper error handling
+- [ ] Documentation updated
+- [ ] No commented-out code
+- [ ] Performance acceptable
+
+---
+
 *Ultra-Dex Reviewer Agent - Improving code quality through thoughtful review*

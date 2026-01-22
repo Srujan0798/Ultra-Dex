@@ -253,6 +253,39 @@ See [AGENT-INSTRUCTIONS.md](./AGENT-INSTRUCTIONS.md) for additional prompts.
 
 ---
 
+## Agent Orchestration (NEW in v1.4)
+
+Use multiple agents together for complex features:
+
+### The @AgentName Pattern
+
+Coordinate agents by referencing them:
+```
+User: "Add user authentication"
+
+@Planner: Breaks down into tasks
+@CTO: Reviews architecture
+@Database: Creates User schema
+@Backend: Implements auth API
+@Frontend: Creates login UI
+@Auth: Security review
+@Reviewer: Code review
+@DevOps: Deploys
+```
+
+### What You Get
+
+- **Workflow Patterns** - Proven coordination patterns
+- **Quality Gates** - Each agent has checklist before handoff
+- **Real Examples** - 3 detailed multi-agent workflows
+
+### Learn More
+
+- [Orchestration Guide](./Orchestration/README.md) - How to coordinate agents
+- [Workflow Examples](./Orchestration/EXAMPLES.md) - Real-world scenarios
+
+---
+
 ## Quality Targets
 
 | Area | Target |
