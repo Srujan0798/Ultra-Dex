@@ -40,11 +40,25 @@ Shows links to fully filled Ultra-Dex examples:
 - InvoiceFlow (Invoicing)
 - HabitStack (Habit Tracking)
 
+### Audit your project
+
+```bash
+npx ultra-dex audit
+```
+
+Checks your project for completeness:
+- Required files (QUICK-START.md, CONTEXT.md, etc.)
+- Key sections (idea, problem, MVP, tech stack)
+- Implementation details (database, API, auth)
+
+Outputs a score and grade (A-F) with suggestions.
+
 ## Commands
 
 | Command | Description |
 |---------|-------------|
 | `ultra-dex init` | Initialize a new project |
+| `ultra-dex audit` | Audit project for completeness |
 | `ultra-dex examples` | List available examples |
 | `ultra-dex --help` | Show help |
 | `ultra-dex --version` | Show version |
@@ -57,6 +71,12 @@ Shows links to fully filled Ultra-Dex examples:
 |--------|-------------|
 | `-n, --name <name>` | Project name (skips prompt) |
 | `-d, --dir <directory>` | Output directory (default: current) |
+
+### audit
+
+| Option | Description |
+|--------|-------------|
+| `-d, --dir <directory>` | Directory to audit (default: current) |
 
 ## Example
 
