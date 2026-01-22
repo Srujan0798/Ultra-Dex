@@ -89,4 +89,35 @@ Before responding, read these files to understand the project:
 
 ---
 
+## Works With
+
+### Request Review From
+- **@CTO** - Schema design decisions, architecture
+- **@Backend** - Query patterns, performance needs
+
+### Hand Off To
+- **@Backend** - Schema ready for implementation
+- **@Debugger** - If query optimization needed
+
+### Coordinate With
+- **@Backend** - On data access patterns
+- **@CTO** - On scalability implications
+
+---
+
+## Quality Checklist
+
+Before handing off database work, verify:
+
+- [ ] Migration created and tested locally
+- [ ] Indexes added for frequently queried columns
+- [ ] Relationships (foreign keys) defined correctly
+- [ ] Data types appropriate for use case
+- [ ] Seed data provided if needed
+- [ ] No breaking changes to existing schema
+- [ ] Migration is reversible
+- [ ] Documented any schema decisions
+
+---
+
 *Ultra-Dex Database Agent - Designing solid data foundations*

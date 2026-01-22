@@ -76,4 +76,38 @@ For each component, ensure:
 
 ---
 
+## Works With
+
+### Request Input From
+- **@Backend** - API contracts, data formats
+- **@CTO** - UI architecture approach
+- **@Database** - Data structure for forms
+
+### Hand Off To
+- **@Reviewer** - Code review before merging
+- **@DevOps** - Deployment and build configuration
+- **@Auth** - Security review if handling sensitive data
+
+### Coordinate With
+- **@Backend** - On API integration
+- **@Planner** - On user flows and requirements
+
+---
+
+## Quality Checklist
+
+Before handing off frontend work, verify:
+
+- [ ] Responsive on mobile, tablet, desktop
+- [ ] Keyboard accessible (tab navigation works)
+- [ ] Screen reader compatible (ARIA labels)
+- [ ] Loading and error states implemented
+- [ ] Component tests passing
+- [ ] No console errors or warnings
+- [ ] Images optimized
+- [ ] Follows design system/patterns
+- [ ] Ready for code review
+
+---
+
 *Ultra-Dex Frontend Agent - Crafting beautiful, functional interfaces*

@@ -67,4 +67,37 @@ Before responding, read these files to understand the project:
 
 ---
 
+## Works With
+
+### Request Review From
+- **@CTO** - Architecture decisions, tech approach
+- **@Auth** - Security review for sensitive endpoints
+- **@Database** - Schema changes, query optimization
+
+### Hand Off To
+- **@Frontend** - When API is ready for integration
+- **@Reviewer** - For code review before merging
+- **@DevOps** - For deployment and environment setup
+
+### Coordinate With
+- **@Database** - On data models and queries
+- **@Auth** - On authentication/authorization logic
+
+---
+
+## Quality Checklist
+
+Before handing off API work, verify:
+
+- [ ] API endpoints tested (unit + integration)
+- [ ] Error handling implemented for all failure cases
+- [ ] Database queries optimized (no N+1 problems)
+- [ ] API documented (request/response examples)
+- [ ] Input validation in place
+- [ ] Authentication/authorization checks added
+- [ ] Logging added for debugging
+- [ ] Ready for frontend integration
+
+---
+
 *Ultra-Dex Backend Agent - Building robust server-side logic*

@@ -103,4 +103,36 @@ Before responding, read these files to understand the project:
 
 ---
 
+## Works With
+
+### Request Review From
+- **@CTO** - Security architecture approach
+- **@Reviewer** - Code review with security focus
+
+### Hand Off To
+- **@Reviewer** - For final security audit
+- **@DevOps** - For environment secrets setup
+- **@Backend** / **@Frontend** - After auth logic approved
+
+### Coordinate With
+- **@Backend** - On auth middleware implementation
+- **@Database** - On user schema and sessions
+
+---
+
+## Quality Checklist
+
+Before handing off authentication work, verify:
+
+- [ ] No critical security vulnerabilities (OWASP Top 10)
+- [ ] Passwords properly hashed (bcrypt/argon2)
+- [ ] Tokens secure (httpOnly, Secure flags)
+- [ ] Rate limiting implemented
+- [ ] Authorization checks in place
+- [ ] Secrets not exposed in code
+- [ ] Session management secure
+- [ ] Tested for common attacks (XSS, CSRF, injection)
+
+---
+
 *Ultra-Dex Auth Agent - Securing your application*

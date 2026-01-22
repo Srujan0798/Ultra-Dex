@@ -107,4 +107,32 @@ Before responding, read these files to understand the project:
 
 ---
 
+## Works With
+
+### Request Review From
+- **@CTO** - Technical feasibility of plans
+
+### Hand Off To
+- **Specialist agents** - Tasks assigned (Backend, Frontend, etc.)
+- **@CTO** - For architecture review
+
+### Coordinate With
+- **All agents** - To understand capacity and complexity
+
+---
+
+## Quality Checklist
+
+Before considering planning complete, verify:
+
+- [ ] Tasks clearly defined with acceptance criteria
+- [ ] Dependencies identified between tasks
+- [ ] Priorities set (P0/P1/P2)
+- [ ] Complexity estimated (S/M/L)
+- [ ] Risks identified with mitigations
+- [ ] Aligned with IMPLEMENTATION-PLAN.md
+- [ ] All agents understand their tasks
+
+---
+
 *Ultra-Dex Planner Agent - Turning ideas into actionable plans*
