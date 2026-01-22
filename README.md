@@ -6,6 +6,7 @@
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@ Ultra DeX/Saas plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md)
 [![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-11_Modules-green.svg)](./cursor-rules/)
+[![AI Agents](https://img.shields.io/badge/AI_Agents-9_Prompts-orange.svg)](./agents/)
 
 > **From Idea to Full-Scale, Production-Ready Application**
 
@@ -20,6 +21,7 @@ A comprehensive framework for building complete, production-grade applications. 
 - **Atomic Task Methodology** - 4-9 hour tasks with realistic estimates
 - **AI Agent Instructions** - Prompts for Claude, GPT, Gemini
 - **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot
+- **9 Pre-built AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner
 
 ---
 
@@ -33,6 +35,7 @@ A comprehensive framework for building complete, production-grade applications. 
 | **Full template** | [04-Imp-Template.md](./@ Ultra DeX/Saas plan/04-Imp-Template.md) |
 | **See a real example** | [TaskFlow-Complete.md](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) |
 | **AI-ready rules** | [cursor-rules/](./cursor-rules/) |
+| **AI agent prompts** | [agents/](./agents/) |
 
 ---
 
@@ -87,6 +90,8 @@ your-project/
 npx ultra-dex init              # Interactive setup
 npx ultra-dex audit             # Check project completeness
 npx ultra-dex examples          # Show example projects
+npx ultra-dex agents            # List AI agent prompts
+npx ultra-dex agent backend     # Show specific agent prompt
 ```
 
 ---
@@ -97,6 +102,10 @@ npx ultra-dex examples          # Show example projects
 Ultra-Dex/
 ├── README.md                      ← You are here
 ├── AGENT-INSTRUCTIONS.md          ← AI agent prompts
+├── agents/                        ← Pre-built AI agents
+│   ├── cto.md, backend.md, frontend.md
+│   ├── database.md, auth.md, devops.md
+│   └── reviewer.md, debugger.md, planner.md
 ├── cursor-rules/                  ← Modular AI rules
 │   ├── 00-ultra-dex-core.mdc
 │   ├── 01-database.mdc
@@ -217,14 +226,30 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-See [AGENT-INSTRUCTIONS.md](./AGENT-INSTRUCTIONS.md) for prompts:
+### Pre-built Agents (NEW in v1.3)
 
-| Agent | Purpose |
-|-------|---------|
-| Planner | Generate implementation plan from idea |
-| Coder | Implement tasks with production code |
-| Tester | Write tests, verify quality |
-| Reviewer | Code review, security check |
+Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT):
+
+| Agent | Purpose | File |
+|-------|---------|------|
+| CTO | Architecture & tech decisions | [agents/cto.md](./agents/cto.md) |
+| Backend | API, database, server logic | [agents/backend.md](./agents/backend.md) |
+| Frontend | UI, components, styling | [agents/frontend.md](./agents/frontend.md) |
+| Database | Schema design, queries | [agents/database.md](./agents/database.md) |
+| Auth | Authentication & authorization | [agents/auth.md](./agents/auth.md) |
+| DevOps | Deployment, CI/CD | [agents/devops.md](./agents/devops.md) |
+| Reviewer | Code review & quality | [agents/reviewer.md](./agents/reviewer.md) |
+| Debugger | Bug fixing | [agents/debugger.md](./agents/debugger.md) |
+| Planner | Task breakdown | [agents/planner.md](./agents/planner.md) |
+
+**Quick access via CLI:**
+```bash
+npx ultra-dex agent backend   # Prints prompt to copy
+```
+
+### Legacy Agent Instructions
+
+See [AGENT-INSTRUCTIONS.md](./AGENT-INSTRUCTIONS.md) for additional prompts.
 
 ---
 
