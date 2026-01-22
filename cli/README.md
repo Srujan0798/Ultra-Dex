@@ -53,6 +53,24 @@ Checks your project for completeness:
 
 Outputs a score and grade (A-F) with suggestions.
 
+### List AI agents
+
+```bash
+npx ultra-dex agents
+```
+
+Shows available AI agent prompts:
+- CTO, Backend, Frontend, Database
+- Auth, DevOps, Reviewer, Debugger, Planner
+
+### Get agent prompt
+
+```bash
+npx ultra-dex agent backend
+```
+
+Prints the full agent prompt. Copy and paste into your AI tool (Cursor, Claude, ChatGPT).
+
 ## Commands
 
 | Command | Description |
@@ -60,6 +78,8 @@ Outputs a score and grade (A-F) with suggestions.
 | `ultra-dex init` | Initialize a new project |
 | `ultra-dex audit` | Audit project for completeness |
 | `ultra-dex examples` | List available examples |
+| `ultra-dex agents` | List available AI agents |
+| `ultra-dex agent <name>` | Show specific agent prompt |
 | `ultra-dex --help` | Show help |
 | `ultra-dex --version` | Show version |
 
@@ -109,7 +129,9 @@ Files created:
   my-saas/
   ├── QUICK-START.md
   ├── CONTEXT.md
-  └── IMPLEMENTATION-PLAN.md
+  ├── IMPLEMENTATION-PLAN.md
+  ├── .cursor/rules/ (11 AI rule files)
+  └── .agents/ (9 AI agent prompts)
 
 Next steps:
   1. cd my-saas
@@ -122,6 +144,7 @@ Next steps:
 - [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
 - [Examples](https://github.com/Srujan0798/Ultra-Dex/tree/main/@%20Ultra%20DeX/Saas%20plan/Examples)
 - [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md)
+- [AI Agents](https://github.com/Srujan0798/Ultra-Dex/tree/main/agents)
 
 ## License
 

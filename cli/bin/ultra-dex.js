@@ -109,7 +109,7 @@ Setting up the implementation plan.
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('1.2.1');
+  .version('1.3.0');
 
 program
   .command('init')
@@ -211,6 +211,12 @@ program
         type: 'confirm',
         name: 'includeDocs',
         message: 'Copy VERIFICATION.md & AGENT-INSTRUCTIONS.md to docs/?',
+        default: true,
+      },
+      {
+        type: 'confirm',
+        name: 'includeAgents',
+        message: 'Include AI agent prompts? (.agents/ folder)',
         default: true,
       },
     ]);
@@ -325,6 +331,27 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         }
       }
 
+      // Copy agents if requested
+      if (answers.includeAgents) {
+        const agentsDir = path.join(outputDir, '.agents');
+        await fs.mkdir(agentsDir, { recursive: true });
+
+        const agentsSourcePath = path.resolve(__dirname, '../../agents');
+        try {
+          const agentFiles = await fs.readdir(agentsSourcePath);
+          for (const file of agentFiles.filter(f => f.endsWith('.md'))) {
+            await fs.copyFile(
+              path.join(agentsSourcePath, file),
+              path.join(agentsDir, file)
+            );
+          }
+        } catch (err) {
+          // Agents not available (npm package, not local)
+          console.log(chalk.yellow('\n  Note: Agent prompts not bundled. Download from GitHub:'));
+          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/tree/main/agents'));
+        }
+      }
+
       spinner.succeed(chalk.green('Project created successfully!'));
 
       console.log('\n' + chalk.bold('Files created:'));
@@ -340,7 +367,10 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         console.log(chalk.gray('  ├── docs/AI-PROMPTS.md'));
       }
       if (answers.includeCursorRules) {
-        console.log(chalk.gray('  └── .cursor/rules/ (11 AI rule files)'));
+        console.log(chalk.gray('  ├── .cursor/rules/ (11 AI rule files)'));
+      }
+      if (answers.includeAgents) {
+        console.log(chalk.gray('  └── .agents/ (9 AI agent prompts)'));
       }
 
       console.log('\n' + chalk.bold('Next steps:'));
@@ -520,6 +550,69 @@ program
       console.log(chalk.cyan(`${i + 1}. ${ex.name}`) + chalk.gray(` (${ex.type})`));
       console.log(chalk.gray(`   ${ex.url}\n`));
     });
+  });
+
+// Agent definitions
+const AGENTS = [
+  { name: 'cto', description: 'Architecture & tech decisions', file: 'cto.md' },
+  { name: 'backend', description: 'API, database, server logic', file: 'backend.md' },
+  { name: 'frontend', description: 'UI, components, styling', file: 'frontend.md' },
+  { name: 'database', description: 'Schema design, queries, migrations', file: 'database.md' },
+  { name: 'auth', description: 'Authentication & authorization', file: 'auth.md' },
+  { name: 'devops', description: 'Deployment, CI/CD, infrastructure', file: 'devops.md' },
+  { name: 'reviewer', description: 'Code review & quality check', file: 'reviewer.md' },
+  { name: 'debugger', description: 'Bug fixing & troubleshooting', file: 'debugger.md' },
+  { name: 'planner', description: 'Task breakdown & planning', file: 'planner.md' },
+];
+
+program
+  .command('agents')
+  .description('List available AI agent prompts')
+  .action(() => {
+    console.log(chalk.bold('\n🤖 Available Ultra-Dex Agents\n'));
+    console.log(chalk.gray('Copy these prompts into your AI tool (Cursor, Claude, ChatGPT, etc.)\n'));
+
+    AGENTS.forEach((agent, i) => {
+      console.log(chalk.cyan(`  ${i + 1}. ${agent.name}`) + chalk.gray(` - ${agent.description}`));
+    });
+
+    console.log('\n' + chalk.bold('Usage:'));
+    console.log(chalk.gray('  ultra-dex agent <name>   Show agent prompt (copy to clipboard)'));
+    console.log(chalk.gray('  ultra-dex agent backend  Example: show backend agent prompt'));
+
+    console.log('\n' + chalk.gray('Full docs: https://github.com/Srujan0798/Ultra-Dex/tree/main/agents\n'));
+  });
+
+program
+  .command('agent <name>')
+  .description('Show a specific agent prompt')
+  .action(async (name) => {
+    const agent = AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
+
+    if (!agent) {
+      console.log(chalk.red(`\n❌ Agent "${name}" not found.\n`));
+      console.log(chalk.gray('Available agents:'));
+      AGENTS.forEach(a => console.log(chalk.cyan(`  - ${a.name}`)));
+      console.log('\n' + chalk.gray('Run "ultra-dex agents" to see all agents.\n'));
+      process.exit(1);
+    }
+
+    // Try to read agent file
+    const agentPath = path.resolve(__dirname, '../../agents', agent.file);
+    try {
+      const content = await fs.readFile(agentPath, 'utf-8');
+      console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(content);
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.bold('\n📋 Copy the above prompt and paste into your AI tool.\n'));
+    } catch (err) {
+      // Agent file not bundled (npm package)
+      console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
+      console.log(chalk.yellow('Agent prompts are not bundled with the npm package.'));
+      console.log(chalk.gray('\nDownload from GitHub:'));
+      console.log(chalk.blue(`  https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n`));
+    }
   });
 
 program.parse();
