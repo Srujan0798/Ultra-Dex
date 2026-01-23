@@ -659,4 +659,17 @@ Use the [@Research](../agents/1-leadership/research.md) agent to compare options
 
 ---
 
+## Related Guides
+
+**Database & Tech Stack:**
+- [Database Decision Framework](./DATABASE-DECISION-FRAMEWORK.md) - PostgreSQL vs MongoDB vs MySQL
+- [AI Model Selection](./AI-MODEL-SELECTION.md) - Choose the right AI for each task
+
+**Workflows & Implementation:**
+- [Project Orchestration](./PROJECT-ORCHESTRATION.md) - Multi-agent workflows for building features
+- [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Real-world examples (Stripe, emails, migrations)
+- [Multi-Tool Workflow](./MULTI-TOOL-WORKFLOW.md) - Coordinate multiple AI tools together
+
+---
+
 *Part of [Ultra-Dex v1.6.1](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*

@@ -330,4 +330,22 @@ Ask yourself:
 
 ---
 
+## Related Guides
+
+**Multi-Tool Coordination:**
+- [Multi-Tool Workflow](./MULTI-TOOL-WORKFLOW.md) - Coordinate multiple AI tools together
+- [Project Orchestration](./PROJECT-ORCHESTRATION.md) - Multi-agent workflows for building features
+
+**Tech Stack Decisions:**
+- [Database Selection](./DATABASE-DECISION-FRAMEWORK.md) - Choose the right database
+- [Architecture Patterns](./ARCHITECTURE-PATTERNS.md) - Choose the right architecture
+
+**Real Examples:**
+- [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Stripe, emails, migrations, real-time features
+
+**Agent Reference:**
+- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 15 agents
+
+---
+
 **Ultra-Dex: Make smart AI decisions, optimize your costs**
