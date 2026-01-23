@@ -37,6 +37,9 @@ A comprehensive framework for building complete, production-grade applications. 
 | **See a real example** | [TaskFlow-Complete.md](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) |
 | **AI-ready rules** | [cursor-rules/](./cursor-rules/) |
 | **AI agent prompts** | [agents/](./agents/) |
+| **Multi-agent workflows** | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md) |
+| **Choose database** | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
+| **Architecture patterns** | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md) |
 
 ---
 
@@ -103,10 +106,26 @@ npx ultra-dex agent backend     # Show specific agent prompt
 Ultra-Dex/
 ├── README.md                      ← You are here
 ├── AGENT-INSTRUCTIONS.md          ← AI agent prompts
-├── agents/                        ← Pre-built AI agents
-│   ├── cto.md, backend.md, frontend.md
-│   ├── database.md, auth.md, devops.md
-│   └── reviewer.md, debugger.md, planner.md
+├── agents/                        ← 15 AI agents (tier-based)
+│   ├── 1-leadership/              (CTO, Planner, Research)
+│   ├── 2-development/             (Backend, Frontend, Database)
+│   ├── 3-security/                (Auth, Security)
+│   ├── 4-devops/                  (DevOps)
+│   ├── 5-quality/                 (Reviewer, Debugger, Testing, Documentation)
+│   ├── 6-specialist/              (Performance, Refactoring)
+│   └── 00-AGENT_INDEX.md          ← Quick reference table
+│
+├── guides/                        ← Production guides
+│   ├── PROJECT-ORCHESTRATION.md   ← Multi-agent workflows
+│   ├── DATABASE-DECISION-FRAMEWORK.md ← Database selection guide
+│   ├── ARCHITECTURE-PATTERNS.md   ← Architecture patterns
+│   ├── ADVANCED-WORKFLOWS.md      ← Real workflow examples
+│   ├── MULTI-TOOL-WORKFLOW.md     ← Coordinate multiple AI tools
+│   └── AI-MODEL-SELECTION.md      ← Choose the right AI model
+│
+├── Orchestration/                 ← Orchestration examples
+│   ├── Copilot.md, Devin.md, gemini.md
+│   └── EXAMPLES.md, README.md
 ├── cursor-rules/                  ← Modular AI rules
 │   ├── 00-ultra-dex-core.mdc
 │   ├── 01-database.mdc
@@ -305,7 +324,8 @@ Total: $23 (vs $60+ single-tool approach)
 
 **Orchestration & Workflows:**
 - **[Project Orchestration Guide](./guides/PROJECT-ORCHESTRATION.md)** - Step-by-step guide to build features with agents
-- **[Orchestration Examples](./Reviews/Orchestration/EXAMPLES.md)** - 7 real-world workflows with commands
+- **[Advanced Workflows](./guides/ADVANCED-WORKFLOWS.md)** - Stripe, emails, migrations, real-time features
+- **[Orchestration Examples](./Orchestration/EXAMPLES.md)** - Multi-agent workflow examples
 - **[Multi-Tool Workflow Guide](./guides/MULTI-TOOL-WORKFLOW.md)** - Coordinate ANY AI tool
 
 **Decision Frameworks:**
