@@ -37,9 +37,11 @@ A comprehensive framework for building complete, production-grade applications. 
 | **See a real example** | [TaskFlow-Complete.md](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) |
 | **AI-ready rules** | [cursor-rules/](./cursor-rules/) |
 | **AI agent prompts** | [agents/](./agents/) |
+| **Quick reference cheatsheet** | [QUICK-REFERENCE.md](./QUICK-REFERENCE.md) |
 | **Multi-agent workflows** | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md) |
 | **Choose database** | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
 | **Architecture patterns** | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md) |
+| **Version history & changelog** | [CHANGELOG.md](./CHANGELOG.md) |
 
 ---
 

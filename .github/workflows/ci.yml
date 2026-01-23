@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  markdown-lint:
+    name: Lint Markdown Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint markdown files
+        uses: articulate/actions-markdownlint@v1
+        with:
+          config: .markdownlint.json
+          files: '**/*.md'
+          ignore: 'node_modules'
+        continue-on-error: true
+
+  link-check:
+    name: Check Markdown Links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check links in markdown files
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          config-file: '.markdown-link-check.json'
+        continue-on-error: true
+
+  validate-structure:
+    name: Validate Project Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check required files exist
+        run: |
+          echo "Checking for required files..."
+          test -f README.md || { echo "❌ README.md missing"; exit 1; }
+          test -f CHANGELOG.md || { echo "❌ CHANGELOG.md missing"; exit 1; }
+          test -f QUICK-REFERENCE.md || { echo "❌ QUICK-REFERENCE.md missing"; exit 1; }
+          test -f ROADMAP.md || { echo "❌ ROADMAP.md missing"; exit 1; }
+          test -f WORKFLOW-DIAGRAMS.md || { echo "❌ WORKFLOW-DIAGRAMS.md missing"; exit 1; }
+          test -d agents || { echo "❌ agents/ directory missing"; exit 1; }
+          test -d guides || { echo "❌ guides/ directory missing"; exit 1; }
+          test -d templates || { echo "❌ templates/ directory missing"; exit 1; }
+          echo "✅ All required files present"
+
+      - name: Check agent files
+        run: |
+          echo "Checking agent files..."
+          test -f agents/00-AGENT_INDEX.md || { echo "❌ Agent index missing"; exit 1; }
+          test -f agents/README.md || { echo "❌ Agents README missing"; exit 1; }
+          test -d agents/1-leadership || { echo "❌ Leadership tier missing"; exit 1; }
+          test -d agents/2-development || { echo "❌ Development tier missing"; exit 1; }
+          test -d agents/3-security || { echo "❌ Security tier missing"; exit 1; }
+          test -d agents/4-devops || { echo "❌ DevOps tier missing"; exit 1; }
+          test -d agents/5-quality || { echo "❌ Quality tier missing"; exit 1; }
+          test -d agents/6-specialist || { echo "❌ Specialist tier missing"; exit 1; }
+          echo "✅ Agent structure valid"
+
+      - name: Check guide files
+        run: |
+          echo "Checking guide files..."
+          test -f guides/README.md || { echo "❌ Guides README missing"; exit 1; }
+          test -f guides/PROJECT-ORCHESTRATION.md || { echo "❌ Project Orchestration guide missing"; exit 1; }
+          test -f guides/DATABASE-DECISION-FRAMEWORK.md || { echo "❌ Database guide missing"; exit 1; }
+          test -f guides/ARCHITECTURE-PATTERNS.md || { echo "❌ Architecture guide missing"; exit 1; }
+          test -f guides/ADVANCED-WORKFLOWS.md || { echo "❌ Advanced Workflows missing"; exit 1; }
+          test -f guides/MULTI-TOOL-WORKFLOW.md || { echo "❌ Multi-Tool Workflow missing"; exit 1; }
+          test -f guides/AI-MODEL-SELECTION.md || { echo "❌ AI Model Selection missing"; exit 1; }
+          echo "✅ All guides present"
+
+      - name: Check template files
+        run: |
+          echo "Checking template files..."
+          test -f templates/README.md || { echo "❌ Templates README missing"; exit 1; }
+          test -f templates/MASTER-PLAN-TEMPLATE.md || { echo "❌ Master Plan template missing"; exit 1; }
+          test -f templates/PHASE-TRACKER-TEMPLATE.md || { echo "❌ Phase Tracker template missing"; exit 1; }
+          echo "✅ All templates present"
+
+  cli-test:
+    name: Test CLI Tool
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install CLI dependencies
+        run: |
+          cd cli
+          npm install
+
+      - name: Test CLI commands
+        run: |
+          cd cli
+          node bin/ultra-dex.js --version
+          node bin/ultra-dex.js --help
+          echo "✅ CLI commands work"
