@@ -109,7 +109,7 @@ Setting up the implementation plan.
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('1.4.0');
+  .version('1.5.0');
 
 program
   .command('init')
