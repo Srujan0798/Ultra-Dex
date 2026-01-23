@@ -413,6 +413,22 @@ Read IMPLEMENTATION-PLAN.md.
 
 ---
 
+## Related Guides
+
+**Get Started:**
+- [Project Orchestration](./PROJECT-ORCHESTRATION.md) - Step-by-step guide to build features with agents
+- [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Real-world examples (Stripe, emails, migrations)
+
+**Decision Frameworks:**
+- [AI Model Selection](./AI-MODEL-SELECTION.md) - Choose the right AI for each task
+- [Database Selection](./DATABASE-DECISION-FRAMEWORK.md) - Choose the right database
+- [Architecture Patterns](./ARCHITECTURE-PATTERNS.md) - Choose the right architecture
+
+**Agent Reference:**
+- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 15 agents
+
+---
+
 **Ultra-Dex: Your AI Orchestration Meta Layer**
 
 We don't replace your AI tools. We coordinate them.

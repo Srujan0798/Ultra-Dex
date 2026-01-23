@@ -21,43 +21,82 @@ See [00-AGENT_INDEX.md](./00-AGENT_INDEX.md) for complete agent directory with "
 Agents are organized into **6 tiers** representing the production pipeline:
 
 ### 1. Leadership Tier (`1-leadership/`)
-Strategic planning and architecture decisions.
+**Strategic planning and architecture decisions**
 
 - **[@CTO](./1-leadership/cto.md)** - Architecture & tech stack decisions
+  - Use for: Major features, system design, technology choices
+  - Example: "Should we use Next.js or separate React + Express?"
+
 - **[@Planner](./1-leadership/planner.md)** - Task breakdown & sprint planning
+  - Use for: Starting any feature, breaking down complex work
+  - Example: "Break down 'user authentication' into implementation tasks"
+
 - **[@Research](./1-leadership/research.md)** - Technology evaluation & comparison
+  - Use for: Choosing frameworks, libraries, comparing approaches
+  - Example: "Compare Prisma vs Drizzle ORM for PostgreSQL"
 
 ### 2. Development Tier (`2-development/`)
-Core feature implementation.
+**Core feature implementation**
 
 - **[@Backend](./2-development/backend.md)** - API & server logic
+  - Use for: Building endpoints, business logic, server code
+  - Example: "Build REST API for user authentication"
+
 - **[@Database](./2-development/database.md)** - Schema & queries
+  - Use for: Database changes, migrations, query optimization
+  - Example: "Create User and Post tables with relationships"
+
 - **[@Frontend](./2-development/frontend.md)** - UI & components
+  - Use for: Building pages, components, user flows
+  - Example: "Build login page with form validation"
 
 ### 3. Security Tier (`3-security/`)
-Authentication and security audits.
+**Authentication, authorization, and security audits**
 
 - **[@Auth](./3-security/auth.md)** - Auth flows & permissions
+  - Use for: Login, permissions, user management
+  - Example: "Implement JWT authentication with refresh tokens"
+
 - **[@Security](./3-security/security.md)** - Vulnerability audits
+  - Use for: Before deployment, security reviews, OWASP checks
+  - Example: "Audit authentication system for security vulnerabilities"
 
 ### 4. DevOps Tier (`4-devops/`)
-Deployment and infrastructure.
+**Deployment and infrastructure management**
 
 - **[@DevOps](./4-devops/devops.md)** - CI/CD & deployment
+  - Use for: Shipping to production, deployment pipelines
+  - Example: "Deploy to Vercel with PostgreSQL on Railway"
 
 ### 5. Quality Tier (`5-quality/`)
-Testing, debugging, code review, and documentation.
+**Testing, debugging, code review, and documentation**
 
 - **[@Debugger](./5-quality/debugger.md)** - Bug investigation
+  - Use for: When something breaks, troubleshooting issues
+  - Example: "Fix: Login endpoint returns 500 error"
+
 - **[@Documentation](./5-quality/documentation.md)** - Technical writing & docs maintenance
+  - Use for: Updating docs, API documentation, user guides
+  - Example: "Document API endpoints with examples"
+
 - **[@Reviewer](./5-quality/reviewer.md)** - Code review
+  - Use for: Before merging, final approval, quality checks
+  - Example: "Review authentication implementation for best practices"
+
 - **[@Testing](./5-quality/testing.md)** - Test automation
+  - Use for: Writing tests, ensuring coverage, QA
+  - Example: "Write unit tests for auth API (80% coverage)"
 
 ### 6. Specialist Tier (`6-specialist/`)
-Advanced optimization and refactoring.
+**Advanced optimization and code improvement**
 
 - **[@Performance](./6-specialist/performance.md)** - Performance optimization
+  - Use for: Slow pages/APIs, optimization needed
+  - Example: "Optimize user list page (currently 5s load time)"
+
 - **[@Refactoring](./6-specialist/refactoring.md)** - Code quality improvement
+  - Use for: Cleaning up code, reducing complexity, applying patterns
+  - Example: "Refactor authentication code to use strategy pattern"
 
 ---
 
@@ -87,16 +126,22 @@ For complex features, use multiple agents in sequence:
 7. @DevOps → Deploy
 ```
 
-See [Orchestration Guide](../Reviews/Orchestration/) for multi-agent workflows.
+See [Project Orchestration Guide](../guides/PROJECT-ORCHESTRATION.md) for complete multi-agent workflows.
 
 ---
 
-## Orchestration
+## Multi-Agent Orchestration
 
-For coordinating multiple agents, see:
-- [Orchestration Patterns](../Reviews/Orchestration/README.md)
-- [Workflow Examples](../Reviews/Orchestration/EXAMPLES.md)
-- [Formal Production Pipeline](../Reviews/Orchestration/WORKFLOW.md)
+For coordinating multiple agents on complex features, see:
+
+**Production Guides:**
+- **[Project Orchestration](../guides/PROJECT-ORCHESTRATION.md)** - Step-by-step multi-agent workflows
+- **[Advanced Workflows](../guides/ADVANCED-WORKFLOWS.md)** - Stripe, emails, migrations, real-time
+- **[Multi-Tool Workflow](../guides/MULTI-TOOL-WORKFLOW.md)** - Coordinate multiple AI tools
+
+**Examples:**
+- **[Orchestration Examples](../Orchestration/EXAMPLES.md)** - Real-world workflow examples
+- **[Orchestration README](../Orchestration/README.md)** - Pattern overview
 
 ---
 

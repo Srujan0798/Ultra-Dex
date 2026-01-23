@@ -101,12 +101,23 @@ Advanced optimization and code improvement.
 
 ---
 
-## Orchestration Workflow
+## Multi-Agent Orchestration
 
 For complete multi-agent workflows and coordination patterns, see:
-- [Orchestration Guide](../Reviews/Orchestration/README.md)
-- [Workflow Examples](../Reviews/Orchestration/EXAMPLES.md)
-- [Formal Production Pipeline](../Reviews/Orchestration/WORKFLOW.md)
+
+**Production Guides:**
+- [Project Orchestration Guide](../guides/PROJECT-ORCHESTRATION.md) - Step-by-step multi-agent workflows
+- [Advanced Workflows](../guides/ADVANCED-WORKFLOWS.md) - Stripe, emails, migrations, real-time features
+- [Multi-Tool Workflow](../guides/MULTI-TOOL-WORKFLOW.md) - Coordinate Claude + Cursor + Copilot + ChatGPT
+
+**Orchestration Examples:**
+- [Orchestration Examples](../Orchestration/EXAMPLES.md) - Real-world multi-agent workflow examples
+- [Orchestration README](../Orchestration/README.md) - Orchestration pattern overview
+
+**Decision Frameworks:**
+- [Database Selection Guide](../guides/DATABASE-DECISION-FRAMEWORK.md) - PostgreSQL vs MongoDB vs MySQL
+- [Architecture Patterns](../guides/ARCHITECTURE-PATTERNS.md) - Monolith to Microservices
+- [AI Model Selection](../guides/AI-MODEL-SELECTION.md) - Choose the right AI for each task
 
 ---
 

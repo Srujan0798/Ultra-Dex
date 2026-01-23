@@ -506,4 +506,16 @@ npx prisma init
 
 ---
 
+## Related Guides
+
+**Architecture & Planning:**
+- [Architecture Patterns](./ARCHITECTURE-PATTERNS.md) - Choose the right architecture for your team size
+- [Project Orchestration](./PROJECT-ORCHESTRATION.md) - Multi-agent workflows for building features
+
+**Advanced Topics:**
+- [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Real-world examples (Stripe, emails, migrations)
+- [AI Model Selection](./AI-MODEL-SELECTION.md) - Choose the right AI for each task
+
+---
+
 *Part of [Ultra-Dex v1.6.1](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*
