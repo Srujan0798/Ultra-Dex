@@ -134,6 +134,7 @@ A developer should be able to:
 | `TROUBLESHOOTING.md` | Common problems and solutions |
 | `CUSTOMIZATION.md` | How to add/remove/modify sections |
 | `AGENT-INSTRUCTIONS.md` | AI agent prompts |
+| `VISION-V2.md` | Meta-Layer orchestration vision |
 
 ### Framework Core (`@ Ultra DeX/Saas plan/`)
 | File | Purpose |
@@ -149,6 +150,27 @@ A developer should be able to:
 | `Examples/TaskFlow-Complete.md` | Full example with TOC and usage guide |
 | `Templates/PHASE-1-FOUNDATION.md` | 8 essential sections only (4-5 hours) |
 
+### AI Agents (`agents/`) - **15 AGENTS IN 6 TIERS**
+| Folder/File | Purpose |
+|-------------|---------|
+| `00-AGENT_INDEX.md` | Quick reference with "when to use" |
+| `1-leadership/` | CTO, Planner, Research agents |
+| `2-development/` | Backend, Frontend, Database agents |
+| `3-security/` | Auth, Security agents |
+| `4-devops/` | DevOps agent |
+| `5-quality/` | Testing, Documentation, Reviewer, Debugger agents |
+| `6-specialist/` | Performance, Refactoring agents |
+
+### Guides (`guides/`) - **6 COMPREHENSIVE GUIDES**
+| File | Purpose |
+|------|---------|
+| `PROJECT-ORCHESTRATION.md` | Multi-agent feature building (24KB) |
+| `MULTI-TOOL-WORKFLOW.md` | Claude + Cursor + Copilot coordination |
+| `AI-MODEL-SELECTION.md` | When to use which LLM |
+| `DATABASE-DECISION-FRAMEWORK.md` | PostgreSQL vs MongoDB |
+| `ARCHITECTURE-PATTERNS.md` | Monolith vs Microservices |
+| `ADVANCED-WORKFLOWS.md` | Complex multi-agent patterns |
+
 ### Cursor Rules (`cursor-rules/`)
 | File | Purpose |
 |------|---------|
@@ -156,10 +178,10 @@ A developer should be able to:
 | `load.sh` + `load.ps1` | Selective loading scripts |
 | `README.md` | Usage documentation |
 
-### CLI (`cli/`)
+### CLI (`cli/`) - **v1.6.1**
 | File | Purpose |
 |------|---------|
-| `bin/ultra-dex.js` | CLI with init, audit, docs copy options |
+| `bin/ultra-dex.js` | CLI: init, audit, agents (15 in 6 tiers), docs copy |
 
 ---
 
