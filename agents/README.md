@@ -1,6 +1,6 @@
 # Ultra-Dex AI Agents
 
-> 14 specialized AI agent prompts organized by production tier
+> 15 specialized AI agent prompts organized by production tier
 
 ---
 
@@ -46,9 +46,10 @@ Deployment and infrastructure.
 - **[@DevOps](./4-devops/devops.md)** - CI/CD & deployment
 
 ### 5. Quality Tier (`5-quality/`)
-Testing, debugging, and code review.
+Testing, debugging, code review, and documentation.
 
 - **[@Debugger](./5-quality/debugger.md)** - Bug investigation
+- **[@Documentation](./5-quality/documentation.md)** - Technical writing & docs maintenance
 - **[@Reviewer](./5-quality/reviewer.md)** - Code review
 - **[@Testing](./5-quality/testing.md)** - Test automation
 
@@ -183,4 +184,4 @@ npx ultra-dex init
 
 ---
 
-*Part of [Ultra-Dex v1.6.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*
+*Part of [Ultra-Dex v1.6.1](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*

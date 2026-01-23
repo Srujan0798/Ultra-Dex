@@ -6,7 +6,7 @@
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@ Ultra DeX/Saas plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md)
 [![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-11_Modules-green.svg)](./cursor-rules/)
-[![AI Agents](https://img.shields.io/badge/AI_Agents-14_Prompts-orange.svg)](./agents/)
+[![AI Agents](https://img.shields.io/badge/AI_Agents-15_Prompts-orange.svg)](./agents/)
 
 > **From Idea to Full-Scale, Production-Ready Application**
 
@@ -21,7 +21,7 @@ A comprehensive framework for building complete, production-grade applications. 
 - **Atomic Task Methodology** - 4-9 hour tasks with realistic estimates
 - **AI Agent Instructions** - Prompts for Claude, GPT, Gemini
 - **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot
-- **14 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research
+- **15 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research, Documentation
 - **Multi-Tool Orchestration** - Coordinate Claude Code + Cursor + Copilot + ChatGPT + Gemini together
 
 ---
@@ -227,9 +227,9 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 14 Production-Ready Agents (v1.6.0)
+### 15 Production-Ready Agents (v1.6.1)
 
-Ultra-Dex includes 14 specialized agent prompts **organized into 6 tiers** for the production pipeline. Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT).
+Ultra-Dex includes 15 specialized agent prompts **organized into 6 tiers** for the production pipeline. Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT).
 
 **Leadership Tier** - Strategic planning and architecture decisions
 - **[@CTO](./agents/1-leadership/cto.md)** - Architecture & tech stack
@@ -248,8 +248,9 @@ Ultra-Dex includes 14 specialized agent prompts **organized into 6 tiers** for t
 **DevOps Tier** - Deployment and infrastructure
 - **[@DevOps](./agents/4-devops/devops.md)** - CI/CD & deployment
 
-**Quality Tier** - Testing, debugging, and review
+**Quality Tier** - Testing, debugging, documentation, and review
 - **[@Testing](./agents/5-quality/testing.md)** - Test automation
+- **[@Documentation](./agents/5-quality/documentation.md)** - Technical writing & docs
 - **[@Reviewer](./agents/5-quality/reviewer.md)** - Code review
 - **[@Debugger](./agents/5-quality/debugger.md)** - Bug fixing
 
@@ -259,7 +260,7 @@ Ultra-Dex includes 14 specialized agent prompts **organized into 6 tiers** for t
 
 **Quick Reference:**
 ```bash
-npx ultra-dex agents              # List all 14 agents by tier
+npx ultra-dex agents              # List all 15 agents by tier
 npx ultra-dex agent backend       # Show specific agent prompt
 ```
 
