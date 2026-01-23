@@ -109,7 +109,7 @@ Setting up the implementation plan.
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('1.5.0');
+  .version('1.6.0');
 
 program
   .command('init')
@@ -338,13 +338,31 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 
         const agentsSourcePath = path.resolve(__dirname, '../../agents');
         try {
-          const agentFiles = await fs.readdir(agentsSourcePath);
-          for (const file of agentFiles.filter(f => f.endsWith('.md'))) {
-            await fs.copyFile(
-              path.join(agentsSourcePath, file),
-              path.join(agentsDir, file)
-            );
+          // Copy tier directories and agent files
+          const tiers = ['1-leadership', '2-development', '3-security', '4-devops', '5-quality', '6-specialist'];
+          for (const tier of tiers) {
+            const tierDir = path.join(agentsDir, tier);
+            await fs.mkdir(tierDir, { recursive: true });
+
+            const tierPath = path.join(agentsSourcePath, tier);
+            const tierFiles = await fs.readdir(tierPath);
+            for (const file of tierFiles.filter(f => f.endsWith('.md'))) {
+              await fs.copyFile(
+                path.join(tierPath, file),
+                path.join(tierDir, file)
+              );
+            }
           }
+
+          // Copy agent index and README
+          await fs.copyFile(
+            path.join(agentsSourcePath, '00-AGENT_INDEX.md'),
+            path.join(agentsDir, '00-AGENT_INDEX.md')
+          );
+          await fs.copyFile(
+            path.join(agentsSourcePath, 'README.md'),
+            path.join(agentsDir, 'README.md')
+          );
         } catch (err) {
           // Agents not available (npm package, not local)
           console.log(chalk.yellow('\n  Note: Agent prompts not bundled. Download from GitHub:'));
@@ -370,7 +388,7 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         console.log(chalk.gray('  ├── .cursor/rules/ (11 AI rule files)'));
       }
       if (answers.includeAgents) {
-        console.log(chalk.gray('  └── .agents/ (9 AI agent prompts)'));
+        console.log(chalk.gray('  └── .agents/ (14 AI agent prompts in 6 tiers)'));
       }
 
       console.log('\n' + chalk.bold('Next steps:'));
@@ -552,35 +570,51 @@ program
     });
   });
 
-// Agent definitions
+// Agent definitions (organized by tier)
 const AGENTS = [
-  { name: 'cto', description: 'Architecture & tech decisions', file: 'cto.md' },
-  { name: 'backend', description: 'API, database, server logic', file: 'backend.md' },
-  { name: 'frontend', description: 'UI, components, styling', file: 'frontend.md' },
-  { name: 'database', description: 'Schema design, queries, migrations', file: 'database.md' },
-  { name: 'auth', description: 'Authentication & authorization', file: 'auth.md' },
-  { name: 'devops', description: 'Deployment, CI/CD, infrastructure', file: 'devops.md' },
-  { name: 'reviewer', description: 'Code review & quality check', file: 'reviewer.md' },
-  { name: 'debugger', description: 'Bug fixing & troubleshooting', file: 'debugger.md' },
-  { name: 'planner', description: 'Task breakdown & planning', file: 'planner.md' },
+  // Leadership Tier
+  { name: 'cto', description: 'Architecture & tech decisions', file: '1-leadership/cto.md', tier: 'Leadership' },
+  { name: 'planner', description: 'Task breakdown & planning', file: '1-leadership/planner.md', tier: 'Leadership' },
+  { name: 'research', description: 'Technology evaluation & comparison', file: '1-leadership/research.md', tier: 'Leadership' },
+  // Development Tier
+  { name: 'backend', description: 'API & server logic', file: '2-development/backend.md', tier: 'Development' },
+  { name: 'database', description: 'Schema design & queries', file: '2-development/database.md', tier: 'Development' },
+  { name: 'frontend', description: 'UI & components', file: '2-development/frontend.md', tier: 'Development' },
+  // Security Tier
+  { name: 'auth', description: 'Authentication & authorization', file: '3-security/auth.md', tier: 'Security' },
+  { name: 'security', description: 'Security audits & vulnerability fixes', file: '3-security/security.md', tier: 'Security' },
+  // DevOps Tier
+  { name: 'devops', description: 'Deployment & infrastructure', file: '4-devops/devops.md', tier: 'DevOps' },
+  // Quality Tier
+  { name: 'debugger', description: 'Bug fixing & troubleshooting', file: '5-quality/debugger.md', tier: 'Quality' },
+  { name: 'reviewer', description: 'Code review & quality check', file: '5-quality/reviewer.md', tier: 'Quality' },
+  { name: 'testing', description: 'QA & test automation', file: '5-quality/testing.md', tier: 'Quality' },
+  // Specialist Tier
+  { name: 'performance', description: 'Performance optimization', file: '6-specialist/performance.md', tier: 'Specialist' },
+  { name: 'refactoring', description: 'Code quality & design patterns', file: '6-specialist/refactoring.md', tier: 'Specialist' },
 ];
 
 program
   .command('agents')
   .description('List available AI agent prompts')
   .action(() => {
-    console.log(chalk.bold('\n🤖 Available Ultra-Dex Agents\n'));
-    console.log(chalk.gray('Copy these prompts into your AI tool (Cursor, Claude, ChatGPT, etc.)\n'));
+    console.log(chalk.bold('\n🤖 Ultra-Dex AI Agents (14 Total)\n'));
+    console.log(chalk.gray('Organized by tier for production pipeline\n'));
 
-    AGENTS.forEach((agent, i) => {
-      console.log(chalk.cyan(`  ${i + 1}. ${agent.name}`) + chalk.gray(` - ${agent.description}`));
+    let currentTier = '';
+    AGENTS.forEach((agent) => {
+      if (agent.tier !== currentTier) {
+        currentTier = agent.tier;
+        console.log(chalk.bold(`\n  ${currentTier} Tier:`));
+      }
+      console.log(chalk.cyan(`    ${agent.name}`) + chalk.gray(` - ${agent.description}`));
     });
 
     console.log('\n' + chalk.bold('Usage:'));
-    console.log(chalk.gray('  ultra-dex agent <name>   Show agent prompt (copy to clipboard)'));
-    console.log(chalk.gray('  ultra-dex agent backend  Example: show backend agent prompt'));
+    console.log(chalk.gray('  ultra-dex agent <name>   Show agent prompt'));
+    console.log(chalk.gray('  ultra-dex agent backend  Example: show backend agent'));
 
-    console.log('\n' + chalk.gray('Full docs: https://github.com/Srujan0798/Ultra-Dex/tree/main/agents\n'));
+    console.log('\n' + chalk.gray('Agent Index: https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/00-AGENT_INDEX.md\n'));
   });
 
 program

@@ -227,36 +227,43 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 14 Production-Ready Agents
+### 14 Production-Ready Agents (v1.6.0)
 
-Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT):
+Ultra-Dex includes 14 specialized agent prompts **organized into 6 tiers** for the production pipeline. Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT).
 
-**Core Development:**
-| Agent | Purpose | File |
-|-------|---------|------|
-| CTO | Architecture & tech decisions | [agents/cto.md](./agents/cto.md) |
-| Backend | API, database, server logic | [agents/backend.md](./agents/backend.md) |
-| Frontend | UI, components, styling | [agents/frontend.md](./agents/frontend.md) |
-| Database | Schema design, queries | [agents/database.md](./agents/database.md) |
-| Auth | Authentication & authorization | [agents/auth.md](./agents/auth.md) |
-| DevOps | Deployment, CI/CD | [agents/devops.md](./agents/devops.md) |
-| Planner | Task breakdown | [agents/planner.md](./agents/planner.md) |
+**Leadership Tier** - Strategic planning and architecture decisions
+- **[@CTO](./agents/1-leadership/cto.md)** - Architecture & tech stack
+- **[@Planner](./agents/1-leadership/planner.md)** - Task breakdown
+- **[@Research](./agents/1-leadership/research.md)** - Technology evaluation
 
-**Quality & Production (NEW in v1.5):**
-| Agent | Purpose | File |
-|-------|---------|------|
-| Testing | QA & test automation | [agents/testing.md](./agents/testing.md) |
-| Performance | Optimization specialist | [agents/performance.md](./agents/performance.md) |
-| Security | Security audit & penetration testing | [agents/security.md](./agents/security.md) |
-| Refactoring | Code quality improvement | [agents/refactoring.md](./agents/refactoring.md) |
-| Research | Technology evaluation | [agents/research.md](./agents/research.md) |
-| Reviewer | Code review & quality | [agents/reviewer.md](./agents/reviewer.md) |
-| Debugger | Bug fixing | [agents/debugger.md](./agents/debugger.md) |
+**Development Tier** - Core implementation
+- **[@Backend](./agents/2-development/backend.md)** - API & server logic
+- **[@Frontend](./agents/2-development/frontend.md)** - UI & components
+- **[@Database](./agents/2-development/database.md)** - Schema & queries
 
-**Quick access via CLI:**
+**Security Tier** - Authentication and audits
+- **[@Auth](./agents/3-security/auth.md)** - Auth flows & permissions
+- **[@Security](./agents/3-security/security.md)** - Vulnerability audits
+
+**DevOps Tier** - Deployment and infrastructure
+- **[@DevOps](./agents/4-devops/devops.md)** - CI/CD & deployment
+
+**Quality Tier** - Testing, debugging, and review
+- **[@Testing](./agents/5-quality/testing.md)** - Test automation
+- **[@Reviewer](./agents/5-quality/reviewer.md)** - Code review
+- **[@Debugger](./agents/5-quality/debugger.md)** - Bug fixing
+
+**Specialist Tier** - Advanced optimization
+- **[@Performance](./agents/6-specialist/performance.md)** - Performance optimization
+- **[@Refactoring](./agents/6-specialist/refactoring.md)** - Code quality
+
+**Quick Reference:**
 ```bash
-npx ultra-dex agent backend   # Prints prompt to copy
+npx ultra-dex agents              # List all 14 agents by tier
+npx ultra-dex agent backend       # Show specific agent prompt
 ```
+
+See [agents/00-AGENT_INDEX.md](./agents/00-AGENT_INDEX.md) for complete directory with "when to use" guidance.
 
 ### Legacy Agent Instructions
 
@@ -264,7 +271,7 @@ See [AGENT-INSTRUCTIONS.md](./AGENT-INSTRUCTIONS.md) for additional prompts.
 
 ---
 
-## Multi-Tool AI Orchestration (NEW in v1.5)
+## Multi-Tool AI Orchestration (v1.5-1.6)
 
 **Ultra-Dex is the ONLY framework that coordinates multiple AI tools together.**
 
