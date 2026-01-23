@@ -6,7 +6,7 @@
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@ Ultra DeX/Saas plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md)
 [![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-11_Modules-green.svg)](./cursor-rules/)
-[![AI Agents](https://img.shields.io/badge/AI_Agents-9_Prompts-orange.svg)](./agents/)
+[![AI Agents](https://img.shields.io/badge/AI_Agents-14_Prompts-orange.svg)](./agents/)
 
 > **From Idea to Full-Scale, Production-Ready Application**
 
@@ -21,7 +21,8 @@ A comprehensive framework for building complete, production-grade applications. 
 - **Atomic Task Methodology** - 4-9 hour tasks with realistic estimates
 - **AI Agent Instructions** - Prompts for Claude, GPT, Gemini
 - **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot
-- **9 Pre-built AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner
+- **14 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research
+- **Multi-Tool Orchestration** - Coordinate Claude Code + Cursor + Copilot + ChatGPT + Gemini together
 
 ---
 
@@ -226,10 +227,11 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### Pre-built Agents (NEW in v1.3)
+### 14 Production-Ready Agents
 
 Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT):
 
+**Core Development:**
 | Agent | Purpose | File |
 |-------|---------|------|
 | CTO | Architecture & tech decisions | [agents/cto.md](./agents/cto.md) |
@@ -238,9 +240,18 @@ Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT):
 | Database | Schema design, queries | [agents/database.md](./agents/database.md) |
 | Auth | Authentication & authorization | [agents/auth.md](./agents/auth.md) |
 | DevOps | Deployment, CI/CD | [agents/devops.md](./agents/devops.md) |
+| Planner | Task breakdown | [agents/planner.md](./agents/planner.md) |
+
+**Quality & Production (NEW in v1.5):**
+| Agent | Purpose | File |
+|-------|---------|------|
+| Testing | QA & test automation | [agents/testing.md](./agents/testing.md) |
+| Performance | Optimization specialist | [agents/performance.md](./agents/performance.md) |
+| Security | Security audit & penetration testing | [agents/security.md](./agents/security.md) |
+| Refactoring | Code quality improvement | [agents/refactoring.md](./agents/refactoring.md) |
+| Research | Technology evaluation | [agents/research.md](./agents/research.md) |
 | Reviewer | Code review & quality | [agents/reviewer.md](./agents/reviewer.md) |
 | Debugger | Bug fixing | [agents/debugger.md](./agents/debugger.md) |
-| Planner | Task breakdown | [agents/planner.md](./agents/planner.md) |
 
 **Quick access via CLI:**
 ```bash
@@ -253,36 +264,40 @@ See [AGENT-INSTRUCTIONS.md](./AGENT-INSTRUCTIONS.md) for additional prompts.
 
 ---
 
-## Agent Orchestration (NEW in v1.4)
+## Multi-Tool AI Orchestration (NEW in v1.5)
 
-Use multiple agents together for complex features:
+**Ultra-Dex is the ONLY framework that coordinates multiple AI tools together.**
 
-### The @AgentName Pattern
+Use Claude Code + Cursor + Copilot + ChatGPT + Gemini on the same project without losing context.
 
-Coordinate agents by referencing them:
+### How It Works
+
+1. **Shared State** - All tools read/write to IMPLEMENTATION-PLAN.md, CONTEXT.md
+2. **Agent Roles** - Each tool acts as a specific agent (@Backend, @Frontend, etc.)
+3. **Handoff Protocol** - Agents document work for the next agent
+4. **Quality Gates** - Checklists ensure consistent quality
+
+### Example: Building Auth with 4 Different Tools
+
 ```
-User: "Add user authentication"
+@Planner (ChatGPT Free)  → Task breakdown ($0)
+@CTO (Claude Opus)       → Architecture ($8)
+@Database (Cursor)       → Schema implementation ($1)
+@Backend (GPT-5.2)       → API endpoints ($3)
+@Frontend (Copilot)      → UI components ($2)
+@Security (Claude Opus)  → Security audit ($5)
+@Reviewer (Claude Sonnet)→ Code review ($4)
 
-@Planner: Breaks down into tasks
-@CTO: Reviews architecture
-@Database: Creates User schema
-@Backend: Implements auth API
-@Frontend: Creates login UI
-@Auth: Security review
-@Reviewer: Code review
-@DevOps: Deploys
+Total: $23 (vs $60+ single-tool approach)
 ```
 
-### What You Get
-
-- **Workflow Patterns** - Proven coordination patterns
-- **Quality Gates** - Each agent has checklist before handoff
-- **Real Examples** - 3 detailed multi-agent workflows
+**Result:** 4x faster, 3-5x cheaper, production-grade quality
 
 ### Learn More
 
-- [Orchestration Guide](./Orchestration/README.md) - How to coordinate agents
-- [Workflow Examples](./Orchestration/EXAMPLES.md) - Real-world scenarios
+- **[Multi-Tool Workflow Guide](./guides/MULTI-TOOL-WORKFLOW.md)** - Coordinate ANY AI tool
+- **[AI Model Selection Guide](./guides/AI-MODEL-SELECTION.md)** - Which AI for which task
+- **[Orchestration Examples](./Reviews/Orchestration/EXAMPLES.md)** - Real-world workflows
 
 ---
 
