@@ -303,9 +303,15 @@ Total: $23 (vs $60+ single-tool approach)
 
 ### Learn More
 
+**Orchestration & Workflows:**
+- **[Project Orchestration Guide](./guides/PROJECT-ORCHESTRATION.md)** - Step-by-step guide to build features with agents
+- **[Orchestration Examples](./Reviews/Orchestration/EXAMPLES.md)** - 7 real-world workflows with commands
 - **[Multi-Tool Workflow Guide](./guides/MULTI-TOOL-WORKFLOW.md)** - Coordinate ANY AI tool
+
+**Decision Frameworks:**
+- **[Database Decision Framework](./guides/DATABASE-DECISION-FRAMEWORK.md)** - PostgreSQL vs MongoDB vs MySQL
+- **[Architecture Patterns](./guides/ARCHITECTURE-PATTERNS.md)** - Monolith vs Microservices
 - **[AI Model Selection Guide](./guides/AI-MODEL-SELECTION.md)** - Which AI for which task
-- **[Orchestration Examples](./Reviews/Orchestration/EXAMPLES.md)** - Real-world workflows
 
 ---
 
