@@ -109,7 +109,7 @@ Setting up the implementation plan.
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('1.6.0');
+  .version('1.6.1');
 
 program
   .command('init')
@@ -388,7 +388,7 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         console.log(chalk.gray('  ├── .cursor/rules/ (11 AI rule files)'));
       }
       if (answers.includeAgents) {
-        console.log(chalk.gray('  └── .agents/ (14 AI agent prompts in 6 tiers)'));
+        console.log(chalk.gray('  └── .agents/ (15 AI agent prompts in 6 tiers)'));
       }
 
       console.log('\n' + chalk.bold('Next steps:'));
@@ -587,6 +587,7 @@ const AGENTS = [
   { name: 'devops', description: 'Deployment & infrastructure', file: '4-devops/devops.md', tier: 'DevOps' },
   // Quality Tier
   { name: 'debugger', description: 'Bug fixing & troubleshooting', file: '5-quality/debugger.md', tier: 'Quality' },
+  { name: 'documentation', description: 'Technical writing & docs maintenance', file: '5-quality/documentation.md', tier: 'Quality' },
   { name: 'reviewer', description: 'Code review & quality check', file: '5-quality/reviewer.md', tier: 'Quality' },
   { name: 'testing', description: 'QA & test automation', file: '5-quality/testing.md', tier: 'Quality' },
   // Specialist Tier
@@ -598,7 +599,7 @@ program
   .command('agents')
   .description('List available AI agent prompts')
   .action(() => {
-    console.log(chalk.bold('\n🤖 Ultra-Dex AI Agents (14 Total)\n'));
+    console.log(chalk.bold('\n🤖 Ultra-Dex AI Agents (15 Total)\n'));
     console.log(chalk.gray('Organized by tier for production pipeline\n'));
 
     let currentTier = '';

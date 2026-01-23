@@ -1,6 +1,6 @@
 # Ultra-Dex Agent Index
 
-Quick reference for all 14 production agents organized by tier.
+Quick reference for all 15 production agents organized by tier.
 
 ---
 
@@ -51,6 +51,7 @@ Testing, debugging, and code review.
 | Agent | Role | When to Use | File |
 |-------|------|-------------|------|
 | **@Debugger** | Bug investigation & fixes | When something breaks, troubleshooting | [debugger.md](./5-quality/debugger.md) |
+| **@Documentation** | Technical writing & docs maintenance | Updating docs, API documentation, guides | [documentation.md](./5-quality/documentation.md) |
 | **@Reviewer** | Code review & quality checks | Before merging, final approval | [reviewer.md](./5-quality/reviewer.md) |
 | **@Testing** | QA & test automation | Writing tests, ensuring coverage | [testing.md](./5-quality/testing.md) |
 
@@ -95,6 +96,9 @@ Advanced optimization and code improvement.
 **Technology choice?**
 → @Research
 
+**Documentation outdated?**
+→ @Documentation
+
 ---
 
 ## Orchestration Workflow
@@ -106,4 +110,4 @@ For complete multi-agent workflows and coordination patterns, see:
 
 ---
 
-*Ultra-Dex v1.6.0 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v1.6.1 - Professional AI Orchestration Meta Layer*
