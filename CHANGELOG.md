@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2026-01-24
+
+### Added
+- **6 Advanced Workflow Examples** (3,139 new lines in ADVANCED-WORKFLOWS.md)
+  - Example 5: Supabase Authentication Setup (587 lines) - Complete auth with RLS policies, OAuth providers, and Row Level Security
+  - Example 6: Vercel Deployment Pipeline (380 lines) - Full deployment pipeline from local to production
+  - Example 7: GitHub Actions CI/CD (493 lines) - Automated testing, linting, and deployment
+  - Example 8: Sentry Error Tracking (524 lines) - Frontend and backend error monitoring with source maps
+  - Example 9: Shopify Product Integration (596 lines) - E-commerce product sync with webhooks
+  - Example 10: PostHog Analytics Integration (561 lines) - User behavior tracking and conversion funnels
+- **3 Enhanced CLI Commands** (438 new lines in cli/bin/ultra-dex.js)
+  - `ultra-dex workflow <feature>` - Display agent workflow for 12 common features (auth, payments, deployment, etc.)
+  - `ultra-dex suggest` - Interactive AI agent suggestions based on task type with reasoning
+  - `ultra-dex validate` - Validate project structure against Ultra-Dex standards
+
+### Changed
+- Updated CLI version from 1.6.1 to 1.7.0
+- Expanded workflow examples from 4 to 10 (150% increase)
+- Total ADVANCED-WORKFLOWS.md now 3,534 lines (was 395 lines)
+- Added 12 workflow definitions to CLI for quick reference
+
+### Success Metrics
+- ✅ 10 workflow examples (6 new examples covering Supabase, Vercel, GitHub Actions, Sentry, Shopify, PostHog)
+- ✅ Enhanced CLI with 3 new interactive commands
+- ✅ Visual diagrams already present (WORKFLOW-DIAGRAMS.md)
+- ✅ Transformed Ultra-Dex from framework to comprehensive reference library
+
+---
+
 ## [1.6.1] - 2026-01-24
 
 ### Added
@@ -171,6 +200,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Key Feature | Agents | Guides | Templates |
 |---------|------|-------------|--------|--------|-----------|
+| **1.7.0** | 2026-01-24 | Workflow Examples + CLI | 15 | 6 (10 examples) | 2 |
 | **1.6.1** | 2026-01-24 | Production Guides | 15 | 6 | 2 |
 | **1.6.0** | 2026-01-23 | Tier-Based Organization | 15 | 2 | 2 |
 | **1.5.0** | 2026-01-23 | Multi-Tool Orchestration | 14 | 2 | 0 |
@@ -183,6 +213,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## Upgrade Guide
+
+### From 1.6.1 to 1.7.0
+
+**New Workflow Examples:**
+- 6 comprehensive SaaS integration examples added to `guides/ADVANCED-WORKFLOWS.md`
+- Examples cover: Supabase auth, Vercel deployment, GitHub Actions, Sentry, Shopify, PostHog
+
+**New CLI Commands:**
+- `ultra-dex workflow <feature>` - Quick reference for 12 common workflows
+- `ultra-dex suggest` - Interactive agent selection helper
+- `ultra-dex validate` - Project structure validation
+
+**Action Required:**
+- None - Fully backward compatible
+- Run `npx ultra-dex workflow auth` to see new workflow reference format
+- Run `npx ultra-dex suggest` to get AI agent recommendations for your task
+
+**Recommended:**
+- Review new workflow examples for copy-pasteable integration patterns
+- Use `ultra-dex workflow` command for quick agent workflow reference
 
 ### From 1.6.0 to 1.6.1
 
