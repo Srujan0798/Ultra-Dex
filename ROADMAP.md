@@ -12,25 +12,24 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 
 ---
 
-## Current State (v1.6.1) ✅
+## Current State (v1.7.0) ✅
 
-**Released: January 2026**
+**Released: January 24, 2026**
 
 - ✅ 15 production-ready AI agents (6 tiers)
 - ✅ 6 comprehensive production guides (83 KB)
+- ✅ 10 advanced workflow examples (3,534 lines)
+- ✅ Enhanced CLI with 8 commands (workflow, suggest, validate)
 - ✅ Multi-tool AI orchestration
-- ✅ 34-section implementation template
-- ✅ CLI tool with 5 commands
 - ✅ Complete documentation and cross-references
-- ✅ Quick reference cheatsheet
 - ✅ CHANGELOG tracking
 
 **Current metrics:**
-- 116 markdown files
+- 10 workflow examples (Stripe, Email, Database, Real-time, Supabase, Vercel, GitHub Actions, Sentry, Shopify, PostHog)
 - 15 specialized agents
 - 6 production guides
 - 2 project templates
-- Full version history
+- 8 CLI commands
 
 ---
 
@@ -39,57 +38,103 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 | Version | Target | Focus | Status |
 |---------|--------|-------|--------|
 | **1.6.1** | Jan 2026 | Documentation & Cross-References | ✅ Released |
-| **1.7.0** | Feb 2026 | Visual Workflows & Interactive Tools | 🔄 In Progress |
-| **1.8.0** | Mar 2026 | Community & Examples | 📋 Planned |
+| **1.7.0** | Jan 2026 | Workflow Examples & CLI Enhancement | ✅ Released |
+| **1.8.0** | Feb 2026 | Agent Library Enhancement | 🔄 In Progress |
+| **1.9.0** | Mar 2026 | Community & Examples | 📋 Planned |
 | **2.0.0** | Q2 2026 | AI Agent Automation | 💡 Proposed |
 | **2.5.0** | Q3 2026 | Enterprise Features | 💡 Proposed |
 | **3.0.0** | Q4 2026 | Platform Integration | 💡 Proposed |
 
 ---
 
-## v1.7.0 - Visual Workflows & Interactive Tools
+## v1.7.0 - Workflow Examples & CLI Enhancement ✅
+
+**Released: January 24, 2026**
+
+### Goals
+Transform Ultra-Dex from framework to comprehensive reference library with copy-pasteable examples.
+
+### Delivered Features
+
+**1. Six Advanced Workflow Examples** (3,139 new lines)
+- ✅ Example 5: Supabase Authentication Setup (587 lines)
+- ✅ Example 6: Vercel Deployment Pipeline (380 lines)
+- ✅ Example 7: GitHub Actions CI/CD (493 lines)
+- ✅ Example 8: Sentry Error Tracking (524 lines)
+- ✅ Example 9: Shopify Product Integration (596 lines)
+- ✅ Example 10: PostHog Analytics Integration (561 lines)
+
+**2. Three Enhanced CLI Commands** (438 new lines)
+- ✅ `ultra-dex workflow <feature>` - Display agent workflow for 12 common features
+- ✅ `ultra-dex suggest` - Interactive AI agent suggestions based on task type
+- ✅ `ultra-dex validate` - Validate project structure against Ultra-Dex standards
+
+**3. Documentation Updates**
+- ✅ Updated CHANGELOG.md with v1.7.0 release notes
+- ✅ Updated version history table
+- ✅ Added upgrade guide from v1.6.1 to v1.7.0
+
+### Success Metrics Achieved
+- ✅ 10 total workflow examples (150% increase from 4 to 10)
+- ✅ Enhanced CLI with 3 new interactive commands
+- ✅ Guides expanded from 395 to 3,534 lines (795% growth)
+- ✅ Transformed Ultra-Dex into comprehensive reference library
+
+### What Was Deferred
+- Visual workflow diagrams → Moved to v1.8.0
+- Web-based tools → Moved to v2.0+
+
+---
+
+## v1.8.0 - Agent Library Enhancement 🔄
 
 **Target Release: February 2026**
 
 ### Goals
-Make Ultra-Dex more visual and interactive for faster understanding.
+Make agents more actionable with code examples, quick reference, and comprehensive AI research.
 
-### Features
+### Planned Features
 
-**1. Visual Workflow Diagrams**
-- Mermaid flowcharts for agent workflows
-- SVG diagrams showing production pipeline
-- Interactive agent selection guide
-- Decision tree visualizations
+**1. Agent Quick Reference Index**
+- Create `agents/00-AGENT_INDEX.md` with lookup table
+- Quick reference: Which agent for which task
+- Tier-based organization table
+- Status and specialization at a glance
 
-**2. Enhanced CLI**
-- `ultra-dex workflow <feature>` - Show workflow for common features
-- `ultra-dex suggest` - AI suggests which agents to use
-- `ultra-dex validate` - Validate project structure
-- `ultra-dex diagram` - Generate workflow diagrams
+**2. Enhanced Agent Documentation with Code**
+Upgrade 5 key agents with concrete, copy-pasteable code examples:
+- **@Testing** - Jest templates, Playwright E2E, coverage configs
+- **@Performance** - Lighthouse CI, bundle size monitoring, query optimization
+- **@Security** - OWASP checklist, dependency scanning, security headers
+- **@Backend** - REST API patterns, error handling, rate limiting
+- **@Database** - Prisma patterns, migration strategies, index optimization
 
-**3. Web-Based Tools**
-- Agent selector web app (agents.ultra-dex.dev)
-- Workflow visualizer
-- Template generator
-- Cost calculator for AI usage
+**3. AI Research Library**
+Create `guides/AI-RESEARCH/` with decision frameworks:
+- `EMBEDDING-MODELS.md` - OpenAI vs Cohere vs HuggingFace comparison
+- `VECTOR-DATABASES.md` - Pinecone vs Qdrant vs Weaviate decision guide
+- Expand `AI-MODEL-SELECTION.md` with 2026 pricing updates
 
-**4. More Workflow Examples**
-- Shopify integration
-- Supabase setup
-- Vercel deployment
-- GitHub Actions CI/CD
-- Error tracking (Sentry)
-- Analytics (PostHog, Mixpanel)
+**4. Learning Resources**
+- `guides/LEARNING-PATH.md` - How to use Ultra-Dex without AI tools
+- Understanding the methodology manually
+- Graduation path from AI assistance to independent execution
 
 ### Success Metrics
-- 50% faster onboarding (measured by time to first feature)
-- 10+ new workflow examples
-- Web-based agent selector with 1,000+ visits/month
+- ✅ Agent index for instant lookup
+- ✅ 5 agents enhanced with code examples
+- ✅ 2 new AI research guides
+- ✅ Learning path for methodology understanding
+
+### Implementation Philosophy
+Focus on making agents immediately actionable:
+- Every agent should have copy-paste code snippets
+- Examples should be production-ready, not toy demos
+- Research should include current 2026 pricing and benchmarks
 
 ---
 
-## v1.8.0 - Community & Examples
+## v1.9.0 - Community & Examples
 
 **Target Release: March 2026**
 
@@ -323,19 +368,19 @@ Integrate Ultra-Dex directly into development platforms.
 
 ## Current Focus Areas
 
-**Immediate Priorities (Next 30 Days):**
-1. Visual workflow diagrams (Mermaid charts)
-2. Enhanced CLI commands (workflow, suggest, validate)
-3. Web-based agent selector
-4. 5 new workflow examples (Shopify, Supabase, Vercel, Sentry, Analytics)
+**Immediate Priorities (Next 30 Days - v1.8.0):**
+1. Create agent quick reference index (`agents/00-AGENT_INDEX.md`)
+2. Enhance 5 key agents with production code examples
+3. Add AI research guides (embeddings, vector databases)
+4. Create standalone learning path guide
 
-**Short-Term (Next 90 Days):**
+**Short-Term (Next 90 Days - v1.9.0):**
 1. 3 complete open-source SaaS examples
 2. Video tutorials (5+ videos)
 3. Discord community launch
 4. Case studies from early adopters
 
-**Medium-Term (Next 6 Months):**
+**Medium-Term (Next 6 Months - v2.0.0):**
 1. Auto-agent orchestration MVP
 2. GitHub App beta
 3. Custom agent builder
@@ -388,10 +433,10 @@ Integrate Ultra-Dex directly into development platforms.
 
 *This roadmap is a living document and will evolve based on community feedback and real-world usage.*
 
-*Last updated: January 24, 2026*
+*Last updated: January 24, 2026 - v1.7.0 released, v1.8.0 in planning*
 
 ---
 
-*Ultra-Dex v1.6.1 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v1.7.0 - Professional AI Orchestration Meta Layer*
 
 **The future is collaborative AI-driven development. Let's build it together.** 🚀
