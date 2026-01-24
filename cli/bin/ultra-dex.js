@@ -109,7 +109,7 @@ Setting up the implementation plan.
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('1.6.1');
+  .version('1.7.0');
 
 program
   .command('init')
@@ -648,6 +648,445 @@ program
       console.log(chalk.gray('\nDownload from GitHub:'));
       console.log(chalk.blue(`  https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n`));
     }
+  });
+
+// Workflow examples map
+const WORKFLOWS = {
+  auth: {
+    name: 'Authentication',
+    agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
+    description: 'Complete authentication with email/password and OAuth',
+    example: 'supabase',
+  },
+  supabase: {
+    name: 'Supabase Authentication Setup',
+    agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
+    description: 'Set up Supabase auth with RLS policies',
+    steps: [
+      '1. Create Supabase project and get API keys',
+      '2. Set up database schema with RLS policies',
+      '3. Configure authentication providers (email + Google OAuth)',
+      '4. Implement backend auth middleware',
+      '5. Build frontend auth UI components',
+      '6. Test authentication flow',
+    ],
+  },
+  payments: {
+    name: 'Payment Integration (Stripe)',
+    agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Security', '@DevOps'],
+    description: 'Integrate Stripe for subscriptions and one-time payments',
+    steps: [
+      '1. Create Stripe account and get API keys',
+      '2. Design subscription/payment schema',
+      '3. Implement Stripe Checkout API',
+      '4. Handle webhooks for payment events',
+      '5. Build payment UI with checkout flow',
+      '6. Test with Stripe test cards',
+    ],
+  },
+  deployment: {
+    name: 'Deployment Pipeline',
+    agents: ['@Planner', '@CTO', '@Frontend', '@DevOps'],
+    description: 'Deploy to Vercel with staging and production environments',
+    example: 'vercel',
+  },
+  vercel: {
+    name: 'Vercel Deployment Pipeline',
+    agents: ['@Planner', '@CTO', '@Frontend', '@DevOps'],
+    description: 'Deploy Next.js app to Vercel',
+    steps: [
+      '1. Set up Vercel project and link Git repository',
+      '2. Configure environment variables for staging/production',
+      '3. Set up custom domain',
+      '4. Configure preview deployments for PRs',
+      '5. Set up deployment protection rules',
+      '6. Test deployment pipeline',
+    ],
+  },
+  cicd: {
+    name: 'GitHub Actions CI/CD',
+    agents: ['@Planner', '@CTO', '@Testing', '@DevOps'],
+    description: 'Automated testing and deployment with GitHub Actions',
+    steps: [
+      '1. Create workflow file for CI (tests + lint)',
+      '2. Add build verification job',
+      '3. Add deployment job for production',
+      '4. Configure secrets for deployment',
+      '5. Add status badges to README',
+      '6. Test workflow on PR',
+    ],
+  },
+  database: {
+    name: 'Database Migration',
+    agents: ['@Planner', '@CTO', '@Database', '@Backend', '@Testing'],
+    description: 'Database schema migration and data sync',
+    steps: [
+      '1. Design new schema changes',
+      '2. Write migration scripts',
+      '3. Test migrations in staging',
+      '4. Back up production database',
+      '5. Run migrations in production',
+      '6. Verify data integrity',
+    ],
+  },
+  email: {
+    name: 'Email Notification System',
+    agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@Testing'],
+    description: 'Transactional emails with templates',
+    steps: [
+      '1. Choose email service (Resend, SendGrid)',
+      '2. Set up email templates',
+      '3. Implement email API endpoints',
+      '4. Add email queue for async sending',
+      '5. Test email delivery',
+      '6. Monitor deliverability',
+    ],
+  },
+  realtime: {
+    name: 'Real-Time Features',
+    agents: ['@Planner', '@CTO', '@Backend', '@Frontend', '@Testing'],
+    description: 'Live notifications with WebSockets',
+    steps: [
+      '1. Choose WebSocket library (Socket.io, Pusher)',
+      '2. Set up WebSocket server',
+      '3. Implement event broadcasting',
+      '4. Build frontend listeners',
+      '5. Test real-time updates',
+      '6. Handle reconnection logic',
+    ],
+  },
+  sentry: {
+    name: 'Sentry Error Tracking',
+    agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@DevOps'],
+    description: 'Error monitoring with Sentry',
+    steps: [
+      '1. Create Sentry account and project',
+      '2. Install Sentry SDKs for frontend and backend',
+      '3. Configure error boundaries for React',
+      '4. Set up source maps for debugging',
+      '5. Configure alerts and notifications',
+      '6. Test error capture in development',
+    ],
+  },
+  shopify: {
+    name: 'Shopify Product Integration',
+    agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@DevOps'],
+    description: 'Sync products from Shopify store',
+    steps: [
+      '1. Create Shopify Partner account and development store',
+      '2. Set up Shopify app with Admin API access',
+      '3. Design database schema for products',
+      '4. Build product sync endpoint',
+      '5. Implement webhook handlers for product updates',
+      '6. Schedule full product sync (cron job)',
+    ],
+  },
+  analytics: {
+    name: 'PostHog Analytics Integration',
+    agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@DevOps'],
+    description: 'Track user behavior with PostHog',
+    steps: [
+      '1. Create PostHog account and project',
+      '2. Install PostHog SDKs for frontend and backend',
+      '3. Set up core event tracking (signup, login, feature usage)',
+      '4. Create conversion funnel dashboard',
+      '5. Set up feature flags (optional)',
+      '6. Configure user identification',
+    ],
+  },
+};
+
+program
+  .command('workflow <feature>')
+  .description('Show workflow for common features (auth, payments, deployment, etc.)')
+  .action((feature) => {
+    const workflow = WORKFLOWS[feature.toLowerCase()];
+
+    if (!workflow) {
+      console.log(chalk.red(`\n❌ Workflow "${feature}" not found.\n`));
+      console.log(chalk.gray('Available workflows:'));
+      Object.keys(WORKFLOWS).forEach(key => {
+        console.log(chalk.cyan(`  - ${key}`) + chalk.gray(` (${WORKFLOWS[key].name})`));
+      });
+      console.log('\n' + chalk.gray('Usage: ultra-dex workflow <feature>\n'));
+      process.exit(1);
+    }
+
+    console.log(chalk.bold(`\n📋 ${workflow.name} Workflow\n`));
+    console.log(chalk.gray(workflow.description));
+
+    console.log(chalk.bold('\n🤖 Agents Involved:\n'));
+    workflow.agents.forEach((agent, i) => {
+      console.log(chalk.cyan(`  ${i + 1}. ${agent}`));
+    });
+
+    if (workflow.steps) {
+      console.log(chalk.bold('\n📝 Implementation Steps:\n'));
+      workflow.steps.forEach(step => {
+        console.log(chalk.gray(`  ${step}`));
+      });
+    }
+
+    console.log(chalk.bold('\n📚 Full Example:\n'));
+    console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/blob/main/guides/ADVANCED-WORKFLOWS.md'));
+    console.log(chalk.gray(`  (Search for "Example: ${workflow.name}")\n`));
+  });
+
+program
+  .command('suggest')
+  .description('Get AI agent suggestions for your task')
+  .action(async () => {
+    console.log(chalk.cyan('\n🤖 Ultra-Dex Agent Suggester\n'));
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'taskType',
+        message: 'What are you trying to build?',
+        choices: [
+          'New feature from scratch',
+          'Authentication system',
+          'Payment integration',
+          'Database changes',
+          'Bug fix',
+          'Performance optimization',
+          'Deployment/DevOps',
+          'API endpoint',
+          'UI component',
+          'Testing',
+        ],
+      },
+      {
+        type: 'input',
+        name: 'description',
+        message: 'Briefly describe your task:',
+        default: '',
+      },
+    ]);
+
+    console.log(chalk.bold('\n💡 Suggested Agent Workflow:\n'));
+
+    // Agent suggestions based on task type
+    let suggestedAgents = [];
+    let reasoning = '';
+
+    switch (answers.taskType) {
+      case 'New feature from scratch':
+        suggestedAgents = ['@Planner', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Reviewer', '@DevOps'];
+        reasoning = 'Complete feature requires planning, architecture, implementation, testing, and deployment';
+        break;
+
+      case 'Authentication system':
+        suggestedAgents = ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'];
+        reasoning = 'Auth requires research (providers), security review, and full-stack implementation';
+        break;
+
+      case 'Payment integration':
+        suggestedAgents = ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Security', '@DevOps'];
+        reasoning = 'Payments need provider research, webhook handling, testing, and security audit';
+        break;
+
+      case 'Database changes':
+        suggestedAgents = ['@Planner', '@CTO', '@Database', '@Backend', '@Testing'];
+        reasoning = 'Schema changes need planning, architecture review, migration, and testing';
+        break;
+
+      case 'Bug fix':
+        suggestedAgents = ['@Debugger', '@Testing', '@Reviewer'];
+        reasoning = 'Debug issue, add test to prevent regression, review fix';
+        break;
+
+      case 'Performance optimization':
+        suggestedAgents = ['@Performance', '@Backend', '@Frontend', '@Database', '@Testing'];
+        reasoning = 'Identify bottlenecks, optimize code/queries, verify improvements';
+        break;
+
+      case 'Deployment/DevOps':
+        suggestedAgents = ['@DevOps', '@CTO', '@Security'];
+        reasoning = 'Infrastructure setup with security review';
+        break;
+
+      case 'API endpoint':
+        suggestedAgents = ['@Backend', '@Database', '@Testing', '@Reviewer'];
+        reasoning = 'Implement endpoint, add tests, review code quality';
+        break;
+
+      case 'UI component':
+        suggestedAgents = ['@Frontend', '@Reviewer'];
+        reasoning = 'Build component, review for quality and accessibility';
+        break;
+
+      case 'Testing':
+        suggestedAgents = ['@Testing', '@Reviewer'];
+        reasoning = 'Write tests, review coverage';
+        break;
+
+      default:
+        suggestedAgents = ['@Planner', '@CTO'];
+        reasoning = 'Start with planning and architecture review';
+    }
+
+    console.log(chalk.gray(reasoning + '\n'));
+
+    suggestedAgents.forEach((agent, i) => {
+      const agentName = agent.replace('@', '').toLowerCase();
+      const agentInfo = AGENTS.find(a => a.name === agentName);
+      const arrow = i < suggestedAgents.length - 1 ? '  →' : '';
+      console.log(chalk.cyan(`  ${i + 1}. ${agent}`) + chalk.gray(` - ${agentInfo?.description || ''}`) + arrow);
+    });
+
+    console.log(chalk.bold('\n📚 Next Steps:\n'));
+    console.log(chalk.gray(`  1. Start with ${suggestedAgents[0]} to plan the task`));
+    console.log(chalk.gray(`  2. Hand off to each agent in sequence`));
+    console.log(chalk.gray('  3. Use "ultra-dex agent <name>" to see full prompts\n'));
+
+    console.log(chalk.bold('🔗 Related Workflows:\n'));
+    if (answers.taskType === 'Authentication system') {
+      console.log(chalk.blue('  ultra-dex workflow auth'));
+      console.log(chalk.blue('  ultra-dex workflow supabase\n'));
+    } else if (answers.taskType === 'Payment integration') {
+      console.log(chalk.blue('  ultra-dex workflow payments\n'));
+    } else if (answers.taskType === 'Deployment/DevOps') {
+      console.log(chalk.blue('  ultra-dex workflow vercel'));
+      console.log(chalk.blue('  ultra-dex workflow cicd\n'));
+    } else {
+      console.log(chalk.gray('  Use "ultra-dex workflow <feature>" to see examples\n'));
+    }
+  });
+
+program
+  .command('validate')
+  .description('Validate project structure against Ultra-Dex standards')
+  .option('-d, --dir <directory>', 'Project directory to validate', '.')
+  .action(async (options) => {
+    console.log(chalk.cyan('\n✅ Ultra-Dex Structure Validator\n'));
+
+    const projectDir = path.resolve(options.dir);
+    let passed = 0;
+    let failed = 0;
+    const warnings = [];
+
+    // Helper to check file/directory exists
+    async function checkExists(itemPath, type = 'file') {
+      try {
+        const stats = await fs.stat(path.join(projectDir, itemPath));
+        if (type === 'file' && stats.isFile()) return true;
+        if (type === 'dir' && stats.isDirectory()) return true;
+        return false;
+      } catch {
+        return false;
+      }
+    }
+
+    console.log(chalk.bold('Checking required files...\n'));
+
+    // Check core planning files
+    const coreFiles = [
+      { path: 'QUICK-START.md', required: true },
+      { path: 'IMPLEMENTATION-PLAN.md', required: true },
+      { path: 'CONTEXT.md', required: false },
+      { path: 'README.md', required: false },
+    ];
+
+    for (const file of coreFiles) {
+      const exists = await checkExists(file.path);
+      if (exists) {
+        passed++;
+        console.log(chalk.green(`  ✅ ${file.path}`));
+      } else if (file.required) {
+        failed++;
+        console.log(chalk.red(`  ❌ ${file.path} (required)`));
+      } else {
+        warnings.push(file.path);
+        console.log(chalk.yellow(`  ⚠️  ${file.path} (recommended)`));
+      }
+    }
+
+    console.log(chalk.bold('\nChecking directory structure...\n'));
+
+    const directories = [
+      { path: 'docs', required: false },
+      { path: '.agents', required: false },
+      { path: '.cursor/rules', required: false },
+    ];
+
+    for (const dir of directories) {
+      const exists = await checkExists(dir.path, 'dir');
+      if (exists) {
+        passed++;
+        console.log(chalk.green(`  ✅ ${dir.path}/`));
+      } else {
+        warnings.push(dir.path);
+        console.log(chalk.yellow(`  ⚠️  ${dir.path}/ (optional)`));
+      }
+    }
+
+    console.log(chalk.bold('\nValidating content quality...\n'));
+
+    // Check if QUICK-START has key sections
+    try {
+      const quickStart = await fs.readFile(path.join(projectDir, 'QUICK-START.md'), 'utf-8');
+
+      const sections = ['idea', 'problem', 'feature', 'tech stack', 'tasks'];
+      let sectionsFound = 0;
+
+      sections.forEach(section => {
+        if (quickStart.toLowerCase().includes(section)) {
+          sectionsFound++;
+        }
+      });
+
+      if (sectionsFound >= 4) {
+        passed++;
+        console.log(chalk.green(`  ✅ QUICK-START.md has ${sectionsFound}/${sections.length} key sections`));
+      } else {
+        failed++;
+        console.log(chalk.red(`  ❌ QUICK-START.md missing key sections (${sectionsFound}/${sections.length})`));
+      }
+    } catch {
+      console.log(chalk.gray('  ⊘  Could not validate QUICK-START.md content'));
+    }
+
+    // Check if implementation plan has content
+    try {
+      const implPlan = await fs.readFile(path.join(projectDir, 'IMPLEMENTATION-PLAN.md'), 'utf-8');
+
+      if (implPlan.length > 500) {
+        passed++;
+        console.log(chalk.green(`  ✅ IMPLEMENTATION-PLAN.md has substantial content`));
+      } else {
+        warnings.push('IMPLEMENTATION-PLAN.md needs more detail');
+        console.log(chalk.yellow(`  ⚠️  IMPLEMENTATION-PLAN.md is sparse (${implPlan.length} chars)`));
+      }
+    } catch {
+      console.log(chalk.gray('  ⊘  Could not validate IMPLEMENTATION-PLAN.md content'));
+    }
+
+    // Summary
+    console.log('\n' + chalk.bold('─'.repeat(50)));
+    console.log(chalk.bold('\nValidation Summary:\n'));
+    console.log(chalk.green(`  ✅ Passed: ${passed}`));
+    console.log(chalk.red(`  ❌ Failed: ${failed}`));
+    console.log(chalk.yellow(`  ⚠️  Warnings: ${warnings.length}`));
+
+    // Overall status
+    if (failed === 0) {
+      console.log(chalk.bold.green('\n✅ VALIDATION PASSED\n'));
+      console.log(chalk.gray('Your project structure follows Ultra-Dex standards.'));
+    } else {
+      console.log(chalk.bold.yellow('\n⚠️  VALIDATION INCOMPLETE\n'));
+      console.log(chalk.gray('Fix required files to meet Ultra-Dex standards.'));
+    }
+
+    // Recommendations
+    if (warnings.length > 0) {
+      console.log(chalk.bold('\n💡 Recommendations:\n'));
+      warnings.slice(0, 3).forEach(w => {
+        console.log(chalk.cyan(`  → Consider adding ${w}`));
+      });
+    }
+
+    console.log('\n' + chalk.gray('Run "ultra-dex init" to set up a proper Ultra-Dex project.\n'));
   });
 
 program.parse();
