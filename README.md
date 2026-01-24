@@ -98,6 +98,9 @@ npx ultra-dex audit             # Check project completeness
 npx ultra-dex examples          # Show example projects
 npx ultra-dex agents            # List AI agent prompts
 npx ultra-dex agent backend     # Show specific agent prompt
+npx ultra-dex workflow auth     # Show workflow for authentication
+npx ultra-dex suggest           # Get AI agent suggestions
+npx ultra-dex validate          # Validate project structure
 ```
 
 ---
@@ -248,7 +251,7 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 15 Production-Ready Agents (v1.6.1)
+### 15 Production-Ready Agents (v1.7.0)
 
 Ultra-Dex includes 15 specialized agent prompts **organized into 6 tiers** for the production pipeline. Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT).
 
