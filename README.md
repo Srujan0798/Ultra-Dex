@@ -26,25 +26,30 @@ A comprehensive framework for building complete, production-grade applications. 
 
 ---
 
-## Quick Start
+## Quick Start (One Path)
 
-| Your Goal | Go Here |
-|-----------|---------|
-| **Start in 5 minutes** | [01-QUICK-START.md](./@ Ultra DeX/Saas plan/01-QUICK-START.md) |
-| **How to use correctly** | [02-HOW-TO-USE.md](./@ Ultra DeX/Saas plan/02-HOW-TO-USE.md) |
-| **Understand the methodology** | [03-METHODOLOGY.md](./@ Ultra DeX/Saas plan/03-METHODOLOGY.md) |
-| **Full template** | [04-Imp-Template.md](./@ Ultra DeX/Saas plan/04-Imp-Template.md) |
-| **See a real example** | [TaskFlow-Complete.md](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) |
-| **AI-ready rules** | [cursor-rules/](./cursor-rules/) |
-| **AI agent prompts** | [agents/](./agents/) |
-| **Quick reference cheatsheet** | [QUICK-REFERENCE.md](./docs/QUICK-REFERENCE.md) |
-| **Docs hub** | [docs/README.md](./docs/README.md) |
-| **Build auth in 30 minutes** | [BUILD-AUTH-30M.md](./docs/BUILD-AUTH-30M.md) |
-| **Multi-agent workflows** | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md) |
-| **Choose database** | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
-| **Architecture patterns** | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md) |
-| **AI research (embeddings/RAG)** | [guides/AI-RESEARCH.md](./guides/AI-RESEARCH.md) |
-| **Version history & changelog** | [CHANGELOG.md](./CHANGELOG.md) |
+| Step | What | Time |
+|------|------|------|
+| 1 | **[QUICK-START.md](./@ Ultra DeX/Saas plan/01-QUICK-START.md)** — Capture your idea | 5 min |
+| 2 | **[HOW-TO-USE.md](./@ Ultra DeX/Saas plan/02-HOW-TO-USE.md)** — Understand phasing | 10 min |
+| 3 | **[BUILD-AUTH-30M.md](./docs/BUILD-AUTH-30M.md)** — Your first working feature | 30 min |
+| 4 | **Start coding with AI agents** | ∞ |
+
+**That's it.** After step 3, you have working auth and understand the system.
+
+<details>
+<summary>📚 Full resources (when you need them)</summary>
+
+| Resource | Purpose |
+|----------|---------|
+| [Full Template](./@ Ultra DeX/Saas plan/04-Imp-Template.md) | 34-section reference |
+| [TaskFlow Example](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) | See a filled example |
+| [Methodology](./@ Ultra DeX/Saas plan/03-METHODOLOGY.md) | 21-step verification system |
+| [Cursor Rules](./cursor-rules/) | AI-optimized rules |
+| [Agent Prompts](./agents/) | 15 specialized agents |
+| [All Guides](./guides/) | Database, architecture, orchestration |
+
+</details>
 
 ---
 
@@ -64,15 +69,21 @@ A comprehensive framework for building complete, production-grade applications. 
 
 ---
 
-## 🚀 Your First 30 Minutes
+## 🚀 First Win: Auth in 30 Minutes
 
-| Time | Do This |
-|------|---------|
-| **0-5 min** | Read "Core Philosophy" below → decide if this fits |
-| **5-10 min** | Fill [01-QUICK-START.md](./@ Ultra DeX/Saas plan/01-QUICK-START.md) |
-| **10-15 min** | Read [02-HOW-TO-USE.md](./@ Ultra DeX/Saas plan/02-HOW-TO-USE.md) → understand phasing |
-| **15-30 min** | Skim [TaskFlow Sections 1-3](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) |
-| **After 30 min** | Fill Phase 1 sections (4-5 hours) → **START CODING** |
+**Don't read everything first.** Build something.
+
+```bash
+npx ultra-dex init         # Creates your project skeleton
+```
+
+Then follow **[BUILD-AUTH-30M.md](./docs/BUILD-AUTH-30M.md)** — you'll have:
+- Working login/logout
+- Protected routes
+- User session management
+- Understanding of the Ultra-Dex workflow
+
+**After that?** You'll know if Ultra-Dex fits your project.
 
 ---
 
