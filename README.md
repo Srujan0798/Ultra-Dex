@@ -75,6 +75,31 @@ A comprehensive framework for building complete, production-grade applications. 
 
 ---
 
+## 🗺️ The Ultra-Dex Flow
+
+```mermaid
+graph TB
+    A[💡 IDEA] --> B[📝 QUICK-START<br/>5 min capture]
+    B --> C[📋 Phase 1: Foundation<br/>8 sections, 4-5 hrs]
+    C --> D[🤖 Load Cursor Rules<br/>./load.sh]
+    D --> E[👨‍💻 CODE with AI Agents<br/>@Backend @Frontend @Database]
+    E --> F[🔒 Security Review<br/>@Auth @Security]
+    F --> G[✅ 21-Step Verification<br/>@Testing @Reviewer]
+    G --> H[🚀 Deploy<br/>@DevOps]
+    H --> I[📦 PRODUCTION]
+
+    style A fill:#f9f,stroke:#333
+    style I fill:#9f9,stroke:#333
+    style E fill:#bbf,stroke:#333
+```
+
+**The Meta-Layer Philosophy:**
+- Ultra-Dex doesn't write code — it provides **structure & memory** for AI agents
+- Each agent (@CTO, @Backend, etc.) has context about YOUR project
+- The 34-section template is YOUR project's "single source of truth"
+
+---
+
 ## 💻 CLI Quick Start
 
 ```bash

@@ -4,6 +4,14 @@ Quick reference for all 15 production agents organized by tier.
 
 ---
 
+## 0. Meta Orchestration
+
+| Agent | Role | When to Use | File |
+|-------|------|-------------|------|
+| **@Orchestrator** | Coordinate all agents for complete features | Building features that span multiple tiers | [orchestrator.md](./0-orchestration/orchestrator.md) |
+
+---
+
 ## 1. Leadership Tier
 Strategic planning and technology decisions.
 
