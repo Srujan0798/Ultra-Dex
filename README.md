@@ -116,19 +116,19 @@ your-project/
 ├── docs/
 │   ├── CHECKLIST.md       ← 21-step verification
 │   └── AI-PROMPTS.md      ← Agent instructions
-└── .cursor/rules/         ← (optional) AI rules
+├── .cursor/rules/         ← (optional) Cursor AI rules
+└── .github/copilot-instructions.md ← (optional) Copilot rules
 ```
 
 **CLI Options:**
 ```bash
 npx ultra-dex init              # Interactive setup
 npx ultra-dex audit             # Check project completeness
-npx ultra-dex examples          # Show example projects
+npx ultra-dex pack backend      # Package context for any AI (Claude, ChatGPT, etc.)
 npx ultra-dex agents            # List AI agent prompts
 npx ultra-dex agent backend     # Show specific agent prompt
 npx ultra-dex workflow auth     # Show workflow for authentication
-npx ultra-dex suggest           # Get AI agent suggestions
-npx ultra-dex validate          # Validate project structure
+npx ultra-dex examples          # Show example projects
 ```
 
 ---
