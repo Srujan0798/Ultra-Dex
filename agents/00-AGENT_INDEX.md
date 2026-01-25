@@ -135,4 +135,4 @@ For complete multi-agent workflows and coordination patterns, see:
 
 ---
 
-*Ultra-Dex v1.7.0 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v1.7.1 - Professional AI Orchestration Meta Layer*
