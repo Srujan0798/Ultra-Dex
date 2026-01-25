@@ -36,6 +36,7 @@ Only load rules relevant to your current task:
 | Deployment | `00-ultra-dex-core.mdc` + `08-deployment.mdc` |
 | Error handling | `00-ultra-dex-core.mdc` + `09-error-handling.mdc` |
 | Performance | `00-ultra-dex-core.mdc` + `10-performance.mdc` |
+| Next.js 15 app | `00-ultra-dex-core.mdc` + `11-nextjs-v15.mdc` |
 
 ## Files
 
@@ -52,6 +53,7 @@ Only load rules relevant to your current task:
 | `08-deployment.mdc` | ~90 | Vercel, CI/CD, migrations |
 | `09-error-handling.mdc` | ~100 | Error patterns, logging |
 | `10-performance.mdc` | ~100 | Optimization, caching |
+| `11-nextjs-v15.mdc` | ~200 | Next.js 15 App Router patterns |
 
 ## Why Modular?
 
