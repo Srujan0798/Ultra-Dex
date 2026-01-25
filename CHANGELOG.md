@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.1] - 2026-01-25
+
+### Added
+- **@Orchestrator Meta-Agent** - New agent that coordinates all 15 agents for complete feature implementation
+  - Located in `agents/0-orchestration/orchestrator.md`
+  - Provides workflow templates for multi-tier features
+  - Includes handoff protocols between agents
+- **Visual Flow Diagram** - Mermaid diagram in README showing IDEA → PRODUCTION flow
+- **Next.js 15 Cursor Rule** - `cursor-rules/11-nextjs-v15.mdc` with App Router patterns
+  - Server/Client components, Server Actions, Streaming
+  - Middleware for auth/tenant, Error boundaries
+  - Multi-tenancy patterns, Vercel AI SDK integration
+- **Enhanced load.sh v2.0** - Cursor auto-detection and nextjs domain support
+- **First 10 Minutes Guide** - Quick start path in CLI README
+
+### Changed
+- **Major Repo Restructure**
+  - Moved 9 docs to `docs/` folder (ROADMAP, VISION-V2, QUICK-REFERENCE, etc.)
+  - Moved AGENT-INSTRUCTIONS.md to `agents/`
+  - Moved Orchestration/ to root (was Reviews/Orchestration/)
+  - Removed edualc./ folder (project-specific content)
+- **Enhanced Agents with Code Examples**
+  - @DevOps: Full GitHub Actions CI/CD pipeline, Vercel config, Railway setup, Sentry monitoring
+  - @Backend: REST API endpoint examples (Next.js App Router), Service layer, Stripe webhooks
+  - @Database: Complete Prisma schema with multi-tenancy, N+1 avoidance, transactions
+  - @CTO & @Reviewer: Added decision frameworks (Approve/Reject/Request Changes criteria)
+- **CLI Improvements**
+  - Fixed version mismatch (1.6.1 → 1.7.0)
+  - Softer asset messaging (gray info instead of yellow warnings)
+  - Updated file paths for moved docs
+
+### Added Files
+- `agents/0-orchestration/orchestrator.md`
+- `cursor-rules/11-nextjs-v15.mdc`
+- `guides/CUSTOM-AGENTS-GUIDE.md` - Template for creating domain-specific agents
+- `templates/ORDER-TRACKER-TEMPLATE.md` - Step-by-step execution with copy-paste prompts
+- `Reviews/A_New_Review/` - AI review files from Devin, Gemini, Jules, Perplexity
+
+### Fixed
+- Broken Orchestration folder links throughout templates and guides
+- .DS_Store removed from git tracking
+- CLI paths updated for moved VERIFICATION.md and AGENT-INSTRUCTIONS.md
+
+---
+
 ## [1.7.0] - 2026-01-24
 
 ### Added

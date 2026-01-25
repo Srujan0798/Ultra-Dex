@@ -1,5 +1,5 @@
 #!/bin/bash
-# Ultra-Dex Cursor Rules Loader
+# Ultra-Dex Cursor Rules Loader v2.0
 # Usage: ./load.sh [domains...]
 # Example: ./load.sh database api auth
 # Example: ./load.sh all (loads all rules)
@@ -7,8 +7,19 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR=".cursor/rules"
 
-echo "🚀 Ultra-Dex Cursor Rules Loader"
+echo "🚀 Ultra-Dex Cursor Rules Loader v2.0"
 echo ""
+
+# Check if Cursor is installed
+if command -v cursor &> /dev/null; then
+  echo "✓ Cursor detected"
+elif [ -d "/Applications/Cursor.app" ] || [ -d "$HOME/Applications/Cursor.app" ]; then
+  echo "✓ Cursor.app detected"
+else
+  echo "⚠️  Cursor not detected. Rules will still be copied."
+  echo "   Install Cursor: https://cursor.com"
+  echo ""
+fi
 
 # Create target directory
 mkdir -p "$TARGET_DIR"
@@ -47,6 +58,7 @@ if [ $# -eq 0 ]; then
   echo "  deployment  - Vercel, CI/CD, migrations"
   echo "  error       - Error patterns, logging"
   echo "  performance - Optimization, caching"
+  echo "  nextjs      - Next.js 15 App Router patterns"
   echo "  all         - Load all rules"
   echo ""
   echo "Example: ./load.sh database api auth"
@@ -67,6 +79,7 @@ for domain in "$@"; do
     deployment)  file="08-deployment.mdc" ;;
     error)       file="09-error-handling.mdc" ;;
     performance) file="10-performance.mdc" ;;
+    nextjs)      file="11-nextjs-v15.mdc" ;;
     *)
       echo "✗ Unknown domain: $domain"
       continue
