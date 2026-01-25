@@ -59,6 +59,7 @@ if [ $# -eq 0 ]; then
   echo "  error       - Error patterns, logging"
   echo "  performance - Optimization, caching"
   echo "  nextjs      - Next.js 15 App Router patterns"
+  echo "  tenancy     - SaaS multi-tenancy patterns"
   echo "  all         - Load all rules"
   echo ""
   echo "Example: ./load.sh database api auth"
@@ -80,6 +81,7 @@ for domain in "$@"; do
     error)       file="09-error-handling.mdc" ;;
     performance) file="10-performance.mdc" ;;
     nextjs)      file="11-nextjs-v15.mdc" ;;
+    tenancy)     file="12-multi-tenancy.mdc" ;;
     *)
       echo "✗ Unknown domain: $domain"
       continue
