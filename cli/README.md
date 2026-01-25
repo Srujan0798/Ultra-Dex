@@ -2,6 +2,27 @@
 
 > Scaffold Ultra-Dex projects from the command line.
 
+## First 10 Minutes
+
+```bash
+# 1. Create your project (2 min)
+npx ultra-dex init
+
+# 2. Open and review QUICK-START.md (3 min)
+cd your-project
+cat QUICK-START.md
+
+# 3. Load Cursor rules for AI assistance (1 min)
+# Download from: https://github.com/Srujan0798/Ultra-Dex/tree/main/cursor-rules
+# Then: ./load.sh database api auth
+
+# 4. Start building with AI agents (4 min)
+# Use @Backend, @Frontend, @Database agents
+# See: npx ultra-dex agents
+
+# You're ready to code!
+```
+
 ## Installation
 
 ```bash
