@@ -119,6 +119,9 @@ Comprehensive guides for building production-ready SaaS applications with AI age
 **"How do I create custom agents for my domain?"**
 → [Custom Agents Guide](./CUSTOM-AGENTS-GUIDE.md)
 
+**"How do I build auth quickly with agents?"**
+→ [Build Auth in 30 Minutes](../docs/BUILD-AUTH-30M.md)
+
 ---
 
 ## 📖 Reading Paths

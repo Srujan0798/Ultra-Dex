@@ -43,6 +43,7 @@ A comprehensive framework for building complete, production-grade applications. 
 | **Multi-agent workflows** | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md) |
 | **Choose database** | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
 | **Architecture patterns** | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md) |
+| **AI research (embeddings/RAG)** | [guides/AI-RESEARCH.md](./guides/AI-RESEARCH.md) |
 | **Version history & changelog** | [CHANGELOG.md](./CHANGELOG.md) |
 
 ---
