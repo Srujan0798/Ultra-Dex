@@ -301,8 +301,8 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             );
           }
         } catch (err) {
-          // Cursor rules not available (npm package, not local)
-          console.log(chalk.yellow('\n  Note: cursor-rules not bundled. Download from GitHub:'));
+          // Cursor rules not available (npm package, not local) - this is expected
+          console.log(chalk.gray('\n  Cursor rules: Download from GitHub for AI-assisted development'));
           console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/tree/main/cursor-rules'));
         }
       }
@@ -313,21 +313,23 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         try {
           await fs.copyFile(templatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
         } catch (err) {
-          console.log(chalk.yellow('\n  Note: Full template not bundled. Download from GitHub:'));
+          // Template not available locally - this is expected for npm installs
+          console.log(chalk.gray('\n  Full 34-section template: Download from GitHub'));
           console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md'));
         }
       }
 
       // Copy docs if requested
       if (answers.includeDocs) {
-        const verificationPath = path.resolve(__dirname, '../../VERIFICATION.md');
-        const agentPath = path.resolve(__dirname, '../../AGENT-INSTRUCTIONS.md');
+        const verificationPath = path.resolve(__dirname, '../../docs/VERIFICATION.md');
+        const agentPath = path.resolve(__dirname, '../../agents/AGENT-INSTRUCTIONS.md');
         try {
           await fs.copyFile(verificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
           await fs.copyFile(agentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
         } catch (err) {
-          console.log(chalk.yellow('\n  Note: Docs not bundled. Download from GitHub:'));
-          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex'));
+          // Docs not available locally - this is expected for npm installs
+          console.log(chalk.gray('\n  Verification checklist & agent instructions: Download from GitHub'));
+          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/tree/main/docs'));
         }
       }
 
@@ -364,8 +366,8 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             path.join(agentsDir, 'README.md')
           );
         } catch (err) {
-          // Agents not available (npm package, not local)
-          console.log(chalk.yellow('\n  Note: Agent prompts not bundled. Download from GitHub:'));
+          // Agents not available locally - this is expected for npm installs
+          console.log(chalk.gray('\n  15 AI agent prompts: Download from GitHub'));
           console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/tree/main/agents'));
         }
       }
@@ -642,10 +644,9 @@ program
       console.log(chalk.gray('─'.repeat(60)));
       console.log(chalk.bold('\n📋 Copy the above prompt and paste into your AI tool.\n'));
     } catch (err) {
-      // Agent file not bundled (npm package)
+      // Agent file not bundled (npm package) - show URL instead
       console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
-      console.log(chalk.yellow('Agent prompts are not bundled with the npm package.'));
-      console.log(chalk.gray('\nDownload from GitHub:'));
+      console.log(chalk.gray('View full prompt on GitHub:'));
       console.log(chalk.blue(`  https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n`));
     }
   });
