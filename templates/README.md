@@ -82,6 +82,53 @@ Week 2: Move to Phase 2 (Database & Backend)
 
 ---
 
+### [ORDER-TRACKER-TEMPLATE.md](./ORDER-TRACKER-TEMPLATE.md)
+
+**Purpose:** Step-by-step execution guide with copy-paste prompts
+
+**What it includes:**
+- Numbered "orders" (1, 2, 3...) with exact prompts to paste
+- Pre-written AI commands for each step
+- Result documentation sections
+- Execution log for tracking progress
+- Blocker tracking
+
+**Best for:**
+- Users who want a scripted, guided experience
+- Following exact sequences without deviating
+- Learning the agent workflow (great for beginners)
+- Projects where order of operations matters
+
+**How to use:**
+1. Copy ORDER-TRACKER-TEMPLATE.md to your project as `ORDERS.md`
+2. Follow orders in sequence (Order #1, then #2, etc.)
+3. Copy the prompt from each order into your AI tool
+4. Paste the result back into the Result section
+5. Move to next order when complete
+
+**Example:**
+```
+Order #3: Database Schema
+
+Prompt (copy this):
+Read agents/2-development/database.md and continue as that agent.
+Task: Create the User and Post tables with relationships.
+[... full prompt ...]
+
+Result:
+[Paste @Database output here]
+Migration: npx prisma migrate dev --name init
+Status: ✅ Complete
+```
+
+**When to use ORDER-TRACKER vs PHASE-TRACKER:**
+- **ORDER-TRACKER:** You want exact prompts, step-by-step guidance, more scripted
+- **PHASE-TRACKER:** You want flexible task tracking, status overview, more freestyle
+
+**Size:** 400+ lines | 15 KB
+
+---
+
 ## 🎯 Which Template to Use?
 
 ### Use MASTER-PLAN when:
@@ -332,4 +379,4 @@ Found a better template structure? Want to add examples?
 
 ---
 
-*Ultra-Dex v1.6.1 - Structured project management for AI-driven development*
+*Ultra-Dex v1.7.0 - Structured project management for AI-driven development*

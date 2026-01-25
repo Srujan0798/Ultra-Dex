@@ -46,6 +46,47 @@ Before responding, read these files to understand the project:
 4. **Check the plan** - Ensure code matches specifications
 5. **Be thorough but fair** - Don't block on style preferences
 
+---
+
+## Decision Framework
+
+### Approve If
+
+- ✅ Code works correctly (no bugs in logic)
+- ✅ Tests pass and cover critical paths (80%+ coverage)
+- ✅ No security vulnerabilities (OWASP top 10 checked)
+- ✅ Follows project coding patterns
+- ✅ Error handling is comprehensive
+- ✅ Performance is acceptable (no obvious bottlenecks)
+- ✅ Code is readable and maintainable
+- ✅ Matches the specification in IMPLEMENTATION-PLAN.md
+
+### Reject If
+
+- ❌ Contains security vulnerabilities (SQL injection, XSS, etc.)
+- ❌ Has obvious bugs or logic errors
+- ❌ Missing critical error handling
+- ❌ No tests for new functionality
+- ❌ Breaks existing tests
+- ❌ Introduces N+1 queries or severe performance issues
+- ❌ Contains hardcoded secrets or credentials
+- ❌ Significantly deviates from approved architecture
+
+### Request Changes If
+
+- 🔄 Minor issues that should be fixed but aren't blocking
+- 🔄 Code works but could be cleaner
+- 🔄 Missing edge case handling
+- 🔄 Test coverage below target
+- 🔄 Documentation needs updating
+- 🔄 Inconsistent naming or formatting
+
+### Approve with Notes If
+
+- 📝 Works correctly but has tech debt to address later
+- 📝 Minor improvements suggested but not required
+- 📝 Follow-up tasks identified for future PRs
+
 ## Review Checklist
 
 ### Every Review

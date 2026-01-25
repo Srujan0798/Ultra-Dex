@@ -52,26 +52,388 @@ Before responding, read these files to understand the project:
 - [ ] Soft delete (deletedAt) where appropriate
 - [ ] Proper data types (don't use VARCHAR for everything)
 
+## Code Examples
+
+### Prisma Schema (Full SaaS Example)
+
+```prisma
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTH
+// ============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  avatarUrl     String?
+  emailVerified DateTime?
+
+  // Multi-tenancy
+  organizations OrganizationMember[]
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  // Relations
+  posts         Post[]
+  comments      Comment[]
+
+  @@index([email])
+  @@index([deletedAt])
+}
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  plan        Plan     @default(FREE)
+
+  // Subscription
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members     OrganizationMember[]
+  posts       Post[]
+
+  @@index([slug])
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid())
+  role           MemberRole   @default(MEMBER)
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+
+  createdAt      DateTime     @default(now())
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+// ============================================
+// CONTENT
+// ============================================
+
+model Post {
+  id             String       @id @default(uuid())
+  title          String
+  content        String
+  slug           String
+  published      Boolean      @default(false)
+  publishedAt    DateTime?
+
+  // Relations
+  author         User         @relation(fields: [authorId], references: [id])
+  authorId       String
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  comments       Comment[]
+  tags           TagsOnPosts[]
+
+  // Timestamps
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([organizationId, slug])
+  @@index([authorId])
+  @@index([organizationId])
+  @@index([published, publishedAt])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+
+  // Self-referential for replies
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  parentId  String?
+  replies   Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+model Tag {
+  id    String        @id @default(uuid())
+  name  String        @unique
+  posts TagsOnPosts[]
+}
+
+model TagsOnPosts {
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId  String
+
+  @@id([postId, tagId])
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+```
+
+### SQLAlchemy Models (FastAPI)
+
+```python
+# app/models.py
+import uuid
+from datetime import datetime
+from sqlalchemy import Column, String, DateTime, ForeignKey, Enum, Boolean
+from sqlalchemy.orm import relationship, declarative_base
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    name = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = Column(DateTime, nullable=True)
+
+    posts = relationship("Post", back_populates="author")
+
+class Post(Base):
+    __tablename__ = "posts"
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    title = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    published = Column(Boolean, default=False)
+
+    author_id = Column(String, ForeignKey("users.id"), index=True)
+    author = relationship("User", back_populates="posts")
+```
+
+### Query Examples (Avoiding N+1)
+
+```typescript
+// lib/queries/posts.ts
+import { prisma } from '@/lib/prisma';
+
+// BAD: N+1 problem
+async function getPostsBad() {
+  const posts = await prisma.post.findMany();
+  for (const post of posts) {
+    post.author = await prisma.user.findUnique({
+      where: { id: post.authorId }
+    });
+  }
+  return posts;
+}
+
+// GOOD: Single query with include
+async function getPostsGood() {
+  return prisma.post.findMany({
+    include: {
+      author: {
+        select: { id: true, name: true, avatarUrl: true }
+      },
+      _count: { select: { comments: true } }
+    },
+    where: { published: true, deletedAt: null },
+    orderBy: { publishedAt: 'desc' },
+    take: 20
+  });
+}
+
+// Pagination with cursor (better for large datasets)
+async function getPostsPaginated(cursor?: string, limit = 20) {
+  return prisma.post.findMany({
+    take: limit + 1, // Fetch one extra to check if there's more
+    cursor: cursor ? { id: cursor } : undefined,
+    skip: cursor ? 1 : 0,
+    include: {
+      author: { select: { id: true, name: true } }
+    },
+    where: { published: true },
+    orderBy: { createdAt: 'desc' }
+  });
+}
+
+// Aggregate query
+async function getOrganizationStats(orgId: string) {
+  const [postCount, memberCount, commentCount] = await Promise.all([
+    prisma.post.count({ where: { organizationId: orgId } }),
+    prisma.organizationMember.count({ where: { organizationId: orgId } }),
+    prisma.comment.count({
+      where: { post: { organizationId: orgId } }
+    })
+  ]);
+
+  return { postCount, memberCount, commentCount };
+}
+```
+
+### Query Examples (SQLAlchemy)
+
+```python
+# app/queries/posts.py
+from sqlalchemy.orm import joinedload
+from app.models import Post
+
+def get_posts(session, limit=20):
+    return (
+        session.query(Post)
+        .options(joinedload(Post.author))
+        .filter(Post.published.is_(True))
+        .limit(limit)
+        .all()
+    )
+```
+
+### Transaction Example
+
+```typescript
+// lib/services/organization.service.ts
+import { prisma } from '@/lib/prisma';
+
+async function createOrganizationWithOwner(
+  userId: string,
+  orgData: { name: string; slug: string }
+) {
+  return prisma.$transaction(async (tx) => {
+    // Create organization
+    const org = await tx.organization.create({
+      data: orgData
+    });
+
+    // Add user as owner
+    await tx.organizationMember.create({
+      data: {
+        userId,
+        organizationId: org.id,
+        role: 'OWNER'
+      }
+    });
+
+    return org;
+  });
+}
+
+// Transfer ownership (atomic)
+async function transferOwnership(
+  orgId: string,
+  fromUserId: string,
+  toUserId: string
+) {
+  return prisma.$transaction([
+    prisma.organizationMember.update({
+      where: {
+        userId_organizationId: { userId: fromUserId, organizationId: orgId }
+      },
+      data: { role: 'ADMIN' }
+    }),
+    prisma.organizationMember.update({
+      where: {
+        userId_organizationId: { userId: toUserId, organizationId: orgId }
+      },
+      data: { role: 'OWNER' }
+    })
+  ]);
+}
+```
+
+### Transaction Example (SQLAlchemy)
+
+```python
+# app/services/org_service.py
+from sqlalchemy.orm import Session
+from app.models import Organization, OrganizationMember
+
+def create_org_with_owner(db: Session, user_id: str, name: str, slug: str):
+    with db.begin():
+        org = Organization(name=name, slug=slug)
+        db.add(org)
+        db.flush()
+        db.add(OrganizationMember(user_id=user_id, organization_id=org.id, role="OWNER"))
+    return org
+```
+
+### Migration Commands
+
+```bash
+# Create migration from schema changes
+npx prisma migrate dev --name add_posts_table
+
+# Apply migrations in production
+npx prisma migrate deploy
+
+# Reset database (dev only!)
+npx prisma migrate reset
+
+# Generate client after schema changes
+npx prisma generate
+
+# View database in browser
+npx prisma studio
+```
+
 ## Common Patterns
 
 ### Multi-tenancy
-```
-- Organization/Workspace table
-- All data tables have organizationId foreign key
-- Row-level security or query filters
-```
+- Organization/Workspace table as tenant
+- All data tables have `organizationId` foreign key
+- Row-level security via query filters
+- Always include `organizationId` in WHERE clauses
 
 ### Audit Trail
-```
-- createdAt, updatedAt, createdBy, updatedBy
-- Separate audit log table for sensitive operations
-```
+- `createdAt`, `updatedAt` timestamps on all tables
+- `createdBy`, `updatedBy` user references for sensitive data
+- Separate audit log table for compliance requirements
 
 ### Soft Deletes
-```
-- deletedAt timestamp (null = not deleted)
-- Filter in all queries: WHERE deletedAt IS NULL
-```
+- `deletedAt` timestamp (null = not deleted)
+- Always filter: `WHERE deletedAt IS NULL`
+- Use Prisma middleware for automatic filtering
 
 ## Start By
 

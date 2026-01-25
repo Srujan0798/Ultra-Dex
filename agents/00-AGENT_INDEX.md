@@ -109,10 +109,16 @@ For complete multi-agent workflows and coordination patterns, see:
 - [Project Orchestration Guide](../guides/PROJECT-ORCHESTRATION.md) - Step-by-step multi-agent workflows
 - [Advanced Workflows](../guides/ADVANCED-WORKFLOWS.md) - Stripe, emails, migrations, real-time features
 - [Multi-Tool Workflow](../guides/MULTI-TOOL-WORKFLOW.md) - Coordinate Claude + Cursor + Copilot + ChatGPT
+- [Custom Agents Guide](../guides/CUSTOM-AGENTS-GUIDE.md) - Create domain-specific agents for your SaaS
 
 **Orchestration Examples:**
 - [Orchestration Examples](../Orchestration/EXAMPLES.md) - Real-world multi-agent workflow examples
 - [Orchestration README](../Orchestration/README.md) - Orchestration pattern overview
+
+**Templates:**
+- [Phase Tracker Template](../templates/PHASE-TRACKER-TEMPLATE.md) - Track progress by phase
+- [Order Tracker Template](../templates/ORDER-TRACKER-TEMPLATE.md) - Step-by-step execution with copy-paste prompts
+- [Master Plan Template](../templates/MASTER-PLAN-TEMPLATE.md) - Single-file project overview
 
 **Decision Frameworks:**
 - [Database Selection Guide](../guides/DATABASE-DECISION-FRAMEWORK.md) - PostgreSQL vs MongoDB vs MySQL
@@ -121,4 +127,4 @@ For complete multi-agent workflows and coordination patterns, see:
 
 ---
 
-*Ultra-Dex v1.6.1 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v1.7.0 - Professional AI Orchestration Meta Layer*

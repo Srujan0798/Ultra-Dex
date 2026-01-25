@@ -59,6 +59,15 @@ Comprehensive guides for building production-ready SaaS applications with AI age
 - **Best for:** Optimizing AI costs while maintaining quality
 - **Time to read:** 8 minutes
 
+**[AI Research Guide](./AI-RESEARCH.md)**
+- **What it covers:** Embedding models, vector databases, and RAG patterns
+- **Includes:**
+  - Embedding model selection criteria
+  - Pinecone vs Weaviate vs Chroma comparison
+  - RAG implementation patterns and pitfalls
+- **Best for:** Planning AI search and retrieval features
+- **Time to read:** 10 minutes
+
 ### Multi-Tool Coordination
 
 **[Multi-Tool Workflow](./MULTI-TOOL-WORKFLOW.md)**
@@ -69,6 +78,18 @@ Comprehensive guides for building production-ready SaaS applications with AI age
   - Tool specialization strategy
 - **Best for:** Using multiple AI tools on the same project without losing context
 - **Time to read:** 12 minutes
+
+### Extending Ultra-Dex
+
+**[Custom Agents Guide](./CUSTOM-AGENTS-GUIDE.md)**
+- **What it covers:** Create domain-specific agents for YOUR SaaS
+- **Includes:**
+  - Agent template with all sections
+  - Complete Invoice Engine example
+  - Complete Booking Engine example
+  - Best practices for domain rules
+- **Best for:** Building agents for your specific domain (healthcare, fintech, e-commerce, etc.)
+- **Time to read:** 15 minutes
 
 ---
 
@@ -89,8 +110,14 @@ Comprehensive guides for building production-ready SaaS applications with AI age
 **"Which AI should I use for coding vs planning vs review?"**
 → [AI Model Selection](./AI-MODEL-SELECTION.md)
 
+**"How do I pick embeddings or a vector database?"**
+→ [AI Research Guide](./AI-RESEARCH.md)
+
 **"Can I use Claude + Cursor + ChatGPT together?"**
 → [Multi-Tool Workflow](./MULTI-TOOL-WORKFLOW.md)
+
+**"How do I create custom agents for my domain?"**
+→ [Custom Agents Guide](./CUSTOM-AGENTS-GUIDE.md)
 
 ---
 
@@ -204,4 +231,4 @@ Found an error? Have a suggestion? Want to add a workflow example?
 
 ---
 
-*Ultra-Dex v1.6.1 - The only framework with comprehensive production guides for AI-driven development*
+*Ultra-Dex v1.7.0 - The only framework with comprehensive production guides for AI-driven development*

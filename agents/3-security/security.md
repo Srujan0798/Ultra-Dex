@@ -99,6 +99,14 @@ import bcrypt from 'bcrypt';
 const hash = await bcrypt.hash(password, 10);
 ```
 
+```python
+# ✅ GOOD - Argon2 with FastAPI
+from argon2 import PasswordHasher
+
+ph = PasswordHasher()
+hash = ph.hash(password)
+```
+
 ### Issue: SQL Injection
 ```typescript
 // ❌ BAD - String concatenation allows injection
@@ -108,6 +116,11 @@ const query = `SELECT * FROM users WHERE email = '${email}'`;
 const user = await prisma.user.findUnique({ where: { email } });
 ```
 
+```python
+# ✅ GOOD - SQLAlchemy parameterized query
+user = db.query(User).filter(User.email == email).first()
+```
+
 ### Issue: XSS Vulnerability
 ```tsx
 // ❌ BAD - Directly rendering user input
@@ -115,6 +128,13 @@ const user = await prisma.user.findUnique({ where: { email } });
 
 // ✅ GOOD - React escapes by default, but be careful with dangerouslySetInnerHTML
 <div>{sanitizeHtml(userComment)}</div>
+```
+
+```python
+# ✅ GOOD - Template auto-escaping (Jinja2)
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="templates")
 ```
 
 ### Issue: Missing Auth Checks
@@ -135,6 +155,16 @@ app.get('/api/users/:id', requireAuth, async (req, res) => {
 });
 ```
 
+```python
+# ✅ GOOD - Dependency-based auth check (FastAPI)
+from fastapi import Depends, HTTPException
+
+def require_auth(user=Depends(get_current_user)):
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return user
+```
+
 ### Issue: Insecure JWT
 ```typescript
 // ❌ BAD - Weak secret, no expiration
@@ -146,6 +176,15 @@ const token = jwt.sign(
   process.env.JWT_SECRET,  // Long random string
   { expiresIn: '15m', algorithm: 'HS256' }
 );
+```
+
+```python
+# ✅ GOOD - PyJWT with strong secret + exp
+import jwt
+from datetime import datetime, timedelta
+
+payload = {"user_id": user_id, "exp": datetime.utcnow() + timedelta(minutes=15)}
+token = jwt.encode(payload, os.environ["JWT_SECRET"], algorithm="HS256")
 ```
 
 ---

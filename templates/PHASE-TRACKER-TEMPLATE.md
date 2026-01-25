@@ -551,7 +551,7 @@ Phase 1 Complete: [Date]
 - Master Plan: [templates/MASTER-PLAN-TEMPLATE.md](../templates/MASTER-PLAN-TEMPLATE.md)
 
 **Examples:**
-- Workflow examples: [Reviews/Orchestration/EXAMPLES.md](../Reviews/Orchestration/EXAMPLES.md)
+- Workflow examples: [Orchestration/EXAMPLES.md](../Orchestration/EXAMPLES.md)
 
 ---
 
@@ -574,4 +574,4 @@ Phase 1 Complete: [Date]
 
 ---
 
-*Template from Ultra-Dex v1.6.1 - Professional AI Orchestration Meta Layer*
+*Template from Ultra-Dex v1.7.0 - Professional AI Orchestration Meta Layer*

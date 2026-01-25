@@ -90,6 +90,8 @@ npx ultra-dex agent backend
 | [Multi-Tool Workflow](./guides/MULTI-TOOL-WORKFLOW.md) | Use multiple AIs together | 12 min |
 
 **All Guides:** [guides/README.md](./guides/README.md)
+**AI Research:** [guides/AI-RESEARCH.md](./guides/AI-RESEARCH.md)
+**Auth sprint:** [BUILD-AUTH-30M.md](./BUILD-AUTH-30M.md)
 
 ---
 
@@ -331,6 +333,6 @@ Use different AI tools for different tasks:
 
 ---
 
-*Ultra-Dex v1.6.1 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v1.7.0 - Professional AI Orchestration Meta Layer*
 
 **Print this page for quick reference while coding!**

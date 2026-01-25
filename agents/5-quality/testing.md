@@ -85,6 +85,25 @@ describe('GET /api/users', () => {
 });
 ```
 
+### Backend API Test (FastAPI + Pytest)
+```python
+# tests/test_users.py
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_list_users_requires_auth():
+    res = client.get("/api/users")
+    assert res.status_code in (401, 403)
+
+def test_create_user():
+    payload = {"email": "test@example.com", "name": "Test User"}
+    res = client.post("/api/users", json=payload)
+    assert res.status_code == 201
+    assert res.json()["data"]["email"] == "test@example.com"
+```
+
 ### Component Test (React Testing Library)
 ```typescript
 // src/components/__tests__/Button.test.tsx
@@ -112,6 +131,23 @@ describe('Button', () => {
 });
 ```
 
+### Component Test (Pytest + Playwright)
+```python
+# tests/test_login_ui.py
+from playwright.sync_api import sync_playwright
+
+def test_login_ui():
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.goto("http://localhost:3000/login")
+        page.fill("[data-testid='email-input']", "test@example.com")
+        page.fill("[data-testid='password-input']", "password123")
+        page.click("[data-testid='login-button']")
+        page.wait_for_url("**/dashboard")
+        browser.close()
+```
+
 ### E2E Test (Playwright)
 ```typescript
 // e2e/auth.spec.ts
@@ -129,6 +165,15 @@ test('user can sign up and log in', async ({ page }) => {
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.locator('h1')).toContainText('Welcome');
 });
+```
+
+### Unit Test (Pytest)
+```python
+# tests/test_utils.py
+from app.utils import slugify
+
+def test_slugify():
+    assert slugify("Hello World") == "hello-world"
 ```
 
 ---

@@ -672,4 +672,4 @@ Use the [@Research](../agents/1-leadership/research.md) agent to compare options
 
 ---
 
-*Part of [Ultra-Dex v1.6.1](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*
+*Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*

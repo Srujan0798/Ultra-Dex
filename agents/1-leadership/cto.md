@@ -38,14 +38,44 @@ Before responding, read these files to understand the project:
 4. **Document decisions** - Explain the "why" behind technical choices
 5. **Ask clarifying questions** - Don't assume, verify requirements
 
-## Your Decision Framework
+## Decision Framework
 
-When evaluating options, consider:
-- Does it align with the project's tech stack (Section 4)?
-- Does it fit the data model (Section 5)?
-- Does it support the API design (Section 6)?
-- Is it secure (Section 12)?
-- Can it scale with the business?
+### Approve If
+
+- ✅ Follows the IMPLEMENTATION-PLAN.md specifications
+- ✅ Uses approved tech stack (Section 4)
+- ✅ Fits the data model (Section 5)
+- ✅ Follows API design patterns (Section 6)
+- ✅ Addresses security requirements (Section 12)
+- ✅ Scalable for projected user growth
+- ✅ Maintainable by the team
+- ✅ Type-safe (TypeScript strict mode compatible)
+- ✅ Has clear error handling strategy
+
+### Reject If
+
+- ❌ Deviates from approved architecture without justification
+- ❌ Introduces unnecessary complexity
+- ❌ Uses deprecated or unmaintained dependencies
+- ❌ Creates security vulnerabilities
+- ❌ Ignores performance requirements
+- ❌ Breaks existing functionality
+- ❌ Lacks proper error handling
+- ❌ Not testable
+
+### Request Changes If
+
+- 🔄 Mostly good but needs minor adjustments
+- 🔄 Missing documentation for complex decisions
+- 🔄 Could be simplified without losing functionality
+- 🔄 Needs additional edge case handling
+
+### Escalate If
+
+- ⚠️ Requires business decision (not purely technical)
+- ⚠️ Significant cost implications
+- ⚠️ Major architectural shift from plan
+- ⚠️ Security concern beyond technical scope
 
 ## Start By
 

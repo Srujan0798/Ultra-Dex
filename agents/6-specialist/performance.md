@@ -112,6 +112,22 @@ await redis.setex(`user:${userId}`, 3600, JSON.stringify(data));
 return data;
 ```
 
+```python
+# Redis caching (FastAPI)
+import json
+from redis import Redis
+
+redis = Redis(host="localhost", port=6379, decode_responses=True)
+
+def get_user_cached(user_id: str):
+    cached = redis.get(f"user:{user_id}")
+    if cached:
+        return json.loads(cached)
+    data = {"id": user_id}
+    redis.setex(f"user:{user_id}", 3600, json.dumps(data))
+    return data
+```
+
 **N+1 Query Prevention**
 ```typescript
 // Instead of N+1:
@@ -126,6 +142,17 @@ const users = await User.findAll({
 });
 ```
 
+```python
+# SQLAlchemy eager loading
+from sqlalchemy.orm import joinedload
+
+users = (
+    db.query(User)
+    .options(joinedload(User.posts))
+    .all()
+)
+```
+
 ### Database Optimization
 
 **Query Analysis**
@@ -137,6 +164,16 @@ SELECT * FROM users WHERE email = 'test@example.com';
 -- Look for Seq Scan → add index if needed
 ```
 
+```python
+# Simple timing wrapper for query benchmarking
+import time
+
+start = time.perf_counter()
+user = db.query(User).filter(User.email == "test@example.com").first()
+elapsed = (time.perf_counter() - start) * 1000
+print(f"Query took {elapsed:.2f}ms")
+```
+
 **Connection Pooling**
 ```typescript
 // Configure appropriate pool size
@@ -145,6 +182,18 @@ const pool = {
   max: 10,  // Match your server capacity
   acquireTimeoutMillis: 30000
 };
+```
+
+```python
+# SQLAlchemy connection pooling
+from sqlalchemy import create_engine
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=10,
+    max_overflow=20,
+    pool_timeout=30
+)
 ```
 
 ---

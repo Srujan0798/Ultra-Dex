@@ -51,6 +51,344 @@ Before responding, read these files to understand the project:
 - Keep functions small and focused
 - Use dependency injection where appropriate
 
+---
+
+## Code Examples
+
+### REST API Endpoint (Next.js App Router)
+
+```typescript
+// app/api/users/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+
+// Validation schema
+const createUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2).max(100),
+});
+
+// GET /api/users - List users with pagination
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '10');
+  const skip = (page - 1) * limit;
+
+  try {
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, email: true, name: true, createdAt: true },
+      }),
+      prisma.user.count(),
+    ]);
+
+    return NextResponse.json({
+      data: users,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Failed to fetch users:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch users' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/users - Create user
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validated = createUserSchema.parse(body);
+
+    const user = await prisma.user.create({
+      data: validated,
+      select: { id: true, email: true, name: true, createdAt: true },
+    });
+
+    return NextResponse.json({ data: user }, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      );
+    }
+    console.error('Failed to create user:', error);
+    return NextResponse.json(
+      { error: 'Failed to create user' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### REST API Endpoint (FastAPI + SQLAlchemy)
+
+```python
+# app/api/users.py
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
+
+from app.db import get_db
+from app.models import User
+
+router = APIRouter(prefix="/api/users", tags=["users"])
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str
+
+@router.get("")
+def list_users(db: Session = Depends(get_db), page: int = 1, limit: int = 10):
+    offset = (page - 1) * limit
+    users = db.query(User).order_by(User.created_at.desc()).offset(offset).limit(limit).all()
+    return {"data": users, "pagination": {"page": page, "limit": limit}}
+
+@router.post("", status_code=201)
+def create_user(payload: UserCreate, db: Session = Depends(get_db)):
+    exists = db.query(User).filter(User.email == payload.email).first()
+    if exists:
+        raise HTTPException(status_code=409, detail="Resource already exists")
+    user = User(email=payload.email, name=payload.name)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return {"data": user}
+```
+
+### Service Layer Pattern
+
+```typescript
+// lib/services/user.service.ts
+import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+
+export class UserService {
+  /**
+   * Get user by ID with related data
+   */
+  async getById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
+      include: { posts: true, profile: true },
+    });
+  }
+
+  /**
+   * Update user with validation
+   */
+  async update(id: string, data: Prisma.UserUpdateInput) {
+    return prisma.user.update({
+      where: { id },
+      data,
+    });
+  }
+
+  /**
+   * Soft delete user
+   */
+  async delete(id: string) {
+    return prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  /**
+   * Search users by email or name
+   */
+  async search(query: string, limit = 10) {
+    return prisma.user.findMany({
+      where: {
+        OR: [
+          { email: { contains: query, mode: 'insensitive' } },
+          { name: { contains: query, mode: 'insensitive' } },
+        ],
+        deletedAt: null,
+      },
+      take: limit,
+    });
+  }
+}
+
+export const userService = new UserService();
+```
+
+### Service Layer Pattern (FastAPI)
+
+```python
+# app/services/user_service.py
+from datetime import datetime
+from sqlalchemy.orm import Session
+from app.models import User
+
+class UserService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_by_id(self, user_id: str):
+        return self.db.query(User).filter(User.id == user_id).first()
+
+    def update(self, user_id: str, data: dict):
+        user = self.get_by_id(user_id)
+        if not user:
+            return None
+        for key, value in data.items():
+            setattr(user, key, value)
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
+    def soft_delete(self, user_id: str):
+        user = self.get_by_id(user_id)
+        if not user:
+            return None
+        user.deleted_at = datetime.utcnow()
+        self.db.commit()
+        return user
+```
+
+### Error Handling Middleware
+
+```typescript
+// lib/api/error-handler.ts
+import { NextResponse } from 'next/server';
+import { ZodError } from 'zod';
+import { Prisma } from '@prisma/client';
+
+export class ApiError extends Error {
+  constructor(
+    public statusCode: number,
+    message: string,
+    public code?: string
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+export function handleApiError(error: unknown) {
+  // Validation errors
+  if (error instanceof ZodError) {
+    return NextResponse.json(
+      { error: 'Validation failed', details: error.errors },
+      { status: 400 }
+    );
+  }
+
+  // Custom API errors
+  if (error instanceof ApiError) {
+    return NextResponse.json(
+      { error: error.message, code: error.code },
+      { status: error.statusCode }
+    );
+  }
+
+  // Prisma errors
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Resource already exists' },
+        { status: 409 }
+      );
+    }
+    if (error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Resource not found' },
+        { status: 404 }
+      );
+    }
+  }
+
+  // Unknown errors
+  console.error('Unhandled error:', error);
+  return NextResponse.json(
+    { error: 'Internal server error' },
+    { status: 500 }
+  );
+}
+```
+
+### Webhook Handler (Stripe Example)
+
+```typescript
+// app/api/webhooks/stripe/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import { prisma } from '@/lib/prisma';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+export async function POST(request: NextRequest) {
+  const body = await request.text();
+  const signature = request.headers.get('stripe-signature')!;
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err);
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await handleCheckoutComplete(session);
+        break;
+      }
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        await handleSubscriptionUpdate(subscription);
+        break;
+      }
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error('Webhook handler error:', error);
+    return NextResponse.json(
+      { error: 'Webhook handler failed' },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
+  await prisma.order.update({
+    where: { stripeSessionId: session.id },
+    data: { status: 'paid', paidAt: new Date() },
+  });
+}
+
+async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
+  await prisma.subscription.update({
+    where: { stripeSubscriptionId: subscription.id },
+    data: {
+      status: subscription.status,
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    },
+  });
+}
+```
+
 ## Start By
 
 1. Read IMPLEMENTATION-PLAN.md Sections 5-8
