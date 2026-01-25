@@ -300,6 +300,16 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
               path.join(rulesDir, file)
             );
           }
+        // Also generate .github/copilot-instructions.md for Copilot users
+          const coreRulePath = path.join(cursorRulesPath, '00-ultra-dex-core.mdc');
+          try {
+            const coreContent = await fs.readFile(coreRulePath, 'utf-8');
+            const dotGithub = path.join(outputDir, '.github');
+            await fs.mkdir(dotGithub, { recursive: true });
+            await fs.writeFile(path.join(dotGithub, 'copilot-instructions.md'), coreContent);
+          } catch (e) {
+            // Core rule not available - skip Copilot setup
+          }
         } catch (err) {
           // Cursor rules not available (npm package, not local) - this is expected
           console.log(chalk.gray('\n  Cursor rules: Download from GitHub for AI-assisted development'));
@@ -648,6 +658,80 @@ program
       console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
       console.log(chalk.gray('View full prompt on GitHub:'));
       console.log(chalk.blue(`  https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n`));
+    }
+  });
+
+// Pack command - assemble context for any AI tool
+program
+  .command('pack <agent>')
+  .description('Package project context + agent prompt for any AI tool')
+  .option('-c, --clipboard', 'Copy to clipboard (requires pbcopy/xclip)')
+  .action(async (agentName, options) => {
+    // Find agent
+    const agent = AGENTS.find(a => a.name.toLowerCase() === agentName.toLowerCase());
+    if (!agent) {
+      console.log(chalk.red(`\n❌ Agent "${agentName}" not found.\n`));
+      console.log(chalk.gray('Available agents:'));
+      AGENTS.forEach(a => console.log(chalk.cyan(`  - ${a.name}`)));
+      process.exit(1);
+    }
+
+    let output = '';
+
+    // 1. Read Agent Prompt
+    const agentPath = path.resolve(__dirname, '../../agents', agent.file);
+    try {
+      const agentPrompt = await fs.readFile(agentPath, 'utf-8');
+      output += agentPrompt + '\n\n';
+    } catch (err) {
+      output += `# ${agent.name.toUpperCase()} Agent\n\nSee: https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n\n`;
+    }
+
+    output += '---\n\n';
+
+    // 2. Read CONTEXT.md
+    try {
+      const context = await fs.readFile('CONTEXT.md', 'utf-8');
+      output += '# PROJECT CONTEXT\n\n' + context + '\n\n';
+    } catch (err) {
+      output += '# PROJECT CONTEXT\n\n*No CONTEXT.md found. Run `ultra-dex init` first.*\n\n';
+    }
+
+    output += '---\n\n';
+
+    // 3. Read IMPLEMENTATION-PLAN.md
+    try {
+      const plan = await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf-8');
+      output += '# IMPLEMENTATION PLAN\n\n' + plan + '\n';
+    } catch (err) {
+      output += '# IMPLEMENTATION PLAN\n\n*No IMPLEMENTATION-PLAN.md found. Run `ultra-dex init` first.*\n';
+    }
+
+    // Output
+    console.log(chalk.bold(`\n📦 Packed context for @${agent.name}\n`));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log(output);
+    console.log(chalk.gray('─'.repeat(60)));
+
+    // Try to copy to clipboard if requested
+    if (options.clipboard) {
+      try {
+        const { execSync } = require('child_process');
+        const platform = process.platform;
+        if (platform === 'darwin') {
+          execSync('pbcopy', { input: output });
+          console.log(chalk.green('\n✅ Copied to clipboard!\n'));
+        } else if (platform === 'linux') {
+          execSync('xclip -selection clipboard', { input: output });
+          console.log(chalk.green('\n✅ Copied to clipboard!\n'));
+        } else {
+          console.log(chalk.yellow('\n⚠️  Clipboard not supported on this platform. Copy manually.\n'));
+        }
+      } catch (err) {
+        console.log(chalk.yellow('\n⚠️  Could not copy to clipboard. Copy manually.\n'));
+      }
+    } else {
+      console.log(chalk.cyan('\n💡 Tip: Use --clipboard flag to copy directly\n'));
     }
   });
 

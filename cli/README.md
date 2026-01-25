@@ -101,6 +101,7 @@ Prints the full agent prompt. Copy and paste into your AI tool (Cursor, Claude, 
 | `ultra-dex examples` | List available examples |
 | `ultra-dex agents` | List available AI agents |
 | `ultra-dex agent <name>` | Show specific agent prompt |
+| `ultra-dex pack <agent>` | Package context + agent for any AI |
 | `ultra-dex --help` | Show help |
 | `ultra-dex --version` | Show version |
 
