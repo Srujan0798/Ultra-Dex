@@ -37,7 +37,9 @@ A comprehensive framework for building complete, production-grade applications. 
 | **See a real example** | [TaskFlow-Complete.md](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) |
 | **AI-ready rules** | [cursor-rules/](./cursor-rules/) |
 | **AI agent prompts** | [agents/](./agents/) |
-| **Quick reference cheatsheet** | [QUICK-REFERENCE.md](./QUICK-REFERENCE.md) |
+| **Quick reference cheatsheet** | [QUICK-REFERENCE.md](./docs/QUICK-REFERENCE.md) |
+| **Docs hub** | [docs/README.md](./docs/README.md) |
+| **Build auth in 30 minutes** | [BUILD-AUTH-30M.md](./docs/BUILD-AUTH-30M.md) |
 | **Multi-agent workflows** | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md) |
 | **Choose database** | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
 | **Architecture patterns** | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md) |
@@ -110,7 +112,10 @@ npx ultra-dex validate          # Validate project structure
 ```
 Ultra-Dex/
 ├── README.md                      ← You are here
-├── AGENT-INSTRUCTIONS.md          ← AI agent prompts
+├── docs/                          ← Documentation & guides
+│   ├── ROADMAP.md, VISION-V2.md   (Strategy)
+│   ├── QUICK-REFERENCE.md         (Cheatsheet)
+│   └── TROUBLESHOOTING.md         (Common issues)
 ├── agents/                        ← 15 AI agents (tier-based)
 │   ├── 1-leadership/              (CTO, Planner, Research)
 │   ├── 2-development/             (Backend, Frontend, Database)
@@ -292,7 +297,7 @@ See [agents/00-AGENT_INDEX.md](./agents/00-AGENT_INDEX.md) for complete director
 
 ### Legacy Agent Instructions
 
-See [AGENT-INSTRUCTIONS.md](./AGENT-INSTRUCTIONS.md) for additional prompts.
+See [agents/AGENT-INSTRUCTIONS.md](./agents/AGENT-INSTRUCTIONS.md) for additional prompts.
 
 ---
 

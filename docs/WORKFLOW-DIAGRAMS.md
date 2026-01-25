@@ -458,6 +458,6 @@ graph TD
 
 ---
 
-*Ultra-Dex v1.6.1 - Visual workflows for AI-driven development*
+*Ultra-Dex v1.7.0 - Visual workflows for AI-driven development*
 
 **These diagrams are living documentation - update them as your workflow evolves!**

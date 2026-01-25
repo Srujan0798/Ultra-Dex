@@ -11,6 +11,8 @@ This tutorial walks you through using Ultra-Dex to create a production-ready imp
 **Time:** 30 minutes
 **Output:** A complete, actionable implementation plan
 
+**Related:** [Build Auth in 30 Minutes](./BUILD-AUTH-30M.md)
+
 ---
 
 ## Step 1: Start with Quick Start (5 minutes)

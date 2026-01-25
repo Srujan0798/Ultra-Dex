@@ -3,7 +3,7 @@
 > How to coordinate 15 AI agents to build your SaaS from scratch
 
 **Last Updated:** January 23, 2026
-**Ultra-Dex Version:** v1.6.1
+**Ultra-Dex Version:** v1.7.0
 
 ---
 
@@ -945,8 +945,8 @@ All three update PHASE-TRACKER.md with progress
 3. ✅ Join the Ultra-Dex community for support
 
 **Want more examples?**
-- [Workflow Examples](../Reviews/Orchestration/EXAMPLES.md)
-- [Formal Production Pipeline](../Reviews/Orchestration/WORKFLOW.md)
+- [Workflow Examples](../Orchestration/EXAMPLES.md)
+- [Orchestration Overview](../Orchestration/README.md)
 
 **Need templates?**
 - [Phase Tracker Template](../templates/PHASE-TRACKER-TEMPLATE.md)
@@ -964,4 +964,4 @@ All three update PHASE-TRACKER.md with progress
 
 ---
 
-*Ultra-Dex v1.6.1 - The only framework that shows you HOW to coordinate AI agents*
+*Ultra-Dex v1.7.0 - The only framework that shows you HOW to coordinate AI agents*
