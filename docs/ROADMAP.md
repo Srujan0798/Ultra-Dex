@@ -327,6 +327,41 @@ Integrate Ultra-Dex directly into development platforms.
 
 ---
 
+## Business Model
+
+### Core Philosophy
+**Open Source Forever** - Ultra-Dex core will always be free and open source.
+
+### Revenue Streams (Future)
+
+| Tier | Price | What You Get |
+|------|-------|--------------|
+| **Core** | Free | Full framework, 15 agents, CLI, templates, community support |
+| **Pro Playbooks** | $49-149 | Industry-specific playbooks (Healthcare SaaS, Fintech, E-commerce) with compliance guidance |
+| **Team License** | $29/user/mo | Shared configs, audit logs, priority support, custom agent builder |
+| **Enterprise** | Custom | Self-hosted, SSO, dedicated support, SLA, custom integrations |
+
+### Why This Model?
+
+1. **Trust First** - Give away the best documentation free, prove value before asking for money
+2. **No Lock-in** - Everything works without payment, paid tiers add convenience
+3. **Community Growth** - Free core attracts users who become contributors and advocates
+4. **Sustainable** - Paid tiers fund development without compromising open source
+
+### Current Status
+- **v1.x** - 100% free, building community and proving value
+- **v2.0+** - Introduce optional paid playbooks and team features
+- **Enterprise** - When demand justifies (target: 10+ inbound requests)
+
+### What Will NEVER Be Paid
+- Core 15 agents
+- CLI tool
+- All existing templates and guides
+- Community support (GitHub, Discord)
+- Basic documentation
+
+---
+
 ## How to Contribute
 
 ### Submit Ideas
@@ -433,10 +468,10 @@ Integrate Ultra-Dex directly into development platforms.
 
 *This roadmap is a living document and will evolve based on community feedback and real-world usage.*
 
-*Last updated: January 24, 2026 - v1.7.0 released, v1.8.0 in planning*
+*Last updated: January 26, 2026 - v1.7.1 released, business model defined*
 
 ---
 
-*Ultra-Dex v1.7.0 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v1.7.1 - Professional AI Orchestration Meta Layer*
 
 **The future is collaborative AI-driven development. Let's build it together.** 🚀
