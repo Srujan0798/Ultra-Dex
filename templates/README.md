@@ -129,6 +129,41 @@ Status: ✅ Complete
 
 ---
 
+### [CASE-STUDY-TEMPLATE.md](./CASE-STUDY-TEMPLATE.md)
+
+**Purpose:** Document real projects built with Ultra-Dex
+
+**What it includes:**
+- Project overview and metrics
+- Tech stack decisions with reasoning
+- Ultra-Dex agent usage breakdown
+- Time savings and quality metrics
+- Learnings and recommendations
+- Screenshots and links
+
+**Best for:**
+- Sharing your success story
+- Contributing to the Ultra-Dex community
+- Documenting what worked (and what didn't)
+- Building credibility for your portfolio
+
+**How to use:**
+1. Copy CASE-STUDY-TEMPLATE.md after shipping your project
+2. Fill in the sections with real metrics
+3. Submit via GitHub issue or PR
+4. Get featured on the Ultra-Dex showcase (coming soon)
+
+**Example submission:**
+```
+Title: Built a SaaS in 6 weeks with Ultra-Dex
+Time saved: 40% vs previous projects
+Key win: @Database agent designed perfect schema first try
+```
+
+**Size:** 150 lines | 4 KB
+
+---
+
 ## 🎯 Which Template to Use?
 
 ### Use MASTER-PLAN when:
@@ -326,7 +361,9 @@ Both templates are **fully customizable**. Common modifications:
 |----------|-------|------|----------|----------|
 | MASTER-PLAN | 800 | 14 KB | 12 | Project overview & context |
 | PHASE-TRACKER | 329 | 11 KB | 5 phases | Task tracking & progress |
-| **Total** | **1,129** | **25 KB** | **17** | **Complete project management** |
+| ORDER-TRACKER | 400 | 15 KB | 10 orders | Step-by-step execution |
+| CASE-STUDY | 150 | 4 KB | 12 | Documenting success stories |
+| **Total** | **1,679** | **44 KB** | **39** | **Complete project management** |
 
 ---
 
@@ -379,4 +416,4 @@ Found a better template structure? Want to add examples?
 
 ---
 
-*Ultra-Dex v1.7.0 - Structured project management for AI-driven development*
+*Ultra-Dex v1.7.1 - Structured project management for AI-driven development*

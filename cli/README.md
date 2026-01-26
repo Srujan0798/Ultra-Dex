@@ -13,12 +13,12 @@ cd your-project
 cat QUICK-START.md
 
 # 3. Load Cursor rules for AI assistance (1 min)
-# Download from: https://github.com/Srujan0798/Ultra-Dex/tree/main/cursor-rules
-# Then: ./load.sh database api auth
+npx degit Srujan0798/Ultra-Dex/cursor-rules .cursor/rules
+# Then: cd .cursor/rules && ./load.sh database api auth
 
 # 4. Start building with AI agents (4 min)
 # Use @Backend, @Frontend, @Database agents
-# See: npx ultra-dex agents
+npx ultra-dex agents
 
 # You're ready to code!
 ```
