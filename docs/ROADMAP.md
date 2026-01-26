@@ -12,17 +12,17 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 
 ---
 
-## Current State (v1.7.1) ✅
+## Current State (v1.7.2) ✅
 
 **Released: January 26, 2026**
 
-- ✅ 15 production-ready AI agents (6 tiers + 1 meta-orchestration tier)
+- ✅ 16 production-ready AI agents (15 + @Orchestrator meta-agent)
 - ✅ 6 comprehensive production guides (83 KB)
 - ✅ 12 modular cursor rules (including Next.js 15 and multi-tenancy)
 - ✅ 10 advanced workflow examples (3,534 lines)
-- ✅ Enhanced CLI with 9 commands (pack, workflow, suggest, validate)
+- ✅ Enhanced CLI with 12 commands (including `hooks` for automated verification)
 - ✅ Multi-tool AI orchestration (Claude + Cursor + Copilot + ChatGPT + Gemini)
-- ✅ Complete documentation and cross-references
+- ✅ Git pre-commit hooks for project validation
 - ✅ Business model defined (OSS core forever)
 
 **Current metrics:**
@@ -31,7 +31,7 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 - 12 cursor rules (including Next.js 15, multi-tenancy)
 - 6 production guides
 - 4 project templates
-- 9 CLI commands
+- 12 CLI commands
 
 ---
 
@@ -470,10 +470,10 @@ Integrate Ultra-Dex directly into development platforms.
 
 *This roadmap is a living document and will evolve based on community feedback and real-world usage.*
 
-*Last updated: January 26, 2026 - v1.7.1 released, business model defined*
+*Last updated: January 26, 2026 - v1.7.2 released, git hooks added*
 
 ---
 
-*Ultra-Dex v1.7.1 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v1.7.2 - Professional AI Orchestration Meta Layer*
 
 **The future is collaborative AI-driven development. Let's build it together.** 🚀

@@ -92,6 +92,19 @@ npx ultra-dex agent backend
 
 Prints the full agent prompt. Copy and paste into your AI tool (Cursor, Claude, ChatGPT).
 
+### Set up git hooks
+
+```bash
+npx ultra-dex hooks
+```
+
+Installs a pre-commit hook that:
+- Validates project structure before each commit
+- Blocks commits if required files are missing
+- Can be bypassed with `git commit --no-verify`
+
+Remove with: `npx ultra-dex hooks --remove`
+
 ## Commands
 
 | Command | Description |
@@ -102,6 +115,10 @@ Prints the full agent prompt. Copy and paste into your AI tool (Cursor, Claude, 
 | `ultra-dex agents` | List available AI agents |
 | `ultra-dex agent <name>` | Show specific agent prompt |
 | `ultra-dex pack <agent>` | Package context + agent for any AI |
+| `ultra-dex hooks` | Set up git pre-commit hooks |
+| `ultra-dex validate` | Validate project structure |
+| `ultra-dex workflow <feature>` | Show workflow for a feature |
+| `ultra-dex suggest` | Get AI agent suggestions |
 | `ultra-dex --help` | Show help |
 | `ultra-dex --version` | Show version |
 
