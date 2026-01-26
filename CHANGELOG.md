@@ -7,22 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.7.1] - 2026-01-25
+## [1.7.1] - 2026-01-26
 
 ### Added
 - **@Orchestrator Meta-Agent** - New agent that coordinates all 15 agents for complete feature implementation
   - Located in `agents/0-orchestration/orchestrator.md`
   - Provides workflow templates for multi-tier features
   - Includes handoff protocols between agents
-- **Visual Flow Diagram** - Mermaid diagram in README showing IDEA → PRODUCTION flow
+- **Multi-Tenancy Cursor Rule** - `cursor-rules/12-multi-tenancy.mdc` with SaaS patterns
+  - Row-Level Security (RLS) with Prisma
+  - Subdomain-based tenant identification
+  - PostgreSQL RLS policies
+  - Tenant-scoped database client pattern
 - **Next.js 15 Cursor Rule** - `cursor-rules/11-nextjs-v15.mdc` with App Router patterns
   - Server/Client components, Server Actions, Streaming
   - Middleware for auth/tenant, Error boundaries
   - Multi-tenancy patterns, Vercel AI SDK integration
-- **Enhanced load.sh v2.0** - Cursor auto-detection and nextjs domain support
+- **Copilot Support** - CLI now generates `.github/copilot-instructions.md` automatically
+- **`pack` Command** - `npx ultra-dex pack <agent>` packages context + agent for ANY AI tool
+  - Works with Claude, ChatGPT, Gemini, local LLMs
+  - Combines agent prompt + CONTEXT.md + IMPLEMENTATION-PLAN.md
+- **Visual Flow Diagram** - Mermaid diagram in README showing IDEA → PRODUCTION flow
+- **Case Study Template** - `templates/CASE-STUDY-TEMPLATE.md` for documenting real projects
+- **Business Model** - Added to ROADMAP (OSS core free forever + optional paid playbooks)
+- **Enhanced load.sh v2.0** - Cursor auto-detection, nextjs and tenancy domain support
 - **First 10 Minutes Guide** - Quick start path in CLI README
 
 ### Changed
+- **README Simplified to ONE funnel** - Reduced Quick Start from 15 links to 4-step path
+  - Step 1: QUICK-START.md (5 min)
+  - Step 2: HOW-TO-USE.md (10 min)
+  - Step 3: BUILD-AUTH-30M.md (30 min) ← First working feature
+  - Step 4: Start coding
+- **CLI Trust Messages Fixed** - Now explains WHY assets aren't bundled (npm size optimization)
+  - Shows `npx degit` one-liner commands for quick setup
+  - No longer looks like a broken stub
 - **Major Repo Restructure**
   - Moved 9 docs to `docs/` folder (ROADMAP, VISION-V2, QUICK-REFERENCE, etc.)
   - Moved AGENT-INSTRUCTIONS.md to `agents/`
@@ -34,18 +53,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - @Database: Complete Prisma schema with multi-tenancy, N+1 avoidance, transactions
   - @CTO & @Reviewer: Added decision frameworks (Approve/Reject/Request Changes criteria)
 - **CLI Improvements**
-  - Fixed version mismatch (1.6.1 → 1.7.0)
-  - Softer asset messaging (gray info instead of yellow warnings)
+  - Fixed version mismatch (1.6.1 → 1.7.1)
+  - Asset messages now explain npm size optimization
+  - Added `pack` command for tool-agnostic AI context
   - Updated file paths for moved docs
 
 ### Added Files
 - `agents/0-orchestration/orchestrator.md`
 - `cursor-rules/11-nextjs-v15.mdc`
+- `cursor-rules/12-multi-tenancy.mdc`
+- `templates/CASE-STUDY-TEMPLATE.md`
 - `guides/CUSTOM-AGENTS-GUIDE.md` - Template for creating domain-specific agents
 - `templates/ORDER-TRACKER-TEMPLATE.md` - Step-by-step execution with copy-paste prompts
 - `Reviews/A_New_Review/` - AI review files from Devin, Gemini, Jules, Perplexity
 
 ### Fixed
+- README had too many entry points - now ONE clear funnel
+- CLI "Download from GitHub" messages sounded like broken stub
 - Broken Orchestration folder links throughout templates and guides
 - .DS_Store removed from git tracking
 - CLI paths updated for moved VERIFICATION.md and AGENT-INSTRUCTIONS.md
@@ -245,6 +269,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Key Feature | Agents | Guides | Templates |
 |---------|------|-------------|--------|--------|-----------|
+| **1.7.1** | 2026-01-26 | Multi-tenancy + Copilot + pack | 16 | 6 | 4 |
 | **1.7.0** | 2026-01-24 | Workflow Examples + CLI | 15 | 6 (10 examples) | 2 |
 | **1.6.1** | 2026-01-24 | Production Guides | 15 | 6 | 2 |
 | **1.6.0** | 2026-01-23 | Tier-Based Organization | 15 | 2 | 2 |
@@ -258,6 +283,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## Upgrade Guide
+
+### From 1.7.0 to 1.7.1
+
+**New Features:**
+- **@Orchestrator Meta-Agent** - Coordinates all 15 agents for complete features
+- **Multi-Tenancy Cursor Rule** - `cursor-rules/12-multi-tenancy.mdc` with SaaS patterns
+- **Copilot Support** - CLI generates `.github/copilot-instructions.md` automatically
+- **`pack` Command** - `npx ultra-dex pack <agent>` for tool-agnostic AI context
+
+**README Simplified:**
+- One clear onboarding funnel: QUICK-START → HOW-TO-USE → BUILD-AUTH-30M → Code
+- Reduced Quick Start from 15 links to 4 steps
+- Full resources in collapsible section
+
+**Action Required:**
+- None - Fully backward compatible
+
+**Recommended:**
+- Use `npx ultra-dex pack backend` to package context for any AI tool
+- Load `12-multi-tenancy.mdc` if building SaaS with tenant isolation
+- Try `@Orchestrator` agent for features spanning multiple tiers
+
+---
 
 ### From 1.6.1 to 1.7.0
 
