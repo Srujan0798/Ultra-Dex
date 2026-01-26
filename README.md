@@ -293,7 +293,7 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 15 Production-Ready Agents (v1.7.0)
+### 16 Production-Ready Agents (v1.7.1)
 
 Ultra-Dex includes 15 specialized agent prompts **organized into 6 tiers** for the production pipeline. Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT).
 

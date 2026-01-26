@@ -12,24 +12,26 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 
 ---
 
-## Current State (v1.7.0) ✅
+## Current State (v1.7.1) ✅
 
-**Released: January 24, 2026**
+**Released: January 26, 2026**
 
-- ✅ 15 production-ready AI agents (6 tiers)
+- ✅ 15 production-ready AI agents (6 tiers + 1 meta-orchestration tier)
 - ✅ 6 comprehensive production guides (83 KB)
+- ✅ 12 modular cursor rules (including Next.js 15 and multi-tenancy)
 - ✅ 10 advanced workflow examples (3,534 lines)
-- ✅ Enhanced CLI with 8 commands (workflow, suggest, validate)
-- ✅ Multi-tool AI orchestration
+- ✅ Enhanced CLI with 9 commands (pack, workflow, suggest, validate)
+- ✅ Multi-tool AI orchestration (Claude + Cursor + Copilot + ChatGPT + Gemini)
 - ✅ Complete documentation and cross-references
-- ✅ CHANGELOG tracking
+- ✅ Business model defined (OSS core forever)
 
 **Current metrics:**
 - 10 workflow examples (Stripe, Email, Database, Real-time, Supabase, Vercel, GitHub Actions, Sentry, Shopify, PostHog)
-- 15 specialized agents
+- 16 specialized agents (15 + @Orchestrator)
+- 12 cursor rules (including Next.js 15, multi-tenancy)
 - 6 production guides
-- 2 project templates
-- 8 CLI commands
+- 4 project templates
+- 9 CLI commands
 
 ---
 
