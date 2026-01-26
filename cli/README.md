@@ -105,6 +105,29 @@ Installs a pre-commit hook that:
 
 Remove with: `npx ultra-dex hooks --remove`
 
+### Fetch assets for offline use
+
+```bash
+npx ultra-dex fetch
+```
+
+Downloads all Ultra-Dex assets locally for offline development:
+- Cursor rules (12 .mdc files)
+- Agent prompts (16 agents)
+- Documentation and guides
+
+Options:
+- `--dir <path>` - Target directory (default: `.ultra-dex`)
+- `--agents` - Fetch only agent prompts
+- `--rules` - Fetch only cursor rules
+- `--docs` - Fetch only documentation
+
+After fetching, copy to your project:
+```bash
+cp -r .ultra-dex/cursor-rules .cursor/rules
+cp -r .ultra-dex/agents .agents
+```
+
 ## Commands
 
 | Command | Description |
@@ -116,6 +139,7 @@ Remove with: `npx ultra-dex hooks --remove`
 | `ultra-dex agent <name>` | Show specific agent prompt |
 | `ultra-dex pack <agent>` | Package context + agent for any AI |
 | `ultra-dex hooks` | Set up git pre-commit hooks |
+| `ultra-dex fetch` | Download assets for offline use |
 | `ultra-dex validate` | Validate project structure |
 | `ultra-dex workflow <feature>` | Show workflow for a feature |
 | `ultra-dex suggest` | Get AI agent suggestions |

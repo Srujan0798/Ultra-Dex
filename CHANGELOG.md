@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.3] - 2026-01-26
+
+### Added
+- **`fetch` Command** - `npx ultra-dex fetch` downloads all assets for offline development
+  - Downloads cursor rules (12 .mdc files), agent prompts (16 agents), docs, and guides
+  - Supports selective fetching: `--agents`, `--rules`, `--docs`
+  - Custom target directory: `--dir <path>` (default: `.ultra-dex`)
+  - No GitHub access needed after initial fetch
+  - CLI now has 13 commands total
+
+### Changed
+- CLI now fully supports offline workflows after initial fetch
+- Removed GitHub dependency for repeat usage
+
+---
+
 ## [1.7.2] - 2026-01-26
 
 ### Added
