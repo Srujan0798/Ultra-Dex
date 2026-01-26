@@ -311,9 +311,10 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             // Core rule not available - skip Copilot setup
           }
         } catch (err) {
-          // Cursor rules not available (npm package, not local) - this is expected
-          console.log(chalk.gray('\n  Cursor rules: Download from GitHub for AI-assisted development'));
-          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/tree/main/cursor-rules'));
+          // Cursor rules not bundled - intentional design choice for npm package size
+          console.log(chalk.gray('\n  📦 Cursor rules not bundled (keeps npm package <50KB)'));
+          console.log(chalk.cyan('  Quick setup: npx degit Srujan0798/Ultra-Dex/cursor-rules .cursor/rules'));
+          console.log(chalk.blue('  Or download: https://github.com/Srujan0798/Ultra-Dex/tree/main/cursor-rules'));
         }
       }
 
@@ -323,9 +324,10 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         try {
           await fs.copyFile(templatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
         } catch (err) {
-          // Template not available locally - this is expected for npm installs
-          console.log(chalk.gray('\n  Full 34-section template: Download from GitHub'));
-          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md'));
+          // Template not bundled - keeps npm package lightweight
+          console.log(chalk.gray('\n  📦 Full template not bundled (5,500 lines - too large for npm)'));
+          console.log(chalk.cyan('  Quick fetch: curl -O https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/%40%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md'));
+          console.log(chalk.blue('  Or view: https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md'));
         }
       }
 
@@ -337,9 +339,10 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
           await fs.copyFile(verificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
           await fs.copyFile(agentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
         } catch (err) {
-          // Docs not available locally - this is expected for npm installs
-          console.log(chalk.gray('\n  Verification checklist & agent instructions: Download from GitHub'));
-          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/tree/main/docs'));
+          // Docs not bundled - intentional for npm package size
+          console.log(chalk.gray('\n  📦 Verification & instructions not bundled (npm size optimization)'));
+          console.log(chalk.cyan('  Quick setup: npx degit Srujan0798/Ultra-Dex/docs docs'));
+          console.log(chalk.blue('  Or view: https://github.com/Srujan0798/Ultra-Dex/tree/main/docs'));
         }
       }
 
@@ -376,9 +379,10 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             path.join(agentsDir, 'README.md')
           );
         } catch (err) {
-          // Agents not available locally - this is expected for npm installs
-          console.log(chalk.gray('\n  15 AI agent prompts: Download from GitHub'));
-          console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex/tree/main/agents'));
+          // Agents not bundled - intentional for npm package size
+          console.log(chalk.gray('\n  📦 Agent prompts not bundled (npm size optimization)'));
+          console.log(chalk.cyan('  Quick setup: npx degit Srujan0798/Ultra-Dex/agents .agents'));
+          console.log(chalk.blue('  Or view: https://github.com/Srujan0798/Ultra-Dex/tree/main/agents'));
         }
       }
 
