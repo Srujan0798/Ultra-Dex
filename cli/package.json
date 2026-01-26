@@ -1,7 +1,7 @@
 {
   "name": "ultra-dex",
-  "version": "1.7.1",
-  "description": "CLI for Ultra-Dex SaaS Implementation Framework with 15 Production Agents",
+  "version": "1.7.2",
+  "description": "CLI for Ultra-Dex SaaS Implementation Framework with 16 Production Agents",
   "keywords": [
     "saas",
     "template",

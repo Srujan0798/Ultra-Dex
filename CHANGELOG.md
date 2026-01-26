@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.2] - 2026-01-26
+
+### Added
+- **`hooks` Command** - `npx ultra-dex hooks` sets up git pre-commit validation
+  - Automatically validates project structure before each commit
+  - Blocks commits if required files (QUICK-START.md, IMPLEMENTATION-PLAN.md) are missing
+  - Warns about incomplete sections
+  - Remove with `npx ultra-dex hooks --remove`
+  - Bypass with `git commit --no-verify` (not recommended)
+
+### Changed
+- CLI now has 12 commands total (init, audit, examples, agents, agent, pack, hooks, validate, workflow, suggest, help, version)
+- Updated agent count to 16 in package.json
+
+---
+
 ## [1.7.1] - 2026-01-26
 
 ### Added
