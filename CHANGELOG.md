@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.4.0] - 2026-01-27
+
+### Added
+- **📊 `ultra-dex dashboard` Command** - Local web dashboard
+  - Real-time project status visualization
+  - Shows alignment score, agents, state, and metrics
+  - Auto-refresh with configurable interval
+  - Accessible at http://localhost:3002
+
+- **🔀 `ultra-dex diff` Command** - Compare plan vs code
+  - Analyzes implementation plan vs actual codebase
+  - Detects missing/found features
+  - Shows completion percentage
+  - Exit codes for CI/CD integration
+
+- **📦 `ultra-dex export` Command** - Export project to various formats
+  - JSON format for machine processing
+  - Markdown format for documentation
+  - HTML format for standalone reports
+  - Custom output path with `--output`
+
+- **⬆️ `ultra-dex upgrade` Command** - Self-upgrade CLI
+  - `--check` - Check for updates only
+  - `--force` - Force reinstall
+  - Shows current vs latest version
+
+### Changed
+- CLI version bumped to 2.4.0
+- All advanced commands now available
+
+---
+
+## [2.3.0] - 2026-01-27
+
+### Added
+- **🩺 `ultra-dex doctor` Command** - Diagnose setup and configuration
+  - Checks Node.js, Git, AI providers, project structure
+  - Validates git hooks and configuration
+  - Provides actionable suggestions
+
+- **⚙️ `ultra-dex config` Command** - Manage configuration
+  - `--list` - Show all settings
+  - `--get <key>` / `--set <key=value>` - Read/write settings
+  - `--mcp` - Generate MCP config for Claude Desktop
+  - `--init` - Create new config file
+  - `--global` - Use global config (~/.ultra-dex.json)
+
+- **📁 `.ultra-dex.json`** - Project configuration file
+  - Set default provider, model, minimum score
+  - Configure MCP server port
+  - Toggle pre-commit/pre-push hooks
+
+- **🔧 VS Code Integration Templates**
+  - `templates/vscode-settings.json` - Editor settings
+  - `templates/vscode-tasks.json` - Quick tasks for Ultra-Dex commands
+
+### Changed
+- CLI version bumped to 2.3.0
+
+---
+
 ## [2.2.0] - 2026-01-27
 
 ### Added

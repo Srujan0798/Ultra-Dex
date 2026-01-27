@@ -12,7 +12,7 @@
 
 ---
 
-## 🚀 NEW: AI-Powered CLI (v2.2)
+## 🚀 NEW: AI-Powered CLI (v2.4)
 
 ```bash
 # Generate a complete 34-section plan with AI
@@ -21,11 +21,17 @@ npx ultra-dex generate "A booking platform for pet groomers"
 # Build with 10 specialized AI agents
 npx ultra-dex build --agent backend
 
-# Check your progress
-npx ultra-dex align
+# Run autonomous agent swarms
+npx ultra-dex swarm "Build user authentication"
+
+# Start MCP server for Claude/Cursor integration
+npx ultra-dex serve
+
+# Local web dashboard
+npx ultra-dex dashboard
 ```
 
-**One command. 60 seconds. Complete implementation plan.**
+**28+ commands. Autonomous agents. MCP integration. The future of AI development.**
 
 Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
@@ -67,6 +73,7 @@ A comprehensive framework for building complete, production-grade applications. 
 | [Cursor Rules](./cursor-rules/) | AI-optimized rules |
 | [Agent Prompts](./agents/) | 16 specialized agents |
 | [All Guides](./guides/) | Database, architecture, orchestration |
+| [CEO Master Plan](./docs/CEO-MASTER-PLAN.md) | Release status and next milestones |
 
 </details>
 
@@ -154,30 +161,55 @@ your-project/
 
 **CLI Commands:**
 ```bash
-# Setup & Planning
+# 🚀 Setup & Planning
 npx ultra-dex init              # Interactive setup
 npx ultra-dex generate "idea"   # AI generates full 34-section plan
 npx ultra-dex init --live --stack next15-prisma-clerk  # Runnable scaffold
 
-# AI-Assisted Development (v2.1)
+# 🤖 AI-Assisted Development
 npx ultra-dex build             # Auto-load context, select agent, get prompt
 npx ultra-dex build --agent backend --task "Add user API"
+npx ultra-dex run planner --task "Build payments"  # Execute single agent
+npx ultra-dex swarm "Add authentication"           # Full agent pipeline
 
-# Code Review & Validation
+# 📊 State & Monitoring
+npx ultra-dex status            # Current project state
+npx ultra-dex align             # Quick alignment score (0-100)
+npx ultra-dex dashboard         # Local web dashboard (port 3002)
+npx ultra-dex watch             # Auto-update state on file changes
+
+# 🔍 Code Review & Validation
 npx ultra-dex review            # AI-powered code review against plan
 npx ultra-dex review --quick    # Quick structure check (no AI)
+npx ultra-dex diff              # Compare plan vs actual code
 npx ultra-dex audit             # Check project completeness
 npx ultra-dex validate          # Validate project structure
 
-# Context & Agents
+# 🔌 MCP & Integration
+npx ultra-dex serve             # MCP server (port 3001) for Claude/Cursor
+npx ultra-dex config --mcp      # Generate Claude Desktop MCP config
+npx ultra-dex doctor            # Diagnose setup issues
+
+# 👥 Team Collaboration
+npx ultra-dex team init         # Initialize team config
+npx ultra-dex team add dev@acme.com --role admin
+npx ultra-dex team list
+npx ultra-dex team remove dev@acme.com
+
+# 🔧 CI/CD & Automation
+npx ultra-dex pre-commit --install  # Install git hooks
+npx ultra-dex hooks             # Set up git pre-commit validation
+
+# 📦 Export & Utilities
+npx ultra-dex export --format html  # Export to HTML/JSON/Markdown
+npx ultra-dex upgrade --check       # Check for CLI updates
+npx ultra-dex pack backend          # Package context + agent for external AI
+npx ultra-dex sync                  # Sync CONTEXT.md with codebase
+
+# 📚 Context & Agents
 npx ultra-dex agents            # List AI agent prompts
 npx ultra-dex agent backend     # Show specific agent prompt
 npx ultra-dex workflow auth     # Show workflow for authentication
-
-# Infrastructure
-npx ultra-dex serve             # Serve context via HTTP (MCP-compatible)
-npx ultra-dex hooks             # Install git pre-commit validation
-npx ultra-dex align             # Quick alignment score (0-100)
 ```
 
 ---
@@ -391,9 +423,20 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 16 Production-Ready Agents (v2.1.0)
+### 16 Production-Ready Agents (v2.4.0)
 
-Ultra-Dex includes 16 specialized agent prompts **organized into 7 tiers** for the production pipeline. Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT).
+Ultra-Dex includes 16 specialized agent prompts **organized into 7 tiers** for the production pipeline. Use the CLI to run agents automatically:
+
+```bash
+# Interactive agent selection
+npx ultra-dex build
+
+# Execute agent autonomously
+npx ultra-dex run backend --task "Add user CRUD API"
+
+# Full pipeline with swarm
+npx ultra-dex swarm "Build payments feature"
+```
 
 **Leadership Tier** - Strategic planning and architecture decisions
 - **[@CTO](./agents/1-leadership/cto.md)** - Architecture & tech stack
@@ -436,6 +479,56 @@ See [agents/00-AGENT_INDEX.md](./agents/00-AGENT_INDEX.md) for complete director
 ### Legacy Agent Instructions
 
 See [agents/AGENT-INSTRUCTIONS.md](./agents/AGENT-INSTRUCTIONS.md) for additional prompts.
+
+---
+
+## 🔌 MCP Server & Claude Desktop Integration (v2.4)
+
+Ultra-Dex includes a **Model Context Protocol (MCP) server** for seamless AI integration.
+
+### Start the MCP Server
+
+```bash
+npx ultra-dex serve
+# Server running at http://localhost:3001
+```
+
+### Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /` | Server info |
+| `GET /context` | All context files (CONTEXT.md, IMPLEMENTATION-PLAN.md) |
+| `GET /state` | Machine-readable project state |
+| `GET /score` | Alignment score (0-100) |
+| `GET /agents` | List of available agents |
+| `GET /agent/:name` | Specific agent prompt |
+| `GET /refresh` | Force state recalculation |
+
+### Claude Desktop Configuration
+
+```bash
+# Generate config automatically
+npx ultra-dex config --mcp
+```
+
+This creates the MCP configuration for Claude Desktop to connect directly to your project.
+
+---
+
+## 📊 Dashboard & Monitoring (v2.4)
+
+```bash
+# Start local web dashboard
+npx ultra-dex dashboard
+# Open http://localhost:3002
+```
+
+**Features:**
+- Real-time alignment score
+- Project state visualization
+- Agent status overview
+- Auto-refresh every 30 seconds
 
 ---
 

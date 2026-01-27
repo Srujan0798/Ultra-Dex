@@ -1,6 +1,6 @@
 # Ultra-Dex Agent Index
 
-Quick reference for all 15 production agents organized by tier.
+Quick reference for all 16 production agents organized by tier.
 
 ---
 

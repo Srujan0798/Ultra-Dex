@@ -163,6 +163,18 @@ npx ultra-dex agents           # List all agents
 npx ultra-dex agent backend    # Show specific agent
 ```
 
+### `team`
+
+Manage team collaboration (local only):
+
+```bash
+npx ultra-dex team init
+npx ultra-dex team add jane@acme.com --role admin
+npx ultra-dex team list
+npx ultra-dex team remove jane@acme.com
+npx ultra-dex team config name "Ultra Team"
+```
+
 ### `fetch`
 
 Download assets for offline use:
@@ -191,6 +203,7 @@ npx ultra-dex serve --port 3001
 | `examples` | List available examples |
 | `agents` | List AI agents |
 | `agent <name>` | Show specific agent prompt |
+| `team` | Team collaboration (local) |
 | `hooks` | Set up git pre-commit hooks |
 | `fetch` | Download assets for offline |
 | `serve` | Serve context over HTTP |

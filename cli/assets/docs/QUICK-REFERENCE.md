@@ -143,6 +143,11 @@ npx ultra-dex agents            # List all 16 agents
 npx ultra-dex agent backend     # Show backend agent
 npx ultra-dex agent cto         # Show CTO agent
 
+# Team
+npx ultra-dex team init         # Initialize team config
+npx ultra-dex team add dev@acme.com --role admin
+npx ultra-dex team list
+
 # Validation
 npx ultra-dex audit             # Check project completeness
 

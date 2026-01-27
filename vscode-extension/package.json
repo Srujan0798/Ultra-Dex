@@ -1,0 +1,68 @@
+{
+  "name": "ultra-dex",
+  "displayName": "Ultra-Dex",
+  "description": "Ultra-Dex agent explorer and alignment tools.",
+  "version": "0.0.1",
+  "publisher": "ultra-dex",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:ultra-dex.agentExplorer",
+    "onView:ultra-dex.contextView",
+    "onView:ultra-dex.verifyView"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ultra-dex",
+          "title": "Ultra-Dex",
+          "icon": "resources/icons/ultra-dex.svg"
+        }
+      ]
+    },
+    "views": {
+      "ultra-dex": [
+        {
+          "id": "ultra-dex.agentExplorer",
+          "name": "Agents"
+        },
+        {
+          "id": "ultra-dex.contextView",
+          "name": "Context"
+        },
+        {
+          "id": "ultra-dex.verifyView",
+          "name": "Verification"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "ultra-dex.selectAgent",
+        "title": "Ultra-Dex: Select Agent",
+        "category": "Ultra-Dex"
+      },
+      {
+        "command": "ultra-dex.askAgent",
+        "title": "Ultra-Dex: Ask Agent",
+        "category": "Ultra-Dex"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.5.4"
+  }
+}

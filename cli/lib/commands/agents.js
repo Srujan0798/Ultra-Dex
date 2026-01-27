@@ -4,8 +4,10 @@ import path from 'path';
 import { ASSETS_ROOT, ROOT_FALLBACK } from '../config/paths.js';
 import { githubBlobUrl } from '../config/urls.js';
 import { readWithFallback } from '../utils/fallback.js';
+import { pathExists } from '../utils/files.js';
 
 export const AGENTS = [
+  { name: 'orchestrator', description: 'Multi-agent coordination', file: '0-orchestration/orchestrator.md', tier: 'Orchestration' },
   { name: 'cto', description: 'Architecture & tech decisions', file: '1-leadership/cto.md', tier: 'Leadership' },
   { name: 'planner', description: 'Task breakdown & planning', file: '1-leadership/planner.md', tier: 'Leadership' },
   { name: 'research', description: 'Technology evaluation & comparison', file: '1-leadership/research.md', tier: 'Leadership' },
@@ -23,7 +25,40 @@ export const AGENTS = [
   { name: 'refactoring', description: 'Code quality & design patterns', file: '6-specialist/refactoring.md', tier: 'Specialist' },
 ];
 
-async function readAgentPrompt(agent) {
+const CUSTOM_AGENTS_DIR = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
+
+export function findBuiltInAgent(name) {
+  return AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
+}
+
+export async function listCustomAgents() {
+  try {
+    const entries = await fs.readdir(CUSTOM_AGENTS_DIR, { withFileTypes: true });
+    return entries
+      .filter(entry => entry.isFile() && entry.name.endsWith('.md'))
+      .map(entry => entry.name.replace(/\.md$/, ''));
+  } catch {
+    return [];
+  }
+}
+
+export async function getCustomAgentPath(name) {
+  const filePath = path.join(CUSTOM_AGENTS_DIR, `${name}.md`);
+  if (await pathExists(filePath)) {
+    return filePath;
+  }
+  return null;
+}
+
+export async function readCustomAgent(name) {
+  const filePath = await getCustomAgentPath(name);
+  if (!filePath) {
+    throw new Error(`Custom agent "${name}" not found.`);
+  }
+  return fs.readFile(filePath, 'utf-8');
+}
+
+export async function readAgentPrompt(agent) {
   const agentPath = path.join(ASSETS_ROOT, 'agents', agent.file);
   const fallbackPath = path.join(ROOT_FALLBACK, 'agents', agent.file);
   return readWithFallback(agentPath, fallbackPath, 'utf-8');
@@ -33,8 +68,10 @@ export function registerAgentsCommand(program) {
   program
     .command('agents')
     .description('List available AI agent prompts')
-    .action(() => {
-      console.log(chalk.bold('\n🤖 Ultra-Dex AI Agents (15 Total)\n'));
+    .action(async () => {
+      const customAgents = await listCustomAgents();
+      const totalAgents = AGENTS.length + customAgents.length;
+      console.log(chalk.bold(`\n🤖 Ultra-Dex AI Agents (${totalAgents} Total)\n`));
       console.log(chalk.gray('Organized by tier for production pipeline\n'));
 
       let currentTier = '';
@@ -46,39 +83,18 @@ export function registerAgentsCommand(program) {
         console.log(chalk.cyan(`    ${agent.name}`) + chalk.gray(` - ${agent.description}`));
       });
 
+      if (customAgents.length > 0) {
+        console.log(chalk.bold('\n  Custom Agents:'));
+        customAgents.forEach((name) => {
+          console.log(chalk.cyan(`    ${name}`));
+        });
+      }
+
       console.log('\n' + chalk.bold('Usage:'));
-      console.log(chalk.gray('  ultra-dex agent <name>   Show agent prompt'));
-      console.log(chalk.gray('  ultra-dex agent backend  Example: show backend agent'));
+      console.log(chalk.gray('  ultra-dex agent list --all      Show built-in + custom agents'));
+      console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
 
       console.log(`\n${chalk.gray(`Agent Index: ${githubBlobUrl('agents/00-AGENT_INDEX.md')}\n`)}`);
-    });
-
-  program
-    .command('agent <name>')
-    .description('Show a specific agent prompt')
-    .action(async (name) => {
-      const agent = AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
-
-      if (!agent) {
-        console.log(chalk.red(`\n❌ Agent "${name}" not found.\n`));
-        console.log(chalk.gray('Available agents:'));
-        AGENTS.forEach(a => console.log(chalk.cyan(`  - ${a.name}`)));
-        console.log('\n' + chalk.gray('Run "ultra-dex agents" to see all agents.\n'));
-        process.exit(1);
-      }
-
-      try {
-        const content = await readAgentPrompt(agent);
-        console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
-        console.log(chalk.gray('─'.repeat(60)));
-        console.log(content);
-        console.log(chalk.gray('─'.repeat(60)));
-        console.log(chalk.bold('\n📋 Copy the above prompt and paste into your AI tool.\n'));
-      } catch (err) {
-        console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
-        console.log(chalk.gray('View full prompt on GitHub:'));
-        console.log(chalk.blue(`  ${githubBlobUrl(`agents/${agent.file}`)}\n`));
-      }
     });
 }
 
