@@ -1,6 +1,6 @@
 # Ultra-Dex Agent Index
 
-Quick reference for all 15 production agents organized by tier.
+Quick reference for all 16 production agents organized by tier.
 
 ---
 
@@ -158,4 +158,4 @@ For complete multi-agent workflows and coordination patterns, see:
 
 ---
 
-*Ultra-Dex v1.7.1 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v2.1.0 - Professional AI Orchestration Meta Layer*

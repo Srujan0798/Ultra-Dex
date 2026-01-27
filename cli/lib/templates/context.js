@@ -1,4 +1,4 @@
-import { githubBlobUrl, githubTreeUrl } from '../config/urls.js';
+import { githubBlobUrl, githubWebUrl } from '../config/urls.js';
 
 export const CONTEXT_TEMPLATE = `# {{PROJECT_NAME}} - Context
 
@@ -21,6 +21,6 @@ export const CONTEXT_TEMPLATE = `# {{PROJECT_NAME}} - Context
 Setting up the implementation plan.
 
 ## Resources
-- [Ultra-Dex Template](${githubTreeUrl('')})
+- [Ultra-Dex Template](${githubWebUrl()})
 - [TaskFlow Example](${githubBlobUrl('@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md')})
 `;

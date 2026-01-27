@@ -6,3 +6,4 @@ const __dirname = path.dirname(__filename);
 
 export const ASSETS_ROOT = path.resolve(__dirname, '../../assets');
 export const ROOT_FALLBACK = path.resolve(__dirname, '../../../');
+export const LIVE_TEMPLATES_ROOT = path.join(ASSETS_ROOT, 'live-templates');

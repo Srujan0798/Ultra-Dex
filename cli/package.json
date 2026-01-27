@@ -1,14 +1,20 @@
 {
   "name": "ultra-dex",
-  "version": "1.8.0",
-  "description": "CLI for Ultra-Dex SaaS Implementation Framework with 16 Production Agents",
+  "version": "2.2.1",
+  "description": "CLI for Ultra-Dex SaaS Implementation Framework with AI-Powered Plan Generation, Build Mode, and Code Review",
   "keywords": [
     "saas",
     "template",
     "implementation",
     "planning",
     "startup",
-    "framework"
+    "framework",
+    "ai",
+    "claude",
+    "openai",
+    "gemini",
+    "orchestration",
+    "mcp"
   ],
   "author": "Srujan Sai Karna",
   "license": "MIT",
@@ -22,8 +28,10 @@
   },
   "files": [
     "bin",
+    "lib",
     "assets"
   ],
+  "type": "module",
   "engines": {
     "node": ">=18"
   },
@@ -32,5 +40,11 @@
     "commander": "^11.1.0",
     "inquirer": "^9.2.12",
     "ora": "^8.0.1"
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "openai": "^4.70.0",
+    "@google/generative-ai": "^0.21.0",
+    "dotenv": "^16.4.5"
   }
 }

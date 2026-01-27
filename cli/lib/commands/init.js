@@ -7,9 +7,9 @@ import path from 'path';
 import { QUICK_START_TEMPLATE } from '../templates/quick-start.js';
 import { CONTEXT_TEMPLATE } from '../templates/context.js';
 import { validateProjectName, validateSafePath } from '../utils/validation.js';
-import { readWithFallback } from '../utils/files.js';
 import { ASSETS_ROOT, ROOT_FALLBACK } from '../config/paths.js';
-import { githubBlobUrl } from '../config/urls.js';
+import { githubBlobUrl, githubWebUrl } from '../config/urls.js';
+import { copyWithFallback, listWithFallback, readWithFallback } from '../utils/fallback.js';
 
 export function registerInitCommand(program) {
   program
@@ -205,72 +205,53 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
           await fs.mkdir(rulesDir, { recursive: true });
 
           const cursorRulesPath = path.join(ASSETS_ROOT, 'cursor-rules');
+          const fallbackRulesPath = path.join(ROOT_FALLBACK, 'cursor-rules');
           try {
-            const ruleFiles = await fs.readdir(cursorRulesPath);
+            const { files: ruleFiles, sourcePath } = await listWithFallback(cursorRulesPath, fallbackRulesPath);
             for (const file of ruleFiles.filter(f => f.endsWith('.mdc'))) {
               await fs.copyFile(
-                path.join(cursorRulesPath, file),
+                path.join(sourcePath, file),
                 path.join(rulesDir, file)
               );
             }
 
-            const coreRulePath = path.join(cursorRulesPath, '00-ultra-dex-core.mdc');
+            const coreRulePath = path.join(sourcePath, '00-ultra-dex-core.mdc');
             try {
-              const coreContent = await fs.readFile(coreRulePath, 'utf-8');
+              const coreContent = await readWithFallback(coreRulePath, null, 'utf-8');
               const dotGithub = path.join(outputDir, '.github');
               await fs.mkdir(dotGithub, { recursive: true });
               await fs.writeFile(path.join(dotGithub, 'copilot-instructions.md'), coreContent);
             } catch {
               // Core rule not available - skip Copilot setup
             }
-          } catch (err) {
-            const fallbackRulesPath = path.join(ROOT_FALLBACK, 'cursor-rules');
-            try {
-              const ruleFiles = await fs.readdir(fallbackRulesPath);
-              for (const file of ruleFiles.filter(f => f.endsWith('.mdc'))) {
-                await fs.copyFile(
-                  path.join(fallbackRulesPath, file),
-                  path.join(rulesDir, file)
-                );
-              }
-            } catch (fallbackErr) {
-              console.log(chalk.red('\n  ❌ Cursor rules not found in assets or repo.'));
-              console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --rules'));
-            }
+          } catch {
+            console.log(chalk.red('\n  ❌ Cursor rules not found in assets or repo.'));
+            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --rules'));
           }
         }
 
         if (answers.includeFullTemplate) {
           const templatePath = path.join(ASSETS_ROOT, 'saas-plan', '04-Imp-Template.md');
+          const fallbackTemplatePath = path.join(ROOT_FALLBACK, '@ Ultra DeX', 'Saas plan', '04-Imp-Template.md');
           try {
-            await fs.copyFile(templatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
-          } catch (err) {
-            const fallbackTemplatePath = path.join(ROOT_FALLBACK, '@ Ultra DeX', 'Saas plan', '04-Imp-Template.md');
-            try {
-              await fs.copyFile(fallbackTemplatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
-            } catch (fallbackErr) {
-              console.log(chalk.red('\n  ❌ Full template not found in assets or repo.'));
-              console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --docs'));
-            }
+            await copyWithFallback(templatePath, fallbackTemplatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
+          } catch {
+            console.log(chalk.red('\n  ❌ Full template not found in assets or repo.'));
+            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --docs'));
           }
         }
 
         if (answers.includeDocs) {
           const verificationPath = path.join(ASSETS_ROOT, 'docs', 'VERIFICATION.md');
           const agentPath = path.join(ASSETS_ROOT, 'agents', 'AGENT-INSTRUCTIONS.md');
+          const fallbackVerificationPath = path.join(ROOT_FALLBACK, 'docs', 'VERIFICATION.md');
+          const fallbackAgentPath = path.join(ROOT_FALLBACK, 'agents', 'AGENT-INSTRUCTIONS.md');
           try {
-            await fs.copyFile(verificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
-            await fs.copyFile(agentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
-          } catch (err) {
-            const fallbackVerificationPath = path.join(ROOT_FALLBACK, 'docs', 'VERIFICATION.md');
-            const fallbackAgentPath = path.join(ROOT_FALLBACK, 'agents', 'AGENT-INSTRUCTIONS.md');
-            try {
-              await fs.copyFile(fallbackVerificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
-              await fs.copyFile(fallbackAgentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
-            } catch (fallbackErr) {
-              console.log(chalk.red('\n  ❌ Docs not found in assets or repo.'));
-              console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --docs'));
-            }
+            await copyWithFallback(verificationPath, fallbackVerificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
+            await copyWithFallback(agentPath, fallbackAgentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
+          } catch {
+            console.log(chalk.red('\n  ❌ Docs not found in assets or repo.'));
+            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --docs'));
           }
         }
 
@@ -279,13 +260,21 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
           await fs.mkdir(agentsDir, { recursive: true });
 
           const agentsSourcePath = path.join(ASSETS_ROOT, 'agents');
+          const fallbackAgentsPath = path.join(ROOT_FALLBACK, 'agents');
           try {
             const tiers = ['1-leadership', '2-development', '3-security', '4-devops', '5-quality', '6-specialist'];
+            let sourceRoot = agentsSourcePath;
+            try {
+              await fs.access(agentsSourcePath);
+            } catch {
+              sourceRoot = fallbackAgentsPath;
+            }
+
             for (const tier of tiers) {
               const tierDir = path.join(agentsDir, tier);
               await fs.mkdir(tierDir, { recursive: true });
 
-              const tierPath = path.join(agentsSourcePath, tier);
+              const tierPath = path.join(sourceRoot, tier);
               const tierFiles = await fs.readdir(tierPath);
               for (const file of tierFiles.filter(f => f.endsWith('.md'))) {
                 await fs.copyFile(
@@ -296,43 +285,16 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             }
 
             await fs.copyFile(
-              path.join(agentsSourcePath, '00-AGENT_INDEX.md'),
+              path.join(sourceRoot, '00-AGENT_INDEX.md'),
               path.join(agentsDir, '00-AGENT_INDEX.md')
             );
             await fs.copyFile(
-              path.join(agentsSourcePath, 'README.md'),
+              path.join(sourceRoot, 'README.md'),
               path.join(agentsDir, 'README.md')
             );
-          } catch (err) {
-            const fallbackAgentsPath = path.join(ROOT_FALLBACK, 'agents');
-            try {
-              const tiers = ['1-leadership', '2-development', '3-security', '4-devops', '5-quality', '6-specialist'];
-              for (const tier of tiers) {
-                const tierDir = path.join(agentsDir, tier);
-                await fs.mkdir(tierDir, { recursive: true });
-
-                const tierPath = path.join(fallbackAgentsPath, tier);
-                const tierFiles = await fs.readdir(tierPath);
-                for (const file of tierFiles.filter(f => f.endsWith('.md'))) {
-                  await fs.copyFile(
-                    path.join(tierPath, file),
-                    path.join(tierDir, file)
-                  );
-                }
-              }
-
-              await fs.copyFile(
-                path.join(fallbackAgentsPath, '00-AGENT_INDEX.md'),
-                path.join(agentsDir, '00-AGENT_INDEX.md')
-              );
-              await fs.copyFile(
-                path.join(fallbackAgentsPath, 'README.md'),
-                path.join(agentsDir, 'README.md')
-              );
-            } catch (fallbackErr) {
-              console.log(chalk.red('\n  ❌ Agent prompts not found in assets or repo.'));
-              console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --agents'));
-            }
+          } catch {
+            console.log(chalk.red('\n  ❌ Agent prompts not found in assets or repo.'));
+            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --agents'));
           }
         }
 
@@ -363,10 +325,10 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         console.log(chalk.cyan('  3. Start building! 🚀'));
 
         console.log('\n' + chalk.gray('Full Ultra-Dex repo:'));
-        console.log(chalk.blue(`  ${githubBlobUrl('')}`));
+        console.log(chalk.blue(`  ${githubWebUrl()}`));
       } catch (error) {
         spinner.fail(chalk.red('Failed to create project'));
-        console.error(error);
+        console.error(`[init] ${error?.message ?? error}`);
         process.exit(1);
       }
     });

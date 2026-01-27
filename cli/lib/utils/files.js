@@ -21,33 +21,6 @@ export async function pathExists(targetPath, type = 'file') {
   }
 }
 
-export async function copyWithFallback({ primary, fallback, destination, onPrimaryMissing }) {
-  try {
-    await fs.copyFile(primary, destination);
-    return 'primary';
-  } catch (primaryError) {
-    if (onPrimaryMissing) {
-      onPrimaryMissing(primaryError);
-    }
-    if (!fallback) {
-      throw primaryError;
-    }
-    await fs.copyFile(fallback, destination);
-    return 'fallback';
-  }
-}
-
-export async function readWithFallback({ primary, fallback, encoding = 'utf-8' }) {
-  try {
-    return await fs.readFile(primary, encoding);
-  } catch (primaryError) {
-    if (!fallback) {
-      throw primaryError;
-    }
-    return await fs.readFile(fallback, encoding);
-  }
-}
-
 export function resolveAssetPath(basePath, relativePath) {
   return path.join(basePath, relativePath);
 }

@@ -1,0 +1,186 @@
+import chalk from 'chalk';
+import ora from 'ora';
+import fs from 'fs/promises';
+import path from 'path';
+import { GITHUB_RAW_BASE } from '../config/urls.js';
+import { fetchWithRetry } from '../utils/network.js';
+import { validateSafePath } from '../utils/validation.js';
+
+async function downloadFile(url, destPath) {
+  try {
+    const response = await fetchWithRetry(url);
+    const content = await response.text();
+    await fs.mkdir(path.dirname(destPath), { recursive: true });
+    await fs.writeFile(destPath, content);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+export function registerFetchCommand(program) {
+  program
+    .command('fetch')
+    .description('Download all Ultra-Dex assets for offline use')
+    .option('-d, --dir <directory>', 'Target directory', '.ultra-dex')
+    .option('--agents', 'Fetch only agent prompts')
+    .option('--rules', 'Fetch only cursor rules')
+    .option('--docs', 'Fetch only documentation')
+    .action(async (options) => {
+      console.log(chalk.cyan('\n📦 Ultra-Dex Asset Fetcher\n'));
+
+      const dirValidation = validateSafePath(options.dir, 'Target directory');
+      if (dirValidation !== true) {
+        console.log(chalk.red(dirValidation));
+        process.exit(1);
+      }
+
+      const targetDir = path.resolve(options.dir);
+      const fetchAll = !options.agents && !options.rules && !options.docs;
+
+      const spinner = ora('Preparing to fetch assets...').start();
+
+      await fs.mkdir(targetDir, { recursive: true });
+
+      let downloaded = 0;
+      let failed = 0;
+
+      if (fetchAll || options.rules) {
+        spinner.text = 'Fetching cursor rules...';
+        const rulesDir = path.join(targetDir, 'cursor-rules');
+        await fs.mkdir(rulesDir, { recursive: true });
+
+        const ruleFiles = [
+          '00-ultra-dex-core.mdc',
+          '01-database.mdc',
+          '02-api.mdc',
+          '03-auth.mdc',
+          '04-frontend.mdc',
+          '05-payments.mdc',
+          '06-testing.mdc',
+          '07-security.mdc',
+          '08-deployment.mdc',
+          '09-error-handling.mdc',
+          '10-performance.mdc',
+          '11-nextjs-v15.mdc',
+          '12-multi-tenancy.mdc',
+        ];
+
+        for (const file of ruleFiles) {
+          const url = `${GITHUB_RAW_BASE}/cursor-rules/${file}`;
+          const dest = path.join(rulesDir, file);
+          if (await downloadFile(url, dest)) {
+            downloaded++;
+          } else {
+            failed++;
+          }
+        }
+
+        await downloadFile(`${GITHUB_RAW_BASE}/cursor-rules/load.sh`, path.join(rulesDir, 'load.sh'));
+        try {
+          await fs.chmod(path.join(rulesDir, 'load.sh'), '755');
+        } catch {}
+      }
+
+      if (fetchAll || options.agents) {
+        spinner.text = 'Fetching agent prompts...';
+        const agentsDir = path.join(targetDir, 'agents');
+
+        const agentPaths = [
+          '00-AGENT_INDEX.md',
+          'README.md',
+          'AGENT-INSTRUCTIONS.md',
+          '1-leadership/cto.md',
+          '1-leadership/planner.md',
+          '1-leadership/research.md',
+          '2-development/backend.md',
+          '2-development/frontend.md',
+          '2-development/database.md',
+          '3-security/security.md',
+          '4-devops/devops.md',
+          '5-quality/reviewer.md',
+          '5-quality/testing.md',
+          '5-quality/debugger.md',
+          '6-specialist/performance.md',
+          '6-specialist/refactoring.md',
+          '6-specialist/documentation.md',
+        ];
+
+        for (const agentPath of agentPaths) {
+          const url = `${GITHUB_RAW_BASE}/agents/${agentPath}`;
+          const dest = path.join(agentsDir, agentPath);
+          if (await downloadFile(url, dest)) {
+            downloaded++;
+          } else {
+            failed++;
+          }
+        }
+      }
+
+      if (fetchAll || options.docs) {
+        spinner.text = 'Fetching documentation...';
+        const docsDir = path.join(targetDir, 'docs');
+
+        const docFiles = [
+          'VERIFICATION.md',
+          'BUILD-AUTH-30M.md',
+          'QUICK-REFERENCE.md',
+          'TROUBLESHOOTING.md',
+        ];
+
+        for (const file of docFiles) {
+          const url = `${GITHUB_RAW_BASE}/docs/${file}`;
+          const dest = path.join(docsDir, file);
+          if (await downloadFile(url, dest)) {
+            downloaded++;
+          } else {
+            failed++;
+          }
+        }
+
+        const guidesDir = path.join(targetDir, 'guides');
+        const guideFiles = [
+          'PROJECT-ORCHESTRATION.md',
+          'ADVANCED-WORKFLOWS.md',
+          'DATABASE-DECISION-FRAMEWORK.md',
+          'ARCHITECTURE-PATTERNS.md',
+        ];
+
+        for (const file of guideFiles) {
+          const url = `${GITHUB_RAW_BASE}/guides/${file}`;
+          const dest = path.join(guidesDir, file);
+          if (await downloadFile(url, dest)) {
+            downloaded++;
+          } else {
+            failed++;
+          }
+        }
+      }
+
+      if (failed === 0) {
+        spinner.succeed(chalk.green(`Downloaded ${downloaded} files to ${targetDir}`));
+      } else {
+        spinner.warn(chalk.yellow(`Downloaded ${downloaded} files, ${failed} failed`));
+      }
+
+      console.log(chalk.bold('\n📁 Assets downloaded to:\n'));
+      if (fetchAll || options.rules) {
+        console.log(chalk.gray(`  ${targetDir}/cursor-rules/  (12 .mdc files)`));
+      }
+      if (fetchAll || options.agents) {
+        console.log(chalk.gray(`  ${targetDir}/agents/        (16 agent prompts)`));
+      }
+      if (fetchAll || options.docs) {
+        console.log(chalk.gray(`  ${targetDir}/docs/          (documentation)`));
+        console.log(chalk.gray(`  ${targetDir}/guides/        (guides)`));
+      }
+
+      console.log(chalk.bold('\n💡 Usage:\n'));
+      console.log(chalk.cyan('  # Copy cursor rules to project'));
+      console.log(chalk.gray(`  cp -r ${targetDir}/cursor-rules .cursor/rules`));
+      console.log(chalk.cyan('\n  # Copy agents to project'));
+      console.log(chalk.gray(`  cp -r ${targetDir}/agents .agents`));
+      console.log(chalk.cyan('\n  # Works offline now!'));
+      console.log(chalk.gray('  No GitHub access needed after fetch.\n'));
+    });
+}

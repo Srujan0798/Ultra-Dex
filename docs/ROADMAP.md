@@ -12,9 +12,9 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 
 ---
 
-## Current State (v1.7.3) ✅
+## Current State (v1.8.0) ✅
 
-**Released: January 26, 2026**
+**Released: January 27, 2026**
 
 - ✅ 16 production-ready AI agents (15 + @Orchestrator meta-agent)
 - ✅ 6 comprehensive production guides (83 KB)
@@ -25,6 +25,10 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 - ✅ Git pre-commit hooks for project validation
 - ✅ **Offline mode support** - `fetch` command downloads all assets locally
 - ✅ Business model defined (OSS core forever)
+- ✅ Agent quick reference index (`agents/00-AGENT_INDEX.md`)
+- ✅ 5 agents upgraded with production-ready code examples
+- ✅ AI research guide library (embeddings, vector databases, model selection)
+- ✅ Learning path guide for manual execution
 
 **Current metrics:**
 - 10 workflow examples (Stripe, Email, Database, Real-time, Supabase, Vercel, GitHub Actions, Sentry, Shopify, PostHog)
@@ -42,8 +46,8 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 |---------|--------|-------|--------|
 | **1.6.1** | Jan 2026 | Documentation & Cross-References | ✅ Released |
 | **1.7.0** | Jan 2026 | Workflow Examples & CLI Enhancement | ✅ Released |
-| **1.8.0** | Feb 2026 | Agent Library Enhancement | 🔄 In Progress |
-| **1.9.0** | Mar 2026 | Community & Examples | 📋 Planned |
+| **1.8.0** | Jan 2026 | Agent Library Enhancement | ✅ Released |
+| **1.9.0** | Mar 2026 | Collaboration & Distribution | 📋 Planned |
 | **2.0.0** | Q2 2026 | AI Agent Automation | 💡 Proposed |
 | **2.5.0** | Q3 2026 | Enterprise Features | 💡 Proposed |
 | **3.0.0** | Q4 2026 | Platform Integration | 💡 Proposed |
@@ -89,44 +93,42 @@ Transform Ultra-Dex from framework to comprehensive reference library with copy-
 
 ---
 
-## v1.8.0 - Agent Library Enhancement 🔄
+## v1.8.0 - Agent Library Enhancement ✅
 
-**Target Release: February 2026**
+**Released: January 27, 2026**
 
 ### Goals
 Make agents more actionable with code examples, quick reference, and comprehensive AI research.
 
-### Planned Features
+### Completed Features
 
 **1. Agent Quick Reference Index**
-- Create `agents/00-AGENT_INDEX.md` with lookup table
-- Quick reference: Which agent for which task
-- Tier-based organization table
-- Status and specialization at a glance
+- ✅ Created `agents/00-AGENT_INDEX.md` with lookup table
+- ✅ Quick reference: Which agent for which task
+- ✅ Tier-based organization table
+- ✅ Status and specialization at a glance
 
 **2. Enhanced Agent Documentation with Code**
-Upgrade 5 key agents with concrete, copy-pasteable code examples:
-- **@Testing** - Jest templates, Playwright E2E, coverage configs
-- **@Performance** - Lighthouse CI, bundle size monitoring, query optimization
-- **@Security** - OWASP checklist, dependency scanning, security headers
-- **@Backend** - REST API patterns, error handling, rate limiting
-- **@Database** - Prisma patterns, migration strategies, index optimization
+Upgraded 5 key agents with concrete, copy-pasteable code examples:
+- ✅ **@Testing** - Jest templates, Playwright E2E, coverage configs
+- ✅ **@Performance** - Lighthouse CI, bundle size monitoring, query optimization
+- ✅ **@Security** - OWASP checklist, dependency scanning, security headers
+- ✅ **@Backend** - REST API patterns, error handling, rate limiting
+- ✅ **@Database** - Prisma patterns, migration strategies, index optimization
 
 **3. AI Research Library**
-Create `guides/AI-RESEARCH/` with decision frameworks:
-- `EMBEDDING-MODELS.md` - OpenAI vs Cohere vs HuggingFace comparison
-- `VECTOR-DATABASES.md` - Pinecone vs Qdrant vs Weaviate decision guide
-- Expand `AI-MODEL-SELECTION.md` with 2026 pricing updates
+- ✅ `guides/AI-RESEARCH.md` with decision frameworks
+- ✅ Updated `AI-MODEL-SELECTION.md` with 2026 pricing updates
 
 **4. Learning Resources**
-- `guides/LEARNING-PATH.md` - How to use Ultra-Dex without AI tools
-- Understanding the methodology manually
-- Graduation path from AI assistance to independent execution
+- ✅ `guides/LEARNING-PATH.md` - How to use Ultra-Dex without AI tools
+- ✅ Understanding the methodology manually
+- ✅ Graduation path from AI assistance to independent execution
 
 ### Success Metrics
 - ✅ Agent index for instant lookup
 - ✅ 5 agents enhanced with code examples
-- ✅ 2 new AI research guides
+- ✅ AI research guide published
 - ✅ Learning path for methodology understanding
 
 ### Implementation Philosophy
@@ -137,49 +139,40 @@ Focus on making agents immediately actionable:
 
 ---
 
-## v1.9.0 - Community & Examples
+## v1.9.0 - Collaboration & Distribution
 
 **Target Release: March 2026**
 
 ### Goals
-Build community around Ultra-Dex and provide real-world examples.
+Scale adoption through collaboration features, exports, and real-world examples.
 
-### Features
+### Planned Features
 
-**1. Real SaaS Examples**
-- 3 complete open-source SaaS projects built with Ultra-Dex:
-  - Task management SaaS (Next.js + Prisma + PostgreSQL)
-  - Invoice generation SaaS (Remix + Supabase)
-  - Analytics dashboard (Next.js + ClickHouse)
+**1. Sync & Distribution**
+- Project sync across devices (local + cloud)
+- CLI command: `ultra-dex sync` for pull/push workflows
+- Team shared configuration packs
+
+**2. Export & Validation Tools**
+- CLI command: `ultra-dex export` for packaging templates and plans
+- CLI command: `ultra-dex check` for repository health and alignment
+- Export bundles for teams, courses, and workshops
+
+**3. Example Library Expansion**
+- 3 new production-grade examples:
+  - Marketplace SaaS (Next.js + Stripe + Postgres)
+  - Support desk SaaS (Remix + Supabase + Redis)
+  - Data sync SaaS (Next.js + Temporal + DynamoDB)
 - Each with:
   - Complete source code
   - IMPLEMENTATION-PLAN.md filled out
   - Agent conversation logs
   - Deployment guide
 
-**2. Video Tutorials**
-- 10-minute "Build Auth with Ultra-Dex" walkthrough
-- "Choose Your Stack" decision guide video
-- "Multi-Tool Workflow" demonstration
-- Agent coordination explainer
-
-**3. Community Features**
-- Discord server for Ultra-Dex users
-- Community-contributed agent prompts
-- Showcase page for SaaS built with Ultra-Dex
-- Monthly "SaaS of the Month" highlight
-
-**4. Enhanced Documentation**
-- Case studies from real users
-- Performance benchmarks (time saved, cost reduced)
-- Best practices from community
-- Troubleshooting guide
-
 ### Success Metrics
-- 3 complete open-source examples
-- 5+ video tutorials
-- 500+ Discord members
-- 20+ community-contributed examples
+- 3 new production examples published
+- Sync and export commands used by 1,000+ teams
+- 25+ community-contributed templates
 
 ---
 
@@ -339,7 +332,7 @@ Integrate Ultra-Dex directly into development platforms.
 
 | Tier | Price | What You Get |
 |------|-------|--------------|
-| **Core** | Free | Full framework, 15 agents, CLI, templates, community support |
+| **Core** | Free | Full framework, 16 agents, CLI, templates, community support |
 | **Pro Playbooks** | $49-149 | Industry-specific playbooks (Healthcare SaaS, Fintech, E-commerce) with compliance guidance |
 | **Team License** | $29/user/mo | Shared configs, audit logs, priority support, custom agent builder |
 | **Enterprise** | Custom | Self-hosted, SSO, dedicated support, SLA, custom integrations |
@@ -357,7 +350,7 @@ Integrate Ultra-Dex directly into development platforms.
 - **Enterprise** - When demand justifies (target: 10+ inbound requests)
 
 ### What Will NEVER Be Paid
-- Core 15 agents
+- Core 16 agents
 - CLI tool
 - All existing templates and guides
 - Community support (GitHub, Discord)
@@ -406,23 +399,23 @@ Integrate Ultra-Dex directly into development platforms.
 
 ## Current Focus Areas
 
-**Immediate Priorities (Next 30 Days - v1.8.0):**
-1. Create agent quick reference index (`agents/00-AGENT_INDEX.md`)
-2. Enhance 5 key agents with production code examples
-3. Add AI research guides (embeddings, vector databases)
-4. Create standalone learning path guide
+**Immediate Priorities (Next 30 Days - v1.9.0):**
+1. Ship `ultra-dex sync` for pull/push workflows
+2. Ship `ultra-dex export` and `ultra-dex check`
+3. Deliver 3 new production examples
+4. Publish team-ready distribution packs
 
-**Short-Term (Next 90 Days - v1.9.0):**
-1. 3 complete open-source SaaS examples
-2. Video tutorials (5+ videos)
-3. Discord community launch
-4. Case studies from early adopters
-
-**Medium-Term (Next 6 Months - v2.0.0):**
+**Short-Term (Next 90 Days - v2.0.0):**
 1. Auto-agent orchestration MVP
 2. GitHub App beta
 3. Custom agent builder
 4. IDE extension prototypes
+
+**Medium-Term (Next 6 Months - v2.5.0):**
+1. Team collaboration features (shared configs, access control)
+2. Jira/Linear + Slack integrations
+3. Enterprise SSO + self-hosted deployment
+4. Advanced analytics and reporting
 
 ---
 
@@ -471,10 +464,10 @@ Integrate Ultra-Dex directly into development platforms.
 
 *This roadmap is a living document and will evolve based on community feedback and real-world usage.*
 
-*Last updated: January 26, 2026 - v1.7.3 released, offline mode added*
+*Last updated: January 27, 2026 - v1.8.0 released, roadmap updated*
 
 ---
 
-*Ultra-Dex v1.7.3 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v1.8.0 - Professional AI Orchestration Meta Layer*
 
 **The future is collaborative AI-driven development. Let's build it together.** 🚀

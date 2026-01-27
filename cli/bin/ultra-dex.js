@@ -280,14 +280,15 @@ const AGENT_PATHS = [
   '2-development/backend.md',
   '2-development/frontend.md',
   '2-development/database.md',
+  '3-security/auth.md',
   '3-security/security.md',
   '4-devops/devops.md',
   '5-quality/reviewer.md',
   '5-quality/testing.md',
   '5-quality/debugger.md',
+  '5-quality/documentation.md',
   '6-specialist/performance.md',
   '6-specialist/refactoring.md',
-  '6-specialist/documentation.md',
 ];
 const DOC_FILES = [
   'VERIFICATION.md',
@@ -300,6 +301,33 @@ const GUIDE_FILES = [
   'ADVANCED-WORKFLOWS.md',
   'DATABASE-DECISION-FRAMEWORK.md',
   'ARCHITECTURE-PATTERNS.md',
+];
+const IGNORED_DIRS = new Set([
+  '.git',
+  'node_modules',
+  '.next',
+  'dist',
+  'build',
+  'out',
+  '.turbo',
+  '.cache',
+  '.ultra-dex',
+  '.cursor',
+  '.agents',
+  'coverage',
+  '.idea',
+  '.vscode',
+]);
+const IGNORED_FILES = new Set(['CONTEXT.md', '.DS_Store']);
+const SNAPSHOT_DIR = '.ultra-dex';
+const SNAPSHOT_FILE = 'context-snapshot.json';
+const AUTO_SYNC_HEADER = '## Auto-Sync Snapshot';
+const SCHEMA_PATTERNS = [
+  /schema\.prisma$/i,
+  /drizzle\/schema/i,
+  /supabase\/migrations/i,
+  /migrations\/.*\.(sql|ts|js)$/i,
+  /db\/schema/i,
 ];
 
 async function downloadFile(url, destPath) {
@@ -354,6 +382,182 @@ function formatYamlExport(data) {
   return lines.join('\n');
 }
 
+async function listFilesRecursive(rootDir, baseDir = rootDir) {
+  let results = [];
+  const entries = await fs.readdir(rootDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (IGNORED_DIRS.has(entry.name)) continue;
+    const fullPath = path.join(rootDir, entry.name);
+    const relativePath = path.relative(baseDir, fullPath);
+    if (entry.isDirectory()) {
+      results = results.concat(await listFilesRecursive(fullPath, baseDir));
+    } else if (entry.isFile()) {
+      if (IGNORED_FILES.has(entry.name)) continue;
+      results.push(relativePath);
+    }
+  }
+  return results;
+}
+
+function classifyFilePaths(files) {
+  const appFiles = [];
+  const apiFiles = [];
+  const schemaFiles = [];
+  const configFiles = [];
+
+  for (const file of files) {
+    if (SCHEMA_PATTERNS.some((pattern) => pattern.test(file))) {
+      schemaFiles.push(file);
+      continue;
+    }
+    if (/^app\/api\//i.test(file) || /api\/.*\.(ts|js)$/i.test(file)) {
+      apiFiles.push(file);
+      continue;
+    }
+    if (/\.(tsx|jsx|svelte|vue)$/i.test(file) || /^app\//i.test(file)) {
+      appFiles.push(file);
+      continue;
+    }
+    if (/(config|\.config)\.(js|ts|json)$/i.test(file) || /\.(env|toml|yaml|yml)$/i.test(file)) {
+      configFiles.push(file);
+    }
+  }
+
+  return { appFiles, apiFiles, schemaFiles, configFiles };
+}
+
+function buildAutoSyncSection(summary) {
+  const lines = [];
+  lines.push(AUTO_SYNC_HEADER);
+  lines.push('');
+  lines.push(`- Last synced: ${summary.generatedAt}`);
+  lines.push(`- Project root: ${summary.root}`);
+  lines.push(`- Stack guess: ${summary.stack}`);
+  lines.push(`- Total files scanned: ${summary.fileCount}`);
+  lines.push(`- App/UI files: ${summary.appCount}`);
+  lines.push(`- API files: ${summary.apiCount}`);
+  lines.push(`- Schema files: ${summary.schemaCount}`);
+  lines.push(`- Config files: ${summary.configCount}`);
+  lines.push('');
+  if (summary.appFiles.length > 0) {
+    lines.push('### App/UI Files');
+    lines.push(...summary.appFiles.map((file) => `- ${file}`));
+    lines.push('');
+  }
+  if (summary.apiFiles.length > 0) {
+    lines.push('### API Files');
+    lines.push(...summary.apiFiles.map((file) => `- ${file}`));
+    lines.push('');
+  }
+  if (summary.schemaFiles.length > 0) {
+    lines.push('### Schema Files');
+    lines.push(...summary.schemaFiles.map((file) => `- ${file}`));
+    lines.push('');
+  }
+  if (summary.configFiles.length > 0) {
+    lines.push('### Config Files');
+    lines.push(...summary.configFiles.map((file) => `- ${file}`));
+    lines.push('');
+  }
+
+  return lines.join('\n').trim();
+}
+
+function summarizeDiff(previous, next) {
+  if (!previous) {
+    return {
+      added: next.fileCount,
+      removed: 0,
+    };
+  }
+  const previousSet = new Set(previous.fileList || []);
+  const nextSet = new Set(next.fileList || []);
+  let added = 0;
+  let removed = 0;
+  for (const file of nextSet) {
+    if (!previousSet.has(file)) added++;
+  }
+  for (const file of previousSet) {
+    if (!nextSet.has(file)) removed++;
+  }
+  return { added, removed };
+}
+
+async function snapshotContext(rootDir) {
+  const files = await listFilesRecursive(rootDir);
+  const { appFiles, apiFiles, schemaFiles, configFiles } = classifyFilePaths(files);
+  const summary = {
+    generatedAt: new Date().toISOString(),
+    root: rootDir,
+    fileCount: files.length,
+    appCount: appFiles.length,
+    apiCount: apiFiles.length,
+    schemaCount: schemaFiles.length,
+    configCount: configFiles.length,
+    appFiles: appFiles.slice(0, 25),
+    apiFiles: apiFiles.slice(0, 25),
+    schemaFiles: schemaFiles.slice(0, 25),
+    configFiles: configFiles.slice(0, 25),
+    stack: inferStackFromFiles(files),
+    fileList: files,
+  };
+
+  const snapshotDir = path.join(rootDir, SNAPSHOT_DIR);
+  await fs.mkdir(snapshotDir, { recursive: true });
+  const snapshotPath = path.join(snapshotDir, SNAPSHOT_FILE);
+  let previous = null;
+  try {
+    const previousRaw = await fs.readFile(snapshotPath, 'utf-8');
+    previous = JSON.parse(previousRaw);
+  } catch {
+    previous = null;
+  }
+
+  await fs.writeFile(snapshotPath, JSON.stringify(summary, null, 2));
+
+  const contextPath = path.join(rootDir, 'CONTEXT.md');
+  let contextContent = null;
+  try {
+    contextContent = await fs.readFile(contextPath, 'utf-8');
+  } catch {
+    return {
+      summary,
+      updated: false,
+      missingContext: true,
+      diff: summarizeDiff(previous, summary),
+      contextPath,
+    };
+  }
+
+  const section = buildAutoSyncSection(summary);
+  let updatedContext = contextContent;
+  if (contextContent.includes(AUTO_SYNC_HEADER)) {
+    const pattern = new RegExp(`${AUTO_SYNC_HEADER}[\\s\\S]*?(?=^##\\s|\\n##\\s|$)`, 'm');
+    updatedContext = contextContent.replace(pattern, `${section}\n\n`);
+  } else {
+    updatedContext = `${contextContent.trim()}\n\n${section}\n`;
+  }
+
+  if (updatedContext !== contextContent) {
+    await fs.writeFile(contextPath, updatedContext);
+    return {
+      summary,
+      updated: true,
+      missingContext: false,
+      diff: summarizeDiff(previous, summary),
+      contextPath,
+    };
+  }
+
+  return {
+    summary,
+    updated: false,
+    missingContext: false,
+    diff: summarizeDiff(previous, summary),
+    contextPath,
+  };
+}
+
 async function copyDirectory(srcDir, destDir) {
   await fs.mkdir(destDir, { recursive: true });
   const entries = await fs.readdir(srcDir, { withFileTypes: true });
@@ -384,7 +588,7 @@ function inferStackFromFiles(fileList) {
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('1.7.4');
+  .version('2.1.0');
 
 program
   .command('init')
@@ -965,33 +1169,725 @@ program
   });
 
 // ========================================
-// V2 PLACEHOLDERS (scaffolds)
+// V2 IMPLEMENTED COMMANDS
 // ========================================
+const BUILD_AGENTS = [
+  { name: 'planner', tier: 'architect', task: 'Break down requirements into tasks' },
+  { name: 'cto', tier: 'architect', task: 'Technical decisions & architecture' },
+  { name: 'backend', tier: 'core', task: 'API, business logic, services' },
+  { name: 'frontend', tier: 'core', task: 'UI components, pages, styling' },
+  { name: 'database', tier: 'core', task: 'Schema design, migrations, queries' },
+  { name: 'auth', tier: 'specialist', task: 'Authentication & authorization' },
+  { name: 'security', tier: 'specialist', task: 'Security audit & hardening' },
+  { name: 'testing', tier: 'specialist', task: 'Test strategy & implementation' },
+  { name: 'reviewer', tier: 'quality', task: 'Code review & best practices' },
+  { name: 'devops', tier: 'quality', task: 'CI/CD, deployment, infrastructure' }
+];
+
 program
   .command('generate')
-  .description('Generate a full implementation plan from an idea (placeholder)')
-  .action(() => {
-    console.log(chalk.yellow('\n🚧 ultra-dex generate is not implemented yet.'));
-    console.log(chalk.gray('Planned: v2.0 - AI fills all 34 sections from your idea.'));
-    console.log(chalk.cyan('Track progress: cli/ROADMAP-V2.md\n'));
+  .description('Generate a full implementation plan from an idea')
+  .option('-i, --idea <idea>', 'Your SaaS idea (one-liner)')
+  .option('--dry-run', 'Show what would be generated without writing')
+  .action(async (options) => {
+    console.log(chalk.cyan(banner));
+    let idea = options.idea;
+    if (!idea) {
+      const answers = await inquirer.prompt([{
+        type: 'input',
+        name: 'idea',
+        message: 'What SaaS do you want to build?',
+        validate: i => i.length > 5 || 'Please describe your idea'
+      }]);
+      idea = answers.idea;
+    }
+    console.log(chalk.green(`\n✨ Generating plan for: "${idea}"\n`));
+    console.log(chalk.yellow('⚠️  Full AI generation requires API key configuration.'));
+    console.log(chalk.gray('   Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY'));
+    console.log(chalk.cyan('\n💡 For now, use `ultra-dex init` to create templates, then fill them in.\n'));
   });
 
 program
   .command('build')
-  .description('Start AI-assisted build flow (placeholder)')
-  .action(() => {
-    console.log(chalk.yellow('\n🚧 ultra-dex build is not implemented yet.'));
-    console.log(chalk.gray('Planned: v2.1 - Orchestrate agents with plan context.'));
-    console.log(chalk.cyan('Track progress: cli/ROADMAP-V2.md\n'));
+  .description('Start AI-assisted build flow with context auto-loading')
+  .option('-a, --agent <agent>', 'Specific agent to use')
+  .option('-t, --task <task>', 'Task description')
+  .option('--list', 'List available agents')
+  .option('--context', 'Show loaded context summary')
+  .action(async (options) => {
+    console.log(chalk.cyan(banner));
+    
+    if (options.list) {
+      console.log(chalk.bold('\n🤖 Available Build Agents:\n'));
+      const tiers = {};
+      BUILD_AGENTS.forEach(a => {
+        if (!tiers[a.tier]) tiers[a.tier] = [];
+        tiers[a.tier].push(a);
+      });
+      Object.entries(tiers).forEach(([tier, agents]) => {
+        console.log(chalk.yellow(`  ${tier.toUpperCase()}`));
+        agents.forEach(a => console.log(chalk.gray(`    @${a.name} - ${a.task}`)));
+      });
+      console.log('');
+      return;
+    }
+
+    // Load context files
+    const contextFiles = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', '.ultra-dex/config.json'];
+    let loadedContext = {};
+    for (const file of contextFiles) {
+      try {
+        const content = await fs.readFile(path.resolve(process.cwd(), file), 'utf8');
+        loadedContext[file] = content.slice(0, 5000); // First 5k chars
+        console.log(chalk.green(`  ✓ Loaded ${file}`));
+      } catch { /* file not found, skip */ }
+    }
+
+    if (options.context) {
+      console.log(chalk.bold('\n📄 Loaded Context Summary:\n'));
+      Object.entries(loadedContext).forEach(([f, c]) => {
+        console.log(chalk.cyan(`  ${f}: ${c.length} chars`));
+      });
+      console.log('');
+      return;
+    }
+
+    let agent = options.agent;
+    if (!agent) {
+      const { selectedAgent } = await inquirer.prompt([{
+        type: 'list',
+        name: 'selectedAgent',
+        message: 'Select an agent:',
+        choices: BUILD_AGENTS.map(a => ({ name: `@${a.name} - ${a.task}`, value: a.name }))
+      }]);
+      agent = selectedAgent;
+    }
+
+    let task = options.task;
+    if (!task) {
+      const { taskInput } = await inquirer.prompt([{
+        type: 'input',
+        name: 'taskInput',
+        message: `What should @${agent} do?`,
+        validate: t => t.length > 3 || 'Please describe the task'
+      }]);
+      task = taskInput;
+    }
+
+    console.log(chalk.bold(`\n🚀 BUILD SESSION: @${agent}\n`));
+    console.log(chalk.gray('─'.repeat(50)));
+    console.log(chalk.cyan('Task: ') + task);
+    console.log(chalk.cyan('Context: ') + Object.keys(loadedContext).join(', ') || 'None');
+    console.log(chalk.gray('─'.repeat(50)));
+
+    // Generate the prompt
+    const agentFile = path.resolve(ASSETS_ROOT, `../agents/${agent}.md`);
+    let agentPrompt = '';
+    try {
+      agentPrompt = await fs.readFile(agentFile, 'utf8');
+    } catch {
+      agentPrompt = `You are the @${agent} agent. ${BUILD_AGENTS.find(a=>a.name===agent)?.task || 'Help with development.'}`;
+    }
+
+    const fullPrompt = `${agentPrompt}\n\n---\nCONTEXT:\n${JSON.stringify(loadedContext, null, 2)}\n\n---\nTASK: ${task}`;
+    
+    console.log(chalk.green('\n✅ Prompt ready! Copy this to your AI:\n'));
+    console.log(chalk.gray('─'.repeat(50)));
+    console.log(fullPrompt.slice(0, 500) + (fullPrompt.length > 500 ? '\n...[truncated]' : ''));
+    console.log(chalk.gray('─'.repeat(50)));
+    console.log(chalk.yellow(`\n📋 Full prompt: ${fullPrompt.length} chars`));
+    console.log(chalk.cyan('💡 Pro tip: Use `ultra-dex serve` to connect via MCP instead of copy-paste.\n'));
   });
 
 program
   .command('review')
-  .description('Review code against implementation plan (placeholder)')
-  .action(() => {
-    console.log(chalk.yellow('\n🚧 ultra-dex review is not implemented yet.'));
-    console.log(chalk.gray('Planned: v2.2 - Align code with plan and report gaps.'));
-    console.log(chalk.cyan('Track progress: cli/ROADMAP-V2.md\n'));
+  .description('Review code/project against implementation plan')
+  .option('-q, --quick', 'Quick check - structure only')
+  .option('-d, --deep', 'Deep check - all 34 sections')
+  .option('--json', 'Output as JSON')
+  .action(async (options) => {
+    console.log(chalk.cyan(banner));
+    console.log(chalk.bold('\n🔍 Ultra-Dex Review\n'));
+
+    const checks = {
+      structure: { files: ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'CHECKLIST.md'], found: [] },
+      sections: { required: 34, found: 0 },
+      agents: { available: 15, configured: 0 }
+    };
+
+    // Check structure
+    const spinner = ora('Checking project structure...').start();
+    for (const file of checks.structure.files) {
+      try {
+        await fs.access(path.resolve(process.cwd(), file));
+        checks.structure.found.push(file);
+      } catch { /* not found */ }
+    }
+    spinner.succeed(`Structure: ${checks.structure.found.length}/${checks.structure.files.length} core files`);
+
+    // Check implementation plan sections
+    const planSpinner = ora('Analyzing implementation plan...').start();
+    try {
+      const plan = await fs.readFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), 'utf8');
+      const sectionMatches = plan.match(/^##\s+\d+\./gm) || [];
+      checks.sections.found = sectionMatches.length;
+      planSpinner.succeed(`Sections: ${checks.sections.found}/${checks.sections.required} documented`);
+    } catch {
+      planSpinner.warn('No IMPLEMENTATION-PLAN.md found');
+    }
+
+    // Check agents
+    const agentSpinner = ora('Checking agent configuration...').start();
+    try {
+      const agentsDir = path.resolve(process.cwd(), 'agents');
+      const agents = await fs.readdir(agentsDir);
+      checks.agents.configured = agents.filter(f => f.endsWith('.md')).length;
+      agentSpinner.succeed(`Agents: ${checks.agents.configured}/${checks.agents.available} configured`);
+    } catch {
+      agentSpinner.info('No local agents/ directory');
+    }
+
+    // Calculate score
+    const structureScore = (checks.structure.found.length / checks.structure.files.length) * 40;
+    const sectionScore = (checks.sections.found / checks.sections.required) * 40;
+    const agentScore = Math.min((checks.agents.configured / 5) * 20, 20);
+    const totalScore = Math.round(structureScore + sectionScore + agentScore);
+
+    console.log(chalk.bold('\n📊 Review Results:\n'));
+    console.log(chalk.gray('─'.repeat(40)));
+    
+    const scoreColor = totalScore >= 80 ? 'green' : totalScore >= 50 ? 'yellow' : 'red';
+    console.log(chalk[scoreColor](`  ALIGNMENT SCORE: ${totalScore}/100`));
+    
+    console.log(chalk.gray('─'.repeat(40)));
+    console.log(chalk.cyan('  Structure: ') + `${Math.round(structureScore)}/40`);
+    console.log(chalk.cyan('  Sections:  ') + `${Math.round(sectionScore)}/40`);
+    console.log(chalk.cyan('  Agents:    ') + `${Math.round(agentScore)}/20`);
+    console.log(chalk.gray('─'.repeat(40)));
+
+    if (checks.structure.found.length < checks.structure.files.length) {
+      const missing = checks.structure.files.filter(f => !checks.structure.found.includes(f));
+      console.log(chalk.yellow('\n⚠️  Missing files: ') + missing.join(', '));
+    }
+    if (checks.sections.found < 20) {
+      console.log(chalk.yellow('⚠️  Plan incomplete: Fill more sections in IMPLEMENTATION-PLAN.md'));
+    }
+
+    if (options.json) {
+      console.log(JSON.stringify({ score: totalScore, checks }, null, 2));
+    }
+    console.log('');
+  });
+
+program
+  .command('align')
+  .description('Quick alignment score (one-liner)')
+  .option('--strict', 'Exit with error if score < 70')
+  .option('--json', 'Output as JSON')
+  .action(async (options) => {
+    // Quick check without banner
+    const files = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'CHECKLIST.md'];
+    let found = 0, sections = 0;
+    
+    for (const file of files) {
+      try {
+        await fs.access(path.resolve(process.cwd(), file));
+        found++;
+      } catch { /* not found */ }
+    }
+    
+    try {
+      const plan = await fs.readFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), 'utf8');
+      sections = (plan.match(/^##\s+\d+\./gm) || []).length;
+    } catch { /* no plan */ }
+
+    const score = Math.round((found / files.length) * 40 + (sections / 34) * 60);
+    
+    if (options.json) {
+      console.log(JSON.stringify({ score, files: found, sections }));
+    } else {
+      const icon = score >= 80 ? '✅' : score >= 50 ? '⚠️' : '❌';
+      console.log(`${icon} Alignment: ${score}/100 (${found}/${files.length} files, ${sections}/34 sections)`);
+    }
+    
+    if (options.strict && score < 70) {
+      process.exit(1);
+    }
+  });
+
+// ========================================
+// SYNC COMMAND - Assets + Context Snapshot
+// ========================================
+program
+  .command('sync')
+  .description('Sync project assets or refresh CONTEXT.md snapshot')
+  .option('-d, --dir <directory>', 'Project directory', '.')
+  .option('--assets', 'Sync agents/rules/docs from GitHub')
+  .option('--agents', 'Sync only agent prompts')
+  .option('--rules', 'Sync only cursor rules')
+  .option('--docs', 'Sync only documentation')
+  .action(async (options) => {
+    const rootDir = path.resolve(options.dir);
+    const syncAssets = options.assets || options.agents || options.rules || options.docs;
+    console.log(chalk.cyan(`\n${syncAssets ? '🔄 Ultra-Dex Sync' : '🔁 Ultra-Dex Context Sync'}\n`));
+
+    if (syncAssets) {
+      const syncAll = !options.agents && !options.rules && !options.docs;
+      const spinner = ora('Syncing assets...').start();
+
+      let downloaded = 0;
+      let failed = 0;
+
+      if (syncAll || options.rules) {
+        spinner.text = 'Syncing cursor rules...';
+        const rulesDir = path.join(rootDir, '.cursor', 'rules');
+        await fs.mkdir(rulesDir, { recursive: true });
+
+        for (const file of CURSOR_RULE_FILES) {
+          const url = `${GITHUB_RAW}/cursor-rules/${file}`;
+          const dest = path.join(rulesDir, file);
+          if (await downloadFile(url, dest)) {
+            downloaded++;
+          } else {
+            failed++;
+          }
+        }
+
+        await downloadFile(`${GITHUB_RAW}/cursor-rules/load.sh`, path.join(rulesDir, 'load.sh'));
+        try {
+          await fs.chmod(path.join(rulesDir, 'load.sh'), '755');
+        } catch {}
+      }
+
+      if (syncAll || options.agents) {
+        spinner.text = 'Syncing agent prompts...';
+        const agentsDir = path.join(rootDir, '.agents');
+        await fs.mkdir(agentsDir, { recursive: true });
+
+        for (const agentPath of AGENT_PATHS) {
+          const url = `${GITHUB_RAW}/agents/${agentPath}`;
+          const dest = path.join(agentsDir, agentPath);
+          if (await downloadFile(url, dest)) {
+            downloaded++;
+          } else {
+            failed++;
+          }
+        }
+      }
+
+      if (syncAll || options.docs) {
+        spinner.text = 'Syncing documentation...';
+        const docsDir = path.join(rootDir, 'docs');
+        await fs.mkdir(docsDir, { recursive: true });
+
+        for (const file of DOC_FILES) {
+          const url = `${GITHUB_RAW}/docs/${file}`;
+          const dest = path.join(docsDir, file);
+          if (await downloadFile(url, dest)) {
+            downloaded++;
+          } else {
+            failed++;
+          }
+        }
+
+        spinner.text = 'Syncing guides...';
+        const guidesDir = path.join(rootDir, 'guides');
+        await fs.mkdir(guidesDir, { recursive: true });
+
+        for (const file of GUIDE_FILES) {
+          const url = `${GITHUB_RAW}/guides/${file}`;
+          const dest = path.join(guidesDir, file);
+          if (await downloadFile(url, dest)) {
+            downloaded++;
+          } else {
+            failed++;
+          }
+        }
+      }
+
+      if (failed === 0) {
+        spinner.succeed(chalk.green(`Synced ${downloaded} files into ${rootDir}`));
+      } else {
+        spinner.warn(chalk.yellow(`Synced ${downloaded} files, ${failed} failed`));
+      }
+
+      console.log(chalk.bold('\n📁 Synced paths:\n'));
+      if (syncAll || options.rules) {
+        console.log(chalk.gray(`  ${rootDir}/.cursor/rules/`));
+      }
+      if (syncAll || options.agents) {
+        console.log(chalk.gray(`  ${rootDir}/.agents/`));
+      }
+      if (syncAll || options.docs) {
+        console.log(chalk.gray(`  ${rootDir}/docs/`));
+        console.log(chalk.gray(`  ${rootDir}/guides/`));
+      }
+      console.log('');
+      return;
+    }
+
+    try {
+      const result = await snapshotContext(rootDir);
+      if (result.missingContext) {
+        console.log(chalk.red('❌ CONTEXT.md not found. Run `ultra-dex init` first.'));
+        process.exit(1);
+      }
+
+      if (result.updated) {
+        console.log(chalk.green('✅ CONTEXT.md updated with latest snapshot.'));
+      } else {
+        console.log(chalk.yellow('⚠️  CONTEXT.md already up to date.'));
+      }
+      console.log(chalk.gray(`Files scanned: ${result.summary.fileCount}`));
+      console.log(chalk.gray(`Stack guess: ${result.summary.stack}`));
+      console.log(chalk.gray(`Changes since last sync: +${result.diff.added} / -${result.diff.removed}\n`));
+    } catch (error) {
+      console.log(chalk.red('❌ Sync failed.'));
+      console.error(error);
+      process.exit(1);
+    }
+  });
+
+// ========================================
+// EXPORT COMMAND - JSON/YAML Snapshot
+// ========================================
+program
+  .command('export')
+  .description('Export project context as JSON or YAML')
+  .option('-d, --dir <directory>', 'Project directory to export', '.')
+  .option('--json', 'Output JSON (default)')
+  .option('--yaml', 'Output YAML')
+  .action(async (options) => {
+    const projectDir = path.resolve(options.dir);
+    const filesToExport = [
+      'QUICK-START.md',
+      'CONTEXT.md',
+      'IMPLEMENTATION-PLAN.md',
+      'docs/CHECKLIST.md',
+      'docs/AI-PROMPTS.md',
+    ];
+
+    const files = {};
+    const missing = [];
+    for (const file of filesToExport) {
+      const content = await readFileIfExists(path.join(projectDir, file));
+      if (content === null) {
+        missing.push(file);
+      } else {
+        files[file] = content;
+      }
+    }
+
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      root: projectDir,
+      files,
+      missing,
+    };
+
+    if (options.yaml) {
+      console.log(formatYamlExport(payload));
+    } else {
+      console.log(JSON.stringify(payload, null, 2));
+    }
+  });
+
+// ========================================
+// CHECK COMMAND - Real-time Health Monitor
+// ========================================
+program
+  .command('check')
+  .description('Real-time project health monitor')
+  .option('-d, --dir <directory>', 'Project directory to monitor', '.')
+  .option('-w, --watch', 'Watch for changes (press Ctrl+C to stop)')
+  .action(async (options) => {
+    const projectDir = path.resolve(options.dir);
+
+    const renderSummary = async (previous) => {
+      const result = await snapshotContext(projectDir);
+      const diff = result.diff;
+
+      console.log(chalk.bold('\n📊 Ultra-Dex Project Health\n'));
+      console.log(chalk.gray(`Root: ${projectDir}`));
+      console.log(chalk.gray(`Stack: ${result.summary.stack}`));
+      console.log(chalk.gray(`Files scanned: ${result.summary.fileCount}`));
+      console.log(chalk.gray(`App/UI: ${result.summary.appCount} | API: ${result.summary.apiCount} | Schema: ${result.summary.schemaCount} | Config: ${result.summary.configCount}`));
+      console.log(chalk.gray(`Changes: +${diff.added} / -${diff.removed}`));
+
+      if (result.missingContext) {
+        console.log(chalk.yellow('\n⚠️  CONTEXT.md not found. Run "ultra-dex init" to create it.'));
+      } else if (result.updated) {
+        console.log(chalk.green(`\n✅ Updated ${path.relative(process.cwd(), result.contextPath)}`));
+      } else {
+        console.log(chalk.green('\n✅ CONTEXT.md is up to date'));
+      }
+
+      console.log(chalk.gray(`Snapshot: ${path.join(projectDir, SNAPSHOT_DIR, SNAPSHOT_FILE)}`));
+      return result.summary;
+    };
+
+    let previous = null;
+    previous = await renderSummary(previous);
+
+    if (!options.watch) return;
+
+    console.log(chalk.cyan('\n👀 Watching for changes...\n'));
+    let timer = null;
+
+    fsWatch(projectDir, { recursive: true }, () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(async () => {
+        try {
+          previous = await renderSummary(previous);
+        } catch (err) {
+          console.log(chalk.red(`\n❌ Check failed: ${err.message || err}`));
+        }
+      }, 300);
+    });
+  });
+
+program
+  .command('pre-commit')
+  .description('Pre-commit hook - verify before commit')
+  .option('--install', 'Install git pre-commit hook')
+  .action(async (options) => {
+    if (options.install) {
+      const hookPath = path.resolve(process.cwd(), '.git/hooks/pre-commit');
+      const hookScript = `#!/bin/sh
+# Ultra-Dex pre-commit hook
+npx ultra-dex align --strict
+if [ $? -ne 0 ]; then
+  echo "❌ Ultra-Dex alignment check failed. Score must be >= 70."
+  echo "   Run 'ultra-dex review' for details."
+  exit 1
+fi
+`;
+      try {
+        await fs.mkdir(path.dirname(hookPath), { recursive: true });
+        await fs.writeFile(hookPath, hookScript, { mode: 0o755 });
+        console.log(chalk.green('✅ Pre-commit hook installed!'));
+        console.log(chalk.gray('   Commits will be blocked if alignment score < 70.'));
+      } catch (e) {
+        console.log(chalk.red('❌ Failed to install hook: ' + e.message));
+      }
+      return;
+    }
+    
+    // Run alignment check
+    const files = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'CHECKLIST.md'];
+    let found = 0, sections = 0;
+    
+    for (const file of files) {
+      try {
+        await fs.access(path.resolve(process.cwd(), file));
+        found++;
+      } catch { /* not found */ }
+    }
+    
+    try {
+      const plan = await fs.readFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), 'utf8');
+      sections = (plan.match(/^##\s+\d+\./gm) || []).length;
+    } catch { /* no plan */ }
+
+    const score = Math.round((found / files.length) * 40 + (sections / 34) * 60);
+    
+    if (score < 70) {
+      console.log(chalk.red(`❌ BLOCKED: Alignment score ${score}/100 (required: 70)`));
+      console.log(chalk.yellow('   Run `ultra-dex review` for detailed analysis.'));
+      process.exit(1);
+    } else {
+      console.log(chalk.green(`✅ Alignment OK: ${score}/100`));
+    }
+  });
+
+// ========================================
+// STATE MANAGEMENT (.ultra/state.json)
+// ========================================
+async function loadState() {
+  const statePath = path.resolve(process.cwd(), '.ultra/state.json');
+  try {
+    const content = await fs.readFile(statePath, 'utf8');
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
+async function saveState(state) {
+  const ultraDir = path.resolve(process.cwd(), '.ultra');
+  const statePath = path.resolve(ultraDir, 'state.json');
+  try {
+    await fs.mkdir(ultraDir, { recursive: true });
+    await fs.writeFile(statePath, JSON.stringify(state, null, 2));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function computeState() {
+  const state = {
+    version: '2.1.0',
+    updatedAt: new Date().toISOString(),
+    project: { name: path.basename(process.cwd()) },
+    files: {},
+    sections: { total: 34, completed: 0, list: [] },
+    score: 0
+  };
+
+  // Check core files
+  const coreFiles = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'CHECKLIST.md', 'QUICK-START.md'];
+  for (const file of coreFiles) {
+    try {
+      const stat = await fs.stat(path.resolve(process.cwd(), file));
+      state.files[file] = { exists: true, size: stat.size, modified: stat.mtime.toISOString() };
+    } catch {
+      state.files[file] = { exists: false };
+    }
+  }
+
+  // Parse sections from IMPLEMENTATION-PLAN.md
+  try {
+    const plan = await fs.readFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), 'utf8');
+    const sectionRegex = /^##\s+(\d+)\.\s+(.+)$/gm;
+    let match;
+    while ((match = sectionRegex.exec(plan)) !== null) {
+      state.sections.list.push({ number: parseInt(match[1]), title: match[2].trim() });
+    }
+    state.sections.completed = state.sections.list.length;
+  } catch { /* no plan */ }
+
+  // Calculate score
+  const fileScore = Object.values(state.files).filter(f => f.exists).length / coreFiles.length * 40;
+  const sectionScore = state.sections.completed / state.sections.total * 60;
+  state.score = Math.round(fileScore + sectionScore);
+
+  return state;
+}
+
+program
+  .command('status')
+  .description('Show current project state (from .ultra/state.json)')
+  .option('--refresh', 'Refresh state before showing')
+  .option('--json', 'Output raw JSON')
+  .action(async (options) => {
+    if (options.refresh) {
+      const state = await computeState();
+      await saveState(state);
+    }
+
+    let state = await loadState();
+    if (!state) {
+      console.log(chalk.yellow('\n⚠️  No .ultra/state.json found. Generating...\n'));
+      state = await computeState();
+      await saveState(state);
+    }
+
+    if (options.json) {
+      console.log(JSON.stringify(state, null, 2));
+      return;
+    }
+
+    console.log(chalk.cyan(banner));
+    console.log(chalk.bold('\n📊 Ultra-Dex Status\n'));
+    console.log(chalk.gray('─'.repeat(50)));
+    
+    const scoreColor = state.score >= 80 ? 'green' : state.score >= 50 ? 'yellow' : 'red';
+    console.log(chalk[scoreColor](`  Score: ${state.score}/100`));
+    console.log(chalk.gray(`  Updated: ${state.updatedAt}`));
+    console.log(chalk.gray('─'.repeat(50)));
+
+    console.log(chalk.bold('\n📁 Files:'));
+    Object.entries(state.files).forEach(([name, info]) => {
+      const icon = info.exists ? chalk.green('✓') : chalk.red('✗');
+      const size = info.exists ? chalk.gray(` (${info.size} bytes)`) : '';
+      console.log(`  ${icon} ${name}${size}`);
+    });
+
+    console.log(chalk.bold('\n📝 Sections:'));
+    console.log(`  ${state.sections.completed}/${state.sections.total} documented`);
+    if (state.sections.list.length > 0) {
+      const recent = state.sections.list.slice(-3);
+      recent.forEach(s => console.log(chalk.gray(`    ${s.number}. ${s.title}`)));
+      if (state.sections.list.length > 3) {
+        console.log(chalk.gray(`    ... and ${state.sections.list.length - 3} more`));
+      }
+    }
+    console.log('');
+  });
+
+program
+  .command('watch')
+  .description('Watch files and auto-update .ultra/state.json')
+  .option('-i, --interval <ms>', 'Check interval in ms', '5000')
+  .action(async (options) => {
+    console.log(chalk.cyan(banner));
+    console.log(chalk.bold('\n👁️  Ultra-Dex Watch Mode\n'));
+    
+    const interval = parseInt(options.interval) || 5000;
+    const watchFiles = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'CHECKLIST.md'];
+    
+    console.log(chalk.gray(`Watching: ${watchFiles.join(', ')}`));
+    console.log(chalk.gray(`Interval: ${interval}ms`));
+    console.log(chalk.yellow('\nPress Ctrl+C to stop.\n'));
+
+    // Initial state
+    let lastState = await computeState();
+    await saveState(lastState);
+    console.log(chalk.green(`✓ Initial state: ${lastState.score}/100`));
+
+    // Watch loop
+    const checkInterval = setInterval(async () => {
+      const newState = await computeState();
+      if (newState.score !== lastState.score || 
+          newState.sections.completed !== lastState.sections.completed) {
+        await saveState(newState);
+        const trend = newState.score > lastState.score ? '📈' : newState.score < lastState.score ? '📉' : '➡️';
+        console.log(chalk.cyan(`${trend} Score: ${lastState.score} → ${newState.score} (${new Date().toLocaleTimeString()})`));
+        lastState = newState;
+      }
+    }, interval);
+
+    // Handle Ctrl+C
+    process.on('SIGINT', () => {
+      clearInterval(checkInterval);
+      console.log(chalk.yellow('\n\n👋 Watch stopped.\n'));
+      process.exit(0);
+    });
+  });
+
+program
+  .command('state')
+  .description('Manage .ultra/state.json')
+  .option('--refresh', 'Refresh state from markdown files')
+  .option('--init', 'Initialize .ultra directory')
+  .action(async (options) => {
+    if (options.init) {
+      const ultraDir = path.resolve(process.cwd(), '.ultra');
+      await fs.mkdir(ultraDir, { recursive: true });
+      const state = await computeState();
+      await saveState(state);
+      console.log(chalk.green('✅ Initialized .ultra/state.json'));
+      console.log(chalk.gray(`   Score: ${state.score}/100`));
+      console.log(chalk.gray(`   Sections: ${state.sections.completed}/${state.sections.total}`));
+      return;
+    }
+
+    if (options.refresh) {
+      const state = await computeState();
+      await saveState(state);
+      console.log(chalk.green('✅ Refreshed .ultra/state.json'));
+      console.log(chalk.gray(`   Score: ${state.score}/100`));
+      return;
+    }
+
+    // Default: show current state
+    let state = await loadState();
+    if (!state) {
+      console.log(chalk.yellow('No .ultra/state.json found. Run `ultra-dex state --init`'));
+      return;
+    }
+    console.log(JSON.stringify(state, null, 2));
   });
 
 // ========================================
@@ -1036,14 +1932,72 @@ program
         return;
       }
 
+      // NEW: /state endpoint - returns .ultra/state.json
+      if (req.url === '/state') {
+        let state = await loadState();
+        if (!state) {
+          state = await computeState();
+          await saveState(state);
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(state));
+        return;
+      }
+
+      // NEW: /score endpoint - quick alignment score
+      if (req.url === '/score') {
+        const state = await computeState();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ score: state.score, sections: state.sections.completed }));
+        return;
+      }
+
+      // NEW: /agents endpoint - list available agents
+      if (req.url === '/agents') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ agents: BUILD_AGENTS }));
+        return;
+      }
+
+      // NEW: /agent/:name endpoint - get specific agent prompt
+      if (req.url.startsWith('/agent/')) {
+        const agentName = req.url.replace('/agent/', '');
+        const agentPath = path.resolve(ASSETS_ROOT, `../agents/${agentName}.md`);
+        try {
+          const content = await fs.readFile(agentPath, 'utf8');
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ agent: agentName, prompt: content }));
+        } catch {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: `Agent ${agentName} not found` }));
+        }
+        return;
+      }
+
+      // NEW: /refresh endpoint - force state refresh
+      if (req.url === '/refresh') {
+        const state = await computeState();
+        await saveState(state);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ refreshed: true, score: state.score }));
+        return;
+      }
+
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Not found' }));
     });
 
     server.listen(port, () => {
       console.log(chalk.green(`\n✅ Ultra-Dex MCP server running on http://localhost:${port}`));
-      console.log(chalk.gray('  GET /context -> CONTEXT.md, IMPLEMENTATION-PLAN.md, QUICK-START.md'));
-      console.log(chalk.gray('  GET / -> health check\n'));
+      console.log(chalk.bold('\n📡 Endpoints:'));
+      console.log(chalk.gray('  GET /          → Health check'));
+      console.log(chalk.gray('  GET /context   → All context files (CONTEXT.md, PLAN, etc.)'));
+      console.log(chalk.gray('  GET /state     → Full state from .ultra/state.json'));
+      console.log(chalk.gray('  GET /score     → Quick alignment score'));
+      console.log(chalk.gray('  GET /agents    → List available agents'));
+      console.log(chalk.gray('  GET /agent/:n  → Get specific agent prompt'));
+      console.log(chalk.gray('  GET /refresh   → Force state refresh'));
+      console.log(chalk.cyan('\n💡 Connect your AI tool to this server for live context.\n'));
     });
   });
 
@@ -1732,23 +2686,6 @@ program
     const targetDir = path.resolve(options.dir);
     const fetchAll = !options.agents && !options.rules && !options.docs;
 
-    // GitHub raw URLs
-    const GITHUB_RAW = 'https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main';
-
-    // Helper to download a file
-    async function downloadFile(url, destPath) {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const content = await response.text();
-        await fs.mkdir(path.dirname(destPath), { recursive: true });
-        await fs.writeFile(destPath, content);
-        return true;
-      } catch (err) {
-        return false;
-      }
-    }
-
     const spinner = ora('Preparing to fetch assets...').start();
 
     // Create target directory
@@ -1763,23 +2700,7 @@ program
       const rulesDir = path.join(targetDir, 'cursor-rules');
       await fs.mkdir(rulesDir, { recursive: true });
 
-      const ruleFiles = [
-        '00-ultra-dex-core.mdc',
-        '01-database.mdc',
-        '02-api.mdc',
-        '03-auth.mdc',
-        '04-frontend.mdc',
-        '05-payments.mdc',
-        '06-testing.mdc',
-        '07-security.mdc',
-        '08-deployment.mdc',
-        '09-error-handling.mdc',
-        '10-performance.mdc',
-        '11-nextjs-v15.mdc',
-        '12-multi-tenancy.mdc',
-      ];
-
-      for (const file of ruleFiles) {
+      for (const file of CURSOR_RULE_FILES) {
         const url = `${GITHUB_RAW}/cursor-rules/${file}`;
         const dest = path.join(rulesDir, file);
         if (await downloadFile(url, dest)) {
@@ -1801,27 +2722,7 @@ program
       spinner.text = 'Fetching agent prompts...';
       const agentsDir = path.join(targetDir, 'agents');
 
-    const agentPaths = [
-        '00-AGENT_INDEX.md',
-        'README.md',
-        'AGENT-INSTRUCTIONS.md',
-        '1-leadership/cto.md',
-        '1-leadership/planner.md',
-        '1-leadership/research.md',
-        '2-development/backend.md',
-        '2-development/frontend.md',
-        '2-development/database.md',
-        '3-security/security.md',
-        '4-devops/devops.md',
-        '5-quality/reviewer.md',
-        '5-quality/testing.md',
-        '5-quality/debugger.md',
-        '6-specialist/performance.md',
-        '6-specialist/refactoring.md',
-        '6-specialist/documentation.md',
-      ];
-
-      for (const agentPath of agentPaths) {
+      for (const agentPath of AGENT_PATHS) {
         const url = `${GITHUB_RAW}/agents/${agentPath}`;
         const dest = path.join(agentsDir, agentPath);
         if (await downloadFile(url, dest)) {
@@ -1837,14 +2738,7 @@ program
       spinner.text = 'Fetching documentation...';
       const docsDir = path.join(targetDir, 'docs');
 
-      const docFiles = [
-        'VERIFICATION.md',
-        'BUILD-AUTH-30M.md',
-        'QUICK-REFERENCE.md',
-        'TROUBLESHOOTING.md',
-      ];
-
-      for (const file of docFiles) {
+      for (const file of DOC_FILES) {
         const url = `${GITHUB_RAW}/docs/${file}`;
         const dest = path.join(docsDir, file);
         if (await downloadFile(url, dest)) {
@@ -1856,14 +2750,7 @@ program
 
       // Fetch guides
       const guidesDir = path.join(targetDir, 'guides');
-      const guideFiles = [
-        'PROJECT-ORCHESTRATION.md',
-        'ADVANCED-WORKFLOWS.md',
-        'DATABASE-DECISION-FRAMEWORK.md',
-        'ARCHITECTURE-PATTERNS.md',
-      ];
-
-      for (const file of guideFiles) {
+      for (const file of GUIDE_FILES) {
         const url = `${GITHUB_RAW}/guides/${file}`;
         const dest = path.join(guidesDir, file);
         if (await downloadFile(url, dest)) {

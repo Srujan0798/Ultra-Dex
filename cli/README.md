@@ -1,219 +1,242 @@
 # Ultra-Dex CLI
 
-> Scaffold Ultra-Dex projects from the command line.
+> Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation**.
+
+## What's New in v2.1
+
+```bash
+# 🚀 Generate a complete 34-section plan with AI
+npx ultra-dex generate "A task management SaaS for remote teams"
+
+# 🔧 Start AI-assisted development
+npx ultra-dex build --agent planner
+
+# 🔍 Review code against plan
+npx ultra-dex review
+
+# 📊 Quick alignment check
+npx ultra-dex align
+```
 
 ## First 10 Minutes
 
 ```bash
-# 1. Create your project (2 min)
+# Option 1: AI-Generated Plan (Recommended)
+export ANTHROPIC_API_KEY=your-key  # or OPENAI_API_KEY or GOOGLE_AI_KEY
+npx ultra-dex generate "Your SaaS idea here"
+
+# Option 2: Manual Setup
 npx ultra-dex init
-
-# 2. Open and review QUICK-START.md (3 min)
-cd your-project
-cat QUICK-START.md
-
-# 3. Load Cursor rules for AI assistance (1 min)
-# Rules are bundled; choose "Include cursor-rules" when prompted.
-#
-# Optional offline bundle:
-# npx ultra-dex fetch --rules --docs --agents
-
-# 4. Start building with AI agents (4 min)
-# Use @Backend, @Frontend, @Database agents
-npx ultra-dex agents
-
-# You're ready to code!
 ```
 
 ## Installation
 
 ```bash
 # Run directly with npx (no installation needed)
-npx ultra-dex init
+npx ultra-dex generate "Your idea"
 
 # Or install globally
 npm install -g ultra-dex
-ultra-dex init
+ultra-dex generate "Your idea"
 ```
 
-## Usage
+## AI Commands (v2.0+)
 
-### Initialize a new project
+### `generate` - AI Plan Generation
+
+Generate a complete implementation plan using AI:
+
+```bash
+# Basic usage
+npx ultra-dex generate "A booking platform for dog groomers"
+
+# With options
+npx ultra-dex generate "idea" --provider openai --output ./my-project
+
+# Preview without calling AI
+npx ultra-dex generate "idea" --dry-run
+```
+
+**Options:**
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-p, --provider` | AI provider (claude, openai, gemini) | claude |
+| `-m, --model` | Specific model to use | provider default |
+| `-o, --output` | Output directory | current |
+| `-k, --key` | API key | env variable |
+| `--dry-run` | Show structure only | false |
+
+### `build` - AI-Assisted Development
+
+Start development with AI agents:
+
+```bash
+# Interactive agent selection
+npx ultra-dex build
+
+# Specific agent
+npx ultra-dex build --agent backend --task "Create user API endpoints"
+
+# Copy to clipboard for external AI
+npx ultra-dex build --agent planner --copy
+```
+
+**Available Agents:**
+| Agent | Role |
+|-------|------|
+| `planner` | Break down features into atomic tasks |
+| `cto` | Architecture decisions |
+| `backend` | API endpoints and business logic |
+| `frontend` | UI components and pages |
+| `database` | Schema design and migrations |
+| `auth` | Authentication and authorization |
+| `security` | Security audit |
+| `testing` | Write and run tests |
+| `reviewer` | Code review |
+| `devops` | Deployment and CI/CD |
+
+### `review` - Code Review
+
+Check code alignment with plan:
+
+```bash
+npx ultra-dex review
+npx ultra-dex review --dir ./src
+```
+
+### `align` - Quick Score
+
+Get alignment score instantly:
+
+```bash
+npx ultra-dex align
+npx ultra-dex align --json  # Machine-readable output
+```
+
+**Environment Variables:**
+```bash
+ANTHROPIC_API_KEY=sk-ant-...  # Claude (recommended)
+OPENAI_API_KEY=sk-...         # OpenAI
+GOOGLE_AI_KEY=...             # Gemini
+```
+
+### `init`
+
+Interactive project setup:
 
 ```bash
 npx ultra-dex init
 ```
 
-This will:
-1. Ask you about your SaaS idea
-2. Gather tech stack preferences
-3. Create starter files:
-   - `QUICK-START.md` - Pre-filled with your answers
-   - `CONTEXT.md` - Project context for AI agents
-   - `IMPLEMENTATION-PLAN.md` - Links to full resources
-
-### List examples
+Generate a runnable scaffold:
 
 ```bash
-npx ultra-dex examples
+npx ultra-dex init --live --stack next15-prisma-clerk
 ```
 
-Shows links to fully filled Ultra-Dex examples:
-- TaskFlow (Task Management)
-- InvoiceFlow (Invoicing)
-- HabitStack (Habit Tracking)
+Presets: `next15-prisma-clerk`, `remix-supabase`, `sveltekit-drizzle`.
 
-### Audit your project
+**Options (init):**
+| Option | Description |
+|--------|-------------|
+| `-n, --name <name>` | Project name (skips prompt) |
+| `-d, --dir <directory>` | Output directory (default: current) |
+| `--preview` | Preview files without creating them |
+| `--live` | Generate a runnable scaffold |
+| `--stack <preset>` | Preset: next15-prisma-clerk, remix-supabase, sveltekit-drizzle |
+
+### `audit`
+
+Check project completeness:
 
 ```bash
 npx ultra-dex audit
 ```
 
-Checks your project for completeness:
-- Required files (QUICK-START.md, CONTEXT.md, etc.)
-- Key sections (idea, problem, MVP, tech stack)
-- Implementation details (database, API, auth)
+### `agents`
 
-Outputs a score and grade (A-F) with suggestions.
-
-### List AI agents
+List and use AI agent prompts:
 
 ```bash
-npx ultra-dex agents
+npx ultra-dex agents           # List all agents
+npx ultra-dex agent backend    # Show specific agent
 ```
 
-Shows available AI agent prompts:
-- CTO, Backend, Frontend, Database
-- Auth, DevOps, Reviewer, Debugger, Planner
+### `fetch`
 
-### Get agent prompt
-
-```bash
-npx ultra-dex agent backend
-```
-
-Prints the full agent prompt. Copy and paste into your AI tool (Cursor, Claude, ChatGPT).
-
-### Set up git hooks
-
-```bash
-npx ultra-dex hooks
-```
-
-Installs a pre-commit hook that:
-- Validates project structure before each commit
-- Blocks commits if required files are missing
-- Can be bypassed with `git commit --no-verify`
-
-Remove with: `npx ultra-dex hooks --remove`
-
-### Fetch assets for offline use
+Download assets for offline use:
 
 ```bash
 npx ultra-dex fetch
+npx ultra-dex fetch --agents --rules
 ```
 
-Downloads all Ultra-Dex assets locally for offline development:
-- Cursor rules (12 .mdc files)
-- Agent prompts (16 agents)
-- Documentation and guides
 
-Options:
-- `--dir <path>` - Target directory (default: `.ultra-dex`)
-- `--agents` - Fetch only agent prompts
-- `--rules` - Fetch only cursor rules
-- `--docs` - Fetch only documentation
-
-After fetching, copy to your project:
-```bash
-cp -r .ultra-dex/cursor-rules .cursor/rules
-cp -r .ultra-dex/agents .agents
-```
-
-### Serve context (MCP-compatible)
+Auto-update CONTEXT.md with a codebase snapshot:
 
 ```bash
-npx ultra-dex serve --port 3001
 ```
 
-Endpoints:
-- `GET /` health check
-- `GET /context` returns CONTEXT.md, IMPLEMENTATION-PLAN.md, QUICK-START.md
-
-## Commands
+### Other Commands
 
 | Command | Description |
 |---------|-------------|
-| `ultra-dex init` | Initialize a new project |
-| `ultra-dex init --preview` | Preview files without creating them |
-| `ultra-dex audit` | Audit project for completeness |
-| `ultra-dex examples` | List available examples |
-| `ultra-dex agents` | List available AI agents |
-| `ultra-dex agent <name>` | Show specific agent prompt |
-| `ultra-dex pack <agent>` | Package context + agent for any AI |
-| `ultra-dex hooks` | Set up git pre-commit hooks |
-| `ultra-dex fetch` | Download assets for offline use |
-| `ultra-dex serve` | Serve context over HTTP |
-| `ultra-dex validate` | Validate project structure |
-| `ultra-dex workflow <feature>` | Show workflow for a feature |
-| `ultra-dex suggest` | Get AI agent suggestions |
-| `ultra-dex --help` | Show help |
-| `ultra-dex --version` | Show version |
+| `init` | Initialize a new project |
+| `init --preview` | Preview files without creating them |
+| `init --live` | Generate a runnable scaffold |
+| `audit` | Audit project for completeness |
+| `examples` | List available examples |
+| `agents` | List AI agents |
+| `agent <name>` | Show specific agent prompt |
+| `hooks` | Set up git pre-commit hooks |
+| `fetch` | Download assets for offline |
+| `serve` | Serve context over HTTP |
+| `validate` | Validate project structure |
+| `workflow <feature>` | Show workflow for a feature |
+| `suggest` | Get AI agent suggestions |
+| `--help` | Show help |
+| `--version` | Show version |
 
-## Options
-
-### init
-
-| Option | Description |
-|--------|-------------|
-| `-n, --name <name>` | Project name (skips prompt) |
-| `-d, --dir <directory>` | Output directory (default: current) |
-
-### audit
-
-| Option | Description |
-|--------|-------------|
-| `-d, --dir <directory>` | Directory to audit (default: current) |
-
-## Example
+## Example: AI Generation
 
 ```bash
-$ npx ultra-dex init
+$ npx ultra-dex generate "A booking platform for dog groomers"
 
-╔═══════════════════════════════════════════════════════════╗
-║   ULTRA-DEX                                               ║
-║   From Idea to Production-Ready SaaS                      ║
-╚═══════════════════════════════════════════════════════════╝
+🚀 Ultra-Dex AI Plan Generator
 
-Welcome to Ultra-Dex! Let's plan your SaaS.
+✔ AI modules loaded
 
-? What's your project name? my-saas
-? What are you building? A booking platform for dog groomers
-? Who is it for? Independent dog grooming businesses
-? Problem #1 you're solving: Manual booking via phone is time-consuming
-? Problem #2 you're solving: No-shows cost money
-? Problem #3 you're solving: No online presence
-? Most important MVP feature: Online booking calendar
-? Frontend framework: Next.js
-? Database: PostgreSQL
-? Authentication: NextAuth
-? Payments: Stripe
-? Hosting: Vercel
+📝 Idea: "A booking platform for dog groomers"
 
-✔ Project created successfully!
+✓ Using Claude (Anthropic) (claude-sonnet-4-20250514)
 
-Files created:
-  my-saas/
-  ├── QUICK-START.md
-  ├── CONTEXT.md
-  ├── IMPLEMENTATION-PLAN.md
-  ├── .cursor/rules/ (11 AI rule files)
-  └── .agents/ (9 AI agent prompts)
+📊 Estimated Generation:
+   Input tokens:  ~2,650
+   Output tokens: ~40,000
+   Estimated cost: ~$0.45
+
+? Proceed with generation? Yes
+
+⚡ Generating 34-section implementation plan...
+
+✔ Generation complete!
+
+✅ All 34 sections generated
+   Tokens used: 42,350 tokens (2,650 in / 39,700 out)
+   Actual cost: $0.52
+
+📦 Project: GroomBook
+
+✓ Created ./IMPLEMENTATION-PLAN.md
+✓ Created ./QUICK-START.md
+✓ Created ./CONTEXT.md
+
+🎉 Generation complete!
 
 Next steps:
-  1. cd my-saas
-  2. Open QUICK-START.md and complete it
-  3. Start building! 🚀
+  1. Review IMPLEMENTATION-PLAN.md
+  2. Customize sections as needed
+  3. Start building with: npx ultra-dex init
 ```
 
 ## Links

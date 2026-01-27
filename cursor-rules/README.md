@@ -4,7 +4,7 @@
 
 ## What is This?
 
-The 34-section Ultra-Dex template, atomized into small, focused rule files. Each file is under 200 lines and optimized for AI context windows.
+The 34-section Ultra-Dex template, atomized into small, focused rule files. Each file is under 250 lines and optimized for AI context windows.
 
 ## How to Use
 

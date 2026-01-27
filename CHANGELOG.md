@@ -7,6 +7,112 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2025-01-27
+
+### Added
+- **🔧 `ultra-dex build` Command** - AI-assisted development with auto-loaded context
+  - Interactive agent selection (10 specialized agents across 4 tiers)
+  - Auto-loads CONTEXT.md and IMPLEMENTATION-PLAN.md
+  - Generates ready-to-paste prompts with full context
+  - List agents with `--list`, show context with `--context`
+  
+- **🔍 `ultra-dex review` Command** - Project review against implementation plan
+  - Quick structure check without AI
+  - Scores structure (40pts), sections (40pts), agents (20pts)
+  - Alignment score 0-100
+  - JSON output mode (`--json`)
+
+- **📊 `ultra-dex align` Command** - One-liner alignment check
+  - Instant score with emoji indicator (✅ ⚠️ ❌)
+  - `--strict` flag exits with error if score < 70
+  - Perfect for CI/CD pipelines
+
+- **🚦 `ultra-dex pre-commit` Command** - Git pre-commit hook
+  - `--install` creates .git/hooks/pre-commit
+  - Blocks commits if alignment score < 70
+  - Enforces quality automatically
+
+### Changed
+- CLI version bumped to 2.1.0
+- v2 placeholder commands replaced with working implementations
+
+### Addresses Review Criticism
+This release addresses the "2026 Reality Check" criticism:
+- **"Human Middleware"** → `build` command auto-loads context
+- **"No Enforcement"** → `pre-commit` blocks bad commits
+- **"Static Checklists"** → `align` gives instant scores
+- **"Manual Friction"** → One-liner checks for CI/CD
+
+---
+- **Prompt Templates** (`cli/lib/templates/prompts/`)
+  - `generate-plan.js` - 34-section plan generation prompts
+  - `review-code.js` - Code audit prompt templates
+
+### Changed
+- CLI version bumped from 2.0.1 to 2.1.0
+- Enhanced build command replaces placeholder
+- Enhanced review command replaces placeholder
+- All v2 roadmap commands now implemented
+
+### Addresses Review Criticism
+This release directly addresses the "2026 Reality Check" review criticisms:
+- ✅ **"Human Middleware"** → `build` command auto-loads context, no copy-paste needed
+- ✅ **"Static Prompts"** → Prompts are now dynamically generated with project context
+- ✅ **"No Enforcement"** → `review` command provides automated alignment checking
+- ✅ **"Markdown Rot"** → `review --quick` detects stale/missing structure
+
+---
+
+## [2.0.1] - 2026-01-27
+
+### Added
+- **🚀 `ultra-dex generate` Command** - AI-powered implementation plan generation
+  - Transform a one-sentence idea into a complete 34-section implementation plan
+  - Multi-provider support: Claude, OpenAI, Gemini
+  - Streaming output with real-time progress feedback
+  - Cost estimation before generation (`--dry-run`)
+  - Generates: IMPLEMENTATION-PLAN.md, QUICK-START.md, CONTEXT.md
+- **AI Provider Infrastructure** (`cli/lib/providers/`)
+  - `base.js` - Abstract provider interface
+  - `claude.js` - Claude (Anthropic) integration
+  - `openai.js` - OpenAI GPT integration
+  - `gemini.js` - Google Gemini integration
+  - `index.js` - Provider factory and selection
+- **Prompt Engineering** (`cli/lib/templates/prompts/`)
+  - `system-prompt.md` - Expert SaaS architect instructions
+  - `section-prompts.js` - 34-section structure templates
+- **Utility Modules** (`cli/lib/utils/`)
+  - `prompt-builder.js` - Prompt assembly and cost estimation
+  - `parser.js` - Response parsing and validation
+- **Configuration Files**
+  - `.env.example` - API key configuration template
+- **Live Scaffold Presets** - `ultra-dex init --live`
+  - `next15-prisma-clerk`, `remix-supabase`, `sveltekit-drizzle`
+- **`ultra-dex sync`** - Auto-sync CONTEXT.md with codebase snapshot
+- **MCP Metadata** - `/context` now returns protocol metadata
+
+### Changed
+- CLI version bumped to 2.0.1
+- `package.json` updated with optional AI SDK dependencies
+- Added `"type": "module"` for ES module support
+- `lib/` folder now included in npm package
+
+### Upgrade Guide
+```bash
+# Install with AI support
+npm install ultra-dex
+
+# Configure API key (choose one)
+export ANTHROPIC_API_KEY=your-key  # Claude (recommended)
+export OPENAI_API_KEY=your-key     # OpenAI
+export GOOGLE_AI_KEY=your-key      # Gemini
+
+# Generate a plan
+npx ultra-dex generate "A task management SaaS for remote teams"
+```
+
+---
+
 ## [1.8.0] - 2026-01-27
 
 ### Added
