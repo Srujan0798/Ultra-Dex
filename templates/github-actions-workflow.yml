@@ -1,0 +1,112 @@
+# Ultra-Dex GitHub Actions Workflow
+# Automatically enforces Ultra-Dex alignment on PRs
+
+name: Ultra-Dex Alignment Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+  alignment-check:
+    name: Check Ultra-Dex Alignment
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Ultra-Dex CLI
+        run: npm install -g ultra-dex
+
+      - name: Run Alignment Check
+        id: align
+        run: |
+          # Run alignment check and capture output
+          OUTPUT=$(ultra-dex align --json || true)
+          SCORE=$(echo $OUTPUT | jq -r '.score // 0')
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          
+          # Display results
+          ultra-dex status
+          
+          # Fail if score is below threshold
+          if [ "$SCORE" -lt 70 ]; then
+            echo "❌ Alignment score ($SCORE) is below threshold (70)"
+            exit 1
+          fi
+
+      - name: Run Review Check
+        if: always()
+        run: ultra-dex review --quick
+
+      - name: Comment PR with Score
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const score = '${{ steps.align.outputs.score }}';
+            const icon = score >= 80 ? '✅' : score >= 70 ? '⚠️' : '❌';
+            const body = `## ${icon} Ultra-Dex Alignment: ${score}/100
+            
+            ${score >= 70 ? '**Status:** Passed' : '**Status:** Failed - Score must be >= 70'}
+            
+            <details>
+            <summary>What is this?</summary>
+            
+            This PR was checked against your Ultra-Dex implementation plan.
+            
+            - Score >= 80: Excellent alignment
+            - Score 70-79: Acceptable
+            - Score < 70: Needs improvement
+            
+            Run \`npx ultra-dex review\` locally for details.
+            </details>`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # Optional: Run AI-powered review on PRs
+  ai-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Ultra-Dex CLI
+        run: npm install -g ultra-dex
+
+      - name: Run AI Review
+        if: env.ANTHROPIC_API_KEY != ''
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Only run if API key is configured
+          ultra-dex review --json > review-output.json || true
+          
+      - name: Upload Review Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ultra-dex-review
+          path: review-output.json
+          retention-days: 7

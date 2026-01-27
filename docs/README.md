@@ -17,5 +17,6 @@ Central navigation for all documentation in `/docs`.
 11. **[VERIFICATION.md](./VERIFICATION.md)** - Verification workflow and PR template guidance.
 12. **[VISION-V2.md](./VISION-V2.md)** - Vision and architecture for Ultra-Dex v2.
 13. **[WORKFLOW-DIAGRAMS.md](./WORKFLOW-DIAGRAMS.md)** - Visual workflows for key features.
+14. **[RELEASE-NOTES-1.8.0.md](./RELEASE-NOTES-1.8.0.md)** - Detailed release notes and migration guide for v1.8.0.
 
 > Note: `index.html` is a static artifact and is not part of the markdown doc hub.

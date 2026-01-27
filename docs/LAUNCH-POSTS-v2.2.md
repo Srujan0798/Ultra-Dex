@@ -65,7 +65,33 @@ Star ⭐ if useful!
 
 ---
 
-## LinkedIn Post
+## LinkedIn Post 1 (First Post - Announcement)
+
+```
+Ultra-Dex v2.2 is live 🚀
+
+One command to turn any SaaS idea into a complete implementation plan:
+
+npx ultra-dex generate "Your idea here"
+
+AI fills 34 sections:
+→ Database schema
+→ API design
+→ Auth system
+→ Tech stack
+→ Timeline
+→ And more...
+
+Works with Claude, OpenAI, Gemini.
+
+Try it: github.com/Srujan0798/Ultra-Dex
+
+#buildinpublic #saas #ai
+```
+
+---
+
+## LinkedIn Post 2 (Follow-up - Deep Dive)
 
 ```
 🚀 Just shipped Ultra-Dex v2.2 - and it changes how you start SaaS projects.

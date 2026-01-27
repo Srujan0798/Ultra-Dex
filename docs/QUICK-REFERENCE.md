@@ -19,7 +19,7 @@ npx ultra-dex agent backend
 
 ---
 
-## 🤖 15 AI Agents by Tier
+## 🤖 16 AI Agents by Tier
 
 | Tier | Agent | Use When |
 |------|-------|----------|
@@ -38,6 +38,7 @@ npx ultra-dex agent backend
 | | @Debugger | Bug fixing & troubleshooting |
 | **6. Specialist** | @Performance | Performance optimization |
 | | @Refactoring | Code quality & design patterns |
+| **0. Orchestration** | @Orchestrator | Multi-agent coordination |
 
 **Full Index:** [agents/00-AGENT_INDEX.md](./agents/00-AGENT_INDEX.md)
 
@@ -136,7 +137,6 @@ Task type:
 ```bash
 # Project Setup
 npx ultra-dex init              # Interactive setup
-npx ultra-dex init --yes        # Use defaults
 
 # Agents
 npx ultra-dex agents            # List all 16 agents
@@ -145,14 +145,6 @@ npx ultra-dex agent cto         # Show CTO agent
 
 # Validation
 npx ultra-dex audit             # Check project completeness
-
-# Sync & Export
-npx ultra-dex sync              # Refresh CONTEXT.md snapshot
-npx ultra-dex sync --assets     # Sync agents/rules/docs
-npx ultra-dex export --json     # Export project context as JSON
-npx ultra-dex check --watch     # Real-time project health monitor
-npx ultra-dex deploy-check      # Pre-deployment validation checklist
-
 
 # Examples
 npx ultra-dex examples          # Show example projects
@@ -320,7 +312,7 @@ Use different AI tools for different tasks:
 
 ## 📊 Project Statistics
 
-- **15 Agents** - 6 tiers, production pipeline coverage
+- **16 Agents** - 7 tiers, production pipeline coverage
 - **6 Guides** - 3,283 lines, 83 KB of documentation
 - **2 Templates** - MASTER-PLAN (800 lines), PHASE-TRACKER (329 lines)
 - **34 Sections** - Complete implementation template
@@ -341,6 +333,6 @@ Use different AI tools for different tasks:
 
 ---
 
-*Ultra-Dex v1.7.0 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v2.1.0 - Professional AI Orchestration Meta Layer*
 
 **Print this page for quick reference while coding!**

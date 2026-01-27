@@ -223,6 +223,89 @@ What would you add to a SaaS framework?
 
 ---
 
+## 6. LinkedIn Post 1 (Short Announcement)
+
+```
+Ultra-Dex is live 🚀
+
+A 34-section framework for building production-ready SaaS.
+
+→ Database schema
+→ API design
+→ Auth system
+→ Payments
+→ Error handling
+→ Deployment
+→ + 28 more sections
+
+But you don't fill all 34 upfront.
+
+Start with 8 core sections (30 min) → Code immediately → Fill the rest as you build.
+
+Includes:
+• 3 complete examples (TaskFlow, InvoiceFlow, HabitStack)
+• 11 Cursor rules for AI-assisted dev
+• CLI: npx ultra-dex init
+
+Free. MIT licensed.
+
+GitHub: github.com/Srujan0798/Ultra-Dex
+
+#buildinpublic #saas #developer
+```
+
+---
+
+## 7. LinkedIn Post 2 (Deep Dive - Post Later)
+
+```
+I kept abandoning SaaS projects. Here's why - and what I built to fix it.
+
+The pattern:
+→ Start coding excited
+→ Miss auth edge cases
+→ Forget payment webhook failures
+→ No error tracking until users complain
+→ Give up
+
+So I built Ultra-Dex - a 34-section framework that forces you to think through everything.
+
+But here's the key insight: You DON'T fill all 34 sections before coding.
+
+The approach:
+1. Fill 8 core sections (30 min)
+2. Start coding immediately
+3. Fill remaining sections as you build
+
+34 sections cover:
+• Product Vision & MVP Scope
+• Database Schema & API Design
+• Auth, Payments, Error Handling
+• Deployment, Monitoring, Launch
+• And 26 more...
+
+AI-native:
+11 modular Cursor rules so your AI assistant knows your project context and doesn't hallucinate your architecture.
+
+3 complete examples:
+• TaskFlow (Task Management)
+• InvoiceFlow (Billing)
+• HabitStack (Habit Tracker)
+
+Get started:
+npx ultra-dex init
+
+GitHub: https://github.com/Srujan0798/Ultra-Dex
+
+Free, MIT licensed. Built for developers who want to ship production-quality SaaS, not just MVPs.
+
+What's missing? Would love feedback!
+
+#SaaS #Developer #OpenSource #BuildInPublic #Startup
+```
+
+---
+
 ## Posting Schedule
 
 | Platform | Best Time | Notes |

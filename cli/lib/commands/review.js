@@ -10,6 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
 import { SYSTEM_PROMPT, generateReviewPrompt } from '../templates/prompts/review-code.js';
+import { validateSafePath } from '../utils/validation.js';
 
 // File patterns to scan
 const CODE_PATTERNS = {
@@ -105,6 +106,12 @@ export function registerReviewCommand(program) {
     .option('--json', 'Output as JSON')
     .action(async (options) => {
       console.log(chalk.cyan('\n🔍 Ultra-Dex Code Review\n'));
+
+      const dirValidation = validateSafePath(options.dir, 'Review directory');
+      if (dirValidation !== true) {
+        console.log(chalk.red(dirValidation));
+        process.exit(1);
+      }
 
       const reviewDir = path.resolve(options.dir);
 
