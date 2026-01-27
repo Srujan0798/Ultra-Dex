@@ -9,6 +9,7 @@ import fs from 'fs/promises';
 import { watch as fsWatch } from 'fs';
 import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
+import { buildGraph } from '../utils/graph.js';
 
 // State management helpers
 export async function loadState() {
@@ -36,8 +37,7 @@ export async function computeState() {
   // Try to load existing state first to check schema
   const existing = await loadState();
   if (existing && existing.project?.mode === 'GOD_MODE') {
-    // In God Mode, we don't recompute entire state from scratch
-    // We just update the timestamp
+    // In God Mode, we update the timestamp
     existing.updatedAt = new Date().toISOString();
     return existing;
   }
@@ -88,28 +88,52 @@ export async function updateState() {
 export function registerAlignCommand(program) {
   program
     .command('align')
-    .description('Quick alignment score (one-liner)')
+    .description('Quick alignment score using Code Property Graph')
     .option('--strict', 'Exit with error if score < 70')
     .option('--json', 'Output as JSON')
     .action(async (options) => {
+      // 1. Compute Base State
       const state = await computeState();
       
+      // 2. Compute Graph Score (God Mode)
+      let graphScore = 0;
+      let graphStats = { nodes: 0, edges: 0 };
+      
+      try {
+        const graph = await buildGraph();
+        graphStats = { nodes: graph.nodes.length, edges: graph.edges.length };
+        
+        // Simple heuristic: A healthy project has nodes and edges
+        // 10+ nodes = 20 points
+        // 10+ edges = 20 points
+        const nodesPoints = Math.min(graph.nodes.length * 2, 20);
+        const edgesPoints = Math.min(graph.edges.length * 2, 20);
+        graphScore = nodesPoints + edgesPoints;
+      } catch (e) {
+        // Graph failed
+      }
+
+      // 3. Combine Scores
+      // Legacy score (files/plan) is 60% weight, Graph is 40%
+      const totalScore = Math.min(Math.round((state.score * 0.6) + graphScore), 100);
+
       if (options.json) {
-        if (state.project?.mode === 'GOD_MODE') {
-             console.log(JSON.stringify({ mode: 'GOD_MODE', phases: state.phases }));
-        } else {
-             console.log(JSON.stringify({ score: state.score, files: Object.values(state.files).filter(f => f.exists).length, sections: state.sections.completed }));
-        }
+        console.log(JSON.stringify({ 
+            score: totalScore, 
+            legacyScore: state.score,
+            graphScore,
+            graphStats,
+            files: Object.values(state.files).filter(f => f.exists).length, 
+            sections: state.sections.completed 
+        }));
       } else {
-        if (state.project?.mode === 'GOD_MODE') {
-             console.log(`✅ Alignment: GOD MODE ACTIVE (All systems operational)`);
-        } else {
-            const icon = state.score >= 80 ? '✅' : state.score >= 50 ? '⚠️' : '❌';
-            console.log(`${icon} Alignment: ${state.score}/100 (${Object.values(state.files).filter(f => f.exists).length}/4 files, ${state.sections.completed}/34 sections)`);
-        }
+        const icon = totalScore >= 80 ? '✅' : totalScore >= 50 ? '⚠️' : '❌';
+        console.log(`${icon} Alignment: ${totalScore}/100`);
+        console.log(chalk.gray(`   • Plan/Docs: ${state.score}/100`));
+        console.log(chalk.gray(`   • Code Graph: ${graphScore}/40 (Nodes: ${graphStats.nodes}, Edges: ${graphStats.edges})`));
       }
       
-      if (options.strict && state.score < 70 && state.project?.mode !== 'GOD_MODE') {
+      if (options.strict && totalScore < 70) {
         process.exit(1);
       }
     });

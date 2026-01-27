@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { loadState, generateMarkdown } from './plan.js';
 import { startMcpServer } from '../mcp/server.js';
+import { projectGraph } from '../mcp/graph.js';
 
 export function registerServeCommand(program) {
   program
@@ -15,7 +16,7 @@ export function registerServeCommand(program) {
     .action(async (options) => {
       // If --http is explicitly set, run the HTTP server
       if (options.http) {
-        startHttpServer(options.port);
+        await startHttpServer(options.port);
       } else {
         // Default to MCP Stdio server
         try {
@@ -28,10 +29,19 @@ export function registerServeCommand(program) {
     });
 }
 
-function startHttpServer(portStr) {
+async function startHttpServer(portStr) {
   const port = Number.parseInt(portStr, 10);
       
   console.log(chalk.bold('\n🚀 Ultra-Dex Active Kernel Starting (HTTP Mode)...\n'));
+
+  // Initialize Graph
+  console.log(chalk.gray('Initializing Code Graph...'));
+  try {
+    await projectGraph.scan();
+    console.log(chalk.green(`✅ Graph loaded: ${projectGraph.nodes.size} nodes`));
+  } catch (e) {
+    console.log(chalk.yellow(`⚠️ Graph init failed: ${e.message}`));
+  }
 
   const server = http.createServer(async (req, res) => {
     // CORS headers for local tools
@@ -62,9 +72,18 @@ function startHttpServer(portStr) {
             '/state',
             '/plan',
             '/context',
+            '/graph',
             '/agents/:name'
           ]
         }, null, 2));
+        return;
+      }
+
+      // Endpoint: /graph (Codebase Graph)
+      if (pathname === '/graph') {
+        const summary = projectGraph.getSummary();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(summary, null, 2));
         return;
       }
 

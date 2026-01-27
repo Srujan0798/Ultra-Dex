@@ -12,6 +12,20 @@ export async function loadState() {
   }
 }
 
+export async function saveState(state) {
+  try {
+    await fs.mkdir(path.resolve(process.cwd(), '.ultra'), { recursive: true });
+    await fs.writeFile(
+      path.resolve(process.cwd(), '.ultra/state.json'), 
+      JSON.stringify(state, null, 2)
+    );
+    return true;
+  } catch (error) {
+    console.error(chalk.red('Failed to save state:'), error);
+    return false;
+  }
+}
+
 export function generateMarkdown(state) {
   const { project, phases } = state;
   let md = `# ${project.name} - Implementation Plan\n\n`;

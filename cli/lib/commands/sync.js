@@ -1,42 +1,72 @@
+/**
+ * ultra-dex sync command
+ * Synchronizes project state and graph across devices
+ */
+
 import chalk from 'chalk';
+import fs from 'fs/promises';
 import path from 'path';
-import { snapshotContext } from '../utils/sync.js';
-import { validateSafePath } from '../utils/validation.js';
+import { loadState, saveState } from './state.js';
+import { buildGraph } from '../utils/graph.js';
 
 export function registerSyncCommand(program) {
   program
     .command('sync')
-    .description('Auto-sync CONTEXT.md with current codebase')
-    .option('-d, --dir <directory>', 'Project directory', '.')
+    .description('Synchronize project state and graph (God Mode Sync)')
+    .option('--push', 'Push local state to sync target')
+    .option('--pull', 'Pull state from sync target')
+    .option('--target <path>', 'Sync target (local folder or s3-like)', '.ultra/sync')
     .action(async (options) => {
-      const dirValidation = validateSafePath(options.dir, 'Project directory');
-      if (dirValidation !== true) {
-        console.log(chalk.red(dirValidation));
-        process.exit(1);
-      }
+      console.log(chalk.cyan('\n🔄 Ultra-Dex State Sync\n'));
 
-      const rootDir = path.resolve(options.dir);
-      console.log(chalk.cyan('\n🔁 Ultra-Dex Context Sync\n'));
+      const syncTarget = path.resolve(options.target);
+      await fs.mkdir(syncTarget, { recursive: true });
 
-      try {
-        const result = await snapshotContext(rootDir);
-        if (result.missingContext) {
-          console.log(chalk.red('❌ CONTEXT.md not found. Run `ultra-dex init` first.'));
-          process.exit(1);
-        }
-
-        if (result.updated) {
-          console.log(chalk.green('✅ CONTEXT.md updated with latest snapshot.'));
-        } else {
-          console.log(chalk.yellow('⚠️  CONTEXT.md already up to date.'));
-        }
-        console.log(chalk.gray(`Files scanned: ${result.summary.fileCount}`));
-        console.log(chalk.gray(`Stack guess: ${result.summary.stack}`));
-        console.log(chalk.gray(`Changes since last sync: +${result.diff.added} / -${result.diff.removed}\n`));
-      } catch (error) {
-        console.log(chalk.red('❌ Sync failed.'));
-        console.error(error);
-        process.exit(1);
+      if (options.push) {
+        await handlePush(syncTarget);
+      } else if (options.pull) {
+        await handlePull(syncTarget);
+      } else {
+        // Default: Bidirectional Sync (Simplified for Phase 2.1)
+        console.log(chalk.yellow('Defaulting to PUSH local state to target.'));
+        await handlePush(syncTarget);
       }
     });
+}
+
+async function handlePush(target) {
+  const spinner = (await import('ora')).default('Pushing state to sync target...').start();
+  try {
+    const state = await loadState();
+    if (!state) throw new Error('No local state found');
+
+    const graph = await buildGraph();
+    
+    const bundle = {
+      state,
+      graph,
+      timestamp: new Date().toISOString(),
+      machine: process.env.USER || 'unknown'
+    };
+
+    await fs.writeFile(path.join(target, 'sync-bundle.json'), JSON.stringify(bundle, null, 2));
+    spinner.succeed(chalk.green(`State pushed to ${target}`));
+  } catch (e) {
+    spinner.fail(chalk.red(`Push failed: ${e.message}`));
+  }
+}
+
+async function handlePull(target) {
+  const spinner = (await import('ora')).default('Pulling state from sync target...').start();
+  try {
+    const bundleContent = await fs.readFile(path.join(target, 'sync-bundle.json'), 'utf8');
+    const bundle = JSON.parse(bundleContent);
+
+    await saveState(bundle.state);
+    spinner.succeed(chalk.green('Local state updated from sync bundle.'));
+    console.log(chalk.gray(`   Bundle Timestamp: ${bundle.timestamp}`));
+    console.log(chalk.gray(`   Source Machine: ${bundle.machine}`));
+  } catch (e) {
+    spinner.fail(chalk.red(`Pull failed: ${e.message}`));
+  }
 }

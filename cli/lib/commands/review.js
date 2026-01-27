@@ -11,6 +11,7 @@ import path from 'path';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
 import { SYSTEM_PROMPT, generateReviewPrompt } from '../templates/prompts/review-code.js';
 import { validateSafePath } from '../utils/validation.js';
+import { buildGraph, queryGraph, getImpactAnalysis } from '../utils/graph.js'; // Import CPG utils
 
 // File patterns to scan
 const CODE_PATTERNS = {
@@ -127,11 +128,29 @@ export function registerReviewCommand(program) {
         return;
       }
 
-      // Get directory structure
-      const spinner = ora('Scanning codebase...').start();
+      // Get directory structure & Build Graph
+      const spinner = ora('Scanning codebase & Building Graph...').start();
       const structure = await getDirectoryStructure(reviewDir);
       const keyFiles = await findKeyFiles(reviewDir);
-      spinner.succeed('Codebase scanned');
+      
+      // GOD MODE: Build CPG
+      let graphSummary = "Graph Not Available";
+      try {
+        const graph = await buildGraph();
+        graphSummary = `
+Code Property Graph Stats:
+- Files: ${graph.nodes.filter(n => n.type === 'file').length}
+- Functions: ${graph.nodes.filter(n => n.type === 'function').length}
+- Dependencies (Edges): ${graph.edges.length}
+
+Top Dependencies:
+${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
+        `;
+      } catch (e) {
+        // Fallback if graph fails
+      }
+
+      spinner.succeed('Codebase scanned & Graph built');
 
       if (options.quick) {
         // Quick review - just check structure
@@ -188,13 +207,16 @@ export function registerReviewCommand(program) {
 
       // Build file summary
       const filesSummary = keyFiles.map(f => `### ${f.path}\n\`\`\`\n${f.content}\n\`\`\``).join('\n\n');
+      
+      // Inject Graph Summary into context
+      const contextWithGraph = `${structure}\n\n## ARCHITECTURAL GRAPH (TRUTH)\n${graphSummary}`;
 
-      spinner.start('Analyzing code against plan...');
+      spinner.start('Analyzing code & graph against plan...');
 
       try {
         const result = await provider.generate(
           SYSTEM_PROMPT,
-          generateReviewPrompt(plan.slice(0, 15000), structure, filesSummary)
+          generateReviewPrompt(plan.slice(0, 15000), contextWithGraph, filesSummary)
         );
 
         spinner.succeed('Analysis complete');
