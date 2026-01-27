@@ -187,6 +187,40 @@ payload = {"user_id": user_id, "exp": datetime.utcnow() + timedelta(minutes=15)}
 token = jwt.encode(payload, os.environ["JWT_SECRET"], algorithm="HS256")
 ```
 
+## Code Examples
+
+### Rate Limiting Middleware
+```typescript
+// src/middleware/rateLimit.ts
+import rateLimit from 'express-rate-limit';
+
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+export const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { error: 'Too many login attempts' },
+});
+```
+
+### Input Sanitization
+```typescript
+import DOMPurify from 'isomorphic-dompurify';
+import { z } from 'zod';
+
+const sanitizedString = z.string().transform((val) => DOMPurify.sanitize(val));
+const userInputSchema = z.object({
+  name: sanitizedString,
+  bio: sanitizedString.max(500),
+});
+```
+
 ---
 
 ## Security Tools

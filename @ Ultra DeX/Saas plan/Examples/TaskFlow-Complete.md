@@ -3034,6 +3034,24 @@ Return JSON matching this schema: { title, description?, priority, dueDate? }`,
 
 ---
 
+## Scaling Scenarios
+
+### Scenario: 10,000 Users
+**Problem:** Database queries become slow, API response times increase.  
+**Solution:**
+1. Add Redis caching (see Section 28 - Caching Strategy)
+2. Use @Performance agent to identify N+1 queries
+3. Add database indexes per cursor-rules/01-database.mdc
+4. Consider read replicas for heavy read workloads
+
+### Scenario: Multi-Tenant Expansion
+**Problem:** Adding B2B features with tenant isolation.  
+**Solution:**
+1. Load cursor-rules/12-multi-tenancy.mdc
+2. Add `tenantId` to all user-facing tables
+3. Implement Row-Level Security in PostgreSQL
+4. Use @Security agent to audit isolation
+
 # END OF TASKFLOW IMPLEMENTATION PLAN
 
 **Total Sections:** 34

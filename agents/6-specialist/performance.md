@@ -91,6 +91,26 @@ const Dashboard = lazy(() => import('./Dashboard'));
 const Settings = lazy(() => import('./Settings'));
 ```
 
+**React.memo for Expensive Components**
+```tsx
+import { memo } from 'react';
+
+interface TaskListProps {
+  tasks: Task[];
+  onComplete: (id: string) => void;
+}
+
+export const TaskList = memo(function TaskList({ tasks, onComplete }: TaskListProps) {
+  return (
+    <ul>
+      {tasks.map((task) => (
+        <TaskItem key={task.id} task={task} onComplete={onComplete} />
+      ))}
+    </ul>
+  );
+});
+```
+
 ### Backend
 
 **Database Indexing**
@@ -99,6 +119,20 @@ const Settings = lazy(() => import('./Settings'));
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_orders_user_id ON orders(user_id);
 CREATE INDEX idx_created_at ON posts(created_at DESC);
+```
+
+**Database Query Optimization**
+```typescript
+// BAD: N+1 query
+const users = await prisma.user.findMany();
+for (const user of users) {
+  const tasks = await prisma.task.findMany({ where: { userId: user.id } });
+}
+
+// GOOD: Single query with include
+const users = await prisma.user.findMany({
+  include: { tasks: true },
+});
 ```
 
 **Redis Caching**
@@ -110,6 +144,20 @@ if (cachedData) return JSON.parse(cachedData);
 const data = await database.query(/* expensive query */);
 await redis.setex(`user:${userId}`, 3600, JSON.stringify(data));
 return data;
+```
+
+```typescript
+import Redis from 'ioredis';
+
+const redis = new Redis();
+
+async function getCachedUser(userId: string) {
+  const cached = await redis.get(`user:${userId}`);
+  if (cached) return JSON.parse(cached);
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  await redis.setex(`user:${userId}`, 3600, JSON.stringify(user));
+  return user;
+}
 ```
 
 ```python

@@ -1,0 +1,104 @@
+# Testing Rules
+
+## Test Stack
+
+- Unit/Integration: Vitest
+- E2E: Playwright
+- API: Supertest or native fetch
+
+## File Structure
+
+```
+tests/
+├── unit/           # Pure function tests
+├── integration/    # API + DB tests
+└── e2e/            # Full user flow tests
+```
+
+## Unit Tests
+
+```typescript
+// tests/unit/utils.test.ts
+import { describe, it, expect } from 'vitest';
+import { formatCurrency } from '@/lib/utils';
+
+describe('formatCurrency', () => {
+  it('formats USD correctly', () => {
+    expect(formatCurrency(1999, 'USD')).toBe('$19.99');
+  });
+
+  it('handles zero', () => {
+    expect(formatCurrency(0, 'USD')).toBe('$0.00');
+  });
+});
+```
+
+## API Integration Tests
+
+```typescript
+// tests/integration/api/users.test.ts
+import { describe, it, expect, beforeEach } from 'vitest';
+import { prisma } from '@/lib/prisma';
+
+describe('POST /api/users', () => {
+  beforeEach(async () => {
+    await prisma.user.deleteMany();
+  });
+
+  it('creates a user with valid data', async () => {
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      body: JSON.stringify({ email: 'test@example.com', name: 'Test' }),
+    });
+    expect(res.status).toBe(201);
+
+    const user = await prisma.user.findUnique({ where: { email: 'test@example.com' } });
+    expect(user).not.toBeNull();
+  });
+
+  it('rejects invalid email', async () => {
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      body: JSON.stringify({ email: 'invalid', name: 'Test' }),
+    });
+    expect(res.status).toBe(400);
+  });
+});
+```
+
+## E2E Tests
+
+```typescript
+// tests/e2e/auth.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('user can sign up and access dashboard', async ({ page }) => {
+  await page.goto('/signup');
+  await page.fill('[name="email"]', 'new@example.com');
+  await page.fill('[name="password"]', 'securePassword123');
+  await page.click('button[type="submit"]');
+
+  await expect(page).toHaveURL('/dashboard');
+  await expect(page.locator('h1')).toContainText('Welcome');
+});
+```
+
+## Coverage Targets
+
+- Business logic: >80%
+- API routes: >70%
+- UI components: >60%
+- E2E critical paths: 100%
+
+## What to Test
+
+- Happy path (it works)
+- Edge cases (empty, null, max values)
+- Error handling (invalid input, network failure)
+- Authorization (can't access others' data)
+
+## What NOT to Test
+
+- Third-party libraries (Stripe, NextAuth)
+- Framework internals
+- Trivial getters/setters

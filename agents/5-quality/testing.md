@@ -104,6 +104,23 @@ def test_create_user():
     assert res.json()["data"]["email"] == "test@example.com"
 ```
 
+### Jest Unit Test
+```typescript
+// __tests__/utils/formatDate.test.ts
+import { formatDate } from '../../src/utils/formatDate';
+
+describe('formatDate', () => {
+  it('formats date correctly', () => {
+    const date = new Date('2026-01-25');
+    expect(formatDate(date)).toBe('January 25, 2026');
+  });
+
+  it('handles null gracefully', () => {
+    expect(formatDate(null)).toBe('N/A');
+  });
+});
+```
+
 ### Component Test (React Testing Library)
 ```typescript
 // src/components/__tests__/Button.test.tsx
@@ -163,6 +180,21 @@ test('user can sign up and log in', async ({ page }) => {
 
   // Should redirect to dashboard
   await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page.locator('h1')).toContainText('Welcome');
+});
+```
+
+### Playwright E2E Test (Login)
+```typescript
+// e2e/auth.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('user can login', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
+  await expect(page).toHaveURL('/dashboard');
   await expect(page.locator('h1')).toContainText('Welcome');
 });
 ```

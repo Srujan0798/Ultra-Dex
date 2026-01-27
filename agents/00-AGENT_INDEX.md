@@ -75,6 +75,29 @@ Advanced optimization and code improvement.
 
 ---
 
+## Agent → Template Section Map
+
+| Agent | Primary Template Sections | Supporting Sections |
+|-------|---------------------------|---------------------|
+| **@Planner** | 1, 2, 16, 18 | 17, 23 |
+| **@CTO** | 12, 15, 19 | 21, 22 |
+| **@Research** | 15, 29, 30 | 25, 26 |
+| **@Backend** | 11, 13 | 9, 27 |
+| **@Database** | 10 | 11, 21 |
+| **@Frontend** | 6, 7, 9 | 8, 14 |
+| **@Auth** | 11 | 21, 27 |
+| **@Security** | 21, 28 | 27, 22 |
+| **@DevOps** | 19, 20 | 18, 24 |
+| **@Testing** | 20 | 16, 27 |
+| **@Reviewer** | 20, 21 | 17, 27 |
+| **@Debugger** | 27 | 13, 20 |
+| **@Documentation** | 24 | 18, 22 |
+| **@Performance** | 21, 22 | 27, 32 |
+| **@Refactoring** | 16, 17 | 13, 22 |
+| **@Orchestrator** | 16, 18 | 12, 24 |
+
+---
+
 ## Quick Selection Guide
 
 **Starting a new feature?**

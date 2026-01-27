@@ -4,6 +4,12 @@
 
 ---
 
+## Deprecation Notice
+
+This legacy prompt bundle is maintained for reference only. Use the updated, tiered agent prompts in **[/agents/](./)** and [00-AGENT_INDEX.md](./00-AGENT_INDEX.md).
+
+---
+
 ## How to Use These Instructions
 
 Copy the relevant prompt below and use it with your AI agent (Claude, GPT-4, Gemini, etc.) along with your idea and the Implementation Template.

@@ -1,6 +1,6 @@
 {
   "name": "ultra-dex",
-  "version": "1.7.3",
+  "version": "1.8.0",
   "description": "CLI for Ultra-Dex SaaS Implementation Framework with 16 Production Agents",
   "keywords": [
     "saas",
@@ -22,7 +22,7 @@
   },
   "files": [
     "bin",
-    "templates"
+    "assets"
   ],
   "engines": {
     "node": ">=18"

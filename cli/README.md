@@ -13,8 +13,10 @@ cd your-project
 cat QUICK-START.md
 
 # 3. Load Cursor rules for AI assistance (1 min)
-npx degit Srujan0798/Ultra-Dex/cursor-rules .cursor/rules
-# Then: cd .cursor/rules && ./load.sh database api auth
+# Rules are bundled; choose "Include cursor-rules" when prompted.
+#
+# Optional offline bundle:
+# npx ultra-dex fetch --rules --docs --agents
 
 # 4. Start building with AI agents (4 min)
 # Use @Backend, @Frontend, @Database agents
@@ -128,11 +130,22 @@ cp -r .ultra-dex/cursor-rules .cursor/rules
 cp -r .ultra-dex/agents .agents
 ```
 
+### Serve context (MCP-compatible)
+
+```bash
+npx ultra-dex serve --port 3001
+```
+
+Endpoints:
+- `GET /` health check
+- `GET /context` returns CONTEXT.md, IMPLEMENTATION-PLAN.md, QUICK-START.md
+
 ## Commands
 
 | Command | Description |
 |---------|-------------|
 | `ultra-dex init` | Initialize a new project |
+| `ultra-dex init --preview` | Preview files without creating them |
 | `ultra-dex audit` | Audit project for completeness |
 | `ultra-dex examples` | List available examples |
 | `ultra-dex agents` | List available AI agents |
@@ -140,6 +153,7 @@ cp -r .ultra-dex/agents .agents
 | `ultra-dex pack <agent>` | Package context + agent for any AI |
 | `ultra-dex hooks` | Set up git pre-commit hooks |
 | `ultra-dex fetch` | Download assets for offline use |
+| `ultra-dex serve` | Serve context over HTTP |
 | `ultra-dex validate` | Validate project structure |
 | `ultra-dex workflow <feature>` | Show workflow for a feature |
 | `ultra-dex suggest` | Get AI agent suggestions |

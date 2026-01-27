@@ -5,11 +5,15 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
+import { watch as fsWatch } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const ASSETS_ROOT = path.resolve(__dirname, '../assets');
+const ROOT_FALLBACK = path.resolve(__dirname, '../../');
 
 const program = new Command();
 
@@ -106,19 +110,302 @@ Setting up the implementation plan.
 - [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
 `;
 
+// ===========================================
+// EMBEDDED ASSETS (bundled for offline use)
+// ===========================================
+
+const CORE_CURSOR_RULE = `# Ultra-Dex Core Rules
+
+> Load this as your base ruleset. Add domain-specific rules as needed.
+
+## Project Philosophy
+
+- Build production-ready from day 1
+- Every task: 4-9 hours with clear acceptance criteria
+- 21-step verification for features (simplified for fixes)
+- Code > Documentation (but document decisions)
+
+## Code Standards
+
+- TypeScript strict mode always
+- Zod validation at all API boundaries
+- Error handling: never swallow errors silently
+- Logging: structured JSON, include request IDs
+- Tests: minimum 80% coverage for business logic
+
+## Architecture Defaults
+
+- Next.js App Router (or specified framework)
+- PostgreSQL with Prisma ORM
+- NextAuth.js for authentication
+- Stripe for payments
+- Vercel for deployment
+
+## Task Completion Checklist (Quick 5-Step)
+
+1. Does it work? (Manual test)
+2. Are there tests? (Automated)
+3. Is it secure? (No secrets exposed, inputs validated)
+4. Is it documented? (Code comments for complex logic)
+5. Is it deployable? (No breaking changes)
+
+## When to Use Full 21-Step
+
+- New features affecting multiple files
+- Security-sensitive changes
+- Database schema changes
+- API contract changes
+
+## File Naming
+
+- Components: PascalCase (UserProfile.tsx)
+- Utilities: camelCase (formatDate.ts)
+- API routes: kebab-case (/api/user-profile)
+- Database: snake_case (user_profiles)
+`;
+
+const AGENT_INSTRUCTIONS_EMBEDDED = `# Ultra-Dex AI Agent Quick Reference
+
+## Agent Selection
+
+| Task | Agent | Use When |
+|------|-------|----------|
+| Architecture decisions | @CTO | Tech stack, scaling, trade-offs |
+| Task breakdown | @Planner | Feature to atomic tasks |
+| API endpoints | @Backend | REST/GraphQL, middleware |
+| React components | @Frontend | UI, state, forms |
+| Schema design | @Database | Models, migrations, queries |
+| Auth flows | @Security | Login, sessions, permissions |
+| CI/CD setup | @DevOps | Deploy, monitoring, infra |
+| Code review | @Reviewer | PR review, quality gates |
+| Test coverage | @Testing | Unit, integration, E2E |
+| Bug fixing | @Debugger | Root cause, fixes |
+
+## Quick Start Prompts
+
+### @Backend - API Endpoint
+Act as @Backend. Context: [paste CONTEXT.md]
+Task: Create POST /api/users endpoint with validation.
+Requirements: Zod schema, error handling, rate limiting.
+
+### @Database - Schema Design
+Act as @Database. Context: [paste CONTEXT.md]
+Task: Design User and Organization tables with relationships.
+Requirements: Prisma schema, indexes, soft deletes.
+
+### @Frontend - Component
+Act as @Frontend. Context: [paste CONTEXT.md]
+Task: Create UserProfile component with edit form.
+Requirements: React Hook Form, Zod validation, loading states.
+
+## 21-Step Verification (Quick 5)
+
+1. Does it work? (Manual test)
+2. Are there tests? (80%+ coverage)
+3. Is it secure? (Inputs validated, no secrets)
+4. Is it documented? (Complex logic commented)
+5. Is it deployable? (No breaking changes)
+
+---
+Full agents: https://github.com/Srujan0798/Ultra-Dex/tree/main/agents
+`;
+
+const VERIFICATION_CHECKLIST = `# Ultra-Dex 21-Step Verification Checklist
+
+## Quick 5 (Every Task)
+- [ ] 1. Does it work? (Manual test)
+- [ ] 2. Are there tests? (Unit tests passing)
+- [ ] 3. Is it secure? (No secrets, inputs validated)
+- [ ] 4. Is it documented? (Comments for complex logic)
+- [ ] 5. Is it deployable? (No breaking changes)
+
+## Full 21 (New Features)
+
+### Understanding (1-4)
+- [ ] 1. Requirements clear?
+- [ ] 2. Assumptions documented?
+- [ ] 3. Logic flow mapped?
+- [ ] 4. Subtasks identified?
+
+### Implementation (5-10)
+- [ ] 5. Setup complete?
+- [ ] 6. Code written?
+- [ ] 7. Comments added?
+- [ ] 8. Unit tests passing?
+- [ ] 9. Bugs fixed?
+- [ ] 10. Integration verified?
+
+### Quality (11-16)
+- [ ] 11. Acceptance criteria met?
+- [ ] 12. UX acceptable?
+- [ ] 13. Performance acceptable?
+- [ ] 14. Security reviewed?
+- [ ] 15. Code refactored?
+- [ ] 16. Errors handled?
+
+### Delivery (17-21)
+- [ ] 17. API documented?
+- [ ] 18. Committed?
+- [ ] 19. Build passing?
+- [ ] 20. Deploy ready?
+- [ ] 21. Final verified?
+
+---
+Use Quick 5 for bug fixes. Use Full 21 for new features.
+`;
+
+const GITHUB_RAW = 'https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main';
+const CURSOR_RULE_FILES = [
+  '00-ultra-dex-core.mdc',
+  '01-database.mdc',
+  '02-api.mdc',
+  '03-auth.mdc',
+  '04-frontend.mdc',
+  '05-payments.mdc',
+  '06-testing.mdc',
+  '07-security.mdc',
+  '08-deployment.mdc',
+  '09-error-handling.mdc',
+  '10-performance.mdc',
+  '11-nextjs-v15.mdc',
+  '12-multi-tenancy.mdc',
+];
+const AGENT_PATHS = [
+  '00-AGENT_INDEX.md',
+  'README.md',
+  'AGENT-INSTRUCTIONS.md',
+  '1-leadership/cto.md',
+  '1-leadership/planner.md',
+  '1-leadership/research.md',
+  '2-development/backend.md',
+  '2-development/frontend.md',
+  '2-development/database.md',
+  '3-security/security.md',
+  '4-devops/devops.md',
+  '5-quality/reviewer.md',
+  '5-quality/testing.md',
+  '5-quality/debugger.md',
+  '6-specialist/performance.md',
+  '6-specialist/refactoring.md',
+  '6-specialist/documentation.md',
+];
+const DOC_FILES = [
+  'VERIFICATION.md',
+  'BUILD-AUTH-30M.md',
+  'QUICK-REFERENCE.md',
+  'TROUBLESHOOTING.md',
+];
+const GUIDE_FILES = [
+  'PROJECT-ORCHESTRATION.md',
+  'ADVANCED-WORKFLOWS.md',
+  'DATABASE-DECISION-FRAMEWORK.md',
+  'ARCHITECTURE-PATTERNS.md',
+];
+
+async function downloadFile(url, destPath) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const content = await response.text();
+    await fs.mkdir(path.dirname(destPath), { recursive: true });
+    await fs.writeFile(destPath, content);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+async function readFileIfExists(filePath) {
+  try {
+    return await fs.readFile(filePath, 'utf-8');
+  } catch {
+    return null;
+  }
+}
+
+function formatYamlExport(data) {
+  const lines = [];
+  lines.push(`generatedAt: ${JSON.stringify(data.generatedAt)}`);
+  lines.push(`root: ${JSON.stringify(data.root)}`);
+  lines.push('files:');
+
+  const fileEntries = Object.entries(data.files);
+  if (fileEntries.length === 0) {
+    lines.push('  {}');
+  } else {
+    fileEntries.forEach(([fileName, content]) => {
+      lines.push(`  ${fileName}: |`);
+      const contentLines = content.length === 0 ? [''] : content.split('\n');
+      contentLines.forEach(line => {
+        lines.push(`    ${line}`);
+      });
+    });
+  }
+
+  if (data.missing.length === 0) {
+    lines.push('missing: []');
+  } else {
+    lines.push('missing:');
+    data.missing.forEach(item => {
+      lines.push(`  - ${item}`);
+    });
+  }
+
+  return lines.join('\n');
+}
+
+async function copyDirectory(srcDir, destDir) {
+  await fs.mkdir(destDir, { recursive: true });
+  const entries = await fs.readdir(srcDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(srcDir, entry.name);
+    const destPath = path.join(destDir, entry.name);
+    if (entry.isDirectory()) {
+      await copyDirectory(srcPath, destPath);
+    } else if (entry.isFile()) {
+      await fs.copyFile(srcPath, destPath);
+    }
+  }
+}
+
+function inferStackFromFiles(fileList) {
+  if (fileList.some((file) => file.includes('package.json'))) {
+    if (fileList.some((file) => file.includes('next.config'))) return 'Next.js';
+    if (fileList.some((file) => file.includes('remix.config'))) return 'Remix';
+    if (fileList.some((file) => file.includes('svelte.config'))) return 'SvelteKit';
+    return 'Node.js';
+  }
+  if (fileList.some((file) => file.includes('pyproject.toml') || file.includes('requirements.txt'))) {
+    return 'Python';
+  }
+  return 'Unknown';
+}
+
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('1.7.1');
+  .version('1.7.4');
 
 program
   .command('init')
   .description('Initialize a new Ultra-Dex project')
   .option('-n, --name <name>', 'Project name')
   .option('-d, --dir <directory>', 'Output directory', '.')
+  .option('--preview', 'Preview files without creating them')
   .action(async (options) => {
     console.log(chalk.cyan(banner));
     console.log(chalk.bold('\nWelcome to Ultra-Dex! Let\'s plan your SaaS.\n'));
+
+    if (options.preview) {
+      console.log('\n📋 Files that would be created:\n');
+      console.log('  QUICK-START.md');
+      console.log('  CONTEXT.md');
+      console.log('  IMPLEMENTATION-PLAN.md');
+      console.log('  docs/CHECKLIST.md');
+      console.log('  docs/AI-PROMPTS.md');
+      console.log('\nRun without --preview to create files.');
+      return;
+    }
 
     // Gather project info
     const answers = await inquirer.prompt([
@@ -291,7 +578,7 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         const rulesDir = path.join(outputDir, '.cursor', 'rules');
         await fs.mkdir(rulesDir, { recursive: true });
 
-        const cursorRulesPath = path.resolve(__dirname, '../../cursor-rules');
+        const cursorRulesPath = path.join(ASSETS_ROOT, 'cursor-rules');
         try {
           const ruleFiles = await fs.readdir(cursorRulesPath);
           for (const file of ruleFiles.filter(f => f.endsWith('.mdc'))) {
@@ -311,38 +598,56 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             // Core rule not available - skip Copilot setup
           }
         } catch (err) {
-          // Cursor rules not bundled - intentional design choice for npm package size
-          console.log(chalk.gray('\n  📦 Cursor rules not bundled (keeps npm package <50KB)'));
-          console.log(chalk.cyan('  Quick setup: npx degit Srujan0798/Ultra-Dex/cursor-rules .cursor/rules'));
-          console.log(chalk.blue('  Or download: https://github.com/Srujan0798/Ultra-Dex/tree/main/cursor-rules'));
+          // Fallback to repo root if assets are not packaged
+          const fallbackRulesPath = path.join(ROOT_FALLBACK, 'cursor-rules');
+          try {
+            const ruleFiles = await fs.readdir(fallbackRulesPath);
+            for (const file of ruleFiles.filter(f => f.endsWith('.mdc'))) {
+              await fs.copyFile(
+                path.join(fallbackRulesPath, file),
+                path.join(rulesDir, file)
+              );
+            }
+          } catch (fallbackErr) {
+            console.log(chalk.red('\n  ❌ Cursor rules not found in assets or repo.'));
+            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --rules'));
+          }
         }
       }
 
       // Copy full template if requested
       if (answers.includeFullTemplate) {
-        const templatePath = path.resolve(__dirname, '../../@ Ultra DeX/Saas plan/04-Imp-Template.md');
+        const templatePath = path.join(ASSETS_ROOT, 'saas-plan', '04-Imp-Template.md');
         try {
           await fs.copyFile(templatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
         } catch (err) {
-          // Template not bundled - keeps npm package lightweight
-          console.log(chalk.gray('\n  📦 Full template not bundled (5,500 lines - too large for npm)'));
-          console.log(chalk.cyan('  Quick fetch: curl -O https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/%40%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md'));
-          console.log(chalk.blue('  Or view: https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md'));
+          const fallbackTemplatePath = path.join(ROOT_FALLBACK, '@ Ultra DeX', 'Saas plan', '04-Imp-Template.md');
+          try {
+            await fs.copyFile(fallbackTemplatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
+          } catch (fallbackErr) {
+            console.log(chalk.red('\n  ❌ Full template not found in assets or repo.'));
+            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --docs'));
+          }
         }
       }
 
       // Copy docs if requested
       if (answers.includeDocs) {
-        const verificationPath = path.resolve(__dirname, '../../docs/VERIFICATION.md');
-        const agentPath = path.resolve(__dirname, '../../agents/AGENT-INSTRUCTIONS.md');
+        const verificationPath = path.join(ASSETS_ROOT, 'docs', 'VERIFICATION.md');
+        const agentPath = path.join(ASSETS_ROOT, 'agents', 'AGENT-INSTRUCTIONS.md');
         try {
           await fs.copyFile(verificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
           await fs.copyFile(agentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
         } catch (err) {
-          // Docs not bundled - intentional for npm package size
-          console.log(chalk.gray('\n  📦 Verification & instructions not bundled (npm size optimization)'));
-          console.log(chalk.cyan('  Quick setup: npx degit Srujan0798/Ultra-Dex/docs docs'));
-          console.log(chalk.blue('  Or view: https://github.com/Srujan0798/Ultra-Dex/tree/main/docs'));
+          const fallbackVerificationPath = path.join(ROOT_FALLBACK, 'docs', 'VERIFICATION.md');
+          const fallbackAgentPath = path.join(ROOT_FALLBACK, 'agents', 'AGENT-INSTRUCTIONS.md');
+          try {
+            await fs.copyFile(fallbackVerificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
+            await fs.copyFile(fallbackAgentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
+          } catch (fallbackErr) {
+            console.log(chalk.red('\n  ❌ Docs not found in assets or repo.'));
+            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --docs'));
+          }
         }
       }
 
@@ -351,7 +656,7 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
         const agentsDir = path.join(outputDir, '.agents');
         await fs.mkdir(agentsDir, { recursive: true });
 
-        const agentsSourcePath = path.resolve(__dirname, '../../agents');
+        const agentsSourcePath = path.join(ASSETS_ROOT, 'agents');
         try {
           // Copy tier directories and agent files
           const tiers = ['1-leadership', '2-development', '3-security', '4-devops', '5-quality', '6-specialist'];
@@ -379,10 +684,35 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             path.join(agentsDir, 'README.md')
           );
         } catch (err) {
-          // Agents not bundled - intentional for npm package size
-          console.log(chalk.gray('\n  📦 Agent prompts not bundled (npm size optimization)'));
-          console.log(chalk.cyan('  Quick setup: npx degit Srujan0798/Ultra-Dex/agents .agents'));
-          console.log(chalk.blue('  Or view: https://github.com/Srujan0798/Ultra-Dex/tree/main/agents'));
+          const fallbackAgentsPath = path.join(ROOT_FALLBACK, 'agents');
+          try {
+            const tiers = ['1-leadership', '2-development', '3-security', '4-devops', '5-quality', '6-specialist'];
+            for (const tier of tiers) {
+              const tierDir = path.join(agentsDir, tier);
+              await fs.mkdir(tierDir, { recursive: true });
+
+              const tierPath = path.join(fallbackAgentsPath, tier);
+              const tierFiles = await fs.readdir(tierPath);
+              for (const file of tierFiles.filter(f => f.endsWith('.md'))) {
+                await fs.copyFile(
+                  path.join(tierPath, file),
+                  path.join(tierDir, file)
+                );
+              }
+            }
+
+            await fs.copyFile(
+              path.join(fallbackAgentsPath, '00-AGENT_INDEX.md'),
+              path.join(agentsDir, '00-AGENT_INDEX.md')
+            );
+            await fs.copyFile(
+              path.join(fallbackAgentsPath, 'README.md'),
+              path.join(agentsDir, 'README.md')
+            );
+          } catch (fallbackErr) {
+            console.log(chalk.red('\n  ❌ Agent prompts not found in assets or repo.'));
+            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --agents'));
+          }
         }
       }
 
@@ -634,6 +964,89 @@ program
     console.log('\n' + chalk.gray('Agent Index: https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/00-AGENT_INDEX.md\n'));
   });
 
+// ========================================
+// V2 PLACEHOLDERS (scaffolds)
+// ========================================
+program
+  .command('generate')
+  .description('Generate a full implementation plan from an idea (placeholder)')
+  .action(() => {
+    console.log(chalk.yellow('\n🚧 ultra-dex generate is not implemented yet.'));
+    console.log(chalk.gray('Planned: v2.0 - AI fills all 34 sections from your idea.'));
+    console.log(chalk.cyan('Track progress: cli/ROADMAP-V2.md\n'));
+  });
+
+program
+  .command('build')
+  .description('Start AI-assisted build flow (placeholder)')
+  .action(() => {
+    console.log(chalk.yellow('\n🚧 ultra-dex build is not implemented yet.'));
+    console.log(chalk.gray('Planned: v2.1 - Orchestrate agents with plan context.'));
+    console.log(chalk.cyan('Track progress: cli/ROADMAP-V2.md\n'));
+  });
+
+program
+  .command('review')
+  .description('Review code against implementation plan (placeholder)')
+  .action(() => {
+    console.log(chalk.yellow('\n🚧 ultra-dex review is not implemented yet.'));
+    console.log(chalk.gray('Planned: v2.2 - Align code with plan and report gaps.'));
+    console.log(chalk.cyan('Track progress: cli/ROADMAP-V2.md\n'));
+  });
+
+// ========================================
+// MCP SERVER (Context over HTTP)
+// ========================================
+program
+  .command('serve')
+  .description('Serve Ultra-Dex context over HTTP (MCP-compatible)')
+  .option('-p, --port <port>', 'Port to listen on', '3001')
+  .action(async (options) => {
+    const port = Number.parseInt(options.port, 10);
+    if (Number.isNaN(port)) {
+      console.log(chalk.red('Invalid port. Use a numeric value.'));
+      process.exit(1);
+    }
+
+    async function readFileSafe(filePath, label) {
+      try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        return { label, content };
+      } catch {
+        return { label, content: '' };
+      }
+    }
+
+    const server = http.createServer(async (req, res) => {
+      if (!req.url || req.url === '/') {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('Ultra-Dex MCP Server\n');
+        return;
+      }
+
+      if (req.url === '/context') {
+        const [context, plan, quickStart] = await Promise.all([
+          readFileSafe('CONTEXT.md', 'CONTEXT.md'),
+          readFileSafe('IMPLEMENTATION-PLAN.md', 'IMPLEMENTATION-PLAN.md'),
+          readFileSafe('QUICK-START.md', 'QUICK-START.md'),
+        ]);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ files: [context, plan, quickStart] }));
+        return;
+      }
+
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Not found' }));
+    });
+
+    server.listen(port, () => {
+      console.log(chalk.green(`\n✅ Ultra-Dex MCP server running on http://localhost:${port}`));
+      console.log(chalk.gray('  GET /context -> CONTEXT.md, IMPLEMENTATION-PLAN.md, QUICK-START.md'));
+      console.log(chalk.gray('  GET / -> health check\n'));
+    });
+  });
+
 program
   .command('agent <name>')
   .description('Show a specific agent prompt')
@@ -649,7 +1062,7 @@ program
     }
 
     // Try to read agent file
-    const agentPath = path.resolve(__dirname, '../../agents', agent.file);
+    const agentPath = path.join(ASSETS_ROOT, 'agents', agent.file);
     try {
       const content = await fs.readFile(agentPath, 'utf-8');
       console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
@@ -658,10 +1071,19 @@ program
       console.log(chalk.gray('─'.repeat(60)));
       console.log(chalk.bold('\n📋 Copy the above prompt and paste into your AI tool.\n'));
     } catch (err) {
-      // Agent file not bundled (npm package) - show URL instead
-      console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
-      console.log(chalk.gray('View full prompt on GitHub:'));
-      console.log(chalk.blue(`  https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n`));
+      const fallbackPath = path.join(ROOT_FALLBACK, 'agents', agent.file);
+      try {
+        const content = await fs.readFile(fallbackPath, 'utf-8');
+        console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
+        console.log(chalk.gray('─'.repeat(60)));
+        console.log(content);
+        console.log(chalk.gray('─'.repeat(60)));
+        console.log(chalk.bold('\n📋 Copy the above prompt and paste into your AI tool.\n'));
+      } catch (fallbackErr) {
+        console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent\n`));
+        console.log(chalk.gray('View full prompt on GitHub:'));
+        console.log(chalk.blue(`  https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n`));
+      }
     }
   });
 
@@ -683,12 +1105,18 @@ program
     let output = '';
 
     // 1. Read Agent Prompt
-    const agentPath = path.resolve(__dirname, '../../agents', agent.file);
+    const agentPath = path.join(ASSETS_ROOT, 'agents', agent.file);
     try {
       const agentPrompt = await fs.readFile(agentPath, 'utf-8');
       output += agentPrompt + '\n\n';
     } catch (err) {
-      output += `# ${agent.name.toUpperCase()} Agent\n\nSee: https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n\n`;
+      const fallbackPath = path.join(ROOT_FALLBACK, 'agents', agent.file);
+      try {
+        const agentPrompt = await fs.readFile(fallbackPath, 'utf-8');
+        output += agentPrompt + '\n\n';
+      } catch (fallbackErr) {
+        output += `# ${agent.name.toUpperCase()} Agent\n\nSee: https://github.com/Srujan0798/Ultra-Dex/blob/main/agents/${agent.file}\n\n`;
+      }
     }
 
     output += '---\n\n';
@@ -1373,11 +1801,10 @@ program
       spinner.text = 'Fetching agent prompts...';
       const agentsDir = path.join(targetDir, 'agents');
 
-      const agentPaths = [
+    const agentPaths = [
         '00-AGENT_INDEX.md',
         'README.md',
         'AGENT-INSTRUCTIONS.md',
-        '0-orchestration/orchestrator.md',
         '1-leadership/cto.md',
         '1-leadership/planner.md',
         '1-leadership/research.md',

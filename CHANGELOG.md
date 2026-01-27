@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2026-01-27
+
+### Added
+- **Cursor Rules Code Examples** - All 13 cursor-rules/*.mdc files now include:
+  - Before/after fintech code examples (transactions, payments, compliance)
+  - Before/after healthcare code examples (HIPAA, patient data, audit logs)
+  - Bad→Good transformation patterns for each domain
+- **CLI Modular Architecture** - Refactored cli/bin/ultra-dex.js into:
+  - `cli/lib/commands/` - Individual command modules
+  - `cli/lib/utils/` - Shared utility functions
+  - `cli/lib/config/` - Configuration constants
+  - `cli/lib/templates/` - Template generators
+- **`ultra-dex init --preview`** - Preview generated files without creating them
+- **`ultra-dex serve`** - Serve CONTEXT.md and plan over HTTP (MCP-compatible)
+
+### Changed
+- **AGENT-INSTRUCTIONS.md** - Added deprecation notice, now links to /agents/ tier structure
+- **00-AGENT_INDEX.md** - Enhanced with template-section mapping
+- **CLI Error Handling** - Improved error messages with context
+- **Documentation** - Updated QUICK-REFERENCE.md, TROUBLESHOOTING.md, TUTORIAL.md
+
+### Fixed
+- CLI input validation for project names and file paths
+- Hardcoded GitHub URLs replaced with config constants
+
+---
+
+## [1.7.1] - 2026-01-25
+
+### Added
+- `docs/BUILD-AUTH-30M.md` - Quick auth tutorial
+- `docs/README.md` - Documentation navigation hub
+- `guides/AI-RESEARCH.md` - Embeddings, RAG, vector databases
+- `cursor-rules/11-nextjs-v15.mdc` - Next.js 15 production patterns
+- `cursor-rules/12-multi-tenancy.mdc` - SaaS multi-tenancy patterns
+- `agents/0-orchestration/META-ORCHESTRATOR.md` - Agent coordination
+- Mermaid flow diagram in README.md
+- docs/QUICK-REFERENCE.md linked in Quick Start table
+- `ultra-dex init --preview` - Preview files without creating them
+- `ultra-dex serve` - Serve CONTEXT.md and plan over HTTP (MCP-compatible)
+
+### Changed
+- Reorganized root files to 5 essential files
+- Moved 9 files from root to docs/
+- Moved AGENT-INSTRUCTIONS.md to agents/
+- Updated folder structure diagram in README.md
+
+### Fixed
+- Navigation improved with docs hub
+
+---
+
 ## [1.7.3] - 2026-01-26
 
 ### Added
@@ -39,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.7.1] - 2026-01-26
+## [1.7.0] - 2026-01-26 (Legacy)
 
 ### Added
 - **@Orchestrator Meta-Agent** - New agent that coordinates all 15 agents for complete feature implementation
