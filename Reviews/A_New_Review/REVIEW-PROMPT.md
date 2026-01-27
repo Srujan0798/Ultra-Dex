@@ -1,486 +1,321 @@
-# 🪐 ULTRA-DEX META-LAYER BRUTAL REVIEW
+# 🪐 ULTRA-DEX META-LAYER BRUTAL REVIEW — 2026 EDITION
 
-> **"We don't compete with Cursor/Devin/Claude Code. We make them UNSTOPPABLE."**
+> **"We don't compete with tools. We ARE the layer that makes ALL tools work together."**
 
 ---
 
-## ⚠️ READ THIS FIRST: THE META-LAYER PARADIGM
+## ⚠️ CRITICAL CONTEXT: READ BEFORE REVIEWING
 
-**Ultra-Dex is NOT an AI tool. It is the ORCHESTRATION LAYER that sits ABOVE all AI tools.**
+### Current State (January 2026)
+
+| Metric | Value |
+|--------|-------|
+| **Version** | v2.4.0 |
+| **npm Package** | `npx ultra-dex` |
+| **CLI Commands** | 28+ commands |
+| **AI Agents** | 16 specialized agents |
+| **Cursor Rules** | 13 production rules |
+| **GitHub** | github.com/Srujan0798/Ultra-Dex |
+
+### What Ultra-Dex Is:
+
+**The AI Orchestration Meta-Layer** — NOT another coding tool, but the **governance + memory + coordination layer** that sits ABOVE all AI coding tools.
 
 ```
-                    ┌─────────────────────────────────┐
-                    │        ULTRA-DEX                │
-                    │    (Orchestration Layer)        │
-                    │  Context + Plans + Verification │
-                    └──────────────┬──────────────────┘
-                                   │
-       ┌───────────────┬───────────┼───────────┬───────────────┐
-       ▼               ▼           ▼           ▼               ▼
-  ┌─────────┐    ┌─────────┐  ┌─────────┐  ┌─────────┐   ┌─────────┐
-  │ Claude  │    │ Cursor  │  │ Devin   │  │ Copilot │   │ Gemini  │
-  │  Code   │    │   2.0   │  │   AI    │  │  Agent  │   │  Code   │
-  └─────────┘    └─────────┘  └─────────┘  └─────────┘   └─────────┘
-       ↓               ↓           ↓           ↓               ↓
-                    💻 PRODUCTION CODE 💻
+┌─────────────────────────────────────────────────────────────────┐
+│                      ULTRA-DEX v2.4                             │
+│              The AI Orchestration Meta-Layer                    │
+│  ┌─────────────┬─────────────┬─────────────┬─────────────┐     │
+│  │ CONTEXT.md  │ 34-Section  │ 21-Step     │ 16 Agents   │     │
+│  │ (Memory)    │ Plan        │ Verify      │ (Prompts)   │     │
+│  └─────────────┴─────────────┴─────────────┴─────────────┘     │
+│                            ↓ MCP Server ↓                       │
+└─────────────────────────────────────────────────────────────────┘
+         │              │              │              │
+    ┌────▼────┐    ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
+    │ Claude  │    │ Cursor  │    │ Devin   │    │ Gemini  │
+    │  Code   │    │   2.0   │    │   AI    │    │  Code   │
+    └─────────┘    └─────────┘    └─────────┘    └─────────┘
 ```
 
-### The Problem We Solve:
+---
 
-| Without Ultra-Dex | With Ultra-Dex |
-|-------------------|----------------|
-| AI forgets context after 10 messages | Context persists in version-controlled files |
-| Each AI session starts from zero | Each session reads CONTEXT.md + IMPLEMENTATION-PLAN.md |
-| "I forgot about the auth edge case" | 34-sections force you to plan EVERYTHING |
-| "Is this production-ready?" | 21-step verification = bulletproof QA |
-| Locked to one AI tool | Works with ANY LLM, switch freely |
+## 🌍 2026 COMPETITIVE LANDSCAPE
+
+### The Explosion We're Riding
+
+| Technology | What It Does | Ultra-Dex Integration |
+|------------|--------------|----------------------|
+| **MCP (Anthropic)** | Standardized AI-tool communication | ✅ `ultra-dex serve` exposes MCP endpoints |
+| **LangChain/LangGraph** | LLM orchestration chains | ✅ Compatible agent architecture |
+| **OpenAI Assistants API** | Persistent threads | ✅ CONTEXT.md = permanent thread |
+| **Google Gemini 2.0** | Multimodal agents | ✅ Agent prompts work with Gemini |
+| **Anthropic Claude 3.5** | Agentic computer use | ✅ Ultra-Dex provides structured context |
+| **Microsoft Copilot Agents** | VS Code integration | ✅ Cursor rules work in Copilot |
+| **Devin 2.0** | Autonomous coding | ✅ Ultra-Dex = Devin's memory layer |
+| **Cursor Agent Mode** | Background agents | ✅ Perfect MCP integration target |
+
+### The Battle for AI Dev Stack 2026
+
+```
+LAYER 3: Meta-Orchestration ←── 🎯 ULTRA-DEX LIVES HERE
+         (Memory + Planning + Quality)
+              ↓
+LAYER 2: AI Agents (Devin, Cursor, Claude Code)
+              ↓  
+LAYER 1: Foundation Models (GPT-5, Claude 4, Gemini 2)
+              ↓
+LAYER 0: Hardware (GPUs, TPUs)
+```
+
+**Our Position:** We are **LAYER 3** — the meta-layer that coordinates Layer 2 agents. No one else owns this layer.
+
+---
+
+## 🏆 WHO WE'RE RACING AGAINST
+
+### Direct Competitors (Orchestration Tools)
+
+| Tool | Threat | Our Advantage |
+|------|--------|---------------|
+| **Sweep AI** | AI PR reviewer | We have 21-step verification + planning |
+| **Cody (Sourcegraph)** | Context-aware coding | We persist context across ALL tools, not just one |
+| **Continue.dev** | IDE agnostic AI | We go beyond IDE to full project lifecycle |
+| **Aider** | CLI pair programming | We coordinate 16 agents, not just 1 |
+| **OpenHands/Devin OSS** | Open Devin clone | We orchestrate Devin, not compete with it |
+
+### Indirect Threats (Platform Lock-in)
+
+| Threat | Risk | Our Defense |
+|--------|------|-------------|
+| **Cursor Pro subscription** | Users stay in Cursor | We enhance Cursor, not replace it |
+| **Claude Pro artifacts** | Anthropic adds planning | Our 34-section template is superior |
+| **GitHub Copilot Workspace** | GitHub adds orchestration | We're tool-agnostic, they're not |
 
 ---
 
 ## 🎯 YOUR REVIEW MISSION
 
-**You are a Senior Production Engineering Auditor evaluating Ultra-Dex's ability to:**
+**You are evaluating Ultra-Dex as if you were a VC conducting technical due diligence for a $10M investment.**
 
-1. **Orchestrate** multiple AI tools on the same project
-2. **Prevent** context loss during long development cycles
-3. **Enforce** production-grade quality gates
-4. **Accelerate** development without sacrificing rigor
+### REVIEW DIMENSIONS
 
----
+#### 1. META-LAYER POSITIONING (Weight: 30%)
+- Is Ultra-Dex positioned as orchestration, NOT just another tool?
+- Does it integrate with (not compete against) major AI coding tools?
+- Is MCP integration first-class?
+- Does marketing clearly communicate "we make your AI tools better"?
 
-## 📊 COMPETITIVE POSITIONING (Our Moat)
+#### 2. TECHNICAL ARCHITECTURE (Weight: 25%)
+- CONTEXT.md + IMPLEMENTATION-PLAN.md design
+- 16-agent coordination architecture
+- MCP server implementation quality
+- CLI command coverage and UX
 
-| Feature | Devin | Cursor | Claude Code | **ULTRA-DEX** |
-|---------|-------|--------|-------------|---------------|
-| Context Persistence | ❌ Session only | ❌ Session only | ❌ Session only | ✅ **CONTEXT.md versioned** |
-| Multi-Tool Orchestration | ❌ Devin only | ❌ Cursor only | ❌ Claude only | ✅ **Any LLM** |
-| Production Checklist | ❌ None | ❌ None | ❌ None | ✅ **21-Step Framework** |
-| Comprehensive Planning | ❌ None | ❌ None | ❌ None | ✅ **34 Sections** |
-| Team Scaling | ❌ 1 user | ✅ Teams | ❌ 1 user | ✅ **Solo → Enterprise** |
-| Cost Optimization | $500/mo | $20/mo | $200/mo | ✅ **Route to cheapest LLM per task** |
+#### 3. COMPETITIVE MOAT (Weight: 20%)
+- 34-section template defensibility
+- 21-step verification uniqueness
+- Multi-tool orchestration capability
+- Enterprise scalability path
 
-**Ultra-Dex Value Prop: "Use Cursor for speed. Use Devin for complexity. Use Ultra-Dex to prevent BOTH from producing garbage."**
+#### 4. INTEGRATION DEPTH (Weight: 15%)
 
----
+**Must integrate with (check completeness):**
 
-## ⚡ CRITICAL: WHAT ULTRA-DEX IS AND IS NOT
+| System | Required Integration | Status |
+|--------|---------------------|--------|
+| MCP Protocol | `ultra-dex serve` as MCP server | ✅ Implemented |
+| Claude Desktop | MCP config generation | ✅ `config --mcp` |
+| Cursor | Rules injection | ✅ 13 .mdc rules |
+| VS Code | Extension or rules | ⚠️ Extension in progress |
+| Git | Pre-commit hooks | ✅ `ultra-dex hooks` |
+| CI/CD | GitHub Actions | ⚠️ Need workflow file |
 
-> **REVIEWER WARNING:** If you recommend "I can generate better templates" - you have MISSED THE POINT.
+#### 5. 2026 TECHNOLOGY READINESS (Weight: 10%)
 
-### ✅ WHAT ULTRA-DEX **IS**:
+**Evaluate integration readiness for:**
 
-| Capability | How It Works |
-|------------|--------------|
-| **Context Persistence** | `CONTEXT.md` + `IMPLEMENTATION-PLAN.md` are Git-versioned, survive between AI sessions |
-| **AI Governance Layer** | `cursor-rules/*.mdc` inject production standards into ANY AI tool |
-| **Quality Gate System** | 21-step verification ensures production-grade before merge |
-| **Multi-Tool Orchestration** | Same context files work with Claude, Cursor, Devin, Gemini, Copilot |
-| **Memory for Amnesiac AI** | AI forgets after every session - Ultra-Dex files REMEMBER |
-| **Skeleton, Not Cage** | Flexible structure that grows with project, not rigid constraints |
-
-### ❌ WHAT ULTRA-DEX **IS NOT**:
-
-| Common Misconception | Reality |
-|---------------------|---------|
-| ❌ "Template library" | Any AI can generate templates. We are a **STATE MANAGEMENT SYSTEM** |
-| ❌ "Code generator" | AI tools generate code. We **ORCHESTRATE** what they generate |
-| ❌ "Replacement for Cursor/Devin" | We ENHANCE them. We work ABOVE them |
-| ❌ "Magic solution" | Requires human planning + discipline |
-| ❌ "Just another framework" | We are the **META-LAYER** that makes all frameworks work better |
-
-### 🧠 THE MEMORY PROBLEM WE SOLVE:
-
-```
-WITHOUT ULTRA-DEX (The Problem):
-├── Open Claude Code / Cursor / Devin
-├── Work for 2 hours → great progress
-├── Close session → AI FORGETS EVERYTHING
-├── Next day → start from ZERO context
-├── Week 2 → "Wait, what was the auth edge case again?"
-└── Month 3 → complete project amnesia
-
-WITH ULTRA-DEX (The Solution):
-├── CONTEXT.md holds all project knowledge (ALWAYS)
-├── IMPLEMENTATION-PLAN.md tracks every decision (VERSIONED)
-├── cursor-rules inject standards (EVERY SESSION)
-├── 21-step enforces quality (EVERY TASK)
-└── ANY AI reads + continues seamlessly (NO LOCK-IN)
-```
-
-**SIMPLE TRUTH:** AI tools have AMNESIA. Ultra-Dex is their MEMORY.
+| Tech | 2026 Trend | Ultra-Dex Readiness |
+|------|------------|---------------------|
+| **Agentic Workflows** | Autonomous multi-step | ✅ 16 agents, swarm mode |
+| **MCP Standard** | Universal AI-tool API | ✅ MCP server built |
+| **Graph RAG** | Knowledge graphs for context | ⚠️ Could add FalkorDB |
+| **Local LLMs** | Ollama, LMStudio | ✅ Provider abstraction |
+| **Voice Coding** | Whisper + agents | ⚠️ Future opportunity |
+| **Multimodal** | Image understanding | ⚠️ Not yet implemented |
 
 ---
 
-## 🚨 2026 COMPETITIVE REALITY CHECK (NEW - CRITICAL)
+## 📋 SPECIFIC THINGS TO CHECK
 
-> **As of 2026, Ultra-Dex must pass these checks or it's outdated tech.**
-
-### The 2026 Landscape
-
-| Tool | What It Does | 2026 Standard |
-|------|--------------|---------------|
-| **Antigravity** | Full IDE agent with file editing, terminal, browser, image gen | Live execution |
-| **Devin** | Autonomous coding with persistent memory | Autonomous loops |
-| **Cursor Agent Mode** | Background agents that code while you sleep | Async automation |
-| **Claude Code** | Terminal agent with full codebase understanding | MCP integration |
-
-### 5 Critical Checks (All Must Pass)
-
-#### 1. ACTIVE vs PASSIVE
-- ❌ **FAIL:** Static markdown files users manually copy-paste
-- ✅ **PASS:** CLI commands that execute, generate, serve, sync
-- **Check:** Does `ultra-dex generate "idea"` create a plan without copy-paste?
-
-#### 2. DYNAMIC vs STATIC  
-- ❌ **FAIL:** CONTEXT.md that users must update manually
-- ✅ **PASS:** Auto-sync with codebase, live MCP server
-- **Check:** Does `ultra-dex serve` expose context to AI tools automatically?
-
-#### 3. EXECUTION vs PLANNING
-- ❌ **FAIL:** "Here's your plan, now go code it yourself"
-- ✅ **PASS:** `ultra-dex init --live` generates actual runnable code
-- **Check:** Can a user have running code in 90 seconds?
-
-#### 4. INTEGRATION vs ISOLATION
-- ❌ **FAIL:** "Copy this prompt into your AI tool"
-- ✅ **PASS:** MCP server, AI API integration, git hooks
-- **Check:** Do AI tools connect to Ultra-Dex automatically (no clipboard)?
-
-#### 5. 2024 vs 2026 Tech
-- ❌ **2024:** Markdown templates, manual checklists, copy-paste workflows
-- ✅ **2026:** MCP, AI providers (Claude/OpenAI/Gemini), live scaffolds, hooks
-- **Check:** Are there multiple AI provider integrations in `cli/lib/providers/`?
-
-### The Brutal Question
-
-> **"Is Ultra-Dex a FILING CABINET or JARVIS?"**
->
-> - Filing cabinet: You organize your notes, then go do the work manually
-> - JARVIS: You give an instruction, it does the work and reports back
-
-### v2.x Required Commands
-
-These MUST exist and WORK for 2026 competitiveness:
+### CLI Commands (28+ commands claimed)
 
 ```bash
-# ACTIVE commands (not just docs)
-npx ultra-dex generate "idea"   # AI generates plan (not human fills template)
-npx ultra-dex build             # Auto-load context, select agent, execute
-npx ultra-dex review            # AI code review (not human checklist)
-npx ultra-dex serve             # MCP server for live AI integration
-npx ultra-dex init --live       # Generates ACTUAL CODE, not markdown
-npx ultra-dex hooks             # Auto-verification on git commit
-npx ultra-dex sync              # Auto-update CONTEXT.md from codebase
+# Core
+init, generate, build, review, validate, audit
+
+# AI Agents
+agents, agent, run, swarm
+
+# State & Monitoring  
+status, align, state, dashboard, watch
+
+# Infrastructure
+serve, config, hooks, sync, doctor
+
+# Team
+team init, team add, team list
+
+# Utilities
+export, upgrade, diff, workflow
 ```
 
-**If any of these are missing or just placeholders, Ultra-Dex is 2024 tech in 2026.**
+**Verify each exists and works.**
 
----
+### Agent Quality
 
-## 🔍 AUDIT AREAS (Be BRUTAL)
+Each of the 16 agents should have:
+- [ ] Clear role definition
+- [ ] Specific task scope
+- [ ] Input/output format
+- [ ] Integration with CONTEXT.md
+- [ ] 2026 best practices
 
-### 1. END-TO-END FLOW ANALYSIS
+### MCP Server Endpoints
 
-**Expected Flow:**
 ```
-IDEA → 01-QUICK-START (5min) → 02-HOW-TO-USE (phases) → PHASE-1-FOUNDATION (8 sections)
-    → START CODING with cursor-rules → Use agents/ for specialized tasks
-    → 21-STEP verification per task → VERIFICATION.md PR checklist → PRODUCTION
-```
-
-**Audit Questions:**
-- Does this flow work with ZERO AI tool lock-in?
-- Can a developer switch from Cursor → Claude Code mid-project seamlessly?
-- Is there a clear "handoff protocol" between AI sessions?
-- Does the 34-section template ACTUALLY prevent "forgot X" disasters?
-
-**DEMAND:** Cite specific file paths. "Line 47 of X breaks flow because..."
-
----
-
-### 2. PHASED APPROACH (02-HOW-TO-USE.md)
-
-**Ultra-Dex Philosophy:** Start with 8 sections, code immediately, fill rest as needed.
-
-**Audit Questions:**
-- Is "start with 8 sections" crystal clear?
-- Does Phase 1/2/3 breakdown work for solo devs AND 10-person teams?
-- Is there a "section picker by app type" that actually helps?
-- Can a developer STOP at Phase 1 and ship something useful?
-
-**DEMAND:** If unclear, provide exact replacement text.
-
----
-
-### 3. CURSOR-RULES (AI Governance Layer)
-
-**Files:** `cursor-rules/00-10.mdc` (11 domain files)
-
-**These rules are the SECRET SAUCE.** They inject production standards into ANY AI session.
-
-**Audit Questions:**
-- Do the 11 .mdc files cover ALL production SaaS needs?
-- Missing patterns: Multi-tenant? Row-level security? Vercel Edge? Server Actions?
-- Does `load.sh` / `load.ps1` work with Cursor, Windsurf, Zed, VS Code?
-- Is there a "rule composition" guide (e.g., load backend + security for auth feature)?
-
-**DEMAND:** If patterns missing, provide the .mdc rule code.
-
----
-
-### 4. 15-AGENT TIER SYSTEM
-
-**Structure:**
-```
-agents/
-├── 00-AGENT_INDEX.md (quick reference)
-├── 1-leadership/ (CTO, Planner, Research)
-├── 2-development/ (Backend, Frontend, Database)
-├── 3-security/ (Auth, Security)
-├── 4-devops/ (DevOps)
-├── 5-quality/ (Testing, Documentation, Reviewer, Debugger)
-└── 6-specialist/ (Performance, Refactoring)
+GET /           → Server info
+GET /context    → CONTEXT.md + IMPLEMENTATION-PLAN.md
+GET /state      → Machine-readable state
+GET /agents     → Agent list
+GET /agent/:name → Specific agent prompt
+GET /score      → Alignment score
+POST /verify    → Run verification
 ```
 
-**Audit Questions:**
-- Can these agents be used with Claude/GPT/Gemini interchangeably?
-- Is there a META-ORCHESTRATOR that coordinates all 15?
-- Do agents reference each other properly? (e.g., @Backend → @Reviewer handoff)
-- Is the "when to use each agent" guidance actionable?
+---
 
-**DEMAND:** If coordination broken, provide orchestrator prompt.
+## 🚨 CRITICAL ANTI-PATTERNS TO FLAG
+
+### DO NOT RECOMMEND:
+
+| Bad Suggestion | Why It's Wrong |
+|----------------|----------------|
+| "Add your own AI model" | We ORCHESTRATE models, not ARE a model |
+| "Build a VS Code extension only" | We're IDE-agnostic by design |
+| "Compete with Devin" | We ENHANCE Devin, not replace it |
+| "Make templates simpler" | 34 sections is our moat, not a bug |
+| "Remove the CLI, just be templates" | CLI is our distribution mechanism |
+| "Partner with only one AI tool" | We're the MULTI-tool layer |
+
+### RED FLAGS IN THE CODEBASE:
+
+- [ ] Any hardcoding to single AI provider
+- [ ] Missing MCP compatibility
+- [ ] Context files not Git-friendly
+- [ ] Agents that don't reference CONTEXT.md
+- [ ] Commands that don't respect project state
 
 ---
 
-### 5. 21-STEP VERIFICATION (Quality Gate)
+## 🔮 FUTURE VISION: WHERE WE'RE GOING
 
-**Files:** `CHECKLIST-21-STEP.md`, `VERIFICATION.md`
+### Q1 2026 (NOW)
+- ✅ v2.4 with MCP server, dashboard, swarm
+- ⬜ VS Code extension beta
+- ⬜ Claude Desktop plugin
 
-**This is the production guarantee.** Every task verified before merge.
+### Q2 2026
+- ⬜ Graph-based context (FalkorDB/Neo4j)
+- ⬜ Agentic memory persistence
+- ⬜ CI/CD enforcement mode
 
-**Audit Questions:**
-- Are all 21 steps clearly defined with time estimates?
-- Does the 5-step vs 21-step decision tree make sense?
-- Is Step 12 (Integration) linked to agents/PROJECT-ORCHESTRATION.md?
-- Can this checklist be automated? (pre-commit hooks, CI/CD)
+### Q3 2026
+- ⬜ Enterprise SSO + audit logs
+- ⬜ Template marketplace
+- ⬜ Paid tier with cloud sync
 
-**DEMAND:** If steps unclear, provide enhanced version.
-
----
-
-### 6. GUIDES (Knowledge Layer)
-
-**Files:**
-| Guide | Purpose |
-|-------|---------|
-| `PROJECT-ORCHESTRATION.md` | Multi-agent feature building (24KB) |
-| `MULTI-TOOL-WORKFLOW.md` | Claude + Cursor + Copilot coordination |
-| `AI-MODEL-SELECTION.md` | When to use which LLM |
-| `DATABASE-DECISION-FRAMEWORK.md` | PostgreSQL vs MongoDB |
-| `ARCHITECTURE-PATTERNS.md` | Monolith vs Microservices |
-| `ADVANCED-WORKFLOWS.md` | Complex multi-agent patterns |
-
-**Audit Questions:**
-- Do guides reduce decision fatigue or add to it?
-- Is AI-MODEL-SELECTION.md updated for 2026 models?
-- Does MULTI-TOOL-WORKFLOW.md actually work in practice?
-
-**DEMAND:** If outdated, provide 2026-ready content.
+### Q4 2026
+- ⬜ Full autonomy mode (swarm runs without human)
+- ⬜ Cross-project context sharing
+- ⬜ Ultra-Dex Cloud
 
 ---
 
-### 7. CLI TOOL (v2.1.0)
+## 📊 SCORING RUBRIC
 
-**Commands:**
-```bash
-# Setup & Planning
-npx ultra-dex init              # Scaffold project
-npx ultra-dex init --live       # Generate actual code (Next.js/Remix/SvelteKit)
-npx ultra-dex generate "idea"   # AI generates full 34-section plan
+### Overall Grade Calculation
 
-# AI-Assisted Development
-npx ultra-dex build             # Interactive agent selection + prompt
-npx ultra-dex review            # AI-powered code review
-npx ultra-dex review --quick    # Structure check (no AI)
+| Dimension | Weight | Score (1-10) | Weighted |
+|-----------|--------|--------------|----------|
+| Meta-Layer Positioning | 30% | | |
+| Technical Architecture | 25% | | |
+| Competitive Moat | 20% | | |
+| Integration Depth | 15% | | |
+| 2026 Tech Readiness | 10% | | |
+| **TOTAL** | 100% | | /10 |
 
-# Context & Agents
-npx ultra-dex agents            # List 16 agents by tier
-npx ultra-dex agent backend     # Show specific agent prompt
-npx ultra-dex workflow auth     # Show workflow for feature
+### Grade Thresholds
 
-# Infrastructure (2026 Requirements)
-npx ultra-dex serve             # MCP-compatible context server
-npx ultra-dex hooks             # Install git pre-commit validation
-npx ultra-dex sync              # Auto-sync CONTEXT.md
-npx ultra-dex fetch             # Offline asset cache
-
-# Validation
-npx ultra-dex audit             # Check project completeness
-npx ultra-dex validate          # Validate project structure
-```
-
-**Audit Questions:**
-- Does CLI generate files that work with ANY AI tool?
-- Is `--live` flag implemented with real boilerplate?
-- Does `ultra-dex serve` actually expose MCP endpoints?
-- Does `generate` use AI API integration (not templates)?
-- Are there multiple AI providers (Claude, OpenAI, Gemini)?
-
-**DEMAND:** If CLI weak, implement missing commands.
+| Score | Grade | Meaning |
+|-------|-------|---------|
+| 9-10 | A+ | Ready to dominate 2026 |
+| 8-8.9 | A | Strong position, minor gaps |
+| 7-7.9 | B | Good foundation, significant work needed |
+| 6-6.9 | C | Viable but falling behind |
+| <6 | F | Major pivot required |
 
 ---
 
-### 8. NAVIGATION & LINKING
-
-**Audit Questions:**
-- Can a user find their way from ANY document to ANY other?
-- Are all cross-references working (no 404s)?
-- Is there a visual "Master Map" (Mermaid diagram)?
-- Is the folder structure intuitive (numbered prefixes)?
-
-**DEMAND:** If navigation broken, provide Mermaid flowchart.
-
----
-
-## ❌ DO NOT RECOMMEND
-
-| Bad Advice | Why It's Wrong |
-|------------|----------------|
-| "Reduce to 7 sections" | 34 sections IS the value - comprehensiveness prevents disasters |
-| "21-step is overkill" | Production apps NEED rigorous QA |
-| "Just use Devin" | Devin = tool. Ultra-Dex = orchestration layer ABOVE Devin |
-| "Build an AI yourself" | We ORCHESTRATE existing AIs, we don't compete with them |
-| "Focus on speed only" | Speed without quality = technical debt |
-
----
-
-## ✅ DO RECOMMEND
-
-| Good Advice | Format |
-|-------------|--------|
-| "Section X is unclear" | Provide exact replacement text |
-| "Flow breaks at Y" | Provide the missing link/file |
-| "Cursor-rules missing Z" | Provide the .mdc code |
-| "Agent handoff unclear" | Provide orchestrator prompt |
-| "CLI needs X" | Provide CLI code |
-
----
-
-## 📁 FILES TO REVIEW
-
-### Root Level
-| File | Purpose |
-|------|---------|
-| `README.md` | Entry point, philosophy, CLI docs |
-| `VISION-V2.md` | Meta-Layer orchestration vision |
-| `VERIFICATION.md` | PR checklist with decision tree |
-| `CHECKLIST-21-STEP.md` | Standalone 21-step verification |
-| `TROUBLESHOOTING.md` | Common problems and solutions |
-| `CUSTOMIZATION.md` | How to add/remove sections |
-
-### Framework Core (`@ Ultra DeX/Saas plan/`)
-| File | Purpose |
-|------|---------|
-| `01-QUICK-START.md` | 5-minute capture |
-| `02-HOW-TO-USE.md` | Phased approach |
-| `03-METHODOLOGY.md` | 21-step explanation |
-| `04-Imp-Template.md` | 34-section template |
-
-### AI Agents (`agents/`) - **15 AGENTS IN 6 TIERS**
-| Folder | Purpose |
-|--------|---------|
-| `00-AGENT_INDEX.md` | Quick reference |
-| `1-leadership/` | CTO, Planner, Research |
-| `2-development/` | Backend, Frontend, Database |
-| `3-security/` | Auth, Security |
-| `4-devops/` | DevOps |
-| `5-quality/` | Testing, Docs, Reviewer, Debugger |
-| `6-specialist/` | Performance, Refactoring |
-
-### Guides (`guides/`)
-| File | Purpose |
-|------|---------|
-| `PROJECT-ORCHESTRATION.md` | Multi-agent coordination |
-| `MULTI-TOOL-WORKFLOW.md` | Cross-tool orchestration |
-| `AI-MODEL-SELECTION.md` | Which LLM for which task |
-
-### Cursor Rules (`cursor-rules/`)
-| File | Purpose |
-|------|---------|
-| `00-10.mdc files` | 11 domain-specific rules |
-| `load.sh` / `load.ps1` | Selective loading |
-
-### CLI (`cli/`) - **v2.1.0**
-| File | Purpose |
-|------|---------|
-| `bin/ultra-dex.js` | CLI entry point |
-| `lib/commands/` | 15 modular commands |
-| `lib/providers/` | AI providers (Claude, OpenAI, Gemini) |
-| `lib/templates/` | Prompt templates |
-| `assets/` | 75 bundled files (agents, rules, templates) |
-
----
-
-## 🎯 SUCCESS CRITERIA (All 10 Must Work)
-
-1. ✅ User reads "Is Ultra-Dex Right for You?" and decides correctly
-2. ✅ User follows "First 30 Minutes" in README
-3. ✅ User captures idea in `01-QUICK-START.md` (5 min)
-4. ✅ User understands phased approach via `02-HOW-TO-USE.md`
-5. ✅ User fills Phase 1 (8 sections) in 4-5 hours
-6. ✅ User starts coding with cursor-rules loaded in ANY AI tool
-7. ✅ User uses agents/ for specialized tasks (works with any LLM)
-8. ✅ User verifies each task with 21-step checklist
-9. ✅ User submits PR with VERIFICATION.md checklist
-10. ✅ User ships PRODUCTION-READY application
-
-**Review whether this flow works with ZERO AI tool lock-in.**
-
----
-
-## 📤 DELIVERABLE FORMAT
+## ✅ DELIVERABLES REQUIRED
 
 Your review MUST include:
 
-```
-## 1. FLOW ANALYSIS
-Does the end-to-end journey work? [SPECIFIC FILE REFERENCES]
-
-## 2. GAP IDENTIFICATION  
-What's missing or broken? [EXACT FILE:LINE CITATIONS]
-
-## 3. CODE-LEVEL FIXES
-Specific, actionable improvements [PROVIDE CODE BLOCKS]
-
-## 4. STRENGTHS
-What works well for production teams? [CITE EVIDENCE]
-
-## 5. EVOLUTION PRIORITY
-| Priority | Fix | Impact | Effort |
-|----------|-----|--------|--------|
-
-## 6. PRODUCTION READINESS SCORE
-[0-100]% with specific blockers
-```
+1. **Executive Summary** (1 paragraph max)
+2. **Score Table** (filled in)
+3. **Top 5 Strengths** (with evidence)
+4. **Top 5 Critical Gaps** (with specific file/code references)
+5. **Integration Checklist** (which integrations exist/missing)
+6. **Competitive Position Assessment** (where we stand vs each competitor)
+7. **90-Day Action Plan** (prioritized fixes)
+8. **"If I were CEO"** section (biggest strategic call to make)
 
 ---
 
-## 🔥 THE BRUTAL TRUTH TEST
+## 📁 FILES TO EXAMINE
 
-**After your review, Ultra-Dex should:**
+**Priority 1 (Core):**
+- `README.md` - Positioning and messaging
+- `cli/package.json` - Version and dependencies
+- `cli/bin/ultra-dex.js` - Command registration
+- `cli/lib/commands/serve.js` - MCP server
+- `cli/lib/commands/swarm.js` - Agent orchestration
 
-1. ✅ Work with Claude Code, Cursor, Devin, Copilot, Gemini simultaneously
-2. ✅ Prevent context loss across 6-month projects
-3. ✅ Ensure AI-generated code is production-ready via 21-step verification
-4. ✅ Scale from solo developer to 50-person team
-5. ✅ Cost less than using any single AI tool alone
+**Priority 2 (Agents):**
+- `agents/00-AGENT_INDEX.md` - Agent registry
+- `agents/**/*.md` - All 16 agent prompts
 
-**If any of these fail, the review is incomplete.**
+**Priority 3 (Templates):**
+- `@ Ultra DeX/Saas plan/04-Imp-Template.md` - 34-section template
+- `docs/CHECKLIST-21-STEP.md` - Verification framework
+
+**Priority 4 (Integration):**
+- `cli/lib/mcp/` - MCP implementation
+- `cursor-rules/*.mdc` - IDE rules
 
 ---
 
-**REMEMBER: Comprehensive = Feature, not Bug. Production-Grade = Non-Negotiable. AI-Agnostic = The Entire Point.**
+## 🎪 THE META QUESTION
 
-**CORE TRUTH:** We don't generate code, we make sure AI-generated code doesn't suck. We're the MEMORY layer for tools that have AMNESIA.
+At the end of your review, answer this:
 
-**Be BRUTAL. We want to be the best META-LAYER, not another template library.**
+> **"Is Ultra-Dex positioned to be the Kubernetes of AI coding tools — the orchestration layer that everyone builds on top of?"**
+
+- If YES: What accelerates this?
+- If NO: What pivot is required?
+
+---
+
+*This review prompt updated: January 28, 2026*
+*Ultra-Dex Version: 2.4.0*
+*Target: Layer 3 Meta-Orchestration Dominance*
