@@ -79,3 +79,47 @@ try {
 - Check resource ownership
 - Sanitize user input
 - Never expose stack traces in production
+
+## Before/After Examples
+
+### Example 1 (Fintech) - Bad -> Good
+```typescript
+// BAD: No schema validation and inconsistent response shape
+export async function POST(req: Request) {
+  const body = await req.json();
+  if (!body.amount) {
+    return Response.json({ message: 'amount required' });
+  }
+  const charge = await createCharge(body);
+  return Response.json(charge);
+}
+```
+
+```typescript
+// GOOD: Validate with Zod and return consistent shape
+import { z } from 'zod';
+
+const chargeSchema = z.object({
+  amount: z.number().positive(),
+  currency: z.string().length(3),
+});
+
+export async function POST(req: Request) {
+  const data = chargeSchema.parse(await req.json());
+  const charge = await createCharge(data);
+  return Response.json({ data: charge }, { status: 201 });
+}
+```
+
+### Example 2 (Healthcare) - Bad -> Good
+```typescript
+// BAD: Exposes internal error details for patient data
+return Response.json({ error: err });
+```
+
+```typescript
+// GOOD: Standardized error payload and status code
+return Response.json({
+  error: { code: 'FORBIDDEN', message: 'No access to patient record' }
+}, { status: 403 });
+```

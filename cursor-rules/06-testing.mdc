@@ -102,3 +102,39 @@ test('user can sign up and access dashboard', async ({ page }) => {
 - Third-party libraries (Stripe, NextAuth)
 - Framework internals
 - Trivial getters/setters
+
+## Before/After Examples
+
+### Example 1 (Fintech) - Bad -> Good
+```typescript
+// BAD: No assertion for invalid transfer amount
+it('rejects invalid transfer', async () => {
+  await createTransfer({ amount: -1, toAccountId: 'acct_1' });
+});
+```
+
+```typescript
+// GOOD: Assert error for invalid transfer amount
+it('rejects invalid transfer', async () => {
+  await expect(
+    createTransfer({ amount: -1, toAccountId: 'acct_1' })
+  ).rejects.toThrow();
+});
+```
+
+### Example 2 (Healthcare) - Bad -> Good
+```typescript
+// BAD: Only tests happy path for patient access
+const res = await fetch('/api/patients/123', {
+  headers: { Authorization: `Bearer ${patientToken}` },
+});
+expect(res.status).toBe(200);
+```
+
+```typescript
+// GOOD: Test cross-tenant access is blocked
+const res = await fetch('/api/patients/123', {
+  headers: { Authorization: `Bearer ${otherTenantToken}` },
+});
+expect(res.status).toBe(403);
+```

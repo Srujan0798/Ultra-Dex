@@ -219,6 +219,62 @@ enum MemberRole {
 }
 ```
 
+### Prisma Schema (Task App)
+```prisma
+// prisma/schema.prisma
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  tasks     Task[]
+  profile   Profile?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  priority    Priority @default(MEDIUM)
+  completed   Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime @default(now())
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+```
+
+### Seed Script
+```typescript
+// prisma/seed.ts
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  await prisma.user.create({
+    data: {
+      email: 'admin@example.com',
+      name: 'Admin User',
+      tasks: {
+        create: [
+          { title: 'Setup project', priority: 'HIGH' },
+          { title: 'Write documentation', priority: 'MEDIUM' },
+        ],
+      },
+    },
+  });
+}
+
+main().catch(console.error).finally(() => prisma.$disconnect());
+```
+
 ### SQLAlchemy Models (FastAPI)
 
 ```python

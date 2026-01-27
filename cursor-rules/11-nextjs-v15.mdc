@@ -305,3 +305,46 @@ export async function POST(req: Request) {
 ---
 
 *Ultra-Dex v1.7.0 - Next.js 15 Production Patterns*
+
+## Before/After Examples
+
+### Example 1 (Fintech) - Bad -> Good
+```tsx
+// BAD: Pages Router with getServerSideProps
+export async function getServerSideProps() {
+  const accounts = await prisma.account.findMany();
+  return { props: { accounts } };
+}
+```
+
+```tsx
+// GOOD: App Router server component
+export default async function AccountsPage() {
+  const accounts = await prisma.account.findMany();
+  return <AccountsView accounts={accounts} />;
+}
+```
+
+### Example 2 (Healthcare) - Bad -> Good
+```tsx
+// BAD: No loading or error boundary for patient routes
+// app/patients/page.tsx
+export default async function PatientsPage() {
+  const patients = await prisma.patient.findMany();
+  return <PatientsView patients={patients} />;
+}
+```
+
+```tsx
+// GOOD: Add loading and error boundaries in App Router
+// app/(dashboard)/patients/loading.tsx
+export default function Loading() {
+  return <PatientsSkeleton />;
+}
+
+// app/(dashboard)/patients/error.tsx
+'use client';
+export default function Error() {
+  return <ErrorState />;
+}
+```

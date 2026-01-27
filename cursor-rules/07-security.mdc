@@ -92,3 +92,33 @@ const securityHeaders = [
 - Never hardcode secrets
 - Use `process.env` only on server
 - Audit with `gitleaks` or similar
+
+## Before/After Examples
+
+### Example 1 (Fintech) - Bad -> Good
+```typescript
+// BAD: SQL injection risk with raw query
+await prisma.$queryRawUnsafe(
+  `SELECT * FROM accounts WHERE id = '${accountId}'`
+);
+```
+
+```typescript
+// GOOD: Parameterized Prisma query
+await prisma.account.findUnique({ where: { id: accountId } });
+```
+
+### Example 2 (Healthcare) - Bad -> Good
+```tsx
+// BAD: Renders patient notes without sanitization
+<div dangerouslySetInnerHTML={{ __html: patientNoteHtml }} />
+```
+
+```tsx
+// GOOD: Sanitize HTML before rendering
+import DOMPurify from 'dompurify';
+
+<div dangerouslySetInnerHTML={{
+  __html: DOMPurify.sanitize(patientNoteHtml),
+}} />
+```

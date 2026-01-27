@@ -1,0 +1,282 @@
+# SaaS Multi-Tenancy Patterns
+
+> Patterns for building secure multi-tenant SaaS applications
+
+## Core Principles
+
+1. **Tenant Isolation** - Data from one tenant NEVER visible to another
+2. **Consistent Filtering** - ALL queries must include tenant context
+3. **Defense in Depth** - Multiple layers of tenant validation
+
+## Tenant Identification
+
+### Subdomain-Based (Recommended for SaaS)
+```typescript
+// middleware.ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  const hostname = request.headers.get('host') || ''
+  const subdomain = hostname.split('.')[0]
+
+  // Skip for main domain
+  if (subdomain === 'www' || subdomain === 'app') {
+    return NextResponse.next()
+  }
+
+  const response = NextResponse.next()
+  response.headers.set('x-tenant-id', subdomain)
+  return response
+}
+```
+
+### Header-Based (API Clients)
+```typescript
+// For API-first architectures
+const tenantId = request.headers.get('x-tenant-id')
+if (!tenantId) {
+  return Response.json({ error: 'Tenant ID required' }, { status: 400 })
+}
+```
+
+### User Association (After Auth)
+```typescript
+// Get tenant from authenticated user
+const session = await getSession()
+const tenantId = session?.user?.organizationId
+```
+
+## Database Patterns
+
+### Row-Level Security (Recommended)
+
+**Prisma Schema:**
+```prisma
+model Organization {
+  id        String   @id @default(cuid())
+  subdomain String   @unique
+  name      String
+  users     User[]
+  posts     Post[]
+  // All tenant-owned data has organizationId
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  posts          Post[]
+}
+
+model Post {
+  id             String       @id @default(cuid())
+  title          String
+  content        String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  author         User         @relation(fields: [authorId], references: [id])
+  authorId       String
+
+  @@index([organizationId]) // ALWAYS index tenant column
+}
+```
+
+**Query Pattern (ALWAYS include organizationId):**
+```typescript
+// lib/db.ts - Tenant-scoped client
+export function getTenantDb(organizationId: string) {
+  return {
+    post: {
+      findMany: (args?: Prisma.PostFindManyArgs) =>
+        prisma.post.findMany({
+          ...args,
+          where: { ...args?.where, organizationId }
+        }),
+      create: (data: Prisma.PostCreateInput) =>
+        prisma.post.create({
+          data: { ...data, organizationId }
+        }),
+      // ... other methods
+    }
+  }
+}
+
+// Usage
+const db = getTenantDb(session.user.organizationId)
+const posts = await db.post.findMany() // Auto-filtered
+```
+
+### PostgreSQL Row-Level Security (RLS)
+
+```sql
+-- Enable RLS
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can only see their org's posts
+CREATE POLICY posts_tenant_isolation ON posts
+  USING (organization_id = current_setting('app.current_tenant')::text);
+
+-- Set tenant context in your app
+SET app.current_tenant = 'org_123';
+SELECT * FROM posts; -- Only org_123 posts returned
+```
+
+### Schema-Per-Tenant (Enterprise)
+
+```typescript
+// For highest isolation (enterprise customers)
+const schema = `tenant_${tenantId}`
+
+// Prisma with schema
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: `${DATABASE_URL}?schema=${schema}`
+    }
+  }
+})
+```
+
+## Middleware Pattern
+
+```typescript
+// lib/tenant.ts
+import { headers } from 'next/headers'
+import { cache } from 'react'
+
+export const getTenant = cache(async () => {
+  const headersList = headers()
+  const tenantId = headersList.get('x-tenant-id')
+
+  if (!tenantId) {
+    throw new Error('Tenant context required')
+  }
+
+  const tenant = await prisma.organization.findUnique({
+    where: { subdomain: tenantId }
+  })
+
+  if (!tenant) {
+    throw new Error('Tenant not found')
+  }
+
+  return tenant
+})
+
+// Usage in any Server Component or API route
+export default async function Dashboard() {
+  const tenant = await getTenant()
+  const posts = await prisma.post.findMany({
+    where: { organizationId: tenant.id }
+  })
+  // ...
+}
+```
+
+## API Route Pattern
+
+```typescript
+// app/api/posts/route.ts
+import { getTenant } from '@/lib/tenant'
+import { getSession } from '@/lib/auth'
+
+export async function GET() {
+  const session = await getSession()
+  if (!session) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const tenant = await getTenant()
+
+  // Verify user belongs to this tenant
+  if (session.user.organizationId !== tenant.id) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const posts = await prisma.post.findMany({
+    where: { organizationId: tenant.id }
+  })
+
+  return Response.json(posts)
+}
+```
+
+## Testing Multi-Tenancy
+
+```typescript
+// tests/multi-tenancy.test.ts
+describe('Tenant Isolation', () => {
+  it('should not leak data between tenants', async () => {
+    // Create data for tenant A
+    const tenantA = await createTenant('tenant-a')
+    const postA = await createPost({
+      title: 'Secret',
+      organizationId: tenantA.id
+    })
+
+    // Create tenant B
+    const tenantB = await createTenant('tenant-b')
+
+    // Query as tenant B - should NOT see tenant A's post
+    const postsForB = await prisma.post.findMany({
+      where: { organizationId: tenantB.id }
+    })
+
+    expect(postsForB).not.toContainEqual(
+      expect.objectContaining({ id: postA.id })
+    )
+  })
+
+  it('should prevent cross-tenant access via API', async () => {
+    const response = await fetch('/api/posts', {
+      headers: {
+        'x-tenant-id': 'wrong-tenant',
+        'Authorization': `Bearer ${validToken}`
+      }
+    })
+
+    expect(response.status).toBe(403)
+  })
+})
+```
+
+## Checklist
+
+- [ ] All database tables have `organizationId` column
+- [ ] All queries filter by `organizationId`
+- [ ] Middleware extracts tenant from subdomain/header
+- [ ] API routes verify user belongs to tenant
+- [ ] Indexes on `organizationId` columns
+- [ ] Cross-tenant access tests written
+- [ ] No raw SQL without tenant filter
+- [ ] Admin routes have additional protection
+
+## Common Mistakes
+
+```typescript
+// ❌ BAD - No tenant filter
+const posts = await prisma.post.findMany()
+
+// ✅ GOOD - Always filter
+const posts = await prisma.post.findMany({
+  where: { organizationId: tenant.id }
+})
+
+// ❌ BAD - Trusting client-provided tenant ID for data access
+const { tenantId } = req.body
+const posts = await prisma.post.findMany({
+  where: { organizationId: tenantId }
+})
+
+// ✅ GOOD - Use server-verified tenant context
+const tenant = await getTenant() // From middleware/session
+const posts = await prisma.post.findMany({
+  where: { organizationId: tenant.id }
+})
+```
+
+---
+
+*Ultra-Dex v1.7.1 - Multi-Tenancy Patterns for Production SaaS*

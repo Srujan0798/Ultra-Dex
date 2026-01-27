@@ -121,3 +121,45 @@ export async function GET() {
 - Vercel Analytics (Web Vitals)
 - Sentry Performance
 - Custom timing with `performance.mark()`
+
+## Before/After Examples
+
+### Example 1 (Fintech) - Bad -> Good
+```typescript
+// BAD: N+1 queries for account transactions
+const accounts = await prisma.account.findMany();
+for (const account of accounts) {
+  await prisma.transaction.findMany({ where: { accountId: account.id } });
+}
+```
+
+```typescript
+// GOOD: Fetch related data in one query
+const accounts = await prisma.account.findMany({
+  include: { transactions: true },
+});
+```
+
+### Example 2 (Healthcare) - Bad -> Good
+```tsx
+// BAD: Heavy chart bundled on initial load
+import PatientChart from '@/components/PatientChart';
+
+export function Analytics() {
+  return <PatientChart />;
+}
+```
+
+```tsx
+// GOOD: Dynamic import for heavy chart
+import dynamic from 'next/dynamic';
+
+const PatientChart = dynamic(() => import('@/components/PatientChart'), {
+  loading: () => <Skeleton />,
+  ssr: false,
+});
+
+export function Analytics() {
+  return <PatientChart />;
+}
+```

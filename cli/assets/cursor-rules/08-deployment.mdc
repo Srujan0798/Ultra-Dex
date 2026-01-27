@@ -1,0 +1,92 @@
+# Deployment Rules
+
+## Platform: Vercel (or specified)
+
+## Environment Setup
+
+```
+Production:  main branch → vercel.com/project
+Staging:     staging branch → staging.project.com
+Preview:     PR branches → pr-123.project.vercel.app
+```
+
+## Environment Variables
+
+Set in Vercel Dashboard:
+- `DATABASE_URL` - Production DB connection
+- `NEXTAUTH_URL` - Full production URL
+- `NEXTAUTH_SECRET` - Production secret
+- `STRIPE_SECRET_KEY` - Live key (not test!)
+- `STRIPE_WEBHOOK_SECRET` - Production webhook secret
+
+## Pre-Deploy Checklist
+
+- [ ] All tests pass (`npm test`)
+- [ ] Build succeeds (`npm run build`)
+- [ ] No TypeScript errors
+- [ ] No console.log in production code
+- [ ] Environment variables set
+- [ ] Database migrations applied
+
+## Database Migrations
+
+```bash
+# Generate migration
+npx prisma migrate dev --name add_feature
+
+# Apply to production (in CI/CD)
+npx prisma migrate deploy
+```
+
+## CI/CD Pipeline (GitHub Actions)
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+```
+
+## Rollback Strategy
+
+- Vercel: Instant rollback via dashboard
+- Database: Keep migration rollback scripts
+- Feature flags: Disable without deploy
+
+## Monitoring Post-Deploy
+
+- Check error rates (Sentry, Vercel)
+- Check performance (Vercel Analytics)
+- Test critical user flows manually
+- Monitor webhooks (Stripe dashboard)
+
+## Domain Setup
+
+1. Add custom domain in Vercel
+2. Update DNS (CNAME or A record)
+3. Wait for SSL certificate
+4. Update `NEXTAUTH_URL` env var

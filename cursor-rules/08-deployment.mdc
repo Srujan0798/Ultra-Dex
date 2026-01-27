@@ -90,3 +90,41 @@ jobs:
 2. Update DNS (CNAME or A record)
 3. Wait for SSL certificate
 4. Update `NEXTAUTH_URL` env var
+
+## Before/After Examples
+
+### Example 1 (Fintech) - Bad -> Good
+```yaml
+# BAD: Deploys without tests or migrations
+jobs:
+  deploy:
+    steps:
+      - run: npm ci
+      - run: npm run build
+      - run: vercel --prod
+```
+
+```yaml
+# GOOD: Run tests and migrations before deploy
+jobs:
+  deploy:
+    steps:
+      - run: npm ci
+      - run: npm test
+      - run: npx prisma migrate deploy
+      - run: npm run build
+      - run: vercel --prod
+```
+
+### Example 2 (Healthcare) - Bad -> Good
+```bash
+# BAD: Test keys in production environment
+STRIPE_SECRET_KEY=sk_test_123
+NEXTAUTH_SECRET=dev-secret
+```
+
+```bash
+# GOOD: Live keys and strong secrets in production
+STRIPE_SECRET_KEY=sk_live_123
+NEXTAUTH_SECRET=prod-strong-secret
+```

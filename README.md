@@ -3,8 +3,8 @@
 [![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@ Ultra DeX/Saas plan/04-Imp-Template.md)
-[![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md)
+[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
+[![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
 [![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-11_Modules-green.svg)](./cursor-rules/)
 [![AI Agents](https://img.shields.io/badge/AI_Agents-15_Prompts-orange.svg)](./agents/)
 
@@ -30,8 +30,8 @@ A comprehensive framework for building complete, production-grade applications. 
 
 | Step | What | Time |
 |------|------|------|
-| 1 | **[QUICK-START.md](./@ Ultra DeX/Saas plan/01-QUICK-START.md)** — Capture your idea | 5 min |
-| 2 | **[HOW-TO-USE.md](./@ Ultra DeX/Saas plan/02-HOW-TO-USE.md)** — Understand phasing | 10 min |
+| 1 | **[QUICK-START.md](./@%20Ultra%20DeX/Saas%20plan/01-QUICK-START.md)** — Capture your idea | 5 min |
+| 2 | **[HOW-TO-USE.md](./@%20Ultra%20DeX/Saas%20plan/02-HOW-TO-USE.md)** — Understand phasing | 10 min |
 | 3 | **[BUILD-AUTH-30M.md](./docs/BUILD-AUTH-30M.md)** — Your first working feature | 30 min |
 | 4 | **Start coding with AI agents** | ∞ |
 
@@ -42,9 +42,9 @@ A comprehensive framework for building complete, production-grade applications. 
 
 | Resource | Purpose |
 |----------|---------|
-| [Full Template](./@ Ultra DeX/Saas plan/04-Imp-Template.md) | 34-section reference |
-| [TaskFlow Example](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md) | See a filled example |
-| [Methodology](./@ Ultra DeX/Saas plan/03-METHODOLOGY.md) | 21-step verification system |
+| [Full Template](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md) | 34-section reference |
+| [TaskFlow Example](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md) | See a filled example |
+| [Methodology](./@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md) | 21-step verification system |
 | [Cursor Rules](./cursor-rules/) | AI-optimized rules |
 | [Agent Prompts](./agents/) | 15 specialized agents |
 | [All Guides](./guides/) | Database, architecture, orchestration |
@@ -82,6 +82,8 @@ Then follow **[BUILD-AUTH-30M.md](./docs/BUILD-AUTH-30M.md)** — you'll have:
 - Protected routes
 - User session management
 - Understanding of the Ultra-Dex workflow
+
+> **Offline-ready:** CLI bundles agents, rules, and docs. Use `npx ultra-dex fetch` only if you want a separate offline cache.
 
 **After that?** You'll know if Ultra-Dex fits your project.
 
@@ -140,6 +142,23 @@ npx ultra-dex agents            # List AI agent prompts
 npx ultra-dex agent backend     # Show specific agent prompt
 npx ultra-dex workflow auth     # Show workflow for authentication
 npx ultra-dex examples          # Show example projects
+```
+
+**Sample Output:**
+```text
+$ npx ultra-dex agents
+✓ Loaded 15 agents
+Leadership: CTO, Planner, Research
+Development: Backend, Frontend, Database
+Security: Auth, Security
+DevOps: DevOps
+Quality: Testing, Documentation, Reviewer, Debugger
+Specialist: Performance, Refactoring
+
+$ npx ultra-dex audit
+Project Score: 82/100 (B)
+Missing: IMPLEMENTATION-PLAN.md section 10 (Data Model)
+Next: Complete sections 10-12, then rerun audit
 ```
 
 ---
@@ -397,9 +416,9 @@ Total: $23 (vs $60+ single-tool approach)
 
 ## Get Started
 
-1. **New to Ultra-Dex?** → Start with [01-QUICK-START.md](./@ Ultra DeX/Saas plan/01-QUICK-START.md)
-2. **Want to see it in action?** → Read [TaskFlow-Complete.md](./@ Ultra DeX/Saas plan/Examples/TaskFlow-Complete.md)
-3. **Ready for full planning?** → Use [04-Imp-Template.md](./@ Ultra DeX/Saas plan/04-Imp-Template.md)
+1. **New to Ultra-Dex?** → Start with [01-QUICK-START.md](./@%20Ultra%20DeX/Saas%20plan/01-QUICK-START.md)
+2. **Want to see it in action?** → Read [TaskFlow-Complete.md](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
+3. **Ready for full planning?** → Use [04-Imp-Template.md](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
 
 ---
 

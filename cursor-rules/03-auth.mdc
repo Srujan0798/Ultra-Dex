@@ -68,3 +68,45 @@ if (session.user.role !== 'ADMIN') {
 - [ ] Secure cookies in production
 - [ ] Rate limit login attempts
 - [ ] Log authentication events
+
+## Before/After Examples
+
+### Example 1 (Fintech) - Bad -> Good
+```typescript
+// BAD: Trusts client-provided role for finance admin actions
+const body = await req.json();
+if (body.role === 'ADMIN') {
+  await approveTransfer(body.transferId);
+}
+```
+
+```typescript
+// GOOD: Use session role from server-side auth
+const session = await auth();
+if (!session || session.user.role !== 'FINANCE_ADMIN') {
+  return Response.json({ error: { code: 'FORBIDDEN' } }, { status: 403 });
+}
+await approveTransfer(transferId);
+```
+
+### Example 2 (Healthcare) - Bad -> Good
+```typescript
+// BAD: Server component renders patient data without auth
+export default async function PatientPage() {
+  const patient = await prisma.patient.findFirst();
+  return <PatientView patient={patient} />;
+}
+```
+
+```typescript
+// GOOD: Require session before returning patient data
+export default async function PatientPage() {
+  const session = await auth();
+  if (!session) redirect('/login');
+
+  const patient = await prisma.patient.findFirst({
+    where: { clinicId: session.user.clinicId },
+  });
+  return <PatientView patient={patient} />;
+}
+```

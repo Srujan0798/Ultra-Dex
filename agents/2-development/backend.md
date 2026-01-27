@@ -133,6 +133,50 @@ export async function POST(request: NextRequest) {
 }
 ```
 
+### Express.js API Endpoint (Task Creation)
+```typescript
+// src/routes/tasks.ts
+import { Router, Request, Response } from 'express';
+import { z } from 'zod';
+import { prisma } from '../lib/prisma';
+
+const router = Router();
+const createTaskSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+});
+
+router.post('/tasks', async (req: Request, res: Response) => {
+  try {
+    const data = createTaskSchema.parse(req.body);
+    const task = await prisma.task.create({
+      data: { ...data, userId: req.user.id },
+    });
+    res.status(201).json(task);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ errors: error.errors });
+    } else {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+});
+
+export default router;
+```
+
+### Prisma Query with Relations
+```typescript
+const userWithTasks = await prisma.user.findUnique({
+  where: { id: userId },
+  include: {
+    tasks: { orderBy: { createdAt: 'desc' }, take: 10 },
+    profile: true,
+  },
+});
+```
+
 ### REST API Endpoint (FastAPI + SQLAlchemy)
 
 ```python
