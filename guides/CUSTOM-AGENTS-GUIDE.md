@@ -6,7 +6,7 @@
 
 ## Why Custom Agents?
 
-Ultra-Dex provides 15 production agents for general SaaS development. But YOUR product has unique domain logic that generic agents can't handle:
+Ultra-Dex provides 16 production agents for general SaaS development. But YOUR product has unique domain logic that generic agents can't handle:
 
 | SaaS Type | Domain Logic | Custom Agent Needed |
 |-----------|--------------|---------------------|

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ultra-Dex — From Idea to Production SaaS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-900 text-white">
+    <div class="min-h-screen">
+      <header class="px-6 py-6 md:px-10">
+        <div class="mx-auto flex max-w-6xl items-center justify-between">
+          <div class="text-lg font-semibold tracking-wide">Ultra-Dex</div>
+          <div class="hidden text-sm text-gray-300 md:block">From Idea to Production SaaS</div>
+        </div>
+      </header>
+
+      <main class="px-6 pb-20 md:px-10">
+        <section class="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div class="space-y-6">
+            <div class="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800 px-4 py-1 text-xs uppercase tracking-[0.2em] text-gray-300">
+              AI-powered planning
+            </div>
+            <h1 class="text-4xl font-semibold leading-tight md:text-5xl">
+              From Idea to Production SaaS
+            </h1>
+            <p class="text-lg text-gray-300">
+              AI-powered implementation planning with 16 specialized agents.
+            </p>
+            <div class="flex flex-wrap items-center gap-4">
+              <button
+                id="cta-copy"
+                class="inline-flex items-center gap-2 rounded-md bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-400"
+                type="button"
+              >
+                <span>npx ultra-dex init</span>
+                <span id="cta-status" class="text-xs text-indigo-100"></span>
+              </button>
+              <span class="text-xs text-gray-400">Copy command to clipboard</span>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-gray-800 bg-gray-950/60 p-6 shadow-xl">
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <span class="h-2 w-2 rounded-full bg-red-500"></span>
+              <span class="h-2 w-2 rounded-full bg-yellow-400"></span>
+              <span class="h-2 w-2 rounded-full bg-green-500"></span>
+              <span>terminal</span>
+            </div>
+            <pre class="mt-4 h-64 overflow-hidden rounded-lg bg-black/40 p-4 text-sm text-gray-200">
+<code id="terminal-output"></code>
+            </pre>
+          </div>
+        </section>
+
+        <section class="mx-auto mt-16 max-w-6xl space-y-8">
+          <h2 class="text-2xl font-semibold">Features</h2>
+          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-xl border border-gray-800 bg-gray-950/40 p-5">
+              <h3 class="text-lg font-semibold">16 AI Agents</h3>
+              <p class="mt-2 text-sm text-gray-300">Organized by tier for full-stack execution.</p>
+            </div>
+            <div class="rounded-xl border border-gray-800 bg-gray-950/40 p-5">
+              <h3 class="text-lg font-semibold">AI Plan Generation</h3>
+              <p class="mt-2 text-sm text-gray-300">Claude, GPT, and Gemini ready.</p>
+            </div>
+            <div class="rounded-xl border border-gray-800 bg-gray-950/40 p-5">
+              <h3 class="text-lg font-semibold">34-Section Template</h3>
+              <p class="mt-2 text-sm text-gray-300">Comprehensive planning, zero gaps.</p>
+            </div>
+            <div class="rounded-xl border border-gray-800 bg-gray-950/40 p-5">
+              <h3 class="text-lg font-semibold">6 Complete Examples</h3>
+              <p class="mt-2 text-sm text-gray-300">Ready-to-build starter blueprints.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mx-auto mt-16 max-w-6xl space-y-8">
+          <h2 class="text-2xl font-semibold">How it works</h2>
+          <div class="grid gap-6 md:grid-cols-3">
+            <div class="rounded-xl border border-gray-800 bg-gray-950/40 p-5">
+              <div class="text-sm font-semibold text-indigo-300">Step 1</div>
+              <p class="mt-2 text-gray-200">Run npx ultra-dex init</p>
+            </div>
+            <div class="rounded-xl border border-gray-800 bg-gray-950/40 p-5">
+              <div class="text-sm font-semibold text-indigo-300">Step 2</div>
+              <p class="mt-2 text-gray-200">Let AI generate your plan</p>
+            </div>
+            <div class="rounded-xl border border-gray-800 bg-gray-950/40 p-5">
+              <div class="text-sm font-semibold text-indigo-300">Step 3</div>
+              <p class="mt-2 text-gray-200">Build with agent guidance</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mx-auto mt-16 max-w-6xl">
+          <div class="rounded-2xl border border-gray-800 bg-gray-950/40 p-6">
+            <h2 class="text-2xl font-semibold">Quick Start</h2>
+            <pre class="mt-4 rounded-lg bg-black/50 p-4 text-sm text-gray-200">
+npx ultra-dex init my-saas
+cd my-saas
+npx ultra-dex generate --provider claude
+            </pre>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="border-t border-gray-800 px-6 py-8 text-sm text-gray-400 md:px-10">
+      <div class="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="space-y-1">
+          <a class="text-gray-200 hover:text-white" href="https://github.com/Srujan0798/Ultra-Dex">GitHub</a>
+          <div>
+            <img
+              alt="GitHub stars"
+              src="https://img.shields.io/github/stars/Srujan0798/Ultra-Dex?style=social"
+            />
+          </div>
+        </div>
+        <div class="space-y-1">
+          <a class="text-gray-200 hover:text-white" href="https://www.npmjs.com/package/ultra-dex">npm</a>
+          <div>MIT License</div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const cta = document.getElementById('cta-copy');
+      const status = document.getElementById('cta-status');
+      const command = 'npx ultra-dex init';
+      cta.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(command);
+          status.textContent = 'Copied!';
+          setTimeout(() => (status.textContent = ''), 1500);
+        } catch {
+          status.textContent = 'Copy failed';
+          setTimeout(() => (status.textContent = ''), 1500);
+        }
+      });
+
+      const terminalLines = [
+        '$ npx ultra-dex init',
+        '✔ Project created successfully!',
+        '  QUICK-START.md',
+        '  CONTEXT.md',
+        '  IMPLEMENTATION-PLAN.md',
+        '  docs/CHECKLIST.md',
+        '  docs/AI-PROMPTS.md',
+        '',
+        'Next steps:',
+        '  1. cd my-saas',
+        '  2. Open QUICK-START.md',
+        '  3. Start building!',
+      ];
+      const terminal = document.getElementById('terminal-output');
+      let lineIndex = 0;
+
+      function typeLine() {
+        if (lineIndex >= terminalLines.length) {
+          setTimeout(() => {
+            terminal.textContent = '';
+            lineIndex = 0;
+            typeLine();
+          }, 1500);
+          return;
+        }
+        terminal.textContent += terminalLines[lineIndex] + '\n';
+        lineIndex += 1;
+        setTimeout(typeLine, 350);
+      }
+
+      typeLine();
+    </script>
+  </body>
+</html>

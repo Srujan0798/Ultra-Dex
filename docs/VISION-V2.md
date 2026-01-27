@@ -188,7 +188,7 @@ Then it:
 - [x] 34-section template
 - [x] 3 complete examples
 - [x] 16 production-ready agents
-- [x] 11 Cursor rules
+- [x] 13 Cursor rules
 - [x] CLI (init, audit, examples)
 - [x] Documentation
 

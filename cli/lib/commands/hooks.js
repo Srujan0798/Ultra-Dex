@@ -47,7 +47,7 @@ export function registerHooksCommand(program) {
 echo "🔍 Ultra-Dex: Validating project structure..."
 
 # Run validation
-npx ultra-dex validate --dir . > /tmp/ultra-dex-validate.log 2>&1
+npx ultra-dex validate --dir . --scan > /tmp/ultra-dex-validate.log 2>&1
 RESULT=$?
 
 if [ $RESULT -ne 0 ]; then

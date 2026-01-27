@@ -488,6 +488,20 @@ User --< Membership >-- Workspace --< Subscription
 }
 ```
 
+**Invite Entity:**
+```json
+{
+  "id": "uuid",
+  "workspaceId": "uuid (FK Workspace)",
+  "email": "string",
+  "role": "enum (admin, member, viewer)",
+  "tokenHash": "string",
+  "expiresAt": "timestamp",
+  "acceptedAt": "timestamp nullable",
+  "createdAt": "timestamp"
+}
+```
+
 **Notification Entity:**
 ```json
 {

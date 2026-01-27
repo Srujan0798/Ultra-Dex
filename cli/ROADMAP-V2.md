@@ -1,239 +1,102 @@
-# Ultra-Dex CLI v2 Roadmap
+# Ultra-Dex CLI Roadmap
 
-> New commands for AI Orchestration
-
----
-
-## New Commands Overview
-
-| Command | Purpose | Phase |
-|---------|---------|-------|
-| `ultra-dex generate <idea>` | AI fills all 34 sections from idea | v2.0 |
-| `ultra-dex build` | Start AI-assisted dev with context | v2.1 |
-| `ultra-dex review` | Audit code against plan | v2.2 |
-| `ultra-dex align` | Check alignment score | v2.2 |
+> **Current Version: 2.4.0** | Last Updated: 2026-01-27
 
 ---
 
-## Command: `ultra-dex generate`
+## ✅ Completed (v2.0 - v2.4)
 
-### Purpose
-Transform a one-sentence idea into a complete 34-section implementation plan.
+| Command | Status | Version |
+|---------|--------|---------|
+| `generate` | ✅ Done | v2.0 |
+| `build` | ✅ Done | v2.1 |
+| `review` | ✅ Done | v2.2 |
+| `serve` | ✅ Done | v2.3 |
+| `dashboard` | ✅ Done | v2.4 |
+| `run` | ✅ Done | v2.4 |
+| `team` | ✅ Done | v2.4 |
+| `doctor` | ✅ Done | v2.4 |
+| `swarm` | ✅ Done | v2.4 |
+| `watch` | ✅ Done | v2.4 |
+| `diff` | ✅ Done | v2.4 |
+| `export` | ✅ Done | v2.4 |
+| `config` | ✅ Done | v2.4 |
+| `upgrade` | ✅ Done | v2.4 |
 
-### Usage
+**Total: 28+ commands implemented**
+
+---
+
+## 🚀 Next: v3.0 - "Full Autonomy"
+
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| **Agent Swarms** | Parallel multi-agent execution | P1 |
+| **Persistent Memory** | Cross-session context via MCP | P1 |
+| **VSCode Extension** | Ultra-Dex sidebar with agent selection | P2 |
+| **Claude Desktop Plugin** | Native MCP integration | P2 |
+| **Template Marketplace** | Community templates | P3 |
+| **Enterprise SSO** | Team auth via Clerk/Auth0 | P3 |
+
+---
+
+## 📋 v3.0 Features in Detail
+
+### 1. Enhanced Swarm Mode
 ```bash
-# Interactive mode
-ultra-dex generate
+# Parallel agent execution
+ultra-dex swarm "Build payments" --parallel
 
-# With idea
-ultra-dex generate "A task management SaaS for remote teams"
+# Custom pipeline
+ultra-dex swarm "Feature X" --pipeline "planner,backend,testing"
 
-# With options
-ultra-dex generate "idea" --provider claude --output ./my-project
+# With checkpoints
+ultra-dex swarm "Feature X" --checkpoint
 ```
 
-### Options
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--provider` | AI provider (claude, openai, gemini) | claude |
-| `--output, -o` | Output directory | current |
-| `--model` | Specific model to use | provider default |
-| `--key` | API key (or use env var) | env var |
-
-### Flow
-```
-1. User provides idea
-2. Ultra-Dex calls AI with template structure
-3. AI fills all 34 sections contextually
-4. Generated plan saved to output directory
-5. Cursor rules automatically configured
-```
-
-### Output Files
-```
-my-project/
-├── IMPLEMENTATION-PLAN.md    # Full 34-section plan (AI-generated)
-├── QUICK-START.md            # Summary for quick reference
-├── CONTEXT.md                # Context file for AI agents
-└── .cursor/
-    └── rules/                # 11 modular cursor rules
-```
-
----
-
-## Command: `ultra-dex build`
-
-### Purpose
-Start development with AI agent, providing full context from the plan.
-
-### Usage
+### 2. Persistent Memory (MCP v2)
 ```bash
-# Interactive agent selection
-ultra-dex build
+# Enable memory
+ultra-dex serve --memory
 
-# With specific agent
-ultra-dex build --agent cursor
+# Query past context
+ultra-dex memory search "auth implementation"
 
-# With specific task
-ultra-dex build --agent cursor --task "Setup database schema"
+# Clear memory
+ultra-dex memory clear --before 7d
 ```
 
-### Options
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--agent` | AI agent to use (cursor, claude, devin) | cursor |
-| `--task` | Specific task to work on | interactive |
-| `--section` | Focus on specific section (1-34) | all |
+### 3. VSCode Extension
+- Sidebar with 16 agents
+- One-click agent execution
+- Real-time alignment score
+- Inline plan references
 
-### Flow
-```
-1. Load existing implementation plan
-2. Format context for selected agent
-3. Launch agent with full context
-4. Track progress against plan
-```
-
----
-
-## Command: `ultra-dex review`
-
-### Purpose
-Audit codebase against the implementation plan.
-
-### Usage
+### 4. Enterprise Features
 ```bash
-# Review current directory
-ultra-dex review
+# Team management
+ultra-dex team sync --sso
 
-# Review specific directory
-ultra-dex review --dir ./src
+# Audit logs
+ultra-dex audit --export compliance.json
 
-# Focus on specific sections
-ultra-dex review --sections "database,api,auth"
-```
-
-### Options
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--dir, -d` | Directory to review | current |
-| `--sections` | Specific sections to check | all |
-| `--fix` | Suggest fixes for deviations | false |
-
-### Output
-```
-Ultra-Dex Code Review
-=====================
-
-Plan Alignment: 85%
-
-✅ Database schema matches plan (100%)
-✅ API endpoints match plan (90%)
-⚠️  Auth flow deviates from plan (70%)
-   - Plan: Email + OAuth
-   - Code: Only email auth implemented
-❌ Error handling incomplete (50%)
-   - Missing: Payment webhook error handlers
-
-Suggestions:
-1. Add OAuth provider support (Section 12)
-2. Implement payment error handlers (Section 15)
+# Role-based access
+ultra-dex team role editor --permissions "generate,build"
 ```
 
 ---
 
-## Command: `ultra-dex align`
+## Version History
 
-### Purpose
-Quick alignment score without full review.
-
-### Usage
-```bash
-ultra-dex align
-```
-
-### Output
-```
-Alignment Score: 85/100
-
-Quick Stats:
-- Sections implemented: 28/34
-- Code coverage: 85%
-- Deviation count: 3
-
-Run `ultra-dex review` for detailed analysis.
-```
+| Version | Date | Highlights |
+|---------|------|------------|
+| v2.4.0 | 2026-01-27 | Swarm, dashboard, MCP server, team commands |
+| v2.3.0 | 2026-01-26 | MCP serve, state management |
+| v2.2.0 | 2026-01-25 | Code review, validation |
+| v2.1.0 | 2026-01-24 | Build mode, agent selection |
+| v2.0.0 | 2026-01-23 | AI generation, multi-provider |
+| v1.x | 2026-01-20 | Initial CLI with init, audit |
 
 ---
 
-## Implementation Priority
-
-### Phase 2.0 (Next Release)
-1. `ultra-dex generate` - Core AI generation
-   - Start with Claude API
-   - Add OpenAI support
-   - Add Gemini support
-
-### Phase 2.1
-2. `ultra-dex build` - Agent integration
-   - Cursor context formatting
-   - Claude context formatting
-   - Generic agent support
-
-### Phase 2.2
-3. `ultra-dex review` - Code auditing
-4. `ultra-dex align` - Quick alignment check
-
----
-
-## Technical Requirements
-
-### Dependencies to Add
-```json
-{
-  "@anthropic-ai/sdk": "^0.x.x",
-  "openai": "^4.x.x",
-  "@google/generative-ai": "^0.x.x",
-  "dotenv": "^16.x.x"
-}
-```
-
-### Environment Variables
-```bash
-ANTHROPIC_API_KEY=sk-ant-...
-OPENAI_API_KEY=sk-...
-GOOGLE_AI_KEY=...
-ULTRA_DEX_DEFAULT_PROVIDER=claude
-```
-
----
-
-## File Structure (Updated)
-
-```
-cli/
-├── bin/
-│   └── ultra-dex.js          # Main entry point
-├── src/
-│   ├── commands/
-│   │   ├── init.js           # Existing
-│   │   ├── audit.js          # Existing
-│   │   ├── examples.js       # Existing
-│   │   ├── generate.js       # NEW
-│   │   ├── build.js          # NEW
-│   │   └── review.js         # NEW
-│   ├── providers/
-│   │   ├── claude.js         # Claude API
-│   │   ├── openai.js         # OpenAI API
-│   │   └── gemini.js         # Gemini API
-│   ├── utils/
-│   │   ├── context.js        # Context formatting
-│   │   └── alignment.js      # Alignment checking
-│   └── templates/
-│       └── prompts/          # AI prompt templates
-├── package.json
-└── README.md
-```
-
----
-
-*This is the roadmap for Ultra-Dex v2 CLI development.*
+*This roadmap tracks Ultra-Dex CLI development.*

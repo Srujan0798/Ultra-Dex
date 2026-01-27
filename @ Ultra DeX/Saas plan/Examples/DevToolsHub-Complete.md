@@ -415,6 +415,21 @@ Workspace --< BillingAccount
 }
 ```
 
+**BillingAccount Entity:**
+```json
+{
+  "id": "uuid",
+  "workspaceId": "uuid",
+  "stripeCustomerId": "string",
+  "stripeSubscriptionId": "string",
+  "billingEmail": "string",
+  "plan": "enum (free, starter, growth, enterprise)",
+  "usageCap": "int",
+  "status": "enum (trialing, active, past_due, canceled)",
+  "createdAt": "timestamp"
+}
+```
+
 ## 10.3 Relationships
 - Workspace owns many ApiKeys, UsageEvents, WebhookEndpoints
 - WebhookEndpoint has many Deliveries

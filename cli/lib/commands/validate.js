@@ -2,12 +2,14 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
+import { runQualityScan } from '../quality/scanner.js';
 
 export function registerValidateCommand(program) {
   program
     .command('validate')
     .description('Validate project structure against Ultra-Dex standards')
     .option('-d, --dir <directory>', 'Project directory to validate', '.')
+    .option('--scan', 'Run deep code quality scan')
     .action(async (options) => {
       console.log(chalk.cyan('\n✅ Ultra-Dex Structure Validator\n'));
 
@@ -114,6 +116,34 @@ export function registerValidateCommand(program) {
         console.log(chalk.gray('  ⊘  Could not validate IMPLEMENTATION-PLAN.md content'));
       }
 
+      // Deep Code Scan
+      if (options.scan) {
+        console.log(chalk.bold('\nRunning Deep Code Scan (Active State Tracking)...\n'));
+        const scanResults = await runQualityScan(projectDir);
+        
+        if (scanResults.failed > 0) {
+          failed += scanResults.failed;
+          console.log(chalk.red(`  ❌ Code Scan Failed: ${scanResults.failed} critical issues found.`));
+        } else {
+          passed++;
+          console.log(chalk.green(`  ✅ Code Scan Passed (${scanResults.filesScanned} files scanned).`));
+        }
+
+        if (scanResults.warnings > 0) {
+          console.log(chalk.yellow(`  ⚠️  ${scanResults.warnings} code warnings found.`));
+        }
+
+        if (scanResults.details.length > 0) {
+          console.log(chalk.gray('\n  Scan Details:'));
+          scanResults.details.forEach(issue => {
+            const icon = issue.severity === 'error' || issue.severity === 'critical' ? '❌' : '⚠️';
+            console.log(`    ${icon} [${issue.ruleName}] ${issue.file}: ${issue.message}`);
+          });
+        }
+      } else {
+        console.log(chalk.gray('\nℹ️  Run with --scan to enable Deep Code Quality Scan.'));
+      }
+
       console.log('\n' + chalk.bold('─'.repeat(50)));
       console.log(chalk.bold('\nValidation Summary:\n'));
       console.log(chalk.green(`  ✅ Passed: ${passed}`));
@@ -126,6 +156,10 @@ export function registerValidateCommand(program) {
       } else {
         console.log(chalk.bold.yellow('\n⚠️  VALIDATION INCOMPLETE\n'));
         console.log(chalk.gray('Fix required files to meet Ultra-Dex standards.'));
+        if (options.scan && failed > 0) {
+           console.log(chalk.red('Code quality gates failed. Commit rejected (if in pre-commit).'));
+        }
+        process.exit(1);
       }
 
       if (warnings.length > 0) {

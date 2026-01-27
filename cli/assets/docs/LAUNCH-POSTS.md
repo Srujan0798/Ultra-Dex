@@ -77,7 +77,7 @@ Built Ultra-Dex to fix this:
 - 21-step verification checklist per task
 - 3 filled examples to learn from
 - CLI: `npx ultra-dex init`
-- 11 Cursor rules for AI coding
+- 13 Cursor rules for AI coding
 
 **Key feature:** Phased approach. Fill 8 sections, code, fill more as needed. Not waterfall.
 

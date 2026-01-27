@@ -23,10 +23,14 @@ ContentStudio combines a Tiptap editor, asset library (Cloudflare R2), workflow 
 - Solo creators scaling content production
 
 ## 1.5 Unique Value Proposition
-- Unified editor + asset library + workflow\n- Built-in SEO scorecards and templates\n- Fast publishing pipeline with version control
+- Unified editor + asset library + workflow
+- Built-in SEO scorecards and templates
+- Fast publishing pipeline with version control
 
 ## 1.6 Success Metrics (Key)
-- 70% of users publish within 7 days\n- 90% content approval rate within 48 hours\n- 1,000 active teams within 6 months
+- 70% of users publish within 7 days
+- 90% content approval rate within 48 hours
+- 1,000 active teams within 6 months
 
 ---
 
@@ -35,22 +39,58 @@ ContentStudio combines a Tiptap editor, asset library (Cloudflare R2), workflow 
 ## 2.1 Core Production Features (Critical - P0)
 
 **Feature 1: Rich Text Editor (Tiptap)**
-- Simple Description: Write content with structured blocks\n- Industry Standard: Rich text editor with markdown export\n- Acceptance Criteria:\n  \n  □ Editor supports headings, lists, embeds\n  \n  □ Autosave every 10 seconds\n  \n  □ Version history available
+- Simple Description: Write content with structured blocks
+- Industry Standard: Rich text editor with markdown export
+- Acceptance Criteria:
+  
+  □ Editor supports headings, lists, embeds
+  
+  □ Autosave every 10 seconds
+  
+  □ Version history available
 
 **Feature 2: Asset Management (R2)**
-- Simple Description: Upload and organize images/files\n- Industry Standard: CDN-backed storage with folder tags\n- Acceptance Criteria:\n  \n  □ Upload <10MB assets\n  \n  □ Thumbnails generated\n  \n  □ Signed URLs for access
+- Simple Description: Upload and organize images/files
+- Industry Standard: CDN-backed storage with folder tags
+- Acceptance Criteria:
+  
+  □ Upload <10MB assets
+  
+  □ Thumbnails generated
+  
+  □ Signed URLs for access
 
 **Feature 3: Publishing Workflow**
-- Simple Description: Draft -> Review -> Published\n- Industry Standard: Status-driven approvals with audit trail\n- Acceptance Criteria:\n  \n  □ Status transitions enforced\n  \n  □ Reviewer approvals tracked\n  \n  □ Publish schedule supported
+- Simple Description: Draft -> Review -> Published
+- Industry Standard: Status-driven approvals with audit trail
+- Acceptance Criteria:
+  
+  □ Status transitions enforced
+  
+  □ Reviewer approvals tracked
+  
+  □ Publish schedule supported
 
 **Feature 4: SEO Optimization**
-- Simple Description: SEO score + recommendations\n- Industry Standard: Metadata editor and keyword checks\n- Acceptance Criteria:\n  \n  □ Title/description length checks\n  \n  □ Keyword density hints\n  \n  □ OpenGraph preview
+- Simple Description: SEO score + recommendations
+- Industry Standard: Metadata editor and keyword checks
+- Acceptance Criteria:
+  
+  □ Title/description length checks
+  
+  □ Keyword density hints
+  
+  □ OpenGraph preview
 
 ## 2.2 Enhanced Features (Important - P1)
-- Content templates and snippets\n- Collaboration comments\n- Approval reminders via email
+- Content templates and snippets
+- Collaboration comments
+- Approval reminders via email
 
 ## 2.3 Future Features (Nice-to-Have - P2/P3)
-- Multichannel publishing (CMS, socials)\n- AI-assisted outlines\n- Localization workflows
+- Multichannel publishing (CMS, socials)
+- AI-assisted outlines
+- Localization workflows
 
 ---
 
@@ -63,10 +103,15 @@ ContentStudio helps teams produce high-quality content faster with a Tiptap edit
 ContentStudio centralizes content production with collaborative editing, structured workflows, and asset storage. Teams can draft, review, and publish content with SEO scorecards, ensuring consistency and faster turnaround.
 
 ## 3.3 Key Benefits
-- Fewer tool switches for content teams\n- Faster approval cycles\n- Consistent SEO optimization
+- Fewer tool switches for content teams
+- Faster approval cycles
+- Consistent SEO optimization
 
 ## 3.4 How It Works (User Perspective)
-Step 1: Create content draft\nStep 2: Upload assets\nStep 3: Request review\nStep 4: Publish content
+Step 1: Create content draft
+Step 2: Upload assets
+Step 3: Request review
+Step 4: Publish content
 
 ## 3.5 Competitive Positioning
 Unlike generic CMS tools, ContentStudio is built for editorial workflow and SEO-first publishing.
@@ -76,52 +121,109 @@ Unlike generic CMS tools, ContentStudio is built for editorial workflow and SEO-
 # SECTION 4: USER PERSONAS
 
 ### Persona 1: Content Manager
-**Demographics:**\n- Age: 28-45\n- Occupation: Marketing manager\n- Tech Savviness: Medium\n- Location: North America/Europe
+**Demographics:**
+- Age: 28-45
+- Occupation: Marketing manager
+- Tech Savviness: Medium
+- Location: North America/Europe
 
-**Goals:**\n- Ship content on schedule\n- Maintain brand consistency
+**Goals:**
+- Ship content on schedule
+- Maintain brand consistency
 
-**Pain Points:**\n- Approval delays\n- Missing assets
+**Pain Points:**
+- Approval delays
+- Missing assets
 
-**Behaviors:**\n- Plans content calendar weekly\n- Reviews SEO metrics
+**Behaviors:**
+- Plans content calendar weekly
+- Reviews SEO metrics
 
-**Motivations:**\n- Improve content output
+**Motivations:**
+- Improve content output
 
 ### Persona 2: Agency Editor
-**Demographics:**\n- Age: 25-40\n- Occupation: Editor\n- Tech Savviness: High
+**Demographics:**
+- Age: 25-40
+- Occupation: Editor
+- Tech Savviness: High
 
-**Goals:**\n- Manage multiple client workflows\n- Keep approvals organized
+**Goals:**
+- Manage multiple client workflows
+- Keep approvals organized
 
-**Pain Points:**\n- Disconnected asset storage\n- Hard to track versions
+**Pain Points:**
+- Disconnected asset storage
+- Hard to track versions
 
-**Behaviors:**\n- Uses templates and checklists\n- Coordinates with freelancers
+**Behaviors:**
+- Uses templates and checklists
+- Coordinates with freelancers
 
-**Motivations:**\n- Reduce revisions
+**Motivations:**
+- Reduce revisions
 
 ---
 
 # SECTION 5: USER STORIES
 
 ## 5.1 Basic User Stories (Epic Level)
-**Epic 1: Content Creation**\n- As a writer, I want a rich editor so that I can format content quickly\n- As a writer, I want autosave so that I never lose work
+**Epic 1: Content Creation**
+- As a writer, I want a rich editor so that I can format content quickly
+- As a writer, I want autosave so that I never lose work
 
-**Epic 2: Review Workflow**\n- As an editor, I want to request review so that content is approved before publishing
+**Epic 2: Review Workflow**
+- As an editor, I want to request review so that content is approved before publishing
 
-**Epic 3: Publishing**\n- As a manager, I want to schedule publishing so that content goes live on time
+**Epic 3: Publishing**
+- As a manager, I want to schedule publishing so that content goes live on time
 
 ## 5.2 Detailed User Stories (Task Level)
-**Story: Request Review**\n- As a: Writer\n- I want to: Submit a draft for review\n- So that: Editors can approve it\n- Acceptance Criteria:\n  \n  □ Status changes to review\n  \n  □ Reviewer notified via email\n  \n  □ Comments enabled\n- Priority: P0\n- Estimated Effort: 6 hours
+**Story: Request Review**
+- As a: Writer
+- I want to: Submit a draft for review
+- So that: Editors can approve it
+- Acceptance Criteria:
+  
+  □ Status changes to review
+  
+  □ Reviewer notified via email
+  
+  □ Comments enabled
+- Priority: P0
+- Estimated Effort: 6 hours
 
-**Story: Upload Asset**\n- As a: Writer\n- I want to: Upload an image to use in content\n- So that: I can add visuals\n- Acceptance Criteria:\n  \n  □ Upload success under 5 seconds\n  \n  □ Asset stored with metadata\n  \n  □ Thumbnail generated\n- Priority: P0\n- Estimated Effort: 7 hours
+**Story: Upload Asset**
+- As a: Writer
+- I want to: Upload an image to use in content
+- So that: I can add visuals
+- Acceptance Criteria:
+  
+  □ Upload success under 5 seconds
+  
+  □ Asset stored with metadata
+  
+  □ Thumbnail generated
+- Priority: P0
+- Estimated Effort: 7 hours
 
 ---
 
 # SECTION 6: SCREEN / PAGE MAP
 
 ## 6.1 Public Pages (No Auth Required)
-Landing (/)\nPricing (/pricing)\nLogin (/login)\nSign Up (/signup)
+Landing (/)
+Pricing (/pricing)
+Login (/login)
+Sign Up (/signup)
 
 ## 6.2 Authenticated Pages (Auth Required)
-Dashboard (/app)\nEditor (/app/content/:id)\nAssets (/app/assets)\nWorkflow (/app/workflow)\nSEO Analyzer (/app/seo)\nSettings (/app/settings)
+Dashboard (/app)
+Editor (/app/content/:id)
+Assets (/app/assets)
+Workflow (/app/workflow)
+SEO Analyzer (/app/seo)
+Settings (/app/settings)
 
 ## 6.3 Page Component Breakdown
 **Example: Editor Page**
@@ -155,9 +257,15 @@ If validation fails -> display errors and keep draft in review
 # SECTION 8: OBJECTIVES
 
 ## 8.1 Primary Objectives (Must Achieve)
-1. **Reliable editorial workflow**\n   - Success Metric: 90% of reviews completed within 48 hours\n   - Timeline: Month 1\n   - Owner: Product
+1. **Reliable editorial workflow**
+   - Success Metric: 90% of reviews completed within 48 hours
+   - Timeline: Month 1
+   - Owner: Product
 
-2. **Fast asset delivery**\n   - Success Metric: Asset load <200ms via CDN\n   - Timeline: Month 1\n   - Owner: Engineering
+2. **Fast asset delivery**
+   - Success Metric: Asset load <200ms via CDN
+   - Timeline: Month 1
+   - Owner: Engineering
 
 ## 8.2 Secondary Objectives (Should Achieve)
 1. Improve SEO scores by 15%
@@ -173,34 +281,57 @@ If validation fails -> display errors and keep draft in review
 # SECTION 9: FULL FEATURE SPECIFICATIONS
 
 ### Feature 1: Tiptap Editor
-**Priority:** P0\n**Complexity:** Medium\n**Estimated Time:** 4 days
+**Priority:** P0
+**Complexity:** Medium
+**Estimated Time:** 4 days
 
 **Description:** Rich text editing with structured blocks.
 
-**Functional Requirements:**\n1. Block-based editing\n2. Autosave\n3. Version history
+**Functional Requirements:**
+1. Block-based editing
+2. Autosave
+3. Version history
 
-**Acceptance Criteria:**\n□ Autosave every 10s\n□ Version restore works\n□ Markdown export
+**Acceptance Criteria:**
+□ Autosave every 10s
+□ Version restore works
+□ Markdown export
 
 ### Feature 2: Asset Library
-**Priority:** P0\n**Complexity:** Medium\n**Estimated Time:** 4 days
+**Priority:** P0
+**Complexity:** Medium
+**Estimated Time:** 4 days
 
 **Description:** Cloudflare R2-backed asset storage.
 
-**Acceptance Criteria:**\n□ Uploads under 10MB\n□ Signed URL access\n□ Folder/tag organization
+**Acceptance Criteria:**
+□ Uploads under 10MB
+□ Signed URL access
+□ Folder/tag organization
 
 ### Feature 3: Workflow States
-**Priority:** P0\n**Complexity:** Medium\n**Estimated Time:** 3 days
+**Priority:** P0
+**Complexity:** Medium
+**Estimated Time:** 3 days
 
 **Description:** Draft -> Review -> Published transitions.
 
-**Acceptance Criteria:**\n□ Status transitions enforced\n□ Reviewer approvals recorded\n□ Publish schedule
+**Acceptance Criteria:**
+□ Status transitions enforced
+□ Reviewer approvals recorded
+□ Publish schedule
 
 ### Feature 4: SEO Optimization
-**Priority:** P1\n**Complexity:** Medium\n**Estimated Time:** 3 days
+**Priority:** P1
+**Complexity:** Medium
+**Estimated Time:** 3 days
 
 **Description:** SEO scorecard and metadata checks.
 
-**Acceptance Criteria:**\n□ Title length check\n□ Meta description preview\n□ Keyword density hints
+**Acceptance Criteria:**
+□ Title length check
+□ Meta description preview
+□ Keyword density hints
 
 ---
 
@@ -253,14 +384,29 @@ ContentItem --< Review
 }
 ```
 
+**ContentVersion Entity:**
+```json
+{
+  "id": "uuid",
+  "contentId": "uuid",
+  "version": "int",
+  "bodyJson": "jsonb",
+  "createdBy": "uuid",
+  "createdAt": "timestamp"
+}
+```
+
 ## 10.3 Relationships
-- Workspace has many ContentItems and Assets\n- ContentItem has many Reviews and Versions
+- Workspace has many ContentItems and Assets
+- ContentItem has many Reviews and Versions
 
 ## 10.4 Indexes
-- ContentItem.workspaceId + status\n- Asset.workspaceId + createdAt
+- ContentItem.workspaceId + status
+- Asset.workspaceId + createdAt
 
 ## 10.5 Data Validation Rules
-- Status transitions: draft -> review -> published\n- Asset size max 10MB
+- Status transitions: draft -> review -> published
+- Asset size max 10MB
 
 ---
 
@@ -273,7 +419,11 @@ Remix loaders/actions with Supabase auth.
 Supabase Auth for login/signup.
 
 ## 11.3 Resource Endpoints
-- POST /api/content\n- PATCH /api/content/:id/status\n- POST /api/assets/upload\n- POST /api/reviews\n- POST /api/publish/schedule
+- POST /api/content
+- PATCH /api/content/:id/status
+- POST /api/assets/upload
+- POST /api/reviews
+- POST /api/publish/schedule
 
 #### POST `/api/content`
 ```json
@@ -383,10 +533,12 @@ Provide editor + asset library + workflow + SEO toolkit.
 | DB | Postgres | 15 | SQL + RLS |
 
 ## 15.3 Database & Storage
-- Supabase Postgres\n- Cloudflare R2
+- Supabase Postgres
+- Cloudflare R2
 
 ## 15.4 DevOps & Infrastructure
-- Cloudflare Pages/Remix hosting\n- Supabase managed DB
+- Cloudflare Pages/Remix hosting
+- Supabase managed DB
 
 ## 15.5 Development Tools
 - pnpm, ESLint, Prettier, Playwright
@@ -417,7 +569,10 @@ Sprint 3: SEO + tests
 #### 16.C.1 PHASE 0 TASKS (Project Setup)
 TASK-000: Bootstrap Remix + Supabase  
 Description: Initialize Remix app, configure Supabase client.  
-Acceptance Criteria:\n□ App runs locally\n□ Supabase auth works\n□ Env templates created  
+Acceptance Criteria:
+□ App runs locally
+□ Supabase auth works
+□ Env templates created  
 Dependencies: None  
 **Estimated Time:** 6 hours  
 **Assigned Phase:** Phase 0  
@@ -427,7 +582,10 @@ Dependencies: None
 
 TASK-001: Content schema + migrations  
 Description: Create ContentItem, Review, Asset models.  
-Acceptance Criteria:\n□ Migrations applied\n□ RLS policies created\n□ Seed data inserted  
+Acceptance Criteria:
+□ Migrations applied
+□ RLS policies created
+□ Seed data inserted  
 Dependencies: TASK-000  
 **Estimated Time:** 7 hours  
 **Assigned Phase:** Phase 0  
@@ -438,7 +596,10 @@ Dependencies: TASK-000
 #### 16.C.2 PHASE 1 TASKS (Foundation & Authentication)
 TASK-002: Implement Tiptap editor  
 Description: Add editor with autosave and versioning.  
-Acceptance Criteria:\n□ Autosave every 10s\n□ Version restore\n□ Markdown export  
+Acceptance Criteria:
+□ Autosave every 10s
+□ Version restore
+□ Markdown export  
 Dependencies: TASK-000  
 **Estimated Time:** 8 hours  
 **Assigned Phase:** Phase 1  
@@ -448,7 +609,10 @@ Dependencies: TASK-000
 
 TASK-003: Asset upload pipeline  
 Description: Signed upload + R2 integration.  
-Acceptance Criteria:\n□ Signed URL flow\n□ Asset stored in DB\n□ Thumbnail generated  
+Acceptance Criteria:
+□ Signed URL flow
+□ Asset stored in DB
+□ Thumbnail generated  
 Dependencies: TASK-001  
 **Estimated Time:** 9 hours  
 **Assigned Phase:** Phase 2  
@@ -458,7 +622,10 @@ Dependencies: TASK-001
 
 TASK-004: Workflow status transitions  
 Description: Enforce draft/review/published with approvals.  
-Acceptance Criteria:\n□ Status rules enforced\n□ Review approvals stored\n□ Publish schedule works  
+Acceptance Criteria:
+□ Status rules enforced
+□ Review approvals stored
+□ Publish schedule works  
 Dependencies: TASK-001  
 **Estimated Time:** 7 hours  
 **Assigned Phase:** Phase 2  
@@ -468,7 +635,10 @@ Dependencies: TASK-001
 
 TASK-005: SEO analyzer UI  
 Description: SEO scorecard with metadata validation.  
-Acceptance Criteria:\n□ Title/description checks\n□ Keyword hints\n□ OpenGraph preview  
+Acceptance Criteria:
+□ Title/description checks
+□ Keyword hints
+□ OpenGraph preview  
 Dependencies: TASK-002  
 **Estimated Time:** 6 hours  
 **Assigned Phase:** Phase 3  
@@ -478,7 +648,10 @@ Dependencies: TASK-002
 
 TASK-006: End-to-end tests  
 Description: Test editor, workflow, and publish.  
-Acceptance Criteria:\n□ E2E tests pass\n□ Critical flows covered\n□ CI green  
+Acceptance Criteria:
+□ E2E tests pass
+□ Critical flows covered
+□ CI green  
 Dependencies: TASK-003, TASK-004  
 **Estimated Time:** 8 hours  
 **Assigned Phase:** Phase 3  

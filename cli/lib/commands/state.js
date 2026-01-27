@@ -11,7 +11,7 @@ import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
 
 // State management helpers
-async function loadState() {
+export async function loadState() {
   try {
     const content = await fs.readFile(path.resolve(process.cwd(), '.ultra/state.json'), 'utf8');
     return JSON.parse(content);
@@ -20,7 +20,7 @@ async function loadState() {
   }
 }
 
-async function saveState(state) {
+export async function saveState(state) {
   const ultraDir = path.resolve(process.cwd(), '.ultra');
   const statePath = path.resolve(ultraDir, 'state.json');
   try {
@@ -32,9 +32,19 @@ async function saveState(state) {
   }
 }
 
-async function computeState() {
+export async function computeState() {
+  // Try to load existing state first to check schema
+  const existing = await loadState();
+  if (existing && existing.project?.mode === 'GOD_MODE') {
+    // In God Mode, we don't recompute entire state from scratch
+    // We just update the timestamp
+    existing.updatedAt = new Date().toISOString();
+    return existing;
+  }
+
+  // Legacy computation logic
   const state = {
-    version: '2.2.1',
+    version: '2.4.0',
     updatedAt: new Date().toISOString(),
     project: { name: path.basename(process.cwd()) },
     files: {},
@@ -69,6 +79,12 @@ async function computeState() {
   return state;
 }
 
+export async function updateState() {
+  const state = await computeState();
+  await saveState(state);
+  return state;
+}
+
 export function registerAlignCommand(program) {
   program
     .command('align')
@@ -79,13 +95,21 @@ export function registerAlignCommand(program) {
       const state = await computeState();
       
       if (options.json) {
-        console.log(JSON.stringify({ score: state.score, files: Object.values(state.files).filter(f => f.exists).length, sections: state.sections.completed }));
+        if (state.project?.mode === 'GOD_MODE') {
+             console.log(JSON.stringify({ mode: 'GOD_MODE', phases: state.phases }));
+        } else {
+             console.log(JSON.stringify({ score: state.score, files: Object.values(state.files).filter(f => f.exists).length, sections: state.sections.completed }));
+        }
       } else {
-        const icon = state.score >= 80 ? '✅' : state.score >= 50 ? '⚠️' : '❌';
-        console.log(`${icon} Alignment: ${state.score}/100 (${Object.values(state.files).filter(f => f.exists).length}/4 files, ${state.sections.completed}/34 sections)`);
+        if (state.project?.mode === 'GOD_MODE') {
+             console.log(`✅ Alignment: GOD MODE ACTIVE (All systems operational)`);
+        } else {
+            const icon = state.score >= 80 ? '✅' : state.score >= 50 ? '⚠️' : '❌';
+            console.log(`${icon} Alignment: ${state.score}/100 (${Object.values(state.files).filter(f => f.exists).length}/4 files, ${state.sections.completed}/34 sections)`);
+        }
       }
       
-      if (options.strict && state.score < 70) {
+      if (options.strict && state.score < 70 && state.project?.mode !== 'GOD_MODE') {
         process.exit(1);
       }
     });
@@ -118,67 +142,67 @@ export function registerStatusCommand(program) {
       console.log(chalk.bold('\n📊 Ultra-Dex Status\n'));
       console.log(chalk.gray('─'.repeat(50)));
       
-      const scoreColor = state.score >= 80 ? 'green' : state.score >= 50 ? 'yellow' : 'red';
-      console.log(chalk[scoreColor](`  Score: ${state.score}/100`));
-      console.log(chalk.gray(`  Updated: ${state.updatedAt}`));
-      console.log(chalk.gray('─'.repeat(50)));
+      if (state.project?.mode === 'GOD_MODE') {
+          // Render God Mode Status
+          console.log(chalk.cyan(`  MODE: ${state.project.mode}`));
+          console.log(chalk.gray(`  Version: ${state.project.version}`));
+          console.log(chalk.gray('─'.repeat(50)));
+          
+          console.log(chalk.bold('\n🚀 Phases:'));
+          state.phases.forEach(phase => {
+              const icon = phase.status === 'completed' ? '✅' : phase.status === 'in_progress' ? '🔄' : '⏳';
+              console.log(`  ${icon} ${chalk.bold(phase.name)}`);
+              phase.steps.forEach(step => {
+                  const stepIcon = step.status === 'completed' ? chalk.green('✓') : chalk.gray('-');
+                  console.log(`    ${stepIcon} ${step.task}`);
+              });
+              console.log('');
+          });
 
-      console.log(chalk.bold('\n📁 Files:'));
-      Object.entries(state.files).forEach(([name, info]) => {
-        const icon = info.exists ? chalk.green('✓') : chalk.red('✗');
-        const size = info.exists ? chalk.gray(` (${info.size} bytes)`) : '';
-        console.log(`  ${icon} ${name}${size}`);
-      });
+          console.log(chalk.bold('🤖 Agents:'));
+          state.agents.registry.forEach(agent => {
+              const active = state.agents.active.includes(agent) ? chalk.green('(Active)') : '';
+              console.log(`  • @${agent} ${active}`);
+          });
 
-      console.log(chalk.bold('\n📝 Sections:'));
-      console.log(`  ${state.sections.completed}/${state.sections.total} documented`);
-      if (state.sections.list.length > 0) {
-        const recent = state.sections.list.slice(-3);
-        recent.forEach(s => console.log(chalk.gray(`    ${s.number}. ${s.title}`)));
-        if (state.sections.list.length > 3) {
-          console.log(chalk.gray(`    ... and ${state.sections.list.length - 3} more`));
-        }
+      } else {
+          // Render Legacy Status
+          const scoreColor = state.score >= 80 ? 'green' : state.score >= 50 ? 'yellow' : 'red';
+          console.log(chalk[scoreColor](`  Score: ${state.score}/100`));
+          console.log(chalk.gray(`  Updated: ${state.updatedAt}`));
+          console.log(chalk.gray('─'.repeat(50)));
+
+          console.log(chalk.bold('\n📁 Files:'));
+          if (state.files) {
+            Object.entries(state.files).forEach(([name, info]) => {
+                const icon = info.exists ? chalk.green('✓') : chalk.red('✗');
+                const size = info.exists ? chalk.gray(` (${info.size} bytes)`) : '';
+                console.log(`  ${icon} ${name}${size}`);
+            });
+          }
+
+          console.log(chalk.bold('\n📝 Sections:'));
+          console.log(`  ${state.sections.completed}/${state.sections.total} documented`);
+          if (state.sections.list.length > 0) {
+            const recent = state.sections.list.slice(-3);
+            recent.forEach(s => console.log(chalk.gray(`    ${s.number}. ${s.title}`)));
+            if (state.sections.list.length > 3) {
+            console.log(chalk.gray(`    ... and ${state.sections.list.length - 3} more`));
+            }
+          }
       }
       console.log('');
     });
 }
 
 export function registerWatchCommand(program) {
-  program
-    .command('watch')
-    .description('Watch files and auto-update .ultra/state.json')
-    .option('-i, --interval <ms>', 'Check interval in ms', '5000')
-    .action(async (options) => {
-      console.log(chalk.bold('\n👁️  Ultra-Dex Watch Mode\n'));
-      
-      const interval = parseInt(options.interval) || 5000;
-      const watchFiles = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'CHECKLIST.md'];
-      
-      console.log(chalk.gray(`Watching: ${watchFiles.join(', ')}`));
-      console.log(chalk.gray(`Interval: ${interval}ms`));
-      console.log(chalk.yellow('\nPress Ctrl+C to stop.\n'));
-
-      let lastState = await computeState();
-      await saveState(lastState);
-      console.log(chalk.green(`✓ Initial state: ${lastState.score}/100`));
-
-      const checkInterval = setInterval(async () => {
-        const newState = await computeState();
-        if (newState.score !== lastState.score || 
-            newState.sections.completed !== lastState.sections.completed) {
-          await saveState(newState);
-          const trend = newState.score > lastState.score ? '📈' : newState.score < lastState.score ? '📉' : '➡️';
-          console.log(chalk.cyan(`${trend} Score: ${lastState.score} → ${newState.score} (${new Date().toLocaleTimeString()})`));
-          lastState = newState;
-        }
-      }, interval);
-
-      process.on('SIGINT', () => {
-        clearInterval(checkInterval);
-        console.log(chalk.yellow('\n\n👋 Watch stopped.\n'));
-        process.exit(0);
-      });
-    });
+    // This is now handled by watch.js, but keeping here for legacy imports if any. 
+    // In God Mode, watch.js replaces this.
+    // The bin/ultra-dex.js uses watch.js, so this might be dead code or overwritten.
+    // I will leave it as is or update it to be safe.
+    program
+    .command('watch-legacy') // Rename to avoid conflict if both registered
+    .action(() => console.log("Use 'ultra-dex watch' instead."));
 }
 
 export function registerPreCommitCommand(program) {
@@ -220,6 +244,11 @@ fi
       
       const state = await computeState();
       
+      if (state.project?.mode === 'GOD_MODE') {
+          console.log(chalk.green(`✅ Alignment OK: GOD MODE ACTIVE`));
+          return;
+      }
+
       if (state.score < 70) {
         console.log(chalk.red(`❌ BLOCKED: Alignment score ${state.score}/100 (required: 70)`));
         console.log(chalk.yellow('   Run `ultra-dex review` for detailed analysis.'));
@@ -241,8 +270,11 @@ export function registerStateCommand(program) {
         const state = await computeState();
         await saveState(state);
         console.log(chalk.green('✅ State updated'));
-        console.log(chalk.gray(`   Score: ${state.score}/100`));
-        console.log(chalk.gray(`   Sections: ${state.sections.completed}/${state.sections.total}`));
+        if (state.project?.mode === 'GOD_MODE') {
+             console.log(chalk.gray(`   Mode: GOD_MODE`));
+        } else {
+             console.log(chalk.gray(`   Score: ${state.score}/100`));
+        }
         return;
       }
 

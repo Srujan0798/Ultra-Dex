@@ -155,7 +155,7 @@ Then it:
 ### Phase 1: Foundation (Current - v1.x)
 - [x] 34-section template
 - [x] 3 complete examples
-- [x] 11 Cursor rules
+- [x] 13 Cursor rules
 - [x] CLI (init, audit, examples)
 - [x] Documentation
 
