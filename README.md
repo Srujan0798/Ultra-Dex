@@ -12,6 +12,25 @@
 
 ---
 
+## 🚀 NEW: AI-Powered CLI (v2.2)
+
+```bash
+# Generate a complete 34-section plan with AI
+npx ultra-dex generate "A booking platform for pet groomers"
+
+# Build with 10 specialized AI agents
+npx ultra-dex build --agent backend
+
+# Check your progress
+npx ultra-dex align
+```
+
+**One command. 60 seconds. Complete implementation plan.**
+
+Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
+
+---
+
 ## What is Ultra-Dex?
 
 A comprehensive framework for building complete, production-grade applications. **This is not for MVPs or quick prototypes** — it is a rigorous system for engineering full-scale software with:
@@ -157,11 +176,38 @@ npx ultra-dex workflow auth     # Show workflow for authentication
 
 # Infrastructure
 npx ultra-dex serve             # Serve context via HTTP (MCP-compatible)
-npx ultra-dex sync --assets     # Sync agents/rules/docs into project
-npx ultra-dex export --json     # Export project context as JSON
-npx ultra-dex check --watch     # Real-time project health monitor
-npx ultra-dex deploy-check      # Pre-deployment validation checklist
 npx ultra-dex hooks             # Install git pre-commit validation
+npx ultra-dex align             # Quick alignment score (0-100)
+```
+
+---
+
+## <a name="ai-commands"></a>🤖 AI Commands Setup
+
+Set your API key to use AI-powered features:
+
+```bash
+# Option 1: Claude (Recommended)
+export ANTHROPIC_API_KEY=your-key
+
+# Option 2: OpenAI
+export OPENAI_API_KEY=your-key
+
+# Option 3: Google Gemini
+export GOOGLE_AI_KEY=your-key
+```
+
+Then use:
+
+```bash
+# Generate complete 34-section plan
+npx ultra-dex generate "A task management SaaS for remote teams"
+
+# Preview without calling AI
+npx ultra-dex generate "idea" --dry-run
+
+# Use different provider
+npx ultra-dex generate "idea" --provider openai
 ```
 
 **Sample Output:**

@@ -2,7 +2,7 @@
 
 > Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation**.
 
-## What's New in v2.1
+## What's New in v2.2
 
 ```bash
 # 🚀 Generate a complete 34-section plan with AI
@@ -16,6 +16,7 @@ npx ultra-dex review
 
 # 📊 Quick alignment check
 npx ultra-dex align
+
 ```
 
 ## First 10 Minutes
@@ -171,14 +172,6 @@ npx ultra-dex fetch
 npx ultra-dex fetch --agents --rules
 ```
 
-### `sync`
-
-Auto-update CONTEXT.md with a codebase snapshot:
-
-```bash
-npx ultra-dex sync
-```
-
 ### `serve`
 
 Serve context (MCP-compatible):
@@ -200,7 +193,6 @@ npx ultra-dex serve --port 3001
 | `agent <name>` | Show specific agent prompt |
 | `hooks` | Set up git pre-commit hooks |
 | `fetch` | Download assets for offline |
-| `sync` | Auto-sync CONTEXT.md |
 | `serve` | Serve context over HTTP |
 | `validate` | Validate project structure |
 | `workflow <feature>` | Show workflow for a feature |

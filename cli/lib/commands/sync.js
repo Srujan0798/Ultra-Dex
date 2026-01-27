@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import path from 'path';
 import { snapshotContext } from '../utils/sync.js';
+import { validateSafePath } from '../utils/validation.js';
 
 export function registerSyncCommand(program) {
   program
@@ -8,6 +9,12 @@ export function registerSyncCommand(program) {
     .description('Auto-sync CONTEXT.md with current codebase')
     .option('-d, --dir <directory>', 'Project directory', '.')
     .action(async (options) => {
+      const dirValidation = validateSafePath(options.dir, 'Project directory');
+      if (dirValidation !== true) {
+        console.log(chalk.red(dirValidation));
+        process.exit(1);
+      }
+
       const rootDir = path.resolve(options.dir);
       console.log(chalk.cyan('\n🔁 Ultra-Dex Context Sync\n'));
 
