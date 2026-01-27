@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { ASSETS_ROOT, ROOT_FALLBACK } from '../config/paths.js';
 import { githubBlobUrl } from '../config/urls.js';
+import { readWithFallback } from '../utils/fallback.js';
 
 export const AGENTS = [
   { name: 'cto', description: 'Architecture & tech decisions', file: '1-leadership/cto.md', tier: 'Leadership' },
@@ -24,12 +25,8 @@ export const AGENTS = [
 
 async function readAgentPrompt(agent) {
   const agentPath = path.join(ASSETS_ROOT, 'agents', agent.file);
-  try {
-    return await fs.readFile(agentPath, 'utf-8');
-  } catch (err) {
-    const fallbackPath = path.join(ROOT_FALLBACK, 'agents', agent.file);
-    return await fs.readFile(fallbackPath, 'utf-8');
-  }
+  const fallbackPath = path.join(ROOT_FALLBACK, 'agents', agent.file);
+  return readWithFallback(agentPath, fallbackPath, 'utf-8');
 }
 
 export function registerAgentsCommand(program) {

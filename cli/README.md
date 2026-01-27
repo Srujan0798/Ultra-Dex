@@ -171,10 +171,39 @@ npx ultra-dex fetch
 npx ultra-dex fetch --agents --rules
 ```
 
+### `sync`
 
-Auto-update CONTEXT.md with a codebase snapshot:
+Sync assets or refresh CONTEXT.md with a codebase snapshot:
 
 ```bash
+npx ultra-dex sync
+npx ultra-dex sync --assets
+```
+
+### `export`
+
+Export project context as JSON or YAML:
+
+```bash
+npx ultra-dex export --json
+npx ultra-dex export --yaml
+```
+
+### `check`
+
+Real-time project health monitor:
+
+```bash
+npx ultra-dex check
+npx ultra-dex check --watch
+```
+
+### `deploy-check`
+
+Pre-deployment validation checklist:
+
+```bash
+npx ultra-dex deploy-check
 ```
 
 ### Other Commands
@@ -190,6 +219,10 @@ Auto-update CONTEXT.md with a codebase snapshot:
 | `agent <name>` | Show specific agent prompt |
 | `hooks` | Set up git pre-commit hooks |
 | `fetch` | Download assets for offline |
+| `sync` | Sync assets or refresh CONTEXT.md snapshot |
+| `export` | Export project context as JSON/YAML |
+| `check` | Real-time project health monitor |
+| `deploy-check` | Pre-deployment validation checklist |
 | `serve` | Serve context over HTTP |
 | `validate` | Validate project structure |
 | `workflow <feature>` | Show workflow for a feature |

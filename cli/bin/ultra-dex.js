@@ -1646,6 +1646,70 @@ program
     });
   });
 
+// ========================================
+// DEPLOY-CHECK COMMAND - Pre-deployment Validation
+// ========================================
+program
+  .command('deploy-check')
+  .description('Pre-deployment validation checklist')
+  .option('-d, --dir <directory>', 'Project directory to check', '.')
+  .option('--json', 'Output as JSON')
+  .action(async (options) => {
+    console.log(chalk.cyan('\n🚦 Ultra-Dex Deploy Check\n'));
+
+    const checkDir = path.resolve(options.dir);
+
+    async function fileExists(fp) {
+      try { await fs.access(fp); return true; } catch { return false; }
+    }
+    async function dirExists(fp) {
+      try { return (await fs.stat(fp)).isDirectory(); } catch { return false; }
+    }
+
+    const checks = [
+      { name: 'Implementation plan', path: 'IMPLEMENTATION-PLAN.md', type: 'file', required: true },
+      { name: 'Quick start', path: 'QUICK-START.md', type: 'file', required: true },
+      { name: 'Context', path: 'CONTEXT.md', type: 'file', required: false },
+      { name: 'Docs folder', path: 'docs', type: 'dir', required: false },
+      { name: 'Tests folder', path: 'tests', type: 'dir', required: false },
+      { name: 'Environment template', path: '.env.example', type: 'file', required: false },
+      { name: 'Cursor rules', path: '.cursor/rules', type: 'dir', required: false },
+      { name: 'Agents', path: '.agents', type: 'dir', required: false },
+      { name: 'Git repo', path: '.git', type: 'dir', required: false },
+    ];
+
+    const results = [];
+    const issues = [];
+    for (const check of checks) {
+      const fullPath = path.join(checkDir, check.path);
+      const exists = check.type === 'dir' ? await dirExists(fullPath) : await fileExists(fullPath);
+      if (!exists && check.required) {
+        issues.push(`${check.path} missing`);
+      }
+      results.push({ name: check.name, path: check.path, status: exists ? 'pass' : 'missing', required: check.required });
+    }
+
+    if (options.json) {
+      console.log(JSON.stringify({ issues, checks: results }, null, 2));
+      if (issues.length > 0) process.exit(1);
+      return;
+    }
+
+    results.forEach((result) => {
+      const icon = result.status === 'pass' ? chalk.green('✅') : result.required ? chalk.red('❌') : chalk.yellow('⚠️');
+      console.log(`  ${icon} ${result.name} (${result.path})`);
+    });
+
+    if (issues.length > 0) {
+      console.log(chalk.red('\n❌ Blocking issues:'));
+      issues.forEach(issue => console.log(chalk.gray(`  • ${issue}`)));
+      console.log(chalk.yellow('\nFix required items before deploying.\n'));
+      process.exit(1);
+    } else {
+      console.log(chalk.green('\n✅ Ready for deployment checks.\n'));
+    }
+  });
+
 program
   .command('pre-commit')
   .description('Pre-commit hook - verify before commit')

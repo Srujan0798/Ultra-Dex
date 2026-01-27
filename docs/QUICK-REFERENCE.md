@@ -146,6 +146,14 @@ npx ultra-dex agent cto         # Show CTO agent
 # Validation
 npx ultra-dex audit             # Check project completeness
 
+# Sync & Export
+npx ultra-dex sync              # Refresh CONTEXT.md snapshot
+npx ultra-dex sync --assets     # Sync agents/rules/docs
+npx ultra-dex export --json     # Export project context as JSON
+npx ultra-dex check --watch     # Real-time project health monitor
+npx ultra-dex deploy-check      # Pre-deployment validation checklist
+
+
 # Examples
 npx ultra-dex examples          # Show example projects
 ```
