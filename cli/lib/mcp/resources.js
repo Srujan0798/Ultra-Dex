@@ -1,8 +1,26 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { loadState, generateMarkdown } from '../commands/plan.js';
+import { projectGraph } from './graph.js';
 
 export function registerResources(server) {
+  // Resource: Graph Summary
+  server.resource(
+    "graph",
+    "ultradex://graph/summary",
+    async (uri) => {
+      if (projectGraph.nodes.size === 0) {
+        await projectGraph.scan();
+      }
+      return {
+        contents: [{
+          uri: uri.href,
+          text: JSON.stringify(projectGraph.getSummary(), null, 2)
+        }]
+      };
+    }
+  );
+
   // Resource: Project Context
   server.resource(
     "context",
@@ -101,6 +119,31 @@ export function registerResources(server) {
           contents: [{
             uri: uri.href,
             text: JSON.stringify({ error: "No state found" })
+          }]
+        };
+      }
+    }
+  );
+
+  // Resource: Code Property Graph (GOD MODE)
+  server.resource(
+    "graph",
+    "ultradex://graph",
+    async (uri) => {
+      try {
+        const { buildGraph } = await import('../utils/graph.js');
+        const graph = await buildGraph();
+        return {
+          contents: [{
+            uri: uri.href,
+            text: JSON.stringify(graph, null, 2)
+          }]
+        };
+      } catch (error) {
+        return {
+          contents: [{
+            uri: uri.href,
+            text: JSON.stringify({ error: `Graph build failed: ${error.message}` })
           }]
         };
       }

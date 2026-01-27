@@ -99,6 +99,8 @@ export function createProvider(providerId, options = {}) {
  * @returns {string|null} Provider ID or null if none available
  */
 export function getDefaultProvider() {
+  if (process.env.ULTRA_DEX_DEFAULT_PROVIDER) return process.env.ULTRA_DEX_DEFAULT_PROVIDER;
+  
   // Check environment variables in order of preference
   if (process.env.ANTHROPIC_API_KEY) return 'claude';
   if (process.env.OPENAI_API_KEY) return 'openai';

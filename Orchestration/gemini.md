@@ -1385,3 +1385,37 @@ Transforming Static Rules into Dynamic Memory
 I am refining the strategy to convert existing modular instructions into a standardized protocol that makes project-specific intelligence portable across any model or environment. This shift resolves the limitation of tool-specific templates by creating a universal contextual layer that follows the developer. Furthermore, I have identified that the most significant value for long-term growth lies in providing this shared project memory as a managed service, allowing teams to maintain architectural consistency across distributed workflows.
 Finalizing the Strategic Blueprint
 I am now synthesizing these insights into a definitive architectural recommendation that positions the system as a central gateway for all development tools. My thinking is focusing on detailing the implementation of self-healing deployment cycles and a persistent codebase graph as the definitive cornerstone of the platform. I am also preparing to outline critical areas to avoid, ensuring that development efforts remain concentrated on creating foundational orchestration infrastructure rather than redundant features.
+
+11. Implementation Blueprint (Phase 1 - The Context Bridge)
+We are currently executing "Phase 1: The Context Bridge". The objective is to establish the Ultra-Dex MCP Server as the single source of truth for project context, replacing static file reading with dynamic resource subscription.
+
+11.1 Immediate Technical Specification
+To "Active Kernel" (God Mode) must transition from a passive dashboard to an interactive server.
+
+**Core Components:**
+1. **MCP Server (`ultra-dex serve`):**
+   - **Transport:** Stdio (for Cursor/Claude) + HTTP (for Dashboard/Web).
+   - **Resources:**
+     - `ultradex://context` -> Combines `CONTEXT.md` + Active Tasks.
+     - `ultradex://plan` -> The dynamic `state.json` rendered as Markdown.
+     - `ultradex://graph/summary` -> High-level architecture map (Modules & Dependencies).
+   - **Tools:**
+     - `query_codebase(query)` -> "Smart Grep" that understands project structure.
+     - `get_architectural_decision(topic)` -> Retrieves constraints from `cursor-rules`.
+     - `update_task_status(id, status)` -> Allows the AI to tick off its own work.
+
+11.2 The "Poor Man's Graph" (Initial CPG)
+Before integrating a full GraphDB (FalkorDB), we will implement a "Lightweight Graph" using in-memory mapping:
+- **Scanner:** On startup, scan `package.json`, imports, and file structure.
+- **Node:** File / Module.
+- **Edge:** "Imports" / "Depends On".
+- **Storage:** `CodeGraph` class in memory, serialized to `.ultra/graph.json`.
+
+**Why this approach?**
+It provides 80% of the value (dependency awareness) with 0% of the external infrastructure cost. It runs instantly on any developer machine.
+
+11.3 Next Steps (Execution)
+1.  **Enhance `tools.js`**: Add `query_codebase` (using regex/search) and `update_task` (modifying `state.json`).
+2.  **Create `graph.js`**: Implement the `CodeGraph` class for dependency scanning.
+3.  **Update `serve.js`**: Initialize the `CodeGraph` on startup.
+

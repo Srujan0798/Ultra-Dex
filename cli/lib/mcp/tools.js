@@ -1,10 +1,94 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
-import { loadState } from '../commands/plan.js';
-import { glob } from 'glob';
+import { loadState, saveState, generateMarkdown } from '../commands/plan.js';
+import { projectGraph } from './graph.js';
 
 export function registerTools(server) {
+  // Tool: Update Task Status
+  server.tool(
+    "update_task_status",
+    "Update the status of a task in the project plan",
+    {
+      taskId: z.string().describe("The ID of the task (e.g., '1.1', '2.3')"),
+      status: z.enum(['pending', 'in_progress', 'completed']).describe("New status")
+    },
+    async ({ taskId, status }) => {
+      const state = await loadState();
+      if (!state) return { content: [{ type: "text", text: "Error: No state found." }] };
+
+      let taskFound = false;
+      let oldStatus = '';
+
+      for (const phase of state.phases) {
+        const step = phase.steps.find(s => s.id === taskId);
+        if (step) {
+          oldStatus = step.status;
+          step.status = status;
+          taskFound = true;
+          break;
+        }
+      }
+
+      if (taskFound) {
+        const success = await saveState(state);
+        if (success) {
+            // Also update the Markdown plan file
+            const md = generateMarkdown(state);
+            await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), md);
+            
+            return {
+                content: [{ type: "text", text: `✅ Task ${taskId} updated: ${oldStatus} -> ${status}` }]
+            };
+        }
+        return { content: [{ type: "text", text: "Error: Failed to save state." }] };
+      }
+      
+      return { content: [{ type: "text", text: `Error: Task ${taskId} not found.` }] };
+    }
+  );
+
+  // Tool: Query Codebase Graph
+  server.tool(
+    "query_codebase",
+    "Search the codebase structure and dependencies",
+    {
+      query: z.string().describe("Search term or file name"),
+      type: z.enum(['files', 'dependencies', 'reverse_deps']).default('files')
+    },
+    async ({ query, type }) => {
+      // Ensure graph is populated
+      if (projectGraph.nodes.size === 0) {
+        await projectGraph.scan();
+      }
+
+      const summary = projectGraph.getSummary();
+
+      if (type === 'files') {
+        const matches = summary.files.filter(f => f.toLowerCase().includes(query.toLowerCase()));
+        return {
+          content: [{ type: "text", text: `Found ${matches.length} files matching '${query}':\n${matches.slice(0, 20).join('\n')}${matches.length > 20 ? '\n...' : ''}` }]
+        };
+      }
+
+      if (type === 'dependencies') {
+        const deps = summary.dependencies.filter(e => e.from.includes(query));
+        return {
+          content: [{ type: "text", text: `Dependencies for files matching '${query}':\n${deps.map(d => `${d.from} -> ${d.to}`).slice(0, 20).join('\n')}` }]
+        };
+      }
+
+      if (type === 'reverse_deps') {
+        const refs = summary.dependencies.filter(e => e.to.includes(query));
+        return {
+          content: [{ type: "text", text: `Files depending on '${query}':\n${refs.map(d => `${d.from}`).slice(0, 20).join('\n')}` }]
+        };
+      }
+      
+      return { content: [{ type: "text", text: "Invalid query type." }] };
+    }
+  );
+
   // Tool: Verify Task
   server.tool(
     "verify_task",
@@ -113,18 +197,29 @@ export function registerTools(server) {
     }
   );
 
-  // Tool: Search Code (Semantic/Structural Stub)
+  // Tool: Search Code (Graph-Aware)
   server.tool(
     "search_code",
-    "Search for symbols or patterns across the codebase (Graph-Aware Search)",
+    "Search for symbols, functions, or patterns using the Code Property Graph",
     {
-      query: z.string().describe("The search query or symbol name"),
-      includeTests: z.boolean().default(false).describe("Whether to include test files")
+      query: z.string().describe("The symbol or function name to search for"),
+      useGraph: z.boolean().default(true).describe("Use structural graph search instead of text grep")
     },
-    async ({ query, includeTests }) => {
+    async ({ query, useGraph }) => {
       try {
-        // Implementation for God Mode Phase 2.1: 
-        // For now, use basic glob + grep-like search, but structured for CPG expansion.
+        const { buildGraph, queryGraph } = await import('../utils/graph.js');
+        const graph = await buildGraph();
+        
+        if (useGraph) {
+          const nodes = queryGraph(graph, query);
+          if (nodes.length > 0) {
+            return {
+              content: [{ type: "text", text: `Found structural matches in graph:\n${JSON.stringify(nodes, null, 2)}` }]
+            };
+          }
+        }
+
+        // Fallback to basic text search
         const files = await glob('**/*.{js,ts,jsx,tsx,md,json}', { 
           ignore: ['node_modules/**', '.git/**', 'dist/**'],
           nodir: true 
@@ -132,28 +227,47 @@ export function registerTools(server) {
 
         const results = [];
         for (const file of files) {
-          if (!includeTests && (file.includes('.test.') || file.includes('/test/'))) continue;
-          
           const content = await fs.readFile(file, 'utf8');
           if (content.includes(query)) {
-            // Find line numbers
-            const lines = content.split('\n');
-            const matches = lines.map((l, i) => l.includes(query) ? i + 1 : null).filter(n => n !== null);
-            results.push({ file, matches });
+            results.push(file);
           }
         }
 
-        if (results.length === 0) {
-          return { content: [{ type: "text", text: `No matches found for "${query}"` }] };
-        }
-
-        const report = results.map(r => `- ${r.file} (Lines: ${r.matches.join(', ')})`).join('\n');
         return {
-          content: [{ type: "text", text: `Search results for "${query}":\n${report}` }]
+          content: [{ type: "text", text: `Matches found in files:\n${results.join('\n')}` }]
         };
       } catch (error) {
         return {
           content: [{ type: "text", text: `Search failed: ${error.message}` }]
+        };
+      }
+    }
+  );
+
+  // Tool: Analyze Impact
+  server.tool(
+    "analyze_impact",
+    "Determine which files or functions will be impacted by changing a specific file",
+    {
+      filePath: z.string().describe("The file path to analyze")
+    },
+    async ({ filePath }) => {
+      try {
+        const { buildGraph, getImpactAnalysis } = await import('../utils/graph.js');
+        const graph = await buildGraph();
+        const impacts = getImpactAnalysis(graph, filePath);
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: impacts.length > 0 
+              ? `Changing ${filePath} may impact the following files:\n- ${impacts.join('\n- ')}`
+              : `No direct dependents found for ${filePath}.`
+          }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Impact analysis failed: ${error.message}` }]
         };
       }
     }

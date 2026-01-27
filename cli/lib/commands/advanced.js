@@ -373,6 +373,50 @@ ${content}
     });
 }
 
+export function registerCheckCommand(program) {
+  program
+    .command('check')
+    .description('Repository health and alignment check (God Mode)')
+    .action(async () => {
+      console.log(chalk.cyan('\n🩺 Ultra-Dex Repository Check\n'));
+
+      const { buildGraph } = await import('../utils/graph.js');
+      const { loadState } = await import('./state.js');
+
+      // 1. Check Graph
+      const graphSpinner = (await import('ora')).default('Checking Code Property Graph...').start();
+      try {
+        const graph = await buildGraph();
+        graphSpinner.succeed(chalk.green(`CPG Healthy: ${graph.nodes.length} nodes, ${graph.edges.length} edges`));
+      } catch (e) {
+        graphSpinner.fail(chalk.red(`CPG Corrupt: ${e.message}`));
+      }
+
+      // 2. Check State
+      const stateSpinner = (await import('ora')).default('Checking Project State...').start();
+      const state = await loadState();
+      if (state) {
+        stateSpinner.succeed(chalk.green('Project state loaded'));
+      } else {
+        stateSpinner.warn(chalk.yellow('No .ultra/state.json found. System is stateless.'));
+      }
+
+      // 3. Check Core Files
+      const files = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'QUICK-START.md'];
+      console.log(chalk.bold('\nCore Documents:'));
+      for (const file of files) {
+        try {
+          await fs.access(file);
+          console.log(chalk.green(`  ✅ ${file}`));
+        } catch {
+          console.log(chalk.red(`  ❌ ${file} (Required)`));
+        }
+      }
+
+      console.log(chalk.cyan('\n💡 Run "ultra-dex audit" for a detailed scoring report.\n'));
+    });
+}
+
 export function registerUpgradeCommand(program) {
   program
     .command('upgrade')

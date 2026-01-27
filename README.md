@@ -307,7 +307,7 @@ Ultra-Dex/
 │   ├── 00-ultra-dex-core.mdc
 │   ├── 01-database.mdc
 │   ├── 02-api.mdc
-│   └── ... (10 domain-specific rules)
+│   └── ... (13 domain-specific rules)
 │
 └── @ Ultra DeX/
     └── Saas plan/
