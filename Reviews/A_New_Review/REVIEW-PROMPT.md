@@ -113,6 +113,36 @@ WITH ULTRA-DEX:
 
 ---
 
+## 🔗 2026 TECHNOLOGY STACK (Must Integrate)
+
+| Technology | What It Is | Ultra-Dex Integration |
+|------------|------------|----------------------|
+| **MCP (Model Context Protocol)** | Anthropic's standard for AI-tool communication | `ultra-dex serve` = MCP server |
+| **LangChain** | LLM orchestration framework | Compatible agent architecture |
+| **LangGraph** | Stateful agent graphs | Swarm mode uses similar patterns |
+| **OpenAI Assistants API** | Persistent AI threads | CONTEXT.md = permanent thread |
+| **Claude Computer Use** | AI browser/desktop control | Provide structured context |
+| **Ollama / LMStudio** | Local LLMs | Provider abstraction supports |
+| **Vercel AI SDK** | Streaming AI responses | CLI should use streaming |
+| **FalkorDB / Neo4j** | Graph databases for RAG | Future: Graph-based context |
+| **Pinecone / Weaviate** | Vector stores | Future: Semantic search |
+
+### API Layer Requirements
+```
+MUST HAVE:
+├── MCP Server (port 3001) ✅ Implemented
+├── REST API for context retrieval ✅ Implemented  
+├── WebSocket for real-time updates ⚠️ Needed
+└── Claude Desktop MCP config ✅ Implemented
+
+SHOULD HAVE:
+├── LangChain adapter ⚠️ Needed
+├── OpenAI Assistants sync ⚠️ Needed
+└── VS Code extension API ⚠️ In progress
+```
+
+---
+
 ## 📊 REVIEW DIMENSIONS (Score 1-10)
 
 | Dimension | Weight | What to Check |
