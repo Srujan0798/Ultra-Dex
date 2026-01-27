@@ -179,6 +179,14 @@ Auto-update CONTEXT.md with a codebase snapshot:
 npx ultra-dex sync
 ```
 
+### `serve`
+
+Serve context (MCP-compatible):
+
+```bash
+npx ultra-dex serve --port 3001
+```
+
 ### Other Commands
 
 | Command | Description |
