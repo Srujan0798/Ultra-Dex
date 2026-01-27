@@ -7,9 +7,25 @@ import path from 'path';
 import { QUICK_START_TEMPLATE } from '../templates/quick-start.js';
 import { CONTEXT_TEMPLATE } from '../templates/context.js';
 import { validateProjectName, validateSafePath } from '../utils/validation.js';
-import { ASSETS_ROOT, ROOT_FALLBACK } from '../config/paths.js';
+import { copyDirectory } from '../utils/files.js';
+import { ASSETS_ROOT, LIVE_TEMPLATES_ROOT, ROOT_FALLBACK } from '../config/paths.js';
 import { githubBlobUrl, githubWebUrl } from '../config/urls.js';
 import { copyWithFallback, listWithFallback, readWithFallback } from '../utils/fallback.js';
+
+const LIVE_STACKS = {
+  'next15-prisma-clerk': {
+    label: 'Next.js 15 + Prisma + Clerk',
+    path: 'next15-prisma-clerk',
+  },
+  'remix-supabase': {
+    label: 'Remix + Supabase',
+    path: 'remix-supabase',
+  },
+  'sveltekit-drizzle': {
+    label: 'SvelteKit + Drizzle',
+    path: 'sveltekit-drizzle',
+  },
+};
 
 export function registerInitCommand(program) {
   program
@@ -18,6 +34,8 @@ export function registerInitCommand(program) {
     .option('-n, --name <name>', 'Project name')
     .option('-d, --dir <directory>', 'Output directory', '.')
     .option('--preview', 'Preview files without creating them')
+    .option('--live', 'Generate a runnable code scaffold')
+    .option('--stack <preset>', 'Live stack preset (next15-prisma-clerk, remix-supabase, sveltekit-drizzle)')
     .action(async (options) => {
       console.log(chalk.cyan(program.banner));
       console.log(chalk.bold('\nWelcome to Ultra-Dex! Let\'s plan your SaaS.\n'));
@@ -31,6 +49,49 @@ export function registerInitCommand(program) {
         console.log('  docs/AI-PROMPTS.md');
         console.log('\nRun without --preview to create files.');
         return;
+      }
+
+      if (options.live) {
+        const stackKey = options.stack || 'next15-prisma-clerk';
+        const stack = LIVE_STACKS[stackKey];
+        if (!stack) {
+          console.log(chalk.red(`\n❌ Unknown stack preset "${stackKey}".`));
+          console.log(chalk.gray('Available presets:'));
+          Object.entries(LIVE_STACKS).forEach(([key, value]) => {
+            console.log(chalk.cyan(`  - ${key} (${value.label})`));
+          });
+          process.exit(1);
+        }
+
+        const targetDir = path.resolve(options.dir, options.name || 'ultra-dex-app');
+        try {
+          const existing = await fs.readdir(targetDir);
+          if (existing.length > 0) {
+            console.log(chalk.red('\n❌ Target directory is not empty.'));
+            console.log(chalk.gray(`  ${targetDir}`));
+            process.exit(1);
+          }
+        } catch {
+          // Directory does not exist yet.
+        }
+
+        const spinner = ora(`Generating live scaffold (${stack.label})...`).start();
+        const sourceDir = path.join(LIVE_TEMPLATES_ROOT, stack.path);
+        try {
+          await fs.mkdir(targetDir, { recursive: true });
+          await copyDirectory(sourceDir, targetDir);
+          spinner.succeed(chalk.green('Live scaffold created.'));
+          console.log('\n' + chalk.bold('Next steps:'));
+          console.log(chalk.cyan(`  1. cd ${path.basename(targetDir)}`));
+          console.log(chalk.cyan('  2. npm install'));
+          console.log(chalk.cyan('  3. npm run dev'));
+          console.log(chalk.gray('\nTip: Run without --live to generate planning docs.\n'));
+          return;
+        } catch (error) {
+          spinner.fail(chalk.red('Failed to create live scaffold'));
+          console.error(`[init] ${error?.message ?? error}`);
+          process.exit(1);
+        }
       }
 
       const dirValidation = validateSafePath(options.dir, 'Output directory');

@@ -157,6 +157,10 @@ npx ultra-dex workflow auth     # Show workflow for authentication
 
 # Infrastructure
 npx ultra-dex serve             # Serve context via HTTP (MCP-compatible)
+npx ultra-dex sync --assets     # Sync agents/rules/docs into project
+npx ultra-dex export --json     # Export project context as JSON
+npx ultra-dex check --watch     # Real-time project health monitor
+npx ultra-dex deploy-check      # Pre-deployment validation checklist
 npx ultra-dex hooks             # Install git pre-commit validation
 ```
 

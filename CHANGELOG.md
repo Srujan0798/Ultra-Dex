@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.1.0] - 2025-01-27
+## [2.1.0] - 2026-01-27
 
 ### Added
 - **🔧 `ultra-dex build` Command** - AI-assisted development with auto-loaded context

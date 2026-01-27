@@ -21,17 +21,22 @@ export function registerServeCommand(program) {
           return;
         }
 
-        if (req.url === '/context') {
-          const [context, plan, quickStart] = await Promise.all([
-            readFileSafe('CONTEXT.md', 'CONTEXT.md'),
-            readFileSafe('IMPLEMENTATION-PLAN.md', 'IMPLEMENTATION-PLAN.md'),
-            readFileSafe('QUICK-START.md', 'QUICK-START.md'),
-          ]);
+      if (req.url === '/context') {
+        const meta = {
+          protocol: 'mcp-lite',
+          version: '0.1',
+          generatedAt: new Date().toISOString(),
+        };
+        const [context, plan, quickStart] = await Promise.all([
+          readFileSafe('CONTEXT.md', 'CONTEXT.md'),
+          readFileSafe('IMPLEMENTATION-PLAN.md', 'IMPLEMENTATION-PLAN.md'),
+          readFileSafe('QUICK-START.md', 'QUICK-START.md'),
+        ]);
 
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ files: [context, plan, quickStart] }));
-          return;
-        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ meta, files: [context, plan, quickStart] }));
+        return;
+      }
 
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Not found' }));
