@@ -425,7 +425,7 @@ Read IMPLEMENTATION-PLAN.md.
 - [Architecture Patterns](./ARCHITECTURE-PATTERNS.md) - Choose the right architecture
 
 **Agent Reference:**
-- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 15 agents
+- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 16 agents
 
 ---
 

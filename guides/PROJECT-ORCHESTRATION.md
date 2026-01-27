@@ -1,6 +1,6 @@
 # Ultra-Dex Project Orchestration Guide
 
-> How to coordinate 15 AI agents to build your SaaS from scratch
+> How to coordinate 16 AI agents to build your SaaS from scratch
 
 **Last Updated:** January 23, 2026
 **Ultra-Dex Version:** v1.7.0
@@ -17,7 +17,7 @@
 
 ## What is Agent Orchestration?
 
-Ultra-Dex provides **15 specialized AI agents** organized in **6 tiers**. Each agent has a specific role in the production pipeline.
+Ultra-Dex provides **16 specialized AI agents** organized in **6 tiers**. Each agent has a specific role in the production pipeline.
 
 **The Problem:** You have great agents, but how do you coordinate them to build a feature?
 

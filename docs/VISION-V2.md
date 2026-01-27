@@ -96,18 +96,50 @@ Ultra-Dex doesn't replace any tool. It **enhances** every tool.
 │         ↓                  ↓                  ↓             │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │              34-SECTION CONTEXT LAYER               │   │
-│  │                                                     │   │
-│  │  Product | Tech | Data | API | Auth | Deploy | ...  │   │
+│  │                                                     │
+│  │  Product | Tech | Data | API | Auth | Deploy | ...  │
 │  └─────────────────────────────────────────────────────┘   │
 │                            ↓                               │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │              AI AGENT INTERFACE LAYER               │   │
-│  │                                                     │   │
+│  │                                                     │
 │  │  Cursor | Devin | Claude | GPT | Gemini | Any AI    │   │
 │  └─────────────────────────────────────────────────────┘   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### CLI Evolution
+
+Ultra-Dex starts as a lightweight context engine and evolves into a fully automated orchestration hub.
+
+**v1.x (Today)**
+- `ultra-dex init` to generate 34-section plans
+- `ultra-dex audit` to validate alignment
+- `ultra-dex examples` to access reference workflows
+- CLI optimized for human-led execution
+
+**v2.0**
+- `ultra-dex generate` to auto-fill plans from a single idea
+- `ultra-dex build` to coordinate multi-agent execution
+- `ultra-dex review` to run continuous alignment checks
+- Early automation with human approval gates
+
+**v2.x+**
+- `ultra-dex auto-implement` for full agent automation
+- `ultra-dex sync` for shared context across teams
+- `ultra-dex export` for distributing playbooks and templates
+- `ultra-dex check` for continuous repository health
+
+### Live Templates
+
+Live templates are executable starter kits shipped with the CLI. They provide working SaaS baselines, pre-wired agent prompts, and ready-to-run environments.
+
+- First-class template library (Next.js, Remix, SvelteKit)
+- Automated setup scripts and seed data
+- Built-in verification (`ultra-dex check`) for alignment
+- Sync-ready updates via `ultra-dex sync`
+- Extensible template packs for teams and cohorts
 
 ### New CLI Commands
 
@@ -155,6 +187,7 @@ Then it:
 ### Phase 1: Foundation (Current - v1.x)
 - [x] 34-section template
 - [x] 3 complete examples
+- [x] 16 production-ready agents
 - [x] 11 Cursor rules
 - [x] CLI (init, audit, examples)
 - [x] Documentation

@@ -56,11 +56,10 @@ export function registerAuditCommand(program) {
       console.log(chalk.bold('Checking project files...\n'));
 
       const quickStart = await checkFile('QUICK-START.md', 'QUICK-START.md', 10);
-      const context = await checkFile('CONTEXT.md', 'CONTEXT.md', 5);
+      await checkFile('CONTEXT.md', 'CONTEXT.md', 5);
       const implPlan = await checkFile('IMPLEMENTATION-PLAN.md', 'IMPLEMENTATION-PLAN.md', 5);
-      const fullTemplate = await checkFile('04-Imp-Template.md', '04-Imp-Template.md', 10);
-
-      const readme = await checkFile('README.md', 'README.md', 5);
+      await checkFile('04-Imp-Template.md', '04-Imp-Template.md', 10);
+      await checkFile('README.md', 'README.md', 5);
 
       if (quickStart) {
         hasSection(quickStart, 'idea', 5);
@@ -131,6 +130,6 @@ export function registerAuditCommand(program) {
         });
       }
 
-      console.log(`\n${chalk.gray(`Learn more: ${githubWebUrl('')}`)}\n`);
+      console.log(`\n${chalk.gray(`Learn more: ${githubWebUrl()}`)}\n`);
     });
 }

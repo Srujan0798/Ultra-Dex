@@ -12,7 +12,7 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 
 ---
 
-## Current State (v1.7.3) ✅
+## Current State (v2.1.0) ✅
 
 **Released: January 26, 2026**
 
@@ -339,7 +339,7 @@ Integrate Ultra-Dex directly into development platforms.
 
 | Tier | Price | What You Get |
 |------|-------|--------------|
-| **Core** | Free | Full framework, 15 agents, CLI, templates, community support |
+| **Core** | Free | Full framework, 16 agents, CLI, templates, community support |
 | **Pro Playbooks** | $49-149 | Industry-specific playbooks (Healthcare SaaS, Fintech, E-commerce) with compliance guidance |
 | **Team License** | $29/user/mo | Shared configs, audit logs, priority support, custom agent builder |
 | **Enterprise** | Custom | Self-hosted, SSO, dedicated support, SLA, custom integrations |
@@ -357,7 +357,7 @@ Integrate Ultra-Dex directly into development platforms.
 - **Enterprise** - When demand justifies (target: 10+ inbound requests)
 
 ### What Will NEVER Be Paid
-- Core 15 agents
+- Core 16 agents
 - CLI tool
 - All existing templates and guides
 - Community support (GitHub, Discord)
@@ -471,10 +471,10 @@ Integrate Ultra-Dex directly into development platforms.
 
 *This roadmap is a living document and will evolve based on community feedback and real-world usage.*
 
-*Last updated: January 26, 2026 - v1.7.3 released, offline mode added*
+*Last updated: January 26, 2026 - v2.1.0 released, offline mode added*
 
 ---
 
-*Ultra-Dex v1.7.3 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v2.1.0 - Professional AI Orchestration Meta Layer*
 
 **The future is collaborative AI-driven development. Let's build it together.** 🚀

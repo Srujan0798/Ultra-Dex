@@ -5,8 +5,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
-[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-11_Modules-green.svg)](./cursor-rules/)
-[![AI Agents](https://img.shields.io/badge/AI_Agents-15_Prompts-orange.svg)](./agents/)
+[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-13_Modules-green.svg)](./cursor-rules/)
+[![AI Agents](https://img.shields.io/badge/AI_Agents-16_Prompts-orange.svg)](./agents/)
 
 > **From Idea to Full-Scale, Production-Ready Application**
 
@@ -21,7 +21,7 @@ A comprehensive framework for building complete, production-grade applications. 
 - **Atomic Task Methodology** - 4-9 hour tasks with realistic estimates
 - **AI Agent Instructions** - Prompts for Claude, GPT, Gemini
 - **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot
-- **15 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research, Documentation
+- **16 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research, Documentation, Orchestrator
 - **Multi-Tool Orchestration** - Coordinate Claude Code + Cursor + Copilot + ChatGPT + Gemini together
 
 ---
@@ -46,7 +46,7 @@ A comprehensive framework for building complete, production-grade applications. 
 | [TaskFlow Example](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md) | See a filled example |
 | [Methodology](./@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md) | 21-step verification system |
 | [Cursor Rules](./cursor-rules/) | AI-optimized rules |
-| [Agent Prompts](./agents/) | 15 specialized agents |
+| [Agent Prompts](./agents/) | 16 specialized agents |
 | [All Guides](./guides/) | Database, architecture, orchestration |
 
 </details>
@@ -133,32 +133,61 @@ your-project/
 └── .github/copilot-instructions.md ← (optional) Copilot rules
 ```
 
-**CLI Options:**
+**CLI Commands:**
 ```bash
+# Setup & Planning
 npx ultra-dex init              # Interactive setup
+npx ultra-dex generate "idea"   # AI generates full 34-section plan
+npx ultra-dex init --live --stack next15-prisma-clerk  # Runnable scaffold
+
+# AI-Assisted Development (v2.1)
+npx ultra-dex build             # Auto-load context, select agent, get prompt
+npx ultra-dex build --agent backend --task "Add user API"
+
+# Code Review & Validation
+npx ultra-dex review            # AI-powered code review against plan
+npx ultra-dex review --quick    # Quick structure check (no AI)
 npx ultra-dex audit             # Check project completeness
-npx ultra-dex pack backend      # Package context for any AI (Claude, ChatGPT, etc.)
+npx ultra-dex validate          # Validate project structure
+
+# Context & Agents
 npx ultra-dex agents            # List AI agent prompts
 npx ultra-dex agent backend     # Show specific agent prompt
 npx ultra-dex workflow auth     # Show workflow for authentication
-npx ultra-dex examples          # Show example projects
+
+# Infrastructure
+npx ultra-dex serve             # Serve context via HTTP (MCP-compatible)
+npx ultra-dex hooks             # Install git pre-commit validation
 ```
 
 **Sample Output:**
 ```text
-$ npx ultra-dex agents
-✓ Loaded 15 agents
-Leadership: CTO, Planner, Research
-Development: Backend, Frontend, Database
-Security: Auth, Security
-DevOps: DevOps
-Quality: Testing, Documentation, Reviewer, Debugger
-Specialist: Performance, Refactoring
+$ npx ultra-dex build
+🔧 Ultra-Dex Build Mode
 
-$ npx ultra-dex audit
-Project Score: 82/100 (B)
-Missing: IMPLEMENTATION-PLAN.md section 10 (Data Model)
-Next: Complete sections 10-12, then rerun audit
+✓ Context loaded
+? Select an agent: (Use arrow keys)
+  ── Leadership ──
+❯ 📋 @Planner - Break down tasks
+  🏗️  @CTO - Architecture decisions
+  ── Development ──
+  ⚙️  @Backend - API endpoints
+  🎨 @Frontend - UI components
+  ...
+
+$ npx ultra-dex review --quick
+📁 Project Structure:
+📁 src/
+  📁 app/
+  📁 components/
+📄 package.json
+...
+
+📋 Quick Checks:
+  ✅ IMPLEMENTATION-PLAN.md
+  ✅ CONTEXT.md
+  ✅ package.json
+  ❌ Database schema
 ```
 
 ---
@@ -172,7 +201,7 @@ Ultra-Dex/
 │   ├── ROADMAP.md, VISION-V2.md   (Strategy)
 │   ├── QUICK-REFERENCE.md         (Cheatsheet)
 │   └── TROUBLESHOOTING.md         (Common issues)
-├── agents/                        ← 15 AI agents (tier-based)
+├── agents/                        ← 16 AI agents (tier-based)
 │   ├── 1-leadership/              (CTO, Planner, Research)
 │   ├── 2-development/             (Backend, Frontend, Database)
 │   ├── 3-security/                (Auth, Security)
@@ -312,9 +341,9 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 16 Production-Ready Agents (v1.7.3)
+### 16 Production-Ready Agents (v2.1.0)
 
-Ultra-Dex includes 15 specialized agent prompts **organized into 6 tiers** for the production pipeline. Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT).
+Ultra-Dex includes 16 specialized agent prompts **organized into 7 tiers** for the production pipeline. Copy and paste these prompts into your AI tool (Cursor, Claude, ChatGPT).
 
 **Leadership Tier** - Strategic planning and architecture decisions
 - **[@CTO](./agents/1-leadership/cto.md)** - Architecture & tech stack
@@ -343,9 +372,12 @@ Ultra-Dex includes 15 specialized agent prompts **organized into 6 tiers** for t
 - **[@Performance](./agents/6-specialist/performance.md)** - Performance optimization
 - **[@Refactoring](./agents/6-specialist/refactoring.md)** - Code quality
 
+**Orchestration Tier** - Multi-agent coordination
+- **[@Orchestrator](./agents/0-orchestration/orchestrator.md)** - Multi-agent coordination
+
 **Quick Reference:**
 ```bash
-npx ultra-dex agents              # List all 15 agents by tier
+npx ultra-dex agents              # List all 16 agents by tier
 npx ultra-dex agent backend       # Show specific agent prompt
 ```
 

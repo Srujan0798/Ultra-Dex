@@ -344,7 +344,7 @@ Ask yourself:
 - [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Stripe, emails, migrations, real-time features
 
 **Agent Reference:**
-- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 15 agents
+- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 16 agents
 
 ---
 
