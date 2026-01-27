@@ -10,6 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
 import { validateSafePath } from '../utils/validation.js';
+import { projectGraph } from '../mcp/graph.js';
 
 const AGENTS = {
   planner: {
@@ -88,6 +89,15 @@ async function readProjectContext() {
         context.state = null; 
     }
   }
+  
+  // Graph Scan (God Mode)
+  try {
+    await projectGraph.scan();
+    context.graph = projectGraph.getSummary();
+  } catch (e) {
+    context.graph = null;
+  }
+  
   return context;
 }
 
@@ -99,7 +109,11 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
 
   const spinner = ora(`${agent.name} is working...`).start();
   
-  const contextSection = projectContext.context ? `## Context\n${projectContext.context.slice(0, 3000)}\n\n` : '';
+  const graphInfo = projectContext.graph 
+    ? `## Codebase Graph\n- Files: ${projectContext.graph.nodeCount}\n- Dependencies: ${projectContext.graph.edgeCount}\n` 
+    : '';
+
+  const contextSection = projectContext.context ? `## Context\n${projectContext.context.slice(0, 3000)}\n\n${graphInfo}` : '';
   const prompt = `${contextSection}## Task\n${task}\n\nYou can use tools by outputting:
 >> READ_CODE: "filePath"
 >> WRITE_CODE: "filePath" "fullContent"
