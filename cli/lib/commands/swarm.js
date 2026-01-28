@@ -2,19 +2,20 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import { getProvider } from '../providers/index.js';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { glob } from 'glob';
 
 const AGENT_PIPELINE = [
-  { name: 'planner', description: 'Break down task into steps', group: 'planning' },
-  { name: 'cto', description: 'Define architecture', group: 'planning' },
-  { name: 'database', description: 'Design schema', group: 'implementation' },
-  { name: 'backend', description: 'Implement API', group: 'implementation' },
-  { name: 'frontend', description: 'Build UI', group: 'implementation' },
-  { name: 'testing', description: 'Write tests', group: 'quality' },
-  { name: 'reviewer', description: 'Code review', group: 'quality' }
+  { name: 'planner', description: 'Break down task into steps', tier: '1-planning' },
+  { name: 'cto', description: 'Define architecture', tier: '1-planning' },
+  { name: 'auth', description: 'Security & authentication review', tier: '3-security' },
+  { name: 'database', description: 'Design schema', tier: '2-implementation' },
+  { name: 'backend', description: 'Implement API', tier: '2-implementation' },
+  { name: 'frontend', description: 'Build UI', tier: '2-implementation' },
+  { name: 'testing', description: 'Write tests', tier: '4-quality' },
+  { name: 'reviewer', description: 'Code review', tier: '4-quality' }
 ];
 
 async function runAgent(agent, task, context, previousOutput, provider) {
@@ -44,17 +45,38 @@ Provide your output for the next agent in the pipeline.
     : (response.content || response.text || JSON.stringify(response));
 }
 
+async function ensureLogDirectory() {
+  const logDir = join(process.cwd(), '.ultra-dex', 'swarm-logs');
+  await mkdir(logDir, { recursive: true });
+  return logDir;
+}
+
+async function writeSwarmLog(logDir, task, results, stats) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const logPath = join(logDir, `swarm-${timestamp}.json`);
+  const logData = {
+    task,
+    timestamp: new Date().toISOString(),
+    stats,
+    results
+  };
+  await writeFile(logPath, JSON.stringify(logData, null, 2));
+  return logPath;
+}
+
 export async function swarmCommand(task, options) {
-  console.log(chalk.cyan.bold('\n🐝 Ultra-Dex Swarm Mode\n'));
+  console.log(chalk.cyan.bold('\n🐝 Ultra-Dex Swarm Mode v3.0\n'));
   console.log(chalk.white(`Task: "${task}"\n`));
+
+  const startTime = Date.now();
 
   if (options.dryRun) {
     console.log(chalk.yellow('Dry run - showing pipeline:\n'));
     AGENT_PIPELINE.forEach((agent, i) => {
-      console.log(`  ${i + 1}. @${agent.name} - ${agent.description} [${agent.group}]`);
+      console.log(`  ${i + 1}. @${agent.name} - ${agent.description} [${agent.tier}]`);
     });
     if (options.parallel) {
-      console.log(chalk.blue('\nℹ️  Parallel execution enabled for implementation group'));
+      console.log(chalk.blue('\nℹ️  Parallel execution enabled for 2-implementation tier'));
     }
     return;
   }
@@ -78,56 +100,102 @@ export async function swarmCommand(task, options) {
     return;
   }
 
+  // Ensure log directory exists
+  const logDir = await ensureLogDirectory();
+
   // Run pipeline
   let previousOutput = '';
+  const agentResults = [];
+  const agentTimings = {};
   
-  // Define execution groups
-  const executionGroups = options.parallel 
+  // Define execution tiers (sorted by tier number)
+  const executionTiers = options.parallel 
     ? [
-        { name: 'Planning', agents: AGENT_PIPELINE.filter(a => a.group === 'planning'), parallel: false },
-        { name: 'Implementation', agents: AGENT_PIPELINE.filter(a => a.group === 'implementation'), parallel: true },
-        { name: 'Quality', agents: AGENT_PIPELINE.filter(a => a.group === 'quality'), parallel: false }
+        { name: '1-Planning', agents: AGENT_PIPELINE.filter(a => a.tier === '1-planning'), parallel: false },
+        { name: '2-Implementation', agents: AGENT_PIPELINE.filter(a => a.tier === '2-implementation'), parallel: true },
+        { name: '3-Security', agents: AGENT_PIPELINE.filter(a => a.tier === '3-security'), parallel: false },
+        { name: '4-Quality', agents: AGENT_PIPELINE.filter(a => a.tier === '4-quality'), parallel: false }
       ]
     : [{ name: 'All', agents: AGENT_PIPELINE, parallel: false }];
 
-  for (const group of executionGroups) {
-    if (options.parallel && group.agents.length > 0) {
-      console.log(chalk.blue.bold(`\nPhase: ${group.name}`));
+  for (const tier of executionTiers) {
+    if (tier.agents.length === 0) continue;
+    
+    if (options.parallel) {
+      console.log(chalk.blue.bold(`\n📦 Tier: ${tier.name}`));
     }
 
-    if (group.parallel) {
-      // Parallel Execution
-      const promises = group.agents.map(async (agent) => {
+    if (tier.parallel) {
+      // Parallel Execution for implementation tier
+      const tierStart = Date.now();
+      const promises = tier.agents.map(async (agent) => {
+        const agentStart = Date.now();
         const spinner = ora(`Running @${agent.name}...`).start();
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
-          spinner.succeed(` @${agent.name} complete`);
-          return result;
+          const duration = Date.now() - agentStart;
+          agentTimings[agent.name] = duration;
+          spinner.succeed(chalk.green(` @${agent.name} complete`) + chalk.gray(` (${duration}ms)`));
+          return { agent: agent.name, result, success: true };
         } catch (error) {
-          spinner.fail(` @${agent.name} failed: ${error.message}`);
-          throw error;
+          const duration = Date.now() - agentStart;
+          agentTimings[agent.name] = duration;
+          spinner.fail(chalk.red(` @${agent.name} failed: ${error.message}`) + chalk.gray(` (${duration}ms)`));
+          return { agent: agent.name, error: error.message, success: false };
         }
       });
 
       const results = await Promise.all(promises);
-      previousOutput += '\n\n' + results.join('\n\n');
+      agentResults.push(...results);
+      previousOutput += '\n\n' + results.filter(r => r.success).map(r => r.result).join('\n\n');
+      console.log(chalk.gray(`  Tier completed in ${Date.now() - tierStart}ms`));
       
     } else {
       // Serial Execution
-      for (const agent of group.agents) {
+      for (const agent of tier.agents) {
+        const agentStart = Date.now();
         const spinner = ora(`Running @${agent.name}...`).start();
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
-          previousOutput = result; // In serial, pass output to next
-          spinner.succeed(` @${agent.name} complete`);
+          const duration = Date.now() - agentStart;
+          agentTimings[agent.name] = duration;
+          previousOutput = result;
+          spinner.succeed(chalk.green(` @${agent.name} complete`) + chalk.gray(` (${duration}ms)`));
           console.log(chalk.gray(`  → ${result.slice(0, 100).replace(/\n/g, ' ')}...`));
+          agentResults.push({ agent: agent.name, result, success: true });
         } catch (error) {
-          spinner.fail(` @${agent.name} failed: ${error.message}`);
+          const duration = Date.now() - agentStart;
+          agentTimings[agent.name] = duration;
+          spinner.fail(chalk.red(` @${agent.name} failed: ${error.message}`) + chalk.gray(` (${duration}ms)`));
+          agentResults.push({ agent: agent.name, error: error.message, success: false });
           break;
         }
       }
     }
   }
+
+  const totalDuration = Date.now() - startTime;
+  const successCount = agentResults.filter(r => r.success).length;
+  const failCount = agentResults.filter(r => !r.success).length;
+
+  // Write log
+  const stats = {
+    totalDuration,
+    agentTimings,
+    successCount,
+    failCount,
+    parallel: options.parallel || false
+  };
+  const logPath = await writeSwarmLog(logDir, task, agentResults, stats);
+
+  // Summary
+  console.log(chalk.cyan.bold('\n📊 Execution Stats:'));
+  console.log(chalk.white(`  Total time: ${totalDuration}ms`));
+  console.log(chalk.green(`  Succeeded: ${successCount}`) + chalk.red(` Failed: ${failCount}`));
+  Object.entries(agentTimings).forEach(([agent, time]) => {
+    console.log(chalk.gray(`  • @${agent}: ${time}ms`));
+  });
+  console.log(chalk.gray(`\n  Log saved: ${logPath}`));
 
   console.log(chalk.green.bold('\n✅ Swarm complete!\n'));
 }

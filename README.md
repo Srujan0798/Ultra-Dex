@@ -1,6 +1,7 @@
 # Ultra-Dex
 
 [![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)
+[![CI Status](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
@@ -9,6 +10,8 @@
 [![AI Agents](https://img.shields.io/badge/AI_Agents-16_Prompts-orange.svg)](./agents/)
 
 > **From Idea to Full-Scale, Production-Ready Application**
+
+![Ultra-Dex Demo](https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/assets/social/terminal-mockup.png)
 
 ---
 

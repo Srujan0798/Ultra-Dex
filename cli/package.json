@@ -1,20 +1,18 @@
 {
   "name": "ultra-dex",
-  "version": "2.4.0",
-  "description": "CLI for Ultra-Dex SaaS Implementation Framework with AI-Powered Plan Generation, Build Mode, and Code Review",
+  "version": "3.0.0",
+  "description": "AI Orchestration Meta-Layer for SaaS Development",
   "keywords": [
-    "saas",
-    "template",
-    "implementation",
-    "planning",
-    "startup",
-    "framework",
     "ai",
+    "orchestration",
+    "saas",
+    "mcp",
+    "langchain",
     "claude",
     "openai",
     "gemini",
-    "orchestration",
-    "mcp"
+    "agents",
+    "swarm"
   ],
   "author": "Srujan Sai Karna",
   "license": "MIT",
@@ -42,6 +40,7 @@
     "glob": "^10.5.0",
     "inquirer": "^9.2.12",
     "ora": "^8.0.1",
+    "ws": "^8.19.0",
     "zod": "^3.25.76"
   },
   "scripts": {

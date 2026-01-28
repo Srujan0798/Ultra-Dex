@@ -44,7 +44,7 @@ program.banner = banner;
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('2.4.0');
+  .version('3.0.0');
 
 registerInitCommand(program);
 registerAuditCommand(program);
@@ -55,22 +55,24 @@ registerBuildCommand(program);
 registerReviewCommand(program);
 registerRunCommand(program);
 
-// v2.4 Commands
+// v3.0 Commands
 program
   .command('swarm <task>')
   .description('Run autonomous agent pipeline')
   .option('--dry-run', 'Show pipeline without executing')
-  .option('--parallel', 'Run agents in parallel where possible')
+  .option('--parallel', 'Run implementation tier agents in parallel')
   .action(swarmCommand);
 
 program
   .command('watch')
   .description('Auto-update state on file changes')
+  .option('--interval <ms>', 'Debounce interval in milliseconds', '500')
   .action(watchCommand);
 
 program
   .command('diff')
   .description('Compare plan vs implemented code')
+  .option('--json', 'Output as JSON')
   .action(diffCommand);
 
 program
@@ -89,6 +91,11 @@ program
   .command('config')
   .description('Show or generate configuration')
   .option('--mcp', 'Generate MCP config for Claude Desktop')
+  .option('--cursor', 'Generate Cursor IDE rules')
+  .option('--vscode', 'Generate VS Code settings.json')
+  .option('--show', 'Display current Ultra-Dex config')
+  .option('--set <key=value>', 'Set a config value')
+  .option('--get <key>', 'Get a specific config value')
   .action(configCommand);
 
 registerAutoImplementCommand(program);
