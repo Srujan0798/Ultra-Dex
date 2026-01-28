@@ -33,10 +33,37 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AgentsProvider = void 0;
+exports.ALL_AGENTS = exports.AgentItem = exports.AgentsProvider = void 0;
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
+// All 16 Ultra-Dex agents organized by tier
+const ALL_AGENTS = [
+    // 0. Meta Orchestration
+    { name: 'Orchestrator', tier: 'Meta', description: 'Coordinate all agents for complete features', icon: 'hubot', file: '0-orchestration/orchestrator.md' },
+    // 1. Leadership
+    { name: 'CTO', tier: 'Leadership', description: 'Architecture & tech stack decisions', icon: 'server-process', file: '1-leadership/cto.md' },
+    { name: 'Planner', tier: 'Leadership', description: 'Task breakdown & sprint planning', icon: 'list-ordered', file: '1-leadership/planner.md' },
+    { name: 'Research', tier: 'Leadership', description: 'Technology evaluation & comparison', icon: 'search', file: '1-leadership/research.md' },
+    // 2. Development
+    { name: 'Backend', tier: 'Development', description: 'API & server implementation', icon: 'server', file: '2-development/backend.md' },
+    { name: 'Database', tier: 'Development', description: 'Schema design & query optimization', icon: 'database', file: '2-development/database.md' },
+    { name: 'Frontend', tier: 'Development', description: 'UI & component implementation', icon: 'browser', file: '2-development/frontend.md' },
+    // 3. Security
+    { name: 'Auth', tier: 'Security', description: 'Authentication & authorization', icon: 'lock', file: '3-security/auth.md' },
+    { name: 'Security', tier: 'Security', description: 'Security audits & vulnerability fixes', icon: 'shield', file: '3-security/security.md' },
+    // 4. DevOps
+    { name: 'DevOps', tier: 'DevOps', description: 'Deployment & infrastructure', icon: 'rocket', file: '4-devops/devops.md' },
+    // 5. Quality
+    { name: 'Debugger', tier: 'Quality', description: 'Bug investigation & fixes', icon: 'bug', file: '5-quality/debugger.md' },
+    { name: 'Documentation', tier: 'Quality', description: 'Technical writing & docs maintenance', icon: 'book', file: '5-quality/documentation.md' },
+    { name: 'Reviewer', tier: 'Quality', description: 'Code review & quality checks', icon: 'eye', file: '5-quality/reviewer.md' },
+    { name: 'Testing', tier: 'Quality', description: 'QA & test automation', icon: 'beaker', file: '5-quality/testing.md' },
+    // 6. Specialist
+    { name: 'Performance', tier: 'Specialist', description: 'Performance optimization', icon: 'dashboard', file: '6-specialist/performance.md' },
+    { name: 'Refactoring', tier: 'Specialist', description: 'Code quality & design patterns', icon: 'wand', file: '6-specialist/refactoring.md' },
+];
+exports.ALL_AGENTS = ALL_AGENTS;
 class AgentsProvider {
     constructor(workspaceRoot) {
         this.workspaceRoot = workspaceRoot;
@@ -54,60 +81,78 @@ class AgentsProvider {
             vscode.window.showInformationMessage('No project open');
             return Promise.resolve([]);
         }
-        if (element) {
-            return Promise.resolve([]);
+        // If no element, return tier groups
+        if (!element) {
+            const tiers = ['Meta', 'Leadership', 'Development', 'Security', 'DevOps', 'Quality', 'Specialist'];
+            return Promise.resolve(tiers.map(tier => new TierItem(tier)));
         }
-        // Try to read state
-        let activeAgents = [];
+        // If tier element, return agents in that tier
+        if (element instanceof TierItem) {
+            const activeAgents = this.getActiveAgents();
+            const tierAgents = ALL_AGENTS.filter(a => a.tier === element.tier);
+            return Promise.resolve(tierAgents.map(agent => {
+                const isActive = activeAgents.includes(agent.name.toLowerCase());
+                return new AgentItem(agent, isActive, this.workspaceRoot);
+            }));
+        }
+        return Promise.resolve([]);
+    }
+    getActiveAgents() {
+        if (!this.workspaceRoot)
+            return [];
         try {
             const statePath = path.join(this.workspaceRoot, '.ultra', 'state.json');
             if (fs.existsSync(statePath)) {
                 const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
                 if (state.agents && state.agents.active) {
-                    activeAgents = state.agents.active;
+                    return state.agents.active;
                 }
             }
         }
-        catch (e) {
+        catch {
             // ignore
         }
-        // List of agents
-        const agents = [
-            { name: 'Orchestrator', role: 'Meta-Layer', icon: 'hubot' },
-            { name: 'Planner', role: 'Leadership', icon: 'list-unordered' },
-            { name: 'CTO', role: 'Leadership', icon: 'server-process' },
-            { name: 'Backend', role: 'Development', icon: 'server' },
-            { name: 'Frontend', role: 'Development', icon: 'layout' },
-            { name: 'Database', role: 'Development', icon: 'database' },
-            { name: 'Auth', role: 'Security', icon: 'lock' },
-            { name: 'Security', role: 'Security', icon: 'shield' },
-            { name: 'Testing', role: 'Quality', icon: 'beaker' },
-            { name: 'Reviewer', role: 'Quality', icon: 'eye' },
-            { name: 'DevOps', role: 'DevOps', icon: 'rocket' }
-        ];
-        return Promise.resolve(agents.map(agent => {
-            const isActive = activeAgents.includes(agent.name.toLowerCase());
-            return new AgentItem(`@${agent.name}`, agent.role, isActive ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.None, isActive, {
-                command: 'ultra-dex.selectAgent',
-                title: 'Select Agent',
-                arguments: [agent.name.toLowerCase()]
-            });
-        }));
+        return [];
+    }
+    getAgentByName(name) {
+        return ALL_AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
     }
 }
 exports.AgentsProvider = AgentsProvider;
-class AgentItem extends vscode.TreeItem {
-    constructor(label, role, collapsibleState, isActive, command) {
-        super(label, collapsibleState);
-        this.label = label;
-        this.role = role;
-        this.collapsibleState = collapsibleState;
-        this.isActive = isActive;
-        this.command = command;
-        this.tooltip = `${this.label} - ${this.role}`;
-        this.description = this.isActive ? `${this.role} (Active)` : this.role;
-        // Use built-in icons, highlight if active
-        this.iconPath = new vscode.ThemeIcon(this.isActive ? 'pulse' : 'circle-filled', this.isActive ? new vscode.ThemeColor('charts.green') : undefined);
+class TierItem extends vscode.TreeItem {
+    constructor(tier) {
+        super(tier, vscode.TreeItemCollapsibleState.Expanded);
+        this.tier = tier;
+        this.contextValue = 'tier';
+        const tierIcons = {
+            'Meta': 'symbol-misc',
+            'Leadership': 'organization',
+            'Development': 'code',
+            'Security': 'shield',
+            'DevOps': 'rocket',
+            'Quality': 'verified',
+            'Specialist': 'sparkle',
+        };
+        this.iconPath = new vscode.ThemeIcon(tierIcons[tier] || 'folder');
     }
 }
+class AgentItem extends vscode.TreeItem {
+    constructor(agent, isActive, workspaceRoot) {
+        super(`@${agent.name}`, vscode.TreeItemCollapsibleState.None);
+        this.agentInfo = agent;
+        this.tooltip = `${agent.name}: ${agent.description}`;
+        this.description = isActive ? '● Active' : agent.description;
+        this.contextValue = 'agent';
+        // Set icon with active color
+        const iconColor = isActive ? new vscode.ThemeColor('charts.green') : undefined;
+        this.iconPath = new vscode.ThemeIcon(agent.icon, iconColor);
+        // Click to copy prompt
+        this.command = {
+            command: 'ultra-dex.copyAgentPrompt',
+            title: 'Copy Agent Prompt',
+            arguments: [agent, workspaceRoot]
+        };
+    }
+}
+exports.AgentItem = AgentItem;
 //# sourceMappingURL=AgentsView.js.map
