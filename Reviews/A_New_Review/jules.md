@@ -57,10 +57,12 @@ The fact that Ultra-Dex is built using AI is the ultimate validation: The system
 
 ---
 
-## 6. The 2025 Roadmap
+## 6. The 2026 Roadmap
 
 1.  **Phase 1: Codify (Done)** - Define the Standard.
-2.  **Phase 2: Enforce (Current)** - CLI-driven audits (`npx ultra-dex audit`).
-3.  **Phase 3: Integrate (Next)** - CI/CD pipelines that reject PRs if `CONTEXT.md` is outdated.
+2.  **Phase 2: Enforce (Done)** - CLI-driven audits (`npx ultra-dex audit`).
+3.  **Phase 3: Integrate (Current)** - MCP server, swarm mode, dashboard.
+4.  **Phase 4: Scale (Next)** - Enterprise features, VS Code extension.
 
 **We are betting on Boring, Reliable, Auditable Infrastructure.**
+

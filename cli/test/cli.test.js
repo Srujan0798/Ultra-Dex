@@ -83,7 +83,7 @@ test('agents lists all agents', () => {
 test('validate fails gracefully on empty dir', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-validate-'));
   const result = runCli(['validate', '--dir', tmpDir]);
-  assert.equal(result.status, 0);
+  assert.equal(result.status, 1);
   assert.match(result.output, /VALIDATION INCOMPLETE|missing|required|❌/i);
 });
 

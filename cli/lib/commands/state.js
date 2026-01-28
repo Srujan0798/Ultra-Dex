@@ -234,6 +234,7 @@ export function registerPreCommitCommand(program) {
     .command('pre-commit')
     .description('Pre-commit hook - verify before commit')
     .option('--install', 'Install git pre-commit hook')
+    .option('--scan', 'Include deep code quality scan in hook')
     .option('-d, --dir <directory>', 'Project directory', '.')
     .action(async (options) => {
       const dirValidation = validateSafePath(options.dir, 'Project directory');
@@ -246,12 +247,13 @@ export function registerPreCommitCommand(program) {
 
       if (options.install) {
         const hookPath = path.resolve(rootDir, '.git/hooks/pre-commit');
+        const scanCmd = options.scan ? '\nnpx ultra-dex validate --scan' : '';
         const hookScript = `#!/bin/sh
 # Ultra-Dex pre-commit hook
-npx ultra-dex align --strict
+npx ultra-dex align --strict${scanCmd}
 if [ $? -ne 0 ]; then
-  echo "❌ Ultra-Dex alignment check failed. Score must be >= 70."
-  echo "   Run 'ultra-dex review' for details."
+  echo "❌ Ultra-Dex quality gate failed."
+  echo "   Run 'ultra-dex review' or 'ultra-dex validate --scan' for details."
   exit 1
 fi
 `;

@@ -29,20 +29,35 @@
     "views": {
       "ultra-dex": [
         {
-          "id": "ultra-dex.agentExplorer",
-          "name": "Agents"
+          "id": "ultra-dex.contextView",
+          "name": "Project Context (God Mode)"
         },
         {
-          "id": "ultra-dex.contextView",
-          "name": "Context"
+          "id": "ultra-dex.agentExplorer",
+          "name": "Active Agents"
         },
         {
           "id": "ultra-dex.verifyView",
-          "name": "Verification"
+          "name": "Verification & Plan"
         }
       ]
     },
     "commands": [
+      {
+        "command": "ultra-dex.startDaemon",
+        "title": "Ultra-Dex: Start God Mode Daemon",
+        "category": "Ultra-Dex"
+      },
+      {
+        "command": "ultra-dex.autoImplement",
+        "title": "Ultra-Dex: Auto-Implement Feature",
+        "category": "Ultra-Dex"
+      },
+      {
+        "command": "ultra-dex.syncProject",
+        "title": "Ultra-Dex: Sync Project State",
+        "category": "Ultra-Dex"
+      },
       {
         "command": "ultra-dex.selectAgent",
         "title": "Ultra-Dex: Select Agent",

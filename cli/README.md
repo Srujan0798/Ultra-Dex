@@ -1,22 +1,24 @@
 # Ultra-Dex CLI
 
-> Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation**.
+> Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation** and **God Mode** autonomous agents.
 
-## What's New in v2.2
+## What's New in v2.2+ (God Mode)
 
 ```bash
-# 🚀 Generate a complete 34-section plan with AI
-npx ultra-dex generate "A task management SaaS for remote teams"
+# 🤖 Autonomous feature implementation (Plan -> Code -> Verify)
+npx ultra-dex auto-implement "Add Stripe checkout"
 
-# 🔧 Start AI-assisted development
-npx ultra-dex build --agent planner
+# 🔄 Real-time State & Graph Synchronization
+npx ultra-dex sync --push --target ./s3-bucket
 
-# 🔍 Review code against plan
-npx ultra-dex review
+# 🛡️ Self-Healing CI/CD Monitor
+npx ultra-dex ci-monitor --port 3003
 
-# 📊 Quick alignment check
-npx ultra-dex align
+# 🧠 Structural Graph Health Check
+npx ultra-dex check
 
+# 🖥️ Live Dashboard with Brain Visualization
+npx ultra-dex dashboard
 ```
 
 ## First 10 Minutes
@@ -41,7 +43,56 @@ npm install -g ultra-dex
 ultra-dex generate "Your idea"
 ```
 
-## AI Commands (v2.0+)
+## AI Commands (God Mode)
+
+### `auto-implement` - Autonomous Engineer
+
+Fully autonomous feature implementation loop:
+
+```bash
+# Implement a feature from scratch
+npx ultra-dex auto-implement "Create a user profile page with Avatar upload"
+
+# Preview the plan without coding
+npx ultra-dex auto-implement "Migrate to Tailwind" --dry-run
+```
+
+**How it works:**
+1. **Structural Analysis:** Scans the Code Property Graph (CPG) for impact.
+2. **Planning:** @Planner breaks down the task.
+3. **Execution:** @Backend/@Frontend implement the code.
+4. **Verification:** @Testing verifies the changes.
+
+### `sync` - State Synchronization
+
+Keep your project's "Brain" (Context + Graph) in sync across devices:
+
+```bash
+# Push state to a shared location
+npx ultra-dex sync --push --target ./shared-drive
+
+# Pull state from a shared location
+npx ultra-dex sync --pull --target ./shared-drive
+```
+
+### `ci-monitor` - Self-Healing CI/CD
+
+Listen for build failures and automatically fix them:
+
+```bash
+npx ultra-dex ci-monitor --port 3003
+```
+*Configure your CI provider (GitHub Actions) to send webhooks to this port.*
+
+### `watch` - Real-time Daemon
+
+Keep the Code Property Graph updated as you code:
+
+```bash
+npx ultra-dex watch
+```
+
+## Core Commands
 
 ### `generate` - AI Plan Generation
 
@@ -53,23 +104,11 @@ npx ultra-dex generate "A booking platform for dog groomers"
 
 # With options
 npx ultra-dex generate "idea" --provider openai --output ./my-project
-
-# Preview without calling AI
-npx ultra-dex generate "idea" --dry-run
 ```
-
-**Options:**
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-p, --provider` | AI provider (claude, openai, gemini) | claude |
-| `-m, --model` | Specific model to use | provider default |
-| `-o, --output` | Output directory | current |
-| `-k, --key` | API key | env variable |
-| `--dry-run` | Show structure only | false |
 
 ### `build` - AI-Assisted Development
 
-Start development with AI agents:
+Start development with AI agents (Interactive Mode):
 
 ```bash
 # Interactive agent selection
@@ -77,141 +116,61 @@ npx ultra-dex build
 
 # Specific agent
 npx ultra-dex build --agent backend --task "Create user API endpoints"
-
-# Copy to clipboard for external AI
-npx ultra-dex build --agent planner --copy
 ```
 
-**Available Agents:**
-| Agent | Role |
-|-------|------|
-| `planner` | Break down features into atomic tasks |
-| `cto` | Architecture decisions |
-| `backend` | API endpoints and business logic |
-| `frontend` | UI components and pages |
-| `database` | Schema design and migrations |
-| `auth` | Authentication and authorization |
-| `security` | Security audit |
-| `testing` | Write and run tests |
-| `reviewer` | Code review |
-| `devops` | Deployment and CI/CD |
+### `review` - Graph-Aware Code Review
 
-### `review` - Code Review
-
-Check code alignment with plan:
+Audit code against the plan using structural graph analysis:
 
 ```bash
 npx ultra-dex review
-npx ultra-dex review --dir ./src
 ```
 
 ### `align` - Quick Score
 
-Get alignment score instantly:
+Get alignment score (Files + Plan + Graph Integrity):
 
 ```bash
 npx ultra-dex align
-npx ultra-dex align --json  # Machine-readable output
 ```
 
-**Environment Variables:**
+### `check` - System Health
+
+Verify repository health and graph consistency:
+
 ```bash
-ANTHROPIC_API_KEY=sk-ant-...  # Claude (recommended)
+npx ultra-dex check
+```
+
+## Environment Variables
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...  # Claude (recommended for complex tasks)
 OPENAI_API_KEY=sk-...         # OpenAI
 GOOGLE_AI_KEY=...             # Gemini
+ULTRA_DEX_DEFAULT_PROVIDER=router # Use "router" for hybrid local/cloud intelligence
 ```
 
-### `init`
-
-Interactive project setup:
-
-```bash
-npx ultra-dex init
-```
-
-Generate a runnable scaffold:
-
-```bash
-npx ultra-dex init --live --stack next15-prisma-clerk
-```
-
-Presets: `next15-prisma-clerk`, `remix-supabase`, `sveltekit-drizzle`.
-
-**Options (init):**
-| Option | Description |
-|--------|-------------|
-| `-n, --name <name>` | Project name (skips prompt) |
-| `-d, --dir <directory>` | Output directory (default: current) |
-| `--preview` | Preview files without creating them |
-| `--live` | Generate a runnable scaffold |
-| `--stack <preset>` | Preset: next15-prisma-clerk, remix-supabase, sveltekit-drizzle |
-
-### `audit`
-
-Check project completeness:
-
-```bash
-npx ultra-dex audit
-```
-
-### `agents`
-
-List and use AI agent prompts:
-
-```bash
-npx ultra-dex agents           # List all agents
-npx ultra-dex agent backend    # Show specific agent
-```
-
-### `team`
-
-Manage team collaboration (local only):
-
-```bash
-npx ultra-dex team init
-npx ultra-dex team add jane@acme.com --role admin
-npx ultra-dex team list
-npx ultra-dex team remove jane@acme.com
-npx ultra-dex team config name "Ultra Team"
-```
-
-### `fetch`
-
-Download assets for offline use:
-
-```bash
-npx ultra-dex fetch
-npx ultra-dex fetch --agents --rules
-```
-
-### `serve`
-
-Serve context (MCP-compatible):
-
-```bash
-npx ultra-dex serve --port 3001
-```
-
-### Other Commands
+## All Commands
 
 | Command | Description |
 |---------|-------------|
+| `generate` | Generate full SaaS plan from idea |
+| `auto-implement` | **(NEW)** Autonomously implement a feature |
+| `build` | Interactive AI agent development loop |
+| `review` | Review code against plan (Graph-Aware) |
+| `align` | Quick alignment score |
+| `sync` | **(NEW)** Sync project state across devices |
+| `check` | **(NEW)** Verify repository health |
+| `watch` | **(NEW)** Real-time graph synchronization daemon |
+| `ci-monitor` | **(NEW)** Self-healing CI/CD webhook listener |
+| `dashboard` | Start the JARVIS web dashboard |
 | `init` | Initialize a new project |
-| `init --preview` | Preview files without creating them |
-| `init --live` | Generate a runnable scaffold |
 | `audit` | Audit project for completeness |
-| `examples` | List available examples |
 | `agents` | List AI agents |
-| `agent <name>` | Show specific agent prompt |
 | `team` | Team collaboration (local) |
-| `hooks` | Set up git pre-commit hooks |
 | `fetch` | Download assets for offline |
-| `serve` | Serve context over HTTP |
-| `validate` | Validate project structure |
-| `workflow <feature>` | Show workflow for a feature |
-| `suggest` | Get AI agent suggestions |
-| `--help` | Show help |
-| `--version` | Show version |
+| `serve` | Serve context (MCP-compatible) |
 
 ## Example: AI Generation
 
@@ -224,21 +183,10 @@ $ npx ultra-dex generate "A booking platform for dog groomers"
 
 📝 Idea: "A booking platform for dog groomers"
 
-✓ Using Claude (Anthropic) (claude-sonnet-4-20250514)
-
-📊 Estimated Generation:
-   Input tokens:  ~2,650
-   Output tokens: ~40,000
-   Estimated cost: ~$0.45
-
-? Proceed with generation? Yes
-
-⚡ Generating 34-section implementation plan...
-
-✔ Generation complete!
+...
 
 ✅ All 34 sections generated
-   Tokens used: 42,350 tokens (2,650 in / 39,700 out)
+   Tokens used: 42,350 tokens
    Actual cost: $0.52
 
 📦 Project: GroomBook
@@ -246,13 +194,7 @@ $ npx ultra-dex generate "A booking platform for dog groomers"
 ✓ Created ./IMPLEMENTATION-PLAN.md
 ✓ Created ./QUICK-START.md
 ✓ Created ./CONTEXT.md
-
-🎉 Generation complete!
-
-Next steps:
-  1. Review IMPLEMENTATION-PLAN.md
-  2. Customize sections as needed
-  3. Start building with: npx ultra-dex init
+✓ Created .ultra/state.json (GOD MODE ACTIVE)
 ```
 
 ## Links
