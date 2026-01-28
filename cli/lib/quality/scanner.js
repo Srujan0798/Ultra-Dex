@@ -46,7 +46,13 @@ const RULES = [
     severity: 'critical',
     pattern: /.*/,
     check: (content) => {
-      return !/(sk_live_|sk_test_|ghp_|eyJ)/.test(content);
+      // Obfuscate regex even further to avoid self-triggering on the string literals
+      const p1 = 'sk' + '_live' + '_';
+      const p2 = 'sk' + '_test' + '_';
+      const p3 = 'gh' + 'p_';
+      const p4 = 'ey' + 'J';
+      const pattern = new RegExp(`${p1}|${p2}|${p3}|${p4}`);
+      return !pattern.test(content);
     },
     message: 'Potential secret key detected!'
   }

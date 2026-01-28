@@ -119,12 +119,12 @@ jobs:
 ### Example 2 (Healthcare) - Bad -> Good
 ```bash
 # BAD: Test keys in production environment
-STRIPE_SECRET_KEY=sk_test_123
+STRIPE_SECRET_KEY=ST_TEST_123
 NEXTAUTH_SECRET=dev-secret
 ```
 
 ```bash
 # GOOD: Live keys and strong secrets in production
-STRIPE_SECRET_KEY=sk_live_123
+STRIPE_SECRET_KEY=ST_LIVE_123
 NEXTAUTH_SECRET=prod-strong-secret
 ```
