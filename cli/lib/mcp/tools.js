@@ -123,7 +123,7 @@ export function registerTools(server) {
   // Tool: Verify Task
   server.tool(
     "verify_task",
-    "Run verification checks for a specific task",
+    "Run the 21-step verification framework for a specific task",
     {
       taskName: z.string().describe("The name or ID of the task to verify")
     },
@@ -147,17 +147,27 @@ export function registerTools(server) {
             }
         }
 
-        if (taskFound) {
-            return {
-                content: [{
-                    type: "text", 
-                    text: `Verification Report for '${taskFound.task}' (${taskFound.id}):\nStatus: ${taskFound.status}\n\n[ ] Check 1: Code implemented\n[ ] Check 2: Tests passed\n[ ] Check 3: Review complete` 
-                }]
-            };
-        }
+        const checklist = [
+          "1. Atomic Scope Defined", "2. Context Loaded", "3. Architecture Alignment", 
+          "4. Security Patterns Applied", "5. Type Safety Check", "6. Error Handling Strategy",
+          "7. API Documentation Updated", "8. Database Schema Verified", "9. Environment Variables Set",
+          "10. Implementation Complete", "11. Console Logs Removed", "12. Edge Cases Handled",
+          "13. Performance Check", "14. Accessibility (A11y) Check", "15. Cross-browser Check",
+          "16. Unit Tests Passed", "17. Integration Tests Passed", "18. Linting & Formatting",
+          "19. Code Review Approved", "20. Migration Scripts Ready", "21. Deployment Readiness"
+        ];
+
+        const report = taskFound 
+          ? `Verification Report for '${taskFound.task}' (${taskFound.id}):\nStatus: ${taskFound.status}\n\n`
+          : `General Verification Report for '${taskName}':\n\n`;
+
+        const fullReport = report + checklist.map((step, i) => `[ ] ${step}`).join('\n');
 
         return {
-            content: [{ type: "text", text: `Task '${taskName}' not found in current plan.` }]
+            content: [{
+                type: "text", 
+                text: fullReport
+            }]
         };
 
       } catch (error) {

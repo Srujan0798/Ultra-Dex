@@ -67,8 +67,21 @@
         "command": "ultra-dex.askAgent",
         "title": "Ultra-Dex: Ask Agent",
         "category": "Ultra-Dex"
+      },
+      {
+        "command": "ultra-dex.verify",
+        "title": "Ultra-Dex: Run Verification",
+        "category": "Ultra-Dex"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ultra-dex.askAgent",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "compile": "tsc -p ./",

@@ -65,37 +65,78 @@ export async function readAgentPrompt(agent) {
 }
 
 export function registerAgentsCommand(program) {
-  program
+  const agents = program
     .command('agents')
     .description('List available AI agent prompts')
     .action(async () => {
-      const customAgents = await listCustomAgents();
-      const totalAgents = AGENTS.length + customAgents.length;
-      console.log(chalk.bold(`\n🤖 Ultra-Dex AI Agents (${totalAgents} Total)\n`));
-      console.log(chalk.gray('Organized by tier for production pipeline\n'));
-
-      let currentTier = '';
-      AGENTS.forEach((agent) => {
-        if (agent.tier !== currentTier) {
-          currentTier = agent.tier;
-          console.log(chalk.bold(`\n  ${currentTier} Tier:`));
-        }
-        console.log(chalk.cyan(`    ${agent.name}`) + chalk.gray(` - ${agent.description}`));
-      });
-
-      if (customAgents.length > 0) {
-        console.log(chalk.bold('\n  Custom Agents:'));
-        customAgents.forEach((name) => {
-          console.log(chalk.cyan(`    ${name}`));
-        });
-      }
-
-      console.log('\n' + chalk.bold('Usage:'));
-      console.log(chalk.gray('  ultra-dex agent list --all      Show built-in + custom agents'));
-      console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
-
-      console.log(`\n${chalk.gray(`Agent Index: ${githubBlobUrl('agents/00-AGENT_INDEX.md')}\n`)}`);
+      await listAgents();
     });
+
+  program
+    .command('agent [name]')
+    .description('Show a specific agent prompt or list all agents')
+    .action(async (name) => {
+      if (!name) {
+        await listAgents();
+      } else {
+        await showAgent(name);
+      }
+    });
+}
+
+async function listAgents() {
+  const customAgents = await listCustomAgents();
+  const totalAgents = AGENTS.length + customAgents.length;
+  console.log(chalk.bold(`\n🤖 Ultra-Dex AI Agents (${totalAgents} Total)\n`));
+  console.log(chalk.gray('Organized by tier for production pipeline\n'));
+
+  let currentTier = '';
+  AGENTS.forEach((agent) => {
+    if (agent.tier !== currentTier) {
+      currentTier = agent.tier;
+      console.log(chalk.bold(`\n  ${currentTier} Tier:`));
+    }
+    console.log(chalk.cyan(`    ${agent.name}`) + chalk.gray(` - ${agent.description}`));
+  });
+
+  if (customAgents.length > 0) {
+    console.log(chalk.bold('\n  Custom Agents:'));
+    customAgents.forEach((name) => {
+      console.log(chalk.cyan(`    ${name}`));
+    });
+  }
+
+  console.log('\n' + chalk.bold('Usage:'));
+  console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
+  console.log(chalk.gray('  ultra-dex pack <name>           Package agent + context'));
+
+  console.log(`\n${chalk.gray(`Agent Index: ${githubBlobUrl('agents/00-AGENT_INDEX.md')}\n`)}`);
+}
+
+async function showAgent(name) {
+  const agent = AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
+  if (!agent) {
+    const custom = await getCustomAgentPath(name);
+    if (custom) {
+      const content = await fs.readFile(custom, 'utf-8');
+      console.log(chalk.bold(`\n🤖 Custom Agent: ${name}\n`));
+      console.log(content);
+      return;
+    }
+    console.log(chalk.red(`\n❌ Agent "${name}" not found.`));
+    return;
+  }
+
+  try {
+    const prompt = await readAgentPrompt(agent);
+    console.log(chalk.bold(`\n🤖 Agent: ${agent.name} (${agent.tier})\n`));
+    console.log(chalk.gray(agent.description) + '\n');
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log(prompt);
+    console.log(chalk.gray('─'.repeat(60)));
+  } catch (err) {
+    console.log(chalk.red(`\n❌ Could not read prompt for ${agent.name}`));
+  }
 }
 
 export function registerPackCommand(program) {

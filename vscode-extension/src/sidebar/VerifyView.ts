@@ -16,17 +16,20 @@ export class VerifyProvider implements vscode.TreeDataProvider<VerifyItem> {
     }
 
     getChildren(element?: VerifyItem): Thenable<VerifyItem[]> {
-        // Mock verification steps for now
+        // Full 21-step checklist
         const steps = [
-            { label: 'Check 1: Atomic Task Definition', state: vscode.TreeItemCheckboxState.Checked },
-            { label: 'Check 2: Context Loaded', state: vscode.TreeItemCheckboxState.Checked },
-            { label: 'Check 3: AI Model Selected', state: vscode.TreeItemCheckboxState.Unchecked },
-            { label: 'Check 4: Code Implemented', state: vscode.TreeItemCheckboxState.Unchecked },
-            { label: 'Check 5: Tests Passed', state: vscode.TreeItemCheckboxState.Unchecked },
-            { label: 'Check 6: Review Complete', state: vscode.TreeItemCheckboxState.Unchecked },
+          "Atomic Scope Defined", "Context Loaded", "Architecture Alignment", 
+          "Security Patterns Applied", "Type Safety Check", "Error Handling Strategy",
+          "API Documentation Updated", "Database Schema Verified", "Environment Variables Set",
+          "Implementation Complete", "Console Logs Removed", "Edge Cases Handled",
+          "Performance Check", "Accessibility Check", "Cross-browser Check",
+          "Unit Tests Passed", "Integration Tests Passed", "Linting & Formatting",
+          "Code Review Approved", "Migration Scripts Ready", "Deployment Readiness"
         ];
 
-        return Promise.resolve(steps.map(s => new VerifyItem(s.label, s.state)));
+        return Promise.resolve(steps.map((label, i) => 
+            new VerifyItem(`${i + 1}. ${label}`, vscode.TreeItemCheckboxState.Unchecked)
+        ));
     }
 }
 

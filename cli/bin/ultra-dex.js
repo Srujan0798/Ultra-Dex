@@ -14,11 +14,20 @@ import { registerReviewCommand } from '../lib/commands/review.js';
 import { registerRunCommand, registerSwarmCommand } from '../lib/commands/run.js';
 import { registerAutoImplementCommand } from '../lib/commands/auto-implement.js';
 import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
-import { registerAlignCommand, registerStatusCommand, registerWatchCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';
-import { registerDoctorCommand, registerConfigCommand } from '../lib/commands/doctor.js';
+import { registerAlignCommand, registerStatusCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';
+import { registerDoctorCommand } from '../lib/commands/doctor.js';
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
-import { registerDiffCommand, registerExportCommand, registerUpgradeCommand, registerCheckCommand } from '../lib/commands/advanced.js';
+import { registerCheckCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
+
+// New v2.4 Commands
+import { swarmCommand } from '../lib/commands/swarm.js';
+import { watchCommand } from '../lib/commands/watch.js';
+import { diffCommand } from '../lib/commands/diff.js';
+import { exportCommand } from '../lib/commands/export.js';
+import { upgradeCommand } from '../lib/commands/upgrade.js';
+import { configCommand } from '../lib/commands/config.js';
+
 import { registerWorkflowCommand } from '../lib/commands/workflows.js';
 import { registerPlanCommand } from '../lib/commands/plan.js';
 import { registerSuggestCommand } from '../lib/commands/suggest.js';
@@ -45,20 +54,51 @@ registerGenerateCommand(program);
 registerBuildCommand(program);
 registerReviewCommand(program);
 registerRunCommand(program);
-registerSwarmCommand(program);
+
+// v2.4 Commands
+program
+  .command('swarm <task>')
+  .description('Run autonomous agent pipeline')
+  .option('--dry-run', 'Show pipeline without executing')
+  .option('--parallel', 'Run agents in parallel where possible')
+  .action(swarmCommand);
+
+program
+  .command('watch')
+  .description('Auto-update state on file changes')
+  .action(watchCommand);
+
+program
+  .command('diff')
+  .description('Compare plan vs implemented code')
+  .action(diffCommand);
+
+program
+  .command('export')
+  .description('Export project context')
+  .option('--format <type>', 'Output format: json, html, md', 'json')
+  .action(exportCommand);
+
+program
+  .command('upgrade')
+  .description('Check for CLI updates')
+  .option('--check', 'Just check, no install')
+  .action(upgradeCommand);
+
+program
+  .command('config')
+  .description('Show or generate configuration')
+  .option('--mcp', 'Generate MCP config for Claude Desktop')
+  .action(configCommand);
+
 registerAutoImplementCommand(program);
 registerCiMonitorCommand(program);
 registerAlignCommand(program);
 registerStatusCommand(program);
-registerWatchCommand(program);
 registerPreCommitCommand(program);
 registerStateCommand(program);
 registerDoctorCommand(program);
-registerConfigCommand(program);
 registerDashboardCommand(program);
-registerDiffCommand(program);
-registerExportCommand(program);
-registerUpgradeCommand(program);
 registerCheckCommand(program);
 registerServeCommand(program);
 registerPackCommand(program);

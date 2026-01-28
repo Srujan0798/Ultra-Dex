@@ -121,4 +121,18 @@ export function checkConfiguredProviders() {
   }));
 }
 
+/**
+ * Get a default configured provider instance
+ * @returns {BaseProvider|null}
+ */
+export function getProvider() {
+  const id = getDefaultProvider();
+  if (!id) return null;
+  try {
+    return createProvider(id);
+  } catch (e) {
+    return null;
+  }
+}
+
 export { ClaudeProvider, OpenAIProvider, GeminiProvider };

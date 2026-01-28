@@ -5,6 +5,7 @@ import { AgentsProvider } from './sidebar/AgentsView';
 import { ContextProvider } from './sidebar/ContextView';
 import { VerifyProvider } from './sidebar/VerifyView';
 import { askAgent } from './commands/askAgent';
+import { verifyCommand } from './commands/verify';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Ultra-Dex extension is now active!');
@@ -44,6 +45,12 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('ultra-dex.askAgent', () => {
             askAgent();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ultra-dex.verify', () => {
+            verifyCommand();
         })
     );
 

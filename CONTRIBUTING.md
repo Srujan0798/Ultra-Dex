@@ -1,13 +1,13 @@
 # Contributing to Ultra-Dex
 
-Thank you for your interest in contributing to Ultra-Dex! This document provides guidelines for contributing.
+Thank you for your interest in contributing to Ultra-Dex! This document provides guidelines for contributing to both the documentation/templates and the CLI tool.
 
 ---
 
 ## Ways to Contribute
 
 ### 1. Report Issues
-- Found a bug in a template?
+- Found a bug in a template or the CLI?
 - Section missing important content?
 - Confusing instructions?
 
@@ -25,6 +25,40 @@ Built something with Ultra-Dex? Share your filled template as an example!
 
 ### 4. Fix Typos & Errors
 Small fixes are welcome. Just submit a PR.
+
+---
+
+## Development Setup (CLI)
+
+If you are contributing to the CLI tool (`cli/` directory):
+
+1. **Clone and Install**
+   ```bash
+   git clone https://github.com/Srujan0798/Ultra-Dex.git
+   cd Ultra-Dex/cli
+   npm install
+   ```
+
+2. **Running Tests**
+   We use Node.js built-in test runner.
+   ```bash
+   npm test
+   ```
+
+3. **Local Testing**
+   You can link the CLI locally to test your changes:
+   ```bash
+   npm link
+   # Now you can run 'ultra-dex' from any directory using your local version
+   ```
+
+---
+
+## Code Style
+
+- **Linting:** We use ESLint. Run `npm run lint` before committing.
+- **Formatting:** Code should be clean and readable.
+- **Modern JS:** Use ES Modules (`import`/`export`) and modern Node.js features (v18+).
 
 ---
 
@@ -54,6 +88,7 @@ feat: Add new section for mobile app considerations
 fix: Correct typo in database schema section
 docs: Improve QUICK-START instructions
 example: Add InvoiceFlow filled example
+ci: Update github actions workflow
 ```
 
 ---
@@ -63,10 +98,11 @@ example: Add InvoiceFlow filled example
 1. Fork the repository
 2. Create a branch: `git checkout -b feature/your-feature`
 3. Make your changes
-4. Test markdown rendering
-5. Commit with clear message
-6. Push and open a PR
-7. Fill out the PR template
+4. **Run tests** (`npm test` if changing CLI)
+5. **Lint code** (`npm run lint` if changing CLI)
+6. Commit with clear message
+7. Push and open a PR
+8. Fill out the **[Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md)** completely
 
 ---
 
