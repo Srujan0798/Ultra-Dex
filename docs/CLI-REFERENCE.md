@@ -146,6 +146,21 @@ npx ultra-dex align [options]
 
 ## Code Quality & Review
 
+### `verify`
+Run the executable 21-step verification framework on a specific task or the entire project.
+
+```bash
+npx ultra-dex verify [task] [options]
+```
+
+**Options:**
+- `--provider <provider>`: AI provider
+
+**Example:**
+```bash
+npx ultra-dex verify "User Authentication"
+```
+
 ### `review`
 Perform an AI-powered code review.
 

@@ -40,6 +40,11 @@ export function registerCommands(context: vscode.ExtensionContext, workspaceRoot
   );
 }
 
+export async function refreshAlignmentStatus(workspaceRoot?: string): Promise<void> {
+  const score = await getAlignmentScore(workspaceRoot);
+  updateAlignmentStatusBar(score);
+}
+
 async function readAgentPrompt(workspaceRoot: string, relativePath: string): Promise<string | null> {
   const fullPath = path.join(workspaceRoot, 'agents', relativePath);
   try {
@@ -58,7 +63,7 @@ async function getAlignmentScore(workspaceRoot?: string): Promise<string> {
   try {
     const data = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath));
     const content = Buffer.from(data).toString('utf8');
-    const match = content.match(/alignment\\s*score\\s*:\\s*(\\d+%?)/i);
+    const match = content.match(/alignment\s*score\s*:\s*(\d+%?)/i);
     return match?.[1] ?? 'Unknown';
   } catch {
     return 'Unknown';
