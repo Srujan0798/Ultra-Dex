@@ -1,19 +1,26 @@
 {
-  "name": "ultra-dex",
+  "name": "ultra-dex-vscode",
   "displayName": "Ultra-Dex",
-  "description": "Ultra-Dex agent explorer and alignment tools.",
-  "version": "0.0.1",
+  "description": "Ultra-Dex AI agent explorer, alignment tools, and project orchestration for VS Code.",
+  "version": "1.0.0",
   "publisher": "ultra-dex",
   "engines": {
     "vscode": "^1.90.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Machine Learning",
+    "Snippets"
+  ],
+  "keywords": [
+    "ai",
+    "agents",
+    "orchestration",
+    "copilot",
+    "cursor"
   ],
   "activationEvents": [
-    "onView:ultra-dex.agentExplorer",
-    "onView:ultra-dex.contextView",
-    "onView:ultra-dex.verifyView"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -30,51 +37,115 @@
       "ultra-dex": [
         {
           "id": "ultra-dex.contextView",
-          "name": "Project Context (God Mode)"
+          "name": "Project Context"
         },
         {
           "id": "ultra-dex.agentExplorer",
-          "name": "Active Agents"
+          "name": "Agents (16)"
+        },
+        {
+          "id": "ultra-dex.quickActions",
+          "name": "Quick Actions"
         },
         {
           "id": "ultra-dex.verifyView",
-          "name": "Verification & Plan"
+          "name": "Verification Checklist"
         }
       ]
     },
     "commands": [
       {
+        "command": "ultra-dex.generatePlan",
+        "title": "Generate Plan",
+        "category": "Ultra-Dex",
+        "icon": "$(list-ordered)"
+      },
+      {
+        "command": "ultra-dex.startBuildMode",
+        "title": "Start Build Mode",
+        "category": "Ultra-Dex",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "ultra-dex.runAgent",
+        "title": "Run Agent",
+        "category": "Ultra-Dex",
+        "icon": "$(run)"
+      },
+      {
+        "command": "ultra-dex.openDashboard",
+        "title": "Open Dashboard",
+        "category": "Ultra-Dex",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "ultra-dex.showAlignmentScore",
+        "title": "Show Alignment Score",
+        "category": "Ultra-Dex",
+        "icon": "$(shield)"
+      },
+      {
         "command": "ultra-dex.startDaemon",
-        "title": "Ultra-Dex: Start God Mode Daemon",
-        "category": "Ultra-Dex"
+        "title": "Start God Mode Daemon",
+        "category": "Ultra-Dex",
+        "icon": "$(zap)"
       },
       {
         "command": "ultra-dex.autoImplement",
-        "title": "Ultra-Dex: Auto-Implement Feature",
-        "category": "Ultra-Dex"
+        "title": "Auto-Implement Feature",
+        "category": "Ultra-Dex",
+        "icon": "$(sparkle)"
       },
       {
         "command": "ultra-dex.syncProject",
-        "title": "Ultra-Dex: Sync Project State",
-        "category": "Ultra-Dex"
+        "title": "Sync Project State",
+        "category": "Ultra-Dex",
+        "icon": "$(sync)"
       },
       {
         "command": "ultra-dex.selectAgent",
-        "title": "Ultra-Dex: Select Agent",
+        "title": "Select Agent",
         "category": "Ultra-Dex"
       },
       {
+        "command": "ultra-dex.copyAgentPrompt",
+        "title": "Copy Agent Prompt",
+        "category": "Ultra-Dex",
+        "icon": "$(copy)"
+      },
+      {
         "command": "ultra-dex.askAgent",
-        "title": "Ultra-Dex: Ask Agent",
+        "title": "Ask Agent",
         "category": "Ultra-Dex"
       },
       {
         "command": "ultra-dex.verify",
-        "title": "Ultra-Dex: Run Verification",
-        "category": "Ultra-Dex"
+        "title": "Run Verification",
+        "category": "Ultra-Dex",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "ultra-dex.refreshAgents",
+        "title": "Refresh Agents",
+        "category": "Ultra-Dex",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "ultra-dex.refreshAgents",
+          "when": "view == ultra-dex.agentExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ultra-dex.copyAgentPrompt",
+          "when": "view == ultra-dex.agentExplorer && viewItem == agent",
+          "group": "inline"
+        }
+      ],
       "editor/context": [
         {
           "command": "ultra-dex.askAgent",

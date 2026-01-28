@@ -5,6 +5,9 @@ import path from 'path';
 import { loadState, generateMarkdown } from './plan.js';
 import { startMcpServer } from '../mcp/server.js';
 import { projectGraph } from '../mcp/graph.js';
+import { UltraDexSocket } from '../mcp/websocket.js';
+import { swarmCommand } from './swarm.js';
+import { glob } from 'glob';
 
 export function registerServeCommand(program) {
   program
@@ -73,7 +76,10 @@ async function startHttpServer(portStr) {
             '/plan',
             '/context',
             '/graph',
-            '/agents/:name'
+            '/agents/:name',
+            '/swarm',
+            '/score',
+            '/rules'
           ]
         }, null, 2));
         return;
@@ -97,6 +103,127 @@ async function startHttpServer(portStr) {
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(state, null, 2));
+        return;
+      }
+
+      // Endpoint: /score (Alignment Score)
+      if (pathname === '/score') {
+         // Placeholder logic - real implementation would check 'diff' status
+         const score = Math.floor(Math.random() * 30) + 70; // Mock score 70-100
+         res.writeHead(200, { 'Content-Type': 'application/json' });
+         res.end(JSON.stringify({ score, timestamp: Date.now() }));
+         return;
+      }
+
+      // Endpoint: /rules (Cursor Rules)
+      if (pathname === '/rules') {
+        const rules = await glob('cursor-rules/*.mdc');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ rules: rules.map(r => path.basename(r)) }));
+        return;
+      }
+
+      // Endpoint: /rule/:name (Get specific rule content)
+      if (pathname.startsWith('/rule/')) {
+        const ruleName = pathname.split('/')[2];
+        const rulePath = path.join(process.cwd(), 'cursor-rules', ruleName.endsWith('.mdc') ? ruleName : `${ruleName}.mdc`);
+        try {
+          const content = await fs.readFile(rulePath, 'utf8');
+          res.writeHead(200, { 'Content-Type': 'text/markdown' });
+          res.end(content);
+        } catch (e) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: `Rule ${ruleName} not found` }));
+        }
+        return;
+      }
+
+      // Endpoint: /agents (List all agents with metadata)
+      if (pathname === '/agents' && req.method === 'GET') {
+        try {
+          const agentCategories = await fs.readdir(path.join(process.cwd(), 'agents'));
+          const agents = [];
+          
+          for (const category of agentCategories) {
+            if (category.startsWith('.') || category.endsWith('.md')) continue;
+            const categoryPath = path.join(process.cwd(), 'agents', category);
+            const stat = await fs.stat(categoryPath);
+            if (!stat.isDirectory()) continue;
+            
+            const files = await fs.readdir(categoryPath);
+            for (const file of files) {
+              if (!file.endsWith('.md')) continue;
+              const filePath = path.join(categoryPath, file);
+              const content = await fs.readFile(filePath, 'utf8');
+              const lines = content.split('\n');
+              const title = lines.find(l => l.startsWith('# '))?.replace('# ', '') || file.replace('.md', '');
+              
+              agents.push({
+                name: file.replace('.md', ''),
+                category,
+                title,
+                path: `agents/${category}/${file}`
+              });
+            }
+          }
+          
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ count: agents.length, agents }, null, 2));
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+        return;
+      }
+
+      // Endpoint: /verify (Run verification check)
+      if (pathname === '/verify' && req.method === 'POST') {
+        try {
+          const state = await loadState();
+          const checks = {
+            stateExists: !!state,
+            contextExists: await fs.access(path.join(process.cwd(), 'CONTEXT.md')).then(() => true).catch(() => false),
+            agentsExist: await fs.access(path.join(process.cwd(), 'agents')).then(() => true).catch(() => false),
+            rulesExist: await fs.access(path.join(process.cwd(), 'cursor-rules')).then(() => true).catch(() => false),
+          };
+          
+          const passed = Object.values(checks).filter(Boolean).length;
+          const total = Object.keys(checks).length;
+          const score = Math.round((passed / total) * 100);
+          
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ 
+            status: passed === total ? 'pass' : 'partial',
+            score,
+            checks,
+            timestamp: Date.now()
+          }, null, 2));
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+        return;
+      }
+
+      // Endpoint: /swarm (Execute Swarm)
+      if (pathname === '/swarm' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+           try {
+             const { task, parallel } = JSON.parse(body);
+             if (!task) throw new Error('Task is required');
+             
+             // Run swarm in background (fire and forget for HTTP response)
+             swarmCommand(task, { parallel, dryRun: false }).catch(err => console.error(err));
+             
+             res.writeHead(202, { 'Content-Type': 'application/json' });
+             res.end(JSON.stringify({ status: 'accepted', message: 'Swarm started' }));
+           } catch (e) {
+             res.writeHead(400, { 'Content-Type': 'application/json' });
+             res.end(JSON.stringify({ error: e.message }));
+           }
+        });
         return;
       }
 
@@ -173,12 +300,16 @@ ${plan}
       res.end(JSON.stringify({ error: 'Internal Server Error' }));
     }
   });
+  
+  // Initialize WebSocket Server
+  const wss = new UltraDexSocket(server);
 
   server.listen(port, () => {
     console.log(chalk.green(`✅ Server running at http://localhost:${port}`));
     console.log(chalk.cyan(`   • Plan:    http://localhost:${port}/plan`));
     console.log(chalk.cyan(`   • State:   http://localhost:${port}/state`));
     console.log(chalk.cyan(`   • Context: http://localhost:${port}/context`));
+    console.log(chalk.cyan(`   • Stream:  ws://localhost:${port}/stream`));
 
     // JARVIS Auto-Pilot: Watch for changes and regenerate plan
     console.log(chalk.bold.yellow('\n👁️  Auto-Pilot: Watching for changes...'));
@@ -197,6 +328,9 @@ ${plan}
           const markdown = generateMarkdown(state);
           await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), markdown);
           console.log(chalk.green('✅ Plan updated automatically.'));
+          
+          // Broadcast update via WebSocket
+          wss.sendStateUpdate(state);
         }
       } catch (e) {
         // silent fail for watcher

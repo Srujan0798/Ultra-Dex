@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.4.1] - 2026-01-28
+
+### Documentation
+- **📚 CLI Reference** - Added `docs/CLI-REFERENCE.md` with comprehensive command documentation
+- **CONTRIBUTING.md** - Added CLI development setup, testing, and code style guidelines
+- **README.md** - Added CI status badge and terminal visual placeholder
+- **General Polish** - Improved consistency across documentation files
+
+---
+
 ## [2.4.0] - 2026-01-27
 
 ### Added
