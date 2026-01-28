@@ -3,8 +3,39 @@ import path from 'path';
 import { z } from 'zod';
 import { loadState, saveState, generateMarkdown } from '../commands/plan.js';
 import { projectGraph } from './graph.js';
+import { swarmCommand } from '../commands/swarm.js';
 
 export function registerTools(server) {
+  // Tool: Start Swarm
+  server.tool(
+    "start_swarm",
+    "Start a multi-agent swarm workflow for a specific feature",
+    {
+      feature: z.string().describe("The feature or task to implement"),
+      provider: z.string().optional().describe("AI provider (claude, openai, gemini)"),
+      key: z.string().optional().describe("API Key for the provider")
+    },
+    async ({ feature, provider, key }) => {
+      try {
+        console.error(`[MCP] Starting Swarm for: ${feature}`);
+        // Run swarm command (this logs to stdout/stderr which MCP captures)
+        // We capture the output by intercepting the console logs or just trust the side effects
+        // Since swarmCommand is designed for CLI, we might need to wrap it or modify it to return result.
+        // For now, we trigger it and return a success message indicating it started.
+        
+        await swarmCommand(feature, { provider, key });
+        
+        return {
+          content: [{ type: "text", text: `✅ Swarm started for feature: "${feature}". Check server logs for progress.` }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Swarm failed to start: ${error.message}` }]
+        };
+      }
+    }
+  );
+
   // Tool: Update Task Status
   server.tool(
     "update_task_status",
@@ -308,6 +339,55 @@ export function registerTools(server) {
       return {
         content: [{ type: "text", text: `Agent '${agentName}' not found. List of agents available in agents/00-AGENT_INDEX.md` }]
       };
+    }
+  );
+
+  // Tool: Start Swarm (Agent Orchestration)
+  server.tool(
+    "start_swarm",
+    "Trigger a multi-agent swarm to plan and implement a feature",
+    {
+      feature: z.string().describe("Description of the feature to build"),
+      mode: z.enum(['plan_only', 'execute']).default('plan_only').describe("Whether to just plan or also execute")
+    },
+    async ({ feature, mode }) => {
+      try {
+        const { runAgentLoop } = await import('../commands/run.js');
+        const { createProvider, getDefaultProvider } = await import('../providers/index.js');
+        const { loadState } = await import('../commands/plan.js');
+        const { projectGraph } = await import('./graph.js');
+
+        // Setup Context
+        const state = await loadState();
+        const context = {
+          state,
+          plan: state ? generateMarkdown(state) : '',
+          graph: projectGraph.getSummary()
+        };
+
+        const provider = createProvider(getDefaultProvider(), { maxTokens: 8000 });
+
+        // Step 1: Planning
+        const planOutput = await runAgentLoop('planner', feature, provider, context);
+        
+        if (mode === 'plan_only') {
+          return {
+            content: [{ type: "text", text: `Swarm Planning Complete:\n\n${planOutput}` }]
+          };
+        }
+
+        // Step 2: Execution (Simplified for MCP - invoking CTO)
+        const execOutput = await runAgentLoop('cto', `Execute this plan:\n${planOutput}`, provider, context);
+        
+        return {
+          content: [{ type: "text", text: `Swarm Execution Complete:\n\n${execOutput}` }]
+        };
+
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Swarm failed: ${error.message}` }]
+        };
+      }
     }
   );
 }

@@ -12,6 +12,7 @@ import { createProvider, getDefaultProvider, checkConfiguredProviders } from '..
 import { SYSTEM_PROMPT, generateUserPrompt } from '../templates/prompts/generate-plan.js';
 import { validateSafePath } from '../utils/validation.js';
 import { githubTreeUrl, githubWebUrl } from '../config/urls.js';
+import { saveState } from './plan.js';
 
 export function registerGenerateCommand(program) {
   program
@@ -136,6 +137,45 @@ export function registerGenerateCommand(program) {
 
         await fs.writeFile(planPath, planContent);
 
+        // --- NEW: Generate state.json (ACTIVE SCALFOLDING) ---
+        const projectName = idea.split(' ').slice(0, 3).join('-').toLowerCase().replace(/[^a-z0-9-]/g, '');
+        
+        const state = {
+          project: {
+            name: projectName,
+            version: '0.1.0',
+            mode: 'AI-First',
+            idea: idea
+          },
+          phases: [
+            {
+              id: '1',
+              name: 'Phase 1: Foundation',
+              status: 'in_progress',
+              steps: [
+                { id: '1.1', task: 'Setup project boilerplate', status: 'pending' },
+                { id: '1.2', task: 'Database schema design', status: 'pending' },
+                { id: '1.3', task: 'Authentication implementation', status: 'pending' }
+              ]
+            },
+            {
+              id: '2',
+              name: 'Phase 2: Core Features',
+              status: 'pending',
+              steps: [
+                { id: '2.1', task: 'Implement primary feature loop', status: 'pending' },
+                { id: '2.2', task: 'API endpoint development', status: 'pending' }
+              ]
+            }
+          ],
+          agents: {
+            active: ['planner', 'cto'],
+            registry: ['planner', 'cto', 'backend', 'frontend', 'database', 'testing', 'reviewer']
+          }
+        };
+
+        await saveState(state);
+
         // Generate CONTEXT.md
         const contextContent = `# Project Context
 
@@ -184,13 +224,15 @@ ${idea}
         console.log(chalk.gray(`  ${planPath}`));
         console.log(chalk.gray(`  ${contextPath}`));
         console.log(chalk.gray(`  ${quickStartPath}`));
+        console.log(chalk.gray(`  .ultra/state.json (GOD MODE ACTIVE)`));
         console.log(chalk.gray(`\n⏱️  Time: ${elapsed}s`));
         console.log(chalk.gray(`💰 Est. cost: ${cost}`));
 
         console.log(chalk.bold('\nNext steps:'));
         console.log(chalk.cyan('  1. Review IMPLEMENTATION-PLAN.md'));
-        console.log(chalk.cyan('  2. Run `npx ultra-dex build` to start development'));
-        console.log(chalk.cyan('  3. Use AI agents for guidance\n'));
+        console.log(chalk.cyan('  2. Run `ultra-dex dashboard` to visualize your progress'));
+        console.log(chalk.cyan('  3. Run `ultra-dex build` to let Auto-Pilot take the first task'));
+        console.log(chalk.cyan('  4. Use AI agents for specialized guidance\n'));
       } catch (err) {
         spinner.fail('Failed to generate plan');
         console.error(chalk.red('Error:'), err.message);

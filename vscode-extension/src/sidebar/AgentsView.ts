@@ -26,8 +26,23 @@ export class AgentsProvider implements vscode.TreeDataProvider<AgentItem> {
       return Promise.resolve([]);
     }
 
-    // List of agents (hardcoded or scanned)
+    // Try to read state
+    let activeAgents: string[] = [];
+    try {
+        const statePath = path.join(this.workspaceRoot, '.ultra', 'state.json');
+        if (fs.existsSync(statePath)) {
+            const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+            if (state.agents && state.agents.active) {
+                activeAgents = state.agents.active;
+            }
+        }
+    } catch (e) {
+        // ignore
+    }
+
+    // List of agents
     const agents = [
+      { name: 'Orchestrator', role: 'Meta-Layer', icon: 'hubot' },
       { name: 'Planner', role: 'Leadership', icon: 'list-unordered' },
       { name: 'CTO', role: 'Leadership', icon: 'server-process' },
       { name: 'Backend', role: 'Development', icon: 'server' },
@@ -41,10 +56,12 @@ export class AgentsProvider implements vscode.TreeDataProvider<AgentItem> {
     ];
 
     return Promise.resolve(agents.map(agent => {
+      const isActive = activeAgents.includes(agent.name.toLowerCase());
       return new AgentItem(
         `@${agent.name}`,
         agent.role,
-        vscode.TreeItemCollapsibleState.None,
+        isActive ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.None,
+        isActive,
         {
           command: 'ultra-dex.selectAgent',
           title: 'Select Agent',
@@ -60,11 +77,13 @@ class AgentItem extends vscode.TreeItem {
     public readonly label: string,
     private role: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    private isActive: boolean,
     public readonly command?: vscode.Command
   ) {
     super(label, collapsibleState);
     this.tooltip = `${this.label} - ${this.role}`;
-    this.description = this.role;
-    this.iconPath = new vscode.ThemeIcon('hubot'); 
+    this.description = this.isActive ? `${this.role} (Active)` : this.role;
+    // Use built-in icons, highlight if active
+    this.iconPath = new vscode.ThemeIcon(this.isActive ? 'pulse' : 'circle-filled', this.isActive ? new vscode.ThemeColor('charts.green') : undefined);
   }
 }

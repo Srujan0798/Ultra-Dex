@@ -113,7 +113,8 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     ? `## Codebase Graph\n- Files: ${projectContext.graph.nodeCount}\n- Dependencies: ${projectContext.graph.edgeCount}\n` 
     : '';
 
-  const contextSection = projectContext.context ? `## Context\n${projectContext.context.slice(0, 3000)}\n\n${graphInfo}` : '';
+  const historySection = projectContext.history ? `## Execution History\n${projectContext.history}\n\n` : '';
+  const contextSection = projectContext.context ? `## Context\n${projectContext.context.slice(0, 3000)}\n\n${graphInfo}${historySection}` : '';
   const prompt = `${contextSection}## Task\n${task}\n\nYou can use tools by outputting:
 >> READ_CODE: "filePath"
 >> WRITE_CODE: "filePath" "fullContent"
