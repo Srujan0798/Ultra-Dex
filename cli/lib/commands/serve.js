@@ -180,6 +180,12 @@ async function startUnifiedKernel(portStr) {
     console.log(chalk.gray(`   • Dashboard: http://localhost:${port}/`));
     console.log(chalk.gray(`   • MCP API:   http://localhost:${port}/api/info`));
     
+    console.log(chalk.bold.magenta('\n🔌 AI Tool Integration:'));
+    console.log(chalk.white('   Cursor IDE: '));
+    console.log(chalk.cyan(`     URL: http://localhost:${port}/api/info`));
+    console.log(chalk.white('   Claude Desktop:'));
+    console.log(chalk.cyan(`     Run "ultra-dex config --mcp" to register.`));
+
     // Auto-Pilot
     fs.watch(process.cwd(), { recursive: true }, async (eventType, filename) => {
       if (!filename || filename.includes('node_modules') || filename.includes('.git') || filename.includes('IMPLEMENTATION-PLAN.md')) return;

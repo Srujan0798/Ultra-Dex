@@ -4,8 +4,86 @@ import { z } from 'zod';
 import { loadState, saveState, generateMarkdown } from '../commands/plan.js';
 import { projectGraph } from './graph.js';
 import { swarmCommand } from '../commands/swarm.js';
+import { ultraMemory } from './memory.js';
+import { glob } from 'glob';
 
 export function registerTools(server) {
+  // Tool: Remember Fact
+  server.tool(
+    "remember",
+    "Save a fact, decision, or piece of context to persistent memory for future reference",
+    {
+      text: z.string().describe("The fact or information to remember"),
+      tags: z.array(z.string()).optional().describe("Tags to categorize the information"),
+      source: z.string().optional().default("agent").describe("Source of the information")
+    },
+    async ({ text, tags, source }) => {
+      try {
+        await ultraMemory.remember(text, tags, source);
+        return {
+          content: [{ type: "text", text: `✅ Remembered: "${text.slice(0, 50)}..."` }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Failed to remember: ${error.message}` }]
+        };
+      }
+    }
+  );
+
+  // Tool: Recall Context
+  server.tool(
+    "recall",
+    "Search persistent memory for relevant past context, decisions, or facts",
+    {
+      query: z.string().describe("Search query to find relevant memories"),
+      limit: z.number().optional().default(5).describe("Maximum number of memories to return")
+    },
+    async ({ query, limit }) => {
+      try {
+        const results = await ultraMemory.search(query, limit);
+        if (results.length === 0) {
+          return {
+            content: [{ type: "text", text: "No relevant memories found." }]
+          };
+        }
+
+        const formatted = results.map(r => 
+          `[${new Date(r.timestamp).toLocaleDateString()}] (${r.source}) ${r.tags?.length ? '#' + r.tags.join(' #') : ''}\n${r.text}`
+        ).join('\n\n---\n\n');
+
+        return {
+          content: [{ type: "text", text: `Relevant memories found:\n\n${formatted}` }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Recall failed: ${error.message}` }]
+        };
+      }
+    }
+  );
+
+  // Tool: Clear Memory
+  server.tool(
+    "clear_memory",
+    "Clear all or part of the persistent memory",
+    {
+      before: z.string().optional().describe("Clear memories older than this date (ISO format)")
+    },
+    async ({ before }) => {
+      try {
+        await ultraMemory.clear(before);
+        return {
+          content: [{ type: "text", text: `✅ Memory cleared${before ? ' before ' + before : ''}.` }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Failed to clear memory: ${error.message}` }]
+        };
+      }
+    }
+  );
+
   // Tool: Start Swarm
   server.tool(
     "start_swarm",

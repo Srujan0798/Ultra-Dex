@@ -168,7 +168,7 @@ curl -X POST http://localhost:4000/api/stripe/create-checkout-session \
 
 ```bash
 # 1. Set Stripe environment variables on Vercel/Railway
-STRIPE_SECRET_KEY=sk_live_xxx
+STRIPE_SECRET_KEY=ST_LIVE_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_xxx
 

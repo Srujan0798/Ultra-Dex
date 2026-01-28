@@ -6,12 +6,29 @@
 import chalk from 'chalk';
 import http from 'http';
 import fs from 'fs/promises';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { execSync, spawn } from 'child_process';
 import { loadState } from './plan.js';
 import { buildGraph } from '../utils/graph.js';
+import { join } from 'path';
 
 // Global clients for SSE
 const clients = new Set();
+
+// Action history for timeline
+const actionHistory = [];
+const MAX_HISTORY = 50;
+
+function addAction(type, message, agent = null) {
+  actionHistory.unshift({
+    timestamp: new Date().toISOString(),
+    type,
+    message,
+    agent
+  });
+  if (actionHistory.length > MAX_HISTORY) actionHistory.pop();
+  sendToClients({ type: 'action', action: actionHistory[0] });
+}
 
 function sendToClients(data) {
   const payload = `data: ${JSON.stringify(data)}\n\n`;
@@ -64,6 +81,12 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
     </div>
   `).join('');
 
+  // Calculate alignment score dynamically
+  const totalSteps = state.phases.reduce((sum, p) => sum + p.steps.length, 0);
+  const completedSteps = state.phases.reduce((sum, p) => sum + p.steps.filter(s => s.status === 'completed').length, 0);
+  const alignmentScore = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+  const scoreColor = alignmentScore >= 80 ? 'var(--success)' : alignmentScore >= 50 ? 'var(--warning)' : 'var(--danger)';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,6 +105,13 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       --pending: #3f3f46;
       --danger: #ef4444;
     }
+    .light-theme {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-dim: #64748b;
+      --pending: #e2e8f0;
+    }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       background: var(--bg);
@@ -89,10 +119,39 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       font-family: 'Inter', system-ui, sans-serif;
       padding: 2rem;
       line-height: 1.5;
+      transition: background 0.3s, color 0.3s;
     }
-    .header { margin-bottom: 3rem; border-left: 4px solid var(--accent); padding-left: 1.5rem; display: flex; justify-content: space-between; align-items: end; }
+    .header { margin-bottom: 2rem; border-left: 4px solid var(--accent); padding-left: 1.5rem; display: flex; justify-content: space-between; align-items: end; }
     .header h1 { font-size: 2.5rem; letter-spacing: -0.05em; text-transform: uppercase; }
     .header p { color: var(--text-dim); font-family: monospace; }
+    .header-controls { display: flex; gap: 0.5rem; align-items: center; }
+
+    /* Toolbar */
+    .toolbar { 
+      display: flex; 
+      gap: 0.5rem; 
+      margin-bottom: 1.5rem; 
+      flex-wrap: wrap;
+      padding: 1rem;
+      background: var(--card);
+      border-radius: 0.5rem;
+      border: 1px solid #27272a;
+    }
+    .toolbar button { padding: 0.5rem 1rem; font-size: 0.75rem; }
+    .toolbar button.secondary { background: #27272a; color: var(--text); }
+    .toolbar button.secondary:hover { background: #3f3f46; }
+    .toolbar .spacer { flex: 1; }
+    
+    /* Theme Toggle */
+    .theme-toggle { 
+      background: #27272a; 
+      color: var(--text); 
+      border: none; 
+      padding: 0.5rem 0.75rem; 
+      border-radius: 0.5rem; 
+      cursor: pointer;
+      font-size: 1rem;
+    }
 
     .dashboard-grid { display: grid; grid-template-columns: 350px 1fr 300px; gap: 1.5rem; }
     
@@ -113,7 +172,7 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
     .status-badge { font-size: 0.65rem; text-transform: uppercase; background: #27272a; padding: 2px 8px; border-radius: 4px; color: var(--text-dim); }
     
     .progress-mini { height: 4px; background: #27272a; border-radius: 2px; margin-bottom: 1.5rem; }
-    .progress-mini .fill { height: 100%; background: var(--accent); border-radius: 2px; }
+    .progress-mini .fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
 
     .steps { list-style: none; }
     .steps li { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.5rem; display: flex; align-items: center; }
@@ -123,20 +182,38 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
 
     /* Agent Panel */
     .agent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-    .agent-card { background: #202022; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #333; }
+    .agent-card { background: #202022; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #333; transition: border-color 0.3s; }
+    .agent-card.active { border-color: var(--accent); }
     .agent-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
     .agent-name { font-family: monospace; font-size: 0.8rem; color: var(--accent); }
     .agent-status { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
     .status-idle { background: #333; color: #888; }
     .status-working { background: rgba(6, 182, 212, 0.2); color: var(--accent); animation: pulse 2s infinite; }
     .agent-activity { font-size: 0.7rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .agent-last-action { font-size: 0.65rem; color: #555; margin-top: 0.25rem; }
 
     /* Timeline */
-    .timeline { max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; }
+    .timeline { max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; }
     .log-entry { margin-bottom: 0.5rem; border-left: 2px solid #333; padding-left: 0.5rem; color: #888; }
     .log-entry.info { border-color: var(--accent); color: #ccc; }
     .log-entry.success { border-color: var(--success); color: var(--success); }
+    .log-entry.error { border-color: var(--danger); color: var(--danger); }
     .log-entry .time { color: #555; margin-right: 0.5rem; }
+
+    /* Recent Actions Timeline */
+    .actions-timeline { max-height: 200px; overflow-y: auto; }
+    .action-item { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.75rem; 
+      padding: 0.5rem 0; 
+      border-bottom: 1px solid #27272a; 
+      font-size: 0.8rem;
+    }
+    .action-icon { font-size: 1rem; }
+    .action-details { flex: 1; }
+    .action-message { color: var(--text); }
+    .action-time { color: var(--text-dim); font-size: 0.7rem; }
 
     /* Chart */
     .chart-container { position: relative; height: 200px; width: 100%; }
@@ -158,6 +235,7 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       border-radius: 0.5rem;
       font-family: monospace;
     }
+    .light-theme input[type="text"] { background: #f1f5f9; color: #0f172a; border-color: #e2e8f0; }
     button {
       background: var(--accent);
       color: #000;
@@ -170,20 +248,51 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       font-size: 0.8rem;
     }
     button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
     
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+    /* Toast Notifications */
+    .toast { 
+      position: fixed; 
+      bottom: 2rem; 
+      right: 2rem; 
+      background: var(--card); 
+      border: 1px solid var(--accent);
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      display: none;
+      animation: slideIn 0.3s;
+    }
+    .toast.show { display: block; }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
   </style>
 </head>
 <body>
   <div class="header">
     <div>
       <h1>${state.project.name} <small style="font-size: 0.4em; vertical-align: middle; color: var(--accent)">GOD MODE</small></h1>
-      <p>KERNEL v${state.project.version} • LOCALHOST:${gitInfo.branch} • ${new Date().toLocaleTimeString()}</p>
+      <p>KERNEL v${state.project.version} • LOCALHOST:${gitInfo.branch} • <span id="clock">${new Date().toLocaleTimeString()}</span></p>
     </div>
-    <div style="text-align: right">
-      <div style="font-size: 2rem; font-weight: bold; color: var(--success)">92%</div>
-      <div style="font-size: 0.8rem; color: #666">ALIGNMENT SCORE</div>
+    <div class="header-controls">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+      <div style="text-align: right; margin-left: 1rem;">
+        <div id="score-display" style="font-size: 2rem; font-weight: bold; color: ${scoreColor}">${alignmentScore}%</div>
+        <div style="font-size: 0.8rem; color: #666">ALIGNMENT SCORE</div>
+      </div>
     </div>
+  </div>
+
+  <!-- Quick Action Toolbar -->
+  <div class="toolbar">
+    <button onclick="runAction('generate')" title="Generate code from plan">⚡ Generate</button>
+    <button onclick="runAction('build')" title="Build the project">🔨 Build</button>
+    <button onclick="runAction('review')" title="Run code review">🔍 Review</button>
+    <button onclick="runAction('validate')" title="Validate alignment">✅ Validate</button>
+    <button onclick="runAction('diff')" title="Check plan vs code diff">📊 Diff</button>
+    <span class="spacer"></span>
+    <button class="secondary" onclick="exportReport()" title="Export HTML report">📄 Export Report</button>
+    <button class="secondary" onclick="refreshDashboard()" title="Refresh data">🔄 Refresh</button>
   </div>
 
   <div class="dashboard-grid">
@@ -211,6 +320,19 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       </div>
 
       <div class="card">
+        <h3 style="margin-bottom: 1rem">RECENT ACTIONS</h3>
+        <div class="actions-timeline" id="actions-container">
+          <div class="action-item">
+            <span class="action-icon">🚀</span>
+            <div class="action-details">
+              <div class="action-message">Dashboard started</div>
+              <div class="action-time">${new Date().toLocaleTimeString()}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
         <h3 style="margin-bottom: 1rem">LIVE SYSTEM LOGS</h3>
         <div class="timeline" id="log-container">
           <div class="log-entry info"><span class="time">${new Date().toLocaleTimeString()}</span> System initialized.</div>
@@ -229,12 +351,15 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       
       <div class="card" style="margin-top: 1rem; font-family: monospace; font-size: 0.8rem">
         <h3 style="margin-bottom: 0.5rem">SYSTEM STATUS</h3>
-        <div style="color: var(--success)">> git: clean</div>
+        <div style="color: var(--success)">> git: ${gitInfo.changedFiles > 0 ? gitInfo.changedFiles + ' changes' : 'clean'}</div>
         <div style="color: var(--accent)">> graph: ${graphSummary ? graphSummary.nodes + ' nodes' : 'scanning...'}</div>
-        <div style="color: #666">> memory: 24MB</div>
+        <div style="color: #666">> uptime: <span id="uptime">0s</span></div>
       </div>
     </div>
   </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
 
   <script>
     // Initialize Chart
@@ -290,6 +415,8 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       div.className = \`log-entry \${level}\`;
       div.innerHTML = \`<span class="time">\${new Date().toLocaleTimeString()}</span> \${msg}\`;
       container.prepend(div);
+      // Keep max 50 entries
+      while (container.children.length > 50) container.lastChild.remove();
     }
 
     function updateAgent(name, status, activity) {
@@ -301,7 +428,91 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
         statusEl.className = \`agent-status status-\${status}\`;
         statusEl.innerText = status;
         activityEl.innerText = activity;
+        
+        // Highlight active agent
+        card.classList.toggle('active', status === 'working');
       }
+    }
+
+    function addAction(icon, message) {
+      const container = document.getElementById('actions-container');
+      const div = document.createElement('div');
+      div.className = 'action-item';
+      div.innerHTML = \`
+        <span class="action-icon">\${icon}</span>
+        <div class="action-details">
+          <div class="action-message">\${message}</div>
+          <div class="action-time">\${new Date().toLocaleTimeString()}</div>
+        </div>
+      \`;
+      container.prepend(div);
+      while (container.children.length > 20) container.lastChild.remove();
+    }
+
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), duration);
+    }
+
+    // Theme Toggle
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+      const isLight = document.body.classList.contains('light-theme');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      showToast(isLight ? '☀️ Light mode' : '🌙 Dark mode');
+    }
+
+    // Load saved theme
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light-theme');
+    }
+
+    // Quick Actions
+    async function runAction(action) {
+      const icons = { generate: '⚡', build: '🔨', review: '🔍', validate: '✅', diff: '📊' };
+      addLog(\`Running \${action}...\`, 'info');
+      addAction(icons[action] || '▶️', \`Started \${action}\`);
+      
+      try {
+        const res = await fetch(\`/api/action/\${action}\`, { method: 'POST' });
+        const data = await res.json();
+        
+        if (data.success) {
+          addLog(\`\${action} completed successfully\`, 'success');
+          addAction('✅', \`\${action} completed\`);
+          showToast(\`✅ \${action} completed\`);
+        } else {
+          addLog(\`\${action} failed: \${data.error}\`, 'error');
+          showToast(\`❌ \${action} failed\`);
+        }
+      } catch (e) {
+        addLog(\`Failed to run \${action}\`, 'error');
+        showToast(\`❌ Connection error\`);
+      }
+    }
+
+    async function exportReport() {
+      addLog('Generating report...', 'info');
+      try {
+        const res = await fetch('/api/export');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ultra-dex-report.html';
+        a.click();
+        URL.revokeObjectURL(url);
+        addLog('Report exported', 'success');
+        showToast('📄 Report downloaded');
+      } catch (e) {
+        addLog('Export failed', 'error');
+      }
+    }
+
+    function refreshDashboard() {
+      location.reload();
     }
 
     async function startSwarm() {
@@ -314,6 +525,7 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       btn.disabled = true;
       btn.innerText = "DEPLOYING...";
       addLog(\`Initiating Swarm: \${objective}\`, 'info');
+      addAction('🐝', \`Swarm: \${objective}\`);
 
       try {
         const res = await fetch('/api/swarm', {
@@ -326,17 +538,37 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
         
         if (data.success) {
           addLog("Swarm processes started successfully", "success");
+          showToast('🐝 Swarm deployed!');
           input.value = "";
         } else {
-          addLog(\`Error: \${data.error}\`, "danger");
+          addLog(\`Error: \${data.error}\`, "error");
         }
       } catch (e) {
-        addLog("Connection Failed", "danger");
+        addLog("Connection Failed", "error");
       } finally {
         btn.disabled = false;
         btn.innerText = "DEPLOY AGENTS";
       }
     }
+
+    // Clock & Uptime
+    const startTime = Date.now();
+    setInterval(() => {
+      document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+      const uptime = Math.floor((Date.now() - startTime) / 1000);
+      const mins = Math.floor(uptime / 60);
+      const secs = uptime % 60;
+      document.getElementById('uptime').innerText = mins > 0 ? \`\${mins}m \${secs}s\` : \`\${secs}s\`;
+    }, 1000);
+
+    // Handle action events from SSE
+    evtSource.addEventListener('message', (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'action') {
+        const icons = { swarm: '🐝', generate: '⚡', build: '🔨', review: '🔍', validate: '✅' };
+        addAction(icons[data.action?.type] || '▶️', data.action?.message || 'Action completed');
+      }
+    });
   </script>
 </body>
 </html>`;
@@ -388,6 +620,9 @@ export function registerDashboardCommand(program) {
               const { feature } = JSON.parse(body);
               console.log(chalk.magenta(`\n⚡ Dashboard Trigger: Starting Swarm for "${feature}"...`));
               
+              // Add to action history
+              addAction('swarm', `Swarm started: ${feature}`, 'planner');
+              
               // Simulate agent activity
               sendToClients({ type: 'log', message: `Swarm triggered: ${feature}`, level: 'info' });
               sendToClients({ type: 'agent_status', agent: 'planner', status: 'working', activity: 'Analyzing requirements...' });
@@ -407,6 +642,74 @@ export function registerDashboardCommand(program) {
               res.end(JSON.stringify({ success: false, error: e.message }));
             }
           });
+          return;
+        }
+
+        // Handle API: Quick Actions
+        if (req.url.startsWith('/api/action/') && req.method === 'POST') {
+          const action = req.url.replace('/api/action/', '');
+          console.log(chalk.cyan(`\n▶️ Running action: ${action}`));
+          
+          try {
+            const actionCommands = {
+              generate: ['npx', ['ultra-dex', 'generate']],
+              build: ['npx', ['ultra-dex', 'build']],
+              review: ['npx', ['ultra-dex', 'review']],
+              validate: ['npx', ['ultra-dex', 'validate']],
+              diff: ['npx', ['ultra-dex', 'diff', '--json']]
+            };
+            
+            if (!actionCommands[action]) {
+              res.writeHead(400, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: false, error: 'Unknown action' }));
+              return;
+            }
+            
+            addAction(action, `Started ${action}`, null);
+            sendToClients({ type: 'log', message: `Running ${action}...`, level: 'info' });
+            
+            const [cmd, args] = actionCommands[action];
+            const result = execSync(`${cmd} ${args.join(' ')}`, { 
+              encoding: 'utf-8',
+              timeout: 60000,
+              maxBuffer: 1024 * 1024
+            });
+            
+            sendToClients({ type: 'log', message: `${action} completed`, level: 'success' });
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, output: result.slice(0, 1000) }));
+          } catch (e) {
+            sendToClients({ type: 'log', message: `${action} failed: ${e.message}`, level: 'error' });
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: e.message }));
+          }
+          return;
+        }
+
+        // Handle API: Export Report
+        if (req.url === '/api/export') {
+          try {
+            const state = await loadState();
+            const gitInfo = await getGitInfo();
+            const html = generateDashboardHTML(state, gitInfo, graphSummary);
+            
+            res.writeHead(200, { 
+              'Content-Type': 'text/html',
+              'Content-Disposition': 'attachment; filename="ultra-dex-report.html"'
+            });
+            res.end(html);
+          } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+          }
+          return;
+        }
+
+        // Handle API: Get actions history
+        if (req.url === '/api/actions') {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(actionHistory));
           return;
         }
 

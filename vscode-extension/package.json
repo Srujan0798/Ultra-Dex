@@ -23,7 +23,8 @@
     "onView:ultra-dex.agentExplorer",
     "onCommand:ultra-dex.selectAgent",
     "onCommand:ultra-dex.checkAlignment",
-    "onCommand:ultra-dex.generatePlan",
+    "onCommand:ultra-dex.triggerSwarm",
+    "onCommand:ultra-dex.openDashboard",
     "onCommand:ultra-dex.askAgent"
   ],
   "main": "./out/extension.js",
@@ -39,6 +40,11 @@
     },
     "views": {
       "ultra-dex": [
+        {
+          "id": "ultra-dex.projectRoadmap",
+          "name": "Project Roadmap",
+          "icon": "$(map)"
+        },
         {
           "id": "ultra-dex.agentExplorer",
           "name": "Agent Explorer"
@@ -57,9 +63,16 @@
         "category": "Ultra-Dex"
       },
       {
-        "command": "ultra-dex.generatePlan",
-        "title": "Ultra-Dex: Generate Plan",
-        "category": "Ultra-Dex"
+        "command": "ultra-dex.triggerSwarm",
+        "title": "Ultra-Dex: Trigger Swarm",
+        "category": "Ultra-Dex",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "ultra-dex.openDashboard",
+        "title": "Ultra-Dex: Open Dashboard",
+        "category": "Ultra-Dex",
+        "icon": "$(dashboard)"
       },
       {
         "command": "ultra-dex.askAgent",
@@ -70,8 +83,25 @@
     "menus": {
       "editor/context": [
         {
+          "command": "ultra-dex.triggerSwarm",
+          "when": "editorHasSelection",
+          "group": "navigation@1"
+        },
+        {
           "command": "ultra-dex.askAgent",
           "when": "editorHasSelection",
+          "group": "navigation@2"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "ultra-dex.openDashboard",
+          "when": "view == ultra-dex.agentExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "ultra-dex.checkAlignment",
+          "when": "view == ultra-dex.agentExplorer",
           "group": "navigation"
         }
       ]
