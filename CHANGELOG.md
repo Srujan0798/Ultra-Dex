@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.5.0] - 2026-01-28
+## [3.0.0] - 2026-01-28
 
 ### Added
 - **🪐 Unified Active Kernel** - `ultra-dex serve` now serves the Dashboard, MCP API, and WebSocket Stream from a single process.
 - **🧠 Graph-Augmented Swarms** - Agents now receive a structural map of the codebase via the Code Property Graph (CPG) during swarms.
+- **⚖️ Executable Verification** - `ultra-dex verify [task]` runs the 21-Step Verification Framework using structural analysis and AI.
 - **🚦 AI Quality Gate** - `ultra-dex pre-commit --ai` runs an automated architectural review of staged changes before allowing a commit.
 - **📈 Live Swarm Tracking** - Dashboard now shows active agent status and swarm progress in real-time.
+
+### Changed
+- Major version jump to 3.0.0 reflecting the transition to a fully AI-native "God Mode" architecture.
 
 ### Documentation
 - **📚 CLI Reference** - Added `docs/CLI-REFERENCE.md` with comprehensive command documentation.

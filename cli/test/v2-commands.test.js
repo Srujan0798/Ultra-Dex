@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import { test } from 'node:test';
 import path from 'path';
 
-const CLI = `node ${path.resolve(process.cwd(), 'cli/bin/ultra-dex.js')}`;
+const CLI = `node ${path.resolve(process.cwd(), 'bin/ultra-dex.js')}`;
 
 test('v2.4 Command Smoke Tests', async (t) => {
   
@@ -37,6 +37,6 @@ test('v2.4 Command Smoke Tests', async (t) => {
 
   await t.test('serve command help works', () => {
     const output = execSync(`${CLI} serve --help`).toString();
-    assert.ok(output.includes('MCP Server'));
+    assert.ok(output.includes('Active Kernel'));
   });
 });

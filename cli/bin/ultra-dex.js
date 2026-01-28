@@ -19,6 +19,7 @@ import { registerDoctorCommand } from '../lib/commands/doctor.js';
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
 import { registerCheckCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
+import { registerVerifyCommand } from '../lib/commands/verify.js';
 
 // New v2.4 Commands
 import { swarmCommand } from '../lib/commands/swarm.js';
@@ -111,6 +112,7 @@ registerDoctorCommand(program);
 registerDashboardCommand(program);
 registerCheckCommand(program);
 registerServeCommand(program);
+registerVerifyCommand(program);
 registerPackCommand(program);
 registerWorkflowCommand(program);
 registerPlanCommand(program);

@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+import { loadConfig } from './config.js';
 
 const STATUS = {
   DONE: 'done',
@@ -40,7 +41,8 @@ export function diffCommand(options) {
   }
 
   // Check implementation status
-  const results = checkImplementationStatus(plannedSections);
+  const config = loadConfig();
+  const results = checkImplementationStatus(plannedSections, config);
   
   // Calculate alignment
   const doneCount = results.filter(r => r.status === STATUS.DONE).length;
@@ -147,48 +149,54 @@ function extractKeywords(title, content) {
   return [...new Set(words.filter(w => w.length > 3 && !stopwords.has(w)))];
 }
 
-function checkImplementationStatus(sections) {
-  const srcDir = existsSync(join(process.cwd(), 'src')) ? 'src' : 
+function checkImplementationStatus(sections, config = {}) {
+  // Use configured directories or fallback to defaults
+  const searchDirs = config.includeDirs || [config.srcDir || (
+                 existsSync(join(process.cwd(), 'src')) ? 'src' : 
                  existsSync(join(process.cwd(), 'app')) ? 'app' :
-                 existsSync(join(process.cwd(), 'lib')) ? 'lib' : null;
+                 existsSync(join(process.cwd(), 'lib')) ? 'lib' : null
+  )].filter(Boolean);
   
   return sections.map(section => {
     const { keywords } = section;
     const matches = [];
     let matchCount = 0;
     
-    if (srcDir && keywords.length > 0) {
+    if (searchDirs.length > 0 && keywords.length > 0) {
       // Search codebase for keywords
       for (const keyword of keywords.slice(0, 5)) {
-        try {
-          const result = execSync(`grep -ril "${keyword}" ${srcDir} 2>/dev/null || true`, {
-            encoding: 'utf-8',
-            maxBuffer: 1024 * 1024
-          }).trim();
-          
-          if (result) {
-            const files = result.split('\n').filter(Boolean);
-            if (files.length > 0) {
-              matchCount++;
-              matches.push(...files.slice(0, 2).map(f => f.replace(process.cwd() + '/', '')));
+        for (const dir of searchDirs) {
+          try {
+            const result = execSync(`grep -ril "${keyword}" ${dir} 2>/dev/null || true`, {
+              encoding: 'utf-8',
+              maxBuffer: 1024 * 1024
+            }).trim();
+            
+            if (result) {
+              const files = result.split('\n').filter(Boolean);
+              if (files.length > 0) {
+                matchCount++;
+                matches.push(...files.slice(0, 2).map(f => f.replace(process.cwd() + '/', '')));
+              }
             }
+          } catch (e) {
+            // grep failed, continue
           }
-        } catch (e) {
-          // grep failed, continue
         }
       }
     }
     
     // Also check for matching file names
-    if (srcDir) {
+    for (const dir of searchDirs) {
+      if (!existsSync(join(process.cwd(), dir))) continue;
       try {
-        const files = readdirSync(join(process.cwd(), srcDir), { recursive: true });
+        const files = readdirSync(join(process.cwd(), dir), { recursive: true });
         const titleWords = section.title.toLowerCase().split(/\s+/).filter(w => w.length > 3);
         titleWords.forEach(word => {
           const matchingFiles = files.filter(f => f.toLowerCase().includes(word));
           if (matchingFiles.length > 0) {
             matchCount++;
-            matches.push(...matchingFiles.slice(0, 2).map(f => `${srcDir}/${f}`));
+            matches.push(...matchingFiles.slice(0, 2).map(f => `${dir}/${f}`));
           }
         });
       } catch (e) {
@@ -199,7 +207,7 @@ function checkImplementationStatus(sections) {
     // Determine status based on matches
     const uniqueMatches = [...new Set(matches)];
     let status;
-    if (matchCount >= 3 || uniqueMatches.length >= 3) {
+    if (matchCount >= 2 || uniqueMatches.length >= 2) {
       status = STATUS.DONE;
     } else if (matchCount > 0 || uniqueMatches.length > 0) {
       status = STATUS.PARTIAL;

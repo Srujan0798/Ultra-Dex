@@ -20,7 +20,11 @@
     "cursor"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onView:ultra-dex.agentExplorer",
+    "onCommand:ultra-dex.selectAgent",
+    "onCommand:ultra-dex.checkAlignment",
+    "onCommand:ultra-dex.generatePlan",
+    "onCommand:ultra-dex.askAgent"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -36,119 +40,38 @@
     "views": {
       "ultra-dex": [
         {
-          "id": "ultra-dex.contextView",
-          "name": "Project Context"
-        },
-        {
           "id": "ultra-dex.agentExplorer",
-          "name": "Agents (16)"
-        },
-        {
-          "id": "ultra-dex.quickActions",
-          "name": "Quick Actions"
-        },
-        {
-          "id": "ultra-dex.verifyView",
-          "name": "Verification Checklist"
+          "name": "Agent Explorer"
         }
       ]
     },
     "commands": [
       {
-        "command": "ultra-dex.generatePlan",
-        "title": "Generate Plan",
-        "category": "Ultra-Dex",
-        "icon": "$(list-ordered)"
-      },
-      {
-        "command": "ultra-dex.startBuildMode",
-        "title": "Start Build Mode",
-        "category": "Ultra-Dex",
-        "icon": "$(tools)"
-      },
-      {
-        "command": "ultra-dex.runAgent",
-        "title": "Run Agent",
-        "category": "Ultra-Dex",
-        "icon": "$(run)"
-      },
-      {
-        "command": "ultra-dex.openDashboard",
-        "title": "Open Dashboard",
-        "category": "Ultra-Dex",
-        "icon": "$(dashboard)"
-      },
-      {
-        "command": "ultra-dex.showAlignmentScore",
-        "title": "Show Alignment Score",
-        "category": "Ultra-Dex",
-        "icon": "$(shield)"
-      },
-      {
-        "command": "ultra-dex.startDaemon",
-        "title": "Start God Mode Daemon",
-        "category": "Ultra-Dex",
-        "icon": "$(zap)"
-      },
-      {
-        "command": "ultra-dex.autoImplement",
-        "title": "Auto-Implement Feature",
-        "category": "Ultra-Dex",
-        "icon": "$(sparkle)"
-      },
-      {
-        "command": "ultra-dex.syncProject",
-        "title": "Sync Project State",
-        "category": "Ultra-Dex",
-        "icon": "$(sync)"
-      },
-      {
         "command": "ultra-dex.selectAgent",
-        "title": "Select Agent",
+        "title": "Ultra-Dex: Select Agent",
         "category": "Ultra-Dex"
       },
       {
-        "command": "ultra-dex.copyAgentPrompt",
-        "title": "Copy Agent Prompt",
-        "category": "Ultra-Dex",
-        "icon": "$(copy)"
+        "command": "ultra-dex.checkAlignment",
+        "title": "Ultra-Dex: Check Alignment",
+        "category": "Ultra-Dex"
+      },
+      {
+        "command": "ultra-dex.generatePlan",
+        "title": "Ultra-Dex: Generate Plan",
+        "category": "Ultra-Dex"
       },
       {
         "command": "ultra-dex.askAgent",
-        "title": "Ask Agent",
+        "title": "Ultra-Dex: Ask @Agent about selection",
         "category": "Ultra-Dex"
-      },
-      {
-        "command": "ultra-dex.verify",
-        "title": "Run Verification",
-        "category": "Ultra-Dex",
-        "icon": "$(checklist)"
-      },
-      {
-        "command": "ultra-dex.refreshAgents",
-        "title": "Refresh Agents",
-        "category": "Ultra-Dex",
-        "icon": "$(refresh)"
       }
     ],
     "menus": {
-      "view/title": [
-        {
-          "command": "ultra-dex.refreshAgents",
-          "when": "view == ultra-dex.agentExplorer",
-          "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "ultra-dex.copyAgentPrompt",
-          "when": "view == ultra-dex.agentExplorer && viewItem == agent",
-          "group": "inline"
-        }
-      ],
       "editor/context": [
         {
           "command": "ultra-dex.askAgent",
+          "when": "editorHasSelection",
           "group": "navigation"
         }
       ]

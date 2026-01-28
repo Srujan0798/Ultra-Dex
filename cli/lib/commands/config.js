@@ -11,7 +11,7 @@ function getConfigPath() {
   return join(process.cwd(), CONFIG_DIR, CONFIG_FILE);
 }
 
-function loadConfig() {
+export function loadConfig() {
   const configPath = getConfigPath();
   if (existsSync(configPath)) {
     try {
