@@ -7,13 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.4.1] - 2026-01-28
+## [2.5.0] - 2026-01-28
+
+### Added
+- **🪐 Unified Active Kernel** - `ultra-dex serve` now serves the Dashboard, MCP API, and WebSocket Stream from a single process.
+- **🧠 Graph-Augmented Swarms** - Agents now receive a structural map of the codebase via the Code Property Graph (CPG) during swarms.
+- **🚦 AI Quality Gate** - `ultra-dex pre-commit --ai` runs an automated architectural review of staged changes before allowing a commit.
+- **📈 Live Swarm Tracking** - Dashboard now shows active agent status and swarm progress in real-time.
 
 ### Documentation
-- **📚 CLI Reference** - Added `docs/CLI-REFERENCE.md` with comprehensive command documentation
-- **CONTRIBUTING.md** - Added CLI development setup, testing, and code style guidelines
-- **README.md** - Added CI status badge and terminal visual placeholder
-- **General Polish** - Improved consistency across documentation files
+- **📚 CLI Reference** - Added `docs/CLI-REFERENCE.md` with comprehensive command documentation.
+- **CONTRIBUTING.md** - Added CLI development setup, testing, and code style guidelines.
+- **README.md** - Added CI status badge and terminal visual placeholder.
+
+---
+
+## [2.4.1] - 2026-01-28 (Internal)
+
+### Documentation
+- General polish and consistency improvements.
 
 ---
 

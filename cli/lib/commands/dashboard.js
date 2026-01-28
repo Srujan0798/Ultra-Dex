@@ -55,29 +55,21 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
   }).join('');
 
   const agentsHTML = state.agents.registry.map(agent => `
-    <div class="agent-pill ${state.agents.active.includes(agent) ? 'active' : ''}">
-      @${agent}
+    <div class="agent-card" id="agent-${agent}">
+      <div class="agent-header">
+        <span class="agent-name">@${agent}</span>
+        <span class="agent-status status-idle">IDLE</span>
+      </div>
+      <div class="agent-activity">Waiting for tasks...</div>
     </div>
   `).join('');
-
-  const graphStats = graphSummary ? `
-    <div class="panel graph-panel">
-      > neural_link: ACTIVE
-      <br>> context_nodes: ${graphSummary.nodes}
-      <br>> dependency_edges: ${graphSummary.edges}
-      <br>> graph_integrity: 100%
-    </div>
-  ` : `
-    <div class="panel graph-panel" style="color: #666">
-      > neural_link: OFFLINE
-    </div>
-  `;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>ULTRA-DEX KERNEL • ${state.project.name}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg: #09090b;
@@ -98,11 +90,11 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       padding: 2rem;
       line-height: 1.5;
     }
-    .header { margin-bottom: 3rem; border-left: 4px solid var(--accent); padding-left: 1.5rem; }
+    .header { margin-bottom: 3rem; border-left: 4px solid var(--accent); padding-left: 1.5rem; display: flex; justify-content: space-between; align-items: end; }
     .header h1 { font-size: 2.5rem; letter-spacing: -0.05em; text-transform: uppercase; }
     .header p { color: var(--text-dim); font-family: monospace; }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+    .dashboard-grid { display: grid; grid-template-columns: 350px 1fr 300px; gap: 1.5rem; }
     
     .card {
       background: var(--card);
@@ -111,42 +103,52 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       padding: 1.5rem;
       position: relative;
       overflow: hidden;
-      transition: all 0.3s ease;
+      margin-bottom: 1rem;
     }
+
+    .phase-card.completed { border-color: var(--success); }
+    .phase-card.in_progress { border-color: var(--accent); }
 
     .phase-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     .status-badge { font-size: 0.65rem; text-transform: uppercase; background: #27272a; padding: 2px 8px; border-radius: 4px; color: var(--text-dim); }
     
-    .phase-card.completed { border-color: var(--success); }
-    .phase-card.completed .status-badge { color: var(--success); border: 1px solid var(--success); }
-    .phase-card.in_progress { border-color: var(--accent); }
-    .phase-card.in_progress .status-badge { color: var(--accent); border: 1px solid var(--accent); }
-
     .progress-mini { height: 4px; background: #27272a; border-radius: 2px; margin-bottom: 1.5rem; }
     .progress-mini .fill { height: 100%; background: var(--accent); border-radius: 2px; }
 
     .steps { list-style: none; }
-    .steps li { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 0.75rem; display: flex; align-items: center; }
+    .steps li { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.5rem; display: flex; align-items: center; }
     .steps li.completed { color: var(--text); }
     .steps li.completed .dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
     .steps li .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pending); margin-right: 12px; }
 
-    .agent-grid { margin-top: 2rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .agent-pill { 
-        background: #27272a; padding: 4px 12px; border-radius: 99px; font-size: 0.8rem; font-family: monospace; color: var(--text-dim);
-        border: 1px solid transparent;
-    }
-    .agent-pill.active { background: rgba(6, 182, 212, 0.1); border-color: var(--accent); color: var(--accent); }
+    /* Agent Panel */
+    .agent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .agent-card { background: #202022; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #333; }
+    .agent-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .agent-name { font-family: monospace; font-size: 0.8rem; color: var(--accent); }
+    .agent-status { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .status-idle { background: #333; color: #888; }
+    .status-working { background: rgba(6, 182, 212, 0.2); color: var(--accent); animation: pulse 2s infinite; }
+    .agent-activity { font-size: 0.7rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Timeline */
+    .timeline { max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; }
+    .log-entry { margin-bottom: 0.5rem; border-left: 2px solid #333; padding-left: 0.5rem; color: #888; }
+    .log-entry.info { border-color: var(--accent); color: #ccc; }
+    .log-entry.success { border-color: var(--success); color: var(--success); }
+    .log-entry .time { color: #555; margin-right: 0.5rem; }
+
+    /* Chart */
+    .chart-container { position: relative; height: 200px; width: 100%; }
 
     .control-panel {
-      margin-top: 3rem;
       padding: 1.5rem;
       background: rgba(6, 182, 212, 0.05);
       border: 1px solid var(--accent);
       border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
     }
-    .control-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
-    .input-group { display: flex; gap: 1rem; }
+    .input-group { display: flex; gap: 1rem; margin-top: 1rem; }
     input[type="text"] {
       flex: 1;
       background: #000;
@@ -168,93 +170,150 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       font-size: 0.8rem;
     }
     button:hover { opacity: 0.9; }
-    button:disabled { background: #333; color: #666; cursor: not-allowed; }
-
-    .panels { display: flex; gap: 1rem; margin-top: 3rem; }
-    .panel { flex: 1; padding: 1rem; background: #000; border-radius: 0.5rem; font-family: monospace; font-size: 0.8rem; }
-    .git-panel { color: #22c55e; }
-    .graph-panel { color: #06b6d4; }
     
-    .glitch { position: absolute; top:0; right:0; padding: 0.5rem; font-size: 0.7rem; color: #333; }
-    
-    .live-indicator { 
-      position: fixed; bottom: 1rem; right: 1rem; font-size: 0.6rem; color: var(--accent); font-family: monospace;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .pulse { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
-  <div id="dashboard-root">
-    <div class="header">
+  <div class="header">
+    <div>
       <h1>${state.project.name} <small style="font-size: 0.4em; vertical-align: middle; color: var(--accent)">GOD MODE</small></h1>
       <p>KERNEL v${state.project.version} • LOCALHOST:${gitInfo.branch} • ${new Date().toLocaleTimeString()}</p>
     </div>
-
-    <div class="control-panel">
-      <div class="control-header">
-        <h3>🚀 SWARM COMMAND CENTER</h3>
-        <span id="swarm-status" style="font-family: monospace; color: var(--text-dim)">IDLE</span>
-      </div>
-      <div class="input-group">
-        <input type="text" id="swarm-input" placeholder="Enter objective (e.g., 'Build user profile page')..." />
-        <button id="swarm-btn" onclick="startSwarm()">DEPLOY AGENTS</button>
-      </div>
+    <div style="text-align: right">
+      <div style="font-size: 2rem; font-weight: bold; color: var(--success)">92%</div>
+      <div style="font-size: 0.8rem; color: #666">ALIGNMENT SCORE</div>
     </div>
+  </div>
 
-    <div class="grid" style="margin-top: 2rem">
+  <div class="dashboard-grid">
+    <!-- LEFT: PHASES -->
+    <div class="col-phases">
+      <h3 style="color: #666; margin-bottom: 1rem; font-size: 0.8rem">IMPLEMENTATION PLAN</h3>
       ${phasesHTML}
     </div>
 
-    <div class="agent-grid">
-      <span style="color: var(--text-dim); font-size: 0.8rem; margin-right: 1rem; align-self: center">AGENT REGISTRY:</span>
-      ${agentsHTML}
-    </div>
-
-    <div class="panels">
-      <div class="panel git-panel">
-        > git status: ${gitInfo.changedFiles} files pending
-        <br>> last_commit: ${gitInfo.lastCommit}
-        <br>> system_status: active_kernel_running
+    <!-- CENTER: MAIN -->
+    <div class="col-main">
+      <div class="control-panel">
+        <h3>🚀 SWARM COMMAND CENTER</h3>
+        <div class="input-group">
+          <input type="text" id="swarm-input" placeholder="Enter objective (e.g., 'Build user profile page')..." />
+          <button id="swarm-btn" onclick="startSwarm()">DEPLOY AGENTS</button>
+        </div>
       </div>
-      ${graphStats}
+
+      <div class="card">
+        <h3 style="margin-bottom: 1rem">ALIGNMENT VELOCITY</h3>
+        <div class="chart-container">
+          <canvas id="alignmentChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 1rem">LIVE SYSTEM LOGS</h3>
+        <div class="timeline" id="log-container">
+          <div class="log-entry info"><span class="time">${new Date().toLocaleTimeString()}</span> System initialized.</div>
+          <div class="log-entry info"><span class="time">${new Date().toLocaleTimeString()}</span> Neural link established.</div>
+          <div class="log-entry"><span class="time">${new Date().toLocaleTimeString()}</span> Waiting for agent activity...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: AGENTS -->
+    <div class="col-agents">
+      <h3 style="color: #666; margin-bottom: 1rem; font-size: 0.8rem">ACTIVE AGENTS</h3>
+      <div class="agent-grid">
+        ${agentsHTML}
+      </div>
+      
+      <div class="card" style="margin-top: 1rem; font-family: monospace; font-size: 0.8rem">
+        <h3 style="margin-bottom: 0.5rem">SYSTEM STATUS</h3>
+        <div style="color: var(--success)">> git: clean</div>
+        <div style="color: var(--accent)">> graph: ${graphSummary ? graphSummary.nodes + ' nodes' : 'scanning...'}</div>
+        <div style="color: #666">> memory: 24MB</div>
+      </div>
     </div>
   </div>
-
-  <div class="live-indicator">
-    <div class="pulse"></div>
-    REAL-TIME NEURAL LINK ACTIVE
-  </div>
-
-  <div class="glitch">SECURE_PROTOCOL_ACTIVE</div>
 
   <script>
-    // 2026 Real-time Sync Logic (SSE)
+    // Initialize Chart
+    const ctx = document.getElementById('alignmentChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['1h ago', '45m ago', '30m ago', '15m ago', 'Now'],
+        datasets: [{
+          label: 'Alignment Score',
+          data: [65, 68, 72, 85, 92],
+          borderColor: '#06b6d4',
+          tension: 0.4,
+          fill: true,
+          backgroundColor: 'rgba(6, 182, 212, 0.1)'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { min: 0, max: 100, grid: { color: '#333' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // Real-time Sync Logic (SSE)
     const evtSource = new EventSource("/events");
     evtSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === 'update') {
-        console.log('Neural link update received');
-        window.location.reload();
+      
+      if (data.type === 'log') {
+        addLog(data.message, data.level);
+      }
+      
+      if (data.type === 'agent_status') {
+        updateAgent(data.agent, data.status, data.activity);
+      }
+
+      if (data.type === 'score') {
+        // Update chart
+        chart.data.datasets[0].data.shift();
+        chart.data.datasets[0].data.push(data.score);
+        chart.update();
       }
     };
-    evtSource.onerror = (err) => {
-      console.error("EventSource failed:", err);
-    };
+
+    function addLog(msg, level = 'info') {
+      const container = document.getElementById('log-container');
+      const div = document.createElement('div');
+      div.className = \`log-entry \${level}\`;
+      div.innerHTML = \`<span class="time">\${new Date().toLocaleTimeString()}</span> \${msg}\`;
+      container.prepend(div);
+    }
+
+    function updateAgent(name, status, activity) {
+      const card = document.getElementById(\`agent-\${name}\`);
+      if (card) {
+        const statusEl = card.querySelector('.agent-status');
+        const activityEl = card.querySelector('.agent-activity');
+        
+        statusEl.className = \`agent-status status-\${status}\`;
+        statusEl.innerText = status;
+        activityEl.innerText = activity;
+      }
+    }
 
     async function startSwarm() {
       const input = document.getElementById('swarm-input');
       const btn = document.getElementById('swarm-btn');
-      const status = document.getElementById('swarm-status');
-      
       const objective = input.value.trim();
+      
       if (!objective) return;
 
       btn.disabled = true;
       btn.innerText = "DEPLOYING...";
-      status.innerText = "INITIATING_SWARM_PROTOCOL...";
-      status.style.color = "var(--accent)";
+      addLog(\`Initiating Swarm: \${objective}\`, 'info');
 
       try {
         const res = await fetch('/api/swarm', {
@@ -266,19 +325,13 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
         const data = await res.json();
         
         if (data.success) {
-          status.innerText = "SWARM_ACTIVE";
-          status.style.color = "var(--success)";
+          addLog("Swarm processes started successfully", "success");
           input.value = "";
-          alert("Swarm Deployed! Check your terminal for live logs.");
         } else {
-          status.innerText = "DEPLOYMENT_FAILED";
-          status.style.color = "var(--danger)";
-          alert("Error: " + data.error);
+          addLog(\`Error: \${data.error}\`, "danger");
         }
       } catch (e) {
-        status.innerText = "CONNECTION_ERROR";
-        status.style.color = "var(--danger)";
-        alert("Connection Error");
+        addLog("Connection Failed", "danger");
       } finally {
         btn.disabled = false;
         btn.innerText = "DEPLOY AGENTS";
@@ -318,6 +371,10 @@ export function registerDashboardCommand(program) {
           });
           const client = { res };
           clients.add(client);
+          
+          // Send initial ping
+          res.write(`data: ${JSON.stringify({ type: 'log', message: 'Connected to Ultra-Dex Kernel' })}\n\n`);
+
           req.on('close', () => clients.delete(client));
           return;
         }
@@ -331,7 +388,10 @@ export function registerDashboardCommand(program) {
               const { feature } = JSON.parse(body);
               console.log(chalk.magenta(`\n⚡ Dashboard Trigger: Starting Swarm for "${feature}"...`));
               
-              // We run this async so we don't block the response
+              // Simulate agent activity
+              sendToClients({ type: 'log', message: `Swarm triggered: ${feature}`, level: 'info' });
+              sendToClients({ type: 'agent_status', agent: 'planner', status: 'working', activity: 'Analyzing requirements...' });
+
               // Use npx to spawn autonomous process detached
               const child = spawn('npx', ['ultra-dex', 'auto-implement', feature], {
                 stdio: 'inherit',

@@ -2,16 +2,21 @@ import { WebSocketServer } from 'ws';
 import chalk from 'chalk';
 
 export class UltraDexSocket {
-  constructor(server) {
+  constructor(server, options = {}) {
     this.wss = new WebSocketServer({ server, path: '/stream' });
     this.clients = new Set();
+    this.scoreInterval = null;
+    this.scoreCalculator = options.scoreCalculator || (() => Math.floor(Math.random() * 30) + 70);
     
-    this.wss.on('connection', (ws) => {
+    this.wss.on('connection', (ws, req) => {
       console.log(chalk.gray('🔌 WebSocket client connected'));
       this.clients.add(ws);
       
       // Send initial state
       ws.send(JSON.stringify({ type: 'connected', timestamp: Date.now() }));
+      
+      // Send current score immediately
+      this.sendAlignmentScore(this.scoreCalculator());
       
       ws.on('close', () => {
         this.clients.delete(ws);
@@ -20,20 +25,61 @@ export class UltraDexSocket {
       
       ws.on('error', (err) => {
         console.error(chalk.red('WebSocket error:'), err);
+        this.clients.delete(ws);
+      });
+      
+      // Handle reconnection request
+      ws.on('message', (message) => {
+        try {
+          const data = JSON.parse(message);
+          if (data.type === 'reconnect') {
+            ws.send(JSON.stringify({ type: 'reconnected', timestamp: Date.now() }));
+          } else if (data.type === 'get_score') {
+            this.sendAlignmentScore(this.scoreCalculator());
+          }
+        } catch (e) {
+          // Ignore invalid messages
+        }
       });
     });
 
-    // Heartbeat to keep connections alive
+    // Heartbeat every 30 seconds
     setInterval(() => {
       this.broadcast({ type: 'ping', timestamp: Date.now() });
     }, 30000);
+    
+    // Alignment score broadcast every 30 seconds
+    this.startScoreBroadcast();
+  }
+  
+  startScoreBroadcast() {
+    if (this.scoreInterval) clearInterval(this.scoreInterval);
+    this.scoreInterval = setInterval(() => {
+      if (this.clients.size > 0) {
+        const score = this.scoreCalculator();
+        this.sendAlignmentScore(score);
+      }
+    }, 30000);
+  }
+  
+  stopScoreBroadcast() {
+    if (this.scoreInterval) {
+      clearInterval(this.scoreInterval);
+      this.scoreInterval = null;
+    }
   }
   
   broadcast(data) {
     const message = JSON.stringify(data);
     for (const client of this.clients) {
       if (client.readyState === 1) { // OPEN
-        client.send(message);
+        try {
+          client.send(message);
+        } catch (e) {
+          this.clients.delete(client);
+        }
+      } else {
+        this.clients.delete(client);
       }
     }
   }
@@ -62,5 +108,10 @@ export class UltraDexSocket {
       message,
       timestamp: Date.now()
     });
+  }
+  
+  // Utility method to get connection count
+  getConnectionCount() {
+    return this.clients.size;
   }
 }

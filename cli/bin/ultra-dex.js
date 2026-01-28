@@ -78,13 +78,16 @@ program
 program
   .command('export')
   .description('Export project context')
-  .option('--format <type>', 'Output format: json, html, md', 'json')
+  .option('--format <type>', 'Output format: json, html, markdown, pdf', 'json')
+  .option('--output <path>', 'Output file path')
+  .option('--include-agents', 'Bundle all agent prompts')
   .action(exportCommand);
 
 program
   .command('upgrade')
   .description('Check for CLI updates')
-  .option('--check', 'Just check, no install')
+  .option('--check', 'Check only, do not show install instructions')
+  .option('--install', 'Automatically install latest version')
   .action(upgradeCommand);
 
 program

@@ -6,6 +6,8 @@ import { readFile, writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { glob } from 'glob';
+import { projectGraph } from '../mcp/graph.js';
+import { updateState, loadState, saveState } from './state.js';
 
 const AGENT_PIPELINE = [
   { name: 'planner', description: 'Break down task into steps', tier: '1-planning' },
@@ -81,7 +83,7 @@ export async function swarmCommand(task, options) {
     return;
   }
 
-  // Load context
+  // Load context & Graph (God Mode)
   const contextPath = join(process.cwd(), 'CONTEXT.md');
   const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
   
@@ -93,6 +95,16 @@ export async function swarmCommand(task, options) {
     context += '\n\n' + await readFile(planPath, 'utf-8');
   }
 
+  // Inject Code Graph into Context
+  const spinnerGraph = ora('🧠 Scanning Codebase Graph...').start();
+  try {
+    const graphSummary = await projectGraph.scan();
+    context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n- Files Analyzed: ${graphSummary.files.join(', ')}\n`;
+    spinnerGraph.succeed('Codebase Graph integrated into context.');
+  } catch (e) {
+    spinnerGraph.warn('Codebase Graph scan failed, proceeding with limited context.');
+  }
+
   // Get AI provider
   const provider = getProvider();
   if (!provider) {
@@ -102,6 +114,12 @@ export async function swarmCommand(task, options) {
 
   // Ensure log directory exists
   const logDir = await ensureLogDirectory();
+
+  // Update State to indicate Swarm is running
+  const state = await loadState() || { project: { mode: 'GOD_MODE' }, agents: { active: [] } };
+  state.agents = state.agents || { active: [] };
+  state.updatedAt = new Date().toISOString();
+  await saveState(state);
 
   // Run pipeline
   let previousOutput = '';
@@ -131,16 +149,39 @@ export async function swarmCommand(task, options) {
       const promises = tier.agents.map(async (agent) => {
         const agentStart = Date.now();
         const spinner = ora(`Running @${agent.name}...`).start();
+        
+        // Update state with active agent
+        const currentState = await loadState();
+        if (currentState) {
+          currentState.agents.active.push(agent.name);
+          await saveState(currentState);
+        }
+
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
           const duration = Date.now() - agentStart;
           agentTimings[agent.name] = duration;
           spinner.succeed(chalk.green(` @${agent.name} complete`) + chalk.gray(` (${duration}ms)`));
+          
+          // Remove active agent from state
+          const stateDone = await loadState();
+          if (stateDone) {
+            stateDone.agents.active = stateDone.agents.active.filter(a => a !== agent.name);
+            await saveState(stateDone);
+          }
+
           return { agent: agent.name, result, success: true };
         } catch (error) {
           const duration = Date.now() - agentStart;
           agentTimings[agent.name] = duration;
           spinner.fail(chalk.red(` @${agent.name} failed: ${error.message}`) + chalk.gray(` (${duration}ms)`));
+          
+          const stateFail = await loadState();
+          if (stateFail) {
+            stateFail.agents.active = stateFail.agents.active.filter(a => a !== agent.name);
+            await saveState(stateFail);
+          }
+
           return { agent: agent.name, error: error.message, success: false };
         }
       });
@@ -155,6 +196,14 @@ export async function swarmCommand(task, options) {
       for (const agent of tier.agents) {
         const agentStart = Date.now();
         const spinner = ora(`Running @${agent.name}...`).start();
+
+        // Update state
+        const currentState = await loadState();
+        if (currentState) {
+          currentState.agents.active.push(agent.name);
+          await saveState(currentState);
+        }
+
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
           const duration = Date.now() - agentStart;
@@ -163,11 +212,25 @@ export async function swarmCommand(task, options) {
           spinner.succeed(chalk.green(` @${agent.name} complete`) + chalk.gray(` (${duration}ms)`));
           console.log(chalk.gray(`  → ${result.slice(0, 100).replace(/\n/g, ' ')}...`));
           agentResults.push({ agent: agent.name, result, success: true });
+
+          // Remove active agent
+          const stateDone = await loadState();
+          if (stateDone) {
+            stateDone.agents.active = stateDone.agents.active.filter(a => a !== agent.name);
+            await saveState(stateDone);
+          }
+
         } catch (error) {
           const duration = Date.now() - agentStart;
           agentTimings[agent.name] = duration;
           spinner.fail(chalk.red(` @${agent.name} failed: ${error.message}`) + chalk.gray(` (${duration}ms)`));
           agentResults.push({ agent: agent.name, error: error.message, success: false });
+          
+          const stateFail = await loadState();
+          if (stateFail) {
+            stateFail.agents.active = stateFail.agents.active.filter(a => a !== agent.name);
+            await saveState(stateFail);
+          }
           break;
         }
       }
@@ -177,6 +240,9 @@ export async function swarmCommand(task, options) {
   const totalDuration = Date.now() - startTime;
   const successCount = agentResults.filter(r => r.success).length;
   const failCount = agentResults.filter(r => !r.success).length;
+
+  // Final state update
+  await updateState();
 
   // Write log
   const stats = {

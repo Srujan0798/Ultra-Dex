@@ -2,7 +2,7 @@
 # Ultra-Dex Pre-Commit Hook v3.0
 # Validates project alignment and structure before allowing commits
 # Install with: npx ultra-dex hooks install
-# Remove with: npx ultra-dex hooks --remove
+# Remove with: npx ultra-dex hooks remove
 
 set -e
 

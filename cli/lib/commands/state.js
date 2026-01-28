@@ -235,6 +235,7 @@ export function registerPreCommitCommand(program) {
     .description('Pre-commit hook - verify before commit')
     .option('--install', 'Install git pre-commit hook')
     .option('--scan', 'Include deep code quality scan in hook')
+    .option('--ai', 'Run AI-powered quality review on staged changes')
     .option('-d, --dir <directory>', 'Project directory', '.')
     .action(async (options) => {
       const dirValidation = validateSafePath(options.dir, 'Project directory');
@@ -248,9 +249,10 @@ export function registerPreCommitCommand(program) {
       if (options.install) {
         const hookPath = path.resolve(rootDir, '.git/hooks/pre-commit');
         const scanCmd = options.scan ? '\nnpx ultra-dex validate --scan' : '';
+        const aiCmd = options.ai ? '\nnpx ultra-dex pre-commit --ai' : '';
         const hookScript = `#!/bin/sh
 # Ultra-Dex pre-commit hook
-npx ultra-dex align --strict${scanCmd}
+npx ultra-dex align --strict${scanCmd}${aiCmd}
 if [ $? -ne 0 ]; then
   echo "❌ Ultra-Dex quality gate failed."
   echo "   Run 'ultra-dex review' or 'ultra-dex validate --scan' for details."
@@ -261,26 +263,56 @@ fi
           await fs.mkdir(path.dirname(hookPath), { recursive: true });
           await fs.writeFile(hookPath, hookScript, { mode: 0o755 });
           console.log(chalk.green('✅ Pre-commit hook installed!'));
-          console.log(chalk.gray('   Commits will be blocked if alignment score < 70.'));
+          console.log(chalk.gray('   Commits will be blocked if alignment score < 70 or AI review fails.'));
         } catch (e) {
           console.log(chalk.red('❌ Failed to install hook: ' + e.message));
         }
         return;
       }
       
-      const state = await computeState();
+      const state = await loadState();
       
-      if (state.project?.mode === 'GOD_MODE') {
+      // AI Quality Gate (God Mode)
+      if (options.ai) {
+          const spinner = (await import('ora')).default('🤖 AI Quality Gate: Reviewing staged changes...').start();
+          try {
+              const { execSync } = await import('child_process');
+              // Get staged changes
+              const staged = execSync('git diff --cached --name-only', { encoding: 'utf8' }).split('\n').filter(Boolean);
+              if (staged.length === 0) {
+                  spinner.succeed('No staged changes to review.');
+                  return;
+              }
+
+              const { createProvider, getDefaultProvider } = await import('../providers/index.js');
+              const { runAgentLoop } = await import('./run.js');
+              
+              const provider = createProvider(getDefaultProvider());
+              const reviewResult = await runAgentLoop('reviewer', `Review these staged files for architectural violations (e.g. missing validation, security risks):\n${staged.join('\n')}`, provider, { state });
+
+              if (reviewResult.toLowerCase().includes('reject') || reviewResult.toLowerCase().includes('blocking violation')) {
+                  spinner.fail('AI Quality Gate: REJECTED');
+                  console.log(chalk.red('\nviolations found:'));
+                  console.log(reviewResult);
+                  process.exit(1);
+              }
+              spinner.succeed('AI Quality Gate: PASSED');
+          } catch (e) {
+              spinner.warn('AI Quality Gate skipped: ' + e.message);
+          }
+      }
+
+      if (state && state.project?.mode === 'GOD_MODE') {
           console.log(chalk.green(`✅ Alignment OK: GOD MODE ACTIVE`));
           return;
       }
 
-      if (state.score < 70) {
+      if (state && state.score < 70) {
         console.log(chalk.red(`❌ BLOCKED: Alignment score ${state.score}/100 (required: 70)`));
         console.log(chalk.yellow('   Run `ultra-dex review` for detailed analysis.'));
         process.exit(1);
       } else {
-        console.log(chalk.green(`✅ Alignment OK: ${state.score}/100`));
+        console.log(chalk.green(`✅ Alignment OK: ${state ? state.score : 'N/A'}/100`));
       }
     });
 }

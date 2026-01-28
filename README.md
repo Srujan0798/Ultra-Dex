@@ -15,26 +15,27 @@
 
 ---
 
-## 🚀 NEW: AI-Powered CLI (v2.4)
+## 🚀 NEW: Ultra-Dex v3.0 (God Mode)
+
+**The Meta-Orchestration Layer for AI Development**
+
+Ultra-Dex v3.0 introduces a fully autonomous "Active Kernel" that coordinates multiple AI agents, manages project state in real-time, and integrates directly with your editor via MCP.
 
 ```bash
-# Generate a complete 34-section plan with AI
-npx ultra-dex generate "A booking platform for pet groomers"
+# Run autonomous agent swarms with parallel execution
+npx ultra-dex swarm "Build user authentication" --parallel
 
-# Build with 10 specialized AI agents
-npx ultra-dex build --agent backend
-
-# Run autonomous agent swarms
-npx ultra-dex swarm "Build user authentication"
-
-# Start MCP server for Claude/Cursor integration
+# Start the Active Kernel (MCP + WebSocket)
 npx ultra-dex serve
 
-# Local web dashboard
-npx ultra-dex dashboard
+# Generate editor configuration
+npx ultra-dex config --cursor --vscode
+
+# Auto-update state on file changes
+npx ultra-dex watch --interval 1000
 ```
 
-**28+ commands. Autonomous agents. MCP integration. The future of AI development.**
+**35+ commands. Autonomous agents. MCP integration. The future of AI development.**
 
 Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
@@ -172,8 +173,8 @@ npx ultra-dex init --live --stack next15-prisma-clerk  # Runnable scaffold
 # 🤖 AI-Assisted Development
 npx ultra-dex build             # Auto-load context, select agent, get prompt
 npx ultra-dex build --agent backend --task "Add user API"
-npx ultra-dex run planner --task "Build payments"  # Execute single agent
-npx ultra-dex swarm "Add authentication"           # Full agent pipeline
+npx ultra-dex swarm "Add authentication" --parallel  # Full agent pipeline
+npx ultra-dex auto-implement "Feature X" # Autonomous implementation
 
 # 📊 State & Monitoring
 npx ultra-dex status            # Current project state
@@ -189,8 +190,9 @@ npx ultra-dex audit             # Check project completeness
 npx ultra-dex validate          # Validate project structure
 
 # 🔌 MCP & Integration
-npx ultra-dex serve             # MCP server (port 3001) for Claude/Cursor
+npx ultra-dex serve             # Active Kernel (MCP + WebSocket)
 npx ultra-dex config --mcp      # Generate Claude Desktop MCP config
+npx ultra-dex config --cursor   # Generate Cursor rules
 npx ultra-dex doctor            # Diagnose setup issues
 
 # 👥 Team Collaboration
@@ -284,6 +286,8 @@ Ultra-Dex/
 ├── README.md                      ← You are here
 ├── docs/                          ← Documentation & guides
 │   ├── ROADMAP.md, VISION-V2.md   (Strategy)
+│   ├── MCP-INTEGRATION.md         (Claude/Cursor Setup)
+│   ├── CICD-GUIDE.md              (GitHub Actions)
 │   ├── QUICK-REFERENCE.md         (Cheatsheet)
 │   └── TROUBLESHOOTING.md         (Common issues)
 ├── agents/                        ← 16 AI agents (tier-based)
