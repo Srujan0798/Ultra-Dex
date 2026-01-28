@@ -5,10 +5,8 @@
 
 import chalk from 'chalk';
 import ora from 'ora';
-import fs from 'fs/promises';
-import path from 'path';
-import { loadState, updateState } from './state.js';
-import { buildGraph, getImpactAnalysis } from '../utils/graph.js';
+import { updateState } from './state.js';
+import { buildGraph } from '../utils/graph.js';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';
 
@@ -50,7 +48,7 @@ export function registerAutoImplementCommand(program) {
 
         // 3. Execution Phase (@Backend/@Frontend)
         spinner.text = 'Agents are implementing code...';
-        const executionResult = await runAgentLoop('orchestrator', `Coordinate the implementation of this plan:\n${plan}`, provider, projectContext);
+        await runAgentLoop('orchestrator', `Coordinate the implementation of this plan:\n${plan}`, provider, projectContext);
 
         // 4. Verification Phase (@Testing)
         spinner.text = '@Testing is verifying changes...';

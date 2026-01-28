@@ -10,14 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.4.0] - 2026-01-27
 
 ### Added
+- **🐝 `ultra-dex swarm`** - Autonomous agent pipeline
+- **👁️ `ultra-dex watch`** - Auto-update on file changes
+- **📊 `ultra-dex diff`** - Plan vs code comparison
+- **📦 `ultra-dex export`** - Export to JSON/HTML/Markdown
+- **⬆️ `ultra-dex upgrade`** - Check for updates
+- **⚙️ `ultra-dex config --mcp`** - Generate Claude Desktop config
 - **📊 `ultra-dex dashboard` Command** - Local web dashboard
   - Real-time project status visualization
   - Shows alignment score, agents, state, and metrics
   - Auto-refresh with configurable interval
   - Accessible at http://localhost:3002
 
-- **🔀 `ultra-dex diff` Command** - Compare plan vs code
-  - Analyzes implementation plan vs actual codebase
+### Changed
+- Total CLI commands: 28+
+- Version bump to 2.4.0
   - Detects missing/found features
   - Shows completion percentage
   - Exit codes for CI/CD integration

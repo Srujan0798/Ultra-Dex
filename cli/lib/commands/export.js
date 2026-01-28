@@ -1,61 +1,62 @@
-/**
- * ultra-dex export command
- * Packages project context and plans for distribution
- */
-
+// cli/lib/commands/export.js
 import chalk from 'chalk';
-import fs from 'fs/promises';
-import path from 'path';
-import { loadState } from './state.js';
-import { buildGraph } from '../utils/graph.js';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
-export function registerExportCommand(program) {
-  program
-    .command('export')
-    .description('Export project context and implementation plans')
-    .option('-o, --output <file>', 'Output zip/json file', 'ultra-dex-export.json')
-    .option('--full', 'Include full Code Property Graph', false)
-    .action(async (options) => {
-      console.log(chalk.cyan('\n📦 Exporting Ultra-Dex Project\n'));
+export function exportCommand(options) {
+  const format = options.format || 'json';
+  console.log(chalk.cyan.bold(`\n📦 Exporting as ${format.toUpperCase()}\n`));
 
-      const spinner = (await import('ora')).default('Gathering project data...').start();
-      try {
-        const state = await loadState();
-        const exportData = {
-          projectName: state?.project?.name || path.basename(process.cwd()),
-          exportedAt: new Date().toISOString(),
-          files: {}
-        };
+  const context = loadContext();
+  
+  const outputFile = `ultra-dex-export.${format}`;
+  
+  if (format === 'json') {
+    writeFileSync(outputFile, JSON.stringify(context, null, 2));
+  } else if (format === 'html') {
+    writeFileSync(outputFile, generateHTML(context));
+  } else {
+    writeFileSync(outputFile, generateMarkdown(context));
+  }
+  
+  console.log(chalk.green(`✅ Exported to ${outputFile}`));
+}
 
-        // Key files to include
-        const filesToExport = [
-          'IMPLEMENTATION-PLAN.md',
-          'CONTEXT.md',
-          'QUICK-START.md',
-          'docs/CHECKLIST.md'
-        ];
+function loadContext() {
+  const files = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'QUICK-START.md'];
+  const context = {};
+  
+  files.forEach(file => {
+    const path = join(process.cwd(), file);
+    if (existsSync(path)) {
+      context[file] = readFileSync(path, 'utf-8');
+    }
+  });
+  
+  return context;
+}
 
-        for (const file of filesToExport) {
-          try {
-            const content = await fs.readFile(path.resolve(process.cwd(), file), 'utf8');
-            exportData.files[file] = content;
-          } catch (e) {
-            // skip
-          }
-        }
+function generateHTML(context) {
+  return `<!DOCTYPE html>
+<html><head><title>Ultra-Dex Export</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 900px; margin: 0 auto; background: #f4f4f9; }
+  pre { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 5px; overflow-x: auto; }
+  h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+  h2 { color: #2980b9; margin-top: 30px; }
+</style>
+</head>
+<body>
+<h1>Ultra-Dex Project Export</h1>
+${Object.entries(context).map(([file, content]) => `
+  <h2>${file}</h2>
+  <pre>${content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+`).join('')}
+</body></html>`;
+}
 
-        if (options.full) {
-          exportData.graph = await buildGraph();
-        }
-
-        await fs.writeFile(options.output, JSON.stringify(exportData, null, 2));
-        spinner.succeed(chalk.green(`Project exported to ${options.output}`));
-        
-        console.log(chalk.gray(`\n  Included ${Object.keys(exportData.files).length} files`));
-        if (exportData.graph) console.log(chalk.gray(`  Included CPG (${exportData.graph.nodes.length} nodes)`));
-
-      } catch (e) {
-        spinner.fail(chalk.red(`Export failed: ${e.message}`));
-      }
-    });
+function generateMarkdown(context) {
+  return Object.entries(context).map(([file, content]) => 
+    `# ${file}\n\n${content}`
+  ).join('\n\n---\n\n');
 }

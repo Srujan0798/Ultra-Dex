@@ -69,7 +69,7 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
         arguments: [agent],
       };
       item.contextValue = 'agent';
-      item.iconPath = getTierIcon(this.workspaceRoot, tierKey);
+      item.iconPath = this.workspaceRoot ? getTierIcon(this.workspaceRoot, tierKey) : undefined;
       return item;
     });
   }
@@ -106,7 +106,7 @@ export async function loadAgentIndex(workspaceRoot?: string): Promise<AgentItem[
   }).filter((agent) => agent.name && agent.filePath);
 }
 
-function getTierIcon(workspaceRoot: string, tierKey: string): { light: string; dark: string } {
+function getTierIcon(workspaceRoot: string, tierKey: string): { light: vscode.Uri; dark: vscode.Uri } {
   const iconPath = path.join(workspaceRoot, 'vscode-extension', 'resources', 'icons', `${tierKey}.svg`);
-  return { light: iconPath, dark: iconPath };
+  return { light: vscode.Uri.file(iconPath), dark: vscode.Uri.file(iconPath) };
 }
