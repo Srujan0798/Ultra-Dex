@@ -1,0 +1,138 @@
+# Streaming SSR (Next.js 15)
+
+> Stream UI to the client progressively. Show content as it loads.
+
+## Suspense Boundaries
+
+```tsx
+// app/dashboard/page.tsx
+import { Suspense } from 'react';
+import { UserProfile } from './user-profile';
+import { Analytics } from './analytics';
+import { RecentActivity } from './recent-activity';
+
+export default function DashboardPage() {
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {/* Loads first - critical content */}
+      <Suspense fallback={<ProfileSkeleton />}>
+        <UserProfile />
+      </Suspense>
+
+      {/* Loads second - important but slower */}
+      <Suspense fallback={<AnalyticsSkeleton />}>
+        <Analytics />
+      </Suspense>
+
+      {/* Loads last - can wait */}
+      <Suspense fallback={<ActivitySkeleton />}>
+        <RecentActivity />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+## Loading States
+
+```tsx
+// app/dashboard/loading.tsx
+export default function Loading() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/4 mb-4" />
+      <div className="h-64 bg-gray-200 rounded" />
+    </div>
+  );
+}
+```
+
+## Streaming with Data
+
+```tsx
+// Server Component that fetches data
+async function SlowDataComponent() {
+  // This will stream when ready
+  const data = await fetch('https://api.example.com/slow-endpoint', {
+    next: { revalidate: 60 },
+  });
+
+  return <DataDisplay data={data} />;
+}
+
+// Usage with Suspense
+export default function Page() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <SlowDataComponent />
+    </Suspense>
+  );
+}
+```
+
+## Parallel Data Fetching
+
+```tsx
+// Fetch in parallel, stream as each resolves
+export default async function Page() {
+  // Start all fetches immediately
+  const userPromise = getUser();
+  const postsPromise = getPosts();
+  const analyticsPromise = getAnalytics();
+
+  return (
+    <div>
+      <Suspense fallback={<UserSkeleton />}>
+        <UserSection promise={userPromise} />
+      </Suspense>
+
+      <Suspense fallback={<PostsSkeleton />}>
+        <PostsSection promise={postsPromise} />
+      </Suspense>
+
+      <Suspense fallback={<AnalyticsSkeleton />}>
+        <AnalyticsSection promise={analyticsPromise} />
+      </Suspense>
+    </div>
+  );
+}
+
+// Component that awaits the promise
+async function UserSection({ promise }: { promise: Promise<User> }) {
+  const user = await promise;
+  return <div>{user.name}</div>;
+}
+```
+
+## Error Boundaries
+
+```tsx
+// app/dashboard/error.tsx
+'use client';
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () => void;
+}) {
+  return (
+    <div className="p-4 bg-red-50 rounded">
+      <h2>Something went wrong!</h2>
+      <p>{error.message}</p>
+      <button onClick={reset}>Try again</button>
+    </div>
+  );
+}
+```
+
+## Rules
+
+- Wrap slow components in Suspense
+- Show meaningful loading states (skeletons > spinners)
+- Place Suspense boundaries at logical UI sections
+- Use error.tsx for error boundaries
+- Start data fetches as early as possible
+- Don't nest too many Suspense boundaries (causes waterfall)
+- Consider using loading.tsx for route-level loading

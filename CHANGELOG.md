@@ -7,24 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [3.2.0] - 2026-01-29
+## [3.2.0] - 2026-01-30
 
 ### Added
+- **🏗️ Scaffold Command** - `ultra-dex scaffold <template>` generates production boilerplate
+  - Templates: next15-prisma-clerk, remix-supabase, sveltekit-drizzle
+  - Generates actual .tsx, .ts, .prisma files (not just markdown)
+- **📝 Production Code Patterns** - Ready-to-use 2026 patterns in `cli/lib/templates/code/`
+  - `server-actions.ts` - Next.js 15 Server Actions with useActionState
+  - `prisma-schema.prisma` - Full multi-tenant schema with RLS support
+  - `clerk-middleware.ts` - Complete Clerk auth middleware
+  - `trpc-router.ts` - Type-safe tRPC router example
+  - `rls-policies.sql` - PostgreSQL Row-Level Security policies
+- **🎯 4 New Cursor Rules** (14-17) for 2026 patterns:
+  - `14-server-components.mdc` - Server vs Client component decisions
+  - `15-server-actions.mdc` - Form handling with Server Actions
+  - `16-edge-middleware.mdc` - Auth, rate limiting, geolocation
+  - `17-streaming-ssr.mdc` - Suspense and streaming patterns
+- **📖 Philosophy Section** - "Your Skeleton, Not Your Cage" added to README
+- **📚 HOW-TO-USE Guide** - `docs/02-HOW-TO-USE.md` with phased approach
 - **🎨 Professional Purple Theme** - Clean indigo-to-pink gradient interface
-  - Modern UI components with boxen, gradient-string, cli-table3
-  - Consistent styling across all commands
-  - `--doomsday` flag for Matrix-green terminal mode
-- **🔧 Enhanced Doctor Command** - Improved system diagnostics
-  - MCP port availability check
-  - Configuration source detection
-  - AI provider environment scan
+- **🔧 Enhanced Doctor Command** - MCP port, config source, AI provider scan
 - **📊 Extended Dashboard** - Real-time agent status and timeline
 - **🧠 Memory Command** - Persistent agent memory management
 - **👥 Team Command** - Team collaboration workflows
 
 ### Changed
-- CLI now has 37+ commands
-- Updated dependencies for modern Node.js 18+ compatibility
+- CLI now has **38+ commands** (added scaffold)
+- Cursor rules increased to **17 modules** (added 14-17)
+- Updated README badges to reflect new counts
 - Improved error messages and user feedback
 
 ---

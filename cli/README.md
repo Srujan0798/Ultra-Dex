@@ -43,6 +43,24 @@ npm install -g ultra-dex
 ultra-dex generate "Your idea"
 ```
 
+## Scaffold Command (NEW)
+
+Generate production-ready boilerplate instantly:
+
+```bash
+# List available templates
+npx ultra-dex scaffold --list
+
+# Generate Next.js 15 + Prisma + Clerk project
+npx ultra-dex scaffold next15-prisma-clerk
+
+# Generate Remix + Supabase project
+npx ultra-dex scaffold remix-supabase
+
+# Generate SvelteKit + Drizzle project
+npx ultra-dex scaffold sveltekit-drizzle
+```
+
 ## AI Commands (God Mode)
 
 ### `swarm` - Autonomous Agent Pipeline
@@ -141,11 +159,12 @@ GOOGLE_AI_KEY=...             # Gemini
 ULTRA_DEX_DEFAULT_PROVIDER=claude # Default AI provider
 ```
 
-## All Commands (37)
+## All Commands (38+)
 
 | Command | Description |
 |---------|-------------|
 | `init` | Initialize a new project |
+| `scaffold` | **NEW** Generate production boilerplate |
 | `generate` | Generate full SaaS plan from idea |
 | `swarm` | Run autonomous agent pipeline |
 | `auto-implement` | Autonomously implement a feature |
