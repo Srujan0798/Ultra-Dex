@@ -5,7 +5,7 @@ import path from 'path';
 
 const CLI = `node ${path.resolve(process.cwd(), 'bin/ultra-dex.js')}`;
 
-test('v2.4 Command Smoke Tests', async (t) => {
+test('v3.0 Command Smoke Tests', async (t) => {
   
   await t.test('agents command lists agents', () => {
     const output = execSync(`${CLI} agents`).toString();

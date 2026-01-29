@@ -15,7 +15,7 @@
 
 ---
 
-## 🚀 NEW: Ultra-Dex v3.0 (God Mode)
+## 🚀 NEW: AI-Powered CLI (v3.0)
 
 **The Meta-Orchestration Layer for AI Development**
 
@@ -430,7 +430,7 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 16 Production-Ready Agents (v2.4.0)
+### 16 Production-Ready Agents (v3.0.0)
 
 Ultra-Dex includes 16 specialized agent prompts **organized into 7 tiers** for the production pipeline. Use the CLI to run agents automatically:
 
@@ -489,7 +489,7 @@ See [agents/AGENT-INSTRUCTIONS.md](./agents/AGENT-INSTRUCTIONS.md) for additiona
 
 ---
 
-## 🔌 MCP Server & Claude Desktop Integration (v2.4)
+## 🔌 MCP Server & Claude Desktop Integration (v3.0)
 
 Ultra-Dex includes a **Model Context Protocol (MCP) server** for seamless AI integration.
 
@@ -523,7 +523,7 @@ This creates the MCP configuration for Claude Desktop to connect directly to you
 
 ---
 
-## 📊 Dashboard & Monitoring (v2.4)
+## 📊 Dashboard & Monitoring (v3.0)
 
 ```bash
 # Start local web dashboard

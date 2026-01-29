@@ -1,7 +1,7 @@
-# Ultra-Dex v2.4 Launch Checklist
+# Ultra-Dex v3.0 Launch Checklist
 
 ## Pre-Flight
-- [ ] Version in `package.json` matches (v2.4.0)
+- [ ] Version in `package.json` matches (v3.0.0)
 - [ ] VS Code Extension packaged (`.vsix`)
 - [ ] CLI tests passed (`npm test`)
 - [ ] Documentation updated
@@ -16,7 +16,7 @@ Devs, we all know AI code gen is great but chaotic. It forgets context, hallucin
 I built **Ultra-Dex** to fix this. It's a "Memory Layer" and Orchestration Framework for AI.
 It treats AI models (Claude, GPT, Gemini) as interchangeable CPUs and gives them a shared file-system memory (`CONTEXT.md`).
 
-**New in v2.4:**
+**New in v3.0:**
 - **MCP Server:** Connect Claude Desktop directly to your project context.
 - **Agent Swarms:** `npx ultra-dex swarm "Build auth"` spins up 3 agents to plan, code, and review.
 - **VS Code Extension:** Sidebar to manage your AI workforce.
@@ -27,7 +27,7 @@ Repo: https://github.com/Srujan0798/Ultra-Dex
 ---
 
 ### Hacker News
-**Title:** Show HN: Ultra-Dex v2.4 – An OS for AI Agent Orchestration
+**Title:** Show HN: Ultra-Dex v3.0 – An OS for AI Agent Orchestration (God Mode)
 **Url:** https://github.com/Srujan0798/Ultra-Dex
 **Text:**
 We built a CLI and framework that standardizes how AI agents interact with codebases.

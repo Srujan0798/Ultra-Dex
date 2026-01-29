@@ -463,7 +463,7 @@ export function registerUpgradeCommand(program) {
         spinner.fail('Upgrade check failed');
         console.log(chalk.yellow('\n⚠️  Could not check for updates.'));
         console.log(chalk.gray('   You may not be connected to npm, or ultra-dex is not published yet.'));
-        console.log(chalk.gray(`   Current version: v2.4.0\n`));
+        console.log(chalk.gray(`   Current version: v3.0.0\n`));
       }
     });
 }

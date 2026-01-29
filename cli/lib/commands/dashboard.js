@@ -342,13 +342,20 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       </div>
     </div>
 
-    <!-- RIGHT: AGENTS -->
+    <!-- RIGHT: AGENTS & MEMORY -->
     <div class="col-agents">
       <h3 style="color: #666; margin-bottom: 1rem; font-size: 0.8rem">ACTIVE AGENTS</h3>
       <div class="agent-grid">
         ${agentsHTML}
       </div>
       
+      <div class="card" style="margin-top: 1rem">
+        <h3 style="margin-bottom: 1rem">🧠 MEMORY BANK</h3>
+        <div id="memory-bank" class="timeline" style="max-height: 200px">
+          <div class="log-entry">Waiting for neural data...</div>
+        </div>
+      </div>
+
       <div class="card" style="margin-top: 1rem; font-family: monospace; font-size: 0.8rem">
         <h3 style="margin-bottom: 0.5rem">SYSTEM STATUS</h3>
         <div style="color: var(--success)">> git: ${gitInfo.changedFiles > 0 ? gitInfo.changedFiles + ' changes' : 'clean'}</div>
@@ -362,7 +369,29 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
   <div class="toast" id="toast"></div>
 
   <script>
+    // Fetch initial memory
+    async function loadMemory() {
+      try {
+        const res = await fetch('/api/memory');
+        const memories = await res.json();
+        const container = document.getElementById('memory-bank');
+        if (memories.length === 0) {
+          container.innerHTML = '<div class="log-entry">Memory is empty.</div>';
+          return;
+        }
+        container.innerHTML = memories.map(m => '<div class="log-entry info">' +
+            '<span class="time">' + new Date(m.timestamp).toLocaleDateString() + '</span>' +
+            m.text +
+          '</div>').join('');
+      } catch (e) {
+        console.error('Failed to load memory');
+      }
+    }
+    loadMemory();
+
     // Initialize Chart
+
+
     const ctx = document.getElementById('alignmentChart').getContext('2d');
     const chart = new Chart(ctx, {
       type: 'line',
@@ -710,6 +739,20 @@ export function registerDashboardCommand(program) {
         if (req.url === '/api/actions') {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(actionHistory));
+          return;
+        }
+
+        // Handle API: Get memory bank
+        if (req.url === '/api/memory') {
+          try {
+            const { ultraMemory } = await import('../mcp/memory.js');
+            const items = await ultraMemory.getAll();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(items));
+          } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+          }
           return;
         }
 
