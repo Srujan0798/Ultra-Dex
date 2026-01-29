@@ -6,12 +6,35 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
-[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-13_Modules-green.svg)](./cursor-rules/)
+[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-17_Modules-green.svg)](./cursor-rules/)
 [![AI Agents](https://img.shields.io/badge/AI_Agents-17_Prompts-orange.svg)](./agents/)
+[![Commands](https://img.shields.io/badge/CLI_Commands-38+-blue.svg)](./cli/)
 
 > **From Idea to Full-Scale, Production-Ready Application**
 
 ![Ultra-Dex Demo](https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/assets/social/terminal-mockup.png)
+
+---
+
+## 🧠 Core Philosophy: "Your Skeleton, Not Your Cage"
+
+Ultra-Dex is a **meta-orchestration layer** - it doesn't write code for you, it makes your AI assistants dramatically smarter by giving them structure, memory, and architectural context.
+
+| Principle | What It Means |
+|-----------|---------------|
+| ✅ **AI-Agnostic** | Works with Claude, GPT, Gemini, Cursor, Copilot |
+| ✅ **Comprehensive by Design** | 34 sections prevent "forgot to plan X" syndrome |
+| ✅ **100% Flexible** | Add, remove, modify any section to fit your needs |
+| ✅ **Production-Grade** | Not for MVPs - for real, scalable applications |
+
+### Is Ultra-Dex Right for You?
+
+| ✅ YES if... | ❌ NO if... |
+|-------------|-------------|
+| Building production SaaS with AI assistants | Just testing an idea or weekend prototype |
+| Want structured AI orchestration | Prefer ad-hoc prompting |
+| Need architectural memory across sessions | Working on simple scripts |
+| Building with a team | Solo on a tiny project |
 
 ---
 
