@@ -1,0 +1,102 @@
+# Server Actions (Next.js 15)
+
+> Use Server Actions for mutations. They replace API routes for form submissions.
+
+## Basic Pattern
+
+```tsx
+// app/actions.ts
+'use server';
+
+import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
+
+const schema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+});
+
+export async function createUser(formData: FormData) {
+  const data = schema.parse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+  });
+
+  await db.user.create({ data });
+  revalidatePath('/users');
+}
+```
+
+## With useActionState (React 19)
+
+```tsx
+'use client';
+
+import { useActionState } from 'react';
+import { createUser } from './actions';
+
+type State = { error?: string; success?: boolean };
+
+export function Form() {
+  const [state, formAction, isPending] = useActionState<State, FormData>(
+    async (prevState, formData) => {
+      try {
+        await createUser(formData);
+        return { success: true };
+      } catch (e) {
+        return { error: e.message };
+      }
+    },
+    {}
+  );
+
+  return (
+    <form action={formAction}>
+      <input name="name" required />
+      <input name="email" type="email" required />
+      {state.error && <p className="error">{state.error}</p>}
+      <button disabled={isPending}>
+        {isPending ? 'Creating...' : 'Create'}
+      </button>
+    </form>
+  );
+}
+```
+
+## Validation Pattern
+
+```tsx
+'use server';
+
+type ActionResult<T = void> =
+  | { success: true; data: T }
+  | { success: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export async function action(formData: FormData): Promise<ActionResult<{ id: string }>> {
+  const validated = schema.safeParse(Object.fromEntries(formData));
+
+  if (!validated.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: validated.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const result = await db.create({ data: validated.data });
+    return { success: true, data: { id: result.id } };
+  } catch {
+    return { success: false, error: 'Database error' };
+  }
+}
+```
+
+## Rules
+
+- Always use 'use server' directive
+- Validate ALL inputs with Zod
+- Return structured results, not throw errors
+- Use revalidatePath/revalidateTag for cache invalidation
+- Keep actions in separate files for organization
+- Actions can only receive serializable arguments

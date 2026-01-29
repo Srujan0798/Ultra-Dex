@@ -74,6 +74,7 @@ import { registerFetchCommand } from '../lib/commands/fetch.js';
 import { registerSyncCommand } from '../lib/commands/sync.js';
 import { registerTeamCommand } from '../lib/commands/team.js';
 import { registerMemoryCommand } from '../lib/commands/memory.js';
+import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 
 const program = new Command();
 program.banner = banner;
@@ -161,5 +162,6 @@ registerSyncCommand(program);
 registerAgentBuilderCommand(program);
 registerTeamCommand(program);
 registerMemoryCommand(program);
+registerScaffoldCommand(program);
 
 program.parse();
