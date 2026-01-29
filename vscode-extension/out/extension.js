@@ -37,7 +37,6 @@ exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const agentTreeProvider_1 = require("./agentTreeProvider");
-const projectTreeProvider_1 = require("./projectTreeProvider");
 const commands_1 = require("./commands");
 const statusBar_1 = require("./statusBar");
 function activate(context) {
@@ -46,8 +45,6 @@ function activate(context) {
     const rootPath = workspaceFolder?.uri.fsPath;
     const agentsProvider = new agentTreeProvider_1.AgentTreeProvider(rootPath);
     vscode.window.registerTreeDataProvider('ultra-dex.agentExplorer', agentsProvider);
-    const projectProvider = new projectTreeProvider_1.ProjectTreeProvider();
-    vscode.window.registerTreeDataProvider('ultra-dex.projectRoadmap', projectProvider);
     (0, statusBar_1.createAlignmentStatusBar)(context);
     (0, commands_1.registerCommands)(context, rootPath);
     if (workspaceFolder) {

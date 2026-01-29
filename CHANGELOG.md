@@ -72,6 +72,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.3.0] - Unreleased
+
+### Added
+- Tests coverage and CLI test suite expansions.
+- Team CLI workflows for member management.
+- Agent Builder for custom agent prompts.
+- Landing page updates for v2.3.0 launch.
+
+---
+
 ## [2.3.0] - 2026-01-27
 
 ### Added

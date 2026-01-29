@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { AgentTreeProvider } from './agentTreeProvider';
-import { ProjectTreeProvider } from './projectTreeProvider';
 import { registerCommands, refreshAlignmentStatus } from './commands';
 import { createAlignmentStatusBar } from './statusBar';
 
@@ -12,9 +11,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     const agentsProvider = new AgentTreeProvider(rootPath);
     vscode.window.registerTreeDataProvider('ultra-dex.agentExplorer', agentsProvider);
-
-    const projectProvider = new ProjectTreeProvider();
-    vscode.window.registerTreeDataProvider('ultra-dex.projectRoadmap', projectProvider);
 
     createAlignmentStatusBar(context);
     registerCommands(context, rootPath);
