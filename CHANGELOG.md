@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `clerk-middleware.ts` - Complete Clerk auth middleware
   - `trpc-router.ts` - Type-safe tRPC router example
   - `rls-policies.sql` - PostgreSQL Row-Level Security policies
-- **🎯 4 New Cursor Rules** (14-17) for 2026 patterns:
+- **🎯 5 New Cursor Rules** (13-17) for 2026 patterns:
+  - `13-ai-integration.mdc` - Vercel AI SDK, streaming, tool use
   - `14-server-components.mdc` - Server vs Client component decisions
   - `15-server-actions.mdc` - Form handling with Server Actions
   - `16-edge-middleware.mdc` - Auth, rate limiting, geolocation
@@ -34,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - CLI now has **38+ commands** (added scaffold)
-- Cursor rules increased to **17 modules** (added 14-17)
+- Cursor rules increased to **18 modules** (added 13-17)
 - Updated README badges to reflect new counts
 - Improved error messages and user feedback
 
