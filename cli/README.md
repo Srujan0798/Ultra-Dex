@@ -2,7 +2,7 @@
 
 > Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation** and **God Mode** autonomous agents.
 
-## What's New in v3.1.0 (God Mode)
+## What's New in v3.2.0 (Professional Purple)
 
 ```bash
 # 🤖 Autonomous agent swarms with parallel execution

@@ -75,7 +75,7 @@ Ultra-Dex is not an editor, and it is not just another agent. It is the **Orches
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| **v3.2.0** | **Jan 29, 2026** | **Competitive Positioning Module**, Refined Swarm Checkpoints, Enhanced Dashboard UI |
+| **v3.2.0** | **Jan 29, 2026** | **Professional Purple Theme**, Competitive Positioning Module, Refined Swarm Checkpoints, Enhanced Dashboard UI |
 | **v3.1.0** | **Jan 28, 2026** | Performance Optimization, Extended MCP Tooling Support, Semantic History Alpha |
 | v3.0.0 | Jan 28, 2026 | **God Mode**: Unified Kernel, CPG Swarms, VS Code Extension, Executable 21-Step Verification |
 | v2.4.0 | Jan 27, 2026 | Kernel Launch: MCP Serve, Dashboard, Swarm, State Management |

@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.2.0] - 2026-01-29
+
+### Added
+- **🎨 Professional Purple Theme** - Clean indigo-to-pink gradient interface
+  - Modern UI components with boxen, gradient-string, cli-table3
+  - Consistent styling across all commands
+  - `--doomsday` flag for Matrix-green terminal mode
+- **🔧 Enhanced Doctor Command** - Improved system diagnostics
+  - MCP port availability check
+  - Configuration source detection
+  - AI provider environment scan
+- **📊 Extended Dashboard** - Real-time agent status and timeline
+- **🧠 Memory Command** - Persistent agent memory management
+- **👥 Team Command** - Team collaboration workflows
+
+### Changed
+- CLI now has 37+ commands
+- Updated dependencies for modern Node.js 18+ compatibility
+- Improved error messages and user feedback
+
+---
+
+## [3.1.0] - 2026-01-27
+
+### Added
+- **🪐 Doomsday Theme** - Matrix-green CLI mode with `--doomsday` flag
+- **🔄 Auto-Implement Command** - Fully autonomous feature implementation
+- **🛠️ CI Monitor** - Self-healing CI/CD webhook listener
+- **📦 Export Command** - Export project context to JSON/HTML/Markdown/PDF
+- **⬆️ Upgrade Command** - Check and install CLI updates
+- **⚙️ Config Command** - Generate MCP, Cursor, and VS Code configurations
+
+### Changed
+- Major CLI architecture refactor - modular command structure
+- All commands now in `lib/commands/` with utilities in `lib/utils/`
+- Added MCP SDK integration for Claude Desktop
+
+---
+
 ## [3.0.0] - 2026-01-28
 
 ### Added
