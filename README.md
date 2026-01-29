@@ -7,7 +7,7 @@
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
 [![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-13_Modules-green.svg)](./cursor-rules/)
-[![AI Agents](https://img.shields.io/badge/AI_Agents-16_Prompts-orange.svg)](./agents/)
+[![AI Agents](https://img.shields.io/badge/AI_Agents-17_Prompts-orange.svg)](./agents/)
 
 > **From Idea to Full-Scale, Production-Ready Application**
 
@@ -15,11 +15,11 @@
 
 ---
 
-## 🚀 NEW: Ultra-Dex v3.0 (God Mode)
+## 🚀 NEW: Ultra-Dex v3.2.0 (Professional Purple Edition)
 
 **The Meta-Orchestration Layer for AI Development**
 
-Ultra-Dex v3.0 introduces a fully autonomous "Active Kernel" that coordinates multiple AI agents, manages project state in real-time, and integrates directly with your editor via MCP.
+Ultra-Dex v3.2.0 introduces a **Professional Purple Gradient Theme**, modern UI components, and enhanced stability for multi-agent orchestration.
 
 ```bash
 # Run autonomous agent swarms with parallel execution
@@ -35,14 +35,15 @@ npx ultra-dex config --cursor --vscode
 npx ultra-dex watch --interval 1000
 ```
 
-**35+ commands. Autonomous agents. MCP integration. The future of AI development.**
+**37+ commands. Autonomous agents. MCP integration. Modern Professional UI.**
 
 Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
 ---
 
-## ✨ v3.0 Feature Highlights
+## ✨ v3.2.0 Feature Highlights
 
+- **Professional Purple Theme** - Clean indigo-to-pink gradient interface for high-performance development. [See Theme Guide](./docs/CLI-THEME.md).
 - **Unified Active Kernel** - One process serves MCP, dashboard, REST API, and WebSocket streaming (`ultra-dex serve`).
 - **Graph-Augmented Swarms** - Agents receive a Code Property Graph (CPG) context for structural reasoning.
 - **Executable Verification** - `ultra-dex verify` runs the 21-Step framework on any task.
@@ -122,7 +123,7 @@ A comprehensive framework for building complete, production-grade applications. 
 - **Atomic Task Methodology** - 4-9 hour tasks with realistic estimates
 - **AI Agent Instructions** - Prompts for Claude, GPT, Gemini
 - **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot
-- **16 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research, Documentation, Orchestrator
+- **17 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research, Documentation, Orchestrator, Specialist
 - **Multi-Tool Orchestration** - Coordinate Claude Code + Cursor + Copilot + ChatGPT + Gemini together
 
 ---
@@ -235,7 +236,7 @@ your-project/
 └── .github/copilot-instructions.md ← (optional) Copilot rules
 ```
 
-**CLI Commands (16):**
+**CLI Commands (37):**
 ```bash
 # Setup & Planning
 npx ultra-dex init
@@ -479,9 +480,9 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 16 Production-Ready Agents (v3.0)
+### 17 Production-Ready Agents (v3.2)
 
-Ultra-Dex includes 16 specialized agent prompts **organized into 7 tiers** for the production pipeline. Use the CLI to run agents automatically:
+Ultra-Dex includes 17 specialized agent prompts **organized into 7 tiers** for the production pipeline. Use the CLI to run agents automatically:
 
 ```bash
 # Interactive agent selection
@@ -526,7 +527,7 @@ npx ultra-dex swarm "Build payments feature"
 
 **Quick Reference:**
 ```bash
-npx ultra-dex agents              # List all 16 agents by tier
+npx ultra-dex agents              # List all 17 agents by tier
 npx ultra-dex agent backend       # Show specific agent prompt
 ```
 

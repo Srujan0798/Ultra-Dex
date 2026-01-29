@@ -1,4 +1,4 @@
-# Ultra-Dex v2 Vision
+# Ultra-Dex v3 Vision
 
 > AI Orchestration Meta Layer for SaaS Development
 
@@ -79,13 +79,13 @@ Ultra-Dex doesn't replace any tool. It **enhances** every tool.
 
 ---
 
-## V2 Architecture
+## V3 Architecture (Active Kernel)
 
 ### Core Components
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     ULTRA-DEX V2                            │
+│                     ULTRA-DEX V3                            │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
@@ -101,9 +101,9 @@ Ultra-Dex doesn't replace any tool. It **enhances** every tool.
 │  └─────────────────────────────────────────────────────┘   │
 │                            ↓                               │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │              AI AGENT INTERFACE LAYER               │   │
+│  │              ACTIVE KERNEL (MCP + WS)               │   │
 │  │                                                     │
-│  │  Cursor | Devin | Claude | GPT | Gemini | Any AI    │   │
+│  │  State | Graph | Events | Swarm | Dashboard         │   │
 │  └─────────────────────────────────────────────────────┘   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -111,25 +111,19 @@ Ultra-Dex doesn't replace any tool. It **enhances** every tool.
 
 ### CLI Evolution
 
-Ultra-Dex starts as a lightweight context engine and evolves into a fully automated orchestration hub.
+Ultra-Dex v3 introduces the "Active Kernel" - a persistent process that manages project state and agent coordination.
 
-**v1.x (Today)**
-- `ultra-dex init` to generate 34-section plans
-- `ultra-dex audit` to validate alignment
-- `ultra-dex examples` to access reference workflows
-- CLI optimized for human-led execution
+**v3.1.0 (Current)**
+- `ultra-dex serve` - Start the MCP + WebSocket + Dashboard server
+- `ultra-dex swarm` - Run autonomous agent swarms with parallel execution
+- `ultra-dex watch` - Real-time state updates on file changes
+- `ultra-dex config` - Automated editor setup (Cursor, VS Code, MCP)
 
-**v2.0**
-- `ultra-dex generate` to auto-fill plans from a single idea
-- `ultra-dex build` to coordinate multi-agent execution
-- `ultra-dex review` to run continuous alignment checks
-- Early automation with human approval gates
-
-**v2.x+**
-- `ultra-dex auto-implement` for full agent automation
-- `ultra-dex sync` for shared context across teams
-- `ultra-dex export` for distributing playbooks and templates
-- `ultra-dex check` for continuous repository health
+**v3.x+**
+- `ultra-dex auto-implement` - Full autonomous feature delivery
+- `ultra-dex ci-monitor` - Self-healing CI/CD integration
+- `ultra-dex team` - Distributed state for remote teams
+- `ultra-dex memory` - Long-term project-specific agent memory
 
 ### Live Templates
 
@@ -137,24 +131,24 @@ Live templates are executable starter kits shipped with the CLI. They provide wo
 
 - First-class template library (Next.js, Remix, SvelteKit)
 - Automated setup scripts and seed data
-- Built-in verification (`ultra-dex check`) for alignment
+- Built-in verification (`ultra-dex verify`) for alignment
 - Sync-ready updates via `ultra-dex sync`
 - Extensible template packs for teams and cohorts
 
-### New CLI Commands
+### Modern CLI Commands
 
 ```bash
-# Generate full plan from idea (AI fills all 34 sections)
-ultra-dex generate "A task management SaaS for remote teams"
+# Start the Active Kernel
+ultra-dex serve
 
-# Start AI-assisted development with context
-ultra-dex build --agent cursor
+# Generate full plan from idea
+ultra-dex generate "idea"
 
-# Audit code against the plan
-ultra-dex review
+# Run autonomous agent pipeline
+ultra-dex swarm "Build payments feature" --parallel
 
-# Check alignment score
-ultra-dex align
+# Auto-update state on file changes
+ultra-dex watch
 ```
 
 ---
@@ -167,8 +161,8 @@ ultra-dex align
 
 Then it:
 1. Generates the complete specification
-2. Provides context to any AI agent
-3. Keeps everything aligned with your vision
+2. Provides context to any AI agent via MCP
+3. Keeps everything aligned with your vision (State Management)
 4. Prevents the "that's not what I wanted" moment
 
 ---
@@ -182,30 +176,28 @@ Then it:
 
 ---
 
-## Roadmap
+## Roadmap (v3.1.0 Update)
 
-### Phase 1: Foundation (Current - v1.x)
-- [x] 34-section template
-- [x] 3 complete examples
-- [x] 16 production-ready agents
-- [x] 13 Cursor rules
-- [x] CLI (init, audit, examples)
-- [x] Documentation
+### Phase 1: Foundation (Legacy - v1.x) ✅
+- 34-section template
+- 16 agents
+- CLI basics
 
-### Phase 2: AI Generation (v2.0)
-- [ ] `ultra-dex generate` - AI fills all sections from idea
-- [ ] Multiple AI provider support (Claude, GPT, Gemini)
-- [ ] Intelligent section prioritization
+### Phase 2: AI Generation (Legacy - v2.x) ✅
+- `ultra-dex generate`
+- Multi-provider support
 
-### Phase 3: Orchestration (v2.x)
-- [ ] `ultra-dex build` - Orchestrate AI agents with context
-- [ ] `ultra-dex review` - Continuous alignment checking
-- [ ] Agent-specific context formatting
+### Phase 3: Active Kernel (Current - v3.x) 🔄
+- [x] MCP Server integration
+- [x] Real-time Dashboard
+- [x] Autonomous Swarms
+- [x] State Management
+- [ ] Auto-Implement (Full Automation)
 
-### Phase 4: Integration (v3.x)
-- [ ] IDE extensions (VS Code, Cursor)
-- [ ] CI/CD integration
-- [ ] Team collaboration features
+### Phase 4: Intelligence (Future - v4.x)
+- Project-specific Fine-tuning
+- Multi-modal Agent Reasoning
+- Global Deployment Orchestration
 
 ---
 
@@ -217,4 +209,4 @@ Human provides the idea. AI does the rest. Ultra-Dex ensures it's right.
 
 ---
 
-*Ultra-Dex v2 - The AI Orchestration Meta Layer*
+*Ultra-Dex v3 - The AI Orchestration Meta Layer*

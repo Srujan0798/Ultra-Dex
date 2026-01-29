@@ -1,5 +1,5 @@
 /**
- * ultra-dex build command (GOD MODE)
+ * ultra-dex build command
  * Auto-Pilot: Finds the next pending task and executes it using Agents.
  */
 
@@ -10,6 +10,8 @@ import path from 'path';
 import { loadState } from './plan.js';
 import { runAgentLoop } from './run.js';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
+import { showProgress } from '../utils/progress.js';
+import { getRandomMessage } from '../utils/messages.js';
 
 async function readProjectContext() {
   const context = {};
@@ -27,21 +29,21 @@ export function registerBuildCommand(program) {
     .option('-k, --key <apiKey>', 'API key')
     .option('--dry-run', 'Preview the task without executing')
     .action(async (options) => {
-      console.log(chalk.cyan('\n\u{1F30B}  Ultra-Dex Auto-Pilot (Build Mode)\n'));
-
+      console.log(chalk.cyan('\n⚡ Ultra-Dex Auto-Pilot\n'));
+      
       // Check for API key
       const configured = checkConfiguredProviders();
       const hasProvider = configured.some(p => p.configured) || options.key;
 
       if (!hasProvider && !options.dryRun) {
-        console.log(chalk.yellow('⚠️  No AI provider configured.'));
+        console.log(chalk.yellow('⚠️  No API keys found.'));
         console.log(chalk.white('Set an API key to enable Auto-Pilot.'));
         return;
       }
 
       const state = await loadState();
       if (!state) {
-        console.log(chalk.red('❌ No state found. Run "ultra-dex init" first.'));
+        console.log(chalk.red('❌ No project state found. Run "ultra-dex init" first.'));
         return;
       }
 
@@ -59,12 +61,12 @@ export function registerBuildCommand(program) {
       }
 
       if (!nextTask) {
-        console.log(chalk.green('✅ All phases completed! You are ready to launch.'));
+        console.log(chalk.green('✅ All phases completed! The project is ready.'));
         return;
       }
 
-      console.log(chalk.bold(`Phase: ${currentPhase.name}`));
-      console.log(chalk.bold(`Task:  ${nextTask.task}`));
+      // Show Progress
+      showProgress([`Phase: ${currentPhase.name}`, `Target: ${nextTask.task}`]);
 
       // Heuristic to pick agent (naive)
       let agentName = 'backend'; // default
@@ -74,7 +76,7 @@ export function registerBuildCommand(program) {
       if (taskLower.includes('plan') || taskLower.includes('break down')) agentName = 'planner';
       if (taskLower.includes('test')) agentName = 'testing';
       
-      console.log(chalk.gray(`Selected Agent: @${agentName}`));
+      console.log(chalk.gray(`Activating Agent: @${agentName}`));
 
       if (options.dryRun) {
         console.log(chalk.yellow('\nDry run mode. Exiting.'));
@@ -87,13 +89,20 @@ export function registerBuildCommand(program) {
 
       console.log(chalk.gray('─'.repeat(50)));
       
-      const result = await runAgentLoop(agentName, nextTask.task, provider, context);
+      const spinner = ora(getRandomMessage('loading')).start();
+      try {
+        const result = await runAgentLoop(agentName, nextTask.task, provider, context);
+        spinner.succeed(chalk.green('Task execution completed'));
 
-      // Save output
-      const filename = `task-${nextTask.id}-${agentName}.md`;
-      await fs.writeFile(filename, result);
-      console.log(chalk.green(`\n✅ Task output saved to ${filename}`));
-      console.log(chalk.gray('Review the code and mark the task as completed in .ultra/state.json'));
+        // Save output
+        const filename = `task-${nextTask.id}-${agentName}.md`;
+        await fs.writeFile(filename, result);
+        console.log(chalk.green(`\n✅ Task output saved to ${filename}`));
+        console.log(chalk.gray('Review the code and mark the task as completed in .ultra/state.json'));
+      } catch (error) {
+        spinner.fail(chalk.red('Task execution failed'));
+        console.error(error);
+      }
     });
 }
 

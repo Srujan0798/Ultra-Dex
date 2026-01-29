@@ -4,9 +4,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
 import fs from 'fs/promises';
-import { watch as fsWatch } from 'fs';
 import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
@@ -34,19 +32,16 @@ export async function saveState(state) {
 }
 
 export async function computeState() {
-  // Try to load existing state first to check schema
   const existing = await loadState();
-  if (existing && existing.project?.mode === 'GOD_MODE') {
-    // In God Mode, we update the timestamp
+  if (existing && existing.project?.mode === 'ULTRA_MODE') {
     existing.updatedAt = new Date().toISOString();
     return existing;
   }
 
-  // Legacy computation logic
   const state = {
-    version: '2.4.0',
+    version: '3.2.0',
     updatedAt: new Date().toISOString(),
-    project: { name: path.basename(process.cwd()) },
+    project: { name: path.basename(process.cwd()), mode: 'ULTRA_MODE' },
     files: {},
     sections: { total: 34, completed: 0, list: [] },
     score: 0
@@ -73,7 +68,7 @@ export async function computeState() {
   } catch { /* no plan */ }
 
   const fileScore = Object.values(state.files).filter(f => f.exists).length / coreFiles.length * 40;
-  const sectionScore = state.sections.completed / state.sections.total * 60;
+  const sectionScore = Math.min(state.sections.completed / state.sections.total * 60, 60);
   state.score = Math.round(fileScore + sectionScore);
 
   return state;
@@ -92,10 +87,8 @@ export function registerAlignCommand(program) {
     .option('--strict', 'Exit with error if score < 70')
     .option('--json', 'Output as JSON')
     .action(async (options) => {
-      // 1. Compute Base State
       const state = await computeState();
       
-      // 2. Compute Graph Score (God Mode)
       let graphScore = 0;
       let graphStats = { nodes: 0, edges: 0 };
       
@@ -103,9 +96,6 @@ export function registerAlignCommand(program) {
         const graph = await buildGraph();
         graphStats = { nodes: graph.nodes.length, edges: graph.edges.length };
         
-        // Simple heuristic: A healthy project has nodes and edges
-        // 10+ nodes = 20 points
-        // 10+ edges = 20 points
         const nodesPoints = Math.min(graph.nodes.length * 2, 20);
         const edgesPoints = Math.min(graph.edges.length * 2, 20);
         graphScore = nodesPoints + edgesPoints;
@@ -113,14 +103,12 @@ export function registerAlignCommand(program) {
         // Graph failed
       }
 
-      // 3. Combine Scores
-      // Legacy score (files/plan) is 60% weight, Graph is 40%
       const totalScore = Math.min(Math.round((state.score * 0.6) + graphScore), 100);
 
       if (options.json) {
-        console.log(JSON.stringify({ 
+        console.log(JSON.stringify({
             score: totalScore, 
-            legacyScore: state.score,
+            documentationScore: state.score,
             graphScore,
             graphStats,
             files: Object.values(state.files).filter(f => f.exists).length, 
@@ -129,7 +117,7 @@ export function registerAlignCommand(program) {
       } else {
         const icon = totalScore >= 80 ? '✅' : totalScore >= 50 ? '⚠️' : '❌';
         console.log(`${icon} Alignment: ${totalScore}/100`);
-        console.log(chalk.gray(`   • Plan/Docs: ${state.score}/100`));
+        console.log(chalk.gray(`   • Documentation: ${state.score}/100`));
         console.log(chalk.gray(`   • Code Graph: ${graphScore}/40 (Nodes: ${graphStats.nodes}, Edges: ${graphStats.edges})`));
       }
       
@@ -153,7 +141,7 @@ export function registerStatusCommand(program) {
 
       let state = await loadState();
       if (!state) {
-        console.log(chalk.yellow('\n⚠️  No .ultra/state.json found. Generating...\n'));
+        console.log(chalk.yellow('\nℹ️  Initializing project state...\n'));
         state = await computeState();
         await saveState(state);
       }
@@ -166,13 +154,12 @@ export function registerStatusCommand(program) {
       console.log(chalk.bold('\n📊 Ultra-Dex Status\n'));
       console.log(chalk.gray('─'.repeat(50)));
       
-      if (state.project?.mode === 'GOD_MODE') {
-          // Render God Mode Status
-          console.log(chalk.cyan(`  MODE: ${state.project.mode}`));
-          console.log(chalk.gray(`  Version: ${state.project.version}`));
+      if (state.phases) {
+          console.log(chalk.cyan(`  MODE: ${state.project?.mode || 'ULTRA_MODE'}`));
+          console.log(chalk.gray(`  Version: ${state.project?.version || state.version}`));
           console.log(chalk.gray('─'.repeat(50)));
           
-          console.log(chalk.bold('\n🚀 Phases:'));
+          console.log(chalk.bold('\n🚀 Implementation Phases:'));
           state.phases.forEach(phase => {
               const icon = phase.status === 'completed' ? '✅' : phase.status === 'in_progress' ? '🔄' : '⏳';
               console.log(`  ${icon} ${chalk.bold(phase.name)}`);
@@ -183,31 +170,32 @@ export function registerStatusCommand(program) {
               console.log('');
           });
 
-          console.log(chalk.bold('🤖 Agents:'));
-          state.agents.registry.forEach(agent => {
-              const active = state.agents.active.includes(agent) ? chalk.green('(Active)') : '';
-              console.log(`  • @${agent} ${active}`);
-          });
+          if (state.agents) {
+            console.log(chalk.bold('🤖 Orchestration Agents:'));
+            state.agents.registry?.forEach(agent => {
+                const active = state.agents.active?.includes(agent) ? chalk.green('(Active)') : '';
+                console.log(`  • @${agent} ${active}`);
+            });
+          }
 
       } else {
-          // Render Legacy Status
           const scoreColor = state.score >= 80 ? 'green' : state.score >= 50 ? 'yellow' : 'red';
           console.log(chalk[scoreColor](`  Score: ${state.score}/100`));
           console.log(chalk.gray(`  Updated: ${state.updatedAt}`));
           console.log(chalk.gray('─'.repeat(50)));
 
-          console.log(chalk.bold('\n📁 Files:'));
+          console.log(chalk.bold('\n📁 Documentation Files:'));
           if (state.files) {
             Object.entries(state.files).forEach(([name, info]) => {
-                const icon = info.exists ? chalk.green('✓') : chalk.red('✗');
+                const icon = info.exists ? chalk.green('✓') : chalk.red('✕');
                 const size = info.exists ? chalk.gray(` (${info.size} bytes)`) : '';
                 console.log(`  ${icon} ${name}${size}`);
             });
           }
 
-          console.log(chalk.bold('\n📝 Sections:'));
-          console.log(`  ${state.sections.completed}/${state.sections.total} documented`);
-          if (state.sections.list.length > 0) {
+          console.log(chalk.bold('\n📝 Implementation Sections:'));
+          console.log(`  ${state.sections.completed}/${state.sections.total} completed`);
+          if (state.sections.list?.length > 0) {
             const recent = state.sections.list.slice(-3);
             recent.forEach(s => console.log(chalk.gray(`    ${s.number}. ${s.title}`)));
             if (state.sections.list.length > 3) {
@@ -220,19 +208,15 @@ export function registerStatusCommand(program) {
 }
 
 export function registerWatchCommand(program) {
-    // This is now handled by watch.js, but keeping here for legacy imports if any. 
-    // In God Mode, watch.js replaces this.
-    // The bin/ultra-dex.js uses watch.js, so this might be dead code or overwritten.
-    // I will leave it as is or update it to be safe.
     program
-    .command('watch-legacy') // Rename to avoid conflict if both registered
+    .command('watch-legacy')
     .action(() => console.log("Use 'ultra-dex watch' instead."));
 }
 
 export function registerPreCommitCommand(program) {
   program
     .command('pre-commit')
-    .description('Pre-commit hook - verify before commit')
+    .description('Pre-commit hook - verify standards before commit')
     .option('--install', 'Install git pre-commit hook')
     .option('--scan', 'Include deep code quality scan in hook')
     .option('--ai', 'Run AI-powered quality review on staged changes')
@@ -254,7 +238,7 @@ export function registerPreCommitCommand(program) {
 # Ultra-Dex pre-commit hook
 npx ultra-dex align --strict${scanCmd}${aiCmd}
 if [ $? -ne 0 ]; then
-  echo "❌ Ultra-Dex quality gate failed."
+  echo "✕ Ultra-Dex quality gate failed."
   echo "   Run 'ultra-dex review' or 'ultra-dex validate --scan' for details."
   exit 1
 fi
@@ -262,22 +246,20 @@ fi
         try {
           await fs.mkdir(path.dirname(hookPath), { recursive: true });
           await fs.writeFile(hookPath, hookScript, { mode: 0o755 });
-          console.log(chalk.green('✅ Pre-commit hook installed!'));
+          console.log(chalk.green('✓ Pre-commit hook installed!'));
           console.log(chalk.gray('   Commits will be blocked if alignment score < 70 or AI review fails.'));
         } catch (e) {
-          console.log(chalk.red('❌ Failed to install hook: ' + e.message));
+          console.log(chalk.red('✕ Failed to install hook: ' + e.message));
         }
         return;
       }
       
       const state = await loadState();
       
-      // AI Quality Gate (God Mode)
       if (options.ai) {
-          const spinner = (await import('ora')).default('🤖 AI Quality Gate: Reviewing staged changes...').start();
+          const spinner = (await import('ora')).default('🤖 AI Quality Review: Analyzing staged changes...').start();
           try {
               const { execSync } = await import('child_process');
-              // Get staged changes
               const staged = execSync('git diff --cached --name-only', { encoding: 'utf8' }).split('\n').filter(Boolean);
               if (staged.length === 0) {
                   spinner.succeed('No staged changes to review.');
@@ -291,28 +273,23 @@ fi
               const reviewResult = await runAgentLoop('reviewer', `Review these staged files for architectural violations (e.g. missing validation, security risks):\n${staged.join('\n')}`, provider, { state });
 
               if (reviewResult.toLowerCase().includes('reject') || reviewResult.toLowerCase().includes('blocking violation')) {
-                  spinner.fail('AI Quality Gate: REJECTED');
-                  console.log(chalk.red('\nviolations found:'));
+                  spinner.fail('Quality Gate: REJECTED');
+                  console.log(chalk.red('\nViolations found:'));
                   console.log(reviewResult);
                   process.exit(1);
               }
-              spinner.succeed('AI Quality Gate: PASSED');
+              spinner.succeed('Quality Gate: PASSED');
           } catch (e) {
-              spinner.warn('AI Quality Gate skipped: ' + e.message);
+              spinner.warn('Quality Gate skipped: ' + e.message);
           }
       }
 
-      if (state && state.project?.mode === 'GOD_MODE') {
-          console.log(chalk.green(`✅ Alignment OK: GOD MODE ACTIVE`));
-          return;
-      }
-
       if (state && state.score < 70) {
-        console.log(chalk.red(`❌ BLOCKED: Alignment score ${state.score}/100 (required: 70)`));
+        console.log(chalk.red(`✕ BLOCKED: Alignment score ${state.score}/100 (required: 70)`));
         console.log(chalk.yellow('   Run `ultra-dex review` for detailed analysis.'));
         process.exit(1);
       } else {
-        console.log(chalk.green(`✅ Alignment OK: ${state ? state.score : 'N/A'}/100`));
+        console.log(chalk.green(`✓ Alignment verified: ${state ? state.score : 'N/A'}/100`));
       }
     });
 }
@@ -320,25 +297,21 @@ fi
 export function registerStateCommand(program) {
   program
     .command('state')
-    .description('Manage .ultra/state.json')
-    .option('--init', 'Initialize .ultra directory')
-    .option('--refresh', 'Refresh state from files')
+    .description('Manage project state')
+    .option('--init', 'Initialize state directory')
+    .option('--refresh', 'Refresh state from documentation')
     .action(async (options) => {
       if (options.init || options.refresh) {
         const state = await computeState();
         await saveState(state);
-        console.log(chalk.green('✅ State updated'));
-        if (state.project?.mode === 'GOD_MODE') {
-             console.log(chalk.gray(`   Mode: GOD_MODE`));
-        } else {
-             console.log(chalk.gray(`   Score: ${state.score}/100`));
-        }
+        console.log(chalk.green('✓ Project state updated'));
+        console.log(chalk.gray(`   Score: ${state.score}/100`));
         return;
       }
 
       const state = await loadState();
       if (!state) {
-        console.log(chalk.yellow('No .ultra/state.json found. Run `ultra-dex state --init`'));
+        console.log(chalk.yellow('No state file found. Run `ultra-dex state --init`'));
         return;
       }
       console.log(JSON.stringify(state, null, 2));

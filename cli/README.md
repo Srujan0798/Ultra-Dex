@@ -2,23 +2,23 @@
 
 > Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation** and **God Mode** autonomous agents.
 
-## What's New in v2.2+ (God Mode)
+## What's New in v3.1.0 (God Mode)
 
 ```bash
-# 🤖 Autonomous feature implementation (Plan -> Code -> Verify)
-npx ultra-dex auto-implement "Add Stripe checkout"
+# 🤖 Autonomous agent swarms with parallel execution
+npx ultra-dex swarm "Build user authentication" --parallel
 
-# 🔄 Real-time State & Graph Synchronization
-npx ultra-dex sync --push --target ./s3-bucket
-
-# 🛡️ Self-Healing CI/CD Monitor
-npx ultra-dex ci-monitor --port 3003
+# 🔄 Start the Active Kernel (MCP + WebSocket + Dashboard)
+npx ultra-dex serve
 
 # 🧠 Structural Graph Health Check
 npx ultra-dex check
 
 # 🖥️ Live Dashboard with Brain Visualization
 npx ultra-dex dashboard
+
+# 🛠️ Self-Healing CI/CD Monitor
+npx ultra-dex ci-monitor --port 3003
 ```
 
 ## First 10 Minutes
@@ -45,6 +45,26 @@ ultra-dex generate "Your idea"
 
 ## AI Commands (God Mode)
 
+### `swarm` - Autonomous Agent Pipeline
+
+Run complex task pipelines with multiple agents:
+
+```bash
+# Build a feature with a swarm of agents
+npx ultra-dex swarm "Implement Stripe subscriptions" --parallel
+
+# Dry run to see the plan
+npx ultra-dex swarm "Migrate to Tailwind" --dry-run
+```
+
+### `serve` - Active Kernel
+
+Start the MCP-compatible server for IDE integration and dashboard:
+
+```bash
+npx ultra-dex serve
+```
+
 ### `auto-implement` - Autonomous Engineer
 
 Fully autonomous feature implementation loop:
@@ -52,44 +72,14 @@ Fully autonomous feature implementation loop:
 ```bash
 # Implement a feature from scratch
 npx ultra-dex auto-implement "Create a user profile page with Avatar upload"
-
-# Preview the plan without coding
-npx ultra-dex auto-implement "Migrate to Tailwind" --dry-run
 ```
-
-**How it works:**
-1. **Structural Analysis:** Scans the Code Property Graph (CPG) for impact.
-2. **Planning:** @Planner breaks down the task.
-3. **Execution:** @Backend/@Frontend implement the code.
-4. **Verification:** @Testing verifies the changes.
-
-### `sync` - State Synchronization
-
-Keep your project's "Brain" (Context + Graph) in sync across devices:
-
-```bash
-# Push state to a shared location
-npx ultra-dex sync --push --target ./shared-drive
-
-# Pull state from a shared location
-npx ultra-dex sync --pull --target ./shared-drive
-```
-
-### `ci-monitor` - Self-Healing CI/CD
-
-Listen for build failures and automatically fix them:
-
-```bash
-npx ultra-dex ci-monitor --port 3003
-```
-*Configure your CI provider (GitHub Actions) to send webhooks to this port.*
 
 ### `watch` - Real-time Daemon
 
-Keep the Code Property Graph updated as you code:
+Keep the project state and Code Property Graph updated as you code:
 
 ```bash
-npx ultra-dex watch
+npx ultra-dex watch --interval 1000
 ```
 
 ## Core Commands
@@ -115,7 +105,7 @@ Start development with AI agents (Interactive Mode):
 npx ultra-dex build
 
 # Specific agent
-npx ultra-dex build --agent backend --task "Create user API endpoints"
+npx ultra-dex run backend --task "Create user API endpoints"
 ```
 
 ### `review` - Graph-Aware Code Review
@@ -148,54 +138,50 @@ npx ultra-dex check
 ANTHROPIC_API_KEY=sk-ant-...  # Claude (recommended for complex tasks)
 OPENAI_API_KEY=sk-...         # OpenAI
 GOOGLE_AI_KEY=...             # Gemini
-ULTRA_DEX_DEFAULT_PROVIDER=router # Use "router" for hybrid local/cloud intelligence
+ULTRA_DEX_DEFAULT_PROVIDER=claude # Default AI provider
 ```
 
-## All Commands
+## All Commands (37)
 
 | Command | Description |
 |---------|-------------|
-| `generate` | Generate full SaaS plan from idea |
-| `auto-implement` | **(NEW)** Autonomously implement a feature |
-| `build` | Interactive AI agent development loop |
-| `review` | Review code against plan (Graph-Aware) |
-| `align` | Quick alignment score |
-| `sync` | **(NEW)** Sync project state across devices |
-| `check` | **(NEW)** Verify repository health |
-| `watch` | **(NEW)** Real-time graph synchronization daemon |
-| `ci-monitor` | **(NEW)** Self-healing CI/CD webhook listener |
-| `dashboard` | Start the JARVIS web dashboard |
 | `init` | Initialize a new project |
+| `generate` | Generate full SaaS plan from idea |
+| `swarm` | Run autonomous agent pipeline |
+| `auto-implement` | Autonomously implement a feature |
+| `serve` | Start the Active Kernel (MCP + Dashboard) |
+| `watch` | Auto-update state on file changes |
+| `build` | Interactive AI agent development loop |
+| `review` | Review code against plan |
+| `align` | Quick alignment score |
 | `audit` | Audit project for completeness |
-| `agents` | List AI agents |
-| `team` | Team collaboration (local) |
-| `fetch` | Download assets for offline |
-| `serve` | Serve context (MCP-compatible) |
-
-## Example: AI Generation
-
-```bash
-$ npx ultra-dex generate "A booking platform for dog groomers"
-
-🚀 Ultra-Dex AI Plan Generator
-
-✔ AI modules loaded
-
-📝 Idea: "A booking platform for dog groomers"
-
-...
-
-✅ All 34 sections generated
-   Tokens used: 42,350 tokens
-   Actual cost: $0.52
-
-📦 Project: GroomBook
-
-✓ Created ./IMPLEMENTATION-PLAN.md
-✓ Created ./QUICK-START.md
-✓ Created ./CONTEXT.md
-✓ Created .ultra/state.json (GOD MODE ACTIVE)
-```
+| `validate` | Validate project against 21-step framework |
+| `check` | Verify repository health |
+| `doctor` | Diagnose project issues |
+| `dashboard` | Start the local web dashboard |
+| `sync` | Sync project state across devices |
+| `fetch` | Download assets for offline use |
+| `hooks` | Manage Git hooks |
+| `export` | Export project context |
+| `upgrade` | Check for CLI updates |
+| `config` | Manage CLI and editor configuration |
+| `agents` | List available AI agents |
+| `agent` | Show specific agent prompt |
+| `workflow` | Show specific production workflow |
+| `suggest` | Get AI-powered task suggestions |
+| `plan` | Generate or update implementation plan |
+| `fix` | Automatically fix project issues |
+| `team` | Team collaboration commands |
+| `memory` | Manage long-term agent memory |
+| `verify` | Run executable verification |
+| `ci-monitor` | Self-healing CI/CD listener |
+| `status` | Show project and kernel status |
+| `pre-commit` | Run pre-commit checks |
+| `state` | Manage machine-readable state |
+| `examples` | Access reference workflows |
+| `pack` | Bundle agents and rules |
+| `run` | Execute agent task |
+| `diff` | Compare plan vs implemented code |
 
 ## Links
 

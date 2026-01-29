@@ -4,12 +4,13 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
 import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
 import { execSync } from 'child_process';
 import { checkConfiguredProviders } from '../providers/index.js';
+import { icons, header, statusLine } from '../utils/status.js';
+import { createSpinner } from '../utils/spinners.js';
 
 // Default configuration
 const DEFAULT_CONFIG = {
@@ -55,17 +56,18 @@ async function saveConfig(config, global = false) {
 export function registerDoctorCommand(program) {
   program
     .command('doctor')
-    .description('Diagnose Ultra-Dex setup and configuration')
+    .description('System Diagnostics - Check System Health')
     .option('--fix', 'Attempt to fix issues automatically')
     .action(async (options) => {
-      console.log(chalk.cyan('\n🩺 Ultra-Dex Doctor\n'));
-      console.log(chalk.gray('Checking your setup...\n'));
+      header('System Health Diagnostics');
+      console.log(chalk.gray('  Analyzing system components...\n'));
 
       const checks = [];
       let hasErrors = false;
 
       // Check 1: Node.js version
-      const nodeSpinner = ora('Checking Node.js version...').start();
+      const nodeSpinner = createSpinner('Scanning Node.js environment...');
+      nodeSpinner.start();
       try {
         const nodeVersion = process.version;
         const major = parseInt(nodeVersion.slice(1).split('.')[0]);
@@ -83,7 +85,8 @@ export function registerDoctorCommand(program) {
       }
 
       // Check 2: Git
-      const gitSpinner = ora('Checking Git...').start();
+      const gitSpinner = createSpinner('Checking Git repository...');
+      gitSpinner.start();
       try {
         const gitVersion = execSync('git --version', { encoding: 'utf8' }).trim();
         gitSpinner.succeed(`${gitVersion} ✓`);
@@ -95,20 +98,22 @@ export function registerDoctorCommand(program) {
       }
 
       // Check 3: AI Providers
-      const providerSpinner = ora('Checking AI providers...').start();
+      const providerSpinner = createSpinner('Locating AI Providers...');
+      providerSpinner.start();
       const providers = checkConfiguredProviders();
       const configuredProviders = providers.filter(p => p.configured);
       
       if (configuredProviders.length > 0) {
-        providerSpinner.succeed(`AI providers: ${configuredProviders.map(p => p.name).join(', ')} ✓`);
+        providerSpinner.succeed(`Providers found: ${configuredProviders.map(p => p.name).join(', ')} ✓`);
         checks.push({ name: 'AI Providers', status: 'ok', detail: configuredProviders.map(p => p.name).join(', ') });
       } else {
-        providerSpinner.warn('No AI providers configured');
+        providerSpinner.warn('No AI Providers found');
         checks.push({ name: 'AI Providers', status: 'warn', detail: 'Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY' });
       }
 
       // Check 4: Project structure
-      const structureSpinner = ora('Checking project structure...').start();
+      const structureSpinner = createSpinner('Verifying Project Structure...');
+      structureSpinner.start();
       const requiredFiles = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md'];
       const optionalFiles = ['CHECKLIST.md', 'QUICK-START.md', '.ultra/state.json'];
       const foundRequired = [];
@@ -129,26 +134,27 @@ export function registerDoctorCommand(program) {
       }
 
       if (foundRequired.length === requiredFiles.length) {
-        structureSpinner.succeed(`Project structure: ${foundRequired.length}/${requiredFiles.length} required files ✓`);
+        structureSpinner.succeed(`Structure valid: ${foundRequired.length}/${requiredFiles.length} required artifacts ✓`);
         checks.push({ name: 'Project Structure', status: 'ok', detail: `${foundRequired.join(', ')}` });
       } else if (foundRequired.length > 0) {
-        structureSpinner.warn(`Project structure: ${foundRequired.length}/${requiredFiles.length} required files`);
+        structureSpinner.warn(`Structure incomplete: ${foundRequired.length}/${requiredFiles.length} required artifacts`);
         checks.push({ name: 'Project Structure', status: 'warn', detail: `Missing: ${requiredFiles.filter(f => !foundRequired.includes(f)).join(', ')}` });
       } else {
         structureSpinner.info('No Ultra-Dex project found');
-        checks.push({ name: 'Project Structure', status: 'info', detail: 'Run `ultra-dex init` to create a project' });
+        checks.push({ name: 'Project Structure', status: 'info', detail: 'Run `ultra-dex init` to create a new project' });
       }
 
       // Check 5: Git hooks
-      const hooksSpinner = ora('Checking git hooks...').start();
+      const hooksSpinner = createSpinner('Checking Git hooks...');
+      hooksSpinner.start();
       try {
         const hookPath = path.resolve(process.cwd(), '.git/hooks/pre-commit');
         const hookContent = await fs.readFile(hookPath, 'utf8');
         if (hookContent.includes('ultra-dex')) {
-          hooksSpinner.succeed('Pre-commit hook installed ✓');
+          hooksSpinner.succeed('Pre-commit active ✓');
           checks.push({ name: 'Git Hooks', status: 'ok', detail: 'Pre-commit active' });
         } else {
-          hooksSpinner.info('Pre-commit hook exists but not Ultra-Dex');
+          hooksSpinner.info('Pre-commit active but not Ultra-Dex');
           checks.push({ name: 'Git Hooks', status: 'info', detail: 'Custom hook present' });
         }
       } catch {
@@ -157,13 +163,15 @@ export function registerDoctorCommand(program) {
       }
 
       // Check 6: Configuration
-      const configSpinner = ora('Checking configuration...').start();
+      const configSpinner = createSpinner('Reading Configuration...');
+      configSpinner.start();
       const config = await loadConfig();
-      configSpinner.succeed(`Config loaded from: ${config.source}`);
+      configSpinner.succeed(`Configuration loaded from: ${config.source}`);
       checks.push({ name: 'Configuration', status: 'ok', detail: `Source: ${config.source}` });
 
       // Check 7: MCP Server port
-      const portSpinner = ora('Checking MCP server port...').start();
+      const portSpinner = createSpinner('Checking MCP Port...');
+      portSpinner.start();
       try {
         const net = await import('net');
         const server = net.createServer();
@@ -175,51 +183,52 @@ export function registerDoctorCommand(program) {
           });
           server.listen(config.mcpPort);
         });
-        portSpinner.succeed(`Port ${config.mcpPort} available ✓`);
+        portSpinner.succeed(`Port ${config.mcpPort} open ✓`);
         checks.push({ name: 'MCP Port', status: 'ok', detail: `Port ${config.mcpPort} free` });
       } catch {
-        portSpinner.warn(`Port ${config.mcpPort} in use`);
+        portSpinner.warn(`Portal ${config.mcpPort} blocked`);
         checks.push({ name: 'MCP Port', status: 'warn', detail: `Port ${config.mcpPort} busy - change with config` });
       }
 
       // Summary
-      console.log(chalk.bold('\n📋 Summary\n'));
-      console.log(chalk.gray('─'.repeat(50)));
+      header('Diagnostics Report');
       
       const okCount = checks.filter(c => c.status === 'ok').length;
       const warnCount = checks.filter(c => c.status === 'warn').length;
       const errorCount = checks.filter(c => c.status === 'error').length;
 
       checks.forEach(check => {
-        const icon = check.status === 'ok' ? chalk.green('✓') :
-                     check.status === 'warn' ? chalk.yellow('⚠') :
-                     check.status === 'error' ? chalk.red('✗') :
-                     chalk.blue('ℹ');
-        console.log(`  ${icon} ${check.name.padEnd(18)} ${chalk.gray(check.detail)}`);
+        let icon;
+        if (check.status === 'ok') icon = icons.success;
+        else if (check.status === 'warn') icon = icons.warning;
+        else if (check.status === 'error') icon = icons.error;
+        else icon = icons.info;
+
+        statusLine(icon, `${check.name.padEnd(18)} ${chalk.gray(check.detail)}`);
       });
 
-      console.log(chalk.gray('─'.repeat(50)));
+      console.log(chalk.gray('  ' + '─'.repeat(50)));
       console.log(`  ${chalk.green(okCount + ' passed')}  ${chalk.yellow(warnCount + ' warnings')}  ${chalk.red(errorCount + ' errors')}`);
 
       if (hasErrors) {
-        console.log(chalk.red('\n❌ Some checks failed. Fix issues above.\n'));
+        console.log(chalk.red('\n❌ System check failed. Fix issues above.\n'));
         process.exit(1);
       } else if (warnCount > 0) {
-        console.log(chalk.yellow('\n⚠️  Some warnings. Setup works but could be improved.\n'));
+        console.log(chalk.yellow('\n⚠️  System operational but has warnings.\n'));
       } else {
-        console.log(chalk.green('\n✅ All checks passed! Ultra-Dex is ready.\n'));
+        console.log(chalk.green('\n✅ All systems operational.\n'));
       }
 
       // Suggestions
       if (configuredProviders.length === 0) {
-        console.log(chalk.cyan('💡 To enable AI features, set an API key:'));
+        console.log(chalk.cyan('💡 To configure AI providers, set an API key:'));
         console.log(chalk.gray('   export ANTHROPIC_API_KEY=sk-ant-...'));
         console.log(chalk.gray('   export OPENAI_API_KEY=sk-...'));
         console.log(chalk.gray('   export GEMINI_API_KEY=...\n'));
       }
 
       if (foundRequired.length === 0) {
-        console.log(chalk.cyan('💡 To start a new project:'));
+        console.log(chalk.cyan('💡 To initialize a new project:'));
         console.log(chalk.gray('   ultra-dex init\n'));
       }
     });
@@ -257,7 +266,7 @@ export function registerConfigCommand(program) {
         
         console.log(chalk.cyan('\n📍 Config file locations:'));
         console.log(chalk.gray('   macOS: ~/Library/Application Support/Claude/claude_desktop_config.json'));
-        console.log(chalk.gray('   Windows: %APPDATA%\\Claude\\claude_desktop_config.json'));
+        console.log(chalk.gray('   Windows: %APPDATA%\Claude\claude_desktop_config.json'));
         console.log(chalk.gray('   Linux: ~/.config/Claude/claude_desktop_config.json\n'));
         return;
       }
@@ -313,19 +322,21 @@ export function registerConfigCommand(program) {
       // Interactive mode
       console.log(chalk.cyan('\n⚙️  Ultra-Dex Configuration\n'));
       
-      const { action } = await inquirer.prompt([{
-        type: 'list',
-        name: 'action',
-        message: 'What would you like to do?',
-        choices: [
-          { name: 'View current config', value: 'view' },
-          { name: 'Set default AI provider', value: 'provider' },
-          { name: 'Set minimum alignment score', value: 'minScore' },
-          { name: 'Set MCP server port', value: 'mcpPort' },
-          { name: 'Generate MCP config for Claude', value: 'mcp' },
-          { name: 'Create new config file', value: 'init' },
-        ]
-      }]);
+      const { action } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'action',
+          message: 'What would you like to do?',
+          choices: [
+            { name: 'View current config', value: 'view' },
+            { name: 'Set default AI provider', value: 'provider' },
+            { name: 'Set minimum alignment score', value: 'minScore' },
+            { name: 'Set MCP server port', value: 'mcpPort' },
+            { name: 'Generate MCP config for Claude', value: 'mcp' },
+            { name: 'Create new config file', value: 'init' },
+          ]
+        }
+      ]);
 
       switch (action) {
         case 'view':
@@ -333,39 +344,45 @@ export function registerConfigCommand(program) {
           break;
 
         case 'provider':
-          const { provider } = await inquirer.prompt([{
-            type: 'list',
-            name: 'provider',
-            message: 'Select default AI provider:',
-            choices: ['claude', 'openai', 'gemini'],
-            default: config.provider
-          }]);
+          const { provider } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'provider',
+              message: 'Select default AI provider:',
+              choices: ['claude', 'openai', 'gemini'],
+              default: config.provider
+            }
+          ]);
           config.provider = provider;
           await saveConfig(config, options.global);
           console.log(chalk.green(`\n✅ Default provider set to: ${provider}\n`));
           break;
 
         case 'minScore':
-          const { minScore } = await inquirer.prompt([{
-            type: 'number',
-            name: 'minScore',
-            message: 'Minimum alignment score (0-100):',
-            default: config.minScore,
-            validate: n => n >= 0 && n <= 100 || 'Must be 0-100'
-          }]);
+          const { minScore } = await inquirer.prompt([
+            {
+              type: 'number',
+              name: 'minScore',
+              message: 'Minimum alignment score (0-100):',
+              default: config.minScore,
+              validate: n => n >= 0 && n <= 100 || 'Must be 0-100'
+            }
+          ]);
           config.minScore = minScore;
           await saveConfig(config, options.global);
           console.log(chalk.green(`\n✅ Minimum score set to: ${minScore}\n`));
           break;
 
         case 'mcpPort':
-          const { mcpPort } = await inquirer.prompt([{
-            type: 'number',
-            name: 'mcpPort',
-            message: 'MCP server port:',
-            default: config.mcpPort,
-            validate: n => n > 0 && n < 65536 || 'Invalid port'
-          }]);
+          const { mcpPort } = await inquirer.prompt([
+            {
+              type: 'number',
+              name: 'mcpPort',
+              message: 'MCP server port:',
+              default: config.mcpPort,
+              validate: n => n > 0 && n < 65536 || 'Invalid port'
+            }
+          ]);
           config.mcpPort = mcpPort;
           await saveConfig(config, options.global);
           console.log(chalk.green(`\n✅ MCP port set to: ${mcpPort}\n`));
@@ -378,15 +395,17 @@ export function registerConfigCommand(program) {
           break;
 
         case 'init':
-          const { scope } = await inquirer.prompt([{
-            type: 'list',
-            name: 'scope',
-            message: 'Create config in:',
-            choices: [
-              { name: 'This project (.ultra-dex.json)', value: 'project' },
-              { name: 'Global (~/.ultra-dex.json)', value: 'global' },
-            ]
-          }]);
+          const { scope } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'scope',
+              message: 'Create config in:',
+              choices: [
+                { name: 'This project (.ultra-dex.json)', value: 'project' },
+                { name: 'Global (~/.ultra-dex.json)', value: 'global' },
+              ]
+            }
+          ]);
           const configPath = await saveConfig(DEFAULT_CONFIG, scope === 'global');
           console.log(chalk.green(`\n✅ Config created: ${configPath}\n`));
           break;
