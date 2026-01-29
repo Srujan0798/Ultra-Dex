@@ -1,7 +1,7 @@
 {
   "name": "ultra-dex",
-  "version": "3.0.0",
-  "description": "CLI for Ultra-Dex SaaS Implementation Framework with AI-Powered Plan Generation, Build Mode, and Code Review",
+  "version": "3.1.0",
+  "description": "AI Orchestration Meta-Layer for SaaS Development",
   "keywords": [
     "ai",
     "orchestration",

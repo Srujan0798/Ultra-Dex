@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerCommands = registerCommands;
+exports.refreshAlignmentStatus = refreshAlignmentStatus;
 const path = __importStar(require("path"));
 const vscode = __importStar(require("vscode"));
 const statusBar_1 = require("./statusBar");
@@ -68,6 +69,10 @@ function registerCommands(context, workspaceRoot) {
         vscode.window.showInformationMessage('Selection copied to clipboard with prompt.');
     }));
 }
+async function refreshAlignmentStatus(workspaceRoot) {
+    const score = await getAlignmentScore(workspaceRoot);
+    (0, statusBar_1.updateAlignmentStatusBar)(score);
+}
 async function readAgentPrompt(workspaceRoot, relativePath) {
     const fullPath = path.join(workspaceRoot, 'agents', relativePath);
     try {
@@ -86,7 +91,7 @@ async function getAlignmentScore(workspaceRoot) {
     try {
         const data = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath));
         const content = Buffer.from(data).toString('utf8');
-        const match = content.match(/alignment\\s*score\\s*:\\s*(\\d+%?)/i);
+        const match = content.match(/alignment\s*score\s*:\s*(\d+%?)/i);
         return match?.[1] ?? 'Unknown';
     }
     catch {

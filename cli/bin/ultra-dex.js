@@ -21,7 +21,7 @@ import { registerCheckCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
 import { registerVerifyCommand } from '../lib/commands/verify.js';
 
-// New v2.4 Commands
+// v3.0 Commands
 import { swarmCommand } from '../lib/commands/swarm.js';
 import { watchCommand } from '../lib/commands/watch.js';
 import { diffCommand } from '../lib/commands/diff.js';
@@ -38,6 +38,7 @@ import { registerHooksCommand } from '../lib/commands/hooks.js';
 import { registerFetchCommand } from '../lib/commands/fetch.js';
 import { registerSyncCommand } from '../lib/commands/sync.js';
 import { registerTeamCommand } from '../lib/commands/team.js';
+import { registerMemoryCommand } from '../lib/commands/memory.js';
 
 const program = new Command();
 program.banner = banner;
@@ -45,7 +46,7 @@ program.banner = banner;
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('3.0.0');
+  .version('3.1.0');
 
 registerInitCommand(program);
 registerAuditCommand(program);
@@ -124,5 +125,6 @@ registerFetchCommand(program);
 registerSyncCommand(program);
 registerAgentBuilderCommand(program);
 registerTeamCommand(program);
+registerMemoryCommand(program);
 
 program.parse();

@@ -12,12 +12,14 @@ INSTRUCTIONS FOR AI AGENTS:
 - Include examples and templates where applicable
 - Output must be ready for immediate production implementation with 21-step rules
 
-**Quality Standards:**
-- All acceptance criteria MUST be measurable (avoid "should work well" → use "<200ms response time")
-- All estimates MUST include buffer (+20% minimum for unknowns)
-- All code examples MUST be production-ready (error handling, edge cases, security)
-- All API endpoints MUST include request/response examples
-- All database schemas MUST include indexes and constraints
+**Quality Standards (v3.0 - God Mode):**
+- **Structural Graph Awareness:** All implementation tasks must reference existing architectural patterns identified by the `Codebase Graph`.
+- **Automated Verification:** Every atomic task must be defined such that it can be audited by `ultra-dex verify` against the 21-step framework.
+- **Acceptance Criteria:** All criteria MUST be measurable (avoid "should work well" → use "<200ms response time")
+- **Estimates:** All estimates MUST include buffer (+20% minimum for unknowns)
+- **Code Examples:** All code examples MUST be production-ready (error handling, edge cases, security)
+- **API Documentation:** All endpoints MUST include request/response examples and match the project's Zod/Prisma schemas.
+- **Dependency Mapping:** Changes to core files must include an "Impact Analysis" using graph dependencies.
 
 **Specificity Rules:**
 - Product Vision: ≤15 words, memorable, answers "what does this do?"
