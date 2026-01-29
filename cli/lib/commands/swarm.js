@@ -8,6 +8,9 @@ import { join } from 'path';
 import { glob } from 'glob';
 import { projectGraph } from '../mcp/graph.js';
 import { updateState, loadState, saveState } from './state.js';
+import { agents } from '../utils/agents.js';
+import { isDoomsdayMode } from '../utils/theme-state.js';
+import { showSwarmAssemble as showDoomsdaySwarm } from '../themes/doomsday.js';
 
 const AGENT_PIPELINE = [
   { name: 'planner', description: 'Break down task into steps', tier: '1-planning' },
@@ -19,6 +22,25 @@ const AGENT_PIPELINE = [
   { name: 'testing', description: 'Write tests', tier: '4-quality' },
   { name: 'reviewer', description: 'Code review', tier: '4-quality' }
 ];
+
+export function showSwarmAssemble(activeAgents) {
+  if (isDoomsdayMode()) {
+    return showDoomsdaySwarm(activeAgents);
+  }
+
+  console.log('');
+  console.log(chalk.hex('#8b5cf6').bold('  ⚡ AGENT PIPELINE INITIALIZED'));
+  console.log('');
+  
+  activeAgents.forEach((agentInfo) => {
+    const agent = agents[agentInfo.name];
+    if (agent) {
+      console.log(`  ${agent.emoji} ${chalk.hex('#6366f1').bold(agent.name)}`);
+      console.log(`     ${chalk.dim('"' + agent.tagline + '"')}`);
+      console.log('');
+    }
+  });
+}
 
 async function runAgent(agent, task, context, previousOutput, provider) {
   const agentPrompt = await loadAgentPrompt(agent.name);
@@ -67,7 +89,7 @@ async function writeSwarmLog(logDir, task, results, stats) {
 }
 
 export async function swarmCommand(task, options) {
-  console.log(chalk.cyan.bold('\n🐝 Ultra-Dex Swarm Mode v3.0\n'));
+  console.log(chalk.cyan.bold('\n🐝 Ultra-Dex Swarm Mode\n'));
   console.log(chalk.white(`Task: "${task}"\n`));
 
   const startTime = Date.now();
@@ -78,12 +100,12 @@ export async function swarmCommand(task, options) {
       console.log(`  ${i + 1}. @${agent.name} - ${agent.description} [${agent.tier}]`);
     });
     if (options.parallel) {
-      console.log(chalk.blue('\nℹ️  Parallel execution enabled for 2-implementation tier'));
+      console.log(chalk.blue('\nℹ️  Parallel execution enabled for implementation tier'));
     }
     return;
   }
 
-  // Load context & Graph (God Mode)
+  // Load context & Graph
   const contextPath = join(process.cwd(), 'CONTEXT.md');
   const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
   
@@ -108,7 +130,7 @@ export async function swarmCommand(task, options) {
   // Get AI provider
   const provider = getProvider();
   if (!provider) {
-    console.log(chalk.red('No AI provider configured. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_AI_KEY'));
+    console.log(chalk.red('No AI provider configured. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY'));
     return;
   }
 
@@ -116,7 +138,7 @@ export async function swarmCommand(task, options) {
   const logDir = await ensureLogDirectory();
 
   // Update State to indicate Swarm is running
-  const state = await loadState() || { project: { mode: 'GOD_MODE' }, agents: { active: [] } };
+  const state = await loadState() || { project: { mode: 'ULTRA_MODE' }, agents: { active: [] } };
   state.agents = state.agents || { active: [] };
   state.updatedAt = new Date().toISOString();
   await saveState(state);
@@ -126,7 +148,7 @@ export async function swarmCommand(task, options) {
   const agentResults = [];
   const agentTimings = {};
   
-  // Define execution tiers (sorted by tier number)
+  // Define execution tiers
   const executionTiers = options.parallel 
     ? [
         { name: '1-Planning', agents: AGENT_PIPELINE.filter(a => a.tier === '1-planning'), parallel: false },
@@ -144,7 +166,7 @@ export async function swarmCommand(task, options) {
     }
 
     if (tier.parallel) {
-      // Parallel Execution for implementation tier
+      // Parallel Execution
       const tierStart = Date.now();
       const promises = tier.agents.map(async (agent) => {
         const agentStart = Date.now();
@@ -263,7 +285,7 @@ export async function swarmCommand(task, options) {
   });
   console.log(chalk.gray(`\n  Log saved: ${logPath}`));
 
-  console.log(chalk.green.bold('\n✅ Swarm complete!\n'));
+  console.log(chalk.green.bold('\n✅ Swarm execution complete!\n'));
 }
 
 async function loadAgentPrompt(name) {

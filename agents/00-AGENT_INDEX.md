@@ -1,6 +1,6 @@
 # Ultra-Dex Agent Index
 
-Quick reference for all 16 production agents organized by tier.
+Quick reference for all 17 production agents organized by tier.
 
 ---
 
@@ -8,6 +8,7 @@ Quick reference for all 16 production agents organized by tier.
 
 | Agent | Role | When to Use | File |
 |-------|------|-------------|------|
+| **@Meta-Orchestrator** | High-level system coordination & strategy | Complex multi-repo or multi-phase projects | [meta-orchestrator.md](./0-orchestration/meta-orchestrator.md) |
 | **@Orchestrator** | Coordinate all agents for complete features | Building features that span multiple tiers | [orchestrator.md](./0-orchestration/orchestrator.md) |
 
 ---
@@ -95,6 +96,7 @@ Advanced optimization and code improvement.
 | **@Performance** | 21, 22 | 27, 32 |
 | **@Refactoring** | 16, 17 | 13, 22 |
 | **@Orchestrator** | 16, 18 | 12, 24 |
+| **@Meta-Orchestrator** | 1, 2, 26, 34 | 12, 20, 24 |
 
 ---
 
@@ -130,6 +132,9 @@ Advanced optimization and code improvement.
 **Documentation outdated?**
 → @Documentation
 
+**Complex multi-repo orchestration?**
+→ @Meta-Orchestrator
+
 ---
 
 ## Multi-Agent Orchestration
@@ -158,4 +163,4 @@ For complete multi-agent workflows and coordination patterns, see:
 
 ---
 
-*Ultra-Dex v3.0.0 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v3.1.0 - Professional AI Orchestration Meta Layer*

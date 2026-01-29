@@ -8,9 +8,10 @@ import { QUICK_START_TEMPLATE } from '../templates/quick-start.js';
 import { CONTEXT_TEMPLATE } from '../templates/context.js';
 import { validateProjectName, validateSafePath } from '../utils/validation.js';
 import { ASSETS_ROOT, ROOT_FALLBACK, LIVE_TEMPLATES_ROOT } from '../config/paths.js';
-import { githubBlobUrl, githubWebUrl } from '../config/urls.js';
+import { githubBlobUrl } from '../config/urls.js';
 import { copyWithFallback, listWithFallback, readWithFallback } from '../utils/fallback.js';
 import { copyDirectory, pathExists } from '../utils/files.js';
+import { getRandomMessage } from '../utils/messages.js';
 
 const LIVE_STACKS = {
   'next15-prisma-clerk': 'Next.js 15 + Prisma + Clerk',
@@ -21,7 +22,7 @@ const LIVE_STACKS = {
 export function registerInitCommand(program) {
   program
     .command('init')
-    .description('Initialize a new Ultra-Dex project')
+    .description('Initialize a new Ultra-Dex Project')
     .option('-n, --name <name>', 'Project name')
     .option('-d, --dir <directory>', 'Output directory', '.')
     .option('--preview', 'Preview files without creating them')
@@ -29,16 +30,17 @@ export function registerInitCommand(program) {
     .option('--stack <preset>', 'Preset: next15-prisma-clerk, remix-supabase, sveltekit-drizzle')
     .action(async (options) => {
       console.log(chalk.cyan(program.banner));
-      console.log(chalk.bold('\nWelcome to Ultra-Dex! Let\'s plan your SaaS.\n'));
+      console.log(chalk.hex('#8b5cf6').bold('\n⚡ INITIALIZING PROJECT PROTOCOL...\n'));
+      console.log(chalk.italic(chalk.gray(`"${getRandomMessage('start')}"`)));
+      console.log('');
 
       if (options.preview) {
-        console.log('\n📋 Files that would be created:\n');
+        console.log('\n📋 Project Preview (Files that would be created):\n');
         console.log('  QUICK-START.md');
         console.log('  CONTEXT.md');
         console.log('  IMPLEMENTATION-PLAN.md');
         console.log('  docs/CHECKLIST.md');
         console.log('  docs/AI-PROMPTS.md');
-        console.log('\nRun without --preview to create files.');
         return;
       }
 
@@ -60,7 +62,7 @@ export function registerInitCommand(program) {
         if (await pathExists(outputDir, 'dir')) {
           const existing = await fs.readdir(outputDir);
           if (existing.length > 0) {
-            console.log(chalk.red('Target directory is not empty.'));
+            console.log(chalk.red('Target directory is not empty. Execution halted to prevent data loss.'));
             process.exit(1);
           }
         }
@@ -77,14 +79,14 @@ export function registerInitCommand(program) {
         const spinner = ora(`Generating ${LIVE_STACKS[preset]} scaffold...`).start();
         try {
           await copyDirectory(sourcePath, outputDir);
-          spinner.succeed(chalk.green('Live scaffold created successfully!'));
+          spinner.succeed(chalk.green('Project scaffold generated successfully!'));
           console.log(chalk.gray(`\nPreset: ${preset}`));
           console.log(chalk.gray(`Next steps:`));
           console.log(chalk.cyan(`  1. cd ${outputDir}`));
           console.log(chalk.cyan('  2. npm install'));
           console.log(chalk.cyan('  3. npm run dev\n'));
         } catch (error) {
-          spinner.fail(chalk.red('Failed to create live scaffold'));
+          spinner.fail(chalk.red('Failed to generate project scaffold'));
           console.error(`[init] ${error?.message ?? error}`);
           process.exit(1);
         }
@@ -95,103 +97,103 @@ export function registerInitCommand(program) {
         {
           type: 'input',
           name: 'projectName',
-          message: 'What\'s your project name?',
+          message: 'What is the name of this project?',
           default: options.name || 'my-saas',
           validate: validateProjectName,
         },
         {
           type: 'input',
           name: 'ideaWhat',
-          message: 'What are you building? (1 sentence)',
-          validate: (input) => input.length > 0 || 'Please describe your idea',
+          message: 'Define the core purpose (What are you building?):',
+          validate: (input) => input.length > 0 || 'Please describe your project',
         },
         {
           type: 'input',
           name: 'ideaFor',
-          message: 'Who is it for?',
-          validate: (input) => input.length > 0 || 'Please specify your target users',
+          message: 'Target audience (Who are the users)?',
+          validate: (input) => input.length > 0 || 'Please specify your target audience',
         },
         {
           type: 'input',
           name: 'problem1',
-          message: 'Problem #1 you\'re solving:',
+          message: 'Primary problem to solve:',
           default: '',
         },
         {
           type: 'input',
           name: 'problem2',
-          message: 'Problem #2 you\'re solving:',
+          message: 'Secondary problem to solve:',
           default: '',
         },
         {
           type: 'input',
           name: 'problem3',
-          message: 'Problem #3 you\'re solving:',
+          message: 'Tertiary problem to solve:',
           default: '',
         },
         {
           type: 'input',
           name: 'feature1',
-          message: 'Critical production feature:',
+          message: 'Core feature:',
           default: '',
         },
         {
           type: 'list',
           name: 'frontend',
-          message: 'Frontend framework:',
+          message: 'Frontend Technology Stack:',
           choices: ['Next.js', 'Remix', 'SvelteKit', 'Nuxt', 'Other'],
         },
         {
           type: 'list',
           name: 'database',
-          message: 'Database:',
+          message: 'Database Infrastructure:',
           choices: ['PostgreSQL', 'Supabase', 'MongoDB', 'PlanetScale', 'Other'],
         },
         {
           type: 'list',
           name: 'auth',
-          message: 'Authentication:',
+          message: 'Authentication Provider:',
           choices: ['NextAuth', 'Clerk', 'Auth0', 'Supabase Auth', 'Other'],
         },
         {
           type: 'list',
           name: 'payments',
-          message: 'Payments:',
+          message: 'Payment Processor:',
           choices: ['Stripe', 'Lemonsqueezy', 'Paddle', 'None (free)', 'Other'],
         },
         {
           type: 'list',
           name: 'hosting',
-          message: 'Hosting:',
+          message: 'Deployment Platform:',
           choices: ['Vercel', 'Railway', 'Fly.io', 'AWS', 'Other'],
         },
         {
           type: 'confirm',
           name: 'includeCursorRules',
-          message: 'Include cursor-rules for AI assistants? (Cursor, Copilot)',
+          message: 'Install IDE intelligence protocols? (Cursor/Copilot Rules)',
           default: true,
         },
         {
           type: 'confirm',
           name: 'includeFullTemplate',
-          message: 'Copy full 34-section template locally?',
+          message: 'Include full 34-section project template?',
           default: false,
         },
         {
           type: 'confirm',
           name: 'includeDocs',
-          message: 'Copy VERIFICATION.md & AGENT-INSTRUCTIONS.md to docs/?',
+          message: 'Include project documentation standards?',
           default: true,
         },
         {
           type: 'confirm',
           name: 'includeAgents',
-          message: 'Include AI agent prompts? (.agents/ folder)',
+          message: 'Configure AI agent orchestration?',
           default: true,
         },
       ]);
 
-      const spinner = ora('Creating project files...').start();
+      const spinner = ora(getRandomMessage('loading')).start();
 
       try {
         const outputDir = path.resolve(options.dir, answers.projectName);
@@ -239,15 +241,8 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 ## Next Steps
 
 1. Open QUICK-START.md and complete the remaining sections
-2. Copy sections from the full Ultra-Dex template as needed
-3. Use the TaskFlow example as reference
-4. Start building!
-
-## Resources
-
-- [Full Template](${githubBlobUrl('@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md')})
-- [TaskFlow Example](${githubBlobUrl('@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md')})
-- [Methodology](${githubBlobUrl('@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md')})
+2. Customize the implementation plan based on your requirements
+3. Start the agent orchestration to begin development
 `;
 
         await fs.writeFile(path.join(outputDir, 'IMPLEMENTATION-PLAN.md'), planContent);
@@ -274,11 +269,11 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
               await fs.mkdir(dotGithub, { recursive: true });
               await fs.writeFile(path.join(dotGithub, 'copilot-instructions.md'), coreContent);
             } catch {
-              // Core rule not available - skip Copilot setup
+              // Core rule not available
             }
           } catch {
-            console.log(chalk.red('\n  ❌ Cursor rules not found in assets or repo.'));
-            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --rules'));
+            console.log(chalk.red('\n  ✕ IDE intelligence protocols not found.'));
+            console.log(chalk.cyan('  Run: ultra-dex fetch --rules'));
           }
         }
 
@@ -288,8 +283,8 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
           try {
             await copyWithFallback(templatePath, fallbackTemplatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
           } catch {
-            console.log(chalk.red('\n  ❌ Full template not found in assets or repo.'));
-            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --docs'));
+            console.log(chalk.red('\n  ✕ Project template not found.'));
+            console.log(chalk.cyan('  Run: ultra-dex fetch --docs'));
           }
         }
 
@@ -302,8 +297,8 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             await copyWithFallback(verificationPath, fallbackVerificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
             await copyWithFallback(agentPath, fallbackAgentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
           } catch {
-            console.log(chalk.red('\n  ❌ Docs not found in assets or repo.'));
-            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --docs'));
+            console.log(chalk.red('\n  ✕ Documentation standards not found.'));
+            console.log(chalk.cyan('  Run: ultra-dex fetch --docs'));
           }
         }
 
@@ -345,41 +340,42 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
               path.join(agentsDir, 'README.md')
             );
           } catch {
-            console.log(chalk.red('\n  ❌ Agent prompts not found in assets or repo.'));
-            console.log(chalk.cyan('  Fetch: npx ultra-dex fetch --agents'));
+            console.log(chalk.red('\n  ✕ Agent orchestration assets not found.'));
+            console.log(chalk.cyan('  Run: ultra-dex fetch --agents'));
           }
         }
 
-        spinner.succeed(chalk.green('Project created successfully!'));
+        spinner.succeed(chalk.green('Project initialized successfully!'));
 
-        console.log('\n' + chalk.bold('Files created:'));
+        console.log('\n' + chalk.bold('Artifacts created:'));
         console.log(chalk.gray(`  ${outputDir}/`));
         console.log(chalk.gray('  ├── QUICK-START.md'));
         console.log(chalk.gray('  ├── CONTEXT.md'));
         console.log(chalk.gray('  ├── IMPLEMENTATION-PLAN.md'));
         if (answers.includeFullTemplate) {
-          console.log(chalk.gray('  ├── docs/MASTER-PLAN.md (34 sections)'));
+          console.log(chalk.gray('  ├── docs/MASTER-PLAN.md'));
         }
         if (answers.includeDocs) {
           console.log(chalk.gray('  ├── docs/CHECKLIST.md'));
           console.log(chalk.gray('  ├── docs/AI-PROMPTS.md'));
         }
         if (answers.includeCursorRules) {
-          console.log(chalk.gray('  ├── .cursor/rules/ (11 AI rule files)'));
+          console.log(chalk.gray('  ├── .cursor/rules/'));
         }
         if (answers.includeAgents) {
-          console.log(chalk.gray('  └── .agents/ (15 AI agent prompts in 6 tiers)'));
+          console.log(chalk.gray('  └── .agents/'));
         }
 
         console.log('\n' + chalk.bold('Next steps:'));
         console.log(chalk.cyan(`  1. cd ${answers.projectName}`));
-        console.log(chalk.cyan('  2. Open QUICK-START.md and complete it'));
-        console.log(chalk.cyan('  3. Start building! 🚀'));
+        console.log(chalk.cyan('  2. Open QUICK-START.md'));
+        console.log(chalk.cyan('  3. ultra-dex swarm "Analyze requirements"'));
 
-        console.log('\n' + chalk.gray('Full Ultra-Dex repo:'));
-        console.log(chalk.blue(`  ${githubWebUrl()}`));
+        console.log('\n' + chalk.hex('#8b5cf6').bold('  ✓ SYSTEM READY.'));
+        console.log('');
+        
       } catch (error) {
-        spinner.fail(chalk.red('Failed to create project'));
+        spinner.fail(chalk.red('Failed to initialize project'));
         console.error(`[init] ${error?.message ?? error}`);
         process.exit(1);
       }

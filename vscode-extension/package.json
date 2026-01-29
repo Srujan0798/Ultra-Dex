@@ -3,9 +3,9 @@
   "displayName": "Ultra-Dex",
   "description": "Ultra-Dex AI agent explorer, alignment tools, and project orchestration for VS Code.",
   "version": "1.0.0",
-  "publisher": "ultra-dex",
+  "publisher": "SrujanSaiKarna",
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
     "Other",
@@ -84,7 +84,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
-    "@types/vscode": "^1.90.0",
+    "@types/vscode": "^1.80.0",
     "typescript": "^5.5.4"
   }
 }

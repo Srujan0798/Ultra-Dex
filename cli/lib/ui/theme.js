@@ -1,34 +1,48 @@
-// Ultra-Dex CLI — Doomsday Theme Interface
+// Ultra-Dex CLI — Professional Purple Theme
 // This file provides the visual styling for the CLI
 
 import chalk from 'chalk';
+import gradient from 'gradient-string';
 
 // ═══════════════════════════════════════════════════════════════
-// DOOMSDAY COLOR PALETTE (Like Gemini's green, but Doomsday style)
+// PROFESSIONAL PURPLE COLOR PALETTE
 // ═══════════════════════════════════════════════════════════════
+
+export const themeColors = {
+  primary: '#6366f1',     // Indigo
+  secondary: '#8b5cf6',   // Purple
+  accent: '#d946ef',      // Pink
+  success: '#22c55e',     // Green
+  warning: '#f59e0b',     // Amber
+  error: '#ef4444',       // Red
+  dim: '#6b7280',         // Gray
+  muted: '#4b5563'        // Darker Gray
+};
+
+export const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
 
 export const theme = {
     // Primary brand colors
-    primary: chalk.hex('#22c55e'),      // Doomsday green (like matrix/gemini)
-    secondary: chalk.hex('#10b981'),    // Emerald
-    accent: chalk.hex('#4ade80'),       // Bright green
+    primary: chalk.hex(themeColors.primary),
+    secondary: chalk.hex(themeColors.secondary),
+    accent: chalk.hex(themeColors.accent),
 
     // Status colors
-    success: chalk.hex('#22c55e'),      // Green
-    error: chalk.hex('#ef4444'),        // Red
-    warning: chalk.hex('#f59e0b'),      // Amber
-    info: chalk.hex('#3b82f6'),         // Blue
+    success: chalk.hex(themeColors.success),
+    error: chalk.hex(themeColors.error),
+    warning: chalk.hex(themeColors.warning),
+    info: chalk.hex(themeColors.primary),
 
     // Text styles
-    title: chalk.hex('#22c55e').bold,   // Green bold
-    subtitle: chalk.hex('#6ee7b7'),     // Light green
-    dim: chalk.hex('#6b7280'),          // Gray
-    muted: chalk.hex('#4b5563'),        // Darker gray
+    title: chalk.hex(themeColors.secondary).bold,
+    subtitle: chalk.hex(themeColors.primary),
+    dim: chalk.hex(themeColors.dim),
+    muted: chalk.hex(themeColors.muted),
 
     // Special
-    highlight: chalk.hex('#22c55e').inverse,
-    link: chalk.hex('#60a5fa').underline,
-    code: chalk.hex('#a5f3fc'),         // Cyan for code
+    highlight: chalk.hex(themeColors.secondary).inverse,
+    link: chalk.hex(themeColors.primary).underline,
+    code: chalk.hex(themeColors.accent),
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -37,7 +51,7 @@ export const theme = {
 
 export function box(content, title = '') {
     const width = 60;
-    const border = theme.primary;
+    const border = theme.secondary;
 
     const top = border('╭' + '─'.repeat(width - 2) + '╮');
     const bottom = border('╰' + '─'.repeat(width - 2) + '╯');
@@ -74,14 +88,14 @@ export function subheader(text) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// STATUS INDICATORS (Like Claude Code's checkmarks)
+// STATUS INDICATORS
 // ═══════════════════════════════════════════════════════════════
 
 export const status = {
     success: theme.success('✓'),
     error: theme.error('✗'),
     warning: theme.warning('⚠'),
-    info: theme.info('●'),
+    info: theme.info('ℹ'),
     pending: theme.dim('○'),
     running: theme.accent('◉'),
     arrow: theme.primary('→'),
@@ -94,7 +108,7 @@ export function statusLine(icon, text, detail = '') {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// TABLE STYLING (Like CLI tables with borders)
+// TABLE STYLING
 // ═══════════════════════════════════════════════════════════════
 
 export function table(headers, rows) {
@@ -148,7 +162,7 @@ export function loadingDots() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// KEYBOARD HINTS (Like at bottom of Gemini CLI)
+// KEYBOARD HINTS
 // ═══════════════════════════════════════════════════════════════
 
 export function keyHints(hints) {

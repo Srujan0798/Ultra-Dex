@@ -1,0 +1,33 @@
+{
+  "version": "2.4.0",
+  "updatedAt": "2026-01-29T16:53:57.956Z",
+  "project": {
+    "name": "Ultra-Dex"
+  },
+  "files": {
+    "CONTEXT.md": {
+      "exists": true,
+      "size": 677,
+      "modified": "2026-01-28T13:59:40.476Z"
+    },
+    "IMPLEMENTATION-PLAN.md": {
+      "exists": true,
+      "size": 1907,
+      "modified": "2026-01-28T14:36:50.798Z"
+    },
+    "CHECKLIST.md": {
+      "exists": false
+    },
+    "QUICK-START.md": {
+      "exists": true,
+      "size": 1015,
+      "modified": "2026-01-28T14:51:04.174Z"
+    }
+  },
+  "sections": {
+    "total": 34,
+    "completed": 0,
+    "list": []
+  },
+  "score": 30
+}

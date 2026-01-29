@@ -9,11 +9,12 @@ import { UltraDexSocket } from '../mcp/websocket.js';
 import { swarmCommand } from './swarm.js';
 import { glob } from 'glob';
 import { execSync, spawn } from 'child_process';
+import { getRandomMessage } from '../utils/messages.js';
 
 export function registerServeCommand(program) {
   program
     .command('serve')
-    .description('Start the Ultra-Dex Active Kernel (MCP + Dashboard + API)')
+    .description('Open the Multiverse Portal (Active Kernel)')
     .option('-p, --port <port>', 'Port to listen on', '3001')
     .option('--stdio', 'Run in Stdio mode (MCP Standard Only)', false)
     .action(async (options) => {
@@ -57,15 +58,16 @@ async function getDashboardHTML() {
 async function startUnifiedKernel(portStr) {
   const port = Number.parseInt(portStr, 10);
       
-  console.log(chalk.bold.cyan('\n🚀 Ultra-Dex Active Kernel Starting (GOD MODE)...\n'));
+  console.log(chalk.bold.hex('#7c3aed')('\n🚀 Opening Multiverse Portal (Infinity Kernel)...\n'));
+  console.log(chalk.italic(chalk.gray(`"${getRandomMessage('loading')}"`)));
 
   // Initialize Graph
-  console.log(chalk.gray('🧠 Initializing Neural Link (Code Graph)...'));
+  console.log(chalk.gray('🧠 Linking Neural Interface (Code Graph)...'));
   try {
     await projectGraph.scan();
-    console.log(chalk.green(`✅ Graph loaded: ${projectGraph.nodes.size} nodes`));
+    console.log(chalk.green(`✅ Graph stabilized: ${projectGraph.nodes.size} nodes`));
   } catch (e) {
-    console.log(chalk.yellow(`⚠️ Graph init failed: ${e.message}`));
+    console.log(chalk.yellow(`⚠️ Graph alignment failed: ${e.message}`));
   }
 
   const server = http.createServer(async (req, res) => {
@@ -96,8 +98,8 @@ async function startUnifiedKernel(portStr) {
       if (pathname === '/api/info') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-          name: 'Ultra-Dex Active Kernel',
-          version: '2.4.1',
+          name: 'Ultra-Dex Multiverse Kernel',
+          version: '3.1.0',
           status: 'online',
           endpoints: ['/api/state', '/api/plan', '/api/context', '/api/graph', '/api/swarm']
         }, null, 2));
@@ -134,7 +136,7 @@ async function startUnifiedKernel(portStr) {
              swarmCommand(objective, { parallel, dryRun: false }).catch(err => console.error(err));
              
              res.writeHead(202, { 'Content-Type': 'application/json' });
-             res.end(JSON.stringify({ status: 'accepted', message: 'Swarm started' }));
+             res.end(JSON.stringify({ status: 'accepted', message: 'Swarm initiated' }));
            } catch (e) {
              res.writeHead(400, { 'Content-Type': 'application/json' });
              res.end(JSON.stringify({ error: e.message }));
@@ -159,13 +161,13 @@ async function startUnifiedKernel(portStr) {
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive'
           });
-          res.write(`data: ${JSON.stringify({ type: 'log', message: 'Connected to Active Kernel' })}\n\n`);
+          res.write(`data: ${JSON.stringify({ type: 'log', message: 'Connected to Multiverse Kernel' })}\n\n`);
           // We'd need to manage clients here if we wanted to push updates
           return;
       }
 
       res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Not found' }));
+      res.end(JSON.stringify({ error: 'Not found in this timeline' }));
 
     } catch (error) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -176,11 +178,11 @@ async function startUnifiedKernel(portStr) {
   const wss = new UltraDexSocket(server);
 
   server.listen(port, () => {
-    console.log(chalk.green(`✅ Unified Kernel active at http://localhost:${port}`));
+    console.log(chalk.green(`✅ Portal Stabilized at http://localhost:${port}`));
     console.log(chalk.gray(`   • Dashboard: http://localhost:${port}/`));
     console.log(chalk.gray(`   • MCP API:   http://localhost:${port}/api/info`));
     
-    console.log(chalk.bold.magenta('\n🔌 AI Tool Integration:'));
+    console.log(chalk.bold.hex('#dc2626')('\n🔌 Weapon Integration (IDE):'));
     console.log(chalk.white('   Cursor IDE: '));
     console.log(chalk.cyan(`     URL: http://localhost:${port}/api/info`));
     console.log(chalk.white('   Claude Desktop:'));
@@ -190,7 +192,7 @@ async function startUnifiedKernel(portStr) {
     fs.watch(process.cwd(), { recursive: true }, async (eventType, filename) => {
       if (!filename || filename.includes('node_modules') || filename.includes('.git') || filename.includes('IMPLEMENTATION-PLAN.md')) return;
       
-      console.log(chalk.gray(`\n🔄 Change in ${filename}. Synchronizing...`));
+      console.log(chalk.gray(`\n🔄 Timeline Shift detected in ${filename}. Synchronizing...`));
       try {
         const state = await loadState();
         if (state) {

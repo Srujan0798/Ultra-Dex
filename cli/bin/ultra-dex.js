@@ -1,6 +1,41 @@
 #!/usr/bin/env node
 
+process.env.FORCE_COLOR = '3';
+
 import { Command } from 'commander';
+import updateNotifier from 'update-notifier';
+import boxen from 'boxen';
+import chalk from 'chalk';
+import { setDoomsdayMode } from '../lib/utils/theme-state.js';
+
+// Check for doomsday flag early
+if (process.argv.includes('--doomsday')) {
+  setDoomsdayMode(true);
+}
+
+import { showHelp as showDoomsdayHelp } from '../lib/themes/doomsday.js';
+
+if (process.argv.includes('--help') && process.argv.includes('--doomsday')) {
+  showDoomsdayHelp();
+  process.exit(0);
+}
+
+// Check for updates
+const pkg = { name: 'ultra-dex', version: '3.2.0' };
+const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 });
+
+if (notifier.update) {
+  console.log(boxen(
+    `Update available! ${chalk.dim(notifier.update.current)} → ${chalk.green(notifier.update.latest)}\n` +
+    `Run ${chalk.cyan('npm install -g ultra-dex')} to update`,
+    {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'yellow'
+    }
+  ));
+}
 
 import { banner } from '../lib/commands/banner.js';
 import { registerInitCommand } from '../lib/commands/init.js';
@@ -46,7 +81,7 @@ program.banner = banner;
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('3.1.0');
+  .version('3.2.0');
 
 registerInitCommand(program);
 registerAuditCommand(program);

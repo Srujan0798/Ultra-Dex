@@ -1,60 +1,43 @@
-// Ultra-Dex CLI — Banner with Doomsday Theme
-// Matrix-style green interface like Gemini CLI
-
+import gradient from 'gradient-string';
+import boxen from 'boxen';
 import chalk from 'chalk';
 
-// Doomsday green theme (like Gemini CLI's green)
-const green = chalk.hex('#22c55e');
-const brightGreen = chalk.hex('#4ade80');
-const dimGreen = chalk.hex('#166534');
-const gray = chalk.hex('#6b7280');
+const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
 
-const logo = `
-  ██╗   ██╗██╗  ████████╗██████╗  █████╗ ██████╗ ███████╗██╗  ██╗
-  ██║   ██║██║  ╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝
-  ██║   ██║██║     ██║   ██████╔╝███████║██║  ██║█████╗   ╚███╔╝ 
-  ██║   ██║██║     ██║   ██╔══██╗██╔══██║██║  ██║██╔══╝   ██╔██╗ 
-  ╚██████╔╝███████╗██║   ██║  ██║██║  ██║██████╔╝███████╗██╔╝ ██╗
-   ╚═════╝ ╚══════╝╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝`;
+const asciiLogo = `
+██╗   ██╗██╗  ████████╗██████╗  █████╗       ██████╗ ███████╗██╗  ██╗
+██║   ██║██║  ╚══██╔══╝██╔══██╗██╔══██╗      ██╔══██╗██╔════╝╚██╗██╔╝
+██║   ██║██║     ██║   ██████╔╝███████║█████╗██║  ██║█████╗   ╚███╔╝ 
+██║   ██║██║     ██║   ██╔══██╗██╔══██║╚════╝██║  ██║██╔══╝   ██╔██╗ 
+╚██████╔╝███████╗██║   ██║  ██║██║  ██║      ██████╔╝███████╗██╔╝ ██╗
+ ╚═════╝ ╚══════╝╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝      ╚═════╝ ╚══════╝╚═╝  ╚═╝`;
 
-export const banner = green(logo);
+export const banner = asciiLogo;
 
-export function showBanner() {
-    console.log('');
-    console.log(green(logo));
-    console.log('');
-    console.log(gray('  ─────────────────────────────────────────────────────────────'));
-    console.log(`  ${green.bold('ULTRA-DEX')} ${gray('v3.1.0')} ${gray('•')} ${brightGreen('AI Orchestration Meta-Layer')}`);
-    console.log(gray('  ─────────────────────────────────────────────────────────────'));
-    console.log('');
+export function showBanner(version = '3.2.0') {
+  console.log(ultraGradient(asciiLogo));
+  console.log(boxen(
+    `${chalk.hex('#8b5cf6').bold('🪐 Ultra-Dex')} ${chalk.dim('v' + version)}
+
+` +
+    `${chalk.hex('#6366f1')('AI Orchestration Meta-Layer')}
+
+` +
+    `${chalk.dim('github.com/Srujan0798/Ultra-Dex')}`,
+    {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: '#8b5cf6',
+      dimBorder: true
+    }
+  ));
 }
 
 export function showCompactBanner() {
-    console.log('');
-    console.log(`  ${green.bold('◆ ULTRA-DEX')} ${gray('v3.1.0')}`);
-    console.log('');
+  console.log(`  ${chalk.hex('#8b5cf6').bold('🪐 Ultra-Dex')} ${chalk.dim('v3.2.0')}`);
 }
 
 export function showWelcome() {
-    showBanner();
-
-    console.log(gray('  Welcome to Ultra-Dex. What would you like to do?'));
-    console.log('');
-
-    const commands = [
-        ['init', 'Initialize new project'],
-        ['generate', 'Create implementation plan'],
-        ['agents', 'Browse 16 AI agents'],
-        ['swarm', 'Run autonomous pipeline'],
-        ['serve', 'Start MCP server'],
-        ['dashboard', 'Open monitoring UI'],
-    ];
-
-    commands.forEach(([cmd, desc]) => {
-        console.log(`  ${green('→')} ${brightGreen(cmd.padEnd(14))} ${gray(desc)}`);
-    });
-
-    console.log('');
-    console.log(gray('  Run ') + brightGreen('ultra-dex <command> --help') + gray(' for more information'));
-    console.log('');
+  showBanner();
 }

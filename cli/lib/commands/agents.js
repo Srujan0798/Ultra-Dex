@@ -5,6 +5,7 @@ import { ASSETS_ROOT, ROOT_FALLBACK } from '../config/paths.js';
 import { githubBlobUrl } from '../config/urls.js';
 import { readWithFallback } from '../utils/fallback.js';
 import { pathExists } from '../utils/files.js';
+import { showAgentsTable } from '../utils/tables.js';
 
 export const AGENTS = [
   { name: 'orchestrator', description: 'Multi-agent coordination', file: '0-orchestration/orchestrator.md', tier: 'Orchestration' },
@@ -88,23 +89,25 @@ async function listAgents() {
   const customAgents = await listCustomAgents();
   const totalAgents = AGENTS.length + customAgents.length;
   console.log(chalk.bold(`\n🤖 Ultra-Dex AI Agents (${totalAgents} Total)\n`));
-  console.log(chalk.gray('Organized by tier for production pipeline\n'));
-
-  let currentTier = '';
-  AGENTS.forEach((agent) => {
-    if (agent.tier !== currentTier) {
-      currentTier = agent.tier;
-      console.log(chalk.bold(`\n  ${currentTier} Tier:`));
-    }
-    console.log(chalk.cyan(`    ${agent.name}`) + chalk.gray(` - ${agent.description}`));
-  });
+  
+  // Format agents for the table
+  const agentsForTable = AGENTS.map(agent => ({
+    tier: agent.tier,
+    name: agent.name,
+    status: 'ready'
+  }));
 
   if (customAgents.length > 0) {
-    console.log(chalk.bold('\n  Custom Agents:'));
-    customAgents.forEach((name) => {
-      console.log(chalk.cyan(`    ${name}`));
+    customAgents.forEach(name => {
+      agentsForTable.push({
+        tier: 'Custom',
+        name: name,
+        status: 'ready'
+      });
     });
   }
+
+  showAgentsTable(agentsForTable);
 
   console.log('\n' + chalk.bold('Usage:'));
   console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
