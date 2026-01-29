@@ -28,10 +28,20 @@ We have successfully transitioned from a static framework to an active **MCP Ker
 | `serve` | ✅ Live | Start the Active Kernel (MCP Server) |
 | `dashboard` | ✅ Live | Launch God Mode UI (port 3002) |
 | `swarm` | ✅ Live | Execute multi-agent workflows |
+| `scaffold` | ✅ **NEW** | Generate production boilerplate (Next.js, Remix, SvelteKit) |
 | `review` | ✅ Live | AI-powered code alignment check |
 | `state` | ✅ Live | Manage persistent project state |
 | `agent` | ✅ Live | Interactive agent builder & registry |
 | `generate` | ✅ Live | Create full implementation plans |
+
+### Assets & Patterns
+| Asset | Count | Description |
+|-------|-------|-------------|
+| CLI Commands | 38+ | Full automation suite |
+| AI Agents | 17 | Tiered agent prompts |
+| Cursor Rules | 17 | Including Server Components, Actions, Edge, Streaming |
+| Live Templates | 3 | next15-prisma-clerk, remix-supabase, sveltekit-drizzle |
+| Code Patterns | 5 | server-actions, prisma-schema, clerk-middleware, trpc-router, rls-policies |
 
 ---
 
@@ -75,7 +85,7 @@ Ultra-Dex is not an editor, and it is not just another agent. It is the **Orches
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| **v3.2.0** | **Jan 29, 2026** | **Professional Purple Theme**, Competitive Positioning Module, Refined Swarm Checkpoints, Enhanced Dashboard UI |
+| **v3.2.0** | **Jan 30, 2026** | **Scaffold Command**, 4 new cursor rules (14-17), Production code patterns, Philosophy section, HOW-TO-USE guide |
 | **v3.1.0** | **Jan 28, 2026** | Performance Optimization, Extended MCP Tooling Support, Semantic History Alpha |
 | v3.0.0 | Jan 28, 2026 | **God Mode**: Unified Kernel, CPG Swarms, VS Code Extension, Executable 21-Step Verification |
 | v2.4.0 | Jan 27, 2026 | Kernel Launch: MCP Serve, Dashboard, Swarm, State Management |
