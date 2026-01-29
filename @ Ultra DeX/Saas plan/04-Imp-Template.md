@@ -5,7 +5,7 @@ RAW IDEA: "[YOUR IDEA HERE]"
 INSTRUCTIONS FOR AI AGENTS:
 
 **Content Requirements:**
-- Generate complete, detailed content for ALL sections (1-34)
+- Generate complete, detailed content for ALL sections (1-35)
 - Do NOT skip, merge, or shorten any section
 - Provide actionable, specific information (no generic placeholders)
 - Break down features into atomic tasks (4-9 hours each)
@@ -47,6 +47,7 @@ Use this to track which sections you've completed:
 | **Production Prep** | 19, 21, 22, 27 | 2-3 hours | [ ] |
 | **Polish** | 28, 29, 30, 31 | As needed | [ ] |
 | **Advanced** | 23-26, 32-34 | As needed | [ ] |
+| **God Mode** | 35 | 1 hour | [ ] |
 
 > **Tip:** Don't fill all sections upfront! See [02-HOW-TO-USE.md](./02-HOW-TO-USE.md) for the phased approach.
 
@@ -61,8 +62,8 @@ Use this to track which sections you've completed:
 **Production Prep:**
 [Section 19](#section-19-deployment-plan) | [Section 21](#section-21-security-guidelines) | [Section 22](#section-22-performance-requirements) | [Section 27](#section-27-error-handling)
 
-**Advanced:**
-[Section 28](#section-28-legal--compliance) | [Section 29](#section-29-seo) | [Section 30](#section-30-i18n) | [Section 33](#section-33-ai-agent-architecture)
+**Advanced & God Mode:**
+[Section 28](#section-28-legal--compliance) | [Section 29](#section-29-seo) | [Section 30](#section-30-i18n) | [Section 33](#section-33-ai-agent-architecture) | [Section 35](#section-35-agentic-orchestration--god-mode)
 
 ═══════════════════════════════════════════════════════════════
 
@@ -5542,6 +5543,79 @@ async function getAIResponse(prompt) {
   }
 }
 ```
+
+---
+
+## SECTION 35: AGENTIC ORCHESTRATION & GOD MODE (v3.0)
+
+------------------------------------------------------------------
+
+### 35.1 Active Kernel Architecture
+
+**Unified Kernel Components:**
+- **MCP Server (Port 3001):** Bridge for Claude/Cursor to read live state
+- **Dashboard UI (Port 3001/dashboard):** Real-time project visualization
+- **WebSocket Stream:** Live updates for IDE extensions and agents
+- **Code Property Graph (CPG):** In-memory structural map of the codebase
+
+**Kernel Startup:**
+```bash
+npx ultra-dex serve
+```
+
+### 35.2 Swarm Workflow Definition
+
+**Standard Swarm Pipeline:**
+1. **Planner:** Decomposes request into atomic tasks
+2. **Graph Analysis:** Maps dependencies using CPG
+3. **Execution Tier:** 
+   - @Backend (API)
+   - @Frontend (UI)
+   - @Database (Schema)
+4. **Verification Tier:**
+   - @Reviewer (21-Step Check)
+   - @Testing (Unit/E2E)
+
+**Triggering a Swarm:**
+- **CLI:** `npx ultra-dex swarm "Add Stripe Payments"`
+- **Dashboard:** "Deploy Agents" button
+- **IDE:** Right-click code -> "Trigger Swarm"
+
+### 35.3 AI Quality Gate Configuration
+
+**Pre-commit Enforcement:**
+The AI Quality Gate runs an architectural review on every commit.
+
+**Configuration (.ultra/quality.json):**
+```json
+{
+  "gate": {
+    "strict_mode": true,
+    "min_score": 85,
+    "required_checks": [
+      "security_scan",
+      "architecture_compliance",
+      "zod_validation_present"
+    ]
+  }
+}
+```
+
+**Bypass (Emergency Only):**
+```bash
+git commit -m "hotfix: critical bug" --no-verify
+```
+
+### 35.4 Context Map Structure
+
+**The "Brain" (.ultra/state.json):**
+- **Project Mode:** GOD_MODE
+- **Phase Status:** Live tracking of 5 phases
+- **Agent Registry:** Active/Idle status of 16 agents
+- **Graph Summary:** Node/Edge counts
+
+**Syncing Context:**
+The kernel automatically updates `IMPLEMENTATION-PLAN.md` when code changes are detected.
 
 ---
 

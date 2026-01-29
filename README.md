@@ -15,7 +15,7 @@
 
 ---
 
-## 🚀 NEW: AI-Powered CLI (v3.0)
+## 🚀 NEW: Ultra-Dex v3.0 (God Mode)
 
 **The Meta-Orchestration Layer for AI Development**
 
@@ -25,7 +25,7 @@ Ultra-Dex v3.0 introduces a fully autonomous "Active Kernel" that coordinates mu
 # Run autonomous agent swarms with parallel execution
 npx ultra-dex swarm "Build user authentication" --parallel
 
-# Start the Active Kernel (MCP + WebSocket)
+# Start the Active Kernel (MCP + WebSocket + Dashboard)
 npx ultra-dex serve
 
 # Generate editor configuration
@@ -38,6 +38,78 @@ npx ultra-dex watch --interval 1000
 **35+ commands. Autonomous agents. MCP integration. The future of AI development.**
 
 Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
+
+---
+
+## ✨ v3.0 Feature Highlights
+
+- **Unified Active Kernel** - One process serves MCP, dashboard, REST API, and WebSocket streaming (`ultra-dex serve`).
+- **Graph-Augmented Swarms** - Agents receive a Code Property Graph (CPG) context for structural reasoning.
+- **Executable Verification** - `ultra-dex verify` runs the 21-Step framework on any task.
+- **Self-Healing CI** - `ultra-dex ci-monitor` listens to CI failures and triggers AI-assisted fixes.
+- **Autonomous Implementation** - `ultra-dex auto-implement "feature"` handles plan → code → verify.
+- **Live Dashboard** - Agent status, timeline, and quality signals in real time.
+
+---
+
+## 📦 Installation
+
+```bash
+npm install -g ultra-dex
+```
+
+Or run without installing:
+
+```bash
+npx ultra-dex --help
+```
+
+**Requirements:** Node.js 18+ and Git.
+
+---
+
+## 🔌 MCP Integration Quick Start
+
+1. Start the Active Kernel:
+   ```bash
+   npx ultra-dex serve
+   ```
+2. Generate Claude Desktop MCP config:
+   ```bash
+   npx ultra-dex config --mcp
+   ```
+3. Open Claude Desktop, reload MCP servers, and connect to the project.
+
+Full guide: **[docs/MCP-INTEGRATION.md](./docs/MCP-INTEGRATION.md)**.
+
+---
+
+## 🆚 VS Code Extension Usage
+
+The Ultra-Dex VS Code extension provides sidebar agent browsing, alignment checks, and quick actions.
+
+```bash
+cd vscode-extension
+npm install
+npm run compile
+```
+
+- Press `F5` to launch the Extension Development Host.
+- Run **Ultra-Dex: Select Agent** from the command palette.
+
+Local-only extension (not published). More: **[vscode-extension/README.md](./vscode-extension/README.md)**.
+
+---
+
+## 🛠️ CI/CD Setup
+
+1. Install local pre-commit gate:
+   ```bash
+   npx ultra-dex pre-commit --install
+   ```
+2. Add GitHub Actions workflow (alignment + validation + export).
+
+Full guide: **[docs/CICD-GUIDE.md](./docs/CICD-GUIDE.md)**.
 
 ---
 
@@ -163,58 +235,35 @@ your-project/
 └── .github/copilot-instructions.md ← (optional) Copilot rules
 ```
 
-**CLI Commands:**
+**CLI Commands (16):**
 ```bash
-# 🚀 Setup & Planning
-npx ultra-dex init              # Interactive setup
-npx ultra-dex generate "idea"   # AI generates full 34-section plan
-npx ultra-dex init --live --stack next15-prisma-clerk  # Runnable scaffold
+# Setup & Planning
+npx ultra-dex init
+npx ultra-dex generate "idea"
+npx ultra-dex examples
 
-# 🤖 AI-Assisted Development
-npx ultra-dex build             # Auto-load context, select agent, get prompt
-npx ultra-dex build --agent backend --task "Add user API"
-npx ultra-dex swarm "Add authentication" --parallel  # Full agent pipeline
-npx ultra-dex auto-implement "Feature X" # Autonomous implementation
+# Agents
+npx ultra-dex agents
+npx ultra-dex agent backend
 
-# 📊 State & Monitoring
-npx ultra-dex status            # Current project state
-npx ultra-dex align             # Quick alignment score (0-100)
-npx ultra-dex dashboard         # Local web dashboard (port 3002)
-npx ultra-dex watch             # Auto-update state on file changes
+# Build & Review
+npx ultra-dex build
+npx ultra-dex review
+npx ultra-dex align
 
-# 🔍 Code Review & Validation
-npx ultra-dex review            # AI-powered code review against plan
-npx ultra-dex review --quick    # Quick structure check (no AI)
-npx ultra-dex diff              # Compare plan vs actual code
-npx ultra-dex audit             # Check project completeness
-npx ultra-dex validate          # Validate project structure
+# Project Checks
+npx ultra-dex audit
+npx ultra-dex validate
 
-# 🔌 MCP & Integration
-npx ultra-dex serve             # Active Kernel (MCP + WebSocket)
-npx ultra-dex config --mcp      # Generate Claude Desktop MCP config
-npx ultra-dex config --cursor   # Generate Cursor rules
-npx ultra-dex doctor            # Diagnose setup issues
+# MCP & Automation
+npx ultra-dex serve
+npx ultra-dex hooks
+npx ultra-dex fetch
+npx ultra-dex sync
 
-# 👥 Team Collaboration
-npx ultra-dex team init         # Initialize team config
-npx ultra-dex team add dev@acme.com --role admin
-npx ultra-dex team list
-npx ultra-dex team remove dev@acme.com
-
-# 🔧 CI/CD & Automation
-npx ultra-dex pre-commit --install  # Install git hooks
-npx ultra-dex hooks             # Set up git pre-commit validation
-
-# 📦 Export & Utilities
-npx ultra-dex export --format html  # Export to HTML/JSON/Markdown
-npx ultra-dex upgrade --check       # Check for CLI updates
-npx ultra-dex pack backend          # Package context + agent for external AI
-npx ultra-dex sync                  # Sync CONTEXT.md with codebase
-
-# 📚 Context & Agents
-npx ultra-dex agents            # List AI agent prompts
-npx ultra-dex agent backend     # Show specific agent prompt
-npx ultra-dex workflow auth     # Show workflow for authentication
+# Guides
+npx ultra-dex workflow auth
+npx ultra-dex suggest
 ```
 
 ---
@@ -430,7 +479,7 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 16 Production-Ready Agents (v3.0.0)
+### 16 Production-Ready Agents (v3.0)
 
 Ultra-Dex includes 16 specialized agent prompts **organized into 7 tiers** for the production pipeline. Use the CLI to run agents automatically:
 
@@ -502,15 +551,16 @@ npx ultra-dex serve
 
 ### Endpoints
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /` | Server info |
-| `GET /context` | All context files (CONTEXT.md, IMPLEMENTATION-PLAN.md) |
-| `GET /state` | Machine-readable project state |
-| `GET /score` | Alignment score (0-100) |
-| `GET /agents` | List of available agents |
-| `GET /agent/:name` | Specific agent prompt |
-| `GET /refresh` | Force state recalculation |
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Dashboard UI |
+| `/api/info` | GET | Active Kernel metadata and endpoint list |
+| `/api/state` | GET | Machine-readable project state |
+| `/api/plan` | GET | Implementation plan (markdown) |
+| `/api/graph` | GET | Code Property Graph summary |
+| `/api/swarm` | POST | Trigger a swarm run |
+| `/stream` | WS | WebSocket event stream |
+| `/events` | SSE | Dashboard events stream |
 
 ### Claude Desktop Configuration
 
@@ -518,8 +568,6 @@ npx ultra-dex serve
 # Generate config automatically
 npx ultra-dex config --mcp
 ```
-
-This creates the MCP configuration for Claude Desktop to connect directly to your project.
 
 ---
 
@@ -535,11 +583,12 @@ npx ultra-dex dashboard
 - Real-time alignment score
 - Project state visualization
 - Agent status overview
+- Action history + live logs
 - Auto-refresh every 30 seconds
 
 ---
 
-## Multi-Tool AI Orchestration (v1.5-1.6)
+## Multi-Tool AI Orchestration
 
 **Ultra-Dex is the ONLY framework that coordinates multiple AI tools together.**
 
