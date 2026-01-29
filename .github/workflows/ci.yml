@@ -48,9 +48,9 @@ jobs:
           echo "Checking for required files..."
           test -f README.md || { echo "❌ README.md missing"; exit 1; }
           test -f CHANGELOG.md || { echo "❌ CHANGELOG.md missing"; exit 1; }
-          test -f QUICK-REFERENCE.md || { echo "❌ QUICK-REFERENCE.md missing"; exit 1; }
-          test -f ROADMAP.md || { echo "❌ ROADMAP.md missing"; exit 1; }
-          test -f WORKFLOW-DIAGRAMS.md || { echo "❌ WORKFLOW-DIAGRAMS.md missing"; exit 1; }
+          test -f docs/QUICK-REFERENCE.md || { echo "❌ docs/QUICK-REFERENCE.md missing"; exit 1; }
+          test -f docs/ROADMAP.md || { echo "❌ docs/ROADMAP.md missing"; exit 1; }
+          test -f docs/WORKFLOW-DIAGRAMS.md || { echo "❌ docs/WORKFLOW-DIAGRAMS.md missing"; exit 1; }
           test -d agents || { echo "❌ agents/ directory missing"; exit 1; }
           test -d guides || { echo "❌ guides/ directory missing"; exit 1; }
           test -d templates || { echo "❌ templates/ directory missing"; exit 1; }
