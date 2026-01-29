@@ -39,7 +39,7 @@ We have successfully transitioned from a static framework to an active **MCP Ker
 |-------|-------|-------------|
 | CLI Commands | 38+ | Full automation suite |
 | AI Agents | 17 | Tiered agent prompts |
-| Cursor Rules | 17 | Including Server Components, Actions, Edge, Streaming |
+| Cursor Rules | 18 | Including AI Integration, Server Components, Actions, Edge, Streaming |
 | Live Templates | 3 | next15-prisma-clerk, remix-supabase, sveltekit-drizzle |
 | Code Patterns | 5 | server-actions, prisma-schema, clerk-middleware, trpc-router, rls-policies |
 
