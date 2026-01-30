@@ -213,6 +213,8 @@ export function registerRunCommand(program) {
     .option('-p, --provider <provider>', 'AI provider')
     .option('-k, --key <apiKey>', 'API key')
     .option('-o, --output <file>', 'Output file')
+    .option('--stream', 'Stream output in real-time')
+    .option('--no-stream', 'Disable streaming')
     .action(async (agentName, options) => {
       const configured = checkConfiguredProviders();
       const hasProvider = configured.some(p => p.configured) || options.key;

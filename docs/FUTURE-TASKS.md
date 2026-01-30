@@ -1,7 +1,29 @@
 # Ultra-Dex Future Tasks & Recommendations
 
 > Generated: 2026-01-30
-> Current Version: v3.3.0 "Survival Mode"
+> Current Version: v3.4.0 "Ecosystem Mode"
+
+---
+
+## Completed in v3.4.0
+
+- [x] LangChain Adapter (`cli/lib/providers/langchain.js`)
+  - Chain templates: summarize, codeReview, taskBreakdown
+  - RAG support with vector stores
+  - Memory sync with Ultra-Dex state
+- [x] OpenAI Assistants Sync (`cli/lib/providers/openai-assistants.js`)
+  - Thread and assistant management
+  - Code interpreter support
+  - Ultra-Dex agent creation as OpenAI Assistants
+- [x] Streaming AI responses (`--stream` flag)
+  - Added to generate, run commands
+  - Real-time output via SSE
+- [x] Agent Marketplace (`ultra-dex agents`)
+  - `agents list --marketplace` - browse community agents
+  - `agents install <name>` - install marketplace agents
+  - `agents create <name>` - create custom agents
+  - `agents publish <name>` - publish to marketplace (coming soon)
+  - Community agents: @SecurityAuditor, @Accessibility, @APIDesigner, @MLEngineer
 
 ---
 
@@ -18,6 +40,7 @@
 - [x] Ollama documentation in README
 - [x] State file locking for parallel swarm
 - [x] VS Code extension packaging
+- [x] All 82/82 tests passing
 
 ---
 
@@ -25,33 +48,21 @@
 
 ### High Priority
 
-1. **LangChain Adapter**
-   - File: `cli/lib/providers/langchain.js`
-   - Purpose: Allow any LangChain agent to plug into Ultra-Dex
-   - Benefit: Ecosystem reach, 2026 compatibility
-   ```javascript
-   // Skeleton
-   export class LangChainAdapter {
-     constructor(chain) { this.chain = chain; }
-     async run(prompt) { return this.chain.invoke(prompt); }
-   }
-   ```
+1. **Voice Mode**
+   - `ultra-dex voice` command
+   - Use Whisper API for speech-to-text
+   - Execute commands via voice
 
-2. **OpenAI Assistants Sync**
-   - File: `cli/lib/providers/openai-assistants.js`
-   - Purpose: Sync Ultra-Dex state with OpenAI Assistants threads
-   - Benefit: Persistent context across OpenAI sessions
-
-3. **Test Fixes** ✅ FIXED
-   - All 82/82 tests pass
-   - LOG_LEVEL=silent added to all test helpers
+2. **LangGraph Native Integration**
+   - Create LangGraph-compatible workflow definitions
+   - Export Ultra-Dex swarm pipelines as LangGraph graphs
 
 ### Medium Priority
 
-4. **Streaming AI Responses**
-   - Add `--stream` flag to generate, review, swarm commands
-   - Use SSE or WebSocket for real-time output
-   - Better UX for long-running AI tasks
+3. **Agent Marketplace Backend**
+   - Remote registry at registry.ultra-dex.dev
+   - Agent versioning and dependencies
+   - Community rating system
 
 5. **Voice Mode**
    - `ultra-dex voice` command

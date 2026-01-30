@@ -25,7 +25,7 @@ test('--version returns valid semver', () => {
   assert.equal(result.status, 0);
   const version = result.output.trim();
   assert.match(version, /^\d+\.\d+\.\d+$/);
-  assert.equal(version, '3.3.0');
+  assert.equal(version, '3.4.0');
 });
 
 test('--help shows all 16 commands', () => {

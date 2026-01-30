@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
-[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-18_Modules-green.svg)](./cursor-rules/)
+[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-25_Modules-green.svg)](./cursor-rules/)
 [![AI Agents](https://img.shields.io/badge/AI_Agents-17_Prompts-orange.svg)](./agents/)
 [![Commands](https://img.shields.io/badge/CLI_Commands-38+-blue.svg)](./cli/)
 
@@ -157,7 +157,7 @@ A comprehensive framework for building complete, production-grade applications. 
 - **21-Step Verification Framework** - Strict quality gates for every atomic task
 - **Atomic Task Methodology** - 4-9 hour tasks with realistic estimates
 - **AI Agent Instructions** - Prompts for Claude, GPT, Gemini
-- **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot
+- **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot (25+ production patterns)
 - **17 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research, Documentation, Orchestrator, Specialist
 - **Multi-Tool Orchestration** - Coordinate Claude Code + Cursor + Copilot + ChatGPT + Gemini together
 
@@ -299,11 +299,11 @@ npx ultra-dex health             # Check system health
 npx ultra-dex debug              # Show detailed debug info
 
 # Configuration Management
-npx ultra-dex config             # Show configuration
-npx ultra-dex config --wizard    # Interactive configuration
-npx ultra-dex config --list      # List all settings
-npx ultra-dex config --get key   # Get specific setting
-npx ultra-dex config --set key=value  # Set specific setting
+npx ultra-dex sys-config         # Show system configuration
+npx ultra-dex sys-config --wizard # Interactive configuration
+npx ultra-dex sys-config --list   # List all settings
+npx ultra-dex sys-config --get key # Get specific setting
+npx ultra-dex sys-config --set key=value  # Set specific setting
 
 # MCP & Automation
 npx ultra-dex serve
