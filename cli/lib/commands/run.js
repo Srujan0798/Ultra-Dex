@@ -9,7 +9,6 @@ import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
-import { validateSafePath } from '../utils/validation.js';
 import { projectGraph } from '../mcp/graph.js';
 
 const AGENTS = {
@@ -130,7 +129,7 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     // Tool Execution Logic (God Mode)
     const readMatch = content.match(/>>\s*READ_CODE:\s*["'](.+?)["']/);
     const writeMatch = content.match(/>>\s*WRITE_CODE:\s*["'](.+?)["']\s*["']([\s\S]+?)["']/);
-    const searchMatch = content.match(/>>\s*SEARCH_CODE:\s*["'](.+?)["']/);
+    const _searchMatch = content.match(/>>\s*SEARCH_CODE:\s*["'](.+?)["']/);
     const delegateMatch = content.match(/>>\s*DELEGATE:\s*@(\w+)\s*["'](.+?)["']/);
 
     if (readMatch) {
@@ -220,7 +219,13 @@ export function registerRunCommand(program) {
       const hasProvider = configured.some(p => p.configured) || options.key;
 
       if (!hasProvider) {
-        console.log(chalk.yellow('⚠️  No AI provider configured.'));
+        console.log(chalk.yellow('\n⚠️  No AI provider configured.\n'));
+        console.log(chalk.white('To use AI agents, configure one of these:'));
+        console.log(chalk.gray('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude'));
+        console.log(chalk.gray('  export OPENAI_API_KEY=sk-...         # OpenAI'));
+        console.log(chalk.gray('  export GOOGLE_AI_KEY=...             # Gemini'));
+        console.log(chalk.white('\nOr use local AI with Ollama (no key needed):'));
+        console.log(chalk.gray('  ultra-dex run planner -t "task" --provider ollama\n'));
         return;
       }
 

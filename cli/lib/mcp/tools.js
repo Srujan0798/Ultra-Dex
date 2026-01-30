@@ -239,7 +239,7 @@ export function registerTools(server) {
           ? `Verification Report for '${taskFound.task}' (${taskFound.id}):\nStatus: ${taskFound.status}\n\n`
           : `General Verification Report for '${taskName}':\n\n`;
 
-        const fullReport = report + checklist.map((step, i) => `[ ] ${step}`).join('\n');
+        const fullReport = report + checklist.map((step) => `[ ] ${step}`).join('\n');
 
         return {
             content: [{

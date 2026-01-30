@@ -9,7 +9,6 @@ import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
-import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
 
 // ============================================================================
 // VECTOR STORE CONFIGURATION

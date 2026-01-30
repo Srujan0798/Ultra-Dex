@@ -106,7 +106,6 @@ async function handlePull(projectDir, target) {
  */
 async function handleBrainSync(projectDir) {
   const ora = (await import('ora')).default;
-  const { glob } = await import('glob');
 
   console.log(chalk.magenta.bold('🧠 Brain Sync: Autonomous Context Update\n'));
 

@@ -7,8 +7,7 @@ import { startMcpServer } from '../mcp/server.js';
 import { projectGraph } from '../mcp/graph.js';
 import { UltraDexSocket } from '../mcp/websocket.js';
 import { swarmCommand } from './swarm.js';
-import { glob } from 'glob';
-import { execSync, spawn } from 'child_process';
+import { execSync } from 'child_process';
 import { getRandomMessage } from '../utils/messages.js';
 
 export function registerServeCommand(program) {

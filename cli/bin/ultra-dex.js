@@ -11,7 +11,7 @@ import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 // Initialize monitoring and configuration systems
 import { monitoring } from '../lib/utils/monitoring.js';
 import { configManager } from '../lib/utils/config-manager.js';
-import { errorRecovery } from '../lib/utils/error-recovery.js';
+import '../lib/utils/error-recovery.js';
 
 // Wait for initialization
 await Promise.all([
@@ -65,7 +65,7 @@ import { registerAgentBuilderCommand } from '../lib/commands/agent-builder.js';
 import { registerGenerateCommand } from '../lib/commands/generate.js';
 import { registerBuildCommand } from '../lib/commands/build.js';
 import { registerReviewCommand } from '../lib/commands/review.js';
-import { registerRunCommand, registerSwarmCommand } from '../lib/commands/run.js';
+import { registerRunCommand } from '../lib/commands/run.js';
 import { registerAutoImplementCommand } from '../lib/commands/auto-implement.js';
 import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
 import { registerAlignCommand, registerStatusCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';

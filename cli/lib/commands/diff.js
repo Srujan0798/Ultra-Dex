@@ -223,6 +223,7 @@ function checkImplementationStatus(sections, config = {}) {
   });
 }
 
+// eslint-disable-next-line no-unused-vars
 function searchInCode(keyword, dir) {
   try {
     const files = readdirSync(join(process.cwd(), dir), { recursive: true });

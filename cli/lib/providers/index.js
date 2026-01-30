@@ -86,8 +86,14 @@ export function createProvider(providerId, options = {}) {
   
   if (!apiKey && providerId !== 'ollama') {
     throw new Error(
-      `API key not found for ${providerConfig.name}.\n` +
-      `Set the ${providerConfig.envKey} environment variable or use --key option.`
+      `API key not found for ${providerConfig.name}.\n\n` +
+      `To fix this, either:\n` +
+      `  1. Set ${providerConfig.envKey} environment variable:\n` +
+      `     export ${providerConfig.envKey}=your-key-here\n\n` +
+      `  2. Pass the key directly:\n` +
+      `     ultra-dex generate "idea" --key your-key-here\n\n` +
+      `  3. Use Ollama for local AI (no key needed):\n` +
+      `     ultra-dex generate "idea" --provider ollama`
     );
   }
 

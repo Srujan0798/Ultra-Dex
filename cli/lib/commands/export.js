@@ -2,7 +2,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
-import { join, basename, dirname, extname } from 'path';
+import { join, basename } from 'path';
 
 export async function exportCommand(options) {
   const format = options.format || 'json';

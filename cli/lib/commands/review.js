@@ -11,9 +11,10 @@ import path from 'path';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
 import { SYSTEM_PROMPT, generateReviewPrompt } from '../templates/prompts/review-code.js';
 import { validateSafePath } from '../utils/validation.js';
-import { buildGraph, queryGraph, getImpactAnalysis } from '../utils/graph.js'; // Import CPG utils
+import { buildGraph } from '../utils/graph.js';
 
-// File patterns to scan
+// File patterns to scan (used for future pattern-based review)
+// eslint-disable-next-line no-unused-vars
 const CODE_PATTERNS = {
   database: ['**/prisma/schema.prisma', '**/schema.sql', '**/migrations/**', '**/models/**'],
   api: ['**/api/**', '**/routes/**', '**/controllers/**', '**/src/app/api/**'],

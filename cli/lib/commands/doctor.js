@@ -48,7 +48,7 @@ async function saveConfig(config, global = false) {
     ? path.join(process.env.HOME || process.env.USERPROFILE, '.ultra-dex.json')
     : path.resolve(process.cwd(), '.ultra-dex.json');
   
-  const { source, ...configData } = config;
+  const { source: _source, ...configData } = config;
   await fs.writeFile(configPath, JSON.stringify(configData, null, 2));
   return configPath;
 }
@@ -58,7 +58,7 @@ export function registerDoctorCommand(program) {
     .command('doctor')
     .description('System Diagnostics - Check System Health')
     .option('--fix', 'Attempt to fix issues automatically')
-    .action(async (options) => {
+    .action(async () => {
       header('System Health Diagnostics');
       console.log(chalk.gray('  Analyzing system components...\n'));
 
@@ -282,7 +282,7 @@ export function registerConfigCommand(program) {
         console.log(chalk.gray(`Source: ${config.source}`));
         console.log(chalk.gray('─'.repeat(40)));
         
-        const { source, ...displayConfig } = config;
+        const { source: _source, ...displayConfig } = config;
         Object.entries(displayConfig).forEach(([key, value]) => {
           const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
           console.log(`  ${chalk.cyan(key.padEnd(15))} ${valueStr}`);

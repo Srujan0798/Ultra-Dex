@@ -323,7 +323,7 @@ ${state.phases?.flatMap(p => p.steps?.filter(s => s.status === 'pending')?.map(s
 
     const messages = await this.listMessages(this.threadId, 100);
 
-    return messages.data?.reverse().map((msg, i) => ({
+    return messages.data?.reverse().map((msg) => ({
       id: msg.id,
       role: msg.role,
       content: msg.content?.[0]?.text?.value || '',
@@ -392,7 +392,7 @@ Cover unit tests, integration tests, and edge cases.`,
   // BASE PROVIDER INTERFACE
   // ============================================
 
-  async generate(systemPrompt, userPrompt, options = {}) {
+  async generate(systemPrompt, userPrompt, _options = {}) {
     // For simple generation, use the chat completions API
     const response = await this._request('/chat/completions', 'POST', {
       model: this.model,
@@ -414,7 +414,7 @@ Cover unit tests, integration tests, and edge cases.`,
     };
   }
 
-  async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
+  async generateStream(systemPrompt, userPrompt, onChunk, _options = {}) {
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {

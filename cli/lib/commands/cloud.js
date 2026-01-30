@@ -219,7 +219,7 @@ function createAPIServer(options = {}) {
           return sendJSON(res, { error: 'Invalid session' }, 401);
         }
 
-        const { task, options } = JSON.parse(body);
+        const { task } = JSON.parse(body);
 
         // Queue swarm run (in real implementation, would use job queue)
         const runId = `run_${Date.now()}`;
@@ -697,8 +697,7 @@ const CLOUD_DASHBOARD_HTML = `<!DOCTYPE html>
 // DASHBOARD SERVER
 // ============================================================================
 
-function createDashboardServer(options = {}) {
-  const { port = CLOUD_CONFIG.ports.dashboard } = options;
+function createDashboardServer() {
 
   const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html' });
