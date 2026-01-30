@@ -1,7 +1,7 @@
 // Ultra-Dex CLI — Main Interface Display
 // The startup screen and interactive interface
 
-import chalk from 'chalk';
+// import chalk from 'chalk';
 import { theme, box, header, divider, status, table, keyHints, statusLine } from './theme.js';
 
 // ═══════════════════════════════════════════════════════════════

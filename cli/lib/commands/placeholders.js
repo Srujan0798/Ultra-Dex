@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+// import chalk from 'chalk';
 
 // Note: build, review, and align commands are now in separate files:
 // - build.js (registerBuildCommand)

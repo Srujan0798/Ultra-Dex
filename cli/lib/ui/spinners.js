@@ -1,7 +1,7 @@
 // Ultra-Dex CLI — Spinner & Loading Animations
 // Professional loading states like Gemini CLI
 
-import chalk from 'chalk';
+// import chalk from 'chalk';
 import ora from 'ora';
 import { theme } from './theme.js';
 

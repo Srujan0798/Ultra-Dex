@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import ora from 'ora';
+// import ora from 'ora';
 
 export function showProgress(tasks) {
   const total = tasks.length;

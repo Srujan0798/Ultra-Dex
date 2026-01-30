@@ -94,7 +94,7 @@ export class OpenAIAssistantsProvider extends BaseProvider {
       tools: config.tools || this.tools.map(t => ({ type: t })),
       metadata: {
         source: 'ultra-dex',
-        version: '3.4.0',
+        version: '3.4.2',
         ...config.metadata,
       },
     });

@@ -5,7 +5,7 @@
 
 import chalk from 'chalk';
 import ora from 'ora';
-import inquirer from 'inquirer';
+// import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
