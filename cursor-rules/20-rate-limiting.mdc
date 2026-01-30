@@ -1,0 +1,225 @@
+# Rate Limiting & Throttling Pattern
+## Ultra-Dex Cursor Rule 20-rate-limiting.mdc
+
+### Context
+Rate limiting protects APIs from abuse, ensures fair usage, and maintains system stability. Essential for production APIs serving multiple clients.
+
+### Pattern
+```javascript
+// 1. Token bucket rate limiter with Redis
+import { redis } from './lib/redis.js';
+import { nanoid } from 'nanoid';
+
+class RateLimiter {
+  constructor() {
+    this.windowMs = 60 * 1000; // 1 minute window
+    this.limit = 100; // requests per window
+  }
+
+  async check(identifier, limit = this.limit, windowMs = this.windowMs) {
+    const key = `rate-limit:${identifier}`;
+    const current = Date.now();
+    const windowStart = current - windowMs;
+
+    // Use Redis sorted set to track requests
+    // Remove old requests outside the window
+    await redis.zremrangebyscore(key, 0, windowStart);
+    
+    // Get current request count
+    const count = await redis.zcard(key);
+    
+    if (count >= limit) {
+      // Rate limit exceeded
+      const ttl = await redis.pttl(key);
+      return {
+        success: false,
+        resetTime: current + ttl,
+        remaining: 0,
+        limit
+      };
+    }
+
+    // Add current request to the set
+    await redis.zadd(key, current, nanoid());
+    await redis.pexpire(key, windowMs);
+    
+    return {
+      success: true,
+      remaining: limit - count - 1,
+      limit,
+      resetTime: current + windowMs
+    };
+  }
+
+  // 2. Sliding window counter (more accurate than fixed windows)
+  async slidingWindowCheck(identifier, limit, windowMs) {
+    const current = Date.now();
+    const windowStart = current - windowMs;
+    const key = `sliding-window:${identifier}`;
+    
+    // Lua script for atomic operation
+    const luaScript = `
+      local key = KEYS[1]
+      local windowStart = ARGV[1]
+      local current = ARGV[2]
+      local limit = tonumber(ARGV[3])
+      local windowMs = tonumber(ARGV[4])
+      
+      -- Remove old requests
+      redis.call('ZREMRANGEBYSCORE', key, 0, windowStart)
+      
+      -- Get count
+      local count = redis.call('ZCARD', key)
+      
+      if count >= limit then
+        local ttl = redis.call('PTTL', key)
+        return {0, count, ttl}
+      end
+      
+      -- Add current request
+      redis.call('ZADD', key, current, ARGV[5])
+      redis.call('PEXPIRE', key, windowMs)
+      
+      return {1, limit - count - 1, windowMs}
+    `;
+    
+    const result = await redis.eval(luaScript, 1, key, windowStart, current, limit, windowMs, nanoid());
+    
+    return {
+      success: Boolean(result[0]),
+      remaining: result[1],
+      resetTime: current + result[2],
+      limit
+    };
+  }
+}
+
+// 3. Express.js middleware implementation
+const rateLimiter = new RateLimiter();
+
+export function createRateLimitMiddleware(options = {}) {
+  const limiter = new RateLimiter();
+  const {
+    limit = 100,
+    windowMs = 60 * 1000,
+    message = 'Too many requests, please try again later.',
+    keyGenerator = (req) => req.ip, // Default: IP-based
+    skipOnError = false
+  } = options;
+
+  return async (req, res, next) => {
+    try {
+      const key = await keyGenerator(req);
+      const result = await limiter.slidingWindowCheck(key, limit, windowMs);
+
+      // Set rate limit headers
+      res.setHeader('X-RateLimit-Limit', result.limit);
+      res.setHeader('X-RateLimit-Remaining', result.remaining);
+      res.setHeader('X-RateLimit-Reset', new Date(result.resetTime).toUTCString());
+
+      if (!result.success) {
+        res.status(429).json({
+          error: 'Too Many Requests',
+          message,
+          resetTime: result.resetTime
+        });
+        return;
+      }
+
+      next();
+    } catch (error) {
+      if (skipOnError) {
+        next();
+      } else {
+        res.status(500).json({ error: 'Rate limiting error' });
+      }
+    }
+  };
+}
+
+// 4. Different rate limiting strategies
+export const rateLimitStrategies = {
+  // User-based (requires authentication)
+  user: createRateLimitMiddleware({
+    limit: 1000,
+    windowMs: 60 * 60 * 1000, // 1 hour
+    keyGenerator: (req) => req.user?.id || req.ip
+  }),
+
+  // API key-based
+  apiKey: createRateLimitMiddleware({
+    limit: 500,
+    windowMs: 60 * 1000,
+    keyGenerator: (req) => req.headers['x-api-key']
+  }),
+
+  // IP-based (default)
+  ip: createRateLimitMiddleware({
+    limit: 100,
+    windowMs: 60 * 1000
+  }),
+
+  // Endpoint-specific
+  endpoint: (endpointLimit, endpointWindow) => createRateLimitMiddleware({
+    limit: endpointLimit,
+    windowMs: endpointWindow
+  })
+};
+
+// 5. Adaptive rate limiting based on system load
+class AdaptiveRateLimiter {
+  constructor() {
+    this.baseLimits = {
+      authenticated: 1000,
+      anonymous: 100
+    };
+    this.loadFactor = 1.0; // 1.0 = normal, >1.0 = under stress
+  }
+
+  async adjustForLoad() {
+    // Monitor system metrics (CPU, memory, DB connections)
+    const systemLoad = await this.getSystemLoad();
+    
+    // Adjust limits based on load (simplified)
+    if (systemLoad > 0.8) {
+      this.loadFactor = 0.5; // Reduce limits by 50%
+    } else if (systemLoad > 0.6) {
+      this.loadFactor = 0.75; // Reduce limits by 25%
+    } else {
+      this.loadFactor = 1.0; // Normal limits
+    }
+  }
+
+  getAdjustedLimit(baseLimit) {
+    return Math.floor(baseLimit * this.loadFactor);
+  }
+
+  async checkWithLoadAdjustment(identifier, baseLimit, windowMs) {
+    await this.adjustForLoad();
+    const adjustedLimit = this.getAdjustedLimit(baseLimit);
+    return this.slidingWindowCheck(identifier, adjustedLimit, windowMs);
+  }
+}
+```
+
+### Production Considerations
+- **Accuracy**: Use sliding window counters for precise rate limiting
+- **Performance**: Implement with Redis for fast operations
+- **Flexibility**: Support different strategies (IP, user, API key)
+- **Monitoring**: Track rate limit hits and system load
+- **Adaptability**: Adjust limits based on system capacity
+
+### Anti-Patterns to Avoid
+- ❌ Fixed window counters (allows burst attacks)
+- ❌ In-memory storage (doesn't work in multi-instance setups)
+- ❌ No monitoring (can't detect abuse patterns)
+- ❌ Too restrictive limits (affects legitimate users)
+- ❌ No adaptive limits (doesn't respond to system load)
+
+### Quality Gates
+- [ ] Sliding window implementation
+- [ ] Redis-backed storage
+- [ ] Multiple strategies supported
+- [ ] Load-adaptive limits
+- [ ] Proper HTTP headers
+- [ ] Monitoring integration

@@ -372,11 +372,19 @@ class MonitoringSystem {
   // Utility methods
   async exportLogs() {
     try {
+      // Check if log file exists before trying to read it
+      try {
+        await fs.access(MONITORING_CONFIG.logFile);
+      } catch {
+        // If log file doesn't exist, return empty content
+        return '# No logs available\n';
+      }
+
       const logContent = await fs.readFile(MONITORING_CONFIG.logFile, 'utf8');
       return logContent;
     } catch (error) {
       this.error('Failed to export logs', { error: error.message });
-      return null;
+      return '# Error reading logs\n' + error.message;
     }
   }
 

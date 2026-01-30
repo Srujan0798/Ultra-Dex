@@ -1,0 +1,676 @@
+# Real-time Communication & WebSocket Pattern
+## Ultra-Dex Cursor Rule 24-realtime.mdc
+
+### Context
+Real-time communication is essential for collaborative development, live dashboards, and interactive AI agent coordination. Proper implementation ensures low-latency updates and scalable concurrent connections.
+
+### Pattern
+```javascript
+// 1. WebSocket server with connection management
+import WebSocket from 'ws';
+import http from 'http';
+import { EventEmitter } from 'events';
+import { validateToken } from './lib/auth.js';
+import { projectGraph } from './mcp/graph.js';
+import { loadState } from './commands/state.js';
+
+class RealTimeServer extends EventEmitter {
+  constructor(options = {}) {
+    super();
+    this.port = options.port || 3002;
+    this.maxConnections = options.maxConnections || 1000;
+    this.pingInterval = options.pingInterval || 30000; // 30 seconds
+    this.connectionTimeout = options.connectionTimeout || 60000; // 1 minute
+    
+    this.clients = new Map(); // clientId -> WebSocket
+    this.rooms = new Map(); // roomName -> Set of clientIds
+    this.authenticated = new Map(); // clientId -> userInfo
+    this.connectionCount = 0;
+    
+    this.server = http.createServer();
+    this.wss = new WebSocket.Server({ server: this.server });
+    
+    this.setupEventHandlers();
+  }
+
+  setupEventHandlers() {
+    this.wss.on('connection', (ws, req) => {
+      const clientId = this.generateClientId();
+      const clientIp = req.socket.remoteAddress;
+      
+      // Set connection timeout
+      const timeout = setTimeout(() => {
+        ws.close(4001, 'Authentication timeout');
+      }, this.connectionTimeout);
+
+      // Handle authentication
+      ws.once('message', async (data) => {
+        try {
+          clearTimeout(timeout);
+          
+          const message = JSON.parse(data.toString());
+          
+          if (message.type !== 'auth') {
+            ws.close(4002, 'Authentication required first');
+            return;
+          }
+
+          const { token, roomId } = message.payload;
+          const userInfo = await validateToken(token);
+          
+          if (!userInfo) {
+            ws.close(4003, 'Invalid token');
+            return;
+          }
+
+          // Authenticate client
+          this.clients.set(clientId, ws);
+          this.authenticated.set(clientId, userInfo);
+          this.connectionCount++;
+
+          // Join room if specified
+          if (roomId) {
+            this.joinRoom(clientId, roomId);
+          }
+
+          // Send authentication success
+          ws.send(JSON.stringify({
+            type: 'auth_success',
+            payload: {
+              clientId,
+              user: userInfo,
+              timestamp: new Date().toISOString()
+            }
+          }));
+
+          // Set up regular ping/pong
+          const pingInterval = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.ping();
+            } else {
+              clearInterval(pingInterval);
+              this.handleDisconnect(clientId);
+            }
+          }, this.pingInterval);
+
+          // Handle messages
+          ws.on('message', (data) => {
+            this.handleMessage(clientId, data, ws);
+          });
+
+          // Handle disconnection
+          ws.on('close', () => {
+            clearInterval(pingInterval);
+            this.handleDisconnect(clientId);
+          });
+
+          // Handle errors
+          ws.on('error', (error) => {
+            console.error(`WebSocket error for client ${clientId}:`, error.message);
+            this.handleDisconnect(clientId);
+          });
+
+          // Emit connection event
+          this.emit('client_connected', { clientId, userInfo, clientIp });
+
+        } catch (error) {
+          console.error('Authentication error:', error.message);
+          ws.close(4004, 'Authentication failed');
+        }
+      });
+
+      // Handle connection errors
+      ws.on('error', (error) => {
+        console.error('WebSocket connection error:', error.message);
+        clearTimeout(timeout);
+      });
+    });
+
+    this.wss.on('error', (error) => {
+      console.error('WebSocket server error:', error.message);
+      this.emit('server_error', error);
+    });
+  }
+
+  generateClientId() {
+    return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  async handleMessage(clientId, data, ws) {
+    try {
+      const message = JSON.parse(data.toString());
+      const userInfo = this.authenticated.get(clientId);
+      
+      if (!userInfo) {
+        ws.send(JSON.stringify({
+          type: 'error',
+          payload: { message: 'Not authenticated' }
+        }));
+        return;
+      }
+
+      switch (message.type) {
+        case 'subscribe':
+          this.handleSubscribe(clientId, message.payload, ws);
+          break;
+          
+        case 'unsubscribe':
+          this.handleUnsubscribe(clientId, message.payload, ws);
+          break;
+          
+        case 'broadcast':
+          this.handleBroadcast(clientId, message.payload, ws);
+          break;
+          
+        case 'request_state':
+          this.handleStateRequest(clientId, message.payload, ws);
+          break;
+          
+        case 'agent_status':
+          this.handleAgentStatus(clientId, message.payload, ws);
+          break;
+          
+        default:
+          ws.send(JSON.stringify({
+            type: 'error',
+            payload: { message: `Unknown message type: ${message.type}` }
+          }));
+      }
+    } catch (error) {
+      console.error('Message handling error:', error.message);
+      ws.send(JSON.stringify({
+        type: 'error',
+        payload: { message: 'Invalid message format' }
+      }));
+    }
+  }
+
+  handleSubscribe(clientId, payload, ws) {
+    const { room } = payload;
+    if (!room) return;
+
+    if (!this.rooms.has(room)) {
+      this.rooms.set(room, new Set());
+    }
+    
+    this.rooms.get(room).add(clientId);
+    
+    ws.send(JSON.stringify({
+      type: 'subscribed',
+      payload: { room }
+    }));
+  }
+
+  handleUnsubscribe(clientId, payload, ws) {
+    const { room } = payload;
+    if (!room) return;
+
+    const roomClients = this.rooms.get(room);
+    if (roomClients) {
+      roomClients.delete(clientId);
+      if (roomClients.size === 0) {
+        this.rooms.delete(room);
+      }
+    }
+    
+    ws.send(JSON.stringify({
+      type: 'unsubscribed',
+      payload: { room }
+    }));
+  }
+
+  handleBroadcast(clientId, payload, ws) {
+    const { room, message } = payload;
+    if (!room || !message) return;
+
+    const roomClients = this.rooms.get(room);
+    if (!roomClients) return;
+
+    const broadcastMessage = JSON.stringify({
+      type: 'broadcast',
+      from: clientId,
+      payload: message,
+      timestamp: new Date().toISOString()
+    });
+
+    for (const roomId of roomClients) {
+      const clientWs = this.clients.get(roomId);
+      if (clientWs && clientWs.readyState === WebSocket.OPEN) {
+        clientWs.send(broadcastMessage);
+      }
+    }
+  }
+
+  async handleStateRequest(clientId, payload, ws) {
+    try {
+      const state = await loadState();
+      const graphSummary = projectGraph.getSummary();
+      
+      ws.send(JSON.stringify({
+        type: 'state_response',
+        payload: {
+          state,
+          graph: graphSummary,
+          timestamp: new Date().toISOString()
+        }
+      }));
+    } catch (error) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        payload: { message: 'Failed to load state' }
+      }));
+    }
+  }
+
+  handleAgentStatus(clientId, payload, ws) {
+    const { agent, status, progress } = payload;
+    
+    // Broadcast agent status to relevant rooms
+    this.broadcastToRooms(['agents', 'dashboard'], {
+      type: 'agent_status',
+      payload: {
+        agent,
+        status,
+        progress,
+        clientId,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  handleDisconnect(clientId) {
+    // Remove from all rooms
+    for (const [room, clients] of this.rooms) {
+      clients.delete(clientId);
+      if (clients.size === 0) {
+        this.rooms.delete(room);
+      }
+    }
+
+    // Remove from maps
+    this.clients.delete(clientId);
+    this.authenticated.delete(clientId);
+    this.connectionCount--;
+
+    this.emit('client_disconnected', { clientId });
+  }
+
+  joinRoom(clientId, roomName) {
+    if (!this.rooms.has(roomName)) {
+      this.rooms.set(roomName, new Set());
+    }
+    this.rooms.get(roomName).add(clientId);
+  }
+
+  broadcastToRooms(roomNames, message) {
+    for (const roomName of roomNames) {
+      const roomClients = this.rooms.get(roomName);
+      if (!roomClients) continue;
+
+      const serializedMessage = JSON.stringify(message);
+
+      for (const clientId of roomClients) {
+        const ws = this.clients.get(clientId);
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(serializedMessage);
+        }
+      }
+    }
+  }
+
+  broadcastToAll(message) {
+    const serializedMessage = JSON.stringify(message);
+    
+    for (const [clientId, ws] of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(serializedMessage);
+      }
+    }
+  }
+
+  getStats() {
+    return {
+      connections: this.connectionCount,
+      maxConnections: this.maxConnections,
+      rooms: this.rooms.size,
+      uptime: process.uptime()
+    };
+  }
+
+  async start() {
+    return new Promise((resolve) => {
+      this.server.listen(this.port, () => {
+        console.log(`Real-time server listening on port ${this.port}`);
+        this.emit('server_started', { port: this.port });
+        resolve();
+      });
+    });
+  }
+
+  async stop() {
+    this.wss.close();
+    this.server.close();
+    this.emit('server_stopped');
+  }
+}
+
+// 2. Client-side WebSocket wrapper
+class RealTimeClient {
+  constructor(url, options = {}) {
+    this.url = url;
+    this.token = options.token;
+    this.autoReconnect = options.autoReconnect !== false;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = options.maxReconnectAttempts || 5;
+    this.reconnectDelay = options.reconnectDelay || 1000;
+    
+    this.ws = null;
+    this.eventListeners = new Map();
+    this.readyState = WebSocket.CONNECTING;
+  }
+
+  async connect() {
+    return new Promise((resolve, reject) => {
+      this.ws = new WebSocket(this.url);
+
+      this.ws.onopen = () => {
+        this.readyState = WebSocket.OPEN;
+        this.reconnectAttempts = 0;
+        
+        // Authenticate
+        this.authenticate().then(resolve).catch(reject);
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          this.handleMessage(message);
+        } catch (error) {
+          console.error('Error parsing message:', error.message);
+        }
+      };
+
+      this.ws.onclose = (event) => {
+        this.readyState = WebSocket.CLOSED;
+        this.emit('disconnected', event);
+
+        if (this.autoReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
+          setTimeout(() => {
+            this.reconnectAttempts++;
+            this.connect().catch(console.error);
+          }, this.reconnectDelay * Math.pow(2, this.reconnectAttempts)); // Exponential backoff
+        }
+      };
+
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error.message);
+        this.emit('error', error);
+      };
+    });
+  }
+
+  async authenticate() {
+    if (!this.token) {
+      throw new Error('No authentication token provided');
+    }
+
+    this.send({
+      type: 'auth',
+      payload: { token: this.token }
+    });
+
+    // Wait for auth success
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Authentication timeout'));
+      }, 10000);
+
+      const authHandler = (message) => {
+        if (message.type === 'auth_success') {
+          clearTimeout(timeout);
+          this.removeListener('message', authHandler);
+          resolve(message.payload);
+        } else if (message.type === 'error') {
+          clearTimeout(timeout);
+          this.removeListener('message', authHandler);
+          reject(new Error(message.payload.message));
+        }
+      };
+
+      this.on('message', authHandler);
+    });
+  }
+
+  send(message) {
+    if (this.ws && this.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket not ready, message not sent:', message.type);
+    }
+  }
+
+  subscribe(room) {
+    this.send({
+      type: 'subscribe',
+      payload: { room }
+    });
+  }
+
+  unsubscribe(room) {
+    this.send({
+      type: 'unsubscribe',
+      payload: { room }
+    });
+  }
+
+  broadcast(room, message) {
+    this.send({
+      type: 'broadcast',
+      payload: { room, message }
+    });
+  }
+
+  on(eventType, handler) {
+    if (!this.eventListeners.has(eventType)) {
+      this.eventListeners.set(eventType, []);
+    }
+    this.eventListeners.get(eventType).push(handler);
+  }
+
+  off(eventType, handler) {
+    if (this.eventListeners.has(eventType)) {
+      const handlers = this.eventListeners.get(eventType);
+      const index = handlers.indexOf(handler);
+      if (index > -1) {
+        handlers.splice(index, 1);
+      }
+    }
+  }
+
+  emit(eventType, data) {
+    if (this.eventListeners.has(eventType)) {
+      const handlers = this.eventListeners.get(eventType);
+      for (const handler of handlers) {
+        handler(data);
+      }
+    }
+  }
+
+  handleMessage(message) {
+    this.emit('message', message);
+    
+    // Emit specific event types
+    if (message.type) {
+      this.emit(message.type, message.payload);
+    }
+  }
+
+  async disconnect() {
+    if (this.ws) {
+      this.ws.close();
+    }
+  }
+}
+
+// 3. Real-time dashboard updates
+export class DashboardUpdater {
+  constructor(realTimeServer) {
+    this.server = realTimeServer;
+    this.updateQueues = new Map(); // room -> queue of updates
+  }
+
+  async sendProjectUpdate(update) {
+    this.server.broadcastToRooms(['dashboard', 'projects'], {
+      type: 'project_update',
+      payload: {
+        ...update,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  async sendAgentStatus(agentName, status, progress = null) {
+    this.server.broadcastToRooms(['dashboard', 'agents'], {
+      type: 'agent_status',
+      payload: {
+        agent: agentName,
+        status,
+        progress,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  async sendMetricsUpdate(metrics) {
+    this.server.broadcastToRooms(['dashboard', 'metrics'], {
+      type: 'metrics_update',
+      payload: {
+        ...metrics,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  async sendBuildProgress(progress) {
+    this.server.broadcastToRooms(['dashboard', 'build'], {
+      type: 'build_progress',
+      payload: {
+        ...progress,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+}
+
+// 4. Integration with Ultra-Dex commands
+export function createRealTimeMiddleware(dashboardUpdater) {
+  return async (req, res, next) => {
+    // Add real-time context to request
+    req.realtime = {
+      sendUpdate: (type, payload) => {
+        dashboardUpdater.sendProjectUpdate({ type, payload });
+      },
+      sendAgentStatus: (agent, status, progress) => {
+        dashboardUpdater.sendAgentStatus(agent, status, progress);
+      }
+    };
+    
+    next();
+  };
+}
+
+// 5. Real-time agent coordination
+export class AgentCoordinator {
+  constructor(realTimeServer) {
+    this.server = realTimeServer;
+    this.agentStatus = new Map(); // agentName -> status
+    this.taskAssignments = new Map(); // taskId -> agentName
+  }
+
+  async assignTask(agentName, taskId, taskDetails) {
+    // Update agent status
+    this.agentStatus.set(agentName, {
+      status: 'assigned',
+      taskId,
+      assignedAt: new Date().toISOString()
+    });
+
+    // Broadcast status update
+    this.server.broadcastToRooms(['agents', 'coordination'], {
+      type: 'task_assigned',
+      payload: {
+        agent: agentName,
+        taskId,
+        taskDetails,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+    return { success: true, taskId };
+  }
+
+  async updateAgentStatus(agentName, status, details = {}) {
+    const prevStatus = this.agentStatus.get(agentName);
+    this.agentStatus.set(agentName, {
+      ...prevStatus,
+      status,
+      updatedAt: new Date().toISOString(),
+      ...details
+    });
+
+    this.server.broadcastToRooms(['agents', 'coordination'], {
+      type: 'agent_status_update',
+      payload: {
+        agent: agentName,
+        status,
+        details,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  async completeTask(taskId) {
+    const agentName = this.taskAssignments.get(taskId);
+    if (agentName) {
+      this.agentStatus.set(agentName, {
+        status: 'idle',
+        taskId: null,
+        completedAt: new Date().toISOString()
+      });
+
+      this.server.broadcastToRooms(['agents', 'coordination'], {
+        type: 'task_completed',
+        payload: {
+          agent: agentName,
+          taskId,
+          completedAt: new Date().toISOString()
+        }
+      });
+    }
+  }
+}
+```
+
+### Production Considerations
+- **Scalability**: Use Redis for pub/sub in multi-instance deployments
+- **Security**: Implement token-based authentication and message validation
+- **Reliability**: Add connection recovery and message acknowledgment
+- **Performance**: Implement message batching and compression
+- **Monitoring**: Track connection metrics and error rates
+
+### Anti-Patterns to Avoid
+- ❌ No authentication for WebSocket connections
+- ❌ Broadcasting to all clients without filtering
+- ❌ No rate limiting for message frequency
+- ❌ No cleanup of disconnected clients
+- ❌ Storing sensitive data in plain text
+
+### Quality Gates
+- [ ] Token-based authentication
+- [ ] Connection rate limiting
+- [ ] Message validation and sanitization
+- [ ] Automatic reconnection with backoff
+- [ ] Room-based message routing
+- [ ] Connection monitoring and metrics
+- [ ] Error handling and recovery
+- [ ] Message acknowledgment system

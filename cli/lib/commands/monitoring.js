@@ -83,10 +83,11 @@ export async function configCommand(options) {
   }
 }
 
-export function registerConfigCommand(program) {
+export function registerSystemConfigCommand(program) {
   program
-    .command('config')
-    .description('Manage Ultra-Dex configuration')
+    .command('sys-config')
+    .alias('sconfig')
+    .description('Manage Ultra-Dex system configuration')
     .option('-w, --wizard', 'Run configuration wizard')
     .option('-l, --list', 'List all configuration')
     .option('-g, --get <key>', 'Get specific configuration value')
@@ -199,7 +200,7 @@ export function registerDebugCommand(program) {
 // Export all registration functions
 export default {
   registerStatusCommand,
-  registerConfigCommand,
+  registerSystemConfigCommand,
   registerMetricsCommand,
   registerHealthCommand,
   registerDebugCommand

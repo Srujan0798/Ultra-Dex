@@ -2,7 +2,7 @@
 
 > Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation** and **God Mode** autonomous agents.
 
-## What's New in v3.3.0 (Survival Mode)
+## What's New in v3.4.0 (Survival Mode)
 
 ```bash
 # 🧠 Auto-sync CONTEXT.md from codebase (eliminates manual updates)

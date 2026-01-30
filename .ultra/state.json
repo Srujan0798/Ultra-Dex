@@ -29,5 +29,19 @@
     "completed": 0,
     "list": []
   },
-  "score": 30
+  "score": 30,
+  "brainSync": {
+    "lastSync": "2026-01-30T14:49:19.919Z",
+    "techStack": {
+      "language": "JavaScript",
+      "frameworks": [],
+      "database": null,
+      "auth": null,
+      "testing": [],
+      "deployment": []
+    },
+    "moduleCount": 2,
+    "exportCount": 50,
+    "graphNodes": 67914
+  }
 }
