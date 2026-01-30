@@ -2,10 +2,28 @@
 
 > Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation** and **God Mode** autonomous agents.
 
-## What's New in v3.4.0 (Survival Mode)
+## What's New in v3.4.2 (Ecosystem Mode)
 
+### 🆕 v3.4.2 Features
 ```bash
-# 🧠 Auto-sync CONTEXT.md from codebase (eliminates manual updates)
+# 🏪 Agent Marketplace - install community agents
+npx ultra-dex agents list --marketplace
+npx ultra-dex agents install security-auditor
+npx ultra-dex agents create my-custom-agent
+
+# 🔗 LangChain Integration - use any LangChain agent
+# See: cli/lib/providers/langchain.js
+
+# 🤖 OpenAI Assistants Sync - persistent threads
+# See: cli/lib/providers/openai-assistants.js
+
+# 🎬 Streaming AI responses
+npx ultra-dex run backend -t "Build API" --stream
+```
+
+### v3.3.0 Features (Included)
+```bash
+# 🧠 Auto-sync CONTEXT.md from codebase
 npx ultra-dex sync --brain
 
 # 🐳 Execute code in Docker sandbox
