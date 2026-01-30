@@ -16,6 +16,8 @@ class UltraDexWebSocketServer {
     this.server = null;
     this.wss = null;
     this.interval = null;
+    this.broadcastErrorCount = 0;
+    this.maxBroadcastErrors = 10;
   }
 
   async start(options = {}) {
@@ -92,8 +94,17 @@ class UltraDexWebSocketServer {
       try {
         const update = await this.getSystemUpdate();
         this.broadcast(update);
+        this.broadcastErrorCount = 0; // Reset on success
       } catch (error) {
-        console.error('[WebSocket] Broadcast error:', error.message);
+        this.broadcastErrorCount++;
+        console.error(`[WebSocket] Broadcast error (${this.broadcastErrorCount}/${this.maxBroadcastErrors}):`, error.message);
+
+        // Stop broadcasting after too many consecutive errors
+        if (this.broadcastErrorCount >= this.maxBroadcastErrors) {
+          console.error('[WebSocket] Too many broadcast errors, stopping automatic updates');
+          clearInterval(this.interval);
+          this.interval = null;
+        }
       }
     }, 5000);
   }
@@ -174,17 +185,21 @@ class UltraDexWebSocketServer {
   async stop() {
     if (this.interval) {
       clearInterval(this.interval);
+      this.interval = null;
     }
-    
+
     if (this.wss) {
       this.wss.close();
+      this.wss = null;
     }
-    
+
     if (this.server) {
       this.server.close();
+      this.server = null;
     }
-    
+
     this.clients.clear();
+    this.broadcastErrorCount = 0;
     console.log('[WebSocket] Server stopped');
   }
 }
