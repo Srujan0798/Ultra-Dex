@@ -79,9 +79,9 @@ for domain in "$@"; do
     security)    file="07-security.mdc" ;;
     deployment)  file="08-deployment.mdc" ;;
     error)       file="09-error-handling.mdc" ;;
-    performance) file="10-performance.mdc" ;;
-    nextjs)      file="11-nextjs-v15.mdc" ;;
-    tenancy)     file="12-multi-tenancy.mdc" ;;
+    performance) file="31-performance.mdc" ;;
+    nextjs)      file="26-nextjs-v15.mdc" ;;
+    tenancy)     file="27-multi-tenant.mdc" ;;
     *)
       echo "✗ Unknown domain: $domain"
       continue

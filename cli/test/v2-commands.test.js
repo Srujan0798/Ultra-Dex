@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import { test } from 'node:test';
 import path from 'path';
 
-const CLI = `node ${path.resolve(process.cwd(), 'cli/bin/ultra-dex.js')}`;
+const CLI = `node ${path.resolve(process.cwd(), 'bin/ultra-dex.js')}`;
 
 test('v3.0 Command Smoke Tests', async (t) => {
   

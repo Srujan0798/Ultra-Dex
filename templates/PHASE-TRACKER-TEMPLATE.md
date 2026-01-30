@@ -545,7 +545,7 @@ Phase 1 Complete: [Date]
 
 **Agent Files:**
 - All agents: [agents/00-AGENT_INDEX.md](../agents/00-AGENT_INDEX.md)
-- Orchestration guide: [guides/PROJECT-ORCHESTRATION.md](../guides/PROJECT-ORCHESTRATION.md)
+- Orchestration guide: [guides/PROJECT-ORCHESTRATION.md](../docs/guides/PROJECT-ORCHESTRATION.md)
 
 **Templates:**
 - Master Plan: [templates/MASTER-PLAN-TEMPLATE.md](../templates/MASTER-PLAN-TEMPLATE.md)
@@ -574,4 +574,4 @@ Phase 1 Complete: [Date]
 
 ---
 
-*Template from Ultra-Dex v1.7.0 - Professional AI Orchestration Meta Layer*
+*Template from Ultra-Dex v3.4.2 - Professional AI Orchestration Meta Layer*

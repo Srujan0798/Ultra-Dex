@@ -118,9 +118,24 @@
    - Audit logging
    - Compliance reporting
 
+### Recovered Roadmap Items (From v3.2 Plan)
+
+9. **GraphRAG Impact Analysis** (Priority: P1)
+   - "If I change this, what breaks?" structural analysis
+   - Dependency visualizer (`ultra-dex graph visualize --format svg`)
+   - `ultra-dex graph impact "User.login"`
+
+10. **Agent2Agent Protocol** (Priority: P2)
+    - Specialized swarm handshakes for complex negotiations
+    - Formalized communication standards between agents
+
+11. **Template Marketplace** (Priority: P3)
+    - Community-driven implementation templates
+    - Beyond just agents: full project scaffolding patterns
+
 ### Marketing (Human Action Required)
 
-9. **3-Minute Demo Video**
+12. **3-Minute Demo Video**
    - Script: init → generate → swarm → serve → dashboard
    - Host on YouTube, embed in README
    - Show voice mode when implemented
