@@ -1,0 +1,497 @@
+# Vercel AI SDK Integration Patterns
+## Ultra-Dex Cursor Rule 28-vercel-ai.mdc
+
+### Context
+Vercel AI SDK provides streaming, tool use, and advanced AI integration capabilities. Essential for modern AI-powered applications with real-time responses and structured tool calling.
+
+### Pattern
+```javascript
+// 1. Streaming with Vercel AI SDK
+// app/api/chat/route.ts
+import { streamText, StreamData } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
+import { db } from '@/lib/db';
+import { z } from 'zod';
+
+// Initialize AI provider
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function POST(request: Request) {
+  try {
+    const { messages, userId, tenantId } = await request.json();
+
+    // Verify user belongs to tenant
+    const user = await db.user.findFirst({
+      where: {
+        id: userId,
+        tenantId: tenantId
+      }
+    });
+
+    if (!user) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    // Create streaming response with tools
+    const result = await streamText({
+      model: openai('gpt-4-turbo'),
+      system: `You are a helpful assistant for the ${tenantId} tenant. 
+      Use available tools to help the user.`,
+      messages,
+      tools: {
+        createProject: {
+          description: 'Create a new project',
+          parameters: z.object({
+            name: z.string().describe('Project name'),
+            description: z.string().describe('Project description'),
+          }),
+          execute: async ({ name, description }) => {
+            const project = await db.project.create({
+              data: {
+                name,
+                description,
+                tenantId,
+                userId
+              }
+            });
+            return { success: true, project };
+          }
+        },
+        searchProjects: {
+          description: 'Search projects by name or description',
+          parameters: z.object({
+            query: z.string().describe('Search query')
+          }),
+          execute: async ({ query }) => {
+            const projects = await db.project.findMany({
+              where: {
+                tenantId,
+                OR: [
+                  { name: { contains: query, mode: 'insensitive' } },
+                  { description: { contains: query, mode: 'insensitive' } }
+                ]
+              }
+            });
+            return { projects };
+          }
+        }
+      }
+    });
+
+    return result.toDataStreamResponse();
+  } catch (error) {
+    console.error('Chat API error:', error);
+    return new Response('Internal Server Error', { status: 500 });
+  }
+}
+
+// 2. Tool Calling with Error Handling
+// lib/ai-tools.ts
+import { z } from 'zod';
+import { db } from './db';
+
+export const aiTools = {
+  // User management tools
+  createUser: {
+    description: 'Create a new user in the system',
+    parameters: z.object({
+      email: z.string().email(),
+      name: z.string().min(2),
+      role: z.enum(['user', 'admin', 'moderator'])
+    }),
+    execute: async ({ email, name, role }) => {
+      try {
+        const existingUser = await db.user.findUnique({
+          where: { email }
+        });
+
+        if (existingUser) {
+          return { error: 'User already exists' };
+        }
+
+        const user = await db.user.create({
+          data: {
+            email,
+            name,
+            role
+          }
+        });
+
+        return { success: true, user: { id: user.id, email: user.email } };
+      } catch (error) {
+        return { error: `Failed to create user: ${error.message}` };
+      }
+    }
+  },
+
+  // Project management tools
+  createProject: {
+    description: 'Create a new project with proper tenant isolation',
+    parameters: z.object({
+      name: z.string().min(1).max(100),
+      description: z.string().max(1000).optional(),
+      tenantId: z.string(),
+      userId: z.string()
+    }),
+    execute: async ({ name, description, tenantId, userId }) => {
+      try {
+        // Verify user belongs to tenant
+        const user = await db.user.findFirst({
+          where: { id: userId, tenantId }
+        });
+
+        if (!user) {
+          return { error: 'User does not belong to this tenant' };
+        }
+
+        const project = await db.project.create({
+          data: {
+            name,
+            description: description || '',
+            tenantId,
+            userId
+          }
+        });
+
+        return { success: true, project: { id: project.id, name: project.name } };
+      } catch (error) {
+        return { error: `Failed to create project: ${error.message}` };
+      }
+    }
+  },
+
+  // Data analysis tools
+  analyzeData: {
+    description: 'Analyze data patterns and provide insights',
+    parameters: z.object({
+      dataset: z.array(z.any()),
+      analysisType: z.enum(['trend', 'correlation', 'anomaly', 'summary'])
+    }),
+    execute: async ({ dataset, analysisType }) => {
+      try {
+        // Perform analysis based on type
+        let analysis;
+        
+        switch (analysisType) {
+          case 'trend':
+            analysis = analyzeTrends(dataset);
+            break;
+          case 'correlation':
+            analysis = analyzeCorrelations(dataset);
+            break;
+          case 'anomaly':
+            analysis = analyzeAnomalies(dataset);
+            break;
+          case 'summary':
+            analysis = analyzeSummary(dataset);
+            break;
+        }
+
+        return { success: true, analysis };
+      } catch (error) {
+        return { error: `Analysis failed: ${error.message}` };
+      }
+    }
+  }
+};
+
+function analyzeTrends(data: any[]) {
+  // Implementation for trend analysis
+  return { trends: [], insights: [] };
+}
+
+function analyzeCorrelations(data: any[]) {
+  // Implementation for correlation analysis
+  return { correlations: [], strength: [] };
+}
+
+function analyzeAnomalies(data: any[]) {
+  // Implementation for anomaly detection
+  return { anomalies: [], severity: [] };
+}
+
+function analyzeSummary(data: any[]) {
+  // Implementation for data summarization
+  return { summary: {}, statistics: {} };
+}
+
+// 3. Streaming Components with React
+// components/ai-chat.tsx
+'use client';
+
+import { useState, useRef } from 'react';
+import { useChat } from 'ai/react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+
+export function AIChat({ tenantId }) {
+  const [input, setInput] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { messages, input: chatInput, handleInputChange, handleSubmit } = useChat({
+    api: `/api/chat?tenant=${tenantId}`,
+    onResponse: (response) => {
+      console.log('Response received:', response.status);
+    },
+    onError: (error) => {
+      console.error('Chat error:', error);
+    }
+  });
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit(e);
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <div 
+              key={message.id} 
+              className={`p-4 rounded-lg ${
+                message.role === 'user' 
+                  ? 'bg-blue-100 ml-auto max-w-3/4' 
+                  : 'bg-gray-100 mr-auto max-w-3/4'
+              }`}
+            >
+              <div className="whitespace-pre-wrap">
+                {message.content}
+              </div>
+              {message.toolInvocations && (
+                <div className="mt-2 p-2 bg-yellow-50 rounded">
+                  {message.toolInvocations.map((toolInvocation, index) => (
+                    <div key={index} className="text-sm">
+                      <div className="font-medium">Tool: {toolInvocation.toolName}</div>
+                      <div>Args: {JSON.stringify(toolInvocation.args)}</div>
+                      <div>Result: {JSON.stringify(toolInvocation.result)}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+
+      <form onSubmit={onSubmit} className="border-t p-4">
+        <div className="flex gap-2">
+          <Textarea
+            value={chatInput}
+            onChange={handleInputChange}
+            placeholder="Ask me to create a project, analyze data, or help with your work..."
+            className="flex-1 resize-none"
+          />
+          <Button type="submit">Send</Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// 4. AI Agent with Streaming and Tools
+// agents/ai-agent.ts
+import { streamText, StreamData } from 'ai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { aiTools } from '@/lib/ai-tools';
+
+const anthropic = createAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+export async function runAIAssistant({
+  messages,
+  tenantId,
+  userId,
+  tools = []
+}: {
+  messages: any[];
+  tenantId: string;
+  userId: string;
+  tools?: string[];
+}) {
+  const availableTools = tools.length > 0 
+    ? tools.reduce((acc, toolName) => {
+        if (aiTools[toolName]) {
+          acc[toolName] = aiTools[toolName];
+        }
+        return acc;
+      }, {})
+    : aiTools;
+
+  const result = await streamText({
+    model: anthropic('claude-3-5-sonnet-20241022'),
+    system: `You are an AI assistant for tenant ${tenantId}. 
+    Help the user with their tasks using available tools.`,
+    messages,
+    tools: availableTools,
+    maxSteps: 5, // Limit tool usage
+    onStepFinish: (step) => {
+      console.log('Step completed:', step);
+    }
+  });
+
+  return result;
+}
+
+// 5. Tool Usage Analytics
+// lib/analytics.ts
+import { db } from './db';
+
+export async function logToolUsage({
+  toolName,
+  userId,
+  tenantId,
+  input,
+  output,
+  duration,
+  success
+}: {
+  toolName: string;
+  userId: string;
+  tenantId: string;
+  input: any;
+  output: any;
+  duration: number;
+  success: boolean;
+}) {
+  await db.toolUsage.create({
+    data: {
+      toolName,
+      userId,
+      tenantId,
+      input: JSON.stringify(input),
+      output: JSON.stringify(output),
+      duration,
+      success
+    }
+  });
+}
+
+// 6. Rate Limiting for AI Usage
+// middleware/ai-rate-limit.ts
+import { kv } from '@vercel/kv';
+import { NextRequest, NextResponse } from 'next/server';
+
+const RATE_LIMITS = {
+  free: { requests: 10, window: 60 * 60 }, // 10 requests per hour
+  pro: { requests: 100, window: 60 * 60 }, // 100 requests per hour
+  team: { requests: 1000, window: 60 * 60 } // 1000 requests per hour
+};
+
+export async function checkAIRateLimit(userId: string, tenantId: string): Promise<{ allowed: boolean; resetTime?: number }> {
+  const key = `ai_rate_limit:${tenantId}:${userId}`;
+  const window = RATE_LIMITS.pro.window; // Default to pro plan
+  
+  const [requests, resetTime] = await kv.pipeline()
+    .incr(key)
+    .expire(key, window)
+    .exec() as [number, number];
+
+  if (requests > RATE_LIMITS.pro.requests) {
+    return { allowed: false, resetTime };
+  }
+
+  return { allowed: true };
+}
+
+// 7. Error Recovery for AI Streams
+// lib/ai-stream-recovery.ts
+export class AIStreamRecovery {
+  private retryCount: number = 0;
+  private maxRetries: number = 3;
+
+  async executeWithRecovery(operation: () => Promise<any>, context: any = {}) {
+    while (this.retryCount < this.maxRetries) {
+      try {
+        const result = await operation();
+        this.retryCount = 0; // Reset on success
+        return result;
+      } catch (error) {
+        this.retryCount++;
+        
+        if (this.retryCount >= this.maxRetries) {
+          throw new Error(`Operation failed after ${this.maxRetries} retries: ${error.message}`);
+        }
+
+        // Exponential backoff
+        const delay = Math.pow(2, this.retryCount) * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        console.warn(`Retry ${this.retryCount}/${this.maxRetries} for operation:`, error.message);
+      }
+    }
+  }
+}
+
+// 8. Cost Tracking for AI Usage
+// lib/ai-cost-tracking.ts
+export class AICostTracker {
+  private costs = {
+    openai: {
+      'gpt-4-turbo': { input: 0.01, output: 0.03 }, // per 1k tokens
+      'gpt-4': { input: 0.03, output: 0.06 },
+    },
+    anthropic: {
+      'claude-3-5-sonnet': { input: 0.003, output: 0.015 },
+      'claude-3-opus': { input: 0.015, output: 0.075 },
+    }
+  };
+
+  calculateCost(model: string, inputTokens: number, outputTokens: number): number {
+    const [provider, modelName] = model.split('/');
+    const cost = this.costs[provider]?.[modelName];
+    
+    if (!cost) {
+      return 0; // Unknown model, no cost tracking
+    }
+
+    const inputCost = (inputTokens / 1000) * cost.input;
+    const outputCost = (outputTokens / 1000) * cost.output;
+    
+    return inputCost + outputCost;
+  }
+
+  async trackUsage(userId: string, tenantId: string, model: string, usage: { input: number, output: number }) {
+    const cost = this.calculateCost(model, usage.input, usage.output);
+    
+    await db.aiUsage.create({
+      data: {
+        userId,
+        tenantId,
+        model,
+        inputTokens: usage.input,
+        outputTokens: usage.output,
+        cost,
+        timestamp: new Date()
+      }
+    });
+  }
+}
+```
+
+### Production Considerations
+- **Streaming**: Use proper React streaming with Suspense boundaries
+- **Tool Validation**: Always validate tool inputs with Zod
+- **Rate Limiting**: Implement per-tenant rate limiting
+- **Cost Tracking**: Monitor and track AI usage costs
+- **Error Recovery**: Handle streaming interruptions gracefully
+
+### Anti-Patterns to Avoid
+- ❌ Not validating tool inputs (security risk)
+- ❌ Unlimited tool usage (could be expensive)
+- ❌ No rate limiting for AI requests
+- ❌ Not tracking AI costs
+- ❌ Blocking UI during streaming
+
+### Quality Gates
+- [ ] All tools validated with Zod schemas
+- [ ] Rate limiting implemented per tenant
+- [ ] Cost tracking enabled for all models
+- [ ] Error recovery for streaming
+- [ ] Proper streaming UX with loading states
+- [ ] Tool usage analytics tracking
