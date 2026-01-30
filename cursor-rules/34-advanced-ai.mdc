@@ -1,0 +1,1121 @@
+# Advanced AI Integration & Orchestration Patterns
+## Ultra-Dex Cursor Rule 34-advanced-ai.mdc
+
+### Context
+Advanced AI integration patterns for multi-model orchestration, tool usage, and sophisticated agent coordination. Critical for leveraging multiple AI providers and coordinating complex AI workflows.
+
+### Pattern
+```javascript
+// 1. Multi-Provider Router with Intelligent Selection
+// lib/providers/router.js
+import { ClaudeProvider } from './claude.js';
+import { OpenAIProvider } from './openai.js';
+import { GeminiProvider } from './gemini.js';
+import { OllamaProvider } from './ollama.js';
+import { monitoring } from '../utils/monitoring.js';
+
+export class AIProviderRouter {
+  constructor(options = {}) {
+    this.providers = new Map();
+    this.weights = options.weights || {
+      claude: 0.4,    // 40% Claude (best for reasoning)
+      openai: 0.3,    // 30% OpenAI (good for coding)
+      gemini: 0.2,    // 20% Gemini (good for research)
+      ollama: 0.1     // 10% Ollama (local, fast)
+    };
+    this.fallbackOrder = options.fallbackOrder || ['claude', 'openai', 'gemini', 'ollama'];
+    this.performanceHistory = new Map(); // Track provider performance
+  }
+
+  async initialize() {
+    // Initialize all configured providers
+    const providerConfigs = {
+      claude: { 
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        enabled: !!process.env.ANTHROPIC_API_KEY
+      },
+      openai: { 
+        apiKey: process.env.OPENAI_API_KEY, 
+        enabled: !!process.env.OPENAI_API_KEY
+      },
+      gemini: { 
+        apiKey: process.env.GEMINI_API_KEY, 
+        enabled: !!process.env.GEMINI_API_KEY
+      },
+      ollama: { 
+        enabled: true // Always enabled for local use
+      }
+    };
+
+    for (const [name, config] of Object.entries(providerConfigs)) {
+      if (config.enabled) {
+        try {
+          let provider;
+          switch (name) {
+            case 'claude':
+              provider = new ClaudeProvider(config.apiKey, options);
+              break;
+            case 'openai':
+              provider = new OpenAIProvider(config.apiKey, options);
+              break;
+            case 'gemini':
+              provider = new GeminiProvider(config.apiKey, options);
+              break;
+            case 'ollama':
+              provider = new OllamaProvider(null, options);
+              break;
+          }
+
+          // Test provider availability
+          await provider.validateApiKey();
+          this.providers.set(name, provider);
+          
+          monitoring.info(`AI Provider initialized: ${name}`, { provider: name });
+        } catch (error) {
+          monitoring.warn(`Failed to initialize provider: ${name}`, { error: error.message });
+        }
+      }
+    }
+
+    if (this.providers.size === 0) {
+      throw new Error('No AI providers configured. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY');
+    }
+  }
+
+  // Intelligent provider selection based on task type
+  selectProvider(taskDescription) {
+    const taskLower = taskDescription.toLowerCase();
+    
+    // Claude for complex reasoning, planning, architecture
+    if (taskLower.includes('plan') || taskLower.includes('architect') || 
+        taskLower.includes('design') || taskLower.includes('strategy') ||
+        taskLower.includes('analyze') || taskLower.includes('review')) {
+      return this.providers.get('claude') || this.getFirstAvailable();
+    }
+    
+    // OpenAI for coding, implementation, testing
+    if (taskLower.includes('code') || taskLower.includes('implement') || 
+        taskLower.includes('test') || taskLower.includes('write') ||
+        taskLower.includes('function') || taskLower.includes('api')) {
+      return this.providers.get('openai') || this.getFirstAvailable();
+    }
+    
+    // Gemini for research, search, documentation
+    if (taskLower.includes('research') || taskLower.includes('search') || 
+        taskLower.includes('find') || taskLower.includes('document') ||
+        taskLower.includes('learn') || taskLower.includes('compare')) {
+      return this.providers.get('gemini') || this.getFirstAvailable();
+    }
+    
+    // Ollama for fast, local operations
+    if (taskLower.includes('quick') || taskLower.includes('fast') || 
+        taskLower.includes('local') || taskLower.includes('draft')) {
+      return this.providers.get('ollama') || this.getFirstAvailable();
+    }
+    
+    // Weighted random selection for general tasks
+    return this.weightedRandomSelection();
+  }
+
+  weightedRandomSelection() {
+    const totalWeight = Object.values(this.weights).reduce((a, b) => a + b, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const [provider, weight] of Object.entries(this.weights)) {
+      if (this.providers.has(provider)) {
+        random -= weight;
+        if (random <= 0) {
+          return this.providers.get(provider);
+        }
+      }
+    }
+    
+    return this.getFirstAvailable();
+  }
+
+  getFirstAvailable() {
+    for (const provider of this.providers.values()) {
+      return provider;
+    }
+    throw new Error('No providers available');
+  }
+
+  async generate(systemPrompt, userPrompt, options = {}) {
+    const provider = options.provider ? 
+      this.providers.get(options.provider) : 
+      this.selectProvider(userPrompt);
+
+    if (!provider) {
+      throw new Error('No available provider');
+    }
+
+    const startTime = Date.now();
+    let result;
+
+    try {
+      result = await provider.generate(systemPrompt, userPrompt, options);
+      
+      // Record performance
+      const duration = Date.now() - startTime;
+      this.recordPerformance(provider.getName(), duration, true);
+      
+      return result;
+    } catch (error) {
+      // Record failure
+      const duration = Date.now() - startTime;
+      this.recordPerformance(provider.getName(), duration, false);
+      
+      // Try fallback providers
+      const fallback = this.getFallbackProvider(provider.getName());
+      if (fallback) {
+        monitoring.warn(`Provider failed, trying fallback`, {
+          original: provider.getName(),
+          fallback: fallback.getName(),
+          error: error.message
+        });
+        
+        return await fallback.generate(systemPrompt, userPrompt, options);
+      }
+      
+      throw error;
+    }
+  }
+
+  getFallbackProvider(currentProviderName) {
+    const currentIndex = this.fallbackOrder.indexOf(currentProviderName);
+    if (currentIndex === -1 || currentIndex >= this.fallbackOrder.length - 1) {
+      return null;
+    }
+
+    for (let i = currentIndex + 1; i < this.fallbackOrder.length; i++) {
+      const name = this.fallbackOrder[i];
+      if (this.providers.has(name)) {
+        return this.providers.get(name);
+      }
+    }
+    
+    return null;
+  }
+
+  recordPerformance(providerName, duration, success) {
+    if (!this.performanceHistory.has(providerName)) {
+      this.performanceHistory.set(providerName, []);
+    }
+    
+    const history = this.performanceHistory.get(providerName);
+    history.push({
+      duration,
+      success,
+      timestamp: Date.now()
+    });
+    
+    // Keep only recent history (last 100 entries)
+    if (history.length > 100) {
+      this.performanceHistory.set(providerName, history.slice(-100));
+    }
+  }
+
+  getPerformanceMetrics() {
+    const metrics = {};
+    
+    for (const [providerName, history] of this.performanceHistory) {
+      const successfulRuns = history.filter(h => h.success);
+      if (successfulRuns.length > 0) {
+        const avgDuration = successfulRuns.reduce((sum, h) => sum + h.duration, 0) / successfulRuns.length;
+        const successRate = successfulRuns.length / history.length;
+        
+        metrics[providerName] = {
+          avgDuration: Math.round(avgDuration),
+          successRate: Math.round(successRate * 100),
+          totalCalls: history.length,
+          recentCalls: successfulRuns.length
+        };
+      }
+    }
+    
+    return metrics;
+  }
+}
+
+// 2. Tool Usage with Function Calling
+// lib/ai-tools/function-calling.js
+import { z } from 'zod';
+
+export class ToolRegistry {
+  constructor() {
+    this.tools = new Map();
+    this.executionHistory = [];
+  }
+
+  registerTool(name, description, schema, handler) {
+    this.tools.set(name, {
+      name,
+      description,
+      schema,
+      handler,
+      registeredAt: new Date().toISOString()
+    });
+  }
+
+  async executeTool(toolName, arguments_) {
+    const tool = this.tools.get(toolName);
+    if (!tool) {
+      throw new Error(`Tool not found: ${toolName}`);
+    }
+
+    // Validate arguments against schema
+    const validationResult = tool.schema.safeParse(arguments_);
+    if (!validationResult.success) {
+      throw new Error(`Invalid arguments for tool ${toolName}: ${validationResult.error.message}`);
+    }
+
+    const startTime = Date.now();
+    let result, error;
+
+    try {
+      result = await tool.handler(validationResult.data);
+      
+      const executionRecord = {
+        tool: toolName,
+        arguments: arguments_,
+        result,
+        success: true,
+        duration: Date.now() - startTime,
+        timestamp: new Date().toISOString()
+      };
+      
+      this.executionHistory.push(executionRecord);
+      return result;
+    } catch (err) {
+      error = err;
+      
+      const executionRecord = {
+        tool: toolName,
+        arguments: arguments_,
+        error: err.message,
+        success: false,
+        duration: Date.now() - startTime,
+        timestamp: new Date().toISOString()
+      };
+      
+      this.executionHistory.push(executionRecord);
+      throw err;
+    }
+  }
+
+  getToolDefinitions() {
+    return Array.from(this.tools.values()).map(tool => ({
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: this.zodToJSONSchema(tool.schema)
+      }
+    }));
+  }
+
+  zodToJSONSchema(schema) {
+    // Simplified Zod to JSON Schema converter
+    // In production, use a proper library like zod-to-json-schema
+    if (schema._def.typeName === 'ZodObject') {
+      const shape = schema.shape;
+      const properties = {};
+      const required = [];
+
+      for (const [key, value] of Object.entries(shape)) {
+        properties[key] = this.zodToJSONSchema(value);
+        if (!(value._def.typeName === 'ZodOptional')) {
+          required.push(key);
+        }
+      }
+
+      return {
+        type: 'object',
+        properties,
+        required
+      };
+    }
+
+    // Handle primitive types
+    if (schema._def.typeName === 'ZodString') return { type: 'string' };
+    if (schema._def.typeName === 'ZodNumber') return { type: 'number' };
+    if (schema._def.typeName === 'ZodBoolean') return { type: 'boolean' };
+    if (schema._def.typeName === 'ZodArray') {
+      return {
+        type: 'array',
+        items: this.zodToJSONSchema(schema._def.type)
+      };
+    }
+
+    return { type: 'string' }; // Default fallback
+  }
+
+  async executeToolSequence(tools) {
+    const results = [];
+    
+    for (const { name, arguments: args } of tools) {
+      try {
+        const result = await this.executeTool(name, args);
+        results.push({ name, result, success: true });
+      } catch (error) {
+        results.push({ name, error: error.message, success: false });
+        // Continue with other tools even if one fails
+      }
+    }
+    
+    return results;
+  }
+}
+
+// 3. Advanced Agent Coordination
+// lib/agents/coordination.js
+import { monitoring } from '../utils/monitoring.js';
+import { errorRecovery } from '../utils/error-recovery.js';
+
+export class AgentCoordinator {
+  constructor(router) {
+    this.router = router;
+    this.agents = new Map();
+    this.agentStates = new Map();
+    this.coordinationHistory = [];
+    this.communicationBus = new Map(); // For agent-to-agent communication
+  }
+
+  registerAgent(name, config) {
+    this.agents.set(name, {
+      ...config,
+      name,
+      registeredAt: new Date().toISOString(),
+      status: 'idle',
+      lastActive: null
+    });
+  }
+
+  async coordinateAgents(task, agents, options = {}) {
+    const { 
+      parallel = false, 
+      maxConcurrent = 5,
+      timeout = 300000 // 5 minutes
+    } = options;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const startTime = Date.now();
+      let results;
+
+      if (parallel) {
+        results = await this.coordinateAgentsParallel(task, agents, controller);
+      } else {
+        results = await this.coordinateAgentsSequential(task, agents, controller);
+      }
+
+      const duration = Date.now() - startTime;
+      
+      const coordinationRecord = {
+        task,
+        agents: agents.map(a => a.name),
+        results,
+        duration,
+        parallel,
+        timestamp: new Date().toISOString()
+      };
+      
+      this.coordinationHistory.push(coordinationRecord);
+      monitoring.info('Agent coordination completed', { 
+        task, 
+        agents: agents.length, 
+        duration,
+        parallel 
+      });
+
+      return results;
+    } catch (error) {
+      monitoring.error('Agent coordination failed', { 
+        task, 
+        error: error.message,
+        agents: agents.map(a => a.name)
+      });
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  async coordinateAgentsSequential(task, agents, controller) {
+    const results = [];
+    let context = '';
+
+    for (const agent of agents) {
+      if (controller.signal.aborted) {
+        throw new Error('Coordination aborted due to timeout');
+      }
+
+      const agentConfig = this.agents.get(agent.name);
+      if (!agentConfig) {
+        throw new Error(`Agent not registered: ${agent.name}`);
+      }
+
+      // Update agent state
+      this.agentStates.set(agent.name, {
+        status: 'working',
+        task,
+        startTime: Date.now(),
+        context
+      });
+
+      try {
+        const result = await this.executeAgent(agent, task, context);
+        context += `\n\nResult from @${agent.name}: ${result.content}`;
+        
+        results.push({
+          agent: agent.name,
+          result,
+          success: true,
+          duration: Date.now() - this.agentStates.get(agent.name).startTime
+        });
+      } catch (error) {
+        results.push({
+          agent: agent.name,
+          error: error.message,
+          success: false,
+          duration: Date.now() - this.agentStates.get(agent.name).startTime
+        });
+        
+        // If failOnError is set, stop the sequence
+        if (agent.failOnError) {
+          break;
+        }
+      } finally {
+        // Update agent state
+        const prevState = this.agentStates.get(agent.name);
+        this.agentStates.set(agent.name, {
+          ...prevState,
+          status: 'idle',
+          endTime: Date.now()
+        });
+      }
+    }
+
+    return results;
+  }
+
+  async coordinateAgentsParallel(task, agents, controller) {
+    // Limit concurrent executions
+    const maxConcurrent = Math.min(agents.length, 5); // Default max 5
+    const results = [];
+
+    for (let i = 0; i < agents.length; i += maxConcurrent) {
+      if (controller.signal.aborted) {
+        throw new Error('Coordination aborted due to timeout');
+      }
+
+      const batch = agents.slice(i, i + maxConcurrent);
+      const batchPromises = batch.map(agent => 
+        this.executeAgentWithState(agent, task, '')
+          .catch(error => ({
+            agent: agent.name,
+            error: error.message,
+            success: false
+          }))
+      );
+
+      const batchResults = await Promise.allSettled(batchPromises);
+      
+      for (const result of batchResults) {
+        if (result.status === 'fulfilled') {
+          results.push(result.value);
+        } else {
+          results.push({
+            agent: 'unknown',
+            error: result.reason.message,
+            success: false
+          });
+        }
+      }
+    }
+
+    return results;
+  }
+
+  async executeAgent(agent, task, context) {
+    const agentConfig = this.agents.get(agent.name);
+    if (!agentConfig) {
+      throw new Error(`Agent not registered: ${agent.name}`);
+    }
+
+    const systemPrompt = `
+You are the @${agent.name} agent in the Ultra-Dex swarm.
+Role: ${agentConfig.role}
+Capabilities: ${agentConfig.capabilities?.join(', ') || 'General'}
+
+Context: ${context}
+
+Task: ${task}
+
+Provide your response for the next agent in the pipeline or for the user.
+    `.trim();
+
+    const userPrompt = task;
+
+    // Use the router to select the best provider for this agent
+    const provider = this.router.selectProvider(`${agent.name} ${task}`);
+    
+    return await provider.generate(systemPrompt, userPrompt, {
+      temperature: agent.temperature || 0.7,
+      maxTokens: agent.maxTokens || 4096
+    });
+  }
+
+  async executeAgentWithState(agent, task, context) {
+    const startTime = Date.now();
+    
+    // Update agent state
+    this.agentStates.set(agent.name, {
+      status: 'working',
+      task,
+      startTime,
+      context
+    });
+
+    try {
+      const result = await this.executeAgent(agent, task, context);
+      
+      const duration = Date.now() - startTime;
+      
+      // Update agent state
+      this.agentStates.set(agent.name, {
+        status: 'idle',
+        task,
+        startTime,
+        endTime: Date.now(),
+        duration,
+        lastResult: result
+      });
+
+      return {
+        agent: agent.name,
+        result,
+        success: true,
+        duration
+      };
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      // Update agent state with error
+      this.agentStates.set(agent.name, {
+        status: 'error',
+        task,
+        startTime,
+        endTime: Date.now(),
+        duration,
+        lastError: error.message
+      });
+
+      throw error;
+    }
+  }
+
+  getAgentStatus(agentName) {
+    return this.agentStates.get(agentName) || { status: 'unknown' };
+  }
+
+  getAllAgentStatus() {
+    const status = {};
+    for (const [name, state] of this.agentStates) {
+      status[name] = state;
+    }
+    return status;
+  }
+
+  async broadcastToAgents(message, filterFn = () => true) {
+    const filteredAgents = Array.from(this.agents.values())
+      .filter(filterFn);
+
+    const results = await Promise.allSettled(
+      filteredAgents.map(agent => 
+        this.sendMessageToAgent(agent.name, message)
+      )
+    );
+
+    return results.map((result, index) => ({
+      agent: filteredAgents[index].name,
+      success: result.status === 'fulfilled',
+      result: result.status === 'fulfilled' ? result.value : result.reason.message
+    }));
+  }
+
+  async sendMessageToAgent(agentName, message) {
+    if (!this.communicationBus.has(agentName)) {
+      this.communicationBus.set(agentName, []);
+    }
+    
+    const messages = this.communicationBus.get(agentName);
+    messages.push({
+      message,
+      timestamp: new Date().toISOString(),
+      sender: 'coordinator'
+    });
+    
+    // Keep only recent messages
+    if (messages.length > 50) {
+      this.communicationBus.set(agentName, messages.slice(-50));
+    }
+  }
+
+  getAgentMessages(agentName) {
+    return this.communicationBus.get(agentName) || [];
+  }
+}
+
+// 4. AI Memory & Context Management
+// lib/ai/memory.js
+import { UltraMemory } from '../mcp/memory.js';
+
+export class AICoordinatorMemory {
+  constructor() {
+    this.memory = new UltraMemory();
+    this.contextWindows = new Map(); // Per-agent context windows
+    this.conversationHistory = new Map(); // Per-session conversation history
+  }
+
+  async initialize() {
+    await this.memory.init();
+  }
+
+  async storeContext(contextId, data, tags = []) {
+    return await this.memory.remember(JSON.stringify(data), 
+      [...tags, 'context'], 
+      'ai-coordinator');
+  }
+
+  async getContext(contextId) {
+    const results = await this.memory.search(contextId, 1);
+    if (results.length > 0) {
+      try {
+        return JSON.parse(results[0].text);
+      } catch {
+        return results[0].text;
+      }
+    }
+    return null;
+  }
+
+  async addToConversation(sessionId, role, content) {
+    if (!this.conversationHistory.has(sessionId)) {
+      this.conversationHistory.set(sessionId, []);
+    }
+
+    const history = this.conversationHistory.get(sessionId);
+    history.push({
+      role,
+      content,
+      timestamp: new Date().toISOString()
+    });
+
+    // Keep only recent conversation (last 50 messages)
+    if (history.length > 50) {
+      this.conversationHistory.set(sessionId, history.slice(-50));
+    }
+  }
+
+  async getConversationContext(sessionId, maxMessages = 20) {
+    const history = this.conversationHistory.get(sessionId) || [];
+    return history.slice(-maxMessages);
+  }
+
+  async createContextWindow(agentName, context) {
+    this.contextWindows.set(agentName, {
+      context,
+      timestamp: new Date().toISOString(),
+      size: context.length
+    });
+  }
+
+  async getContextWindow(agentName) {
+    return this.contextWindows.get(agentName) || null;
+  }
+
+  async updateContextWindow(agentName, updates) {
+    const window = this.contextWindows.get(agentName);
+    if (window) {
+      window.context = { ...window.context, ...updates };
+      window.timestamp = new Date().toISOString();
+    }
+  }
+
+  // Summarize long contexts to keep within token limits
+  async summarizeContext(context, maxLength = 4000) {
+    if (context.length <= maxLength) {
+      return context;
+    }
+
+    // Use AI to summarize if context is too long
+    const provider = this.router.selectProvider('summarization');
+    
+    const summaryPrompt = `
+Summarize the following context while preserving the most important information for AI agents:
+
+${context.substring(0, maxLength * 2)}  // Provide more context for summarization
+
+Keep the summary under ${maxLength} characters.
+Preserve key decisions, requirements, and technical details.
+    `.trim();
+
+    const result = await provider.generate(
+      'You are a context summarization expert. Create concise summaries that preserve essential information for AI agents.',
+      summaryPrompt
+    );
+
+    return result.content;
+  }
+}
+
+// 5. Integration with CLI Commands
+// lib/commands/ai-integration.js
+import { AIProviderRouter } from '../providers/router.js';
+import { ToolRegistry } from '../ai-tools/function-calling.js';
+import { AgentCoordinator } from '../agents/coordination.js';
+import { AICoordinatorMemory } from '../ai/memory.js';
+
+export async function aiIntegrateCommand(task, options) {
+  console.log('🤖 Starting Advanced AI Integration...\n');
+
+  try {
+    // Initialize AI components
+    const router = new AIProviderRouter();
+    await router.initialize();
+
+    const tools = new ToolRegistry();
+    const coordinator = new AgentCoordinator(router);
+    const memory = new AICoordinatorMemory();
+    await memory.initialize();
+
+    // Register common tools
+    tools.registerTool(
+      'read_file',
+      'Read a file from the project',
+      z.object({
+        path: z.string().describe('Path to the file to read')
+      }),
+      async ({ path }) => {
+        // Implementation would go here
+        return { content: 'File content would be returned here' };
+      }
+    );
+
+    tools.registerTool(
+      'write_file',
+      'Write content to a file',
+      z.object({
+        path: z.string().describe('Path to the file to write'),
+        content: z.string().describe('Content to write to the file')
+      }),
+      async ({ path, content }) => {
+        // Implementation would go here
+        return { success: true, path };
+      }
+    );
+
+    // Example agent coordination
+    const agents = [
+      { name: 'planner', role: 'Task breakdown', temperature: 0.5 },
+      { name: 'cto', role: 'Architecture decisions', temperature: 0.3 },
+      { name: 'backend', role: 'Implementation', temperature: 0.7 }
+    ];
+
+    // Register agents
+    agents.forEach(agent => coordinator.registerAgent(agent.name, {
+      role: agent.role,
+      temperature: agent.temperature
+    }));
+
+    // Coordinate agents
+    const results = await coordinator.coordinateAgents(task, agents, {
+      parallel: options.parallel,
+      timeout: options.timeout || 300000
+    });
+
+    console.log('✅ AI Integration completed successfully!');
+    console.log(`📊 Results: ${results.filter(r => r.success).length}/${results.length} agents succeeded`);
+
+    if (options.verbose) {
+      results.forEach(result => {
+        if (result.success) {
+          console.log(`✅ ${result.agent}: ${result.duration}ms`);
+        } else {
+          console.log(`❌ ${result.agent}: ${result.error}`);
+        }
+      });
+    }
+
+    // Show performance metrics
+    const metrics = router.getPerformanceMetrics();
+    if (Object.keys(metrics).length > 0) {
+      console.log('\n📈 Provider Performance:');
+      for (const [provider, data] of Object.entries(metrics)) {
+        console.log(`   ${provider}: ${data.successRate}% success, ${data.avgDuration}ms avg`);
+      }
+    }
+
+    return results;
+  } catch (error) {
+    console.error('❌ AI Integration failed:', error.message);
+    throw error;
+  }
+}
+
+export function registerAIIntegrationCommand(program) {
+  program
+    .command('ai-integrate <task>')
+    .description('Advanced AI integration with multi-provider orchestration')
+    .option('-p, --parallel', 'Run agents in parallel')
+    .option('-t, --timeout <ms>', 'Timeout in milliseconds', '300000')
+    .option('-v, --verbose', 'Show detailed output')
+    .option('--provider <name>', 'Specific provider to use')
+    .action(aiIntegrateCommand);
+}
+
+// 6. Advanced Prompt Engineering
+// lib/ai/prompt-engineering.js
+export class AdvancedPromptEngineer {
+  static createContextualPrompt(basePrompt, projectContext, codeContext) {
+    return `
+## PROJECT CONTEXT
+${projectContext}
+
+## CODEBASE CONTEXT
+${codeContext}
+
+## BASE PROMPT
+${basePrompt}
+
+## INSTRUCTIONS
+- Use the project context to understand requirements and constraints
+- Leverage codebase context to maintain consistency with existing patterns
+- Follow the existing architecture and coding standards
+- Consider the current project phase and priorities
+- Maintain alignment with the 34-section implementation plan
+- Apply the 21-step verification framework where applicable
+    `.trim();
+  }
+
+  static createChainOfThoughtPrompt(task) {
+    return `
+## TASK
+${task}
+
+## CHAIN OF THOUGHT REASONING
+Think step by step:
+
+1. **Understand**: What exactly is being asked?
+2. **Analyze**: What are the key components/constraints?
+3. **Plan**: How should this be approached?
+4. **Execute**: What specific actions should be taken?
+5. **Verify**: How will success be measured?
+
+## RESPONSE
+Provide your response following the chain of thought above.
+    `.trim();
+  }
+
+  static createFewShotPrompt(task, examples) {
+    const examplesText = examples.map((ex, i) => `
+Example ${i + 1}:
+Input: ${ex.input}
+Output: ${ex.output}
+    `).join('\n');
+
+    return `
+## TASK
+${task}
+
+## FEW-SHOT EXAMPLES
+${examplesText}
+
+## INSTRUCTIONS
+Follow the pattern demonstrated in the examples above to complete the current task.
+Maintain consistency with the example approaches while adapting to the specific requirements.
+    `.trim();
+  }
+
+  static createRolePlayingPrompt(role, task, constraints) {
+    return `
+## ROLE
+You are a ${role} with expertise in this domain.
+
+## TASK
+${task}
+
+## CONSTRAINTS
+${constraints.map(c => `- ${c}`).join('\n')}
+
+## APPROACH
+Act as the specified role would, considering their expertise, responsibilities, and perspective.
+Provide professional, role-appropriate recommendations and solutions.
+    `.trim();
+  }
+}
+
+// 7. AI Quality Assurance
+// lib/ai/quality.js
+export class AIQualityAssurance {
+  static async validateAIOutput(output, requirements) {
+    const checks = {
+      completeness: this.checkCompleteness(output, requirements),
+      accuracy: this.checkAccuracy(output),
+      consistency: this.checkConsistency(output),
+      security: this.checkSecurity(output),
+      performance: this.checkPerformance(output),
+      accessibility: this.checkAccessibility(output)
+    };
+
+    const passed = Object.values(checks).every(check => check.passed);
+    
+    return {
+      passed,
+      checks,
+      score: this.calculateScore(checks),
+      feedback: this.generateFeedback(checks)
+    };
+  }
+
+  static checkCompleteness(output, requirements) {
+    const missing = [];
+    
+    if (requirements.expectedSections) {
+      for (const section of requirements.expectedSections) {
+        if (!output.toLowerCase().includes(section.toLowerCase())) {
+          missing.push(section);
+        }
+      }
+    }
+
+    return {
+      passed: missing.length === 0,
+      missing,
+      message: missing.length === 0 
+        ? 'All required sections included' 
+        : `Missing sections: ${missing.join(', ')}`
+    };
+  }
+
+  static checkAccuracy(output) {
+    // Check for common accuracy issues
+    const issues = [];
+    
+    if (output.includes('TODO:')) {
+      issues.push('Contains TODO markers');
+    }
+    
+    if (output.includes('FIXME:')) {
+      issues.push('Contains FIXME markers');
+    }
+    
+    if (output.includes('XXX:')) {
+      issues.push('Contains placeholder markers');
+    }
+
+    return {
+      passed: issues.length === 0,
+      issues,
+      message: issues.length === 0 
+        ? 'No accuracy issues detected' 
+        : `Issues found: ${issues.join(', ')}`
+    };
+  }
+
+  static checkConsistency(output) {
+    // Check for consistency in naming, patterns, etc.
+    const issues = [];
+    
+    // Example: check for consistent terminology
+    const terms = ['should', 'must', 'shall', 'will'];
+    const foundTerms = terms.filter(term => 
+      new RegExp(`\\b${term}\\b`, 'gi').test(output)
+    );
+    
+    if (foundTerms.length > 2) {
+      issues.push('Multiple obligation terms used inconsistently');
+    }
+
+    return {
+      passed: issues.length === 0,
+      issues,
+      message: issues.length === 0 
+        ? 'Consistency checks passed' 
+        : `Consistency issues: ${issues.join(', ')}`
+    };
+  }
+
+  static checkSecurity(output) {
+    const issues = [];
+    
+    // Check for potential security issues
+    if (output.includes('console.log(') && output.includes('password')) {
+      issues.push('Password logged to console');
+    }
+    
+    if (output.includes('eval(')) {
+      issues.push('Use of eval() function');
+    }
+    
+    if (output.includes('innerHTML')) {
+      issues.push('Potential XSS via innerHTML');
+    }
+
+    return {
+      passed: issues.length === 0,
+      issues,
+      message: issues.length === 0 
+        ? 'Security checks passed' 
+        : `Security issues: ${issues.join(', ')}`
+    };
+  }
+
+  static calculateScore(checks) {
+    const passed = Object.values(checks).filter(c => c.passed).length;
+    const total = Object.keys(checks).length;
+    return Math.round((passed / total) * 100);
+  }
+
+  static generateFeedback(checks) {
+    const feedback = [];
+    
+    for (const [checkName, result] of Object.entries(checks)) {
+      if (!result.passed) {
+        feedback.push(`${checkName}: ${result.message}`);
+      }
+    }
+    
+    return feedback.length > 0 
+      ? feedback.join('\n') 
+      : 'All quality checks passed!';
+  }
+}
+```
+
+### Production Considerations
+- **Provider Selection**: Intelligent routing based on task type and provider performance
+- **Tool Validation**: Schema validation for all tool arguments
+- **Agent Coordination**: Sophisticated orchestration with state management
+- **Memory Management**: Context preservation across AI sessions
+- **Quality Assurance**: Automated validation of AI outputs
+
+### Anti-Patterns to Avoid
+- ❌ Using the same provider for all tasks (not leveraging strengths)
+- ❌ Not validating tool arguments (security risk)
+- ❌ No fallback mechanisms for provider failures
+- ❌ Not preserving context across AI interactions
+- ❌ Not validating AI output quality
+
+### Quality Gates
+- [ ] Multi-provider routing with intelligent selection
+- [ ] Tool argument validation with Zod schemas
+- [ ] Agent state management and coordination
+- [ ] Context preservation and memory management
+- [ ] AI output quality validation
+- [ ] Performance monitoring for providers
+- [ ] Error recovery for AI operations
+- [ ] Security validation for all AI outputs

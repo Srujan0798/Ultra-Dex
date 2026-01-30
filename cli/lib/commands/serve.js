@@ -5,7 +5,7 @@ import path from 'path';
 import { loadState, generateMarkdown } from './plan.js';
 import { startMcpServer } from '../mcp/server.js';
 import { projectGraph } from '../mcp/graph.js';
-import { UltraDexSocket } from '../mcp/websocket.js';
+import { webSocketServer } from '../mcp/websocket.js';
 import { swarmCommand } from './swarm.js';
 import { execSync } from 'child_process';
 import { getRandomMessage } from '../utils/messages.js';
@@ -174,7 +174,9 @@ async function startUnifiedKernel(portStr) {
     }
   });
   
-  const wss = new UltraDexSocket(server);
+  // Use the singleton instance instead of creating new one
+  const wss = webSocketServer;
+  await wss.start({ port: 3002 });
 
   server.listen(port, () => {
     console.log(chalk.green(`✅ Portal Stabilized at http://localhost:${port}`));

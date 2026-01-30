@@ -1,0 +1,567 @@
+# React Server Components & Server Actions Patterns
+## Ultra-Dex Cursor Rule 29-server-components.mdc
+
+### Context
+React Server Components (RSC) and Server Actions are the foundation of Next.js 15's architecture. Critical for performance, SEO, and security in modern SaaS applications.
+
+### Pattern
+```javascript
+// 1. Server Component with Data Fetching
+// app/dashboard/page.tsx
+import { Suspense } from 'react';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { getUserProjects, getAnalyticsData } from '@/lib/data-fetching';
+import { ProjectList } from '@/components/project-list';
+import { AnalyticsCard } from '@/components/analytics-card';
+import { Header } from '@/components/header';
+import { Sidebar } from '@/components/sidebar';
+
+export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    redirect('/login');
+  }
+
+  // Fetch data on the server (no waterfalls!)
+  const [projects, analytics] = await Promise.all([
+    getUserProjects(session.user.id),
+    getAnalyticsData(session.user.id)
+  ]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header user={session.user} />
+      <div className="flex">
+        <Sidebar user={session.user} />
+        <main className="flex-1 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <AnalyticsCard 
+              title="Projects" 
+              value={analytics.projectsCount} 
+              change="+12%" 
+            />
+            <AnalyticsCard 
+              title="Active Users" 
+              value={analytics.activeUsers} 
+              change="+8%" 
+            />
+            <AnalyticsCard 
+              title="API Calls" 
+              value={analytics.apiCalls} 
+              change="+25%" 
+            />
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold mb-4">Your Projects</h2>
+            <Suspense fallback={<div>Loading projects...</div>}>
+              <ProjectList initialProjects={projects} userId={session.user.id} />
+            </Suspense>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// 2. Server Actions with Validation
+// actions/project-actions.ts
+'use server';
+
+import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
+import { db } from '@/lib/db';
+import { currentUser } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
+
+const createProjectSchema = z.object({
+  name: z.string().min(2).max(100),
+  description: z.string().max(500).optional(),
+  visibility: z.enum(['public', 'private']),
+  tags: z.array(z.string()).max(5).optional()
+});
+
+export async function createProject(prevState: any, formData: FormData) {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return { error: 'Authentication required' };
+    }
+
+    const validatedFields = createProjectSchema.safeParse({
+      name: formData.get('name'),
+      description: formData.get('description'),
+      visibility: formData.get('visibility'),
+      tags: formData.getAll('tags')
+    });
+
+    if (!validatedFields.success) {
+      return {
+        error: 'Invalid fields',
+        details: validatedFields.error.flatten()
+      };
+    }
+
+    const { name, description, visibility, tags } = validatedFields.data;
+
+    // Check user limits
+    const projectCount = await db.project.count({
+      where: { userId: user.id }
+    });
+
+    if (projectCount >= user.planLimits.maxProjects) {
+      return { error: 'Project limit exceeded for your plan' };
+    }
+
+    const project = await db.project.create({
+      data: {
+        name,
+        description: description || '',
+        visibility,
+        userId: user.id,
+        tags: tags || []
+      }
+    });
+
+    // Revalidate the dashboard page to show new project
+    revalidatePath('/dashboard');
+    
+    return {
+      success: true,
+      project: { id: project.id, name: project.name }
+    };
+  } catch (error) {
+    console.error('Create project error:', error);
+    return { error: 'Failed to create project' };
+  }
+}
+
+// 3. Server Action with File Upload
+// actions/file-actions.ts
+'use server';
+
+import { z } from 'zod';
+import { db } from '@/lib/db';
+import { currentUser } from '@clerk/nextjs';
+import { put } from '@vercel/blob';
+import { revalidatePath } from 'next/cache';
+
+const uploadFileSchema = z.object({
+  file: z.instanceof(File),
+  folder: z.string().min(1).max(50)
+});
+
+export async function uploadFile(formData: FormData) {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return { error: 'Authentication required' };
+    }
+
+    const file = formData.get('file') as File;
+    const folder = formData.get('folder') as string;
+
+    if (!file) {
+      return { error: 'No file provided' };
+    }
+
+    // Validate file
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      return { error: 'File too large (max 10MB)' };
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+    if (!allowedTypes.includes(file.type)) {
+      return { error: 'File type not allowed' };
+    }
+
+    // Upload to Vercel Blob
+    const blob = await put(`${folder}/${Date.now()}-${file.name}`, file, {
+      access: 'public',
+    });
+
+    // Save to database
+    const fileRecord = await db.file.create({
+      data: {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: blob.url,
+        userId: user.id,
+        folder
+      }
+    });
+
+    revalidatePath('/files');
+    
+    return {
+      success: true,
+      file: { id: fileRecord.id, name: fileRecord.name, url: fileRecord.url }
+    };
+  } catch (error) {
+    console.error('File upload error:', error);
+    return { error: 'Failed to upload file' };
+  }
+}
+
+// 4. Client Component for Interactive UI
+// components/project-form.client.tsx
+'use client';
+
+import { useFormState, useFormStatus } from 'react-dom';
+import { createProject } from '@/actions/project-actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? 'Creating...' : 'Create Project'}
+    </Button>
+  );
+}
+
+export function ProjectForm() {
+  const [state, formAction] = useFormState(createProject, null);
+
+  return (
+    <form action={formAction} className="space-y-4">
+      <div>
+        <Label htmlFor="name">Project Name</Label>
+        <Input 
+          id="name" 
+          name="name" 
+          required 
+          minLength={2}
+          maxLength={100}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Textarea 
+          id="description" 
+          name="description"
+          maxLength={500}
+        />
+      </div>
+
+      <div>
+        <Label>Visibility</Label>
+        <div className="flex space-x-4 mt-2">
+          <label className="flex items-center">
+            <input 
+              type="radio" 
+              name="visibility" 
+              value="public" 
+              className="mr-2"
+              defaultChecked 
+            />
+            Public
+          </label>
+          <label className="flex items-center">
+            <input 
+              type="radio" 
+              name="visibility" 
+              value="private" 
+              className="mr-2"
+            />
+            Private
+          </label>
+        </div>
+      </div>
+
+      {state?.error && (
+        <div className="text-red-600 text-sm">
+          {state.error}
+          {state.details && (
+            <pre className="mt-2 text-xs">{JSON.stringify(state.details, null, 2)}</pre>
+          )}
+        </div>
+      )}
+
+      {state?.success && (
+        <div className="text-green-600 text-sm">
+          Project created successfully!
+        </div>
+      )}
+
+      <SubmitButton />
+    </form>
+  );
+}
+
+// 5. Server Component with Streaming
+// app/streaming-demo/page.tsx
+import { Suspense } from 'react';
+import { ExpensiveComponent } from '@/components/expensive-component';
+import { FastComponent } from '@/components/fast-component';
+
+export default function StreamingDemoPage() {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Streaming Demo</h1>
+      
+      {/* This renders immediately */}
+      <div className="mb-6">
+        <FastComponent />
+      </div>
+      
+      {/* This streams separately */}
+      <div className="border p-4">
+        <Suspense fallback={<div>Loading expensive data...</div>}>
+          <ExpensiveComponent />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+// 6. Server Component with Database Relations
+// components/project-details.tsx
+import { db } from '@/lib/db';
+
+export async function ProjectDetails({ projectId }: { projectId: string }) {
+  const project = await db.project.findUnique({
+    where: { id: projectId },
+    include: {
+      owner: {
+        select: { name: true, email: true }
+      },
+      collaborators: {
+        select: { name: true, email: true, role: true }
+      },
+      tasks: {
+        where: { status: { not: 'completed' } },
+        orderBy: { createdAt: 'desc' },
+        take: 5
+      }
+    }
+  });
+
+  if (!project) {
+    return <div>Project not found</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">{project.name}</h2>
+      <p className="text-gray-600">{project.description}</p>
+      
+      <div className="text-sm text-gray-500">
+        Owned by: {project.owner.name} ({project.owner.email})
+      </div>
+
+      <div className="mt-4">
+        <h3 className="font-semibold mb-2">Recent Tasks</h3>
+        <ul className="space-y-1">
+          {project.tasks.map(task => (
+            <li key={task.id} className="text-sm">
+              {task.title} - {task.status}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// 7. Server Action with Transaction
+// actions/bulk-actions.ts
+'use server';
+
+import { z } from 'zod';
+import { db } from '@/lib/db';
+import { currentUser } from '@clerk/nextjs';
+
+const bulkDeleteSchema = z.object({
+  projectIds: z.array(z.string())
+});
+
+export async function bulkDeleteProjects(formData: FormData) {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return { error: 'Authentication required' };
+    }
+
+    const projectIds = JSON.parse(formData.get('projectIds') as string);
+    const validatedFields = bulkDeleteSchema.safeParse({ projectIds });
+
+    if (!validatedFields.success) {
+      return { error: 'Invalid project IDs' };
+    }
+
+    // Use transaction to ensure atomicity
+    const deletedProjects = await db.$transaction(async (tx) => {
+      // Verify user owns all projects
+      const projects = await tx.project.findMany({
+        where: {
+          id: { in: validatedFields.data.projectIds },
+          userId: user.id
+        }
+      });
+
+      if (projects.length !== validatedFields.data.projectIds.length) {
+        throw new Error('Some projects do not belong to user');
+      }
+
+      // Delete projects
+      return await tx.project.deleteMany({
+        where: {
+          id: { in: validatedFields.data.projectIds },
+          userId: user.id
+        }
+      });
+    });
+
+    revalidatePath('/dashboard');
+    
+    return {
+      success: true,
+      deletedCount: deletedProjects.count
+    };
+  } catch (error) {
+    console.error('Bulk delete error:', error);
+    return { error: 'Failed to delete projects' };
+  }
+}
+
+// 8. Server Component with Caching
+// components/popular-projects.tsx
+import 'server-only'; // Ensures this only runs on server
+import { db } from '@/lib/db';
+
+// This component will be cached by Next.js
+export async function PopularProjects({ limit = 5 }: { limit?: number }) {
+  const projects = await db.project.findMany({
+    where: { visibility: 'public' },
+    orderBy: { views: 'desc' },
+    take: limit,
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      views: true,
+      createdAt: true
+    }
+  });
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-lg font-semibold mb-4">Popular Projects</h3>
+      <ul className="space-y-3">
+        {projects.map(project => (
+          <li key={project.id} className="border-b pb-3 last:border-0 last:pb-0">
+            <a href={`/projects/${project.id}`} className="hover:underline">
+              <div className="font-medium">{project.name}</div>
+              <div className="text-sm text-gray-600 truncate">{project.description}</div>
+              <div className="text-xs text-gray-500 mt-1">
+                {project.views} views • {project.createdAt.toLocaleDateString()}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// 9. Error Boundaries for Server Components
+// components/error-boundary.tsx
+'use client';
+
+import { Component, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ServerComponentErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('Server component error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="p-4 bg-red-50 border border-red-200 rounded">
+          <h3 className="text-red-800 font-medium">Something went wrong</h3>
+          <p className="text-red-600 text-sm mt-1">{this.state.error?.message}</p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// 10. Middleware for Server Actions
+// middleware.ts (for protecting server actions)
+import { authMiddleware } from '@clerk/nextjs/server';
+
+export default authMiddleware({
+  publicRoutes: [
+    '/',
+    '/api/webhook',
+    '/api/health',
+    '/api/public/(.*)'
+  ],
+  ignoredRoutes: [
+    '/api/webhook',
+    '/api/health'
+  ]
+});
+
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+};
+```
+
+### Production Considerations
+- **Data Fetching**: Use Promise.all() to avoid waterfalls in server components
+- **Caching**: Leverage Next.js automatic caching for static content
+- **Security**: Always validate server action inputs with Zod
+- **Performance**: Use Suspense boundaries for streaming content
+- **Error Handling**: Implement proper error boundaries for server components
+
+### Anti-Patterns to Avoid
+- ❌ Client-side data fetching when server components can do it
+- ❌ No validation on server action inputs
+- ❌ Waterfall data fetching (use Promise.all)
+- ❌ Not handling loading states with Suspense
+- ❌ Exposing sensitive data in server components
+
+### Quality Gates
+- [ ] Server actions validated with Zod
+- [ ] Data fetching avoids waterfalls
+- [ ] Proper error boundaries implemented
+- [ ] Caching strategies applied appropriately
+- [ ] Security validation on all inputs
+- [ ] Loading states handled with Suspense
