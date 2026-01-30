@@ -7,14 +7,26 @@ import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
 
+// Cache for graph building to improve performance
+let cachedGraph = null;
+let lastCacheTime = 0;
+const CACHE_DURATION = 30000; // 30 seconds
+
 /**
  * Build a simple Code Property Graph (CPG)
  * Maps files, functions, and dependencies
  */
-export async function buildGraph() {
-  const files = await glob('**/*.{js,ts,jsx,tsx}', { 
+export async function buildGraph(useCache = true) {
+  const now = Date.now();
+
+  // Return cached result if available and not expired
+  if (useCache && cachedGraph && (now - lastCacheTime) < CACHE_DURATION) {
+    return cachedGraph;
+  }
+
+  const files = await glob('**/*.{js,ts,jsx,tsx}', {
     ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'],
-    nodir: true 
+    nodir: true
   });
 
   const graph = {
@@ -23,7 +35,8 @@ export async function buildGraph() {
     lastUpdated: new Date().toISOString()
   };
 
-  for (const file of files) {
+  // Process files in parallel for better performance
+  const promises = files.map(async (file) => {
     try {
       const content = await fs.readFile(file, 'utf8');
       const fileNode = {
@@ -36,7 +49,7 @@ export async function buildGraph() {
 
       // Naive parsing using Regex (Phase 2.1)
       // In Phase 2.2+ this would use tree-sitter
-      
+
       // Extract imports
       const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
       let match;
@@ -72,7 +85,13 @@ export async function buildGraph() {
     } catch (e) {
       // Skip files that can't be read
     }
-  }
+  });
+
+  await Promise.allSettled(promises);
+
+  // Cache the result
+  cachedGraph = graph;
+  lastCacheTime = now;
 
   return graph;
 }

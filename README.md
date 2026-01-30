@@ -38,11 +38,11 @@ Ultra-Dex is a **meta-orchestration layer** - it doesn't write code for you, it 
 
 ---
 
-## 🚀 NEW: Ultra-Dex v3.2.0 (Professional Purple Edition)
+## 🚀 NEW: Ultra-Dex v3.3.0 (Professional Purple Edition with Advanced Monitoring)
 
 **The Meta-Orchestration Layer for AI Development**
 
-Ultra-Dex v3.2.0 introduces a **Professional Purple Gradient Theme**, modern UI components, and enhanced stability for multi-agent orchestration.
+Ultra-Dex v3.3.0 introduces **Advanced Monitoring & Observability**, comprehensive error recovery, and enhanced developer experience features alongside the Professional Purple Theme and multi-agent orchestration.
 
 ```bash
 # Run autonomous agent swarms with parallel execution
@@ -56,16 +56,28 @@ npx ultra-dex config --cursor --vscode
 
 # Auto-update state on file changes
 npx ultra-dex watch --interval 1000
+
+# Check system status and health
+npx ultra-dex status --all
+
+# Manage configuration interactively
+npx ultra-dex config --wizard
+
+# Monitor system metrics
+npx ultra-dex metrics
 ```
 
-**37+ commands. Autonomous agents. MCP integration. Modern Professional UI.**
+**42+ commands. Autonomous agents. MCP integration. Advanced monitoring. Modern Professional UI.**
 
 Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
 ---
 
-## ✨ v3.2.0 Feature Highlights
+## ✨ v3.3.0 Feature Highlights
 
+- **Advanced Monitoring & Observability** - Comprehensive logging, metrics collection, and health monitoring with `ultra-dex status`, `ultra-dex metrics`, and `ultra-dex health` commands.
+- **Intelligent Error Recovery** - Circuit breaker patterns, automatic retry mechanisms, and graceful degradation with `ultra-dex debug` for detailed diagnostics.
+- **Enhanced Configuration Management** - Interactive configuration wizard, environment variable overrides, and persistent settings with `ultra-dex config --wizard`.
 - **Professional Purple Theme** - Clean indigo-to-pink gradient interface for high-performance development. [See Theme Guide](./docs/CLI-THEME.md).
 - **Unified Active Kernel** - One process serves MCP, dashboard, REST API, and WebSocket streaming (`ultra-dex serve`).
 - **Graph-Augmented Swarms** - Agents receive a Code Property Graph (CPG) context for structural reasoning.
@@ -259,7 +271,7 @@ your-project/
 └── .github/copilot-instructions.md ← (optional) Copilot rules
 ```
 
-**CLI Commands (37):**
+**CLI Commands (42+):**
 ```bash
 # Setup & Planning
 npx ultra-dex init
@@ -278,6 +290,20 @@ npx ultra-dex align
 # Project Checks
 npx ultra-dex audit
 npx ultra-dex validate
+
+# Monitoring & Health
+npx ultra-dex status              # Show system status
+npx ultra-dex status --all       # Show all system info
+npx ultra-dex metrics            # Show performance metrics
+npx ultra-dex health             # Check system health
+npx ultra-dex debug              # Show detailed debug info
+
+# Configuration Management
+npx ultra-dex config             # Show configuration
+npx ultra-dex config --wizard    # Interactive configuration
+npx ultra-dex config --list      # List all settings
+npx ultra-dex config --get key   # Get specific setting
+npx ultra-dex config --set key=value  # Set specific setting
 
 # MCP & Automation
 npx ultra-dex serve

@@ -8,6 +8,25 @@ import boxen from 'boxen';
 import chalk from 'chalk';
 import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 
+// Initialize monitoring and configuration systems
+import { monitoring } from '../lib/utils/monitoring.js';
+import { configManager } from '../lib/utils/config-manager.js';
+import { errorRecovery } from '../lib/utils/error-recovery.js';
+
+// Wait for initialization
+await Promise.all([
+  monitoring.initialize(),
+  configManager.load()
+]).catch(console.error);
+
+// Log startup
+monitoring.info('Ultra-Dex CLI starting', {
+  version: '3.3.0',
+  pid: process.pid,
+  nodeVersion: process.version,
+  platform: process.platform
+});
+
 // Check for doomsday flag early
 if (process.argv.includes('--doomsday')) {
   setDoomsdayMode(true);
@@ -21,7 +40,7 @@ if (process.argv.includes('--help') && process.argv.includes('--doomsday')) {
 }
 
 // Check for updates
-const pkg = { name: 'ultra-dex', version: '3.2.0' };
+const pkg = { name: 'ultra-dex', version: '3.3.0' };
 const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 });
 
 if (notifier.update) {
@@ -75,6 +94,13 @@ import { registerSyncCommand } from '../lib/commands/sync.js';
 import { registerTeamCommand } from '../lib/commands/team.js';
 import { registerMemoryCommand } from '../lib/commands/memory.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
+import { registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
+
+// v3.3.0 Commands - 2026 Competitive Features
+import { registerExecCommand } from '../lib/commands/exec.js';
+import { registerGitHubCommand } from '../lib/commands/github.js';
+import { registerSearchCommand } from '../lib/commands/search.js';
+import { registerCloudCommand } from '../lib/commands/cloud.js';
 
 const program = new Command();
 program.banner = banner;
@@ -82,7 +108,7 @@ program.banner = banner;
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('3.2.0');
+  .version('3.3.0');
 
 registerInitCommand(program);
 registerAuditCommand(program);
@@ -163,5 +189,16 @@ registerAgentBuilderCommand(program);
 registerTeamCommand(program);
 registerMemoryCommand(program);
 registerScaffoldCommand(program);
+
+// Monitoring commands (v3.3.0) - note: status uses state.js, config uses config.js
+registerMetricsCommand(program);
+registerHealthCommand(program);
+registerDebugCommand(program);
+
+// v3.3.0 Commands - 2026 Competitive Features
+registerExecCommand(program);
+registerGitHubCommand(program);
+registerSearchCommand(program);
+registerCloudCommand(program);
 
 program.parse();

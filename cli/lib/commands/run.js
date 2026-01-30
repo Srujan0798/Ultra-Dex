@@ -134,10 +134,22 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     const delegateMatch = content.match(/>>\s*DELEGATE:\s*@(\w+)\s*["'](.+?)["']/);
 
     if (readMatch) {
-      const filePath = readMatch[1];
+      let filePath = readMatch[1];
+      // Sanitize file path to prevent directory traversal
+      filePath = path.normalize(filePath);
+      if (filePath.includes('../') || filePath.includes('..\\')) {
+        return await runAgentLoop(agentName, `${task}\n\nError reading ${filePath}: Path traversal detected`, provider, projectContext, depth + 1);
+      }
+
       console.log(chalk.cyan(`\n🔍 ${agent.name} is reading ${filePath}...`));
       try {
-        const fileContent = await fs.readFile(path.resolve(process.cwd(), filePath), 'utf8');
+        const fullPath = path.resolve(process.cwd(), filePath);
+        // Additional check to ensure path is within project directory
+        if (!fullPath.startsWith(process.cwd())) {
+          return await runAgentLoop(agentName, `${task}\n\nError reading ${filePath}: Path outside project root`, provider, projectContext, depth + 1);
+        }
+
+        const fileContent = await fs.readFile(fullPath, 'utf8');
         const nextPrompt = `Output of READ_CODE "${filePath}":\n\`\`\`\n${fileContent}\n\`\`\`\n\nPlease proceed with your task.`;
         return await runAgentLoop(agentName, `${task}\n\n${nextPrompt}`, provider, projectContext, depth + 1);
       } catch (e) {
@@ -146,12 +158,32 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     }
 
     if (writeMatch) {
-      const filePath = writeMatch[1];
+      let filePath = writeMatch[1];
       const newContent = writeMatch[2];
+
+      // Sanitize file path to prevent directory traversal
+      filePath = path.normalize(filePath);
+      if (filePath.includes('../') || filePath.includes('..\\')) {
+        return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: Path traversal detected`, provider, projectContext, depth + 1);
+      }
+
       console.log(chalk.green(`\n💾 ${agent.name} is writing to ${filePath}...`));
       try {
-        await fs.mkdir(path.dirname(path.resolve(process.cwd(), filePath)), { recursive: true });
-        await fs.writeFile(path.resolve(process.cwd(), filePath), newContent, 'utf8');
+        const fullPath = path.resolve(process.cwd(), filePath);
+        // Additional check to ensure path is within project directory
+        if (!fullPath.startsWith(process.cwd())) {
+          return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: Path outside project root`, provider, projectContext, depth + 1);
+        }
+
+        // Prevent writing to sensitive files
+        const forbiddenPaths = ['.git', 'node_modules', '.env', 'package-lock.json'];
+        const pathParts = fullPath.split(path.sep);
+        if (pathParts.some(part => forbiddenPaths.includes(part))) {
+          return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: Cannot write to sensitive file`, provider, projectContext, depth + 1);
+        }
+
+        await fs.mkdir(path.dirname(fullPath), { recursive: true });
+        await fs.writeFile(fullPath, newContent, 'utf8');
         const nextPrompt = `Successfully wrote ${filePath}. Please proceed or delegate verification.`;
         return await runAgentLoop(agentName, `${task}\n\n${nextPrompt}`, provider, projectContext, depth + 1);
       } catch (e) {

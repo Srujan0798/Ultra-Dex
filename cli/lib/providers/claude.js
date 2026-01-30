@@ -51,108 +51,158 @@ export class ClaudeProvider extends BaseProvider {
   }
 
   async generate(systemPrompt, userPrompt, options = {}) {
-    const response = await fetch(`${this.baseUrl}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': this.apiKey,
-        'anthropic-version': this.apiVersion,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        max_tokens: options.maxTokens || this.maxTokens,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
-      }),
-    });
+    // Validate required parameters
+    this.validateParams({ systemPrompt, userPrompt }, ['systemPrompt', 'userPrompt']);
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(`Claude API error: ${error.error?.message || response.statusText}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    try {
+      const response = await fetch(`${this.baseUrl}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': this.apiVersion,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          max_tokens: options.maxTokens || this.maxTokens,
+          temperature: options.temperature !== undefined ? options.temperature : this.temperature,
+          system: systemPrompt,
+          messages: [
+            { role: 'user', content: userPrompt }
+          ],
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw this.formatError(
+          error.error?.message || response.statusText,
+          'generate() API call failed'
+        );
+      }
+
+      const data = await response.json();
+
+      return {
+        content: data.content[0]?.text || '',
+        usage: {
+          inputTokens: data.usage?.input_tokens || 0,
+          outputTokens: data.usage?.output_tokens || 0,
+        },
+        model: data.model || this.model,
+      };
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error.name === 'AbortError') {
+        throw this.formatError('Request timed out', 'generate()');
+      }
+
+      throw this.formatError(error, 'generate()');
     }
-
-    const data = await response.json();
-    
-    return {
-      content: data.content[0]?.text || '',
-      usage: {
-        inputTokens: data.usage?.input_tokens || 0,
-        outputTokens: data.usage?.output_tokens || 0,
-      },
-    };
   }
 
   async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
-    const response = await fetch(`${this.baseUrl}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': this.apiKey,
-        'anthropic-version': this.apiVersion,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        max_tokens: options.maxTokens || this.maxTokens,
-        stream: true,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
-      }),
-    });
+    // Validate required parameters
+    this.validateParams({ systemPrompt, userPrompt, onChunk }, ['systemPrompt', 'userPrompt', 'onChunk']);
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(`Claude API error: ${error.error?.message || response.statusText}`);
-    }
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullContent = '';
-    let usage = { inputTokens: 0, outputTokens: 0 };
+    try {
+      const response = await fetch(`${this.baseUrl}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': this.apiVersion,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          max_tokens: options.maxTokens || this.maxTokens,
+          temperature: options.temperature !== undefined ? options.temperature : this.temperature,
+          stream: true,
+          system: systemPrompt,
+          messages: [
+            { role: 'user', content: userPrompt }
+          ],
+        }),
+        signal: controller.signal
+      });
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+      clearTimeout(timeoutId);
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw this.formatError(
+          error.error?.message || response.statusText,
+          'generateStream() API call failed'
+        );
+      }
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = '';
+      let usage = { inputTokens: 0, outputTokens: 0 };
 
-          try {
-            const parsed = JSON.parse(data);
-            
-            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-              fullContent += parsed.delta.text;
-              onChunk(parsed.delta.text);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+
+            try {
+              const parsed = JSON.parse(data);
+
+              if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                fullContent += parsed.delta.text;
+                onChunk(parsed.delta.text);
+              }
+
+              if (parsed.type === 'message_delta' && parsed.usage) {
+                usage.outputTokens = parsed.usage.output_tokens || 0;
+              }
+
+              if (parsed.type === 'message_start' && parsed.message?.usage) {
+                usage.inputTokens = parsed.message.usage.input_tokens || 0;
+              }
+            } catch {
+              // Skip malformed JSON
             }
-            
-            if (parsed.type === 'message_delta' && parsed.usage) {
-              usage.outputTokens = parsed.usage.output_tokens || 0;
-            }
-            
-            if (parsed.type === 'message_start' && parsed.message?.usage) {
-              usage.inputTokens = parsed.message.usage.input_tokens || 0;
-            }
-          } catch {
-            // Skip malformed JSON
           }
         }
       }
-    }
 
-    return { content: fullContent, usage };
+      return { content: fullContent, usage, model: this.model };
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error.name === 'AbortError') {
+        throw this.formatError('Request timed out', 'generateStream()');
+      }
+
+      throw this.formatError(error, 'generateStream()');
+    }
   }
 
   async validateApiKey() {
     try {
       // Make a minimal request to check API key validity
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout / 2); // Half timeout for validation
+
       const response = await fetch(`${this.baseUrl}/messages`, {
         method: 'POST',
         headers: {
@@ -165,10 +215,17 @@ export class ClaudeProvider extends BaseProvider {
           max_tokens: 10,
           messages: [{ role: 'user', content: 'Hi' }],
         }),
+        signal: controller.signal
       });
 
-      return response.ok || response.status === 400; // 400 is OK, means key is valid but request malformed
-    } catch {
+      clearTimeout(timeoutId);
+
+      // 200 means valid key and successful request
+      // 400 means valid key but bad request (which is expected for validation)
+      // 401/403 means invalid key
+      return response.ok || response.status === 400;
+    } catch (error) {
+      // If there's a timeout or network error, we can't validate
       return false;
     }
   }

@@ -2,7 +2,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import { getProvider } from '../providers/index.js';
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { glob } from 'glob';
@@ -22,6 +22,25 @@ const AGENT_PIPELINE = [
   { name: 'testing', description: 'Write tests', tier: '4-quality' },
   { name: 'reviewer', description: 'Code review', tier: '4-quality' }
 ];
+
+async function withStateLock(callback) {
+  const lockFile = join(process.cwd(), '.ultra-dex', 'state.lock');
+  let retries = 0;
+  // Simple spin lock with 5s timeout
+  while (existsSync(lockFile) && retries < 50) {
+    await new Promise(r => setTimeout(r, 100));
+    retries++;
+  }
+  
+  try {
+    await writeFile(lockFile, String(Date.now()));
+    return await callback();
+  } finally {
+    if (existsSync(lockFile)) {
+      await unlink(lockFile).catch(() => {});
+    }
+  }
+}
 
 export function showSwarmAssemble(activeAgents) {
   if (isDoomsdayMode()) {
@@ -60,9 +79,22 @@ Provide your output for the next agent in the pipeline.
 `;
 
   // Standardize provider call
-  const response = provider.complete 
-    ? await provider.complete(prompt) 
-    : await provider.generate('', prompt);
+  let response;
+  try {
+    if (provider.complete) {
+      response = await provider.complete(prompt);
+    } else if (provider.generate) {
+      response = await provider.generate('', prompt);
+    } else {
+      throw new Error('Provider does not support complete or generate methods');
+    }
+
+    if (!response) {
+      throw new Error('Received empty response from provider');
+    }
+  } catch (error) {
+    throw new Error(`Provider Error: ${error.message}`);
+  }
     
   return typeof response === 'string' 
     ? response 
@@ -173,11 +205,13 @@ export async function swarmCommand(task, options) {
         const spinner = ora(`Running @${agent.name}...`).start();
         
         // Update state with active agent
-        const currentState = await loadState();
-        if (currentState) {
-          currentState.agents.active.push(agent.name);
-          await saveState(currentState);
-        }
+        await withStateLock(async () => {
+          const currentState = await loadState();
+          if (currentState) {
+            currentState.agents.active.push(agent.name);
+            await saveState(currentState);
+          }
+        });
 
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
@@ -186,11 +220,13 @@ export async function swarmCommand(task, options) {
           spinner.succeed(chalk.green(` @${agent.name} complete`) + chalk.gray(` (${duration}ms)`));
           
           // Remove active agent from state
-          const stateDone = await loadState();
-          if (stateDone) {
-            stateDone.agents.active = stateDone.agents.active.filter(a => a !== agent.name);
-            await saveState(stateDone);
-          }
+          await withStateLock(async () => {
+            const stateDone = await loadState();
+            if (stateDone) {
+              stateDone.agents.active = stateDone.agents.active.filter(a => a !== agent.name);
+              await saveState(stateDone);
+            }
+          });
 
           return { agent: agent.name, result, success: true };
         } catch (error) {
@@ -198,11 +234,13 @@ export async function swarmCommand(task, options) {
           agentTimings[agent.name] = duration;
           spinner.fail(chalk.red(` @${agent.name} failed: ${error.message}`) + chalk.gray(` (${duration}ms)`));
           
-          const stateFail = await loadState();
-          if (stateFail) {
-            stateFail.agents.active = stateFail.agents.active.filter(a => a !== agent.name);
-            await saveState(stateFail);
-          }
+          await withStateLock(async () => {
+            const stateFail = await loadState();
+            if (stateFail) {
+              stateFail.agents.active = stateFail.agents.active.filter(a => a !== agent.name);
+              await saveState(stateFail);
+            }
+          });
 
           return { agent: agent.name, error: error.message, success: false };
         }
@@ -220,11 +258,13 @@ export async function swarmCommand(task, options) {
         const spinner = ora(`Running @${agent.name}...`).start();
 
         // Update state
-        const currentState = await loadState();
-        if (currentState) {
-          currentState.agents.active.push(agent.name);
-          await saveState(currentState);
-        }
+        await withStateLock(async () => {
+          const currentState = await loadState();
+          if (currentState) {
+            currentState.agents.active.push(agent.name);
+            await saveState(currentState);
+          }
+        });
 
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
@@ -236,11 +276,13 @@ export async function swarmCommand(task, options) {
           agentResults.push({ agent: agent.name, result, success: true });
 
           // Remove active agent
-          const stateDone = await loadState();
-          if (stateDone) {
-            stateDone.agents.active = stateDone.agents.active.filter(a => a !== agent.name);
-            await saveState(stateDone);
-          }
+          await withStateLock(async () => {
+            const stateDone = await loadState();
+            if (stateDone) {
+              stateDone.agents.active = stateDone.agents.active.filter(a => a !== agent.name);
+              await saveState(stateDone);
+            }
+          });
 
         } catch (error) {
           const duration = Date.now() - agentStart;
@@ -248,11 +290,13 @@ export async function swarmCommand(task, options) {
           spinner.fail(chalk.red(` @${agent.name} failed: ${error.message}`) + chalk.gray(` (${duration}ms)`));
           agentResults.push({ agent: agent.name, error: error.message, success: false });
           
-          const stateFail = await loadState();
-          if (stateFail) {
-            stateFail.agents.active = stateFail.agents.active.filter(a => a !== agent.name);
-            await saveState(stateFail);
-          }
+          await withStateLock(async () => {
+            const stateFail = await loadState();
+            if (stateFail) {
+              stateFail.agents.active = stateFail.agents.active.filter(a => a !== agent.name);
+              await saveState(stateFail);
+            }
+          });
           break;
         }
       }

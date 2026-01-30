@@ -58,17 +58,24 @@ const RULES = [
   }
 ];
 
-async function getFiles(dir) {
-  const dirents = await fs.readdir(dir, { withFileTypes: true });
-  const files = await Promise.all(dirents.map((dirent) => {
-    const res = path.resolve(dir, dirent.name);
-    if (dirent.isDirectory()) {
-      if (['node_modules', '.git', '.next', 'dist', 'build'].includes(dirent.name)) return [];
-      return getFiles(res);
-    }
-    return res;
-  }));
-  return files.flat();
+async function getFiles(dir, ignoreList = ['node_modules', '.git', '.next', 'dist', 'build']) {
+  try {
+    const dirents = await fs.readdir(dir, { withFileTypes: true });
+    const filePromises = dirents.map(async (dirent) => {
+      const res = path.resolve(dir, dirent.name);
+      if (dirent.isDirectory()) {
+        if (ignoreList.includes(dirent.name)) return [];
+        return await getFiles(res, ignoreList);
+      }
+      return res;
+    });
+
+    const files = await Promise.all(filePromises);
+    return files.flat();
+  } catch {
+    // If directory can't be read, return empty array
+    return [];
+  }
 }
 
 export async function runQualityScan(dir) {
@@ -83,20 +90,22 @@ export async function runQualityScan(dir) {
   const projectRoot = path.resolve(dir);
   const allFiles = await getFiles(projectRoot);
 
-  for (const filePath of allFiles) {
+  // Process files in parallel for better performance
+  const fileProcessingPromises = allFiles.map(async (filePath) => {
     // Relative path for pattern matching
     const relativePath = path.relative(projectRoot, filePath);
-    
+
     // Skip non-code/text files roughly
-    if (/\.(png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot|pdf|lock)$/.test(filePath)) continue;
+    if (/\.(png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot|pdf|lock)$/.test(filePath)) return null;
 
     let content = '';
     try {
       content = await fs.readFile(filePath, 'utf8');
-    } catch { continue; }
-    
-    results.filesScanned++;
+    } catch {
+      return null;
+    }
 
+    const fileResults = [];
     for (const rule of RULES) {
       if (rule.pattern.test(relativePath) || rule.pattern.test(filePath)) { // Match against both just in case
         try {
@@ -109,18 +118,32 @@ export async function runQualityScan(dir) {
               severity: rule.severity,
               message: rule.message
             };
-            results.details.push(issue);
-
-            if (rule.severity === 'error' || rule.severity === 'critical') {
-              results.failed++;
-            } else {
-              results.warnings++;
-            }
+            fileResults.push(issue);
           }
         } catch (err) {
           // Ignore check errors
         }
       }
+    }
+    return { fileResults, filePath };
+  });
+
+  const fileResults = await Promise.allSettled(fileProcessingPromises);
+
+  for (const result of fileResults) {
+    if (result.status === 'fulfilled' && result.value !== null) {
+      const { fileResults, filePath } = result.value;
+      if (fileResults.length > 0) {
+        results.details.push(...fileResults);
+        for (const issue of fileResults) {
+          if (issue.severity === 'error' || issue.severity === 'critical') {
+            results.failed++;
+          } else {
+            results.warnings++;
+          }
+        }
+      }
+      results.filesScanned++;
     }
   }
 

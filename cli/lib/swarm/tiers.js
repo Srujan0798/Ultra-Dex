@@ -308,6 +308,9 @@ export const AGENT_DEPENDENCIES = {
  * Get agent by name.
  */
 export function getAgent(name) {
+  if (!name || typeof name !== 'string') {
+    return null;
+  }
   const normalized = name.toLowerCase().replace('@', '');
   return AGENTS[normalized] || null;
 }
@@ -356,7 +359,17 @@ export function canInvoke(agentA, agentB) {
  * Get execution order for a set of agents based on dependencies.
  */
 export function getExecutionOrder(agentNames) {
-  const normalized = agentNames.map(n => n.toLowerCase().replace('@', ''));
+  if (!Array.isArray(agentNames)) {
+    throw new Error('agentNames must be an array');
+  }
+
+  const normalized = agentNames.map(n => {
+    if (!n || typeof n !== 'string') {
+      throw new Error('Each agent name must be a non-empty string');
+    }
+    return n.toLowerCase().replace('@', '');
+  });
+
   const visited = new Set();
   const order = [];
 
@@ -431,20 +444,43 @@ export function getTierSummary() {
  * Validate a pipeline for dependency violations.
  */
 export function validatePipeline(pipeline) {
+  if (!Array.isArray(pipeline)) {
+    throw new Error('pipeline must be an array');
+  }
+
   const errors = [];
-  const completed = new Set();
 
   for (let i = 0; i < pipeline.length; i++) {
     const step = pipeline[i];
-    const agent = step.agent?.toLowerCase().replace('@', '');
+
+    // Validate step structure
+    if (!step || typeof step !== 'object') {
+      errors.push({
+        step: i + 1,
+        agent: 'unknown',
+        error: 'Step must be an object'
+      });
+      continue;
+    }
+
+    if (!step.agent || typeof step.agent !== 'string') {
+      errors.push({
+        step: i + 1,
+        agent: 'unknown',
+        error: 'Step must have a valid agent property'
+      });
+      continue;
+    }
+
+    const agent = step.agent.toLowerCase().replace('@', '');
     const deps = AGENT_DEPENDENCIES[agent] || [];
 
     for (const dep of deps) {
       // Check if dependency is in pipeline and comes before
-      const depIndex = pipeline.findIndex(s => 
+      const depIndex = pipeline.findIndex(s =>
         s.agent?.toLowerCase().replace('@', '') === dep
       );
-      
+
       if (depIndex > i) {
         errors.push({
           step: i + 1,
@@ -453,8 +489,6 @@ export function validatePipeline(pipeline) {
         });
       }
     }
-
-    completed.add(agent);
   }
 
   return {

@@ -12,6 +12,17 @@
  */
 export class AgentMessage {
   constructor(from, to, content, context = {}) {
+    // Validate required parameters
+    if (!from || typeof from !== 'string') {
+      throw new Error('from is required and must be a string');
+    }
+    if (!to || typeof to !== 'string') {
+      throw new Error('to is required and must be a string');
+    }
+    if (content === undefined || content === null) {
+      throw new Error('content is required');
+    }
+
     this.id = crypto.randomUUID();
     this.from = from;
     this.to = to;
@@ -83,13 +94,21 @@ export class AgentMessage {
  */
 export class HandoffPayload {
   constructor(previousAgent, nextAgent, options = {}) {
+    // Validate required parameters
+    if (!previousAgent || typeof previousAgent !== 'string') {
+      throw new Error('previousAgent is required and must be a string');
+    }
+    if (!nextAgent || typeof nextAgent !== 'string') {
+      throw new Error('nextAgent is required and must be a string');
+    }
+
     this.id = crypto.randomUUID();
     this.previousAgent = previousAgent;
     this.nextAgent = nextAgent;
     this.summary = options.summary || '';
-    this.artifacts = options.artifacts || [];
-    this.decisions = options.decisions || [];
-    this.constraints = options.constraints || [];
+    this.artifacts = Array.isArray(options.artifacts) ? options.artifacts : [];
+    this.decisions = Array.isArray(options.decisions) ? options.decisions : [];
+    this.constraints = Array.isArray(options.constraints) ? options.constraints : [];
     this.nextTask = options.nextTask || '';
     this.context = options.context || {};
     this.timestamp = new Date().toISOString();
@@ -220,6 +239,20 @@ export class ExecutionTrace {
    * Add a step to the pipeline.
    */
   addStep(step, agent, task, dependencies = []) {
+    // Validate required parameters
+    if (step === undefined || step === null) {
+      throw new Error('step is required');
+    }
+    if (!agent || typeof agent !== 'string') {
+      throw new Error('agent is required and must be a string');
+    }
+    if (task === undefined || task === null) {
+      throw new Error('task is required');
+    }
+    if (!Array.isArray(dependencies)) {
+      throw new Error('dependencies must be an array');
+    }
+
     this.pipeline.push({
       step,
       agent,
@@ -248,18 +281,23 @@ export class ExecutionTrace {
    * Record result from an agent.
    */
   recordResult(agent, output, success = true) {
+    // Validate required parameters
+    if (!agent || typeof agent !== 'string') {
+      throw new Error('agent is required and must be a string');
+    }
+
     const step = this.pipeline.find(s => s.agent === agent && s.status === 'executing');
     if (step) {
       step.status = success ? 'completed' : 'failed';
       step.endTime = new Date().toISOString();
     }
-    
+
     this.results[agent] = {
       success,
       output,
       timestamp: new Date().toISOString()
     };
-    
+
     if (!success) {
       this.errors.push({
         agent,
@@ -274,6 +312,11 @@ export class ExecutionTrace {
    * Create a checkpoint for potential rollback.
    */
   createCheckpoint(name, state = {}) {
+    // Validate required parameters
+    if (!name || typeof name !== 'string') {
+      throw new Error('name is required and must be a string');
+    }
+
     const checkpoint = {
       id: crypto.randomUUID(),
       name,
