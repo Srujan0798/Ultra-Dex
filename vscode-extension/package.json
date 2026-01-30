@@ -2,7 +2,7 @@
   "name": "ultra-dex-vscode",
   "displayName": "Ultra-Dex: AI Agent Orchestration",
   "description": "Meta-orchestration layer for AI development. Coordinate Claude, GPT, Cursor, and Copilot with architectural memory, agent swarms, and code execution sandbox.",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "publisher": "SrujanSaiKarna",
   "license": "MIT",
   "icon": "resources/icons/ultra-dex-128.png",
