@@ -179,30 +179,47 @@ async function startUnifiedKernel(portStr) {
   const wss = webSocketServer;
   await wss.start({ port: 3002 });
 
+  // Store watcher reference for cleanup
+  let fileWatcher = null;
+
   server.listen(port, () => {
     console.log(chalk.green(`✅ Portal Stabilized at http://localhost:${port}`));
     console.log(chalk.gray(`   • Dashboard: http://localhost:${port}/`));
     console.log(chalk.gray(`   • MCP API:   http://localhost:${port}/api/info`));
-    
+
     console.log(chalk.bold.hex('#dc2626')('\n🔌 Weapon Integration (IDE):'));
     console.log(chalk.white('   Cursor IDE: '));
     console.log(chalk.cyan(`     URL: http://localhost:${port}/api/info`));
     console.log(chalk.white('   Claude Desktop:'));
     console.log(chalk.cyan(`     Run "ultra-dex config --mcp" to register.`));
 
-    // Auto-Pilot
-    fs.watch(process.cwd(), { recursive: true }, async (eventType, filename) => {
+    // Auto-Pilot with proper cleanup
+    fileWatcher = fs.watch(process.cwd(), { recursive: true }, async (eventType, filename) => {
       if (!filename || filename.includes('node_modules') || filename.includes('.git') || filename.includes('IMPLEMENTATION-PLAN.md')) return;
-      
+
       console.log(chalk.gray(`\n🔄 Timeline Shift detected in ${filename}. Synchronizing...`));
       try {
         const state = await loadState();
         if (state) {
             const markdown = generateMarkdown(state);
             await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), markdown);
-            wss.sendStateUpdate(state);
+            // Broadcast state update to all connected clients
+            wss.broadcast({ type: 'state_update', data: state, timestamp: new Date().toISOString() });
         }
       } catch (e) {}
     });
   });
+
+  // Cleanup on process exit
+  const cleanup = () => {
+    if (fileWatcher) {
+      fileWatcher.close();
+      fileWatcher = null;
+    }
+    wss.stop();
+    server.close();
+  };
+
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
 }
