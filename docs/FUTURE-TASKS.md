@@ -42,10 +42,9 @@
    - Purpose: Sync Ultra-Dex state with OpenAI Assistants threads
    - Benefit: Persistent context across OpenAI sessions
 
-3. **Test Fixes (commands.test.js)**
-   - `diff --json` test fails due to extra output in JSON
-   - `export to JSON format` test fails (exit code issue)
-   - Fix: Ensure LOG_LEVEL=silent is passed in all test helpers
+3. **Test Fixes** ✅ FIXED
+   - All 82/82 tests pass
+   - LOG_LEVEL=silent added to all test helpers
 
 ### Medium Priority
 
@@ -107,10 +106,9 @@
 
 ## Technical Debt
 
-1. **Test Environment Variables**
-   - Some tests don't pass LOG_LEVEL=silent
-   - Files: `cli/test/commands.test.js` (diff --json, export JSON tests fail)
-   - Fix: Add LOG_LEVEL=silent to all test helper functions
+1. **Test Environment Variables** ✅ FIXED
+   - All test files now have LOG_LEVEL=silent
+   - 82/82 tests pass
 
 2. **Version Consistency**
    - Multiple places define version (package.json, serve.js, tests)
@@ -198,7 +196,7 @@ cd cli && npm run lint
 | 25+ cursor rules | ✅ Done | 26 rules |
 | sync --brain | ✅ Done | Eliminates human middleware |
 | Provider null check | ✅ OK | swarm.js handles this |
-| Test failures | ⚠️ 3 failing | diff --json, export JSON |
+| Test failures | ✅ Fixed | All 82/82 pass |
 | ESLint | ✅ Passes | cd cli && npm run lint |
 
 ---
