@@ -4,6 +4,11 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
+const EXPECTED_VERSION = pkg.version;
 
 const cliPath = path.resolve(process.cwd(), 'bin', 'ultra-dex.js');
 
@@ -25,7 +30,7 @@ test('--version returns valid semver', () => {
   assert.equal(result.status, 0);
   const version = result.output.trim();
   assert.match(version, /^\d+\.\d+\.\d+$/);
-  assert.equal(version, '3.4.2');
+  assert.equal(version, EXPECTED_VERSION, `Version should match package.json (${EXPECTED_VERSION})`);
 });
 
 test('--help shows all 16 commands', () => {

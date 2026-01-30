@@ -9,6 +9,7 @@ import { webSocketServer } from '../mcp/websocket.js';
 import { swarmCommand } from './swarm.js';
 import { execSync } from 'child_process';
 import { getRandomMessage } from '../utils/messages.js';
+import { VERSION } from '../utils/version.js';
 
 export function registerServeCommand(program) {
   program
@@ -98,7 +99,7 @@ async function startUnifiedKernel(portStr) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           name: 'Ultra-Dex Multiverse Kernel',
-          version: '3.4.2',
+          version: VERSION,
           status: 'online',
           endpoints: ['/api/state', '/api/plan', '/api/context', '/api/graph', '/api/swarm']
         }, null, 2));

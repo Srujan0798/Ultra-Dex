@@ -7,6 +7,7 @@ import updateNotifier from 'update-notifier';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { setDoomsdayMode } from '../lib/utils/theme-state.js';
+import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
 
 // Initialize monitoring and configuration systems
 import { monitoring } from '../lib/utils/monitoring.js';
@@ -21,7 +22,7 @@ await Promise.all([
 
 // Log startup
 monitoring.info('Ultra-Dex CLI starting', {
-  version: '3.4.2',
+  version: VERSION,
   pid: process.pid,
   nodeVersion: process.version,
   platform: process.platform
@@ -40,7 +41,7 @@ if (process.argv.includes('--help') && process.argv.includes('--doomsday')) {
 }
 
 // Check for updates
-const pkg = { name: 'ultra-dex', version: '3.4.2' };
+const pkg = { name: PACKAGE_NAME, version: VERSION };
 const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 });
 
 if (notifier.update) {
@@ -108,7 +109,7 @@ program.banner = banner;
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('3.4.2');
+  .version(VERSION);
 
 registerInitCommand(program);
 registerAuditCommand(program);

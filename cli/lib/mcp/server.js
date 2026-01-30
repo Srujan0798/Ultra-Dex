@@ -4,6 +4,7 @@ import { registerResources } from "./resources.js";
 import { registerTools } from "./tools.js";
 import { projectGraph } from "./graph.js";
 import { webSocketServer } from "./websocket.js";
+import { VERSION } from "../utils/version.js";
 
 export async function startMcpServer(options = {}) {
   const port = options.port || 3001;
@@ -20,7 +21,7 @@ export async function startMcpServer(options = {}) {
   // Create server instance
   const server = new McpServer({
     name: "Ultra-Dex Active Kernel",
-    version: "3.4.2"
+    version: VERSION
   });
 
   // Register features
