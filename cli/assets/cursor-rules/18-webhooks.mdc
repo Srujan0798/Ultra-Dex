@@ -1,0 +1,52 @@
+# Webhook Implementation Rules
+
+## Webhook Endpoint Design
+- Use POST method for incoming webhooks
+- Validate webhook signatures (HMAC-SHA256)
+- Return 200 immediately, process async
+- Implement idempotency with event IDs
+
+## Security
+```typescript
+// Verify webhook signature
+async function verifyWebhook(req: Request, secret: string) {
+  const signature = req.headers.get('x-signature-256');
+  const body = await req.text();
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(body)
+    .digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature || ''),
+    Buffer.from(`sha256=${expected}`)
+  );
+}
+```
+
+## Retry Strategy
+- Implement exponential backoff (1s, 2s, 4s, 8s, 16s)
+- Max 5 retry attempts
+- Store failed webhooks for manual retry
+- Log all webhook attempts with correlation IDs
+
+## Event Processing
+```typescript
+// Idempotent webhook handler
+async function handleWebhook(event: WebhookEvent) {
+  const existing = await db.webhookEvent.findUnique({
+    where: { eventId: event.id }
+  });
+  if (existing) return { status: 'duplicate' };
+
+  await db.$transaction([
+    db.webhookEvent.create({ data: { eventId: event.id } }),
+    processEvent(event)
+  ]);
+}
+```
+
+## Outbound Webhooks
+- Queue outbound webhooks with job processor
+- Include timestamp and signature in headers
+- Support webhook URL validation before saving
+- Implement circuit breaker for failing endpoints

@@ -195,6 +195,14 @@ async function ensureLogDirectory() {
 
 // Create logger
 async function createLoggerInstance() {
+  // Handle 'silent' log level - return a silent logger
+  if (MONITORING_CONFIG.logLevel === 'silent') {
+    return createLogger({
+      silent: true,
+      transports: []
+    });
+  }
+
   await ensureLogDirectory();
 
   return createLogger({
@@ -207,7 +215,7 @@ async function createLoggerInstance() {
     ),
     defaultMeta: { service: 'ultra-dex' },
     transports: [
-      new transports.File({ 
+      new transports.File({
         filename: MONITORING_CONFIG.logFile,
         maxSize: MONITORING_CONFIG.maxLogSize,
         maxFiles: MONITORING_CONFIG.maxLogFiles

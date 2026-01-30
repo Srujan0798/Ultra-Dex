@@ -1,0 +1,59 @@
+# Rate Limiting Rules
+
+## Strategy Selection
+- Token bucket for API endpoints
+- Sliding window for auth attempts
+- Fixed window for simple limits
+- Leaky bucket for smoothing bursts
+
+## Implementation
+```typescript
+// Redis-based rate limiter
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, '10 s'),
+  analytics: true,
+  prefix: 'api',
+});
+
+// Middleware
+export async function rateLimitMiddleware(req: Request) {
+  const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1';
+  const { success, limit, reset, remaining } = await ratelimit.limit(ip);
+
+  if (!success) {
+    return new Response('Rate limit exceeded', {
+      status: 429,
+      headers: {
+        'X-RateLimit-Limit': limit.toString(),
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': reset.toString(),
+        'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString(),
+      },
+    });
+  }
+}
+```
+
+## Tiered Limits
+```typescript
+const RATE_LIMITS = {
+  free: { requests: 100, window: '1 h' },
+  pro: { requests: 1000, window: '1 h' },
+  enterprise: { requests: 10000, window: '1 h' },
+};
+
+async function getRateLimit(userId: string) {
+  const user = await getUser(userId);
+  return RATE_LIMITS[user.plan];
+}
+```
+
+## Headers to Return
+- `X-RateLimit-Limit`: Total allowed requests
+- `X-RateLimit-Remaining`: Requests left in window
+- `X-RateLimit-Reset`: Unix timestamp when limit resets
+- `Retry-After`: Seconds until retry (on 429)
