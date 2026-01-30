@@ -6,12 +6,20 @@ export class CodeGraph {
   constructor() {
     this.nodes = new Map(); // file path -> node info
     this.edges = []; // { from, to, type }
+    this.lastScanTime = 0;
+    this.cacheTimeout = 30000; // 30 seconds cache
   }
 
-  async scan() {
+  async scan(useCache = true) {
+    // Check if we can use cached results
+    const now = Date.now();
+    if (useCache && this.nodes.size > 0 && (now - this.lastScanTime) < this.cacheTimeout) {
+      return this.getSummary();
+    }
+
     this.nodes.clear();
     this.edges = [];
-    
+
     // Find all js/ts/jsx/tsx files
     // Ignoring node_modules, .git, dist, build
     const files = await glob('**/*.{js,ts,jsx,tsx}', {
@@ -20,10 +28,11 @@ export class CodeGraph {
       cwd: process.cwd()
     });
 
-    for (const file of files) {
-      await this.analyzeFile(file);
-    }
+    // Process files in parallel for better performance
+    const promises = files.map(file => this.analyzeFile(file));
+    await Promise.allSettled(promises);
 
+    this.lastScanTime = now;
     return this.getSummary();
   }
 

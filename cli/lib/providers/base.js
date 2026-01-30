@@ -11,6 +11,8 @@ export class BaseProvider {
     this.apiKey = apiKey;
     this.model = options.model || this.getDefaultModel();
     this.maxTokens = options.maxTokens || 8192;
+    this.temperature = options.temperature !== undefined ? options.temperature : 0.7;
+    this.timeout = options.timeout || 30000; // 30 seconds default
   }
 
   /**
@@ -18,7 +20,7 @@ export class BaseProvider {
    * @returns {string} Default model identifier
    */
   getDefaultModel() {
-    throw new Error('getDefaultModel() must be implemented by subclass');
+    throw new Error('BaseProvider.getDefaultModel() must be implemented by subclass');
   }
 
   /**
@@ -26,7 +28,7 @@ export class BaseProvider {
    * @returns {Array<{id: string, name: string, maxTokens: number}>}
    */
   getAvailableModels() {
-    throw new Error('getAvailableModels() must be implemented by subclass');
+    throw new Error('BaseProvider.getAvailableModels() must be implemented by subclass');
   }
 
   /**
@@ -36,7 +38,7 @@ export class BaseProvider {
    * @returns {{input: number, output: number, total: number}} Cost in USD
    */
   estimateCost(inputTokens, outputTokens) {
-    throw new Error('estimateCost() must be implemented by subclass');
+    throw new Error('BaseProvider.estimateCost() must be implemented by subclass');
   }
 
   /**
@@ -44,10 +46,10 @@ export class BaseProvider {
    * @param {string} systemPrompt - System instructions
    * @param {string} userPrompt - User message/request
    * @param {Object} options - Additional options
-   * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}}>}
+   * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}, model: string}>}
    */
   async generate(systemPrompt, userPrompt, options = {}) {
-    throw new Error('generate() must be implemented by subclass');
+    throw new Error('BaseProvider.generate() must be implemented by subclass');
   }
 
   /**
@@ -56,10 +58,10 @@ export class BaseProvider {
    * @param {string} userPrompt - User message/request
    * @param {Function} onChunk - Callback for each chunk: (text: string) => void
    * @param {Object} options - Additional options
-   * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}}>}
+   * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}, model: string}>}
    */
   async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
-    throw new Error('generateStream() must be implemented by subclass');
+    throw new Error('BaseProvider.generateStream() must be implemented by subclass');
   }
 
   /**
@@ -67,7 +69,7 @@ export class BaseProvider {
    * @returns {Promise<boolean>}
    */
   async validateApiKey() {
-    throw new Error('validateApiKey() must be implemented by subclass');
+    throw new Error('BaseProvider.validateApiKey() must be implemented by subclass');
   }
 
   /**
@@ -75,7 +77,32 @@ export class BaseProvider {
    * @returns {string}
    */
   getName() {
-    throw new Error('getName() must be implemented by subclass');
+    throw new Error('BaseProvider.getName() must be implemented by subclass');
+  }
+
+  /**
+   * Format error messages consistently
+   * @param {Error|string} error - The error to format
+   * @param {string} context - Context of where the error occurred
+   * @returns {Error} Formatted error
+   */
+  formatError(error, context) {
+    const errorMessage = typeof error === 'string' ? error : error.message || 'Unknown error';
+    return new Error(`[${this.getName()}] ${context}: ${errorMessage}`);
+  }
+
+  /**
+   * Validate required parameters before making API calls
+   * @param {Object} params - Parameters to validate
+   * @param {string[]} required - Required parameter names
+   * @throws {Error} If any required parameter is missing
+   */
+  validateParams(params, required) {
+    for (const param of required) {
+      if (params[param] === undefined || params[param] === null || params[param] === '') {
+        throw new Error(`Missing required parameter: ${param}`);
+      }
+    }
   }
 }
 

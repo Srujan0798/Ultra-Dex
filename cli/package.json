@@ -1,7 +1,7 @@
 {
   "name": "ultra-dex",
-  "version": "3.2.0",
-  "description": "AI Orchestration Meta-Layer for SaaS Development",
+  "version": "3.3.0",
+  "description": "AI Orchestration Meta-Layer for SaaS Development - The Headless CTO",
   "keywords": [
     "ai",
     "orchestration",
@@ -12,7 +12,12 @@
     "openai",
     "gemini",
     "agents",
-    "swarm"
+    "swarm",
+    "docker",
+    "sandbox",
+    "github",
+    "browser-automation",
+    "agent-sdk"
   ],
   "author": "Srujan Sai Karna",
   "license": "MIT",
@@ -49,6 +54,7 @@
     "ora": "^8.0.1",
     "terminal-link": "^3.0.0",
     "update-notifier": "^7.3.1",
+    "winston": "^3.19.0",
     "ws": "^8.19.0",
     "zod": "^3.25.76"
   },
@@ -60,7 +66,8 @@
     "@anthropic-ai/sdk": "^0.30.0",
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.4.5",
-    "openai": "^4.70.0"
+    "openai": "^4.70.0",
+    "playwright": "^1.41.0"
   },
   "devDependencies": {
     "eslint": "^8.57.0"

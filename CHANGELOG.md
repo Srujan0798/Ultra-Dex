@@ -7,6 +7,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.3.0] - 2026-01-30 - "Survival Mode" Release
+
+### 🎯 Strategic Vision
+This release transforms Ultra-Dex from a static orchestration framework into an **indispensable AI development platform**. Following the 2026 AI landscape analysis, we've added the critical features needed to compete with Claude Code, Devin, and Cursor Agent.
+
+### Added
+
+#### 🐳 Code Execution Sandbox (`ultra-dex exec`)
+- **Docker-based isolated execution** - Run generated code safely
+- Multi-language support: JavaScript, TypeScript, Python, Go, Rust, Ruby
+- Resource limits (memory, CPU, timeout)
+- Network isolation option
+- Test runner integration: `ultra-dex exec --test`
+
+#### 🐙 GitHub Integration (`ultra-dex github`)
+- **Issue → Task conversion** - Sync GitHub issues to Ultra-Dex tasks
+- **Auto-PR creation** - Create PRs from swarm output
+- Label-to-agent mapping (frontend → @Frontend, etc.)
+- PR status tracking and CI integration
+- Webhook support for real-time sync
+
+#### 🔍 Enhanced Semantic Search (`ultra-dex search`)
+- Vector embeddings for codebase understanding
+- "Find where auth is handled" style queries
+- Code structure extraction (functions, classes, imports)
+- Local TF-IDF fallback when no API key available
+- Persistent index with auto-rebuild
+
+#### 🤖 Anthropic Agent SDK Integration
+- **True autonomous agents** with tool use
+- Agentic loops with iteration limits
+- Tool execution: read_file, write_file, search_code, run_command
+- Delegation between agents
+- Checkpoint/rollback support
+- Browser automation via browse_web tool
+
+#### 🌐 Browser Automation (Playwright)
+- Research agent can now browse the web
+- Screenshot capture for visual testing
+- Page content extraction (text, links, headings)
+- Google search integration
+- Documentation fetching from common sources
+
+#### 🔌 MCP Client Hub
+- **Consume external MCP servers** (GitHub, Slack, Postgres, etc.)
+- Connect to any MCP-compatible tool
+- Real-time state synchronization
+- Multi-server connection management
+
+#### ☁️ Cloud Dashboard (`ultra-dex cloud`)
+- **Team collaboration** via WebSocket sync
+- Session management with team support
+- Real-time agent status across team members
+- Swarm event broadcasting
+- API server for external integrations
+
+#### 💻 VS Code Extension v3.3.0
+- 10 new commands (exec, search, swarm, cloud, etc.)
+- Configuration options for kernel and sandbox
+- Keyboard shortcuts (Cmd+Shift+A for agents)
+- Context menu integration
+- Marketplace-ready with proper metadata
+
+### Changed
+- CLI version bumped to **3.3.0**
+- CLI now has **42+ commands**
+- Added 5 new optional dependencies
+- Updated all documentation
+
+### Technical
+- New files: `exec.js`, `github.js`, `cloud.js`, `agent-sdk.js`, `browser.js`, `client.js`
+- VS Code extension updated with marketplace metadata
+- MCP client architecture for consuming external servers
+
+---
+
 ## [3.2.0] - 2026-01-30
 
 ### Added

@@ -27,12 +27,33 @@ const TEMPLATES = {
 };
 
 async function copyDirectory(src, dest) {
-  await fs.mkdir(dest, { recursive: true });
-  const entries = await fs.readdir(src, { withFileTypes: true });
+  // Validate source and destination paths to prevent directory traversal
+  const normalizedSrc = path.resolve(src);
+  const normalizedDest = path.resolve(dest);
+
+  // Ensure source is within expected assets directory
+  const expectedSrcPrefix = path.resolve(__dirname, '../../assets/live-templates');
+  if (!normalizedSrc.startsWith(expectedSrcPrefix)) {
+    throw new Error('Source path is outside allowed directory');
+  }
+
+  // Ensure destination is not outside project root
+  if (!normalizedDest.startsWith(process.cwd())) {
+    throw new Error('Destination path is outside project root');
+  }
+
+  await fs.mkdir(normalizedDest, { recursive: true });
+  const entries = await fs.readdir(normalizedSrc, { withFileTypes: true });
 
   for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
+    // Prevent any potential symbolic link issues
+    if (entry.isSymbolicLink()) {
+      console.warn(`Skipping symbolic link: ${entry.name}`);
+      continue;
+    }
+
+    const srcPath = path.join(normalizedSrc, entry.name);
+    const destPath = path.join(normalizedDest, entry.name);
 
     if (entry.isDirectory()) {
       await copyDirectory(srcPath, destPath);

@@ -192,8 +192,8 @@ export class SwarmCoordinator {
   async _executeSequential(steps, trace, spinner) {
     let previousResult = null;
 
-    for (const step of steps) {
-      const stepNum = steps.indexOf(step) + 1;
+    for (const [index, step] of steps.entries()) {
+      const stepNum = index + 1;
       spinner.text = `Step ${stepNum}/${steps.length}: [${step.agent}] ${step.task}`;
       trace.startStep(stepNum);
 
@@ -203,8 +203,8 @@ export class SwarmCoordinator {
           trace.createCheckpoint(`before-step-${stepNum}`, { previousResult });
         }
 
-        // Execute step
-        const result = await this._executeStep(step, previousResult, trace);
+        // Execute step with timeout protection
+        const result = await this._executeStepWithTimeout(step, previousResult, trace);
         trace.recordResult(step.agent, result, true);
         previousResult = result;
 
@@ -256,7 +256,7 @@ export class SwarmCoordinator {
         trace.startStep(stepNum);
 
         try {
-          const result = await this._executeStep(step, previousResults, trace);
+          const result = await this._executeStepWithTimeout(step, previousResults, trace);
           trace.recordResult(step.agent, result, true);
           return { agent: step.agent, result, success: true };
         } catch (error) {
@@ -287,6 +287,32 @@ export class SwarmCoordinator {
   }
 
   /**
+   * Execute a single step with timeout protection.
+   */
+  async _executeStepWithTimeout(step, context, trace, timeoutMs = 120000) { // 2 minute default timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const result = await Promise.race([
+        this._executeStep(step, context, trace),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error(`Step timeout after ${timeoutMs}ms`)), timeoutMs);
+        })
+      ]);
+
+      clearTimeout(timeoutId);
+      return result;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError' || error.message.includes('timeout')) {
+        throw new Error(`Step execution timed out: ${step.agent} - ${step.task.substring(0, 50)}...`);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Execute a single step.
    */
   async _executeStep(step, context, trace) {
@@ -305,7 +331,7 @@ export class SwarmCoordinator {
     const userPrompt = this._buildUserPrompt(step, context);
 
     const result = await this.provider.generate(systemPrompt, userPrompt);
-    
+
     // Parse result
     return {
       output: result.content,
@@ -460,6 +486,10 @@ If making decisions, explain the reasoning briefly.`;
    * Plan a feature using the planner agent.
    */
   async plan(feature) {
+    if (!feature || typeof feature !== 'string' || feature.trim().length === 0) {
+      throw new Error('Feature parameter is required and must be a non-empty string');
+    }
+
     const spinner = ora('🧠 Planning feature implementation...').start();
 
     const plannerPrompt = `
@@ -487,7 +517,7 @@ Output STRICT JSON format only:
 
     try {
       const result = await this.provider.generate(plannerPrompt, `Feature: ${feature}`);
-      
+
       let jsonStr = result.content.trim();
       if (jsonStr.startsWith('```json')) {
         jsonStr = jsonStr.replace(/^```json\n?/, '').replace(/\n?```$/, '');
@@ -495,13 +525,23 @@ Output STRICT JSON format only:
         jsonStr = jsonStr.replace(/^```\n?/, '').replace(/\n?```$/, '');
       }
 
-      const plan = JSON.parse(jsonStr);
+      let plan;
+      try {
+        plan = JSON.parse(jsonStr);
+      } catch (parseError) {
+        throw new Error(`Failed to parse planner response as JSON: ${parseError.message}`);
+      }
+
+      if (!Array.isArray(plan.tasks)) {
+        throw new Error('Invalid plan format: missing tasks array');
+      }
+
       spinner.succeed(`Plan generated: ${plan.tasks.length} tasks identified.`);
       return plan.tasks;
     } catch (error) {
       spinner.fail('Planning failed.');
       console.error(chalk.red(error.message));
-      return null;
+      throw error; // Re-throw to allow caller to handle appropriately
     }
   }
 
@@ -524,11 +564,12 @@ Output STRICT JSON format only:
   /**
    * Run a single agent task.
    */
-  async runAgent(agent, task, context = {}) {
+  async runAgent(agent, task, context = {}, options = {}) {
     return this.runPipeline({
       goal: task,
       steps: [{ agent, task, context }],
-      parallel: false
+      parallel: false,
+      ...options
     });
   }
 
@@ -536,31 +577,44 @@ Output STRICT JSON format only:
    * Get suggested agents for a task description.
    */
   suggestAgents(taskDescription) {
+    if (!taskDescription || typeof taskDescription !== 'string') {
+      return [];
+    }
+
     const keywords = {
-      backend: ['api', 'endpoint', 'server', 'route', 'controller', 'service'],
-      frontend: ['ui', 'component', 'page', 'button', 'form', 'css', 'react', 'vue'],
-      database: ['schema', 'table', 'migration', 'query', 'sql', 'model'],
-      auth: ['login', 'authentication', 'authorization', 'password', 'session', 'jwt'],
-      security: ['vulnerability', 'audit', 'secure', 'encryption', 'xss', 'csrf'],
-      testing: ['test', 'spec', 'coverage', 'jest', 'mocha', 'e2e'],
-      devops: ['deploy', 'ci', 'cd', 'docker', 'kubernetes', 'aws', 'pipeline'],
-      performance: ['slow', 'optimize', 'cache', 'speed', 'latency', 'memory'],
-      debugger: ['bug', 'fix', 'error', 'crash', 'issue', 'debug'],
-      documentation: ['docs', 'readme', 'guide', 'api docs', 'comment'],
-      refactoring: ['refactor', 'clean', 'reorganize', 'pattern', 'simplify'],
-      planner: ['plan', 'break down', 'tasks', 'sprint', 'estimate'],
-      cto: ['architecture', 'tech stack', 'design', 'decision'],
-      research: ['compare', 'evaluate', 'research', 'options', 'alternatives'],
-      reviewer: ['review', 'approve', 'check', 'quality']
+      backend: ['api', 'endpoint', 'server', 'route', 'controller', 'service', 'rest', 'graphql', 'middleware'],
+      frontend: ['ui', 'component', 'page', 'button', 'form', 'css', 'react', 'vue', 'angular', 'html', 'javascript', 'typescript'],
+      database: ['schema', 'table', 'migration', 'query', 'sql', 'model', 'orm', 'prisma', 'sequelize', 'mongodb'],
+      auth: ['login', 'authentication', 'authorization', 'password', 'session', 'jwt', 'oauth', 'sso', 'permissions'],
+      security: ['vulnerability', 'audit', 'secure', 'encryption', 'xss', 'csrf', 'cors', 'ssl', 'tls', 'penetration'],
+      testing: ['test', 'spec', 'coverage', 'jest', 'mocha', 'cypress', 'playwright', 'e2e', 'unit', 'integration'],
+      devops: ['deploy', 'ci', 'cd', 'docker', 'kubernetes', 'aws', 'pipeline', 'jenkins', 'github actions', 'terraform'],
+      performance: ['slow', 'optimize', 'cache', 'speed', 'latency', 'memory', 'profiling', 'monitoring', 'scalability'],
+      debugger: ['bug', 'fix', 'error', 'crash', 'issue', 'debug', 'stack trace', 'exception', 'logging'],
+      documentation: ['docs', 'readme', 'guide', 'api docs', 'comment', 'tutorial', 'manual', 'specification'],
+      refactoring: ['refactor', 'clean', 'reorganize', 'pattern', 'simplify', 'modularize', 'deprecate', 'upgrade'],
+      planner: ['plan', 'break down', 'tasks', 'sprint', 'estimate', 'timeline', 'milestone', 'roadmap'],
+      cto: ['architecture', 'tech stack', 'design', 'decision', 'strategy', 'infrastructure', 'scaling'],
+      research: ['compare', 'evaluate', 'research', 'options', 'alternatives', 'analysis', 'study', 'investigation'],
+      reviewer: ['review', 'approve', 'check', 'quality', 'code review', 'approval', 'verification', 'validation']
     };
 
     const lower = taskDescription.toLowerCase();
     const matches = [];
 
     for (const [agent, words] of Object.entries(keywords)) {
-      const matchCount = words.filter(w => lower.includes(w)).length;
-      if (matchCount > 0) {
-        matches.push({ agent, score: matchCount });
+      // Count matches with weighted scoring
+      let score = 0;
+      for (const word of words) {
+        const regex = new RegExp(`\\b${word}\\b`, 'gi'); // Word boundary matching
+        const matches = lower.match(regex);
+        if (matches) {
+          score += matches.length; // Add count of matches
+        }
+      }
+
+      if (score > 0) {
+        matches.push({ agent, score });
       }
     }
 

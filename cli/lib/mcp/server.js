@@ -17,7 +17,7 @@ export async function startMcpServer() {
   // Create server instance
   const server = new McpServer({
     name: "Ultra-Dex Active Kernel",
-    version: "2.2.0"
+    version: "3.3.0"
   });
 
   // Register features

@@ -265,11 +265,18 @@ export function registerTools(server) {
     },
     async ({ filePath }) => {
       try {
-        const fullPath = path.resolve(process.cwd(), filePath);
+        // Security validation: prevent path traversal
+        const normalizedPath = path.normalize(filePath);
+        if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+          throw new Error("Access denied: Invalid path containing '..'");
+        }
+
+        const fullPath = path.resolve(process.cwd(), normalizedPath);
         // Security check: ensure path is within process.cwd()
         if (!fullPath.startsWith(process.cwd())) {
           throw new Error("Access denied: Path outside project root");
         }
+
         const content = await fs.readFile(fullPath, 'utf8');
         return {
           content: [{ type: "text", text: content }]
@@ -293,18 +300,31 @@ export function registerTools(server) {
     },
     async ({ filePath, content, description }) => {
       try {
-        const fullPath = path.resolve(process.cwd(), filePath);
+        // Security validation: prevent path traversal
+        const normalizedPath = path.normalize(filePath);
+        if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+          throw new Error("Access denied: Invalid path containing '..'");
+        }
+
+        const fullPath = path.resolve(process.cwd(), normalizedPath);
         if (!fullPath.startsWith(process.cwd())) {
           throw new Error("Access denied: Path outside project root");
         }
-        
+
+        // Additional security: prevent writing to sensitive locations
+        const forbiddenPaths = ['.git', 'node_modules', '.env', 'package-lock.json'];
+        const pathParts = fullPath.split(path.sep);
+        if (pathParts.some(part => forbiddenPaths.includes(part))) {
+          throw new Error(`Access denied: Cannot write to ${part} directory`);
+        }
+
         // Ensure directory exists
         await fs.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.writeFile(fullPath, content, 'utf8');
-        
+
         // Log to stderr for server visibility
         console.error(`[MCP] Write: ${filePath} - ${description || 'No description'}`);
-        
+
         return {
           content: [{ type: "text", text: `Successfully wrote ${filePath}` }]
         };
@@ -400,7 +420,15 @@ export function registerTools(server) {
       agentName: z.string().describe("Name of the agent (e.g., 'backend', 'planner', 'cto')")
     },
     async ({ agentName }) => {
-      const lowerName = agentName.toLowerCase();
+      // Sanitize agent name to prevent path traversal
+      const sanitizedAgentName = agentName.replace(/[^a-zA-Z0-9_-]/g, '');
+      if (sanitizedAgentName !== agentName) {
+        return {
+          content: [{ type: "text", text: `Invalid agent name format. Only alphanumeric characters, hyphens, and underscores are allowed.` }]
+        };
+      }
+
+      const lowerName = sanitizedAgentName.toLowerCase();
       const potentialPaths = [
         `agents/1-leadership/${lowerName}.md`,
         `agents/2-development/${lowerName}.md`,
@@ -414,7 +442,19 @@ export function registerTools(server) {
 
       for (const p of potentialPaths) {
         try {
-          const fullPath = path.resolve(process.cwd(), p);
+          // Additional security check: normalize and validate path
+          const normalizedPath = path.normalize(p);
+          if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+            continue; // Skip invalid paths
+          }
+
+          const fullPath = path.resolve(process.cwd(), normalizedPath);
+          // Ensure the path is within the expected directory structure
+          const expectedPrefix = path.resolve(process.cwd(), 'agents');
+          if (!fullPath.startsWith(expectedPrefix)) {
+            continue; // Skip paths that escape the agents directory
+          }
+
           const content = await fs.readFile(fullPath, 'utf8');
           return {
             content: [{ type: "text", text: content }]
