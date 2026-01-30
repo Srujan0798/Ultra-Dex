@@ -184,8 +184,7 @@ A comprehensive framework for building complete, production-grade applications. 
 | [Methodology](./@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md) | 21-step verification system |
 | [Cursor Rules](./cursor-rules/) | AI-optimized rules |
 | [Agent Prompts](./agents/) | 16 specialized agents |
-| [All Guides](./guides/) | Database, architecture, orchestration |
-| [CEO Master Plan](./docs/CEO-MASTER-PLAN.md) | Release status and next milestones |
+| [All Guides](./docs/guides/) | Database, architecture, orchestration |
 
 </details>
 
@@ -398,13 +397,14 @@ Ultra-Dex/
 │   ├── 6-specialist/              (Performance, Refactoring)
 │   └── 00-AGENT_INDEX.md          ← Quick reference table
 │
-├── guides/                        ← Production guides
-│   ├── PROJECT-ORCHESTRATION.md   ← Multi-agent workflows
-│   ├── DATABASE-DECISION-FRAMEWORK.md ← Database selection guide
-│   ├── ARCHITECTURE-PATTERNS.md   ← Architecture patterns
-│   ├── ADVANCED-WORKFLOWS.md      ← Real workflow examples
-│   ├── MULTI-TOOL-WORKFLOW.md     ← Coordinate multiple AI tools
-│   └── AI-MODEL-SELECTION.md      ← Choose the right AI model
+├── docs/
+│   ├── guides/                    ← Production guides
+│   │   ├── PROJECT-ORCHESTRATION.md
+│   │   ├── DATABASE-DECISION-FRAMEWORK.md
+│   │   ├── ARCHITECTURE-PATTERNS.md
+│   │   └── ...
+│   ├── reference/                 ← Technical reference
+│   └── BUILD-AUTH-30M.md, MCP-INTEGRATION.md, etc.
 │
 ├── Orchestration/                 ← Orchestration examples
 │   ├── Copilot.md, Devin.md, gemini.md
@@ -670,15 +670,15 @@ Total: $23 (vs $60+ single-tool approach)
 ### Learn More
 
 **Orchestration & Workflows:**
-- **[Project Orchestration Guide](./guides/PROJECT-ORCHESTRATION.md)** - Step-by-step guide to build features with agents
-- **[Advanced Workflows](./guides/ADVANCED-WORKFLOWS.md)** - Stripe, emails, migrations, real-time features
+- **[Project Orchestration Guide](./docs/guides/PROJECT-ORCHESTRATION.md)** - Step-by-step guide to build features with agents
+- **[Advanced Workflows](./docs/guides/ADVANCED-WORKFLOWS.md)** - Stripe, emails, migrations, real-time features
 - **[Orchestration Examples](./Orchestration/EXAMPLES.md)** - Multi-agent workflow examples
-- **[Multi-Tool Workflow Guide](./guides/MULTI-TOOL-WORKFLOW.md)** - Coordinate ANY AI tool
+- **[Multi-Tool Workflow Guide](./docs/guides/MULTI-TOOL-WORKFLOW.md)** - Coordinate ANY AI tool
 
 **Decision Frameworks:**
-- **[Database Decision Framework](./guides/DATABASE-DECISION-FRAMEWORK.md)** - PostgreSQL vs MongoDB vs MySQL
-- **[Architecture Patterns](./guides/ARCHITECTURE-PATTERNS.md)** - Monolith vs Microservices
-- **[AI Model Selection Guide](./guides/AI-MODEL-SELECTION.md)** - Which AI for which task
+- **[Database Decision Framework](./docs/guides/DATABASE-DECISION-FRAMEWORK.md)** - PostgreSQL vs MongoDB vs MySQL
+- **[Architecture Patterns](./docs/guides/ARCHITECTURE-PATTERNS.md)** - Monolith vs Microservices
+- **[AI Model Selection Guide](./docs/guides/AI-MODEL-SELECTION.md)** - Which AI for which task
 
 ---
 

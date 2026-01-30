@@ -1,7 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
-import { loadState, saveState, generateMarkdown } from '../commands/plan.js';
+import { loadState, saveState, withStateLock, updateState } from '../commands/state.js';
+import { generateMarkdown } from '../commands/plan.js';
 import { projectGraph } from './graph.js';
 import { swarmCommand } from '../commands/swarm.js';
 import { ultraMemory } from './memory.js';
@@ -123,37 +124,40 @@ export function registerTools(server) {
       status: z.enum(['pending', 'in_progress', 'completed']).describe("New status")
     },
     async ({ taskId, status }) => {
-      const state = await loadState();
-      if (!state) return { content: [{ type: "text", text: "Error: No state found." }] };
+      // Use state locking to prevent race conditions
+      return await withStateLock(async () => {
+        const state = await loadState();
+        if (!state) return { content: [{ type: "text", text: "Error: No state found." }] };
 
-      let taskFound = false;
-      let oldStatus = '';
+        let taskFound = false;
+        let oldStatus = '';
 
-      for (const phase of state.phases) {
-        const step = phase.steps.find(s => s.id === taskId);
-        if (step) {
-          oldStatus = step.status;
-          step.status = status;
-          taskFound = true;
-          break;
+        for (const phase of state.phases) {
+          const step = phase.steps.find(s => s.id === taskId);
+          if (step) {
+            oldStatus = step.status;
+            step.status = status;
+            taskFound = true;
+            break;
+          }
         }
-      }
 
-      if (taskFound) {
-        const success = await saveState(state);
-        if (success) {
-            // Also update the Markdown plan file
-            const md = generateMarkdown(state);
-            await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), md);
-            
-            return {
-                content: [{ type: "text", text: `✅ Task ${taskId} updated: ${oldStatus} -> ${status}` }]
-            };
+        if (taskFound) {
+          const success = await saveState(state);
+          if (success) {
+              // Also update the Markdown plan file
+              const md = generateMarkdown(state);
+              await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), md);
+
+              return {
+                  content: [{ type: "text", text: `✅ Task ${taskId} updated: ${oldStatus} -> ${status}` }]
+              };
+          }
+          return { content: [{ type: "text", text: "Error: Failed to save state." }] };
         }
-        return { content: [{ type: "text", text: "Error: Failed to save state." }] };
-      }
-      
-      return { content: [{ type: "text", text: `Error: Task ${taskId} not found.` }] };
+
+        return { content: [{ type: "text", text: `Error: Task ${taskId} not found.` }] };
+      });
     }
   );
 

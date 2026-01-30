@@ -22,7 +22,9 @@ const logo = `
                                   ██████╔╝███████╗██╔╝ ██╗
                                   ╚═════╝ ╚══════╝╚═╝  ╚═╝`;
 
-export function showStartup(version = '3.1.0') {
+import { VERSION } from '../utils/version.js';
+
+export function showStartup(version = VERSION) {
     console.clear();
     console.log(theme.primary(logo));
     console.log('');
