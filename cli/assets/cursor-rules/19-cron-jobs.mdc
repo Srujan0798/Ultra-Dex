@@ -1,0 +1,61 @@
+# Cron & Scheduled Jobs Rules
+
+## Job Scheduling Patterns
+- Use cron expressions for recurring jobs
+- Store job definitions in database, not code
+- Implement job locking for distributed systems
+- Track job execution history
+
+## Implementation
+```typescript
+// Next.js API route with Vercel Cron
+// vercel.json: { "crons": [{ "path": "/api/cron/daily", "schedule": "0 0 * * *" }] }
+
+export async function GET(req: Request) {
+  // Verify cron secret
+  const authHeader = req.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  // Execute with timeout protection
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 55000);
+
+  try {
+    await runDailyTasks({ signal: controller.signal });
+    return Response.json({ success: true });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+```
+
+## Job Locking
+```typescript
+// Prevent concurrent execution
+async function withJobLock(jobName: string, fn: () => Promise<void>) {
+  const lock = await db.jobLock.create({
+    data: {
+      name: jobName,
+      lockedAt: new Date(),
+      expiresAt: new Date(Date.now() + 60000)
+    }
+  }).catch(() => null);
+
+  if (!lock) return { skipped: true };
+
+  try {
+    await fn();
+    return { success: true };
+  } finally {
+    await db.jobLock.delete({ where: { name: jobName } });
+  }
+}
+```
+
+## Monitoring
+- Log job start/end with duration
+- Alert on job failures or timeouts
+- Track job queue depth
+- Implement dead letter queue for failed jobs

@@ -1,0 +1,78 @@
+# File Upload Rules
+
+## Presigned URL Pattern
+```typescript
+// Server action to get upload URL
+'use server';
+
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+const s3 = new S3Client({ region: process.env.AWS_REGION });
+
+export async function getUploadUrl(filename: string, contentType: string) {
+  const key = `uploads/${crypto.randomUUID()}/${filename}`;
+
+  const command = new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET,
+    Key: key,
+    ContentType: contentType,
+  });
+
+  const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+  return { url, key };
+}
+```
+
+## Client Upload
+```typescript
+async function uploadFile(file: File) {
+  // 1. Get presigned URL
+  const { url, key } = await getUploadUrl(file.name, file.type);
+
+  // 2. Upload directly to S3
+  await fetch(url, {
+    method: 'PUT',
+    body: file,
+    headers: { 'Content-Type': file.type },
+  });
+
+  // 3. Save reference to database
+  await saveFileReference(key);
+}
+```
+
+## Validation
+```typescript
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+
+function validateFile(file: File) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error('Invalid file type');
+  }
+  if (file.size > MAX_SIZE) {
+    throw new Error('File too large');
+  }
+}
+```
+
+## Image Processing
+```typescript
+// Process uploaded images
+import sharp from 'sharp';
+
+async function processImage(buffer: Buffer) {
+  return sharp(buffer)
+    .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
+}
+```
+
+## Security
+- Validate MIME type server-side (don't trust Content-Type)
+- Generate random filenames to prevent enumeration
+- Serve uploads from separate domain/CDN
+- Set Content-Disposition: attachment for downloads
+- Scan files with antivirus in production

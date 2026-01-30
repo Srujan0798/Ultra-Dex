@@ -2,23 +2,31 @@
 
 > Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation** and **God Mode** autonomous agents.
 
-## What's New in v3.2.0 (Professional Purple)
+## What's New in v3.3.0 (Survival Mode)
 
 ```bash
+# 🧠 Auto-sync CONTEXT.md from codebase (eliminates manual updates)
+npx ultra-dex sync --brain
+
+# 🐳 Execute code in Docker sandbox
+npx ultra-dex exec "console.log('safe!')" --lang javascript
+
+# 🔍 Semantic search with vector embeddings
+npx ultra-dex search "user authentication" --index
+
+# 🐙 GitHub integration (issues → tasks, auto-PR)
+npx ultra-dex github sync
+npx ultra-dex github pr --from-swarm
+
 # 🤖 Autonomous agent swarms with parallel execution
 npx ultra-dex swarm "Build user authentication" --parallel
 
 # 🔄 Start the Active Kernel (MCP + WebSocket + Dashboard)
 npx ultra-dex serve
 
-# 🧠 Structural Graph Health Check
-npx ultra-dex check
-
-# 🖥️ Live Dashboard with Brain Visualization
-npx ultra-dex dashboard
-
-# 🛠️ Self-Healing CI/CD Monitor
-npx ultra-dex ci-monitor --port 3003
+# 📊 Health monitoring and metrics
+npx ultra-dex health
+npx ultra-dex metrics
 ```
 
 ## First 10 Minutes
@@ -156,10 +164,37 @@ npx ultra-dex check
 ANTHROPIC_API_KEY=sk-ant-...  # Claude (recommended for complex tasks)
 OPENAI_API_KEY=sk-...         # OpenAI
 GOOGLE_AI_KEY=...             # Gemini
+OLLAMA_HOST=http://localhost:11434  # Ollama (local AI)
 ULTRA_DEX_DEFAULT_PROVIDER=claude # Default AI provider
 ```
 
-## All Commands (38+)
+## Local AI with Ollama
+
+Ultra-Dex supports Ollama for fully local, private AI operations:
+
+```bash
+# 1. Install Ollama (https://ollama.ai)
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# 2. Pull a model
+ollama pull llama3.2
+ollama pull codellama
+
+# 3. Use with Ultra-Dex
+npx ultra-dex generate "Your idea" --provider ollama --model codellama
+
+# For agent swarms with local AI
+npx ultra-dex swarm "Build user auth" --provider ollama
+```
+
+**Supported Ollama Models:**
+- `llama3.2` - General tasks
+- `codellama` - Code generation (recommended)
+- `mistral` - Fast, efficient
+- `mixtral` - Best quality for local
+- Any model available via `ollama list`
+
+## All Commands (44+)
 
 | Command | Description |
 |---------|-------------|
@@ -201,6 +236,13 @@ ULTRA_DEX_DEFAULT_PROVIDER=claude # Default AI provider
 | `pack` | Bundle agents and rules |
 | `run` | Execute agent task |
 | `diff` | Compare plan vs implemented code |
+| `exec` | **NEW** Execute code in Docker sandbox |
+| `search` | **NEW** Semantic codebase search |
+| `github` | **NEW** GitHub sync (issues, PRs) |
+| `cloud` | **NEW** Team collaboration server |
+| `metrics` | **NEW** Show CLI metrics |
+| `health` | **NEW** System health check |
+| `debug` | **NEW** Debug information |
 
 ## Links
 

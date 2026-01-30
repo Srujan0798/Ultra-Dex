@@ -18,6 +18,7 @@ export function registerSyncCommand(program) {
     .option('-d, --dir <directory>', 'Project directory to sync', '.')
     .option('--push', 'Push local state to sync target')
     .option('--pull', 'Pull state from sync target')
+    .option('--brain', 'Auto-update CONTEXT.md from codebase analysis (eliminates human middleware)')
     .option('--target <path>', 'Sync target (local folder or s3-like)', '.ultra/sync')
     .action(async (options) => {
       console.log(chalk.cyan('\n🔄 Ultra-Dex State Sync\n'));
@@ -29,6 +30,12 @@ export function registerSyncCommand(program) {
       }
 
       const projectDir = path.resolve(options.dir);
+
+      // Brain Mode: Full autonomous context update
+      if (options.brain) {
+        await handleBrainSync(projectDir);
+        return;
+      }
 
       // 1. Snapshot Context (Updates CONTEXT.md)
       const syncResult = await snapshotContext(projectDir);
@@ -91,4 +98,186 @@ async function handlePull(projectDir, target) {
   } catch (e) {
     spinner.fail(chalk.red(`Pull failed: ${e.message}`));
   }
+}
+
+/**
+ * Brain Sync: Auto-update CONTEXT.md from codebase analysis
+ * This eliminates the human-as-middleware anti-pattern
+ */
+async function handleBrainSync(projectDir) {
+  const ora = (await import('ora')).default;
+  const { glob } = await import('glob');
+
+  console.log(chalk.magenta.bold('🧠 Brain Sync: Autonomous Context Update\n'));
+
+  // Step 1: Build Code Property Graph
+  const graphSpinner = ora('Building Code Property Graph...').start();
+  const graph = await buildGraph(false); // Force fresh build
+  graphSpinner.succeed(`Graph built: ${graph.nodes.length} nodes, ${graph.edges.length} edges`);
+
+  // Step 2: Analyze Tech Stack
+  const techSpinner = ora('Analyzing tech stack...').start();
+  const techStack = await analyzeTechStack(projectDir);
+  techSpinner.succeed(`Tech stack detected: ${techStack.frameworks.join(', ') || 'custom'}`);
+
+  // Step 3: Discover Modules
+  const moduleSpinner = ora('Discovering modules...').start();
+  const modules = discoverModules(graph);
+  moduleSpinner.succeed(`Modules found: ${modules.length}`);
+
+  // Step 4: Extract Key Exports
+  const exportsSpinner = ora('Extracting key exports...').start();
+  const exports = extractKeyExports(graph);
+  exportsSpinner.succeed(`Key exports: ${exports.length} functions`);
+
+  // Step 5: Generate CONTEXT.md
+  const contextSpinner = ora('Generating CONTEXT.md...').start();
+  const contextPath = path.join(projectDir, 'CONTEXT.md');
+  const contextContent = generateContextMd(techStack, modules, exports, graph);
+  await fs.writeFile(contextPath, contextContent);
+  contextSpinner.succeed('CONTEXT.md updated with AI-generated analysis');
+
+  // Step 6: Update State
+  const stateSpinner = ora('Updating project state...').start();
+  const state = await loadState() || { project: {}, agents: {} };
+  state.brainSync = {
+    lastSync: new Date().toISOString(),
+    techStack,
+    moduleCount: modules.length,
+    exportCount: exports.length,
+    graphNodes: graph.nodes.length
+  };
+  await saveState(state);
+  stateSpinner.succeed('State updated');
+
+  // Summary
+  console.log(chalk.green.bold('\n✅ Brain Sync Complete!\n'));
+  console.log(chalk.white('  Tech Stack:'));
+  console.log(chalk.gray(`    Language: ${techStack.language}`));
+  console.log(chalk.gray(`    Frameworks: ${techStack.frameworks.join(', ') || 'none detected'}`));
+  console.log(chalk.gray(`    Database: ${techStack.database || 'none detected'}`));
+  console.log(chalk.gray(`    Auth: ${techStack.auth || 'none detected'}`));
+  console.log(chalk.white('\n  Codebase Analysis:'));
+  console.log(chalk.gray(`    Modules: ${modules.length}`));
+  console.log(chalk.gray(`    Functions: ${exports.length}`));
+  console.log(chalk.gray(`    Dependencies: ${graph.edges.filter(e => e.type === 'depends_on').length}`));
+  console.log(chalk.cyan('\n  → CONTEXT.md is now current. No manual updates needed.'));
+}
+
+/**
+ * Analyze tech stack from package.json and file patterns
+ */
+async function analyzeTechStack(projectDir) {
+  const stack = {
+    language: 'JavaScript',
+    frameworks: [],
+    database: null,
+    auth: null,
+    testing: [],
+    deployment: []
+  };
+
+  // Check package.json
+  try {
+    const pkgPath = path.join(projectDir, 'package.json');
+    const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf8'));
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+    // Detect TypeScript
+    if (deps.typescript) stack.language = 'TypeScript';
+
+    // Detect frameworks
+    if (deps.next) stack.frameworks.push('Next.js');
+    if (deps.react) stack.frameworks.push('React');
+    if (deps.vue) stack.frameworks.push('Vue');
+    if (deps.svelte || deps['@sveltejs/kit']) stack.frameworks.push('SvelteKit');
+    if (deps.express) stack.frameworks.push('Express');
+    if (deps.fastify) stack.frameworks.push('Fastify');
+    if (deps.hono) stack.frameworks.push('Hono');
+
+    // Detect database
+    if (deps.prisma || deps['@prisma/client']) stack.database = 'Prisma';
+    if (deps.drizzle || deps['drizzle-orm']) stack.database = 'Drizzle';
+    if (deps.mongoose) stack.database = 'MongoDB';
+    if (deps['@supabase/supabase-js']) stack.database = 'Supabase';
+
+    // Detect auth
+    if (deps['@clerk/nextjs']) stack.auth = 'Clerk';
+    if (deps['next-auth']) stack.auth = 'NextAuth';
+    if (deps['@auth/core']) stack.auth = 'Auth.js';
+    if (deps['@supabase/auth-helpers-nextjs']) stack.auth = 'Supabase Auth';
+
+    // Detect testing
+    if (deps.jest) stack.testing.push('Jest');
+    if (deps.vitest) stack.testing.push('Vitest');
+    if (deps.playwright) stack.testing.push('Playwright');
+    if (deps.cypress) stack.testing.push('Cypress');
+
+  } catch {
+    // No package.json, use file extension detection
+  }
+
+  return stack;
+}
+
+/**
+ * Discover modules from graph structure
+ */
+function discoverModules(graph) {
+  const dirs = new Set();
+  for (const node of graph.nodes) {
+    if (node.type === 'file' && node.path) {
+      const dir = path.dirname(node.path);
+      if (dir !== '.' && !dir.includes('node_modules')) {
+        dirs.add(dir.split('/')[0]); // Top-level directory
+      }
+    }
+  }
+  return [...dirs].sort();
+}
+
+/**
+ * Extract key exports (public API)
+ */
+function extractKeyExports(graph) {
+  return graph.nodes
+    .filter(n => n.type === 'function')
+    .map(n => ({ name: n.name, file: n.parent }))
+    .slice(0, 50); // Top 50 functions
+}
+
+/**
+ * Generate CONTEXT.md content
+ */
+function generateContextMd(techStack, modules, exports, graph) {
+  const timestamp = new Date().toISOString();
+
+  return `# Project Context
+> Auto-generated by Ultra-Dex Brain Sync on ${timestamp}
+> Run \`ultra-dex sync --brain\` to update
+
+## Tech Stack
+- **Language:** ${techStack.language}
+- **Frameworks:** ${techStack.frameworks.join(', ') || 'None detected'}
+- **Database:** ${techStack.database || 'None detected'}
+- **Auth:** ${techStack.auth || 'None detected'}
+- **Testing:** ${techStack.testing.join(', ') || 'None detected'}
+
+## Project Structure
+${modules.map(m => `- \`${m}/\``).join('\n') || '- No modules detected'}
+
+## Key Functions
+${exports.slice(0, 20).map(e => `- \`${e.name}\` in \`${e.file}\``).join('\n') || '- No functions detected'}
+
+## Dependency Graph
+- **Total Files:** ${graph.nodes.filter(n => n.type === 'file').length}
+- **Total Functions:** ${graph.nodes.filter(n => n.type === 'function').length}
+- **Import Links:** ${graph.edges.filter(e => e.type === 'depends_on').length}
+
+## Key Decisions
+- Document architectural decisions here
+
+## Current Focus
+- Document current sprint/milestone focus here
+`;
 }

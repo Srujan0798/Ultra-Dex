@@ -10,7 +10,7 @@ const cliPath = path.resolve(process.cwd(), 'bin', 'ultra-dex.js');
 function runCli(args, options = {}) {
   const result = spawnSync(process.execPath, [cliPath, ...args], {
     cwd: options.cwd ?? process.cwd(),
-    env: { ...process.env, FORCE_COLOR: '0', ...options.env },
+    env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     input: options.input ?? ''
   });
@@ -25,7 +25,7 @@ test('--version returns valid semver', () => {
   assert.equal(result.status, 0);
   const version = result.output.trim();
   assert.match(version, /^\d+\.\d+\.\d+$/);
-  assert.equal(version, '3.2.0');
+  assert.equal(version, '3.3.0');
 });
 
 test('--help shows all 16 commands', () => {
