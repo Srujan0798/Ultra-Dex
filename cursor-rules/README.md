@@ -29,33 +29,40 @@ Only load rules relevant to your current task:
 | Database schema | `00-ultra-dex-core.mdc` + `01-database.mdc` |
 | API endpoints | `00-ultra-dex-core.mdc` + `02-api.mdc` |
 | Authentication | `00-ultra-dex-core.mdc` + `03-auth.mdc` |
-| Frontend components | `00-ultra-dex-core.mdc` + `04-frontend.mdc` |
-| Payments | `00-ultra-dex-core.mdc` + `05-payments.mdc` |
-| Testing | `00-ultra-dex-core.mdc` + `06-testing.mdc` |
-| Security review | `00-ultra-dex-core.mdc` + `07-security.mdc` |
-| Deployment | `00-ultra-dex-core.mdc` + `08-deployment.mdc` |
-| Error handling | `00-ultra-dex-core.mdc` + `09-error-handling.mdc` |
-| Performance | `00-ultra-dex-core.mdc` + `10-performance.mdc` |
-| Next.js 15 app | `00-ultra-dex-core.mdc` + `11-nextjs-v15.mdc` |
-| Multi-tenant SaaS | `00-ultra-dex-core.mdc` + `12-multi-tenancy.mdc` |
+| Next.js 15 app | `00-ultra-dex-core.mdc` + `26-nextjs-v15.mdc` |
+| Server Components | `00-ultra-dex-core.mdc` + `29-server-components.mdc` |
+| Multi-tenant SaaS | `00-ultra-dex-core.mdc` + `27-multi-tenant.mdc` |
+| Performance | `00-ultra-dex-core.mdc` + `31-performance.mdc` |
+| AI/LLM Integration | `00-ultra-dex-core.mdc` + `34-advanced-ai.mdc` |
 
-## Files
+## Files (Core & Development)
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `00-ultra-dex-core.mdc` | ~60 | Base rules (always load) |
-| `01-database.mdc` | ~70 | Prisma, schema, queries |
-| `02-api.mdc` | ~100 | API routes, validation, responses |
-| `03-auth.mdc` | ~70 | NextAuth configuration |
-| `04-frontend.mdc` | ~100 | React, components, state |
-| `05-payments.mdc` | ~90 | Stripe integration |
-| `06-testing.mdc` | ~100 | Vitest, Playwright |
-| `07-security.mdc` | ~100 | Input validation, auth, headers |
-| `08-deployment.mdc` | ~90 | Vercel, CI/CD, migrations |
-| `09-error-handling.mdc` | ~100 | Error patterns, logging |
-| `10-performance.mdc` | ~100 | Optimization, caching |
-| `11-nextjs-v15.mdc` | ~200 | Next.js 15 App Router patterns |
-| `12-multi-tenancy.mdc` | ~200 | SaaS multi-tenant patterns |
+| File | Purpose |
+|------|---------|
+| `00-ultra-dex-core.mdc` | Base rules (always load) |
+| `01-database.mdc` | Prisma, schema, queries |
+| `02-api.mdc` | API routes, validation, responses |
+| `03-auth.mdc` | NextAuth configuration |
+| `04-frontend.mdc` | React, components, state |
+| `05-payments.mdc` | Stripe integration |
+| `06-testing.mdc` | Vitest, Playwright |
+| `07-security.mdc` | Input validation, auth, headers |
+| `08-deployment.mdc` | Vercel, CI/CD, migrations |
+| `09-error-handling.mdc` | Error patterns, logging |
+
+## Files (Advanced Patterns)
+
+| File | Purpose |
+|------|---------|
+| `26-nextjs-v15.mdc` | Next.js 15 App Router & Server Actions |
+| `27-multi-tenant.mdc` | SaaS multi-tenant isolation patterns |
+| `28-vercel-ai.mdc` | AI SDK & Streaming implementations |
+| `29-server-components.mdc` | RSC & Server Action best practices |
+| `30-error-boundaries.mdc` | Resilience & Error UX patterns |
+| `31-performance.mdc` | Optimization & Caching strategies |
+| `32-langgraph.mdc` | Agentic workflow state management |
+| `33-voice-nlp.mdc` | Voice & Speech-to-text integration |
+| `34-advanced-ai.mdc` | Advanced LLM orchestration |
 
 ## Why Modular?
 

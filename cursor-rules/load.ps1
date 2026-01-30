@@ -75,7 +75,15 @@ switch ($Selection.ToLower()) {
     }
     "performance" {
         Write-Host "Loading performance rules..." -ForegroundColor White
-        Copy-Rules @("00-ultra-dex-core.mdc", "10-performance.mdc")
+        Copy-Rules @("00-ultra-dex-core.mdc", "31-performance.mdc")
+    }
+    "nextjs" {
+        Write-Host "Loading Next.js 15 rules..." -ForegroundColor White
+        Copy-Rules @("00-ultra-dex-core.mdc", "26-nextjs-v15.mdc")
+    }
+    "tenancy" {
+        Write-Host "Loading multi-tenancy rules..." -ForegroundColor White
+        Copy-Rules @("00-ultra-dex-core.mdc", "27-multi-tenant.mdc")
     }
     "all" {
         Write-Host "Loading ALL rules..." -ForegroundColor White
@@ -97,6 +105,8 @@ switch ($Selection.ToLower()) {
         Write-Host "  deployment  Load core + deployment rules"
         Write-Host "  errors      Load core + error handling rules"
         Write-Host "  performance Load core + performance rules"
+        Write-Host "  nextjs      Load core + Next.js 15 rules"
+        Write-Host "  tenancy     Load core + multi-tenancy rules"
         Write-Host "  all         Load ALL rules"
         Write-Host ""
         exit 1

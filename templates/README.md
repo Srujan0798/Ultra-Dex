@@ -370,8 +370,8 @@ Both templates are **fully customizable**. Common modifications:
 ## 🔗 Related Resources
 
 **Guides:**
-- [Project Orchestration Guide](../guides/PROJECT-ORCHESTRATION.md) - Multi-agent workflows
-- [Advanced Workflows](../guides/ADVANCED-WORKFLOWS.md) - Real-world examples
+- [Project Orchestration Guide](../docs/guides/PROJECT-ORCHESTRATION.md) - Multi-agent workflows
+- [Advanced Workflows](../docs/guides/ADVANCED-WORKFLOWS.md) - Real-world examples
 
 **Agent Prompts:**
 - [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 16 agents
@@ -416,4 +416,4 @@ Found a better template structure? Want to add examples?
 
 ---
 
-*Ultra-Dex v1.7.1 - Structured project management for AI-driven development*
+*Ultra-Dex v3.4.2 - Structured project management for AI-driven development*
