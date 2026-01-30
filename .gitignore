@@ -10,3 +10,10 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# Logs
+*.log
+.ultra-dex/logs/
+.ultra-dex/swarm-logs/
+.cli/logs/
+**/*.log

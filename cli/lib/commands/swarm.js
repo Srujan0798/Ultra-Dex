@@ -7,7 +7,7 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { glob } from 'glob';
 import { projectGraph } from '../mcp/graph.js';
-import { updateState, loadState, saveState } from './state.js';
+import { updateStateFile, loadState, saveState } from './state.js';
 import { agents } from '../utils/agents.js';
 import { isDoomsdayMode } from '../utils/theme-state.js';
 import { showSwarmAssemble as showDoomsdaySwarm } from '../themes/doomsday.js';
@@ -62,6 +62,11 @@ export function showSwarmAssemble(activeAgents) {
 }
 
 async function runAgent(agent, task, context, previousOutput, provider) {
+  // Check if provider is null/undefined
+  if (!provider) {
+    throw new Error('No AI provider configured. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY environment variable.');
+  }
+
   const agentPrompt = await loadAgentPrompt(agent.name);
   const prompt = `
 ${agentPrompt}
@@ -95,9 +100,9 @@ Provide your output for the next agent in the pipeline.
   } catch (error) {
     throw new Error(`Provider Error: ${error.message}`);
   }
-    
-  return typeof response === 'string' 
-    ? response 
+
+  return typeof response === 'string'
+    ? response
     : (response.content || response.text || JSON.stringify(response));
 }
 
@@ -177,11 +182,13 @@ export async function swarmCommand(task, options) {
   // Ensure log directory exists
   const logDir = await ensureLogDirectory();
 
-  // Update State to indicate Swarm is running
-  const state = await loadState() || { project: { mode: 'ULTRA_MODE' }, agents: { active: [] } };
-  state.agents = state.agents || { active: [] };
-  state.updatedAt = new Date().toISOString();
-  await saveState(state);
+  // Update State to indicate Swarm is running with locking to prevent race conditions
+  await withStateLock(async () => {
+    const state = await loadState() || { project: { mode: 'ULTRA_MODE' }, agents: { active: [] } };
+    state.agents = state.agents || { active: [] };
+    state.updatedAt = new Date().toISOString();
+    await saveState(state);
+  });
 
   // Run pipeline
   let previousOutput = '';
@@ -316,7 +323,7 @@ export async function swarmCommand(task, options) {
   const failCount = agentResults.filter(r => !r.success).length;
 
   // Final state update
-  await updateState();
+  await updateStateFile();
 
   // Write log
   const stats = {

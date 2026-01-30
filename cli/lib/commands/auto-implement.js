@@ -5,7 +5,7 @@
 
 import chalk from 'chalk';
 import ora from 'ora';
-import { updateState } from './state.js';
+import { updateStateFile } from './state.js';
 import { buildGraph } from '../utils/graph.js';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';
@@ -55,7 +55,7 @@ export function registerAutoImplementCommand(program) {
         const verification = await runAgentLoop('testing', `Verify the implementation of: ${feature}`, provider, projectContext);
 
         // 5. Finalize
-        await updateState();
+        await updateStateFile();
         spinner.succeed(chalk.green('Feature implemented autonomously!'));
         
         console.log(chalk.bold('\nFinal Report:'));

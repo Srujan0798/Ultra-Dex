@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { watch } from 'fs';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { updateState, computeState } from './state.js';
+import { updateStateFile, computeState } from './state.js';
 
 async function calculateAlignmentScore() {
   const state = await computeState();
@@ -50,7 +50,7 @@ export function watchCommand(options) {
           const timestamp = new Date().toLocaleTimeString();
           console.log(chalk.yellow(`\n[${timestamp}] 📝 ${filename || path} changed`));
           
-          await updateState();
+          await updateStateFile();
           
           const newScore = await calculateAlignmentScore();
           const scoreDiff = lastScore !== null ? newScore - lastScore : 0;

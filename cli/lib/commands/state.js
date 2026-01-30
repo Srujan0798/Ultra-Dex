@@ -9,7 +9,48 @@ import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
 
-// State management helpers
+// State locking mechanism to prevent race conditions
+let stateLock = null;
+let lockPromise = null;
+
+async function acquireStateLock() {
+  if (stateLock) {
+    // Someone else has the lock, wait for it to be released
+    return new Promise((resolve) => {
+      const checkLock = () => {
+        if (!stateLock) {
+          resolve();
+        } else {
+          setTimeout(checkLock, 10);
+        }
+      };
+      checkLock();
+    });
+  }
+
+  // Acquire the lock
+  const lockId = Math.random().toString(36).substring(2, 15);
+  stateLock = lockId;
+
+  return lockId;
+}
+
+async function releaseStateLock(lockId) {
+  if (stateLock === lockId) {
+    stateLock = null;
+  }
+}
+
+export async function withStateLock(callback) {
+  const lockId = await acquireStateLock();
+  try {
+    return await callback();
+  } finally {
+    releaseStateLock(lockId);
+  }
+}
+
+// State management helpers with locking
 export async function loadState() {
   try {
     const content = await fs.readFile(path.resolve(process.cwd(), '.ultra/state.json'), 'utf8');
@@ -29,6 +70,16 @@ export async function saveState(state) {
   } catch {
     return false;
   }
+}
+
+export async function updateState(updates) {
+  return await withStateLock(async () => {
+    const state = await loadState() || await computeState();
+    if (state && updates) {
+      Object.assign(state, updates);
+    }
+    return await saveState(state);
+  });
 }
 
 export async function computeState() {
@@ -74,7 +125,7 @@ export async function computeState() {
   return state;
 }
 
-export async function updateState() {
+export async function updateStateFile() {
   const state = await computeState();
   await saveState(state);
   return state;

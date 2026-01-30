@@ -21,7 +21,9 @@ const infinityGauntlet = `
     ┃   ⟐  SOUL   ⟐  TIME   ⟐   MIND    ⟐     ┃
     ╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
 
-export function showBanner(version = '3.1.0') {
+import { VERSION } from '../utils/version.js';
+
+export function showBanner(version = VERSION) {
   console.log(doomsdayGradient(epicBanner));
   console.log(infinityGradient(infinityGauntlet));
   console.log('');
