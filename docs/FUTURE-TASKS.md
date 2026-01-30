@@ -1,11 +1,23 @@
 # Ultra-Dex Future Tasks & Recommendations
 
-> Generated: 2026-01-30
-> Current Version: v3.4.0 "Ecosystem Mode"
+> Updated: 2026-01-30
+> Current Version: v3.4.2 "Ecosystem Mode"
+> npm: https://www.npmjs.com/package/ultra-dex
 
 ---
 
-## Completed in v3.4.0
+## Completed in v3.4.2
+
+- [x] Console logs silenced (debug mode only)
+- [x] Version sync across all files
+- [x] ESLint warnings reduced (70 → 57)
+- [x] Alignment score improved (40% → 85%)
+- [x] CHANGELOG.md created
+- [x] README updated with v3.4.2 features
+
+---
+
+## Completed in v3.4.0/v3.4.1
 
 - [x] LangChain Adapter (`cli/lib/providers/langchain.js`)
   - Chain templates: summarize, codeReview, taskBreakdown
@@ -146,12 +158,37 @@
 
 ---
 
-## Next Release (v3.4.0) Suggested Scope
+## Next Release (v3.5.0) Suggested Scope
 
-1. LangChain adapter
-2. Streaming AI responses
-3. Test suite fixes (100% pass rate)
+1. Voice Mode (`ultra-dex voice`)
+2. LangGraph native integration
+3. Agent Marketplace backend (remote registry)
 4. Plugin system foundation
+
+---
+
+## Marketing & Launch Checklist
+
+### Ready Now
+- [x] npm package published (v3.4.2)
+- [x] GitHub repo updated
+- [x] CHANGELOG.md created
+- [x] README updated with v3.4.2 features
+- [ ] VS Code extension to marketplace
+
+### Needs Human Action
+- [ ] Record 3-min demo video (script: init → swarm → serve → dashboard)
+- [ ] Hacker News launch post
+- [ ] Reddit posts (r/programming, r/AItools)
+- [ ] Twitter/X announcement
+- [ ] LinkedIn article
+- [ ] Dev.to blog post
+
+### Future Marketing
+- [ ] Partner case studies
+- [ ] Influencer outreach
+- [ ] Enterprise sales deck
+- [ ] Conference talks
 
 ---
 
