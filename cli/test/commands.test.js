@@ -15,7 +15,7 @@ const cliPath = path.resolve(process.cwd(), 'bin', 'ultra-dex.js');
 function runCli(args, options = {}) {
   const result = spawnSync(process.execPath, [cliPath, ...args], {
     cwd: options.cwd ?? process.cwd(),
-    env: { ...process.env, FORCE_COLOR: '0', ...options.env },
+    env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
     input: options.input ?? ''
