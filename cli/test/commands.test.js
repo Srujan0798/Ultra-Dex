@@ -405,11 +405,134 @@ describe('command integration', () => {
       'CONTEXT.md': '# Context',
       'IMPLEMENTATION-PLAN.md': '# Plan'
     });
-    
+
     const result = runCli(['validate', '--dir', tmpDir]);
     // Should return non-zero for incomplete validation
     assert.ok([0, 1].includes(result.status));
-    
+
     await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+});
+
+// ===============================
+// v3.4 AGENT MARKETPLACE TESTS
+// ===============================
+describe('agents marketplace (v3.4)', () => {
+  let tmpDir;
+
+  beforeEach(async () => {
+    tmpDir = await createTempProject({});
+  });
+
+  afterEach(async () => {
+    if (tmpDir) {
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  test('agents list shows built-in agents', () => {
+    const result = runCli(['agents', 'list']);
+    assert.equal(result.status, 0);
+    assert.match(result.output, /orchestrator|planner|backend|frontend/i);
+  });
+
+  test('agents list --marketplace shows community agents', () => {
+    const result = runCli(['agents', 'list', '--marketplace']);
+    assert.equal(result.status, 0);
+    assert.match(result.output, /SecurityAuditor|Accessibility|APIDesigner|MLEngineer|marketplace/i);
+  });
+
+  test('agents search finds matching agents', () => {
+    const result = runCli(['agents', 'search', 'security']);
+    assert.equal(result.status, 0);
+    assert.match(result.output, /security/i);
+  });
+
+  test('agents install downloads marketplace agent', async () => {
+    const result = runCli(['agents', 'install', 'security-auditor'], { cwd: tmpDir });
+    assert.equal(result.status, 0);
+    assert.match(result.output, /installed|SecurityAuditor/i);
+
+    // Verify agent file created
+    const agentPath = path.join(tmpDir, '.ultra-dex', 'marketplace-agents', 'security-auditor.json');
+    assert.ok(existsSync(agentPath), 'Agent file should be created');
+  });
+
+  test('agents uninstall removes agent', async () => {
+    // First install
+    runCli(['agents', 'install', 'security-auditor'], { cwd: tmpDir });
+
+    // Then uninstall
+    const result = runCli(['agents', 'uninstall', 'security-auditor'], { cwd: tmpDir });
+    assert.equal(result.status, 0);
+    assert.match(result.output, /uninstalled/i);
+  });
+
+  test('agents create generates custom agent', async () => {
+    const result = runCli(['agents', 'create', 'myagent', '-d', 'My custom agent'], { cwd: tmpDir });
+    assert.equal(result.status, 0);
+    assert.match(result.output, /created|myagent/i);
+
+    // Verify agent file created
+    const agentPath = path.join(tmpDir, '.ultra-dex', 'custom-agents', 'myagent.md');
+    assert.ok(existsSync(agentPath), 'Custom agent file should be created');
+  });
+
+  test('agents publish shows coming soon message', () => {
+    const result = runCli(['agents', 'publish', 'myagent']);
+    assert.equal(result.status, 0);
+    assert.match(result.output, /coming soon|marketplace/i);
+  });
+});
+
+// ===============================
+// v3.4 STREAMING & RUN OPTIONS
+// ===============================
+describe('run command options (v3.4)', () => {
+  test('run --help shows stream option', () => {
+    const result = runCli(['run', '--help']);
+    assert.equal(result.status, 0);
+    assert.match(result.output, /--stream/i);
+  });
+
+  test('run command shows provider configuration notice', () => {
+    const result = runCli(['run', 'planner', '-t', 'test'], {
+      env: { ANTHROPIC_API_KEY: '', OPENAI_API_KEY: '' }
+    });
+    // Should warn about missing provider
+    assert.match(result.output, /provider|configured|API/i);
+  });
+});
+
+// ===============================
+// v3.4 PROVIDER EXPORTS
+// ===============================
+describe('provider ecosystem (v3.4)', () => {
+  test('providers index exports LangChain adapter', async () => {
+    const { LangChainAdapter } = await import('../lib/providers/index.js');
+    assert.ok(LangChainAdapter, 'LangChainAdapter should be exported');
+    assert.equal(typeof LangChainAdapter, 'function');
+  });
+
+  test('providers index exports OpenAI Assistants provider', async () => {
+    const { OpenAIAssistantsProvider } = await import('../lib/providers/index.js');
+    assert.ok(OpenAIAssistantsProvider, 'OpenAIAssistantsProvider should be exported');
+    assert.equal(typeof OpenAIAssistantsProvider, 'function');
+  });
+
+  test('LangChainAdapter has required methods', async () => {
+    const { LangChainAdapter } = await import('../lib/providers/index.js');
+    const adapter = new LangChainAdapter({ model: 'test' });
+    assert.equal(typeof adapter.generate, 'function');
+    assert.equal(typeof adapter.generateStream, 'function');
+    assert.equal(typeof adapter.getName, 'function');
+  });
+
+  test('OpenAIAssistantsProvider has required methods', async () => {
+    const { OpenAIAssistantsProvider } = await import('../lib/providers/index.js');
+    const provider = new OpenAIAssistantsProvider({ apiKey: 'test-key' });
+    assert.equal(typeof provider.createThread, 'function');
+    assert.equal(typeof provider.createAssistant, 'function');
+    assert.equal(typeof provider.syncFromUltraDex, 'function');
   });
 });

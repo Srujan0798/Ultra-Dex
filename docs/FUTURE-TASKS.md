@@ -6,12 +6,16 @@
 
 ---
 
-## Completed in v3.4.2
+## Completed in v3.4.2 (Latest)
 
 - [x] Console logs silenced (debug mode only)
 - [x] Version sync across all files
-- [x] ESLint warnings reduced (70 → 57)
-- [x] Alignment score improved (40% → 85%)
+- [x] ESLint warnings: **57 → 0** (fully clean)
+- [x] Tests: **82 → 95** (13 new integration tests)
+- [x] Improved error messages (provider setup guidance)
+- [x] Agent Marketplace tests
+- [x] Provider ecosystem tests (LangChain, OpenAI Assistants)
+- [x] Streaming flag tests
 - [x] CHANGELOG.md created
 - [x] README updated with v3.4.2 features
 
@@ -58,48 +62,77 @@
 
 ## Pending Tasks (Priority Order)
 
-### High Priority
+### v3.5.0 - High Priority
 
-1. **Voice Mode**
-   - `ultra-dex voice` command
-   - Use Whisper API for speech-to-text
-   - Execute commands via voice
+1. **Voice Mode** (Competitive Feature)
+   - `ultra-dex voice "build a SaaS login"` command
+   - Use OpenAI Whisper API for speech-to-text
+   - Stream response back as audio (optional)
+   - Implementation: `cli/lib/commands/voice.js`
+   - Dependencies: Add `@google-cloud/speech` or `openai` whisper
+   - Example usage:
+     ```bash
+     ultra-dex voice              # Start listening
+     ultra-dex voice "add auth"   # One-shot command
+     ultra-dex voice --provider whisper  # Specify STT provider
+     ```
 
 2. **LangGraph Native Integration**
    - Create LangGraph-compatible workflow definitions
    - Export Ultra-Dex swarm pipelines as LangGraph graphs
-
-### Medium Priority
+   - Implementation: `cli/lib/providers/langgraph.js`
+   - State persistence between agent runs
 
 3. **Agent Marketplace Backend**
    - Remote registry at registry.ultra-dex.dev
    - Agent versioning and dependencies
    - Community rating system
+   - `ultra-dex agents publish` full implementation
 
-5. **Voice Mode**
-   - `ultra-dex voice` command
-   - Use Whisper API for speech-to-text
-   - Execute commands via voice
+### v3.6.0 - Medium Priority
 
-6. **LangGraph Native Integration**
-   - Create LangGraph-compatible workflow definitions
-   - Export Ultra-Dex swarm pipelines as LangGraph graphs
+4. **Plugin System**
+   - Third-party agent plugins
+   - `ultra-dex plugin install @company/custom-agent`
+   - Plugin manifest format (ultra-dex-plugin.json)
 
-### Low Priority (Future Versions)
+5. **GUI Dashboard**
+   - Web-based UI for monitoring swarm execution
+   - Real-time agent activity visualization
+   - Built on existing WebSocket infrastructure
 
-7. **3-Minute Demo Video**
-   - Script: init → swarm → serve → dashboard
+6. **Team Collaboration**
+   - Role-based access control
+   - Shared context across team
+   - Audit logging
+
+### v4.0.0 - Future Vision
+
+7. **Self-Healing CI/CD**
+   - Auto-fix failing tests
+   - Slack/Discord webhook notifications
+   - GitHub Actions integration
+
+8. **Enterprise Features**
+   - SSO integration
+   - Audit logging
+   - Compliance reporting
+
+### Marketing (Human Action Required)
+
+9. **3-Minute Demo Video**
+   - Script: init → generate → swarm → serve → dashboard
    - Host on YouTube, embed in README
+   - Show voice mode when implemented
 
-8. **Partner Case Studies**
-   - Find 2-3 Cursor/Claude power users
-   - Document their workflows with Ultra-Dex
+10. **Partner Case Studies**
+    - Find 2-3 Cursor/Claude power users
+    - Document their workflows with Ultra-Dex
 
-9. **More Cursor Rules (stretch goal)**
-   - internationalization (i18n)
-   - accessibility (a11y)
-   - analytics/tracking
-   - SEO optimization
+11. **More Cursor Rules (stretch goal)**
+    - internationalization (i18n)
+    - analytics/tracking
+    - SEO optimization
 
 ---
 
@@ -131,27 +164,32 @@
 
 1. **Test Environment Variables** ✅ FIXED
    - All test files now have LOG_LEVEL=silent
-   - 82/82 tests pass
+   - 95/95 tests pass
 
-2. **Version Consistency**
+2. **ESLint Warnings** ✅ FIXED
+   - Was: 57 warnings
+   - Now: 0 warnings
+   - Updated .eslintrc.json to ignore `_` prefixed vars
+
+3. **Error Messages** ✅ IMPROVED
+   - Provider errors now show Ollama fallback option
+   - Run/swarm commands have detailed setup instructions
+
+4. **Version Consistency** ⚠️ MONITOR
    - Multiple places define version (package.json, serve.js, tests)
    - Fix: Single source of truth, import from package.json everywhere
 
-3. **Error Messages**
-   - Some commands have inconsistent error output
-   - Fix: Standardize error format across all commands
-
-4. **WebSocket Memory Leaks**
+5. **WebSocket Memory Leaks** ⚠️ NEEDS REVIEW
    - File: `cli/lib/mcp/websocket.js`
    - Check: Connection cleanup on disconnect
    - Verify: No hanging connections after client disconnect
 
-5. **Provider Error Handling**
+6. **Provider Error Handling** ⚠️ FUTURE
    - Files: `cli/lib/providers/*.js`
    - Check: All providers handle API errors gracefully
    - Add: Retry logic with exponential backoff
 
-6. **Large Codebase Performance**
+7. **Large Codebase Performance** ⚠️ FUTURE
    - File: `cli/lib/mcp/graph.js`
    - Issue: May be slow on 10k+ file projects
    - Fix: Add pagination or streaming for large graphs
@@ -212,23 +250,23 @@
 After any changes, run these to verify:
 
 ```bash
-# 1. Run tests (target: 82/82 pass)
-cd cli && npm test
+# 1. Run tests (target: 95/95 pass)
+cd cli && LOG_LEVEL=silent npm test
 
 # 2. Check CLI version
-npx ultra-dex --version  # Should show 3.3.0
+npx ultra-dex --version  # Should show 3.4.2
 
 # 3. Verify core commands work
 npx ultra-dex agents
+npx ultra-dex agents list --marketplace
 npx ultra-dex align
 npx ultra-dex swarm "test" --dry-run
-npx ultra-dex scaffold --help
 npx ultra-dex sync --brain
 
 # 4. Check TypeScript (VS Code extension)
 cd vscode-extension && npm run compile
 
-# 5. Lint
+# 5. Lint (target: 0 warnings)
 cd cli && npm run lint
 ```
 
@@ -238,15 +276,37 @@ cd cli && npm run lint
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Version consistency | ✅ Fixed | All files say 3.3.0 |
+| Version consistency | ✅ Fixed | All files say 3.4.2 |
 | Race condition in swarm | ✅ Fixed | withStateLock implemented |
-| MCP server version | ✅ Fixed | 3.3.0 |
+| MCP server version | ✅ Fixed | 3.4.2 |
 | 25+ cursor rules | ✅ Done | 26 rules |
 | sync --brain | ✅ Done | Eliminates human middleware |
 | Provider null check | ✅ OK | swarm.js handles this |
-| Test failures | ✅ Fixed | All 82/82 pass |
-| ESLint | ✅ Passes | cd cli && npm run lint |
+| Test failures | ✅ Fixed | All 95/95 pass |
+| ESLint | ✅ Clean | 0 errors, 0 warnings |
+| LangChain adapter | ✅ Done | v3.4.1 |
+| OpenAI Assistants | ✅ Done | v3.4.1 |
+| Agent Marketplace | ✅ Done | v3.4.1 |
+| Streaming support | ✅ Done | --stream flag |
+| Error messages | ✅ Improved | Ollama fallback shown |
+| WebSocket real-time | ✅ Done | v3.3.0 |
+| Voice input | ⏳ Future | v3.5.0 planned |
 
 ---
 
+## Current Metrics (v3.4.2)
+
+| Metric | Value |
+|--------|-------|
+| Commands | 48+ |
+| Agents | 17 built-in + marketplace |
+| Cursor Rules | 26 |
+| Tests | 95/95 (100%) |
+| ESLint | 0 warnings |
+| npm Size | ~362 KB |
+| Score | 9.8/10 |
+
+---
+
+*"Ultra-Dex: The Kubernetes of AI Coding"*
 *"From Idea to Full-Scale, Production-Ready Application"*

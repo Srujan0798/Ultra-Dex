@@ -248,7 +248,7 @@ async function showMarketplace() {
   console.log(chalk.cyan('\n🏪 Ultra-Dex Agent Marketplace\n'));
   console.log(chalk.bold('Available Community Agents:'));
   console.log(chalk.gray('─'.repeat(50)));
-  for (const [id, agent] of Object.entries(COMMUNITY_AGENTS)) {
+  for (const [, agent] of Object.entries(COMMUNITY_AGENTS)) {
     console.log(`  ${chalk.yellow(agent.name)} ${chalk.gray(`v${agent.version}`)}`);
     console.log(`    ${chalk.white(agent.description)}`);
     console.log(`    ${chalk.gray(`↓ ${agent.downloads} downloads`)}\n`);

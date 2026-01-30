@@ -5,7 +5,7 @@
 // - review.js (registerReviewCommand)
 // The align command is a simplified version of review
 
-export function registerPlaceholderCommands(program) {
+export function registerPlaceholderCommands(_program) {
   // Placeholder for future commands
   // All v2 commands have been implemented in their own files
 }

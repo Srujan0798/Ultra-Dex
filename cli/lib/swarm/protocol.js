@@ -410,7 +410,7 @@ export class ExecutionTrace {
    */
   getArtifacts() {
     const artifacts = [];
-    for (const [agent, result] of Object.entries(this.results)) {
+    for (const [, result] of Object.entries(this.results)) {
       if (result.success && result.output?.artifacts) {
         artifacts.push(...result.output.artifacts);
       }

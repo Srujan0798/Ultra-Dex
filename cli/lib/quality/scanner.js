@@ -132,7 +132,7 @@ export async function runQualityScan(dir) {
 
   for (const result of fileResults) {
     if (result.status === 'fulfilled' && result.value !== null) {
-      const { fileResults, filePath } = result.value;
+      const { fileResults } = result.value;
       if (fileResults.length > 0) {
         results.details.push(...fileResults);
         for (const issue of fileResults) {

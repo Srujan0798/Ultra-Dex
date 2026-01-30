@@ -62,7 +62,6 @@ export async function analyzeCodeStructure(files) {
   for (const file of files) {
     const relativePath = file;
     const filename = path.basename(file);
-    const dir = path.dirname(file);
     
     // Categorize files
     if (relativePath.includes('/components/') || relativePath.includes('/Components/')) {

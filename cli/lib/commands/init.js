@@ -8,7 +8,6 @@ import { QUICK_START_TEMPLATE } from '../templates/quick-start.js';
 import { CONTEXT_TEMPLATE } from '../templates/context.js';
 import { validateProjectName, validateSafePath } from '../utils/validation.js';
 import { ASSETS_ROOT, ROOT_FALLBACK, LIVE_TEMPLATES_ROOT } from '../config/paths.js';
-import { githubBlobUrl } from '../config/urls.js';
 import { copyWithFallback, listWithFallback, readWithFallback } from '../utils/fallback.js';
 import { copyDirectory, pathExists } from '../utils/files.js';
 import { getRandomMessage } from '../utils/messages.js';

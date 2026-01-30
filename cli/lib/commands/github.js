@@ -143,6 +143,7 @@ async function createPullRequest(title, body, options = {}) {
 /**
  * Get PR status
  */
+// eslint-disable-next-line no-unused-vars
 async function getPRStatus(prNumber) {
   const { stdout } = await execAsync(`gh pr view ${prNumber} --json state,mergeable,reviews,statusCheckRollup`);
   return JSON.parse(stdout);

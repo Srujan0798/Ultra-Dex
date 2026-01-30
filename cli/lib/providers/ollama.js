@@ -31,7 +31,7 @@ export class OllamaProvider extends BaseProvider {
     return MODELS;
   }
 
-  estimateCost(inputTokens, outputTokens) {
+  estimateCost(_inputTokens, _outputTokens) {
     // Local is free!
     return {
       input: 0,

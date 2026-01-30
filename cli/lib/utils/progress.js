@@ -2,12 +2,13 @@ import chalk from 'chalk';
 // import ora from 'ora';
 
 export function showProgress(tasks) {
-  const total = tasks.length;
+  // eslint-disable-next-line no-unused-vars
+  const _total = tasks.length;
   console.log('');
   console.log(chalk.hex('#8b5cf6').bold('  ⚡ EXECUTING TASKS...'));
   console.log('');
   
-  tasks.forEach((task, idx) => {
+  tasks.forEach((task) => {
     // Simple vertical list for now
     console.log(`  ${chalk.hex('#d946ef')('►')} ${task}`);
   });

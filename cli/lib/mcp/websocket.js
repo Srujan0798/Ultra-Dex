@@ -8,7 +8,7 @@ export class UltraDexSocket {
     this.scoreInterval = null;
     this.scoreCalculator = options.scoreCalculator || (() => Math.floor(Math.random() * 30) + 70);
     
-    this.wss.on('connection', (ws, req) => {
+    this.wss.on('connection', (ws, _req) => {
       console.log(chalk.gray('🔌 WebSocket client connected'));
       this.clients.add(ws);
       

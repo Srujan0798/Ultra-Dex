@@ -146,7 +146,7 @@ export class LangChainAdapter extends BaseProvider {
   /**
    * Generate completion using LangChain
    */
-  async generate(systemPrompt, userPrompt, options = {}) {
+  async generate(systemPrompt, userPrompt, _options = {}) {
     await this.initialize();
 
     const messages = [
@@ -169,7 +169,7 @@ export class LangChainAdapter extends BaseProvider {
   /**
    * Generate with streaming
    */
-  async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
+  async generateStream(systemPrompt, userPrompt, onChunk, _options = {}) {
     await this.initialize();
 
     const messages = [

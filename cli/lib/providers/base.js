@@ -37,7 +37,7 @@ export class BaseProvider {
    * @param {number} outputTokens - Number of output tokens
    * @returns {{input: number, output: number, total: number}} Cost in USD
    */
-  estimateCost(inputTokens, outputTokens) {
+  estimateCost(_inputTokens, _outputTokens) {
     throw new Error('BaseProvider.estimateCost() must be implemented by subclass');
   }
 
@@ -48,7 +48,7 @@ export class BaseProvider {
    * @param {Object} options - Additional options
    * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}, model: string}>}
    */
-  async generate(systemPrompt, userPrompt, options = {}) {
+  async generate(systemPrompt, userPrompt, _options = {}) {
     throw new Error('BaseProvider.generate() must be implemented by subclass');
   }
 
@@ -60,7 +60,7 @@ export class BaseProvider {
    * @param {Object} options - Additional options
    * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}, model: string}>}
    */
-  async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
+  async generateStream(systemPrompt, userPrompt, onChunk, _options = {}) {
     throw new Error('BaseProvider.generateStream() must be implemented by subclass');
   }
 

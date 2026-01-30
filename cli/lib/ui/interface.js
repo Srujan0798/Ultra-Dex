@@ -2,7 +2,7 @@
 // The startup screen and interactive interface
 
 // import chalk from 'chalk';
-import { theme, box, header, divider, status, table, keyHints, statusLine } from './theme.js';
+import { theme, header, status, table, keyHints, statusLine } from './theme.js';
 
 // ═══════════════════════════════════════════════════════════════
 // STARTUP BANNER (Like Gemini CLI's clean intro)
@@ -73,7 +73,7 @@ export function showStatus(projectData) {
 
     // Alignment score with bar
     const score = projectData.score || 0;
-    const scoreColor = score >= 80 ? theme.success : score >= 50 ? theme.warning : theme.error;
+    const _scoreColor = score >= 80 ? theme.success : score >= 50 ? theme.warning : theme.error;
     console.log(`  ${theme.dim('Alignment')}  ${progressBar(score, 100)}`);
     console.log('');
 

@@ -1,8 +1,6 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import { runAgentLoop } from '../commands/run.js';
-import { createProvider, getDefaultProvider } from '../providers/index.js';
-import { loadState } from '../commands/plan.js';
 import fs from 'fs/promises';
 
 export class SwarmCoordinator {

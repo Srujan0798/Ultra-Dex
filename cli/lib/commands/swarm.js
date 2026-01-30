@@ -162,7 +162,15 @@ export async function swarmCommand(task, options) {
   // Get AI provider
   const provider = getProvider();
   if (!provider) {
-    console.log(chalk.red('No AI provider configured. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY'));
+    console.log(chalk.red('\n❌ No AI provider configured.\n'));
+    console.log(chalk.white('The swarm needs an AI provider to coordinate agents.'));
+    console.log(chalk.white('Configure one of these:\n'));
+    console.log(chalk.gray('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude (recommended)'));
+    console.log(chalk.gray('  export OPENAI_API_KEY=sk-...         # OpenAI'));
+    console.log(chalk.gray('  export GOOGLE_AI_KEY=...             # Gemini'));
+    console.log(chalk.white('\nOr run Ollama locally (no API key needed):'));
+    console.log(chalk.gray('  ollama serve  # Start Ollama'));
+    console.log(chalk.gray('  export ULTRA_DEX_DEFAULT_PROVIDER=ollama\n'));
     return;
   }
 

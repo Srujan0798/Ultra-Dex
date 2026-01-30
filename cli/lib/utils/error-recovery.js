@@ -4,7 +4,6 @@
  */
 
 import { monitoring } from './monitoring.js';
-import { configManager } from './config-manager.js';
 
 // Circuit breaker states
 const CIRCUIT_STATES = {
@@ -438,7 +437,7 @@ class ErrorRecoveryManager {
    * Emergency reset - reset all circuit breakers and clear degraded mode
    */
   emergencyReset() {
-    for (const [name, circuit] of this.circuitBreakers) {
+    for (const [, circuit] of this.circuitBreakers) {
       circuit.reset();
     }
     

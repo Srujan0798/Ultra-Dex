@@ -57,9 +57,6 @@ export async function loadContext(dir = '.') {
 export function extractTasks(planContent) {
   const tasks = [];
   
-  // Match task patterns: - [ ] Task name or - [x] Task name
-  const taskRegex = /- \[([ x])\]\s*(.+?)(?=\n|$)/gi;
-  let match;
   let currentSection = 0;
   
   // Track current section

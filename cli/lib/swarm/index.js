@@ -21,10 +21,8 @@ import {
   getAgent,
   getAgentsByTier,
   getTier,
-  getExecutionOrder,
   findParallelGroups,
-  validatePipeline,
-  getAgentDependencies
+  validatePipeline
 } from './tiers.js';
 
 // Re-export from protocol for convenience
@@ -498,7 +496,7 @@ Break down the feature "${feature}" into sequential atomic tasks for other agent
 
 Available Agents:
 ${Object.entries(AGENTS)
-  .filter(([_, a]) => a.tier > 0)
+  .filter(([, a]) => a.tier > 0)
   .map(([name, a]) => `- @${name} (${a.role})`)
   .join('\n')}
 

@@ -88,8 +88,8 @@ export const avengersAgents = {
 
 // --- Progress ---
 export function thanoSnap(tasks) {
+  // eslint-disable-next-line no-unused-vars
   const total = tasks.length;
-  let complete = 0;
   
   console.log('');
   console.log(chalk.hex('#7c3aed').bold('  ✵ INITIATING THE SNAP...'));
