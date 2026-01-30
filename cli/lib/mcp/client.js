@@ -9,6 +9,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
 import { EventEmitter } from 'events';
+import { VERSION } from '../utils/version.js';
 
 // ============================================================================
 // MCP CLIENT CONFIGURATION
@@ -157,7 +158,7 @@ export class MCPConnection extends EventEmitter {
         },
         clientInfo: {
           name: 'ultra-dex',
-          version: '3.4.2',
+          version: VERSION,
         },
       }).then(async (result) => {
         clearTimeout(timeout);
