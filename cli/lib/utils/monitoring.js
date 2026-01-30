@@ -205,6 +205,27 @@ async function createLoggerInstance() {
 
   await ensureLogDirectory();
 
+  // Only add console transport in debug mode or when explicitly requested
+  const logTransports = [
+    new transports.File({
+      filename: MONITORING_CONFIG.logFile,
+      maxSize: MONITORING_CONFIG.maxLogSize,
+      maxFiles: MONITORING_CONFIG.maxLogFiles
+    })
+  ];
+
+  // Add console transport only for debug mode
+  if (MONITORING_CONFIG.logLevel === 'debug' || process.env.DEBUG) {
+    logTransports.push(
+      new transports.Console({
+        format: format.combine(
+          format.colorize(),
+          format.simple()
+        )
+      })
+    );
+  }
+
   return createLogger({
     level: MONITORING_CONFIG.logLevel,
     format: format.combine(
@@ -214,19 +235,7 @@ async function createLoggerInstance() {
       format.json()
     ),
     defaultMeta: { service: 'ultra-dex' },
-    transports: [
-      new transports.File({
-        filename: MONITORING_CONFIG.logFile,
-        maxSize: MONITORING_CONFIG.maxLogSize,
-        maxFiles: MONITORING_CONFIG.maxLogFiles
-      }),
-      new transports.Console({
-        format: format.combine(
-          format.colorize(),
-          format.simple()
-        )
-      })
-    ]
+    transports: logTransports
   });
 }
 

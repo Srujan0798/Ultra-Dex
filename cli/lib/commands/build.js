@@ -6,7 +6,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
-import path from 'path';
+// import path from "path";
 import { loadState } from './plan.js';
 import { runAgentLoop } from './run.js';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';

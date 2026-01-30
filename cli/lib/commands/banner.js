@@ -14,7 +14,7 @@ const asciiLogo = `
 
 export const banner = asciiLogo;
 
-export function showBanner(version = '3.4.0') {
+export function showBanner(version = '3.4.2') {
   console.log(ultraGradient(asciiLogo));
   console.log(boxen(
     `${chalk.hex('#8b5cf6').bold('🪐 Ultra-Dex')} ${chalk.dim('v' + version)}

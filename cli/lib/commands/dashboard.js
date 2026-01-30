@@ -5,12 +5,12 @@
 
 import chalk from 'chalk';
 import http from 'http';
-import fs from 'fs/promises';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+// import fs from 'fs/promises';
+// import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { execSync, spawn } from 'child_process';
 import { loadState } from './plan.js';
 import { buildGraph } from '../utils/graph.js';
-import { join } from 'path';
+// import { join } from 'path';
 
 // Global clients for SSE
 const clients = new Set();
