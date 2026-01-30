@@ -39,7 +39,7 @@ export async function computeState() {
   }
 
   const state = {
-    version: '3.2.0',
+    version: '3.4.0',
     updatedAt: new Date().toISOString(),
     project: { name: path.basename(process.cwd()), mode: 'ULTRA_MODE' },
     files: {},

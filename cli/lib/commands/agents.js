@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
 import { ASSETS_ROOT, ROOT_FALLBACK } from '../config/paths.js';
@@ -6,6 +7,35 @@ import { githubBlobUrl } from '../config/urls.js';
 import { readWithFallback } from '../utils/fallback.js';
 import { pathExists } from '../utils/files.js';
 import { showAgentsTable } from '../utils/tables.js';
+import { validateSafePath } from '../utils/validation.js';
+
+// Community agents available in the marketplace
+const COMMUNITY_AGENTS = {
+  'security-auditor': {
+    name: '@SecurityAuditor',
+    description: 'Security vulnerability scanner and auditor',
+    version: '1.0.0',
+    downloads: 1250,
+  },
+  'accessibility': {
+    name: '@Accessibility',
+    description: 'A11y expert - ensures WCAG compliance',
+    version: '1.0.0',
+    downloads: 421,
+  },
+  'api-designer': {
+    name: '@APIDesigner',
+    description: 'REST/GraphQL API design specialist',
+    version: '1.0.0',
+    downloads: 892,
+  },
+  'ml-engineer': {
+    name: '@MLEngineer',
+    description: 'Machine learning model integration',
+    version: '1.0.0',
+    downloads: 654,
+  },
+};
 
 export const AGENTS = [
   { name: 'orchestrator', description: 'Multi-agent coordination', file: '0-orchestration/orchestrator.md', tier: 'Orchestration' },
@@ -66,13 +96,142 @@ export async function readAgentPrompt(agent) {
 }
 
 export function registerAgentsCommand(program) {
-  const agents = program
+  const agentsCmd = program
     .command('agents')
-    .description('List available AI agent prompts')
-    .action(async () => {
-      await listAgents();
+    .description('Agent Marketplace - list, install, and manage agents');
+
+  // Default action: list agents
+  agentsCmd.action(async () => {
+    await listAgents();
+  });
+
+  // agents list
+  agentsCmd
+    .command('list')
+    .alias('ls')
+    .description('List all available agents')
+    .option('--marketplace', 'Show marketplace agents')
+    .action(async (options) => {
+      if (options.marketplace) {
+        await showMarketplace();
+      } else {
+        await listAgents();
+      }
     });
 
+  // agents search <query>
+  agentsCmd
+    .command('search <query>')
+    .description('Search for agents in the marketplace')
+    .action(async (query) => {
+      console.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
+      const allAgents = [...AGENTS.map(a => ({ ...a, source: 'builtin' })),
+                        ...Object.entries(COMMUNITY_AGENTS).map(([id, a]) => ({ id, ...a, source: 'community' }))];
+      const results = allAgents.filter(a =>
+        `${a.name} ${a.description}`.toLowerCase().includes(query.toLowerCase())
+      );
+      if (results.length === 0) {
+        console.log(chalk.yellow('No agents found matching your query.'));
+      } else {
+        console.log(chalk.bold(`Found ${results.length} agent(s):\n`));
+        results.forEach(a => {
+          const badge = a.source === 'builtin' ? chalk.blue('[built-in]') : chalk.yellow('[marketplace]');
+          console.log(`  ${chalk.green('@' + a.name)} ${badge}`);
+          console.log(`    ${chalk.gray(a.description)}\n`);
+        });
+      }
+    });
+
+  // agents install <name>
+  agentsCmd
+    .command('install <name>')
+    .alias('i')
+    .description('Install an agent from the marketplace')
+    .action(async (name) => {
+      const spinner = ora(`Installing ${name}...`).start();
+      const agent = COMMUNITY_AGENTS[name.toLowerCase()];
+      if (!agent) {
+        spinner.fail(`Agent "${name}" not found in marketplace`);
+        console.log(chalk.gray('\nUse `ultra-dex agents list --marketplace` to see available agents'));
+        return;
+      }
+      const agentsDir = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents');
+      await fs.mkdir(agentsDir, { recursive: true });
+      const agentConfig = {
+        id: name.toLowerCase(),
+        name: agent.name,
+        description: agent.description,
+        version: agent.version,
+        installedAt: new Date().toISOString(),
+        systemPrompt: generateCommunityAgentPrompt(name.toLowerCase()),
+      };
+      await fs.writeFile(path.join(agentsDir, `${name.toLowerCase()}.json`), JSON.stringify(agentConfig, null, 2));
+      spinner.succeed(`Installed ${chalk.green(agent.name)} v${agent.version}`);
+      console.log(chalk.gray(`\nUse with: ultra-dex run ${name.toLowerCase()} -t "your task"`));
+    });
+
+  // agents uninstall <name>
+  agentsCmd
+    .command('uninstall <name>')
+    .alias('rm')
+    .description('Uninstall a marketplace agent')
+    .action(async (name) => {
+      const spinner = ora(`Uninstalling ${name}...`).start();
+      try {
+        const agentPath = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents', `${name.toLowerCase()}.json`);
+        await fs.unlink(agentPath);
+        spinner.succeed(`Uninstalled ${name}`);
+      } catch {
+        spinner.fail(`Agent "${name}" is not installed`);
+      }
+    });
+
+  // agents create <name>
+  agentsCmd
+    .command('create <name>')
+    .description('Create a custom agent')
+    .option('-d, --description <desc>', 'Agent description')
+    .action(async (name, options) => {
+      const validation = validateSafePath(name, 'Agent name');
+      if (validation !== true) {
+        console.log(chalk.red(validation));
+        return;
+      }
+      const customDir = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
+      await fs.mkdir(customDir, { recursive: true });
+      const agentContent = `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent
+
+## Role
+${options.description || `Custom agent: ${name}`}
+
+## Instructions
+You are @${name.charAt(0).toUpperCase() + name.slice(1)}, a custom Ultra-Dex agent.
+Follow user instructions carefully and provide helpful responses.
+
+## Available Commands
+- >> READ_CODE: "filePath" - Read a file
+- >> WRITE_CODE: "filePath" "content" - Create/update a file
+- >> SEARCH_CODE: "query" - Search the codebase
+- >> DELEGATE: @AgentName "Task" - Delegate to another agent
+`;
+      await fs.writeFile(path.join(customDir, `${name.toLowerCase()}.md`), agentContent);
+      console.log(chalk.green(`\n✅ Created custom agent: @${name}`));
+      console.log(chalk.gray(`\nEdit: .ultra-dex/custom-agents/${name.toLowerCase()}.md`));
+      console.log(chalk.gray(`Use with: ultra-dex agent ${name.toLowerCase()}\n`));
+    });
+
+  // agents publish <name>
+  agentsCmd
+    .command('publish <name>')
+    .description('Publish a custom agent to the marketplace (coming soon)')
+    .action(async (name) => {
+      console.log(chalk.cyan('\n📤 Publishing Agent to Marketplace\n'));
+      console.log(chalk.yellow('⚠️  Marketplace publishing is coming soon!'));
+      console.log(chalk.gray('\nFor now, share your agent by copying:'));
+      console.log(chalk.gray(`  .ultra-dex/custom-agents/${name.toLowerCase()}.md\n`));
+    });
+
+  // Legacy: agent [name] command
   program
     .command('agent [name]')
     .description('Show a specific agent prompt or list all agents')
@@ -83,6 +242,28 @@ export function registerAgentsCommand(program) {
         await showAgent(name);
       }
     });
+}
+
+async function showMarketplace() {
+  console.log(chalk.cyan('\n🏪 Ultra-Dex Agent Marketplace\n'));
+  console.log(chalk.bold('Available Community Agents:'));
+  console.log(chalk.gray('─'.repeat(50)));
+  for (const [id, agent] of Object.entries(COMMUNITY_AGENTS)) {
+    console.log(`  ${chalk.yellow(agent.name)} ${chalk.gray(`v${agent.version}`)}`);
+    console.log(`    ${chalk.white(agent.description)}`);
+    console.log(`    ${chalk.gray(`↓ ${agent.downloads} downloads`)}\n`);
+  }
+  console.log(chalk.gray('Install with: ultra-dex agents install <name>\n'));
+}
+
+function generateCommunityAgentPrompt(agentId) {
+  const prompts = {
+    'security-auditor': `You are @SecurityAuditor, a security specialist. Analyze code for OWASP Top 10 vulnerabilities, injection attacks, auth flaws, and sensitive data exposure.`,
+    'accessibility': `You are @Accessibility, an A11y expert. Ensure WCAG compliance, proper ARIA labels, keyboard navigation, and screen reader compatibility.`,
+    'api-designer': `You are @APIDesigner, an API design specialist. Design RESTful and GraphQL APIs with proper versioning, authentication, and documentation.`,
+    'ml-engineer': `You are @MLEngineer, a machine learning specialist. Help integrate ML models, optimize inference, and implement AI features.`,
+  };
+  return prompts[agentId] || `You are a custom Ultra-Dex agent. Follow user instructions carefully.`;
 }
 
 async function listAgents() {

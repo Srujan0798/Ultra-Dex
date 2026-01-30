@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import gradient from 'gradient-string';
 
 export function showVersionCard() {
-  const version = '3.1.0';
+  const version = '3.4.0';
   const ultra = gradient(['#6366f1', '#8b5cf6'])('Ultra-Dex');
   
   console.log(boxen(

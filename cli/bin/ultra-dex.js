@@ -21,7 +21,7 @@ await Promise.all([
 
 // Log startup
 monitoring.info('Ultra-Dex CLI starting', {
-  version: '3.3.0',
+  version: '3.4.0',
   pid: process.pid,
   nodeVersion: process.version,
   platform: process.platform
@@ -40,7 +40,7 @@ if (process.argv.includes('--help') && process.argv.includes('--doomsday')) {
 }
 
 // Check for updates
-const pkg = { name: 'ultra-dex', version: '3.3.0' };
+const pkg = { name: 'ultra-dex', version: '3.4.0' };
 const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 });
 
 if (notifier.update) {
@@ -94,9 +94,9 @@ import { registerSyncCommand } from '../lib/commands/sync.js';
 import { registerTeamCommand } from '../lib/commands/team.js';
 import { registerMemoryCommand } from '../lib/commands/memory.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
-import { registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
+import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
 
-// v3.3.0 Commands - 2026 Competitive Features
+// v3.4.0 Commands - 2026 Competitive Features
 import { registerExecCommand } from '../lib/commands/exec.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
 import { registerSearchCommand } from '../lib/commands/search.js';
@@ -108,7 +108,7 @@ program.banner = banner;
 program
   .name('ultra-dex')
   .description('CLI for Ultra-Dex SaaS Implementation Framework')
-  .version('3.3.0');
+  .version('3.4.0');
 
 registerInitCommand(program);
 registerAuditCommand(program);
@@ -190,12 +190,13 @@ registerTeamCommand(program);
 registerMemoryCommand(program);
 registerScaffoldCommand(program);
 
-// Monitoring commands (v3.3.0) - note: status uses state.js, config uses config.js
+// Monitoring commands (v3.4.0) - note: status uses state.js, sys-config uses monitoring.js
+registerSystemConfigCommand(program);
 registerMetricsCommand(program);
 registerHealthCommand(program);
 registerDebugCommand(program);
 
-// v3.3.0 Commands - 2026 Competitive Features
+// v3.4.0 Commands - 2026 Competitive Features
 registerExecCommand(program);
 registerGitHubCommand(program);
 registerSearchCommand(program);

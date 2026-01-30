@@ -157,7 +157,7 @@ export class MCPConnection extends EventEmitter {
         },
         clientInfo: {
           name: 'ultra-dex',
-          version: '3.2.0',
+          version: '3.4.0',
         },
       }).then(async (result) => {
         clearTimeout(timeout);

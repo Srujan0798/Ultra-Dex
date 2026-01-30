@@ -170,7 +170,7 @@ function createAPIServer(options = {}) {
     try {
       // Route handling
       if (path === '/api/health') {
-        return sendJSON(res, { status: 'ok', version: '3.3.0' });
+        return sendJSON(res, { status: 'ok', version: '3.4.0' });
       }
 
       if (path === '/api/session' && req.method === 'POST') {
@@ -621,7 +621,7 @@ const CLOUD_DASHBOARD_HTML = `<!DOCTYPE html>
     </div>
 
     <footer>
-      Ultra-Dex v3.3.0 | Cloud Dashboard | <a href="https://github.com/Srujan0798/Ultra-Dex" style="color: var(--primary);">GitHub</a>
+      Ultra-Dex v3.4.0 | Cloud Dashboard | <a href="https://github.com/Srujan0798/Ultra-Dex" style="color: var(--primary);">GitHub</a>
     </footer>
   </div>
 

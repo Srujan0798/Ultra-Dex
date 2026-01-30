@@ -99,7 +99,7 @@ async function startUnifiedKernel(portStr) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           name: 'Ultra-Dex Multiverse Kernel',
-          version: '3.3.0',
+          version: '3.4.0',
           status: 'online',
           endpoints: ['/api/state', '/api/plan', '/api/context', '/api/graph', '/api/swarm']
         }, null, 2));
