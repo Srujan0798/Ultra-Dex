@@ -22,4 +22,4 @@ cd ..
 
 echo -e "\n✅ ALL SYSTEMS GO. Ultra-Dex is ready for production."
 echo "Extension: vscode-extension/ultra-dex-vscode-1.0.0.vsix"
-echo "Launch Kit: LAUNCH_KIT/content.md"
+echo "Launch Kit: marketing/content.md"

@@ -9,7 +9,7 @@ Central navigation for all documentation in `/docs`.
 3. **[CODEMAP.md](./CODEMAP.md)** - Map of how the Ultra-Dex system flows from idea to production.
 4. **[CUSTOMIZATION.md](./CUSTOMIZATION.md)** - How to add/remove sections and tailor Ultra-Dex to your product type.
 5. **[EXECUTIVE-REVIEW.md](./EXECUTIVE-REVIEW.md)** - Executive review and 90-day roadmap recommendations.
-6. **[LAUNCH-POSTS.md](./LAUNCH-POSTS.md)** - Example launch posts and positioning angles.
+6. **[LAUNCH-POSTS.md](../../marketing/LAUNCH-POSTS-v2.2.md)** - Example launch posts and positioning angles.
 7. **[QUICK-REFERENCE.md](./QUICK-REFERENCE.md)** - One-page cheatsheet and command summary.
 8. **[ROADMAP.md](./ROADMAP.md)** - Product roadmap and version timeline.
 9. **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and fixes.
