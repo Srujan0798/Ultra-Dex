@@ -1,83 +1,74 @@
-# 📚 Ultra-Dex Documentation
+# Ultra-Dex Documentation
 
-Welcome to the Ultra-Dex documentation hub. This directory contains comprehensive guides, references, and resources for using and extending Ultra-Dex.
-
-## 🗂️ Directory Structure
-
-### `/agents` - AI Agent Documentation
-- **Agent Prompts**: System prompts for all 17 specialized agents
-- **Orchestration Guides**: Multi-agent workflow patterns
-- **Quality Frameworks**: 21-step verification and quality gates
-
-### `/architecture` - System Architecture
-- **Design Patterns**: Code Property Graph, MCP integration, swarm architecture
-- **Workflow Diagrams**: Visual representations of agent coordination
-- **Integration Guides**: MCP, Claude Desktop, Cursor integration
-
-### `/completion-reports` - Project Completion Reports
-- **Development Reports**: Comprehensive project completion documentation
-- **Verification Reports**: System validation and testing reports
-- **Security Assessments**: Security validation and vulnerability reports
-
-### `/demos` - Demo Resources
-- **Tutorial**: Step-by-step usage guide
-- **Demo Scripts**: Professional demonstration scripts
-- **Comprehensive Demos**: Full feature demonstrations
-
-### `/guides` - User Guides
-- **How-to Guides**: Practical usage instructions
-- **Troubleshooting**: Issue resolution and debugging
-- **Customization**: Configuration and customization guides
-- **Video Tutorials**: Visual learning resources
-
-### `/performance` - Performance Documentation
-- **Benchmark Reports**: Performance metrics and comparisons
-- **Optimization Guides**: Performance tuning recommendations
-
-### `/reference` - Technical Reference
-- **CLI Reference**: Command-line interface documentation
-- **Quick Reference**: Concise command and feature summaries
-- **Code Maps**: System architecture and component relationships
-
-### `/security` - Security Documentation
-- **Security Assessments**: Comprehensive security analysis
-- **Best Practices**: Security implementation guidelines
-
-### `/testing` - Quality Assurance
-- **Integration Tests**: System integration validation
-- **Verification Reports**: Quality gate validation
-- **Test Results**: Automated testing outcomes
-
-### `/validation` - Validation Tools
-- **Validation Scripts**: Automated system validation
-- **Compliance Checks**: Standards and requirements validation
-
-## 🚀 Quick Navigation
-
-| Topic | File | Description |
-|-------|------|-------------|
-| Getting Started | `guides/02-HOW-TO-USE.md` | Step-by-step usage guide |
-| CLI Commands | `reference/CLI-REFERENCE.md` | Complete command reference |
-| Agent System | `agents/REVIEW-PROMPT.md` | AI agent orchestration |
-| Security | `security/SECURITY-ASSESSMENT-REPORT.md` | Security validation |
-| Performance | `performance/PERFORMANCE-BENCHMARK-REPORT.md` | Performance metrics |
-| Architecture | `architecture/WORKFLOW-DIAGRAMS.md` | System design patterns |
-
-## 🤝 Contributing
-
-For documentation contributions, please:
-1. Follow the existing structure and formatting
-2. Update the relevant category directory
-3. Add cross-references where appropriate
-4. Include examples and practical use cases
-
-## 📞 Support
-
-For documentation issues or questions:
-- Check the `guides/TROUBLESHOOTING.md` first
-- Review `reference/QUICK-REFERENCE.md` for quick answers
-- Create an issue in the main repository if needed
+> Documentation hub for Ultra-Dex v3.4.2
 
 ---
 
-*Documentation maintained for Ultra-Dex v3.4.2*
+## Quick Start
+
+| Goal | Document |
+|------|----------|
+| **First feature** | [BUILD-AUTH-30M.md](./BUILD-AUTH-30M.md) |
+| **CI/CD setup** | [CICD-GUIDE.md](./CICD-GUIDE.md) |
+| **MCP integration** | [MCP-INTEGRATION.md](./MCP-INTEGRATION.md) |
+| **Project roadmap** | [ROADMAP.md](./ROADMAP.md) |
+| **Future tasks** | [FUTURE-TASKS.md](./FUTURE-TASKS.md) |
+| **Product vision** | [VISION-V2.md](./VISION-V2.md) |
+
+---
+
+## Directory Structure
+
+```
+docs/
+├── BUILD-AUTH-30M.md    # Build auth in 30 minutes tutorial
+├── CICD-GUIDE.md        # CI/CD setup guide
+├── MCP-INTEGRATION.md   # MCP server integration
+├── ROADMAP.md           # Project roadmap
+├── FUTURE-TASKS.md      # Planned features & tech debt
+├── VISION-V2.md         # Product vision
+│
+├── guides/              # User guides
+│   ├── ADVANCED-WORKFLOWS.md
+│   ├── AI-MODEL-SELECTION.md
+│   ├── ARCHITECTURE-PATTERNS.md
+│   ├── CUSTOM-AGENTS-GUIDE.md
+│   ├── DATABASE-DECISION-FRAMEWORK.md
+│   ├── MULTI-TOOL-WORKFLOW.md
+│   └── PROJECT-ORCHESTRATION.md
+│
+├── reference/           # Technical reference
+│   ├── CLI-REFERENCE.md
+│   ├── CODEMAP.md
+│   └── QUICK-REFERENCE.md
+│
+└── internal/            # Internal development docs
+    └── (old implementation plans)
+```
+
+---
+
+## Related Documentation
+
+| Location | Contents |
+|----------|----------|
+| [/agents](../agents/) | 17 AI agent prompts |
+| [/cursor-rules](../cursor-rules/) | 26 Cursor IDE rules |
+| [/templates](../templates/) | Project templates |
+| [/@ Ultra DeX](../@%20Ultra%20DeX/) | Core methodology & examples |
+
+---
+
+## Quick Navigation
+
+| Topic | File |
+|-------|------|
+| Getting started | [BUILD-AUTH-30M.md](./BUILD-AUTH-30M.md) |
+| CLI commands | [reference/CLI-REFERENCE.md](./reference/CLI-REFERENCE.md) |
+| Multi-agent workflows | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md) |
+| Database selection | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
+| Architecture patterns | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md) |
+
+---
+
+*Ultra-Dex v3.4.2 - AI Orchestration Meta-Layer*
