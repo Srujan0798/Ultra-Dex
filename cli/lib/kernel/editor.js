@@ -18,8 +18,9 @@ export class FileEditor {
      * @param {string} filePath - Relative path to file
      * @param {string} newContent - Full new content of the file
      * @param {string} reason - Why this change is being made
+     * @param {boolean} force - Bypass confirmation (Autonomous Mode)
      */
-    async edit(filePath, newContent, reason) {
+    async edit(filePath, newContent, reason, force = false) {
         const fullPath = path.join(this.projectRoot, filePath);
         let originalContent = '';
         let fileExists = false;
@@ -41,7 +42,7 @@ export class FileEditor {
         if (fileExists) {
             renderDiff(filePath, originalContent, newContent);
         } else {
-            // For new files, show preview of content
+            // For new files, show preview
             console.log(theme.dim('╭──────────────────────────────────────────────────────────╮'));
             console.log(theme.dim('│ ') + theme.success('NEW FILE: ' + filePath));
             console.log(theme.dim('├──────────────────────────────────────────────────────────┤'));
@@ -51,15 +52,22 @@ export class FileEditor {
             console.log('');
         }
 
-        // 4. Safety Lock: Ask for Confirmation
-        const { confirm } = await inquirer.prompt([
-            {
-                type: 'confirm',
-                name: 'confirm',
-                message: 'Apply this change?',
-                default: true
-            }
-        ]);
+        // 4. Safety Lock: Ask for Confirmation (Unless Forced)
+        let confirm = force;
+        
+        if (!force) {
+            const answer = await inquirer.prompt([
+                {
+                    type: 'confirm',
+                    name: 'confirm',
+                    message: 'Apply this change?',
+                    default: true
+                }
+            ]);
+            confirm = answer.confirm;
+        } else {
+            console.log(theme.accent('  ⚡ Autonomous Mode: Applying change automatically.'));
+        }
 
         // 5. Execute or Discard
         if (confirm) {

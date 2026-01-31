@@ -111,31 +111,49 @@ const program = new Command();
 // Custom Help Configuration - Professional Purple Edition
 program.configureHelp({
   formatHelp: (cmd, helper) => {
+    // For subcommands, build command-specific help
+    if (cmd.parent) {
+      let output = `\n${theme.title('Usage:')} ${theme.primary('ultra-dex ' + cmd.name())} ${theme.dim('[options]')}\n\n`;
+      output += `${theme.subtitle(cmd.description())}\n\n`;
+
+      const options = cmd.options;
+      if (options.length > 0) {
+        output += `${theme.title('Options:')}\n`;
+        options.forEach(opt => {
+          const flags = opt.flags.padEnd(25);
+          output += `  ${theme.primary(flags)} ${theme.dim(opt.description)}\n`;
+        });
+        output += '\n';
+      }
+
+      return output;
+    }
+
     const gradientBanner = ultraGradient(banner);
-    
+
     let output = `\n${gradientBanner}\n\n`;
     output += `  ${theme.subtitle('AI Orchestration Meta-Layer for SaaS Development')}\n`;
     output += `  ${theme.dim('Version: ' + VERSION)}\n\n`;
-    
+
     output += `  ${theme.title('USAGE')}\n`;
     output += `    ${theme.primary('ultra-dex')} ${theme.warning('[command]')} ${theme.dim('[options]')}\n\n`;
-    
+
     output += `  ${theme.title('COMMANDS')}\n`;
-    
+
     // Sort and format commands
     const commands = cmd.commands.map(c => {
         return `    ${theme.accent(c.name().padEnd(20))} ${theme.dim(c.description())}`;
     }).join('\n');
-    
+
     output += commands + '\n\n';
-    
+
     output += `  ${theme.title('OPTIONS')}\n`;
     output += `    ${theme.primary('-V, --version').padEnd(20)} ${theme.dim('output the version number')}\n`;
     output += `    ${theme.primary('-h, --help').padEnd(20)} ${theme.dim('display help for command')}\n\n`;
-    
+
     output += `  ${theme.dim('─────────────────────────────────────────────────────────')}\n`;
     output += `  ${theme.subtitle('Run ultra-dex without arguments to launch the Interactive Dashboard')}\n\n`;
-    
+
     return output;
   }
 });

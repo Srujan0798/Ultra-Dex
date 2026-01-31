@@ -54,7 +54,8 @@
     "workspaceContains:.ultra-dex/**",
     "onView:ultra-dex.agentExplorer",
     "onView:ultra-dex.quickActions",
-    "onView:ultra-dex.swarmStatus"
+    "onView:ultra-dex.swarmStatus",
+    "onView:ultra-dex.contextPreview"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -74,12 +75,16 @@
           "name": "Agent Explorer"
         },
         {
-          "id": "ultra-dex.quickActions",
-          "name": "Quick Actions"
-        },
-        {
           "id": "ultra-dex.swarmStatus",
           "name": "Swarm Status"
+        },
+        {
+          "id": "ultra-dex.contextPreview",
+          "name": "Context Preview"
+        },
+        {
+          "id": "ultra-dex.quickActions",
+          "name": "Quick Actions"
         }
       ]
     },
@@ -143,6 +148,24 @@
         "title": "Sync GitHub Issues",
         "category": "Ultra-Dex",
         "icon": "$(github)"
+      },
+      {
+        "command": "ultra-dex.refreshAgents",
+        "title": "Refresh Agents",
+        "category": "Ultra-Dex",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "ultra-dex.runSpecificAgent",
+        "title": "Run Agent",
+        "category": "Ultra-Dex",
+        "icon": "$(play)"
+      },
+      {
+        "command": "ultra-dex.stopAgent",
+        "title": "Stop Agent",
+        "category": "Ultra-Dex",
+        "icon": "$(stop-circle)"
       }
     ],
     "menus": {
@@ -160,9 +183,26 @@
       ],
       "view/title": [
         {
+          "command": "ultra-dex.refreshAgents",
+          "when": "view == ultra-dex.agentExplorer",
+          "group": "navigation"
+        },
+        {
           "command": "ultra-dex.runSwarm",
           "when": "view == ultra-dex.swarmStatus",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ultra-dex.runSpecificAgent",
+          "when": "view == ultra-dex.agentExplorer && viewItem == agent",
+          "group": "Ultra-Dex@1"
+        },
+        {
+          "command": "ultra-dex.stopAgent",
+          "when": "view == ultra-dex.agentExplorer && viewItem == agent",
+          "group": "Ultra-Dex@2"
         }
       ]
     },

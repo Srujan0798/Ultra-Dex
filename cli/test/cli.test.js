@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 const EXPECTED_VERSION = pkg.version;
 
-const cliPath = path.resolve(process.cwd(), 'bin', 'ultra-dex.js');
+const cliPath = path.resolve(process.cwd(), 'cli', 'bin', 'ultra-dex.js');
 
 function runCli(args, options = {}) {
   const result = spawnSync(process.execPath, [cliPath, ...args], {

@@ -2,6 +2,9 @@
 
 [![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)
 [![CI Status](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-41%25-yellow.svg)](./cli/package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](./cli/tsconfig.json)
+[![Tests](https://img.shields.io/badge/Tests-350+-brightgreen.svg)](./cli/test/README.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
@@ -67,7 +70,7 @@ npx ultra-dex config --wizard
 npx ultra-dex metrics
 ```
 
-**46 commands. Autonomous agents. MCP integration. Advanced monitoring. Modern Professional UI.**
+**40+ commands. 7 production-ready. MCP integration. Multi-agent orchestration. Modern Professional UI.**
 
 Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
@@ -94,6 +97,37 @@ Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 - **Autonomous Implementation** - `ultra-dex auto-implement "feature"` handles plan → code → verify.
 - **Live Dashboard** - Agent status, timeline, and quality signals in real time.
 - **New Monitoring Commands** - `ultra-dex sys-config`, `ultra-dex metrics`, `ultra-dex health`, `ultra-dex debug`, `ultra-dex status` with comprehensive system insights.
+
+---
+
+## ✅ Current Capabilities (Honest Assessment)
+
+Ultra-Dex is actively developed. Here's what works **today** vs what's in progress:
+
+### ✅ Production-Ready (Fully Implemented)
+- **`init`** - Complete project scaffolding with 3 live templates (Next.js, Remix, SvelteKit)
+- **`generate`** - AI-powered 34-section plan generation with streaming (Claude/OpenAI/Gemini)
+- **`build`** - Auto-pilot executes next pending task from plan
+- **`swarm`** - 8-agent orchestration pipeline with parallel execution
+- **`serve`** - MCP server + WebSocket + Dashboard (ports 3001/3002)
+- **`validate`** - Project structure validation + quality scanning
+- **`dashboard`** - Live web UI with real-time updates
+
+### ⚠️ Beta / Partial (Working but Limited)
+- `agents`, `review`, `align`, `sync`, `config`, `scaffold`, `export`, `status`
+- Basic functionality works, advanced features in development
+
+### 🚧 In Development (Stubs/Placeholders)
+- `auto-implement`, `ci-monitor`, `cloud`, `brain`, `github`, `search`
+- Commands exist but need completion
+
+### 📊 Stats
+- **7 commands** fully production-ready (1,576 lines)
+- **15 commands** in beta/partial state
+- **18+ commands** in development
+- **MCP server**: ✅ Fully functional (Stdio + HTTP)
+- **WebSocket**: ✅ Real-time updates working
+- **VS Code extension**: ⚠️ Basic (needs sidebar completion)
 
 ---
 

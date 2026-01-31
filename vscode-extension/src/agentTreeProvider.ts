@@ -6,6 +6,7 @@ export interface AgentItem {
   tier: string;
   description: string;
   filePath: string;
+  status?: string;
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -22,10 +23,17 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
+  private agentStatuses: Map<string, string> = new Map();
+
   constructor(private readonly workspaceRoot: string | undefined) {}
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
+  }
+
+  updateAgentStatus(agentName: string, status: string): void {
+    this.agentStatuses.set(agentName, status);
+    this.refresh();
   }
 
   getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
@@ -61,7 +69,10 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     const agentIndex = await loadAgentIndex(this.workspaceRoot);
     const agents = agentIndex.filter((agent) => agent.tier === tierKey);
     return agents.map((agent) => {
-      const item = new vscode.TreeItem(agent.name, vscode.TreeItemCollapsibleState.None);
+      const status = this.agentStatuses.get(agent.name);
+      const label = status ? `${agent.name} (${status})` : agent.name;
+      
+      const item = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
       item.description = agent.description;
       item.command = {
         command: 'ultra-dex.selectAgent',
@@ -69,7 +80,18 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
         arguments: [agent],
       };
       item.contextValue = 'agent';
-      item.iconPath = this.workspaceRoot ? getTierIcon(this.workspaceRoot, tierKey) : undefined;
+      
+      // Set icon based on status
+      if (status === 'working') {
+        item.iconPath = new vscode.ThemeIcon('sync~spin');
+      } else if (status === 'completed') {
+        item.iconPath = new vscode.ThemeIcon('check');
+      } else if (status === 'error') {
+        item.iconPath = new vscode.ThemeIcon('error');
+      } else {
+        item.iconPath = this.workspaceRoot ? getTierIcon(this.workspaceRoot, tierKey) : undefined;
+      }
+      
       return item;
     });
   }

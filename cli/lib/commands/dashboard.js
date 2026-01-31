@@ -78,6 +78,11 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
         <span class="agent-status status-idle">IDLE</span>
       </div>
       <div class="agent-activity">Waiting for tasks...</div>
+      <div class="agent-controls">
+        <button class="agent-btn run" onclick="runAgent('${agent}')" title="Start agent">▶ Run</button>
+        <button class="agent-btn stop" onclick="stopAgent('${agent}')" title="Stop agent" disabled>⏹ Stop</button>
+        <button class="agent-btn logs" onclick="viewAgentLogs('${agent}')" title="View logs">📄 Logs</button>
+      </div>
     </div>
   `).join('');
 
@@ -189,8 +194,26 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
     .agent-status { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
     .status-idle { background: #333; color: #888; }
     .status-working { background: rgba(6, 182, 212, 0.2); color: var(--accent); animation: pulse 2s infinite; }
+    .status-error { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .status-completed { background: rgba(34, 197, 94, 0.2); color: var(--success); }
     .agent-activity { font-size: 0.7rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .agent-last-action { font-size: 0.65rem; color: #555; margin-top: 0.25rem; }
+    .agent-controls { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .agent-btn { 
+      flex: 1; 
+      font-size: 0.65rem; 
+      padding: 0.4rem; 
+      border: none; 
+      border-radius: 0.25rem; 
+      cursor: pointer; 
+      font-weight: bold;
+      transition: opacity 0.2s;
+    }
+    .agent-btn:hover:not(:disabled) { opacity: 0.8; }
+    .agent-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .agent-btn.run { background: var(--success); color: #000; }
+    .agent-btn.stop { background: var(--danger); color: #fff; }
+    .agent-btn.logs { background: #333; color: #fff; }
 
     /* Timeline */
     .timeline { max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; }
@@ -580,6 +603,128 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       }
     }
 
+    // Agent Control Functions
+    async function runAgent(agentName) {
+      const card = document.getElementById(\`agent-\${agentName}\`);
+      const statusEl = card.querySelector('.agent-status');
+      const activityEl = card.querySelector('.agent-activity');
+      const runBtn = card.querySelector('.agent-btn.run');
+      const stopBtn = card.querySelector('.agent-btn.stop');
+      
+      statusEl.className = 'agent-status status-working';
+      statusEl.innerText = 'WORKING';
+      activityEl.innerText = 'Initializing...';
+      runBtn.disabled = true;
+      stopBtn.disabled = false;
+      card.classList.add('active');
+      
+      addLog(\`Starting agent: @\${agentName}\`, 'info');
+      addAction('🤖', `Agent @${agentName} started`);
+
+      try {
+        const res = await fetch('/api/agent/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agent: agentName })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          activityEl.innerText = data.message || 'Processing...';
+          showToast(\`🤖 @\${agentName} is running\`);
+        } else {
+          statusEl.className = 'agent-status status-error';
+          statusEl.innerText = 'ERROR';
+          activityEl.innerText = data.error || 'Failed to start';
+          addLog(\`Agent @\${agentName} error: \${data.error}\`, 'error');
+          runBtn.disabled = false;
+          stopBtn.disabled = true;
+        }
+      } catch (e) {
+        statusEl.className = 'agent-status status-error';
+        statusEl.innerText = 'ERROR';
+        activityEl.innerText = 'Connection failed';
+        addLog(\`Failed to start @\${agentName}\`, 'error');
+        runBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+    }
+
+    async function stopAgent(agentName) {
+      const card = document.getElementById(`agent-${agentName}`);
+      const statusEl = card.querySelector('.agent-status');
+      const activityEl = card.querySelector('.agent-activity');
+      const runBtn = card.querySelector('.agent-btn.run');
+      const stopBtn = card.querySelector('.agent-btn.stop');
+      
+      addLog(\`Stopping agent: @\${agentName}\`, 'info');
+
+      try {
+        const res = await fetch('/api/agent/stop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agent: agentName })
+        });
+        
+        const data = await res.json();
+        
+        statusEl.className = 'agent-status status-idle';
+        statusEl.innerText = 'IDLE';
+        activityEl.innerText = 'Stopped by user';
+        runBtn.disabled = false;
+        stopBtn.disabled = true;
+        card.classList.remove('active');
+        
+        addAction('🛑', `Agent @${agentName} stopped`);
+        showToast(\`🛑 @\${agentName} stopped\`);
+      } catch (e) {
+        addLog(\`Failed to stop @\${agentName}\`, 'error');
+      }
+    }
+
+    async function viewAgentLogs(agentName) {
+      addLog(\`Opening logs for @\${agentName}\`, 'info');
+      
+      try {
+        const res = await fetch(`/api/agent/logs?agent=${agentName}`);
+        const data = await res.json();
+        
+        if (data.logs && data.logs.length > 0) {
+          const logWindow = window.open('', '_blank', 'width=800,height=600');
+          logWindow.document.write(`
+            <html>
+              <head>
+                <title>@${agentName} Logs</title>
+                <style>
+                  body { font-family: monospace; background: #09090b; color: #fff; padding: 20px; }
+                  .log-entry { margin: 5px 0; border-left: 2px solid #333; padding-left: 10px; }
+                  .log-entry.info { border-color: #06b6d4; }
+                  .log-entry.error { border-color: #ef4444; }
+                  .log-entry.success { border-color: #22c55e; }
+                  .timestamp { color: #666; font-size: 0.8em; }
+                </style>
+              </head>
+              <body>
+                <h2>@${agentName} Activity Logs</h2>
+                <hr style="border-color: #333;">
+                ${data.logs.map(log => `
+                  <div class="log-entry ${log.type || 'info'}">
+                    <span class="timestamp">${new Date(log.timestamp).toLocaleString()}</span>
+                    <div>${log.message}</div>
+                  </div>
+                `).join('')}
+              </body>
+            </html>
+          `);
+        } else {
+          showToast(\`📄 No logs available for @\${agentName}\`);
+        }
+      } catch (e) {
+        addLog(\`Failed to fetch logs for @\${agentName}\`, 'error');
+      }
+    }
+
     // Clock & Uptime
     const startTime = Date.now();
     setInterval(() => {
@@ -587,7 +732,7 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       const uptime = Math.floor((Date.now() - startTime) / 1000);
       const mins = Math.floor(uptime / 60);
       const secs = uptime % 60;
-      document.getElementById('uptime').innerText = mins > 0 ? \`\${mins}m \${secs}s\` : \`\${secs}s\`;
+      document.getElementById('uptime').innerText = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
     }, 1000);
 
     // Handle action events from SSE
@@ -710,6 +855,94 @@ export function registerDashboardCommand(program) {
             res.end(JSON.stringify({ success: true, output: result.slice(0, 1000) }));
           } catch (e) {
             sendToClients({ type: 'log', message: `${action} failed: ${e.message}`, level: 'error' });
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: e.message }));
+          }
+          return;
+        }
+
+        // Handle API: Agent Control
+        if (req.url === '/api/agent/run' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk.toString());
+          req.on('end', () => {
+            try {
+              const { agent, task } = JSON.parse(body);
+              console.log(chalk.cyan(`▶️ Dashboard: Running agent @${agent}`));
+              
+              addAction('agent_start', `Agent @${agent} started`, agent);
+              sendToClients({ type: 'agent_status', agent, status: 'working', activity: task || 'Processing...' });
+              
+              // Spawn agent process
+              const agentProcess = spawn('npx', ['ultra-dex', 'run', agent, task || ''], {
+                stdio: 'pipe',
+                shell: true,
+                detached: true
+              });
+              
+              let output = '';
+              agentProcess.stdout?.on('data', (data) => {
+                output += data.toString();
+                sendToClients({ type: 'agent_log', agent, message: data.toString().slice(0, 200) });
+              });
+              
+              agentProcess.stderr?.on('data', (data) => {
+                sendToClients({ type: 'agent_log', agent, message: `Error: ${data.toString().slice(0, 200)}`, level: 'error' });
+              });
+              
+              agentProcess.on('close', (code) => {
+                const status = code === 0 ? 'completed' : 'error';
+                sendToClients({ type: 'agent_status', agent, status, activity: code === 0 ? 'Completed' : 'Failed' });
+                addAction(status === 'completed' ? 'agent_complete' : 'agent_error', 
+                  `Agent @${agent} ${status}`, agent);
+              });
+              
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true, message: `Agent @${agent} started` }));
+            } catch (e) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: false, error: e.message }));
+            }
+          });
+          return;
+        }
+
+        if (req.url === '/api/agent/stop' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk.toString());
+          req.on('end', () => {
+            try {
+              const { agent } = JSON.parse(body);
+              console.log(chalk.yellow(`⏹ Dashboard: Stopping agent @${agent}`));
+              
+              addAction('agent_stop', `Agent @${agent} stopped by user`, agent);
+              sendToClients({ type: 'agent_status', agent, status: 'idle', activity: 'Stopped' });
+              
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true, message: `Agent @${agent} stopped` }));
+            } catch (e) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: false, error: e.message }));
+            }
+          });
+          return;
+        }
+
+        if (req.url.startsWith('/api/agent/logs') && req.method === 'GET') {
+          const url = new URL(req.url, `http://localhost:${port}`);
+          const agent = url.searchParams.get('agent');
+          
+          try {
+            // Get logs from action history
+            const agentLogs = actionHistory.filter(a => a.agent === agent).map(a => ({
+              timestamp: a.timestamp,
+              message: a.message,
+              type: a.type.includes('error') ? 'error' : a.type.includes('complete') ? 'success' : 'info'
+            }));
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, logs: agentLogs }));
+          } catch (e) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: false, error: e.message }));
           }

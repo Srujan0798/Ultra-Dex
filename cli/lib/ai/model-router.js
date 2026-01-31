@@ -3,9 +3,11 @@
  * Routes tasks to optimal AI models based on task type, cost, and quality
  */
 
-import { createProvider, getDefaultProvider } from './providers/index.js';
-import { monitoring } from './utils/monitoring.js';
-import { errorRecovery } from './utils/error-recovery.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { createProvider, getDefaultProvider, getProvider } from '../providers/index.js';
+import { monitoring } from '../utils/monitoring.js';
+import { errorRecovery } from '../utils/error-recovery.js';
 
 class TaskClassifier {
   constructor() {
@@ -98,81 +100,110 @@ class ModelRouter {
   constructor() {
     this.taskClassifier = new TaskClassifier();
     this.modelCapabilities = {
-      'claude-sonnet-4-20250514': {
-        reasoning: 9,
-        coding: 8,
-        creative: 7,
-        speed: 6,
-        cost: 4
-      },
-      'claude-opus-20240229': {
-        reasoning: 10,
-        coding: 9,
-        creative: 8,
-        speed: 3,
-        cost: 8
-      },
-      'claude-haiku-20240307': {
-        reasoning: 6,
-        coding: 5,
-        creative: 4,
-        speed: 9,
-        cost: 1
-      },
-      'gpt-4-turbo': {
-        coding: 9,
-        creative: 8,
-        reasoning: 7,
-        speed: 7,
-        cost: 5
-      },
-      'gpt-4': {
-        coding: 8,
-        creative: 9,
-        reasoning: 8,
-        speed: 5,
-        cost: 7
-      },
-      'gpt-3.5-turbo': {
-        coding: 6,
-        creative: 5,
-        reasoning: 4,
-        speed: 8,
-        cost: 2
-      },
-      'gemini-pro': {
-        reasoning: 7,
-        coding: 8,
-        creative: 6,
-        speed: 8,
-        cost: 3
-      }
+      'claude-sonnet-4-20250514': { reasoning: 9, coding: 8, creative: 7, speed: 6, cost: 4 },
+      'claude-opus-20240229': { reasoning: 10, coding: 9, creative: 8, speed: 3, cost: 8 },
+      'claude-haiku-20240307': { reasoning: 6, coding: 5, creative: 4, speed: 9, cost: 1 },
+      'gpt-4-turbo': { coding: 9, creative: 8, reasoning: 7, speed: 7, cost: 5 },
+      'gpt-4': { coding: 8, creative: 9, reasoning: 8, speed: 5, cost: 7 },
+      'gpt-3.5-turbo': { coding: 6, creative: 5, reasoning: 4, speed: 8, cost: 2 },
+      'gemini-pro': { reasoning: 7, coding: 8, creative: 6, speed: 8, cost: 3 }
     };
 
+    // Default hardcoded policies as fallback
     this.routingPolicies = {
-      // Cost-conscious policy
       costEffective: {
         priority: ['claude-haiku-20240307', 'gpt-3.5-turbo', 'gemini-pro'],
         fallback: 'claude-sonnet-4-20250514'
       },
-      // Quality-focused policy
       qualityFirst: {
         priority: ['claude-opus-20240229', 'claude-sonnet-4-20250514', 'gpt-4-turbo'],
         fallback: 'gpt-4'
       },
-      // Balanced policy
       balanced: {
         priority: ['claude-sonnet-4-20250514', 'gpt-4-turbo', 'gpt-4'],
         fallback: 'gpt-3.5-turbo'
       }
     };
+    
+    this.configLoaded = false;
+  }
+
+  async loadConfig() {
+    if (this.configLoaded) return;
+
+    try {
+      // Try project config first, then template
+      const projectConfigPath = path.resolve(process.cwd(), '.ultra-dex/router.json');
+      const templateConfigPath = path.resolve(new URL(import.meta.url).pathname, '../../../../assets/templates/config/router.json');
+      
+      let configData;
+      try {
+        configData = await fs.readFile(projectConfigPath, 'utf8');
+      } catch {
+        try {
+          // Fallback to template if project config missing
+          // Note: Relative path handling might need adjustment based on install location
+           configData = await fs.readFile(templateConfigPath, 'utf8');
+        } catch (e) {
+          // Fallback to internal defaults if files missing
+          console.warn('⚠️  Could not load router.json, using defaults.');
+          this.configLoaded = true;
+          return;
+        }
+      }
+
+      if (configData) {
+        const config = JSON.parse(configData);
+        // Map config strategies to routing policies
+        if (config.strategies) {
+          if (config.strategies.cost_optimized) {
+            this.routingPolicies.costEffective = {
+              priority: [config.strategies.cost_optimized.default],
+              fallback: config.strategies.cost_optimized.complex
+            };
+          }
+          if (config.strategies.performance) {
+            this.routingPolicies.qualityFirst = {
+              priority: [config.strategies.performance.default],
+              fallback: config.strategies.performance.complex
+            };
+          }
+        }
+        
+        // Load overrides
+        if (config.overrides) {
+            this.overrides = config.overrides;
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️  Error parsing router configuration:', e.message);
+    } finally {
+      this.configLoaded = true;
+    }
   }
 
   /**
    * Route a task to the optimal model based on classification and policy
    */
-  routeTask(taskDescription, policy = 'balanced', options = {}) {
+  async routeTask(taskDescription, policy = 'balanced', options = {}) {
+    await this.loadConfig(); // Ensure config is loaded
+
     const classification = this.taskClassifier.classifyTask(taskDescription);
+    
+    // Check overrides first
+    if (this.overrides) {
+        for (const override of this.overrides) {
+            if (taskDescription.toLowerCase().includes(override.keyword)) {
+                return {
+                    model: override.model,
+                    classification,
+                    candidates: [override.model],
+                    policy: 'override'
+                };
+            }
+        }
+    }
+
     const policyConfig = this.routingPolicies[policy] || this.routingPolicies.balanced;
 
     // Adjust routing based on task category
@@ -188,6 +219,9 @@ class ModelRouter {
       case 'backend':
       case 'frontend':
       case 'database':
+      case 'bugfix':
+      case 'feature':
+      case 'deployment':
         // Prioritize models with strong coding capabilities
         candidateModels = this._prioritizeModels(candidateModels, 'coding');
         break;
@@ -198,6 +232,10 @@ class ModelRouter {
       case 'refactor':
         // Prioritize models with strong reasoning and code understanding
         candidateModels = this._prioritizeModels(candidateModels, 'reasoning');
+        break;
+      case 'documentation':
+        // Prioritize models with strong creative/writing skills
+        candidateModels = this._prioritizeModels(candidateModels, 'creative');
         break;
       default:
         // Use policy default
@@ -387,12 +425,17 @@ class EvaluationEngine {
   /**
    * Run evaluation loop with feedback-driven re-routing
    */
-  async evaluationLoop(task, content, provider, options = {}) {
+  async evaluationLoop(task, content, provider = null, options = {}) {
     const { maxIterations = 3, policy = 'balanced', taskType = 'general' } = options;
 
     let currentContent = content;
     let iteration = 0;
     let finalResult = null;
+    
+    // Ensure we have a provider
+    if (!provider) {
+       provider = getProvider();
+    }
 
     while (iteration < maxIterations) {
       iteration++;
@@ -424,20 +467,33 @@ ${evaluation.recommendations.join('\n')}
 Task: ${task}
 
 Please improve the content to address these issues while maintaining the original functionality.
+Return ONLY the improved code/content.
         `.trim();
 
         try {
-          // Route to appropriate model based on issues
-          const routing = this.routeTask(`Fix ${evaluation.issues.map(i => i.check).join(', ')}`, policy);
+          if (!provider) {
+             console.warn('⚠️ No AI provider available for self-correction loop.');
+             break;
+          }
+          
+          // Route to appropriate model based on issues (in future iterations, pass explicit model)
+          // For now, reuse the active provider
+          let improved;
+          if (provider.complete) {
+              improved = await provider.complete(improvementPrompt);
+          } else if (provider.generate) {
+              const res = await provider.generate(improvementPrompt);
+              improved = res.content || res.text || (typeof res === 'string' ? res : JSON.stringify(res));
+          }
+          
+          if (improved) {
+             currentContent = improved;
+             monitoring.info('Content improved in evaluation loop', {
+                iteration,
+                issuesAddressed: evaluation.issues.length
+             });
+          }
 
-          // For now, just return the improvement prompt since we don't have provider access here
-          // In a real implementation, we would call the provider
-          currentContent = `// Improvement suggested for: ${evaluation.issues.map(i => i.check).join(', ')}\n${currentContent}`;
-          monitoring.info('Content improved in evaluation loop', {
-            iteration,
-            issuesAddressed: evaluation.issues.length,
-            modelUsed: routing.model
-          });
         } catch (error) {
           monitoring.error('Evaluation loop iteration failed', {
             iteration,
@@ -481,7 +537,7 @@ export class ModelOrchestrator {
     const classification = this.classifier.classifyTask(task);
     
     // 2. Route to appropriate model
-    const routing = this.router.routeTask(task, options.policy || 'balanced');
+    const routing = await this.router.routeTask(task, options.policy || 'balanced');
     
     // 3. If initial content exists, run evaluation loop
     let result;
@@ -489,7 +545,7 @@ export class ModelOrchestrator {
       result = await this.evaluator.evaluationLoop(
         task,
         initialContent,
-        null, // provider will be determined by routing
+        null, // provider will be determined dynamically
         {
           taskType: classification.category,
           policy: options.policy || 'balanced',

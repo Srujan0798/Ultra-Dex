@@ -103,69 +103,55 @@ Setting up the implementation plan.
 }
 
 async function enhanceContextWithProjectInfo(context, state, graphSummary) {
-  // Parse existing context
-  const lines = context.split('\n');
-  let enhancedLines = [];
-  
-  let inCurrentFocus = false;
-  let inResources = false;
-  
-  for (const line of lines) {
-    if (line.startsWith('## Current Focus')) {
-      inCurrentFocus = true;
-      enhancedLines.push(line);
-      continue;
+  // 1. Remove existing "Current State" blocks (and their content up to next header)
+  // We use a regex that matches "### Current State" and everything until the next "## " header or end of string
+  let newContext = context
+    .replace(/\n### Current State[\s\S]*?(?=\n## |\n$|$)/g, '') 
+    .replace(/\n## Project Statistics[\s\S]*?(?=\n## |\n$|$)/g, '')
+    .trim();
+
+  // 2. Prepare new Current State block
+  let currentStateBlock = `\n\n### Current State
+- **Files Analyzed**: ${graphSummary.nodeCount}
+- **Dependencies**: ${graphSummary.edgeCount}
+- **Project Phases**: ${state?.phases?.length || 0} active
+- **Last Sync**: ${new Date().toISOString()}
+`;
+
+  if (state?.phases && state.phases.length > 0) {
+    currentStateBlock += `\n### Active Phases:\n`;
+    for (const phase of state.phases.slice(0, 3)) { // Show first 3 phases
+      currentStateBlock += `- **${phase.name}**: ${phase.status} (${phase.steps.filter(s => s.status === 'completed').length}/${phase.steps.length} tasks complete)\n`;
     }
-    
-    if (line.startsWith('## Resources')) {
-      inCurrentFocus = false;
-      inResources = true;
-    }
-    
-    if (inCurrentFocus && line.trim() === '') {
-      // Add enhanced current focus information
-      enhancedLines.push(line);
-      enhancedLines.push('');
-      enhancedLines.push('### Current State');
-      enhancedLines.push(`- **Files Analyzed**: ${graphSummary.nodeCount}`);
-      enhancedLines.push(`- **Dependencies**: ${graphSummary.edgeCount}`);
-      enhancedLines.push(`- **Project Phases**: ${state?.phases?.length || 0} active`);
-      enhancedLines.push(`- **Last Sync**: ${new Date().toISOString()}`);
-      enhancedLines.push('');
-      
-      if (state?.phases) {
-        enhancedLines.push('### Active Phases:');
-        for (const phase of state.phases.slice(0, 3)) { // Show first 3 phases
-          enhancedLines.push(`- **${phase.name}**: ${phase.status} (${phase.steps.filter(s => s.status === 'completed').length}/${phase.steps.length} tasks complete)`);
-        }
-        enhancedLines.push('');
-      }
-      
-      continue;
-    }
-    
-    if (inResources && line.startsWith('##')) {
-      inResources = false;
-    }
-    
-    enhancedLines.push(line);
   }
+
+  // 3. Insert Current State after "Current Focus" content
+  // Find "## Current Focus"
+  const focusRegex = /(## Current Focus[\s\S]*?)(?=\n## |$)/;
+  const match = newContext.match(focusRegex);
   
-  // Add project statistics if not already present
-  if (!context.includes('## Project Statistics')) {
-    enhancedLines.push('');
-    enhancedLines.push('## Project Statistics');
-    enhancedLines.push('');
-    enhancedLines.push('| Metric | Count |');
-    enhancedLines.push('|--------|-------|');
-    enhancedLines.push(`| Files | ${graphSummary.nodeCount} |`);
-    enhancedLines.push(`| Dependencies | ${graphSummary.edgeCount} |`);
-    enhancedLines.push(`| Lines of Code | ${graphSummary.totalLines || 'N/A'} |`);
-    enhancedLines.push(`| Last Updated | ${new Date().toISOString()} |`);
-    enhancedLines.push('');
+  if (match) {
+    // We found the section. We append our block to it.
+    // match[0] is the entire "Current Focus" section content
+    const updatedSection = match[0].trimEnd() + currentStateBlock + '\n';
+    newContext = newContext.replace(focusRegex, updatedSection);
+  } else {
+    // Fallback: Append if section missing
+    newContext += `\n\n## Current Focus\n${currentStateBlock}`;
   }
-  
-  return enhancedLines.join('\n');
+
+  // 4. Append Project Statistics
+  const statsBlock = `\n\n## Project Statistics
+
+| Metric | Count |
+|--------|-------|
+| Files | ${graphSummary.nodeCount} |
+| Dependencies | ${graphSummary.edgeCount} |
+| Lines of Code | ${graphSummary.totalLines || 'N/A'} |
+| Last Updated | ${new Date().toISOString()} |
+`;
+
+  return newContext + statsBlock;
 }
 
 export function registerBrainCommand(program) {
