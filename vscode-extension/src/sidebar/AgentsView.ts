@@ -65,26 +65,26 @@ export class AgentsProvider implements vscode.TreeDataProvider<AgentItem | TierI
 
     // If tier element, return agents in that tier
     if (element instanceof TierItem) {
-      const activeAgents = this.getActiveAgents();
-      const tierAgents = ALL_AGENTS.filter(a => a.tier === element.tier);
-      return Promise.resolve(tierAgents.map(agent => {
-        const isActive = activeAgents.includes(agent.name.toLowerCase());
-        return new AgentItem(agent, isActive, this.workspaceRoot!);
-      }));
+      return this.getActiveAgents().then(activeAgents => {
+        const tierAgents = ALL_AGENTS.filter(a => a.tier === element.tier);
+        return tierAgents.map(agent => {
+          const isActive = activeAgents.includes(agent.name.toLowerCase());
+          return new AgentItem(agent, isActive, this.workspaceRoot!);
+        });
+      });
     }
 
     return Promise.resolve([]);
   }
 
-  private getActiveAgents(): string[] {
+  private async getActiveAgents(): Promise<string[]> {
     if (!this.workspaceRoot) return [];
     try {
       const statePath = path.join(this.workspaceRoot, '.ultra', 'state.json');
-      if (fs.existsSync(statePath)) {
-        const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
-        if (state.agents && state.agents.active) {
-          return state.agents.active;
-        }
+      const content = await fs.promises.readFile(statePath, 'utf-8');
+      const state = JSON.parse(content);
+      if (state.agents && state.agents.active) {
+        return state.agents.active;
       }
     } catch {
       // ignore
