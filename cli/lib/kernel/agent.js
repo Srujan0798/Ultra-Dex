@@ -5,7 +5,9 @@ import { renderer } from '../ui/renderer.js';
 import { theme } from '../ui/theme.js';
 import { getProvider } from '../providers/index.js';
 import { context } from './context.js';
+import { editor } from './editor.js';
 import { execSync } from 'child_process';
+import { routeIntent } from '../nlp/router.js'; // Import Regex Router
 
 export class Agent {
     constructor() {
@@ -27,21 +29,16 @@ export class Agent {
     async execute(intent, input) {
         const provider = await this.initialize();
         
-        // 1. Fallback if no AI is configured (Safety Net)
+        // 1. Fallback: IDE Companion Mode (No API Key)
         if (!provider) {
-            renderer.box(
-                `To enable the AI Brain, please set an API Key:\n` +
-                `export ANTHROPIC_API_KEY=... (Recommended)\n` +
-                `export GOOGLE_AI_KEY=...`,
-                'Missing Cognitive Module', 'error'
-            );
+            await this.runOfflineMode(input);
             return;
         }
 
         // 2. Think Phase (Visuals)
         await renderer.thinking('Cognitive Processing', [
-            'Analyzing natural language intent...', 
-            'Loading project context...', 
+            'Analyzing natural language intent...',
+            'Loading project context...',
             'Formulating execution plan...'
         ]);
 
@@ -58,22 +55,23 @@ Your goal is to execute the user's request in the context of their project.
 - **Key Files:** ${projectCtx.files.slice(0, 20).join(', ')}...
 
 ## CAPABILITIES
-You can run the following CLI commands:
+You can run the following CLI commands or edit files directly:
 - 'init': Start new project
 - 'generate <idea>': Create implementation plan
 - 'build': Auto-implement the plan
-- 'review': Analyze code quality
-- 'fix': Apply self-healing fixes
 - 'swarm <task>': Run agent pipeline
 - 'status': Show dashboard
+- 'edit_file': Modify or create a file (Use this for direct code changes)
 
 ## INSTRUCTION
 Decide the best course of action for the user's input: "${input}"
 
 RETURN ONLY JSON:
 {
-  "type": "command" | "chat" | "error",
+  "type": "command" | "edit" | "chat" | "error",
   "command": "full cli command to run" (if type is command),
+  "file": "path/to/file" (if type is edit),
+  "code": "full new content of file" (if type is edit),
   "reasoning": "brief explanation of why",
   "response": "chat response" (if type is chat)
 }
@@ -98,16 +96,18 @@ RETURN ONLY JSON:
                 renderer.succeed(decision.reasoning);
                 renderer.box(decision.command, 'Executing Plan', 'info');
                 
-                // execute the command (strip 'ultra-dex ' prefix if present)
                 const cmd = decision.command.replace(/^ultra-dex\s+/, '');
                 
-                // Delegate to internal tool runner (simulated for safety in this step)
                 if (cmd === 'exit') process.exit(0);
                 
-                // We use a new spinner for the actual work
                 console.log(theme.dim(`  [System] Spawning process: ${cmd}`));
                 execSync(`npx ultra-dex ${cmd}`, { stdio: 'inherit' });
                 
+            } else if (decision.type === 'edit') {
+                // Interactive Editing Mode
+                renderer.succeed('Generating Code Change...');
+                await editor.edit(decision.file, decision.code, decision.reasoning);
+
             } else if (decision.type === 'chat') {
                 renderer.succeed('Analysis Complete.');
                 await renderer.text(decision.response);
@@ -117,10 +117,53 @@ RETURN ONLY JSON:
 
         } catch (e) {
             renderer.fail(`Cognitive Failure: ${e.message}`);
-            // Fallback to basic chat if JSON parsing fails
             await renderer.text(`**Error Details:**\n${e.message}`);
         }
     }
-}
 
+    /**
+     * IDE Companion Mode (Offline)
+     * Uses Regex for commands, generates Context Packets for complex requests.
+     */
+    async runOfflineMode(input) {
+        // A. Check for simple commands (e.g. "status", "build")
+        const simpleIntent = routeIntent(input);
+        
+        if (simpleIntent && simpleIntent !== 'help' && simpleIntent !== 'exit') {
+            renderer.succeed(`Offline Mode: Executing '${simpleIntent}'`);
+            try {
+                execSync(`npx ultra-dex ${simpleIntent}`, { stdio: 'inherit' });
+            } catch (e) {
+                renderer.fail(`Execution failed: ${e.message}`);
+            }
+            return;
+        }
+
+        // B. Complex Request -> Generate Prompt for Cursor/Windsurf
+        const projectCtx = await context.scan();
+        
+        const contextPacket = `
+**Copy this into Cursor / Windsurf / ChatGPT:**
+
+I am working on a **${projectCtx.stack}** project.
+Current Git Branch: **${projectCtx.git.branch}**
+
+**Context:**
+- Root: \`${context.projectRoot}\`
+- Key Files: ${projectCtx.files.slice(0, 15).join(', ')}...
+
+**Task:**
+${input}
+
+**Instruction:**
+Please analyze the file structure and implement the requested changes.
+`;
+
+        renderer.succeed('Context Packet Generated');
+        console.log(theme.warning('  ⚠ No API Key detected. IDE Companion Mode active.'));
+        console.log('');
+        renderer.box(contextPacket, '📋 COPY TO IDE', 'info');
+        console.log(theme.dim('  (Use this prompt in your AI Code Editor to get the best result)'));
+    }
+}
 export const agent = new Agent();
