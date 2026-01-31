@@ -1,8 +1,8 @@
 // Ultra-Dex CLI — Main Interface Display
 // The startup screen and interactive interface
 
-// import chalk from 'chalk';
-import { theme, header, status, table, keyHints, statusLine } from './theme.js';
+import { theme, header, status, table, keyHints, statusLine, progressBar } from './theme.js';
+import { VERSION } from '../utils/version.js';
 
 // ═══════════════════════════════════════════════════════════════
 // STARTUP BANNER (Like Gemini CLI's clean intro)
@@ -21,8 +21,6 @@ const logo = `
                                   ██║  ██║██╔══╝   ██╔██╗ 
                                   ██████╔╝███████╗██╔╝ ██╗
                                   ╚═════╝ ╚══════╝╚═╝  ╚═╝`;
-
-import { VERSION } from '../utils/version.js';
 
 export function showStartup(version = VERSION) {
     console.clear();

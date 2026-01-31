@@ -57,7 +57,7 @@ if (notifier.update) {
   ));
 }
 
-import { banner } from '../lib/commands/banner.js';
+import { banner, showBanner } from '../lib/commands/banner.js';
 import { registerInitCommand } from '../lib/commands/init.js';
 import { registerAuditCommand } from '../lib/commands/audit.js';
 import { registerExamplesCommand } from '../lib/commands/examples.js';
@@ -96,19 +96,53 @@ import { registerTeamCommand } from '../lib/commands/team.js';
 import { registerMemoryCommand } from '../lib/commands/memory.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
+import { registerBrainCommand } from '../lib/commands/brain.js';
 
 // v3.4.3 Commands - 2026 Competitive Features
 import { registerExecCommand } from '../lib/commands/exec.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
 import { registerSearchCommand } from '../lib/commands/search.js';
 import { registerCloudCommand } from '../lib/commands/cloud.js';
+import { startInteractiveMode } from '../lib/ui/interactive.js';
+import { theme, ultraGradient } from '../lib/ui/theme.js';
 
 const program = new Command();
-program.banner = banner;
+
+// Custom Help Configuration - Professional Purple Edition
+program.configureHelp({
+  formatHelp: (cmd, helper) => {
+    const gradientBanner = ultraGradient(banner);
+    
+    let output = `\n${gradientBanner}\n\n`;
+    output += `  ${theme.subtitle('AI Orchestration Meta-Layer for SaaS Development')}\n`;
+    output += `  ${theme.dim('Version: ' + VERSION)}\n\n`;
+    
+    output += `  ${theme.title('USAGE')}\n`;
+    output += `    ${theme.primary('ultra-dex')} ${theme.warning('[command]')} ${theme.dim('[options]')}\n\n`;
+    
+    output += `  ${theme.title('COMMANDS')}\n`;
+    
+    // Sort and format commands
+    const commands = cmd.commands.map(c => {
+        return `    ${theme.accent(c.name().padEnd(20))} ${theme.dim(c.description())}`;
+    }).join('\n');
+    
+    output += commands + '\n\n';
+    
+    output += `  ${theme.title('OPTIONS')}\n`;
+    output += `    ${theme.primary('-V, --version').padEnd(20)} ${theme.dim('output the version number')}\n`;
+    output += `    ${theme.primary('-h, --help').padEnd(20)} ${theme.dim('display help for command')}\n\n`;
+    
+    output += `  ${theme.dim('─────────────────────────────────────────────────────────')}\n`;
+    output += `  ${theme.subtitle('Run ultra-dex without arguments to launch the Interactive Dashboard')}\n\n`;
+    
+    return output;
+  }
+});
 
 program
   .name('ultra-dex')
-  .description('CLI for Ultra-Dex SaaS Implementation Framework')
+  .description(theme.subtitle('AI Orchestration Meta-Layer for SaaS Development'))
   .version(VERSION);
 
 registerInitCommand(program);
@@ -202,5 +236,11 @@ registerExecCommand(program);
 registerGitHubCommand(program);
 registerSearchCommand(program);
 registerCloudCommand(program);
+registerBrainCommand(program);
 
-program.parse();
+// Launch interactive mode if no arguments provided
+if (process.argv.length <= 2) {
+  await startInteractiveMode();
+} else {
+  program.parse();
+}

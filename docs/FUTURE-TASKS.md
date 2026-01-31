@@ -108,17 +108,26 @@
    - Shared context across team
    - Audit logging
 
-### v4.0.0 - Future Vision
+### v4.0.0 - Future Vision (The "Copilot" Strategic Plan)
 
-7. **Self-Healing CI/CD**
-   - Auto-fix failing tests
-   - Slack/Discord webhook notifications
-   - GitHub Actions integration
+7. **Persistent Project Memory (PPM)**
+   - **Goal:** Solve AI amnesia with a multi-tier memory system (Hot/Warm/Cold).
+   - **Spec:** Defined in `docs/architecture/01-persistent-memory.md`
+   - **Tech:** Vector DB + Graph DB integration.
 
-8. **Enterprise Features**
-   - SSO integration
-   - Audit logging
-   - Compliance reporting
+8. **Model Router & Evaluation Engine**
+   - **Goal:** Optimize cost/performance by routing tasks to the best model.
+   - **Spec:** Defined in `docs/architecture/02-model-router.md`
+   - **Config:** `router.json` template created.
+
+9. **Quality Gate System**
+   - **Goal:** Enforce architectural rules and block bad code.
+   - **Spec:** Defined in `docs/architecture/03-quality-gates.md`
+   - **Config:** `quality-gate.json` template created.
+
+10. **Decision Ledger**
+    - **Goal:** Immutable audit trail of AI decisions for trust/compliance.
+    - **Spec:** Defined in `docs/architecture/04-decision-ledger.md`
 
 ### Recovered Roadmap Items (From v3.2 Plan)
 
