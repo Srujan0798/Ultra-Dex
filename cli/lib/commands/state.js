@@ -11,7 +11,6 @@ import { buildGraph } from '../utils/graph.js';
 
 // State locking mechanism to prevent race conditions
 let stateLock = null;
-let lockPromise = null;
 
 async function acquireStateLock() {
   if (stateLock) {

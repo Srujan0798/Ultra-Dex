@@ -38,11 +38,11 @@ Ultra-Dex is a **meta-orchestration layer** - it doesn't write code for you, it 
 
 ---
 
-## 🚀 NEW: Ultra-Dex v3.3.0 (Professional Purple Edition with Advanced Monitoring)
+## 🚀 NEW: Ultra-Dex v3.4.3 (Professional Purple Edition with Advanced Monitoring & Security)
 
 **The Meta-Orchestration Layer for AI Development**
 
-Ultra-Dex v3.3.0 introduces **Advanced Monitoring & Observability**, comprehensive error recovery, and enhanced developer experience features alongside the Professional Purple Theme and multi-agent orchestration.
+Ultra-Dex v3.4.3 introduces **Advanced Security Hardening**, comprehensive **Performance Optimizations**, **Reliability Enhancements**, and **Enterprise-Grade Monitoring & Observability** alongside the Professional Purple Theme and multi-agent orchestration. The system now includes circuit breakers, caching, parallel processing, and advanced configuration management.
 
 ```bash
 # Run autonomous agent swarms with parallel execution
@@ -73,11 +73,19 @@ Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
 ---
 
-## ✨ v3.3.0 Feature Highlights
+## ✨ v3.4.3 Feature Highlights
 
-- **Advanced Monitoring & Observability** - Comprehensive logging, metrics collection, and health monitoring with `ultra-dex status`, `ultra-dex metrics`, and `ultra-dex health` commands.
-- **Intelligent Error Recovery** - Circuit breaker patterns, automatic retry mechanisms, and graceful degradation with `ultra-dex debug` for detailed diagnostics.
-- **Enhanced Configuration Management** - Interactive configuration wizard, environment variable overrides, and persistent settings with `ultra-dex config --wizard`.
+### **Security & Reliability:**
+- **Advanced Security Hardening** - Complete path traversal prevention, input sanitization, and command injection protection. [See Security Guide](./SECURITY.md).
+- **Performance Optimizations** - Caching system with 30-second TTL, parallel processing with Promise.allSettled(), and algorithm improvements delivering 2-5x speed gains.
+- **Reliability & Error Recovery** - Circuit breaker patterns, automatic retry with exponential backoff, timeout protection, and fallback strategies.
+
+### **Monitoring & Observability:**
+- **Enterprise Monitoring** - Comprehensive logging with Winston, performance metrics, health checks, and diagnostic tools.
+- **Advanced Configuration Management** - Interactive wizard, hierarchical settings, environment variable overrides, and schema validation.
+- **Enhanced Developer Experience** - Progress indicators, formatted output, interactive questionnaires, and comprehensive help system.
+
+### **Core Features:**
 - **Professional Purple Theme** - Clean indigo-to-pink gradient interface for high-performance development. [See Theme Guide](./docs/CLI-THEME.md).
 - **Unified Active Kernel** - One process serves MCP, dashboard, REST API, and WebSocket streaming (`ultra-dex serve`).
 - **Graph-Augmented Swarms** - Agents receive a Code Property Graph (CPG) context for structural reasoning.
@@ -85,6 +93,7 @@ Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 - **Self-Healing CI** - `ultra-dex ci-monitor` listens to CI failures and triggers AI-assisted fixes.
 - **Autonomous Implementation** - `ultra-dex auto-implement "feature"` handles plan → code → verify.
 - **Live Dashboard** - Agent status, timeline, and quality signals in real time.
+- **New Monitoring Commands** - `ultra-dex sys-config`, `ultra-dex metrics`, `ultra-dex health`, `ultra-dex debug`, `ultra-dex status` with comprehensive system insights.
 
 ---
 

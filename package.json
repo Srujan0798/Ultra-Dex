@@ -1,4 +1,43 @@
 {
+  "name": "ultra-dex",
+  "version": "3.4.3",
+  "description": "AI Orchestration Meta-Layer for SaaS Development - The Headless CTO",
+  "keywords": [
+    "ai",
+    "orchestration",
+    "saas",
+    "mcp",
+    "langchain",
+    "claude",
+    "openai",
+    "gemini",
+    "agents",
+    "swarm",
+    "docker",
+    "sandbox",
+    "github",
+    "browser-automation",
+    "agent-sdk"
+  ],
+  "author": "Srujan Sai Karna",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Srujan0798/Ultra-Dex"
+  },
+  "homepage": "https://github.com/Srujan0798/Ultra-Dex",
+  "bin": {
+    "ultra-dex": "./cli/bin/ultra-dex.js"
+  },
+  "files": [
+    "cli/bin",
+    "cli/lib",
+    "cli/assets"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "chalk": "^5.6.2"
   }
