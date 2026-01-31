@@ -8,7 +8,7 @@
 [![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
 [![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-31_Modules-green.svg)](./cursor-rules/)
 [![AI Agents](https://img.shields.io/badge/AI_Agents-17_Prompts-orange.svg)](./agents/)
-[![Commands](https://img.shields.io/badge/CLI_Commands-42+-blue.svg)](./cli/)
+[![Commands](https://img.shields.io/badge/CLI_Commands-46-blue.svg)](./cli/)
 
 > **From Idea to Full-Scale, Production-Ready Application**
 
@@ -67,7 +67,7 @@ npx ultra-dex config --wizard
 npx ultra-dex metrics
 ```
 
-**42+ commands. Autonomous agents. MCP integration. Advanced monitoring. Modern Professional UI.**
+**46 commands. Autonomous agents. MCP integration. Advanced monitoring. Modern Professional UI.**
 
 Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
@@ -166,7 +166,7 @@ A comprehensive framework for building complete, production-grade applications. 
 - **21-Step Verification Framework** - Strict quality gates for every atomic task
 - **Atomic Task Methodology** - 4-9 hour tasks with realistic estimates
 - **AI Agent Instructions** - Prompts for Claude, GPT, Gemini
-- **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot (25+ production patterns)
+- **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot (31 production patterns)
 - **17 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research, Documentation, Orchestrator, Specialist
 - **Multi-Tool Orchestration** - Coordinate Claude Code + Cursor + Copilot + ChatGPT + Gemini together
 
@@ -192,7 +192,7 @@ A comprehensive framework for building complete, production-grade applications. 
 | [TaskFlow Example](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md) | See a filled example |
 | [Methodology](./@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md) | 21-step verification system |
 | [Cursor Rules](./cursor-rules/) | AI-optimized rules |
-| [Agent Prompts](./agents/) | 16 specialized agents |
+| [Agent Prompts](./agents/) | 17 specialized agents |
 | [All Guides](./docs/guides/) | Database, architecture, orchestration |
 
 </details>
@@ -279,7 +279,7 @@ your-project/
 └── .github/copilot-instructions.md ← (optional) Copilot rules
 ```
 
-**CLI Commands (42+):**
+**CLI Commands (46):**
 ```bash
 # Setup & Planning
 npx ultra-dex init
@@ -397,7 +397,7 @@ Ultra-Dex/
 │   ├── CICD-GUIDE.md              (GitHub Actions)
 │   ├── QUICK-REFERENCE.md         (Cheatsheet)
 │   └── TROUBLESHOOTING.md         (Common issues)
-├── agents/                        ← 16 AI agents (tier-based)
+├── agents/                        ← 17 AI agents (tier-based)
 │   ├── 1-leadership/              (CTO, Planner, Research)
 │   ├── 2-development/             (Backend, Frontend, Database)
 │   ├── 3-security/                (Auth, Security)
@@ -412,7 +412,6 @@ Ultra-Dex/
 │   │   ├── DATABASE-DECISION-FRAMEWORK.md
 │   │   ├── ARCHITECTURE-PATTERNS.md
 │   │   └── ...
-│   ├── reference/                 ← Technical reference
 │   └── BUILD-AUTH-30M.md, MCP-INTEGRATION.md, etc.
 │
 ├── Orchestration/                 ← Orchestration examples
@@ -422,7 +421,7 @@ Ultra-Dex/
 │   ├── 00-ultra-dex-core.mdc
 │   ├── 01-database.mdc
 │   ├── 02-api.mdc
-│   └── ... (13 domain-specific rules)
+│   └── ... (31 domain-specific rules)
 │
 └── @ Ultra DeX/
     └── Saas plan/
@@ -538,7 +537,7 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 17 Production-Ready Agents (v3.2)
+### 17 Production-Ready Agents (v3.4.3)
 
 Ultra-Dex includes 17 specialized agent prompts **organized into 7 tiers** for the production pipeline. Use the CLI to run agents automatically:
 
