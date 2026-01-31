@@ -52,7 +52,7 @@ jobs:
           test -f docs/ROADMAP.md || { echo "❌ docs/ROADMAP.md missing"; exit 1; }
           test -f docs/WORKFLOW-DIAGRAMS.md || { echo "❌ docs/WORKFLOW-DIAGRAMS.md missing"; exit 1; }
           test -d agents || { echo "❌ agents/ directory missing"; exit 1; }
-          test -d guides || { echo "❌ guides/ directory missing"; exit 1; }
+          test -d docs/guides || { echo "❌ docs/guides/ directory missing"; exit 1; }
           test -d templates || { echo "❌ templates/ directory missing"; exit 1; }
           echo "✅ All required files present"
 
@@ -72,13 +72,13 @@ jobs:
       - name: Check guide files
         run: |
           echo "Checking guide files..."
-          test -f guides/README.md || { echo "❌ Guides README missing"; exit 1; }
-          test -f guides/PROJECT-ORCHESTRATION.md || { echo "❌ Project Orchestration guide missing"; exit 1; }
-          test -f guides/DATABASE-DECISION-FRAMEWORK.md || { echo "❌ Database guide missing"; exit 1; }
-          test -f guides/ARCHITECTURE-PATTERNS.md || { echo "❌ Architecture guide missing"; exit 1; }
-          test -f guides/ADVANCED-WORKFLOWS.md || { echo "❌ Advanced Workflows missing"; exit 1; }
-          test -f guides/MULTI-TOOL-WORKFLOW.md || { echo "❌ Multi-Tool Workflow missing"; exit 1; }
-          test -f guides/AI-MODEL-SELECTION.md || { echo "❌ AI Model Selection missing"; exit 1; }
+          test -f docs/guides/README.md || { echo "❌ Guides README missing"; exit 1; }
+          test -f docs/guides/PROJECT-ORCHESTRATION.md || { echo "❌ Project Orchestration guide missing"; exit 1; }
+          test -f docs/guides/DATABASE-DECISION-FRAMEWORK.md || { echo "❌ Database guide missing"; exit 1; }
+          test -f docs/guides/ARCHITECTURE-PATTERNS.md || { echo "❌ Architecture guide missing"; exit 1; }
+          test -f docs/guides/ADVANCED-WORKFLOWS.md || { echo "❌ Advanced Workflows missing"; exit 1; }
+          test -f docs/guides/MULTI-TOOL-WORKFLOW.md || { echo "❌ Multi-Tool Workflow missing"; exit 1; }
+          test -f docs/guides/AI-MODEL-SELECTION.md || { echo "❌ AI Model Selection missing"; exit 1; }
           echo "✅ All guides present"
 
       - name: Check template files
