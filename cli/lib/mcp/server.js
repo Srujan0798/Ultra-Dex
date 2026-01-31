@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerResources } from "./resources.js";
 import { registerTools } from "./tools.js";
@@ -19,10 +19,20 @@ export async function startMcpServer(options = {}) {
   }
 
   // Create server instance
-  const server = new McpServer({
-    name: "Ultra-Dex Active Kernel",
-    version: VERSION
-  });
+  const server = new Server(
+    {
+      name: "Ultra-Dex Active Kernel",
+      version: VERSION
+    },
+    {
+      capabilities: {
+        tools: {},
+        resources: {},
+        prompts: {},
+        logging: {}
+      }
+    }
+  );
 
   // Register features
   registerResources(server);
@@ -38,9 +48,9 @@ export async function startMcpServer(options = {}) {
 
   // Connect transport
   if (options.transport === 'http') {
-    const transport = new HttpServerTransport({ port });
-    await server.connect(transport);
-    console.error(`Ultra-Dex MCP Server running on HTTP port ${port}...`);
+    // const transport = new HttpServerTransport({ port });
+    // await server.connect(transport);
+    console.error(`HTTP transport temporarily disabled (SDK update mismatch)`);
   } else {
     const transport = new StdioServerTransport();
     await server.connect(transport);
