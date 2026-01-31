@@ -21,5 +21,5 @@ npx --yes @vscode/vsce package --allow-missing-repository
 cd ..
 
 echo -e "\n✅ ALL SYSTEMS GO. Ultra-Dex is ready for production."
-echo "Extension: vscode-extension/ultra-dex-vscode-3.4.2.vsix"
+echo "Extension: vscode-extension/ultra-dex-vscode-3.4.3.vsix"
 echo "Launch Kit: marketing/content.md"

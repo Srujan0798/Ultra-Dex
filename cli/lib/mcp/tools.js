@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
-import { loadState, saveState, withStateLock, updateState } from '../commands/state.js';
+import { loadState, saveState, withStateLock } from '../commands/state.js';
 import { generateMarkdown } from '../commands/plan.js';
 import { projectGraph } from './graph.js';
 import { swarmCommand } from '../commands/swarm.js';
