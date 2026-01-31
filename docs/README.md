@@ -28,22 +28,14 @@ docs/
 ├── FUTURE-TASKS.md      # Planned features & tech debt
 ├── VISION-V2.md         # Product vision
 │
-├── guides/              # User guides
-│   ├── ADVANCED-WORKFLOWS.md
-│   ├── AI-MODEL-SELECTION.md
-│   ├── ARCHITECTURE-PATTERNS.md
-│   ├── CUSTOM-AGENTS-GUIDE.md
-│   ├── DATABASE-DECISION-FRAMEWORK.md
-│   ├── MULTI-TOOL-WORKFLOW.md
-│   └── PROJECT-ORCHESTRATION.md
-│
-├── reference/           # Technical reference
-│   ├── CLI-REFERENCE.md
-│   ├── CODEMAP.md
-│   └── QUICK-REFERENCE.md
-│
-└── internal/            # Internal development docs
-    └── (old implementation plans)
+└── guides/              # User guides
+    ├── ADVANCED-WORKFLOWS.md
+    ├── AI-MODEL-SELECTION.md
+    ├── ARCHITECTURE-PATTERNS.md
+    ├── CUSTOM-AGENTS-GUIDE.md
+    ├── DATABASE-DECISION-FRAMEWORK.md
+    ├── MULTI-TOOL-WORKFLOW.md
+    └── PROJECT-ORCHESTRATION.md
 ```
 
 ---
@@ -53,7 +45,7 @@ docs/
 | Location | Contents |
 |----------|----------|
 | [/agents](../agents/) | 17 AI agent prompts |
-| [/cursor-rules](../cursor-rules/) | 26 Cursor IDE rules |
+| [/cursor-rules](../cursor-rules/) | 31 Cursor IDE rules |
 | [/templates](../templates/) | Project templates |
 | [/@ Ultra DeX](../@%20Ultra%20DeX/) | Core methodology & examples |
 
@@ -64,7 +56,7 @@ docs/
 | Topic | File |
 |-------|------|
 | Getting started | [BUILD-AUTH-30M.md](./BUILD-AUTH-30M.md) |
-| CLI commands | [reference/CLI-REFERENCE.md](./reference/CLI-REFERENCE.md) |
+| CLI commands | [../cli/README.md](../cli/README.md) |
 | Multi-agent workflows | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md) |
 | Database selection | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
 | Architecture patterns | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md) |
