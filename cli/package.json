@@ -52,6 +52,8 @@
     "inquirer": "^9.2.12",
     "listr2": "^8.3.3",
     "ora": "^8.0.1",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
     "terminal-link": "^3.0.0",
     "update-notifier": "^7.3.1",
     "uuid": "^9.0.0",
@@ -76,9 +78,9 @@
     "playwright": "^1.41.0"
   },
   "devDependencies": {
+    "@types/node": "^20.11.30",
     "c8": "^9.1.0",
     "eslint": "^8.57.0",
-    "typescript": "^5.5.4",
-    "@types/node": "^20.11.30"
+    "typescript": "^5.5.4"
   }
 }
