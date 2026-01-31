@@ -16,9 +16,12 @@ node_modules/
 .env.*
 !.env.example
 
+# State folders (runtime generated)
+.ultra/
+.ultra-dex/
+**/.ultra/
+**/.ultra-dex/
+
 # Logs
 *.log
-.ultra-dex/logs/
-.ultra-dex/swarm-logs/
-.cli/logs/
 **/*.log
