@@ -57,6 +57,12 @@ export const AGENTS = [
   { name: 'refactoring', description: 'Code quality & design patterns', file: '6-specialist/refactoring.md', tier: 'Specialist' },
 ];
 
+// Pre-compute searchable agents for performance optimization
+const SEARCHABLE_AGENTS = [
+  ...AGENTS.map(a => ({ ...a, source: 'builtin', searchStr: `${a.name} ${a.description}`.toLowerCase() })),
+  ...Object.entries(COMMUNITY_AGENTS).map(([id, a]) => ({ id, ...a, source: 'community', searchStr: `${a.name} ${a.description}`.toLowerCase() }))
+];
+
 const CUSTOM_AGENTS_DIR = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
 
 export function findBuiltInAgent(name) {
@@ -126,11 +132,12 @@ export function registerAgentsCommand(program) {
     .description('Search for agents in the marketplace')
     .action(async (query) => {
       console.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
-      const allAgents = [...AGENTS.map(a => ({ ...a, source: 'builtin' })),
-                        ...Object.entries(COMMUNITY_AGENTS).map(([id, a]) => ({ id, ...a, source: 'community' }))];
-      const results = allAgents.filter(a =>
-        `${a.name} ${a.description}`.toLowerCase().includes(query.toLowerCase())
+
+      const lowerQuery = query.toLowerCase();
+      const results = SEARCHABLE_AGENTS.filter(a =>
+        a.searchStr.includes(lowerQuery)
       );
+
       if (results.length === 0) {
         console.log(chalk.yellow('No agents found matching your query.'));
       } else {
