@@ -390,7 +390,7 @@ graph TD
 - [Multi-Tool Workflow](./guides/MULTI-TOOL-WORKFLOW.md) - Coordinate multiple AIs
 
 **Agent Reference:**
-- [Agent Index](./agents/00-AGENT_INDEX.md) - All 16 agents with "when to use"
+- [Agent Index](./agents/00-AGENT_INDEX.md) - All 17 agents with "when to use"
 - [Agents README](./agents/README.md) - Tier-based organization
 
 **Decision Guides:**
@@ -458,6 +458,6 @@ graph TD
 
 ---
 
-*Ultra-Dex v1.7.0 - Visual workflows for AI-driven development*
+*Ultra-Dex v3.4.3 - Visual workflows for AI-driven development*
 
 **These diagrams are living documentation - update them as your workflow evolves!**
