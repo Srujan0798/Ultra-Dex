@@ -1,0 +1,49 @@
+name: Ultra-Dex CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Ultra-Dex
+        run: npm install -g ultra-dex
+      
+      - name: Verify Implementation Plan
+        uses: ./.github/actions/verify
+        with:
+          fail-on: 'incomplete-p0-sections'
+          min-alignment: '70'
+
+  alignment:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Ultra-Dex
+        run: npm install -g ultra-dex
+      
+      - name: Check Alignment
+        uses: ./.github/actions/align
+        with:
+          min-score: '75'
+          comment-on-pr: 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

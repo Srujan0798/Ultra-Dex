@@ -42,8 +42,11 @@ If you are contributing to the CLI tool (`cli/` directory):
 2. **Running Tests**
    We use Node.js built-in test runner.
    ```bash
-   npm test
+   npm test              # Run all tests
+   npm run test:coverage # Run with coverage report
    ```
+   
+   Coverage targets: 70%+ (currently ~31%)
 
 3. **Local Testing**
    You can link the CLI locally to test your changes:

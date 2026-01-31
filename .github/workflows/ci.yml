@@ -83,12 +83,19 @@ jobs:
           cd cli
           npm run lint
 
-      - name: Run Test Suite (95 Tests)
+      - name: Run Test Suite with Coverage
         run: |
           cd cli
-          npm test
+          npm run test:coverage
         env:
           LOG_LEVEL: silent
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cli/coverage/
+          retention-days: 30
 
   # 4. Dogfooding (Run Ultra-Dex against itself)
   dogfood-check:

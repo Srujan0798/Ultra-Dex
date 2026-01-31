@@ -23,14 +23,17 @@ export class CodeGraph {
     // Find all js/ts/jsx/tsx files
     // Ignoring node_modules, .git, dist, build
     const files = await glob('**/*.{js,ts,jsx,tsx}', {
-      ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**', '.next/**'],
+      ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/.next/**'],
       absolute: false,
       cwd: process.cwd()
     });
 
-    // Process files in parallel for better performance
-    const promises = files.map(file => this.analyzeFile(file));
-    await Promise.allSettled(promises);
+    // Process files in chunks to prevent EMFILE errors
+    const CONCURRENCY_LIMIT = 50;
+    for (let i = 0; i < files.length; i += CONCURRENCY_LIMIT) {
+      const chunk = files.slice(i, i + CONCURRENCY_LIMIT);
+      await Promise.allSettled(chunk.map(file => this.analyzeFile(file)));
+    }
 
     this.lastScanTime = now;
     return this.getSummary();

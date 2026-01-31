@@ -18,6 +18,16 @@ class UltraDexWebSocketServer {
     this.interval = null;
     this.broadcastErrorCount = 0;
     this.maxBroadcastErrors = 10;
+    
+    // Memory leak prevention
+    this.heartbeatInterval = null;
+    this.heartbeatIntervalMs = 30000; // 30 seconds
+    this.connectionTimeout = 60000; // 60 seconds without ping = dead
+    this.clientMetadata = new WeakMap(); // Store last ping time per client
+    
+    // Cleanup interval for dead connections
+    this.cleanupInterval = null;
+    this.cleanupIntervalMs = 60000; // Check every minute
   }
 
   async start(options = {}) {
@@ -34,23 +44,49 @@ class UltraDexWebSocketServer {
 
     this.wss.on('connection', (ws) => {
       this.clients.add(ws);
+      
+      // Track connection metadata for heartbeat
+      this.clientMetadata.set(ws, {
+        connectedAt: Date.now(),
+        lastPing: Date.now(),
+        messageCount: 0
+      });
+      
       console.log(`[WebSocket] Client connected. Total: ${this.clients.size}`);
 
-      // Send welcome message
+      // Send welcome message with heartbeat config
       ws.send(JSON.stringify({
         type: 'connected',
         timestamp: new Date().toISOString(),
-        message: 'Connected to Ultra-Dex WebSocket Server'
+        message: 'Connected to Ultra-Dex WebSocket Server',
+        config: {
+          heartbeatInterval: this.heartbeatIntervalMs,
+          timeout: this.connectionTimeout
+        }
       }));
 
       ws.on('message', (message) => {
         try {
           const data = JSON.parse(message.toString());
           
+          // Update last activity
+          const metadata = this.clientMetadata.get(ws);
+          if (metadata) {
+            metadata.messageCount++;
+          }
+          
           // Handle different message types
           switch (data.type) {
             case 'ping':
-              ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+              // Update last ping time and respond with pong
+              if (metadata) {
+                metadata.lastPing = Date.now();
+              }
+              ws.send(JSON.stringify({ 
+                type: 'pong', 
+                timestamp: Date.now(),
+                serverTime: new Date().toISOString()
+              }));
               break;
               
             case 'request_state':
@@ -69,15 +105,34 @@ class UltraDexWebSocketServer {
         }
       });
 
-      ws.on('close', () => {
+      ws.on('close', (code, reason) => {
         this.clients.delete(ws);
-        console.log(`[WebSocket] Client disconnected. Total: ${this.clients.size}`);
+        this.clientMetadata.delete(ws);
+        console.log(`[WebSocket] Client disconnected (code: ${code}). Total: ${this.clients.size}`);
       });
 
       ws.on('error', (error) => {
         console.error('[WebSocket] Connection error:', error.message);
         this.clients.delete(ws);
+        this.clientMetadata.delete(ws);
+        
+        // Ensure socket is closed
+        try {
+          ws.terminate();
+        } catch (e) {
+          // Socket may already be closed
+        }
       });
+      
+      // Set a timeout for initial connection
+      ws._connectionTimeout = setTimeout(() => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          console.log('[WebSocket] Connection timeout, terminating');
+          this.clients.delete(ws);
+          this.clientMetadata.delete(ws);
+          ws.terminate();
+        }
+      }, 10000); // 10 second initial connection timeout
     });
 
     this.server.listen(this.port, () => {
@@ -86,6 +141,46 @@ class UltraDexWebSocketServer {
 
     // Start broadcasting updates
     this.startBroadcasting();
+    
+    // Start connection cleanup (memory leak prevention)
+    this.startCleanupInterval();
+  }
+  
+  startCleanupInterval() {
+    // Periodically check for and remove dead connections
+    this.cleanupInterval = setInterval(() => {
+      const now = Date.now();
+      let removedCount = 0;
+      
+      for (const client of this.clients) {
+        const metadata = this.clientMetadata.get(client);
+        
+        // Check if connection is dead (no ping for timeout duration)
+        const isDead = metadata && (now - metadata.lastPing) > this.connectionTimeout;
+        
+        // Check if connection is not actually open
+        const isNotOpen = client.readyState !== WebSocket.OPEN;
+        
+        if (isDead || isNotOpen) {
+          this.clients.delete(client);
+          this.clientMetadata.delete(client);
+          removedCount++;
+          
+          // Force close dead connections
+          try {
+            if (client.readyState === WebSocket.OPEN || client.readyState === WebSocket.CONNECTING) {
+              client.terminate();
+            }
+          } catch (e) {
+            // Ignore errors from already closed connections
+          }
+        }
+      }
+      
+      if (removedCount > 0) {
+        console.log(`[WebSocket] Cleanup: Removed ${removedCount} dead connections. Total: ${this.clients.size}`);
+      }
+    }, this.cleanupIntervalMs);
   }
 
   startBroadcasting() {
@@ -183,9 +278,34 @@ class UltraDexWebSocketServer {
   }
 
   async stop() {
+    // Stop all intervals
     if (this.interval) {
       clearInterval(this.interval);
       this.interval = null;
+    }
+    
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+
+    // Close all client connections gracefully
+    for (const client of this.clients) {
+      try {
+        // Clear connection timeout if exists
+        if (client._connectionTimeout) {
+          clearTimeout(client._connectionTimeout);
+        }
+        
+        // Close connection gracefully
+        if (client.readyState === WebSocket.OPEN) {
+          client.close(1000, 'Server shutting down');
+        } else if (client.readyState === WebSocket.CONNECTING) {
+          client.terminate();
+        }
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
     }
 
     if (this.wss) {
@@ -199,6 +319,7 @@ class UltraDexWebSocketServer {
     }
 
     this.clients.clear();
+    this.clientMetadata = new WeakMap(); // Clear metadata
     this.broadcastErrorCount = 0;
     console.log('[WebSocket] Server stopped');
   }

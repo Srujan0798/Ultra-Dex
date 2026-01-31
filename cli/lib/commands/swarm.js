@@ -14,7 +14,7 @@ import { showSwarmAssemble as showDoomsdaySwarm } from '../themes/doomsday.js';
 import { renderer } from '../ui/renderer.js'; // Import the Pro Renderer
 import { theme } from '../ui/theme.js';
 
-const AGENT_PIPELINE = [
+export const AGENT_PIPELINE = [
   { name: 'planner', description: 'Break down task into steps', tier: '1-planning' },
   { name: 'cto', description: 'Define architecture', tier: '1-planning' },
   { name: 'auth', description: 'Security & authentication review', tier: '3-security' },
@@ -124,9 +124,29 @@ export async function swarmCommand(task, options) {
   const startTime = Date.now();
 
   if (options.dryRun) {
+    const pipelineInfo = options.parallel
+      ? [
+          '📦 Tier: 1-Planning (sequential)',
+          '  1. @planner - Break down task into steps',
+          '  2. @cto - Define architecture',
+          '',
+          '📦 Tier: 2-Implementation (PARALLEL)',
+          '  3. @database - Design schema',
+          '  4. @backend - Implement API',
+          '  5. @frontend - Build UI',
+          '',
+          '📦 Tier: 3-Security (sequential)',
+          '  6. @auth - Security & authentication review',
+          '',
+          '📦 Tier: 4-Quality (sequential)',
+          '  7. @testing - Write tests',
+          '  8. @reviewer - Code review'
+        ].join('\n')
+      : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
+    
     renderer.box(
-      AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n'),
-      'Dry Run Pipeline',
+      pipelineInfo,
+      options.parallel ? 'Dry Run Pipeline (Parallel Mode)' : 'Dry Run Pipeline',
       'info'
     );
     return;

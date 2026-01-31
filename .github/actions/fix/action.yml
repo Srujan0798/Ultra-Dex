@@ -1,0 +1,62 @@
+name: 'Ultra-Dex Auto-Fix'
+description: 'Automatically fix common issues'
+branding:
+  icon: 'tool'
+  color: 'orange'
+
+inputs:
+  rules:
+    description: 'Rules to check: all, cursor-rules, 21-step, alignment'
+    required: false
+    default: 'all'
+  auto-commit:
+    description: 'Commit fixes automatically'
+    required: false
+    default: 'false'
+  commit-message:
+    description: 'Commit message for auto-fixes'
+    required: false
+    default: 'chore: ultra-dex auto-fixes'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Apply Auto-Fixes
+      shell: bash
+      run: |
+        echo "🔧 Ultra-Dex Auto-Fix"
+        echo "Rules: ${{ inputs.rules }}"
+        echo "Auto-commit: ${{ inputs.auto-commit }}"
+        
+        CHANGES_MADE=false
+        
+        # Apply fixes based on rules
+        if [ "${{ inputs.rules }}" = "all" ] || [ "${{ inputs.rules }}" = "alignment" ]; then
+          echo "📊 Checking alignment..."
+          npx ultra-dex fix --alignment || true
+        fi
+        
+        if [ "${{ inputs.rules }}" = "all" ] || [ "${{ inputs.rules }}" = "cursor-rules" ]; then
+          echo "📋 Checking cursor rules..."
+          npx ultra-dex fix --cursor-rules || true
+        fi
+        
+        # Check if any changes were made
+        if [ -n "$(git status --porcelain)" ]; then
+          CHANGES_MADE=true
+          echo "✅ Changes made by auto-fix"
+          git status --short
+        else
+          echo "ℹ️ No changes needed"
+        fi
+        
+        # Auto-commit if enabled
+        if [ "${{ inputs.auto-commit }}" = "true" ] && [ "$CHANGES_MADE" = "true" ]; then
+          echo "📝 Committing changes..."
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "${{ inputs.commit-message }}" || echo "Nothing to commit"
+          git push
+          echo "✅ Changes committed and pushed"
+        fi

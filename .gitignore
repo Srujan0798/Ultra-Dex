@@ -28,3 +28,4 @@ CONTEXT.md
 # Logs
 *.log
 **/*.log
+.aider*
