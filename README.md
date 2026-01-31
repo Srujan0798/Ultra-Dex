@@ -4,7 +4,7 @@
 [![CI Status](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-41%25-yellow.svg)](./cli/package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](./cli/tsconfig.json)
-[![Tests](https://img.shields.io/badge/Tests-350+-brightgreen.svg)](./cli/test/README.md)
+[![Tests](https://img.shields.io/badge/Tests-281-brightgreen.svg)](./cli/test/README.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
