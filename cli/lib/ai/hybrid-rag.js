@@ -249,9 +249,9 @@ class HybridRAG {
 
   async initialize() {
     if (this.indexed) return;
-    
-    console.log('🧠 Initializing Hybrid RAG System...');
-    
+
+    // Silent initialization (use monitoring.info for debugging)
+
     // Index all project files
     await this.indexProject();
     
