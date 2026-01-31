@@ -4,7 +4,7 @@ import ora from 'ora';
 import { getProvider } from '../providers/index.js';
 import { readFile, writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { glob } from 'glob';
 import { projectGraph } from '../mcp/graph.js';
 import { updateStateFile, loadState, saveState } from './state.js';
@@ -347,12 +347,36 @@ export async function swarmCommand(task, options) {
   console.log(chalk.green.bold('\n✅ Swarm execution complete!\n'));
 }
 
+let agentPathsCache = null;
+
+async function getAgentPaths() {
+  if (agentPathsCache) return agentPathsCache;
+  agentPathsCache = new Map();
+
+  try {
+    const files = await glob('agents/**/*.md', { ignore: 'node_modules/**' });
+    for (const file of files) {
+      const name = basename(file, '.md');
+      // Store the first occurrence found. The glob order is generally stable.
+      if (!agentPathsCache.has(name)) {
+        agentPathsCache.set(name, file);
+      }
+    }
+  } catch (error) {
+    // If glob fails, we'll just have an empty map and fall back to direct checks if possible,
+    // though the direct check logic below also relies on file existence.
+    console.warn('Warning: Failed to scan agent prompts:', error.message);
+  }
+
+  return agentPathsCache;
+}
+
 async function loadAgentPrompt(name) {
-  // Use glob to find agent file recursively
-  const files = await glob(`agents/**/${name}.md`, { ignore: 'node_modules/**' });
+  const paths = await getAgentPaths();
+  const file = paths.get(name);
   
-  if (files.length > 0) {
-    return await readFile(files[0], 'utf-8');
+  if (file) {
+    return await readFile(file, 'utf-8');
   }
 
   // Fallback to direct check
