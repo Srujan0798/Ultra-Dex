@@ -1,8 +1,0 @@
-{
-  "srcDir": "cli/lib",
-  "includeDirs": [
-    "cli/lib",
-    "cli/bin",
-    "vscode-extension/src"
-  ]
-}
