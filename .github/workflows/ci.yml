@@ -58,7 +58,7 @@ jobs:
           done
           echo "✅ Directory structure valid"
 
-  # 3. CLI Logic & Behavior (95 Unit Tests)
+  # 3. CLI Logic & Behavior (281 Unit Tests)
   cli-test:
     name: CLI Test Suite
     runs-on: ubuntu-latest

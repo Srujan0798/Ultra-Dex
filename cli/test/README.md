@@ -24,7 +24,7 @@ cli/test/
 ├── validation.test.js    # Validation tests (35+ tests)
 └── v2-commands.test.js   # v2 command smoke tests (6 tests)
 
-Total: 13 test files, 350+ test cases
+Total: 13 test files, 281 test cases
 ```
 
 ## Coverage Report
