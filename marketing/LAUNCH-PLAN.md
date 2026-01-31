@@ -84,7 +84,7 @@ asciinema rec demo.cast
 ```
 🚀 Just launched Ultra-Dex v3.4.3 — the AI Orchestration Meta-Layer
 
-✅ 64+ CLI commands
+✅ 42+ CLI commands
 ✅ 17 AI agents (swarm mode!)
 ✅ Active Kernel (MCP + WebSocket)
 ✅ Docker Sandbox for safe execution
@@ -142,7 +142,7 @@ The solution: A structured meta-layer with:
 - A Docker Sandbox to safely verify generated code
 
 Features:
-- 64+ CLI commands
+- 42+ CLI commands
 - Parallel Swarm pipelines
 - God Mode Dashboard
 - Works with Claude, Cursor, Devin, Gemini
@@ -167,7 +167,7 @@ https://github.com/Srujan0798/Ultra-Dex
 Ultra-Dex is the "Headless CTO" for your SaaS projects. It's a CLI framework that orchestrates AI coding tools like Claude Code, Cursor, and Devin.
 
 Key Features:
-✓ 64+ CLI commands for AI-assisted engineering
+✓ 42+ CLI commands for AI-assisted engineering
 ✓ 17 specialized agents in a 7-tier orchestration system
 ✓ Active Kernel (MCP) for Claude Desktop integration
 ✓ Docker Sandbox for code execution and testing

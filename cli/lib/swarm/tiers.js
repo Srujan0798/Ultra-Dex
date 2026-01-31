@@ -8,7 +8,7 @@
 // ============================================================================
 
 /**
- * Tier structure for all 16 agents.
+ * Tier structure for all 17 agents.
  * Lower tier numbers indicate higher-level strategic roles.
  */
 export const TIERS = {
@@ -16,7 +16,7 @@ export const TIERS = {
     id: 0,
     name: 'Meta Orchestration',
     description: 'Coordinates all other agents',
-    agents: ['orchestrator']
+    agents: ['meta-orchestrator', 'orchestrator']
   },
   LEADERSHIP: {
     id: 1,
@@ -65,6 +65,16 @@ export const TIERS = {
  */
 export const AGENTS = {
   // Tier 0: Meta
+  'meta-orchestrator': {
+    name: 'Meta-Orchestrator',
+    tier: 0,
+    tierName: 'Meta Orchestration',
+    role: 'High-level system coordination & strategy',
+    invocation: '@meta-orchestrator',
+    file: '0-orchestration/meta-orchestrator.md',
+    capabilities: ['multi_repo_coordination', 'strategic_planning', 'system_orchestration', 'phase_management'],
+    canInvoke: ['all']
+  },
   orchestrator: {
     name: 'Orchestrator',
     tier: 0,
@@ -272,6 +282,10 @@ export const TIER_FLOW = {
  * Agent dependency graph - which agents depend on outputs from others.
  */
 export const AGENT_DEPENDENCIES = {
+  // Meta tier - can coordinate all agents
+  'meta-orchestrator': [],
+  orchestrator: [],
+
   // Leadership tier has no dependencies (entry points)
   planner: [],
   cto: ['planner'],

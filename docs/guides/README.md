@@ -146,7 +146,7 @@ Comprehensive guides for building production-ready SaaS applications with AI age
 ## 🔗 Related Resources
 
 **Agent Prompts:**
-- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 16 agents
+- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 17 agents
 - [Agents Directory](../agents/) - Full agent prompt library
 
 **Templates:**
