@@ -135,7 +135,7 @@ Break work into 4-9 hour tasks with:
 
 ### Cursor Integration
 1. Generate rules: `npx ultra-dex config --cursor`
-2. Use the 18+ production patterns in your workflow
+2. Use the 31 production patterns in your workflow
 
 ### VS Code Extension
 1. Install the Ultra-Dex extension

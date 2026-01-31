@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.4.3] - 2026-01-31 - "Professional Polish" Release
+
+### 🎯 Strategic Focus
+This release focuses on **data accuracy**, **code quality**, and **documentation cleanup**. All metrics verified and corrected across the codebase.
+
+### Added
+- **Meta-Orchestrator Agent** - Added to CLI tier system (`cli/lib/swarm/tiers.js`)
+  - High-level system coordination & strategy
+  - Multi-repo and multi-phase project management
+  - 17 agents total (was 16)
+
+### Fixed
+- **Agent Registration Bug** - meta-orchestrator was missing from TIERS, AGENTS, and AGENT_DEPENDENCIES
+- **Command Count Accuracy** - Updated from "42+" to actual 46 commands
+- **Cursor Rules Count** - Updated from "26" to actual 31 rules
+- **Agent Count** - Updated from "16" to actual 17 agents across all docs
+
+### Changed
+- CLI now has **46 commands** (verified by counting register functions)
+- All documentation updated with accurate metrics
+- Removed outdated docs/reference/ folder (CLI-REFERENCE.md, CODEMAP.md)
+
+### Metrics (Verified)
+| Metric | Value |
+|--------|-------|
+| Commands | 46 |
+| Agents | 17 built-in + marketplace |
+| Cursor Rules | 31 |
+| Tests | 95/95 (100%) |
+| ESLint | 0 warnings |
+
+---
+
+## [3.4.2] - 2026-01-30
+
+### Added
+- LangChain Adapter with chain templates
+- OpenAI Assistants Sync
+- Streaming AI responses (`--stream` flag)
+- Agent Marketplace (`ultra-dex agents`)
+
+### Fixed
+- WebSocket memory leaks
+- fs.watch cleanup on exit
+- Version consistency across all files
+
+---
+
+## [3.4.1] - 2026-01-30
+
+### Added
+- Provider ecosystem integration
+- Community agents: @SecurityAuditor, @Accessibility, @APIDesigner, @MLEngineer
+
+---
+
+## [3.4.0] - 2026-01-30
+
+### Added
+- Advanced monitoring system (metrics, health, debug)
+- sync --brain for autonomous CONTEXT.md updates
+- State file locking for parallel swarm
+
+---
+
 ## [3.3.0] - 2026-01-30 - "Survival Mode" Release
 
 ### 🎯 Strategic Vision
