@@ -95,7 +95,7 @@ test('validate fails gracefully on empty dir', async () => {
 test('init --preview shows planned files', async () => {
   const result = runCli(['init', '--preview']);
   assert.equal(result.status, 0);
-  assert.match(result.output, /Files that would be created/);
+  assert.match(result.output, /PREVIEW MODE: ARCHITECTURAL BLUEPRINT/);
   assert.match(result.output, /QUICK-START\.md/);
 });
 
