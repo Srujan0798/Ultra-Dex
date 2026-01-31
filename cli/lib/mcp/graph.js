@@ -23,7 +23,7 @@ export class CodeGraph {
     // Find all js/ts/jsx/tsx files
     // Ignoring node_modules, .git, dist, build
     const files = await glob('**/*.{js,ts,jsx,tsx}', {
-      ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**', '.next/**'],
+      ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/.next/**'],
       absolute: false,
       cwd: process.cwd()
     });

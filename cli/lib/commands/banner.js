@@ -22,6 +22,8 @@ export function showBanner(version = VERSION) {
 
 ` +
     `${chalk.hex('#6366f1')('AI Orchestration Meta-Layer')}
+` +
+    `${chalk.green.dim('● SYSTEM ACTIVATED')}
 
 ` +
     `${chalk.dim('github.com/Srujan0798/Ultra-Dex')}`,
