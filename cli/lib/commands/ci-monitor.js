@@ -73,12 +73,12 @@ async function handleBuildFailure(payload, options) {
     };
 
     // 2. Diagnose & Fix (@Debugger)
-    const fixPlan = await runAgentLoop('debugger', `Analyze this build failure and propose a fix:\n${logs}`, provider, context);
+    const fixPlan = await runAgentLoop('debugger', `Analyze this build failure, fix the code using WRITE_CODE, and explain what you did:\n${logs}`, provider, context);
     
-    // 3. Apply Fix (Mock - would be git push)
+    // 3. Apply Fix
     console.log(chalk.bold('\nProposed Fix:'));
     console.log(chalk.gray(fixPlan));
     
-    // In a real system, we would:
-    // await runAgentLoop('devops', `Apply this fix and push to branch 'fix/${jobName}':\n${fixPlan}`, provider, context);
+    console.log(chalk.yellow('\n🚀 Applying Fix via @DevOps...'));
+    await runAgentLoop('devops', `The fix has been applied to the code. Please create a new branch 'fix/${jobName.replace(/[^a-zA-Z0-9-_]/g, '-')}', commit the changes, and push using git commands.`, provider, context);
 }
