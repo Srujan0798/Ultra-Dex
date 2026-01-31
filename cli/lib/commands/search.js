@@ -9,6 +9,7 @@ import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
+import { getProvider } from '../providers/index.js';
 
 // ============================================================================
 // VECTOR STORE CONFIGURATION
@@ -193,8 +194,13 @@ async function generateEmbedding(text, provider = null) {
     try {
       return await provider.getEmbedding(text);
     } catch (err) {
-      console.log(chalk.yellow(`Embedding API failed, using local fallback: ${err.message}`));
+      console.log(chalk.yellow(`\n⚠️  Embedding API failed, falling back to local method: ${err.message}`));
     }
+  } else if (provider) {
+    console.log(chalk.yellow(`\n⚠️  Provider ${provider.getName()} does not support embeddings. Using local fallback.`));
+  } else {
+    // Only warn once per session ideally, but for now simple warning
+    // console.log(chalk.gray('Using local "dumb" embeddings (no AI provider).'));
   }
 
   // Fallback: Simple bag-of-words embedding
@@ -294,6 +300,15 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
     console.log(chalk.gray(`Found ${uniqueFiles.length} files to index`));
   }
 
+  // Get Provider
+  const provider = getProvider();
+  if (!provider) {
+    console.log(chalk.yellow('\n⚠️  No AI provider configured. Using "dumb" local embeddings (bag-of-words).'));
+    console.log(chalk.gray('   For smart search, set OPENAI_API_KEY or use Ollama.\n'));
+  } else {
+    if (verbose) console.log(chalk.green(`Using ${provider.getName()} for embeddings.`));
+  }
+
   // Index each file
   let chunkCount = 0;
   for (const file of uniqueFiles) {
@@ -312,7 +327,7 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
 
       // Generate embeddings for each chunk
       for (const chunk of chunks) {
-        const embedding = await generateEmbedding(chunk.content);
+        const embedding = await generateEmbedding(chunk.content, provider);
 
         vectorStore.addDocument({
           id: `${file}:${chunk.chunk}`,
@@ -357,8 +372,11 @@ export async function searchCodebase(query, options = {}) {
     }
   }
 
+  // Get Provider
+  const provider = getProvider();
+
   // Generate query embedding
-  const queryEmbedding = await generateEmbedding(query);
+  const queryEmbedding = await generateEmbedding(query, provider);
 
   // Search
   const results = vectorStore.search(queryEmbedding, topK);

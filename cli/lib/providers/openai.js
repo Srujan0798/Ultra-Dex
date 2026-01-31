@@ -11,6 +11,7 @@ const PRICING = {
   'gpt-4o-mini': { input: 0.15, output: 0.60 },
   'gpt-4-turbo': { input: 10.00, output: 30.00 },
   'gpt-4': { input: 30.00, output: 60.00 },
+  'text-embedding-3-small': { input: 0.02, output: 0 }, // For reference
 };
 
 const MODELS = [
@@ -24,6 +25,7 @@ export class OpenAIProvider extends BaseProvider {
   constructor(apiKey, options = {}) {
     super(apiKey, options);
     this.baseUrl = 'https://api.openai.com/v1';
+    this.embeddingModel = options.embeddingModel || 'text-embedding-3-small';
   }
 
   getName() {
@@ -144,6 +146,32 @@ export class OpenAIProvider extends BaseProvider {
     }
 
     return { content: fullContent, usage };
+  }
+
+  /**
+   * Get embeddings for text using OpenAI
+   * Uses 'text-embedding-3-small' by default
+   */
+  async getEmbedding(text) {
+    const response = await fetch(`${this.baseUrl}/embeddings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.embeddingModel,
+        input: text,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(`OpenAI Embeddings API error: ${error.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.data[0].embedding;
   }
 
   async validateApiKey() {
