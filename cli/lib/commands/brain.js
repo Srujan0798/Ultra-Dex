@@ -8,7 +8,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { loadState } from './state.js';
 import { projectGraph } from '../mcp/graph.js';
-import { hybridRAG } from '../ai/hybrid-rag.js';
+// hybridRAG imported for future use with advanced brain features
+// import { hybridRAG } from '../ai/hybrid-rag.js';
 import ora from 'ora';
 
 export async function brainCommand(options) {

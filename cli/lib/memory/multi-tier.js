@@ -5,7 +5,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { existsSync } from 'fs';
+import { existsSync, statSync } from 'fs';
 import { glob } from 'glob';
 
 class MemoryTier {
@@ -306,7 +306,7 @@ class PersistentMemorySystem {
       
       const fileStats = allFiles.map(file => {
         try {
-          const stat = fs.statSync(path.join(this.projectRoot, file));
+          const stat = statSync(path.join(this.projectRoot, file));
           return {
             path: file,
             size: stat.size,

@@ -105,7 +105,7 @@ class UltraDexWebSocketServer {
         }
       });
 
-      ws.on('close', (code, reason) => {
+      ws.on('close', (code, _reason) => {
         this.clients.delete(ws);
         this.clientMetadata.delete(ws);
         console.log(`[WebSocket] Client disconnected (code: ${code}). Total: ${this.clients.size}`);

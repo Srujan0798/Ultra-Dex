@@ -1,6 +1,4 @@
 // cli/lib/commands/swarm.js
-import chalk from 'chalk';
-import ora from 'ora';
 import { getProvider } from '../providers/index.js';
 import { readFile, writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';

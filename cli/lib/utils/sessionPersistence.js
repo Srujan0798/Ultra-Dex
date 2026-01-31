@@ -203,7 +203,7 @@ class SessionPersistence {
     const words = this.extractKeywords(text);
     const embedding = new Array(50).fill(0);
     
-    words.forEach((word, i) => {
+    words.forEach((word, _i) => {
       const hash = word.split('').reduce((acc, char) => {
         return acc + char.charCodeAt(0);
       }, 0);

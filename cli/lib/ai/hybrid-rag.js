@@ -311,7 +311,7 @@ class HybridRAG {
     return combinedResults.slice(0, topK);
   }
 
-  combineSearchResults(vectorResults, graphResults, keywordResults, vWeight, gWeight, kWeight) {
+  combineSearchResults(vectorResults, graphResults, keywordResults, _vWeight, _gWeight, _kWeight) {
     const allResults = new Map();
 
     // Process vector results
