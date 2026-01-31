@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { loadState, saveState, withStateLock } from '../commands/state.js';
 import { generateMarkdown } from '../commands/plan.js';
 import { projectGraph } from './graph.js';
-import { swarmCommand } from '../commands/swarm.js';
 import { ultraMemory } from './memory.js';
 import { glob } from 'glob';
 

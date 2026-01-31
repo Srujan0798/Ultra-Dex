@@ -1,6 +1,6 @@
 // cli/lib/commands/diff.js
 import chalk from 'chalk';
-import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join, relative } from 'path';
 import { execSync } from 'child_process';
 import { loadConfig } from './config.js';

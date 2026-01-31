@@ -57,7 +57,7 @@ if (notifier.update) {
   ));
 }
 
-import { banner, showBanner } from '../lib/commands/banner.js';
+import { banner } from '../lib/commands/banner.js';
 import { registerInitCommand } from '../lib/commands/init.js';
 import { registerAuditCommand } from '../lib/commands/audit.js';
 import { registerExamplesCommand } from '../lib/commands/examples.js';
@@ -110,7 +110,7 @@ const program = new Command();
 
 // Custom Help Configuration - Professional Purple Edition
 program.configureHelp({
-  formatHelp: (cmd, helper) => {
+  formatHelp: (cmd, _helper) => {
     // For subcommands, build command-specific help
     if (cmd.parent) {
       let output = `\n${theme.title('Usage:')} ${theme.primary('ultra-dex ' + cmd.name())} ${theme.dim('[options]')}\n\n`;

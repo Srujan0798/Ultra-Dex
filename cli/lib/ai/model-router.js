@@ -5,9 +5,8 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { createProvider, getDefaultProvider, getProvider } from '../providers/index.js';
+import { getProvider } from '../providers/index.js';
 import { monitoring } from '../utils/monitoring.js';
-import { errorRecovery } from '../utils/error-recovery.js';
 
 class TaskClassifier {
   constructor() {
@@ -185,7 +184,7 @@ class ModelRouter {
   /**
    * Route a task to the optimal model based on classification and policy
    */
-  async routeTask(taskDescription, policy = 'balanced', options = {}) {
+  async routeTask(taskDescription, policy = 'balanced', _options = {}) {
     await this.loadConfig(); // Ensure config is loaded
 
     const classification = this.taskClassifier.classifyTask(taskDescription);
@@ -336,7 +335,7 @@ class EvaluationEngine {
   /**
    * Evaluate content against quality gates
    */
-  async evaluateContent(content, taskType = 'general', context = {}) {
+  async evaluateContent(content, taskType = 'general', _context = {}) {
     const results = {
       taskType,
       passed: true,
@@ -426,7 +425,7 @@ class EvaluationEngine {
    * Run evaluation loop with feedback-driven re-routing
    */
   async evaluationLoop(task, content, provider = null, options = {}) {
-    const { maxIterations = 3, policy = 'balanced', taskType = 'general' } = options;
+    const { maxIterations = 3, policy: _policy = 'balanced', taskType = 'general' } = options;
 
     let currentContent = content;
     let iteration = 0;

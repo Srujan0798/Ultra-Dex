@@ -7,7 +7,6 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import fs from 'fs/promises';
-import path from 'path';
 
 const program = new Command();
 
@@ -359,7 +358,7 @@ program
       
       console.log(chalk.cyan(`\n📋 Tasks (${filtered.length}/${tasks.length}):\n`));
       
-      filtered.forEach((task, i) => {
+      filtered.forEach((task, _i) => {
         const icon = task.status === 'completed' ? '✅' : '☐';
         const color = task.status === 'completed' ? chalk.gray : chalk.white;
         console.log(color(`${icon} [${task.priority}] ${task.title}`));

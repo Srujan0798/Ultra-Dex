@@ -2,7 +2,6 @@
 // Handles streaming, markdown, and high-fidelity UI output
 
 import chalk from 'chalk';
-import gradient from 'gradient-string';
 import boxen from 'boxen';
 import ora from 'ora';
 import { theme, ultraGradient } from './theme.js';

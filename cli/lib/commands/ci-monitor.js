@@ -48,7 +48,7 @@ export function registerCiMonitorCommand(program) {
               
               // Handle different webhook events
               if (payload.action === 'completed' && payload.workflow_job) {
-                const { workflow_job, repository } = payload;
+                const { workflow_job, repository: _repository } = payload;
                 
                 if (workflow_job.conclusion === 'failure') {
                   await handleBuildFailure(payload, options, notifyEvents);

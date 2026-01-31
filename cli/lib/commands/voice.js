@@ -111,7 +111,7 @@ program
 /**
  * Record audio from microphone (cross-platform)
  */
-async function recordAudio(options) {
+async function recordAudio(_options) {
   const tempDir = os.tmpdir();
   const outputFile = path.join(tempDir, `ultra-dex-voice-${Date.now()}.wav`);
   
