@@ -10,7 +10,7 @@ One-page cheatsheet for AI-driven SaaS development.
 # Initialize Ultra-Dex in your project
 npx ultra-dex init
 
-# List all 16 agents
+# List all 17 agents
 npx ultra-dex agents
 
 # Show specific agent
@@ -19,7 +19,7 @@ npx ultra-dex agent backend
 
 ---
 
-## 🤖 16 AI Agents by Tier
+## 🤖 17 AI Agents by Tier
 
 | Tier | Agent | Use When |
 |------|-------|----------|
@@ -139,7 +139,7 @@ Task type:
 npx ultra-dex init              # Interactive setup
 
 # Agents
-npx ultra-dex agents            # List all 16 agents
+npx ultra-dex agents            # List all 17 agents
 npx ultra-dex agent backend     # Show backend agent
 npx ultra-dex agent cto         # Show CTO agent
 
@@ -221,7 +221,7 @@ Use different AI tools for different tasks:
 
 **Core:**
 - [Main README](./README.md) - Project overview
-- [Agent Index](./agents/00-AGENT_INDEX.md) - All 16 agents
+- [Agent Index](./agents/00-AGENT_INDEX.md) - All 17 agents
 - [Guide Directory](./guides/README.md) - All guides
 - [CHANGELOG](./CHANGELOG.md) - Version history
 
@@ -317,7 +317,7 @@ Use different AI tools for different tasks:
 
 ## 📊 Project Statistics
 
-- **16 Agents** - 7 tiers, production pipeline coverage
+- **17 Agents** - 7 tiers, production pipeline coverage
 - **6 Guides** - 3,283 lines, 83 KB of documentation
 - **2 Templates** - MASTER-PLAN (800 lines), PHASE-TRACKER (329 lines)
 - **34 Sections** - Complete implementation template
@@ -338,6 +338,6 @@ Use different AI tools for different tasks:
 
 ---
 
-*Ultra-Dex v2.1.0 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v3.4.3 - Professional AI Orchestration Meta Layer*
 
 **Print this page for quick reference while coding!**
