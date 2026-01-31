@@ -374,7 +374,7 @@ Both templates are **fully customizable**. Common modifications:
 - [Advanced Workflows](../docs/guides/ADVANCED-WORKFLOWS.md) - Real-world examples
 
 **Agent Prompts:**
-- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 16 agents
+- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 17 agents
 - [Agents Directory](../agents/) - Full agent prompt library
 
 **Core Framework:**
@@ -416,4 +416,4 @@ Found a better template structure? Want to add examples?
 
 ---
 
-*Ultra-Dex v3.4.2 - Structured project management for AI-driven development*
+*Ultra-Dex v3.4.3 - Structured project management for AI-driven development*
