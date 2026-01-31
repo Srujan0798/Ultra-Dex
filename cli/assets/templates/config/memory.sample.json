@@ -1,0 +1,19 @@
+{
+  "project": "Ultra-Dex",
+  "memories": [
+    {
+      "id": "mem_001",
+      "text": "Always use absolute paths for file system operations in the CLI.",
+      "type": "constraint",
+      "tags": ["security", "fs"],
+      "timestamp": "2026-01-31T10:00:00Z"
+    },
+    {
+      "id": "mem_002",
+      "text": "The project uses ESM (ECMAScript Modules) exclusively.",
+      "type": "pattern",
+      "tags": ["architecture", "node"],
+      "timestamp": "2026-01-31T10:05:00Z"
+    }
+  ]
+}
