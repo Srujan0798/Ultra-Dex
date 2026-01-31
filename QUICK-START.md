@@ -1,6 +1,6 @@
 # 🚀 Ultra-Dex Quick Start Guide
 
-## Welcome to Ultra-Dex v3.4.2
+## Welcome to Ultra-Dex v3.4.3
 
 Ultra-Dex is the AI orchestration meta-layer that makes your AI tools remember, coordinate, and execute like Kubernetes orchestrates containers.
 
