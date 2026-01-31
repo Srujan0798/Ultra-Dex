@@ -79,6 +79,6 @@ async function handleBuildFailure(payload, options) {
     console.log(chalk.bold('\nProposed Fix:'));
     console.log(chalk.gray(fixPlan));
     
-    // In a real system, we would:
-    // await runAgentLoop('devops', `Apply this fix and push to branch 'fix/${jobName}':\n${fixPlan}`, provider, context);
+    // Apply Fix using DevOps Agent
+    await runAgentLoop('devops', `Apply this fix and push to branch 'fix/${jobName}':\n${fixPlan}`, provider, context);
 }
