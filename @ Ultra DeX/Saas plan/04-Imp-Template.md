@@ -5611,7 +5611,7 @@ git commit -m "hotfix: critical bug" --no-verify
 **The "Brain" (.ultra/state.json):**
 - **Project Mode:** GOD_MODE
 - **Phase Status:** Live tracking of 5 phases
-- **Agent Registry:** Active/Idle status of 16 agents
+- **Agent Registry:** Active/Idle status of 17 agents
 - **Graph Summary:** Node/Edge counts
 
 **Syncing Context:**

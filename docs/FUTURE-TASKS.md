@@ -6,7 +6,7 @@
 
 ---
 
-## Completed in v3.4.2 (Latest)
+## Completed in v3.4.3/v3.4.3
 
 - [x] Console logs silenced (debug mode only)
 - [x] Version sync across all files
@@ -17,7 +17,9 @@
 - [x] Provider ecosystem tests (LangChain, OpenAI Assistants)
 - [x] Streaming flag tests
 - [x] CHANGELOG.md created
-- [x] README updated with v3.4.2 features
+- [x] README updated with v3.4.3 features
+- [x] meta-orchestrator added to CLI (17 agents total)
+- [x] All version references updated to v3.4.3
 
 ---
 
@@ -223,10 +225,10 @@
 ## Marketing & Launch Checklist
 
 ### Ready Now
-- [x] npm package published (v3.4.2)
+- [x] npm package published (v3.4.3)
 - [x] GitHub repo updated
 - [x] CHANGELOG.md created
-- [x] README updated with v3.4.2 features
+- [x] README updated with v3.4.3 features
 - [ ] VS Code extension to marketplace
 
 ### Needs Human Action
@@ -309,13 +311,13 @@ cd cli && npm run lint
 
 ---
 
-## Current Metrics (v3.4.2)
+## Current Metrics (v3.4.3)
 
 | Metric | Value |
 |--------|-------|
-| Commands | 48+ |
+| Commands | 46 |
 | Agents | 17 built-in + marketplace |
-| Cursor Rules | 26 |
+| Cursor Rules | 31 |
 | Tests | 95/95 (100%) |
 | ESLint | 0 warnings |
 | npm Size | ~362 KB |

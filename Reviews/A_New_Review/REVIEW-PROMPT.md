@@ -265,7 +265,7 @@ Priority 1 (Core):
 
 Priority 2 (Agents):
 ├── agents/00-AGENT_INDEX.md
-└── agents/**/*.md (16 agents)
+└── agents/**/*.md (17 agents)
 
 Priority 3 (Templates):
 ├── @ Ultra DeX/Saas plan/04-Imp-Template.md

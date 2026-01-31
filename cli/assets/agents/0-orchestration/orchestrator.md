@@ -1,6 +1,6 @@
 # @Orchestrator - Meta Agent
 
-> **Role**: Coordinate all 16 agents for complete feature implementation
+> **Role**: Coordinate all 17 agents for complete feature implementation
 > **When to Use**: Building a complete feature that spans architecture, implementation, security, testing, and deployment
 
 ---

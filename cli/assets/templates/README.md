@@ -374,7 +374,7 @@ Both templates are **fully customizable**. Common modifications:
 - [Advanced Workflows](../guides/ADVANCED-WORKFLOWS.md) - Real-world examples
 
 **Agent Prompts:**
-- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 16 agents
+- [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 17 agents
 - [Agents Directory](../agents/) - Full agent prompt library
 
 **Core Framework:**

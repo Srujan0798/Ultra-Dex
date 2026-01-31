@@ -621,7 +621,7 @@ const CLOUD_DASHBOARD_HTML = `<!DOCTYPE html>
     </div>
 
     <footer>
-      Ultra-Dex v3.4.2 | Cloud Dashboard | <a href="https://github.com/Srujan0798/Ultra-Dex" style="color: var(--primary);">GitHub</a>
+      Ultra-Dex v3.4.3 | Cloud Dashboard | <a href="https://github.com/Srujan0798/Ultra-Dex" style="color: var(--primary);">GitHub</a>
     </footer>
   </div>
 

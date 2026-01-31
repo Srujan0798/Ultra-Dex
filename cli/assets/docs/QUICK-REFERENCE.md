@@ -10,7 +10,7 @@ One-page cheatsheet for AI-driven SaaS development.
 # Initialize Ultra-Dex in your project
 npx ultra-dex init
 
-# List all 16 agents
+# List all 17 agents
 npx ultra-dex agents
 
 # Show specific agent
@@ -139,7 +139,7 @@ Task type:
 npx ultra-dex init              # Interactive setup
 
 # Agents
-npx ultra-dex agents            # List all 16 agents
+npx ultra-dex agents            # List all 17 agents
 npx ultra-dex agent backend     # Show backend agent
 npx ultra-dex agent cto         # Show CTO agent
 
@@ -221,7 +221,7 @@ Use different AI tools for different tasks:
 
 **Core:**
 - [Main README](./README.md) - Project overview
-- [Agent Index](./agents/00-AGENT_INDEX.md) - All 16 agents
+- [Agent Index](./agents/00-AGENT_INDEX.md) - All 17 agents
 - [Guide Directory](./guides/README.md) - All guides
 - [CHANGELOG](./CHANGELOG.md) - Version history
 

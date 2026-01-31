@@ -2,9 +2,9 @@
 
 > Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation** and **God Mode** autonomous agents.
 
-## What's New in v3.4.2 (Ecosystem Mode)
+## What's New in v3.4.3 (Ecosystem Mode)
 
-### 🆕 v3.4.2 Features
+### 🆕 v3.4.3 Features
 ```bash
 # 🏪 Agent Marketplace - install community agents
 npx ultra-dex agents list --marketplace

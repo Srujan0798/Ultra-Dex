@@ -1,55 +1,42 @@
-# Ultra-Dex v3.0 Launch Checklist
+# Ultra-Dex v3.4.3 Launch Checklist
 
 ## Pre-Flight
-- [ ] Version in `package.json` matches (v3.0.0)
-- [ ] VS Code Extension packaged (`.vsix`)
-- [ ] CLI tests passed (`npm test`)
-- [ ] Documentation updated
+- [x] Version in `package.json` matches (v3.4.3)
+- [x] VS Code Extension packaged (`.vsix`)
+- [x] CLI tests passed (`npm test` - 95/95)
+- [x] Documentation updated
+
+## Key Stats
+- 42+ CLI commands
+- 17 AI agents in 6 tiers
+- 31 cursor rules
+- 95 passing tests
+- MCP + WebSocket + Graph implementation
 
 ## Platforms
 
-### Reddit (r/programming, r/webdev, r/SideProject)
-**Title:** I built an "Operating System" for AI Agents (Open Source)
-**Body:**
-Devs, we all know AI code gen is great but chaotic. It forgets context, hallucinates imports, and goes off-rails.
+### Twitter / X
+```
+🚀 Ultra-Dex v3.4.3 — the AI Orchestration Meta-Layer
 
-I built **Ultra-Dex** to fix this. It's a "Memory Layer" and Orchestration Framework for AI.
-It treats AI models (Claude, GPT, Gemini) as interchangeable CPUs and gives them a shared file-system memory (`CONTEXT.md`).
+✅ 42+ CLI commands
+✅ 17 AI agents (swarm mode!)
+✅ Active Kernel (MCP + WebSocket)
+✅ Docker Sandbox for safe execution
 
-**New in v3.0:**
-- **MCP Server:** Connect Claude Desktop directly to your project context.
-- **Agent Swarms:** `npx ultra-dex swarm "Build auth"` spins up 3 agents to plan, code, and review.
-- **VS Code Extension:** Sidebar to manage your AI workforce.
+npx ultra-dex init myproject
 
-It's 100% free and open source.
-Repo: https://github.com/Srujan0798/Ultra-Dex
+github.com/Srujan0798/Ultra-Dex
 
----
+#AI #DevTools #OpenSource #MCP
+```
+
+### Reddit (r/programming, r/webdev)
+**Title:** Ultra-Dex v3.4.3 — AI orchestration framework with 17 agents and MCP kernel
 
 ### Hacker News
-**Title:** Show HN: Ultra-Dex v3.0 – An OS for AI Agent Orchestration (God Mode)
-**Url:** https://github.com/Srujan0798/Ultra-Dex
-**Text:**
-We built a CLI and framework that standardizes how AI agents interact with codebases.
-Instead of "chatting" with code, Ultra-Dex provides a structured protocol (21-step verification) and persistent memory files.
-v2.4 adds a local MCP server, allowing tools like Claude Desktop to read the project plan dynamically.
+**Title:** Show HN: Ultra-Dex – The Kubernetes of AI Coding (17 agents, MCP Kernel)
 
 ---
 
-### Twitter / X
-**Post 1:**
-Stop pasting context into ChatGPT. 🛑
-Meet Ultra-Dex v2.4: The Operating System for AI Agents.
-🤖 16 Specialized Agents (CTO, Backend, Security)
-🧠 Persistent Context Memory
-🔌 Native MCP Server
-Open Source & Free.
-[Link to Repo]
-
-**Post 2:**
-Just ran `npx ultra-dex swarm "Add Stripe payments"`
-1. Planner agent broke it down
-2. Backend agent wrote the API
-3. Security agent audited it
-All orchestrated automatically. This is the future. 🤯
-#AI #DevTools #OpenSource
+*Ultra-Dex v3.4.3 - Professional AI Orchestration Meta Layer*

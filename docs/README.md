@@ -1,6 +1,6 @@
 # Ultra-Dex Documentation
 
-> Documentation hub for Ultra-Dex v3.4.2
+> Documentation hub for Ultra-Dex v3.4.3
 
 ---
 
@@ -71,4 +71,4 @@ docs/
 
 ---
 
-*Ultra-Dex v3.4.2 - AI Orchestration Meta-Layer*
+*Ultra-Dex v3.4.3 - AI Orchestration Meta-Layer*

@@ -144,6 +144,6 @@ export function getProvider() {
 // Core providers
 export { ClaudeProvider, OpenAIProvider, GeminiProvider, OllamaProvider, RouterProvider };
 
-// Ecosystem adapters (v3.4.2)
+// Ecosystem adapters (v3.4.3)
 export { LangChainAdapter } from './langchain.js';
 export { OpenAIAssistantsProvider } from './openai-assistants.js';

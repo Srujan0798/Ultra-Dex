@@ -339,7 +339,7 @@ Integrate Ultra-Dex directly into development platforms.
 
 | Tier | Price | What You Get |
 |------|-------|--------------|
-| **Core** | Free | Full framework, 16 agents, CLI, templates, community support |
+| **Core** | Free | Full framework, 17 agents, CLI, templates, community support |
 | **Pro Playbooks** | $49-149 | Industry-specific playbooks (Healthcare SaaS, Fintech, E-commerce) with compliance guidance |
 | **Team License** | $29/user/mo | Shared configs, audit logs, priority support, custom agent builder |
 | **Enterprise** | Custom | Self-hosted, SSO, dedicated support, SLA, custom integrations |
@@ -357,7 +357,7 @@ Integrate Ultra-Dex directly into development platforms.
 - **Enterprise** - When demand justifies (target: 10+ inbound requests)
 
 ### What Will NEVER Be Paid
-- Core 16 agents
+- Core 17 agents
 - CLI tool
 - All existing templates and guides
 - Community support (GitHub, Discord)

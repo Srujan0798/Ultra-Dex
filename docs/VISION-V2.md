@@ -113,7 +113,7 @@ Ultra-Dex doesn't replace any tool. It **enhances** every tool.
 
 Ultra-Dex v3 introduces the "Active Kernel" - a persistent process that manages project state and agent coordination.
 
-**v3.1.0 (Current)**
+**v3.4.3 (Current)**
 - `ultra-dex serve` - Start the MCP + WebSocket + Dashboard server
 - `ultra-dex swarm` - Run autonomous agent swarms with parallel execution
 - `ultra-dex watch` - Real-time state updates on file changes
@@ -176,11 +176,11 @@ Then it:
 
 ---
 
-## Roadmap (v3.1.0 Update)
+## Roadmap (v3.4.3 Update)
 
 ### Phase 1: Foundation (Legacy - v1.x) ✅
 - 34-section template
-- 16 agents
+- 17 agents
 - CLI basics
 
 ### Phase 2: AI Generation (Legacy - v2.x) ✅
