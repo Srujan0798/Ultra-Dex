@@ -232,17 +232,6 @@ Follow user instructions carefully and provide helpful responses.
       console.log(chalk.gray(`  .ultra-dex/custom-agents/${name.toLowerCase()}.md\n`));
     });
 
-  // Legacy: agent [name] command
-  program
-    .command('agent [name]')
-    .description('Show a specific agent prompt or list all agents')
-    .action(async (name) => {
-      if (!name) {
-        await listAgents();
-      } else {
-        await showAgent(name);
-      }
-    });
 }
 
 async function showMarketplace() {
