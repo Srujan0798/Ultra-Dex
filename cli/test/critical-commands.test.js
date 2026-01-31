@@ -11,7 +11,9 @@ import path from 'node:path';
 import os from 'node:os';
 import http from 'node:http';
 
-const cliPath = path.resolve(process.cwd(), 'cli/bin/ultra-dex.js');
+// Use import.meta.url to get correct path regardless of cwd
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const cliPath = path.resolve(__dirname, '..', 'bin', 'ultra-dex.js');
 
 function runCli(args, options = {}) {
   const result = spawnSync(process.execPath, [cliPath, ...args], {

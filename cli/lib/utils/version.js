@@ -10,4 +10,8 @@ const pkg = require('../../package.json');
 export const VERSION = pkg.version;
 export const PACKAGE_NAME = pkg.name;
 
+export function getVersion() {
+  return VERSION;
+}
+
 export default VERSION;
