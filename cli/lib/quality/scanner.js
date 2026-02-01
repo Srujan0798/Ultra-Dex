@@ -58,7 +58,7 @@ const RULES = [
   }
 ];
 
-async function getFiles(dir, ignoreList = ['node_modules', '.git', '.next', 'dist', 'build']) {
+async function getFiles(dir, ignoreList = ['node_modules', '.git', '.next', 'dist', 'build', 'coverage']) {
   try {
     const dirents = await fs.readdir(dir, { withFileTypes: true });
     const filePromises = dirents.map(async (dirent) => {
