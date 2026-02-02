@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { registerResources } from "./resources.js";
@@ -12,10 +12,20 @@ import { VERSION } from "../utils/version.js";
  * @returns {McpServer} Configured MCP Server
  */
 export function createMcpServer() {
-  const server = new McpServer({
-    name: "Ultra-Dex Active Kernel",
-    version: VERSION
-  });
+  const server = new Server(
+    {
+      name: "Ultra-Dex Active Kernel",
+      version: VERSION
+    },
+    {
+      capabilities: {
+        tools: {},
+        resources: {},
+        prompts: {},
+        logging: {}
+      }
+    }
+  );
 
   registerResources(server);
   registerTools(server);
