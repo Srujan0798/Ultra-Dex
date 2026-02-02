@@ -249,7 +249,7 @@ function generateLocalEmbedding(text, dimensions = 384) {
  * Index the codebase
  */
 export async function indexCodebase(workdir = process.cwd(), options = {}) {
-  const { force = false, verbose = false } = options;
+  const { force = false, verbose = false, provider = null } = options;
   const indexPath = path.join(workdir, EMBEDDINGS_CONFIG.indexPath);
 
   // Check if index exists and is recent
@@ -306,8 +306,8 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
       const chunks = chunkText(content, file);
 
       // Generate embeddings for each chunk
-      for (const chunk of chunks) {
-        const embedding = await generateEmbedding(chunk.content);
+      await Promise.all(chunks.map(async (chunk) => {
+        const embedding = await generateEmbedding(chunk.content, provider);
 
         vectorStore.addDocument({
           id: `${file}:${chunk.chunk}`,
@@ -319,7 +319,7 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
         });
 
         chunkCount++;
-      }
+      }));
     } catch (err) {
       if (verbose) {
         console.log(chalk.yellow(`Failed to index ${file}: ${err.message}`));
