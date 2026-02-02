@@ -2,7 +2,7 @@
 import { getProvider } from '../providers/index.js';
 import { readFile, writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { glob } from 'glob';
 import { projectGraph } from '../mcp/graph.js';
 import { updateStateFile, loadState, saveState } from './state.js';
@@ -30,7 +30,7 @@ async function withStateLock(callback) {
     await new Promise(r => setTimeout(r, 100));
     retries++;
   }
-  
+
   try {
     await writeFile(lockFile, String(Date.now()));
     return await callback();
@@ -47,7 +47,7 @@ export function showSwarmAssemble(activeAgents) {
   }
 
   renderer.text(`**⚡ AGENT PIPELINE INITIALIZED**`, true);
-  
+
   activeAgents.forEach((agentInfo) => {
     const agent = agents[agentInfo.name];
     if (agent) {
@@ -141,7 +141,7 @@ export async function swarmCommand(task, options) {
           '  8. @reviewer - Code review'
         ].join('\n')
       : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
-    
+
     renderer.box(
       pipelineInfo,
       options.parallel ? 'Dry Run Pipeline (Parallel Mode)' : 'Dry Run Pipeline',
@@ -153,7 +153,7 @@ export async function swarmCommand(task, options) {
   // Load context & Graph
   const contextPath = join(process.cwd(), 'CONTEXT.md');
   const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
-  
+
   let context = '';
   if (existsSync(contextPath)) context += await readFile(contextPath, 'utf-8');
   if (existsSync(planPath)) context += '\n\n' + await readFile(planPath, 'utf-8');
@@ -192,8 +192,8 @@ export async function swarmCommand(task, options) {
   let previousOutput = '';
   const agentResults = [];
   const agentTimings = {};
-  
-  const executionTiers = options.parallel 
+
+  const executionTiers = options.parallel
     ? [
         { name: '1-Planning', agents: AGENT_PIPELINE.filter(a => a.tier === '1-planning'), parallel: false },
         { name: '2-Implementation', agents: AGENT_PIPELINE.filter(a => a.tier === '2-implementation'), parallel: true },
@@ -204,7 +204,7 @@ export async function swarmCommand(task, options) {
 
   for (const tier of executionTiers) {
     if (tier.agents.length === 0) continue;
-    
+
     console.log(theme.dim(`\n📦 Tier: ${tier.name}`));
 
     if (tier.parallel) {
@@ -213,7 +213,7 @@ export async function swarmCommand(task, options) {
         const agentStart = Date.now();
         // Use a generic spinner since parallel spinners are messy in terminal
         console.log(theme.accent(`  ⟳ Running @${agent.name}...`));
-        
+
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
           const duration = Date.now() - agentStart;
@@ -229,7 +229,7 @@ export async function swarmCommand(task, options) {
       const results = await Promise.all(promises);
       agentResults.push(...results);
       previousOutput += '\n\n' + results.filter(r => r.success).map(r => r.result).join('\n\n');
-      
+
     } else {
       // Serial Execution
       for (const agent of tier.agents) {
@@ -242,11 +242,11 @@ export async function swarmCommand(task, options) {
           agentTimings[agent.name] = duration;
           previousOutput = result;
           renderer.succeed(`@${agent.name} complete (${duration}ms)`);
-          
+
           // Stream a preview of the output
           const preview = result.slice(0, 150).replace(/\n/g, ' ') + '...';
           console.log(theme.dim(`    › ${preview}`));
-          
+
           agentResults.push({ agent: agent.name, result, success: true });
 
         } catch (error) {
@@ -276,10 +276,39 @@ export async function swarmCommand(task, options) {
   );
 }
 
+let agentPathsCache = null;
+
+async function getAgentPaths() {
+  if (agentPathsCache) return agentPathsCache;
+  agentPathsCache = new Map();
+
+  try {
+    const files = await glob('agents/**/*.md', { ignore: 'node_modules/**' });
+    for (const file of files) {
+      const name = basename(file, '.md');
+      // Store the first occurrence found. The glob order is generally stable.
+      if (!agentPathsCache.has(name)) {
+        agentPathsCache.set(name, file);
+      }
+    }
+  } catch (error) {
+    // If glob fails, we'll just have an empty map and fall back to direct checks if possible,
+    // though the direct check logic below also relies on file existence.
+    console.warn('Warning: Failed to scan agent prompts:', error.message);
+  }
+
+  return agentPathsCache;
+}
+
 async function loadAgentPrompt(name) {
-  const files = await glob(`agents/**/${name}.md`, { ignore: 'node_modules/**' });
-  if (files.length > 0) return await readFile(files[0], 'utf-8');
-  
+  const paths = await getAgentPaths();
+  const file = paths.get(name);
+
+  if (file) {
+    return await readFile(file, 'utf-8');
+  }
+
+  // Fallback to direct check
   const directPath = join(process.cwd(), 'agents', `${name}.md`);
   if (existsSync(directPath)) return await readFile(directPath, 'utf-8');
 
