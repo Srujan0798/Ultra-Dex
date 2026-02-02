@@ -280,17 +280,6 @@ ${answers.prompt}
       spinner.succeed(`Installed ${chalk.green(agent.name)} v${agent.version}`);
     });
 
-  // Legacy: agent [name] command
-  program
-    .command('agent [name]')
-    .description('Show a specific agent prompt or list all agents')
-    .action(async (name) => {
-      if (!name) {
-        await listAgents();
-      } else {
-        await showAgent(name);
-      }
-    });
 }
 
 async function showMarketplace() {
