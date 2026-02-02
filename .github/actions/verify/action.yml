@@ -49,9 +49,9 @@ runs:
         OUTPUT=$(npx ultra-dex verify --json --template "${{ inputs.template }}" 2>/dev/null || echo '{"valid":false,"error":"verify command failed"}')
         
         # Parse JSON
-        VALID=$(echo "$OUTPUT" | npx jq -r '.valid // false')
-        SCORE=$(echo "$OUTPUT" | npx jq -r '.score // 0')
-        P0_COMPLETE=$(echo "$OUTPUT" | npx jq -r '.p0SectionsComplete // false')
+        VALID=$(echo "$OUTPUT" | jq -r '.valid // false')
+        SCORE=$(echo "$OUTPUT" | jq -r '.score // 0')
+        P0_COMPLETE=$(echo "$OUTPUT" | jq -r '.p0SectionsComplete // false')
         
         echo ""
         echo "📊 Results:"
