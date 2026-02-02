@@ -1,6 +1,6 @@
 {
   "name": "ultra-dex",
-  "version": "3.4.3",
+  "version": "3.4.4",
   "description": "AI Orchestration Meta-Layer for SaaS Development - The Headless CTO",
   "keywords": [
     "ai",
@@ -17,7 +17,11 @@
     "sandbox",
     "github",
     "browser-automation",
-    "agent-sdk"
+    "agent-sdk",
+    "plugin-architecture",
+    "extensible",
+    "performance-optimized",
+    "security-hardened"
   ],
   "author": "Srujan Sai Karna",
   "license": "MIT",

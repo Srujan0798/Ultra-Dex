@@ -278,7 +278,7 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 
         if (answers.includeFullTemplate) {
           const templatePath = path.join(ASSETS_ROOT, 'saas-plan', '04-Imp-Template.md');
-          const fallbackTemplatePath = path.join(ROOT_FALLBACK, '@ Ultra DeX', 'Saas plan', '04-Imp-Template.md');
+          const fallbackTemplatePath = path.join(ROOT_FALLBACK, '@ ultra-dex', 'Saas plan', '04-Imp-Template.md');
           try {
             await copyWithFallback(templatePath, fallbackTemplatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
           } catch {
