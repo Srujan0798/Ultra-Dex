@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { existsSync } from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 import { performance } from 'perf_hooks';
@@ -10,10 +11,49 @@ export class CodeGraph {
     this.lastScanTime = 0;
     this.cacheTimeout = 30000; // 30 seconds cache
     this.fileHashes = new Map(); // Track file changes for selective updates
+    this.cacheDir = path.resolve(process.cwd(), '.ultra-dex');
+    this.cacheFile = path.resolve(this.cacheDir, 'graph.json');
+  }
+
+  async loadCache() {
+    try {
+      if (existsSync(this.cacheFile)) {
+        const data = await fs.readFile(this.cacheFile, 'utf8');
+        const json = JSON.parse(data);
+        this.nodes = new Map(json.nodes);
+        this.edges = json.edges;
+        this.lastScanTime = json.lastScanTime || 0;
+        return true;
+      }
+    } catch (e) {
+      console.warn('Failed to load graph cache:', e.message);
+    }
+    return false;
+  }
+
+  async saveCache() {
+    try {
+      if (!existsSync(this.cacheDir)) {
+        await fs.mkdir(this.cacheDir, { recursive: true });
+      }
+      const json = {
+        nodes: Array.from(this.nodes.entries()),
+        edges: this.edges,
+        lastScanTime: Date.now()
+      };
+      await fs.writeFile(this.cacheFile, JSON.stringify(json, null, 2));
+    } catch (e) {
+      console.warn('Failed to save graph cache:', e.message);
+    }
   }
 
   async scan(useCache = true) {
     const now = Date.now();
+
+    // Try loading persistent cache if memory cache is empty
+    if (useCache && this.nodes.size === 0) {
+      await this.loadCache();
+    }
 
     // Check if we can use cached results
     if (useCache && this.nodes.size > 0 && (now - this.lastScanTime) < this.cacheTimeout) {
@@ -23,46 +63,87 @@ export class CodeGraph {
     // Start performance tracking
     const scanStart = performance.now();
 
-    this.nodes.clear();
-    this.edges = [];
-
     // Find all js/ts/jsx/tsx files
     // Ignoring node_modules, .git, dist, build
     const files = await glob('**/*.{js,ts,jsx,tsx}', {
-      ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/.next/**'],
+      ignore: ['**/node_modules/**', '.git/**', 'dist/**', 'build/**', '.next/**'],
       absolute: false,
-      cwd: process.cwd()
+      cwd: process.cwd(),
+      nodir: true
     });
 
-    // Process files in chunks to prevent EMFILE errors
-    const CONCURRENCY_LIMIT = 100; // Increased for better performance
-    const promises = [];
+    const currentFiles = new Set(files);
+    const filesToAnalyze = [];
 
-    for (let i = 0; i < files.length; i += CONCURRENCY_LIMIT) {
-      const chunk = files.slice(i, i + CONCURRENCY_LIMIT);
-      const chunkPromises = chunk.map(file => this.analyzeFile(file));
-      promises.push(...chunkPromises);
+    // Identify files to update or add
+    for (const file of files) {
+      try {
+        const stats = await fs.stat(path.resolve(process.cwd(), file));
+        const mtime = stats.mtimeMs;
+
+        const existingNode = this.nodes.get(file);
+        if (!existingNode || existingNode.mtime !== mtime) {
+          filesToAnalyze.push({ file, mtime });
+        }
+      } catch (e) {
+        console.warn(`Failed to stat ${file}:`, e.message);
+      }
     }
 
-    // Process all files with better error handling
-    const results = await Promise.allSettled(promises);
-
-    // Log any errors that occurred during analysis
-    results.forEach((result, index) => {
-      if (result.status === 'rejected') {
-        console.error(`Failed to analyze file at index ${index}:`, result.reason);
+    // Identify deleted files
+    for (const [file] of this.nodes) {
+      if (!currentFiles.has(file)) {
+        this.nodes.delete(file);
+        // Remove edges originating from this file
+        this.edges = this.edges.filter(e => e.from !== file);
       }
-    });
+    }
+
+    // Remove old edges from files being re-analyzed
+    if (filesToAnalyze.length > 0) {
+      const filesToUpdateSet = new Set(filesToAnalyze.map(f => f.file));
+      this.edges = this.edges.filter(e => !filesToUpdateSet.has(e.from));
+
+      // Process files in chunks to prevent EMFILE errors
+      const CONCURRENCY_LIMIT = 100; // Increased for better performance
+      const promises = [];
+
+      for (let i = 0; i < filesToAnalyze.length; i += CONCURRENCY_LIMIT) {
+        const chunk = filesToAnalyze.slice(i, i + CONCURRENCY_LIMIT);
+        const chunkPromises = chunk.map(({ file, mtime }) => this.analyzeFile(file, mtime));
+        promises.push(...chunkPromises);
+      }
+
+      // Process all files with better error handling
+      const results = await Promise.allSettled(promises);
+
+      // Log any errors that occurred during analysis
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`Failed to analyze file at index ${index}:`, result.reason);
+        }
+      });
+
+      // Add new edges
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          this.edges.push(...result.value);
+        }
+      }
+    }
 
     this.lastScanTime = now;
 
     const scanDuration = performance.now() - scanStart;
     console.debug(`[Performance] Graph scan completed in ${scanDuration.toFixed(2)}ms for ${files.length} files`);
 
+    // Save cache asynchronously
+    this.saveCache().catch(e => console.error('Background cache save failed:', e));
+
     return this.getSummary();
   }
 
-  async analyzeFile(filePath) {
+  async analyzeFile(filePath, mtime) {
     try {
       const absolutePath = path.resolve(process.cwd(), filePath);
       const stats = await fs.stat(absolutePath);
@@ -82,13 +163,14 @@ export class CodeGraph {
         id: filePath,
         size: content.length,
         type: path.extname(filePath).substring(1),
-        mtime: stats.mtimeMs,
+        mtime: mtime,
         // Simple heuristic for "component" vs "utility"
         isComponent: /^[A-Z]/.test(path.basename(filePath)) || content.includes('React') || content.includes('Component'),
       });
 
-      // Extract Imports (Optimized regex with better performance characteristics)
-      const importRegex = /import\s+(?:[\w\s{},*$]+)\s+from\s+['"]([^'"]+)['"]/g;
+      const newEdges = [];
+      // Extract Imports (Regex based for speed/simplicity without AST parsing overhead)
+      const importRegex = /import\s+(?:[\w\s{},*]+)\s+from\s+['"]([^'"]+)['"]/g;
       let match;
 
       while ((match = importRegex.exec(content)) !== null) {
@@ -100,17 +182,15 @@ export class CodeGraph {
           const resolvedAbs = path.resolve(absoluteDir, importPath);
           const relativeResolved = path.relative(process.cwd(), resolvedAbs);
 
-          // Add edge with validation to prevent self-references
-          if (filePath !== relativeResolved) {
-            this.edges.push({
-              from: filePath,
-              to: relativeResolved,
-              type: 'depends_on'
-            });
-          }
+          // Add edge
+          newEdges.push({
+            from: filePath,
+            to: relativeResolved, // Note: This might not match exactly if extensions are missing, but good enough for rough graph
+            type: 'depends_on'
+          });
         } else {
           // Package import
-          this.edges.push({
+          newEdges.push({
             from: filePath,
             to: importPath,
             type: 'package_dependency'
@@ -118,11 +198,14 @@ export class CodeGraph {
         }
       }
 
+      return newEdges;
+
     } catch (e) {
       // Only log errors in debug mode to avoid spamming console
       if (process.env.DEBUG) {
         console.error(`Failed to analyze ${filePath}:`, e.message);
       }
+      return [];
     }
   }
 
