@@ -1,0 +1,132 @@
+#compdef ultra-dex
+# Ultra-Dex CLI Zsh Completion
+
+_ultra_dex() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+    
+    _arguments -C \
+        '(-h --help)'{-h,--help}'[Show help]' \
+        '(-v --version)'{-v,--version}'[Show version]' \
+        '(--verbose)'--verbose'[Verbose output]' \
+        '(--debug)'--debug'[Debug mode]' \
+        '(--json)'--json'[JSON output]' \
+        '1: :_ultra_dex_commands' \
+        '*:: :->args'
+    
+    case "$state" in
+        args)
+            case "$line[1]" in
+                init)
+                    _arguments \
+                        '(--template)'--template'[Template type]:template:(lite full enterprise)' \
+                        '(--force)'--force'[Force overwrite]' \
+                        '(--skip-git)'--skip-git'[Skip git init]'
+                    ;;
+                run)
+                    _arguments \
+                        '1:agent:_ultra_dex_agents'
+                    ;;
+                swarm)
+                    _arguments \
+                        '(--dry-run)'--dry-run'[Dry run only]' \
+                        '(--agents)'--agents'[Specific agents]:agents:' \
+                        '(--timeout)'--timeout'[Timeout in ms]:timeout:'
+                    ;;
+                agents)
+                    _arguments \
+                        '1:action:(list install create publish)' \
+                        '(--marketplace)'--marketplace'[Browse marketplace]'
+                    ;;
+                sync)
+                    _arguments \
+                        '(--brain)'--brain'[Sync with brain]' \
+                        '(--watch)'--watch'[Watch mode]' \
+                        '(--force)'--force'[Force sync]'
+                    ;;
+                memory)
+                    _arguments \
+                        '1:action:(list add search clear sessions decisions query stats)'
+                    ;;
+                estimate)
+                    _arguments \
+                        '1:task type:(simple-task feature-impl plan-generation complex-refactor agent-swarm context-sync)' \
+                        '(--tokens)'--tokens'[Token count]:tokens:' \
+                        '(--provider)'--provider'[AI provider]:provider:(openai anthropic google local)' \
+                        '(--monthly)'--monthly'[Monthly estimate]:count:' \
+                        '(--json)'--json'[JSON output]'
+                    ;;
+                voice)
+                    _arguments \
+                        '(--provider)'--provider'[STT provider]:provider:(whisper google azure)' \
+                        '(--language)'--language'[Language code]:lang:' \
+                        '(--output)'--output'[Output file]:file:_files' \
+                        '(--template)'--template'[Template]:template:(lite full enterprise)' \
+                        '(--save-audio)'--save-audio'[Save audio file]'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_ultra_dex_commands() {
+    local commands=(
+        "init:Initialize new project"
+        "generate:Generate implementation plan"
+        "build:Build the project"
+        "run:Run single agent"
+        "swarm:Run agent swarm"
+        "agents:Manage agents"
+        "agent:Alias for run"
+        "auto-implement:Auto-implement features"
+        "serve:Start MCP server"
+        "dashboard:Open dashboard"
+        "watch:Watch mode"
+        "ci-monitor:CI/CD monitor"
+        "status:Show status"
+        "state:Manage state"
+        "sync:Sync project"
+        "memory:Memory management"
+        "align:Check alignment"
+        "validate:Validate project"
+        "check:Check completeness"
+        "doctor:Diagnose issues"
+        "verify:Verify implementation"
+        "fix:Auto-fix issues"
+        "diff:Show diff"
+        "export:Export plan"
+        "pack:Pack project"
+        "config:Configuration"
+        "hooks:Git hooks"
+        "upgrade:Upgrade Ultra-Dex"
+        "exec:Execute code"
+        "search:Semantic search"
+        "github:GitHub integration"
+        "cloud:Cloud features"
+        "metrics:Show metrics"
+        "health:Health check"
+        "debug:Debug mode"
+        "brain:Brain sync"
+        "advanced:Advanced commands"
+        "estimate:Cost estimation"
+        "voice:Voice-to-plan"
+    )
+    _describe -t commands 'ultra-dex commands' commands
+}
+
+_ultra_dex_agents() {
+    local agents=(
+        "planner:Planning agent"
+        "backend:Backend developer"
+        "frontend:Frontend developer"
+        "database:Database specialist"
+        "security:Security auditor"
+        "devops:DevOps engineer"
+        "reviewer:Code reviewer"
+        "debugger:Debug specialist"
+    )
+    _describe -t agents 'agents' agents
+}
+
+compdef _ultra_dex ultra-dex
+compdef _ultra_dex 'npx ultra-dex'

@@ -1,0 +1,8 @@
+{
+  "name": "logger",
+  "version": "1.0.0",
+  "description": "Logs all Ultra-Dex activity to a central file",
+  "main": "index.js",
+  "author": "Ultra-Dex Team",
+  "hooks": ["pre-run", "post-run", "pre-init"]
+}
