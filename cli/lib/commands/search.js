@@ -275,16 +275,11 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
 
   // Find all files to index
   const excludePattern = EMBEDDINGS_CONFIG.excludeDirs.map(d => `**/${d}/**`);
-  const files = [];
-
-  for (const pattern of EMBEDDINGS_CONFIG.includePatterns) {
-    const matches = await glob(pattern, {
-      cwd: workdir,
-      ignore: excludePattern,
-      nodir: true,
-    });
-    files.push(...matches);
-  }
+  const files = await glob(EMBEDDINGS_CONFIG.includePatterns, {
+    cwd: workdir,
+    ignore: excludePattern,
+    nodir: true,
+  });
 
   // Deduplicate
   const uniqueFiles = [...new Set(files)];
