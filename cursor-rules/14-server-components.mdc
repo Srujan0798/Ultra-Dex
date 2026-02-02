@@ -1,0 +1,81 @@
+# Server Components (React 19 / Next.js 15)
+
+> Default to Server Components. Use Client Components only when necessary.
+
+## When to Use Server Components
+
+- Data fetching
+- Accessing backend resources directly
+- Keeping sensitive logic on server
+- Large dependencies that shouldn't be in client bundle
+- SEO-critical content
+
+## When to Use Client Components
+
+- Interactivity (onClick, onChange, etc.)
+- Browser APIs (localStorage, geolocation)
+- React hooks (useState, useEffect, useContext)
+- Third-party libraries that use browser APIs
+
+## Patterns
+
+### Data Fetching in Server Components
+
+```tsx
+// app/users/page.tsx (Server Component)
+import { prisma } from '@/lib/prisma';
+
+export default async function UsersPage() {
+  const users = await prisma.user.findMany({
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return (
+    <div>
+      {users.map(user => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </div>
+  );
+}
+```
+
+### Composition Pattern
+
+```tsx
+// Server Component wrapper
+async function UserList() {
+  const users = await getUsers();
+  return <UserListClient users={users} />;
+}
+
+// Client Component for interactivity
+'use client';
+function UserListClient({ users }) {
+  const [selected, setSelected] = useState(null);
+  return (/* interactive UI */);
+}
+```
+
+### Passing Server Data to Client
+
+```tsx
+// Server Component
+export default async function Page() {
+  const data = await fetchData(); // Server-side fetch
+
+  return (
+    <ClientComponent
+      initialData={data}  // Serializable data only
+    />
+  );
+}
+```
+
+## Rules
+
+- Never import Server Components into Client Components
+- Keep 'use client' boundary as low as possible
+- Don't pass functions as props across the boundary
+- Use Server Actions for mutations, not API routes
+- Async components are Server Components by default

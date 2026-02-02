@@ -41,7 +41,7 @@ WITHOUT ULTRA-DEX:
 ├── Close session → AI FORGETS EVERYTHING
 ├── Next day → start from ZERO context
 ├── Week 2 → "Wait, what was the auth edge case again?"
-└── Month 3 → complete project amnesia
+├── Month 3 → complete project amnesia
 
 WITH ULTRA-DEX:
 ├── CONTEXT.md holds all project knowledge (ALWAYS)
@@ -107,21 +107,6 @@ WITH ULTRA-DEX:
 
 ---
 
-## ⚔️ KILLERS WE MUST BEAT
-
-| Tool | Their Strength | Our Gap | Our Counter |
-|------|----------------|---------|-------------|
-| **Devin AI** | End-to-end app in 60min | No live boilerplate | CLI `--live` mode + Swarm |
-| **Cursor 2.0** | Perfect Next.js patterns | Missing .mdc rules | Add 31+ rules (Verified) |
-| **Replit Agent** | Voice→code→deploy | CLI too static | **`ultra-dex voice` command** |
-| **Antigravity** | Full IDE agent | Passive approach | MCP + swarm |
-| **LangGraph** | Agent orchestration | Manual coord | Swarm mode (Auto-pipeline) |
-| **Bolt.new** | 30s app prototypes | Phase1→code gap | Boilerplate gen |
-| **Claude Code** | Full codebase understanding | Session amnesia | CONTEXT.md + MCP |
-| **Cody** | Context-aware | Single-tool only | Multi-tool / Meta-Layer |
-
----
-
 ## 🔗 2026 TECHNOLOGY STACK (Must Integrate)
 
 | Technology | What It Is | Ultra-Dex Integration |
@@ -131,10 +116,11 @@ WITH ULTRA-DEX:
 | **LangGraph** | Stateful agent graphs | Swarm mode uses similar tier-based patterns |
 | **OpenAI Assistants API** | Persistent AI threads | **⚠️ DEBT:** `openai.js` lacks sync; `openai-assistants.js` exists but is separate. |
 | **Claude Computer Use** | AI browser/desktop control | Context provided via MCP |
-| **Ollama / LMStudio** | Local LLMs | Supported via `OllamaProvider` |
-| **Vercel AI SDK** | Streaming AI responses | CLI uses streaming response handling |
-| **FalkorDB / Neo4j** | Graph databases for RAG | `projectGraph` uses in-memory graph |
-| **Pinecone / Weaviate** | Vector stores | **`search` command** uses local vector store |
+| **Antigravity** | Full IDE agent | Context provided via MCP |
+| **LangGraph** | Agent orchestration | Swarm mode uses similar patterns |
+| **Bolt.new** | 30s app prototypes | MCP provides context for rapid prototyping |
+| **Claude Code** | Full codebase understanding | MCP provides persistent context |
+| **Cody** | Context-aware | MCP provides unified context across tools |
 
 ### API Layer Requirements
 ```

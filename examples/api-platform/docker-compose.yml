@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/api_platform
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev-secret-key
+      - WEBHOOK_SECRET=dev-webhook-secret
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=api_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  webhook-worker:
+    build: .
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/api_platform
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev-secret-key
+      - WEBHOOK_SECRET=dev-webhook-secret
+    depends_on:
+      - db
+      - redis
+    command: npm run webhook:worker
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -9,8 +9,8 @@ const redToPurpleGradient = gradient(['#dc2626', '#7c3aed']);
 const asciiLogo = `
 ██╗   ██╗██╗  ████████╗██████╗  █████╗       ██████╗ ███████╗██╗  ██╗
 ██║   ██║██║  ╚══██╔══╝██╔══██╗██╔══██╗      ██╔══██╗██╔════╝╚██╗██╔╝
-██║   ██║██║     ██║   ██████╔╝███████║█████╗██║  ██║█████╗   ╚███╔╝ 
-██║   ██║██║     ██║   ██╔══██╗██╔══██║╚════╝██║  ██║██╔══╝   ██╔██╗ 
+██║   ██║██║     ██║   ██████╔╝███████║█████╗██║  ██║█████╗   ╚███╔╝
+██║   ██║██║     ██║   ██╔══██╗██╔══██║╚════╝██║  ██║██╔══╝   ██╔██╗
 ╚██████╔╝███████╗██║   ██║  ██║██║  ██║      ██████╔╝███████╗██╔╝ ██╗
  ╚═════╝ ╚══════╝╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝      ╚═════╝ ╚══════╝╚═╝  ╚═╝`;
 
@@ -19,12 +19,14 @@ export const banner = asciiLogo;
 export function showBanner(version = VERSION) {
   // Apply the gradient VERTICALLY (Top to Bottom)
   console.log(redToPurpleGradient.multiline(asciiLogo));
-  
+
   console.log(boxen(
     `${chalk.hex('#dc2626').bold('⚡ ULTRA-DEX')} ${chalk.dim('v' + version)}
 
 ` +
-    `${chalk.hex('#7c3aed')('AI Orchestration Meta-Layer')}
+    `${chalk.hex('#6366f1')('AI Orchestration Meta-Layer')}
+` +
+    `${chalk.green.dim('● SYSTEM ACTIVATED')}
 
 ` +
     `${chalk.dim('Perfectly balanced, as all code should be.')}`,
