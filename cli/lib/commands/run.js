@@ -73,6 +73,24 @@ Available commands:
 >> READ_CODE: "path"
 >> SEARCH_CODE: "query"`,
   },
+  debugger: {
+    name: '@Debugger',
+    role: 'Bug Fixing Specialist',
+    systemPrompt: `You are @Debugger. Analyze logs and code to identify and fix bugs.
+Available commands:
+>> READ_CODE: "path"
+>> SEARCH_CODE: "query"
+>> WRITE_CODE: "path" "content"`,
+  },
+  devops: {
+    name: '@DevOps',
+    role: 'DevOps Engineer',
+    systemPrompt: `You are @DevOps. Manage deployment, infrastructure, and CI/CD pipelines.
+Available commands:
+>> READ_CODE: "path"
+>> WRITE_CODE: "path" "content"
+>> SEARCH_CODE: "query"`,
+  },
 };
 
 async function readProjectContext() {
