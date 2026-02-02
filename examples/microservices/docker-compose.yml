@@ -1,0 +1,400 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  redis:
+    image: redis:7-alpine
+    container_name: ms-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: ms-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  consul:
+    image: consul:1.16
+    container_name: ms-consul
+    ports:
+      - "8500:8500"
+    command: consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - microservices-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    container_name: ms-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - microservices-network
+
+  # Databases
+  postgres-auth:
+    image: postgres:15-alpine
+    container_name: ms-postgres-auth
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_pass123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+      - ./services/auth-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  postgres-users:
+    image: postgres:15-alpine
+    container_name: ms-postgres-users
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: users_user
+      POSTGRES_PASSWORD: users_pass123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+      - ./services/users-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U users_user -d users_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  postgres-orders:
+    image: postgres:15-alpine
+    container_name: ms-postgres-orders
+    environment:
+      POSTGRES_DB: orders_db
+      POSTGRES_USER: orders_user
+      POSTGRES_PASSWORD: orders_pass123
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_orders_data:/var/lib/postgresql/data
+      - ./services/orders-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orders_user -d orders_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  postgres-payments:
+    image: postgres:15-alpine
+    container_name: ms-postgres-payments
+    environment:
+      POSTGRES_DB: payments_db
+      POSTGRES_USER: payments_user
+      POSTGRES_PASSWORD: payments_pass123
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_payments_data:/var/lib/postgresql/data
+      - ./services/payments-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payments_user -d payments_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  postgres-notifications:
+    image: postgres:15-alpine
+    container_name: ms-postgres-notifications
+    environment:
+      POSTGRES_DB: notifications_db
+      POSTGRES_USER: notifications_user
+      POSTGRES_PASSWORD: notifications_pass123
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_notifications_data:/var/lib/postgresql/data
+      - ./services/notifications-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notifications_user -d notifications_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  # Microservices
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: ms-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      REDIS_URL: redis://redis:6379
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      JAEGER_ENDPOINT: http://jaeger:4318/v1/traces
+    depends_on:
+      - redis
+      - consul
+      - auth-service
+      - users-service
+      - orders-service
+      - payments-service
+      - notifications-service
+    networks:
+      - microservices-network
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: ms-auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      SERVICE_NAME: auth-service
+      DB_HOST: postgres-auth
+      DB_PORT: 5432
+      DB_NAME: auth_db
+      DB_USER: auth_user
+      DB_PASSWORD: auth_pass123
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      BCRYPT_ROUNDS: 12
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      JAEGER_ENDPOINT: http://jaeger:4318/v1/traces
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_started
+    networks:
+      - microservices-network
+
+  users-service:
+    build:
+      context: ./services/users-service
+      dockerfile: Dockerfile
+    container_name: ms-users-service
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      SERVICE_NAME: users-service
+      DB_HOST: postgres-users
+      DB_PORT: 5432
+      DB_NAME: users_db
+      DB_USER: users_user
+      DB_PASSWORD: users_pass123
+      REDIS_URL: redis://redis:6379
+      AUTH_SERVICE_URL: http://auth-service:3001
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      JAEGER_ENDPOINT: http://jaeger:4318/v1/traces
+      CACHE_TTL: 3600
+    depends_on:
+      postgres-users:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      auth-service:
+        condition: service_started
+    networks:
+      - microservices-network
+
+  orders-service:
+    build:
+      context: ./services/orders-service
+      dockerfile: Dockerfile
+    container_name: ms-orders-service
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      SERVICE_NAME: orders-service
+      DB_HOST: postgres-orders
+      DB_PORT: 5432
+      DB_NAME: orders_db
+      DB_USER: orders_user
+      DB_PASSWORD: orders_pass123
+      REDIS_URL: redis://redis:6379
+      AUTH_SERVICE_URL: http://auth-service:3001
+      USERS_SERVICE_URL: http://users-service:3002
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      JAEGER_ENDPOINT: http://jaeger:4318/v1/traces
+    depends_on:
+      postgres-orders:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      users-service:
+        condition: service_started
+    networks:
+      - microservices-network
+
+  payments-service:
+    build:
+      context: ./services/payments-service
+      dockerfile: Dockerfile
+    container_name: ms-payments-service
+    ports:
+      - "3004:3004"
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      SERVICE_NAME: payments-service
+      DB_HOST: postgres-payments
+      DB_PORT: 5432
+      DB_NAME: payments_db
+      DB_USER: payments_user
+      DB_PASSWORD: payments_pass123
+      REDIS_URL: redis://redis:6379
+      AUTH_SERVICE_URL: http://auth-service:3001
+      ORDERS_SERVICE_URL: http://orders-service:3003
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      JAEGER_ENDPOINT: http://jaeger:4318/v1/traces
+      PAYMENT_GATEWAY_MODE: mock
+    depends_on:
+      postgres-payments:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      orders-service:
+        condition: service_started
+    networks:
+      - microservices-network
+
+  notifications-service:
+    build:
+      context: ./services/notifications-service
+      dockerfile: Dockerfile
+    container_name: ms-notifications-service
+    ports:
+      - "3005:3005"
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      SERVICE_NAME: notifications-service
+      DB_HOST: postgres-notifications
+      DB_PORT: 5432
+      DB_NAME: notifications_db
+      DB_USER: notifications_user
+      DB_PASSWORD: notifications_pass123
+      REDIS_URL: redis://redis:6379
+      AUTH_SERVICE_URL: http://auth-service:3001
+      USERS_SERVICE_URL: http://users-service:3002
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      JAEGER_ENDPOINT: http://jaeger:4318/v1/traces
+      SMTP_HOST: smtp.mock.com
+      SMTP_PORT: 587
+      SMTP_USER: mock@example.com
+      SMTP_PASS: mockpass
+    depends_on:
+      postgres-notifications:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      users-service:
+        condition: service_started
+    networks:
+      - microservices-network
+
+volumes:
+  redis_data:
+  rabbitmq_data:
+  consul_data:
+  postgres_auth_data:
+  postgres_users_data:
+  postgres_orders_data:
+  postgres_payments_data:
+  postgres_notifications_data:
+
+networks:
+  microservices-network:
+    driver: bridge
