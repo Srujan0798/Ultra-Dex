@@ -23,10 +23,10 @@ export function registerCiMonitorCommand(program) {
     .action(async (options) => {
       const port = parseInt(options.port);
       const notifyEvents = options.notifyOn.split(',').map(e => e.trim());
-      
+
       console.log(chalk.cyan('\n🛡️  Ultra-Dex Self-Healing CI Monitor\n'));
       console.log(chalk.gray(`Listening for GitHub Webhooks on port ${port}...`));
-      
+
       if (options.slackWebhook) {
         console.log(chalk.green(`📱 Slack notifications: ${options.slackWebhook.substring(0, 30)}...`));
       }
@@ -45,11 +45,11 @@ export function registerCiMonitorCommand(program) {
           req.on('end', async () => {
             try {
               const payload = JSON.parse(body);
-              
+
               // Handle different webhook events
               if (payload.action === 'completed' && payload.workflow_job) {
                 const { workflow_job, repository: _repository } = payload;
-                
+
                 if (workflow_job.conclusion === 'failure') {
                   await handleBuildFailure(payload, options, notifyEvents);
                 } else if (workflow_job.conclusion === 'success' && notifyEvents.includes('success')) {
@@ -99,11 +99,14 @@ async function handleBuildFailure(payload, options, notifyEvents) {
 
   // 2. Diagnose & Fix (@Debugger)
   const fixPlan = await runAgentLoop('debugger', `Analyze this build failure and propose a fix:\n${logs}`, provider, context);
-  
+
   // 3. Apply Fix (Mock - would be git push)
   console.log(chalk.bold('\nProposed Fix:'));
   console.log(chalk.gray(fixPlan));
-  
+
+  // Apply Fix using DevOps Agent
+  await runAgentLoop('devops', `Apply this fix and push to branch 'fix/${jobName}':\n${fixPlan}`, provider, context);
+
   // 4. Send Notifications
   if (notifyEvents.includes('failure')) {
     const notification = {
@@ -115,7 +118,7 @@ async function handleBuildFailure(payload, options, notifyEvents) {
       error: logs.substring(0, 500),
       fix: fixPlan.substring(0, 300)
     };
-    
+
     if (options.slackWebhook) {
       await sendSlackNotification(options.slackWebhook, notification, 'failure');
     }
@@ -123,9 +126,6 @@ async function handleBuildFailure(payload, options, notifyEvents) {
       await sendDiscordNotification(options.discordWebhook, notification, 'failure');
     }
   }
-  
-  // In a real system, we would:
-  // await runAgentLoop('devops', `Apply this fix and push to branch 'fix/${jobName}':\n${fixPlan}`, provider, context);
 }
 
 async function notifySuccess(payload, options) {
@@ -137,9 +137,9 @@ async function notifySuccess(payload, options) {
     url: payload.workflow_job.html_url,
     duration: payload.workflow_job.duration || 'unknown'
   };
-  
+
   console.log(chalk.green(`\n✅ Build Success: ${notification.title}`));
-  
+
   if (options.slackWebhook) {
     await sendSlackNotification(options.slackWebhook, notification, 'success');
   }
@@ -151,9 +151,9 @@ async function notifySuccess(payload, options) {
 async function sendSlackNotification(webhookUrl, data, type) {
   try {
     const url = new URL(webhookUrl);
-    
+
     let slackPayload = {};
-    
+
     if (type === 'failure') {
       slackPayload = {
         text: `🚨 Ultra-Dex CI: Build Failed`,
@@ -185,9 +185,9 @@ async function sendSlackNotification(webhookUrl, data, type) {
         }]
       };
     }
-    
+
     const postData = JSON.stringify(slackPayload);
-    
+
     const options = {
       hostname: url.hostname,
       path: url.pathname + url.search,
@@ -197,7 +197,7 @@ async function sendSlackNotification(webhookUrl, data, type) {
         'Content-Length': Buffer.byteLength(postData)
       }
     };
-    
+
     const req = https.request(options, (res) => {
       if (res.statusCode === 200) {
         console.log(chalk.green('   📱 Slack notification sent'));
@@ -205,14 +205,14 @@ async function sendSlackNotification(webhookUrl, data, type) {
         console.log(chalk.yellow(`   ⚠️ Slack notification failed: ${res.statusCode}`));
       }
     });
-    
+
     req.on('error', (e) => {
       console.log(chalk.red(`   ❌ Slack webhook error: ${e.message}`));
     });
-    
+
     req.write(postData);
     req.end();
-    
+
   } catch (error) {
     console.log(chalk.red(`   ❌ Failed to send Slack notification: ${error.message}`));
   }
@@ -221,9 +221,9 @@ async function sendSlackNotification(webhookUrl, data, type) {
 async function sendDiscordNotification(webhookUrl, data, type) {
   try {
     const url = new URL(webhookUrl);
-    
+
     let discordPayload = {};
-    
+
     if (type === 'failure') {
       discordPayload = {
         username: 'Ultra-Dex CI Monitor',
@@ -261,9 +261,9 @@ async function sendDiscordNotification(webhookUrl, data, type) {
         }]
       };
     }
-    
+
     const postData = JSON.stringify(discordPayload);
-    
+
     const options = {
       hostname: url.hostname,
       path: url.pathname + url.search,
@@ -273,7 +273,7 @@ async function sendDiscordNotification(webhookUrl, data, type) {
         'Content-Length': Buffer.byteLength(postData)
       }
     };
-    
+
     const req = https.request(options, (res) => {
       if (res.statusCode === 204) {
         console.log(chalk.green('   💬 Discord notification sent'));
@@ -281,14 +281,14 @@ async function sendDiscordNotification(webhookUrl, data, type) {
         console.log(chalk.yellow(`   ⚠️ Discord notification failed: ${res.statusCode}`));
       }
     });
-    
+
     req.on('error', (e) => {
       console.log(chalk.red(`   ❌ Discord webhook error: ${e.message}`));
     });
-    
+
     req.write(postData);
     req.end();
-    
+
   } catch (error) {
     console.log(chalk.red(`   ❌ Failed to send Discord notification: ${error.message}`));
   }
