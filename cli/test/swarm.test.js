@@ -156,16 +156,18 @@ describe('swarm command', () => {
       // Mock console.log to capture output
       const originalLog = console.log;
       let output = '';
-      console.log = (...args) => {
-        output += args.join(' ') + '\n';
-      };
-      
-      // Should not throw
-      assert.doesNotThrow(() => {
-        showSwarmAssemble(AGENT_PIPELINE);
-      });
-      
-      console.log = originalLog;
+      try {
+        console.log = (...args) => {
+          output += args.join(' ') + '\n';
+        };
+
+        // Should not throw
+        assert.doesNotThrow(() => {
+          showSwarmAssemble(AGENT_PIPELINE);
+        });
+      } finally {
+        console.log = originalLog;
+      }
       
       // Output should contain agent info
       assert.ok(output.length > 0, 'Should produce output');
