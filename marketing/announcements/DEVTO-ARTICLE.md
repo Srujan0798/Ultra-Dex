@@ -3,7 +3,6 @@ title: "Ultra-Dex v3.4.3: The Professional Purple Edition is Here!"
 published: false  # Set to true when publishing
 description: "Announcing the release of Ultra-Dex v3.4.3 with Plugin Architecture, Performance Optimizations, and Security Hardening"
 tags: [ai, saas, development, javascript, typescript, productivity, automation, orchestration]
-cover_image: https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/assets/social/terminal-mockup.png
 canonical_url: false
 ---
 

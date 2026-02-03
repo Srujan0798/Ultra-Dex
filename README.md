@@ -14,9 +14,8 @@
 
 > **The Autonomous OS for Software Engineering — The Headless CTO.**
 
-![Ultra-Dex Demo](https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/assets/social/terminal-mockup.png)
-
 ---
+
 
 ## 📖 New Here? Start with [00-START/README.md](./00-START/README.md)
 
