@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.4.3-autonomous] - Self-Healing Update
+
+### 🎯 Strategic Focus
+This release introduces **Wave 6: Self-Healing**, bringing autonomous error recovery and automated debugging capabilities to Ultra-Dex. This represents a major shift towards "human-on-the-loop" development where the system proactively maintains its own health.
+
+### Added
+- **🔧 Autonomous Self-Healing Engine** (`cli/lib/commands/autonomous.js`)
+  - Automated error detection and recovery loop
+  - `AutonomousEngine` class with decision logging and reporting
+  - Integration with `@Debugger` agent for root cause analysis
+- **👁️ Watch & Heal Mode** (`ultra-dex autonomous --watch`)
+  - Continuous monitoring of source files
+  - Automatic test execution on change
+  - Instant self-healing trigger upon test failure
+- **📸 Snapshot & Rollback**
+  - Automatic filesystem snapshots before healing attempts
+  - Safety mechanism to revert changes if healing fails
+  - `.ultra-dex/snapshots/` directory for recovery points
+- **🧠 "Lessons Learned" Memory**
+  - Persistence of successful fixes in `.ultra-dex/history/`
+  - Injection of past solutions into agent context for faster resolution
+- **🛡️ Dashboard Integration**
+  - Real-time "Self-Healing Monitor" widget in the dashboard
+  - Live status updates via SSE (Active, Fixed, Failed)
+  - Success rate tracking and fix counters
+
+### Changed
+- **Dashboard UI** - Added dedicated self-healing status card and metrics
+- **CLI** - New `autonomous` command with `--watch`, `--fix`, and `--heal` options
+
+---
+
 ## [3.4.4] - 2026-02-02 - "Professional Enhancement" Release
 
 ### 🎯 Strategic Focus
