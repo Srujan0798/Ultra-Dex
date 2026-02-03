@@ -1,6 +1,6 @@
 # Ultra-Dex User Guide - Complete Tutorial
 
-**Version:** 3.4.3  
+**Version:** 3.4.5  
 **Level:** Beginner to Advanced  
 **Time:** 30 minutes to read, 2 hours to complete tutorial
 
@@ -54,7 +54,7 @@ npm install -g ultra-dex
 # Verify installation
 ultra-dex --version
 
-# Should output: 3.4.3
+# Should output: 3.4.5
 ```
 
 ### 1.3 Initial Configuration

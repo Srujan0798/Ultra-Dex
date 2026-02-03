@@ -1,7 +1,7 @@
-# Ultra-Dex v3.4.3 Launch Checklist
+# Ultra-Dex v3.4.5 Launch Checklist
 
 ## Pre-Flight
-- [x] Version in `package.json` matches (v3.4.3)
+- [x] Version in `package.json` matches (v3.4.5)
 - [x] VS Code Extension packaged (`.vsix`)
 - [x] CLI tests passed (`npm test` - 95/95)
 - [x] Documentation updated
@@ -17,7 +17,7 @@
 
 ### Twitter / X
 ```
-🚀 Ultra-Dex v3.4.3 — the AI Orchestration Meta-Layer
+🚀 Ultra-Dex v3.4.5 — the AI Orchestration Meta-Layer
 
 ✅ 46 CLI commands
 ✅ 17 AI agents (swarm mode!)
@@ -32,11 +32,11 @@ github.com/Srujan0798/Ultra-Dex
 ```
 
 ### Reddit (r/programming, r/webdev)
-**Title:** Ultra-Dex v3.4.3 — AI orchestration framework with 17 agents and MCP kernel
+**Title:** Ultra-Dex v3.4.5 — AI orchestration framework with 17 agents and MCP kernel
 
 ### Hacker News
 **Title:** Show HN: Ultra-Dex – The Kubernetes of AI Coding (17 agents, MCP Kernel)
 
 ---
 
-*Ultra-Dex v3.4.3 - Professional AI Orchestration Meta Layer*
+*Ultra-Dex v3.4.5 - Professional AI Orchestration Meta Layer*

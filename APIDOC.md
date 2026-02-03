@@ -1,4 +1,4 @@
-# Ultra-Dex API & CLI Reference (v3.4.3)
+# Ultra-Dex API & CLI Reference (v3.4.5)
 
 > **The Headless CTO for your SaaS.**
 > Comprehensive documentation for all 50+ commands available in the Ultra-Dex CLI.
@@ -93,7 +93,7 @@ npx ultra-dex swarm "Implement Stripe payments"
 #   --dry-run   Preview the plan without executing
 ```
 
-### `autonomous` (New in v3.4.3)
+### `autonomous` (New in v3.4.5)
 Self-healing mode that detects errors and auto-fixes them.
 ```bash
 npx ultra-dex autonomous
@@ -133,7 +133,7 @@ npx ultra-dex workflow <name>
 #   --start     Add workflow steps to your plan
 ```
 
-### `workspace` (New in v3.4.3)
+### `workspace` (New in v3.4.5)
 Manage multiple projects from a global registry.
 ```bash
 npx ultra-dex workspace list
@@ -274,4 +274,4 @@ npx ultra-dex cloud
 
 ---
 
-*Generated for Ultra-Dex v3.4.3*
+*Generated for Ultra-Dex v3.4.5*

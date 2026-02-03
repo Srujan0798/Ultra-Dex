@@ -3,9 +3,9 @@
 ## Overview
 This document provides guidance for migrating between different versions of Ultra-Dex and understanding the changes introduced in recent updates.
 
-## Current Release: v3.4.3
+## Current Release: v3.4.5
 
-### What's New in v3.4.3
+### What's New in v3.4.5
 - **Professional Purple Theme**: Enhanced UI with indigo-to-pink gradient interface
 - **MCP Server Integration**: Model Context Protocol server for Claude Desktop
 - **WebSocket Real-time Updates**: Live dashboard with instant updates
@@ -18,7 +18,7 @@ This document provides guidance for migrating between different versions of Ultr
 
 ## Migration Steps
 
-### From Previous Versions (v3.3.x to v3.4.3)
+### From Previous Versions (v3.3.x to v3.4.5)
 
 #### 1. Update Ultra-Dex
 ```bash
@@ -36,7 +36,7 @@ For existing projects, you don't need to make any changes to your implementation
 - Try the new dashboard with `ultra-dex dashboard`
 - Test the MCP server with `ultra-dex serve`
 
-### From v3.2.x to v3.4.3
+### From v3.2.x to v3.4.5
 
 #### 1. Major Changes to Be Aware Of
 - The MCP server is now integrated into the main serve command
@@ -50,7 +50,7 @@ For existing projects, you don't need to make any changes to your implementation
 npm uninstall -g ultra-dex
 
 # Install new version
-npm install -g ultra-dex@3.4.3
+npm install -g ultra-dex@3.4.5
 
 # Verify installation
 ultra-dex --version
@@ -58,7 +58,7 @@ ultra-dex --version
 
 ## Breaking Changes (If Any)
 
-### v3.4.3
+### v3.4.5
 - No breaking changes - all features are backward compatible
 - Existing implementation plans remain valid
 - All commands continue to work as before
@@ -70,7 +70,7 @@ ultra-dex --version
 ## Configuration Updates
 
 ### Environment Variables
-The following new environment variables are available in v3.4.3:
+The following new environment variables are available in v3.4.5:
 
 ```bash
 # Performance settings
@@ -91,7 +91,7 @@ If you have a custom configuration file, you may want to update it to include ne
 
 ```json
 {
-  "version": "3.4.3",
+  "version": "3.4.5",
   "performance": {
     "cacheTimeout": 30000,
     "concurrencyLimit": 100
@@ -113,7 +113,7 @@ If you have a custom configuration file, you may want to update it to include ne
 ## Project Structure Updates
 
 ### New Files Created by Default
-Projects initialized with v3.4.3 will include:
+Projects initialized with v3.4.5 will include:
 
 ```
 my-project/
@@ -133,7 +133,7 @@ Older project templates may have different file structures. These remain compati
 ## Agent Migration
 
 ### New Agent System
-In v3.4.3, Ultra-Dex introduces a tiered agent system:
+In v3.4.5, Ultra-Dex introduces a tiered agent system:
 
 #### Tier 1: Leadership
 - @CTO: Architecture & tech stack decisions
@@ -165,7 +165,7 @@ In v3.4.3, Ultra-Dex introduces a tiered agent system:
 ## Performance Considerations
 
 ### Graph Analysis Improvements
-v3.4.3 includes performance optimizations for graph analysis:
+v3.4.5 includes performance optimizations for graph analysis:
 - Caching with 30-second TTL
 - Concurrency improvements with Promise.allSettled()
 - File change detection to avoid unnecessary work
@@ -204,7 +204,7 @@ Enhanced path validation prevents directory traversal attacks. Ensure all file p
 2. Clear npm cache:
    ```bash
    npm cache clean --force
-   npm install -g ultra-dex@3.4.3
+   npm install -g ultra-dex@3.4.5
    ```
 
 #### Problem: Configuration Issues
@@ -228,7 +228,7 @@ Enhanced path validation prevents directory traversal attacks. Ensure all file p
 
 ## Rollback Procedure
 
-If you encounter issues with v3.4.3 and need to rollback:
+If you encounter issues with v3.4.5 and need to rollback:
 
 ```bash
 # Uninstall current version
@@ -257,7 +257,7 @@ ultra-dex --version
 
 ## Post-Migration Verification
 
-After migrating to v3.4.3, verify that everything works:
+After migrating to v3.4.5, verify that everything works:
 
 ```bash
 # Check version
@@ -274,4 +274,4 @@ ultra-dex generate "test idea" --dry-run
 
 ## Questions?
 
-If you have questions about migrating to v3.4.3, please open an issue or consult the community forums.
+If you have questions about migrating to v3.4.5, please open an issue or consult the community forums.

@@ -57,7 +57,7 @@ npx ultra-dex --help
 ### Verify Installation
 ```bash
 ultra-dex --version
-# Should output: Ultra-Dex v3.4.3
+# Should output: Ultra-Dex v3.4.5
 ```
 
 ## Project Initialization

@@ -69,7 +69,7 @@ npx ultra-dex setup
 ### 🙏 Thanks
 This release incorporates feedback from 8 comprehensive code reviews and community input.
 
-**Full Changelog**: Compare with v3.4.3
+**Full Changelog**: Compare with v3.4.5
 
 ---
 

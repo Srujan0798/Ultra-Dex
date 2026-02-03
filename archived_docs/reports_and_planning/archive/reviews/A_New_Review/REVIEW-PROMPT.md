@@ -10,7 +10,7 @@
 
 | Metric | Value |
 |--------|-------|
-| **Version** | v3.4.3 |
+| **Version** | v3.4.5 |
 | **npm** | `npx ultra-dex` |
 | **Commands** | 46+ (7 production-ready, 15 beta, 18 dev) |
 | **Agents** | 17 specialized (6 tiers) |
@@ -301,4 +301,4 @@ Priority 4 (Integration):
 
 ---
 
-*Updated: February 2, 2026 | v3.4.3 | Target: Feb 14 Launch*
+*Updated: February 2, 2026 | v3.4.5 | Target: Feb 14 Launch*

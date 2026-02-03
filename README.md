@@ -52,11 +52,11 @@ Ultra-Dex is a **meta-orchestration layer** - it doesn't write code for you, it 
 
 ---
 
-## 🚀 NEW: Ultra-Dex v3.4.3 (Professional Purple Edition with Advanced Monitoring & Security)
+## 🚀 NEW: Ultra-Dex v3.4.5 (Professional Purple Edition with Advanced Monitoring & Security)
 
 **The Meta-Orchestration Layer for AI Development**
 
-Ultra-Dex v3.4.3 introduces **Advanced Security Hardening**, comprehensive **Performance Optimizations**, **Reliability Enhancements**, and **Enterprise-Grade Monitoring & Observability** alongside the Professional Purple Theme and multi-agent orchestration. The system now includes circuit breakers, caching, parallel processing, and advanced configuration management.
+Ultra-Dex v3.4.5 introduces **Advanced Security Hardening**, comprehensive **Performance Optimizations**, **Reliability Enhancements**, and **Enterprise-Grade Monitoring & Observability** alongside the Professional Purple Theme and multi-agent orchestration. The system now includes circuit breakers, caching, parallel processing, and advanced configuration management.
 
 ```bash
 # Run autonomous agent swarms with parallel execution
@@ -87,7 +87,7 @@ Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
 ---
 
-## ✨ v3.4.3 Feature Highlights
+## ✨ v3.4.5 Feature Highlights
 
 ### **Security & Reliability:**
 - **Advanced Security Hardening** - Complete path traversal prevention, input sanitization, and command injection protection. [See Security Guide](./SECURITY.md).
@@ -651,7 +651,7 @@ When working with AI agents (Claude, GPT, Gemini, Copilot, etc.), you've likely 
 
 ## Using with AI Agents
 
-### 17 Production-Ready Agents (v3.4.3)
+### 17 Production-Ready Agents (v3.4.5)
 
 Ultra-Dex includes 17 specialized agent prompts **organized into 7 tiers** for the production pipeline. Use the CLI to run agents automatically:
 

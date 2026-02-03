@@ -4,7 +4,7 @@ A modern, production-ready AI SaaS template built with Next.js 14, TypeScript, T
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.58B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.7-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
 [![Stripe](https://img.shields.io/badge/Stripe-Latest-635BFF?style=flat-square&logo=stripe)](https://stripe.com/)
 

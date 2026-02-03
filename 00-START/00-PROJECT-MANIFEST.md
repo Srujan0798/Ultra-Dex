@@ -1,6 +1,6 @@
 # Ultra-Dex Project Manifest
 > **THE SOURCE OF TRUTH - READ THIS FIRST**
-> Version: 3.4.3 | Updated: February 2, 2026
+> Version: 3.4.5 | Updated: February 2, 2026
 
 ---
 

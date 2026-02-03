@@ -1,4 +1,4 @@
-# Launch Content: Ultra-Dex v3.4.3 (Valentine's Day Release)
+# Launch Content: Ultra-Dex v3.4.5 (Valentine's Day Release)
 
 **Theme:** "Fall in Love with Building SaaS Again" 💝
 **Date:** Feb 14, 2026
@@ -10,7 +10,7 @@
 **Tweet 1:**
 Developers deserve a better partner. 💔
 Coding alone is hard. Context switching is exhausting.
-Meet Ultra-Dex v3.4.3: The Headless CTO that never sleeps.
+Meet Ultra-Dex v3.4.5: The Headless CTO that never sleeps.
 🤖 17 AI Agents
 ⚡ Self-Healing Code
 🐳 Docker Sandbox
@@ -50,7 +50,7 @@ Hello HN! 👋
 
 We've been building Ultra-Dex to solve "AI Amnesia" in software development. It's a meta-layer that gives structure (context, plans, memory) to your AI agents.
 
-**What's new in v3.4.3:**
+**What's new in v3.4.5:**
 1. **Self-Healing Engine:** A `watch` mode that runs tests and auto-fixes bugs using an iterative agent loop.
 2. **Docker Sandbox:** Generated code runs in isolated containers for safety.
 3. **Graph-Based Search:** Semantic symbol search using a Code Property Graph (CPG).
@@ -82,14 +82,14 @@ Fall in love with coding again. 💝
 
 ## 📧 Email Newsletter
 
-**Subject:** 💝 A Valentine's Gift for Developers: Ultra-Dex v3.4.3
+**Subject:** 💝 A Valentine's Gift for Developers: Ultra-Dex v3.4.5
 
 **Body:**
 Hey Builders,
 
 We know the feeling. You have a great idea, but the "boring stuff" (setup, config, boilerplate) kills the romance.
 
-**Ultra-Dex v3.4.3 is here to bring the spark back.**
+**Ultra-Dex v3.4.5 is here to bring the spark back.**
 
 We've just released our biggest update yet:
 - **Self-Healing:** Let the AI fix the bugs while you focus on features.

@@ -737,7 +737,7 @@ The system implements circuit breakers to prevent cascading failures:
 ## Versioning
 
 Ultra-Dex follows semantic versioning (SemVer):
-- MAJOR.MINOR.PATCH (e.g., 3.4.3)
+- MAJOR.MINOR.PATCH (e.g., 3.4.5)
 - MAJOR: Breaking changes
 - MINOR: New features (backward compatible)
 - PATCH: Bug fixes (backward compatible)

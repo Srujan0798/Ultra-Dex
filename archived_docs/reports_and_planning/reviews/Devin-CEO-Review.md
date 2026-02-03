@@ -96,7 +96,7 @@ Well-structured system prompts for Planner/Coder/Tester/Reviewer that work with 
 - **Evidence:** Only markdown files, no JS implementation
 
 ### 4. Package.json Version Mismatch
-**Issue:** Root says v3.4.3, CLI says v1.0.0, vision doc says v2.4.0. Dependencies incomplete (imports `inquirer`, `ora`, `commander` but root package.json only lists `chalk`).
+**Issue:** Root says v3.4.5, CLI says v1.0.0, vision doc says v2.4.0. Dependencies incomplete (imports `inquirer`, `ora`, `commander` but root package.json only lists `chalk`).
 - **Impact:** Cannot publish to npm reliably
 - **File:** `package.json:2`, `cli/package.json:3`
 
@@ -118,7 +118,7 @@ Well-structured system prompts for Planner/Coder/Tester/Reviewer that work with 
 - [ ] Add "Current State vs. Vision" section to docs
 
 **Hour 5-8: Fix Package.json Chaos**
-- [ ] Consolidate to single package.json with correct version (1.0.0, not 3.4.3)
+- [ ] Consolidate to single package.json with correct version (1.0.0, not 3.4.5)
 - [ ] Add all actual dependencies: `commander`, `inquirer`, `ora`
 - [ ] Set up proper npm publishing workflow
 - [ ] Add `.npmignore` to exclude documentation from package
@@ -289,7 +289,7 @@ Ultra-Dex has a **brilliant vision** and **zero execution**. Fix the execution o
 **Key Evidence Summary:**
 - Only 2 commands implemented: `init` and `examples`
 - No MCP server code exists despite claims
-- Version chaos: 3.4.3 vs 1.0.0 vs 2.4.0
+- Version chaos: 3.4.5 vs 1.0.0 vs 2.4.0
 - Dependencies missing in root package.json
 - Agent system exists only as markdown prompts, not executable code
 - Single vanilla JS file with basic inquirer prompts
