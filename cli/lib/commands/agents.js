@@ -130,11 +130,35 @@ export function registerAgentsCommand(program) {
     .alias('ls')
     .description('List all available agents')
     .option('--marketplace', 'Show marketplace agents')
+    .option('--builtin', 'Show built-in agents only')
     .action(async (options) => {
       if (options.marketplace) {
         await showMarketplace();
+      } else if (options.builtin) {
+        await listAgents(true);
       } else {
         await listAgents();
+      }
+    });
+
+  // agents show <name>
+  agentsCmd
+    .command('show <name>')
+    .description('Show agent prompt and details')
+    .action(async (name) => {
+      await showAgent(name);
+    });
+
+  // agents validate <name>
+  agentsCmd
+    .command('validate <name>')
+    .description('Validate agent configuration')
+    .action(async (name) => {
+      const agent = findBuiltInAgent(name);
+      if (agent) {
+        console.log(chalk.green(`✅ Agent @${name} is valid (built-in).`));
+      } else {
+        console.log(chalk.yellow(`⚠️ Agent @${name} is not a built-in agent.`));
       }
     });
 
@@ -165,8 +189,12 @@ export function registerAgentsCommand(program) {
   // agents create <name>
   agentsCmd
     .command('create <name>')
-    .description('Create a custom agent with an interactive wizard')
-    .action(async (name) => {
+    .description('Create a custom agent')
+    .option('-d, --description <desc>', 'Agent description')
+    .option('-t, --tier <tier>', 'Agent tier')
+    .option('-e, --expertise <expertise>', 'Expertise (comma-separated)')
+    .option('-p, --prompt <prompt>', 'Base system prompt')
+    .action(async (name, options) => {
       const validation = validateSafePath(name, 'Agent name');
       if (validation !== true) {
         console.log(chalk.red(validation));
@@ -178,33 +206,45 @@ export function registerAgentsCommand(program) {
         return;
       }
 
-      const answers = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'role',
-          message: 'Role description (1 sentence):',
-          validate: input => input.trim().length > 0 || 'Role description is required',
-        },
-        {
-          type: 'list',
-          name: 'tier',
-          message: 'Select tier:',
-          choices: TIERS,
-        },
-        {
-          type: 'input',
-          name: 'expertise',
-          message: 'Expertise areas (comma-separated):',
-          validate: input => input.trim().length > 0 || 'Expertise is required',
-        },
-        {
-          type: 'editor',
-          name: 'prompt',
-          message: 'Base system prompt:',
-          default: `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent\n\nYou are an expert in...`,
-          validate: input => input.trim().length > 0 || 'System prompt is required',
-        },
-      ]);
+      let answers;
+      if (options.description || options.tier || options.expertise || options.prompt) {
+          // Non-interactive mode
+          answers = {
+              role: options.description || 'Custom AI Agent',
+              tier: options.tier || 'Specialist',
+              expertise: options.expertise || 'General',
+              prompt: options.prompt || `You are @${name}, an AI assistant.`
+          };
+      } else {
+          // Interactive mode
+          answers = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'role',
+              message: 'Role description (1 sentence):',
+              validate: input => input.trim().length > 0 || 'Role description is required',
+            },
+            {
+              type: 'list',
+              name: 'tier',
+              message: 'Select tier:',
+              choices: TIERS,
+            },
+            {
+              type: 'input',
+              name: 'expertise',
+              message: 'Expertise areas (comma-separated):',
+              validate: input => input.trim().length > 0 || 'Expertise is required',
+            },
+            {
+              type: 'editor',
+              name: 'prompt',
+              message: 'Base system prompt:',
+              default: `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent\n\nYou are an expert in...`,
+              validate: input => input.trim().length > 0 || 'System prompt is required',
+            },
+          ]);
+      }
 
       const agentContent = `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent
 
@@ -231,7 +271,7 @@ ${answers.prompt}
       const outputPath = path.join(CUSTOM_AGENTS_DIR, `${name.toLowerCase()}.md`);
       await fs.writeFile(outputPath, agentContent);
       
-      console.log(chalk.green(`\n✅ Custom agent created: ${outputPath}\n`));
+      console.log(chalk.green(`\n✅ Custom agent created: ${name.toLowerCase()}\n`));
     });
 
   // agents delete <name>
@@ -258,6 +298,31 @@ ${answers.prompt}
         await fs.unlink(filePath);
         console.log(chalk.green(`\n✅ Deleted custom agent "${name}".\n`));
       }
+    });
+
+  // agents uninstall <name>
+  agentsCmd
+    .command('uninstall <name>')
+    .description('Uninstall an agent from the marketplace')
+    .action(async (name) => {
+      const agentsDir = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents');
+      const agentFile = path.join(agentsDir, `${name.toLowerCase()}.json`);
+      
+      try {
+        await fs.unlink(agentFile);
+        console.log(chalk.green(`\n✅ Uninstalled agent: ${name}\n`));
+      } catch {
+        console.log(chalk.red(`\n❌ Agent "${name}" not found in marketplace installs.\n`));
+      }
+    });
+
+  // agents publish <name>
+  agentsCmd
+    .command('publish <name>')
+    .description('Publish an agent to the marketplace')
+    .action(async (name) => {
+      console.log(chalk.cyan(`\n🚀 Preparing to publish agent: ${name}...`));
+      console.log(chalk.yellow('   (This feature is coming soon to the Ultra-Dex Marketplace)\n'));
     });
 
   // agents install <name>
@@ -301,10 +366,11 @@ async function showMarketplace() {
   console.log(chalk.gray('Install with: ultra-dex agents install <name>\n'));
 }
 
-async function listAgents() {
-  const customAgents = await listCustomAgents();
+async function listAgents(builtinOnly = false) {
+  const customAgents = builtinOnly ? [] : await listCustomAgents();
   const totalAgents = AGENTS.length + customAgents.length;
-  console.log(chalk.bold(`\n🤖 Ultra-Dex AI Agents (${totalAgents} Total)\n`));
+  const header = builtinOnly ? 'Built-in Agents' : `Ultra-Dex AI Agents (${totalAgents} Total)`;
+  console.log(chalk.bold(`\n🤖 ${header}\n`));
   
   const agentsForTable = AGENTS.map(agent => ({
     tier: agent.tier,

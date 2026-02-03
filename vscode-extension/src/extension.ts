@@ -8,12 +8,15 @@ import { createAlignmentStatusBar, updateAlignmentStatusBar } from './statusBar'
 import { SwarmStatusProvider } from './swarmStatusProvider';
 import { QuickActionsProvider } from './quickActionsProvider';
 import { ContextPreviewProvider } from './contextPreviewProvider';
+import { ContextHoverProvider } from './providers/hoverProvider';
 import { WebSocketManager } from './websocketManager';
 
 const exec = util.promisify(cp.exec);
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Ultra-Dex extension activated');
+
+    const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 
     // Initialize tree providers
     const agentTreeProvider = new AgentTreeProvider();
@@ -26,6 +29,11 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider('ultra-dex.swarmStatus', swarmStatusProvider);
     vscode.window.registerTreeDataProvider('ultra-dex.quickActions', quickActionsProvider);
     vscode.window.registerTreeDataProvider('ultra-dex.contextPreview', contextPreviewProvider);
+
+    // Register hover provider
+    context.subscriptions.push(
+        vscode.languages.registerHoverProvider({ scheme: 'file' }, new ContextHoverProvider(rootPath))
+    );
 
     // Initialize WebSocket manager for real-time updates
     const wsManager = new WebSocketManager();
