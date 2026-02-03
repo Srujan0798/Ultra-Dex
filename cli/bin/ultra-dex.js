@@ -12,12 +12,14 @@ import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
 // Initialize monitoring and configuration systems
 import { monitoring } from '../lib/utils/monitoring.js';
 import { configManager } from '../lib/utils/config-manager.js';
+import { pluginManager } from '../lib/plugin-system.js';
 import '../lib/utils/error-recovery.js';
 
 // Wait for initialization
 await Promise.all([
   monitoring.initialize(),
-  configManager.load()
+  configManager.load(),
+  pluginManager.initialize()
 ]).catch(console.error);
 
 // Log startup
@@ -46,7 +48,8 @@ const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 
 
 if (notifier.update) {
   console.log(boxen(
-    `Update available! ${chalk.dim(notifier.update.current)} → ${chalk.green(notifier.update.latest)}\n` +
+    `Update available! ${chalk.dim(notifier.update.current)} → ${chalk.green(notifier.update.latest)}
+` +
     `Run ${chalk.cyan('npm install -g ultra-dex')} to update`,
     {
       padding: 1,
@@ -62,7 +65,6 @@ import { registerInitCommand } from '../lib/commands/init.js';
 import { registerAuditCommand } from '../lib/commands/audit.js';
 import { registerExamplesCommand } from '../lib/commands/examples.js';
 import { registerAgentsCommand, registerPackCommand } from '../lib/commands/agents.js';
-import { registerAgentBuilderCommand } from '../lib/commands/agent-builder.js';
 import { registerGenerateCommand } from '../lib/commands/generate.js';
 import { registerBuildCommand } from '../lib/commands/build.js';
 import { registerReviewCommand } from '../lib/commands/review.js';
@@ -72,9 +74,11 @@ import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
 import { registerAlignCommand, registerStatusCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
-import { registerCheckCommand } from '../lib/commands/advanced.js';
+import { registerCheckCommand, registerBatchCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
 import { registerVerifyCommand } from '../lib/commands/verify.js';
+import { registerPluginCommand } from '../lib/commands/plugin.js';
+import { registerWorkspaceCommand } from '../lib/commands/workspace.js';
 
 // v3.0 Commands
 import { swarmCommand } from '../lib/commands/swarm.js';
@@ -96,19 +100,72 @@ import { registerTeamCommand } from '../lib/commands/team.js';
 import { registerMemoryCommand } from '../lib/commands/memory.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
+import { registerBrainCommand } from '../lib/commands/brain.js';
 
 // v3.4.3 Commands - 2026 Competitive Features
 import { registerExecCommand } from '../lib/commands/exec.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
 import { registerSearchCommand } from '../lib/commands/search.js';
 import { registerCloudCommand } from '../lib/commands/cloud.js';
+import { registerAutonomousCommand } from '../lib/commands/autonomous.js';
+import { startInteractiveMode } from '../lib/ui/interactive.js';
+import { theme, ultraGradient } from '../lib/ui/theme.js';
 
 const program = new Command();
-program.banner = banner;
+
+// Custom Help Configuration - Professional Purple Edition
+program.configureHelp({
+  formatHelp: (cmd, _helper) => {
+    // For subcommands, build command-specific help
+    if (cmd.parent) {
+      let output = `\n${theme.title('Usage:')} ${theme.primary('ultra-dex ' + cmd.name())} ${theme.dim('[options]')}\n\n`;
+      output += `${theme.subtitle(cmd.description())}\n\n`;
+
+      const options = cmd.options;
+      if (options.length > 0) {
+        output += `${theme.title('Options:')}\n`;
+        options.forEach(opt => {
+          const flags = opt.flags.padEnd(25);
+          output += `  ${theme.primary(flags)} ${theme.dim(opt.description)}\n`;
+        });
+        output += '\n';
+      }
+
+      return output;
+    }
+
+    const gradientBanner = ultraGradient(banner);
+
+    let output = `\n${gradientBanner}\n\n`;
+    output += `  ${theme.subtitle('AI Orchestration Meta-Layer for SaaS Development')}\n`;
+    output += `  ${theme.dim('Version: ' + VERSION)}\n\n`;
+
+    output += `  ${theme.title('USAGE')}\n`;
+    output += `    ${theme.primary('ultra-dex')} ${theme.warning('[command]')} ${theme.dim('[options]')}\n\n`;
+
+    output += `  ${theme.title('COMMANDS')}\n`;
+
+    // Sort and format commands
+    const commands = cmd.commands.map(c => {
+        return `    ${theme.accent(c.name().padEnd(20))} ${theme.dim(c.description())}`;
+    }).sort().join('\n');
+
+    output += commands + '\n\n';
+
+    output += `  ${theme.title('OPTIONS')}\n`;
+    output += `    ${theme.primary('-V, --version').padEnd(20)} ${theme.dim('output the version number')}\n`;
+    output += `    ${theme.primary('-h, --help').padEnd(20)} ${theme.dim('display help for command')}\n\n`;
+
+    output += `  ${theme.dim('─────────────────────────────────────────────────────────')}\n`;
+    output += `  ${theme.subtitle('Run ultra-dex without arguments to launch the Interactive Dashboard')}\n\n`;
+
+    return output;
+  }
+});
 
 program
   .name('ultra-dex')
-  .description('CLI for Ultra-Dex SaaS Implementation Framework')
+  .description(theme.subtitle('AI Orchestration Meta-Layer for SaaS Development'))
   .version(VERSION);
 
 registerInitCommand(program);
@@ -186,10 +243,10 @@ registerFixCommand(program);
 registerHooksCommand(program);
 registerFetchCommand(program);
 registerSyncCommand(program);
-registerAgentBuilderCommand(program);
 registerTeamCommand(program);
 registerMemoryCommand(program);
 registerScaffoldCommand(program);
+registerPluginCommand(program);
 
 // Monitoring commands (v3.4.3) - note: status uses state.js, sys-config uses monitoring.js
 registerSystemConfigCommand(program);
@@ -202,5 +259,19 @@ registerExecCommand(program);
 registerGitHubCommand(program);
 registerSearchCommand(program);
 registerCloudCommand(program);
+registerBrainCommand(program);
+registerAutonomousCommand(program);
+registerWorkspaceCommand(program);
+registerBatchCommand(program);
 
-program.parse();
+// Activate plugins after all commands are registered
+await pluginManager.activatePlugins(program).catch(error => {
+  console.error('Failed to activate plugins:', error.message);
+});
+
+// Launch interactive mode if no arguments provided
+if (process.argv.length <= 2) {
+  await startInteractiveMode();
+} else {
+  program.parse();
+}

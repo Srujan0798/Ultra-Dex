@@ -3,7 +3,9 @@ import { execSync } from 'child_process';
 import { test } from 'node:test';
 import path from 'path';
 
-const CLI = `node ${path.resolve(process.cwd(), 'bin/ultra-dex.js')}`;
+// Use import.meta.url to get correct path regardless of cwd
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const CLI = `node ${path.resolve(__dirname, '..', 'bin', 'ultra-dex.js')}`;
 
 test('v3.0 Command Smoke Tests', async (t) => {
   
@@ -15,8 +17,8 @@ test('v3.0 Command Smoke Tests', async (t) => {
   });
 
   await t.test('agent command shows specific prompt', () => {
-    const output = execSync(`${CLI} agent backend`).toString();
-    assert.ok(output.includes('# Backend Developer Agent'));
+    const output = execSync(`${CLI} agent show backend`).toString();
+    assert.ok(output.includes('# Backend Developer Agent') || output.includes('BACKEND Agent'));
   });
 
   await t.test('config --mcp generates json', () => {

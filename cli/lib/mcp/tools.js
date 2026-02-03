@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { loadState, saveState, withStateLock } from '../commands/state.js';
 import { generateMarkdown } from '../commands/plan.js';
 import { projectGraph } from './graph.js';
-import { swarmCommand } from '../commands/swarm.js';
 import { ultraMemory } from './memory.js';
 import { glob } from 'glob';
 
@@ -85,35 +84,7 @@ export function registerTools(server) {
     }
   );
 
-  // Tool: Start Swarm
-  server.tool(
-    "start_swarm",
-    "Start a multi-agent swarm workflow for a specific feature",
-    {
-      feature: z.string().describe("The feature or task to implement"),
-      provider: z.string().optional().describe("AI provider (claude, openai, gemini)"),
-      key: z.string().optional().describe("API Key for the provider")
-    },
-    async ({ feature, provider, key }) => {
-      try {
-        console.error(`[MCP] Starting Swarm for: ${feature}`);
-        // Run swarm command (this logs to stdout/stderr which MCP captures)
-        // We capture the output by intercepting the console logs or just trust the side effects
-        // Since swarmCommand is designed for CLI, we might need to wrap it or modify it to return result.
-        // For now, we trigger it and return a success message indicating it started.
-        
-        await swarmCommand(feature, { provider, key });
-        
-        return {
-          content: [{ type: "text", text: `✅ Swarm started for feature: "${feature}". Check server logs for progress.` }]
-        };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Swarm failed to start: ${error.message}` }]
-        };
-      }
-    }
-  );
+
 
   // Tool: Update Task Status
   server.tool(
@@ -480,40 +451,50 @@ export function registerTools(server) {
     "Trigger a multi-agent swarm to plan and implement a feature",
     {
       feature: z.string().describe("Description of the feature to build"),
-      mode: z.enum(['plan_only', 'execute']).default('plan_only').describe("Whether to just plan or also execute")
+      mode: z.enum(['full', 'plan_only']).default('full').describe("Execution mode: 'full' runs entire pipeline, 'plan_only' just generates plan"),
+      provider: z.string().optional().describe("AI provider override"),
+      key: z.string().optional().describe("API Key override")
     },
-    async ({ feature, mode }) => {
+    async ({ feature, mode, provider: providerId, key }) => {
       try {
-        const { runAgentLoop } = await import('../commands/run.js');
-        const { createProvider, getDefaultProvider } = await import('../providers/index.js');
-        const { loadState } = await import('../commands/plan.js');
-        const { projectGraph } = await import('./graph.js');
+        console.error(`[MCP] Starting Swarm: ${feature} (${mode})`);
 
-        // Setup Context
-        const state = await loadState();
-        const context = {
-          state,
-          plan: state ? generateMarkdown(state) : '',
-          graph: projectGraph.getSummary()
-        };
-
-        const provider = createProvider(getDefaultProvider(), { maxTokens: 8000 });
-
-        // Step 1: Planning
-        const planOutput = await runAgentLoop('planner', feature, provider, context);
-        
         if (mode === 'plan_only') {
+          const { runAgentLoop } = await import('../commands/run.js');
+          const { createProvider, getDefaultProvider } = await import('../providers/index.js');
+          const { loadState } = await import('../commands/plan.js');
+          const { projectGraph } = await import('./graph.js');
+          const { generateMarkdown } = await import('../commands/plan.js');
+
+          // Setup Context
+          const state = await loadState();
+          const context = {
+            state,
+            plan: state ? generateMarkdown(state) : '',
+            graph: projectGraph.getSummary()
+          };
+
+          const provider = createProvider(providerId || getDefaultProvider(), { apiKey: key, maxTokens: 8000 });
+
+          // Step 1: Planning
+          const planOutput = await runAgentLoop('planner', feature, provider, context);
+          
           return {
             content: [{ type: "text", text: `Swarm Planning Complete:\n\n${planOutput}` }]
           };
+        } else {
+          // Full Execution Mode
+          const { swarmCommand } = await import('../commands/swarm.js');
+          
+          // We invoke the main CLI command
+          // Note: This might take time. In a real server, we might want to run this detached.
+          // For now, we await it to provide feedback.
+          await swarmCommand(feature, { provider: providerId, key, parallel: true });
+          
+          return {
+            content: [{ type: "text", text: `✅ Swarm execution completed for: "${feature}". Check logs for details.` }]
+          };
         }
-
-        // Step 2: Execution (Simplified for MCP - invoking CTO)
-        const execOutput = await runAgentLoop('cto', `Execute this plan:\n${planOutput}`, provider, context);
-        
-        return {
-          content: [{ type: "text", text: `Swarm Execution Complete:\n\n${execOutput}` }]
-        };
 
       } catch (error) {
         return {
@@ -522,4 +503,5 @@ export function registerTools(server) {
       }
     }
   );
+
 }

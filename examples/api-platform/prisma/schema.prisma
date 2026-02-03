@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  apiKeys   ApiKey[]
+  resources Resource[]
+  webhooks  WebhookEndpoint[]
+
+  @@map("users")
+}
+
+model ApiKey {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  name       String
+  prefix     String
+  hash       String    @unique
+  tier       String    @default("free")
+  status     String    @default("active")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([hash])
+  @@map("api_keys")
+}
+
+model Resource {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  description String?
+  status      String   @default("active")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("resources")
+}
+
+model WebhookEndpoint {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  url       String
+  events    String[]
+  status    String   @default("active")
+  secret    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("webhook_endpoints")
+}
+
+model WebhookDelivery {
+  id          String    @id @default(uuid())
+  endpointId  String    @map("endpoint_id")
+  eventId     String    @map("event_id")
+  eventType   String    @map("event_type")
+  status      String    @default("pending")
+  httpStatus  Int?      @map("http_status")
+  deliveredAt DateTime? @map("delivered_at")
+  error       String?
+  retryCount  Int       @default(0) @map("retry_count")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([endpointId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("webhook_deliveries")
+}
+
+model RequestLog {
+  id        String   @id @default(uuid())
+  apiKeyId  String   @map("api_key_id")
+  method    String
+  path      String
+  status    Int
+  duration  Int
+  ip        String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([apiKeyId])
+  @@index([createdAt])
+  @@map("request_logs")
+}

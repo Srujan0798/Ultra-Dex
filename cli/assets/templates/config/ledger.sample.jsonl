@@ -1,0 +1,2 @@
+{"timestamp":"2026-01-31T12:00:00Z","agent":"Planner","action":"Task Breakdown","decision":{"selected_option":"Phased implementation of Voice Mode","reasoning":"User requested delay until Feb 14th."},"constraints_checked":[{"rule":"Alignment","status":"PASS"}]}
+{"timestamp":"2026-01-31T12:05:00Z","agent":"CTO","action":"Arch. Change","decision":{"selected_option":"Centralized VERSION in utils/version.js"},"constraints_checked":[{"rule":"Single Source of Truth","status":"PASS"}]}

@@ -2,10 +2,13 @@
 
 [![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)
 [![CI Status](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-41%25-yellow.svg)](./cli/package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](./cli/tsconfig.json)
+[![Tests](https://img.shields.io/badge/Tests-281-brightgreen.svg)](./cli/test/README.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
-[![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
+[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md)
+[![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20ultra-dex/Saas%20plan/Examples/TaskFlow-Complete.md)
 [![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-31_Modules-green.svg)](./cursor-rules/)
 [![AI Agents](https://img.shields.io/badge/AI_Agents-17_Prompts-orange.svg)](./agents/)
 [![Commands](https://img.shields.io/badge/CLI_Commands-46-blue.svg)](./cli/)
@@ -13,6 +16,17 @@
 > **From Idea to Full-Scale, Production-Ready Application**
 
 ![Ultra-Dex Demo](https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/assets/social/terminal-mockup.png)
+
+---
+
+## 📖 New Here? Start with [00-START/README.md](./00-START/README.md)
+
+**Don't read this long README first.** Read the 6 core docs in `00-START/` folder (takes 15 minutes):
+1. What we are & sacred principles
+2. Our philosophy
+3. Current priorities (Feb 14 launch)
+4. Project state
+5. AI agent guide
 
 ---
 
@@ -67,7 +81,7 @@ npx ultra-dex config --wizard
 npx ultra-dex metrics
 ```
 
-**46 commands. Autonomous agents. MCP integration. Advanced monitoring. Modern Professional UI.**
+**40+ commands. 7 production-ready. MCP integration. Multi-agent orchestration. Modern Professional UI.**
 
 Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 
@@ -94,6 +108,39 @@ Works with Claude, OpenAI, or Gemini. [Set your API key →](#ai-commands)
 - **Autonomous Implementation** - `ultra-dex auto-implement "feature"` handles plan → code → verify.
 - **Live Dashboard** - Agent status, timeline, and quality signals in real time.
 - **New Monitoring Commands** - `ultra-dex sys-config`, `ultra-dex metrics`, `ultra-dex health`, `ultra-dex debug`, `ultra-dex status` with comprehensive system insights.
+- **Plugin Architecture** - Extensible system allowing custom functionality through plugins.
+
+---
+
+## ✅ Current Capabilities (Honest Assessment)
+
+Ultra-Dex is actively developed. Here's what works **today** vs what's in progress:
+
+### ✅ Production-Ready (Fully Implemented)
+- **`init`** - Complete project scaffolding with 3 live templates (Next.js, Remix, SvelteKit)
+- **`generate`** - AI-powered 34-section plan generation with streaming (Claude/OpenAI/Gemini)
+- **`build`** - Auto-pilot executes next pending task from plan
+- **`swarm`** - 8-agent orchestration pipeline with parallel execution
+- **`serve`** - MCP server + WebSocket + Dashboard (ports 3001/3002)
+- **`validate`** - Project structure validation + quality scanning
+- **`dashboard`** - Live web UI with real-time updates
+- **`plugin`** - Plugin management system for extending functionality
+
+### ⚠️ Beta / Partial (Working but Limited)
+- `agents`, `review`, `align`, `sync`, `config`, `scaffold`, `export`, `status`
+- Basic functionality works, advanced features in development
+
+### 🚧 In Development (Stubs/Placeholders)
+- `auto-implement`, `ci-monitor`, `cloud`, `brain`, `github`, `search`
+- Commands exist but need completion
+
+### 📊 Stats
+- **7 commands** fully production-ready (1,576 lines)
+- **15 commands** in beta/partial state
+- **18+ commands** in development
+- **MCP server**: ✅ Fully functional (Stdio + HTTP)
+- **WebSocket**: ✅ Real-time updates working
+- **VS Code extension**: ⚠️ Basic (needs sidebar completion)
 
 ---
 
@@ -169,6 +216,7 @@ A comprehensive framework for building complete, production-grade applications. 
 - **Modular Cursor Rules** - AI-optimized rules for Cursor, Copilot (31 production patterns)
 - **17 Production-Ready AI Agents** - CTO, Backend, Frontend, Database, Auth, DevOps, Reviewer, Debugger, Planner, Testing, Performance, Security, Refactoring, Research, Documentation, Orchestrator, Specialist
 - **Multi-Tool Orchestration** - Coordinate Claude Code + Cursor + Copilot + ChatGPT + Gemini together
+- **Plugin Architecture** - Extend functionality with custom plugins for specialized needs
 
 ---
 
@@ -176,8 +224,8 @@ A comprehensive framework for building complete, production-grade applications. 
 
 | Step | What | Time |
 |------|------|------|
-| 1 | **[QUICK-START.md](./@%20Ultra%20DeX/Saas%20plan/01-QUICK-START.md)** — Capture your idea | 5 min |
-| 2 | **[HOW-TO-USE.md](./@%20Ultra%20DeX/Saas%20plan/02-HOW-TO-USE.md)** — Understand phasing | 10 min |
+| 1 | **[QUICK-START.md](./@%20ultra-dex/Saas%20plan/01-QUICK-START.md)** — Capture your idea | 5 min |
+| 2 | **[HOW-TO-USE.md](./@%20ultra-dex/Saas%20plan/02-HOW-TO-USE.md)** — Understand phasing | 10 min |
 | 3 | **[BUILD-AUTH-30M.md](./docs/BUILD-AUTH-30M.md)** — Your first working feature | 30 min |
 | 4 | **Start coding with AI agents** | ∞ |
 
@@ -188,9 +236,15 @@ A comprehensive framework for building complete, production-grade applications. 
 
 | Resource | Purpose |
 |----------|---------|
-| [Full Template](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md) | 34-section reference |
-| [TaskFlow Example](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md) | See a filled example |
-| [Methodology](./@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md) | 21-step verification system |
+| [Full Template](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md) | 34-section reference |
+| [TaskFlow Example](./@%20ultra-dex/Saas%20plan/Examples/TaskFlow-Complete.md) | See a filled example |
+| [Methodology](./@%20ultra-dex/Saas%20plan/03-METHODOLOGY.md) | 21-step verification system |
+| [API Documentation](./APIDOC.md) | Complete API reference |
+| [User Guide](./USERGUIDE.md) | Comprehensive user manual |
+| [Best Practices](./BESTPRACTICES.md) | Recommended practices |
+| [Troubleshooting](./TROUBLESHOOTING.md) | Issue resolution guide |
+| [Contributing](./CONTRIBUTING.md) | Guidelines for contributors |
+| [Migration Guide](./MIGRATION-GUIDE.md) | Update and migration instructions |
 | [Cursor Rules](./cursor-rules/) | AI-optimized rules |
 | [Agent Prompts](./agents/) | 17 specialized agents |
 | [All Guides](./docs/guides/) | Database, architecture, orchestration |
@@ -313,6 +367,12 @@ npx ultra-dex sys-config --list   # List all settings
 npx ultra-dex sys-config --get key # Get specific setting
 npx ultra-dex sys-config --set key=value  # Set specific setting
 
+# Plugin Management
+npx ultra-dex plugin list        # List installed plugins
+npx ultra-dex plugin install <source>  # Install a plugin
+npx ultra-dex plugin uninstall <name>  # Uninstall a plugin
+npx ultra-dex plugin info <name> # Show plugin information
+
 # MCP & Automation
 npx ultra-dex serve
 npx ultra-dex hooks
@@ -423,7 +483,7 @@ Ultra-Dex/
 │   ├── 02-api.mdc
 │   └── ... (31 domain-specific rules)
 │
-└── @ Ultra DeX/
+└── @ ultra-dex/
     └── Saas plan/
         │
         │  # Core (numbered for order)
@@ -473,6 +533,60 @@ Ultra-Dex/
 | **Product** | 1-10 | Definition, Tech Stack, Database, API, Auth, Frontend, Real-time, Payments, UI/UX, Testing |
 | **Operations** | 11-20 | Deployment, Errors, Logging, Performance, Security, Tasks, Timeline, Risks, Maintenance, Launch |
 | **Advanced** | 21-34 | Docs, Roadmap, Accessibility, Cost, Analytics, Error Strategy, Legal, SEO, i18n, Feature Flags, Real-time Architecture, Support, AI/ML |
+
+---
+
+## Plugin Architecture
+
+Ultra-Dex now includes a comprehensive plugin system for extending functionality:
+
+### Creating a Plugin
+1. Create a JavaScript file with the following structure:
+   ```javascript
+   // Plugin metadata
+   export const name = 'my-plugin';
+   export const version = '1.0.0';
+   export const description = 'My awesome Ultra-Dex plugin';
+   export const author = 'Your Name';
+
+   /**
+    * Activation function - called when the plugin is activated
+    * @param {PluginManager} pluginManager - The plugin manager instance
+    * @param {Command} cliProgram - The main CLI program instance
+    */
+   export async function activate(pluginManager, cliProgram) {
+     // Register new commands or modify existing functionality
+     cliProgram
+       .command('my-command')
+       .description('My plugin command')
+       .action(() => {
+         console.log('Hello from my plugin!');
+       });
+
+     // Register hooks to modify Ultra-Dex behavior
+     pluginManager.registerHook('project-init', 'Called when initializing a new project');
+   }
+
+   // Export as default for ES module compatibility
+   export default {
+     name,
+     version,
+     description,
+     author,
+     activate
+   };
+   ```
+
+2. Install your plugin:
+   ```bash
+   ultra-dex plugin install ./path-to-your-plugin.js
+   ```
+
+### Managing Plugins
+- List installed plugins: `ultra-dex plugin list`
+- Install a plugin: `ultra-dex plugin install <source>`
+- Uninstall a plugin: `ultra-dex plugin uninstall <name>`
+- View plugin info: `ultra-dex plugin info <name>`
 
 ---
 
@@ -646,6 +760,27 @@ npx ultra-dex dashboard
 
 ---
 
+## Performance & Optimization
+
+### Graph Analysis
+- Optimized file processing with caching
+- Concurrency improvements for faster scanning
+- Selective updates for changed files only
+- Performance metrics and benchmarks
+
+### Caching System
+- 30-second TTL for graph analysis
+- File change detection to avoid unnecessary work
+- Memory-efficient data structures
+- Performance monitoring and reporting
+
+### Benchmarking
+- Built-in performance tests in `cli/test/performance-benchmarks.test.js`
+- Metrics collection for key operations
+- Performance regression detection
+
+---
+
 ## Multi-Tool AI Orchestration
 
 **Ultra-Dex is the ONLY framework that coordinates multiple AI tools together.**
@@ -705,9 +840,9 @@ Total: $23 (vs $60+ single-tool approach)
 
 ## Get Started
 
-1. **New to Ultra-Dex?** → Start with [01-QUICK-START.md](./@%20Ultra%20DeX/Saas%20plan/01-QUICK-START.md)
-2. **Want to see it in action?** → Read [TaskFlow-Complete.md](./@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
-3. **Ready for full planning?** → Use [04-Imp-Template.md](./@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
+1. **New to Ultra-Dex?** → Start with [01-QUICK-START.md](./@%20ultra-dex/Saas%20plan/01-QUICK-START.md)
+2. **Want to see it in action?** → Read [TaskFlow-Complete.md](./@%20ultra-dex/Saas%20plan/Examples/TaskFlow-Complete.md)
+3. **Ready for full planning?** → Use [04-Imp-Template.md](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md)
 
 ---
 

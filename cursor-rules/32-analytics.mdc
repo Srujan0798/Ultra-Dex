@@ -1,0 +1,414 @@
+# Analytics & Tracking Rules
+
+> Rules for implementing privacy-compliant analytics and event tracking
+
+## Core Principles
+
+- Privacy-first: GDPR, CCPA, PECR compliant
+- Never track PII without explicit consent
+- Use server-side tracking when possible
+- Respect Do Not Track (DNT) signals
+- Document all tracking in privacy policy
+
+## Technology Stack
+
+- **Product Analytics**: Mixpanel, Amplitude, or PostHog
+- **Web Analytics**: Plausible (privacy-focused) or Fathom
+- **Error Tracking**: Sentry
+- **Performance**: Vercel Analytics or DataDog RUM
+- **Consent Management**: Cookiebot, OneTrust, or custom
+
+## Privacy Compliance
+
+### GDPR Requirements
+- Explicit consent before tracking
+- Granular consent categories
+- Data retention limits
+- Right to erasure support
+- Data processing agreements
+
+### Implementation
+
+```typescript
+// lib/analytics/consent.ts
+type ConsentCategory = 'necessary' | 'analytics' | 'marketing' | 'functional';
+
+interface ConsentState {
+  necessary: boolean;    // Always true
+  analytics: boolean;    // User choice
+  marketing: boolean;    // User choice
+  functional: boolean;   // User choice
+  timestamp: Date;
+}
+
+export function getConsent(): ConsentState {
+  const stored = localStorage.getItem('consent');
+  return stored ? JSON.parse(stored) : getDefaultConsent();
+}
+
+export function setConsent(consent: Omit<ConsentState, 'timestamp'>) {
+  const state: ConsentState = { ...consent, timestamp: new Date() };
+  localStorage.setItem('consent', JSON.stringify(state));
+  
+  // Initialize or disable analytics based on consent
+  if (state.analytics) {
+    initAnalytics();
+  } else {
+    disableAnalytics();
+  }
+}
+```
+
+## Event Tracking Architecture
+
+### Event Types
+
+```typescript
+// lib/analytics/events.ts
+export interface AnalyticsEvent {
+  name: string;
+  category: 'engagement' | 'conversion' | 'error' | 'performance';
+  properties?: Record<string, any>;
+  timestamp?: Date;
+  sessionId?: string;
+  userId?: string; // Hashed, not email
+}
+
+// Predefined events
+export const events = {
+  // Auth
+  USER_SIGNUP: { name: 'User Signup', category: 'conversion' },
+  USER_LOGIN: { name: 'User Login', category: 'engagement' },
+  
+  // Core
+  PAGE_VIEW: { name: 'Page View', category: 'engagement' },
+  FEATURE_USED: { name: 'Feature Used', category: 'engagement' },
+  
+  // Conversion
+  SUBSCRIPTION_STARTED: { name: 'Subscription Started', category: 'conversion' },
+  CHECKOUT_COMPLETED: { name: 'Checkout Completed', category: 'conversion' },
+  
+  // Error
+  ERROR_OCCURRED: { name: 'Error Occurred', category: 'error' },
+  API_ERROR: { name: 'API Error', category: 'error' }
+} as const;
+```
+
+### Analytics Hook
+
+```typescript
+// hooks/useAnalytics.ts
+import { useCallback } from 'react';
+import { getConsent } from '@/lib/analytics/consent';
+
+export function useAnalytics() {
+  const track = useCallback((event: string, properties?: Record<string, any>) => {
+    const consent = getConsent();
+    
+    // Check DNT
+    if (navigator.doNotTrack === '1') return;
+    
+    // Check analytics consent
+    if (!consent.analytics) return;
+    
+    // Sanitize properties (remove PII)
+    const cleanProps = sanitizeProperties(properties);
+    
+    // Send to analytics provider
+    if (typeof window !== 'undefined' && window.analytics) {
+      window.analytics.track(event, {
+        ...cleanProps,
+        timestamp: new Date().toISOString(),
+        sessionId: getSessionId(),
+        path: window.location.pathname
+      });
+    }
+  }, []);
+  
+  const identify = useCallback((userId: string, traits?: Record<string, any>) => {
+    const consent = getConsent();
+    if (!consent.analytics) return;
+    
+    // Hash userId (never use email)
+    const hashedId = hashUserId(userId);
+    
+    if (typeof window !== 'undefined' && window.analytics) {
+      window.analytics.identify(hashedId, sanitizeProperties(traits));
+    }
+  }, []);
+  
+  return { track, identify };
+}
+
+function sanitizeProperties(props?: Record<string, any>): Record<string, any> {
+  if (!props) return {};
+  
+  const piiFields = ['email', 'phone', 'name', 'address', 'password'];
+  const clean: Record<string, any> = {};
+  
+  for (const [key, value] of Object.entries(props)) {
+    if (piiFields.includes(key.toLowerCase())) {
+      clean[key] = '[REDACTED]';
+    } else {
+      clean[key] = value;
+    }
+  }
+  
+  return clean;
+}
+```
+
+### Page View Tracking
+
+```typescript
+// components/AnalyticsProvider.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useAnalytics } from '@/hooks/useAnalytics';
+
+export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const { track } = useAnalytics();
+  
+  useEffect(() => {
+    // Track page view on route change
+    track('Page Viewed', {
+      page: pathname,
+      referrer: document.referrer,
+      title: document.title
+    });
+  }, [pathname, track]);
+  
+  return <>{children}</>;
+}
+```
+
+## Consent Banner Component
+
+```typescript
+// components/ConsentBanner.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { getConsent, setConsent } from '@/lib/analytics/consent';
+
+export function ConsentBanner() {
+  const [show, setShow] = useState(false);
+  const [preferences, setPreferences] = useState({
+    analytics: false,
+    marketing: false,
+    functional: false
+  });
+  
+  useEffect(() => {
+    const consent = getConsent();
+    // Show if no consent recorded (first visit)
+    if (!consent.timestamp) {
+      setShow(true);
+    }
+  }, []);
+  
+  const acceptAll = () => {
+    setConsent({
+      necessary: true,
+      analytics: true,
+      marketing: true,
+      functional: true
+    });
+    setShow(false);
+  };
+  
+  const acceptSelected = () => {
+    setConsent({
+      necessary: true,
+      ...preferences
+    });
+    setShow(false);
+  };
+  
+  if (!show) return null;
+  
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
+      <div className="max-w-6xl mx-auto">
+        <p className="text-sm mb-4">
+          We use cookies to enhance your experience. 
+          <a href="/privacy" className="underline">Learn more</a>
+        </p>
+        
+        <div className="flex gap-4 mb-4">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked disabled />
+            <span>Necessary (required)</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              checked={preferences.analytics}
+              onChange={(e) => setPreferences(p => ({ ...p, analytics: e.target.checked }))}
+            />
+            <span>Analytics</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              checked={preferences.marketing}
+              onChange={(e) => setPreferences(p => ({ ...p, marketing: e.target.checked }))}
+            />
+            <span>Marketing</span>
+          </label>
+        </div>
+        
+        <div className="flex gap-2">
+          <button onClick={acceptAll} className="bg-blue-600 text-white px-4 py-2 rounded">
+            Accept All
+          </button>
+          <button onClick={acceptSelected} className="border px-4 py-2 rounded">
+            Accept Selected
+          </button>
+          <button onClick={() => setShow(false)} className="text-gray-600 px-4 py-2">
+            Reject All
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## E-commerce Tracking
+
+```typescript
+// lib/analytics/ecommerce.ts
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  variant?: string;
+}
+
+export function trackProductViewed(product: Product) {
+  track('Product Viewed', {
+    product_id: product.id,
+    product_name: product.name,
+    product_price: product.price,
+    product_category: product.category
+  });
+}
+
+export function trackAddedToCart(product: Product, quantity: number) {
+  track('Product Added to Cart', {
+    product_id: product.id,
+    product_name: product.name,
+    product_price: product.price,
+    quantity,
+    value: product.price * quantity
+  });
+}
+
+export function trackPurchase(orderId: string, products: Product[], total: number) {
+  track('Order Completed', {
+    order_id: orderId,
+    value: total,
+    currency: 'USD',
+    products: products.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      category: p.category
+    }))
+  });
+}
+```
+
+## Server-Side Tracking
+
+```typescript
+// app/api/track/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(req: NextRequest) {
+  const { event, properties } = await req.json();
+  
+  // Server-side tracking (bypasses ad-blockers)
+  await fetch('https://api.mixpanel.com/track', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${btoa(process.env.MIXPANEL_TOKEN + ':')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      event,
+      properties: {
+        ...properties,
+        ip: req.ip,
+        time: Date.now()
+      }
+    })
+  });
+  
+  return NextResponse.json({ success: true });
+}
+```
+
+## Performance Tracking
+
+```typescript
+// lib/analytics/performance.ts
+export function trackCoreWebVitals() {
+  if (typeof window === 'undefined') return;
+  
+  // LCP
+  new PerformanceObserver((list) => {
+    const entries = list.getEntries();
+    const lastEntry = entries[entries.length - 1];
+    track('LCP', { value: lastEntry.startTime });
+  }).observe({ entryTypes: ['largest-contentful-paint'] });
+  
+  // FID
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const fid = entry.processingStart - entry.startTime;
+      track('FID', { value: fid });
+    }
+  }).observe({ entryTypes: ['first-input'] });
+  
+  // CLS
+  let clsValue = 0;
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      if (!entry.hadRecentInput) {
+        clsValue += entry.value;
+      }
+    }
+    track('CLS', { value: clsValue });
+  }).observe({ entryTypes: ['layout-shift'] });
+}
+```
+
+## 21-Step Verification
+
+1. Consent banner displays on first visit
+2. Necessary cookies load without consent
+3. Analytics only load after consent
+4. DNT signal respected
+5. No PII in tracking calls
+6. User IDs hashed
+7. Properties sanitized
+8. Server-side tracking implemented
+9. Ad-blocker bypass working
+10. Page views tracked
+11. Key events instrumented
+12. E-commerce funnel tracked
+13. Error tracking active
+14. Performance metrics collected
+15. Consent preferences persisted
+16. Privacy policy updated
+17. Data retention configured
+18. GDPR deletion supported
+19. Analytics dashboard accessible
+20. Conversion tracking verified
+21. Documentation complete

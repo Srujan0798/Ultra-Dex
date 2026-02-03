@@ -79,45 +79,64 @@ Available commands:
   },
   debugger: {
     name: '@Debugger',
-    role: 'Diagnostic & Fix Specialist',
-    systemPrompt: `You are @Debugger. Analyze logs and fix code.
+    role: 'Bug Fixing Specialist',
+    systemPrompt: `You are @Debugger. Analyze logs and code to identify and fix bugs.
 Available commands:
 >> READ_CODE: "path"
->> WRITE_CODE: "path" "content"
->> SEARCH_CODE: "query"`,
+>> SEARCH_CODE: "query"
+>> WRITE_CODE: "path" "content"`,
   },
   devops: {
     name: '@DevOps',
     role: 'CI/CD & Infrastructure Specialist',
-    systemPrompt: `You are @DevOps. Manage deployment and git.
+    systemPrompt: `You are @DevOps. Manage deployment, infrastructure, and git operations.
 Available commands:
 >> RUN_SHELL: "command"
->> READ_CODE: "path"`,
+>> READ_CODE: "path"
+>> WRITE_CODE: "path" "content"
+>> SEARCH_CODE: "query"`,
   },
 };
 
 async function readProjectContext() {
   const context = {};
-  try { context.plan = await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8'); } catch { context.plan = null; }
-  try { context.context = await fs.readFile('CONTEXT.md', 'utf8'); } catch { context.context = null; }
-  try { 
-    context.state = JSON.parse(await fs.readFile('.ultra/state.json', 'utf8')); 
-  } catch { 
+
+  const planPromise = fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => null);
+  const contextPromise = fs.readFile('CONTEXT.md', 'utf8').catch(() => null);
+  const statePromise = (async () => {
     try {
-        context.state = JSON.parse(await fs.readFile('.ultra-dex/state.json', 'utf8'));
+      return JSON.parse(await fs.readFile('.ultra/state.json', 'utf8'));
     } catch {
-        context.state = null; 
+      try {
+        return JSON.parse(await fs.readFile('.ultra-dex/state.json', 'utf8'));
+      } catch {
+        return null;
+      }
     }
-  }
-  
+  })();
+
   // Graph Scan (God Mode)
-  try {
-    await projectGraph.scan();
-    context.graph = projectGraph.getSummary();
-  } catch (e) {
-    context.graph = null;
-  }
-  
+  const graphPromise = (async () => {
+    try {
+      await projectGraph.scan();
+      return projectGraph.getSummary();
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const [plan, ctx, state, graph] = await Promise.all([
+    planPromise,
+    contextPromise,
+    statePromise,
+    graphPromise
+  ]);
+
+  context.plan = plan;
+  context.context = ctx;
+  context.state = state;
+  context.graph = graph;
+
   return context;
 }
 

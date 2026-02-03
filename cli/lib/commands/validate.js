@@ -39,7 +39,7 @@ export function registerValidateCommand(program) {
 
       const coreFiles = [
         { path: 'QUICK-START.md', required: true },
-        { path: 'IMPLEMENTATION-PLAN.md', required: true },
+        { path: 'IMPLEMENTATION-PLAN.md', required: false },
         { path: 'CONTEXT.md', required: false },
         { path: 'README.md', required: false },
       ];

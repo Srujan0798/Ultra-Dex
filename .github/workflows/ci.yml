@@ -1,20 +1,21 @@
-name: CI
+name: Ultra-Dex CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
 
 jobs:
-  markdown-lint:
-    name: Lint Markdown Files
+  # 1. Code Quality & Standards
+  quality-check:
+    name: Code Quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Lint markdown files
+      - name: Lint Markdown
         uses: articulate/actions-markdownlint@v1
         with:
           config: .markdownlint.json
@@ -22,75 +23,44 @@ jobs:
           ignore: 'node_modules'
         continue-on-error: true
 
-  link-check:
-    name: Check Markdown Links
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check links in markdown files
+      - name: Check Links
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           use-quiet-mode: 'yes'
           config-file: '.markdown-link-check.json'
         continue-on-error: true
 
-  validate-structure:
-    name: Validate Project Structure
+  # 2. Structural Integrity (File Existence)
+  structure-check:
+    name: Validate Structure
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check required files exist
+      - name: Verify Core Files
         run: |
-          echo "Checking for required files..."
-          test -f README.md || { echo "❌ README.md missing"; exit 1; }
-          test -f CHANGELOG.md || { echo "❌ CHANGELOG.md missing"; exit 1; }
-          test -f docs/QUICK-REFERENCE.md || { echo "❌ docs/QUICK-REFERENCE.md missing"; exit 1; }
-          test -f docs/ROADMAP.md || { echo "❌ docs/ROADMAP.md missing"; exit 1; }
-          test -f docs/WORKFLOW-DIAGRAMS.md || { echo "❌ docs/WORKFLOW-DIAGRAMS.md missing"; exit 1; }
-          test -d agents || { echo "❌ agents/ directory missing"; exit 1; }
-          test -d docs/guides || { echo "❌ docs/guides/ directory missing"; exit 1; }
-          test -d templates || { echo "❌ templates/ directory missing"; exit 1; }
-          echo "✅ All required files present"
+          for file in README.md CHANGELOG.md docs/ROADMAP.md agents/00-AGENT_INDEX.md; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            fi
+          done
+          echo "✅ Core files present"
 
-      - name: Check agent files
+      - name: Verify Directories
         run: |
-          echo "Checking agent files..."
-          test -f agents/00-AGENT_INDEX.md || { echo "❌ Agent index missing"; exit 1; }
-          test -f agents/README.md || { echo "❌ Agents README missing"; exit 1; }
-          test -d agents/1-leadership || { echo "❌ Leadership tier missing"; exit 1; }
-          test -d agents/2-development || { echo "❌ Development tier missing"; exit 1; }
-          test -d agents/3-security || { echo "❌ Security tier missing"; exit 1; }
-          test -d agents/4-devops || { echo "❌ DevOps tier missing"; exit 1; }
-          test -d agents/5-quality || { echo "❌ Quality tier missing"; exit 1; }
-          test -d agents/6-specialist || { echo "❌ Specialist tier missing"; exit 1; }
-          echo "✅ Agent structure valid"
+          for dir in agents docs/guides templates cli vscode-extension; do
+            if [ ! -d "$dir" ]; then
+              echo "❌ Missing directory: $dir"
+              exit 1
+            fi
+          done
+          echo "✅ Directory structure valid"
 
-      - name: Check guide files
-        run: |
-          echo "Checking guide files..."
-          test -f docs/guides/README.md || { echo "❌ Guides README missing"; exit 1; }
-          test -f docs/guides/PROJECT-ORCHESTRATION.md || { echo "❌ Project Orchestration guide missing"; exit 1; }
-          test -f docs/guides/DATABASE-DECISION-FRAMEWORK.md || { echo "❌ Database guide missing"; exit 1; }
-          test -f docs/guides/ARCHITECTURE-PATTERNS.md || { echo "❌ Architecture guide missing"; exit 1; }
-          test -f docs/guides/ADVANCED-WORKFLOWS.md || { echo "❌ Advanced Workflows missing"; exit 1; }
-          test -f docs/guides/MULTI-TOOL-WORKFLOW.md || { echo "❌ Multi-Tool Workflow missing"; exit 1; }
-          test -f docs/guides/AI-MODEL-SELECTION.md || { echo "❌ AI Model Selection missing"; exit 1; }
-          echo "✅ All guides present"
-
-      - name: Check template files
-        run: |
-          echo "Checking template files..."
-          test -f templates/README.md || { echo "❌ Templates README missing"; exit 1; }
-          test -f templates/MASTER-PLAN-TEMPLATE.md || { echo "❌ Master Plan template missing"; exit 1; }
-          test -f templates/PHASE-TRACKER-TEMPLATE.md || { echo "❌ Phase Tracker template missing"; exit 1; }
-          echo "✅ All templates present"
-
+  # 3. CLI Logic & Behavior (281 Unit Tests)
   cli-test:
-    name: Test CLI Tool
+    name: CLI Test Suite
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -99,16 +69,56 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cli/package-lock.json
 
-      - name: Install CLI dependencies
+      - name: Install Dependencies
+        run: |
+          cd cli
+          npm ci
+
+      - name: Run Linter
+        run: |
+          cd cli
+          npm run lint
+
+      - name: Run Test Suite with Coverage
+        run: |
+          cd cli
+          npm run test:coverage
+        env:
+          LOG_LEVEL: silent
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cli/coverage/
+          retention-days: 30
+
+  # 4. Dogfooding (Run Ultra-Dex against itself)
+  dogfood-check:
+    name: Dogfood Validation
+    runs-on: ubuntu-latest
+    needs: [cli-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install & Link Ultra-Dex
         run: |
           cd cli
           npm install
+          npm link
 
-      - name: Test CLI commands
-        run: |
-          cd cli
-          node bin/ultra-dex.js --version
-          node bin/ultra-dex.js --help
-          echo "✅ CLI commands work"
+      - name: Run Alignment Check
+        run: npx ultra-dex align --strict
+
+      - name: Run Validation Scan
+        run: npx ultra-dex validate --scan

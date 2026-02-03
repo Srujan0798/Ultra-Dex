@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra-Dex Web Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .feature {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature h3 {
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Ultra-Dex Playground</h1>
+        <p class="subtitle">Generate implementation plans from your browser</p>
+        
+        <form id="planForm">
+            <div class="form-group">
+                <label for="projectName">Project Name</label>
+                <input type="text" id="projectName" placeholder="My Awesome SaaS" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="idea">What are you building?</label>
+                <textarea id="idea" placeholder="A platform that helps developers..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="audience">Who is it for?</label>
+                <input type="text" id="audience" placeholder="Developers, Small businesses, etc." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="techStack">Tech Stack</label>
+                <select id="techStack" required>
+                    <option value="nextjs">Next.js + Prisma + PostgreSQL</option>
+                    <option value="remix">Remix + Supabase</option>
+                    <option value="sveltekit">SvelteKit + Drizzle</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn">Generate Implementation Plan</button>
+        </form>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">📋</div>
+                <h3>34-Section Template</h3>
+                <p>Comprehensive planning framework</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>AI-Powered</h3>
+                <p>Smart plan generation</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <h3>21-Step Verification</h3>
+                <p>Production-ready quality</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📦</div>
+                <h3>Export Options</h3>
+                <p>Markdown, JSON, YAML</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('planForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const status = document.getElementById('status');
+            status.className = 'status loading';
+            status.textContent = '⏳ Generating your implementation plan...';
+            
+            const formData = {
+                projectName: document.getElementById('projectName').value,
+                idea: document.getElementById('idea').value,
+                audience: document.getElementById('audience').value,
+                techStack: document.getElementById('techStack').value
+            };
+            
+            try {
+                // In a real implementation, this would call an API
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                status.className = 'status success';
+                status.innerHTML = `
+                    <strong>✅ Implementation plan generated!</strong><br>
+                    <small>Download your plan or continue editing</small>
+                `;
+                
+                // Generate a sample plan (in real app, this would come from backend)
+                const plan = generateSamplePlan(formData);
+                downloadPlan(plan, formData.projectName);
+                
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ Error generating plan. Please try again.';
+            }
+        });
+        
+        function generateSamplePlan(data) {
+            return `# ${data.projectName} - Implementation Plan
+
+## 1. Overview
+${data.idea} for ${data.audience}.
+
+## 2. Tech Stack
+- **Frontend:** ${data.techStack === 'nextjs' ? 'Next.js 15' : data.techStack === 'remix' ? 'Remix' : 'SvelteKit'}
+- **Database:** ${data.techStack === 'supabase' ? 'Supabase' : 'PostgreSQL'}
+- **Auth:** ${data.techStack === 'supabase' ? 'Supabase Auth' : 'Clerk'}
+- **Payments:** Stripe
+- **Hosting:** Vercel
+
+## 3. Core Features
+- [ ] User authentication
+- [ ] Dashboard
+- [ ] Data management
+- [ ] Analytics
+
+## 4. Next Steps
+1. Run: \`npx ultra-dex init\`
+2. Follow the generated plan
+3. Start building!
+
+---
+*Generated by Ultra-Dex Web Playground*
+`;
+        }
+        
+        function downloadPlan(content, projectName) {
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-plan.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
