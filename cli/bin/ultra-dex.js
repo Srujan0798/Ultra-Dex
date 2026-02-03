@@ -74,10 +74,11 @@ import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
 import { registerAlignCommand, registerStatusCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
-import { registerCheckCommand } from '../lib/commands/advanced.js';
+import { registerCheckCommand, registerBatchCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
 import { registerVerifyCommand } from '../lib/commands/verify.js';
 import { registerPluginCommand } from '../lib/commands/plugin.js';
+import { registerWorkspaceCommand } from '../lib/commands/workspace.js';
 
 // v3.0 Commands
 import { swarmCommand } from '../lib/commands/swarm.js';
@@ -260,6 +261,8 @@ registerSearchCommand(program);
 registerCloudCommand(program);
 registerBrainCommand(program);
 registerAutonomousCommand(program);
+registerWorkspaceCommand(program);
+registerBatchCommand(program);
 
 // Activate plugins after all commands are registered
 await pluginManager.activatePlugins(program).catch(error => {
