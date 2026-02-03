@@ -58,8 +58,14 @@ This release combines **Wave 6: Self-Healing** with comprehensive **Beta Command
 - **📈 Real-Time Monitoring** (`ultra-dex metrics`)
   - `--watch`: Live system metrics dashboard
   - Alerting for high resource usage or errors
+### Added - Advanced Features
+- **📂 Multi-Project Workspace** (`ultra-dex workspace`)
+  - Global project tracking and management
+  - `workspace add/list/remove` commands
+  - Seamless context switching between projects
 - **🔄 Batch Operations** (`ultra-dex batch`)
   - Execute sequential Ultra-Dex commands from a file
+  - Automation for repetitive workflows
 
 ### Changed
 - **Dashboard UI** - Added dedicated self-healing status card and metrics
