@@ -38,11 +38,11 @@ module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
   
   name = "{{PROJECT_NAME}}-vpc"
-  cidr = "10.0.0.0/16"
+  cidr = "{{VPC_CIDR_BLOCK}}"
   
   azs             = ["{{REGION}}a", "{{REGION}}b", "{{REGION}}c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  private_subnets = ["{{PRIVATE_SUBNET_1}}", "{{PRIVATE_SUBNET_2}}", "{{PRIVATE_SUBNET_3}}"]
+  public_subnets  = ["{{PUBLIC_SUBNET_1}}", "{{PUBLIC_SUBNET_2}}", "{{PUBLIC_SUBNET_3}}"]
   
   enable_nat_gateway = true
   enable_vpn_gateway = false
@@ -172,10 +172,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE {{APP_PORT}}
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+ENV PORT={{APP_PORT}}
+ENV HOSTNAME="{{HOSTNAME}}"
 
 CMD ["node", "server.js"]
 `,
@@ -187,12 +187,12 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "{{APP_PORT}}:{{APP_PORT}}"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:password@db:5432/{{PROJECT_NAME}}
-      - NEXTAUTH_SECRET=your-secret-key
-      - NEXTAUTH_URL=http://localhost:3000
+      - DATABASE_URL={{DATABASE_URL}}
+      - NEXTAUTH_SECRET={{NEXTAUTH_SECRET}}
+      - NEXTAUTH_URL={{NEXTAUTH_URL}}
     depends_on:
       - db
     networks:
@@ -202,19 +202,19 @@ services:
     image: postgres:15-alpine
     environment:
       - POSTGRES_DB={{PROJECT_NAME}}
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER={{DB_USER}}
+      - POSTGRES_PASSWORD={{DB_PASSWORD}}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "{{DB_PORT}}:{{DB_PORT}}"
     networks:
       - app-network
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "{{REDIS_PORT}}:{{REDIS_PORT}}"
     networks:
       - app-network
 
@@ -286,7 +286,7 @@ spec:
       - name: {{PROJECT_NAME}}
         image: {{PROJECT_NAME}}:latest
         ports:
-        - containerPort: 3000
+        - containerPort: {{APP_PORT}}
         env:
         - name: NODE_ENV
           value: "production"
@@ -310,13 +310,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /api/health
-            port: 3000
+            port: {{APP_PORT}}
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /api/health
-            port: 3000
+            port: {{APP_PORT}}
           initialDelaySeconds: 5
           periodSeconds: 5
 `,
@@ -331,7 +331,7 @@ spec:
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 3000
+    targetPort: {{APP_PORT}}
   type: ClusterIP
 `,
   ingress: `apiVersion: networking.k8s.io/v1
@@ -358,7 +358,7 @@ spec:
           service:
             name: {{PROJECT_NAME}}-service
             port:
-              number: 80
+              number: {{HTTP_PORT}}
 `,
   secrets: `apiVersion: v1
 kind: Secret
@@ -367,9 +367,9 @@ metadata:
   namespace: default
 type: Opaque
 stringData:
-  database-url: "postgresql://user:password@host:5432/dbname"
-  nextauth-secret: "your-secret-key"
-  stripe-secret-key: "sk_test_..."
+  database-url: "{{DATABASE_URL}}"
+  nextauth-secret: "{{NEXTAUTH_SECRET}}"
+  stripe-secret-key: "{{STRIPE_SECRET_KEY}}"
 `,
   namespace: `apiVersion: v1
 kind: Namespace

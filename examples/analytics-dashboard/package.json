@@ -2,6 +2,7 @@
   "name": "analytics-dashboard",
   "version": "1.0.0",
   "description": "Production-ready analytics dashboard with Next.js 14",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",

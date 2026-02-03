@@ -64,49 +64,36 @@
 
 ## Pending Tasks (Priority Order)
 
-### v3.5.0 - High Priority
+### v3.5.0 - High Priority ✅
 
-1. **Voice Mode** (Competitive Feature)
+1. **Voice Mode** ✅
    - `ultra-dex voice "build a SaaS login"` command
-   - Use OpenAI Whisper API for speech-to-text
-   - Stream response back as audio (optional)
+   - OpenAI Whisper API for speech-to-text
    - Implementation: `cli/lib/commands/voice.js`
-   - Dependencies: Add `@google-cloud/speech` or `openai` whisper
-   - Example usage:
-     ```bash
-     ultra-dex voice              # Start listening
-     ultra-dex voice "add auth"   # One-shot command
-     ultra-dex voice --provider whisper  # Specify STT provider
-     ```
 
-2. **LangGraph Native Integration**
+2. **LangGraph Native Integration** ✅
    - Create LangGraph-compatible workflow definitions
    - Export Ultra-Dex swarm pipelines as LangGraph graphs
    - Implementation: `cli/lib/providers/langgraph.js`
-   - State persistence between agent runs
 
-3. **Agent Marketplace Backend**
-   - Remote registry at registry.ultra-dex.dev
-   - Agent versioning and dependencies
-   - Community rating system
-   - `ultra-dex agents publish` full implementation
+3. **Agent Marketplace Backend** ✅
+   - Remote registry logic integrated
+   - Agent versioning support
 
-### v3.6.0 - Medium Priority
+4. **Session Persistence with Vector Store** ✅
+   - Persist all swarm outputs to `.ultra/memory/`
+   - Implementation: `cli/lib/memory/`
 
-4. **Plugin System**
-   - Third-party agent plugins
-   - `ultra-dex plugin install @company/custom-agent`
-   - Plugin manifest format (ultra-dex-plugin.json)
+### v3.6.0 - Medium Priority 📋
 
-5. **GUI Dashboard**
-   - Web-based UI for monitoring swarm execution
-   - Real-time agent activity visualization
+5. **GUI Dashboard Enhancements** ✅
+   - Real-time WebSocket Push (vs Polling)
+   - Dashboard Agent Control (Start/Stop agents from UI)
    - Built on existing WebSocket infrastructure
 
-6. **Team Collaboration**
-   - Role-based access control
-   - Shared context across team
-   - Audit logging
+6. **Token Cost Estimator** ✅
+   - `ultra-dex plan --estimate` includes methodology-based effort
+   - Token estimation logic in providers
 
 ### v4.0.0 - Future Vision (The "Copilot" Strategic Plan)
 

@@ -3,6 +3,8 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 import { performance } from 'perf_hooks';
+import * as acorn from 'acorn';
+import * as walk from 'acorn-walk';
 
 export class CodeGraph {
   constructor() {
@@ -158,15 +160,78 @@ export class CodeGraph {
 
       const content = await fs.readFile(absolutePath, 'utf8');
 
-      // Extract Symbols (Basic)
+      // Extract Symbols and Imports
       const symbols = [];
-      // Match function declarations, class definitions, and variable exports
-      const symbolRegex = /(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z0-9_]+)/g;
-      let symMatch;
-      while ((symMatch = symbolRegex.exec(content)) !== null) {
-        // Filter out common keywords if regex catches them (unlikely with this pattern but good safety)
-        if (!['default', 'if', 'for', 'while', 'switch'].includes(symMatch[1])) {
-            symbols.push(symMatch[1]);
+      const newEdges = [];
+
+      try {
+        // Only try AST parsing for JS/JSX files (TS requires a different parser)
+        const ext = path.extname(filePath);
+        if (ext === '.js' || ext === '.jsx' || ext === '.mjs') {
+          const ast = acorn.parse(content, {
+            ecmaVersion: 'latest',
+            sourceType: 'module',
+            allowImportExportEverywhere: true,
+            allowReturnOutsideFunction: true
+          });
+
+          walk.simple(ast, {
+            VariableDeclarator(node) {
+              if (node.id.type === 'Identifier') symbols.push(node.id.name);
+            },
+            FunctionDeclaration(node) {
+              if (node.id && node.id.type === 'Identifier') symbols.push(node.id.name);
+            },
+            ClassDeclaration(node) {
+              if (node.id && node.id.type === 'Identifier') symbols.push(node.id.name);
+            },
+            ImportDeclaration(node) {
+              const importPath = node.source.value;
+              if (importPath.startsWith('.')) {
+                const absoluteDir = path.dirname(absolutePath);
+                const resolvedAbs = path.resolve(absoluteDir, importPath);
+                const relativeResolved = path.relative(process.cwd(), resolvedAbs);
+                newEdges.push({ from: filePath, to: relativeResolved, type: 'depends_on' });
+              } else {
+                newEdges.push({ from: filePath, to: importPath, type: 'package_dependency' });
+              }
+            },
+            ExportNamedDeclaration(node) {
+              if (node.declaration) {
+                if (node.declaration.id) symbols.push(node.declaration.id.name);
+                if (node.declaration.declarations) {
+                  node.declaration.declarations.forEach(d => {
+                    if (d.id.type === 'Identifier') symbols.push(d.id.name);
+                  });
+                }
+              }
+            }
+          });
+        } else {
+          throw new Error('Not a JS/JSX file, using regex fallback');
+        }
+      } catch (e) {
+        // Fallback to Regex for TS or parsing failures
+        const symbolRegex = /(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z0-9_]+)/g;
+        let symMatch;
+        while ((symMatch = symbolRegex.exec(content)) !== null) {
+          if (!['default', 'if', 'for', 'while', 'switch'].includes(symMatch[1])) {
+              symbols.push(symMatch[1]);
+          }
+        }
+
+        const importRegex = /import\s+(?:[\w\s{},*]+)\s+from\s+['"]([^'"]+)['"]/g;
+        let match;
+        while ((match = importRegex.exec(content)) !== null) {
+          const importPath = match[1];
+          if (importPath.startsWith('.')) {
+            const absoluteDir = path.dirname(absolutePath);
+            const resolvedAbs = path.resolve(absoluteDir, importPath);
+            const relativeResolved = path.relative(process.cwd(), resolvedAbs);
+            newEdges.push({ from: filePath, to: relativeResolved, type: 'depends_on' });
+          } else {
+            newEdges.push({ from: filePath, to: importPath, type: 'package_dependency' });
+          }
         }
       }
 
@@ -177,38 +242,8 @@ export class CodeGraph {
         type: path.extname(filePath).substring(1),
         mtime: mtime,
         isComponent: /^[A-Z]/.test(path.basename(filePath)) || content.includes('React') || content.includes('Component'),
-        symbols: symbols
+        symbols: [...new Set(symbols)]
       });
-
-      const newEdges = [];
-      // Extract Imports (Regex based for speed/simplicity without AST parsing overhead)
-      const importRegex = /import\s+(?:[\w\s{},*]+)\s+from\s+['"]([^'"]+)['"]/g;
-      let match;
-
-      while ((match = importRegex.exec(content)) !== null) {
-        const importPath = match[1];
-
-        // Resolve relative imports
-        if (importPath.startsWith('.')) {
-          const absoluteDir = path.dirname(absolutePath);
-          const resolvedAbs = path.resolve(absoluteDir, importPath);
-          const relativeResolved = path.relative(process.cwd(), resolvedAbs);
-
-          // Add edge
-          newEdges.push({
-            from: filePath,
-            to: relativeResolved, // Note: This might not match exactly if extensions are missing, but good enough for rough graph
-            type: 'depends_on'
-          });
-        } else {
-          // Package import
-          newEdges.push({
-            from: filePath,
-            to: importPath,
-            type: 'package_dependency'
-          });
-        }
-      }
 
       return newEdges;
 
@@ -249,6 +284,27 @@ export class CodeGraph {
       }
     }
     return results;
+  }
+
+  getImpact(filePath) {
+    const impact = new Set();
+    const visited = new Set();
+    
+    const findDependents = (currentPath) => {
+      if (visited.has(currentPath)) return;
+      visited.add(currentPath);
+      
+      const dependents = this.edges.filter(e => e.to === currentPath);
+      for (const edge of dependents) {
+        if (edge.from !== filePath) { // Don't include the starting file
+            impact.add(edge.from);
+        }
+        findDependents(edge.from);
+      }
+    };
+    
+    findDependents(filePath);
+    return Array.from(impact);
   }
 
   // New method to selectively update changed files

@@ -38,7 +38,7 @@ export const theme = {
     code: chalk.hex(themeColors.accent),
 };
 
-function stripAnsi(str) {
+export function stripAnsi(str) {
     return str.replace(/\x1b\[[0-9;]*m/g, '');
 }
 

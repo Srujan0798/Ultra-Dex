@@ -9,7 +9,8 @@ import https from 'https';
 import { URL } from 'url';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';
-import { buildGraph } from '../utils/graph.js';
+import { projectGraph } from '../mcp/graph.js';
+import { dashboardNotifier } from '../utils/dashboard-notifier.js';
 
 export function registerCiMonitorCommand(program) {
   program
@@ -20,23 +21,13 @@ export function registerCiMonitorCommand(program) {
     .option('--slack-webhook <url>', 'Slack webhook URL for notifications')
     .option('--discord-webhook <url>', 'Discord webhook URL for notifications')
     .option('--notify-on <events>', 'Comma-separated events: failure,success,fix (default: failure)', 'failure')
+    .option('--dashboard', 'Notify Ultra-Dex Dashboard of CI events')
     .action(async (options) => {
       const port = parseInt(options.port);
       const notifyEvents = options.notifyOn.split(',').map(e => e.trim());
 
       console.log(chalk.cyan('\n🛡️  Ultra-Dex Self-Healing CI Monitor\n'));
-      console.log(chalk.gray(`Listening for GitHub Webhooks on port ${port}...`));
-
-      if (options.slackWebhook) {
-        console.log(chalk.green(`📱 Slack notifications: ${options.slackWebhook.substring(0, 30)}...`));
-      }
-      if (options.discordWebhook) {
-        console.log(chalk.green(`💬 Discord notifications: ${options.discordWebhook.substring(0, 30)}...`));
-      }
-      if (!options.slackWebhook && !options.discordWebhook) {
-        console.log(chalk.yellow('⚠️  No webhook configured. Use --slack-webhook or --discord-webhook'));
-      }
-      console.log();
+      console.log(chalk.gray(`Listening for GitHub Webhooks on port \${port}...`));
 
       const server = http.createServer(async (req, res) => {
         if (req.method === 'POST') {
@@ -45,14 +36,12 @@ export function registerCiMonitorCommand(program) {
           req.on('end', async () => {
             try {
               const payload = JSON.parse(body);
+              const event = req.headers['x-github-event'];
 
-              // Handle different webhook events
-              if (payload.action === 'completed' && payload.workflow_job) {
-                const { workflow_job, repository: _repository } = payload;
-
-                if (workflow_job.conclusion === 'failure') {
+              if (event === 'workflow_job' && payload.action === 'completed') {
+                if (payload.workflow_job.conclusion === 'failure') {
                   await handleBuildFailure(payload, options, notifyEvents);
-                } else if (workflow_job.conclusion === 'success' && notifyEvents.includes('success')) {
+                } else if (payload.workflow_job.conclusion === 'success' && notifyEvents.includes('success')) {
                   await notifySuccess(payload, options);
                 }
               }
@@ -73,59 +62,82 @@ export function registerCiMonitorCommand(program) {
 
       server.listen(port, () => {
         console.log(chalk.green(`✅ Monitor Active: http://localhost:${port}`));
-        console.log(chalk.gray(`   Send GitHub webhook events to this endpoint`));
-        console.log(chalk.gray(`   Events: ${notifyEvents.join(', ')}\n`));
       });
     });
 }
 
-async function handleBuildFailure(payload, options, notifyEvents) {
-  const jobName = payload.workflow_job.name;
-  const repo = payload.repository.full_name;
-  const logs = "Mock Log: Error: Cannot find module './utils/graph.js'"; // Real imp would fetch logs via API
+async function fetchGithubLogs(repo, jobId) {
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) return "GITHUB_TOKEN not set. Cannot fetch real logs.";
 
-  console.log(chalk.red(`\n🚨 Build Failed: ${jobName} in ${repo}`));
+    return new Promise((resolve) => {
+        const options = {
+            hostname: 'api.github.com',
+            path: `/repos/${repo}/actions/jobs/${jobId}/logs`,
+            method: 'GET',
+            headers: {
+                'Authorization': `token ${token}`,
+                'User-Agent': 'Ultra-Dex-CI-Monitor',
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        };
+
+        const req = https.get(options, (res) => {
+            if (res.statusCode === 302) {
+                // Handle redirect to log URL
+                https.get(res.headers.location, (logRes) => {
+                    let logData = '';
+                    logRes.on('data', chunk => logData += chunk);
+                    logRes.on('end', () => resolve(logData.substring(0, 5000))); // Cap at 5k chars
+                });
+            } else {
+                resolve(`Failed to fetch logs (Status ${res.statusCode})`);
+            }
+        });
+        req.on('error', () => resolve("Error fetching logs from GitHub API."));
+    });
+}
+
+async function handleBuildFailure(payload, options, notifyEvents) {
+  const job = payload.workflow_job;
+  const repo = payload.repository.full_name;
+  
+  if (options.dashboard) {
+      await dashboardNotifier.sendLog(`🚨 CI Build Failed: ${job.name} (${repo})`, 'error');
+  }
+
+  const logs = await fetchGithubLogs(repo, job.id);
+  console.log(chalk.red(`\n🚨 Build Failed: ${job.name} in ${repo}`));
   console.log(chalk.yellow('   Initiating Self-Healing Protocol...'));
 
   const providerId = options.provider || getDefaultProvider() || 'router';
   const provider = createProvider(providerId);
 
-  // 1. Analyze Context (CPG)
-  const graph = await buildGraph();
+  // 1. Context Analysis
+  await projectGraph.scan();
   const context = {
-    context: `Build Failure Log:\n${logs}\n\nRepository: ${repo}`,
-    graph
+    context: `Build Failure Log:\n${logs}\n\nJob: ${job.name}\nRepo: ${repo}`,
+    graph: projectGraph.getSummary()
   };
 
-  // 2. Diagnose & Fix (@Debugger)
-  const fixPlan = await runAgentLoop('debugger', `Analyze this build failure, fix the code using WRITE_CODE, and explain what you did:\n${logs}`, provider, context);
+  // 2. Fix Generation
+  const fixPlan = await runAgentLoop('debugger', `Analyze build failure and fix code using WRITE_CODE:\n${logs}`, provider, context);
     
-  // 3. Apply Fix
-  console.log(chalk.bold('\nProposed Fix:'));
-  console.log(chalk.gray(fixPlan));
-    
-  console.log(chalk.yellow('\n🚀 Applying Fix via @DevOps...'));
-  await runAgentLoop('devops', `The fix has been applied to the code. Please create a new branch 'fix/${jobName.replace(/[^a-zA-Z0-9-_]/g, '-')}', commit the changes, and push using git commands.`, provider, context);
+  // 3. Apply & Push
+  await runAgentLoop('devops', `Commit the fix to a new branch 'fix/${job.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}' and push.`, provider, context);
 
-  // 4. Send Notifications
-  if (notifyEvents.includes('failure')) {
-    const notification = {
-      title: `🚨 Build Failed: ${jobName}`,
-      repo: repo,
-      branch: payload.workflow_job.head_branch,
-      commit: payload.workflow_job.head_sha?.substring(0, 7) || 'unknown',
-      url: payload.workflow_job.html_url,
-      error: logs.substring(0, 500),
-      fix: fixPlan.substring(0, 300)
-    };
+  // 4. Notifications
+  const notification = {
+    title: `🚨 Build Failed: ${job.name}`,
+    repo, branch: job.head_branch,
+    commit: job.head_sha?.substring(0, 7),
+    url: job.html_url,
+    error: logs.substring(0, 500),
+    fix: fixPlan.substring(0, 300)
+  };
 
-    if (options.slackWebhook) {
-      await sendSlackNotification(options.slackWebhook, notification, 'failure');
-    }
-    if (options.discordWebhook) {
-      await sendDiscordNotification(options.discordWebhook, notification, 'failure');
-    }
-  }
+  if (options.slackWebhook) await sendSlackNotification(options.slackWebhook, notification, 'failure');
+  if (options.discordWebhook) await sendDiscordNotification(options.discordWebhook, notification, 'failure');
 }
 
 async function notifySuccess(payload, options) {

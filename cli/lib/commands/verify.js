@@ -12,6 +12,23 @@ import { runAgentLoop } from './run.js';
 import { loadState } from './plan.js';
 import { projectGraph } from '../mcp/graph.js';
 import { runQualityScan } from '../quality/scanner.js';
+import { 
+    verifyArchitectureAlignment, 
+    verifyErrorHandlingStrategy, 
+    verifyApiDocumentation, 
+    verifyDatabaseSchema, 
+    verifyEnvironmentVariables,
+    verifyTypeSafety,
+    verifyUnitTests,
+    verifyLinting,
+    verifySecurityPatterns,
+    verifyConsoleLogs,
+    verifyContextLoaded,
+    verifyAccessibility,
+    verifyPerformance,
+    verifyDeploymentReadiness,
+    verifyMigrationScripts
+} from '../quality/automation.js';
 
 const CHECKLIST = [
   "Atomic Scope Defined", "Context Loaded", "Architecture Alignment", 
@@ -23,15 +40,6 @@ const CHECKLIST = [
   "Code Review Approved", "Migration Scripts Ready", "Deployment Readiness"
 ];
 
-async function runAutomatedCheck(name, command) {
-    try {
-        execSync(command, { stdio: 'ignore' });
-        return { name, status: 'PASS' };
-    } catch {
-        return { name, status: 'FAIL' };
-    }
-}
-
 export async function verifyCommand(taskName, options) {
   console.log(chalk.cyan.bold('\n⚖️  Ultra-Dex 21-Step Verification\n'));
   
@@ -40,41 +48,35 @@ export async function verifyCommand(taskName, options) {
   const state = await loadState();
   const automatedResults = {};
 
+  const projectDir = process.cwd();
+
   // 1. Automated Checks
   console.log(chalk.bold('1. Running Automated Gates...\n'));
   
-  // Type Safety
-  if (await fs.stat('tsconfig.json').catch(() => false)) {
-      const res = await runAutomatedCheck('Type Safety Check', 'npx tsc --noEmit');
-      automatedResults['Type Safety Check'] = res.status;
-      console.log(`  ${res.status === 'PASS' ? '✅' : '❌'} Type Safety Check`);
-  }
+  const gates = [
+    { name: 'Context Loaded', fn: verifyContextLoaded },
+    { name: 'Architecture Alignment', fn: verifyArchitectureAlignment },
+    { name: 'Security Patterns Applied', fn: verifySecurityPatterns },
+    { name: 'Type Safety Check', fn: verifyTypeSafety },
+    { name: 'Error Handling Strategy', fn: verifyErrorHandlingStrategy },
+    { name: 'API Documentation Updated', fn: verifyApiDocumentation },
+    { name: 'Database Schema Verified', fn: verifyDatabaseSchema },
+    { name: 'Migration Scripts Ready', fn: verifyMigrationScripts },
+    { name: 'Environment Variables Set', fn: verifyEnvironmentVariables },
+    { name: 'Console Logs Removed', fn: verifyConsoleLogs },
+    { name: 'Accessibility (A11y) Check', fn: verifyAccessibility },
+    { name: 'Performance Check', fn: verifyPerformance },
+    { name: 'Unit Tests Passed', fn: verifyUnitTests },
+    { name: 'Linting & Formatting', fn: verifyLinting },
+    { name: 'Deployment Readiness', fn: verifyDeploymentReadiness }
+  ];
 
-  // Tests
-  const pkg = JSON.parse(await fs.readFile('package.json', 'utf8').catch(() => '{}'));
-  if (pkg.scripts?.test) {
-      const res = await runAutomatedCheck('Unit Tests Passed', 'npm test');
-      automatedResults['Unit Tests Passed'] = res.status;
-      console.log(`  ${res.status === 'PASS' ? '✅' : '❌'} Unit Tests Passed`);
+  for (const gate of gates) {
+    const res = await gate.fn(projectDir);
+    automatedResults[gate.name] = res.status;
+    const icon = res.status === 'PASS' ? '✅' : res.status === 'SKIP' ? '⚪' : '❌';
+    console.log(`  ${icon} ${gate.name} (${res.message})`);
   }
-
-  // Linting
-  if (pkg.scripts?.lint) {
-      const res = await runAutomatedCheck('Linting & Formatting', 'npm run lint');
-      automatedResults['Linting & Formatting'] = res.status;
-      console.log(`  ${res.status === 'PASS' ? '✅' : '❌'} Linting & Formatting`);
-  }
-
-  // Quality Scan (Security, Console Logs)
-  const scanResults = await runQualityScan(process.cwd());
-  const securityPass = !scanResults.details.some(d => d.severity === 'critical');
-  const logsPass = !scanResults.details.some(d => d.ruleId === 'console-log-in-api');
-  
-  automatedResults['Security Patterns Applied'] = securityPass ? 'PASS' : 'FAIL';
-  automatedResults['Console Logs Removed'] = logsPass ? 'PASS' : 'FAIL';
-  
-  console.log(`  ${securityPass ? '✅' : '❌'} Security Patterns Applied`);
-  console.log(`  ${logsPass ? '✅' : '❌'} Console Logs Removed`);
 
   console.log('');
 

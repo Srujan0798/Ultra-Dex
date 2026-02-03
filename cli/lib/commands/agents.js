@@ -39,6 +39,7 @@ const COMMUNITY_AGENTS = {
 };
 
 export const AGENTS = [
+  { name: 'architect', description: 'Manifest reality from a raw idea', file: '0-orchestration/architect.md', tier: 'Orchestration' },
   { name: 'meta-orchestrator', description: 'High-level system coordination & strategy', file: '0-orchestration/meta-orchestrator.md', tier: 'Orchestration' },
   { name: 'orchestrator', description: 'Multi-agent coordination', file: '0-orchestration/orchestrator.md', tier: 'Orchestration' },
   { name: 'cto', description: 'Architecture & tech decisions', file: '1-leadership/cto.md', tier: 'Leadership' },

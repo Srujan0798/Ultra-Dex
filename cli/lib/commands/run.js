@@ -12,6 +12,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
 import { projectGraph } from '../mcp/graph.js';
+import { errorRecovery } from '../utils/error-recovery.js';
+import { dashboardNotifier } from '../utils/dashboard-notifier.js';
 
 const execAsync = promisify(exec);
 
@@ -146,8 +148,11 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
   const agent = AGENTS[agentName.toLowerCase()];
   if (!agent) return `[System]: Unknown agent @${agentName}`;
 
-  const spinner = ora(`${agent.name} is working...`).start();
+  const spinner = ora(`\${agent.name} is working...`).start();
   
+  // Notify Dashboard
+  await dashboardNotifier.sendAgentStatus(agentName, 'working', task.substring(0, 50));
+
   const graphInfo = projectContext.graph 
     ? `## Codebase Graph\n- Files: ${projectContext.graph.nodeCount}\n- Dependencies: ${projectContext.graph.edgeCount}\n` 
     : '';
@@ -162,9 +167,16 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
 >> DELEGATE: @AgentName "Task"`;
 
   try {
-    const result = await provider.generate(agent.systemPrompt, prompt);
-    spinner.succeed(`${agent.name} completed.`);
+    const result = await errorRecovery.executeWithRecovery('ai-provider', async () => {
+        return await provider.generate(agent.systemPrompt, prompt);
+    }, {
+        maxRetries: 2,
+        retryDelay: 2000
+    });
     
+    spinner.succeed(`\${agent.name} completed.`);
+    await dashboardNotifier.sendAgentStatus(agentName, 'completed', 'Task finished');
+
     let content = result.content;
 
     // Tool Execution Logic (God Mode)
@@ -182,7 +194,8 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         return await runAgentLoop(agentName, `${task}\n\nError reading ${filePath}: Path traversal detected`, provider, projectContext, depth + 1);
       }
 
-      console.log(chalk.cyan(`\n🔍 ${agent.name} is reading ${filePath}...`));
+      console.log(chalk.cyan(`\n🔍 \${agent.name} is reading \${filePath}...`));
+      await dashboardNotifier.sendLog(`@\${agentName} is reading \${filePath}`, 'info');
       try {
         const fullPath = path.resolve(process.cwd(), filePath);
         // Additional check to ensure path is within project directory
@@ -208,7 +221,8 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: Path traversal detected`, provider, projectContext, depth + 1);
       }
 
-      console.log(chalk.green(`\n💾 ${agent.name} is writing to ${filePath}...`));
+      console.log(chalk.green(`\n💾 \${agent.name} is writing to \${filePath}...`));
+      await dashboardNotifier.sendLog(`@\${agentName} is writing to \${filePath}`, 'success');
       try {
         const fullPath = path.resolve(process.cwd(), filePath);
         // Additional check to ensure path is within project directory

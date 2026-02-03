@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     default: 'Ultra-Dex - AI Development Orchestration',
     template: '%s | Ultra-Dex'
   },
-  description: 'Production-ready AI orchestration for modern development. 46 CLI commands, 17 agents, MCP server integration.',
+  description: 'Production-ready AI orchestration for modern development. 46 CLI commands, 18 agents, MCP server integration.',
   keywords: ['AI development', 'CLI tools', 'agent orchestration', 'MCP server', 'development workflow'],
   
   // Robots
@@ -222,7 +222,7 @@ export function SoftwareApplicationSchema() {
     },
     featureList: [
       '46 CLI commands',
-      '17 AI agents',
+      '18 AI agents',
       'MCP server integration',
       'WebSocket real-time updates',
       'Voice-to-code'
@@ -390,7 +390,7 @@ export default function HomePage() {
           <p>Complete toolkit for every development phase</p>
         </article>
         <article>
-          <h3>17 AI Agents</h3>
+          <h3>18 AI Agents</h3>
           <p>Specialized agents for every role</p>
         </article>
       </section>

@@ -10,7 +10,13 @@ import { execSync } from 'child_process';
 import { routeIntent } from '../nlp/router.js';
 import { session } from './session.js';
 import { tools } from './tools.js'; 
-import { runQualityScan } from '../quality/scanner.js'; // Import Quality Scanner
+import { runQualityScan } from '../quality/scanner.js';
+import { 
+    verifyTypeSafety, 
+    verifyLinting, 
+    verifySecurityPatterns, 
+    verifyConsoleLogs 
+} from '../quality/automation.js';
 import { modelOrchestrator } from '../ai/model-router.js';
 
 export class Agent {
@@ -174,11 +180,24 @@ RETURN ONLY JSON:
                     if (success) {
                         // AUTOMATIC QUALITY SCAN (Self-Healing)
                         renderer.startSpinner('Verifying changes...');
-                        const scanResults = await runQualityScan(context.projectRoot);
                         
-                        if (scanResults.failed > 0) {
-                            renderer.fail(`Verification failed: Found ${scanResults.failed} critical issues.`);
-                            const issueSummary = scanResults.details.map(d => `- [${d.severity}] ${d.file}: ${d.message}`).join('\n');
+                        const results = [];
+                        const projectDir = context.projectRoot;
+                        
+                        // Run core quality gates
+                        results.push({ name: 'Security', ...(await verifySecurityPatterns(projectDir)) });
+                        results.push({ name: 'Console Logs', ...(await verifyConsoleLogs(projectDir)) });
+                        
+                        // Only run slow gates if relevant
+                        if (decision.file.endsWith('.ts') || decision.file.endsWith('.tsx')) {
+                            results.push({ name: 'Type Safety', ...(await verifyTypeSafety(projectDir)) });
+                        }
+
+                        const failures = results.filter(r => r.status === 'FAIL');
+                        
+                        if (failures.length > 0) {
+                            renderer.fail(`Verification failed: Found ${failures.length} regression(s).`);
+                            const issueSummary = failures.map(f => `- [${f.name}] ${f.message}`).join('\n');
                             session.addAgentMessage(`Edit verification FAILED. Issues found:\n${issueSummary}\nPLEASE FIX THESE ISSUES.`);
                             await renderer.text(`I've detected quality regressions. Attempting self-healing...`, false);
                             continue; // RECURSIVE FIX

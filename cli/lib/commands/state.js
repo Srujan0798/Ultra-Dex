@@ -9,6 +9,8 @@ import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
 import { VERSION } from '../utils/version.js';
+import { syncState } from '../utils/state-sync.js';
+import { reconciler } from '../utils/reconciler.js';
 
 // State locking mechanism to prevent race conditions
 let stateLock = null;
@@ -136,9 +138,18 @@ export function registerAlignCommand(program) {
     .command('align')
     .description('Quick alignment score using Code Property Graph')
     .option('--strict', 'Exit with error if score < 70')
+    .option('--reconcile', 'Verify completed tasks against codebase')
     .option('--json', 'Output as JSON')
     .action(async (options) => {
+      // Ensure state is synced before alignment check
+      await syncState();
+      
       const state = await computeState();
+      let reconciliation = null;
+
+      if (options.reconcile) {
+        reconciliation = await reconciler.reconcile();
+      }
       
       let graphScore = 0;
       let graphStats = { nodes: 0, edges: 0 };
@@ -162,6 +173,7 @@ export function registerAlignCommand(program) {
             documentationScore: state.score,
             graphScore,
             graphStats,
+            reconciliation,
             files: Object.values(state.files).filter(f => f.exists).length, 
             sections: state.sections.completed 
         }));
@@ -170,6 +182,16 @@ export function registerAlignCommand(program) {
         console.log(`${icon} Alignment: ${totalScore}/100`);
         console.log(chalk.gray(`   • Documentation: ${state.score}/100`));
         console.log(chalk.gray(`   • Code Graph: ${graphScore}/40 (Nodes: ${graphStats.nodes}, Edges: ${graphStats.edges})`));
+        
+        if (reconciliation) {
+          console.log(chalk.gray(`   • Truth Score: ${reconciliation.score}/100`));
+          if (reconciliation.hallucinatedTasks.length > 0) {
+            console.log(chalk.red(`   ⚠️  Detected ${reconciliation.hallucinatedTasks.length} hallucinated tasks!`));
+            reconciliation.hallucinatedTasks.forEach(t => console.log(chalk.red(`      - ${t.task}`)));
+          } else {
+            console.log(chalk.green(`   ✅ All completed tasks verified.`));
+          }
+        }
       }
       
       if (options.strict && totalScore < 70) {
@@ -185,6 +207,9 @@ export function registerStatusCommand(program) {
     .option('--refresh', 'Refresh state before showing')
     .option('--json', 'Output raw JSON')
     .action(async (options) => {
+      // Sync state before showing status
+      await syncState();
+
       if (options.refresh) {
         const state = await computeState();
         await saveState(state);
@@ -351,7 +376,18 @@ export function registerStateCommand(program) {
     .description('Manage project state')
     .option('--init', 'Initialize state directory')
     .option('--refresh', 'Refresh state from documentation')
+    .option('--sync', 'Force sync between Markdown and JSON')
     .action(async (options) => {
+      if (options.sync) {
+        const result = await syncState();
+        if (result) {
+          console.log(chalk.green(`✓ Synced ${result.source} to ${result.target}`));
+        } else {
+          console.log(chalk.gray('  State already synchronized.'));
+        }
+        return;
+      }
+
       if (options.init || options.refresh) {
         const state = await computeState();
         await saveState(state);

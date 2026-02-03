@@ -5,10 +5,9 @@ import { githubBlobUrl } from '../config/urls.js';
 
 export const WORKFLOWS = {
   auth: {
-    name: 'Authentication',
+    name: 'Authentication (General)',
     agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
     description: 'Complete authentication with email/password and OAuth',
-    example: 'supabase',
     steps: [
       '1. Define auth strategy',
       '2. Set up database schema',
@@ -21,7 +20,7 @@ export const WORKFLOWS = {
   supabase: {
     name: 'Supabase Authentication Setup',
     agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
-    description: 'Set up Supabase auth with RLS policies',
+    description: 'Set up Supabase auth with RLS policies and triggers',
     steps: [
       '1. Create Supabase project and get API keys',
       '2. Set up database schema with RLS policies',
@@ -45,10 +44,9 @@ export const WORKFLOWS = {
     ],
   },
   deployment: {
-    name: 'Deployment Pipeline',
+    name: 'Deployment Strategy',
     agents: ['@Planner', '@CTO', '@Frontend', '@DevOps'],
-    description: 'Deploy to Vercel with staging and production environments',
-    example: 'vercel',
+    description: 'General deployment strategy for SaaS applications',
     steps: [
         '1. Configure environment',
         '2. Set up CI/CD',
@@ -60,11 +58,11 @@ export const WORKFLOWS = {
   vercel: {
     name: 'Vercel Deployment Pipeline',
     agents: ['@Planner', '@CTO', '@Frontend', '@DevOps'],
-    description: 'Deploy Next.js app to Vercel',
+    description: 'Deploy Next.js app to Vercel with staging/production',
     steps: [
       '1. Set up Vercel project and link Git repository',
       '2. Configure environment variables for staging/production',
-      '3. Set up custom domain',
+      '3. Set up custom domain and SSL',
       '4. Configure preview deployments for PRs',
       '5. Set up deployment protection rules',
       '6. Test deployment pipeline',
@@ -86,7 +84,7 @@ export const WORKFLOWS = {
   database: {
     name: 'Database Migration',
     agents: ['@Planner', '@CTO', '@Database', '@Backend', '@Testing'],
-    description: 'Database schema migration and data sync',
+    description: 'Database schema migration and data sync patterns',
     steps: [
       '1. Design new schema changes',
       '2. Write migration scripts',
@@ -99,20 +97,20 @@ export const WORKFLOWS = {
   email: {
     name: 'Email Notification System',
     agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@Testing'],
-    description: 'Transactional emails with templates',
+    description: 'Transactional emails with Resend and React Email',
     steps: [
       '1. Choose email service (Resend, SendGrid)',
-      '2. Set up email templates',
+      '2. Set up email templates (React Email)',
       '3. Implement email API endpoints',
-      '4. Add email queue for async sending',
+      '4. Add email queue for async sending (BullMQ)',
       '5. Test email delivery',
-      '6. Monitor deliverability',
+      '6. Monitor deliverability and bounce rates',
     ],
   },
   realtime: {
     name: 'Real-Time Features',
     agents: ['@Planner', '@CTO', '@Backend', '@Frontend', '@Testing'],
-    description: 'Live notifications with WebSockets',
+    description: 'Live notifications and updates with WebSockets/Socket.io',
     steps: [
       '1. Choose WebSocket library (Socket.io, Pusher)',
       '2. Set up WebSocket server',
@@ -125,7 +123,7 @@ export const WORKFLOWS = {
   sentry: {
     name: 'Sentry Error Tracking',
     agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@DevOps'],
-    description: 'Error monitoring with Sentry',
+    description: 'Error monitoring and performance tracking with Sentry',
     steps: [
       '1. Create Sentry account and project',
       '2. Install Sentry SDKs for frontend and backend',
@@ -138,7 +136,7 @@ export const WORKFLOWS = {
   shopify: {
     name: 'Shopify Product Integration',
     agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@DevOps'],
-    description: 'Sync products from Shopify store',
+    description: 'Sync products from Shopify store via Admin API',
     steps: [
       '1. Create Shopify Partner account and development store',
       '2. Set up Shopify app with Admin API access',
@@ -151,7 +149,7 @@ export const WORKFLOWS = {
   analytics: {
     name: 'PostHog Analytics Integration',
     agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@DevOps'],
-    description: 'Track user behavior with PostHog',
+    description: 'Track user behavior and conversion funnels with PostHog',
     steps: [
       '1. Create PostHog account and project',
       '2. Install PostHog SDKs for frontend and backend',

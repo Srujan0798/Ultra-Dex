@@ -503,4 +503,64 @@ export function registerBatchCommand(program) {
     });
 }
 
-export default { registerDiffCommand, registerExportCommand, registerUpgradeCommand, registerBatchCommand, registerCheckCommand };
+export function registerPipelineCommand(program) {
+  program
+    .command('pipeline <file>')
+    .description('Run a multi-agent, multi-command pipeline')
+    .option('--dry-run', 'Show pipeline steps without executing')
+    .option('--continue-on-error', 'Continue to next step if a step fails', false)
+    .action(async (file, options) => {
+      console.log(chalk.bold.cyan('\n🚀 Ultra-Dex Pipeline Processor\n'));
+      
+      try {
+        const content = await fs.readFile(path.resolve(file), 'utf8');
+        const pipeline = JSON.parse(content);
+        
+        console.log(chalk.bold(`Pipeline: ${pipeline.name || file}`));
+        console.log(chalk.gray(`Description: ${pipeline.description || 'No description'}\n`));
+        
+        const steps = pipeline.steps || [];
+        console.log(chalk.bold(`Found ${steps.length} steps.\n`));
+        
+        for (const [i, step] of steps.entries()) {
+          const stepName = step.name || `Step ${i+1}`;
+          console.log(chalk.bold.blue(`[${i+1}/${steps.length}] ${stepName}`));
+          
+          if (options.dryRun) {
+            console.log(chalk.gray(`  Type: ${step.type}`));
+            console.log(chalk.gray(`  Action: ${JSON.stringify(step.action)}`));
+            console.log(chalk.yellow('  (Dry run - skipping execution)'));
+            continue;
+          }
+          
+          try {
+            if (step.type === 'command') {
+              console.log(chalk.gray(`  Executing: ultra-dex ${step.action}`));
+              execSync(`npx ultra-dex ${step.action}`, { stdio: 'inherit' });
+            } else if (step.type === 'agent') {
+              console.log(chalk.gray(`  Running Agent: @${step.agent} with task: ${step.task}`));
+              execSync(`npx ultra-dex run ${step.agent} --task "${step.task}"`, { stdio: 'inherit' });
+            } else if (step.type === 'swarm') {
+              console.log(chalk.gray(`  Starting Swarm: ${step.feature}`));
+              execSync(`npx ultra-dex swarm "${step.feature}"`, { stdio: 'inherit' });
+            }
+            
+            console.log(chalk.green('  ✓ Completed\n'));
+          } catch (e) {
+            console.log(chalk.red(`  ✕ Failed: ${stepName}`));
+            if (!options.continueOnError) {
+                console.log(chalk.yellow('  Stopping pipeline execution.\n'));
+                process.exit(1);
+            }
+          }
+        }
+        
+        console.log(chalk.green.bold('✅ Pipeline execution completed!\n'));
+        
+      } catch (e) {
+        console.error(chalk.red(`Failed to process pipeline: ${e.message}`));
+      }
+    });
+}
+
+export default { registerDiffCommand, registerExportCommand, registerUpgradeCommand, registerBatchCommand, registerPipelineCommand, registerCheckCommand };

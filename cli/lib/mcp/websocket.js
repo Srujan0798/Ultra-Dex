@@ -29,7 +29,7 @@ class UltraWebSocketServer {
     this.server = http.createServer();
 
     // Create WebSocket server
-    this.wss = new WebSocket.Server({
+    this.wss = new WebSocketServer({
       server: this.server,
       path: '/ws'
     });
@@ -44,7 +44,7 @@ class UltraWebSocketServer {
         messageCount: 0
       });
 
-      console.log(`[WebSocket] Client connected. Total: ${this.clients.size}`);
+      console.log(`[WebSocket] Client connected. Total: \${this.clients.size}`);
 
       // Send welcome message with heartbeat config
       ws.send(JSON.stringify({
@@ -90,7 +90,7 @@ class UltraWebSocketServer {
               break;
 
             default:
-              console.log(`[WebSocket] Unknown message type: ${data.type}`);
+              console.log(`[WebSocket] Unknown message type: \${data.type}`);
           }
         } catch (error) {
           console.error('[WebSocket] Error parsing message:', error.message);
@@ -100,7 +100,7 @@ class UltraWebSocketServer {
       ws.on('close', (code, _reason) => {
         this.clients.delete(ws);
         this.clientMetadata.delete(ws);
-        console.log(`[WebSocket] Client disconnected (code: ${code}). Total: ${this.clients.size}`);
+        console.log(`[WebSocket] Client disconnected (code: \${code}). Total: \${this.clients.size}`);
       });
 
       ws.on('error', (error) => {
@@ -118,7 +118,7 @@ class UltraWebSocketServer {
 
       // Set a timeout for initial connection
       ws._connectionTimeout = setTimeout(() => {
-        if (ws.readyState !== WebSocket.OPEN) {
+        if (ws.readyState !== 1) { // 1 = OPEN
           console.log('[WebSocket] Connection timeout, terminating');
           this.clients.delete(ws);
           this.clientMetadata.delete(ws);
@@ -246,7 +246,7 @@ class UltraWebSocketServer {
 
     const message = JSON.stringify(data);
     for (const client of this.clients) {
-      if (client.readyState === WebSocket.OPEN) { // OPEN
+      if (client.readyState === 1) { // 1 = OPEN
         client.send(message);
       }
     }

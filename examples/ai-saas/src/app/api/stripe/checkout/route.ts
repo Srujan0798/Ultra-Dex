@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { stripe, createOrRetrieveCustomer, createCheckoutSession, PLANS } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";

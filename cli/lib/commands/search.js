@@ -396,6 +396,7 @@ export function registerSearchCommand(program) {
     .option('--index', 'Rebuild the search index')
     .option('--force', 'Force full re-index')
     .option('--symbol', 'Search for symbol definitions (functions, classes)')
+    .option('--impact <file>', 'Analyze the impact of changing a file')
     .option('-k, --top <n>', 'Number of results', '10')
     .option('-v, --verbose', 'Show detailed output')
     .option('--stats', 'Show index statistics')
@@ -421,6 +422,29 @@ export function registerSearchCommand(program) {
               return;
           } catch (e) {
               spinner.fail(`Symbol search failed: ${e.message}`);
+              return;
+          }
+      }
+
+      if (options.impact) {
+          const spinner = ora('Analyzing impact in code graph...').start();
+          try {
+              await projectGraph.scan();
+              const impact = projectGraph.getImpact(options.impact);
+              spinner.succeed(`Impact analysis complete.`);
+              
+              console.log(chalk.bold(`\nFiles that depend on ${chalk.cyan(options.impact)}:\n`));
+              if (impact.length === 0) {
+                  console.log(chalk.green('  ✓ No direct or indirect dependents found. Change is likely safe.'));
+              } else {
+                  impact.forEach(file => {
+                      console.log(`  ${chalk.yellow('⚠')} ${file}`);
+                  });
+                  console.log(chalk.gray(`\nTotal affected: ${impact.length} files`));
+              }
+              return;
+          } catch (e) {
+              spinner.fail(`Impact analysis failed: \${e.message}`);
               return;
           }
       }

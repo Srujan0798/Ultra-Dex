@@ -73,12 +73,20 @@ export async function parsePlanFromMarkdown() {
   }
 }
 
+export function estimateDuration(baseHours, factors = {}) {
+    let multiplier = 1.0;
+    if (factors.testing !== false) multiplier += 0.25;
+    if (factors.codeReview !== false) multiplier += 0.10;
+    if (factors.contextSwitching) multiplier += 0.15;
+    if (factors.newTech) multiplier += 0.30;
+    if (factors.integration) multiplier += 0.20;
+    if (factors.uncertainty) multiplier += 0.20;
+    
+    return baseHours * multiplier;
+}
+
 export function generateGantt(phases) {
     console.log(chalk.bold.cyan('\n📊 Project Timeline (Gantt View)\n'));
-    
-    // Simple ASCII Gantt
-    // Assuming each phase takes roughly proportional time or just listing them
-    // For a real Gantt we need dates, but we'll use "Phase relative duration" simulation
     
     const width = 60;
     console.log(chalk.gray('Phase' + ' '.repeat(25) + 'Progress' + ' '.repeat(width - 8) + 'Status'));
@@ -126,6 +134,15 @@ export function generateTimeline(phases) {
                 console.log(`${connector} 👉 Next: ${chalk.cyan(nextTask.task)}`);
             }
         }
+        
+        // Show milestones in this phase
+        phase.steps.forEach(s => {
+            if (s.isMilestone) {
+                const icon = s.status === 'completed' ? '🚩' : '🏁';
+                console.log(`${connector} ${icon} ${chalk.magenta('MILESTONE')}: ${s.task}`);
+            }
+        });
+
         console.log(connector);
     });
 }
@@ -147,7 +164,8 @@ export function generateMarkdown(state) {
         if (phase.steps && phase.steps.length > 0) {
         phase.steps.forEach(step => {
             const stepIcon = step.status === 'completed' ? '- [x]' : '- [ ]';
-            md += `${stepIcon} **${step.id || ''}**: ${step.task}\n`;
+            const milestoneMarker = step.isMilestone ? ' 🚩' : '';
+            md += `${stepIcon} **${step.id || ''}**: ${step.task}${milestoneMarker}\n`;
         });
         } else {
         md += `_No steps defined for this phase._\n`;
@@ -165,7 +183,8 @@ export function generateMarkdown(state) {
   }
 
   md += `\n---\n`;
-  md += `*This file is strictly read-only. Edit .ultra/state.json to update.*`;
+  md += `*This file is strictly read-only. Edit .ultra/state.json to update.*
+`;
 
   return md;
 }
@@ -177,6 +196,8 @@ export function registerPlanCommand(program) {
     .option('--gantt', 'Show Gantt chart')
     .option('--timeline', 'Show milestone timeline')
     .option('--generate', 'Regenerate IMPLEMENTATION-PLAN.md from state')
+    .option('--estimate', 'Show realistic effort estimates based on methodology')
+    .option('--milestone <stepId>', 'Mark a specific step as a milestone')
     .action(async (options) => {
       let state = await loadState();
       
@@ -186,8 +207,60 @@ export function registerPlanCommand(program) {
           if (phases.length > 0) {
               if (!state) state = { project: { name: 'Current Project' } };
               state.phases = phases;
-              // Don't auto-save state here to avoid side effects, unless explicitly syncing
           }
+      }
+
+      if (options.milestone) {
+          if (!state || !state.phases) {
+              console.log(chalk.red('No active plan found.'));
+              return;
+          }
+          
+          let found = false;
+          state.phases.forEach(p => {
+              p.steps.forEach(s => {
+                  if (s.id === options.milestone || s.task.includes(options.milestone)) {
+                      s.isMilestone = true;
+                      found = true;
+                  }
+              });
+          });
+
+          if (found) {
+              await saveState(state);
+              console.log(chalk.green(`✅ Step "${options.milestone}" marked as milestone.`));
+          } else {
+              console.log(chalk.yellow(`Step "${options.milestone}" not found in any phase.`));
+          }
+          return;
+      }
+
+      if (options.estimate) {
+          if (!state || !state.phases) {
+              console.log(chalk.yellow('No phases found.'));
+              return;
+          }
+          console.log(chalk.bold.cyan('\n🕒 Effort Estimates (Ultra-Dex Methodology)\n'));
+          let totalBase = 0;
+          let totalActual = 0;
+
+          state.phases.forEach(phase => {
+              const baseHours = phase.steps.length * 6; // Assume 6h average per atomic task
+              const actualHours = estimateDuration(baseHours, { 
+                  uncertainty: phase.status === 'pending',
+                  newTech: phase.name.toLowerCase().includes('ai') || phase.name.toLowerCase().includes('blockchain')
+              });
+              
+              totalBase += baseHours;
+              totalActual += actualHours;
+
+              console.log(`  ${chalk.bold(phase.name.padEnd(30))} ${chalk.gray(baseHours + 'h base')} → ${chalk.yellow(actualHours.toFixed(1) + 'h actual')}`);
+          });
+
+          console.log(chalk.gray('  ' + '─'.repeat(50)));
+          console.log(`  ${chalk.bold('TOTAL PROJECT EFFORT'.padEnd(30))} ${chalk.gray(totalBase + 'h base')} → ${chalk.green(totalActual.toFixed(1) + 'h actual')}`);
+          console.log(chalk.gray(`  (Actual Hours = Base × (1 + sum of methodology factors))\n`));
+          return;
       }
 
       if (options.gantt) {

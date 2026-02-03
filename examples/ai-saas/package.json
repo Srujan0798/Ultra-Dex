@@ -2,6 +2,7 @@
   "name": "ai-saas-starter",
   "version": "1.0.0",
   "description": "Modern AI SaaS starter template with Next.js 14, TypeScript, Tailwind, Prisma, and Stripe",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",

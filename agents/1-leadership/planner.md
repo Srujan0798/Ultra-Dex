@@ -93,7 +93,8 @@ Before responding, read these files to understand the project:
 
 ## Start By
 
-1. Read IMPLEMENTATION-PLAN.md to understand the full scope
+1. Read IMPLEMENTATION-PLAN.md to understand the full scope.
+   - **Note:** If `IMPLEMENTATION-PLAN.md` does not exist yet, use the **@Architect** agent to manifest the reality first.
 2. Identify current project status
 3. Ask: "What feature or area would you like me to plan?"
 

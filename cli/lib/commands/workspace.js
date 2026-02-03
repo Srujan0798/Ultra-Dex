@@ -91,6 +91,32 @@ export function registerWorkspaceCommand(program) {
             console.log(chalk.yellow(`Workspace not found: ${target}`));
         }
     });
+
+  ws.command('switch <name>')
+    .description('Switch active project context to a workspace')
+    .action(async (name) => {
+        const globalConfig = await configManager.loadGlobal();
+        if (!globalConfig?.workspaces) {
+            console.log(chalk.red('No workspaces tracked.'));
+            return;
+        }
+        
+        const workspace = globalConfig.workspaces.find(w => w.name === name);
+        if (!workspace) {
+            console.log(chalk.red(`Workspace "${name}" not found.`));
+            return;
+        }
+        
+        // Update lastUsed
+        workspace.lastUsed = new Date().toISOString();
+        globalConfig.activeWorkspace = workspace.path;
+        
+        await configManager.saveGlobal(globalConfig);
+        
+        console.log(chalk.green(`✅ Switched to workspace: ${name}`));
+        console.log(chalk.gray(`Active path: ${workspace.path}`));
+        console.log(chalk.cyan(`Note: New commands will use this context if supported.`));
+    });
 }
 
 export default { registerWorkspaceCommand };

@@ -108,6 +108,15 @@ Get AI context-aware suggestions for your next task.
 npx ultra-dex suggest
 ```
 
+### `voice` (New in v3.5.0)
+Voice-to-Plan: Convert speech to implementation plans.
+```bash
+npx ultra-dex voice "Build a SaaS dashboard"
+# Options:
+#   --provider  Speech-to-text provider (default: whisper)
+#   --no-plan   Only transcribe, do not generate plan
+```
+
 ---
 
 ## 📋 Project Management
@@ -122,9 +131,58 @@ npx ultra-dex plan
 #   --gantt     Show ASCII Gantt chart
 #   --timeline  Show milestone timeline
 #   --generate  Regenerate markdown plan
+#   --estimate  Show realistic effort estimates based on methodology
+```
+
+### `sync`
+Synchronize project state across agents and tools.
+```bash
+npx ultra-dex sync
+# Options:
+#   --brain     Autonomous memory synchronization
 ```
 
 ### `workflow`
+Visualize and start predefined implementation workflows.
+```bash
+npx ultra-dex workflow <name>
+# Options:
+#   --viz       Visualize the workflow graph
+#   --start     Add workflow steps to your plan
+```
+
+---
+
+## 🛡️ Quality & Verification
+
+// ...
+
+### `search`
+Semantic search across your codebase using embeddings.
+```bash
+npx ultra-dex search "auth middleware"
+# Options:
+#   --index     Rebuild the search index
+#   --symbol    Search for symbol definitions
+#   --impact    Analyze the impact of changing a file
+```
+
+---
+
+## ⚙️ System & Configuration
+
+// ...
+
+### `pipeline` (New in v3.5.0)
+Run a multi-agent, multi-command pipeline from a JSON file.
+```bash
+npx ultra-dex pipeline ./release.json
+# Options:
+#   --dry-run   Show steps without executing
+```
+
+### `batch`
+// ...
 Visualize and start predefined implementation workflows.
 ```bash
 npx ultra-dex workflow <name>

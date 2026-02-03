@@ -362,6 +362,51 @@ class MonitoringSystem {
     return this.healthChecker.getStatus();
   }
 
+  // Alerting logic
+  checkAlerts() {
+    const metrics = this.getMetrics();
+    const alerts = [];
+
+    // Memory alert
+    if (metrics.system) {
+      const usedMemPercent = ((metrics.system.totalMemory - metrics.system.freeMemory) / metrics.system.totalMemory) * 100;
+      if (usedMemPercent > 90) {
+        alerts.push({
+          level: 'critical',
+          type: 'memory',
+          message: `High memory usage: \${usedMemPercent.toFixed(1)}%`
+        });
+      } else if (usedMemPercent > 80) {
+        alerts.push({
+          level: 'warning',
+          type: 'memory',
+          message: `Elevated memory usage: \${usedMemPercent.toFixed(1)}%`
+        });
+      }
+    }
+
+    // Error rate alert
+    if (metrics.errors > 10) {
+      alerts.push({
+        level: 'critical',
+        type: 'errors',
+        message: `High error count detected: \${metrics.errors} errors`
+      });
+    }
+
+    // Performance alert
+    const slowOps = metrics.performance.filter(p => p.duration > 5000);
+    if (slowOps.length > 0) {
+      alerts.push({
+        level: 'warning',
+        type: 'performance',
+        message: `\${slowOps.length} operations took longer than 5s`
+      });
+    }
+
+    return alerts;
+  }
+
   // Performance timing
   markStart(operation) {
     this.performanceMarks.set(operation, performance.now());

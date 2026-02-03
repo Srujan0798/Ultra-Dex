@@ -239,7 +239,9 @@ export function generateDashboardHTML(state, gitInfo, graphSummary) {
         if (memories && memories.length > 0) {
            // Logic omitted
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("Failed to load memory:", e);
+      }
     }
     loadMemory();
 
@@ -431,9 +433,12 @@ export function generateDashboardHTML(state, gitInfo, graphSummary) {
         const data = await res.json();
         if (data.logs) {
             // Simplified log viewing for stability
-            alert(JSON.stringify(data.logs, null, 2));
+            addLog("Logs received for @" + agentName, 'success');
+            console.log(data.logs);
         }
-      } catch (e) {}
+      } catch (e) {
+        addLog("Failed to fetch logs", 'error');
+      }
     }
 
     const startTime = Date.now();
@@ -525,6 +530,24 @@ export function registerDashboardCommand(program) {
                 addAction('healing_success', `Self-healing fixed issue`, 'debugger');
               }
               
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true }));
+            } catch (e) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: false, error: e.message }));
+            }
+          });
+          return;
+        }
+
+        // Log Endpoint
+        if (req.url === '/api/log' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk.toString());
+          req.on('end', () => {
+            try {
+              const logData = JSON.parse(body);
+              sendToClients({ type: 'log', ...logData });
               res.writeHead(200, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ success: true }));
             } catch (e) {

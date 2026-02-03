@@ -221,6 +221,73 @@ async function startUnifiedKernel(portStr) {
         return;
       }
 
+      // Endpoint: /api/autonomous/status (Self-Healing Updates)
+      if (pathname === '/api/autonomous/status' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk);
+          req.on('end', () => {
+              try {
+                  const data = JSON.parse(body);
+                  // Broadcast to all WebSocket clients
+                  webSocketServer.broadcast({
+                      type: 'autonomous_update',
+                      ...data,
+                      timestamp: new Date().toISOString()
+                  });
+                  res.writeHead(200, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ status: 'ok' }));
+              } catch (e) {
+                  res.writeHead(400);
+                  res.end(JSON.stringify({ error: 'Invalid JSON' }));
+              }
+          });
+          return;
+      }
+
+      // Endpoint: /api/log
+      if (pathname === '/api/log' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk);
+          req.on('end', () => {
+              try {
+                  const data = JSON.parse(body);
+                  webSocketServer.broadcast({
+                      type: 'log',
+                      ...data,
+                      timestamp: new Date().toISOString()
+                  });
+                  res.writeHead(200, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ status: 'ok' }));
+              } catch (e) {
+                  res.writeHead(400);
+                  res.end(JSON.stringify({ error: 'Invalid JSON' }));
+              }
+          });
+          return;
+      }
+
+      // Endpoint: /api/agent/status
+      if (pathname === '/api/agent/status' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk);
+          req.on('end', () => {
+              try {
+                  const data = JSON.parse(body);
+                  webSocketServer.broadcast({
+                      type: 'agent_status',
+                      ...data,
+                      timestamp: new Date().toISOString()
+                  });
+                  res.writeHead(200, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ status: 'ok' }));
+              } catch (e) {
+                  res.writeHead(400);
+                  res.end(JSON.stringify({ error: 'Invalid JSON' }));
+              }
+          });
+          return;
+      }
+
       // SSE Events for Dashboard (Separate from MCP SSE)
       if (pathname === '/events') {
           res.writeHead(200, {
@@ -271,7 +338,9 @@ async function startUnifiedKernel(portStr) {
         if (state) {
             wss.broadcast({ type: 'state_update', data: state, timestamp: new Date().toISOString() });
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("Failed to load state during watch:", e.message);
+      }
     });
   });
 

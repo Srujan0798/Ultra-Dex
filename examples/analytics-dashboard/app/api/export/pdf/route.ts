@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { auth } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/db'
 import jsPDF from 'jspdf'

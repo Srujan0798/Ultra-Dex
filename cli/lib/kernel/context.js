@@ -49,6 +49,7 @@ export class ContextScanner {
             else if (this.cache.dependencies['react']) this.cache.stack = 'React';
             else if (this.cache.dependencies['vue']) this.cache.stack = 'Vue';
             else if (this.cache.dependencies['express']) this.cache.stack = 'Node/Express';
+            else this.cache.stack = 'Node.js';
             
             // Refine with TypeScript
             if (this.cache.dependencies['typescript']) this.cache.stack += ' (TypeScript)';

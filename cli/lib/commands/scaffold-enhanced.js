@@ -179,15 +179,19 @@ function generateAiHelper(stack) {
 
 import { PrismaClient } from '@prisma/client';
 
-// TODO: Configure your AI provider (Claude, GPT, Gemini)
-const AI_PROVIDER = process.env.AI_PROVIDER || 'claude'; // 'claude' | 'openai' | 'gemini'
+/**
+ * AI Provider Configuration
+ * Ultra-Dex agents will detect this to determine available capabilities
+ */
+export const AI_CONFIG = {
+  provider: process.env.AI_PROVIDER || 'openai',
+  model: process.env.AI_MODEL || 'gpt-4-turbo',
+  capabilities: ['streaming', 'tool-use', 'vision']
+};
 
 export async function callAI(prompt: string, options: { model?: string; temperature?: number } = {}) {
-  // AI integration ready for Ultra-Dex agents
-  console.log('[AI CALL]', prompt);
-  
-  // Placeholder - replace with actual AI API calls
-  return \`AI response to: \${prompt.substring(0, 50)}...\`;
+  // ...
+`;
 }
 
 export async function getProjectContext() {
@@ -632,8 +636,191 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-${models}
+\${models}
 `;
+}
+
+function parsePlanSections(content) {
+  const sections = [];
+  const lines = content.split('\n');
+  let currentSection = null;
+
+  for (const line of lines) {
+    const match = line.match(/^##\s+(\d+)\.\s+(.+)$/);
+    if (match) {
+      if (currentSection) sections.push(currentSection);
+      currentSection = {
+        number: parseInt(match[1]),
+        title: match[2],
+        content: ''
+      };
+    } else if (currentSection) {
+      currentSection.content += line + '\n';
+    }
+  }
+  if (currentSection) sections.push(currentSection);
+  return sections;
+}
+
+function extractTechStack(content, sections) {
+  const stack = [];
+  const lowerContent = content.toLowerCase();
+
+  if (lowerContent.includes('next.js') || lowerContent.includes('nextjs')) stack.push('Next.js 15');
+  if (lowerContent.includes('prisma')) stack.push('Prisma');
+  if (lowerContent.includes('clerk')) stack.push('Clerk');
+  if (lowerContent.includes('supabase')) stack.push('Supabase');
+  if (lowerContent.includes('tailwind')) stack.push('Tailwind CSS');
+  if (lowerContent.includes('postgresql') || lowerContent.includes('postgres')) stack.push('PostgreSQL');
+  if (lowerContent.includes('typescript')) stack.push('TypeScript');
+
+  // Fallback if nothing found
+  if (stack.length === 0) stack.push('Next.js 15', 'Tailwind CSS', 'TypeScript');
+
+  return stack;
+}
+
+function generateStructure(techStack, sections) {
+  const structure = [
+    'src/app',
+    'src/components',
+    'src/lib',
+    'src/hooks',
+    'src/styles',
+    'public',
+    'docs'
+  ];
+
+  if (techStack.includes('Prisma')) structure.push('prisma');
+  if (techStack.includes('Supabase')) structure.push('supabase');
+
+  return structure;
+}
+
+function displayStructure(structure) {
+  console.log(chalk.bold('Directories:'));
+  structure.forEach(dir => console.log(chalk.gray(`  📁 \${dir}`)));
+  console.log();
+}
+
+function displayFiles(files) {
+  console.log(chalk.bold('Files:'));
+  Object.keys(files).forEach(file => console.log(chalk.gray(`  📄 \${file}`)));
+  console.log();
+}
+
+function generateEnvExample(stack) {
+  let content = '# Environment Variables\n\n';
+  content += 'DATABASE_URL="postgresql://user:password@localhost:5432/dbname"\n';
+  if (stack.includes('Clerk')) {
+    content += 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="{{CLERK_PUBLISHABLE_KEY}}"\nCLERK_SECRET_KEY="{{CLERK_SECRET_KEY}}"\n';
+  }
+  if (stack.includes('Supabase')) {
+    content += 'NEXT_PUBLIC_SUPABASE_URL="{{SUPABASE_URL}}"\nNEXT_PUBLIC_SUPABASE_ANON_KEY="{{SUPABASE_ANON_KEY}}"\n';
+  }
+  return content;
+}
+
+function generateGitignore() {
+  return `node_modules
+.next
+.env
+dist
+build
+.ultra-dex/swarm-logs
+*.log
+`;
+}
+
+function generateDbFile(stack, advanced) {
+  if (stack.includes('Prisma')) {
+    return `import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+export const prisma = globalForPrisma.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+`;
+  }
+  return '// Database client initialization\n';
+}
+
+function generateAuthFile(stack, advanced) {
+  if (stack.includes('Clerk')) {
+    return "export { auth, currentUser } from '@clerk/nextjs/server';\n";
+  }
+  return '// Authentication helper functions\n';
+}
+
+function generateLayoutFile(stack, advanced) {
+  return `import './globals.css';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Ultra-Dex App',
+  description: 'Built with Ultra-Dex AI Orchestration',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+`;
+}
+
+function generatePageFile(advanced) {
+  return `export default function Home() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <h1 className="text-4xl font-bold text-purple-600">Ultra-Dex Project</h1>
+      <p className="mt-4 text-xl">Reality successfully rewritten.</p>
+    </main>
+  );
+}
+`;
+}
+
+function generateApiRoute(advanced) {
+  return `import { NextResponse } from 'next/server';
+
+export async function GET() {
+  return NextResponse.json({ status: 'ok', version: '1.0.0' });
+}
+`;
+}
+
+async function scaffoldFromTemplate(options) {
+  const templateName = options.template;
+  if (!templateName) {
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'template',
+        message: 'Select a template to scaffold from:',
+        choices: Object.keys(TEMPLATES).map(key => ({
+          name: \`\${TEMPLATES[key].name} - \${TEMPLATES[key].description}\`,
+          value: key
+        }))
+      }
+    ]);
+    return scaffoldFromTemplate({ ...options, template: answers.template });
+  }
+
+  const template = TEMPLATES[templateName];
+  if (!template) {
+    throw new Error(\`Template '\${templateName}' not found\`);
+  }
+
+  console.log(chalk.cyan.bold(\`\\n🏗️  Scaffolding from template: \${template.name}\\n\`));
+  // Template implementation logic would go here...
 }
 
 // Export the enhanced scaffold command

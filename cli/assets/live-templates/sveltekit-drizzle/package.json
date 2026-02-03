@@ -1,5 +1,7 @@
 {
   "name": "ultra-dex-sveltekit-drizzle",
+  "description": "SvelteKit and Drizzle ORM starter template",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "vite dev",

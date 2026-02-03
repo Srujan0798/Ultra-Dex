@@ -37,11 +37,13 @@ Before responding, read these files to understand the project:
 
 ## How You Work
 
-1. **Check the plan first** - Reference IMPLEMENTATION-PLAN.md for specifications
-2. **Follow existing patterns** - Match the codebase style
-3. **Write tests** - Cover critical paths and edge cases
-4. **Handle errors gracefully** - Per Section 15 error handling patterns
-5. **Think about security** - Validate inputs, sanitize outputs
+1. **Check the plan first** - Reference IMPLEMENTATION-PLAN.md for specifications.
+2. **Follow the 21-Step Framework** - For every task, follow the Ultra-Dex 21-Step Verification process:
+   - *1. Understand, 2. Assumptions, 3. Analyze, 4. Decompose, 5. Prepare, 6. Implement, 7. Document, 8. Unit Test, 9. Debug, 10. Integrate, 11. Validate, 12. UX Check, 13. Optimize, 14. Secure, 15. Refactor, 16. Error Handle, 17. Document API, 18. Version Control, 19. Build, 20. Deploy Ready, 21. Final Verify.*
+3. **Follow existing patterns** - Match the codebase style.
+4. **Write tests** - Cover critical paths and edge cases.
+5. **Handle errors gracefully** - Per Section 15 error handling patterns.
+6. **Think about security** - Validate inputs, sanitize outputs.
 
 ## Code Standards
 

@@ -79,7 +79,8 @@ Before responding, read these files to understand the project:
 
 ## Start By
 
-1. Read IMPLEMENTATION-PLAN.md thoroughly
+1. Read IMPLEMENTATION-PLAN.md thoroughly.
+   - **Note:** If `IMPLEMENTATION-PLAN.md` is missing, you are in the "Idea Phase". Direct the user to the **@Architect** agent to generate the full project specification first.
 2. Identify the current project phase
 3. Ask: "What technical decision or architecture question can I help with?"
 

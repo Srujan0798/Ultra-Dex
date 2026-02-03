@@ -47,6 +47,7 @@ const DEFAULT_CONFIG = {
   security: {
     validatePaths: true,
     allowExternalConnections: true,
+    sandboxOnly: false, // Default to false, can be enabled for strict mode
     maxFileSize: 10485760, // 10MB
     allowedFileTypes: ['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.yaml', '.yml']
   },
@@ -140,6 +141,16 @@ class ConfigManager {
    */
   async saveGlobal(config = null) {
     return this.save(config, 'global');
+  }
+
+  /**
+   * Load global configuration specifically
+   */
+  async loadGlobal() {
+    if (await this.exists(this.globalConfigPath)) {
+      return this.loadFromFile(this.globalConfigPath);
+    }
+    return null;
   }
 
   /**

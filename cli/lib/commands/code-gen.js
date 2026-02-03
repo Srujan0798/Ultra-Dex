@@ -146,7 +146,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function ${endpoint.method.toLowerCase()}(request: NextRequest) {
   try {
-    // TODO: Implement ${endpoint.method} ${endpoint.path}
+    // Implement ${endpoint.method} ${endpoint.path} logic here
     const body = await request.json();
     
     // Add your implementation here
@@ -178,7 +178,7 @@ const router = express.Router();
 // ${endpoint.description}
 router.${endpoint.method.toLowerCase()}('${endpoint.path}', async (req, res) => {
   try {
-    // TODO: Implement ${endpoint.method} ${endpoint.path}
+    // Implement ${endpoint.method} ${endpoint.path} logic here
     const data = req.body;
     
     // Add your implementation here
