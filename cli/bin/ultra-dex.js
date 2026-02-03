@@ -69,6 +69,7 @@ import { registerGenerateCommand } from '../lib/commands/generate.js';
 import { registerBuildCommand } from '../lib/commands/build.js';
 import { registerReviewCommand } from '../lib/commands/review.js';
 import { registerRunCommand } from '../lib/commands/run.js';
+import { registerDeployCommand } from '../lib/commands/deploy.js';
 import { registerAutoImplementCommand } from '../lib/commands/auto-implement.js';
 import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
 import { registerAlignCommand, registerStatusCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';
@@ -131,6 +132,14 @@ program.configureHelp({
         output += '\n';
       }
 
+      if (cmd.commands.length > 0) {
+        output += `${theme.title('Commands:')}\n`;
+        cmd.commands.forEach(subCmd => {
+            output += `  ${theme.accent(subCmd.name().padEnd(20))} ${theme.dim(subCmd.description())}\n`;
+        });
+        output += '\n';
+      }
+
       return output;
     }
 
@@ -176,6 +185,7 @@ registerGenerateCommand(program);
 registerBuildCommand(program);
 registerReviewCommand(program);
 registerRunCommand(program);
+registerDeployCommand(program);
 
 // v3.0 Commands
 program

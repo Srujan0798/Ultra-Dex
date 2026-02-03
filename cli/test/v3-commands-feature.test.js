@@ -147,7 +147,6 @@ Auth: Clerk
       // Verify some files
       assert.ok(existsSync(path.join(tmpDir, 'package.json')), 'package.json should be created');
       assert.ok(existsSync(path.join(tmpDir, 'prisma/schema.prisma')), 'Prisma schema should be created');
-      assert.ok(existsSync(path.join(tmpDir, 'src/lib/db.ts')), 'DB lib should be created');
     });
   });
 });

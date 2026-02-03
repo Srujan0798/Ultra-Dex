@@ -7,8 +7,8 @@
 [![Tests](https://img.shields.io/badge/Tests-281-brightgreen.svg)](./cli/test/README.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md)
-[![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./@%20ultra-dex/Saas%20plan/Examples/TaskFlow-Complete.md)
+[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./docs/reference/04-Imp-Template.md)
+[![Example](https://img.shields.io/badge/Example-TaskFlow-purple.svg)](./docs/reference/Examples/TaskFlow-Complete.md)
 [![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-31_Modules-green.svg)](./cursor-rules/)
 [![AI Agents](https://img.shields.io/badge/AI_Agents-17_Prompts-orange.svg)](./agents/)
 [![Commands](https://img.shields.io/badge/CLI_Commands-46-blue.svg)](./cli/)
@@ -224,8 +224,8 @@ A comprehensive framework for building complete, production-grade applications. 
 
 | Step | What | Time |
 |------|------|------|
-| 1 | **[QUICK-START.md](./@%20ultra-dex/Saas%20plan/01-QUICK-START.md)** — Capture your idea | 5 min |
-| 2 | **[HOW-TO-USE.md](./@%20ultra-dex/Saas%20plan/02-HOW-TO-USE.md)** — Understand phasing | 10 min |
+| 1 | **[QUICK-START.md](./docs/reference/01-QUICK-START.md)** — Capture your idea | 5 min |
+| 2 | **[HOW-TO-USE.md](./docs/reference/02-HOW-TO-USE.md)** — Understand phasing | 10 min |
 | 3 | **[BUILD-AUTH-30M.md](./docs/BUILD-AUTH-30M.md)** — Your first working feature | 30 min |
 | 4 | **Start coding with AI agents** | ∞ |
 
@@ -236,9 +236,9 @@ A comprehensive framework for building complete, production-grade applications. 
 
 | Resource | Purpose |
 |----------|---------|
-| [Full Template](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md) | 34-section reference |
-| [TaskFlow Example](./@%20ultra-dex/Saas%20plan/Examples/TaskFlow-Complete.md) | See a filled example |
-| [Methodology](./@%20ultra-dex/Saas%20plan/03-METHODOLOGY.md) | 21-step verification system |
+| [Full Template](./docs/reference/04-Imp-Template.md) | 34-section reference |
+| [TaskFlow Example](./docs/reference/Examples/TaskFlow-Complete.md) | See a filled example |
+| [Methodology](./docs/reference/03-METHODOLOGY.md) | 21-step verification system |
 | [API Documentation](./APIDOC.md) | Complete API reference |
 | [User Guide](./USERGUIDE.md) | Comprehensive user manual |
 | [Best Practices](./BESTPRACTICES.md) | Recommended practices |
@@ -483,28 +483,22 @@ Ultra-Dex/
 │   ├── 02-api.mdc
 │   └── ... (31 domain-specific rules)
 │
-└── @ ultra-dex/
-    └── Saas plan/
+└── docs/
+    └── reference/                 ← Core Templates & Guides
         │
         │  # Core (numbered for order)
         ├── 00-README.md           ← Navigation hub
         ├── 01-QUICK-START.md      ← 5-minute entry point
         ├── 02-HOW-TO-USE.md       ← Phased approach & workflows
-        ├── 03-METHODOLOGY.md      ← 21-step system explained
+        ├── 03-METHODOLOGY.md      ← 21-step verification
         ├── 04-Imp-Template.md     ← Full 34-section template (5,500 lines)
         │
         ├── Examples/              ← Complete filled examples
         │   ├── TaskFlow-Complete.md
-        │   ├── InvoiceFlow-Complete.md
         │   └── HabitStack-Complete.md
         │
         └── Templates/             ← Supplementary templates
             ├── 01-CONTEXT-TEMPLATE.md
-            ├── 02-STATUS-TEMPLATE.md
-            ├── 03-CONSTRAINTS-TEMPLATE.md
-            ├── 04-INTEGRATIONS-TEMPLATE.md
-            ├── 05-CHANGELOG-TEMPLATE.md
-            ├── 06-SaaS-Workflow.md
             └── 07-Rule-Book-21.md
 ```
 
@@ -840,9 +834,9 @@ Total: $23 (vs $60+ single-tool approach)
 
 ## Get Started
 
-1. **New to Ultra-Dex?** → Start with [01-QUICK-START.md](./@%20ultra-dex/Saas%20plan/01-QUICK-START.md)
-2. **Want to see it in action?** → Read [TaskFlow-Complete.md](./@%20ultra-dex/Saas%20plan/Examples/TaskFlow-Complete.md)
-3. **Ready for full planning?** → Use [04-Imp-Template.md](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md)
+1. **New to Ultra-Dex?** → Start with [01-QUICK-START.md](./docs/reference/01-QUICK-START.md)
+2. **Want to see it in action?** → Read [TaskFlow-Complete.md](./docs/reference/Examples/TaskFlow-Complete.md)
+3. **Ready for full planning?** → Use [04-Imp-Template.md](./docs/reference/04-Imp-Template.md)
 
 ---
 
