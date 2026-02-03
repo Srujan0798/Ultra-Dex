@@ -8,8 +8,12 @@ import ora from 'ora';
 import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
 import { projectGraph } from '../mcp/graph.js';
+
+const execAsync = promisify(exec);
 
 const AGENTS = {
   planner: {
@@ -73,30 +77,66 @@ Available commands:
 >> READ_CODE: "path"
 >> SEARCH_CODE: "query"`,
   },
+  debugger: {
+    name: '@Debugger',
+    role: 'Bug Fixing Specialist',
+    systemPrompt: `You are @Debugger. Analyze logs and code to identify and fix bugs.
+Available commands:
+>> READ_CODE: "path"
+>> SEARCH_CODE: "query"
+>> WRITE_CODE: "path" "content"`,
+  },
+  devops: {
+    name: '@DevOps',
+    role: 'CI/CD & Infrastructure Specialist',
+    systemPrompt: `You are @DevOps. Manage deployment, infrastructure, and git operations.
+Available commands:
+>> RUN_SHELL: "command"
+>> READ_CODE: "path"
+>> WRITE_CODE: "path" "content"
+>> SEARCH_CODE: "query"`,
+  },
 };
 
 async function readProjectContext() {
   const context = {};
-  try { context.plan = await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8'); } catch { context.plan = null; }
-  try { context.context = await fs.readFile('CONTEXT.md', 'utf8'); } catch { context.context = null; }
-  try { 
-    context.state = JSON.parse(await fs.readFile('.ultra/state.json', 'utf8')); 
-  } catch { 
+
+  const planPromise = fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => null);
+  const contextPromise = fs.readFile('CONTEXT.md', 'utf8').catch(() => null);
+  const statePromise = (async () => {
     try {
-        context.state = JSON.parse(await fs.readFile('.ultra-dex/state.json', 'utf8'));
+      return JSON.parse(await fs.readFile('.ultra/state.json', 'utf8'));
     } catch {
-        context.state = null; 
+      try {
+        return JSON.parse(await fs.readFile('.ultra-dex/state.json', 'utf8'));
+      } catch {
+        return null;
+      }
     }
-  }
-  
+  })();
+
   // Graph Scan (God Mode)
-  try {
-    await projectGraph.scan();
-    context.graph = projectGraph.getSummary();
-  } catch (e) {
-    context.graph = null;
-  }
-  
+  const graphPromise = (async () => {
+    try {
+      await projectGraph.scan();
+      return projectGraph.getSummary();
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const [plan, ctx, state, graph] = await Promise.all([
+    planPromise,
+    contextPromise,
+    statePromise,
+    graphPromise
+  ]);
+
+  context.plan = plan;
+  context.context = ctx;
+  context.state = state;
+  context.graph = graph;
+
   return context;
 }
 
@@ -118,6 +158,7 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
 >> READ_CODE: "filePath"
 >> WRITE_CODE: "filePath" "fullContent"
 >> SEARCH_CODE: "query"
+>> RUN_SHELL: "command"
 >> DELEGATE: @AgentName "Task"`;
 
   try {
@@ -130,6 +171,7 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     const readMatch = content.match(/>>\s*READ_CODE:\s*["'](.+?)["']/);
     const writeMatch = content.match(/>>\s*WRITE_CODE:\s*["'](.+?)["']\s*["']([\s\S]+?)["']/);
     const _searchMatch = content.match(/>>\s*SEARCH_CODE:\s*["'](.+?)["']/);
+    const runShellMatch = content.match(/>>\s*RUN_SHELL:\s*["'](.+?)["']/);
     const delegateMatch = content.match(/>>\s*DELEGATE:\s*@(\w+)\s*["'](.+?)["']/);
 
     if (readMatch) {
@@ -187,6 +229,20 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         return await runAgentLoop(agentName, `${task}\n\n${nextPrompt}`, provider, projectContext, depth + 1);
       } catch (e) {
         return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: ${e.message}`, provider, projectContext, depth + 1);
+      }
+    }
+
+    if (runShellMatch) {
+      const command = runShellMatch[1];
+      console.log(chalk.yellow(`\n⚡ ${agent.name} is executing shell command: ${command}...`));
+
+      try {
+        const { stdout, stderr } = await execAsync(command);
+        const output = stdout + (stderr ? `\nSTDERR:\n${stderr}` : '');
+        const nextPrompt = `Output of RUN_SHELL "${command}":\n\`\`\`\n${output}\n\`\`\`\n\nPlease proceed with your task.`;
+        return await runAgentLoop(agentName, `${task}\n\n${nextPrompt}`, provider, projectContext, depth + 1);
+      } catch (e) {
+        return await runAgentLoop(agentName, `${task}\n\nError executing ${command}: ${e.message}`, provider, projectContext, depth + 1);
       }
     }
 

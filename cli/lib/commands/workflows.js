@@ -1,4 +1,6 @@
 import chalk from 'chalk';
+import fs from 'fs/promises';
+import path from 'path';
 import { githubBlobUrl } from '../config/urls.js';
 
 export const WORKFLOWS = {
@@ -7,6 +9,14 @@ export const WORKFLOWS = {
     agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
     description: 'Complete authentication with email/password and OAuth',
     example: 'supabase',
+    steps: [
+      '1. Define auth strategy',
+      '2. Set up database schema',
+      '3. Implement API endpoints',
+      '4. Build frontend pages',
+      '5. Secure routes',
+      '6. Verify email/OAuth flows'
+    ]
   },
   supabase: {
     name: 'Supabase Authentication Setup',
@@ -39,6 +49,13 @@ export const WORKFLOWS = {
     agents: ['@Planner', '@CTO', '@Frontend', '@DevOps'],
     description: 'Deploy to Vercel with staging and production environments',
     example: 'vercel',
+    steps: [
+        '1. Configure environment',
+        '2. Set up CI/CD',
+        '3. Deploy to staging',
+        '4. Verify staging',
+        '5. Promote to production'
+    ]
   },
   vercel: {
     name: 'Vercel Deployment Pipeline',
@@ -146,11 +163,64 @@ export const WORKFLOWS = {
   },
 };
 
+export function visualizeWorkflow(workflow) {
+    console.log(chalk.bold.cyan(`\n📊 ${workflow.name} Flow\n`));
+    
+    // Agent Flow
+    console.log(chalk.bold('Team Handoff:'));
+    const agentFlow = workflow.agents.map((a, i) => {
+       const color = ['@Planner', '@CTO'].includes(a) ? chalk.magenta : ['@Backend', '@Frontend'].includes(a) ? chalk.blue : chalk.yellow;
+       return color(a);
+    }).join(chalk.gray(' → '));
+    console.log('  ' + agentFlow + '\n');
+
+    // Step Flow
+    console.log(chalk.bold('Execution Path:'));
+    if (workflow.steps) {
+        workflow.steps.forEach((step, i) => {
+            const isLast = i === workflow.steps.length - 1;
+            const stepName = step.replace(/^\d+\.\s+/, '');
+            console.log(`  ${chalk.green('●')} ${stepName}`);
+            if (!isLast) console.log(`  ${chalk.gray('│')}`);
+        });
+    }
+    console.log('');
+}
+
+export async function startWorkflow(feature) {
+    const workflow = WORKFLOWS[feature.toLowerCase()];
+    if (!workflow) return false;
+
+    const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
+    try {
+        let content = await fs.readFile(planPath, 'utf8');
+        
+        // Check if already exists
+        if (content.includes(`## Workflow: ${workflow.name}`)) {
+            console.log(chalk.yellow(`Workflow "${workflow.name}" already exists in the plan.`));
+            return true;
+        }
+
+        const newSection = `\n## Workflow: ${workflow.name}\n` +
+            workflow.steps.map(s => `- [ ] ${s.replace(/^\d+\.\s+/, '')}`).join('\n') +
+            '\n';
+
+        await fs.appendFile(planPath, newSection);
+        console.log(chalk.green(`✅ Added "${workflow.name}" workflow to IMPLEMENTATION-PLAN.md`));
+        return true;
+    } catch (e) {
+        console.error(chalk.red(`Failed to update plan: ${e.message}`));
+        return false;
+    }
+}
+
 export function registerWorkflowCommand(program) {
   program
     .command('workflow <feature>')
-    .description('Show workflow for common features (auth, payments, deployment, etc.)')
-    .action((feature) => {
+    .description('Show or start workflow for common features (auth, payments, etc.)')
+    .option('--viz', 'Visualize the workflow')
+    .option('--start', 'Add workflow to implementation plan')
+    .action(async (feature, options) => {
       const workflow = WORKFLOWS[feature.toLowerCase()];
 
       if (!workflow) {
@@ -163,6 +233,17 @@ export function registerWorkflowCommand(program) {
         process.exit(1);
       }
 
+      if (options.viz) {
+          visualizeWorkflow(workflow);
+          return;
+      }
+
+      if (options.start) {
+          await startWorkflow(feature);
+          return;
+      }
+
+      // Default View
       console.log(chalk.bold(`\n📋 ${workflow.name} Workflow\n`));
       console.log(chalk.gray(workflow.description));
 

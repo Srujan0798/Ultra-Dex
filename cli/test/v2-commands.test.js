@@ -17,8 +17,8 @@ test('v3.0 Command Smoke Tests', async (t) => {
   });
 
   await t.test('agent command shows specific prompt', () => {
-    const output = execSync(`${CLI} agent backend`).toString();
-    assert.ok(output.includes('# Backend Developer Agent'));
+    const output = execSync(`${CLI} agent show backend`).toString();
+    assert.ok(output.includes('# Backend Developer Agent') || output.includes('BACKEND Agent'));
   });
 
   await t.test('config --mcp generates json', () => {

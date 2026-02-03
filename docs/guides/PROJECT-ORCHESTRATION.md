@@ -240,11 +240,11 @@ Key Features:
 Test Commands:
 curl -X POST http://localhost:3001/api/auth/signup \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"SecurePass123"}'
+  -d '{"email":"test@example.com","password":"Use a secure, randomly generated password following company standards"}'
 
 curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"SecurePass123"}'
+  -d '{"email":"test@example.com","password":"Use a secure, randomly generated password following company standards"}'
 
 curl -X GET http://localhost:3001/api/auth/me \
   -H "Cookie: auth_token=<token_from_login>"

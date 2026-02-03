@@ -116,21 +116,30 @@ class ConfigManager {
   /**
    * Save configuration to file
    */
-  async save(config = null) {
+  async save(config = null, type = 'project') {
     if (!config) config = this.config;
     
+    const targetPath = type === 'global' ? this.globalConfigPath : this.configPath;
+
     try {
       // Create directory if it doesn't exist
-      const dir = path.dirname(this.configPath);
+      const dir = path.dirname(targetPath);
       await fs.mkdir(dir, { recursive: true });
       
       // Write configuration to file
-      await fs.writeFile(this.configPath, JSON.stringify(config, null, 2));
+      await fs.writeFile(targetPath, JSON.stringify(config, null, 2));
       return true;
     } catch (error) {
-      console.error('Failed to save configuration:', error.message);
+      console.error(`Failed to save ${type} configuration:`, error.message);
       return false;
     }
+  }
+
+  /**
+   * Save global configuration
+   */
+  async saveGlobal(config = null) {
+    return this.save(config, 'global');
   }
 
   /**

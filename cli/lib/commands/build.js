@@ -14,11 +14,17 @@ import { showProgress } from '../utils/progress.js';
 import { getRandomMessage } from '../utils/messages.js';
 
 async function readProjectContext() {
-  const context = {};
-  try { context.plan = await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8'); } catch { context.plan = null; }
-  try { context.context = await fs.readFile('CONTEXT.md', 'utf8'); } catch { context.context = null; }
-  context.state = await loadState();
-  return context;
+  const [plan, ctx, state] = await Promise.all([
+    fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => null),
+    fs.readFile('CONTEXT.md', 'utf8').catch(() => null),
+    loadState()
+  ]);
+
+  return {
+    plan,
+    context: ctx,
+    state
+  };
 }
 
 export function registerBuildCommand(program) {
