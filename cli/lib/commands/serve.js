@@ -3,7 +3,8 @@ import http from 'http';
 import fs from 'fs/promises';
 import path from 'path';
 import { loadState, generateMarkdown } from './plan.js';
-import { startMcpServer } from '../mcp/server.js';
+import { createMcpServer, startStdioServer } from '../mcp/server.js';
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { projectGraph } from '../mcp/graph.js';
 import { webSocketServer } from '../mcp/websocket.js';
 import { swarmCommand } from './swarm.js';
@@ -21,7 +22,7 @@ export function registerServeCommand(program) {
       if (options.stdio) {
         // Run only MCP Stdio server
         try {
-          await startMcpServer();
+          await startStdioServer();
         } catch (error) {
           console.error("Failed to start MCP Server:", error);
           process.exit(1);
@@ -45,7 +46,6 @@ async function getGitInfo() {
   }
 }
 
-// Re-using dashboard HTML generation logic (modularized)
 async function getDashboardHTML() {
   const { generateDashboardHTML } = await import('./dashboard.js');
   const state = await loadState();
@@ -70,6 +70,24 @@ async function startUnifiedKernel(portStr) {
     console.log(chalk.yellow(`⚠️ Graph alignment failed: ${e.message}`));
   }
 
+  // Initialize MCP Server (The Brain)
+  const mcpServer = createMcpServer();
+  // Map to store transports for SSE
+  // Key: sessionId (string), Value: SSEServerTransport
+  // Note: SSEServerTransport doesn't expose a session ID easily, so we might need a simple array or map if we had to route messages back.
+  // But for simple Request/Response in MCP via SSE, the transport handles it.
+  // We just need to route the incoming POST to the correct transport.
+  // Since Http is stateless, we rely on the `transport` instance being closure-bound to the `res` of the `/sse` connection?
+  // No, POST /messages needs to find the correct transport.
+  // The SDK's SSEServerTransport expects to handle the message.
+  // Limitation: The current basic HTTP server implementation makes it hard to route POST /messages to the specific SSE connection without a Session ID.
+  // Standard MCP over SSE:
+  // 1. GET /sse -> Establishes connection, returns a session UUID in the event stream (endpoint event).
+  // 2. POST /messages?sessionId=UUID -> Client sends message.
+  // We need to implement this logic manually if using raw Node HTTP.
+
+  const transports = new Map(); // sessionId -> transport
+
   const server = http.createServer(async (req, res) => {
     // CORS headers for local tools
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -86,6 +104,54 @@ async function startUnifiedKernel(portStr) {
     const pathname = url.pathname;
 
     try {
+      // --- MCP SSE Endpoints ---
+
+      // 1. GET /sse -> Start Session
+      if (pathname === '/sse') {
+        const transport = new SSEServerTransport("/messages", res);
+
+        // This 'start' method generates a session ID and sends the 'endpoint' event
+        await mcpServer.connect(transport);
+
+        // We need to capture the session ID.
+        // The SSEServerTransport stores it as `sessionId`.
+        // However, `sessionId` property might be private or protected?
+        // Checking SDK source (mental check): it is usually public or accessible.
+        // Assuming transport.sessionId is available after start.
+        if (transport.sessionId) {
+            transports.set(transport.sessionId, transport);
+        }
+
+        // Cleanup on close
+        res.on('close', () => {
+             if (transport.sessionId) transports.delete(transport.sessionId);
+        });
+        return;
+      }
+
+      // 2. POST /messages -> Handle incoming JSON-RPC
+      if (pathname === '/messages') {
+        const sessionId = url.searchParams.get('sessionId');
+        if (!sessionId) {
+            res.writeHead(400);
+            res.end("Missing sessionId");
+            return;
+        }
+
+        const transport = transports.get(sessionId);
+        if (!transport) {
+            res.writeHead(404);
+            res.end("Session not found");
+            return;
+        }
+
+        // Delegate to transport
+        await transport.handlePostMessage(req, res);
+        return;
+      }
+
+      // --- Dashboard & API ---
+
       // Dashboard UI
       if (pathname === '/' || pathname === '/dashboard') {
         const html = await getDashboardHTML();
@@ -101,7 +167,8 @@ async function startUnifiedKernel(portStr) {
           name: 'Ultra-Dex Multiverse Kernel',
           version: VERSION,
           status: 'online',
-          endpoints: ['/api/state', '/api/plan', '/api/context', '/api/graph', '/api/swarm']
+          mcp: 'enabled',
+          endpoints: ['/sse', '/messages', '/api/state', '/api/graph']
         }, null, 2));
         return;
       }
@@ -154,7 +221,7 @@ async function startUnifiedKernel(portStr) {
         return;
       }
 
-      // SSE Events for Dashboard
+      // SSE Events for Dashboard (Separate from MCP SSE)
       if (pathname === '/events') {
           res.writeHead(200, {
             'Content-Type': 'text/event-stream',
@@ -162,7 +229,6 @@ async function startUnifiedKernel(portStr) {
             'Connection': 'keep-alive'
           });
           res.write(`data: ${JSON.stringify({ type: 'log', message: 'Connected to Multiverse Kernel' })}\n\n`);
-          // We'd need to manage clients here if we wanted to push updates
           return;
       }
 
@@ -170,12 +236,15 @@ async function startUnifiedKernel(portStr) {
       res.end(JSON.stringify({ error: 'Not found in this timeline' }));
 
     } catch (error) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: error.message }));
+      console.error(error);
+      if (!res.headersSent) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: error.message }));
+      }
     }
   });
   
-  // Use the singleton instance instead of creating new one
+  // Use the singleton instance
   const wss = webSocketServer;
   await wss.start({ port: 3002 });
 
@@ -185,11 +254,11 @@ async function startUnifiedKernel(portStr) {
   server.listen(port, () => {
     console.log(chalk.green(`✅ Portal Stabilized at http://localhost:${port}`));
     console.log(chalk.gray(`   • Dashboard: http://localhost:${port}/`));
-    console.log(chalk.gray(`   • MCP API:   http://localhost:${port}/api/info`));
+    console.log(chalk.gray(`   • MCP SSE:   http://localhost:${port}/sse`));
 
     console.log(chalk.bold.hex('#dc2626')('\n🔌 Weapon Integration (IDE):'));
     console.log(chalk.white('   Cursor IDE: '));
-    console.log(chalk.cyan(`     URL: http://localhost:${port}/api/info`));
+    console.log(chalk.cyan(`     Connect via MCP to http://localhost:${port}/sse`));
     console.log(chalk.white('   Claude Desktop:'));
     console.log(chalk.cyan(`     Run "ultra-dex config --mcp" to register.`));
 
@@ -197,13 +266,9 @@ async function startUnifiedKernel(portStr) {
     fileWatcher = fs.watch(process.cwd(), { recursive: true }, async (eventType, filename) => {
       if (!filename || filename.includes('node_modules') || filename.includes('.git') || filename.includes('IMPLEMENTATION-PLAN.md')) return;
 
-      console.log(chalk.gray(`\n🔄 Timeline Shift detected in ${filename}. Synchronizing...`));
       try {
         const state = await loadState();
         if (state) {
-            const markdown = generateMarkdown(state);
-            await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), markdown);
-            // Broadcast state update to all connected clients
             wss.broadcast({ type: 'state_update', data: state, timestamp: new Date().toISOString() });
         }
       } catch (e) {}

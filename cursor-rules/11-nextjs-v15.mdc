@@ -1,0 +1,307 @@
+# Next.js 15 Production Patterns
+
+> Modern App Router patterns for production-grade Next.js 15 applications
+
+## Architecture Rules
+
+1. **ALWAYS use App Router** - `src/app/` directory structure
+2. **Route Groups** for organization - `(marketing)/`, `(dashboard)/`, `(auth)/`
+3. **Parallel Routes** for complex layouts - `@modal`, `@sidebar`
+4. **Intercepting Routes** for modals - `(.)photo/[id]`
+
+## File Structure
+
+```
+src/app/
+├── (marketing)/
+│   ├── page.tsx              # Landing page
+│   ├── pricing/page.tsx
+│   └── layout.tsx            # Marketing layout
+├── (dashboard)/
+│   ├── dashboard/
+│   │   ├── page.tsx          # Main dashboard
+│   │   ├── loading.tsx       # Suspense fallback
+│   │   └── error.tsx         # Error boundary
+│   ├── settings/page.tsx
+│   └── layout.tsx            # Dashboard layout with sidebar
+├── (auth)/
+│   ├── login/page.tsx
+│   ├── signup/page.tsx
+│   └── layout.tsx            # Auth layout (no navbar)
+├── api/
+│   └── [...]/route.ts        # API routes
+├── layout.tsx                # Root layout
+└── globals.css
+```
+
+## Server Components (Default)
+
+```tsx
+// This is a Server Component by default
+export default async function DashboardPage() {
+  const data = await prisma.user.findMany()
+
+  return (
+    <div>
+      {data.map(user => <UserCard key={user.id} user={user} />)}
+    </div>
+  )
+}
+```
+
+## Client Components (When Needed)
+
+```tsx
+'use client'
+
+import { useState } from 'react'
+
+export function Counter() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>
+}
+```
+
+## Server Actions
+
+```tsx
+// app/actions.ts
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+
+export async function createPost(formData: FormData) {
+  const title = formData.get('title') as string
+
+  await prisma.post.create({ data: { title } })
+
+  revalidatePath('/posts')
+  redirect('/posts')
+}
+```
+
+## Loading States
+
+```tsx
+// app/dashboard/loading.tsx
+export default function Loading() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/4 mb-4" />
+      <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+      <div className="h-4 bg-gray-200 rounded w-3/4" />
+    </div>
+  )
+}
+```
+
+## Error Boundaries
+
+```tsx
+// app/dashboard/error.tsx
+'use client'
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  return (
+    <div className="p-4 bg-red-50 rounded-lg">
+      <h2 className="text-red-800 font-semibold">Something went wrong!</h2>
+      <button
+        onClick={() => reset()}
+        className="mt-2 px-4 py-2 bg-red-600 text-white rounded"
+      >
+        Try again
+      </button>
+    </div>
+  )
+}
+```
+
+## Middleware for Auth/Tenant
+
+```tsx
+// middleware.ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  // Get tenant from subdomain or header
+  const hostname = request.headers.get('host') || ''
+  const subdomain = hostname.split('.')[0]
+
+  // Add tenant to headers for downstream use
+  const response = NextResponse.next()
+  response.headers.set('x-tenant-id', subdomain)
+
+  // Auth check
+  const session = request.cookies.get('session')
+  if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  return response
+}
+
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+}
+```
+
+## Streaming with Suspense
+
+```tsx
+import { Suspense } from 'react'
+
+export default function Dashboard() {
+  return (
+    <div>
+      <h1>Dashboard</h1>
+
+      {/* This loads immediately */}
+      <StaticContent />
+
+      {/* This streams in when ready */}
+      <Suspense fallback={<LoadingStats />}>
+        <AsyncStats />
+      </Suspense>
+
+      {/* This streams separately */}
+      <Suspense fallback={<LoadingChart />}>
+        <AsyncChart />
+      </Suspense>
+    </div>
+  )
+}
+```
+
+## Metadata API
+
+```tsx
+// app/dashboard/page.tsx
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Dashboard | MyApp',
+  description: 'Your personal dashboard',
+}
+
+// Dynamic metadata
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const user = await getUser(params.id)
+  return {
+    title: `${user.name}'s Profile`,
+    openGraph: {
+      images: [user.avatar],
+    },
+  }
+}
+```
+
+## Data Fetching Patterns
+
+```tsx
+// Parallel data fetching
+async function Dashboard() {
+  // These run in parallel
+  const [user, posts, stats] = await Promise.all([
+    getUser(),
+    getPosts(),
+    getStats(),
+  ])
+
+  return <DashboardView user={user} posts={posts} stats={stats} />
+}
+
+// Sequential (when dependent)
+async function Profile({ params }) {
+  const user = await getUser(params.id)
+  const posts = await getPostsByUser(user.id) // Needs user.id
+
+  return <ProfileView user={user} posts={posts} />
+}
+```
+
+## Route Handlers (API)
+
+```tsx
+// app/api/users/route.ts
+import { NextResponse } from 'next/server'
+
+export async function GET(request: Request) {
+  const users = await prisma.user.findMany()
+  return NextResponse.json(users)
+}
+
+export async function POST(request: Request) {
+  const body = await request.json()
+  const user = await prisma.user.create({ data: body })
+  return NextResponse.json(user, { status: 201 })
+}
+```
+
+## Multi-Tenancy Pattern
+
+```tsx
+// lib/tenant.ts
+import { headers } from 'next/headers'
+
+export async function getTenant() {
+  const headersList = headers()
+  const tenantId = headersList.get('x-tenant-id')
+
+  if (!tenantId) throw new Error('No tenant')
+
+  return prisma.organization.findUniqueOrThrow({
+    where: { subdomain: tenantId },
+  })
+}
+
+// Usage in any server component
+export default async function Dashboard() {
+  const tenant = await getTenant()
+  const data = await prisma.post.findMany({
+    where: { organizationId: tenant.id },
+  })
+  // ...
+}
+```
+
+## Vercel AI SDK Integration
+
+```tsx
+// app/api/chat/route.ts
+import { openai } from '@ai-sdk/openai'
+import { streamText } from 'ai'
+
+export async function POST(req: Request) {
+  const { messages } = await req.json()
+
+  const result = await streamText({
+    model: openai('gpt-4-turbo'),
+    messages,
+  })
+
+  return result.toDataStreamResponse()
+}
+```
+
+## Production Checklist
+
+- [ ] All routes have `loading.tsx`
+- [ ] All routes have `error.tsx`
+- [ ] Metadata on all pages
+- [ ] Server Actions for mutations
+- [ ] Proper auth middleware
+- [ ] Multi-tenant isolation (if applicable)
+- [ ] Streaming for slow data
+- [ ] Edge runtime where beneficial
+
+---
+
+*Ultra-Dex v1.7.0 - Next.js 15 Production Patterns*

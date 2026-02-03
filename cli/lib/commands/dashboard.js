@@ -177,30 +177,41 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       ${phasesHTML}
     </div>
 
-    <div class="col-main">
-      <div class="control-panel">
-        <h3>🚀 SWARM COMMAND CENTER</h3>
-        <div class="input-group">
-          <input type="text" id="swarm-input" placeholder="Enter objective..." />
-          <button id="swarm-btn" onclick="startSwarm()">DEPLOY AGENTS</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>ALIGNMENT VELOCITY</h3>
-        <div class="chart-container">
-          <canvas id="alignmentChart"></canvas>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>LIVE SYSTEM LOGS</h3>
-        <div class="timeline" id="log-container">
-          <div class="log-entry info"><span class="time">${new Date().toLocaleTimeString()}</span> System initialized.</div>
-        </div>
-      </div>
-    </div>
-
+          <div class="col-main">
+            <div class="control-panel">
+              <h3>🚀 SWARM COMMAND CENTER</h3>
+              <div class="input-group">
+                <input type="text" id="swarm-input" placeholder="Enter objective..." />
+                <button id="swarm-btn" onclick="startSwarm()">DEPLOY AGENTS</button>
+              </div>
+            </div>
+    
+            <div class="card" id="healing-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+                <h3>🛡️ SELF-HEALING MONITOR</h3>
+                <span id="healing-badge" class="status-badge" style="background:#333; color:#888">IDLE</span>
+              </div>
+              <div id="healing-status" style="font-size:0.9rem; color:#aaa; margin-bottom:0.5rem">System healthy. Watching for issues...</div>
+              <div id="healing-stats" style="display:flex; gap:1rem; font-size:0.8rem; color:#666">
+                <span>Fixes: <strong id="fix-count" style="color:#fff">0</strong></span>
+                <span>Success: <strong id="success-rate" style="color:#fff">100%</strong></span>
+              </div>
+            </div>
+    
+            <div class="card">
+              <h3>ALIGNMENT VELOCITY</h3>
+              <div class="chart-container">
+                <canvas id="alignmentChart"></canvas>
+              </div>
+            </div>
+    
+            <div class="card">
+              <h3>LIVE SYSTEM LOGS</h3>
+              <div class="timeline" id="log-container">
+                <div class="log-entry info"><span class="time">${new Date().toLocaleTimeString()}</span> System initialized.</div>
+              </div>
+            </div>
+          </div>
     <div class="col-agents">
       <h3 style="color: #666; margin-bottom: 1rem; font-size: 0.8rem">ACTIVE AGENTS</h3>
       <div class="agent-grid">
@@ -254,7 +265,38 @@ function generateDashboardHTML(state, gitInfo, graphSummary) {
       const data = JSON.parse(event.data);
       if (data.type === 'log') addLog(data.message, data.level);
       if (data.type === 'agent_status') updateAgent(data.agent, data.status, data.activity);
+      if (data.type === 'autonomous_update') updateAutonomous(data.data);
     };
+
+    function updateAutonomous(data) {
+      const badge = document.getElementById('healing-badge');
+      const statusText = document.getElementById('healing-status');
+      const fixCount = document.getElementById('fix-count');
+      
+      if (data.status === 'healing') {
+        badge.innerText = 'ACTIVE';
+        badge.style.background = 'var(--accent)';
+        badge.style.color = '#000';
+        badge.classList.add('pulse'); // You might want to add a pulse animation class
+      } else if (data.status === 'fixed') {
+        badge.innerText = 'SUCCESS';
+        badge.style.background = 'var(--success)';
+        badge.style.color = '#000';
+      } else if (data.status === 'failed') {
+        badge.innerText = 'FAILED';
+        badge.style.background = 'var(--danger)';
+        badge.style.color = '#fff';
+      } else {
+        badge.innerText = 'IDLE';
+        badge.style.background = '#333';
+        badge.style.color = '#888';
+      }
+
+      statusText.innerText = data.message;
+      if (data.stats) {
+        fixCount.innerText = data.stats.fixes;
+      }
+    }
 
     function addLog(msg, level = 'info') {
       const container = document.getElementById('log-container');
@@ -460,6 +502,31 @@ export function registerDashboardCommand(program) {
 
               res.writeHead(200, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ success: true, message: 'Swarm initiated' }));
+            } catch (e) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: false, error: e.message }));
+            }
+          });
+          return;
+        }
+
+        // Autonomous Status Update
+        if (req.url === '/api/autonomous/status' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk.toString());
+          req.on('end', () => {
+            try {
+              const statusData = JSON.parse(body);
+              sendToClients({ type: 'autonomous_update', data: statusData });
+              // Also log significant events
+              if (statusData.status === 'healing') {
+                addAction('healing_start', `Self-healing started: ${statusData.message}`, 'debugger');
+              } else if (statusData.status === 'fixed') {
+                addAction('healing_success', `Self-healing fixed issue`, 'debugger');
+              }
+              
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true }));
             } catch (e) {
               res.writeHead(500, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ success: false, error: e.message }));

@@ -9,6 +9,8 @@ import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
+import { getProvider } from '../providers/index.js';
+import { projectGraph } from '../mcp/graph.js';
 
 // ============================================================================
 // VECTOR STORE CONFIGURATION
@@ -193,8 +195,13 @@ async function generateEmbedding(text, provider = null) {
     try {
       return await provider.getEmbedding(text);
     } catch (err) {
-      console.log(chalk.yellow(`Embedding API failed, using local fallback: ${err.message}`));
+      console.log(chalk.yellow(`\n⚠️  Embedding API failed, falling back to local method: ${err.message}`));
     }
+  } else if (provider) {
+    console.log(chalk.yellow(`\n⚠️  Provider ${provider.getName()} does not support embeddings. Using local fallback.`));
+  } else {
+    // Only warn once per session ideally, but for now simple warning
+    // console.log(chalk.gray('Using local "dumb" embeddings (no AI provider).'));
   }
 
   // Fallback: Simple bag-of-words embedding
@@ -249,7 +256,7 @@ function generateLocalEmbedding(text, dimensions = 384) {
  * Index the codebase
  */
 export async function indexCodebase(workdir = process.cwd(), options = {}) {
-  const { force = false, verbose = false } = options;
+  const { force = false, verbose = false, provider = null } = options;
   const indexPath = path.join(workdir, EMBEDDINGS_CONFIG.indexPath);
 
   // Check if index exists and is recent
@@ -275,16 +282,11 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
 
   // Find all files to index
   const excludePattern = EMBEDDINGS_CONFIG.excludeDirs.map(d => `**/${d}/**`);
-  const files = [];
-
-  for (const pattern of EMBEDDINGS_CONFIG.includePatterns) {
-    const matches = await glob(pattern, {
-      cwd: workdir,
-      ignore: excludePattern,
-      nodir: true,
-    });
-    files.push(...matches);
-  }
+  const files = await glob(EMBEDDINGS_CONFIG.includePatterns, {
+    cwd: workdir,
+    ignore: excludePattern,
+    nodir: true,
+  });
 
   // Deduplicate
   const uniqueFiles = [...new Set(files)];
@@ -292,6 +294,15 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
 
   if (verbose) {
     console.log(chalk.gray(`Found ${uniqueFiles.length} files to index`));
+  }
+
+  // Get Provider
+  const activeProvider = provider || getProvider();
+  if (!activeProvider) {
+    console.log(chalk.yellow('\n⚠️  No AI provider configured. Using "dumb" local embeddings (bag-of-words).'));
+    console.log(chalk.gray('   For smart search, set OPENAI_API_KEY or use Ollama.\n'));
+  } else {
+    if (verbose) console.log(chalk.green(`Using ${activeProvider.getName()} for embeddings.`));
   }
 
   // Index each file
@@ -312,7 +323,7 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
 
       // Generate embeddings for each chunk
       for (const chunk of chunks) {
-        const embedding = await generateEmbedding(chunk.content);
+        const embedding = await generateEmbedding(chunk.content, activeProvider);
 
         vectorStore.addDocument({
           id: `${file}:${chunk.chunk}`,
@@ -357,8 +368,11 @@ export async function searchCodebase(query, options = {}) {
     }
   }
 
+  // Get Provider
+  const provider = getProvider();
+
   // Generate query embedding
-  const queryEmbedding = await generateEmbedding(query);
+  const queryEmbedding = await generateEmbedding(query, provider);
 
   // Search
   const results = vectorStore.search(queryEmbedding, topK);
@@ -381,11 +395,35 @@ export function registerSearchCommand(program) {
     .description('Semantic search across your codebase using embeddings')
     .option('--index', 'Rebuild the search index')
     .option('--force', 'Force full re-index')
+    .option('--symbol', 'Search for symbol definitions (functions, classes)')
     .option('-k, --top <n>', 'Number of results', '10')
     .option('-v, --verbose', 'Show detailed output')
     .option('--stats', 'Show index statistics')
     .action(async (query, options) => {
-      console.log(chalk.cyan('\n🔍 Ultra-Dex Semantic Search\n'));
+      console.log(chalk.cyan('\n🔍 Ultra-Dex Search\n'));
+
+      if (options.symbol) {
+          const spinner = ora('Scanning code graph...').start();
+          try {
+              await projectGraph.scan();
+              const results = projectGraph.findSymbol(query);
+              spinner.succeed(`Graph scan complete. Found ${results.length} symbol matches.`);
+              
+              if (results.length === 0) {
+                  console.log(chalk.yellow(`No symbols found matching "${query}"`));
+                  return;
+              }
+              
+              console.log(chalk.bold('\nDefinitions found:'));
+              results.forEach(r => {
+                  console.log(`  ${chalk.green(r.symbol)} in ${chalk.gray(r.file)}`);
+              });
+              return;
+          } catch (e) {
+              spinner.fail(`Symbol search failed: ${e.message}`);
+              return;
+          }
+      }
 
       const workdir = process.cwd();
       const indexPath = path.join(workdir, EMBEDDINGS_CONFIG.indexPath);

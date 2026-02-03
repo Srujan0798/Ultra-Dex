@@ -7,10 +7,131 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.4.5] - 2026-02-03 - Valentine's Launch Candidate
+
+### 🎯 Strategic Focus
+This release combines **Wave 6: Self-Healing** with comprehensive **Beta Command Polish**, moving 8 key commands from beta to production readiness in preparation for the Feb 14 launch.
+
+### Added - Self-Healing (Wave 6)
+- **🔧 Autonomous Self-Healing Engine** (`cli/lib/commands/autonomous.js`)
+  - Automated error detection and recovery loop
+  - `AutonomousEngine` class with decision logging and reporting
+  - Integration with `@Debugger` agent for root cause analysis
+- **👁️ Watch & Heal Mode** (`ultra-dex autonomous --watch`)
+  - Continuous monitoring of source files
+  - Automatic test execution on change
+  - Instant self-healing trigger upon test failure
+- **📸 Snapshot & Rollback**
+  - Automatic filesystem snapshots before healing attempts
+  - Safety mechanism to revert changes if healing fails
+  - `.ultra-dex/snapshots/` directory for recovery points
+- **🧠 "Lessons Learned" Memory**
+  - Persistence of successful fixes in `.ultra-dex/history/`
+  - Injection of past solutions into agent context for faster resolution
+- **🛡️ Dashboard Integration**
+  - Real-time "Self-Healing Monitor" widget in the dashboard
+  - Live status updates via SSE (Active, Fixed, Failed)
+  - Success rate tracking and fix counters
+
+### Added - Beta Command Polish
+- **📊 Plan Visualization** (`ultra-dex plan`)
+  - `--gantt`: ASCII Gantt chart of implementation phases
+  - `--timeline`: Milestone timeline view
+  - Markdown parsing for existing plans
+- **📋 Workflow Management** (`ultra-dex workflow`)
+  - `--viz`: Visual flowcharts of agent handoffs
+  - `--start`: Append workflow steps to `IMPLEMENTATION-PLAN.md`
+  - 12 built-in templates (Auth, Payments, CI/CD, etc.)
+- **💡 Smart Suggestions** (`ultra-dex suggest`)
+  - AI-powered context awareness (reads project files)
+  - Intelligent agent chain recommendations
+- **🔍 Deep Audit** (`ultra-dex audit`)
+  - Integrated code quality & security scanning
+  - 20+ new rules (Secrets, Gitignore, React patterns, SQL injection)
+  - `--report`: JSON report generation
+- **⚖️ Executable Verification** (`ultra-dex verify`)
+  - Hybrid verification: Automated Checks + AI Review
+  - Programmatic gates for Type Safety, Linting, and Unit Tests
+- **🐳 Sandbox & Safety** (`ultra-dex exec`)
+  - Pre-flight code scanning for dangerous patterns (`eval`, `process.exit`)
+  - Improved output formatting
+- **📈 Real-Time Monitoring** (`ultra-dex metrics`)
+  - `--watch`: Live system metrics dashboard
+  - Alerting for high resource usage or errors
+### Added - Advanced Features
+- **📂 Multi-Project Workspace** (`ultra-dex workspace`)
+  - Global project tracking and management
+  - `workspace add/list/remove` commands
+  - Seamless context switching between projects
+- **🔄 Batch Operations** (`ultra-dex batch`)
+  - Execute sequential Ultra-Dex commands from a file
+  - Automation for repetitive workflows
+- **🔍 Symbol Search** (`ultra-dex search --symbol`)
+  - Graph-based definition lookup
+  - Find functions, classes, and variables instantly
+
+### Changed
+- **Dashboard UI** - Added dedicated self-healing status card and metrics
+- **CLI** - New `autonomous` command with `--watch`, `--fix`, and `--heal` options
+
+---
+
+## [3.4.4] - 2026-02-02 - "Professional Enhancement" Release
+
+### 🎯 Strategic Focus
+This release focuses on **project organization**, **performance optimization**, **security hardening**, **extensibility**, and **comprehensive documentation**.
+
+### Added
+- **Plugin Architecture** - Extensible system for custom functionality (`cli/lib/plugin-system.js`)
+  - Plugin manager with load/uninstall capabilities
+  - Hook system for modifying Ultra-Dex behavior
+  - Plugin command for management (`ultra-dex plugin`)
+  - Sample plugin for demonstration purposes
+- **Performance Optimizations** - Enhanced graph analysis system (`cli/lib/mcp/graph.js`)
+  - Caching with 30-second TTL
+  - Concurrency improvements with Promise.allSettled()
+  - File change detection to avoid unnecessary work
+  - Performance metrics and benchmarking
+- **Performance Tests** - Added comprehensive benchmarks (`cli/test/performance-benchmarks.test.js`)
+- **Comprehensive Documentation** - New documentation files:
+  - API Documentation (`APIDOC.md`)
+  - User Guide (`USERGUIDE.md`)
+  - Best Practices (`BESTPRACTICES.md`)
+  - Troubleshooting Guide (`TROUBLESHOOTING.md`)
+  - Contribution Guidelines (`CONTRIBUTING.md`)
+  - Migration Guide (`MIGRATION-GUIDE.md`)
+  - Security Guide (`SECURITY.md`)
+- **Security Hardening** - Enhanced security measures throughout the system
+- **Enhanced CLI Commands** - Added plugin management to existing command structure
+
+### Fixed
+- **Redundancy Issues** - Removed duplicate template files while preserving core template in `@ ultra-dex/Saas plan/`
+- **Path Validation** - Improved security in file operations to prevent traversal attacks
+- **Documentation References** - Updated all references to use new directory structure
+- **Example Credentials** - Replaced example passwords with secure placeholder instructions
+- **Performance Bottlenecks** - Optimized graph scanning and file processing
+
+### Changed
+- **Directory Structure** - Renamed `@ Ultra DeX` to `@ ultra-dex` for consistency
+- **Security Practices** - Enhanced validation and sanitization throughout the codebase
+- **Performance** - Improved efficiency of graph analysis and file operations
+- **Documentation** - Updated README with comprehensive information about new features
+- **Maintainability** - Reduced code duplication and improved organization
+
+### Metrics (Verified)
+| Metric | Value |
+|--------|-------|
+| Commands | 46+ (with plugin management) |
+| Agents | 17 built-in + extensible via plugins |
+| Cursor Rules | 31 |
+| Tests | 281+ (with performance benchmarks) |
+| Documentation Files | 8+ comprehensive guides |
+| ESLint | 0 warnings |
+
 ## [3.4.3] - 2026-01-31 - "Professional Polish" Release
 
 ### 🎯 Strategic Focus
-This release focuses on **data accuracy**, **code quality**, and **documentation cleanup**. All metrics verified and corrected across the codebase.
+This release focused on **data accuracy**, **code quality**, and **documentation cleanup**. All metrics verified and corrected across the codebase.
 
 ### Added
 - **Meta-Orchestrator Agent** - Added to CLI tier system (`cli/lib/swarm/tiers.js`)

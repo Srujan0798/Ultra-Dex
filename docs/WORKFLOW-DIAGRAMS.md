@@ -438,13 +438,11 @@ graph TD
 
 **Mermaid Syntax:**
 ```markdown
-\`\`\`mermaid
 graph TD
     A[@YourAgent] --> B[@NextAgent]
     B --> C{Decision?}
     C -->|Yes| D[@Agent3]
     C -->|No| E[@Agent4]
-\`\`\`
 ```
 
 **Tools:**

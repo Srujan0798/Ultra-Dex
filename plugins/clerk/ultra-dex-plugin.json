@@ -1,0 +1,10 @@
+{
+  "name": "clerk",
+  "version": "1.0.0",
+  "description": "Scaffold Clerk authentication components",
+  "main": "index.js",
+  "author": "Ultra-Dex Team",
+  "commands": [
+    { "name": "clerk-setup", "description": "Add Clerk auth to project" }
+  ]
+}

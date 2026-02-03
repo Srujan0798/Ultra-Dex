@@ -1,0 +1,120 @@
+{
+  // Ultra-Dex VS Code Tasks
+  // Copy this to your project's .vscode/tasks.json
+  
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Ultra-Dex: Check Alignment",
+      "type": "shell",
+      "command": "npx ultra-dex align",
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Ultra-Dex: Review Project",
+      "type": "shell",
+      "command": "npx ultra-dex review --quick",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Ultra-Dex: Show Status",
+      "type": "shell",
+      "command": "npx ultra-dex status",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Ultra-Dex: Start MCP Server",
+      "type": "shell",
+      "command": "npx ultra-dex serve",
+      "group": "none",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Ultra-Dex: Watch Mode",
+      "type": "shell",
+      "command": "npx ultra-dex watch",
+      "group": "none",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Ultra-Dex: Build (Select Agent)",
+      "type": "shell",
+      "command": "npx ultra-dex build",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Ultra-Dex: Run Planner",
+      "type": "shell",
+      "command": "npx ultra-dex run planner --task \"${input:plannerTask}\"",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Ultra-Dex: Doctor Check",
+      "type": "shell",
+      "command": "npx ultra-dex doctor",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Ultra-Dex: Install Pre-commit Hook",
+      "type": "shell",
+      "command": "npx ultra-dex pre-commit --install",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "plannerTask",
+      "type": "promptString",
+      "description": "What should @Planner work on?",
+      "default": "Break down the next feature"
+    }
+  ]
+}

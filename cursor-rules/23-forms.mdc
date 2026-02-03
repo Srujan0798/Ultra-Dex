@@ -1,0 +1,67 @@
+# Form Handling Rules
+
+## Server Actions (Next.js 15)
+```typescript
+'use server';
+
+import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
+
+const schema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2).max(100),
+});
+
+export async function createUser(formData: FormData) {
+  const parsed = schema.safeParse({
+    email: formData.get('email'),
+    name: formData.get('name'),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  await db.user.create({ data: parsed.data });
+  revalidatePath('/users');
+  return { success: true };
+}
+```
+
+## Client Form Component
+```tsx
+'use client';
+
+import { useActionState } from 'react';
+import { createUser } from './actions';
+
+export function CreateUserForm() {
+  const [state, formAction, pending] = useActionState(createUser, null);
+
+  return (
+    <form action={formAction}>
+      <input name="email" type="email" required />
+      {state?.error?.email && <p className="error">{state.error.email}</p>}
+
+      <input name="name" required />
+      {state?.error?.name && <p className="error">{state.error.name}</p>}
+
+      <button disabled={pending}>
+        {pending ? 'Creating...' : 'Create User'}
+      </button>
+    </form>
+  );
+}
+```
+
+## Validation
+- Client: HTML5 validation + real-time feedback
+- Server: Always re-validate with Zod
+- Sanitize: Strip HTML, trim whitespace
+- Rate limit: Form submissions per IP
+
+## File Uploads
+- Use presigned URLs for large files
+- Validate file type on both client and server
+- Set maximum file size limits
+- Scan uploads for malware in production

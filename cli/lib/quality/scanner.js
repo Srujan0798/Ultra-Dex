@@ -3,12 +3,12 @@ import path from 'path';
 
 // Define the Quality Rules
 const RULES = [
+  // --- EXISTING RULES ---
   {
     id: 'api-zod-validation',
     name: 'API Input Validation',
     description: 'API endpoints must validate input using Zod',
     severity: 'error',
-    // Regex based pattern matching for file path
     pattern: /app\/api\/.*\.ts|src\/routes\/.*\.ts|pages\/api\/.*\.ts/,
     check: (content) => {
       const isApi = /NextRequest|NextResponse|express\.Router|fastify/.test(content);
@@ -46,7 +46,6 @@ const RULES = [
     severity: 'critical',
     pattern: /.*/,
     check: (content) => {
-      // Obfuscate regex even further to avoid self-triggering on the string literals
       const p1 = 'sk' + '_live' + '_';
       const p2 = 'sk' + '_test' + '_';
       const p3 = 'gh' + 'p_';
@@ -55,6 +54,155 @@ const RULES = [
       return !pattern.test(content);
     },
     message: 'Potential secret key detected!'
+  },
+
+  // --- NEW RULES (BETA POLISH) ---
+
+  // 1. Gitignore Checks
+  {
+    id: 'gitignore-env',
+    name: 'Gitignore Environment',
+    description: 'Ensure .env files are ignored',
+    severity: 'critical',
+    pattern: /\.gitignore$/,
+    check: (content) => /\.env/.test(content),
+    message: '.gitignore must exclude .env files'
+  },
+  {
+    id: 'gitignore-modules',
+    name: 'Gitignore Node Modules',
+    description: 'Ensure node_modules are ignored',
+    severity: 'critical',
+    pattern: /\.gitignore$/,
+    check: (content) => /node_modules/.test(content),
+    message: '.gitignore must exclude node_modules'
+  },
+
+  // 2. Package.json Metadata
+  {
+    id: 'pkg-description',
+    name: 'Package Description',
+    description: 'Package.json should have a description',
+    severity: 'warning',
+    pattern: /package\.json$/,
+    check: (content) => /"description":\s*".+"/.test(content),
+    message: 'package.json missing description'
+  },
+  {
+    id: 'pkg-license',
+    name: 'Package License',
+    description: 'Package.json should specify a license',
+    severity: 'warning',
+    pattern: /package\.json$/,
+    check: (content) => /"license":\s*".+"/.test(content),
+    message: 'package.json missing license'
+  },
+
+  // 3. Code Hygiene
+  {
+    id: 'todo-comments',
+    name: 'Pending TODOs',
+    description: 'Track TODO comments',
+    severity: 'info',
+    pattern: /\.(js|ts|tsx|jsx|py|rs|go)$/,
+    check: (content) => !/\/\/\s*TODO:/.test(content),
+    message: 'Found TODO comment'
+  },
+  {
+    id: 'fixme-comments',
+    name: 'Pending FIXMEs',
+    description: 'Track FIXME comments',
+    severity: 'warning',
+    pattern: /\.(js|ts|tsx|jsx|py|rs|go)$/,
+    check: (content) => !/\/\/\s*FIXME:/.test(content),
+    message: 'Found FIXME comment'
+  },
+  {
+    id: 'empty-catch',
+    name: 'Empty Catch Block',
+    description: 'Avoid silent failure',
+    severity: 'warning',
+    pattern: /\.(js|ts|tsx|jsx)$/,
+    check: (content) => !/catch\s*\(\w*\)\s*\{\s*\}/.test(content),
+    message: 'Empty catch block found'
+  },
+
+  // 4. Security & Dangerous Patterns
+  {
+    id: 'no-eval',
+    name: 'No Eval',
+    description: 'Avoid using eval()',
+    severity: 'critical',
+    pattern: /\.(js|ts|tsx|jsx)$/,
+    check: (content) => !/\beval\(/.test(content),
+    message: 'Dangerous eval() usage detected'
+  },
+  {
+    id: 'hardcoded-ip',
+    name: 'Hardcoded IP Address',
+    description: 'Avoid hardcoded IPv4 addresses',
+    severity: 'warning',
+    pattern: /\.(js|ts|tsx|jsx|json|yaml)$/,
+    check: (content) => !/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/.test(content),
+    message: 'Potential hardcoded IP address found'
+  },
+
+  // 5. Frontend / React
+  {
+    id: 'react-class-name',
+    name: 'React className',
+    description: 'Use className instead of class in JSX',
+    severity: 'error',
+    pattern: /\.(tsx|jsx)$/,
+    check: (content) => !/class="[^"]+"/.test(content), // Simple check, might have false positives in string literals
+    message: 'Found "class" attribute in JSX. Use "className".'
+  },
+  {
+    id: 'react-danger-html',
+    name: 'Dangerous HTML',
+    description: 'Avoid dangerouslySetInnerHTML',
+    severity: 'warning',
+    pattern: /\.(tsx|jsx)$/,
+    check: (content) => !/dangerouslySetInnerHTML/.test(content),
+    message: 'Usage of dangerouslySetInnerHTML detected'
+  },
+  {
+    id: 'frontend-alert',
+    name: 'No Alert',
+    description: 'Avoid window.alert()',
+    severity: 'warning',
+    pattern: /\.(tsx|jsx|js|ts)$/,
+    check: (content) => !/\balert\(/.test(content),
+    message: 'Found alert(). Use a proper UI notification.'
+  },
+  {
+    id: 'img-alt-text',
+    name: 'Image Alt Text',
+    description: 'Images must have alt text',
+    severity: 'warning',
+    pattern: /\.(tsx|jsx)$/,
+    check: (content) => !/<img(?!.*alt=).*>/.test(content),
+    message: 'Image tag missing alt attribute'
+  },
+
+  // 6. Backend / Database
+  {
+    id: 'sql-injection',
+    name: 'SQL Injection Risk',
+    description: 'Avoid raw string concatenation in SQL',
+    severity: 'critical',
+    pattern: /\.(ts|js)$/,
+    check: (content) => !/query\(`.*?\$\{.*?\}.*?`\)/.test(content), // Very basic check for template literal in query
+    message: 'Potential SQL injection risk (template literal in query)'
+  },
+  {
+    id: 'process-exit',
+    name: 'Process Exit',
+    description: 'Avoid process.exit() in application code',
+    severity: 'warning',
+    pattern: /src\/.*\.(ts|js)$/, // Only check source code, not scripts
+    check: (content) => !/process\.exit\(/.test(content),
+    message: 'Found process.exit(). Throw error instead.'
   }
 ];
 
@@ -76,6 +224,26 @@ async function getFiles(dir, ignoreList = ['node_modules', '.git', '.next', 'dis
     // If directory can't be read, return empty array
     return [];
   }
+}
+
+export function scanContent(content) {
+  const issues = [];
+  for (const rule of RULES) {
+    try {
+      const passed = rule.check(content);
+      if (!passed) {
+        issues.push({
+          ruleId: rule.id,
+          ruleName: rule.name,
+          severity: rule.severity,
+          message: rule.message
+        });
+      }
+    } catch (err) {
+      // Ignore
+    }
+  }
+  return issues;
 }
 
 export async function runQualityScan(dir) {
