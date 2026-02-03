@@ -136,7 +136,7 @@ Response:
 {
   "user": { "id": "...", "email": "user@example.com", "role": "user" },
   "tokens": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "accessToken": "<jwt-access-token>",
     "refreshToken": "uuid-refresh-token",
     "expiresIn": "15m"
   }
