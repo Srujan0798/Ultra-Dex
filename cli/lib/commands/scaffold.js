@@ -34,7 +34,8 @@ async function copyDirectory(src, dest) {
   // Ensure source is within expected assets directory
   const expectedSrcPrefix = path.resolve(__dirname, '../../assets/live-templates');
 
-  if (!normalizedSrc.startsWith(expectedSrcPrefix)) {
+  const relative = path.relative(expectedSrcPrefix, normalizedSrc);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
     throw new Error('Source path is outside allowed directory');
   }
 
@@ -122,7 +123,12 @@ export async function scaffoldCommand(templateName, options) {
   try {
     const assetsDir = path.resolve(__dirname, '../../assets/live-templates', templateName);
 
-    await fs.access(assetsDir);
+    try {
+      await fs.access(assetsDir);
+    } catch {
+      throw new Error(`Template files not found at ${assetsDir}`);
+    }
+
     await copyDirectory(assetsDir, outputDir);
 
     spinner.succeed(`Scaffolded ${template.name}`);
