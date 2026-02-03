@@ -32,3 +32,10 @@
 ## Phase 4: Verification
 - [x] Add E2E tests for the `autonomous` command
 - [x] Verify Grade A Audit persistence after auto-fixes
+## Workflow: Authentication
+- [ ] Define auth strategy
+- [ ] Set up database schema
+- [ ] Implement API endpoints
+- [ ] Build frontend pages
+- [ ] Secure routes
+- [ ] Verify email/OAuth flows

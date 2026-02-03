@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [3.4.3-autonomous] - Self-Healing Update
+## [3.4.3-feature-pack] - Self-Healing & Beta Polish Update
 
 ### 🎯 Strategic Focus
-This release introduces **Wave 6: Self-Healing**, bringing autonomous error recovery and automated debugging capabilities to Ultra-Dex. This represents a major shift towards "human-on-the-loop" development where the system proactively maintains its own health.
+This release combines **Wave 6: Self-Healing** with comprehensive **Beta Command Polish**, moving 8 key commands from beta to production readiness in preparation for the Feb 14 launch.
 
-### Added
+### Added - Self-Healing (Wave 6)
 - **🔧 Autonomous Self-Healing Engine** (`cli/lib/commands/autonomous.js`)
   - Automated error detection and recovery loop
   - `AutonomousEngine` class with decision logging and reporting
@@ -32,6 +32,34 @@ This release introduces **Wave 6: Self-Healing**, bringing autonomous error reco
   - Real-time "Self-Healing Monitor" widget in the dashboard
   - Live status updates via SSE (Active, Fixed, Failed)
   - Success rate tracking and fix counters
+
+### Added - Beta Command Polish
+- **📊 Plan Visualization** (`ultra-dex plan`)
+  - `--gantt`: ASCII Gantt chart of implementation phases
+  - `--timeline`: Milestone timeline view
+  - Markdown parsing for existing plans
+- **📋 Workflow Management** (`ultra-dex workflow`)
+  - `--viz`: Visual flowcharts of agent handoffs
+  - `--start`: Append workflow steps to `IMPLEMENTATION-PLAN.md`
+  - 12 built-in templates (Auth, Payments, CI/CD, etc.)
+- **💡 Smart Suggestions** (`ultra-dex suggest`)
+  - AI-powered context awareness (reads project files)
+  - Intelligent agent chain recommendations
+- **🔍 Deep Audit** (`ultra-dex audit`)
+  - Integrated code quality & security scanning
+  - 20+ new rules (Secrets, Gitignore, React patterns, SQL injection)
+  - `--report`: JSON report generation
+- **⚖️ Executable Verification** (`ultra-dex verify`)
+  - Hybrid verification: Automated Checks + AI Review
+  - Programmatic gates for Type Safety, Linting, and Unit Tests
+- **🐳 Sandbox & Safety** (`ultra-dex exec`)
+  - Pre-flight code scanning for dangerous patterns (`eval`, `process.exit`)
+  - Improved output formatting
+- **📈 Real-Time Monitoring** (`ultra-dex metrics`)
+  - `--watch`: Live system metrics dashboard
+  - Alerting for high resource usage or errors
+- **🔄 Batch Operations** (`ultra-dex batch`)
+  - Execute sequential Ultra-Dex commands from a file
 
 ### Changed
 - **Dashboard UI** - Added dedicated self-healing status card and metrics

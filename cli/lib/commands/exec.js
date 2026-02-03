@@ -10,6 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { spawn, exec as execCallback } from 'child_process';
 import { promisify } from 'util';
+import { scanContent } from '../quality/scanner.js';
 
 const execAsync = promisify(execCallback);
 
@@ -128,7 +129,21 @@ export async function executeInSandbox(code, options = {}) {
     allowNetwork = false,
     env = {},
     workdir = process.cwd(),
+    safeMode = false
   } = options;
+
+  // Pre-flight Safety Check
+  const issues = scanContent(code);
+  const criticalIssues = issues.filter(i => i.severity === 'critical');
+  
+  if (issues.length > 0) {
+      console.log(chalk.yellow('\n⚠️  Safety Check Warnings:'));
+      issues.forEach(i => console.log(`  ${chalk.red(i.ruleName)}: ${i.message}`));
+      
+      if (safeMode && criticalIssues.length > 0) {
+          throw new Error(`Execution blocked by Safe Mode due to critical issues.`);
+      }
+  }
 
   const image = SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
   const tempDir = path.join(workdir, SANDBOX_CONFIG.workspace.tempDir);
@@ -328,6 +343,7 @@ export function registerExecCommand(program) {
     .option('--allow-network', 'Allow network access in sandbox')
     .option('--command <cmd>', 'Run shell command instead of file')
     .option('--test', 'Run npm test in sandbox')
+    .option('--safe', 'Block execution if safety checks fail')
     .action(async (file, options) => {
       console.log(chalk.cyan('\n🐳 Ultra-Dex Code Sandbox\n'));
 
@@ -370,6 +386,7 @@ export function registerExecCommand(program) {
             language,
             timeout,
             allowNetwork: options.allowNetwork,
+            safeMode: options.safe
           });
         } else if (file) {
           // Execute file
@@ -383,6 +400,7 @@ export function registerExecCommand(program) {
           result = await executeFile(file, {
             timeout,
             allowNetwork: options.allowNetwork,
+            safeMode: options.safe
           });
         } else {
           spinner.fail('No code, file, or command specified');
@@ -404,15 +422,22 @@ export function registerExecCommand(program) {
         }
 
         // Print output
+        console.log(chalk.gray('┌' + '─'.repeat(50) + '┐'));
+        
         if (result.stdout) {
-          console.log(chalk.bold('\n📤 Output:'));
-          console.log(result.stdout);
+          // console.log(chalk.bold('\n📤 Output:'));
+          const lines = result.stdout.trim().split('\n');
+          lines.forEach(line => console.log(`│ ${line.padEnd(48)} │`));
         }
 
         if (result.stderr) {
-          console.log(chalk.bold('\n⚠️  Stderr:'));
-          console.log(chalk.red(result.stderr));
+          console.log('│' + '─'.repeat(50) + '│');
+          console.log(`│ ${chalk.red('STDERR:'.padEnd(48))} │`);
+          const lines = result.stderr.trim().split('\n');
+          lines.forEach(line => console.log(`│ ${chalk.red(line.padEnd(48))} │`));
         }
+        
+        console.log(chalk.gray('└' + '─'.repeat(50) + '┘'));
 
         // Summary
         console.log(chalk.gray(`\n⏱️  Duration: ${result.duration}ms`));
