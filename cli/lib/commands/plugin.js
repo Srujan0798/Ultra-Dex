@@ -4,7 +4,7 @@
  */
 
 import chalk from 'chalk';
-import { pluginManager } from '../lib/plugin-system.js';
+import { pluginManager } from '../plugin-system.js';
 import fs from 'fs/promises';
 import path from 'path';
 

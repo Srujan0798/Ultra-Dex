@@ -296,12 +296,12 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
   }
 
   // Get Provider
-  const provider = getProvider();
-  if (!provider) {
+  const activeProvider = provider || getProvider();
+  if (!activeProvider) {
     console.log(chalk.yellow('\n⚠️  No AI provider configured. Using "dumb" local embeddings (bag-of-words).'));
     console.log(chalk.gray('   For smart search, set OPENAI_API_KEY or use Ollama.\n'));
   } else {
-    if (verbose) console.log(chalk.green(`Using ${provider.getName()} for embeddings.`));
+    if (verbose) console.log(chalk.green(`Using ${activeProvider.getName()} for embeddings.`));
   }
 
   // Index each file
@@ -322,7 +322,7 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
 
       // Generate embeddings for each chunk
       for (const chunk of chunks) {
-        const embedding = await generateEmbedding(chunk.content, provider);
+        const embedding = await generateEmbedding(chunk.content, activeProvider);
 
         vectorStore.addDocument({
           id: `${file}:${chunk.chunk}`,
