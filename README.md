@@ -86,6 +86,54 @@ npx ultra-dex workspace switch "my-pro-project"
 
 ---
 
+## 🏗️ Architecture & Components
+
+### **AI Agent Ecosystem**
+Ultra-Dex orchestrates 18 specialized AI agents organized in 6 tiers:
+
+**Leadership Tier**: @CTO, @Planner, @Research
+**Development Tier**: @Backend, @Frontend, @Database
+**Security Tier**: @Auth, @Security
+**DevOps Tier**: @DevOps
+**Quality Tier**: @Testing, @Documentation, @Reviewer, @Debugger
+**Specialist Tier**: @Performance, @Refactoring
+**Orchestration Tier**: @Orchestrator
+
+### **Multi-Agent Swarms**
+Coordinate multiple specialized agents for complex tasks:
+```bash
+# Run an autonomous agent swarm
+ultra-dex swarm "Build user authentication system"
+
+# This triggers: @Planner → @CTO → @Database → @Backend → @Frontend → @Security → @Reviewer → @DevOps
+```
+
+### **Verification Framework**
+Every task follows a 21-step verification framework ensuring production-ready quality:
+1. Atomic Scope Defined
+2. Context Loaded
+3. Architecture Alignment
+4. Security Patterns Applied
+5. Type Safety Check
+6. Error Handling Strategy
+7. API Documentation Updated
+8. Database Schema Verified
+9. Environment Variables Set
+10. Implementation Complete
+11. Console Logs Removed
+12. Edge Cases Handled
+13. Performance Check
+14. Accessibility (A11y) Check
+15. Cross-browser Check
+16. Unit Tests Passed
+17. Integration Tests Passed
+18. Linting & Formatting
+19. Code Review Approved
+20. Migration Scripts Ready
+21. Deployment Readiness
+
+---
+
 ## 🤔 Is Ultra-Dex Right for You?
 
 **✅ YES if:**
@@ -93,15 +141,17 @@ npx ultra-dex workspace switch "my-pro-project"
 - You use multiple AI tools (Claude, GPT, Cursor) and need shared context.
 - You want to automate the "Verify" loop (Testing, Linting, Security).
 - You need a structured skeleton that agents can't "drift" from.
+- You're working on complex projects with 5+ database tables or microservices.
 
 **❌ NO if:**
 - You prefer ad-hoc, unstructured prompting.
 - You are building a static landing page or simple script.
 - You don't care about architectural integrity or long-term maintenance.
+- You're working on a simple CRUD app with <3 features.
 
 ---
 
-##  Bone Philosophy: Your Skeleton, Not Your Cage
+## 🧠 Meta-Layer Philosophy: Your Skeleton, Not Your Cage
 
 Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amnesia" by giving every LLM a shared, transparent structure to follow via the 34-section template.
 
@@ -115,6 +165,22 @@ Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amn
 └─────────────────────────────────────────────────────────┘
 ```
 
+**AI-Agnostic**: Works with Claude, GPT, Gemini, Cursor, Copilot
+**Comprehensive by Design**: 34 sections prevent "forgot to plan X" syndrome
+**100% Flexible**: Add, remove, modify any section to fit your needs
+**Production-Grade**: Not for MVPs - for real, scalable applications
+
+---
+
+## 📈 Performance & Reliability
+
+- **46+ CLI commands** with comprehensive functionality
+- **281+ passing tests** ensuring stability
+- **0 ESLint warnings** for code quality
+- **Circuit breaker patterns** to prevent cascading failures
+- **Caching systems** for improved performance
+- **Proper error recovery mechanisms**
+
 ---
 
 ## 🆘 Support & Resources
@@ -123,6 +189,7 @@ Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amn
 - **Documentation:** [APIDOC.md](./APIDOC.md) | [USER-GUIDE.md](./docs/USER-GUIDE.md)
 - **Roadmap:** [ROADMAP.md](./docs/ROADMAP.md)
 - **Issues:** [Report Bug](https://github.com/Srujan0798/Ultra-Dex/issues)
+- **VS Code Extension:** [Marketplace](https://marketplace.visualstudio.com/items?itemName=SrujanSaiKarna.ultra-dex-vscode)
 
 ---
 
