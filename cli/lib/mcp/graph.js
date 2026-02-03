@@ -158,14 +158,26 @@ export class CodeGraph {
 
       const content = await fs.readFile(absolutePath, 'utf8');
 
+      // Extract Symbols (Basic)
+      const symbols = [];
+      // Match function declarations, class definitions, and variable exports
+      const symbolRegex = /(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z0-9_]+)/g;
+      let symMatch;
+      while ((symMatch = symbolRegex.exec(content)) !== null) {
+        // Filter out common keywords if regex catches them (unlikely with this pattern but good safety)
+        if (!['default', 'if', 'for', 'while', 'switch'].includes(symMatch[1])) {
+            symbols.push(symMatch[1]);
+        }
+      }
+
       // Basic Node Info
       this.nodes.set(filePath, {
         id: filePath,
         size: content.length,
         type: path.extname(filePath).substring(1),
         mtime: mtime,
-        // Simple heuristic for "component" vs "utility"
         isComponent: /^[A-Z]/.test(path.basename(filePath)) || content.includes('React') || content.includes('Component'),
+        symbols: symbols
       });
 
       const newEdges = [];
@@ -222,6 +234,21 @@ export class CodeGraph {
 
   findReferences(fileName) {
     return this.edges.filter(e => e.to.includes(fileName));
+  }
+
+  findSymbol(name) {
+    const results = [];
+    const lowerName = name.toLowerCase();
+    for (const [file, node] of this.nodes) {
+      if (node.symbols) {
+        // Exact match or partial match
+        const match = node.symbols.find(s => s.toLowerCase() === lowerName || s.toLowerCase().includes(lowerName));
+        if (match) {
+          results.push({ file, symbol: match, type: 'definition' });
+        }
+      }
+    }
+    return results;
   }
 
   // New method to selectively update changed files

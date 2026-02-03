@@ -10,6 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
 import { getProvider } from '../providers/index.js';
+import { projectGraph } from '../mcp/graph.js';
 
 // ============================================================================
 // VECTOR STORE CONFIGURATION
@@ -394,11 +395,35 @@ export function registerSearchCommand(program) {
     .description('Semantic search across your codebase using embeddings')
     .option('--index', 'Rebuild the search index')
     .option('--force', 'Force full re-index')
+    .option('--symbol', 'Search for symbol definitions (functions, classes)')
     .option('-k, --top <n>', 'Number of results', '10')
     .option('-v, --verbose', 'Show detailed output')
     .option('--stats', 'Show index statistics')
     .action(async (query, options) => {
-      console.log(chalk.cyan('\n🔍 Ultra-Dex Semantic Search\n'));
+      console.log(chalk.cyan('\n🔍 Ultra-Dex Search\n'));
+
+      if (options.symbol) {
+          const spinner = ora('Scanning code graph...').start();
+          try {
+              await projectGraph.scan();
+              const results = projectGraph.findSymbol(query);
+              spinner.succeed(`Graph scan complete. Found ${results.length} symbol matches.`);
+              
+              if (results.length === 0) {
+                  console.log(chalk.yellow(`No symbols found matching "${query}"`));
+                  return;
+              }
+              
+              console.log(chalk.bold('\nDefinitions found:'));
+              results.forEach(r => {
+                  console.log(`  ${chalk.green(r.symbol)} in ${chalk.gray(r.file)}`);
+              });
+              return;
+          } catch (e) {
+              spinner.fail(`Symbol search failed: ${e.message}`);
+              return;
+          }
+      }
 
       const workdir = process.cwd();
       const indexPath = path.join(workdir, EMBEDDINGS_CONFIG.indexPath);

@@ -66,6 +66,9 @@ This release combines **Wave 6: Self-Healing** with comprehensive **Beta Command
 - **🔄 Batch Operations** (`ultra-dex batch`)
   - Execute sequential Ultra-Dex commands from a file
   - Automation for repetitive workflows
+- **🔍 Symbol Search** (`ultra-dex search --symbol`)
+  - Graph-based definition lookup
+  - Find functions, classes, and variables instantly
 
 ### Changed
 - **Dashboard UI** - Added dedicated self-healing status card and metrics
