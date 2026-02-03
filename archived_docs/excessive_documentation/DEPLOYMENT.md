@@ -150,7 +150,7 @@ services:
     image: nginx:alpine
     ports:
       - "80:80"
-      - "443:443"
+      - "443.4.5"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl

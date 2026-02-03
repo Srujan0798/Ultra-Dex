@@ -167,7 +167,7 @@ The VS Code extension was **already fully implemented** and just needed compilat
 
 ## 📦 PACKAGE STATUS
 
-**Extension File:** `ultra-dex-vscode-3.4.3.vsix` (already packaged!)
+**Extension File:** `ultra-dex-vscode-3.4.5.vsix` (already packaged!)
 
 **Installation Ready:** YES ✅
 
@@ -176,7 +176,7 @@ The VS Code extension was **already fully implemented** and just needed compilat
 cd vscode-extension
 npm install
 # Press F5 in VS Code to test
-# Or: code --install-extension ultra-dex-vscode-3.4.3.vsix
+# Or: code --install-extension ultra-dex-vscode-3.4.5.vsix
 ```
 
 ---

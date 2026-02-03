@@ -10,7 +10,7 @@ Welcome to the most comprehensive AI orchestration framework for SaaS developmen
 3. [Installation](#installation)
 4. [Quick Start](#quick-start)
 5. [Core Concepts](#core-concepts)
-6. [New Features in v3.4.3](#new-features-in-v343)
+6. [New Features in v3.4.5](#new-features-in-v343)
 7. [Best Practices](#best-practices)
 8. [Troubleshooting](#troubleshooting)
 9. [Next Steps](#next-steps)
@@ -62,7 +62,7 @@ npx ultra-dex --help
 ### Verify Installation
 ```bash
 ultra-dex --version
-# Should output: Ultra-Dex v3.4.3
+# Should output: Ultra-Dex v3.4.5
 ```
 
 ## Quick Start
@@ -158,7 +158,7 @@ Ultra-Dex includes 17 specialized AI agents organized into 6 tiers:
 **Quality Tier**: @Testing, @Reviewer, @Debugger, @Documentation
 **Specialist Tier**: @Performance, @Refactoring
 
-## New Features in v3.4.3
+## New Features in v3.4.5
 
 ### 1. Plugin Architecture 🧩
 Extend Ultra-Dex functionality with custom plugins:

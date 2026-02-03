@@ -32,7 +32,7 @@ Transform your IDE into an Ultra-Dex command center.
 - **Status Tracking:** Live agent status with visual indicators
 - **Quick Access:** All commands from sidebar, no terminal needed
 
-**Install:** Download `ultra-dex-vscode-3.4.3.vsix` from releases
+**Install:** Download `ultra-dex-vscode-3.4.5.vsix` from releases
 
 ### 2. Real-Time WebSocket Push
 Say goodbye to polling. Get instant updates.
@@ -220,7 +220,7 @@ npx ultra-dex memory sessions
 ```
 
 ### VS Code Users
-1. Download `ultra-dex-vscode-3.4.3.vsix`
+1. Download `ultra-dex-vscode-3.4.5.vsix`
 2. Open VS Code → Extensions → Install from VSIX
 3. Click Ultra-Dex icon in sidebar
 

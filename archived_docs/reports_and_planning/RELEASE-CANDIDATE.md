@@ -1,7 +1,7 @@
-# Ultra-Dex v3.4.3 "Professional Purple Edition" - Release Candidate
+# Ultra-Dex v3.4.5 "Professional Purple Edition" - Release Candidate
 
 > **Target Date:** February 14, 2026
-> **Version:** 3.4.3
+> **Version:** 3.4.5
 > **Status:** GOD MODE ACTIVE
 
 ---
@@ -9,8 +9,8 @@
 ## 🔒 Official Build Artifacts
 | File | SHA256 Checksum |
 |------|-----------------|
-| `ultra-dex-3.4.3.tgz` | `5d80e83319ffe7e7cbebaa527036309baf28f211de449d05c2585a31cdcb57a0` |
-| `ultra-dex-vscode-3.4.3.vsix` | `bc7d80572ab0ddb20bdecb39baf81a30e3cd0888e594fd031d28e24991bb47ca` |
+| `ultra-dex-3.4.5.tgz` | `5d80e83319ffe7e7cbebaa527036309baf28f211de449d05c2585a31cdcb57a0` |
+| `ultra-dex-vscode-3.4.5.vsix` | `bc7d80572ab0ddb20bdecb39baf81a30e3cd0888e594fd031d28e24991bb47ca` |
 
 ---
 
@@ -37,13 +37,13 @@ vsce publish
 ```
 
 ### 4. GitHub Release
-- **Tag:** `v3.4.3`
-- **Title:** Ultra-Dex v3.4.3 - Professional Purple Edition
+- **Tag:** `v3.4.5`
+- **Title:** Ultra-Dex v3.4.5 - Professional Purple Edition
 - **Description:** Copy from `marketing/GITHUB-RELEASE-DRAFT.md`
-- **Assets:** Attach `ultra-dex-3.4.3.tgz` and `ultra-dex-vscode-3.4.3.vsix`
+- **Assets:** Attach `ultra-dex-3.4.5.tgz` and `ultra-dex-vscode-3.4.5.vsix`
 
 ### 5. Marketing Blast
-- **Twitter:** Post thread from `marketing/LAUNCH-POSTS-v3.4.3.md`
+- **Twitter:** Post thread from `marketing/LAUNCH-POSTS-v3.4.5.md`
 - **Hacker News:** Submit "Show HN" link
 - **Product Hunt:** Schedule launch
 

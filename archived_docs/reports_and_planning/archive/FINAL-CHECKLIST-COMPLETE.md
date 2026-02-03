@@ -12,7 +12,7 @@
 - [x] **Status:** ✅ READY
 
 ### 2. VS Code Extension
-- [x] **File:** `vscode-extension/ultra-dex-vscode-3.4.3.vsix`
+- [x] **File:** `vscode-extension/ultra-dex-vscode-3.4.5.vsix`
 - [x] **Size:** 627.43 KB (65 files)
 - [x] **Compiled:** TypeScript → JavaScript (no errors)
 - [x] **Status:** ✅ READY
@@ -122,7 +122,7 @@
 | File | Purpose | Status |
 |------|---------|--------|
 | `cli/ultra-dex-3.5.0.tgz` | NPM package | ✅ |
-| `vscode-extension/ultra-dex-vscode-3.4.3.vsix` | VS Code ext | ✅ |
+| `vscode-extension/ultra-dex-vscode-3.4.5.vsix` | VS Code ext | ✅ |
 | `cli/README.md` | Documentation | ✅ |
 | `RELEASE-v3.5.0.md` | Changelog | ✅ |
 | `GITHUB-RELEASE-DRAFT.md` | Release notes | ✅ |

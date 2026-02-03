@@ -153,7 +153,7 @@ The new plugin architecture allows for:
 ## Next Steps for the Project
 
 ### Immediate Actions
-1. Publish the updated version (3.4.3) to npm
+1. Publish the updated version (3.4.5) to npm
 2. Update GitHub releases with new version
 3. Announce new features to the community
 

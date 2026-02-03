@@ -1,7 +1,7 @@
 # Ultra-Dex v3.5.0 - Implementation Complete! 🎉
 
 > **Date:** February 1, 2026  
-> **Version:** v3.4.3 → v3.5.0 (Ready for Feb 14 Release)  
+> **Version:** v3.4.5 → v3.5.0 (Ready for Feb 14 Release)  
 > **Status:** All Major Features Implemented ✅
 
 ---
@@ -238,7 +238,7 @@ ultra-dex memory stats             # Show statistics
 # Install extension
 cd vscode-extension
 vsce package
-# Install ultra-dex-vscode-3.4.3.vsix in VS Code
+# Install ultra-dex-vscode-3.4.5.vsix in VS Code
 
 # Use sidebar:
 # 1. Click Ultra-Dex icon in Activity Bar

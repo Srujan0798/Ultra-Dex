@@ -367,4 +367,4 @@ Star us on GitHub: github.com/Srujan0798/Ultra-Dex"
 
 *Script Version: 1.0*  
 *Last Updated: February 2026*  
-*For Ultra-Dex v3.4.3*
+*For Ultra-Dex v3.4.5*

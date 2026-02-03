@@ -728,4 +728,4 @@ Monitoring: [Sentry dashboard link]
 
 ---
 
-*Template from Ultra-Dex v3.4.3 - Step-by-step AI orchestration*
+*Template from Ultra-Dex v3.4.5 - Step-by-step AI orchestration*
