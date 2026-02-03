@@ -463,9 +463,44 @@ export function registerUpgradeCommand(program) {
         spinner.fail('Upgrade check failed');
         console.log(chalk.yellow('\n⚠️  Could not check for updates.'));
         console.log(chalk.gray('   You may not be connected to npm, or ultra-dex is not published yet.'));
-        console.log(chalk.gray(`   Current version: v3.4.3\n`));
+        const { getVersionString } = await import('../utils/version.js');
+        console.log(chalk.gray(`   Current version: ${getVersionString()}\n`));
       }
     });
 }
 
-export default { registerDiffCommand, registerExportCommand, registerUpgradeCommand };
+export function registerBatchCommand(program) {
+  program
+    .command('batch <file>')
+    .description('Execute a batch of Ultra-Dex commands from a file')
+    .action(async (file) => {
+      console.log(chalk.cyan(`\n🔄 Executing Batch: ${file}\n`));
+      
+      try {
+        const content = await fs.readFile(path.resolve(file), 'utf8');
+        const commands = content.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+        
+        console.log(chalk.bold(`Found ${commands.length} commands to execute.\n`));
+        
+        for (const [i, cmd] of commands.entries()) {
+          console.log(chalk.bold.blue(`[${i+1}/${commands.length}] Running: ultra-dex ${cmd}`));
+          try {
+            // Use npx ultra-dex to run the command
+            execSync(`npx ultra-dex ${cmd}`, { stdio: 'inherit' });
+            console.log(chalk.green('✓ Completed\n'));
+          } catch (e) {
+            console.log(chalk.red(`✕ Failed: ${cmd}`));
+            console.log(chalk.yellow('Stopping batch execution.\n'));
+            process.exit(1);
+          }
+        }
+        
+        console.log(chalk.green.bold('✅ Batch execution completed successfully!\n'));
+        
+      } catch (e) {
+        console.error(chalk.red(`Failed to read batch file: ${e.message}`));
+      }
+    });
+}
+
+export default { registerDiffCommand, registerExportCommand, registerUpgradeCommand, registerBatchCommand, registerCheckCommand };

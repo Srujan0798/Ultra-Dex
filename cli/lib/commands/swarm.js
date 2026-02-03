@@ -1,18 +1,18 @@
 // cli/lib/commands/swarm.js
-import chalk from 'chalk';
-import ora from 'ora';
 import { getProvider } from '../providers/index.js';
 import { readFile, writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { glob } from 'glob';
 import { projectGraph } from '../mcp/graph.js';
 import { updateStateFile, loadState, saveState } from './state.js';
 import { agents } from '../utils/agents.js';
 import { isDoomsdayMode } from '../utils/theme-state.js';
 import { showSwarmAssemble as showDoomsdaySwarm } from '../themes/doomsday.js';
+import { renderer } from '../ui/renderer.js'; // Import the Pro Renderer
+import { theme } from '../ui/theme.js';
 
-const AGENT_PIPELINE = [
+export const AGENT_PIPELINE = [
   { name: 'planner', description: 'Break down task into steps', tier: '1-planning' },
   { name: 'cto', description: 'Define architecture', tier: '1-planning' },
   { name: 'auth', description: 'Security & authentication review', tier: '3-security' },
@@ -26,12 +26,11 @@ const AGENT_PIPELINE = [
 async function withStateLock(callback) {
   const lockFile = join(process.cwd(), '.ultra-dex', 'state.lock');
   let retries = 0;
-  // Simple spin lock with 5s timeout
   while (existsSync(lockFile) && retries < 50) {
     await new Promise(r => setTimeout(r, 100));
     retries++;
   }
-  
+
   try {
     await writeFile(lockFile, String(Date.now()));
     return await callback();
@@ -47,24 +46,21 @@ export function showSwarmAssemble(activeAgents) {
     return showDoomsdaySwarm(activeAgents);
   }
 
-  console.log('');
-  console.log(chalk.hex('#8b5cf6').bold('  ⚡ AGENT PIPELINE INITIALIZED'));
-  console.log('');
-  
+  renderer.text(`**⚡ AGENT PIPELINE INITIALIZED**`, true);
+
   activeAgents.forEach((agentInfo) => {
     const agent = agents[agentInfo.name];
     if (agent) {
-      console.log(`  ${agent.emoji} ${chalk.hex('#6366f1').bold(agent.name)}`);
-      console.log(`     ${chalk.dim('"' + agent.tagline + '"')}`);
+      console.log(`  ${agent.emoji} ${theme.accent(agent.name.toUpperCase())}`);
+      console.log(`     ${theme.dim('"' + agent.tagline + '"')}`);
       console.log('');
     }
   });
 }
 
 async function runAgent(agent, task, context, previousOutput, provider) {
-  // Check if provider is null/undefined
   if (!provider) {
-    throw new Error('No AI provider configured. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY environment variable.');
+    throw new Error('No AI provider configured.');
   }
 
   const agentPrompt = await loadAgentPrompt(agent.name);
@@ -83,7 +79,6 @@ ${task}
 Provide your output for the next agent in the pipeline.
 `;
 
-  // Standardize provider call
   let response;
   try {
     if (provider.complete) {
@@ -115,74 +110,78 @@ async function ensureLogDirectory() {
 async function writeSwarmLog(logDir, task, results, stats) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const logPath = join(logDir, `swarm-${timestamp}.json`);
-  const logData = {
-    task,
-    timestamp: new Date().toISOString(),
-    stats,
-    results
-  };
+  const logData = { task, timestamp: new Date().toISOString(), stats, results };
   await writeFile(logPath, JSON.stringify(logData, null, 2));
   return logPath;
 }
 
 export async function swarmCommand(task, options) {
-  console.log(chalk.cyan.bold('\n🐝 Ultra-Dex Swarm Mode\n'));
-  console.log(chalk.white(`Task: "${task}"\n`));
+  renderer.clearScreen();
+  await renderer.text(`**🐝 Ultra-Dex Swarm Mode**\nTask: "${task}"`);
 
   const startTime = Date.now();
 
   if (options.dryRun) {
-    console.log(chalk.yellow('Dry run - showing pipeline:\n'));
-    AGENT_PIPELINE.forEach((agent, i) => {
-      console.log(`  ${i + 1}. @${agent.name} - ${agent.description} [${agent.tier}]`);
-    });
-    if (options.parallel) {
-      console.log(chalk.blue('\nℹ️  Parallel execution enabled for implementation tier'));
-    }
+    const pipelineInfo = options.parallel
+      ? [
+          '📦 Tier: 1-Planning (sequential)',
+          '  1. @planner - Break down task into steps',
+          '  2. @cto - Define architecture',
+          '',
+          '📦 Tier: 2-Implementation (PARALLEL)',
+          '  3. @database - Design schema',
+          '  4. @backend - Implement API',
+          '  5. @frontend - Build UI',
+          '',
+          '📦 Tier: 3-Security (sequential)',
+          '  6. @auth - Security & authentication review',
+          '',
+          '📦 Tier: 4-Quality (sequential)',
+          '  7. @testing - Write tests',
+          '  8. @reviewer - Code review'
+        ].join('\n')
+      : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
+
+    renderer.box(
+      pipelineInfo,
+      options.parallel ? 'Dry Run Pipeline (Parallel Mode)' : 'Dry Run Pipeline',
+      'info'
+    );
     return;
   }
 
   // Load context & Graph
   const contextPath = join(process.cwd(), 'CONTEXT.md');
   const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
-  
-  let context = '';
-  if (existsSync(contextPath)) {
-    context += await readFile(contextPath, 'utf-8');
-  }
-  if (existsSync(planPath)) {
-    context += '\n\n' + await readFile(planPath, 'utf-8');
-  }
 
-  // Inject Code Graph into Context
-  const spinnerGraph = ora('🧠 Scanning Codebase Graph...').start();
+  let context = '';
+  if (existsSync(contextPath)) context += await readFile(contextPath, 'utf-8');
+  if (existsSync(planPath)) context += '\n\n' + await readFile(planPath, 'utf-8');
+
+  // Inject Code Graph
+  renderer.startSpinner('Scanning Codebase Graph...');
   try {
     const graphSummary = await projectGraph.scan();
-    context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n- Files Analyzed: ${graphSummary.files.join(', ')}\n`;
-    spinnerGraph.succeed('Codebase Graph integrated into context.');
+    context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n`;
+    renderer.succeed(`Codebase mapped: ${graphSummary.nodeCount} nodes`);
   } catch (e) {
-    spinnerGraph.warn('Codebase Graph scan failed, proceeding with limited context.');
+    renderer.fail('Graph scan failed, using limited context.');
   }
 
   // Get AI provider
   const provider = getProvider();
   if (!provider) {
-    console.log(chalk.red('\n❌ No AI provider configured.\n'));
-    console.log(chalk.white('The swarm needs an AI provider to coordinate agents.'));
-    console.log(chalk.white('Configure one of these:\n'));
-    console.log(chalk.gray('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude (recommended)'));
-    console.log(chalk.gray('  export OPENAI_API_KEY=sk-...         # OpenAI'));
-    console.log(chalk.gray('  export GOOGLE_AI_KEY=...             # Gemini'));
-    console.log(chalk.white('\nOr run Ollama locally (no API key needed):'));
-    console.log(chalk.gray('  ollama serve  # Start Ollama'));
-    console.log(chalk.gray('  export ULTRA_DEX_DEFAULT_PROVIDER=ollama\n'));
+    renderer.fail('No AI provider configured.');
+    renderer.box(
+      `export ANTHROPIC_API_KEY=sk-ant-...\nexport OPENAI_API_KEY=sk-...\nollama serve`,
+      'Configuration Required',
+      'error'
+    );
     return;
   }
 
-  // Ensure log directory exists
   const logDir = await ensureLogDirectory();
 
-  // Update State to indicate Swarm is running with locking to prevent race conditions
   await withStateLock(async () => {
     const state = await loadState() || { project: { mode: 'ULTRA_MODE' }, agents: { active: [] } };
     state.agents = state.agents || { active: [] };
@@ -190,13 +189,11 @@ export async function swarmCommand(task, options) {
     await saveState(state);
   });
 
-  // Run pipeline
   let previousOutput = '';
   const agentResults = [];
   const agentTimings = {};
-  
-  // Define execution tiers
-  const executionTiers = options.parallel 
+
+  const executionTiers = options.parallel
     ? [
         { name: '1-Planning', agents: AGENT_PIPELINE.filter(a => a.tier === '1-planning'), parallel: false },
         { name: '2-Implementation', agents: AGENT_PIPELINE.filter(a => a.tier === '2-implementation'), parallel: true },
@@ -207,56 +204,24 @@ export async function swarmCommand(task, options) {
 
   for (const tier of executionTiers) {
     if (tier.agents.length === 0) continue;
-    
-    if (options.parallel) {
-      console.log(chalk.blue.bold(`\n📦 Tier: ${tier.name}`));
-    }
+
+    console.log(theme.dim(`\n📦 Tier: ${tier.name}`));
 
     if (tier.parallel) {
       // Parallel Execution
-      const tierStart = Date.now();
       const promises = tier.agents.map(async (agent) => {
         const agentStart = Date.now();
-        const spinner = ora(`Running @${agent.name}...`).start();
-        
-        // Update state with active agent
-        await withStateLock(async () => {
-          const currentState = await loadState();
-          if (currentState) {
-            currentState.agents.active.push(agent.name);
-            await saveState(currentState);
-          }
-        });
+        // Use a generic spinner since parallel spinners are messy in terminal
+        console.log(theme.accent(`  ⟳ Running @${agent.name}...`));
 
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
           const duration = Date.now() - agentStart;
           agentTimings[agent.name] = duration;
-          spinner.succeed(chalk.green(` @${agent.name} complete`) + chalk.gray(` (${duration}ms)`));
-          
-          // Remove active agent from state
-          await withStateLock(async () => {
-            const stateDone = await loadState();
-            if (stateDone) {
-              stateDone.agents.active = stateDone.agents.active.filter(a => a !== agent.name);
-              await saveState(stateDone);
-            }
-          });
-
+          console.log(theme.success(`  ✓ @${agent.name} complete (${duration}ms)`));
           return { agent: agent.name, result, success: true };
         } catch (error) {
-          const duration = Date.now() - agentStart;
-          agentTimings[agent.name] = duration;
-          spinner.fail(chalk.red(` @${agent.name} failed: ${error.message}`) + chalk.gray(` (${duration}ms)`));
-          
-          await withStateLock(async () => {
-            const stateFail = await loadState();
-            if (stateFail) {
-              stateFail.agents.active = stateFail.agents.active.filter(a => a !== agent.name);
-              await saveState(stateFail);
-            }
-          });
-
+          console.log(theme.error(`  ✖ @${agent.name} failed: ${error.message}`));
           return { agent: agent.name, error: error.message, success: false };
         }
       });
@@ -264,54 +229,29 @@ export async function swarmCommand(task, options) {
       const results = await Promise.all(promises);
       agentResults.push(...results);
       previousOutput += '\n\n' + results.filter(r => r.success).map(r => r.result).join('\n\n');
-      console.log(chalk.gray(`  Tier completed in ${Date.now() - tierStart}ms`));
-      
+
     } else {
       // Serial Execution
       for (const agent of tier.agents) {
         const agentStart = Date.now();
-        const spinner = ora(`Running @${agent.name}...`).start();
-
-        // Update state
-        await withStateLock(async () => {
-          const currentState = await loadState();
-          if (currentState) {
-            currentState.agents.active.push(agent.name);
-            await saveState(currentState);
-          }
-        });
+        renderer.startSpinner(`Agent @${agent.name} is working...`);
 
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
           const duration = Date.now() - agentStart;
           agentTimings[agent.name] = duration;
           previousOutput = result;
-          spinner.succeed(chalk.green(` @${agent.name} complete`) + chalk.gray(` (${duration}ms)`));
-          console.log(chalk.gray(`  → ${result.slice(0, 100).replace(/\n/g, ' ')}...`));
+          renderer.succeed(`@${agent.name} complete (${duration}ms)`);
+
+          // Stream a preview of the output
+          const preview = result.slice(0, 150).replace(/\n/g, ' ') + '...';
+          console.log(theme.dim(`    › ${preview}`));
+
           agentResults.push({ agent: agent.name, result, success: true });
 
-          // Remove active agent
-          await withStateLock(async () => {
-            const stateDone = await loadState();
-            if (stateDone) {
-              stateDone.agents.active = stateDone.agents.active.filter(a => a !== agent.name);
-              await saveState(stateDone);
-            }
-          });
-
         } catch (error) {
-          const duration = Date.now() - agentStart;
-          agentTimings[agent.name] = duration;
-          spinner.fail(chalk.red(` @${agent.name} failed: ${error.message}`) + chalk.gray(` (${duration}ms)`));
+          renderer.fail(`@${agent.name} failed: ${error.message}`);
           agentResults.push({ agent: agent.name, error: error.message, success: false });
-          
-          await withStateLock(async () => {
-            const stateFail = await loadState();
-            if (stateFail) {
-              stateFail.agents.active = stateFail.agents.active.filter(a => a !== agent.name);
-              await saveState(stateFail);
-            }
-          });
           break;
         }
       }
@@ -322,44 +262,55 @@ export async function swarmCommand(task, options) {
   const successCount = agentResults.filter(r => r.success).length;
   const failCount = agentResults.filter(r => !r.success).length;
 
-  // Final state update
   await updateStateFile();
 
-  // Write log
-  const stats = {
-    totalDuration,
-    agentTimings,
-    successCount,
-    failCount,
-    parallel: options.parallel || false
-  };
+  const stats = { totalDuration, agentTimings, successCount, failCount, parallel: options.parallel || false };
   const logPath = await writeSwarmLog(logDir, task, agentResults, stats);
 
-  // Summary
-  console.log(chalk.cyan.bold('\n📊 Execution Stats:'));
-  console.log(chalk.white(`  Total time: ${totalDuration}ms`));
-  console.log(chalk.green(`  Succeeded: ${successCount}`) + chalk.red(` Failed: ${failCount}`));
-  Object.entries(agentTimings).forEach(([agent, time]) => {
-    console.log(chalk.gray(`  • @${agent}: ${time}ms`));
-  });
-  console.log(chalk.gray(`\n  Log saved: ${logPath}`));
+  renderer.divider();
+  await renderer.text(`**Execution Complete**\nTotal time: ${totalDuration}ms`);
+  renderer.box(
+    `Succeeded: ${successCount}  Failed: ${failCount}\nLog saved: ${logPath}`,
+    'Stats',
+    failCount > 0 ? 'error' : 'success'
+  );
+}
 
-  console.log(chalk.green.bold('\n✅ Swarm execution complete!\n'));
+let agentPathsCache = null;
+
+async function getAgentPaths() {
+  if (agentPathsCache) return agentPathsCache;
+  agentPathsCache = new Map();
+
+  try {
+    const files = await glob('agents/**/*.md', { ignore: 'node_modules/**' });
+    for (const file of files) {
+      const name = basename(file, '.md');
+      // Store the first occurrence found. The glob order is generally stable.
+      if (!agentPathsCache.has(name)) {
+        agentPathsCache.set(name, file);
+      }
+    }
+  } catch (error) {
+    // If glob fails, we'll just have an empty map and fall back to direct checks if possible,
+    // though the direct check logic below also relies on file existence.
+    console.warn('Warning: Failed to scan agent prompts:', error.message);
+  }
+
+  return agentPathsCache;
 }
 
 async function loadAgentPrompt(name) {
-  // Use glob to find agent file recursively
-  const files = await glob(`agents/**/${name}.md`, { ignore: 'node_modules/**' });
-  
-  if (files.length > 0) {
-    return await readFile(files[0], 'utf-8');
+  const paths = await getAgentPaths();
+  const file = paths.get(name);
+
+  if (file) {
+    return await readFile(file, 'utf-8');
   }
 
   // Fallback to direct check
   const directPath = join(process.cwd(), 'agents', `${name}.md`);
-  if (existsSync(directPath)) {
-    return await readFile(directPath, 'utf-8');
-  }
+  if (existsSync(directPath)) return await readFile(directPath, 'utf-8');
 
   return `You are the @${name} agent.`;
 }

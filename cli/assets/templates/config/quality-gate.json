@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "strict_mode": true,
+  "gates": {
+    "syntax": {
+      "enabled": true,
+      "blocking": true
+    },
+    "linting": {
+      "enabled": true,
+      "blocking": true,
+      "command": "npm run lint"
+    },
+    "testing": {
+      "enabled": true,
+      "blocking": false,
+      "require_new_tests": true
+    },
+    "security": {
+      "enabled": true,
+      "scan_secrets": true
+    },
+    "architecture": {
+      "banned_patterns": [
+        "console.log",
+        "TODO:",
+        "FIXME:"
+      ],
+      "required_patterns": []
+    }
+  },
+  "on_failure": {
+    "action": "reject", 
+    "retry_attempts": 2
+  }
+}

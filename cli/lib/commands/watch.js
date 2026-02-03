@@ -4,6 +4,7 @@ import { watch } from 'fs';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { updateStateFile, computeState } from './state.js';
+import { execSync } from 'child_process';
 
 async function calculateAlignmentScore() {
   const state = await computeState();
@@ -11,11 +12,20 @@ async function calculateAlignmentScore() {
 }
 
 export function watchCommand(options) {
-  console.log(chalk.cyan.bold('\n👁️  Ultra-Dex Watch Mode v3.0\n'));
+  console.log(chalk.cyan.bold('\n👁️  Ultra-Dex Watch Mode v3.1 (Auto-Sync Edition)\n'));
   console.log(chalk.gray('Watching for file changes...\n'));
 
   const interval = options.interval ? parseInt(options.interval, 10) : 500;
   console.log(chalk.gray(`Debounce interval: ${interval}ms`));
+
+  // Auto-sync configuration
+  const autoSync = options.sync || false;
+  const syncInterval = options.syncInterval ? parseInt(options.syncInterval, 10) : 5000;
+  
+  if (autoSync) {
+    console.log(chalk.green('🔄 Auto-sync enabled: CONTEXT.md will update automatically'));
+    console.log(chalk.gray(`   Sync interval: ${syncInterval}ms\n`));
+  }
 
   const watchPaths = [
     'CONTEXT.md',
@@ -51,6 +61,20 @@ export function watchCommand(options) {
           console.log(chalk.yellow(`\n[${timestamp}] 📝 ${filename || path} changed`));
           
           await updateStateFile();
+          
+          // Auto-sync CONTEXT.md if enabled and code files changed
+          if (autoSync && !filename?.includes('CONTEXT.md') && !filename?.includes('.md')) {
+            console.log(chalk.blue('🔄 Auto-syncing CONTEXT.md...'));
+            try {
+              execSync('npx ultra-dex sync --brain', { 
+                stdio: 'pipe',
+                timeout: 30000 
+              });
+              console.log(chalk.green('   ✅ CONTEXT.md synced with brain'));
+            } catch (e) {
+              console.log(chalk.gray('   ⚠️  Auto-sync skipped (no changes detected or error)'));
+            }
+          }
           
           const newScore = await calculateAlignmentScore();
           const scoreDiff = lastScore !== null ? newScore - lastScore : 0;

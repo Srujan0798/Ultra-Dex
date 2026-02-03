@@ -22,6 +22,10 @@ node_modules/
 **/.ultra/
 **/.ultra-dex/
 
+# Auto-generated context (use `ultra-dex sync --brain` to regenerate)
+CONTEXT.md
+
 # Logs
 *.log
 **/*.log
+.aider*

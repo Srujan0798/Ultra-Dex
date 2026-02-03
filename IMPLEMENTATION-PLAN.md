@@ -1,23 +1,41 @@
-# Ultra-Dex v3.4.3 - Implementation Plan
+# Implementation Plan: Wave 6 Self-Healing
+> Automated Debugging & Autonomous Recovery
 
-> Generated with Ultra-Dex CLI v3.4.3 - The AI Orchestration Meta-Layer
+## database
+- SQLite Vector Store for error pattern recognition.
+- JSON state tracking for recovery attempts.
 
-## Overview
+## api
+- Iterative `runAgentLoop` with feedback injection.
+- MCP tool integration for filesystem repair.
 
-The AI Orchestration Meta-Layer for SaaS Development. Not a simple template - a full system with 34-section Implementation Template, 21-Step Verification Framework, Atomic Task Methodology, and AI Agent Instructions.
+## auth
+- Secure local key storage.
+- File system access controls.
 
----
+## Phase 1: Core Self-Healing Loop
+- [x] Implement `AutonomousEngine` in `autonomous.js`
+- [x] Add `selfHeal` method to coordinate `@Debugger`
+- [x] Connect `selfHeal` to standard `npm test` output
+- [x] Add support for custom test command flags
 
-## Next Steps
+## Phase 2: Pattern Recognition
+- [x] Create `.ultra-dex/history/` to store previous successful fixes
+- [x] Implement `@Debugger` prompt enhancement with "Lessons Learned"
+- [x] Add "Snapshot & Rollback" logic for failed healing attempts
 
-1. Complete remaining sections of the implementation plan
-2. Use the 21-step verification framework for all tasks
-3. Implement atomic tasks (4-9 hours each)
-4. Run agent swarms for feature development
-5. Monitor with the dashboard and metrics system
+## Phase 3: CLI & UX
+- [x] Register `autonomous` command in main binary
+- [x] Add `--watch-heal` mode for continuous self-healing during dev
+- [x] Implement `dashboard` integration for real-time healing progress
 
-## Resources
-
-- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Imp%20Template.md)
-- [TaskFlow Example](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md)
-- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
+## Phase 4: Verification
+- [x] Add E2E tests for the `autonomous` command
+- [x] Verify Grade A Audit persistence after auto-fixes
+## Workflow: Authentication
+- [ ] Define auth strategy
+- [ ] Set up database schema
+- [ ] Implement API endpoints
+- [ ] Build frontend pages
+- [ ] Secure routes
+- [ ] Verify email/OAuth flows

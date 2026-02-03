@@ -10,6 +10,7 @@ const MODELS = [
   { id: 'mistral', name: 'Mistral', maxTokens: 8192 },
   { id: 'phi3', name: 'Phi-3', maxTokens: 4096 },
   { id: 'codellama', name: 'CodeLlama', maxTokens: 8192 },
+  { id: 'nomic-embed-text', name: 'Nomic Embed Text', maxTokens: 8192, embedding: true },
 ];
 
 export class OllamaProvider extends BaseProvider {
@@ -17,6 +18,7 @@ export class OllamaProvider extends BaseProvider {
     // Ollama doesn't typically require an API key
     super(apiKey || 'not-required', options);
     this.baseUrl = options.baseUrl || 'http://localhost:11434/api';
+    this.embeddingModel = options.embeddingModel || 'nomic-embed-text';
   }
 
   getName() {
@@ -121,6 +123,58 @@ export class OllamaProvider extends BaseProvider {
       content: fullContent, 
       usage: { inputTokens: 0, outputTokens: 0 } // Ollama streaming usage is complex to track line by line
     };
+  }
+
+  /**
+   * Get embeddings for text using Ollama
+   * Use 'nomic-embed-text' if available, otherwise fallback to default model
+   */
+  async getEmbedding(text) {
+    // Try the specific embedding model first
+    let model = this.embeddingModel;
+
+    try {
+      const response = await fetch(`${this.baseUrl}/embeddings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: model,
+          prompt: text,
+        }),
+      });
+
+      if (!response.ok) {
+        // Fallback to the main model if embedding model fails (might not be pulled)
+        model = this.model;
+        const retryResponse = await fetch(`${this.baseUrl}/embeddings`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: model,
+              prompt: text,
+            }),
+        });
+
+        if (!retryResponse.ok) {
+             const error = await retryResponse.text().catch(() => retryResponse.statusText);
+             throw new Error(`Ollama Embeddings API error: ${error}`);
+        }
+
+        const data = await retryResponse.json();
+        return data.embedding;
+      }
+
+      const data = await response.json();
+      return data.embedding;
+
+    } catch (error) {
+       console.warn(`Ollama embedding failed for model ${model}: ${error.message}`);
+       throw error;
+    }
   }
 
   async validateApiKey() {

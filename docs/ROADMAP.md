@@ -19,7 +19,7 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 - ✅ 17 production-ready AI agents (16 + @Orchestrator meta-agent)
 - ✅ 6 comprehensive production guides in docs/guides/
 - ✅ 31 modular cursor rules (.mdc files)
-- ✅ 42+ CLI commands (init, swarm, serve, generate, verify, etc.)
+- ✅ 46 CLI commands (init, swarm, serve, generate, verify, etc.)
 - ✅ MCP Server integration (Claude Desktop compatible)
 - ✅ WebSocket real-time updates (port 3002)
 - ✅ Code Property Graph (graph.js)
@@ -31,12 +31,12 @@ By 2027, developers should think: "Building a SaaS? Use Ultra-Dex + AI agents."
 - ✅ Streaming AI responses (--stream flag)
 
 **Current metrics:**
-- 42+ CLI commands
+- 46 CLI commands
 - 17 specialized agents in 6 tiers
 - 31 cursor rules
 - 6 production guides
 - 8 project templates
-- 95 passing tests
+- 281 passing tests
 - MCP + WebSocket + Graph implementation
 
 ---
@@ -112,13 +112,13 @@ Transform Ultra-Dex from framework to comprehensive reference library with copy-
 - 7 MCP tool definitions
 
 **3. Advanced CLI** ✅
-- 42+ commands implemented
+- 46 commands implemented
 - Agent swarms with parallel execution
 - Auto-implement feature
 - Streaming AI responses
 
 **4. Quality & Stability** ✅
-- 95 passing tests
+- 281 passing tests
 - Memory leak fixes (WebSocket, fs.watch)
 - Circuit breaker patterns
 - Input sanitization
@@ -324,9 +324,9 @@ Transform Ultra-Dex from framework to comprehensive reference library with copy-
 - ✅ Agent quick reference index
 - ✅ MCP server integration
 - ✅ WebSocket real-time updates
-- ✅ 42+ CLI commands
+- ✅ 46 CLI commands
 - ✅ Memory leak fixes
-- ✅ 95 passing tests
+- ✅ 281 passing tests
 
 **Next Release (Feb 14, 2026 - v3.5.0):**
 1. Voice mode (`ultra-dex voice`)

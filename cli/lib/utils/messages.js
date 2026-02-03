@@ -1,31 +1,39 @@
 // cli/lib/utils/messages.js
+
+/**
+ * ULTRA-DEX SYSTEM MESSAGES
+ * Tone: Lead Architect / Sci-Fi / Meta-Layer / Brutal Efficiency
+ */
+
 export const professionalMessages = {
   start: [
-    "AI Orchestration initialized. Ready for mission.",
-    "Analyzing project graph for optimal path...",
-    "System check complete. Starting task execution.",
-    "Leveraging 16 specialized agents for development."
+    "INITIALIZING META-LAYER PROTOCOLS...",
+    "ESTABLISHING NEURAL CONTEXT LINK...",
+    "ACTIVATING 16-AGENT SWARM INTELLIGENCE...",
+    "SYNCING MULTIVERSE REPOSITORIES...",
+    "ALLOCATING SECTORS FOR ARCHITECTURAL DOMINANCE..."
   ],
   
   success: [
-    "✓ Task completed successfully. Alignment verified.",
-    "✓ System integrity confirmed. Code merged.",
-    "✓ Orchestration successful. Results saved.",
-    "✓ Professional SaaS standards achieved."
+    "✓ ALIGNMENT 100%. SYSTEM STABILIZED.",
+    "✓ EXECUTION PERFECTED. READY FOR PRODUCTION.",
+    "✓ META-LAYER INTEGRITY CONFIRMED.",
+    "✓ ARCHITECTURE VALIDATED. NO DEVIATIONS DETECTED."
   ],
   
   error: [
-    "✕ Task failed. Analyzing logs for recovery...",
-    "✕ System anomaly detected. Diagnostic required.",
-    "✕ Orchestration interrupted. Please check configuration.",
-    "✕ Quality gate failed. Refactoring recommended."
+    "✕ CRITICAL ANOMALY DETECTED. ABORTING SEQUENCE.",
+    "✕ CONTEXT DESYNCHRONIZATION. MANUAL OVERRIDE REQUIRED.",
+    "✕ INFRASTRUCTURE INTEGRITY COMPROMISED.",
+    "✕ ALIGNMENT FAILURE. DO NOT PROCEED."
   ],
   
   loading: [
-    "Initializing agent pipeline...",
-    "Scanning project context...",
-    "Optimizing orchestration logic...",
-    "Verifying system state..."
+    "Compiling Neural Knowledge Graph...",
+    "Orchestrating High-Dimension Vectors...",
+    "Synthesizing Agent Context...",
+    "Optimizing Local-First Daemons...",
+    "Verifying 21-Step Security Protocols..."
   ]
 };
 

@@ -1,0 +1,86 @@
+name: 'Ultra-Dex Verify'
+description: 'Verify implementation plan completeness and alignment'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  template:
+    description: 'Path to implementation plan'
+    required: false
+    default: './IMPLEMENTATION-PLAN.md'
+  fail-on:
+    description: 'Fail condition: never, incomplete-p0-sections, incomplete-all, low-alignment'
+    required: false
+    default: 'incomplete-p0-sections'
+  min-alignment:
+    description: 'Minimum alignment score percentage'
+    required: false
+    default: '70'
+  context-file:
+    description: 'Path to CONTEXT.md'
+    required: false
+    default: './CONTEXT.md'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Verify Implementation Plan
+      shell: bash
+      run: |
+        echo "🔍 Ultra-Dex Verification"
+        echo "Template: ${{ inputs.template }}"
+        echo "Fail on: ${{ inputs.fail-on }}"
+        echo "Min alignment: ${{ inputs.min-alignment }}%"
+        
+        # Check if files exist
+        if [ ! -f "${{ inputs.template }}" ]; then
+          echo "❌ Implementation plan not found: ${{ inputs.template }}"
+          if [ "${{ inputs.fail-on }}" != "never" ]; then
+            exit 1
+          fi
+        fi
+        
+        if [ ! -f "${{ inputs.context-file }}" ]; then
+          echo "⚠️ CONTEXT.md not found: ${{ inputs.context-file }}"
+        fi
+        
+        # Run verification
+        OUTPUT=$(npx ultra-dex verify --json --template "${{ inputs.template }}" 2>/dev/null || echo '{"valid":false,"error":"verify command failed"}')
+        
+        # Parse JSON
+        VALID=$(echo "$OUTPUT" | npx jq -r '.valid // false')
+        SCORE=$(echo "$OUTPUT" | npx jq -r '.score // 0')
+        P0_COMPLETE=$(echo "$OUTPUT" | npx jq -r '.p0SectionsComplete // false')
+        
+        echo ""
+        echo "📊 Results:"
+        echo "  Valid: $VALID"
+        echo "  Score: $SCORE%"
+        echo "  P0 Complete: $P0_COMPLETE"
+        
+        # Check fail conditions
+        EXIT_CODE=0
+        
+        if [ "${{ inputs.fail-on }}" = "incomplete-p0-sections" ] && [ "$P0_COMPLETE" != "true" ]; then
+          echo "❌ FAIL: P0 sections incomplete"
+          EXIT_CODE=1
+        fi
+        
+        if [ "${{ inputs.fail-on }}" = "incomplete-all" ] && [ "$VALID" != "true" ]; then
+          echo "❌ FAIL: Plan not valid"
+          EXIT_CODE=1
+        fi
+        
+        if [ "${{ inputs.fail-on }}" = "low-alignment" ]; then
+          if [ "$SCORE" -lt "${{ inputs.min-alignment }}" ]; then
+            echo "❌ FAIL: Alignment score $SCORE% below minimum ${{ inputs.min-alignment }}%"
+            EXIT_CODE=1
+          fi
+        fi
+        
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "✅ Verification passed!"
+        fi
+        
+        exit $EXIT_CODE

@@ -10,7 +10,9 @@ const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 const EXPECTED_VERSION = pkg.version;
 
-const cliPath = path.resolve(process.cwd(), 'bin', 'ultra-dex.js');
+// Use import.meta.url to get correct path regardless of cwd
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const cliPath = path.resolve(__dirname, '..', 'bin', 'ultra-dex.js');
 
 function runCli(args, options = {}) {
   const result = spawnSync(process.execPath, [cliPath, ...args], {
@@ -95,7 +97,7 @@ test('validate fails gracefully on empty dir', async () => {
 test('init --preview shows planned files', async () => {
   const result = runCli(['init', '--preview']);
   assert.equal(result.status, 0);
-  assert.match(result.output, /Files that would be created/);
+  assert.match(result.output, /PREVIEW MODE: ARCHITECTURAL BLUEPRINT/);
   assert.match(result.output, /QUICK-START\.md/);
 });
 

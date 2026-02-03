@@ -47,7 +47,7 @@ docs/
 | [/agents](../agents/) | 17 AI agent prompts |
 | [/cursor-rules](../cursor-rules/) | 31 Cursor IDE rules |
 | [/templates](../templates/) | Project templates |
-| [/@ Ultra DeX](../@%20Ultra%20DeX/) | Core methodology & examples |
+| [/@ ultra-dex](../@%20ultra-dex/) | Core methodology & examples |
 
 ---
 

@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
+import inquirer from 'inquirer';
 import { ASSETS_ROOT, ROOT_FALLBACK } from '../config/paths.js';
 import { githubBlobUrl } from '../config/urls.js';
 import { readWithFallback } from '../utils/fallback.js';
@@ -57,7 +58,23 @@ export const AGENTS = [
   { name: 'refactoring', description: 'Code quality & design patterns', file: '6-specialist/refactoring.md', tier: 'Specialist' },
 ];
 
+// Pre-compute searchable agents for performance optimization
+const SEARCHABLE_AGENTS = [
+  ...AGENTS.map(a => ({ ...a, source: 'builtin', searchStr: `${a.name} ${a.description}`.toLowerCase() })),
+  ...Object.entries(COMMUNITY_AGENTS).map(([id, a]) => ({ id, ...a, source: 'community', searchStr: `${a.name} ${a.description}`.toLowerCase() }))
+];
+
 const CUSTOM_AGENTS_DIR = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
+
+const TIERS = [
+  { name: '0 - Orchestration', value: 'Orchestration' },
+  { name: '1 - Leadership', value: 'Leadership' },
+  { name: '2 - Development', value: 'Development' },
+  { name: '3 - Security', value: 'Security' },
+  { name: '4 - DevOps', value: 'DevOps' },
+  { name: '5 - Quality', value: 'Quality' },
+  { name: '6 - Specialist', value: 'Specialist' },
+];
 
 export function findBuiltInAgent(name) {
   return AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
@@ -99,7 +116,8 @@ export async function readAgentPrompt(agent) {
 export function registerAgentsCommand(program) {
   const agentsCmd = program
     .command('agents')
-    .description('Agent Marketplace - list, install, and manage agents');
+    .alias('agent')
+    .description('Agent Management - list, create, and manage agents');
 
   // Default action: list agents
   agentsCmd.action(async () => {
@@ -126,11 +144,12 @@ export function registerAgentsCommand(program) {
     .description('Search for agents in the marketplace')
     .action(async (query) => {
       console.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
-      const allAgents = [...AGENTS.map(a => ({ ...a, source: 'builtin' })),
-                        ...Object.entries(COMMUNITY_AGENTS).map(([id, a]) => ({ id, ...a, source: 'community' }))];
-      const results = allAgents.filter(a =>
-        `${a.name} ${a.description}`.toLowerCase().includes(query.toLowerCase())
+
+      const lowerQuery = query.toLowerCase();
+      const results = SEARCHABLE_AGENTS.filter(a =>
+        a.searchStr.includes(lowerQuery)
       );
+
       if (results.length === 0) {
         console.log(chalk.yellow('No agents found matching your query.'));
       } else {
@@ -140,6 +159,104 @@ export function registerAgentsCommand(program) {
           console.log(`  ${chalk.green('@' + a.name)} ${badge}`);
           console.log(`    ${chalk.gray(a.description)}\n`);
         });
+      }
+    });
+
+  // agents create <name>
+  agentsCmd
+    .command('create <name>')
+    .description('Create a custom agent with an interactive wizard')
+    .action(async (name) => {
+      const validation = validateSafePath(name, 'Agent name');
+      if (validation !== true) {
+        console.log(chalk.red(validation));
+        return;
+      }
+
+      if (findBuiltInAgent(name)) {
+        console.log(chalk.red(`\n❌ "${name}" conflicts with a built-in agent.\n`));
+        return;
+      }
+
+      const answers = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'role',
+          message: 'Role description (1 sentence):',
+          validate: input => input.trim().length > 0 || 'Role description is required',
+        },
+        {
+          type: 'list',
+          name: 'tier',
+          message: 'Select tier:',
+          choices: TIERS,
+        },
+        {
+          type: 'input',
+          name: 'expertise',
+          message: 'Expertise areas (comma-separated):',
+          validate: input => input.trim().length > 0 || 'Expertise is required',
+        },
+        {
+          type: 'editor',
+          name: 'prompt',
+          message: 'Base system prompt:',
+          default: `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent\n\nYou are an expert in...`,
+          validate: input => input.trim().length > 0 || 'System prompt is required',
+        },
+      ]);
+
+      const agentContent = `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent
+
+## Role
+${answers.role}
+
+## Tier
+${answers.tier}
+
+## Expertise
+${answers.expertise}
+
+## System Prompt
+${answers.prompt}
+
+## Available Commands
+- >> READ_CODE: "filePath"
+- >> WRITE_CODE: "filePath" "content"
+- >> SEARCH_CODE: "query"
+- >> DELEGATE: @AgentName "Task"
+`;
+      
+      await fs.mkdir(CUSTOM_AGENTS_DIR, { recursive: true });
+      const outputPath = path.join(CUSTOM_AGENTS_DIR, `${name.toLowerCase()}.md`);
+      await fs.writeFile(outputPath, agentContent);
+      
+      console.log(chalk.green(`\n✅ Custom agent created: ${outputPath}\n`));
+    });
+
+  // agents delete <name>
+  agentsCmd
+    .command('delete <name>')
+    .description('Delete a custom agent')
+    .action(async (name) => {
+      const filePath = await getCustomAgentPath(name);
+      if (!filePath) {
+        console.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
+        return;
+      }
+
+      const { confirmDelete } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'confirmDelete',
+          message: `Delete custom agent "${name}"?`,
+          default: false,
+        },
+      ]);
+
+      if (confirmDelete) {
+        await fs.unlink(filePath);
+        console.log(chalk.green(`\n✅ Deleted custom agent "${name}".\n`));
       }
     });
 
@@ -164,85 +281,12 @@ export function registerAgentsCommand(program) {
         description: agent.description,
         version: agent.version,
         installedAt: new Date().toISOString(),
-        systemPrompt: generateCommunityAgentPrompt(name.toLowerCase()),
+        systemPrompt: `You are ${agent.name}, ${agent.description}`,
       };
       await fs.writeFile(path.join(agentsDir, `${name.toLowerCase()}.json`), JSON.stringify(agentConfig, null, 2));
       spinner.succeed(`Installed ${chalk.green(agent.name)} v${agent.version}`);
-      console.log(chalk.gray(`\nUse with: ultra-dex run ${name.toLowerCase()} -t "your task"`));
     });
 
-  // agents uninstall <name>
-  agentsCmd
-    .command('uninstall <name>')
-    .alias('rm')
-    .description('Uninstall a marketplace agent')
-    .action(async (name) => {
-      const spinner = ora(`Uninstalling ${name}...`).start();
-      try {
-        const agentPath = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents', `${name.toLowerCase()}.json`);
-        await fs.unlink(agentPath);
-        spinner.succeed(`Uninstalled ${name}`);
-      } catch {
-        spinner.fail(`Agent "${name}" is not installed`);
-      }
-    });
-
-  // agents create <name>
-  agentsCmd
-    .command('create <name>')
-    .description('Create a custom agent')
-    .option('-d, --description <desc>', 'Agent description')
-    .action(async (name, options) => {
-      const validation = validateSafePath(name, 'Agent name');
-      if (validation !== true) {
-        console.log(chalk.red(validation));
-        return;
-      }
-      const customDir = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
-      await fs.mkdir(customDir, { recursive: true });
-      const agentContent = `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent
-
-## Role
-${options.description || `Custom agent: ${name}`}
-
-## Instructions
-You are @${name.charAt(0).toUpperCase() + name.slice(1)}, a custom Ultra-Dex agent.
-Follow user instructions carefully and provide helpful responses.
-
-## Available Commands
-- >> READ_CODE: "filePath" - Read a file
-- >> WRITE_CODE: "filePath" "content" - Create/update a file
-- >> SEARCH_CODE: "query" - Search the codebase
-- >> DELEGATE: @AgentName "Task" - Delegate to another agent
-`;
-      await fs.writeFile(path.join(customDir, `${name.toLowerCase()}.md`), agentContent);
-      console.log(chalk.green(`\n✅ Created custom agent: @${name}`));
-      console.log(chalk.gray(`\nEdit: .ultra-dex/custom-agents/${name.toLowerCase()}.md`));
-      console.log(chalk.gray(`Use with: ultra-dex agent ${name.toLowerCase()}\n`));
-    });
-
-  // agents publish <name>
-  agentsCmd
-    .command('publish <name>')
-    .description('Publish a custom agent to the marketplace (coming soon)')
-    .action(async (name) => {
-      console.log(chalk.cyan('\n📤 Publishing Agent to Marketplace\n'));
-      console.log(chalk.yellow('⚠️  Marketplace publishing is coming soon!'));
-      console.log(chalk.gray('\nFor now, share your agent by copying:'));
-      console.log(chalk.gray(`  .ultra-dex/custom-agents/${name.toLowerCase()}.md\n`));
-    });
-
-  // Legacy: agent [name] command
-  program
-    .command('agent [name]')
-    .description('Show a specific agent prompt or list all agents')
-    .action(async (name) => {
-      if (!name) {
-        await listAgents();
-      } else {
-        await showAgent(name);
-      }
-    });
 }
 
 async function showMarketplace() {
@@ -257,22 +301,11 @@ async function showMarketplace() {
   console.log(chalk.gray('Install with: ultra-dex agents install <name>\n'));
 }
 
-function generateCommunityAgentPrompt(agentId) {
-  const prompts = {
-    'security-auditor': `You are @SecurityAuditor, a security specialist. Analyze code for OWASP Top 10 vulnerabilities, injection attacks, auth flaws, and sensitive data exposure.`,
-    'accessibility': `You are @Accessibility, an A11y expert. Ensure WCAG compliance, proper ARIA labels, keyboard navigation, and screen reader compatibility.`,
-    'api-designer': `You are @APIDesigner, an API design specialist. Design RESTful and GraphQL APIs with proper versioning, authentication, and documentation.`,
-    'ml-engineer': `You are @MLEngineer, a machine learning specialist. Help integrate ML models, optimize inference, and implement AI features.`,
-  };
-  return prompts[agentId] || `You are a custom Ultra-Dex agent. Follow user instructions carefully.`;
-}
-
 async function listAgents() {
   const customAgents = await listCustomAgents();
   const totalAgents = AGENTS.length + customAgents.length;
   console.log(chalk.bold(`\n🤖 Ultra-Dex AI Agents (${totalAgents} Total)\n`));
   
-  // Format agents for the table
   const agentsForTable = AGENTS.map(agent => ({
     tier: agent.tier,
     name: agent.name,
@@ -333,61 +366,44 @@ export function registerPackCommand(program) {
       const agent = AGENTS.find(a => a.name.toLowerCase() === agentName.toLowerCase());
       if (!agent) {
         console.log(chalk.red(`\n❌ Agent "${agentName}" not found.\n`));
-        console.log(chalk.gray('Available agents:'));
-        AGENTS.forEach(a => console.log(chalk.cyan(`  - ${a.name}`)));
-        process.exit(1);
+        return;
       }
 
       let output = '';
-
       try {
         const agentPrompt = await readAgentPrompt(agent);
         output += agentPrompt + '\n\n';
       } catch (err) {
-        output += `# ${agent.name.toUpperCase()} Agent\n\nSee: ${githubBlobUrl(`agents/${agent.file}`)}\n\n`;
+        output += `# ${agent.name.toUpperCase()} Agent\n\n`;
       }
 
       output += '---\n\n';
-
       try {
         const context = await fs.readFile('CONTEXT.md', 'utf-8');
         output += '# PROJECT CONTEXT\n\n' + context + '\n\n';
       } catch (err) {
-        output += '# PROJECT CONTEXT\n\n*No CONTEXT.md found. Run `ultra-dex init` first.*\n\n';
+        output += '# PROJECT CONTEXT\n\n*No CONTEXT.md found.*\n\n';
       }
 
       output += '---\n\n';
-
       try {
         const plan = await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf-8');
         output += '# IMPLEMENTATION PLAN\n\n' + plan + '\n';
       } catch (err) {
-        output += '# IMPLEMENTATION PLAN\n\n*No IMPLEMENTATION-PLAN.md found. Run `ultra-dex init` first.*\n';
+        output += '# IMPLEMENTATION PLAN\n\n*No IMPLEMENTATION-PLAN.md found.*\n';
       }
 
       console.log(chalk.bold(`\n📦 Packed context for @${agent.name}\n`));
-      console.log(chalk.gray('─'.repeat(60)));
       console.log(output);
-      console.log(chalk.gray('─'.repeat(60)));
 
       if (options.clipboard) {
         try {
           const { execSync } = await import('child_process');
-          const platform = process.platform;
-          if (platform === 'darwin') {
-            execSync('pbcopy', { input: output });
-            console.log(chalk.green('\n✅ Copied to clipboard!\n'));
-          } else if (platform === 'linux') {
-            execSync('xclip -selection clipboard', { input: output });
-            console.log(chalk.green('\n✅ Copied to clipboard!\n'));
-          } else {
-            console.log(chalk.yellow('\n⚠️  Clipboard not supported on this platform. Copy manually.\n'));
-          }
+          execSync('pbcopy', { input: output });
+          console.log(chalk.green('\n✅ Copied to clipboard!\n'));
         } catch (err) {
-          console.log(chalk.yellow('\n⚠️  Could not copy to clipboard. Copy manually.\n'));
+          console.log(chalk.yellow('\n⚠️  Could not copy to clipboard.'));
         }
-      } else {
-        console.log(chalk.cyan('\n💡 Tip: Use --clipboard flag to copy directly\n'));
       }
     });
 }

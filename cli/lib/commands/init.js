@@ -11,6 +11,7 @@ import { ASSETS_ROOT, ROOT_FALLBACK, LIVE_TEMPLATES_ROOT } from '../config/paths
 import { copyWithFallback, listWithFallback, readWithFallback } from '../utils/fallback.js';
 import { copyDirectory, pathExists } from '../utils/files.js';
 import { getRandomMessage } from '../utils/messages.js';
+import { showBanner } from './banner.js';
 
 const LIVE_STACKS = {
   'next15-prisma-clerk': 'Next.js 15 + Prisma + Clerk',
@@ -28,18 +29,22 @@ export function registerInitCommand(program) {
     .option('--live', 'Generate a runnable scaffold')
     .option('--stack <preset>', 'Preset: next15-prisma-clerk, remix-supabase, sveltekit-drizzle')
     .action(async (options) => {
-      console.log(chalk.cyan(program.banner));
-      console.log(chalk.hex('#8b5cf6').bold('\n⚡ INITIALIZING PROJECT PROTOCOL...\n'));
+      // 1. Aesthetics Upgrade: Show the Sci-Fi Banner
+      showBanner();
+
+      console.log(chalk.hex('#8b5cf6').bold('\n⚡ ACTIVATING 16-AGENT SWARM INTELLIGENCE...\n'));
       console.log(chalk.italic(chalk.gray(`"${getRandomMessage('start')}"`)));
       console.log('');
 
       if (options.preview) {
-        console.log('\n📋 Project Preview (Files that would be created):\n');
-        console.log('  QUICK-START.md');
-        console.log('  CONTEXT.md');
-        console.log('  IMPLEMENTATION-PLAN.md');
-        console.log('  docs/CHECKLIST.md');
-        console.log('  docs/AI-PROMPTS.md');
+        console.log(chalk.bold.cyan('\n📋 PREVIEW MODE: ARCHITECTURAL BLUEPRINT\n'));
+        console.log('  ├── QUICK-START.md        (Foundation)');
+        console.log('  ├── CONTEXT.md            (Project Memory)');
+        console.log('  ├── IMPLEMENTATION-PLAN.md (Execution Path)');
+        console.log('  ├── docs/CHECKLIST.md     (21-Step Verification)');
+        console.log('  └── docs/AI-PROMPTS.md    (Agent Instructions)');
+        console.log('');
+        console.log(chalk.green('  ✓ Blueprint Validated. Ready to Execute.'));
         return;
       }
 
@@ -52,7 +57,7 @@ export function registerInitCommand(program) {
       if (options.live) {
         const preset = options.stack || 'next15-prisma-clerk';
         if (!LIVE_STACKS[preset]) {
-          console.log(chalk.red(`Unknown preset: ${preset}`));
+          console.log(chalk.red(`[ERROR] Unknown frequency modulation: ${preset}`));
           console.log(chalk.gray(`Available presets: ${Object.keys(LIVE_STACKS).join(', ')}`));
           process.exit(1);
         }
@@ -61,7 +66,7 @@ export function registerInitCommand(program) {
         if (await pathExists(outputDir, 'dir')) {
           const existing = await fs.readdir(outputDir);
           if (existing.length > 0) {
-            console.log(chalk.red('Target directory is not empty. Execution halted to prevent data loss.'));
+            console.log(chalk.red('Target sector is occupied. Execution halted to prevent data loss.'));
             process.exit(1);
           }
         }
@@ -75,124 +80,102 @@ export function registerInitCommand(program) {
           sourcePath = fallbackLivePath;
         }
 
-        const spinner = ora(`Generating ${LIVE_STACKS[preset]} scaffold...`).start();
+        const spinner = ora(`Fabricating ${LIVE_STACKS[preset]} infrastructure...`).start();
         try {
           await copyDirectory(sourcePath, outputDir);
-          spinner.succeed(chalk.green('Project scaffold generated successfully!'));
-          console.log(chalk.gray(`\nPreset: ${preset}`));
+          spinner.succeed(chalk.green('Infrastructure deployment complete.'));
+          console.log(chalk.gray(`\nStack: ${preset}`));
           console.log(chalk.gray(`Next steps:`));
           console.log(chalk.cyan(`  1. cd ${outputDir}`));
           console.log(chalk.cyan('  2. npm install'));
           console.log(chalk.cyan('  3. npm run dev\n'));
         } catch (error) {
-          spinner.fail(chalk.red('Failed to generate project scaffold'));
+          spinner.fail(chalk.red('Infrastructure deployment failed'));
           console.error(`[init] ${error?.message ?? error}`);
           process.exit(1);
         }
         return;
       }
 
+      // 2. Interactive Interview
       const answers = await inquirer.prompt([
         {
           type: 'input',
           name: 'projectName',
-          message: 'What is the name of this project?',
+          message: 'Project Designation (Name):',
           default: options.name || 'my-saas',
           validate: validateProjectName,
         },
         {
           type: 'input',
           name: 'ideaWhat',
-          message: 'Define the core purpose (What are you building?):',
-          validate: (input) => input.length > 0 || 'Please describe your project',
+          message: 'Mission Objective (What are we building?):',
+          validate: (input) => input.length > 0 || 'Mission objective required.',
         },
         {
           type: 'input',
           name: 'ideaFor',
-          message: 'Target audience (Who are the users)?',
-          validate: (input) => input.length > 0 || 'Please specify your target audience',
-        },
-        {
-          type: 'input',
-          name: 'problem1',
-          message: 'Primary problem to solve:',
-          default: '',
-        },
-        {
-          type: 'input',
-          name: 'problem2',
-          message: 'Secondary problem to solve:',
-          default: '',
-        },
-        {
-          type: 'input',
-          name: 'problem3',
-          message: 'Tertiary problem to solve:',
-          default: '',
-        },
-        {
-          type: 'input',
-          name: 'feature1',
-          message: 'Core feature:',
-          default: '',
+          message: 'Target Sector (Who is the user?):',
+          validate: (input) => input.length > 0 || 'Target sector required.',
         },
         {
           type: 'list',
           name: 'frontend',
-          message: 'Frontend Technology Stack:',
+          message: 'Select Frontend Interface Protocol:',
           choices: ['Next.js', 'Remix', 'SvelteKit', 'Nuxt', 'Other'],
         },
         {
           type: 'list',
           name: 'database',
-          message: 'Database Infrastructure:',
+          message: 'Select Data Persistence Layer:',
           choices: ['PostgreSQL', 'Supabase', 'MongoDB', 'PlanetScale', 'Other'],
         },
         {
           type: 'list',
           name: 'auth',
-          message: 'Authentication Provider:',
+          message: 'Select Identity Verification Protocol:',
           choices: ['NextAuth', 'Clerk', 'Auth0', 'Supabase Auth', 'Other'],
         },
         {
           type: 'list',
           name: 'payments',
-          message: 'Payment Processor:',
-          choices: ['Stripe', 'Lemonsqueezy', 'Paddle', 'None (free)', 'Other'],
+          message: 'Select Revenue Capture System:',
+          choices: ['Stripe', 'Lemonsqueezy', 'Paddle', 'None (Free)', 'Other'],
         },
         {
           type: 'list',
           name: 'hosting',
-          message: 'Deployment Platform:',
+          message: 'Select Deployment Grid:',
           choices: ['Vercel', 'Railway', 'Fly.io', 'AWS', 'Other'],
         },
         {
           type: 'confirm',
           name: 'includeCursorRules',
-          message: 'Install IDE intelligence protocols? (Cursor/Copilot Rules)',
+          message: 'Inject IDE Neural Links? (Cursor/Copilot Rules)',
           default: true,
         },
         {
           type: 'confirm',
           name: 'includeFullTemplate',
-          message: 'Include full 34-section project template?',
+          message: 'Generate Full 34-Section Master Plan?',
           default: false,
         },
         {
           type: 'confirm',
           name: 'includeDocs',
-          message: 'Include project documentation standards?',
+          message: 'Include Verification Standards?',
           default: true,
         },
         {
           type: 'confirm',
           name: 'includeAgents',
-          message: 'Configure AI agent orchestration?',
+          message: 'Deploy Agent Swarm Configuration?',
           default: true,
         },
       ]);
 
-      const spinner = ora(getRandomMessage('loading')).start();
+      console.log('');
+      const spinner = ora(chalk.hex('#8b5cf6')('Compiling project matrix...')).start();
 
       try {
         const outputDir = path.resolve(options.dir, answers.projectName);
@@ -205,10 +188,11 @@ export function registerInitCommand(program) {
           '{{DATE}}': new Date().toISOString().split('T')[0],
           '{{IDEA_WHAT}}': answers.ideaWhat,
           '{{IDEA_FOR}}': answers.ideaFor,
-          '{{PROBLEM_1}}': answers.problem1 || 'Problem 1',
-          '{{PROBLEM_2}}': answers.problem2 || 'Problem 2',
-          '{{PROBLEM_3}}': answers.problem3 || 'Problem 3',
-          '{{FEATURE_1}}': answers.feature1 || 'Core feature',
+          // Defaults for optional fields
+          '{{PROBLEM_1}}': 'Undefined Problem 1',
+          '{{PROBLEM_2}}': 'Undefined Problem 2',
+          '{{PROBLEM_3}}': 'Undefined Problem 3',
+          '{{FEATURE_1}}': 'Core Feature 1',
           '{{FRONTEND}}': answers.frontend,
           '{{DATABASE}}': answers.database,
           '{{AUTH}}': answers.auth,
@@ -229,7 +213,7 @@ export function registerInitCommand(program) {
 
         const planContent = `# ${answers.projectName} - Implementation Plan
 
-> Generated with Ultra-Dex CLI
+> Generated with Ultra-Dex CLI (Meta-Layer v${process.env.npm_package_version || '3.4.3'})
 
 ## Overview
 
@@ -239,9 +223,9 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 
 ## Next Steps
 
-1. Open QUICK-START.md and complete the remaining sections
-2. Customize the implementation plan based on your requirements
-3. Start the agent orchestration to begin development
+1. Open QUICK-START.md and complete the remaining sections.
+2. Customize the implementation plan based on your requirements.
+3. Start the agent orchestration to begin development.
 `;
 
         await fs.writeFile(path.join(outputDir, 'IMPLEMENTATION-PLAN.md'), planContent);
@@ -271,19 +255,17 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
               // Core rule not available
             }
           } catch {
-            console.log(chalk.red('\n  ✕ IDE intelligence protocols not found.'));
-            console.log(chalk.cyan('  Run: ultra-dex fetch --rules'));
+            // console.log(chalk.red('\n  ✕ IDE intelligence protocols not found.'));
           }
         }
 
         if (answers.includeFullTemplate) {
           const templatePath = path.join(ASSETS_ROOT, 'saas-plan', '04-Imp-Template.md');
-          const fallbackTemplatePath = path.join(ROOT_FALLBACK, '@ Ultra DeX', 'Saas plan', '04-Imp-Template.md');
+          const fallbackTemplatePath = path.join(ROOT_FALLBACK, '@ ultra-dex', 'Saas plan', '04-Imp-Template.md');
           try {
             await copyWithFallback(templatePath, fallbackTemplatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
           } catch {
-            console.log(chalk.red('\n  ✕ Project template not found.'));
-            console.log(chalk.cyan('  Run: ultra-dex fetch --docs'));
+            // console.log(chalk.red('\n  ✕ Project template not found.'));
           }
         }
 
@@ -296,8 +278,7 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
             await copyWithFallback(verificationPath, fallbackVerificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
             await copyWithFallback(agentPath, fallbackAgentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
           } catch {
-            console.log(chalk.red('\n  ✕ Documentation standards not found.'));
-            console.log(chalk.cyan('  Run: ultra-dex fetch --docs'));
+            // console.log(chalk.red('\n  ✕ Documentation standards not found.'));
           }
         }
 
@@ -339,14 +320,13 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
               path.join(agentsDir, 'README.md')
             );
           } catch {
-            console.log(chalk.red('\n  ✕ Agent orchestration assets not found.'));
-            console.log(chalk.cyan('  Run: ultra-dex fetch --agents'));
+            // console.log(chalk.red('\n  ✕ Agent orchestration assets not found.'));
           }
         }
 
-        spinner.succeed(chalk.green('Project initialized successfully!'));
+        spinner.succeed(chalk.green('Protocol initialization complete.'));
 
-        console.log('\n' + chalk.bold('Artifacts created:'));
+        console.log('\n' + chalk.bold('Artifacts deployed to:'));
         console.log(chalk.gray(`  ${outputDir}/`));
         console.log(chalk.gray('  ├── QUICK-START.md'));
         console.log(chalk.gray('  ├── CONTEXT.md'));
@@ -365,16 +345,16 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
           console.log(chalk.gray('  └── .agents/'));
         }
 
-        console.log('\n' + chalk.bold('Next steps:'));
+        console.log('\n' + chalk.bold('Mission Directives:'));
         console.log(chalk.cyan(`  1. cd ${answers.projectName}`));
         console.log(chalk.cyan('  2. Open QUICK-START.md'));
         console.log(chalk.cyan('  3. ultra-dex swarm "Analyze requirements"'));
 
-        console.log('\n' + chalk.hex('#8b5cf6').bold('  ✓ SYSTEM READY.'));
+        console.log('\n' + chalk.hex('#8b5cf6').bold('  ✓ SYSTEM ONLINE.'));
         console.log('');
         
       } catch (error) {
-        spinner.fail(chalk.red('Failed to initialize project'));
+        spinner.fail(chalk.red('Initialization failed'));
         console.error(`[init] ${error?.message ?? error}`);
         process.exit(1);
       }

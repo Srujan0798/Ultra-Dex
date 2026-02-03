@@ -1,274 +1,444 @@
-# Ultra-Dex CLI
+# Ultra-Dex CLI v3.5.0
 
-> Scaffold Ultra-Dex projects from the command line, now with **AI-powered plan generation** and **God Mode** autonomous agents.
+> **AI Orchestration Meta-Layer for SaaS Development** - The complete toolkit for AI-assisted software engineering.
 
-## What's New in v3.4.3 (Ecosystem Mode)
+[![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-### 🆕 v3.4.3 Features
+## 🚀 What's New in v3.5.0 (February 2026)
+
+### ✨ Major Features
+
+#### 🎯 VS Code Extension Sidebar
+Full IDE integration with 4 sidebar views:
 ```bash
-# 🏪 Agent Marketplace - install community agents
-npx ultra-dex agents list --marketplace
-npx ultra-dex agents install security-auditor
-npx ultra-dex agents create my-custom-agent
-
-# 🔗 LangChain Integration - use any LangChain agent
-# See: cli/lib/providers/langchain.js
-
-# 🤖 OpenAI Assistants Sync - persistent threads
-# See: cli/lib/providers/openai-assistants.js
-
-# 🎬 Streaming AI responses
-npx ultra-dex run backend -t "Build API" --stream
+# Install from VSIX or marketplace
+# Access: Agent Explorer, Swarm Status, Context Preview, Quick Actions
 ```
 
-### v3.3.0 Features (Included)
+#### ⚡ Real-Time WebSocket Dashboard
+Instant updates, no polling:
 ```bash
-# 🧠 Auto-sync CONTEXT.md from codebase
-npx ultra-dex sync --brain
-
-# 🐳 Execute code in Docker sandbox
-npx ultra-dex exec "console.log('safe!')" --lang javascript
-
-# 🔍 Semantic search with vector embeddings
-npx ultra-dex search "user authentication" --index
-
-# 🐙 GitHub integration (issues → tasks, auto-PR)
-npx ultra-dex github sync
-npx ultra-dex github pr --from-swarm
-
-# 🤖 Autonomous agent swarms with parallel execution
-npx ultra-dex swarm "Build user authentication" --parallel
-
-# 🔄 Start the Active Kernel (MCP + WebSocket + Dashboard)
-npx ultra-dex serve
-
-# 📊 Health monitoring and metrics
-npx ultra-dex health
-npx ultra-dex metrics
+npx ultra-dex dashboard  # or: npx ultra-dex d
+# Live agent status, auto-reconnect, connection indicators
 ```
 
-## First 10 Minutes
-
+#### 🧠 Session Persistence & Memory
+Never lose context:
 ```bash
-# Option 1: AI-Generated Plan (Recommended)
-export ANTHROPIC_API_KEY=your-key  # or OPENAI_API_KEY or GOOGLE_AI_KEY
-npx ultra-dex generate "Your SaaS idea here"
-
-# Option 2: Manual Setup
-npx ultra-dex init
+npx ultra-dex memory sessions     # List all sessions
+npx ultra-dex memory query "auth" # Search past decisions
 ```
 
-## Installation
+### 📦 New Commands
 
 ```bash
-# Run directly with npx (no installation needed)
-npx ultra-dex generate "Your idea"
+# 💰 Cost Estimation
+npx ultra-dex estimate "Build login system"
+npx ultra-dex estimate feature-impl --monthly 100
 
-# Or install globally
+# 🎤 Voice-to-Plan (Speech input)
+npx ultra-dex voice "Create a task manager app"
+npx ultra-dex voice --template full
+
+# 📋 Batch Execution
+npx ultra-dex batch setup.json
+npx ultra-dex batch deploy.txt --dry-run
+
+# 🔄 Command History
+npx ultra-dex history list
+npx ultra-dex history replay abc123
+
+# ⚙️ Setup Wizard
+npx ultra-dex setup              # Interactive configuration
+npx ultra-dex setup --quick      # Fast defaults
+```
+
+### 🔧 Enhanced Features
+
+```bash
+# Quick Aliases
+npx ultra-dex s "task"      # swarm
+npx ultra-dex d             # dashboard  
+npx ultra-dex v             # verify
+npx ultra-dex b             # build
+npx ultra-dex g "idea"      # generate
+npx ultra-dex i             # init
+npx ultra-dex st            # status
+npx ultra-dex m sessions    # memory
+
+# Shell Completions (Tab completion)
+source <(ultra-dex completions bash)  # Add to ~/.bashrc
+source <(ultra-dex completions zsh)   # Add to ~/.zshrc
+
+# Smart Error Handling
+# Auto-suggestions when commands fail
+
+# Auto-Sync on File Save
+npx ultra-dex watch --sync  # Auto-runs sync --brain
+```
+
+### 🔄 CI/CD Integration
+
+```yaml
+# .github/workflows/ultra-dex.yml
+- uses: Srujan0798/ultra-dex-action/verify@v1
+  with:
+    fail-on: 'incomplete-p0-sections'
+    min-alignment: '70'
+
+- uses: Srujan0798/ultra-dex-action/align@v1
+  with:
+    comment-on-pr: 'true'
+```
+
+### 📚 Example Repositories
+
+Complete starter templates:
+- **E-commerce** (Next.js + Stripe + PostgreSQL)
+- **SaaS Analytics** (ClickHouse + Redis + Real-time)
+- **Real-time Chat** (Socket.io + WebSocket)
+
+[View Examples](./examples/)
+
+---
+
+## 📊 By The Numbers
+
+- **60 CLI Commands** (with 10 smart aliases)
+- **34 Cursor Rules** for comprehensive guidance
+- **4 VS Code Sidebar Views** for IDE integration
+- **3 GitHub Actions** for CI/CD
+- **3 Example Repositories** production-ready
+- **26 Total Features** in v3.5.0
+- **95/95 Tests Passing**
+
+---
+
+## 🚀 Quick Start (30 seconds)
+
+```bash
+# Install globally
 npm install -g ultra-dex
-ultra-dex generate "Your idea"
+
+# Or use npx (no install needed)
+npx ultra-dex setup
+
+# Initialize project
+npx ultra-dex init
+
+# Generate plan from idea
+npx ultra-dex generate "Your amazing SaaS idea"
+
+# Start dashboard
+npx ultra-dex dashboard
 ```
 
-## Scaffold Command (NEW)
+---
 
-Generate production-ready boilerplate instantly:
+## 📖 Core Commands
+
+### Project Management
+```bash
+npx ultra-dex init                    # Initialize new project
+npx ultra-dex generate "idea"         # AI-generated implementation plan
+npx ultra-dex swarm "objective"       # Run autonomous agents
+npx ultra-dex run <agent>             # Run single agent
+npx ultra-dex align                   # Check plan vs code alignment
+npx ultra-dex verify                  # Verify implementation completeness
+```
+
+### Development
+```bash
+npx ultra-dex build                   # Build project
+npx ultra-dex validate                # Validate against standards
+npx ultra-dex fix                     # Auto-fix issues
+npx ultra-dex doctor                  # System diagnostics
+npx ultra-dex exec "code"             # Execute in sandbox
+```
+
+### Monitoring & Control
+```bash
+npx ultra-dex dashboard               # Open God Mode dashboard
+npx ultra-dex serve                   # Start MCP server
+npx ultra-dex watch                   # Watch mode with auto-sync
+npx ultra-dex status                  # Show project status
+npx ultra-dex health                  # Health check
+npx ultra-dex metrics                 # Show metrics
+```
+
+### Advanced
+```bash
+npx ultra-dex sync --brain            # Auto-sync CONTEXT.md
+npx ultra-dex cloud                   # Cloud collaboration
+npx ultra-dex github                  # GitHub integration
+npx ultra-dex search "query"          # Semantic search
+npx ultra-dex memory                  # Persistent memory
+npx ultra-dex batch file.json         # Batch execution
+npx ultra-dex history                 # Command history
+```
+
+---
+
+## 🎯 Key Features
+
+### 1. 21-Step Verification Framework
+Every task follows production-ready standards:
+1. Understand requirement
+2. List assumptions
+3. Analyze logic flow
+4. Decompose into steps
+5. Prepare environment
+6. Implement code
+7. Document code
+8. Write unit tests
+9. Debug issues
+10. Integrate systems
+11. Validate output
+12. UX check
+13. Optimize performance
+14. Security check
+15. Refactor quality
+16. Error handling
+17. Document API
+18. Version control
+19. Build validation
+20. Deploy ready
+21. Final verify
+
+### 2. 34 Cursor Rules
+Production-grade coding standards:
+- Core principles, TypeScript, React patterns
+- Authentication, database, testing
+- Security, performance, accessibility
+- **NEW:** i18n, analytics, SEO
+
+[View Rules](./cli/assets/cursor-rules/)
+
+### 3. Agent Ecosystem
+**17 Specialized Agents:**
+- **Leadership:** @cto, @planner, @research
+- **Development:** @backend, @frontend, @database
+- **Security:** @auth, @security
+- **DevOps:** @devops
+- **Quality:** @debugger, @reviewer, @testing, @docs
+- **Specialist:** @performance
+- **Meta:** @orchestrator
+
+### 4. Template System
+**3 Template Variants:**
+- **LITE** (12 sections) - Quick MVPs
+- **FULL** (34 sections) - Complete projects
+- **ENTERPRISE** (50+ sections) - Large-scale
+
+---
+
+## 🛠️ Installation & Setup
+
+### Prerequisites
+- Node.js 18+ 
+- Git
+- (Optional) Docker for sandbox execution
+
+### Install
+```bash
+npm install -g ultra-dex
+```
+
+### First-Time Setup
+```bash
+npx ultra-dex setup
+# Interactive wizard configures:
+# - AI provider (Anthropic, OpenAI, Google, Ollama)
+# - API keys
+# - Default template
+# - Shell completions
+```
+
+### Shell Completions
+```bash
+# Bash
+source <(ultra-dex completions bash)
+# Add to ~/.bashrc for persistence
+
+# Zsh  
+source <(ultra-dex completions zsh)
+# Add to ~/.zshrc for persistence
+```
+
+---
+
+## 📚 Documentation
+
+- **Quick Start:** `npx ultra-dex setup`
+- **Help:** `npx ultra-dex --help`
+- **Command Help:** `npx ultra-dex <command> --help`
+- **Full Guide:** [MEGA-IMPLEMENTATION-FINAL.md](./MEGA-IMPLEMENTATION-FINAL.md)
+- **Examples:** [examples/](./examples/)
+- **Release Notes:** [RELEASE-v3.5.0.md](./RELEASE-v3.5.0.md)
+
+---
+
+## 🎓 Learning Path
+
+### Beginner (Day 1)
+```bash
+npx ultra-dex init                    # Create project
+npx ultra-dex generate "Todo app"     # Generate plan
+npx ultra-dex align                   # Check alignment
+```
+
+### Intermediate (Week 1)
+```bash
+npx ultra-dex swarm "Feature X"       # Run agents
+npx ultra-dex dashboard               # Monitor progress
+npx ultra-dex verify                  # Verify completion
+```
+
+### Advanced (Month 1)
+```bash
+npx ultra-dex voice "Complex system"  # Voice input
+npx ultra-dex sync --brain            # Auto-sync
+npx ultra-dex cloud                   # Team collaboration
+```
+
+---
+
+## 🤝 VS Code Integration
+
+1. Install extension: `ultra-dex-vscode-3.5.0.vsix`
+2. Click Ultra-Dex icon in sidebar
+3. Access:
+   - Agent Explorer (browse all agents)
+   - Swarm Status (real-time progress)
+   - Context Preview (tech stack, focus)
+   - Quick Actions (one-click commands)
+
+---
+
+## 🔐 Environment Variables
 
 ```bash
-# List available templates
-npx ultra-dex scaffold --list
+# AI Providers (at least one required)
+export ANTHROPIC_API_KEY=sk-ant-...
+export OPENAI_API_KEY=sk-...
+export GOOGLE_API_KEY=...
 
-# Generate Next.js 15 + Prisma + Clerk project
-npx ultra-dex scaffold next15-prisma-clerk
-
-# Generate Remix + Supabase project
-npx ultra-dex scaffold remix-supabase
-
-# Generate SvelteKit + Drizzle project
-npx ultra-dex scaffold sveltekit-drizzle
+# Optional
+export GITHUB_TOKEN=GITHUB_TOKEN_HERE           # GitHub integration
+export LINEAR_API_KEY=...             # Linear sync
+export SLACK_WEBHOOK_URL=...          # Notifications
 ```
 
-## AI Commands (God Mode)
+---
 
-### `swarm` - Autonomous Agent Pipeline
+## 📦 Project Structure
 
-Run complex task pipelines with multiple agents:
+```
+my-project/
+├── IMPLEMENTATION-PLAN.md      # Auto-generated plan
+├── CONTEXT.md                   # Project context (synced)
+├── .ultra/
+│   ├── state.json              # Project state
+│   ├── memory/                 # Persistent memory
+│   │   └── sessions.db         # SQLite database
+│   └── config.json             # Local config
+└── src/                        # Your code
+```
 
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Command not found:**
 ```bash
-# Build a feature with a swarm of agents
-npx ultra-dex swarm "Implement Stripe subscriptions" --parallel
-
-# Dry run to see the plan
-npx ultra-dex swarm "Migrate to Tailwind" --dry-run
+npm install -g ultra-dex
+# Or use: npx ultra-dex
 ```
 
-### `serve` - Active Kernel
-
-Start the MCP-compatible server for IDE integration and dashboard:
-
+**API key errors:**
 ```bash
-npx ultra-dex serve
+npx ultra-dex setup              # Configure keys
+# Or set env var: export ANTHROPIC_API_KEY=...
 ```
 
-### `auto-implement` - Autonomous Engineer
-
-Fully autonomous feature implementation loop:
-
+**Port already in use:**
 ```bash
-# Implement a feature from scratch
-npx ultra-dex auto-implement "Create a user profile page with Avatar upload"
+npx ultra-dex serve --port 3003  # Use different port
+lsof -ti:3001 | xargs kill -9   # Kill process
 ```
 
-### `watch` - Real-time Daemon
-
-Keep the project state and Code Property Graph updated as you code:
-
+**Need help:**
 ```bash
-npx ultra-dex watch --interval 1000
+npx ultra-dex doctor             # Diagnostics
+npx ultra-dex <command> --help   # Command help
 ```
 
-## Core Commands
+---
 
-### `generate` - AI Plan Generation
+## 🌟 Why Ultra-Dex?
 
-Generate a complete implementation plan using AI:
+### Before Ultra-Dex
+- ❌ AI agents forget context between sessions
+- ❌ No standard for AI-assisted development
+- ❌ Manual coordination between tools
+- ❌ Plans drift from implementation
+- ❌ No verification framework
 
-```bash
-# Basic usage
-npx ultra-dex generate "A booking platform for dog groomers"
+### With Ultra-Dex
+- ✅ Persistent memory across sessions
+- ✅ 21-step production-ready framework
+- ✅ Coordinated agent swarms
+- ✅ Real-time alignment tracking
+- ✅ Automated verification
 
-# With options
-npx ultra-dex generate "idea" --provider openai --output ./my-project
-```
+---
 
-### `build` - AI-Assisted Development
+## 📈 Roadmap
 
-Start development with AI agents (Interactive Mode):
+### v3.6.0 (March 2026)
+- Deep Graph RAG (FalkorDB/Neo4j)
+- Enterprise Auth (SSO/SAML)
+- LangGraph Integration
 
-```bash
-# Interactive agent selection
-npx ultra-dex build
+### v4.0.0 (Q2 2026)
+- AI Agent Protocol SDK
+- JetBrains/Neovim plugins
+- Agent Marketplace
 
-# Specific agent
-npx ultra-dex run backend --task "Create user API endpoints"
-```
+---
 
-### `review` - Graph-Aware Code Review
+## 🤝 Contributing
 
-Audit code against the plan using structural graph analysis:
+We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-```bash
-npx ultra-dex review
-```
+### Ways to Contribute
+- Report bugs
+- Suggest features
+- Add cursor rules
+- Create examples
+- Improve docs
 
-### `align` - Quick Score
+---
 
-Get alignment score (Files + Plan + Graph Integrity):
+## 📄 License
 
-```bash
-npx ultra-dex align
-```
+MIT License - see [LICENSE](./LICENSE)
 
-### `check` - System Health
+---
 
-Verify repository health and graph consistency:
+## 🙏 Acknowledgments
 
-```bash
-npx ultra-dex check
-```
+- 8 comprehensive code reviews incorporated
+- Community feedback integrated
+- Real-world testing validated
 
-## Environment Variables
+---
 
-```bash
-ANTHROPIC_API_KEY=sk-ant-...  # Claude (recommended for complex tasks)
-OPENAI_API_KEY=sk-...         # OpenAI
-GOOGLE_AI_KEY=...             # Gemini
-OLLAMA_HOST=http://localhost:11434  # Ollama (local AI)
-ULTRA_DEX_DEFAULT_PROVIDER=claude # Default AI provider
-```
+**Ultra-Dex v3.5.0** - *The most complete AI orchestration platform for developers.*
 
-## Local AI with Ollama
+🚀 **Ready for production. Ready for you.** 🚀
 
-Ultra-Dex supports Ollama for fully local, private AI operations:
-
-```bash
-# 1. Install Ollama (https://ollama.ai)
-curl -fsSL https://ollama.ai/install.sh | sh
-
-# 2. Pull a model
-ollama pull llama3.2
-ollama pull codellama
-
-# 3. Use with Ultra-Dex
-npx ultra-dex generate "Your idea" --provider ollama --model codellama
-
-# For agent swarms with local AI
-npx ultra-dex swarm "Build user auth" --provider ollama
-```
-
-**Supported Ollama Models:**
-- `llama3.2` - General tasks
-- `codellama` - Code generation (recommended)
-- `mistral` - Fast, efficient
-- `mixtral` - Best quality for local
-- Any model available via `ollama list`
-
-## All Commands (44+)
-
-| Command | Description |
-|---------|-------------|
-| `init` | Initialize a new project |
-| `scaffold` | **NEW** Generate production boilerplate |
-| `generate` | Generate full SaaS plan from idea |
-| `swarm` | Run autonomous agent pipeline |
-| `auto-implement` | Autonomously implement a feature |
-| `serve` | Start the Active Kernel (MCP + Dashboard) |
-| `watch` | Auto-update state on file changes |
-| `build` | Interactive AI agent development loop |
-| `review` | Review code against plan |
-| `align` | Quick alignment score |
-| `audit` | Audit project for completeness |
-| `validate` | Validate project against 21-step framework |
-| `check` | Verify repository health |
-| `doctor` | Diagnose project issues |
-| `dashboard` | Start the local web dashboard |
-| `sync` | Sync project state across devices |
-| `fetch` | Download assets for offline use |
-| `hooks` | Manage Git hooks |
-| `export` | Export project context |
-| `upgrade` | Check for CLI updates |
-| `config` | Manage CLI and editor configuration |
-| `agents` | List available AI agents |
-| `agent` | Show specific agent prompt |
-| `workflow` | Show specific production workflow |
-| `suggest` | Get AI-powered task suggestions |
-| `plan` | Generate or update implementation plan |
-| `fix` | Automatically fix project issues |
-| `team` | Team collaboration commands |
-| `memory` | Manage long-term agent memory |
-| `verify` | Run executable verification |
-| `ci-monitor` | Self-healing CI/CD listener |
-| `status` | Show project and kernel status |
-| `pre-commit` | Run pre-commit checks |
-| `state` | Manage machine-readable state |
-| `examples` | Access reference workflows |
-| `pack` | Bundle agents and rules |
-| `run` | Execute agent task |
-| `diff` | Compare plan vs implemented code |
-| `exec` | **NEW** Execute code in Docker sandbox |
-| `search` | **NEW** Semantic codebase search |
-| `github` | **NEW** GitHub sync (issues, PRs) |
-| `cloud` | **NEW** Team collaboration server |
-| `metrics` | **NEW** Show CLI metrics |
-| `health` | **NEW** System health check |
-| `debug` | **NEW** Debug information |
-
-## Links
-
-- [Full Template](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
-- [Examples](https://github.com/Srujan0798/Ultra-Dex/tree/main/@%20Ultra%20DeX/Saas%20plan/Examples)
-- [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/@%20Ultra%20DeX/Saas%20plan/03-METHODOLOGY.md)
-- [AI Agents](https://github.com/Srujan0798/Ultra-Dex/tree/main/agents)
-
-## License
-
-MIT
+[Get Started →](#quick-start-30-seconds)

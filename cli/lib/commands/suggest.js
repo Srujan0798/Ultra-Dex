@@ -1,46 +1,129 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import fs from 'fs/promises';
+import path from 'path';
+import ora from 'ora';
 import { AGENTS } from './agents.js';
+import { createProvider, getDefaultProvider } from '../providers/index.js';
 
 export function registerSuggestCommand(program) {
   program
-    .command('suggest')
+    .command('suggest [query]')
     .description('Get AI agent suggestions for your task')
-    .action(async () => {
+    .action(async (query) => {
       console.log(chalk.cyan('\n🤖 Ultra-Dex Agent Suggester\n'));
 
-      const answers = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'taskType',
-          message: 'What are you trying to build?',
-          choices: [
-            'New feature from scratch',
-            'Authentication system',
-            'Payment integration',
-            'Database changes',
-            'Bug fix',
-            'Performance optimization',
-            'Deployment/DevOps',
-            'API endpoint',
-            'UI component',
-            'Testing',
-          ],
-        },
-        {
-          type: 'input',
-          name: 'description',
-          message: 'Briefly describe your task:',
-          default: '',
-        },
-      ]);
+      // Check for AI Provider
+      const providerId = getDefaultProvider();
+      
+      let description = query;
+      let taskType = 'custom';
 
-      console.log(chalk.bold('\n💡 Suggested Agent Workflow:\n'));
+      if (!description) {
+        const answers = await inquirer.prompt([
+            {
+            type: 'list',
+            name: 'taskType',
+            message: 'What are you trying to build?',
+            choices: [
+                'Custom (AI Analysis)',
+                'New feature from scratch',
+                'Authentication system',
+                'Payment integration',
+                'Database changes',
+                'Bug fix',
+                'Performance optimization',
+                'Deployment/DevOps',
+                'API endpoint',
+                'UI component',
+                'Testing',
+            ],
+            },
+        ]);
+        taskType = answers.taskType;
+
+        if (taskType === 'Custom (AI Analysis)') {
+             const input = await inquirer.prompt([{
+                 type: 'input',
+                 name: 'desc',
+                 message: 'Describe your task in detail:',
+             }]);
+             description = input.desc;
+        } else if (['New feature from scratch', 'Bug fix', 'API endpoint', 'UI component'].includes(taskType)) {
+             const input = await inquirer.prompt([{
+                 type: 'input',
+                 name: 'desc',
+                 message: 'Briefly describe your task (optional):',
+             }]);
+             description = input.desc;
+        }
+      }
+
+      // AI Mode
+      if (providerId && (description || taskType === 'Custom (AI Analysis)')) {
+          const spinner = ora('Analyzing context with AI...').start();
+          try {
+              const provider = createProvider(providerId);
+              
+              let context = '';
+              try {
+                  context = await fs.readFile(path.resolve(process.cwd(), 'CONTEXT.md'), 'utf8');
+              } catch {}
+
+              const prompt = `
+You are an expert software architect using the Ultra-Dex framework.
+Based on the user's task, suggest the best workflow of agents.
+
+Available Agents:
+${AGENTS.map(a => `- @${a.name}: ${a.description}`).join('\n')}
+
+Project Context:
+${context.slice(0, 1000)}...
+
+User Task: ${description || taskType}
+
+Output a JSON object with:
+{
+  "reasoning": "Why this workflow?",
+  "agents": ["@Agent1", "@Agent2"],
+  "tips": ["Tip 1", "Tip 2"]
+}
+`;
+              const response = await provider.generate('You are a helpful assistant that outputs JSON.', prompt);
+              
+              // Extract JSON
+              const jsonMatch = response.content.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                  const data = JSON.parse(jsonMatch[0]);
+                  spinner.succeed(chalk.green('AI Analysis Complete'));
+                  
+                  console.log(chalk.bold('\n💡 AI Suggested Workflow:\n'));
+                  console.log(chalk.gray(data.reasoning + '\n'));
+                  
+                  data.agents.forEach((agent, i) => {
+                      const arrow = i < data.agents.length - 1 ? '  →' : '';
+                      console.log(chalk.cyan(`  ${i + 1}. ${agent}`) + arrow);
+                  });
+
+                  if (data.tips && data.tips.length > 0) {
+                      console.log(chalk.bold('\n🧠 Pro Tips:\n'));
+                      data.tips.forEach(tip => console.log(chalk.gray(`  • ${tip}`)));
+                  }
+                  return;
+              }
+          } catch (e) {
+              spinner.fail('AI analysis failed, falling back to static logic.');
+              // Fallthrough to static
+          }
+      }
+
+      // Static Fallback
+      console.log(chalk.bold('\n💡 Suggested Agent Workflow (Static):\n'));
 
       let suggestedAgents = [];
       let reasoning = '';
 
-      switch (answers.taskType) {
+      switch (taskType) {
         case 'New feature from scratch':
           suggestedAgents = ['@Planner', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Reviewer', '@DevOps'];
           reasoning = 'Complete feature requires planning, architecture, implementation, testing, and deployment';
@@ -111,12 +194,12 @@ export function registerSuggestCommand(program) {
       console.log(chalk.gray('  3. Use "ultra-dex agent <name>" to see full prompts\n'));
 
       console.log(chalk.bold('🔗 Related Workflows:\n'));
-      if (answers.taskType === 'Authentication system') {
+      if (taskType === 'Authentication system') {
         console.log(chalk.blue('  ultra-dex workflow auth'));
         console.log(chalk.blue('  ultra-dex workflow supabase\n'));
-      } else if (answers.taskType === 'Payment integration') {
+      } else if (taskType === 'Payment integration') {
         console.log(chalk.blue('  ultra-dex workflow payments\n'));
-      } else if (answers.taskType === 'Deployment/DevOps') {
+      } else if (taskType === 'Deployment/DevOps') {
         console.log(chalk.blue('  ultra-dex workflow vercel'));
         console.log(chalk.blue('  ultra-dex workflow cicd\n'));
       } else {

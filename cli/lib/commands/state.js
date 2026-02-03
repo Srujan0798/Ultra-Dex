@@ -8,6 +8,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
+import { VERSION } from '../utils/version.js';
 
 // State locking mechanism to prevent race conditions
 let stateLock = null;
@@ -89,7 +90,7 @@ export async function computeState() {
   }
 
   const state = {
-    version: '3.4.2',
+    version: VERSION,
     updatedAt: new Date().toISOString(),
     project: { name: path.basename(process.cwd()), mode: 'ULTRA_MODE' },
     files: {},

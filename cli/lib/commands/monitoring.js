@@ -96,6 +96,34 @@ export function registerSystemConfigCommand(program) {
 }
 
 export async function metricsCommand(options) {
+  if (options.watch) {
+    console.clear();
+    console.log(chalk.bold.blue('\n📈 Ultra-Dex Real-Time Metrics (Press Ctrl+C to stop)\n'));
+    
+    setInterval(() => {
+      console.clear();
+      console.log(chalk.bold.blue('\n📈 Ultra-Dex Real-Time Metrics (Press Ctrl+C to stop)\n'));
+      interactiveMode.showMetrics();
+      
+      // Alerting Logic
+      const metrics = monitoring.getMetrics();
+      if (metrics.system) {
+          const usedMemPercent = ((metrics.system.totalMemory - metrics.system.freeMemory) / metrics.system.totalMemory) * 100;
+          if (usedMemPercent > 90) {
+              console.log(chalk.bgRed.white.bold('\n⚠️  ALERT: High Memory Usage (>90%) '));
+          }
+          if (metrics.errors > 10) {
+              console.log(chalk.bgRed.white.bold(`\n⚠️  ALERT: High Error Rate (${metrics.errors} errors) `));
+          }
+      }
+      console.log(chalk.gray(`\nLast updated: ${new Date().toLocaleTimeString()}`));
+    }, 2000);
+    
+    // Keep process alive
+    process.stdin.resume();
+    return;
+  }
+
   console.log(chalk.bold.blue('\n📈 Ultra-Dex Metrics\n'));
   interactiveMode.showMetrics();
   
@@ -113,6 +141,7 @@ export function registerMetricsCommand(program) {
     .description('Show system metrics and performance data')
     .option('-e, --export', 'Export metrics')
     .option('-f, --format <format>', 'Export format (json, csv)', 'json')
+    .option('-w, --watch', 'Watch metrics in real-time')
     .action(metricsCommand);
 }
 

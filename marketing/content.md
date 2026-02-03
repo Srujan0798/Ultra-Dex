@@ -7,10 +7,10 @@
 - [x] Documentation updated
 
 ## Key Stats
-- 42+ CLI commands
+- 46 CLI commands
 - 17 AI agents in 6 tiers
 - 31 cursor rules
-- 95 passing tests
+- 281 passing tests
 - MCP + WebSocket + Graph implementation
 
 ## Platforms
@@ -19,7 +19,7 @@
 ```
 🚀 Ultra-Dex v3.4.3 — the AI Orchestration Meta-Layer
 
-✅ 42+ CLI commands
+✅ 46 CLI commands
 ✅ 17 AI agents (swarm mode!)
 ✅ Active Kernel (MCP + WebSocket)
 ✅ Docker Sandbox for safe execution

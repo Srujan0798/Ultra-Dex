@@ -1,19 +1,22 @@
 // cli/lib/commands/diff.js
 import chalk from 'chalk';
 import { readFileSync, existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { join, relative } from 'path';
 import { execSync } from 'child_process';
 import { loadConfig } from './config.js';
+import { projectGraph } from '../mcp/graph.js';
+import { loadState } from './state.js';
 
 const STATUS = {
   DONE: 'done',
   PARTIAL: 'partial',
-  MISSING: 'missing'
+  MISSING: 'missing',
+  PLANNED: 'planned'
 };
 
-export function diffCommand(options) {
+export async function diffCommand(options) {
   if (!options.json) {
-    console.log(chalk.cyan.bold('\n📊 Ultra-Dex Diff - Plan vs Code v3.0\n'));
+    console.log(chalk.cyan.bold('\n📊 Ultra-Dex Diff - Plan vs Reality v3.5\n'));
   }
 
   const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
@@ -21,11 +24,28 @@ export function diffCommand(options) {
     if (options.json) {
       console.log(JSON.stringify({ error: 'No IMPLEMENTATION-PLAN.md found', sections: [], alignment: 0 }));
     } else {
-      console.log(chalk.red('No IMPLEMENTATION-PLAN.md found'));
+      console.log(chalk.red('❌ No IMPLEMENTATION-PLAN.md found'));
+      console.log(chalk.gray('   Run: ultra-dex generate "your idea" to create one\n'));
     }
     return;
   }
 
+  // Load project graph for enhanced analysis
+  let graphSummary = null;
+  if (!options.json) {
+    console.log(chalk.gray('🔍 Analyzing codebase structure...'));
+  }
+  
+  try {
+    await projectGraph.scan();
+    graphSummary = projectGraph.getSummary();
+  } catch (e) {
+    // Graph analysis failed, continue without it
+  }
+
+  // Load state for task tracking
+  const state = await loadState();
+  
   const plan = readFileSync(planPath, 'utf-8');
   
   // Extract planned sections
@@ -35,20 +55,26 @@ export function diffCommand(options) {
     if (options.json) {
       console.log(JSON.stringify({ error: 'No sections found', sections: [], alignment: 0 }));
     } else {
-      console.log(chalk.yellow('No sections found in IMPLEMENTATION-PLAN.md (looking for ## or ### headings)'));
+      console.log(chalk.yellow('⚠️  No sections found in IMPLEMENTATION-PLAN.md'));
+      console.log(chalk.gray('   Looking for ## or ### headings\n'));
     }
     return;
   }
 
   // Check implementation status
   const config = loadConfig();
-  const results = checkImplementationStatus(plannedSections, config);
+  const results = checkImplementationStatus(plannedSections, config, state);
   
-  // Calculate alignment
+  // Calculate alignment with weighted scoring
   const doneCount = results.filter(r => r.status === STATUS.DONE).length;
   const partialCount = results.filter(r => r.status === STATUS.PARTIAL).length;
   const missingCount = results.filter(r => r.status === STATUS.MISSING).length;
-  const alignment = Math.round(((doneCount + partialCount * 0.5) / results.length) * 100);
+  const plannedCount = results.filter(r => r.status === STATUS.PLANNED).length;
+  
+  // Weight: Done = 1.0, Partial = 0.5, Planned = 0.25
+  const alignment = Math.round(
+    ((doneCount * 1.0 + partialCount * 0.5 + plannedCount * 0.25) / results.length) * 100
+  );
 
   if (options.json) {
     console.log(JSON.stringify({
@@ -57,47 +83,89 @@ export function diffCommand(options) {
       done: doneCount,
       partial: partialCount,
       missing: missingCount,
+      planned: plannedCount,
+      graphStats: graphSummary,
+      stateStats: state ? {
+        phases: state.phases?.length || 0,
+        completedTasks: state.phases?.reduce((acc, p) => 
+          acc + p.steps?.filter(s => s.status === 'completed').length, 0) || 0
+      } : null,
       sections: results.map(r => ({
         title: r.title,
         status: r.status,
-        matches: r.matches
+        confidence: r.confidence,
+        matches: r.matches,
+        taskStatus: r.taskStatus
       }))
     }, null, 2));
     return;
   }
 
-  // Color output
-  console.log(chalk.white.bold('Planned vs Implemented:\n'));
+  // Enhanced visual output
+  console.log(chalk.white.bold('📋 Implementation Analysis:\n'));
   
-  results.forEach(({ title, status, matches }) => {
-    let icon, color;
-    switch (status) {
-      case STATUS.DONE:
-        icon = '✅';
-        color = 'green';
-        break;
-      case STATUS.PARTIAL:
-        icon = '⚠️';
-        color = 'yellow';
-        break;
-      case STATUS.MISSING:
-        icon = '❌';
-        color = 'red';
-        break;
-    }
-    console.log(`  ${icon} ${chalk[color](title)}`);
-    if (matches && matches.length > 0 && status !== STATUS.MISSING) {
-      matches.slice(0, 2).forEach(m => {
-        console.log(chalk.gray(`      → ${m}`));
-      });
-    }
-  });
+  // Show stats
+  if (graphSummary) {
+    console.log(chalk.gray(`Codebase: ${graphSummary.nodeCount} files, ${graphSummary.edgeCount} dependencies`));
+  }
+  if (state?.phases) {
+    const completedTasks = state.phases.reduce((acc, p) => 
+      acc + p.steps?.filter(s => s.status === 'completed').length, 0);
+    const totalTasks = state.phases.reduce((acc, p) => acc + p.steps?.length, 0);
+    console.log(chalk.gray(`Tasks: ${completedTasks}/${totalTasks} completed`));
+  }
+  console.log();
+
+  // Show results by status
+  const statusOrder = [STATUS.DONE, STATUS.PARTIAL, STATUS.PLANNED, STATUS.MISSING];
+  
+  for (const status of statusOrder) {
+    const statusResults = results.filter(r => r.status === status);
+    if (statusResults.length === 0) continue;
+    
+    const statusConfig = {
+      [STATUS.DONE]: { icon: '✅', color: 'green', label: 'Implemented' },
+      [STATUS.PARTIAL]: { icon: '⚠️', color: 'yellow', label: 'Partial' },
+      [STATUS.PLANNED]: { icon: '📝', color: 'blue', label: 'Planned' },
+      [STATUS.MISSING]: { icon: '❌', color: 'red', label: 'Missing' }
+    }[status];
+    
+    console.log(chalk.bold(`${statusConfig.icon} ${statusConfig.label} (${statusResults.length}):`));
+    
+    statusResults.forEach(({ title, matches, confidence, taskStatus }) => {
+      const confidenceIndicator = confidence >= 80 ? '●' : confidence >= 50 ? '◐' : '○';
+      const taskIndicator = taskStatus === 'completed' ? '✓' : taskStatus === 'in_progress' ? '⋯' : '○';
+      
+      console.log(`   ${chalk[statusConfig.color](title)} ${chalk.gray(confidenceIndicator)} ${chalk.gray(taskIndicator)}`);
+      
+      if (matches && matches.length > 0 && status !== STATUS.MISSING) {
+        matches.slice(0, 2).forEach(m => {
+          console.log(chalk.gray(`      └─ ${m}`));
+        });
+      }
+    });
+    console.log();
+  }
   
   // Summary
-  console.log(chalk.white.bold('\n─────────────────────────────────────'));
+  console.log(chalk.white.bold('─────────────────────────────────────'));
   const alignColor = alignment >= 80 ? 'green' : alignment >= 50 ? 'yellow' : 'red';
-  console.log(chalk[alignColor].bold(`Alignment: ${alignment}%`));
-  console.log(chalk.gray(`  ${chalk.green(`Done: ${doneCount}`)} | ${chalk.yellow(`Partial: ${partialCount}`)} | ${chalk.red(`Missing: ${missingCount}`)}`));
+  const alignEmoji = alignment >= 80 ? '🎯' : alignment >= 50 ? '🔧' : '🚨';
+  
+  console.log(`${alignEmoji} ${chalk[alignColor].bold(`Alignment Score: ${alignment}%`)}`);
+  console.log(chalk.gray(`   ${chalk.green(`● Done: ${doneCount}`)} | ${chalk.yellow(`◐ Partial: ${partialCount}`)} | ${chalk.blue(`○ Planned: ${plannedCount}`)} | ${chalk.red(`○ Missing: ${missingCount}`)}`));
+  
+  // Recommendations
+  console.log();
+  if (alignment < 50) {
+    console.log(chalk.yellow('💡 Recommendation: Focus on core features first'));
+  } else if (alignment < 80) {
+    console.log(chalk.yellow('💡 Recommendation: Continue implementation, polish partial features'));
+  } else {
+    console.log(chalk.green('✨ Excellent alignment! Consider testing and optimization'));
+  }
+  
+  console.log();
 }
 
 function extractSections(plan) {
@@ -149,18 +217,35 @@ function extractKeywords(title, content) {
   return [...new Set(words.filter(w => w.length > 3 && !stopwords.has(w)))];
 }
 
-function checkImplementationStatus(sections, config = {}) {
+function checkImplementationStatus(sections, config = {}, state = null) {
   // Use configured directories or fallback to defaults
   const searchDirs = config.includeDirs || [config.srcDir || (
                  existsSync(join(process.cwd(), 'src')) ? 'src' : 
                  existsSync(join(process.cwd(), 'app')) ? 'app' :
-                 existsSync(join(process.cwd(), 'lib')) ? 'lib' : null
+                 existsSync(join(process.cwd(), 'lib')) ? 'lib' : 
+                 existsSync(join(process.cwd(), 'pages')) ? 'pages' : null
   )].filter(Boolean);
   
   return sections.map(section => {
-    const { keywords } = section;
+    const { keywords, title } = section;
     const matches = [];
     let matchCount = 0;
+    let confidence = 0;
+    
+    // Check if this section has corresponding tasks in state
+    let taskStatus = 'not_tracked';
+    if (state?.phases) {
+      for (const phase of state.phases) {
+        const matchingTask = phase.steps?.find(step => 
+          step.task?.toLowerCase().includes(title.toLowerCase()) ||
+          title.toLowerCase().includes(step.task?.toLowerCase())
+        );
+        if (matchingTask) {
+          taskStatus = matchingTask.status;
+          break;
+        }
+      }
+    }
     
     if (searchDirs.length > 0 && keywords.length > 0) {
       // Search codebase for keywords
@@ -176,7 +261,8 @@ function checkImplementationStatus(sections, config = {}) {
               const files = result.split('\n').filter(Boolean);
               if (files.length > 0) {
                 matchCount++;
-                matches.push(...files.slice(0, 2).map(f => f.replace(process.cwd() + '/', '')));
+                confidence += files.length * 10; // More files = higher confidence
+                matches.push(...files.slice(0, 2).map(f => relative(process.cwd(), f)));
               }
             }
           } catch (e) {
@@ -191,11 +277,12 @@ function checkImplementationStatus(sections, config = {}) {
       if (!existsSync(join(process.cwd(), dir))) continue;
       try {
         const files = readdirSync(join(process.cwd(), dir), { recursive: true });
-        const titleWords = section.title.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+        const titleWords = title.toLowerCase().split(/\s+/).filter(w => w.length > 3);
         titleWords.forEach(word => {
           const matchingFiles = files.filter(f => f.toLowerCase().includes(word));
           if (matchingFiles.length > 0) {
             matchCount++;
+            confidence += matchingFiles.length * 15; // Filename match = higher confidence
             matches.push(...matchingFiles.slice(0, 2).map(f => `${dir}/${f}`));
           }
         });
@@ -204,13 +291,23 @@ function checkImplementationStatus(sections, config = {}) {
       }
     }
     
-    // Determine status based on matches
+    // Boost confidence for completed tasks
+    if (taskStatus === 'completed') confidence += 50;
+    if (taskStatus === 'in_progress') confidence += 25;
+    
+    // Cap confidence at 100
+    confidence = Math.min(confidence, 100);
+    
+    // Determine status based on matches and task status
     const uniqueMatches = [...new Set(matches)];
     let status;
-    if (matchCount >= 2 || uniqueMatches.length >= 2) {
+    
+    if (taskStatus === 'completed' || (matchCount >= 3 && uniqueMatches.length >= 3)) {
       status = STATUS.DONE;
-    } else if (matchCount > 0 || uniqueMatches.length > 0) {
+    } else if (taskStatus === 'in_progress' || (matchCount >= 2 || uniqueMatches.length >= 2)) {
       status = STATUS.PARTIAL;
+    } else if (matchCount > 0 || uniqueMatches.length > 0 || taskStatus !== 'not_tracked') {
+      status = STATUS.PLANNED;
     } else {
       status = STATUS.MISSING;
     }
@@ -218,7 +315,9 @@ function checkImplementationStatus(sections, config = {}) {
     return {
       title: section.title,
       status,
-      matches: uniqueMatches.slice(0, 3)
+      confidence,
+      matches: uniqueMatches.slice(0, 3),
+      taskStatus
     };
   });
 }

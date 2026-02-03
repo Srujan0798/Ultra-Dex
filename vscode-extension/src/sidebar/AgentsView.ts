@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
 
 // All 16 Ultra-Dex agents organized by tier
 const ALL_AGENTS = [
@@ -51,40 +51,39 @@ export class AgentsProvider implements vscode.TreeDataProvider<AgentItem | TierI
     return element;
   }
 
-  getChildren(element?: AgentItem | TierItem): Thenable<(AgentItem | TierItem)[]> {
+  async getChildren(element?: AgentItem | TierItem): Promise<(AgentItem | TierItem)[]> {
     if (!this.workspaceRoot) {
       vscode.window.showInformationMessage('No project open');
-      return Promise.resolve([]);
+      return [];
     }
 
     // If no element, return tier groups
     if (!element) {
       const tiers = ['Meta', 'Leadership', 'Development', 'Security', 'DevOps', 'Quality', 'Specialist'];
-      return Promise.resolve(tiers.map(tier => new TierItem(tier)));
+      return tiers.map(tier => new TierItem(tier));
     }
 
     // If tier element, return agents in that tier
     if (element instanceof TierItem) {
-      const activeAgents = this.getActiveAgents();
+      const activeAgents = await this.getActiveAgents();
       const tierAgents = ALL_AGENTS.filter(a => a.tier === element.tier);
-      return Promise.resolve(tierAgents.map(agent => {
+      return tierAgents.map(agent => {
         const isActive = activeAgents.includes(agent.name.toLowerCase());
         return new AgentItem(agent, isActive, this.workspaceRoot!);
-      }));
+      });
     }
 
-    return Promise.resolve([]);
+    return [];
   }
 
-  private getActiveAgents(): string[] {
+  private async getActiveAgents(): Promise<string[]> {
     if (!this.workspaceRoot) return [];
     try {
       const statePath = path.join(this.workspaceRoot, '.ultra', 'state.json');
-      if (fs.existsSync(statePath)) {
-        const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
-        if (state.agents && state.agents.active) {
-          return state.agents.active;
-        }
+      const content = await fs.readFile(statePath, 'utf-8');
+      const state = JSON.parse(content);
+      if (state.agents && state.agents.active) {
+        return state.agents.active;
       }
     } catch {
       // ignore
@@ -127,11 +126,11 @@ export class AgentItem extends vscode.TreeItem {
     this.tooltip = `${agent.name}: ${agent.description}`;
     this.description = isActive ? '● Active' : agent.description;
     this.contextValue = 'agent';
-    
+
     // Set icon with active color
     const iconColor = isActive ? new vscode.ThemeColor('charts.green') : undefined;
     this.iconPath = new vscode.ThemeIcon(agent.icon, iconColor);
-    
+
     // Click to copy prompt
     this.command = {
       command: 'ultra-dex.copyAgentPrompt',
