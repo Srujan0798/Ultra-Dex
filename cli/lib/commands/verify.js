@@ -37,8 +37,8 @@ export async function verifyCommand(taskName, options) {
   if (options.json) {
     try {
       // JSON Output Mode for CI/CD
-      const templatePath = options.template || 'IMPLEMENTATION-PLAN.md';
-      const contextPath = 'CONTEXT.md';
+      const templatePath = path.resolve(process.cwd(), options.template || 'IMPLEMENTATION-PLAN.md');
+      const contextPath = path.resolve(process.cwd(), 'CONTEXT.md');
 
       const planExists = await fs.stat(templatePath).catch(() => false);
       const contextExists = await fs.stat(contextPath).catch(() => false);
