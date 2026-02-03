@@ -4,6 +4,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { execSync } from 'child_process';
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+import { configManager } from '../utils/config-manager.js';
 
 export class ToolBelt {
     constructor() {
@@ -54,14 +57,41 @@ export class ToolBelt {
     }
 
     /**
-     * Run shell command (Safe restricted set)
+     * Run shell command (Safe restricted set with user confirmation)
      */
     async runShell(command) {
+        const config = await configManager.load();
+        const sandboxOnly = config.security?.sandboxOnly || false;
+
+        if (sandboxOnly) {
+            console.log(chalk.blue(`\n🐳 Sandbox Enforcement: Routing command to Docker...`));
+            const { executeCommand } = await import('../commands/exec.js');
+            try {
+                const result = await executeCommand(command);
+                return result.stdout + (result.stderr ? `\nSTDERR: ${result.stderr}` : '');
+            } catch (e) {
+                return `Sandbox Error: ${e.message}`;
+            }
+        }
+
         // Restricted to safe commands for the prototype
-        const allowedPrefixes = ['npm test', 'npm run lint', 'ls', 'pwd', 'cat', 'grep', 'find'];
-        if (!allowedPrefixes.some(p => command.startsWith(p))) {
-            // return `Error: Command '${command}' is restricted for safety.`;
-            // For GOD MODE, we allow more but log it.
+        const allowedPrefixes = ['npm test', 'npm run lint', 'ls', 'pwd', 'cat', 'grep', 'find', 'git status'];
+        const isWhitelisted = allowedPrefixes.some(p => command.startsWith(p));
+
+        if (!isWhitelisted) {
+            console.log(chalk.yellow(`\n⚠️  Agent requested a sensitive command: ${chalk.bold(command)}`));
+            const { confirm } = await inquirer.prompt([
+                {
+                    type: 'confirm',
+                    name: 'confirm',
+                    message: 'Allow execution?',
+                    default: false
+                }
+            ]);
+
+            if (!confirm) {
+                return `Error: Command execution denied by user.`;
+            }
         }
 
         try {

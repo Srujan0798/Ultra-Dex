@@ -1,84 +1,45 @@
 # Ultra-Dex Archive Summary
+> Last Updated: February 3, 2026
 
-## Archived Files and Directories
+## 📂 Archive Structure Overview
 
-### Excessive Documentation (Moved to excessive_documentation/)
-- 8 Complete example files (25-45KB each)
-- 10 Template files with detailed specifications
-- 7 Strategy files for different AI tools (Copilot, Devin, gemini, etc.)
-- 6 Architecture files with detailed planning
-- 7 Guide files with specialized workflows
-- 10 Additional documentation files (Best Practices, Deployment, Roadmap, Security, etc.)
+The project archives are organized into three main categories to maintain a clean root directory while preserving historical context and planning documents.
 
-### Reports and Planning Documents
-Moved from `archived_reports/` to `archived_docs/reports_and_planning/`:
-- 00-START/: Initial project manifest, what we are, Feb 14 focus, context, AI onboarding
-- AI-AGENT-PLAN.md: AI agent planning document
-- CLEANUP-COMPLETION-REPORT.md: Cleanup completion report
-- DEMO-TRANSCRIPT.txt: Demo transcript
-- ENHANCEMENT-SUMMARY.md: Enhancement summary
-- FINAL-PROJECT-STRUCTURE-ANALYSIS.md: Final project structure analysis
-- FINAL-SUMMARY.md: Final summary
-- FINAL-VERIFICATION-REPORT.md: Final verification report
-- FINAL-VERIFICATION.md: Final verification
-- PROJECT-COMPLETION-SUMMARY.md: Project completion summary
-- PROJECT-STRUCTURE.md: Project structure document
-- RELEASE-CANDIDATE.md: Release candidate document
-- RELEASE-CHECKLIST.md: Release checklist
-- REVIEW-PROMPT-2026-UPDATED.md: Updated review prompt
-- archive/: Archive of previous versions
-- benchmark-suite.js: Benchmark suite
-- benchmark.js: Benchmark file
-- reviews/: Review documents
-- test-suite.js: Test suite
-- ultra-pro.sh: Ultra-pro shell script
-- verification-suite.js: Verification suite
+### 1. `archives/` - Transformation & Session Reports
+Contains high-level reports from major development sessions and "waves" of transformation.
 
-### Internal Planning Documents
-Moved from `docs/internal/` to `archived_docs/internal_planning/`:
-- CLI-DOOMSDAY-THEME.md: CLI doomsday theme
-- CLI-ENHANCEMENT-PLAN.md: CLI enhancement plan
-- CODEX-IMPLEMENTATION-PLAN.md: Codex implementation plan
-- COMMAND-INVENTORY-REAL.md: Command inventory
+- **`REVIEWS-ANALYSIS-COMPLETE.md`**: Detailed audit of 9 external reviews.
+- **`COMPLETE-TRANSFORMATION-REPORT.md`**: Summary of the Feb 1, 2026 transformation session.
+- **`VSCODE-EXTENSION-COMPLETE.md`**: Documentation for the compiled VS Code extension.
+- **`transformation-waves/`**: Intermediate progress reports from development waves (1st through 5th).
 
-### Temporary Documentation Files
-Moved from `docs/` to `archived_docs/`:
-- BUILD-AUTH-30M.md: 30-minute auth build guide
-- CHECKLIST-21-STEP.md: 21-step checklist
-- FUTURE-TASKS.md: Future tasks
-- ONBOARDING.md: Onboarding guide
-- ULTRA-DEX-FLOW.md: Ultra-Dex flow
-- USER-FLOW.md: User flow
-- TUTORIAL.md: Duplicate tutorial content
+### 2. `archived_docs/` - Deprecated Guides & specialized Docs
+Contains older versions of documentation, guides that have been consolidated, and release notes.
 
-## Consolidated Files
+- **`reports_and_planning/`**: Technical reports, benchmark scripts, and internal structure analysis.
+  - Includes archived scripts: `benchmark.js`, `test-suite.js`, `ultra-pro.sh`.
+  - Includes centralized reviews in `reviews/`.
+- **`internal_planning/`**: Legacy planning documents and command inventories.
+- **`excessive_documentation/`**: Overspecified templates and guides that were streamlined for better usability.
 
-### User Guide
-- Merged `docs/USER-GUIDE.md` and `docs/USERGUIDE.md` into a single comprehensive guide at `docs/USER-GUIDE.md`
+### 3. `archived_reports/` (Removed)
+Consolidated into `archived_docs/reports_and_planning/reviews/` for better organization.
 
-### API Documentation
-- Consolidated `docs/API-REFERENCE.md` (comprehensive) and `docs/APIDOC.md` (duplicate content) by keeping only `docs/API-REFERENCE.md` and removing the duplicate
+---
 
-## Streamlined Documentation Structure
+## 🛠️ Key Archived Scripts & Tools
+(Located in `archived_docs/reports_and_planning/`)
 
-### Remaining Essential Documentation (10 core files):
-1. USER-GUIDE.md - Complete user guide
-2. API-REFERENCE.md - Command reference
-3. README.md - Documentation hub
-4. FAQ.md - Common questions
-5. QUICK-REFERENCE.md - Quick commands reference
-6. MCP-INTEGRATION.md - MCP functionality
-7. PLUGINS.md - Plugin system
-8. TROUBLESHOOTING.md - Problem solving
-9. PROJECT-ORCHESTRATION.md - Core agent workflows
-10. CICD-GUIDE.md - CI/CD setup
+- **`benchmark.js`**: Performance testing script.
+- **`test-suite.js`**: Comprehensive validation suite (Version 3.4.4).
+- **`ultra-pro.sh`**: Lifecycle management script (Version 3.4.3).
 
-### Purpose of Archiving
+---
 
-These files represented:
-1. Excessive documentation that was overwhelming for users
-2. Detailed planning documents that were not needed for core functionality
-3. Multiple specialized guides that could be consolidated
-4. Complete example files that were too comprehensive for basic needs
+## 📄 Streamlined Documentation
+The current source of truth for the project resides in:
+1.  **`00-START/`**: Core project manifest and onboarding.
+2.  **`docs/`**: Essential user guides and technical reference.
+3.  **`README.md`**: Project hub.
 
-The streamlined documentation now focuses on essential functionality while preserving all archived content for reference purposes.
+All files in `archived_docs/` and `archives/` are for **reference only** and should not be used as active guides for the current project version (v3.4.5+).

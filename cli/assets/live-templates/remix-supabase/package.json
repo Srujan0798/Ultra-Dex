@@ -1,5 +1,7 @@
 {
   "name": "ultra-dex-remix-supabase",
+  "description": "Remix and Supabase starter template",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "remix dev",

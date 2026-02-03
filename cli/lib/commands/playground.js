@@ -47,7 +47,6 @@ export function registerPlaygroundCommand(program) {
           
           console.log(chalk.blue('\n🌐 Ultra-Dex Web Playground\n'));
           console.log(`  Local: ${chalk.cyan(`http://localhost:${port}`)}`);
-          console.log(`  Network: ${chalk.cyan(`http://0.0.0.0:${port}`)}\n`);
           
           console.log(chalk.gray('Features:'));
           console.log('  • Create implementation plans from your browser');

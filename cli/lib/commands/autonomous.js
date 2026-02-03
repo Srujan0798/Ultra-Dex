@@ -167,19 +167,36 @@ export class AutonomousEngine {
     };
 
     this.sendDashboardUpdate('healing', 'Agent devising fix...');
+    
+    // Confidence scoring logic
+    const analysisPrompt = `Analyze this error and provide a confidence score (0-100) on how likely you are to fix it in one attempt. 
+    Error: \${errorOutput}
+    Output format: [SCORE]: <number>
+    [REASONING]: <text>`;
+    
+    const analysis = await runAgentLoop('debugger', analysisPrompt, this.provider, projectContext);
+    const scoreMatch = analysis.match(/\[SCORE\]:\s*(\d+)/);
+    const confidence = scoreMatch ? parseInt(scoreMatch[1]) : 50;
+
+    console.log(chalk.gray(`\nConfidence Score: \${confidence}/100`));
+    
+    if (confidence < 30) {
+        console.log(chalk.yellow('⚠️ Low confidence in automated fix. Proceeding with caution...'));
+    }
+
     const result = await runAgentLoop(
       'debugger', 
-      `Identify and fix the root cause of this error. Use READ_CODE and WRITE_CODE to apply fixes. Error output: ${errorOutput}`, 
+      `Identify and fix the root cause of this error. Use READ_CODE and WRITE_CODE to apply fixes. Error output: \${errorOutput}`, 
       this.provider,
       projectContext
     );
 
     if (result && !result.startsWith('[Error]')) {
-       // We assume the agent output describes the fix. 
-       // In a real scenario, we might want to extract a specific summary.
        await this.saveHistory(errorOutput, result.slice(0, 100));
+       this.logDecision('self-heal', 'Applied fix', confidence, 'success');
        this.sendDashboardUpdate('fixed', 'Fix applied successfully');
     } else {
+       this.logDecision('self-heal', 'Fix failed', confidence, 'failure');
        this.sendDashboardUpdate('failed', 'Agent failed to fix issue');
     }
 

@@ -16,11 +16,15 @@ import { pluginManager } from '../lib/plugin-system.js';
 import '../lib/utils/error-recovery.js';
 
 // Wait for initialization
-await Promise.all([
-  monitoring.initialize(),
-  configManager.load(),
-  pluginManager.initialize()
-]).catch(console.error);
+try {
+  await Promise.all([
+    monitoring.initialize(),
+    configManager.load(),
+    pluginManager.initialize()
+  ]);
+} catch (error) {
+  console.error(chalk.red('Failed to initialize systems:'), error.message);
+}
 
 // Log startup
 monitoring.info('Ultra-Dex CLI starting', {
@@ -74,11 +78,13 @@ import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
 import { registerAlignCommand, registerStatusCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
-import { registerCheckCommand, registerBatchCommand } from '../lib/commands/advanced.js';
+import { registerCheckCommand, registerBatchCommand, registerPipelineCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
 import { registerVerifyCommand } from '../lib/commands/verify.js';
 import { registerPluginCommand } from '../lib/commands/plugin.js';
 import { registerWorkspaceCommand } from '../lib/commands/workspace.js';
+import { registerVoiceCommand } from '../lib/commands/voice.js';
+import { registerAuthCommand } from '../lib/commands/auth.js';
 
 // v3.0 Commands
 import { swarmCommand } from '../lib/commands/swarm.js';
@@ -247,6 +253,8 @@ registerTeamCommand(program);
 registerMemoryCommand(program);
 registerScaffoldCommand(program);
 registerPluginCommand(program);
+registerVoiceCommand(program);
+registerAuthCommand(program);
 
 // Monitoring commands (v3.4.3) - note: status uses state.js, sys-config uses monitoring.js
 registerSystemConfigCommand(program);
@@ -263,15 +271,53 @@ registerBrainCommand(program);
 registerAutonomousCommand(program);
 registerWorkspaceCommand(program);
 registerBatchCommand(program);
+registerPipelineCommand(program);
 
 // Activate plugins after all commands are registered
-await pluginManager.activatePlugins(program).catch(error => {
-  console.error('Failed to activate plugins:', error.message);
-});
+try {
+  await pluginManager.activatePlugins(program);
+} catch (error) {
+  console.error(chalk.red('Failed to activate plugins:'), error.message);
+}
 
 // Launch interactive mode if no arguments provided
 if (process.argv.length <= 2) {
-  await startInteractiveMode();
+  try {
+    await startInteractiveMode();
+  } catch (error) {
+    console.error(chalk.red('Interactive mode failed:'), error.message);
+  }
 } else {
-  program.parse();
+  // Add 'Did you mean?' logic for typos
+  program.on('command:*', () => {
+    const commandName = program.args[0];
+    const availableCommands = program.commands.map(cmd => cmd.name());
+    
+    // Simple Levenshtein-like distance check
+    const suggestions = availableCommands.filter(cmd => {
+        let distance = 0;
+        const longer = commandName.length > cmd.length ? commandName : cmd;
+        const shorter = commandName.length > cmd.length ? cmd : commandName;
+        
+        for (let i = 0; i < shorter.length; i++) {
+            if (commandName[i] !== cmd[i]) distance++;
+        }
+        distance += Math.abs(commandName.length - cmd.length);
+        return distance <= 2;
+    });
+
+    console.error(chalk.red(`\n✕ Unknown command: ${commandName}`));
+    if (suggestions.length > 0) {
+        console.log(chalk.yellow(`  Did you mean: ${suggestions.join(', ')}?\n`));
+    } else {
+        console.log(chalk.gray(`  Run 'ultra-dex --help' for a list of available commands.\n`));
+    }
+    process.exit(1);
+  });
+
+  try {
+    program.parse();
+  } catch (error) {
+    console.error(chalk.red('Command execution failed:'), error.message);
+  }
 }

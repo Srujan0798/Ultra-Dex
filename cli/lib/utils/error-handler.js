@@ -4,6 +4,8 @@
  */
 
 import chalk from 'chalk';
+import inquirer from 'inquirer';
+import { execSync } from 'child_process';
 
 // Error patterns and their solutions
 const ERROR_SOLUTIONS = {
@@ -121,13 +123,23 @@ const ERROR_SOLUTIONS = {
       'Ensure disk space is available',
       'Check if another process is using the database'
     ]
+  },
+  
+  // Build/Test failures
+  'build_failure': {
+    check: (msg) => msg.includes('build failed') || msg.includes('test failed') || msg.includes('compilation error'),
+    suggest: () => [
+      chalk.green('Try automatic self-healing: ultra-dex autonomous --fix'),
+      'Check the logs for specific error details',
+      'Run ultra-dex verify to identify architectural gaps'
+    ]
   }
 };
 
 /**
  * Analyze error and provide helpful suggestions
  */
-export function handleError(error, context = {}) {
+export async function handleError(error, context = {}) {
   const errorMessage = error.message || error.toString();
   const suggestions = getSuggestions(errorMessage);
   
@@ -140,6 +152,11 @@ export function handleError(error, context = {}) {
     });
     console.log();
   }
+
+  // Offer Auto-Fix if relevant
+  if (errorMessage.toLowerCase().includes('build') || errorMessage.toLowerCase().includes('test')) {
+      await offerAutoFix();
+  }
   
   // Log error for debugging
   if (process.env.DEBUG) {
@@ -149,6 +166,26 @@ export function handleError(error, context = {}) {
   }
   
   return suggestions;
+}
+
+export async function offerAutoFix() {
+    const { confirm } = await inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: chalk.cyan('Detected build/test failure. Start autonomous self-healing?'),
+            default: true
+        }
+    ]);
+
+    if (confirm) {
+        console.log(chalk.green('\n🚀 Initiating Autonomous Fix...\n'));
+        try {
+            execSync('npx ultra-dex autonomous --fix', { stdio: 'inherit' });
+        } catch (e) {
+            console.error(chalk.red('Self-healing failed to launch.'));
+        }
+    }
 }
 
 /**

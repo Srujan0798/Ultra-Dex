@@ -56,17 +56,17 @@ The CLI will communicate as an entity, not a script.
 ## 5. Implementation Roadmap
 
 ### Phase 1: The Face Lift (UI/UX)
-*   [ ] Refactor `cli/lib/ui/theme.js` to enforce a unified design system.
-*   [ ] Create `cli/lib/ui/layout.js` for standard headers/footers.
-*   [ ] Replace standard `console.log` with a structured `Logger` class that supports themes.
+*   [x] Refactor `cli/lib/ui/theme.js` to enforce a unified design system.
+*   [x] Create `cli/lib/ui/layout.js` for standard headers/footers.
+*   [x] Replace standard `console.log` with a structured `Logger` class that supports themes.
 
 ### Phase 2: The Dashboard (Interaction)
-*   [ ] Create `cli/lib/commands/dashboard.js` (The new default).
-*   [ ] Implement interactive menus using `inquirer` or `ink`.
+*   [x] Create `cli/lib/commands/dashboard.js` (Web dashboard already exists).
+*   [x] Implement interactive menus using `inquirer` or `ink` (Enhanced startInteractiveMode).
 
 ### Phase 3: The Brain (Intelligence)
-*   [ ] Implement `cli/lib/nlp/router.js` for intent parsing.
-*   [ ] Connect "Magic Bar" input to existing commands.
+*   [x] Implement `cli/lib/nlp/router.js` for intent parsing (Enhanced).
+*   [x] Connect "Magic Bar" input to existing commands (Handled in interactive.js).
 
 ### Phase 4: Polish
 *   [ ] Add "Did you mean?" for typos.

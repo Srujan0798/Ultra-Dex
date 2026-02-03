@@ -111,7 +111,9 @@ export function getDefaultProvider() {
   if (process.env.ANTHROPIC_API_KEY) return 'claude';
   if (process.env.OPENAI_API_KEY) return 'openai';
   if (process.env.GOOGLE_AI_KEY) return 'gemini';
-  return null;
+  
+  // Final fallback to Ollama (local-first resilience)
+  return 'ollama';
 }
 
 /**

@@ -8,6 +8,7 @@ Quick reference for all 17 production agents organized by tier.
 
 | Agent | Role | When to Use | File |
 |-------|------|-------------|------|
+| **@Architect** | Manifest reality from a raw idea | Starting a new project from scratch | [architect.md](./0-orchestration/architect.md) |
 | **@Meta-Orchestrator** | High-level system coordination & strategy | Complex multi-repo or multi-phase projects | [meta-orchestrator.md](./0-orchestration/meta-orchestrator.md) |
 | **@Orchestrator** | Coordinate all agents for complete features | Building features that span multiple tiers | [orchestrator.md](./0-orchestration/orchestrator.md) |
 

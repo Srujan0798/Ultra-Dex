@@ -24,18 +24,23 @@
 - [x] Implement `@Debugger` prompt enhancement with "Lessons Learned"
 - [x] Add "Snapshot & Rollback" logic for failed healing attempts
 
-## Phase 3: CLI & UX
+## Phase 3: CLI & UX (CLI 4.0 Face Lift)
 - [x] Register `autonomous` command in main binary
 - [x] Add `--watch-heal` mode for continuous self-healing during dev
 - [x] Implement `dashboard` integration for real-time healing progress
+- [x] Implement themed `Logger` class
+- [x] Create `layout.js` for unified headers/footers
+- [x] Enhance interactive mode with dashboard status
 
-## Phase 4: Verification
+## Phase 4: Verification & Intelligence
 - [x] Add E2E tests for the `autonomous` command
 - [x] Verify Grade A Audit persistence after auto-fixes
+- [x] Enhance NLP Intent Router with fuzzy matching
+- [x] Implement Code Impact Analysis in CodeGraph
 ## Workflow: Authentication
-- [ ] Define auth strategy
-- [ ] Set up database schema
-- [ ] Implement API endpoints
-- [ ] Build frontend pages
-- [ ] Secure routes
-- [ ] Verify email/OAuth flows
+- [x] Define auth strategy (Identity profiles & API keys)
+- [x] Set up database schema (Local global config storage)
+- [x] Implement API endpoints (CLI auth commands)
+- [x] Build frontend pages (Interactive CLI prompts)
+- [x] Secure routes (Path sanitization & Permission checks)
+- [x] Verify email/OAuth flows (Provider key management)

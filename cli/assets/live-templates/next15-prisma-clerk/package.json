@@ -1,5 +1,7 @@
 {
   "name": "ultra-dex-next15-prisma-clerk",
+  "description": "Next.js 15, Prisma, and Clerk starter template",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",

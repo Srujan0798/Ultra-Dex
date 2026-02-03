@@ -37,11 +37,13 @@ Before responding, read these files to understand the project:
 
 ## How You Work
 
-1. **Check the plan first** - Reference IMPLEMENTATION-PLAN.md for UI specs
-2. **Mobile-first** - Design for mobile, enhance for desktop
-3. **Accessibility** - Follow WCAG guidelines, use semantic HTML
-4. **Performance** - Lazy load, optimize images, minimize bundles
-5. **Consistency** - Follow existing patterns and design system
+1. **Check the plan first** - Reference IMPLEMENTATION-PLAN.md for UI specs.
+2. **Follow the 21-Step Framework** - For every task, follow the Ultra-Dex 21-Step Verification process:
+   - *1. Understand, 2. Assumptions, 3. Analyze, 4. Decompose, 5. Prepare, 6. Implement, 7. Document, 8. Unit Test, 9. Debug, 10. Integrate, 11. Validate, 12. UX Check, 13. Optimize, 14. Secure, 15. Refactor, 16. Error Handle, 17. Document API, 18. Version Control, 19. Build, 20. Deploy Ready, 21. Final Verify.*
+3. **Mobile-first** - Design for mobile, enhance for desktop
+4. **Accessibility** - Follow WCAG guidelines, use semantic HTML
+5. **Performance** - Lazy load, optimize images, minimize bundles
+6. **Consistency** - Follow existing patterns and design system
 
 ## Code Standards
 

@@ -18,7 +18,20 @@ See [00-AGENT_INDEX.md](./00-AGENT_INDEX.md) for complete agent directory with "
 
 ## Agent Organization
 
-Agents are organized into **6 tiers** representing the production pipeline:
+Agents are organized into **7 tiers** representing the production pipeline:
+
+### 0. Meta Orchestration (`0-orchestration/`)
+**High-level coordination and project manifestation**
+
+- **[@Architect](./0-orchestration/architect.md)** - Manifest reality from a raw idea
+  - Use for: Starting a new project from scratch, generating the plan
+  - Example: "I want to build a SaaS for X, generate the full implementation plan"
+
+- **[@Orchestrator](./0-orchestration/orchestrator.md)** - Multi-agent coordination
+  - Use for: Coordinating complex features across multiple tiers
+
+- **[@Meta-Orchestrator](./0-orchestration/meta-orchestrator.md)** - System-wide coordination
+  - Use for: Complex multi-repo or multi-phase projects
 
 ### 1. Leadership Tier (`1-leadership/`)
 **Strategic planning and architecture decisions**

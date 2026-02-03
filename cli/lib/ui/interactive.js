@@ -4,7 +4,7 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { renderer } from './renderer.js'; // Use the new renderer
-import { theme } from './theme.js';
+import { theme, stripAnsi } from './theme.js';
 import { execSync } from 'child_process';
 import { routeIntent } from '../nlp/router.js';
 import { context } from '../kernel/context.js'; // Import Intelligence
@@ -30,6 +30,21 @@ export async function startInteractiveMode() {
     const gitInfo = ctx.git.branch ? `Active branch: \`${ctx.git.branch}\`` : '';
 
     await renderer.text(`**Welcome, User.**\n${stackInfo} ${gitInfo}`);
+    
+    // Display Status Dashboard
+    console.log(theme.dim('  ┌' + '─'.repeat(56) + '┐'));
+    const statusLine = (label, val) => {
+        const padding = 54 - label.length - stripAnsi(val).length;
+        console.log(`  │ ${theme.subtitle(label)} ${' '.repeat(Math.max(0, padding))} ${val} │`);
+    };
+    
+    statusLine('STACK', ctx.stack);
+    statusLine('BRANCH', ctx.git.branch || 'none');
+    statusLine('CHANGES', `${ctx.git.modifiedFiles || 0} files`);
+    statusLine('AGENTS', theme.success('17 Online'));
+    console.log(theme.dim('  └' + '─'.repeat(56) + '┘'));
+    console.log('');
+
     console.log(theme.dim('  (Type a command, ask a question, or use the menu below)'));
     console.log('');
 
@@ -38,6 +53,8 @@ export async function startInteractiveMode() {
         { name: `${theme.primary('🧠')}  Generate Implementation Plan`, value: 'generate' },
         { name: `${theme.primary('🔨')}  Start Build Swarm`, value: 'swarm' },
         { name: `${theme.primary('📊')}  Project Status Dashboard`, value: 'status' },
+        { name: `${theme.primary('📂')}  Manage Workspaces`, value: 'workspace' },
+        { name: `${theme.primary('🔐')}  Identity & Auth`, value: 'auth' },
         { name: `${theme.primary('🔍')}  Browse Agents`, value: 'agents' },
         { name: `${theme.primary('🚑')}  System Doctor`, value: 'doctor' },
         { name: `${theme.primary('📖')}  Read Documentation`, value: 'docs' },

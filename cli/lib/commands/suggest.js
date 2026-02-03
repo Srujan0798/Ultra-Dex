@@ -5,6 +5,7 @@ import path from 'path';
 import ora from 'ora';
 import { AGENTS } from './agents.js';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
+import { context } from '../kernel/context.js';
 
 export function registerSuggestCommand(program) {
   program
@@ -59,26 +60,37 @@ export function registerSuggestCommand(program) {
         }
       }
 
+      // 1. Context Phase
+      const spinner = ora('Analyzing environment context...').start();
+      const ctx = await context.scan();
+      spinner.succeed('Environment analyzed');
+      console.log(chalk.gray(`  Stack: ${ctx.stack} | Branch: ${ctx.git.branch || 'none'}`));
+
       // AI Mode
       if (providerId && (description || taskType === 'Custom (AI Analysis)')) {
-          const spinner = ora('Analyzing context with AI...').start();
+          const aiSpinner = ora('Synthesizing expert recommendations...').start();
           try {
               const provider = createProvider(providerId);
               
-              let context = '';
+              let contextContent = '';
               try {
-                  context = await fs.readFile(path.resolve(process.cwd(), 'CONTEXT.md'), 'utf8');
+                  contextContent = await fs.readFile(path.resolve(process.cwd(), 'CONTEXT.md'), 'utf8');
               } catch {}
 
               const prompt = `
 You are an expert software architect using the Ultra-Dex framework.
-Based on the user's task, suggest the best workflow of agents.
+Based on the user's task and the project environment, suggest the best workflow of agents.
 
 Available Agents:
 ${AGENTS.map(a => `- @${a.name}: ${a.description}`).join('\n')}
 
-Project Context:
-${context.slice(0, 1000)}...
+Project Environment:
+- Stack: ${ctx.stack}
+- Git: ${ctx.git.branch} (${ctx.git.isDirty ? 'dirty' : 'clean'})
+- Files: ${ctx.files.join(', ')}
+
+Project Context (from CONTEXT.md):
+${contextContent.slice(0, 1000)}...
 
 User Task: ${description || taskType}
 
@@ -95,7 +107,7 @@ Output a JSON object with:
               const jsonMatch = response.content.match(/\{[\s\S]*\}/);
               if (jsonMatch) {
                   const data = JSON.parse(jsonMatch[0]);
-                  spinner.succeed(chalk.green('AI Analysis Complete'));
+                  aiSpinner.succeed(chalk.green('AI Analysis Complete'));
                   
                   console.log(chalk.bold('\n💡 AI Suggested Workflow:\n'));
                   console.log(chalk.gray(data.reasoning + '\n'));
@@ -112,7 +124,7 @@ Output a JSON object with:
                   return;
               }
           } catch (e) {
-              spinner.fail('AI analysis failed, falling back to static logic.');
+              aiSpinner.fail('AI analysis failed, falling back to static logic.');
               // Fallthrough to static
           }
       }

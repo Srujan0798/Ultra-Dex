@@ -1,4 +1,4 @@
-# Ultra-Dex Professional Development Flow
+# Ultra-Dex Professional Development Flow (v3.5.0)
 
 ## 🎯 The Complete End-to-End Workflow
 
@@ -28,29 +28,31 @@ Fill only the 8 critical sections first:
 
 ### Phase 3: Scaffolding & Setup (10 minutes)
 ```bash
-npx ultra-dex scaffold --from-plan
+npx ultra-dex scaffold --from-plan --advanced
 ```
-Auto-generates your project structure based on your implementation plan:
+Auto-generates your project structure with AI-ready patterns:
 - Folder structure matching your tech stack
 - Configuration files (package.json, tsconfig.json)
-- Empty files with TODOs for each component
+- **Advanced AI Context Helpers** (`src/lib/ai.ts`, `src/lib/context.ts`)
 - Database schema templates
 
 ### Phase 4: Quality Verification (2 minutes)
 ```bash
 npx ultra-dex check
+npx ultra-dex audit --report
 ```
-Comprehensive completeness validation:
+Comprehensive completeness and security validation:
 - Section-by-section analysis
-- P0 section criticality checking
+- **Grade A Audit Framework** (90% benchmark)
 - Completeness percentage reporting
 - Actionable suggestions for missing content
 
 ### Phase 5: Autonomous Development (Ongoing)
 ```bash
 npx ultra-dex swarm "Implement feature"
+npx ultra-dex autonomous --fix --watch
 ```
-The 8-agent orchestration pipeline:
+The enhanced orchestration pipeline:
 1. **@Planner**: Task breakdown specialist
 2. **@CTO**: Technical architecture lead  
 3. **@Backend**: API & business logic developer
@@ -58,21 +60,21 @@ The 8-agent orchestration pipeline:
 5. **@Database**: Database architect
 6. **@Testing**: QA engineer
 7. **@Reviewer**: Code review specialist
-8. **@Debugger**: Bug fixing and optimization
+8. **@Debugger**: **Autonomous Self-Healing**
 
-### Phase 6: Quality Assurance (Continuous)
+### Phase 6: Intelligence & Safety (Continuous)
 ```bash
-npx ultra-dex verify    # 21-step verification framework
-npx ultra-dex audit     # Comprehensive project analysis
-npx ultra-dex doctor    # System health check
-npx ultra-dex metrics   # Performance monitoring
+npx ultra-dex search --impact "file.ts"  # Code Impact Analysis
+npx ultra-dex verify                     # 21-step verification framework
+npx ultra-dex doctor                     # System health check
+npx ultra-dex metrics --watch            # Real-time monitoring
 ```
 
 ### Phase 7: Production Deployment
 ```bash
 npx ultra-dex serve     # MCP + WebSocket + Dashboard
 npx ultra-dex cloud     # Team collaboration server
-npx ultra-dex deploy    # Production deployment
+npx ultra-dex deploy    # Production deployment configurations
 ```
 
 ## 🏆 Why This Flow Wins
@@ -80,31 +82,21 @@ npx ultra-dex deploy    # Production deployment
 ### For Developers:
 - **Structure without restriction**: Follow the template but modify anything you want
 - **AI memory**: Every agent has context about YOUR project
-- **Quality enforcement**: 21-step verification built-in
-- **Real-time feedback**: WebSocket dashboard shows progress
+- **Self-Healing**: Autonomous loops fix bugs before you even see them
+- **Impact Analysis**: Know exactly what breaks before you commit
 
 ### For Teams:
 - **Shared understanding**: Everyone works from the same implementation plan
-- **Parallel development**: Multiple agents work simultaneously
-- **Consistent quality**: Automated verification ensures standards
+- **Strict Sandbox**: Safe agent execution via Docker containers
+- **Consistent quality**: Automated 21-step verification ensures standards
 - **Knowledge retention**: Context scanning preserves project memory
-
-## 📊 Metrics That Matter
-
-| Metric | Target | Current Status |
-|--------|--------|----------------|
-| Section Completeness | 90%+ | Variable (depends on plan) |
-| Critical Sections (P0) | 100% | Verified by `check` command |
-| Agent Success Rate | 85%+ | Built-in error handling |
-| Build Time | <5 min | Optimized with caching |
-| Verification Coverage | 21 steps | Fully implemented |
 
 ## 🚀 Getting Started Today
 
 1. **Initialize**: `npx ultra-dex init`
 2. **Fill 8 sections**: Focus on foundation
-3. **Scaffold**: `npx ultra-dex scaffold --from-plan`
-4. **Check**: `npx ultra-dex check`
+3. **Scaffold**: `npx ultra-dex scaffold --from-plan --advanced`
+4. **Audit**: `npx ultra-dex audit`
 5. **Swarm**: `npx ultra-dex swarm "your first feature"`
 
 The Ultra-Dex flow turns AI-assisted development from chaotic prompting into structured, production-grade engineering.

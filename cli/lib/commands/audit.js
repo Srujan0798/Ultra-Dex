@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
+import { pathExists } from '../utils/files.js';
 import { githubWebUrl } from '../config/urls.js';
 import { runQualityScan } from '../quality/scanner.js';
 
@@ -76,21 +77,35 @@ export function registerAuditCommand(program) {
       console.log(chalk.bold('📊 STRUCTURE AUDIT\n'));
 
       const quickStart = await checkFile('QUICK-START.md', 'QUICK-START.md', 10);
-      await checkFile('CONTEXT.md', 'CONTEXT.md', 5);
+      const context = await checkFile('CONTEXT.md', 'CONTEXT.md', 5);
       const implPlan = await checkFile('IMPLEMENTATION-PLAN.md', 'IMPLEMENTATION-PLAN.md', 5);
-      await checkFile('README.md', 'README.md', 5);
+      const readme = await checkFile('README.md', 'README.md', 5);
       await checkFile('package.json', 'package.json', 5);
 
-      try {
-          await fs.access(path.join(projectDir, 'src'));
+      if (readme && readme.split('\n').length > 100) {
           score += 5;
           maxScore += 5;
-          results.push({ category: 'Docs', status: '✅', item: 'src/ folder exists', points: '+5' });
-          console.log(chalk.green('  ✅ src/ folder present'));
+          results.push({ category: 'Docs', status: '✅', item: 'Detailed README (>100 lines)', points: '+5' });
+      }
+
+      try {
+          const hasSrc = await pathExists(path.join(projectDir, 'src'), 'dir');
+          const hasLib = await pathExists(path.join(projectDir, 'lib'), 'dir');
+          const hasCli = await pathExists(path.join(projectDir, 'cli'), 'dir');
+          
+          if (hasSrc || hasLib || hasCli) {
+              const folderName = hasSrc ? 'src/' : (hasLib ? 'lib/' : 'cli/');
+              score += 5;
+              maxScore += 5;
+              results.push({ category: 'Docs', status: '✅', item: `${folderName} folder exists`, points: '+5' });
+              console.log(chalk.green(`  ✅ ${folderName} folder present`));
+          } else {
+              throw new Error('No source folder found');
+          }
       } catch {
           maxScore += 5;
-          results.push({ category: 'Docs', status: '❌', item: 'src/ folder (Missing)', points: '0' });
-          console.log(chalk.red('  ❌ src/ folder missing'));
+          results.push({ category: 'Docs', status: '❌', item: 'src/ or lib/ folder (Missing)', points: '0' });
+          console.log(chalk.red('  ❌ src/ or lib/ folder missing'));
       }
 
       if (quickStart) {
