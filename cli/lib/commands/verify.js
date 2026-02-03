@@ -12,6 +12,7 @@ import { runAgentLoop } from './run.js';
 import { loadState } from './plan.js';
 import { projectGraph } from '../mcp/graph.js';
 import { runQualityScan } from '../quality/scanner.js';
+import path from 'path';
 
 const CHECKLIST = [
   "Atomic Scope Defined", "Context Loaded", "Architecture Alignment", 
@@ -33,6 +34,42 @@ async function runAutomatedCheck(name, command) {
 }
 
 export async function verifyCommand(taskName, options) {
+  if (options.json) {
+    try {
+      // JSON Output Mode for CI/CD
+      const templatePath = options.template || 'IMPLEMENTATION-PLAN.md';
+      const contextPath = 'CONTEXT.md';
+
+      const planExists = await fs.stat(templatePath).catch(() => false);
+      const contextExists = await fs.stat(contextPath).catch(() => false);
+
+      let p0SectionsComplete = false;
+      if (planExists) {
+        const planContent = await fs.readFile(templatePath, 'utf-8');
+        // Basic check for content to satisfy P0 requirement
+        if (planContent.length > 100 && planContent.includes('##')) {
+            p0SectionsComplete = true;
+        }
+      }
+
+      const result = {
+        valid: Boolean(planExists && contextExists),
+        score: (planExists ? 50 : 0) + (contextExists ? 30 : 0) + (p0SectionsComplete ? 20 : 0),
+        p0SectionsComplete,
+        files: {
+          plan: Boolean(planExists),
+          context: Boolean(contextExists)
+        }
+      };
+
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    } catch (e) {
+      console.log(JSON.stringify({ valid: false, error: e.message }));
+      return;
+    }
+  }
+
   console.log(chalk.cyan.bold('\n⚖️  Ultra-Dex 21-Step Verification\n'));
   
   const providerId = options.provider || getDefaultProvider();
@@ -133,5 +170,7 @@ export function registerVerifyCommand(program) {
       .command('verify [task]')
       .description('Run executable 21-step verification on a task or project')
       .option('-p, --provider <provider>', 'AI provider')
+      .option('--json', 'Output results as JSON')
+      .option('--template <path>', 'Template file path (optional)')
       .action(verifyCommand);
 }

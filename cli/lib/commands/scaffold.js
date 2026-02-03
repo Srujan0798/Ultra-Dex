@@ -33,6 +33,7 @@ async function copyDirectory(src, dest) {
 
   // Ensure source is within expected assets directory
   const expectedSrcPrefix = path.resolve(__dirname, '../../assets/live-templates');
+
   if (!normalizedSrc.startsWith(expectedSrcPrefix)) {
     throw new Error('Source path is outside allowed directory');
   }
@@ -43,10 +44,10 @@ async function copyDirectory(src, dest) {
   }
 
   await fs.mkdir(normalizedDest, { recursive: true });
+
   const entries = await fs.readdir(normalizedSrc, { withFileTypes: true });
 
   for (const entry of entries) {
-    // Prevent any potential symbolic link issues
     if (entry.isSymbolicLink()) {
       console.warn(`Skipping symbolic link: ${entry.name}`);
       continue;
@@ -63,8 +64,34 @@ async function copyDirectory(src, dest) {
   }
 }
 
+async function detectStackFromPlan() {
+  try {
+    const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
+    const content = await fs.readFile(planPath, 'utf-8');
+
+    if (content.match(/remix/i) && content.match(/supabase/i)) return 'remix-supabase';
+    if (content.match(/svelte/i) && content.match(/drizzle/i)) return 'sveltekit-drizzle';
+
+    return 'next15-prisma-clerk';
+  } catch (e) {
+    return 'next15-prisma-clerk';
+  }
+}
+
 export async function scaffoldCommand(templateName, options) {
   console.log(chalk.cyan('\n🏗️  Ultra-Dex Scaffold\n'));
+
+  // Logic for --from-plan
+  if (options.fromPlan) {
+    console.log(chalk.blue('  Scaffolding from Implementation Plan...'));
+    const detected = await detectStackFromPlan();
+    if (detected) {
+      console.log(chalk.green(`  Detected Tech Stack -> Template: ${TEMPLATES[detected].name}`));
+      templateName = detected;
+    } else {
+      templateName = 'next15-prisma-clerk';
+    }
+  }
 
   // If no template specified, show selection
   if (!templateName) {
@@ -85,33 +112,21 @@ export async function scaffoldCommand(templateName, options) {
   const template = TEMPLATES[templateName];
   if (!template) {
     console.log(chalk.red(`\n❌ Template "${templateName}" not found.\n`));
-    console.log(chalk.gray('Available templates:'));
-    Object.entries(TEMPLATES).forEach(([key, val]) => {
-      console.log(chalk.cyan(`  - ${key}`) + chalk.gray(` (${val.name})`));
-    });
     process.exit(1);
   }
 
-  const outputDir = options.output || templateName;
+  const outputDir = options.output || '.';
+
   const spinner = ora(`Scaffolding ${template.name}...`).start();
 
   try {
-    // Find template directory
     const assetsDir = path.resolve(__dirname, '../../assets/live-templates', templateName);
 
-    try {
-      await fs.access(assetsDir);
-    } catch {
-      spinner.fail('Template files not found in assets');
-      console.log(chalk.yellow('\n💡 Templates are bundled with the npm package.'));
-      console.log(chalk.gray('   Make sure you have the full package installed.\n'));
-      process.exit(1);
-    }
-
-    // Copy template
+    await fs.access(assetsDir);
     await copyDirectory(assetsDir, outputDir);
 
     spinner.succeed(`Scaffolded ${template.name}`);
+    console.log(chalk.green('✅ Scaffolding Complete'));
 
     console.log(chalk.bold('\n📁 Created files:\n'));
 
@@ -157,6 +172,7 @@ export function registerScaffoldCommand(program) {
     .description('Generate a production-ready project from a template')
     .option('-o, --output <dir>', 'Output directory')
     .option('--list', 'List available templates')
+    .option('--from-plan', 'Scaffold based on Implementation Plan')
     .action(async (template, options) => {
       if (options.list) {
         console.log(chalk.cyan('\n📦 Available Templates\n'));
