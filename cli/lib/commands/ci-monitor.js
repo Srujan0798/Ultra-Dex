@@ -98,14 +98,14 @@ async function handleBuildFailure(payload, options, notifyEvents) {
   };
 
   // 2. Diagnose & Fix (@Debugger)
-  const fixPlan = await runAgentLoop('debugger', `Analyze this build failure and propose a fix:\n${logs}`, provider, context);
-
-  // 3. Apply Fix (Mock - would be git push)
+  const fixPlan = await runAgentLoop('debugger', `Analyze this build failure, fix the code using WRITE_CODE, and explain what you did:\n${logs}`, provider, context);
+    
+  // 3. Apply Fix
   console.log(chalk.bold('\nProposed Fix:'));
   console.log(chalk.gray(fixPlan));
-
-  // Apply Fix using DevOps Agent
-  await runAgentLoop('devops', `Apply this fix and push to branch 'fix/${jobName}':\n${fixPlan}`, provider, context);
+    
+  console.log(chalk.yellow('\n🚀 Applying Fix via @DevOps...'));
+  await runAgentLoop('devops', `The fix has been applied to the code. Please create a new branch 'fix/${jobName.replace(/[^a-zA-Z0-9-_]/g, '-')}', commit the changes, and push using git commands.`, provider, context);
 
   // 4. Send Notifications
   if (notifyEvents.includes('failure')) {
@@ -119,35 +119,13 @@ async function handleBuildFailure(payload, options, notifyEvents) {
       fix: fixPlan.substring(0, 300)
     };
 
-    // 2. Diagnose & Fix (@Debugger)
-    const fixPlan = await runAgentLoop('debugger', `Analyze this build failure, fix the code using WRITE_CODE, and explain what you did:\n${logs}`, provider, context);
-    
-    // 3. Apply Fix
-    console.log(chalk.bold('\nProposed Fix:'));
-    console.log(chalk.gray(fixPlan));
-    
-    console.log(chalk.yellow('\n🚀 Applying Fix via @DevOps...'));
-    await runAgentLoop('devops', `The fix has been applied to the code. Please create a new branch 'fix/${jobName.replace(/[^a-zA-Z0-9-_]/g, '-')}', commit the changes, and push using git commands.`, provider, context);
-
-    // 4. Send Notifications
-    if (notifyEvents.includes('failure')) {
-      const notification = {
-        title: `🚨 Build Failed: ${jobName}`,
-        repo: repo,
-        branch: payload.workflow_job.head_branch,
-        commit: payload.workflow_job.head_sha?.substring(0, 7) || 'unknown',
-        url: payload.workflow_job.html_url,
-        error: logs.substring(0, 500),
-        fix: fixPlan.substring(0, 300)
-      };
-
-      if (options.slackWebhook) {
-        await sendSlackNotification(options.slackWebhook, notification, 'failure');
-      }
-      if (options.discordWebhook) {
-        await sendDiscordNotification(options.discordWebhook, notification, 'failure');
-      }
+    if (options.slackWebhook) {
+      await sendSlackNotification(options.slackWebhook, notification, 'failure');
     }
+    if (options.discordWebhook) {
+      await sendDiscordNotification(options.discordWebhook, notification, 'failure');
+    }
+  }
 }
 
 async function notifySuccess(payload, options) {
