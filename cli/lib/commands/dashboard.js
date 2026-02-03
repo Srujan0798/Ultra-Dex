@@ -46,7 +46,7 @@ async function getGitInfo() {
   }
 }
 
-function generateDashboardHTML(state, gitInfo, graphSummary) {
+export function generateDashboardHTML(state, gitInfo, graphSummary) {
   const phasesHTML = state.phases.map(phase => {
     const statusClass = phase.status;
     const progress = (phase.steps.filter(s => s.status === 'completed').length / phase.steps.length) * 100;

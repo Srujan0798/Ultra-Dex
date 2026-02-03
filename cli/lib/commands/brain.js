@@ -103,7 +103,7 @@ Setting up the implementation plan.
   }
 }
 
-async function enhanceContextWithProjectInfo(context, state, graphSummary) {
+export async function enhanceContextWithProjectInfo(context, state, graphSummary) {
   // 1. Remove existing "Current State" blocks (and their content up to next header)
   // We use a regex that matches "### Current State" and everything until the next "## " header or end of string
   let newContext = context
