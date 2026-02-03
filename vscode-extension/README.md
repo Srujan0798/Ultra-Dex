@@ -8,9 +8,8 @@
 
 Ultra-Dex makes your AI assistants (Claude, GPT, Cursor, Copilot) dramatically smarter by giving them structure, memory, and architectural context. This VS Code extension provides deep integration with the Ultra-Dex CLI.
 
-![Ultra-Dex Demo](https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/assets/social/terminal-mockup.png)
-
 ---
+
 
 ## ✨ Features
 
