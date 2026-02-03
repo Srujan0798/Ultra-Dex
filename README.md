@@ -1,38 +1,130 @@
 # Ultra-Dex
 
 [![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)
+[![CI Status](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](./cli/package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](./cli/tsconfig.json)
+[![Tests](https://img.shields.io/badge/Tests-300+-brightgreen.svg)](./cli/test/README.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+[![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md)
+[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-31_Modules-green.svg)](./cursor-rules/)
+[![AI Agents](https://img.shields.io/badge/AI_Agents-18_Prompts-orange.svg)](./agents/)
+[![Commands](https://img.shields.io/badge/CLI_Commands-50+-blue.svg)](./cli/)
 
 > **The Autonomous OS for Software Engineering — The Headless CTO.**
 
 ---
 
-## What is Ultra-Dex?
 
-Ultra-Dex is an AI orchestration meta-layer that makes your AI assistants (Claude, GPT, Cursor) dramatically smarter by giving them structure, memory, and architectural context.
+## 📖 New Here? Start with [00-START/README.md](./00-START/README.md)
 
-## Quick Start
+**Don't read this long README first.** Read the 6 core docs in `00-START/` folder (takes 15 minutes):
+1. [START-HERE.md](./00-START/START-HERE.md) — Reading Guide
+2. [00-PROJECT-MANIFEST.md](./00-START/00-PROJECT-MANIFEST.md) — Sacred Principles
+3. [01-WHAT-WE-ARE.md](./00-START/01-WHAT-WE-ARE.md) — Philosophy
+4. [02-FEB-14-FOCUS.md](./00-START/02-FEB-14-FOCUS.md) — Launch Roadmap
+5. [03-CONTEXT.md](./00-START/03-CONTEXT.md) — System State
+6. [04-AI-ONBOARDING.md](./00-START/04-AI-ONBOARDING.md) — For AI Agents
+
+---
+
+## 🚀 NEW: Ultra-Dex v3.5.0 (The Professional Standard)
+
+**Valentine's Day Launch — "Fall in Love with Building SaaS Again"**
+
+Ultra-Dex v3.5.0 introduces **Autonomous Self-Healing**, **Voice-to-Plan**, and **LangGraph Native Integration**. The CLI has been completely refactored with a Professional UI/UX, unified design system, and strict security sandboxing.
 
 ```bash
-# Install globally
-npm install -g ultra-dex
-
-# Start the Interactive Dashboard
+# Start the Interactive Dashboard (Conversational Interface)
 npx ultra-dex
+
+# Voice-to-Plan: Convert speech to blueprints
+npx ultra-dex voice "Build a finance SaaS with Next.js"
+
+# Run autonomous self-healing test loops
+npx ultra-dex autonomous --fix --watch
+
+# Analyze the impact of changing a file
+npx ultra-dex search --impact "src/lib/auth.ts"
+
+# Show realistic effort estimates based on methodology
+npx ultra-dex plan --estimate
+
+# Manage project workspaces and identity
+npx ultra-dex auth login
+npx ultra-dex workspace switch "my-pro-project"
 ```
 
-## Key Features
+**50+ commands. 18 production-ready agents. MCP integration. Autonomous Self-Healing.**
 
-- **50+ CLI Commands** - Comprehensive toolset for SaaS development
-- **18 Production-Ready Agents** - Specialized AI agents for different tasks
-- **Autonomous Self-Healing** - Automatically detects and fixes build/test failures
-- **MCP Integration** - Works with Cursor, Claude Code, and other AI tools
-- **Enterprise Security** - Strict sandbox enforcement for safe code execution
+---
 
-## Resources
+## ✨ v3.5.0 Feature Highlights
 
-- **Documentation:** [APIDOC.md](./APIDOC.md)
+### **1. Autonomous Intelligence (Wave 6)**
+- **Self-Healing Loop** — Automatically detects build/test failures and triggers @Debugger to fix them.
+- **Code Impact Analysis** — Predict downstream breakages across the Code Property Graph (CPG).
+- **Cognitive Link** — Persistent memory across sessions using Vector Store embeddings.
+
+### **2. Professional UI/UX (CLI 4.0)**
+- **Conversational Interface** — NLP intent routing allows natural language commands.
+- **Interactive Dashboard** — Real-time project status, alignment scores, and agent activity.
+- **Themed Design System** — Unified professional "Purple Edition" visuals with high-fidelity headers.
+- **"Did you mean?"** — Graceful handling of command typos with smart suggestions.
+
+### **3. Enterprise Security**
+- **Strict Sandbox Enforcement** — Force all agent-run shell commands through isolated Docker containers.
+- **Grade A Audit Framework** — 90% benchmark for documentation, structure, and security.
+- **Identity Profiles** — Manage local and cloud sessions with `ultra-dex auth`.
+
+### **4. Connectivity & Ecosystem**
+- **LangGraph Native** — Export Ultra-Dex swarm pipelines as state-machine graphs.
+- **Agent Marketplace** — Browse and install community-contributed specialist agents.
+- **MCP Portal** — Seamless integration with Cursor, Claude Code, and Windsurf.
+
+---
+
+## 🤔 Is Ultra-Dex Right for You?
+
+**✅ YES if:**
+- You are building a production-grade SaaS, not a weekend prototype.
+- You use multiple AI tools (Claude, GPT, Cursor) and need shared context.
+- You want to automate the "Verify" loop (Testing, Linting, Security).
+- You need a structured skeleton that agents can't "drift" from.
+
+**❌ NO if:**
+- You prefer ad-hoc, unstructured prompting.
+- You are building a static landing page or simple script.
+- You don't care about architectural integrity or long-term maintenance.
+
+---
+
+##  Bone Philosophy: Your Skeleton, Not Your Cage
+
+Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amnesia" by giving every LLM a shared, transparent structure to follow via the 34-section template.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  YOUR IDEA  +  ANY AI/LLM  +  ULTRA-DEX STRUCTURE      │
+│                      ↓                                  │
+│            STRUCTURED IMPLEMENTATION PLAN               │
+│                      ↓                                  │
+│            PRODUCTION-READY APPLICATION                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🆘 Support & Resources
+
+- **Main Repo:** [GitHub](https://github.com/Srujan0798/Ultra-Dex)
+- **Documentation:** [APIDOC.md](./APIDOC.md) | [USER-GUIDE.md](./docs/USER-GUIDE.md)
 - **Roadmap:** [ROADMAP.md](./docs/ROADMAP.md)
-- **Issues:** [GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues)
+- **Issues:** [Report Bug](https://github.com/Srujan0798/Ultra-Dex/issues)
+
+---
+
+**Ready for launch on February 14, 2026** 💝
 
 **"Ultra-Dex: The Headless CTO for your SaaS."**
