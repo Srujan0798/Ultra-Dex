@@ -10,6 +10,8 @@ import { loadState, saveState } from './state.js';
 import { buildGraph } from '../utils/graph.js';
 import { snapshotContext } from '../utils/sync.js';
 import { validateSafePath } from '../utils/validation.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 export function registerSyncCommand(program) {
   program
@@ -21,11 +23,11 @@ export function registerSyncCommand(program) {
     .option('--brain', 'Auto-update CONTEXT.md from codebase analysis (eliminates human middleware)')
     .option('--target <path>', 'Sync target (local folder or s3-like)', '.ultra/sync')
     .action(async (options) => {
-      console.log(chalk.cyan('\n🔄 Ultra-Dex State Sync\n'));
+      printInfo(chalk.cyan('\n🔄 Ultra-Dex State Sync\n'));
 
       const dirValidation = validateSafePath(options.dir, 'Project directory');
       if (dirValidation !== true) {
-        console.log(chalk.red(dirValidation));
+        printError(chalk.red(dirValidation));
         process.exit(1);
       }
 
@@ -39,9 +41,9 @@ export function registerSyncCommand(program) {
 
       // 1. Snapshot Context (Updates CONTEXT.md)
       const syncResult = await snapshotContext(projectDir);
-      console.log(chalk.green(`  ✅ Context Snapshot Complete (${syncResult.summary.fileCount} Files scanned)`));
+      printSuccess(chalk.green(`  ✅ Context Snapshot Complete (${syncResult.summary.fileCount} Files scanned)`));
       if (syncResult.updated) {
-        console.log(chalk.gray('     CONTEXT.md updated with latest project structure.'));
+        printInfo(chalk.gray('     CONTEXT.md updated with latest project structure.'));
       }
 
       const syncTarget = path.resolve(projectDir, options.target);
@@ -53,7 +55,7 @@ export function registerSyncCommand(program) {
         await handlePull(projectDir, syncTarget);
       } else {
         // Default: Bidirectional Sync (Simplified for Phase 2.1)
-        console.log(chalk.yellow('\nDefaulting to PUSH local state to target.'));
+        printWarning(chalk.yellow('\nDefaulting to PUSH local state to target.'));
         await handlePush(projectDir, syncTarget);
       }
     });
@@ -93,8 +95,8 @@ async function handlePull(projectDir, target) {
 
     await saveState(bundle.state);
     spinner.succeed(chalk.green('Local state updated from sync bundle.'));
-    console.log(chalk.gray(`   Bundle Timestamp: ${bundle.timestamp}`));
-    console.log(chalk.gray(`   Source Machine: ${bundle.machine}`));
+    printInfo(chalk.gray(`   Bundle Timestamp: ${bundle.timestamp}`));
+    printInfo(chalk.gray(`   Source Machine: ${bundle.machine}`));
   } catch (e) {
     spinner.fail(chalk.red(`Pull failed: ${e.message}`));
   }
