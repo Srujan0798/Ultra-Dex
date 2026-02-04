@@ -10,6 +10,8 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { EventEmitter } from 'events';
 import { VERSION } from '../utils/version.js';
+import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../ui/logger.js';
 
 // ============================================================================
 // MCP CLIENT CONFIGURATION
@@ -101,12 +103,12 @@ export class MCPConnection extends EventEmitter {
     return new Promise((resolve, reject) => {
       // Validate command and args to prevent command injection
       if (!this.config.command || typeof this.config.command !== 'string') {
-        reject(new Error('Invalid command configuration'));
+        reject(new ValidationError('Invalid command configuration'));
         return;
       }
 
       if (!Array.isArray(this.config.args)) {
-        reject(new Error('Invalid args configuration'));
+        reject(new ValidationError('Invalid args configuration'));
         return;
       }
 
@@ -120,13 +122,18 @@ export class MCPConnection extends EventEmitter {
         }
       }
 
-      this.process = spawn(this.config.command, this.config.args, {
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env,
-      });
+      try {
+        this.process = spawn(this.config.command, this.config.args, {
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env,
+        });
+      } catch (err) {
+        reject(new AppError(`Failed to spawn MCP server: ${err.message}`, { cause: err }));
+        return;
+      }
 
       const timeout = setTimeout(() => {
-        reject(new Error('Connection timeout'));
+        reject(new AppError('Connection timeout', { code: 'MCP_TIMEOUT' }));
         this.disconnect();
       }, MCP_CLIENT_CONFIG.connectionTimeout);
 
@@ -208,13 +215,17 @@ export class MCPConnection extends EventEmitter {
    * Call a tool
    */
   async callTool(name, arguments_) {
+    if (!name || typeof name !== 'string') {
+      throw new ValidationError('Tool name is required');
+    }
+
     if (!this.connected) {
-      throw new Error('Not connected');
+      throw new AppError(`Not connected to MCP server: ${this.config.name}`, { code: 'MCP_NOT_CONNECTED' });
     }
 
     return this._sendRequest('tools/call', {
       name,
-      arguments: arguments_,
+      arguments: arguments_ || {},
     });
   }
 
@@ -222,8 +233,12 @@ export class MCPConnection extends EventEmitter {
    * Read a resource
    */
   async readResource(uri) {
+    if (!uri || typeof uri !== 'string') {
+      throw new ValidationError('Resource URI is required');
+    }
+
     if (!this.connected) {
-      throw new Error('Not connected');
+      throw new AppError(`Not connected to MCP server: ${this.config.name}`, { code: 'MCP_NOT_CONNECTED' });
     }
 
     return this._sendRequest('resources/read', { uri });
@@ -234,6 +249,11 @@ export class MCPConnection extends EventEmitter {
    */
   _sendRequest(method, params) {
     return new Promise((resolve, reject) => {
+      if (!this.process || !this.process.stdin || this.process.stdin.destroyed) {
+        reject(new AppError('MCP server process is not available', { code: 'MCP_PROCESS_ERROR' }));
+        return;
+      }
+
       const id = ++this.requestId;
       const request = {
         jsonrpc: '2.0',
@@ -245,13 +265,21 @@ export class MCPConnection extends EventEmitter {
       this.pendingRequests.set(id, { resolve, reject });
 
       const timeout = setTimeout(() => {
-        this.pendingRequests.delete(id);
-        reject(new Error('Request timeout'));
+        if (this.pendingRequests.has(id)) {
+          this.pendingRequests.delete(id);
+          reject(new AppError(`Request timeout (${method})`, { code: 'MCP_REQUEST_TIMEOUT' }));
+        }
       }, MCP_CLIENT_CONFIG.requestTimeout);
 
       this.pendingRequests.get(id).timeout = timeout;
 
-      this.process.stdin.write(JSON.stringify(request) + '\n');
+      try {
+        this.process.stdin.write(JSON.stringify(request) + '\n');
+      } catch (err) {
+        clearTimeout(timeout);
+        this.pendingRequests.delete(id);
+        reject(new AppError(`Failed to write to MCP server: ${err.message}`, { cause: err }));
+      }
     });
   }
 
@@ -322,6 +350,7 @@ export class MCPConnection extends EventEmitter {
 export class MCPHub {
   constructor() {
     this.connections = new Map();
+    this.connecting = new Set();
     this.stateFile = MCP_CLIENT_CONFIG.stateFile;
   }
 
@@ -329,30 +358,58 @@ export class MCPHub {
    * Connect to an MCP server
    */
   async connect(serverName, customConfig = null) {
+    if (!serverName || typeof serverName !== 'string') {
+      throw new ValidationError('Server name is required');
+    }
+
     // Check if already connected
     if (this.connections.has(serverName) && this.connections.get(serverName).connected) {
       return this.connections.get(serverName);
     }
 
+    // Handle race condition: check if already connecting
+    if (this.connecting.has(serverName)) {
+      // Wait for it to finish or timeout
+      return new Promise((resolve, reject) => {
+        const check = setInterval(() => {
+          if (!this.connecting.has(serverName)) {
+            clearInterval(check);
+            if (this.connections.has(serverName) && this.connections.get(serverName).connected) {
+              resolve(this.connections.get(serverName));
+            } else {
+              reject(new AppError(`Failed to connect to ${serverName} (already in progress)`));
+            }
+          }
+        }, 100);
+        setTimeout(() => {
+          clearInterval(check);
+          reject(new AppError(`Timeout waiting for ${serverName} to connect`, { code: 'MCP_HUB_TIMEOUT' }));
+        }, 35000);
+      });
+    }
+
     // Get server config
     const config = customConfig || MCP_CLIENT_CONFIG.servers[serverName];
     if (!config) {
-      throw new Error(`Unknown MCP server: ${serverName}`);
+      throw new ValidationError(`Unknown MCP server: ${serverName}`);
     }
 
+    this.connecting.add(serverName);
     const connection = new MCPConnection(config);
 
     try {
       const result = await connection.connect();
       this.connections.set(serverName, connection);
 
-      console.log(chalk.green(`Connected to ${config.name}`));
-      console.log(chalk.gray(`  Tools: ${result.tools.map(t => t.name).join(', ') || 'none'}`));
+      logger.success(`Connected to ${config.name}`);
+      logger.debug(`  Tools: ${result.tools.map(t => t.name).join(', ') || 'none'}`);
 
       return connection;
     } catch (err) {
-      console.log(chalk.red(`Failed to connect to ${config.name}: ${err.message}`));
+      logger.error(`Failed to connect to ${config.name}`, err);
       throw err;
+    } finally {
+      this.connecting.delete(serverName);
     }
   }
 
@@ -362,8 +419,13 @@ export class MCPHub {
   async disconnect(serverName) {
     const connection = this.connections.get(serverName);
     if (connection) {
-      await connection.disconnect();
-      this.connections.delete(serverName);
+      try {
+        await connection.disconnect();
+      } catch (err) {
+        logger.error(`Error disconnecting from ${serverName}`, err);
+      } finally {
+        this.connections.delete(serverName);
+      }
     }
   }
 
@@ -371,9 +433,8 @@ export class MCPHub {
    * Disconnect from all servers
    */
   async disconnectAll() {
-    for (const [name] of this.connections) {
-      await this.disconnect(name);
-    }
+    const disconnects = Array.from(this.connections.keys()).map(name => this.disconnect(name));
+    await Promise.all(disconnects);
   }
 
   /**
@@ -382,7 +443,7 @@ export class MCPHub {
   async callTool(serverName, toolName, args) {
     const connection = this.connections.get(serverName);
     if (!connection || !connection.connected) {
-      throw new Error(`Not connected to ${serverName}`);
+      throw new AppError(`Not connected to ${serverName}`, { code: 'MCP_HUB_NOT_CONNECTED' });
     }
 
     return connection.callTool(toolName, args);
@@ -394,7 +455,7 @@ export class MCPHub {
   async readResource(serverName, uri) {
     const connection = this.connections.get(serverName);
     if (!connection || !connection.connected) {
-      throw new Error(`Not connected to ${serverName}`);
+      throw new AppError(`Not connected to ${serverName}`, { code: 'MCP_HUB_NOT_CONNECTED' });
     }
 
     return connection.readResource(uri);
