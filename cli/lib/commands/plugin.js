@@ -7,6 +7,8 @@ import chalk from 'chalk';
 import { pluginManager } from '../plugin-system.js';
 import fs from 'fs/promises';
 import path from 'path';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 export function registerPluginCommand(program) {
   const pluginCmd = program
@@ -65,69 +67,69 @@ async function listPlugins() {
 }
 
 async function installPlugin(source, options) {
-  console.log(chalk.cyan(`\n🔌 Installing plugin from: ${source}\n`));
+  printInfo(chalk.cyan(`\n🔌 Installing plugin from: ${source}\n`));
 
   try {
     const result = await pluginManager.installPlugin(source, options);
-    
+
     if (result.success) {
-      console.log(chalk.green(`✅ Plugin installed successfully!`));
-      console.log(chalk.gray(`Location: ${result.path}`));
+      printSuccess(chalk.green(`✅ Plugin installed successfully!`));
+      printInfo(chalk.gray(`Location: ${result.path}`));
     } else {
-      console.log(chalk.red(`❌ Plugin installation failed: ${result.error}`));
+      printError(chalk.red(`❌ Plugin installation failed: ${result.error}`));
     }
   } catch (error) {
-    console.log(chalk.red(`❌ Plugin installation failed: ${error.message}`));
+    printError(chalk.red(`❌ Plugin installation failed: ${error.message}`));
   }
 }
 
 async function uninstallPlugin(name) {
-  console.log(chalk.cyan(`\n🔌 Uninstalling plugin: ${name}\n`));
+  printInfo(chalk.cyan(`\n🔌 Uninstalling plugin: ${name}\n`));
 
   try {
     const result = await pluginManager.uninstallPlugin(name);
-    
+
     if (result.success) {
-      console.log(chalk.green(`✅ Plugin uninstalled successfully!`));
+      printSuccess(chalk.green(`✅ Plugin uninstalled successfully!`));
     } else {
-      console.log(chalk.red(`❌ Plugin uninstallation failed: ${result.error}`));
+      printError(chalk.red(`❌ Plugin uninstallation failed: ${result.error}`));
     }
   } catch (error) {
-    console.log(chalk.red(`❌ Plugin uninstallation failed: ${error.message}`));
+    printError(chalk.red(`❌ Plugin uninstallation failed: ${error.message}`));
   }
 }
 
 async function pluginInfo(name) {
-  console.log(chalk.cyan(`\n🔌 Plugin Information: ${name}\n`));
+  printInfo(chalk.cyan(`\n🔌 Plugin Information: ${name}\n`));
 
   const plugin = pluginManager.getPlugin(name);
 
   if (!plugin) {
-    console.log(chalk.red(`Plugin '${name}' not found.`));
+    printError(chalk.red(`Plugin '${name}' not found.`));
     return;
   }
 
-  console.log(chalk.bold('Details:'));
-  console.log(`Name: ${plugin.name}`);
-  console.log(`Version: ${plugin.version}`);
-  console.log(`Description: ${plugin.description || 'No description'}`);
-  console.log(`Author: ${plugin.author || 'Unknown'}`);
-  console.log(`Loaded: ${plugin.loaded ? chalk.green('Yes') : chalk.red('No')}`);
-  console.log(`Path: ${plugin.path}`);
+  printInfo(chalk.bold('Details:'));
+  printInfo(`Name: ${plugin.name}`);
+  printInfo(`Version: ${plugin.version}`);
+  printInfo(`Description: ${plugin.description || 'No description'}`);
+  printInfo(`Author: ${plugin.author || 'Unknown'}`);
+  printInfo(`Loaded: ${plugin.loaded ? chalk.green('Yes') : chalk.red('No')}`);
+  printInfo(`Path: ${plugin.path}`);
 
   // Show hooks this plugin is attached to
-  console.log(chalk.bold('\nHooks:'));
+  printInfo(chalk.bold('\nHooks:'));
   let hasHooks = false;
   for (const [hookName, hooks] of pluginManager.hooks) {
     const pluginHooks = hooks.filter(h => h.pluginName === name);
     if (pluginHooks.length > 0) {
-      console.log(`• ${hookName} (${pluginHooks.length} attachment${pluginHooks.length !== 1 ? 's' : ''})`);
+      printInfo(`• ${hookName} (${pluginHooks.length} attachment${pluginHooks.length !== 1 ? 's' : ''})`);
       hasHooks = true;
     }
   }
-  
+
   if (!hasHooks) {
-    console.log(chalk.gray('This plugin is not attached to any hooks.'));
+    printInfo(chalk.gray('This plugin is not attached to any hooks.'));
   }
 }
 
