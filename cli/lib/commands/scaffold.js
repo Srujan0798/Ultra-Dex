@@ -85,8 +85,34 @@ async function copyDirectory(src, dest) {
   }
 }
 
+async function detectStackFromPlan() {
+  try {
+    const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
+    const content = await fs.readFile(planPath, 'utf-8');
+
+    if (content.match(/remix/i) && content.match(/supabase/i)) return 'remix-supabase';
+    if (content.match(/svelte/i) && content.match(/drizzle/i)) return 'sveltekit-drizzle';
+
+    return 'next15-prisma-clerk';
+  } catch {
+    return null;
+  }
+}
+
 export async function scaffoldCommand(templateName, options) {
   printInfo(chalk.cyan('\n🏗️  Ultra-Dex Scaffold\n'));
+
+  if (options.fromPlan) {
+    printInfo(chalk.blue('  Scaffolding from Implementation Plan...'));
+    const detected = await detectStackFromPlan();
+    if (detected && TEMPLATES[detected]) {
+      printInfo(chalk.green(`  Detected Tech Stack -> Template: ${TEMPLATES[detected].name}`));
+      templateName = detected;
+    } else {
+      printWarning(chalk.yellow('  Could not detect a stack from the plan. Falling back to Next.js template.'));
+      templateName = 'next15-prisma-clerk';
+    }
+  }
 
   // If no template specified, show selection
   if (!templateName) {
@@ -179,6 +205,7 @@ export function registerScaffoldCommand(program) {
     .description('Generate a production-ready project from a template')
     .option('-o, --output <dir>', 'Output directory')
     .option('--list', 'List available templates')
+    .option('--from-plan', 'Scaffold based on Implementation Plan')
     .action(async (template, options) => {
       if (options.list) {
         printInfo(chalk.cyan('\n📦 Available Templates\n'));

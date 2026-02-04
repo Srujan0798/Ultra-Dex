@@ -51,6 +51,8 @@ export function registerVerifyCommand(program) {
       .command('verify [task]')
       .description('Run executable 21-step verification on a task or project')
       .option('-p, --provider <provider>', 'AI provider')
+      .option('--json', 'Output results as JSON')
+      .option('--template <path>', 'Template file path (optional)')
       .option('--live', 'Run active verification (automated gates only)')
       .option('--pre-push', 'Run pre-push checks (update CONTEXT.md + live gates)')
       .action(async (task, options) => {
@@ -127,6 +129,39 @@ async function updateContextWithDiff() {
  * Core verification logic
  */
 export async function verifyCommand(taskName, options) {
+  if (options.json) {
+    try {
+      const templatePath = path.resolve(process.cwd(), options.template || 'IMPLEMENTATION-PLAN.md');
+      const contextPath = path.resolve(process.cwd(), 'CONTEXT.md');
+      const planExists = await fs.stat(templatePath).then(() => true).catch(() => false);
+      const contextExists = await fs.stat(contextPath).then(() => true).catch(() => false);
+
+      let p0SectionsComplete = false;
+      if (planExists) {
+        const planContent = await fs.readFile(templatePath, 'utf-8');
+        if (planContent.length > 100 && planContent.includes('##')) {
+          p0SectionsComplete = true;
+        }
+      }
+
+      const result = {
+        valid: Boolean(planExists && contextExists),
+        score: (planExists ? 50 : 0) + (contextExists ? 30 : 0) + (p0SectionsComplete ? 20 : 0),
+        p0SectionsComplete,
+        files: {
+          plan: Boolean(planExists),
+          context: Boolean(contextExists)
+        }
+      };
+
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    } catch (error) {
+      console.log(JSON.stringify({ valid: false, error: error.message }));
+      return;
+    }
+  }
+
   printInfo('\n⚖️  Ultra-Dex 21-Step Verification\n');
   
   const providerId = options.provider || getDefaultProvider();
