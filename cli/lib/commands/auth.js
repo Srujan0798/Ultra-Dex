@@ -8,11 +8,32 @@ import fs from 'fs/promises';
 import path from 'path';
 import inquirer from 'inquirer';
 import { configManager } from '../utils/config-manager.js';
+import { ssoClient } from '../auth/sso.js';
 
 export function registerAuthCommand(program) {
   const auth = program
     .command('auth')
     .description('Manage identity and API keys');
+
+  auth.command('sso')
+    .description('Manage Enterprise SSO authentication')
+    .option('--provider <provider>', 'Identity provider (okta, auth0, azure)')
+    .option('--configure', 'Reconfigure SSO settings')
+    .action(async (options) => {
+      try {
+        if (options.provider) {
+          ssoClient.provider = options.provider;
+        }
+        
+        if (options.configure) {
+          await ssoClient.configure();
+        } else {
+          await ssoClient.login();
+        }
+      } catch (error) {
+        console.error(chalk.red(`\n❌ SSO Error: ${error.message}`));
+      }
+    });
 
   auth.command('login')
     .description('Log in to Ultra-Dex Cloud or local session')

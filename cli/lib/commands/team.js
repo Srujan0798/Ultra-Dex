@@ -4,6 +4,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { Command } from 'commander';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { hasPermission, PERMISSIONS } from '../auth/rbac.js';
+import { configManager } from '../utils/config-manager.js';
 
 const TEAM_DIR = '.ultra-dex';
 const TEAM_FILE = 'team.json';
@@ -40,8 +42,19 @@ async function saveTeamConfig(config) {
 function requireTeamConfig(team) {
   if (!team) {
     printError(chalk.red('\n❌ Team not initialized. Run "ultra-dex team init" first.\n'));
-    // process.exit(1); // Removed hard exit, throw error instead for better testing
     throw new Error('Team not initialized');
+  }
+}
+
+async function getCurrentRole() {
+  const config = await configManager.loadGlobal();
+  return config?.user?.role || 'viewer';
+}
+
+async function checkPermission(permission) {
+  const role = await getCurrentRole();
+  if (!hasPermission(role, permission)) {
+    throw new Error(`Permission denied: You need permission '${permission}' (Current role: ${role})`);
   }
 }
 
@@ -70,6 +83,8 @@ function buildInitCommand() {
     .description('Initialize team configuration')
     .action(async () => {
       try {
+        // Init usually allows anyone to start if it doesn't exist, 
+        // effectively claiming adminship of the local workspace.
         const existing = await loadTeamConfig();
         if (existing) {
           const { overwrite } = await inquirer.prompt([
@@ -107,6 +122,16 @@ function buildInitCommand() {
           createdAt: new Date().toISOString(),
         };
 
+        // Add current user as admin
+        const globalConfig = await configManager.loadGlobal();
+        if (globalConfig?.user?.username) {
+            config.members.push({
+                email: globalConfig.user.username,
+                role: 'admin',
+                addedAt: new Date().toISOString()
+            });
+        }
+
         await saveTeamConfig(config);
         printSuccess(chalk.green('\n✅ Team config created at .ultra-dex/team.json\n'));
       } catch (error) {
@@ -125,6 +150,8 @@ function buildAddCommand() {
     .option('-r, --role <role>', 'Role (admin|member|viewer)', 'member')
     .action(async (email, options) => {
       try {
+        await checkPermission(PERMISSIONS.MANAGE_TEAM);
+
         const normalizedEmail = normalizeEmail(email);
         if (!isValidEmail(normalizedEmail)) {
           printError(chalk.red('\n❌ Invalid email format.\n'));
@@ -204,6 +231,8 @@ function buildRemoveCommand() {
     .argument('<email>', 'Member email')
     .action(async (email) => {
       try {
+        await checkPermission(PERMISSIONS.MANAGE_TEAM);
+
         const normalizedEmail = normalizeEmail(email);
         if (!isValidEmail(normalizedEmail)) {
           printError(chalk.red('\n❌ Invalid email format.\n'));
@@ -277,6 +306,9 @@ function buildConfigCommand() {
           printInfo(chalk.gray(`\n${key}: ${team[key] || '-'}\n`));
           return;
         }
+
+        // Updating requires permission
+        await checkPermission(PERMISSIONS.MANAGE_TEAM);
 
         team[key] = value.trim();
         await saveTeamConfig(team);
