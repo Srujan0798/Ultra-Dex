@@ -7,6 +7,8 @@ import { createProvider as getProvider } from '../providers/index.js';
 import { printError, printInfo, printSuccess } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
+import { visionScanner } from '../vision/scanner.js';
+
 export function registerBrowserCommand(program) {
   const browserCmd = program
     .command('browser')
@@ -80,9 +82,51 @@ export function registerBrowserCommand(program) {
         await handleError(error, { command: 'browser mockup', options });
       }
     });
+
+  // 6. Audit (Visual Regression) Command
+  browserCmd
+    .command('audit <url>')
+    .description('Perform AI Visual Regression Audit')
+    .option('--name <name>', 'Snapshot name', 'ui-audit')
+    .option('--promote', 'Promote current run to baseline')
+    .action(async (url, options) => {
+      try {
+        await handleAudit(url, options);
+      } catch (error) {
+        await handleError(error, { command: 'browser audit', options });
+      }
+    });
 }
 
 // --- Implementation Handlers ---
+
+async function handleAudit(url, options) {
+  const spinner = ora(`Initializing Visual Audit for ${url}...`).start();
+  
+  try {
+    const screenshotPath = await visionScanner.capture(url, options.name);
+    
+    if (options.promote) {
+      await visionScanner.promoteToBaseline(screenshotPath, options.name);
+      spinner.succeed(chalk.green('Current screenshot promoted to baseline.'));
+      return;
+    }
+
+    spinner.text = 'Performing Visual Comparison...';
+    const result = await visionScanner.compare(options.name, screenshotPath);
+    
+    if (result.status === 'ANALYZED') {
+      spinner.succeed('Visual Audit Complete');
+      console.log(chalk.magenta('\n🔍 AI Review Results:'));
+      console.log(chalk.gray(result.message));
+    } else {
+      spinner.info(result.message);
+    }
+  } catch (error) {
+    spinner.fail(chalk.red('Visual Audit failed'));
+    throw error;
+  }
+}
 
 async function handleScreenshot(url, options) {
   const spinner = ora(`Navigating to ${url}...`).start();

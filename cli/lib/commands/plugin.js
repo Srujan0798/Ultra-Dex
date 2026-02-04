@@ -43,7 +43,7 @@ export function registerPluginCommand(program) {
 }
 
 async function listPlugins() {
-  console.log(chalk.cyan('\n🔌 Ultra-Dex Plugins\n'));
+  printInfo(chalk.cyan('\n🔌 Ultra-Dex Plugins\n'));
 
   const plugins = pluginManager.getInstalledPlugins();
 
@@ -134,12 +134,12 @@ async function pluginInfo(name) {
 }
 
 async function activateAllPlugins() {
-  console.log(chalk.cyan('\n🔌 Activating all plugins...\n'));
+  printInfo(chalk.cyan('\n🔌 Activating all plugins...\n'));
 
   try {
     await pluginManager.activatePlugins({});
-    console.log(chalk.green(`✅ All plugins activated successfully!`));
+    printSuccess(chalk.green(`✅ All plugins activated successfully!`));
   } catch (error) {
-    console.log(chalk.red(`❌ Plugin activation failed: ${error.message}`));
+    printError(chalk.red(`❌ Plugin activation failed: ${error.message}`));
   }
 }
