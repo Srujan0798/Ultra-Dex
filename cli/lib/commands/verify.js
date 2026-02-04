@@ -5,13 +5,14 @@
 
 import chalk from 'chalk';
 import ora from 'ora';
-import { execSync } from 'child_process';
 import fs from 'fs/promises';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';
 import { loadState } from './plan.js';
 import { projectGraph } from '../mcp/graph.js';
-import { runQualityScan } from '../quality/scanner.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 import { 
     verifyArchitectureAlignment, 
     verifyErrorHandlingStrategy, 
@@ -40,19 +41,53 @@ const CHECKLIST = [
   "Code Review Approved", "Migration Scripts Ready", "Deployment Readiness"
 ];
 
+/**
+ * Register the verify command with Commander
+ */
+export function registerVerifyCommand(program) {
+    program
+      .command('verify [task]')
+      .description('Run executable 21-step verification on a task or project')
+      .option('-p, --provider <provider>', 'AI provider')
+      .action(async (task, options) => {
+          try {
+              await verifyCommand(task, options);
+          } catch (error) {
+              await handleError(error, { command: 'verify', task, options });
+              process.exit(error.exitCode || 1);
+          }
+      });
+}
+
+/**
+ * Core verification logic
+ */
 export async function verifyCommand(taskName, options) {
-  console.log(chalk.cyan.bold('\n⚖️  Ultra-Dex 21-Step Verification\n'));
+  printInfo('\n⚖️  Ultra-Dex 21-Step Verification\n');
   
   const providerId = options.provider || getDefaultProvider();
   const provider = createProvider(providerId);
   const state = await loadState();
-  const automatedResults = {};
-
   const projectDir = process.cwd();
 
   // 1. Automated Checks
-  console.log(chalk.bold('1. Running Automated Gates...\n'));
-  
+  printInfo(chalk.bold('1. Running Automated Gates...\n'));
+  const automatedResults = await runAutomatedGates(projectDir);
+  console.log('');
+
+  // 2. AI Review
+  printInfo(chalk.bold('2. Initiating AI Deep Review...\n'));
+  const report = await runAiReview(taskName, provider, state, automatedResults);
+
+  // 3. Final Verdict
+  displayFinalVerdict(report);
+}
+
+/**
+ * Execute all automated verification gates
+ */
+async function runAutomatedGates(projectDir) {
+  const automatedResults = {};
   const gates = [
     { name: 'Context Loaded', fn: verifyContextLoaded },
     { name: 'Architecture Alignment', fn: verifyArchitectureAlignment },
@@ -72,15 +107,23 @@ export async function verifyCommand(taskName, options) {
   ];
 
   for (const gate of gates) {
-    const res = await gate.fn(projectDir);
-    automatedResults[gate.name] = res.status;
-    const icon = res.status === 'PASS' ? '✅' : res.status === 'SKIP' ? '⚪' : '❌';
-    console.log(`  ${icon} ${gate.name} (${res.message})`);
+    try {
+        const res = await gate.fn(projectDir);
+        automatedResults[gate.name] = res.status;
+        const icon = res.status === 'PASS' ? chalk.green('✅') : res.status === 'SKIP' ? chalk.gray('⚪') : chalk.red('❌');
+        console.log(`  ${icon} ${chalk.white(gate.name.padEnd(30))} [${res.status}] ${chalk.gray(`(${res.message})`)}`);
+    } catch (e) {
+        automatedResults[gate.name] = 'FAIL';
+        printError(`  ❌ ${gate.name} failed to execute: ${e.message}`);
+    }
   }
+  return automatedResults;
+}
 
-  console.log('');
-
-  // 2. AI Review
+/**
+ * Use @Reviewer agent to verify the task against the 21-step framework
+ */
+async function runAiReview(taskName, provider, state, automatedResults) {
   const spinner = ora(`@Reviewer is verifying: "${taskName || 'Project'}"...`).start();
 
   try {
@@ -115,25 +158,29 @@ Final Verdict: [APPROVED/REJECTED]
     const report = await runAgentLoop('reviewer', prompt, provider, projectContext);
     spinner.succeed('Verification complete.');
 
-    console.log(chalk.bold('\n📋 Verification Report:'));
+    printInfo('\n📋 AI Verification Report:');
+    console.log(chalk.gray('─'.repeat(50)));
     console.log(chalk.white(report));
-
-    if (report.includes('REJECTED')) {
-        console.log(chalk.red.bold('\n❌ Task failed verification. Please address the issues above.'));
-        process.exit(1);
-    } else {
-        console.log(chalk.green.bold('\n✅ Task passed verification!'));
-    }
-
+    console.log(chalk.gray('─'.repeat(50)));
+    
+    return report;
   } catch (e) {
-    spinner.fail(chalk.red(`Verification failed: ${e.message}`));
+    spinner.fail(chalk.red('AI Verification failed'));
+    throw new AppError('AI verification loop failed', { cause: e });
   }
 }
 
-export function registerVerifyCommand(program) {
-    program
-      .command('verify [task]')
-      .description('Run executable 21-step verification on a task or project')
-      .option('-p, --provider <provider>', 'AI provider')
-      .action(verifyCommand);
+/**
+ * Handle the final verdict from the verification report
+ */
+function displayFinalVerdict(report) {
+    if (report.includes('REJECTED')) {
+        printError('\n❌ Task failed verification. Please address the issues above.');
+        // We don't exit here, but return failure so the command action can handle it
+        const err = new AppError('Verification rejected by AI reviewer', { code: 'VERIFICATION_REJECTED' });
+        err.exitCode = 1;
+        throw err;
+    } else {
+        printSuccess('\n✅ Task passed verification! Deployment recommended.');
+    }
 }

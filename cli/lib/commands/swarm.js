@@ -9,8 +9,11 @@ import { updateStateFile, loadState, saveState } from './state.js';
 import { agents } from '../utils/agents.js';
 import { isDoomsdayMode } from '../utils/theme-state.js';
 import { showSwarmAssemble as showDoomsdaySwarm } from '../themes/doomsday.js';
-import { renderer } from '../ui/renderer.js'; // Import the Pro Renderer
+import { renderer } from '../ui/renderer.js';
 import { theme } from '../ui/theme.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError, ValidationError, NetworkError } from '../utils/errors.js';
 
 export const AGENT_PIPELINE = [
   { name: 'planner', description: 'Break down task into steps', tier: '1-planning' },
@@ -23,12 +26,25 @@ export const AGENT_PIPELINE = [
   { name: 'reviewer', description: 'Code review', tier: '4-quality' }
 ];
 
+/**
+ * Handle state locking for safe updates
+ */
 async function withStateLock(callback) {
   const lockFile = join(process.cwd(), '.ultra-dex', 'state.lock');
+  const ultraDir = join(process.cwd(), '.ultra-dex');
+  
+  if (!existsSync(ultraDir)) {
+      await mkdir(ultraDir, { recursive: true });
+  }
+
   let retries = 0;
   while (existsSync(lockFile) && retries < 50) {
     await new Promise(r => setTimeout(r, 100));
     retries++;
+  }
+
+  if (retries >= 50) {
+    throw new AppError('Could not acquire state lock. Is another process running?', { code: 'LOCK_TIMEOUT' });
   }
 
   try {
@@ -39,6 +55,25 @@ async function withStateLock(callback) {
       await unlink(lockFile).catch(() => {});
     }
   }
+}
+
+/**
+ * Register swarm command with Commander
+ */
+export function registerSwarmCommand(program) {
+    program
+      .command('swarm <task>')
+      .description('Deploy an autonomous agent swarm for a task')
+      .option('-p, --parallel', 'Execute implementation tier in parallel', false)
+      .option('--dry-run', 'Preview the swarm pipeline', false)
+      .action(async (task, options) => {
+          try {
+              await swarmCommand(task, options);
+          } catch (error) {
+              await handleError(error, { command: 'swarm', task, options });
+              process.exit(error.exitCode || 1);
+          }
+      });
 }
 
 export function showSwarmAssemble(activeAgents) {
@@ -58,9 +93,12 @@ export function showSwarmAssemble(activeAgents) {
   });
 }
 
+/**
+ * Run a single agent with retry logic
+ */
 async function runAgent(agent, task, context, previousOutput, provider) {
   if (!provider) {
-    throw new Error('No AI provider configured.');
+    throw new ValidationError('No AI provider configured. Set your API keys first.');
   }
 
   const agentPrompt = await loadAgentPrompt(agent.name);
@@ -79,26 +117,44 @@ ${task}
 Provide your output for the next agent in the pipeline.
 `;
 
-  let response;
-  try {
-    if (provider.complete) {
-      response = await provider.complete(prompt);
-    } else if (provider.generate) {
-      response = await provider.generate('', prompt);
-    } else {
-      throw new Error('Provider does not support complete or generate methods');
-    }
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        let response;
+        if (provider.complete) {
+          response = await provider.complete(prompt);
+        } else if (provider.generate) {
+          response = await provider.generate('', prompt);
+        } else {
+          throw new AppError('Provider does not support complete or generate methods', { code: 'PROVIDER_INCOMPATIBLE' });
+        }
 
-    if (!response) {
-      throw new Error('Received empty response from provider');
-    }
-  } catch (error) {
-    throw new Error(`Provider Error: ${error.message}`);
+        if (!response) {
+          throw new NetworkError('Received empty response from provider');
+        }
+
+        return typeof response === 'string'
+          ? response
+          : (response.content || response.text || JSON.stringify(response));
+      } catch (error) {
+        lastError = error;
+        if (attempt < 3) {
+            const delay = attempt * 2000;
+            printWarning(`  ⚠️ @${agent.name} attempt ${attempt} failed, retrying in ${delay}ms...`);
+            await new Promise(r => setTimeout(r, delay));
+        }
+      }
   }
 
-  return typeof response === 'string'
-    ? response
-    : (response.content || response.text || JSON.stringify(response));
+  throw new AppError(`Agent @${agent.name} failed after 3 attempts`, { 
+      cause: lastError, 
+      code: 'AGENT_MAX_RETRIES',
+      suggestions: [
+          'Check your internet connection',
+          'Verify your API key has sufficient quota',
+          'Try a different model or provider'
+      ]
+  });
 }
 
 async function ensureLogDirectory() {
@@ -122,62 +178,21 @@ export async function swarmCommand(task, options) {
   const startTime = Date.now();
 
   if (options.dryRun) {
-    const pipelineInfo = options.parallel
-      ? [
-          '📦 Tier: 1-Planning (sequential)',
-          '  1. @planner - Break down task into steps',
-          '  2. @cto - Define architecture',
-          '',
-          '📦 Tier: 2-Implementation (PARALLEL)',
-          '  3. @database - Design schema',
-          '  4. @backend - Implement API',
-          '  5. @frontend - Build UI',
-          '',
-          '📦 Tier: 3-Security (sequential)',
-          '  6. @auth - Security & authentication review',
-          '',
-          '📦 Tier: 4-Quality (sequential)',
-          '  7. @testing - Write tests',
-          '  8. @reviewer - Code review'
-        ].join('\n')
-      : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
-
-    renderer.box(
-      pipelineInfo,
-      options.parallel ? 'Dry Run Pipeline (Parallel Mode)' : 'Dry Run Pipeline',
-      'info'
-    );
+    handleDryRun(options);
     return;
   }
 
   // Load context & Graph
-  const contextPath = join(process.cwd(), 'CONTEXT.md');
-  const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
-
-  let context = '';
-  if (existsSync(contextPath)) context += await readFile(contextPath, 'utf-8');
-  if (existsSync(planPath)) context += '\n\n' + await readFile(planPath, 'utf-8');
-
-  // Inject Code Graph
-  renderer.startSpinner('Scanning Codebase Graph...');
-  try {
-    const graphSummary = await projectGraph.scan();
-    context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n`;
-    renderer.succeed(`Codebase mapped: ${graphSummary.nodeCount} nodes`);
-  } catch (e) {
-    renderer.fail('Graph scan failed, using limited context.');
-  }
+  const context = await gatherSwarmContext();
 
   // Get AI provider
   const provider = getProvider();
   if (!provider) {
-    renderer.fail('No AI provider configured.');
-    renderer.box(
-      `export ANTHROPIC_API_KEY=sk-ant-...\nexport OPENAI_API_KEY=sk-...\nollama serve`,
-      'Configuration Required',
-      'error'
-    );
-    return;
+    throw new ValidationError('No AI provider configured.', [
+        'export ANTHROPIC_API_KEY=sk-ant-...',
+        'export OPENAI_API_KEY=sk-...',
+        'npx ultra-dex setup'
+    ]);
   }
 
   const logDir = await ensureLogDirectory();
@@ -211,17 +226,16 @@ export async function swarmCommand(task, options) {
       // Parallel Execution
       const promises = tier.agents.map(async (agent) => {
         const agentStart = Date.now();
-        // Use a generic spinner since parallel spinners are messy in terminal
-        console.log(theme.accent(`  ⟳ Running @${agent.name}...`));
+        printInfo(`  ⟳ Running @${agent.name}...`);
 
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
           const duration = Date.now() - agentStart;
           agentTimings[agent.name] = duration;
-          console.log(theme.success(`  ✓ @${agent.name} complete (${duration}ms)`));
+          printSuccess(`  ✓ @${agent.name} complete (${duration}ms)`);
           return { agent: agent.name, result, success: true };
         } catch (error) {
-          console.log(theme.error(`  ✖ @${agent.name} failed: ${error.message}`));
+          printError(`  ✖ @${agent.name} failed: ${error.message}`);
           return { agent: agent.name, error: error.message, success: false };
         }
       });
@@ -243,7 +257,6 @@ export async function swarmCommand(task, options) {
           previousOutput = result;
           renderer.succeed(`@${agent.name} complete (${duration}ms)`);
 
-          // Stream a preview of the output
           const preview = result.slice(0, 150).replace(/\n/g, ' ') + '...';
           console.log(theme.dim(`    › ${preview}`));
 
@@ -252,6 +265,11 @@ export async function swarmCommand(task, options) {
         } catch (error) {
           renderer.fail(`@${agent.name} failed: ${error.message}`);
           agentResults.push({ agent: agent.name, error: error.message, success: false });
+          
+          // Stop sequential pipeline if a critical planning agent fails
+          if (agent.tier === '1-planning') {
+              throw new AppError(`Critical failure in planning tier: @${agent.name}`, { cause: error });
+          }
           break;
         }
       }
@@ -276,6 +294,53 @@ export async function swarmCommand(task, options) {
   );
 }
 
+function handleDryRun(options) {
+    const pipelineInfo = options.parallel
+      ? [
+          '📦 Tier: 1-Planning (sequential)',
+          '  1. @planner - Break down task into steps',
+          '  2. @cto - Define architecture',
+          '',
+          '📦 Tier: 2-Implementation (PARALLEL)',
+          '  3. @database - Design schema',
+          '  4. @backend - Implement API',
+          '  5. @frontend - Build UI',
+          '',
+          '📦 Tier: 3-Security (sequential)',
+          '  6. @auth - Security & authentication review',
+          '',
+          '📦 Tier: 4-Quality (sequential)',
+          '  7. @testing - Write tests',
+          '  8. @reviewer - Code review'
+        ].join('\n')
+      : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
+
+    renderer.box(
+      pipelineInfo,
+      options.parallel ? 'Dry Run Pipeline (Parallel Mode)' : 'Dry Run Pipeline',
+      'info'
+    );
+}
+
+async function gatherSwarmContext() {
+    const contextPath = join(process.cwd(), 'CONTEXT.md');
+    const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
+
+    let context = '';
+    if (existsSync(contextPath)) context += await readFile(contextPath, 'utf-8');
+    if (existsSync(planPath)) context += '\n\n' + await readFile(planPath, 'utf-8');
+
+    renderer.startSpinner('Scanning Codebase Graph...');
+    try {
+      const graphSummary = await projectGraph.scan();
+      context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n`;
+      renderer.succeed(`Codebase mapped: ${graphSummary.nodeCount} nodes`);
+    } catch (e) {
+      renderer.fail('Graph scan failed, using limited context.');
+    }
+    return context;
+}
+
 let agentPathsCache = null;
 
 async function getAgentPaths() {
@@ -286,15 +351,12 @@ async function getAgentPaths() {
     const files = await glob('agents/**/*.md', { ignore: 'node_modules/**' });
     for (const file of files) {
       const name = basename(file, '.md');
-      // Store the first occurrence found. The glob order is generally stable.
       if (!agentPathsCache.has(name)) {
         agentPathsCache.set(name, file);
       }
     }
   } catch (error) {
-    // If glob fails, we'll just have an empty map and fall back to direct checks if possible,
-    // though the direct check logic below also relies on file existence.
-    console.warn('Warning: Failed to scan agent prompts:', error.message);
+    printWarning('Warning: Failed to scan agent prompts: ' + error.message);
   }
 
   return agentPathsCache;
@@ -308,7 +370,6 @@ async function loadAgentPrompt(name) {
     return await readFile(file, 'utf-8');
   }
 
-  // Fallback to direct check
   const directPath = join(process.cwd(), 'agents', `${name}.md`);
   if (existsSync(directPath)) return await readFile(directPath, 'utf-8');
 

@@ -10,10 +10,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import { marked } from 'marked';
 
 // Parse IMPLEMENTATION-PLAN.md to extract structured data
 async function parseImplementationPlan(planPath) {
   const content = await fs.readFile(planPath, 'utf-8');
+  const tokens = marked.lexer(content);
   
   const sections = {
     techStack: {},
@@ -24,54 +26,70 @@ async function parseImplementationPlan(planPath) {
     payments: {}
   };
 
-  // Extract tech stack
-  const techStackMatch = content.match(/## SECTION \d+.*TECH.*STACK[\s\S]*?(?=## SECTION|$)/i);
-  if (techStackMatch) {
-    const frontendMatch = techStackMatch[0].match(/Frontend:\s*([^\n]+)/);
-    const databaseMatch = techStackMatch[0].match(/Database:\s*([^\n]+)/);
-    const authMatch = techStackMatch[0].match(/Auth:\s*([^\n]+)/);
-    const paymentsMatch = techStackMatch[0].match(/Payments?:\s*([^\n]+)/);
-    const hostingMatch = techStackMatch[0].match(/Hosting:\s*([^\n]+)/);
+  let currentSection = null;
 
-    sections.techStack = {
-      frontend: frontendMatch ? frontendMatch[1].trim() : 'Next.js',
-      database: databaseMatch ? databaseMatch[1].trim() : 'PostgreSQL',
-      auth: authMatch ? authMatch[1].trim() : 'NextAuth',
-      payments: paymentsMatch ? paymentsMatch[1].trim() : 'Stripe',
-      hosting: hostingMatch ? hostingMatch[1].trim() : 'Vercel'
-    };
-  }
+  for (const token of tokens) {
+    if (token.type === 'heading' && token.depth === 2) {
+      const title = token.text.toUpperCase();
+      if (title.includes('TECH') && title.includes('STACK')) currentSection = 'techStack';
+      else if (title.includes('DATA') && title.includes('MODEL')) currentSection = 'dataModel';
+      else if (title.includes('API') && title.includes('BLUEPRINT')) currentSection = 'apiBlueprint';
+      else currentSection = null;
+      continue;
+    }
 
-  // Extract data models
-  const dataModelMatch = content.match(/## SECTION \d+.*DATA.*MODEL[\s\S]*?(?=## SECTION|$)/i);
-  if (dataModelMatch) {
-    const entityMatches = dataModelMatch[0].matchAll(/\*\*([^*]+) Entity:\*\*[\s\S]*?```json\n([\s\S]*?)```/g);
-    for (const match of entityMatches) {
-      try {
-        const entityName = match[1].trim();
-        const schema = JSON.parse(match[2]);
-        sections.dataModel.push({ name: entityName, schema });
-      } catch (e) {
-        // Invalid JSON, skip
-      }
+    if (!currentSection) continue;
+
+    if (currentSection === 'techStack' && token.type === 'text') {
+      const frontendMatch = token.text.match(/Frontend:\s*([^\n]+)/i);
+      const databaseMatch = token.text.match(/Database:\s*([^\n]+)/i);
+      const authMatch = token.text.match(/Auth:\s*([^\n]+)/i);
+      const paymentsMatch = token.text.match(/Payments?:\s*([^\n]+)/i);
+      const hostingMatch = token.text.match(/Hosting:\s*([^\n]+)/i);
+
+      if (frontendMatch) sections.techStack.frontend = frontendMatch[1].trim();
+      if (databaseMatch) sections.techStack.database = databaseMatch[1].trim();
+      if (authMatch) sections.techStack.auth = authMatch[1].trim();
+      if (paymentsMatch) sections.techStack.payments = paymentsMatch[1].trim();
+      if (hostingMatch) sections.techStack.hosting = hostingMatch[1].trim();
+    }
+
+    if (currentSection === 'dataModel' && token.type === 'text') {
+        const entityMatch = token.text.match(/\*\*([^*]+) Entity:\*\*/i);
+        if (entityMatch) {
+            // The next token might be the code block
+            const nextTokenIdx = tokens.indexOf(token) + 1;
+            const nextToken = tokens[nextTokenIdx];
+            if (nextToken && nextToken.type === 'code' && nextToken.lang === 'json') {
+                try {
+                    sections.dataModel.push({
+                        name: entityMatch[1].trim(),
+                        schema: JSON.parse(nextToken.text)
+                    });
+                } catch (e) { /* ignore invalid json */ }
+            }
+        }
+    }
+
+    if (currentSection === 'apiBlueprint' && token.type === 'text') {
+        const endpointMatch = token.text.match(/(GET|POST|PUT|DELETE|PATCH)\s+(`[^`]+`|\/[^\s]+)/i);
+        if (endpointMatch) {
+            sections.apiBlueprint.push({
+                method: endpointMatch[1].toUpperCase(),
+                path: endpointMatch[2].replace(/`/g, ''),
+                description: token.text.split('\n')[1]?.substring(0, 100) || ''
+            });
+        }
     }
   }
 
-  // Extract API endpoints
-  const apiMatch = content.match(/## SECTION \d+.*API.*BLUEPRINT[\s\S]*?(?=## SECTION|$)/i);
-  if (apiMatch) {
-    const endpointMatches = apiMatch[0].matchAll(/(GET|POST|PUT|DELETE|PATCH)\s+(`[^`]+`|\/[^\s]+)[\s\S]*?Request Body:([\s\S]*?)(?=####|##|$)/g);
-    for (const match of endpointMatches) {
-      sections.apiBlueprint.push({
-        method: match[1],
-        path: match[2].replace(/`/g, ''),
-        description: match[3]?.substring(0, 100) || ''
-      });
-    }
-  }
+  // Set defaults if missing
+  if (!sections.techStack.frontend) sections.techStack.frontend = 'Next.js';
+  if (!sections.techStack.database) sections.techStack.database = 'PostgreSQL';
 
   return sections;
 }
+
 
 // Generate Prisma schema
 async function generatePrismaSchema(dataModel, outputPath) {

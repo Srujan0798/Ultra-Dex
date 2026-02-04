@@ -8,11 +8,11 @@ import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
-import { exec as execCallback } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import inquirer from 'inquirer';
 
-const execAsync = promisify(execCallback);
+const execFileAsync = promisify(execFile);
 
 // ============================================================================
 // GITHUB CONFIGURATION
@@ -60,8 +60,8 @@ const GITHUB_CONFIG = {
  */
 async function checkGitHubCLI() {
   try {
-    await execAsync('gh --version');
-    const { stdout } = await execAsync('gh auth status 2>&1');
+    await execFileAsync('gh', ['--version']);
+    const { stdout } = await execFileAsync('gh', ['auth', 'status']);
     return { installed: true, authenticated: stdout.includes('Logged in') };
   } catch (err) {
     if (err.message.includes('not found')) {
@@ -77,7 +77,7 @@ async function checkGitHubCLI() {
  */
 async function getRepoInfo() {
   try {
-    const { stdout } = await execAsync('gh repo view --json owner,name,url');
+    const { stdout } = await execFileAsync('gh', ['repo', 'view', '--json', 'owner,name,url']);
     return JSON.parse(stdout);
   } catch {
     return null;
@@ -90,13 +90,13 @@ async function getRepoInfo() {
 async function listIssues(options = {}) {
   const { limit = 20, labels = [], state = 'open' } = options;
 
-  let cmd = `gh issue list --state ${state} --limit ${limit} --json number,title,labels,body,assignees,createdAt`;
+  const args = ['issue', 'list', '--state', state, '--limit', String(limit), '--json', 'number,title,labels,body,assignees,createdAt'];
 
   if (labels.length > 0) {
-    cmd += ` --label "${labels.join(',')}"`;
+    args.push('--label', labels.join(','));
   }
 
-  const { stdout } = await execAsync(cmd);
+  const { stdout } = await execFileAsync('gh', args);
   return JSON.parse(stdout);
 }
 
@@ -106,17 +106,17 @@ async function listIssues(options = {}) {
 async function createIssue(title, body, options = {}) {
   const { labels = [], assignees = [] } = options;
 
-  let cmd = `gh issue create --title "${title.replace(/"/g, '\\"')}" --body "${body.replace(/"/g, '\\"')}"`;
+  const args = ['issue', 'create', '--title', title, '--body', body];
 
   if (labels.length > 0) {
-    cmd += ` --label "${labels.join(',')}"`;
+    args.push('--label', labels.join(','));
   }
 
   if (assignees.length > 0) {
-    cmd += ` --assignee "${assignees.join(',')}"`;
+    args.push('--assignee', assignees.join(','));
   }
 
-  const { stdout } = await execAsync(cmd);
+  const { stdout } = await execFileAsync('gh', args);
   return stdout.trim();
 }
 
@@ -126,17 +126,17 @@ async function createIssue(title, body, options = {}) {
 async function createPullRequest(title, body, options = {}) {
   const { base = 'main', head, draft = false } = options;
 
-  let cmd = `gh pr create --title "${title.replace(/"/g, '\\"')}" --body "${body.replace(/"/g, '\\"')}" --base ${base}`;
+  const args = ['pr', 'create', '--title', title, '--body', body, '--base', base];
 
   if (head) {
-    cmd += ` --head ${head}`;
+    args.push('--head', head);
   }
 
   if (draft) {
-    cmd += ' --draft';
+    args.push('--draft');
   }
 
-  const { stdout } = await execAsync(cmd);
+  const { stdout } = await execFileAsync('gh', args);
   return stdout.trim();
 }
 
@@ -145,7 +145,7 @@ async function createPullRequest(title, body, options = {}) {
  */
 // eslint-disable-next-line no-unused-vars
 async function getPRStatus(prNumber) {
-  const { stdout } = await execAsync(`gh pr view ${prNumber} --json state,mergeable,reviews,statusCheckRollup`);
+  const { stdout } = await execFileAsync('gh', ['pr', 'view', String(prNumber), '--json', 'state,mergeable,reviews,statusCheckRollup']);
   return JSON.parse(stdout);
 }
 
@@ -155,7 +155,9 @@ async function getPRStatus(prNumber) {
 async function listPRs(options = {}) {
   const { state = 'open', limit = 10 } = options;
 
-  const { stdout } = await execAsync(`gh pr list --state ${state} --limit ${limit} --json number,title,headRefName,state,createdAt`);
+  const args = ['pr', 'list', '--state', state, '--limit', String(limit), '--json', 'number,title,headRefName,state,createdAt'];
+
+  const { stdout } = await execFileAsync('gh', args);
   return JSON.parse(stdout);
 }
 
@@ -244,17 +246,17 @@ async function createPRFromSwarm(swarmResult, options = {}) {
   const branchName = branch || `ultra-dex/${Date.now()}`;
 
   // Create branch
-  await execAsync(`git checkout -b ${branchName}`);
+  await execFileAsync('git', ['checkout', '-b', branchName]);
 
   // Stage all changes
-  await execAsync('git add -A');
+  await execFileAsync('git', ['add', '-A']);
 
   // Commit
   const commitMsg = swarmResult.goal || 'Ultra-Dex agent swarm implementation';
-  await execAsync(`git commit -m "${commitMsg}"`);
+  await execFileAsync('git', ['commit', '-m', commitMsg]);
 
   // Push
-  await execAsync(`git push -u origin ${branchName}`);
+  await execFileAsync('git', ['push', '-u', 'origin', branchName]);
 
   // Generate PR body
   const prBody = GITHUB_CONFIG.prTemplate
@@ -268,6 +270,7 @@ async function createPRFromSwarm(swarmResult, options = {}) {
 
   return { branch: branchName, prUrl };
 }
+
 
 // ============================================================================
 // WEBHOOK HANDLER (for CI integration)

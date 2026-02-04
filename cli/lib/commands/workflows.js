@@ -2,6 +2,9 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { githubBlobUrl } from '../config/urls.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 export const WORKFLOWS = {
   auth: {
@@ -9,12 +12,12 @@ export const WORKFLOWS = {
     agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
     description: 'Complete authentication with email/password and OAuth',
     steps: [
-      '1. Define auth strategy',
-      '2. Set up database schema',
-      '3. Implement API endpoints',
-      '4. Build frontend pages',
-      '5. Secure routes',
-      '6. Verify email/OAuth flows'
+      'Define auth strategy',
+      'Set up database schema',
+      'Implement API endpoints',
+      'Build frontend pages',
+      'Secure routes',
+      'Verify email/OAuth flows'
     ]
   },
   supabase: {
@@ -22,12 +25,12 @@ export const WORKFLOWS = {
     agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
     description: 'Set up Supabase auth with RLS policies and triggers',
     steps: [
-      '1. Create Supabase project and get API keys',
-      '2. Set up database schema with RLS policies',
-      '3. Configure authentication providers (email + Google OAuth)',
-      '4. Implement backend auth middleware',
-      '5. Build frontend auth UI components',
-      '6. Test authentication flow',
+      'Create Supabase project and get API keys',
+      'Set up database schema with RLS policies',
+      'Configure authentication providers',
+      'Implement backend auth middleware',
+      'Build frontend auth UI components',
+      'Test authentication flow',
     ],
   },
   payments: {
@@ -35,183 +38,161 @@ export const WORKFLOWS = {
     agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Security', '@DevOps'],
     description: 'Integrate Stripe for subscriptions and one-time payments',
     steps: [
-      '1. Create Stripe account and get API keys',
-      '2. Design subscription/payment schema',
-      '3. Implement Stripe Checkout API',
-      '4. Handle webhooks for payment events',
-      '5. Build payment UI with checkout flow',
-      '6. Test with Stripe test cards',
+      'Create Stripe account and get API keys',
+      'Design subscription/payment schema',
+      'Implement Stripe Checkout API',
+      'Handle webhooks for payment events',
+      'Build payment UI with checkout flow',
+      'Test with Stripe test cards',
     ],
-  },
-  deployment: {
-    name: 'Deployment Strategy',
-    agents: ['@Planner', '@CTO', '@Frontend', '@DevOps'],
-    description: 'General deployment strategy for SaaS applications',
-    steps: [
-        '1. Configure environment',
-        '2. Set up CI/CD',
-        '3. Deploy to staging',
-        '4. Verify staging',
-        '5. Promote to production'
-    ]
   },
   vercel: {
     name: 'Vercel Deployment Pipeline',
     agents: ['@Planner', '@CTO', '@Frontend', '@DevOps'],
     description: 'Deploy Next.js app to Vercel with staging/production',
     steps: [
-      '1. Set up Vercel project and link Git repository',
-      '2. Configure environment variables for staging/production',
-      '3. Set up custom domain and SSL',
-      '4. Configure preview deployments for PRs',
-      '5. Set up deployment protection rules',
-      '6. Test deployment pipeline',
+      'Set up Vercel project and link Git repository',
+      'Configure environment variables',
+      'Set up custom domain and SSL',
+      'Configure preview deployments',
+      'Set up deployment protection rules',
+      'Test deployment pipeline',
     ],
   },
-  cicd: {
-    name: 'GitHub Actions CI/CD',
-    agents: ['@Planner', '@CTO', '@Testing', '@DevOps'],
-    description: 'Automated testing and deployment with GitHub Actions',
+  ai: {
+    name: 'AI SaaS Integration',
+    agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@Security'],
+    description: 'Integrate OpenAI/Anthropic with vector database and streaming',
     steps: [
-      '1. Create workflow file for CI (tests + lint)',
-      '2. Add build verification job',
-      '3. Add deployment job for production',
-      '4. Configure secrets for deployment',
-      '5. Add status badges to README',
-      '6. Test workflow on PR',
-    ],
-  },
-  database: {
-    name: 'Database Migration',
-    agents: ['@Planner', '@CTO', '@Database', '@Backend', '@Testing'],
-    description: 'Database schema migration and data sync patterns',
-    steps: [
-      '1. Design new schema changes',
-      '2. Write migration scripts',
-      '3. Test migrations in staging',
-      '4. Back up production database',
-      '5. Run migrations in production',
-      '6. Verify data integrity',
-    ],
-  },
-  email: {
-    name: 'Email Notification System',
-    agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@Testing'],
-    description: 'Transactional emails with Resend and React Email',
-    steps: [
-      '1. Choose email service (Resend, SendGrid)',
-      '2. Set up email templates (React Email)',
-      '3. Implement email API endpoints',
-      '4. Add email queue for async sending (BullMQ)',
-      '5. Test email delivery',
-      '6. Monitor deliverability and bounce rates',
-    ],
-  },
-  realtime: {
-    name: 'Real-Time Features',
-    agents: ['@Planner', '@CTO', '@Backend', '@Frontend', '@Testing'],
-    description: 'Live notifications and updates with WebSockets/Socket.io',
-    steps: [
-      '1. Choose WebSocket library (Socket.io, Pusher)',
-      '2. Set up WebSocket server',
-      '3. Implement event broadcasting',
-      '4. Build frontend listeners',
-      '5. Test real-time updates',
-      '6. Handle reconnection logic',
-    ],
-  },
-  sentry: {
-    name: 'Sentry Error Tracking',
-    agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@DevOps'],
-    description: 'Error monitoring and performance tracking with Sentry',
-    steps: [
-      '1. Create Sentry account and project',
-      '2. Install Sentry SDKs for frontend and backend',
-      '3. Configure error boundaries for React',
-      '4. Set up source maps for debugging',
-      '5. Configure alerts and notifications',
-      '6. Test error capture in development',
-    ],
-  },
-  shopify: {
-    name: 'Shopify Product Integration',
-    agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@DevOps'],
-    description: 'Sync products from Shopify store via Admin API',
-    steps: [
-      '1. Create Shopify Partner account and development store',
-      '2. Set up Shopify app with Admin API access',
-      '3. Design database schema for products',
-      '4. Build product sync endpoint',
-      '5. Implement webhook handlers for product updates',
-      '6. Schedule full product sync (cron job)',
+      'Configure AI provider API keys',
+      'Set up Vector Database (Pinecone/Supabase Vector)',
+      'Implement RAG (Retrieval-Augmented Generation) pipeline',
+      'Build streaming API endpoints',
+      'Create interactive chat/AI UI components',
+      'Implement usage monitoring and rate limiting',
     ],
   },
   analytics: {
-    name: 'PostHog Analytics Integration',
-    agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@DevOps'],
-    description: 'Track user behavior and conversion funnels with PostHog',
+    name: 'Analytics & Event Tracking',
+    agents: ['@Planner', '@CTO', '@Frontend', '@Backend', '@DevOps'],
+    description: 'Implement PostHog/Mixpanel tracking with custom dashboards',
     steps: [
-      '1. Create PostHog account and project',
-      '2. Install PostHog SDKs for frontend and backend',
-      '3. Set up core event tracking (signup, login, feature usage)',
-      '4. Create conversion funnel dashboard',
-      '5. Set up feature flags (optional)',
-      '6. Configure user identification',
+      'Initialize analytics SDK in frontend',
+      'Define core event schema',
+      'Implement server-side event tracking',
+      'Set up user identification and properties',
+      'Create analytics dashboards and funnels',
+      'Verify data accuracy and privacy compliance',
     ],
   },
+  api: {
+    name: 'API Platform Development',
+    agents: ['@Planner', '@CTO', '@Backend', '@Security', '@Testing'],
+    description: 'Build a production-ready API with documentation and rate limiting',
+    steps: [
+      'Design REST/GraphQL API schema',
+      'Implement API Key/JWT authentication',
+      'Set up Redis-based rate limiting',
+      'Generate OpenAPI/Swagger documentation',
+      'Implement versioning strategy',
+      'Build API monitoring and logging',
+    ],
+  },
+  microservices: {
+    name: 'Microservices Architecture',
+    agents: ['@Planner', '@CTO', '@Backend', '@DevOps', '@Security'],
+    description: 'Set up a distributed microservices system with service mesh',
+    steps: [
+      'Define service boundaries and API contracts',
+      'Set up Docker/Kubernetes orchestration',
+      'Implement inter-service communication (gRPC/NATS)',
+      'Configure API Gateway and service discovery',
+      'Implement distributed tracing (Jaeger/Zipkin)',
+      'Set up centralized logging and monitoring',
+    ],
+  },
+  blockchain: {
+    name: 'Blockchain & Web3 Integration',
+    agents: ['@Planner', '@Research', '@CTO', '@Backend', '@Frontend', '@Security'],
+    description: 'Integrate smart contracts and wallet authentication',
+    steps: [
+      'Set up blockchain development environment (Hardhat/Foundry)',
+      'Develop and test smart contracts',
+      'Deploy contracts to testnet/mainnet',
+      'Implement wallet connection (RainbowKit/ConnectKit)',
+      'Integrate contract interactions in frontend',
+      'Implement backend transaction monitoring',
+    ],
+  },
+  admin: {
+    name: 'Internal Admin Dashboard',
+    agents: ['@Planner', '@CTO', '@Backend', '@Frontend', '@Security'],
+    description: 'Build a secure administrative dashboard for internal tools',
+    steps: [
+      'Define admin RBAC (Role-Based Access Control) policies',
+      'Implement secure admin-only API routes',
+      'Build data management tables and filters',
+      'Implement audit logging for admin actions',
+      'Build user/subscription management interface',
+      'Set up monitoring and incident response tools',
+    ],
+  }
 };
 
+/**
+ * Visualize the agent and step flow for a workflow
+ */
 export function visualizeWorkflow(workflow) {
-    console.log(chalk.bold.cyan(`\n📊 ${workflow.name} Flow\n`));
+    printInfo(chalk.bold.cyan(`\n📊 ${workflow.name} Flow\n`));
     
-    // Agent Flow
-    console.log(chalk.bold('Team Handoff:'));
-    const agentFlow = workflow.agents.map((a, i) => {
+    printInfo(chalk.bold('Team Handoff:'));
+    const agentFlow = workflow.agents.map((a) => {
        const color = ['@Planner', '@CTO'].includes(a) ? chalk.magenta : ['@Backend', '@Frontend'].includes(a) ? chalk.blue : chalk.yellow;
        return color(a);
     }).join(chalk.gray(' → '));
     console.log('  ' + agentFlow + '\n');
 
-    // Step Flow
-    console.log(chalk.bold('Execution Path:'));
+    printInfo(chalk.bold('Execution Path:'));
     if (workflow.steps) {
         workflow.steps.forEach((step, i) => {
             const isLast = i === workflow.steps.length - 1;
-            const stepName = step.replace(/^\d+\.\s+/, '');
-            console.log(`  ${chalk.green('●')} ${stepName}`);
+            console.log(`  ${chalk.green('●')} ${step}`);
             if (!isLast) console.log(`  ${chalk.gray('│')}`);
         });
     }
     console.log('');
 }
 
+/**
+ * Add a workflow to the project implementation plan
+ */
 export async function startWorkflow(feature) {
     const workflow = WORKFLOWS[feature.toLowerCase()];
-    if (!workflow) return false;
+    if (!workflow) throw new ValidationError(`Workflow "${feature}" not found.`);
 
     const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
     try {
         let content = await fs.readFile(planPath, 'utf8');
         
-        // Check if already exists
         if (content.includes(`## Workflow: ${workflow.name}`)) {
-            console.log(chalk.yellow(`Workflow "${workflow.name}" already exists in the plan.`));
-            return true;
+            printWarning(`Workflow "${workflow.name}" already exists in the plan.`);
+            return;
         }
 
         const newSection = `\n## Workflow: ${workflow.name}\n` +
-            workflow.steps.map(s => `- [ ] ${s.replace(/^\d+\.\s+/, '')}`).join('\n') +
+            workflow.steps.map(s => `- [ ] ${s}`).join('\n') +
             '\n';
 
         await fs.appendFile(planPath, newSection);
-        console.log(chalk.green(`✅ Added "${workflow.name}" workflow to IMPLEMENTATION-PLAN.md`));
-        return true;
+        printSuccess(`✅ Added "${workflow.name}" workflow to IMPLEMENTATION-PLAN.md`);
     } catch (e) {
-        console.error(chalk.red(`Failed to update plan: ${e.message}`));
-        return false;
+        throw new AppError('Failed to update implementation plan', { cause: e });
     }
 }
 
+/**
+ * Register the workflow command with Commander
+ */
 export function registerWorkflowCommand(program) {
   program
     .command('workflow <feature>')
@@ -219,46 +200,49 @@ export function registerWorkflowCommand(program) {
     .option('--viz', 'Visualize the workflow')
     .option('--start', 'Add workflow to implementation plan')
     .action(async (feature, options) => {
-      const workflow = WORKFLOWS[feature.toLowerCase()];
+      try {
+        const workflow = WORKFLOWS[feature.toLowerCase()];
 
-      if (!workflow) {
-        console.log(chalk.red(`\n❌ Workflow "${feature}" not found.\n`));
-        console.log(chalk.gray('Available workflows:'));
-        Object.keys(WORKFLOWS).forEach(key => {
-          console.log(chalk.cyan(`  - ${key}`) + chalk.gray(` (${WORKFLOWS[key].name})`));
-        });
-        console.log('\n' + chalk.gray('Usage: ultra-dex workflow <feature>\n'));
-        process.exit(1);
+        if (!workflow) {
+            const available = Object.keys(WORKFLOWS).join(', ');
+            throw new ValidationError(`Workflow "${feature}" not found.`, [`Available: ${available}`]);
+        }
+
+        if (options.viz) {
+            visualizeWorkflow(workflow);
+            return;
+        }
+
+        if (options.start) {
+            await startWorkflow(feature);
+            return;
+        }
+
+        displayWorkflowSummary(workflow);
+
+      } catch (error) {
+        await handleError(error, { command: 'workflow', feature, options });
+        process.exit(error.exitCode || 1);
       }
-
-      if (options.viz) {
-          visualizeWorkflow(workflow);
-          return;
-      }
-
-      if (options.start) {
-          await startWorkflow(feature);
-          return;
-      }
-
-      // Default View
-      console.log(chalk.bold(`\n📋 ${workflow.name} Workflow\n`));
-      console.log(chalk.gray(workflow.description));
-
-      console.log(chalk.bold('\n🤖 Agents Involved:\n'));
-      workflow.agents.forEach((agent, i) => {
-        console.log(chalk.cyan(`  ${i + 1}. ${agent}`));
-      });
-
-      if (workflow.steps) {
-        console.log(chalk.bold('\n📝 Implementation Steps:\n'));
-        workflow.steps.forEach(step => {
-          console.log(chalk.gray(`  ${step}`));
-        });
-      }
-
-      console.log(chalk.bold('\n📚 Full Example:\n'));
-      console.log(chalk.blue(`  ${githubBlobUrl('guides/ADVANCED-WORKFLOWS.md')}`));
-      console.log(chalk.gray(`  (Search for "Example: ${workflow.name}")\n`));
     });
+}
+
+function displayWorkflowSummary(workflow) {
+    printInfo(chalk.bold(`\n📋 ${workflow.name} Workflow\n`));
+    console.log(chalk.gray(workflow.description));
+
+    printInfo(chalk.bold('\n🤖 Agents Involved:\n'));
+    workflow.agents.forEach((agent, i) => {
+      console.log(chalk.cyan(`  ${i + 1}. ${agent}`));
+    });
+
+    if (workflow.steps) {
+      printInfo(chalk.bold('\n📝 Implementation Steps:\n'));
+      workflow.steps.forEach(step => {
+        console.log(chalk.gray(`  • ${step}`));
+      });
+    }
+
+    printInfo(chalk.bold('\n📚 Documentation:\n'));
+    printInfo(`  Guide: ${githubBlobUrl('guides/ADVANCED-WORKFLOWS.md')}\n`);
 }
