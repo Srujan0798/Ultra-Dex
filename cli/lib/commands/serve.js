@@ -3,6 +3,7 @@ import http from 'http';
 import fs from 'fs/promises';
 import { loadState, generateMarkdown } from './plan.js';
 import { createMcpServer, startStdioServer } from '../mcp/server.js';
+import { initializeMcpHost } from '../mcp/host.js';
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { projectGraph } from '../mcp/graph.js';
 import { webSocketServer } from '../mcp/websocket.js';
@@ -24,12 +25,14 @@ export function registerServeCommand(program) {
     .description('Open the Multiverse Portal (Active Kernel)')
     .option('-p, --port <port>', 'Port to listen on', '3001')
     .option('--stdio', 'Run in Stdio mode (MCP Standard Only)', false)
+    .option('--host', 'Enable MCP Host mode (aggregate external MCP servers)', false)
+    .option('--mcp-servers <list>', 'Comma-separated MCP servers to connect (e.g., github,filesystem)')
     .action(async (options) => {
       try {
         if (options.stdio) {
-          return await handleStdioServer();
+          return await handleStdioServer(options);
         } else {
-          return await startUnifiedKernel(options.port);
+          return await startUnifiedKernel(options.port, options);
         }
       } catch (error) {
         await handleError(error, { command: 'serve', options });
@@ -41,10 +44,13 @@ export function registerServeCommand(program) {
 /**
  * Handle MCP Stdio server mode
  */
-async function handleStdioServer() {
+async function handleStdioServer(options = {}) {
   try {
     printInfo('Starting MCP Stdio server...');
-    await startStdioServer();
+    await startStdioServer({
+      hostMode: options.host,
+      servers: options.mcpServers ? options.mcpServers.split(',').map(s => s.trim()).filter(Boolean) : []
+    });
   } catch (error) {
     throw new AppError('Failed to start MCP Stdio Server', { cause: error });
   }
@@ -81,7 +87,7 @@ async function getDashboardHTML() {
  * Start the full unified kernel (HTTP + WebSocket + Dashboard + MCP SSE)
  * @param {string} portStr Port to listen on
  */
-async function startUnifiedKernel(portStr) {
+async function startUnifiedKernel(portStr, options = {}) {
   const port = Number.parseInt(portStr, 10);
   if (isNaN(port) || port < 1 || port > 65535) {
     throw new ValidationError(`Invalid port: ${portStr}. Port must be between 1 and 65535.`);
@@ -99,8 +105,19 @@ async function startUnifiedKernel(portStr) {
     printWarning(`⚠️ Graph alignment failed: ${e.message}`);
   }
 
+  // Initialize MCP Host connections if requested
+  if (options.host) {
+    const servers = options.mcpServers
+      ? options.mcpServers.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+    const hostResult = await initializeMcpHost({ servers });
+    if (hostResult.failures?.length) {
+      printWarning(`⚠️ MCP Host connection failures: ${hostResult.failures.map(f => f.server).join(', ')}`);
+    }
+  }
+
   // Initialize MCP Server (The Brain)
-  const mcpServer = createMcpServer();
+  const mcpServer = createMcpServer({ hostMode: options.host });
   const transports = new Map(); // sessionId -> transport
 
   const server = http.createServer(async (req, res) => {
