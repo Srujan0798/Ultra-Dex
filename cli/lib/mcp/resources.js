@@ -5,6 +5,33 @@ import { projectGraph } from './graph.js';
 import { logger } from '../ui/logger.js';
 
 export function registerResources(server) {
+  // Resource: Graph (alias for tests)
+  server.resource(
+    "graph",
+    "ultradex://graph",
+    async (uri) => {
+      try {
+        if (projectGraph.nodes.size === 0) {
+          await projectGraph.scan();
+        }
+        return {
+          contents: [{
+            uri: uri.href,
+            text: JSON.stringify(projectGraph.getSummary(), null, 2)
+          }]
+        };
+      } catch (error) {
+        logger.error('Failed to get graph resource', error);
+        return {
+          contents: [{
+            uri: uri.href,
+            text: JSON.stringify({ error: error.message })
+          }]
+        };
+      }
+    }
+  );
+
   // Resource: Graph Summary
   server.resource(
     "graph_summary",
