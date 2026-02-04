@@ -54,34 +54,52 @@ async function atomicWrite(filePath, data) {
   }
 }
 
+import { open } from 'fs/promises';
+
 /**
- * Handle state locking for safe updates
+ * Handle state locking for safe updates using exclusive file creation
  */
 async function withStateLock(callback) {
   const lockFile = join(process.cwd(), '.ultra-dex', 'state.lock');
   const ultraDir = join(process.cwd(), '.ultra-dex');
-
+  
   if (!existsSync(ultraDir)) {
       await mkdir(ultraDir, { recursive: true });
   }
 
+  let fileHandle = null;
   let retries = 0;
-  while (existsSync(lockFile) && retries < 50) {
-    await new Promise(r => setTimeout(r, 100));
-    retries++;
+  const maxRetries = 50;
+  const retryDelay = 100;
+
+  while (!fileHandle && retries < maxRetries) {
+    try {
+      // 'wx' flag ensures atomic exclusive creation. Fails if file exists.
+      fileHandle = await open(lockFile, 'wx');
+    } catch (error) {
+      if (error.code === 'EEXIST') {
+        // Lock exists, wait and retry
+        await new Promise(r => setTimeout(r, retryDelay));
+        retries++;
+      } else {
+        throw error; // Unexpected error
+      }
+    }
   }
 
-  if (retries >= 50) {
+  if (!fileHandle) {
     throw new AppError('Could not acquire state lock. Is another process running?', { code: 'LOCK_TIMEOUT' });
   }
 
   try {
-    await writeFile(lockFile, String(Date.now()));
+    // Write timestamp for debugging purposes
+    await fileHandle.write(String(Date.now()));
+    await fileHandle.close(); // Close handle but keep file as lock
+    
     return await callback();
   } finally {
-    if (existsSync(lockFile)) {
-      await unlink(lockFile).catch(() => {});
-    }
+    // Always release lock
+    await unlink(lockFile).catch(() => {});
   }
 }
 
