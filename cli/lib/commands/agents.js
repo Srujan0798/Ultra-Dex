@@ -424,6 +424,54 @@ async function showAgent(name) {
   }
 }
 
+import { spawn } from 'child_process';
+
+/**
+ * Secure cross-platform clipboard copy
+ */
+async function copyToClipboard(text) {
+  const platform = process.platform;
+  let command, args;
+
+  if (platform === 'darwin') {
+    command = 'pbcopy';
+    args = [];
+  } else if (platform === 'win32') {
+    command = 'powershell.exe';
+    args = ['-command', 'Set-Clipboard', '-Value', text];
+  } else {
+    // Linux/Unix fallback
+    command = 'xclip';
+    args = ['-selection', 'clipboard'];
+  }
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args);
+    
+    child.on('error', (err) => {
+      // Fallback for xclip if not installed
+      if (platform !== 'darwin' && platform !== 'win32') {
+          const fallback = spawn('xsel', ['--clipboard', '--input']);
+          fallback.stdin.write(text);
+          fallback.stdin.end();
+          fallback.on('close', (code) => code === 0 ? resolve() : reject(err));
+          return;
+      }
+      reject(err);
+    });
+
+    if (platform !== 'win32') {
+        child.stdin.write(text);
+        child.stdin.end();
+    }
+
+    child.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`Clipboard command failed with code ${code}`));
+    });
+  });
+}
+
 export function registerPackCommand(program) {
   program
     .command('pack <agent>')
@@ -465,12 +513,12 @@ export function registerPackCommand(program) {
 
       if (options.clipboard) {
         try {
-          const { execSync } = await import('child_process');
-          execSync('pbcopy', { input: output });
+          await copyToClipboard(output);
           console.log(chalk.green('\n✅ Copied to clipboard!\n'));
         } catch (err) {
-          console.log(chalk.yellow('\n⚠️  Could not copy to clipboard.'));
+          console.log(chalk.yellow('\n⚠️  Could not copy to clipboard. Ensure pbcopy, xclip, or xsel is installed.'));
         }
       }
     });
 }
+

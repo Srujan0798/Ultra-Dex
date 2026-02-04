@@ -65,11 +65,20 @@ export async function loadState() {
 export async function saveState(state) {
   const ultraDir = path.resolve(process.cwd(), '.ultra');
   const statePath = path.resolve(ultraDir, 'state.json');
+  const tempPath = path.resolve(ultraDir, `state.json.tmp.${Date.now()}.${Math.random().toString(36).substr(2, 9)}`);
+
   try {
     await fs.mkdir(ultraDir, { recursive: true });
-    await fs.writeFile(statePath, JSON.stringify(state, null, 2));
+    await fs.writeFile(tempPath, JSON.stringify(state, null, 2));
+    await fs.rename(tempPath, statePath);
     return true;
-  } catch {
+  } catch (error) {
+    // Clean up temp file if it exists
+    try {
+      await fs.unlink(tempPath).catch(() => {});
+    } catch (unlinkError) {
+      // Ignore unlink errors
+    }
     return false;
   }
 }
