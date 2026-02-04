@@ -153,28 +153,28 @@ export function registerPluginsCommand(program) {
       const plugin = manager.plugins.get(name);
 
       if (!plugin) {
-        console.log(chalk.red(`\nPlugin "${name}" not found.`));
+        printError(chalk.red(`\nPlugin "${name}" not found.`));
         return;
       }
 
-      console.log(chalk.bold.cyan(`\n🔌 Plugin: ${name}`));
-      console.log(chalk.gray('─'.repeat(30)));
-      console.log(`${chalk.bold('Version:')}     ${plugin.manifest.version}`);
-      console.log(`${chalk.bold('Author:')}      ${plugin.manifest.author || 'N/A'}`);
-      console.log(`${chalk.bold('License:')}     ${plugin.manifest.license || 'N/A'}`);
-      console.log(`${chalk.bold('Path:')}        ${plugin.path}`);
-      console.log(`${chalk.bold('Description:')} ${plugin.manifest.description || 'No description'}`);
-      
+      printInfo(chalk.bold.cyan(`\n🔌 Plugin: ${name}`));
+      printInfo(chalk.gray('─'.repeat(30)));
+      printInfo(`${chalk.bold('Version:')}     ${plugin.manifest.version}`);
+      printInfo(`${chalk.bold('Author:')}      ${plugin.manifest.author || 'N/A'}`);
+      printInfo(`${chalk.bold('License:')}     ${plugin.manifest.license || 'N/A'}`);
+      printInfo(`${chalk.bold('Path:')}        ${plugin.path}`);
+      printInfo(`${chalk.bold('Description:')} ${plugin.manifest.description || 'No description'}`);
+
       if (plugin.manifest.hooks && plugin.manifest.hooks.length > 0) {
-        console.log(`\n${chalk.bold('Registered Hooks:')}`);
-        plugin.manifest.hooks.forEach(h => console.log(`  - ${h}`));
+        printInfo(`\n${chalk.bold('Registered Hooks:')}`);
+        plugin.manifest.hooks.forEach(h => printInfo(`  - ${h}`));
       }
-      
+
       if (plugin.manifest.commands && plugin.manifest.commands.length > 0) {
-        console.log(`\n${chalk.bold('Custom Commands:')}`);
-        plugin.manifest.commands.forEach(c => console.log(`  - ${c.name}: ${c.description}`));
+        printInfo(`\n${chalk.bold('Custom Commands:')}`);
+        plugin.manifest.commands.forEach(c => printInfo(`  - ${c.name}: ${c.description}`));
       }
-      console.log();
+      printInfo('');
     });
 }
 
