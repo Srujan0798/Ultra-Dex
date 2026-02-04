@@ -1,33 +1,34 @@
 import boxen from 'boxen';
-import chalk from 'chalk';
 import gradient from 'gradient-string';
+import chalk from 'chalk';
 import { VERSION } from './version.js';
 
+/**
+ * Display a styled version card for Ultra-Dex
+ */
 export function showVersionCard() {
-  const version = VERSION;
-  const ultra = gradient(['#6366f1', '#8b5cf6'])('Ultra-Dex');
+  const ultraGradient = gradient(['#8A2BE2', '#4B0082', '#9400D3']);
   
-  console.log(boxen(
-    `${ultra} ${chalk.dim('v')}${chalk.bold.white(version)}
+  const content = [
+    ultraGradient.bold('ULTRA-DEX AI'),
+    chalk.gray(`The Headless CTO Meta-Layer`),
+    '',
+    `${chalk.white('Version:')} ${chalk.cyan(VERSION)}`,
+    `${chalk.white('Status:')} ${chalk.green('Stable/Production')}`,
+    '',
+    chalk.dim('Checking for intergalactic updates...')
+  ].join('\n');
 
-` +
-    `${chalk.cyan('◆')} AI Orchestration Meta-Layer
-` +
-    `${chalk.magenta('◆')} 35 Commands • 16 Agents
-` +
-    `${chalk.yellow('◆')} MCP Server • Swarm Mode
+  const card = boxen(content, {
+    padding: 1,
+    margin: 1,
+    borderStyle: 'round',
+    borderColor: '#9400D3',
+    title: 'System Info',
+    titleAlignment: 'center'
+  });
 
-` +
-    `${chalk.dim('npm install -g ultra-dex')}
-` +
-    `${chalk.dim('github.com/Srujan0798/Ultra-Dex')}`,
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'double',
-      borderColor: '#8b5cf6',
-      title: '🪐 Ultra-Dex',
-      titleAlignment: 'center'
-    }
-  ));
+  console.log(card);
 }
+
+export default showVersionCard;

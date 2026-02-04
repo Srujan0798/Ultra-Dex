@@ -4,6 +4,10 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { ContextCompactor } from '../context/compactor.js';
+
+const DEFAULT_MAX_TOKENS = 200000;
+const DEFAULT_THRESHOLD = 0.95;
 
 export class SessionManager {
     constructor() {
@@ -11,6 +15,10 @@ export class SessionManager {
         this.history = [];
         this.projectRoot = process.cwd();
         this.sessionDir = path.join(this.projectRoot, '.ultra-dex', 'sessions');
+        this.compactor = new ContextCompactor({
+            maxTokens: Number.parseInt(process.env.ULTRA_DEX_CONTEXT_TOKENS || DEFAULT_MAX_TOKENS, 10),
+            tokenThreshold: Number.parseFloat(process.env.ULTRA_DEX_CONTEXT_THRESHOLD || DEFAULT_THRESHOLD),
+        });
     }
 
     async initialize() {
@@ -22,6 +30,7 @@ export class SessionManager {
      */
     addUserMessage(content) {
         this.history.push({ role: 'user', content, timestamp: Date.now() });
+        void this.compactHistory();
         this.save();
     }
 
@@ -30,6 +39,7 @@ export class SessionManager {
      */
     addAgentMessage(content) {
         this.history.push({ role: 'assistant', content, timestamp: Date.now() });
+        void this.compactHistory();
         this.save();
     }
 
@@ -58,6 +68,17 @@ export class SessionManager {
      */
     clear() {
         this.history = [];
+    }
+
+    async compactHistory() {
+        try {
+            const result = await this.compactor.compact(this.history);
+            if (result.compressed) {
+                this.history = result.compressedContext;
+            }
+        } catch (error) {
+            // Compaction should never break session tracking
+        }
     }
 }
 

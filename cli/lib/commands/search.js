@@ -12,11 +12,9 @@ import { glob } from 'glob';
 import { getProvider } from '../providers/index.js';
 import { projectGraph } from '../mcp/graph.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory'; // Using direct import path for compatibility if needed, or @langchain/community
-import { Document } from '@langchain/core/documents';
-import { OpenAIEmbeddings } from '@langchain/openai'; // Assuming OpenAI for now, or use generic
-// We'll use dynamic imports for community to avoid top-level failures if not perfectly linked
-// But for this task we assume it works. 
+
+// We'll use dynamic imports for langchain to avoid top-level failures if not perfectly linked
+// since they are optional dependencies.
 
 // ============================================================================
 // VECTOR STORE CONFIGURATION
@@ -71,7 +69,12 @@ class UltraDexVectorStore {
         // If it's LangChain provider, it might have embeddings configured
         // For now, default to OpenAIEmbeddings if API key is present
         if (process.env.OPENAI_API_KEY) {
-            return new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY });
+            try {
+                const { OpenAIEmbeddings } = await import('@langchain/openai');
+                return new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY });
+            } catch (e) {
+                // Fallback to local
+            }
         }
     }
     
@@ -108,7 +111,12 @@ class UltraDexVectorStore {
   async init() {
     if (!this.store) {
       const embeddings = await this.getEmbeddingsModel();
-      this.store = new MemoryVectorStore(embeddings);
+      try {
+        const { MemoryVectorStore } = await import('langchain/vectorstores/memory');
+        this.store = new MemoryVectorStore(embeddings);
+      } catch (err) {
+        throw new Error('LangChain is required for semantic search. Run `npm install langchain @langchain/openai @langchain/core` to enable.');
+      }
     }
   }
 
@@ -157,6 +165,7 @@ class UltraDexVectorStore {
       this.metadata = data.metadata;
       
       const embeddings = await this.getEmbeddingsModel();
+      const { MemoryVectorStore } = await import('langchain/vectorstores/memory');
       this.store = new MemoryVectorStore(embeddings);
       
       // Restore vectors
@@ -192,7 +201,8 @@ const vectorStore = new UltraDexVectorStore();
 /**
  * Split text into overlapping chunks
  */
-function chunkText(text, filepath) {
+async function chunkText(text, filepath) {
+  const { Document } = await import('@langchain/core/documents');
   const chunks = [];
   const { chunkSize, chunkOverlap } = EMBEDDINGS_CONFIG;
 
@@ -293,7 +303,7 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
       }
 
       // Chunk the content
-      const chunks = chunkText(content, file);
+      const chunks = await chunkText(content, file);
       allDocs.push(...chunks);
       chunkCount += chunks.length;
 
@@ -355,6 +365,7 @@ export function registerSearchCommand(program) {
     .description('Semantic search across your codebase using embeddings')
     .option('--index', 'Rebuild the search index')
     .option('--force', 'Force full re-index')
+    .option('--vector', 'Perform semantic vector search (default)')
     .option('--symbol', 'Search for symbol definitions (functions, classes)')
     .option('--impact <file>', 'Analyze the impact of changing a file')
     .option('-k, --top <n>', 'Number of results', '10')

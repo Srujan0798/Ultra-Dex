@@ -148,7 +148,7 @@ export async function scaffoldCommand(templateName, options) {
 
   } catch (error) {
     spinner.fail('Failed to scaffold');
-    console.error(chalk.red(error.message));
+    printError(chalk.red(error.message));
     process.exit(1);
   }
 }
@@ -161,11 +161,11 @@ export function registerScaffoldCommand(program) {
     .option('--list', 'List available templates')
     .action(async (template, options) => {
       if (options.list) {
-        console.log(chalk.cyan('\n📦 Available Templates\n'));
+        printInfo(chalk.cyan('\n📦 Available Templates\n'));
         Object.entries(TEMPLATES).forEach(([key, val]) => {
-          console.log(chalk.bold(`  ${key}`));
-          console.log(chalk.gray(`    ${val.description}`));
-          console.log(chalk.gray(`    Stack: ${val.stack.join(', ')}\n`));
+          printInfo(chalk.bold(`  ${key}`));
+          printInfo(chalk.gray(`    ${val.description}`));
+          printInfo(chalk.gray(`    Stack: ${val.stack.join(', ')}\n`));
         });
         return;
       }

@@ -293,15 +293,18 @@ class ContextCompactor {
    * Compact context when it exceeds the threshold
    */
   async compact(context) {
+    const tokensBefore = this.calculateTokens(context);
+
     if (!this.isAboveThreshold(context)) {
       return {
         originalContext: context,
         compressed: false,
-        tokensBefore: this.calculateTokens(context),
-        tokensAfter: this.calculateTokens(context),
+        tokensBefore: tokensBefore,
+        tokensAfter: tokensBefore,
         compressionRatio: 1,
         preservedSections: [],
-        summary: null
+        summary: null,
+        tokensSaved: 0
       };
     }
 
@@ -330,13 +333,15 @@ class ContextCompactor {
 
     // If the compressed version is larger than original, try alternative approach
     // that only keeps the summary and preserved sections
-    if (tokensAfter > this.calculateTokens(context)) {
+    if (tokensAfter > tokensBefore) {
       // Create minimal compressed context with just summary and preserved sections
       if (Array.isArray(context)) {
         compressedContext = {
           summary: summary.summary,
           preservedSections: preservedSections.map(p => p.content),
-          type: 'compressed_context'
+          type: 'compressed_context',
+          originalTokens: tokensBefore,
+          compressedTokens: tokensAfter
         };
         tokensAfter = this.calculateTokens(compressedContext);
       }
@@ -346,11 +351,13 @@ class ContextCompactor {
       originalContext: context,
       compressedContext,
       compressed: true,
-      tokensBefore: this.calculateTokens(context),
-      tokensAfter,
-      compressionRatio: tokensAfter / this.calculateTokens(context),
+      tokensBefore: tokensBefore,
+      tokensAfter: tokensAfter,
+      compressionRatio: tokensAfter / tokensBefore,
+      tokensSaved: tokensBefore - tokensAfter,
       preservedSections,
-      summary
+      summary,
+      timestamp: Date.now()
     };
 
     return result;
@@ -478,14 +485,102 @@ class ContextCompactor {
    * Get compression statistics
    */
   getStats() {
+    const totalTokensSaved = this.summaryHistory.reduce((sum, s) => s.tokensSaved || 0, 0);
+    const avgCompressionRatio = this.summaryHistory.length > 0
+      ? this.summaryHistory.reduce((sum, s) => sum + s.compressionRatio, 0) / this.summaryHistory.length
+      : 0;
+
     return {
       totalCompactions: this.summaryHistory.length,
       preservedSectionsCount: this.preservedContext.length,
-      avgCompressionRatio: this.summaryHistory.length > 0 
-        ? this.summaryHistory.reduce((sum, s) => sum + s.compressionRatio, 0) / this.summaryHistory.length 
-        : 0,
+      avgCompressionRatio: avgCompressionRatio,
       currentTokenThreshold: this.tokenThreshold,
-      maxTokenWindow: this.maxTokens
+      maxTokenWindow: this.maxTokens,
+      totalTokensSaved: totalTokensSaved,
+      efficiencyRate: this.summaryHistory.length > 0
+        ? totalTokensSaved / (this.summaryHistory.reduce((sum, s) => sum.tokensBefore || 0, 0) || 1)
+        : 0
+    };
+  }
+
+  /**
+   * Check if context needs immediate compaction
+   */
+  needsCompaction(context) {
+    const currentTokens = this.calculateTokens(context);
+    const threshold = this.maxTokens * this.tokenThreshold;
+    const buffer = this.maxTokens * 0.02; // 2% buffer to avoid getting too close to limit
+
+    return currentTokens > (threshold - buffer);
+  }
+
+  /**
+   * Perform adaptive compaction based on context characteristics
+   */
+  async adaptiveCompact(context) {
+    if (!this.needsCompaction(context)) {
+      return {
+        originalContext: context,
+        compressed: false,
+        reason: 'Below compaction threshold'
+      };
+    }
+
+    // Determine the best compaction strategy based on context type
+    if (Array.isArray(context) && context.length > 100) {
+      // For large arrays, use aggressive compaction
+      return await this.aggressiveCompact(context);
+    } else {
+      // For smaller contexts, use standard compaction
+      return await this.compact(context);
+    }
+  }
+
+  /**
+   * Aggressive compaction for very large contexts
+   */
+  async aggressiveCompact(context) {
+    // Extract and preserve Sacred DNA sections first
+    const preservedSections = this.extractSacredDNA(context);
+
+    // Create a more aggressive summary
+    const summary = await this.summarizeConversation(context);
+
+    // For aggressive compaction, we'll create a much more condensed version
+    let compressedContext;
+
+    if (Array.isArray(context)) {
+      // Take only the most recent 20% of items plus preserved sections
+      const recentCount = Math.max(5, Math.floor(context.length * 0.2));
+      const recentItems = context.slice(-recentCount);
+
+      compressedContext = {
+        type: 'aggressively_compressed',
+        summary: summary.summary,
+        preservedSections: preservedSections.map(p => p.content),
+        recentItems: recentItems,
+        originalLength: context.length,
+        compressedLength: recentCount + preservedSections.length
+      };
+    } else {
+      compressedContext = await this.compact(context);
+    }
+
+    const tokensBefore = this.calculateTokens(context);
+    const tokensAfter = this.calculateTokens(compressedContext);
+
+    return {
+      originalContext: context,
+      compressedContext,
+      compressed: true,
+      tokensBefore,
+      tokensAfter,
+      compressionRatio: tokensAfter / Math.max(tokensBefore, 1),
+      tokensSaved: tokensBefore - tokensAfter,
+      preservedSections,
+      summary,
+      strategy: 'aggressive',
+      timestamp: Date.now()
     };
   }
 }

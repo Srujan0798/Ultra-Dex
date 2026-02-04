@@ -11,6 +11,8 @@ import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 const program = new Command();
 
@@ -24,24 +26,24 @@ program
   .option('--reset', 'Reset configuration to defaults')
   .action(async (options) => {
     try {
-      console.log(chalk.cyan.bold('\n⚡ Ultra-Dex Setup Wizard\n'));
-      
+      printInfo(chalk.cyan.bold('\n⚡ Ultra-Dex Setup Wizard\n'));
+
       if (options.reset) {
         await resetConfig();
-        console.log(chalk.green('✅ Configuration reset to defaults\n'));
+        printSuccess(chalk.green('✅ Configuration reset to defaults\n'));
         return;
       }
-      
+
       if (options.quick) {
         await quickSetup();
-        console.log(chalk.green('✅ Quick setup complete!\n'));
-        console.log(chalk.gray('Run `ultra-dex setup` for full configuration.\n'));
+        printSuccess(chalk.green('✅ Quick setup complete!\n'));
+        printInfo(chalk.gray('Run `ultra-dex setup` for full configuration.\n'));
         return;
       }
-      
+
       // Full interactive setup
-      console.log(chalk.blue('Welcome! Let\'s configure Ultra-Dex for your workflow.\n'));
-      
+      printInfo(chalk.blue('Welcome! Let\'s configure Ultra-Dex for your workflow.\n'));
+
       const answers = await inquirer.prompt([
         {
           type: 'list',
@@ -119,7 +121,7 @@ program
           default: true
         }
       ]);
-      
+
       // Save configuration
       const config = {
         version: '1.0.0',
@@ -131,37 +133,37 @@ program
         features: answers.features,
         createdAt: new Date().toISOString()
       };
-      
+
       if (answers.apiKey) {
         config.apiKey = answers.apiKey;
       }
-      
+
       if (answers.ollamaUrl) {
         config.ollamaUrl = answers.ollamaUrl;
       }
-      
+
       await saveConfig(config);
-      
+
       // Install completions if requested
       if (answers.installCompletions) {
         await installCompletions();
       }
-      
-      console.log(chalk.green.bold('\n✅ Setup Complete!\n'));
-      
+
+      printSuccess(chalk.green.bold('\n✅ Setup Complete!\n'));
+
       // Show next steps
-      console.log(chalk.cyan('Next Steps:'));
-      console.log(chalk.white('  1. Run `npx ultra-dex init` to create your first project'));
-      console.log(chalk.white('  2. Run `npx ultra-dex generate "Your idea"` for a plan'));
-      console.log(chalk.white('  3. Run `npx ultra-dex dashboard` to open the dashboard'));
-      console.log(chalk.white('  4. Install VS Code extension for sidebar integration'));
-      console.log();
-      
-      console.log(chalk.gray('Configuration saved to: ~/.ultra-dex/config.json\n'));
-      console.log(chalk.gray('Edit anytime with: `npx ultra-dex config`\n'));
-      
+      printInfo(chalk.cyan('Next Steps:'));
+      printInfo(chalk.white('  1. Run `npx ultra-dex init` to create your first project'));
+      printInfo(chalk.white('  2. Run `npx ultra-dex generate "Your idea"` for a plan'));
+      printInfo(chalk.white('  3. Run `npx ultra-dex dashboard` to open the dashboard'));
+      printInfo(chalk.white('  4. Install VS Code extension for sidebar integration'));
+      printInfo('');
+
+      printInfo(chalk.gray('Configuration saved to: ~/.ultra-dex/config.json\n'));
+      printInfo(chalk.gray('Edit anytime with: `npx ultra-dex config`\n'));
+
     } catch (error) {
-      console.error(chalk.red('\n❌ Setup failed:'), error.message);
+      printError(chalk.red('\n❌ Setup failed:'), error.message);
       process.exit(1);
     }
   });
@@ -213,32 +215,32 @@ async function installCompletions() {
     try {
       await fs.mkdir(zshCompletionDir, { recursive: true });
       await fs.copyFile(sourceFile, targetFile);
-      console.log(chalk.green('✅ Zsh completions installed'));
-      console.log(chalk.gray('   Add to ~/.zshrc: fpath+=~/.zsh/completions'));
+      printSuccess(chalk.green('✅ Zsh completions installed'));
+      printInfo(chalk.gray('   Add to ~/.zshrc: fpath+=~/.zsh/completions'));
     } catch (e) {
-      console.log(chalk.yellow('⚠️  Could not install zsh completions'));
+      printWarning(chalk.yellow('⚠️  Could not install zsh completions'));
     }
   } else if (shell && shell.includes('bash')) {
     const bashrc = path.join(os.homedir(), '.bashrc');
     const sourceFile = path.join(__dirname, '..', 'completions', 'ultra-dex.bash');
-    
+
     try {
       const completionLine = `source ${sourceFile}`;
       const bashrcContent = await fs.readFile(bashrc, 'utf8');
-      
+
       if (!bashrcContent.includes(completionLine)) {
         await fs.appendFile(bashrc, `\n# Ultra-Dex completions\n${completionLine}\n`);
-        console.log(chalk.green('✅ Bash completions installed'));
-        console.log(chalk.gray('   Restart your shell or run: source ~/.bashrc'));
+        printSuccess(chalk.green('✅ Bash completions installed'));
+        printInfo(chalk.gray('   Restart your shell or run: source ~/.bashrc'));
       } else {
-        console.log(chalk.gray('ℹ️  Bash completions already installed'));
+        printInfo(chalk.gray('ℹ️  Bash completions already installed'));
       }
     } catch (e) {
-      console.log(chalk.yellow('⚠️  Could not install bash completions'));
+      printWarning(chalk.yellow('⚠️  Could not install bash completions'));
     }
   } else {
-    console.log(chalk.yellow('⚠️  Unknown shell. Completions not installed.'));
-    console.log(chalk.gray('   Manual install: see completions/ directory'));
+    printWarning(chalk.yellow('⚠️  Unknown shell. Completions not installed.'));
+    printInfo(chalk.gray('   Manual install: see completions/ directory'));
   }
 }
 

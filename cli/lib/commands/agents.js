@@ -9,34 +9,12 @@ import { readWithFallback } from '../utils/fallback.js';
 import { pathExists } from '../utils/files.js';
 import { showAgentsTable } from '../utils/tables.js';
 import { validateSafePath } from '../utils/validation.js';
+import { marketplaceClient, FALLBACK_MARKETPLACE_AGENTS } from '../marketplace/client.js';
 
-// Community agents available in the marketplace
-const COMMUNITY_AGENTS = {
-  'security-auditor': {
-    name: '@SecurityAuditor',
-    description: 'Security vulnerability scanner and auditor',
-    version: '1.0.0',
-    downloads: 1250,
-  },
-  'accessibility': {
-    name: '@Accessibility',
-    description: 'A11y expert - ensures WCAG compliance',
-    version: '1.0.0',
-    downloads: 421,
-  },
-  'api-designer': {
-    name: '@APIDesigner',
-    description: 'REST/GraphQL API design specialist',
-    version: '1.0.0',
-    downloads: 892,
-  },
-  'ml-engineer': {
-    name: '@MLEngineer',
-    description: 'Machine learning model integration',
-    version: '1.0.0',
-    downloads: 654,
-  },
-};
+const COMMUNITY_AGENTS = FALLBACK_MARKETPLACE_AGENTS.reduce((acc, agent) => {
+  acc[agent.id] = agent;
+  return acc;
+}, {});
 
 export const AGENTS = [
   { name: 'architect', description: 'Manifest reality from a raw idea', file: '0-orchestration/architect.md', tier: 'Orchestration' },
@@ -62,7 +40,6 @@ export const AGENTS = [
 // Pre-compute searchable agents for performance optimization
 const SEARCHABLE_AGENTS = [
   ...AGENTS.map(a => ({ ...a, source: 'builtin', searchStr: `${a.name} ${a.description}`.toLowerCase() })),
-  ...Object.entries(COMMUNITY_AGENTS).map(([id, a]) => ({ id, ...a, source: 'community', searchStr: `${a.name} ${a.description}`.toLowerCase() }))
 ];
 
 const CUSTOM_AGENTS_DIR = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
@@ -135,6 +112,22 @@ export async function readAgentPrompt(agent) {
   }
 
   return readWithFallback(agentPath, fallbackPath, 'utf-8');
+}
+
+function extractAgentMetadata(content) {
+  const nameMatch = content.match(/^#\\s*@?([^\\n]+)/m);
+  const roleMatch = content.match(/##\\s+Role\\s*\\n([\\s\\S]*?)(\\n##|$)/i);
+  const versionMatch = content.match(/##\\s+Version\\s*\\n([\\s\\S]*?)(\\n##|$)/i);
+  const promptMatch = content.match(/##\\s+System Prompt\\s*\\n([\\s\\S]*?)(\\n##|$)/i);
+  const expertiseMatch = content.match(/##\\s+Expertise\\s*\\n([\\s\\S]*?)(\\n##|$)/i);
+
+  const name = nameMatch ? nameMatch[1].trim() : null;
+  const description = roleMatch ? roleMatch[1].trim().replace(/\\n+/g, ' ') : null;
+  const version = versionMatch ? versionMatch[1].trim().split(/\\s+/)[0] : null;
+  const prompt = promptMatch ? promptMatch[1].trim() : null;
+  const tags = expertiseMatch ? expertiseMatch[1].split(/[,\\n]/).map(tag => tag.trim()).filter(Boolean) : [];
+
+  return { name, description, version, prompt, tags };
 }
 
 
@@ -239,9 +232,14 @@ export function registerAgentsCommand(program) {
       console.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
 
       const lowerQuery = query.toLowerCase();
-      const results = SEARCHABLE_AGENTS.filter(a =>
+      const builtinResults = SEARCHABLE_AGENTS.filter(a =>
         a.searchStr.includes(lowerQuery)
       );
+      const marketplaceResults = await marketplaceClient.searchAgents(query);
+      const results = [
+        ...builtinResults.map(result => ({ ...result, source: 'builtin' })),
+        ...marketplaceResults.map(result => ({ ...result, source: 'marketplace' }))
+      ];
 
       if (results.length === 0) {
         console.log(chalk.yellow('No agents found matching your query.'));
@@ -249,7 +247,10 @@ export function registerAgentsCommand(program) {
         console.log(chalk.bold(`Found ${results.length} agent(s):\n`));
         results.forEach(a => {
           const badge = a.source === 'builtin' ? chalk.blue('[built-in]') : chalk.yellow('[marketplace]');
-          console.log(`  ${chalk.green('@' + a.name)} ${badge}`);
+          const name = a.name.startsWith('@') ? a.name : `@${a.name}`;
+          console.log(`  ${chalk.green(name)} ${badge}`);
+          if (a.version) console.log(`    ${chalk.gray(`v${a.version}`)}`);
+          if (a.rating) console.log(`    ${chalk.gray(`Rating: ${a.rating}`)}`);
           console.log(`    ${chalk.gray(a.description)}\n`);
         });
       }
@@ -391,7 +392,31 @@ ${answers.prompt}
     .description('Publish an agent to the marketplace')
     .action(async (name) => {
       console.log(chalk.cyan(`\n🚀 Preparing to publish agent: ${name}...`));
-      console.log(chalk.yellow('   (This feature is coming soon to the Ultra-Dex Marketplace)\n'));
+      const agentPath = await getCustomAgentPath(name);
+      if (!agentPath) {
+        console.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
+        return;
+      }
+
+      const content = await fs.readFile(agentPath, 'utf-8');
+      const metadata = extractAgentMetadata(content);
+
+      const payload = {
+        id: name.toLowerCase(),
+        name: metadata.name || `@${name}`,
+        description: metadata.description || 'Custom Ultra-Dex agent',
+        version: metadata.version || '1.0.0',
+        systemPrompt: metadata.prompt || content,
+        tags: metadata.tags || [],
+      };
+
+      const spinner = ora('Publishing to marketplace...').start();
+      const result = await marketplaceClient.submitAgent(payload);
+      if (result?.success === false) {
+        spinner.fail(result.message || 'Marketplace submission failed');
+        return;
+      }
+      spinner.succeed(`Published ${payload.name} v${payload.version}`);
     });
 
   // agents install <name>
@@ -401,7 +426,7 @@ ${answers.prompt}
     .description('Install an agent from the marketplace')
     .action(async (name) => {
       const spinner = ora(`Installing ${name}...`).start();
-      const agent = COMMUNITY_AGENTS[name.toLowerCase()];
+      const agent = await marketplaceClient.getAgent(name.toLowerCase());
       if (!agent) {
         spinner.fail(`Agent "${name}" not found in marketplace`);
         console.log(chalk.gray('\nUse `ultra-dex agents list --marketplace` to see available agents'));
@@ -410,12 +435,13 @@ ${answers.prompt}
       const agentsDir = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents');
       await fs.mkdir(agentsDir, { recursive: true });
       const agentConfig = {
-        id: name.toLowerCase(),
+        id: agent.id || name.toLowerCase(),
         name: agent.name,
         description: agent.description,
         version: agent.version,
+        rating: agent.rating || null,
         installedAt: new Date().toISOString(),
-        systemPrompt: `You are ${agent.name}, ${agent.description}`,
+        systemPrompt: agent.systemPrompt || `You are ${agent.name}, ${agent.description}`,
       };
       await fs.writeFile(path.join(agentsDir, `${name.toLowerCase()}.json`), JSON.stringify(agentConfig, null, 2));
       spinner.succeed(`Installed ${chalk.green(agent.name)} v${agent.version}`);
@@ -427,10 +453,13 @@ async function showMarketplace() {
   console.log(chalk.cyan('\n🏪 Ultra-Dex Agent Marketplace\n'));
   console.log(chalk.bold('Available Community Agents:'));
   console.log(chalk.gray('─'.repeat(50)));
-  for (const [, agent] of Object.entries(COMMUNITY_AGENTS)) {
-    console.log(`  ${chalk.yellow(agent.name)} ${chalk.gray(`v${agent.version}`)}`);
+  const agents = await marketplaceClient.listAgents();
+  for (const agent of agents) {
+    const name = agent.name.startsWith('@') ? agent.name : `@${agent.name}`;
+    console.log(`  ${chalk.yellow(name)} ${chalk.gray(`v${agent.version}`)}`);
     console.log(`    ${chalk.white(agent.description)}`);
-    console.log(`    ${chalk.gray(`↓ ${agent.downloads} downloads`)}\n`);
+    if (agent.rating) console.log(`    ${chalk.gray(`★ ${agent.rating}`)}`);
+    console.log(`    ${chalk.gray(`↓ ${agent.downloads || 0} downloads`)}\n`);
   }
   console.log(chalk.gray('Install with: ultra-dex agents install <name>\n'));
 }
@@ -589,4 +618,3 @@ export function registerPackCommand(program) {
       }
     });
 }
-

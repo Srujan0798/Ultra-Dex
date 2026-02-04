@@ -1,7 +1,8 @@
 import boxen from 'boxen';
 import chalk from 'chalk';
+import gradient from 'gradient-string';
 import { VERSION } from '../utils/version.js';
-import { theme, ultraGradient } from '../ui/theme.js';
+import { theme } from '../ui/theme.js';
 
 const asciiLogo = `
 ██╗   ██╗██╗  ████████╗██████╗  █████╗       ██████╗ ███████╗██╗  ██╗
@@ -13,31 +14,45 @@ const asciiLogo = `
 
 export const banner = asciiLogo;
 
+/**
+ * Display the Ultra-Dex visual banner
+ */
 export function showBanner(version = VERSION) {
-  // Apply the gradient multiline
-  process.stdout.write(ultraGradient(asciiLogo));
+  const ultraGradient = gradient(['#8A2BE2', '#4B0082', '#9400D3', '#FF00FF']);
+  
+  // Clear screen for a fresh look if in interactive mode (optional)
+  // process.stdout.write('\x1Bc');
 
-  process.stdout.write(boxen(
-    `${theme.primary.bold('⚡ ULTRA-DEX')} ${theme.dim('v' + version)}
+  console.log(ultraGradient.multiline(asciiLogo));
 
-` +
-    `${theme.secondary('AI Orchestration Meta-Layer')}
-` +
-    `${theme.success.dim('● SYSTEM ACTIVATED')}
+  const info = [
+    `${chalk.bold('⚡ ULTRA-DEX')} ${chalk.dim(`v${version}`)}`,
+    `${chalk.magenta('AI Orchestration Meta-Layer for SaaS')}`,
+    '',
+    `${chalk.green('●')} ${chalk.white('CORE SYSTEMS:')} ${chalk.green('ONLINE')}`,
+    `${chalk.green('●')} ${chalk.white('NEURAL LINK:')} ${chalk.green('ESTABLISHED')}`,
+    '',
+    `${chalk.italic.dim('"Perfectly balanced, as all code should be."')}`
+  ].join('\n');
 
-` +
-    `${theme.dim('Perfectly balanced, as all code should be.')}`,
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'round',
-      borderColor: '#dc2626',
-      title: 'ULTRA-DEX',
-      titleAlignment: 'center'
-    }
-  ));
+  console.log(boxen(info, {
+    padding: 1,
+    margin: { top: 1, bottom: 1 },
+    borderStyle: 'double',
+    borderColor: '#8A2BE2',
+    textAlignment: 'center',
+    title: 'System Boot',
+    titleAlignment: 'left'
+  }));
 }
 
 export function showCompactBanner() {
-  process.stdout.write(`  ${theme.primary.bold('⚡ Ultra-Dex')} ${theme.dim('v' + VERSION)}`);
+  const shortGradient = gradient(['#8A2BE2', '#FF00FF']);
+  console.log(`  ${shortGradient.bold('⚡ Ultra-Dex')} ${chalk.dim(`v${VERSION}`)}`);
 }
+
+export default {
+  banner,
+  showBanner,
+  showCompactBanner
+};

@@ -1,46 +1,49 @@
 import ora from 'ora';
 import chalk from 'chalk';
+import gradient from 'gradient-string';
 
-const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+const ultraGradient = gradient(['#8A2BE2', '#4B0082', '#9400D3']);
 
-export function createSpinner(text) {
+/**
+ * Enhanced Ultra-Dex Spinners
+ */
+export const SPINNERS = {
+  quantum: {
+    interval: 80,
+    frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'].map(f => ultraGradient(f))
+  },
+  cyber: {
+    interval: 100,
+    frames: ['|', '/', '-', '\\'].map(f => chalk.magenta(f))
+  },
+  pulse: {
+    interval: 200,
+    frames: ['⊙', '⊚', '⊛', '⊜', '⊝'].map(f => chalk.cyan(f))
+  }
+};
+
+/**
+ * Create an enhanced spinner instance
+ * @param {string} text - Initial text
+ * @param {string} type - Spinner type from SPINNERS
+ */
+export function createSpinner(text, type = 'quantum') {
   return ora({
-    text: chalk.cyan(text),
-    spinner: {
-      interval: 80,
-      frames: spinnerFrames
-    },
-    color: 'magenta'
+    text,
+    spinner: SPINNERS[type] || SPINNERS.quantum
   });
 }
 
-export function success(text) {
-  return ora().succeed(chalk.green(text));
+/**
+ * Start a spinner with gradient text
+ */
+export function startSpinner(text, type = 'quantum') {
+  const spinner = createSpinner(text, type);
+  return spinner.start();
 }
 
-export function fail(text) {
-  return ora().fail(chalk.red(text));
-}
-
-export function info(text) {
-  return ora().info(chalk.blue(text));
-}
-
-export function warn(text) {
-  return ora().warn(chalk.yellow(text));
-}
-
-// Task list with progress
-export async function runTasks(tasks) {
-  for (const task of tasks) {
-    const spinner = createSpinner(task.title);
-    spinner.start();
-    try {
-      await task.fn();
-      spinner.succeed(chalk.green(task.title));
-    } catch (error) {
-      spinner.fail(chalk.red(`${task.title}: ${error.message}`));
-      throw error;
-    }
-  }
-}
+export default {
+  SPINNERS,
+  createSpinner,
+  startSpinner
+};
