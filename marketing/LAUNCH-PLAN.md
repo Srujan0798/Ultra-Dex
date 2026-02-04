@@ -99,31 +99,23 @@ github.com/Srujan0798/Ultra-Dex
 
 ### Reddit (r/programming, r/webdev)
 
-**Title:** Ultra-Dex v3.4.5 — Enterprise AI orchestration framework with 17 agents, swarms, and MCP kernel
+**Title:** Show r/programming: Ultra-Dex 3.5.0 — A Meta-Orchestration layer to fix "AI Amnesia"
 
 **Body:**
-```
-Hey everyone! Just released Ultra-Dex v3.4.5.
+Most AI coding tools lose track of your architecture after a few dozen prompts. We built **Ultra-Dex** to act as a "Headless CTO"—a persistent layer that manages context, planning, and verification across any AI tool (Claude, Cursor, Devin).
 
-**What is it?**
-Ultra-Dex is the orchestration layer that sits ABOVE AI coding tools (Claude Code, Cursor, Devin). It provides:
-- Persistent context (CONTEXT.md survives sessions)
-- 17 specialized agents across 7 tiers
-- Swarm mode for autonomous parallel pipelines
-- MCP server for Claude Desktop integration
-- Docker Sandbox for executing generated code
+**Key Features in v3.5.0:**
+- 🪐 **Active Kernel:** An MCP server that injects project state (CONTEXT.md, DB schema) into your AI tools.
+- 🐝 **Agent Swarms:** Orchestrates 17 specialized agents in parallel implementation loops.
+- 🏗️ **Smart Scaffolding:** Generates boilerplate and Prisma schemas directly from your Markdown plan.
+- 🛡️ **Execution Sandbox:** Safely verifies generated code in Docker with autonomous auto-fix loops.
 
-**Why?**
-AI tools have amnesia and hallucinate. Ultra-Dex provides the memory and the verification sandbox.
+Open source (MIT). Stop being the "human clipboard" between AI tools.
 
-**Quick start:**
-npx ultra-dex init myproject
+**Try it:** `npx ultra-dex init`
+**GitHub:** https://github.com/Srujan0798/Ultra-Dex
 
-GitHub: github.com/Srujan0798/Ultra-Dex
-npm: npmjs.com/package/ultra-dex
-
-Would love feedback!
-```
+Feedback welcome!
 
 ### Hacker News
 
