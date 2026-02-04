@@ -4,7 +4,7 @@
  */
 
 import { performance } from 'perf_hooks';
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
+import fs from 'fs';
 import { join } from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -84,12 +84,12 @@ class PerformanceTracker {
     
     // Load existing metrics
     let existing = [];
-    if (existsSync(perfPath)) {
+    if (fs.existsSync(perfPath)) {
       try {
-        existing = JSON.parse(readFileSync(perfPath, 'utf8'));
+        existing = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
       } catch { /* ignore */ }
     } else {
-      mkdirSync(join(process.cwd(), PERF_DIR), { recursive: true });
+      fs.mkdirSync(join(process.cwd(), PERF_DIR), { recursive: true });
     }
 
     // Append new metrics
@@ -98,7 +98,7 @@ class PerformanceTracker {
     // Keep only last 1000 metrics to prevent file bloat
     const trimmed = allMetrics.slice(-1000);
     
-    writeFileSync(perfPath, JSON.stringify(trimmed, null, 2));
+    fs.writeFileSync(perfPath, JSON.stringify(trimmed, null, 2));
     return trimmed.length;
   }
 
@@ -107,9 +107,9 @@ class PerformanceTracker {
    */
   getSummary(days = 7) {
     const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
-    if (!existsSync(perfPath)) return null;
+    if (!fs.existsSync(perfPath)) return null;
 
-    const metrics = JSON.parse(readFileSync(perfPath, 'utf8'));
+    const metrics = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
     const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
     const recent = metrics.filter(m => new Date(m.timestamp).getTime() > cutoff);
 
@@ -199,9 +199,8 @@ export function registerPerformanceCommand(program) {
 
       if (options.clear) {
         const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
-        if (existsSync(perfPath)) {
-          const { unlinkSync } = await import('fs');
-          unlinkSync(perfPath);
+        if (fs.existsSync(perfPath)) {
+          fs.unlinkSync(perfPath);
           console.log(chalk.green('✅ Performance history cleared'));
         } else {
           console.log(chalk.gray('No performance data to clear'));
@@ -211,17 +210,17 @@ export function registerPerformanceCommand(program) {
 
       if (options.export) {
         const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
-        if (!existsSync(perfPath)) {
+        if (!fs.existsSync(perfPath)) {
           console.log(chalk.yellow('No performance data found'));
           return;
         }
         
-        const data = JSON.parse(readFileSync(perfPath, 'utf8'));
+        const data = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
         const exportData = options.operation 
           ? data.filter(d => d.operation === options.operation)
           : data;
         
-        writeFileSync(options.export, JSON.stringify(exportData, null, 2));
+        fs.writeFileSync(options.export, JSON.stringify(exportData, null, 2));
         console.log(chalk.green(`✅ Exported ${exportData.length} metrics to ${options.export}`));
         return;
       }
@@ -271,12 +270,12 @@ export function registerPerformanceCommand(program) {
 
       if (options.operation) {
         const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
-        if (!existsSync(perfPath)) {
+        if (!fs.existsSync(perfPath)) {
           console.log(chalk.yellow('No performance data found'));
           return;
         }
 
-        const data = JSON.parse(readFileSync(perfPath, 'utf8'));
+        const data = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
         const filtered = data.filter(d => d.operation === options.operation).slice(-20);
 
         if (filtered.length === 0) {
@@ -327,14 +326,14 @@ export function trackMetric(name, value, unit = 'ms') {
   const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
   let data = [];
   
-  if (existsSync(perfPath)) {
+  if (fs.existsSync(perfPath)) {
     try {
-      data = JSON.parse(readFileSync(perfPath, 'utf8'));
+      data = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
     } catch { /* ignore */ }
   }
 
   data.push(metric);
-  writeFileSync(perfPath, JSON.stringify(data.slice(-1000), null, 2));
+  fs.writeFileSync(perfPath, JSON.stringify(data.slice(-1000), null, 2));
 }
 
 /**

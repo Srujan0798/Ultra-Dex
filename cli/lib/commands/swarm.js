@@ -1,6 +1,6 @@
 // cli/lib/commands/swarm.js
 import { getProvider } from '../providers/index.js';
-import { readFile, writeFile, mkdir, unlink } from 'fs/promises';
+import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import { join, basename, dirname } from 'path';
 import { glob } from 'glob';
@@ -40,21 +40,19 @@ async function atomicWrite(filePath, data) {
   );
 
   try {
-    await mkdir(dir, { recursive: true });
-    await writeFile(tempPath, data);
-    await writeFile(filePath, data); // This is the atomic operation on most systems
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(tempPath, data);
+    await fs.writeFile(filePath, data); // This is the atomic operation on most systems
   } catch (error) {
     // Clean up temp file if it exists
     try {
-      await unlink(tempPath).catch(() => {});
+      await fs.unlink(tempPath).catch(() => {});
     } catch (unlinkError) {
       // Ignore cleanup errors
     }
     throw error;
   }
 }
-
-import { open } from 'fs/promises';
 
 /**
  * Handle state locking for safe updates using exclusive file creation
@@ -64,7 +62,7 @@ async function withStateLock(callback) {
   const ultraDir = join(process.cwd(), '.ultra-dex');
   
   if (!existsSync(ultraDir)) {
-      await mkdir(ultraDir, { recursive: true });
+      await fs.mkdir(ultraDir, { recursive: true });
   }
 
   let fileHandle = null;
@@ -75,7 +73,7 @@ async function withStateLock(callback) {
   while (!fileHandle && retries < maxRetries) {
     try {
       // 'wx' flag ensures atomic exclusive creation. Fails if file exists.
-      fileHandle = await open(lockFile, 'wx');
+      fileHandle = await fs.open(lockFile, 'wx');
     } catch (error) {
       if (error.code === 'EEXIST') {
         // Lock exists, wait and retry
@@ -99,7 +97,7 @@ async function withStateLock(callback) {
     return await callback();
   } finally {
     // Always release lock
-    await unlink(lockFile).catch(() => {});
+    await fs.unlink(lockFile).catch(() => {});
   }
 }
 
@@ -129,7 +127,7 @@ async function saveCheckpoint(task, agentResults, previousOutput, completedAgent
 async function loadCheckpoint() {
   try {
     if (existsSync(CHECKPOINT_FILE)) {
-      const data = await readFile(CHECKPOINT_FILE, 'utf-8');
+      const data = await fs.readFile(CHECKPOINT_FILE, 'utf-8');
       return JSON.parse(data);
     }
   } catch (error) {
@@ -141,7 +139,7 @@ async function loadCheckpoint() {
 async function clearCheckpoint() {
   try {
     if (existsSync(CHECKPOINT_FILE)) {
-      await unlink(CHECKPOINT_FILE);
+      await fs.unlink(CHECKPOINT_FILE);
     }
   } catch (error) {
     // Ignore cleanup errors
@@ -299,7 +297,7 @@ Provide your output for the next agent in the pipeline.
 
 async function ensureLogDirectory() {
   const logDir = join(process.cwd(), '.ultra-dex', 'swarm-logs');
-  await mkdir(logDir, { recursive: true });
+  await fs.mkdir(logDir, { recursive: true });
   return logDir;
 }
 
@@ -323,7 +321,7 @@ async function cleanupOldSwarmLogs(logDir, maxLogs = 50) {
       // Delete oldest files to keep only maxLogs - 1 (to make room for new log)
       const filesToDelete = sortedFiles.slice(0, sortedFiles.length - maxLogs + 1);
       for (const file of filesToDelete) {
-        await unlink(file.filepath).catch(() => {});
+        await fs.unlink(file.filepath).catch(() => {});
       }
     }
   } catch (error) {
@@ -370,7 +368,7 @@ async function writeSwarmLog(logDir, task, results, stats) {
     }
   }
 
-  await writeFile(logPath, logContent);
+  await fs.writeFile(logPath, logContent);
   return logPath;
 }
 
@@ -574,8 +572,8 @@ async function gatherSwarmContext() {
     const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
 
     let context = '';
-    if (existsSync(contextPath)) context += await readFile(contextPath, 'utf-8');
-    if (existsSync(planPath)) context += '\n\n' + await readFile(planPath, 'utf-8');
+    if (existsSync(contextPath)) context += await fs.readFile(contextPath, 'utf-8');
+    if (existsSync(planPath)) context += '\n\n' + await fs.readFile(planPath, 'utf-8');
 
     renderer.startSpinner('Scanning Codebase Graph...');
     try {
@@ -630,11 +628,11 @@ async function loadAgentPrompt(name) {
   const file = paths.get(name);
 
   if (file) {
-    return await readFile(file, 'utf-8');
+    return await fs.readFile(file, 'utf-8');
   }
 
   const directPath = join(process.cwd(), 'agents', `${name}.md`);
-  if (existsSync(directPath)) return await readFile(directPath, 'utf-8');
+  if (existsSync(directPath)) return await fs.readFile(directPath, 'utf-8');
 
   return `You are the @${name} agent.`;
 }

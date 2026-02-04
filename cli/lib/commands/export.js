@@ -1,7 +1,7 @@
 // cli/lib/commands/export.js
 import chalk from 'chalk';
 import ora from 'ora';
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
+import fs from 'fs';
 import { join, basename, resolve } from 'path';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
@@ -59,7 +59,7 @@ export async function exportCommand(options) {
         break;
     }
     
-    writeFileSync(resolvedOutput, output);
+    fs.writeFileSync(resolvedOutput, output);
     formatSpinner.succeed(`Generated ${format.toUpperCase()} output`);
 
     printSuccess(chalk.green(`\n✅ Exported to ${chalk.bold(resolvedOutput)}`));
@@ -93,16 +93,16 @@ function loadContext(includeAgents = false) {
   // Load core documentation files
   coreFiles.forEach(file => {
     const filePath = join(process.cwd(), file);
-    if (existsSync(filePath)) {
-      context.files[file] = readFileSync(filePath, 'utf-8');
+    if (fs.existsSync(filePath)) {
+      context.files[file] = fs.readFileSync(filePath, 'utf-8');
     }
   });
   
   // Load state.json if exists
   const statePath = join(process.cwd(), '.ultra', 'state.json');
-  if (existsSync(statePath)) {
+  if (fs.existsSync(statePath)) {
     try {
-      context.state = JSON.parse(readFileSync(statePath, 'utf-8'));
+      context.state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
     } catch { /* invalid state */ }
   }
   
@@ -118,20 +118,20 @@ function loadAgentPrompts() {
   const agents = [];
   const agentsDir = join(process.cwd(), 'agents');
   
-  if (!existsSync(agentsDir)) return agents;
+  if (!fs.existsSync(agentsDir)) return agents;
   
   const walkDir = (dir, category = '') => {
     try {
-      const items = readdirSync(dir);
+      const items = fs.readdirSync(dir);
       for (const item of items) {
         const itemPath = join(dir, item);
-        const stat = statSync(itemPath);
+        const stat = fs.statSync(itemPath);
         
         if (stat.isDirectory()) {
           walkDir(itemPath, item);
         } else if (item.endsWith('.md') && !item.startsWith('README') && !item.startsWith('00-')) {
           try {
-            const content = readFileSync(itemPath, 'utf-8');
+            const content = fs.readFileSync(itemPath, 'utf-8');
             agents.push({
               name: basename(item, '.md'),
               category: category || 'root',

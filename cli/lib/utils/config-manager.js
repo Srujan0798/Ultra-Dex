@@ -75,6 +75,13 @@ const DEFAULT_CONFIG = {
     verboseLogging: false,
     enableExperimental: false,
     autoSave: true
+  },
+
+  // Governance settings
+  governance: {
+    allowlist: [],
+    blocklist: [],
+    strict: false
   }
 };
 

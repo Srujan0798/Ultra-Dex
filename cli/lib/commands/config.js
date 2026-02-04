@@ -1,6 +1,6 @@
 // cli/lib/commands/config.js
 import chalk from 'chalk';
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
+import fs from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
@@ -19,9 +19,9 @@ function getConfigPath() {
  */
 export function loadConfig() {
   const configPath = getConfigPath();
-  if (existsSync(configPath)) {
+  if (fs.existsSync(configPath)) {
     try {
-      return JSON.parse(readFileSync(configPath, 'utf8'));
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
     } catch (e) {
       return {};
     }
@@ -34,11 +34,11 @@ export function loadConfig() {
  */
 function saveConfig(config) {
   const configDir = join(process.cwd(), CONFIG_DIR);
-  if (!existsSync(configDir)) {
-    mkdirSync(configDir, { recursive: true });
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
   }
   try {
-    writeFileSync(getConfigPath(), JSON.stringify(config, null, 2));
+    fs.writeFileSync(getConfigPath(), JSON.stringify(config, null, 2));
   } catch (error) {
     throw new AppError('Failed to save configuration', { cause: error });
   }
@@ -111,7 +111,7 @@ function generateMCPConfig() {
   process.stdout.write(JSON.stringify(config, null, 2) + '\n');
   
   try {
-    writeFileSync('mcp-config.json', JSON.stringify(config, null, 2));
+    fs.writeFileSync('mcp-config.json', JSON.stringify(config, null, 2));
     printSuccess('\n✅ Saved to mcp-config.json');
   } catch (e) {
     throw new AppError('Failed to save mcp-config.json', { cause: e });
@@ -123,7 +123,7 @@ function generateCursorConfig() {
     const rulesDir = join(process.cwd(), '.cursor', 'rules');
     
     try {
-        mkdirSync(rulesDir, { recursive: true });
+        fs.mkdirSync(rulesDir, { recursive: true });
         const ruleContent = `
 ---
 description: Ultra-Dex Standards
@@ -135,7 +135,7 @@ globs: **/*.{js,ts,md}
 - Use the 'agents' directory for role-specific prompts
 - Maintain valid JSON in all .json files
 `;
-        writeFileSync(join(rulesDir, 'ultra-dex.mdc'), ruleContent.trim());
+        fs.writeFileSync(join(rulesDir, 'ultra-dex.mdc'), ruleContent.trim());
         printSuccess(`✅ Created Cursor rules in .cursor/rules/ultra-dex.mdc`);
     } catch (e) {
         throw new AppError('Failed to create Cursor config', { cause: e });
@@ -147,13 +147,13 @@ function generateVSCodeConfig() {
     const vscodeDir = join(process.cwd(), '.vscode');
     
     try {
-        mkdirSync(vscodeDir, { recursive: true });
+        fs.mkdirSync(vscodeDir, { recursive: true });
         const settings = {
             "editor.defaultFormatter": "esbenp.prettier-vscode",
             "editor.formatOnSave": true,
             "ultra-dex.contextPath": "CONTEXT.md"
         };
-        writeFileSync(join(vscodeDir, 'settings.json'), JSON.stringify(settings, null, 2));
+        fs.writeFileSync(join(vscodeDir, 'settings.json'), JSON.stringify(settings, null, 2));
         printSuccess(`✅ Created VS Code settings in .vscode/settings.json`);
     } catch (e) {
         throw new AppError('Failed to create VS Code config', { cause: e });

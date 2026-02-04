@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+import crypto from 'crypto';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
 
@@ -111,6 +112,15 @@ export class UltraMemory {
     } else {
       this.memory = [];
     }
+    await this.saveToFile();
+  }
+
+  async pruneAfter(timestamp) {
+    await this.init();
+    if (!timestamp) return;
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return;
+    this.memory = this.memory.filter(entry => new Date(entry.timestamp) < date);
     await this.saveToFile();
   }
 

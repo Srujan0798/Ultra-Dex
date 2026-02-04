@@ -1,7 +1,6 @@
 import { chromium } from 'playwright';
 import chalk from 'chalk';
 import ora from 'ora';
-import path from 'path';
 import fs from 'fs/promises';
 import { createProvider as getProvider } from '../providers/index.js';
 import { printError, printInfo, printSuccess } from '../utils/output.js';
@@ -13,6 +12,81 @@ export function registerBrowserCommand(program) {
   const browserCmd = program
     .command('browser')
     .description('Browser Automation & Testing (Playwright + AI)');
+
+  // Flag-based usage for quick actions
+  browserCmd
+    .option('--screenshot <url>', 'Take a screenshot of a URL')
+    .option('--to-code', 'Convert screenshot to code (use with --screenshot)')
+    .option('--scrape <url>', 'Extract content from a URL using AI')
+    .option('--test <url>', 'Run automated tests with AI assertions')
+    .option('--record', 'Record user actions to generate Playwright code')
+    .option('--mockup <image>', 'Convert UI mockup to code using Vision AI')
+    .option('--audit <url>', 'Perform AI Visual Regression Audit')
+    .option('--stack <stack>', 'Tech stack (e.g., next15-tailwind)', 'next15-tailwind')
+    .option('-o, --output <path>', 'Output file path')
+    .option('-q, --query <query>', 'What to extract (e.g., "all pricing tiers")', 'Summarize the page content')
+    .option('-a, --assertions <list>', 'Comma-separated assertions (e.g., "Login button exists, Title is Home")')
+    .option('--name <name>', 'Snapshot name', 'ui-audit')
+    .option('--promote', 'Promote current run to baseline')
+    .option('--full-page', 'Capture full page', true)
+    .option('--no-full-page', 'Capture viewport only')
+    .action(async (options) => {
+      try {
+        const modes = [
+          { key: 'screenshot', value: options.screenshot },
+          { key: 'scrape', value: options.scrape },
+          { key: 'test', value: options.test },
+          { key: 'record', value: options.record },
+          { key: 'mockup', value: options.mockup },
+          { key: 'audit', value: options.audit }
+        ].filter(entry => Boolean(entry.value));
+
+        if (modes.length === 0) {
+          browserCmd.help();
+          return;
+        }
+
+        if (modes.length > 1) {
+          printError('Please specify only one action flag at a time (e.g., --screenshot or --scrape).');
+          return;
+        }
+
+        if (options.screenshot) {
+          if (options.toCode) {
+            await handleScreenshotToCode(options.screenshot, options);
+          } else {
+            await handleScreenshot(options.screenshot, options);
+          }
+          return;
+        }
+
+        if (options.scrape) {
+          await handleScrape(options.scrape, options);
+          return;
+        }
+
+        if (options.test) {
+          await handleTest(options.test, options);
+          return;
+        }
+
+        if (options.record) {
+          await handleRecord(options);
+          return;
+        }
+
+        if (options.mockup) {
+          await handleMockup(options.mockup, options);
+          return;
+        }
+
+        if (options.audit) {
+          await handleAudit(options.audit, options);
+        }
+      } catch (error) {
+        await handleError(error, { command: 'browser', options });
+      }
+    });
 
   // 1. Screenshot Command
   browserCmd
@@ -117,8 +191,7 @@ async function handleAudit(url, options) {
     
     if (result.status === 'ANALYZED') {
       spinner.succeed('Visual Audit Complete');
-      console.log(chalk.magenta('
-🔍 AI Review Results:'));
+      console.log(chalk.magenta('\n🔍 AI Review Results:'));
       console.log(chalk.gray(result.message));
     } else {
       spinner.info(result.message);
@@ -129,8 +202,7 @@ async function handleAudit(url, options) {
   }
 }
 
-async function handleScreenshot(url, options) {
-  const spinner = ora(`Navigating to ${url}...`).start();
+async function captureScreenshot(url, options) {
   let browser;
 
   try {
@@ -150,21 +222,74 @@ async function handleScreenshot(url, options) {
       outputPath = `${hostname}-${timestamp}.png`;
     }
 
-    spinner.text = 'Capturing screenshot...';
     await page.screenshot({ 
       path: outputPath, 
       fullPage: options.fullPage 
     });
 
-    spinner.succeed(chalk.green(`Screenshot saved to ${outputPath}`));
+    return outputPath;
   } catch (error) {
-    spinner.fail(chalk.red('Screenshot failed'));
     if (error.message.includes("Executable doesn't exist")) {
       printInfo('👉 Run `npx playwright install` to install browser binaries.');
     }
     throw error;
   } finally {
     if (browser) await browser.close();
+  }
+}
+
+async function handleScreenshot(url, options) {
+  const spinner = ora(`Navigating to ${url}...`).start();
+
+  try {
+    spinner.text = 'Capturing screenshot...';
+    const outputPath = await captureScreenshot(url, options);
+    spinner.succeed(chalk.green(`Screenshot saved to ${outputPath}`));
+  } catch (error) {
+    spinner.fail(chalk.red('Screenshot failed'));
+    throw error;
+  }
+}
+
+async function handleScreenshotToCode(url, options) {
+  const provider = getProvider();
+  if (!provider) {
+    printError('AI Provider not configured. Set OPENAI_API_KEY or ANTHROPIC_API_KEY.');
+    return;
+  }
+
+  if (!provider.analyzeImage) {
+    printError(`Current provider (${provider.constructor.name}) does not support Vision. Please use OpenAI (GPT-4o) or Claude 3.5 Sonnet.`);
+    return;
+  }
+
+  const spinner = ora(`Capturing ${url} for codegen...`).start();
+
+  try {
+    const screenshotPath = await captureScreenshot(url, { ...options, output: undefined });
+    spinner.text = 'Generating code from screenshot...';
+
+    const buffer = await fs.readFile(screenshotPath);
+    const prompt = `
+You are an expert Frontend Engineer.
+Convert this screenshot into clean, production-ready code.
+
+Tech Stack: ${options.stack}
+- Use functional components.
+- Ensure responsiveness.
+- Match layout/spacing/typography from the screenshot.
+- Return ONLY the code, no markdown fences.
+    `;
+
+    const response = await provider.analyzeImage(buffer, prompt);
+    const outputPath = options.output || 'component.tsx';
+    await fs.writeFile(outputPath, response);
+
+    spinner.succeed(chalk.green(`Code generated at ${outputPath}`));
+    printInfo(chalk.gray(`Screenshot saved at ${screenshotPath}`));
+  } catch (error) {
+    spinner.fail(chalk.red('Screenshot-to-code failed'));
+    throw error;
   }
 }
 
