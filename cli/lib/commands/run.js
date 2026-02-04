@@ -14,6 +14,11 @@ import { createProvider, getDefaultProvider, checkConfiguredProviders } from '..
 import { projectGraph } from '../mcp/graph.js';
 import { errorRecovery } from '../utils/error-recovery.js';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
+import { 
+  verifyLinting, 
+  verifyTypeSafety, 
+  verifySecurityPatterns 
+} from '../quality/automation.js';
 
 const execAsync = promisify(exec);
 
@@ -239,7 +244,32 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
 
         await fs.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.writeFile(fullPath, newContent, 'utf8');
-        const nextPrompt = `Successfully wrote ${filePath}. Please proceed or delegate verification.`;
+
+        // --- Active Verification Hook ---
+        console.log(chalk.yellow(`\n🛡️  Running Active Verification Gates...`));
+        const projectDir = process.cwd();
+        const lintRes = await verifyLinting(projectDir);
+        const typeRes = await verifyTypeSafety(projectDir);
+        const secRes = await verifySecurityPatterns(projectDir);
+
+        const failures = [];
+        if (lintRes.status === 'FAIL') failures.push(`Linting Failed: ${lintRes.message}`);
+        if (typeRes.status === 'FAIL') failures.push(`Type Safety Failed: ${typeRes.message}`);
+        if (secRes.status === 'FAIL') failures.push(`Security Check Failed: ${secRes.message}`);
+
+        if (failures.length > 0) {
+            console.log(chalk.red(`\n❌ Verification Failed!`));
+            failures.forEach(f => console.log(chalk.red(`  - ${f}`)));
+            
+            // Return failure to agent so it can fix it
+            const errorMsg = `Code written to ${filePath}, BUT verification failed. YOU MUST FIX THIS:\n${failures.join('\n')}`;
+            return await runAgentLoop(agentName, `${task}\n\n${errorMsg}`, provider, projectContext, depth + 1);
+        }
+        
+        console.log(chalk.green(`\n✅ Verification Passed`));
+        // --------------------------------
+
+        const nextPrompt = `Successfully wrote ${filePath} and passed verification. Please proceed or delegate verification.`;
         return await runAgentLoop(agentName, `${task}\n\n${nextPrompt}`, provider, projectContext, depth + 1);
       } catch (e) {
         return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: ${e.message}`, provider, projectContext, depth + 1);
