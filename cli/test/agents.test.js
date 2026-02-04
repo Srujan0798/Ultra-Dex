@@ -34,9 +34,9 @@ describe('agents command utilities', () => {
   });
 
   describe('AGENTS constant', () => {
-    test('exports array of 17 agents', () => {
+    test('exports array of 18 agents', () => {
       assert.ok(Array.isArray(AGENTS), 'AGENTS should be an array');
-      assert.strictEqual(AGENTS.length, 17, 'Should have 17 agents');
+      assert.strictEqual(AGENTS.length, 18, 'Should have 18 agents');
     });
 
     test('each agent has required properties', () => {
