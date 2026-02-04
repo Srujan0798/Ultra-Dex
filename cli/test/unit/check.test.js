@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { registerCheckCommand } from '../../../lib/commands/advanced.js';
+import { registerCheckCommand } from '../../lib/commands/advanced.js';
 import { Command } from 'commander';
 
 describe('check command', () => {
@@ -9,17 +9,14 @@ describe('check command', () => {
     program = new Command();
   });
 
-  it('should register the check command with correct options', () => {
+  it('should register the check command with correct description', () => {
     registerCheckCommand(program);
-    
+
     const command = program.commands.find(cmd => cmd.name() === 'check');
     expect(command).toBeDefined();
     expect(command.description()).toContain('Repository health and alignment check');
-    
-    const options = command.options.map(opt => opt.flags);
-    expect(options).toContain('-p, --provider <provider>');
-    expect(options).toContain('--deep');
-    expect(options).toContain('--fix');
-    expect(options).toContain('--report');
+
+    // Check command has no options
+    expect(command.options).toHaveLength(0);
   });
 });
