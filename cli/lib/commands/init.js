@@ -460,6 +460,18 @@ async function generateNext15SaaSStack(outputDir) {
       await fs.mkdir(path.join(outputDir, dir), { recursive: true });
     }
 
+    // Generate middleware
+    await fs.writeFile(path.join(outputDir, 'middleware.ts'), `import { authMiddleware } from '@clerk/nextjs/server'
+
+export default authMiddleware({
+  publicRoutes: ['/', '/api/webhooks(.*)'],
+})
+
+export const config = {
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+}
+`);
+
     // Generate package.json
     await fs.writeFile(path.join(outputDir, 'package.json'), JSON.stringify({
       name: 'nextjs-saas',
