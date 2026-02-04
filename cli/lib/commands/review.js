@@ -186,16 +186,16 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
       const hasProvider = configured.some(p => p.configured) || options.key;
 
       if (!hasProvider) {
-        console.log(chalk.yellow('\n⚠️  No AI provider configured for full review.\n'));
-        console.log(chalk.white('Options:'));
-        console.log(chalk.gray('  1. Set API key: export ANTHROPIC_API_KEY=your-key'));
-        console.log(chalk.gray('  2. Use --quick for structure-only review'));
-        console.log(chalk.gray('  3. Use --key option: npx ultra-dex review --key sk-...\n'));
+        printWarning(chalk.yellow('\n⚠️  No AI provider configured for full review.\n'));
+        printInfo(chalk.white('Options:'));
+        printInfo(chalk.gray('  1. Set API key: export ANTHROPIC_API_KEY=your-key'));
+        printInfo(chalk.gray('  2. Use --quick for structure-only review'));
+        printInfo(chalk.gray('  3. Use --key option: npx ultra-dex review --key sk-...\n'));
         return;
       }
 
       const providerId = options.provider || getDefaultProvider();
-      console.log(chalk.gray(`Using provider: ${providerId}\n`));
+      printInfo(chalk.gray(`Using provider: ${providerId}\n`));
 
       let provider;
       try {
@@ -204,7 +204,7 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
           maxTokens: 4000,
         });
       } catch (err) {
-        console.log(chalk.red(`Error: ${err.message}`));
+        printError(chalk.red(`Error: ${err.message}`));
         return;
       }
 
@@ -239,79 +239,79 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
         }
 
         if (options.json) {
-          console.log(JSON.stringify(report, null, 2));
+          printInfo(JSON.stringify(report, null, 2));
           return;
         }
 
         // Display formatted report
-        console.log(chalk.white('\n' + '═'.repeat(60)));
-        console.log(chalk.bold.cyan('  ULTRA-DEX CODE REVIEW REPORT'));
-        console.log(chalk.white('═'.repeat(60) + '\n'));
+        printInfo(chalk.white('\n' + '═'.repeat(60)));
+        printInfo(chalk.bold.cyan('  ULTRA-DEX CODE REVIEW REPORT'));
+        printInfo(chalk.white('═'.repeat(60) + '\n'));
 
         if (report.alignmentScore !== undefined) {
           const score = report.alignmentScore;
           const color = score >= 80 ? chalk.green : score >= 60 ? chalk.yellow : chalk.red;
-          console.log(chalk.white('  Alignment Score: ') + color.bold(`${score}/100`));
-          console.log();
+          printInfo(chalk.white('  Alignment Score: ') + color.bold(`${score}/100`));
+          printInfo('');
         }
 
         if (report.summary) {
-          console.log(chalk.white('  Summary:'));
-          console.log(chalk.gray(`  ${report.summary}\n`));
+          printInfo(chalk.white('  Summary:'));
+          printInfo(chalk.gray(`  ${report.summary}\n`));
         }
 
         if (report.sections) {
-          console.log(chalk.white('  Section Scores:\n'));
+          printInfo(chalk.white('  Section Scores:\n'));
           for (const [section, data] of Object.entries(report.sections)) {
             const icon = data.status === 'aligned' ? '✅' :
                          data.status === 'deviated' ? '⚠️' : '❌';
             const scoreColor = data.score >= 80 ? chalk.green :
                               data.score >= 60 ? chalk.yellow : chalk.red;
-            console.log(`    ${icon} ${section.padEnd(12)} ${scoreColor(`${data.score}%`)} - ${data.notes || ''}`);
+            printInfo(`    ${icon} ${section.padEnd(12)} ${scoreColor(`${data.score}%`)} - ${data.notes || ''}`);
           }
-          console.log();
+          printInfo('');
         }
 
         if (report.criticalIssues?.length) {
-          console.log(chalk.red.bold('  ⚠️  Critical Issues:\n'));
+          printInfo(chalk.red.bold('  ⚠️  Critical Issues:\n'));
           report.criticalIssues.forEach((issue, i) => {
-            console.log(chalk.red(`    ${i + 1}. ${issue}`));
+            printInfo(chalk.red(`    ${i + 1}. ${issue}`));
           });
-          console.log();
+          printInfo('');
         }
 
         if (report.suggestions?.length) {
-          console.log(chalk.yellow('  💡 Suggestions:\n'));
+          printInfo(chalk.yellow('  💡 Suggestions:\n'));
           report.suggestions.forEach((suggestion, i) => {
-            console.log(chalk.gray(`    ${i + 1}. ${suggestion}`));
+            printInfo(chalk.gray(`    ${i + 1}. ${suggestion}`));
           });
-          console.log();
+          printInfo('');
         }
 
         if (report.nextSteps?.length) {
-          console.log(chalk.cyan('  📋 Next Steps:\n'));
+          printInfo(chalk.cyan('  📋 Next Steps:\n'));
           report.nextSteps.forEach((step, i) => {
-            console.log(chalk.white(`    ${i + 1}. ${step}`));
+            printInfo(chalk.white(`    ${i + 1}. ${step}`));
           });
-          console.log();
+          printInfo('');
         }
 
         // If we couldn't parse, show raw
         if (report.raw) {
-          console.log(chalk.white('  Analysis:\n'));
-          console.log(chalk.gray(report.raw));
+          printInfo(chalk.white('  Analysis:\n'));
+          printInfo(chalk.gray(report.raw));
         }
 
-        console.log(chalk.white('═'.repeat(60) + '\n'));
+        printInfo(chalk.white('═'.repeat(60) + '\n'));
 
         // Cost info
         const cost = provider.estimateCost(result.usage.inputTokens, result.usage.outputTokens);
-        console.log(chalk.gray(`  Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`));
-        console.log(chalk.gray(`  Cost: ~$${cost.total.toFixed(4)}\n`));
+        printInfo(chalk.gray(`  Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`));
+        printInfo(chalk.gray(`  Cost: ~$${cost.total.toFixed(4)}\n`));
 
       } catch (err) {
         spinner.fail('Review failed');
-        console.log(chalk.red(`\nError: ${err.message}`));
+        printError(chalk.red(`\nError: ${err.message}`));
       }
     });
 }
