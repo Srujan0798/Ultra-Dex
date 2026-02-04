@@ -8,6 +8,7 @@ import boxen from 'boxen';
 import chalk from 'chalk';
 import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
+import { formatInfo, formatWarning, formatSuccess } from '../lib/utils/status.js';
 
 // Initialize monitoring and configuration systems
 import { monitoring } from '../lib/utils/monitoring.js';
@@ -75,16 +76,9 @@ const pkg = { name: PACKAGE_NAME, version: VERSION };
 const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 });
 
 if (notifier.update) {
-  console.log(boxen(
-    `Update available! ${chalk.dim(notifier.update.current)} → ${chalk.green(notifier.update.latest)}
-` +
-    `Run ${chalk.cyan('npm install -g ultra-dex')} to update`,
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'round',
-      borderColor: 'yellow'
-    }
+  console.log(formatWarning(
+    `Update available! ${notifier.update.current} → ${notifier.update.latest}\n` +
+    `Run ${chalk.cyan('npm install -g ultra-dex')} to update`
   ));
 }
 
@@ -134,6 +128,7 @@ import { registerSystemConfigCommand, registerMetricsCommand, registerHealthComm
 import { registerBrainCommand } from '../lib/commands/brain.js';
 import { registerEstimateCommand } from '../lib/commands/estimate.js';
 import { startACPHost } from '../lib/acp/host.js';
+import { createEnhancedHelp, formatHelpSection, formatUsage, formatDescription, formatOptions } from '../lib/utils/help.js';
 
 // v3.4.3 Commands - 2026 Competitive Features
 import { registerBrowserCommand } from '../lib/commands/browser.js';
@@ -154,20 +149,16 @@ program.configureHelp({
   formatHelp: (cmd, _helper) => {
     // For subcommands, build command-specific help
     if (cmd.parent) {
-      let output = `\n${theme.title('Usage:')} ${theme.primary('ultra-dex ' + cmd.name())} ${theme.dim('[options]')}\n\n`;
-      output += `${theme.subtitle(cmd.description())}\n\n`;
+      const commandData = {
+        name: cmd.name(),
+        description: cmd.description(),
+        options: cmd.options,
+        examples: cmd._examples || [],
+        tips: cmd._tips || [],
+        troubleshooting: cmd._troubleshooting || []
+      };
 
-      const options = cmd.options;
-      if (options.length > 0) {
-        output += `${theme.title('Options:')}\n`;
-        options.forEach(opt => {
-          const flags = opt.flags.padEnd(25);
-          output += `  ${theme.primary(flags)} ${theme.dim(opt.description)}\n`;
-        });
-        output += '\n';
-      }
-
-      return output;
+      return createEnhancedHelp(commandData);
     }
 
     const gradientBanner = ultraGradient(banner);
