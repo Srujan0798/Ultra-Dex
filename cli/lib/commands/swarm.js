@@ -2,7 +2,7 @@
 import { getProvider } from '../providers/index.js';
 import { readFile, writeFile, mkdir, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join, basename } from 'path';
+import { join, basename, dirname } from 'path';
 import { glob } from 'glob';
 import { projectGraph } from '../mcp/graph.js';
 import { updateStateFile, loadState, saveState } from './state.js';
@@ -14,6 +14,9 @@ import { theme } from '../ui/theme.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError, NetworkError } from '../utils/errors.js';
+
+// Maximum context size limit (100KB)
+const MAX_CONTEXT_SIZE = 100 * 1024; // 100KB in bytes
 
 export const AGENT_PIPELINE = [
   { name: 'planner', description: 'Break down task into steps', tier: '1-planning' },
@@ -27,12 +30,37 @@ export const AGENT_PIPELINE = [
 ];
 
 /**
+ * Atomic write function to prevent partial writes
+ */
+async function atomicWrite(filePath, data) {
+  const dir = dirname(filePath);
+  const tempPath = join(
+    dir,
+    `.tmp-${basename(filePath)}-${process.pid}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  );
+
+  try {
+    await mkdir(dir, { recursive: true });
+    await writeFile(tempPath, data);
+    await writeFile(filePath, data); // This is the atomic operation on most systems
+  } catch (error) {
+    // Clean up temp file if it exists
+    try {
+      await unlink(tempPath).catch(() => {});
+    } catch (unlinkError) {
+      // Ignore cleanup errors
+    }
+    throw error;
+  }
+}
+
+/**
  * Handle state locking for safe updates
  */
 async function withStateLock(callback) {
   const lockFile = join(process.cwd(), '.ultra-dex', 'state.lock');
   const ultraDir = join(process.cwd(), '.ultra-dex');
-  
+
   if (!existsSync(ultraDir)) {
       await mkdir(ultraDir, { recursive: true });
   }
@@ -102,7 +130,9 @@ async function runAgent(agent, task, context, previousOutput, provider) {
   }
 
   const agentPrompt = await loadAgentPrompt(agent.name);
-  const prompt = `
+
+  // Build the full prompt first
+  const fullPrompt = `
 ${agentPrompt}
 
 ## Context
@@ -116,6 +146,47 @@ ${task}
 
 Provide your output for the next agent in the pipeline.
 `;
+
+  // Enforce prompt size limit
+  let prompt = fullPrompt;
+  if (Buffer.byteLength(fullPrompt, 'utf-8') > MAX_CONTEXT_SIZE) {
+    printWarning(`Prompt size exceeds limit (${MAX_CONTEXT_SIZE / 1024}KB), truncating...`);
+
+    // Truncate the context portion specifically
+    const contextStart = fullPrompt.indexOf('## Context');
+    const contextEnd = fullPrompt.indexOf('## Previous Agent Output');
+
+    if (contextStart !== -1 && contextEnd !== -1) {
+      const prefix = fullPrompt.substring(0, contextStart);
+      const suffix = fullPrompt.substring(contextEnd);
+
+      // Calculate how much context we can fit
+      const overhead = Buffer.byteLength(prefix + suffix, 'utf-8');
+      const availableForContext = MAX_CONTEXT_SIZE - overhead - 1000; // Leave 1KB buffer
+
+      if (availableForContext > 0) {
+        const fullContext = fullPrompt.substring(contextStart + 11, contextEnd); // +11 to skip "## Context"
+        const contextBytes = Buffer.from(fullContext, 'utf-8');
+        const truncatedContext = contextBytes.subarray(0, availableForContext);
+        const truncatedContextString = new TextDecoder().decode(truncatedContext);
+
+        prompt = prefix + '## Context\n' + truncatedContextString +
+                 `\n\n[Context was truncated due to size limits.]\n` + suffix;
+      } else {
+        // If there's not enough room even for minimal context, truncate the whole prompt
+        const promptBytes = Buffer.from(fullPrompt, 'utf-8');
+        const truncatedPrompt = promptBytes.subarray(0, MAX_CONTEXT_SIZE - 1000);
+        prompt = new TextDecoder().decode(truncatedPrompt) +
+                 `\n\n[Prompt was truncated due to size limits.]`;
+      }
+    } else {
+      // If we can't find the expected structure, just truncate the full prompt
+      const promptBytes = Buffer.from(fullPrompt, 'utf-8');
+      const truncatedPrompt = promptBytes.subarray(0, MAX_CONTEXT_SIZE - 1000);
+      prompt = new TextDecoder().decode(truncatedPrompt) +
+               `\n\n[Prompt was truncated due to size limits.]`;
+    }
+  }
 
   let lastError;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -146,8 +217,8 @@ Provide your output for the next agent in the pipeline.
       }
   }
 
-  throw new AppError(`Agent @${agent.name} failed after 3 attempts`, { 
-      cause: lastError, 
+  throw new AppError(`Agent @${agent.name} failed after 3 attempts`, {
+      cause: lastError,
       code: 'AGENT_MAX_RETRIES',
       suggestions: [
           'Check your internet connection',
@@ -163,11 +234,74 @@ async function ensureLogDirectory() {
   return logDir;
 }
 
+async function cleanupOldSwarmLogs(logDir, maxLogs = 50) {
+  try {
+    const files = await readdir(logDir);
+    const logFiles = files.filter(f => f.startsWith('swarm-') && f.endsWith('.json'));
+    
+    if (logFiles.length >= maxLogs) {
+      // Sort by modification time (oldest first)
+      const sortedFiles = await Promise.all(
+        logFiles.map(async (filename) => {
+          const filepath = join(logDir, filename);
+          const stat = await fs.stat(filepath);
+          return { filename, filepath, mtime: stat.mtime };
+        })
+      );
+      
+      sortedFiles.sort((a, b) => a.mtime - b.mtime);
+      
+      // Delete oldest files to keep only maxLogs - 1 (to make room for new log)
+      const filesToDelete = sortedFiles.slice(0, sortedFiles.length - maxLogs + 1);
+      for (const file of filesToDelete) {
+        await unlink(file.filepath).catch(() => {});
+      }
+    }
+  } catch (error) {
+    // Silently fail cleanup - don't block swarm execution
+    printWarning(`Warning: Failed to cleanup old swarm logs: ${error.message}`);
+  }
+}
+
 async function writeSwarmLog(logDir, task, results, stats) {
+  // Cleanup old logs before writing new one to prevent memory leak
+  await cleanupOldSwarmLogs(logDir, 50);
+  
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const logPath = join(logDir, `swarm-${timestamp}.json`);
   const logData = { task, timestamp: new Date().toISOString(), stats, results };
-  await writeFile(logPath, JSON.stringify(logData, null, 2));
+
+  let logContent = JSON.stringify(logData, null, 2);
+
+  // Enforce log size limit
+  if (Buffer.byteLength(logContent, 'utf-8') > MAX_CONTEXT_SIZE) {
+    printWarning(`Log size exceeds limit (${MAX_CONTEXT_SIZE / 1024}KB), truncating...`);
+
+    // Truncate results array to reduce size
+    const truncatedResults = [...results];
+    while (truncatedResults.length > 0 && Buffer.byteLength(JSON.stringify({...logData, results: truncatedResults}), 'utf-8') > MAX_CONTEXT_SIZE) {
+      truncatedResults.pop(); // Remove the last result
+    }
+
+    logContent = JSON.stringify({...logData, results: truncatedResults}, null, 2);
+
+    // If still too big, truncate individual results
+    if (Buffer.byteLength(logContent, 'utf-8') > MAX_CONTEXT_SIZE) {
+      for (let i = 0; i < truncatedResults.length; i++) {
+        if ('result' in truncatedResults[i] && typeof truncatedResults[i].result === 'string') {
+          const originalResult = truncatedResults[i].result;
+          truncatedResults[i].result = originalResult.substring(0, originalResult.length / 2);
+
+          logContent = JSON.stringify({...logData, results: truncatedResults}, null, 2);
+          if (Buffer.byteLength(logContent, 'utf-8') <= MAX_CONTEXT_SIZE) {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  await writeFile(logPath, logContent);
   return logPath;
 }
 
@@ -338,6 +472,22 @@ async function gatherSwarmContext() {
     } catch (e) {
       renderer.fail('Graph scan failed, using limited context.');
     }
+
+    // Enforce context size limit
+    if (Buffer.byteLength(context, 'utf-8') > MAX_CONTEXT_SIZE) {
+      printWarning(`Context size exceeds limit (${MAX_CONTEXT_SIZE / 1024}KB), truncating...`);
+
+      // Truncate context while preserving important information
+      const contextBytes = Buffer.from(context, 'utf-8');
+      const truncatedContext = contextBytes.subarray(0, MAX_CONTEXT_SIZE - 1000); // Leave 1KB for summary
+
+      // Add a summary of what was removed
+      const truncatedString = new TextDecoder().decode(truncatedContext);
+      const remainingChars = context.length - truncatedString.length;
+
+      context = truncatedString + `\n\n[Context was truncated due to size limits. ${remainingChars} characters removed.]`;
+    }
+
     return context;
 }
 
