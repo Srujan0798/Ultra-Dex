@@ -152,17 +152,17 @@ async function handleBrainSync(projectDir) {
   stateSpinner.succeed('State updated');
 
   // Summary
-  console.log(chalk.green.bold('\n✅ Brain Sync Complete!\n'));
-  console.log(chalk.white('  Tech Stack:'));
-  console.log(chalk.gray(`    Language: ${techStack.language}`));
-  console.log(chalk.gray(`    Frameworks: ${techStack.frameworks.join(', ') || 'none detected'}`));
-  console.log(chalk.gray(`    Database: ${techStack.database || 'none detected'}`));
-  console.log(chalk.gray(`    Auth: ${techStack.auth || 'none detected'}`));
-  console.log(chalk.white('\n  Codebase Analysis:'));
-  console.log(chalk.gray(`    Modules: ${modules.length}`));
-  console.log(chalk.gray(`    Functions: ${exports.length}`));
-  console.log(chalk.gray(`    Dependencies: ${graph.edges.filter(e => e.type === 'depends_on').length}`));
-  console.log(chalk.cyan('\n  → CONTEXT.md is now current. No manual updates needed.'));
+  printSuccess(chalk.green.bold('\n✅ Brain Sync Complete!\n'));
+  printInfo(chalk.white('  Tech Stack:'));
+  printInfo(chalk.gray(`    Language: ${techStack.language}`));
+  printInfo(chalk.gray(`    Frameworks: ${techStack.frameworks.join(', ') || 'none detected'}`));
+  printInfo(chalk.gray(`    Database: ${techStack.database || 'none detected'}`));
+  printInfo(chalk.gray(`    Auth: ${techStack.auth || 'none detected'}`));
+  printInfo(chalk.white('\n  Codebase Analysis:'));
+  printInfo(chalk.gray(`    Modules: ${modules.length}`));
+  printInfo(chalk.gray(`    Functions: ${exports.length}`));
+  printInfo(chalk.gray(`    Dependencies: ${graph.edges.filter(e => e.type === 'depends_on').length}`));
+  printInfo(chalk.cyan('\n  → CONTEXT.md is now current. No manual updates needed.'));
 }
 
 /**
