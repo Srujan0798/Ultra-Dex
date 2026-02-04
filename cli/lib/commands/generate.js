@@ -16,6 +16,7 @@ import { saveState } from './plan.js';
 import { getRandomMessage } from '../utils/messages.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
+import { getCache } from '../cache/index.js';
 
 export function registerGenerateCommand(program) {
   program
@@ -27,6 +28,7 @@ export function registerGenerateCommand(program) {
     .option('-k, --key <apiKey>', 'API key (or use environment variable)')
     .option('--stream', 'Stream output in real-time', true)
     .option('--no-stream', 'Disable streaming')
+    .option('--cache', 'Use response caching to reduce API costs')
     .action(async (idea, options) => {
       try {
         printInfo(chalk.cyan('\n🚀 Ultra-Dex Plan Generator (Reality Stone Mode)\n'));
