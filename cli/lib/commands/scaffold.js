@@ -26,6 +26,26 @@ const TEMPLATES = {
     description: 'SvelteKit app with Drizzle ORM',
     stack: ['SvelteKit', 'Drizzle', 'PostgreSQL', 'Tailwind CSS'],
   },
+  'astro-sanity': {
+    name: 'Astro + Sanity CMS',
+    description: 'High-performance content-driven websites with Astro and Sanity',
+    stack: ['Astro', 'Sanity CMS', 'React', 'TypeScript'],
+  },
+  'nuxt3-supabase': {
+    name: 'Nuxt 3 + Supabase',
+    description: 'Full-stack applications with Nuxt 3 and Supabase',
+    stack: ['Nuxt 3', 'Supabase', 'Vue 3', 'TypeScript'],
+  },
+  'tauri-desktop': {
+    name: 'Tauri Desktop App',
+    description: 'Cross-platform native desktop apps with web technologies',
+    stack: ['Tauri', 'Rust', 'Any Web Frontend', 'TypeScript'],
+  },
+  'solid-drizzle': {
+    name: 'SolidStart + Drizzle',
+    description: 'Reactive full-stack apps with SolidStart and Drizzle ORM',
+    stack: ['SolidStart', 'Drizzle ORM', 'PostgreSQL', 'TypeScript'],
+  },
 };
 
 async function copyDirectory(src, dest) {

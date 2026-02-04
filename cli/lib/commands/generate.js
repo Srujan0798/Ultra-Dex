@@ -101,25 +101,54 @@ export function registerGenerateCommand(program) {
           let result;
           let planContent = '';
 
-          if (options.stream) {
-            spinner.stop();
-            printInfo(chalk.cyan('📝 Manifesting Reality:\n'));
-            process.stdout.write(chalk.gray('─'.repeat(60)) + '\n');
+          // Check cache if enabled
+          let cachedResult = null;
+          if (options.cache) {
+            const cache = getCache();
+            const model = options.model || (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
+            cachedResult = await cache.get(providerId, model, SYSTEM_PROMPT, generateUserPrompt(idea));
+          }
 
-            result = await provider.generateStream(
-              SYSTEM_PROMPT,
-              generateUserPrompt(idea),
-              (chunk) => {
-                process.stdout.write(chunk);
-                planContent += chunk;
-              }
-            );
-
-            process.stdout.write(chalk.gray('\n' + '─'.repeat(60)) + '\n');
-          } else {
-            result = await provider.generate(SYSTEM_PROMPT, generateUserPrompt(idea));
+          if (options.cache && cachedResult) {
+            spinner.succeed('Plan retrieved from cache!');
+            printInfo(chalk.green(`  💾 Cache hit! Saved API call and costs.`));
+            result = cachedResult.response;
             planContent = result.content;
-            spinner.succeed('Plan generated!');
+
+            // Show cache metrics
+            const stats = cache.getStats();
+            printInfo(chalk.gray(`  📊 Cache Hit Rate: ${(stats.hitRate * 100).toFixed(1)}% | Estimated Savings: $${stats.estimatedSavings.toFixed(2)}`));
+          } else {
+            if (options.stream) {
+              spinner.stop();
+              printInfo(chalk.cyan('📝 Manifesting Reality:\n'));
+              process.stdout.write(chalk.gray('─'.repeat(60)) + '\n');
+
+              result = await provider.generateStream(
+                SYSTEM_PROMPT,
+                generateUserPrompt(idea),
+                (chunk) => {
+                  process.stdout.write(chunk);
+                  planContent += chunk;
+                }
+              );
+
+              process.stdout.write(chalk.gray('\n' + '─'.repeat(60)) + '\n');
+            } else {
+              result = await provider.generate(SYSTEM_PROMPT, generateUserPrompt(idea));
+              planContent = result.content;
+              spinner.succeed('Plan generated!');
+            }
+
+            // Cache the result if caching is enabled
+            if (options.cache) {
+              const cache = getCache();
+              await cache.set(providerId, options.model || provider.getDefaultModel(), SYSTEM_PROMPT, generateUserPrompt(idea), result);
+
+              // Show cache metrics
+              const stats = cache.getStats();
+              printInfo(chalk.gray(`  💾 Cached for future use. Estimated Savings: $${stats.estimatedSavings.toFixed(2)}`));
+            }
           }
 
           // Calculate stats
