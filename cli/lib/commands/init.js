@@ -40,8 +40,8 @@ export function registerInitCommand(program) {
       try {
         showBanner();
         printInfo('\n⚡ ACTIVATING 16-AGENT SWARM INTELLIGENCE...\n');
-        console.log(chalk.italic(chalk.gray(`"${getRandomMessage('start')}"`)));
-        console.log('');
+        process.stdout.write(chalk.italic(chalk.gray(`"${getRandomMessage('start')}"`)) + '\n');
+        process.stdout.write('\n');
 
         if (options.preview) {
           return handlePreview();
@@ -68,13 +68,13 @@ export function registerInitCommand(program) {
  * Show a preview of the architectural blueprint
  */
 function handlePreview() {
-  console.log(chalk.bold.cyan('\n📋 PREVIEW MODE: ARCHITECTURAL BLUEPRINT\n'));
-  console.log('  ├── QUICK-START.md        (Foundation)');
-  console.log('  ├── CONTEXT.md            (Project Memory)');
-  console.log('  ├── IMPLEMENTATION-PLAN.md (Execution Path)');
-  console.log('  ├── docs/CHECKLIST.md     (21-Step Verification)');
-  console.log('  └── docs/AI-PROMPTS.md    (Agent Instructions)');
-  console.log('');
+  process.stdout.write(chalk.bold.cyan('\n📋 PREVIEW MODE: ARCHITECTURAL BLUEPRINT\n'));
+  process.stdout.write('  ├── QUICK-START.md        (Foundation)\n');
+  process.stdout.write('  ├── CONTEXT.md            (Project Memory)\n');
+  process.stdout.write('  ├── IMPLEMENTATION-PLAN.md (Execution Path)\n');
+  process.stdout.write('  ├── docs/CHECKLIST.md     (21-Step Verification)\n');
+  process.stdout.write('  └── docs/AI-PROMPTS.md    (Agent Instructions)\n');
+  process.stdout.write('\n');
   printSuccess('  ✓ Blueprint Validated. Ready to Execute.');
 }
 
@@ -121,10 +121,10 @@ async function handleLiveScaffold(options) {
     spinner.succeed(chalk.green('Infrastructure deployment complete.'));
     
     printInfo(`\nStack: ${preset}`);
-    console.log(chalk.gray(`Next steps:`));
-    console.log(chalk.cyan(`  1. cd ${outputDir}`));
-    console.log(chalk.cyan('  2. npm install'));
-    console.log(chalk.cyan('  3. npm run dev\n'));
+    process.stdout.write(chalk.gray(`Next steps:`) + '\n');
+    process.stdout.write(chalk.cyan(`  1. cd ${outputDir}`) + '\n');
+    process.stdout.write(chalk.cyan('  2. npm install') + '\n');
+    process.stdout.write(chalk.cyan('  3. npm run dev\n') + '\n');
   } catch (error) {
     spinner.fail(chalk.red('Infrastructure deployment failed'));
     throw error;
@@ -212,7 +212,7 @@ async function handleInteractiveInit(options) {
     },
   ]);
 
-  console.log('');
+  process.stdout.write('\n');
   const spinner = ora(chalk.hex('#8b5cf6')('Compiling project matrix...')).start();
 
   try {
@@ -393,29 +393,29 @@ async function deployAgents(outputDir) {
 }
 
 function showFinalInstructions(outputDir, answers) {
-  console.log('\n' + chalk.bold('Artifacts deployed to:'));
-  console.log(chalk.gray(`  ${outputDir}/`));
-  console.log(chalk.gray('  ├── QUICK-START.md'));
-  console.log(chalk.gray('  ├── CONTEXT.md'));
-  console.log(chalk.gray('  ├── IMPLEMENTATION-PLAN.md'));
+  process.stdout.write('\n' + chalk.bold('Artifacts deployed to:') + '\n');
+  process.stdout.write(chalk.gray(`  ${outputDir}/`) + '\n');
+  process.stdout.write(chalk.gray('  ├── QUICK-START.md') + '\n');
+  process.stdout.write(chalk.gray('  ├── CONTEXT.md') + '\n');
+  process.stdout.write(chalk.gray('  ├── IMPLEMENTATION-PLAN.md') + '\n');
   if (answers.includeFullTemplate) {
-    console.log(chalk.gray('  ├── docs/MASTER-PLAN.md'));
+    process.stdout.write(chalk.gray('  ├── docs/MASTER-PLAN.md') + '\n');
   }
   if (answers.includeDocs) {
-    console.log(chalk.gray('  ├── docs/CHECKLIST.md'));
-    console.log(chalk.gray('  ├── docs/AI-PROMPTS.md'));
+    process.stdout.write(chalk.gray('  ├── docs/CHECKLIST.md') + '\n');
+    process.stdout.write(chalk.gray('  ├── docs/AI-PROMPTS.md') + '\n');
   }
   if (answers.includeCursorRules) {
-    console.log(chalk.gray('  ├── .cursor/rules/'));
+    process.stdout.write(chalk.gray('  ├── .cursor/rules/') + '\n');
   }
   if (answers.includeAgents) {
-    console.log(chalk.gray('  └── .agents/'));
+    process.stdout.write(chalk.gray('  └── .agents/') + '\n');
   }
 
-  console.log('\n' + chalk.bold('Mission Directives:'));
-  console.log(chalk.cyan(`  1. cd ${answers.projectName}`));
-  console.log(chalk.cyan('  2. Open QUICK-START.md'));
-  console.log(chalk.cyan('  3. ultra-dex swarm "Analyze requirements"'));
+  process.stdout.write('\n' + chalk.bold('Mission Directives:') + '\n');
+  process.stdout.write(chalk.cyan(`  1. cd ${answers.projectName}`) + '\n');
+  process.stdout.write(chalk.cyan('  2. Open QUICK-START.md') + '\n');
+  process.stdout.write(chalk.cyan('  3. ultra-dex swarm "Analyze requirements"') + '\n');
 
   printSuccess('\n  ✓ SYSTEM ONLINE.\n');
 }
@@ -1094,7 +1094,7 @@ export async function POST(req: Request) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
     } catch (err: any) {
-      console.error(\`Webhook signature verification failed: \${err.message}\`)
+      process.stderr.write(\`Webhook signature verification failed: \${err.message}\\n\`)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
     
@@ -1153,7 +1153,7 @@ export async function POST(req: Request) {
     
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error('Webhook error:', error)
+    process.stderr.write(`Webhook error: ${error}\n`)
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 }
@@ -1182,7 +1182,7 @@ export async function POST(req: Request) {
     
     return NextResponse.json({ url: session.url })
   } catch (error: any) {
-    console.error('Checkout error:', error)
+    process.stderr.write(`Checkout error: ${error}\n`)
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }
@@ -1305,21 +1305,21 @@ MIT
     
     printInfo('\n📦 Stack: next15-saas');
     printInfo('✅ Includes:');
-    console.log(chalk.gray('  • Next.js 15 + TypeScript + Tailwind'));
-    console.log(chalk.gray('  • Clerk authentication with protected routes'));
-    console.log(chalk.gray('  • Stripe payments (checkout + webhooks)'));
-    console.log(chalk.gray('  • Prisma + PostgreSQL (5 tables)'));
-    console.log(chalk.gray('  • Admin dashboard'));
-    console.log(chalk.gray('  • Email (Resend)'));
-    console.log(chalk.gray('  • File upload (AWS S3)'));
+    process.stdout.write(chalk.gray('  • Next.js 15 + TypeScript + Tailwind') + '\n');
+    process.stdout.write(chalk.gray('  • Clerk authentication with protected routes') + '\n');
+    process.stdout.write(chalk.gray('  • Stripe payments (checkout + webhooks)') + '\n');
+    process.stdout.write(chalk.gray('  • Prisma + PostgreSQL (5 tables)') + '\n');
+    process.stdout.write(chalk.gray('  • Admin dashboard') + '\n');
+    process.stdout.write(chalk.gray('  • Email (Resend)') + '\n');
+    process.stdout.write(chalk.gray('  • File upload (AWS S3)') + '\n');
     
-    console.log(chalk.gray('\nNext steps:'));
-    console.log(chalk.cyan(`  1. cd ${outputDir}`));
-    console.log(chalk.cyan('  2. npm install'));
-    console.log(chalk.cyan('  3. cp .env.example .env.local'));
-    console.log(chalk.cyan('  4. # Add your API keys to .env.local'));
-    console.log(chalk.cyan('  5. npx prisma migrate dev'));
-    console.log(chalk.cyan('  6. npm run dev\n'));
+    process.stdout.write(chalk.gray('\nNext steps:') + '\n');
+    process.stdout.write(chalk.cyan(`  1. cd ${outputDir}`) + '\n');
+    process.stdout.write(chalk.cyan('  2. npm install') + '\n');
+    process.stdout.write(chalk.cyan('  3. cp .env.example .env.local') + '\n');
+    process.stdout.write(chalk.cyan('  4. # Add your API keys to .env.local') + '\n');
+    process.stdout.write(chalk.cyan('  5. npx prisma migrate dev') + '\n');
+    process.stdout.write(chalk.cyan('  6. npm run dev\n') + '\n');
     
   } catch (error) {
     spinner.fail(chalk.red('Failed to generate SaaS infrastructure'));

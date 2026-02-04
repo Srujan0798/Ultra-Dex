@@ -15,7 +15,7 @@ class UltraDexCache {
     this.maxEntries = options.maxEntries || 1000;
     this.ttl = options.ttl || 24 * 60 * 60 * 1000; // 24 hours default
     this.similarityThreshold = options.similarityThreshold || 0.85; // 85% similarity threshold
-    
+
     // In-memory LRU cache for fast access
     this.lruCache = new LRUCache({
       max: this.maxEntries,
@@ -27,17 +27,17 @@ class UltraDexCache {
         this.cleanupFile(key);
       }
     });
-    
+
     // Track cost savings
     this.costMetrics = {
       hits: 0,
       misses: 0,
       estimatedSavings: 0 // in USD
     };
-    
+
     this.ensureCacheDir();
   }
-  
+
   async ensureCacheDir() {
     try {
       await fs.mkdir(this.cacheDir, { recursive: true });

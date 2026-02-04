@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { registerInitCommand } from '../../../lib/commands/init.js';
+import { registerInitCommand } from '../../lib/commands/init.js';
 import { Command } from 'commander';
 
 describe('init command', () => {

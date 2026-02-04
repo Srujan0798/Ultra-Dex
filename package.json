@@ -73,6 +73,15 @@
   "devDependencies": {
     "@types/node": "^20.19.30",
     "c8": "^9.1.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^2.0.5"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:unit": "vitest run cli/test/unit",
+    "test:integration": "vitest run cli/test/integration",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   }
 }
