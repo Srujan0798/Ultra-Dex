@@ -6,6 +6,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
+import path from 'path';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';
 import { loadState } from './plan.js';
@@ -13,6 +14,7 @@ import { projectGraph } from '../mcp/graph.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
+import { buildDiffSummary, applyDiffSummary } from './brain.js';
 import { 
     verifyArchitectureAlignment, 
     verifyErrorHandlingStrategy, 
@@ -50,9 +52,12 @@ export function registerVerifyCommand(program) {
       .description('Run executable 21-step verification on a task or project')
       .option('-p, --provider <provider>', 'AI provider')
       .option('--live', 'Run active verification (automated gates only)')
+      .option('--pre-push', 'Run pre-push checks (update CONTEXT.md + live gates)')
       .action(async (task, options) => {
           try {
-              if (options.live) {
+              if (options.prePush) {
+                  await runPrePushChecks();
+              } else if (options.live) {
                   await verifyLive(process.cwd());
               } else {
                   await verifyCommand(task, options);
@@ -82,6 +87,40 @@ export async function verifyLive(projectDir) {
     }
     
     printSuccess('\n✅ Active Verification Passed');
+}
+
+async function runPrePushChecks() {
+    printInfo('\n🔒 Ultra-Dex Pre-Push Verification\n');
+
+    const contextUpdated = await updateContextWithDiff();
+    if (contextUpdated) {
+        printWarning('CONTEXT.md updated from git diff. Please commit the changes before pushing.');
+        const err = new AppError('CONTEXT.md updated - commit required', { code: 'CONTEXT_UPDATE_REQUIRED' });
+        err.exitCode = 1;
+        throw err;
+    }
+
+    await verifyLive(process.cwd());
+}
+
+async function updateContextWithDiff() {
+    const contextPath = path.resolve(process.cwd(), 'CONTEXT.md');
+    let contextContent = '';
+    try {
+        contextContent = await fs.readFile(contextPath, 'utf8');
+    } catch {
+        contextContent = '# Project Context\n';
+    }
+
+    const diffSummary = await buildDiffSummary();
+    const updated = await applyDiffSummary(contextContent, diffSummary);
+
+    if (updated !== contextContent) {
+        await fs.writeFile(contextPath, updated);
+        return true;
+    }
+
+    return false;
 }
 
 /**

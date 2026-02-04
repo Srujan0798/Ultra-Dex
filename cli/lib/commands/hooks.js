@@ -17,6 +17,7 @@ export function registerHooksCommand(program) {
     .command('install')
     .description('Install Ultra-Dex pre-commit hook to .git/hooks/')
     .option('--force', 'Overwrite existing hooks')
+    .option('--pre-commit-only', 'Only install the pre-commit hook (skip pre-push)')
     .option('--min-score <score>', 'Minimum alignment score (default: 70)', '70')
     .action(async (options) => {
       printInfo(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Installation\n'));
@@ -76,6 +77,24 @@ async function getPreCommitHookPath() {
   const possiblePaths = [
     path.join(__dirname, '..', '..', 'assets', 'hooks', 'pre-commit'),
     path.join(__dirname, '..', '..', '..', 'assets', 'hooks', 'pre-commit'),
+  ];
+
+  for (const hookPath of possiblePaths) {
+    try {
+      await fs.access(hookPath);
+      return hookPath;
+    } catch {
+      // Continue to next path
+    }
+  }
+
+  return null;
+}
+
+async function getPrePushHookPath() {
+  const possiblePaths = [
+    path.join(__dirname, '..', '..', 'assets', 'hooks', 'pre-push'),
+    path.join(__dirname, '..', '..', '..', 'assets', 'hooks', 'pre-push'),
   ];
 
   for (const hookPath of possiblePaths) {

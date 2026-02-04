@@ -1,241 +1,151 @@
 /**
- * Agent governance / constitutional AI layer
+ * Agent Governance Engine
+ * Enforces security, role-based access, and constitutional AI rules
  */
 
 import path from 'path';
-import {
-  ROLE_DEFINITIONS,
-  FILE_TYPE_DEFINITIONS,
-  SENSITIVE_PATH_PATTERNS,
+import { 
+  ROLE_DEFINITIONS, 
+  FILE_TYPE_DEFINITIONS, 
+  SENSITIVE_PATH_PATTERNS, 
   FILE_ACCESS_RULES,
-  DESTRUCTIVE_COMMAND_PATTERNS,
+  DESTRUCTIVE_COMMAND_PATTERNS 
 } from './rules.js';
-import { logOperation } from './audit.js';
+import { printWarning, printError } from '../utils/output.js';
+import { configManager } from '../utils/config-manager.js';
 
-const PROJECT_ROOT = process.cwd();
-
-function normalizePath(inputPath) {
-  if (!inputPath) return null;
-  const normalized = path.normalize(inputPath);
-  return normalized.split(path.sep).join('/');
-}
-
-export function getFileType(filePath) {
-  if (!filePath) return 'unknown';
-  const normalized = normalizePath(filePath);
-  const ext = path.extname(normalized).toLowerCase();
-
-  for (const def of FILE_TYPE_DEFINITIONS) {
-    if (def.extensions?.includes(ext)) return def.id;
-    if (def.patterns?.some(pattern => pattern.test(normalized))) return def.id;
+export class GovernanceEngine {
+  constructor(projectRoot = process.cwd()) {
+    this.projectRoot = path.resolve(projectRoot);
+    this.config = null;
   }
 
-  return 'unknown';
-}
-
-export function isSensitivePath(filePath) {
-  if (!filePath) return false;
-  const normalized = normalizePath(filePath);
-  return SENSITIVE_PATH_PATTERNS.some(pattern => pattern.test(normalized));
-}
-
-function resolveAgentProfile(agent) {
-  if (!agent) return { id: 'unknown', roleId: 'default', role: ROLE_DEFINITIONS.default };
-  if (typeof agent === 'string') {
-    const roleId = agent.toLowerCase();
-    return { id: roleId, roleId, role: ROLE_DEFINITIONS[roleId] || ROLE_DEFINITIONS.default };
+  async init() {
+    // Load project-specific governance config if available
+    const globalConfig = await configManager.load();
+    this.config = globalConfig?.governance || {};
   }
 
-  const id = (agent.id || agent.name || 'unknown').toString().toLowerCase();
-  const roleId = (agent.roleId || agent.role || id || 'default').toString().toLowerCase();
-  const role = ROLE_DEFINITIONS[roleId] || ROLE_DEFINITIONS.default;
-  return {
-    id,
-    name: agent.name || id,
-    roleId,
-    role,
-  };
-}
-
-function hasPermission(role, operation, fileType) {
-  const permissions = role?.permissions || {};
-  const allowed = permissions[operation] || [];
-  if (allowed.includes('*')) return true;
-  return allowed.includes(fileType);
-}
-
-function checkFileAccessRules(filePath, operation, roleId) {
-  if (!filePath) return null;
-  const normalized = normalizePath(filePath);
-
-  for (const rule of FILE_ACCESS_RULES) {
-    if (rule.pattern.test(normalized)) {
-      const deny = rule.deny || [];
-      if (deny.includes(operation)) {
-        return {
-          id: rule.id,
-          reason: rule.reason || 'File-level access rule blocked operation',
-        };
+  /**
+   * Authorize an action for an agent
+   * @param {string} agentRole - Role of the agent (e.g., 'backend', 'planner')
+   * @param {string} action - Action type ('read', 'write', 'execute')
+   * @param {string} target - Target path or command
+   * @returns {Object} { allowed: boolean, reason: string }
+   */
+  authorize(agentRole, action, target) {
+    const roleDef = ROLE_DEFINITIONS[agentRole] || ROLE_DEFINITIONS.default;
+    
+    // 1. Constitutional Checks (Global Bans)
+    if (action === 'execute') {
+      if (this.isDestructiveCommand(target)) {
+        return { allowed: false, reason: 'Command is destructive and banned by constitution.' };
       }
     }
-  }
 
-  return null;
-}
-
-function isDestructiveCommand(command) {
-  if (!command) return false;
-  return DESTRUCTIVE_COMMAND_PATTERNS.some(pattern => pattern.test(command));
-}
-
-function evaluateOperationContext(context) {
-  const agentProfile = resolveAgentProfile(context.agent);
-  const operation = context.operation;
-  const command = context.command;
-  const resourceType = context.resourceType;
-  const rawPath = context.filePath;
-  const normalizedPath = normalizePath(rawPath);
-  const resolvedPath = rawPath ? path.resolve(PROJECT_ROOT, rawPath) : null;
-  const outsideRoot = resolvedPath ? !resolvedPath.startsWith(PROJECT_ROOT) : false;
-  const pathTraversal = normalizedPath ? normalizedPath.split('/').includes('..') : false;
-  const sensitive = normalizedPath ? isSensitivePath(normalizedPath) : false;
-
-  let fileType = context.fileType;
-  if (!fileType) {
-    if (operation === 'execute' && command) {
-      fileType = 'shell';
-    } else if (operation === 'execute' && resourceType === 'ai') {
-      fileType = 'ai';
-    } else {
-      fileType = getFileType(normalizedPath);
+    if (action === 'write' || action === 'read') {
+      if (this.isSensitivePath(target)) {
+        // Strict sensitive file block
+        return { allowed: false, reason: `Access to sensitive file '${path.basename(target)}' is restricted.` };
+      }
+      
+      // Path Traversal Check
+      if (!this.isPathSafe(target)) {
+        return { allowed: false, reason: 'Path traversal detected. Stay within project root.' };
+      }
     }
+
+    // 2. Role-Based Access Control (RBAC)
+    if (!this.checkRolePermission(roleDef, action, target)) {
+      return { 
+        allowed: false, 
+        reason: `Role '${agentRole}' is not authorized to ${action} ${this.getFileType(target)} files.` 
+      };
+    }
+
+    // 3. User Configuration (Allow/Block Lists)
+    if (this.config) {
+      if (this.isBlockedByConfig(target)) {
+        return { allowed: false, reason: 'Blocked by project configuration.' };
+      }
+    }
+
+    return { allowed: true };
   }
 
-  if (operation === 'delegate') {
-    return {
-      allowed: true,
-      ruleId: 'allow',
-      reason: 'Delegation allowed',
-      fileType,
-      agentProfile,
-    };
+  /**
+   * Check if command is destructive
+   */
+  isDestructiveCommand(command) {
+    return DESTRUCTIVE_COMMAND_PATTERNS.some(pattern => pattern.test(command));
   }
 
-  // Constitutional checks
-  if (pathTraversal) {
-    return { allowed: false, ruleId: 'no-path-traversal', reason: 'Path traversal detected', fileType, agentProfile };
+  /**
+   * Check if path is sensitive
+   */
+  isSensitivePath(filePath) {
+    const relPath = path.isAbsolute(filePath) ? path.relative(this.projectRoot, filePath) : filePath;
+    return SENSITIVE_PATH_PATTERNS.some(pattern => pattern.test(relPath) || pattern.test('/' + relPath));
   }
 
-  if (outsideRoot) {
-    return { allowed: false, ruleId: 'stay-in-repo', reason: 'Path resolves outside project root', fileType, agentProfile };
+  /**
+   * Check if path is safe (within project root)
+   */
+  isPathSafe(filePath) {
+    const resolved = path.resolve(this.projectRoot, filePath);
+    return resolved.startsWith(this.projectRoot);
   }
 
-  if (sensitive) {
-    return { allowed: false, ruleId: 'block-sensitive', reason: 'Sensitive file access blocked', fileType, agentProfile };
+  /**
+   * Check if blocked by user config
+   */
+  isBlockedByConfig(target) {
+    if (!this.config?.blocklist) return false;
+    // Simple substring match for now, could be glob
+    return this.config.blocklist.some(term => target.includes(term));
   }
 
-  const fileRule = checkFileAccessRules(normalizedPath, operation, agentProfile.roleId);
-  if (fileRule) {
-    return { allowed: false, ruleId: fileRule.id, reason: fileRule.reason, fileType, agentProfile };
+  /**
+   * Determine file type ID
+   */
+  getFileType(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    const relPath = path.isAbsolute(filePath) ? path.relative(this.projectRoot, filePath) : filePath;
+
+    // Check patterns first
+    for (const type of FILE_TYPE_DEFINITIONS) {
+      if (type.patterns) {
+        if (type.patterns.some(p => p.test(relPath))) return type.id;
+      }
+    }
+
+    // Check extensions
+    for (const type of FILE_TYPE_DEFINITIONS) {
+      if (type.extensions && type.extensions.includes(ext)) return type.id;
+    }
+
+    return 'unknown';
   }
 
-  if (operation === 'execute' && isDestructiveCommand(command)) {
-    return { allowed: false, ruleId: 'command-safety', reason: 'Destructive command blocked', fileType, agentProfile };
-  }
+  /**
+   * Check RBAC
+   */
+  checkRolePermission(roleDef, action, target) {
+    const permissions = roleDef.permissions[action];
+    
+    if (!permissions) return false; // No permissions for this action type defined
+    if (permissions.includes('*')) return true; // Superuser for this action
 
-  if (!hasPermission(agentProfile.role, operation, fileType)) {
-    return {
-      allowed: false,
-      ruleId: 'role-permission',
-      reason: `Role ${agentProfile.roleId} cannot ${operation} ${fileType} resources`,
-      fileType,
-      agentProfile,
-    };
-  }
+    let typeId = 'unknown';
+    if (action === 'execute') {
+      typeId = 'shell'; // Default for execute unless specifically classified
+      // In future, we could classify commands
+    } else {
+      typeId = this.getFileType(target);
+    }
 
-  return {
-    allowed: true,
-    ruleId: 'allow',
-    reason: 'Operation allowed',
-    fileType,
-    agentProfile,
-  };
+    return permissions.includes(typeId);
+  }
 }
 
-export function evaluateOperation(context) {
-  return evaluateOperationContext(context);
-}
-
-export async function authorizeOperation(context) {
-  const decision = evaluateOperationContext(context);
-  await logOperation({
-    allowed: decision.allowed,
-    ruleId: decision.ruleId,
-    reason: decision.reason,
-    operation: context.operation,
-    fileType: decision.fileType,
-    filePath: context.filePath,
-    command: context.command?.slice(0, 300),
-    resourceType: context.resourceType,
-    agent: {
-      id: decision.agentProfile.id,
-      role: decision.agentProfile.roleId,
-      name: decision.agentProfile.name || decision.agentProfile.id,
-    },
-    metadata: context.metadata,
-    content: context.content,
-  });
-  return decision;
-}
-
-export function enforceOperation(context) {
-  const decision = evaluateOperationContext(context);
-  void logOperation({
-    allowed: decision.allowed,
-    ruleId: decision.ruleId,
-    reason: decision.reason,
-    operation: context.operation,
-    fileType: decision.fileType,
-    filePath: context.filePath,
-    command: context.command?.slice(0, 300),
-    resourceType: context.resourceType,
-    agent: {
-      id: decision.agentProfile.id,
-      role: decision.agentProfile.roleId,
-      name: decision.agentProfile.name || decision.agentProfile.id,
-    },
-    metadata: context.metadata,
-    content: context.content,
-  });
-
-  if (!decision.allowed) {
-    const error = new Error(decision.reason);
-    error.ruleId = decision.ruleId;
-    error.operation = context.operation;
-    throw error;
-  }
-
-  return decision;
-}
-
-export function checkAgentExecution({ agent, providerId, task }) {
-  return evaluateOperationContext({
-    agent,
-    operation: 'execute',
-    resourceType: 'ai',
-    metadata: { providerId, task },
-  });
-}
-
-export function enforceAgentExecution({ agent, providerId, task }) {
-  return enforceOperation({
-    agent,
-    operation: 'execute',
-    resourceType: 'ai',
-    metadata: { providerId, task },
-  });
-}
-
-export function getAgentRoleDefinition(roleId) {
-  return ROLE_DEFINITIONS[roleId] || ROLE_DEFINITIONS.default;
-}
+export const governance = new GovernanceEngine();

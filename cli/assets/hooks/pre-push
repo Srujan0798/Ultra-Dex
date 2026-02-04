@@ -1,0 +1,26 @@
+#!/bin/sh
+# Ultra-Dex Pre-Push Hook v1.0
+# Auto-updates CONTEXT.md from git diff + runs live verification
+# Install with: npx ultra-dex hooks install
+
+set -e
+
+echo ""
+echo "🚀 Ultra-Dex: Running pre-push verification..."
+echo ""
+
+# Check if ultra-dex is available
+if ! command -v ultra-dex >/dev/null 2>&1 && ! npx ultra-dex --version >/dev/null 2>&1; then
+    echo "⚠️  Ultra-Dex not found. Skipping pre-push verification."
+    echo "   Install with: npm install -g ultra-dex"
+    exit 0
+fi
+
+# Update CONTEXT.md based on diff + run live verification
+npx ultra-dex verify --live --pre-push
+
+echo ""
+echo "✅ Ultra-Dex pre-push checks passed"
+echo ""
+
+exit 0
