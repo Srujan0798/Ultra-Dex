@@ -470,7 +470,7 @@ export default authMiddleware({
 export const config = {
   matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 }
-`});
+`);
 
     // Generate package.json
     await fs.writeFile(path.join(outputDir, 'package.json'), JSON.stringify({
@@ -549,7 +549,7 @@ AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=us-east-1
 AWS_S3_BUCKET_NAME=your-bucket-name
-`});
+`);
 
     // Generate Prisma schema with 5 tables
     await fs.writeFile(path.join(outputDir, 'prisma/schema.prisma'), `generator client {
@@ -664,7 +664,7 @@ enum InvoiceStatus {
   UNCOLLECTIBLE
   VOID
 }
-`});
+`);
 
     // Generate Next.js config
     await fs.writeFile(path.join(outputDir, 'next.config.js'), `/** @type {import('next').NextConfig} */
@@ -678,7 +678,7 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-`});
+`);
 
     // Generate TypeScript config
     await fs.writeFile(path.join(outputDir, 'tsconfig.json'), JSON.stringify({
@@ -724,7 +724,7 @@ module.exports = {
   },
   plugins: [],
 }
-`});
+`);
 
     // Generate PostCSS config
     await fs.writeFile(path.join(outputDir, 'postcss.config.js'), `module.exports = {
@@ -733,7 +733,7 @@ module.exports = {
     autoprefixer: {},
   },
 }
-`});
+`);
 
     // Generate types
     await fs.writeFile(path.join(outputDir, 'types/index.ts'), `export interface User {
@@ -761,7 +761,7 @@ export interface Invoice {
   description?: string;
   createdAt: Date;
 }
-`});
+`);
 
     // Generate lib files
     await fs.writeFile(path.join(outputDir, 'src/lib/db.ts'), `import { PrismaClient } from '@prisma/client'
@@ -773,12 +773,12 @@ const globalForPrisma = globalThis as unknown as {
 export const db = globalForPrisma.prisma ?? new PrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
-`});
+`);
 
     await fs.writeFile(path.join(outputDir, 'src/lib/stripe/client.ts'), `import { loadStripe } from '@stripe/stripe-js'
 
 export const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-`});
+`);
 
     await fs.writeFile(path.join(outputDir, 'src/lib/stripe/server.ts'), `import Stripe from 'stripe'
 
@@ -826,11 +826,11 @@ export const createCheckoutSession = async (customerId: string, priceId: string)
         quantity: 1,
       },
     ],
-    success_url: \`\${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true\`,
-    cancel_url: \`\${process.env.NEXT_PUBLIC_APP_URL}/dashboard?canceled=true\`,
+    success_url: \`${'${'}process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true\`,
+    cancel_url: \`${'${'}process.env.NEXT_PUBLIC_APP_URL}/dashboard?canceled=true\`,
   })
 }
-`});
+`);
 
     await fs.writeFile(path.join(outputDir, 'src/lib/email/resend.ts'), `import { Resend } from 'resend'
 
@@ -842,7 +842,7 @@ export const sendWelcomeEmail = async (email: string, name?: string) => {
     to: email,
     subject: 'Welcome to our SaaS!',
     html: \`
-      <h1>Welcome \${name || 'there'}!</h1>
+      <h1>Welcome ${'${'}name || 'there'}!</h1>
       <p>Thanks for signing up. We're excited to have you on board.</p>
     \`,
   })
@@ -854,13 +854,13 @@ export const sendInvoiceEmail = async (email: string, invoiceId: string, amount:
     to: email,
     subject: 'Your invoice is ready',
     html: \`
-      <h1>Invoice #\${invoiceId}</h1>
-      <p>Amount: $\${(amount / 100).toFixed(2)}</p>
+      <h1>Invoice #${'${'}invoiceId}</h1>
+      <p>Amount: $${'${'}(amount / 100).toFixed(2)}</p>
       <p>Thank you for your business!</p>
     \`,
   })
 }
-`});
+`);
 
     await fs.writeFile(path.join(outputDir, 'src/lib/upload/s3.ts'), `import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
@@ -884,9 +884,9 @@ export const generateUploadUrl = async (key: string, contentType: string) => {
 }
 
 export const getPublicUrl = (key: string) => {
-  return \`https://\${process.env.AWS_S3_BUCKET_NAME}.s3.\${process.env.AWS_REGION}.amazonaws.com/\${key}\`
+  return \`https://${'${'}process.env.AWS_S3_BUCKET_NAME}.s3.${'${'}process.env.AWS_REGION}.amazonaws.com/${'${'}key}\`
 }
-`});
+`);
 
     // Generate app layout
     await fs.writeFile(path.join(outputDir, 'src/app/layout.tsx'), `import type { Metadata } from 'next'
@@ -914,7 +914,7 @@ export default function RootLayout({
     </ClerkProvider>
   )
 }
-`});
+`);
 
     await fs.writeFile(path.join(outputDir, 'src/app/globals.css'), `@tailwind base;
 @tailwind components;
@@ -947,7 +947,7 @@ export default function Home() {
     </main>
   )
 }
-`});
+`);
 
     // Generate dashboard page
     await fs.writeFile(path.join(outputDir, 'src/app/dashboard/page.tsx'), `import { auth } from '@clerk/nextjs'
@@ -1026,7 +1026,7 @@ export default async function Dashboard() {
     </main>
   )
 }
-`});
+`);
 
     // Generate admin page
     await fs.writeFile(path.join(outputDir, 'src/app/admin/page.tsx'), `import { auth } from '@clerk/nextjs'
@@ -1092,7 +1092,7 @@ export default async function AdminDashboard() {
     </main>
   )
 }
-`});
+`);
 
     // Generate API routes
     await fs.writeFile(path.join(outputDir, 'src/app/api/webhooks/stripe/route.ts'), `import { headers } from 'next/headers'
@@ -1116,7 +1116,7 @@ export async function POST(req: Request) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
     } catch (err: any) {
-      process.stderr.write(\`Webhook signature verification failed: \${err.message}\\n\`)
+      process.stderr.write(\`Webhook signature verification failed: ${'${'}err.message}\\n\`)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
     
@@ -1175,11 +1175,11 @@ export async function POST(req: Request) {
     
     return NextResponse.json({ received: true })
   } catch (error) {
-    process.stderr.write(`Webhook error: ${error}\n`)
+    process.stderr.write(\`Webhook error: ${'${'}error}\\n\`)
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 }
-`});
+`);
 
     await fs.writeFile(path.join(outputDir, 'src/app/api/stripe/checkout/route.ts'), `import { auth } from '@clerk/nextjs'
 import { NextResponse } from 'next/server'
@@ -1204,14 +1204,14 @@ export async function POST(req: Request) {
     
     return NextResponse.json({ url: session.url })
   } catch (error: any) {
-    process.stderr.write(`Checkout error: ${error}\n`)
+    process.stderr.write(\`Checkout error: ${'${'}error}\\n\`)
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }
     )
   }
 }
-`});
+`);
 
     // Generate README
     await fs.writeFile(path.join(outputDir, 'README.md'), `# Next.js 15 SaaS Template
@@ -1321,7 +1321,7 @@ Events to listen for:
 ## License
 
 MIT
-`});
+`);
 
     spinner.succeed(chalk.green('Next.js 15 SaaS infrastructure generated!'));
     
