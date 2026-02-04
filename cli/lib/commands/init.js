@@ -470,7 +470,7 @@ export default authMiddleware({
 export const config = {
   matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 }
-`});
+`);
 
     // Generate package.json
     await fs.writeFile(path.join(outputDir, 'package.json'), JSON.stringify({
