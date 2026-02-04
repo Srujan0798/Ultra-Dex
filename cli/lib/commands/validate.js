@@ -3,6 +3,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { validateSafePath } from '../utils/validation.js';
 import { runQualityScan } from '../quality/scanner.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 export function registerValidateCommand(program) {
   program

@@ -48,112 +48,192 @@ export class GeminiProvider extends BaseProvider {
   }
 
   async generate(systemPrompt, userPrompt, options = {}) {
-    const url = `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: systemPrompt }],
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: userPrompt }],
+    // Retry logic with exponential backoff
+    const maxRetries = options.maxRetries || 3;
+    let lastError;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+        const url = `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        ],
-        generationConfig: {
-          maxOutputTokens: options.maxTokens || this.maxTokens,
-        },
-      }),
-    });
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemPrompt }],
+            },
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: userPrompt }],
+              },
+            ],
+            generationConfig: {
+              maxOutputTokens: options.maxTokens || this.maxTokens,
+            },
+          }),
+          signal: controller.signal
+        });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(`Gemini API error: ${error.error?.message || response.statusText}`);
-    }
+        clearTimeout(timeoutId);
 
-    const data = await response.json();
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
-    return {
-      content,
-      usage: {
-        inputTokens: data.usageMetadata?.promptTokenCount || 0,
-        outputTokens: data.usageMetadata?.candidatesTokenCount || 0,
-      },
-    };
-  }
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
 
-  async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
-    const url = `${this.baseUrl}/models/${this.model}:streamGenerateContent?key=${this.apiKey}&alt=sse`;
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: systemPrompt }],
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: userPrompt }],
-          },
-        ],
-        generationConfig: {
-          maxOutputTokens: options.maxTokens || this.maxTokens,
-        },
-      }),
-    });
+          // Handle rate limiting
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After');
+            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(`Gemini API error: ${error.error?.message || response.statusText}`);
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullContent = '';
-    let usage = { inputTokens: 0, outputTokens: 0 };
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          
-          try {
-            const parsed = JSON.parse(data);
-            
-            const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              fullContent += text;
-              onChunk(text);
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue; // Retry
             }
-            
-            if (parsed.usageMetadata) {
-              usage.inputTokens = parsed.usageMetadata.promptTokenCount || 0;
-              usage.outputTokens = parsed.usageMetadata.candidatesTokenCount || 0;
-            }
-          } catch {
-            // Skip malformed JSON
           }
+
+          throw new Error(`Gemini API error: ${error.error?.message || response.statusText}`);
         }
+
+        const data = await response.json();
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        return {
+          content,
+          usage: {
+            inputTokens: data.usageMetadata?.promptTokenCount || 0,
+            outputTokens: data.usageMetadata?.candidatesTokenCount || 0,
+          },
+        };
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < maxRetries) {
+          // Exponential backoff
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        throw error;
       }
     }
 
-    return { content: fullContent, usage };
+    // This should not be reached, but just in case
+    throw lastError || new Error('Max retries exceeded');
+  }
+
+  async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
+    // Retry logic with exponential backoff
+    const maxRetries = options.maxRetries || 3;
+    let lastError;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+        const url = `${this.baseUrl}/models/${this.model}:streamGenerateContent?key=${this.apiKey}&alt=sse`;
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemPrompt }],
+            },
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: userPrompt }],
+              },
+            ],
+            generationConfig: {
+              maxOutputTokens: options.maxTokens || this.maxTokens,
+            },
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+
+          // Handle rate limiting
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After');
+            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
+
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue; // Retry
+            }
+          }
+
+          throw new Error(`Gemini API error: ${error.error?.message || response.statusText}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+        let usage = { inputTokens: 0, outputTokens: 0 };
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+
+              try {
+                const parsed = JSON.parse(data);
+
+                const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                  fullContent += text;
+                  onChunk(text);
+                }
+
+                if (parsed.usageMetadata) {
+                  usage.inputTokens = parsed.usageMetadata.promptTokenCount || 0;
+                  usage.outputTokens = parsed.usageMetadata.candidatesTokenCount || 0;
+                }
+              } catch {
+                // Skip malformed JSON
+              }
+            }
+          }
+        }
+
+        return { content: fullContent, usage };
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < maxRetries) {
+          // Exponential backoff
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        throw error;
+      }
+    }
+
+    // This should not be reached, but just in case
+    throw lastError || new Error('Max retries exceeded');
   }
 
   async validateApiKey() {

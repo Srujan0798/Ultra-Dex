@@ -3,7 +3,7 @@
  * Defines schema for agent handoffs, execution state, and rollback support.
  */
 
-import { ValidationError } from '../utils/errors.js';
+import { ValidationError, AppError } from '../utils/errors.js';
 
 // ============================================================================
 // AGENT MESSAGE CLASS

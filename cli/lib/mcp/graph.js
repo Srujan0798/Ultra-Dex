@@ -6,6 +6,8 @@ import { performance } from 'perf_hooks';
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
 import neo4j from 'neo4j-driver';
+import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../ui/logger.js';
 
 /**
  * GraphRAG - Deep Graph RAG Implementation with Neo4j
@@ -19,22 +21,30 @@ export class GraphRAG {
     this.driver = null;
     this.isConnected = false;
     this.projectId = config.projectId || 'default';
+    this.connecting = null;
   }
 
   async connect() {
-    try {
-      this.driver = neo4j.driver(this.uri, neo4j.auth.basic(this.user, this.password));
-      await this.driver.verifyConnectivity();
-      this.isConnected = true;
-      console.log(`[GraphRAG] Connected to Neo4j at ${this.uri}`);
-      await this.initializeSchema();
-      return true;
-    } catch (error) {
-      console.warn(`[GraphRAG] Failed to connect to Neo4j: ${error.message}`);
-      console.warn('[GraphRAG] Falling back to in-memory graph storage');
-      this.isConnected = false;
-      return false;
-    }
+    if (this.connecting) return this.connecting;
+
+    this.connecting = (async () => {
+      try {
+        this.driver = neo4j.driver(this.uri, neo4j.auth.basic(this.user, this.password));
+        await this.driver.verifyConnectivity();
+        this.isConnected = true;
+        logger.info(`[GraphRAG] Connected to Neo4j at ${this.uri}`);
+        await this.initializeSchema();
+        return true;
+      } catch (error) {
+        logger.warn(`[GraphRAG] Failed to connect to Neo4j: ${error.message}`);
+        logger.debug('[GraphRAG] Falling back to in-memory graph storage');
+        this.isConnected = false;
+        this.connecting = null;
+        return false;
+      }
+    })();
+
+    return this.connecting;
   }
 
   async disconnect() {
@@ -75,7 +85,7 @@ export class GraphRAG {
         FOR ()-[r:DEPENDS_ON]-() ON (r.type)
       `);
 
-      console.log('[GraphRAG] Schema initialized');
+      logger.debug('[GraphRAG] Schema initialized');
     } finally {
       await session.close();
     }
@@ -91,15 +101,19 @@ export class GraphRAG {
         WHERE n.project = $projectId
         DETACH DELETE n
       `, { projectId: this.projectId });
-      console.log(`[GraphRAG] Cleared project: ${this.projectId}`);
+      logger.info(`[GraphRAG] Cleared project: ${this.projectId}`);
     } finally {
       await session.close();
     }
   }
 
   async syncFromCodeGraph(codeGraph) {
+    if (!codeGraph) {
+      throw new ValidationError('codeGraph is required for sync');
+    }
+
     if (!this.isConnected) {
-      console.warn('[GraphRAG] Not connected to Neo4j, skipping sync');
+      logger.warn('[GraphRAG] Not connected to Neo4j, skipping sync');
       return false;
     }
 
@@ -170,7 +184,7 @@ export class GraphRAG {
         });
       }
 
-      console.log(`[GraphRAG] Synced ${files.length} files and ${summary.dependencies.length} dependencies`);
+      logger.info(`[GraphRAG] Synced ${files.length} files and ${summary.dependencies.length} dependencies`);
       return true;
     } finally {
       await session.close();
@@ -493,6 +507,8 @@ export class CodeGraph {
     // GraphRAG integration
     this.graphRAG = options.graphRAG || null;
     this.useGraphDB = options.useGraphDB !== false; // Default to true
+    this.isScanning = false;
+    this.initializingRAG = null;
   }
 
   async loadCache() {
@@ -506,7 +522,7 @@ export class CodeGraph {
         return true;
       }
     } catch (e) {
-      console.warn('Failed to load graph cache:', e.message);
+      logger.debug(`Failed to load graph cache: ${e.message}`);
     }
     return false;
   }
@@ -523,122 +539,143 @@ export class CodeGraph {
       };
       await fs.writeFile(this.cacheFile, JSON.stringify(json, null, 2));
     } catch (e) {
-      console.warn('Failed to save graph cache:', e.message);
+      logger.debug(`Failed to save graph cache: ${e.message}`);
     }
   }
 
   async initializeGraphRAG() {
     if (this.graphRAG || !this.useGraphDB) return false;
+    if (this.initializingRAG) return this.initializingRAG;
 
-    this.graphRAG = new GraphRAG({ projectId: path.basename(process.cwd()) });
-    const connected = await this.graphRAG.connect();
-    
-    if (connected) {
-      console.log('[CodeGraph] GraphRAG initialized and connected');
-    }
-    
-    return connected;
+    this.initializingRAG = (async () => {
+      try {
+        this.graphRAG = new GraphRAG({ projectId: path.basename(process.cwd()) });
+        const connected = await this.graphRAG.connect();
+        
+        if (connected) {
+          logger.info('[CodeGraph] GraphRAG initialized and connected');
+        }
+        
+        return connected;
+      } catch (err) {
+        this.initializingRAG = null;
+        logger.error('[CodeGraph] Failed to initialize GraphRAG', err);
+        return false;
+      }
+    })();
+
+    return this.initializingRAG;
   }
 
   async scan(useCache = true) {
-    const now = Date.now();
-
-    // Try loading persistent cache if memory cache is empty
-    if (useCache && this.nodes.size === 0) {
-      await this.loadCache();
-    }
-
-    // Check if we can use cached results
-    if (useCache && this.nodes.size > 0 && (now - this.lastScanTime) < this.cacheTimeout) {
+    if (this.isScanning) {
+      logger.debug('[CodeGraph] Scan already in progress, skipping');
       return this.getSummary();
     }
 
-    // Initialize GraphRAG if not already done
-    if (this.useGraphDB && !this.graphRAG) {
-      await this.initializeGraphRAG();
-    }
+    this.isScanning = true;
+    try {
+      const now = Date.now();
 
-    // Start performance tracking
-    const scanStart = performance.now();
-
-    // Find all js/ts/jsx/tsx files
-    const files = await glob('**/*.{js,ts,jsx,tsx}', {
-      ignore: ['**/node_modules/**', '.git/**', 'dist/**', 'build/**', '.next/**'],
-      absolute: false,
-      cwd: process.cwd(),
-      nodir: true
-    });
-
-    const currentFiles = new Set(files);
-    const filesToAnalyze = [];
-
-    // Identify files to update or add
-    for (const file of files) {
-      try {
-        const stats = await fs.stat(path.resolve(process.cwd(), file));
-        const mtime = stats.mtimeMs;
-
-        const existingNode = this.nodes.get(file);
-        if (!existingNode || existingNode.mtime !== mtime) {
-          filesToAnalyze.push({ file, mtime });
-        }
-      } catch (e) {
-        console.warn(`Failed to stat ${file}:`, e.message);
-      }
-    }
-
-    // Identify deleted files
-    for (const [file] of this.nodes) {
-      if (!currentFiles.has(file)) {
-        this.nodes.delete(file);
-        this.edges = this.edges.filter(e => e.from !== file);
-      }
-    }
-
-    // Remove old edges from files being re-analyzed
-    if (filesToAnalyze.length > 0) {
-      const filesToUpdateSet = new Set(filesToAnalyze.map(f => f.file));
-      this.edges = this.edges.filter(e => !filesToUpdateSet.has(e.from));
-
-      // Process files in chunks
-      const CONCURRENCY_LIMIT = 100;
-      const promises = [];
-
-      for (let i = 0; i < filesToAnalyze.length; i += CONCURRENCY_LIMIT) {
-        const chunk = filesToAnalyze.slice(i, i + CONCURRENCY_LIMIT);
-        const chunkPromises = chunk.map(({ file, mtime }) => this.analyzeFile(file, mtime));
-        promises.push(...chunkPromises);
+      // Try loading persistent cache if memory cache is empty
+      if (useCache && this.nodes.size === 0) {
+        await this.loadCache();
       }
 
-      const results = await Promise.allSettled(promises);
+      // Check if we can use cached results
+      if (useCache && this.nodes.size > 0 && (now - this.lastScanTime) < this.cacheTimeout) {
+        return this.getSummary();
+      }
 
-      results.forEach((result, index) => {
-        if (result.status === 'rejected') {
-          console.error(`Failed to analyze file at index ${index}:`, result.reason);
-        }
+      // Initialize GraphRAG if not already done
+      if (this.useGraphDB && !this.graphRAG) {
+        await this.initializeGraphRAG();
+      }
+
+      // Start performance tracking
+      const scanStart = performance.now();
+
+      // Find all js/ts/jsx/tsx files
+      const files = await glob('**/*.{js,ts,jsx,tsx}', {
+        ignore: ['**/node_modules/**', '.git/**', 'dist/**', 'build/**', '.next/**'],
+        absolute: false,
+        cwd: process.cwd(),
+        nodir: true
       });
 
-      for (const result of results) {
-        if (result.status === 'fulfilled') {
-          this.edges.push(...result.value.edges);
+      const currentFiles = new Set(files);
+      const filesToAnalyze = [];
+
+      // Identify files to update or add
+      for (const file of files) {
+        try {
+          const stats = await fs.stat(path.resolve(process.cwd(), file));
+          const mtime = stats.mtimeMs;
+
+          const existingNode = this.nodes.get(file);
+          if (!existingNode || existingNode.mtime !== mtime) {
+            filesToAnalyze.push({ file, mtime });
+          }
+        } catch (e) {
+          logger.debug(`Failed to stat ${file}: ${e.message}`);
         }
       }
+
+      // Identify deleted files
+      for (const [file] of this.nodes) {
+        if (!currentFiles.has(file)) {
+          this.nodes.delete(file);
+          this.edges = this.edges.filter(e => e.from !== file);
+        }
+      }
+
+      // Remove old edges from files being re-analyzed
+      if (filesToAnalyze.length > 0) {
+        const filesToUpdateSet = new Set(filesToAnalyze.map(f => f.file));
+        this.edges = this.edges.filter(e => !filesToUpdateSet.has(e.from));
+
+        // Process files in chunks
+        const CONCURRENCY_LIMIT = 50; // Reduced concurrency for stability
+        const promises = [];
+
+        for (let i = 0; i < filesToAnalyze.length; i += CONCURRENCY_LIMIT) {
+          const chunk = filesToAnalyze.slice(i, i + CONCURRENCY_LIMIT);
+          const chunkPromises = chunk.map(({ file, mtime }) => this.analyzeFile(file, mtime));
+          promises.push(...chunkPromises);
+        }
+
+        const results = await Promise.allSettled(promises);
+
+        results.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            logger.error(`Failed to analyze file at index ${index}`, result.reason);
+          }
+        });
+
+        for (const result of results) {
+          if (result.status === 'fulfilled') {
+            this.edges.push(...result.value.edges);
+          }
+        }
+      }
+
+      this.lastScanTime = now;
+
+      const scanDuration = performance.now() - scanStart;
+      logger.debug(`[Performance] Graph scan completed in ${scanDuration.toFixed(2)}ms for ${files.length} files`);
+
+      // Sync to GraphRAG if connected
+      if (this.graphRAG && this.graphRAG.isConnected) {
+        await this.graphRAG.syncFromCodeGraph(this);
+      }
+
+      // Save cache asynchronously
+      this.saveCache().catch(e => logger.debug(`Background cache save failed: ${e.message}`));
+
+      return this.getSummary();
+    } finally {
+      this.isScanning = false;
     }
-
-    this.lastScanTime = now;
-
-    const scanDuration = performance.now() - scanStart;
-    console.debug(`[Performance] Graph scan completed in ${scanDuration.toFixed(2)}ms for ${files.length} files`);
-
-    // Sync to GraphRAG if connected
-    if (this.graphRAG && this.graphRAG.isConnected) {
-      await this.graphRAG.syncFromCodeGraph(this);
-    }
-
-    // Save cache asynchronously
-    this.saveCache().catch(e => console.error('Background cache save failed:', e));
-
-    return this.getSummary();
   }
 
   async analyzeFile(filePath, mtime) {

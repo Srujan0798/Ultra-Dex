@@ -88,7 +88,15 @@ export class BaseProvider {
    */
   formatError(error, context) {
     const errorMessage = typeof error === 'string' ? error : error.message || 'Unknown error';
-    return new Error(`[${this.getName()}] ${context}: ${errorMessage}`);
+    const formattedError = new Error(`[${this.getName()}] ${context}: ${errorMessage}`);
+
+    // Preserve original error for debugging
+    if (typeof error !== 'string' && error) {
+      formattedError.originalError = error;
+      formattedError.stack = error.stack;
+    }
+
+    return formattedError;
   }
 
   /**

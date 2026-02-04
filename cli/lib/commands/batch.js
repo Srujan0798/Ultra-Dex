@@ -10,6 +10,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import { spawn } from 'child_process';
 import path from 'path';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const program = new Command();
 
@@ -26,7 +27,7 @@ program
   .option('--timeout <ms>', 'Timeout per command', '300000')
   .action(async (file, options) => {
     try {
-      console.log(chalk.cyan.bold('\n📦 Ultra-Dex Batch Execution\n'));
+      printInfo(chalk.cyan.bold('\n📦 Ultra-Dex Batch Execution\n'));
       
       let commands = [];
       
@@ -44,36 +45,41 @@ program
         commands = parseCommands(data);
       } else {
         // Read from file
-        const content = await fs.readFile(file, 'utf8');
-        const ext = path.extname(file);
-        
-        if (ext === '.json') {
-          const batch = JSON.parse(content);
-          commands = batch.commands || [];
-        } else {
-          commands = parseCommands(content);
+        try {
+            const content = await fs.readFile(file, 'utf8');
+            const ext = path.extname(file);
+            
+            if (ext === '.json') {
+              const batch = JSON.parse(content);
+              commands = batch.commands || [];
+            } else {
+              commands = parseCommands(content);
+            }
+        } catch (err) {
+            printError(chalk.red(`Failed to read batch file: ${err.message}`));
+            process.exit(1);
         }
       }
       
       if (commands.length === 0) {
-        console.log(chalk.yellow('No commands to execute'));
+        printWarning(chalk.yellow('No commands to execute'));
         return;
       }
       
-      console.log(chalk.blue(`Found ${commands.length} commands:\n`));
+      printInfo(chalk.blue(`Found ${commands.length} commands:\n`));
       
       // Display commands
       commands.forEach((cmd, i) => {
-        console.log(chalk.gray(`  ${i + 1}. ultra-dex ${cmd.command} ${cmd.args?.join(' ') || ''}`));
+        printInfo(chalk.gray(`  ${i + 1}. ultra-dex ${cmd.command} ${cmd.args?.join(' ') || ''}`));
         if (cmd.description) {
-          console.log(chalk.dim(`     ${cmd.description}`));
+          printInfo(chalk.dim(`     ${cmd.description}`));
         }
       });
       
-      console.log();
+      printInfo('');
       
       if (options.dryRun) {
-        console.log(chalk.yellow('Dry run mode - not executing\n'));
+        printWarning(chalk.yellow('Dry run mode - not executing\n'));
         return;
       }
       
@@ -85,7 +91,7 @@ program
         const cmd = commands[i];
         const cmdStr = `ultra-dex ${cmd.command} ${cmd.args?.join(' ') || ''}`;
         
-        console.log(chalk.cyan(`\n[${i + 1}/${commands.length}] Executing: ${cmdStr}`));
+        printInfo(chalk.cyan(`\n[${i + 1}/${commands.length}] Executing: ${cmdStr}`));
         
         const startTime = Date.now();
         
@@ -99,7 +105,7 @@ program
             duration
           });
           
-          console.log(chalk.green(`  ✓ Completed in ${(duration / 1000).toFixed(1)}s`));
+          printSuccess(chalk.green(`  ✓ Completed in ${(duration / 1000).toFixed(1)}s`));
         } catch (error) {
           const duration = Date.now() - startTime;
           failed++;
@@ -111,32 +117,32 @@ program
             error: error.message
           });
           
-          console.log(chalk.red(`  ✗ Failed: ${error.message}`));
+          printError(chalk.red(`  ✗ Failed: ${error.message}`));
           
           if (!options.continueOnError) {
-            console.log(chalk.red('\nStopping due to error (use --continue-on-error to skip)'));
+            printError(chalk.red('\nStopping due to error (use --continue-on-error to skip)'));
             break;
           }
         }
       }
       
       // Summary
-      console.log(chalk.cyan.bold('\n📊 Summary:\n'));
-      console.log(`Total: ${commands.length}`);
-      console.log(chalk.green(`Successful: ${results.filter(r => r.status === 'success').length}`));
+      printInfo(chalk.cyan.bold('\n📊 Summary:\n'));
+      printInfo(`Total: ${commands.length}`);
+      printInfo(chalk.green(`Successful: ${results.filter(r => r.status === 'success').length}`));
       if (failed > 0) {
-        console.log(chalk.red(`Failed: ${failed}`));
+        printInfo(chalk.red(`Failed: ${failed}`));
       }
       
       const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
-      console.log(chalk.gray(`Total time: ${(totalDuration / 1000).toFixed(1)}s\n`));
+      printInfo(chalk.gray(`Total time: ${(totalDuration / 1000).toFixed(1)}s\n`));
       
       if (failed > 0) {
         process.exit(1);
       }
       
     } catch (error) {
-      console.error(chalk.red('\n❌ Error:'), error.message);
+      printError(chalk.red('\n❌ Error:'), error.message);
       process.exit(1);
     }
   });
@@ -180,20 +186,26 @@ program
     
     const template = templates[options.type];
     if (!template) {
-      console.log(chalk.red(`Unknown template type: ${options.type}`));
-      console.log(chalk.gray('Available: setup, deploy, test'));
+      printError(chalk.red(`Unknown template type: ${options.type}`));
+      printInfo(chalk.gray('Available: setup, deploy, test'));
       return;
     }
     
     await fs.writeFile(file, JSON.stringify(template, null, 2));
-    console.log(chalk.green(`\n✅ Created ${file}`));
-    console.log(chalk.gray(`Template: ${template.name}`));
-    console.log(chalk.gray(`Contains ${template.commands.length} commands\n`));
-    console.log(chalk.white('Run with:'));
-    console.log(chalk.cyan(`  ultra-dex batch ${file}\n`));
+    printSuccess(chalk.green(`\n✅ Created ${file}`));
+    printInfo(chalk.gray(`Template: ${template.name}`));
+    printInfo(chalk.gray(`Contains ${template.commands.length} commands\n`));
+    printInfo(chalk.white('Run with:'));
+    printInfo(chalk.cyan(`  ultra-dex batch ${file}\n`));
   });
 
 function parseCommands(content) {
+  try {
+      // Try parsing as JSON first just in case
+      const json = JSON.parse(content);
+      if (json.commands) return json.commands;
+  } catch {}
+
   const lines = content.split('\n');
   const commands = [];
   
@@ -219,8 +231,13 @@ function parseCommands(content) {
 
 function executeCommand(cmd, timeout) {
   return new Promise((resolve, reject) => {
-    const args = ['ultra-dex', cmd.command, ...(cmd.args || [])];
+    // Sanitize arguments slightly by ensuring strings
+    const safeArgs = (cmd.args || []).map(String);
+    const args = ['ultra-dex', cmd.command, ...safeArgs];
     
+    // Warning: shell: true is used to allow command execution, but it carries security risks
+    // if input is untrusted. Since this is a CLI tool run by the user with their own files,
+    // we assume some level of trust, but we should be careful.
     const child = spawn('npx', args, {
       stdio: ['ignore', 'pipe', 'pipe'],
       shell: true

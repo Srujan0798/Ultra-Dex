@@ -6,6 +6,8 @@ import { registerTools } from "./tools.js";
 import { projectGraph } from "./graph.js";
 import { webSocketServer } from "./websocket.js";
 import { VERSION } from "../utils/version.js";
+import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../ui/logger.js';
 
 /**
  * Creates and configures the MCP Server instance
@@ -38,32 +40,53 @@ export function createMcpServer() {
  */
 export async function startStdioServer() {
   // Initialize Graph
-  console.error("Initializing Ultra-Dex Active Kernel (Stdio)...");
+  logger.debug("Initializing Ultra-Dex Active Kernel (Stdio)...");
   try {
     await projectGraph.scan();
-    console.error(`Graph loaded: ${projectGraph.nodes.size} nodes.`);
+    logger.debug(`Graph loaded: ${projectGraph.nodes.size} nodes.`);
   } catch (e) {
-    console.error("Graph initialization warning:", e.message);
+    logger.warn(`Graph initialization warning: ${e.message}`);
   }
 
   // Start WebSocket for side-channel updates
   try {
     await webSocketServer.start({ port: 3002 });
   } catch (error) {
-    console.error("WebSocket server failed:", error.message);
+    logger.error("WebSocket server failed", error);
   }
 
   const server = createMcpServer();
   const transport = new StdioServerTransport();
-  await server.connect(transport);
+  
+  // Handle graceful shutdown
+  const shutdown = async () => {
+    logger.debug("Shutting down MCP server...");
+    try {
+      await webSocketServer.stop();
+      await transport.close();
+      process.exit(0);
+    } catch (err) {
+      logger.error("Error during shutdown", err);
+      process.exit(1);
+    }
+  };
 
-  console.error("Ultra-Dex MCP Server running on Stdio...");
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+
+  try {
+    await server.connect(transport);
+    logger.debug("Ultra-Dex MCP Server running on Stdio...");
+  } catch (err) {
+    logger.error("Failed to connect MCP server", err);
+    throw new AppError(`MCP Connection failed: ${err.message}`, { cause: err });
+  }
 }
 
 // Legacy export for backward compatibility if needed, but we should use startStdioServer
 export async function startMcpServer(options = {}) {
   if (options.transport === 'http') {
-    throw new Error("Use 'ultra-dex serve' for HTTP mode. This function only supports Stdio or direct invocation.");
+    throw new ValidationError("Use 'ultra-dex serve' for HTTP mode. This function only supports Stdio or direct invocation.");
   }
   return startStdioServer();
 }

@@ -64,10 +64,10 @@ export class ToolBelt {
         const sandboxOnly = config.security?.sandboxOnly || false;
 
         if (sandboxOnly) {
-            console.log(chalk.blue(`\n🐳 Sandbox Enforcement: Routing command to Docker...`));
-            const { executeCommand } = await import('../commands/exec.js');
+            process.stdout.write(chalk.blue(`\n🐳 Sandbox Enforcement: Routing command to Docker...`) + '\n');
+            const { executeInSandbox } = await import('./exec.js');
             try {
-                const result = await executeCommand(command);
+                const result = await executeInSandbox(command, { isCommand: true });
                 return result.stdout + (result.stderr ? `\nSTDERR: ${result.stderr}` : '');
             } catch (e) {
                 return `Sandbox Error: ${e.message}`;
@@ -79,7 +79,7 @@ export class ToolBelt {
         const isWhitelisted = allowedPrefixes.some(p => command.startsWith(p));
 
         if (!isWhitelisted) {
-            console.log(chalk.yellow(`\n⚠️  Agent requested a sensitive command: ${chalk.bold(command)}`));
+            process.stdout.write(chalk.yellow(`\n⚠️  Agent requested a sensitive command: ${chalk.bold(command)}`) + '\n');
             const { confirm } = await inquirer.prompt([
                 {
                     type: 'confirm',

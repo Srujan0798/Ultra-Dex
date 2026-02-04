@@ -54,147 +54,219 @@ export class ClaudeProvider extends BaseProvider {
     // Validate required parameters
     this.validateParams({ systemPrompt, userPrompt }, ['systemPrompt', 'userPrompt']);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    // Retry logic with exponential backoff
+    const maxRetries = options.maxRetries || 3;
+    let lastError;
 
-    try {
-      const response = await fetch(`${this.baseUrl}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': this.apiKey,
-          'anthropic-version': this.apiVersion,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          max_tokens: options.maxTokens || this.maxTokens,
-          temperature: options.temperature !== undefined ? options.temperature : this.temperature,
-          system: systemPrompt,
-          messages: [
-            { role: 'user', content: userPrompt }
-          ],
-        }),
-        signal: controller.signal
-      });
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-      clearTimeout(timeoutId);
+      try {
+        const response = await fetch(`${this.baseUrl}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': this.apiKey,
+            'anthropic-version': this.apiVersion,
+          },
+          body: JSON.stringify({
+            model: this.model,
+            max_tokens: options.maxTokens || this.maxTokens,
+            temperature: options.temperature !== undefined ? options.temperature : this.temperature,
+            system: systemPrompt,
+            messages: [
+              { role: 'user', content: userPrompt }
+            ],
+          }),
+          signal: controller.signal
+        });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw this.formatError(
-          error.error?.message || response.statusText,
-          'generate() API call failed'
-        );
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+
+          // Handle rate limiting
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After');
+            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
+
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue; // Retry
+            }
+          }
+
+          throw this.formatError(
+            error.error?.message || response.statusText,
+            'generate() API call failed'
+          );
+        }
+
+        const data = await response.json();
+
+        return {
+          content: data.content[0]?.text || '',
+          usage: {
+            inputTokens: data.usage?.input_tokens || 0,
+            outputTokens: data.usage?.output_tokens || 0,
+          },
+          model: data.model || this.model,
+        };
+      } catch (error) {
+        clearTimeout(timeoutId);
+
+        if (error.name === 'AbortError') {
+          if (attempt < maxRetries) {
+            // Exponential backoff for timeout
+            const delay = Math.pow(2, attempt) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue; // Retry
+          }
+          throw this.formatError('Request timed out', 'generate()');
+        }
+
+        lastError = error;
+
+        if (attempt < maxRetries) {
+          // Exponential backoff
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        throw this.formatError(lastError, 'generate()');
       }
-
-      const data = await response.json();
-
-      return {
-        content: data.content[0]?.text || '',
-        usage: {
-          inputTokens: data.usage?.input_tokens || 0,
-          outputTokens: data.usage?.output_tokens || 0,
-        },
-        model: data.model || this.model,
-      };
-    } catch (error) {
-      clearTimeout(timeoutId);
-
-      if (error.name === 'AbortError') {
-        throw this.formatError('Request timed out', 'generate()');
-      }
-
-      throw this.formatError(error, 'generate()');
     }
+
+    // This should not be reached, but just in case
+    throw this.formatError(lastError || new Error('Max retries exceeded'), 'generate()');
   }
 
   async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
     // Validate required parameters
     this.validateParams({ systemPrompt, userPrompt, onChunk }, ['systemPrompt', 'userPrompt', 'onChunk']);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    // Retry logic with exponential backoff
+    const maxRetries = options.maxRetries || 3;
+    let lastError;
 
-    try {
-      const response = await fetch(`${this.baseUrl}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': this.apiKey,
-          'anthropic-version': this.apiVersion,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          max_tokens: options.maxTokens || this.maxTokens,
-          temperature: options.temperature !== undefined ? options.temperature : this.temperature,
-          stream: true,
-          system: systemPrompt,
-          messages: [
-            { role: 'user', content: userPrompt }
-          ],
-        }),
-        signal: controller.signal
-      });
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-      clearTimeout(timeoutId);
+      try {
+        const response = await fetch(`${this.baseUrl}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': this.apiKey,
+            'anthropic-version': this.apiVersion,
+          },
+          body: JSON.stringify({
+            model: this.model,
+            max_tokens: options.maxTokens || this.maxTokens,
+            temperature: options.temperature !== undefined ? options.temperature : this.temperature,
+            stream: true,
+            system: systemPrompt,
+            messages: [
+              { role: 'user', content: userPrompt }
+            ],
+          }),
+          signal: controller.signal
+        });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw this.formatError(
-          error.error?.message || response.statusText,
-          'generateStream() API call failed'
-        );
-      }
+        clearTimeout(timeoutId);
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let fullContent = '';
-      let usage = { inputTokens: 0, outputTokens: 0 };
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+          // Handle rate limiting
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After');
+            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue; // Retry
+            }
+          }
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
+          throw this.formatError(
+            error.error?.message || response.statusText,
+            'generateStream() API call failed'
+          );
+        }
 
-            try {
-              const parsed = JSON.parse(data);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+        let usage = { inputTokens: 0, outputTokens: 0 };
 
-              if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-                fullContent += parsed.delta.text;
-                onChunk(parsed.delta.text);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(data);
+
+                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                  fullContent += parsed.delta.text;
+                  onChunk(parsed.delta.text);
+                }
+
+                if (parsed.type === 'message_delta' && parsed.usage) {
+                  usage.outputTokens = parsed.usage.output_tokens || 0;
+                }
+
+                if (parsed.type === 'message_start' && parsed.message?.usage) {
+                  usage.inputTokens = parsed.message.usage.input_tokens || 0;
+                }
+              } catch {
+                // Skip malformed JSON
               }
-
-              if (parsed.type === 'message_delta' && parsed.usage) {
-                usage.outputTokens = parsed.usage.output_tokens || 0;
-              }
-
-              if (parsed.type === 'message_start' && parsed.message?.usage) {
-                usage.inputTokens = parsed.message.usage.input_tokens || 0;
-              }
-            } catch {
-              // Skip malformed JSON
             }
           }
         }
+
+        return { content: fullContent, usage, model: this.model };
+      } catch (error) {
+        clearTimeout(timeoutId);
+
+        if (error.name === 'AbortError') {
+          if (attempt < maxRetries) {
+            // Exponential backoff for timeout
+            const delay = Math.pow(2, attempt) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue; // Retry
+          }
+          throw this.formatError('Request timed out', 'generateStream()');
+        }
+
+        lastError = error;
+
+        if (attempt < maxRetries) {
+          // Exponential backoff
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        throw this.formatError(lastError, 'generateStream()');
       }
-
-      return { content: fullContent, usage, model: this.model };
-    } catch (error) {
-      clearTimeout(timeoutId);
-
-      if (error.name === 'AbortError') {
-        throw this.formatError('Request timed out', 'generateStream()');
-      }
-
-      throw this.formatError(error, 'generateStream()');
     }
+
+    // This should not be reached, but just in case
+    throw this.formatError(lastError || new Error('Max retries exceeded'), 'generateStream()');
   }
 
   async validateApiKey() {

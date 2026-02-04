@@ -52,100 +52,182 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   async generate(systemPrompt, userPrompt, options = {}) {
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        max_tokens: options.maxTokens || this.maxTokens,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
-    });
+    // Retry logic with exponential backoff
+    const maxRetries = options.maxRetries || 3;
+    let lastError;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
-    }
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    const data = await response.json();
-    
-    return {
-      content: data.choices[0]?.message?.content || '',
-      usage: {
-        inputTokens: data.usage?.prompt_tokens || 0,
-        outputTokens: data.usage?.completion_tokens || 0,
-      },
-    };
-  }
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: this.model,
+            max_tokens: options.maxTokens || this.maxTokens,
+            temperature: options.temperature !== undefined ? options.temperature : this.temperature,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+          }),
+          signal: controller.signal
+        });
 
-  async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        max_tokens: options.maxTokens || this.maxTokens,
-        stream: true,
-        stream_options: { include_usage: true },
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
-    });
+        clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
-    }
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullContent = '';
-    let usage = { inputTokens: 0, outputTokens: 0 };
+          // Handle rate limiting
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After');
+            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
-
-          try {
-            const parsed = JSON.parse(data);
-            
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              fullContent += content;
-              onChunk(content);
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue; // Retry
             }
-            
-            if (parsed.usage) {
-              usage.inputTokens = parsed.usage.prompt_tokens || 0;
-              usage.outputTokens = parsed.usage.completion_tokens || 0;
-            }
-          } catch {
-            // Skip malformed JSON
           }
+
+          throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
         }
+
+        const data = await response.json();
+
+        return {
+          content: data.choices[0]?.message?.content || '',
+          usage: {
+            inputTokens: data.usage?.prompt_tokens || 0,
+            outputTokens: data.usage?.completion_tokens || 0,
+          },
+        };
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < maxRetries) {
+          // Exponential backoff
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        throw error;
       }
     }
 
-    return { content: fullContent, usage };
+    // This should not be reached, but just in case
+    throw lastError || new Error('Max retries exceeded');
+  }
+
+  async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
+    // Retry logic with exponential backoff
+    const maxRetries = options.maxRetries || 3;
+    let lastError;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: this.model,
+            max_tokens: options.maxTokens || this.maxTokens,
+            temperature: options.temperature !== undefined ? options.temperature : this.temperature,
+            stream: true,
+            stream_options: { include_usage: true },
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+
+          // Handle rate limiting
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After');
+            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
+
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue; // Retry
+            }
+          }
+
+          throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+        let usage = { inputTokens: 0, outputTokens: 0 };
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(data);
+
+                const content = parsed.choices?.[0]?.delta?.content;
+                if (content) {
+                  fullContent += content;
+                  onChunk(content);
+                }
+
+                if (parsed.usage) {
+                  usage.inputTokens = parsed.usage.prompt_tokens || 0;
+                  usage.outputTokens = parsed.usage.completion_tokens || 0;
+                }
+              } catch {
+                // Skip malformed JSON
+              }
+            }
+          }
+        }
+
+        return { content: fullContent, usage };
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < maxRetries) {
+          // Exponential backoff
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        throw error;
+      }
+    }
+
+    // This should not be reached, but just in case
+    throw lastError || new Error('Max retries exceeded');
   }
 
   /**
