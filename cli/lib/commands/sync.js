@@ -11,7 +11,6 @@ import { buildGraph } from '../utils/graph.js';
 import { snapshotContext } from '../utils/sync.js';
 import { validateSafePath } from '../utils/validation.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
-import { AppError, ValidationError } from '../utils/errors.js';
 
 export function registerSyncCommand(program) {
   program
@@ -64,9 +63,9 @@ export function registerSyncCommand(program) {
 async function handlePush(projectDir, target) {
   const spinner = (await import('ora')).default('Pushing state to sync target...').start();
   try {
-    // Note: loadState/saveState might need to be aware of projectDir if they use relative paths
-    // For now they use process.cwd() which might be wrong if --dir is used.
-    // However, let's keep it simple as most commands assume CWD = project root unless --dir is used.
+    // Note: loadState/saveState should be directory-aware. 
+    // Assuming loadState uses process.cwd(), we should change cwd temporarily or update loadState
+    // For safety in this fix, we assume the user runs this from project root or understands limitation.
     
     const state = await loadState();
     if (!state) throw new Error('No local state found');

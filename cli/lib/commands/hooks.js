@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +19,7 @@ export function registerHooksCommand(program) {
     .option('--force', 'Overwrite existing hooks')
     .option('--min-score <score>', 'Minimum alignment score (default: 70)', '70')
     .action(async (options) => {
-      console.log(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Installation\n'));
+      printInfo(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Installation\n'));
       await installHook(options);
     });
 
@@ -28,7 +29,7 @@ export function registerHooksCommand(program) {
     .alias('uninstall')
     .description('Remove Ultra-Dex git hooks')
     .action(async () => {
-      console.log(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Removal\n'));
+      printInfo(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Removal\n'));
       await removeHook();
     });
 
@@ -37,7 +38,7 @@ export function registerHooksCommand(program) {
     .command('status')
     .description('Check if Ultra-Dex hooks are installed')
     .action(async () => {
-      console.log(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Status\n'));
+      printInfo(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Status\n'));
       await checkHookStatus();
     });
 
@@ -46,7 +47,7 @@ export function registerHooksCommand(program) {
     .option('--remove', 'Remove Ultra-Dex git hooks (deprecated: use "hooks remove")')
     .action(async (options) => {
       if (options.remove) {
-        console.log(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Removal\n'));
+        printInfo(chalk.cyan('\n🪝 Ultra-Dex Git Hooks Removal\n'));
         await removeHook();
       } else {
         // Show help if no subcommand
@@ -62,8 +63,8 @@ async function getGitHooksDir() {
   try {
     await fs.access(gitDir);
   } catch {
-    console.log(chalk.red('❌ Not a git repository. Run "git init" first.\n'));
-    process.exit(1);
+    printError(chalk.red('❌ Not a git repository. Run "git init" first.\n'));
+    return null;
   }
 
   await fs.mkdir(hooksDir, { recursive: true });
@@ -91,8 +92,15 @@ async function getPreCommitHookPath() {
 
 async function installHook(options) {
   const hooksDir = await getGitHooksDir();
+  if (!hooksDir) return;
+
   const preCommitPath = path.join(hooksDir, 'pre-commit');
-  const minScore = parseInt(options.minScore, 10) || 70;
+  let minScore = parseInt(options.minScore, 10);
+  
+  if (isNaN(minScore) || minScore < 0 || minScore > 100) {
+      printWarning(chalk.yellow('Invalid minimum score. Defaulting to 70.'));
+      minScore = 70;
+  }
 
   // Try to use bundled hook
   const bundledHookPath = await getPreCommitHookPath();
@@ -102,11 +110,11 @@ async function installHook(options) {
     hookScript = await fs.readFile(bundledHookPath, 'utf-8');
     // Update minimum score if specified
     hookScript = hookScript.replace(/MIN_ALIGNMENT_SCORE=\d+/, `MIN_ALIGNMENT_SCORE=${minScore}`);
-    console.log(chalk.gray(`  Using bundled hook from: ${bundledHookPath}`));
+    printInfo(chalk.gray(`  Using bundled hook from: ${bundledHookPath}`));
   } else {
     // Fallback to embedded script
     hookScript = generatePreCommitScript(minScore);
-    console.log(chalk.gray('  Using embedded hook script'));
+    printInfo(chalk.gray('  Using embedded hook script'));
   }
 
   try {
@@ -115,10 +123,10 @@ async function installHook(options) {
       if (options.force) {
         await fs.writeFile(preCommitPath, hookScript);
         await fs.chmod(preCommitPath, '755');
-        console.log(chalk.green('✅ Ultra-Dex pre-commit hook updated (--force).\n'));
+        printSuccess(chalk.green('✅ Ultra-Dex pre-commit hook updated (--force).\n'));
       } else {
-        console.log(chalk.yellow('⚠️  Ultra-Dex pre-commit hook already exists.\n'));
-        console.log(chalk.gray('  Use --force to overwrite, or "hooks remove" first.\n'));
+        printWarning(chalk.yellow('⚠️  Ultra-Dex pre-commit hook already exists.\n'));
+        printInfo(chalk.gray('  Use --force to overwrite, or "hooks remove" first.\n'));
         return;
       }
     } else {
@@ -126,13 +134,13 @@ async function installHook(options) {
       const combined = existing + '\n\n' + hookScript;
       await fs.writeFile(preCommitPath, combined);
       await fs.chmod(preCommitPath, '755');
-      console.log(chalk.green('✅ Ultra-Dex hook appended to existing pre-commit.\n'));
+      printSuccess(chalk.green('✅ Ultra-Dex hook appended to existing pre-commit.\n'));
     }
   } catch {
     // No existing hook, create new one
     await fs.writeFile(preCommitPath, hookScript);
     await fs.chmod(preCommitPath, '755');
-    console.log(chalk.green('✅ Pre-commit hook installed.\n'));
+    printSuccess(chalk.green('✅ Pre-commit hook installed.\n'));
   }
 
   printHookInfo(minScore);
@@ -140,59 +148,63 @@ async function installHook(options) {
 
 async function removeHook() {
   const hooksDir = await getGitHooksDir();
+  if (!hooksDir) return;
+  
   const preCommitPath = path.join(hooksDir, 'pre-commit');
 
   try {
     const content = await fs.readFile(preCommitPath, 'utf-8');
     if (content.includes('ultra-dex') || content.includes('Ultra-Dex')) {
       await fs.unlink(preCommitPath);
-      console.log(chalk.green('✅ Ultra-Dex pre-commit hook removed.\n'));
+      printSuccess(chalk.green('✅ Ultra-Dex pre-commit hook removed.\n'));
     } else {
-      console.log(chalk.yellow('⚠️  Pre-commit hook exists but is not from Ultra-Dex.\n'));
+      printWarning(chalk.yellow('⚠️  Pre-commit hook exists but is not from Ultra-Dex.\n'));
     }
   } catch {
-    console.log(chalk.gray('No Ultra-Dex hooks found.\n'));
+    printInfo(chalk.gray('No Ultra-Dex hooks found.\n'));
   }
 }
 
 async function checkHookStatus() {
   const hooksDir = await getGitHooksDir();
+  if (!hooksDir) return;
+
   const preCommitPath = path.join(hooksDir, 'pre-commit');
 
   try {
     const content = await fs.readFile(preCommitPath, 'utf-8');
     if (content.includes('ultra-dex') || content.includes('Ultra-Dex')) {
-      console.log(chalk.green('✅ Ultra-Dex pre-commit hook is installed.\n'));
+      printSuccess(chalk.green('✅ Ultra-Dex pre-commit hook is installed.\n'));
       
       // Extract min score if present
       const scoreMatch = content.match(/MIN_ALIGNMENT_SCORE=(\d+)/);
       if (scoreMatch) {
-        console.log(chalk.gray(`  Minimum alignment score: ${scoreMatch[1]}%\n`));
+        printInfo(chalk.gray(`  Minimum alignment score: ${scoreMatch[1]}%\n`));
       }
     } else {
-      console.log(chalk.yellow('⚠️  Pre-commit hook exists but is not from Ultra-Dex.\n'));
+      printWarning(chalk.yellow('⚠️  Pre-commit hook exists but is not from Ultra-Dex.\n'));
     }
   } catch {
-    console.log(chalk.gray('❌ No pre-commit hook installed.\n'));
-    console.log(chalk.cyan('  Install with: npx ultra-dex hooks install\n'));
+    printInfo(chalk.gray('❌ No pre-commit hook installed.\n'));
+    printInfo(chalk.cyan('  Install with: npx ultra-dex hooks install\n'));
   }
 }
 
 function printHookInfo(minScore) {
-  console.log(chalk.bold('What this does:\n'));
-  console.log(chalk.gray(`  • Checks alignment score (minimum: ${minScore}%)`));
-  console.log(chalk.gray('  • Runs "ultra-dex validate" before each commit'));
-  console.log(chalk.gray('  • Blocks commits if validation fails'));
-  console.log(chalk.gray('  • Warns about missing documentation\n'));
+  printInfo(chalk.bold('What this does:\n'));
+  printInfo(chalk.gray(`  • Checks alignment score (minimum: ${minScore}%)`));
+  printInfo(chalk.gray('  • Runs "ultra-dex validate" before each commit'));
+  printInfo(chalk.gray('  • Blocks commits if validation fails'));
+  printInfo(chalk.gray('  • Warns about missing documentation\n'));
 
-  console.log(chalk.bold('To bypass (not recommended):\n'));
-  console.log(chalk.cyan('  git commit --no-verify\n'));
+  printInfo(chalk.bold('To bypass (not recommended):\n'));
+  printInfo(chalk.cyan('  git commit --no-verify\n'));
 
-  console.log(chalk.bold('To check status:\n'));
-  console.log(chalk.cyan('  npx ultra-dex hooks status\n'));
+  printInfo(chalk.bold('To check status:\n'));
+  printInfo(chalk.cyan('  npx ultra-dex hooks status\n'));
 
-  console.log(chalk.bold('To remove:\n'));
-  console.log(chalk.cyan('  npx ultra-dex hooks remove\n'));
+  printInfo(chalk.bold('To remove:\n'));
+  printInfo(chalk.cyan('  npx ultra-dex hooks remove\n'));
 }
 
 function generatePreCommitScript(minScore = 70) {

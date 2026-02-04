@@ -115,6 +115,8 @@ class UltraDexVectorStore {
         const { MemoryVectorStore } = await import('langchain/vectorstores/memory');
         this.store = new MemoryVectorStore(embeddings);
       } catch (err) {
+        // Fallback for non-langchain environments if needed, but erroring is safer
+        // Actually, let's just warn and use a dummy store if possible or rethrow
         throw new Error('LangChain is required for semantic search. Run `npm install langchain @langchain/openai @langchain/core` to enable.');
       }
     }
@@ -146,6 +148,7 @@ class UltraDexVectorStore {
     
     // Extract vectors from memory store (internal access)
     // Note: MemoryVectorStore stores in `memoryVectors` array
+    // This is internal API usage, so we wrap in try-catch or check existence
     const vectors = this.store.memoryVectors || [];
     
     await fs.writeFile(filepath, JSON.stringify({
@@ -376,6 +379,10 @@ export function registerSearchCommand(program) {
         printInfo(chalk.cyan('\n🔍 Ultra-Dex Search (LangChain Powered)\n'));
 
         if (options.symbol) {
+            if (!query) {
+                printError(chalk.red('Query required for symbol search.'));
+                return;
+            }
             const spinner = ora('Scanning code graph...').start();
             try {
                 await projectGraph.scan();
@@ -399,13 +406,19 @@ export function registerSearchCommand(program) {
         }
 
         if (options.impact) {
+            const fileToCheck = options.impact;
+            if (!fileToCheck) {
+                printError(chalk.red('File path required for impact analysis.'));
+                return;
+            }
+            
             const spinner = ora('Analyzing impact in code graph...').start();
             try {
                 await projectGraph.scan();
-                const impact = projectGraph.getImpact(options.impact);
+                const impact = projectGraph.getImpact(fileToCheck);
                 spinner.succeed(`Impact analysis complete.`);
 
-                printInfo(chalk.bold(`\nFiles that depend on ${chalk.cyan(options.impact)}:\n`));
+                printInfo(chalk.bold(`\nFiles that depend on ${chalk.cyan(fileToCheck)}:\n`));
                 if (impact.length === 0) {
                     printSuccess('  ✓ No direct or indirect dependents found. Change is likely safe.');
                 } else {

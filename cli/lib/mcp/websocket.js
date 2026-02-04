@@ -1,6 +1,8 @@
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import chalk from 'chalk';
 import http from 'http';
+import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../ui/logger.js';
 
 class UltraWebSocketServer {
   constructor() {
@@ -10,6 +12,7 @@ class UltraWebSocketServer {
     this.interval = null;
     this.broadcastErrorCount = 0;
     this.maxBroadcastErrors = 10;
+    this.started = false;
 
     // Memory leak prevention
     this.heartbeatInterval = null;
@@ -23,119 +26,138 @@ class UltraWebSocketServer {
   }
 
   async start(options = {}) {
+    if (this.started) return;
+
     const port = options.port || 3002;
 
-    // Create HTTP server to upgrade to WebSocket
-    this.server = http.createServer();
+    try {
+      // Create HTTP server to upgrade to WebSocket
+      this.server = http.createServer();
 
-    // Create WebSocket server
-    this.wss = new WebSocketServer({
-      server: this.server,
-      path: '/ws'
-    });
-
-    this.wss.on('connection', (ws) => {
-      this.clients.add(ws);
-
-      // Track connection metadata for heartbeat
-      this.clientMetadata.set(ws, {
-        connectedAt: Date.now(),
-        lastPing: Date.now(),
-        messageCount: 0
+      // Create WebSocket server
+      this.wss = new WebSocketServer({
+        server: this.server,
+        path: '/ws'
       });
 
-      console.log(`[WebSocket] Client connected. Total: \${this.clients.size}`);
+      this.wss.on('connection', (ws) => {
+        this.clients.add(ws);
 
-      // Send welcome message with heartbeat config
-      ws.send(JSON.stringify({
-        type: 'connected',
-        timestamp: new Date().toISOString(),
-        message: 'Connected to Ultra-dex WebSocket Server',
-        config: {
-          heartbeatInterval: this.heartbeatIntervalMs,
-          timeout: this.connectionTimeout
-        }
-      }));
+        // Track connection metadata for heartbeat
+        this.clientMetadata.set(ws, {
+          connectedAt: Date.now(),
+          lastPing: Date.now(),
+          messageCount: 0
+        });
 
-      ws.on('message', (message) => {
-        try {
-          const data = JSON.parse(message.toString());
+        logger.debug(`[WebSocket] Client connected. Total: ${this.clients.size}`);
 
-          // Update last activity
-          const metadata = this.clientMetadata.get(ws);
-          if (metadata) {
-            metadata.messageCount++;
+        // Send welcome message with heartbeat config
+        ws.send(JSON.stringify({
+          type: 'connected',
+          timestamp: new Date().toISOString(),
+          message: 'Connected to Ultra-dex WebSocket Server',
+          config: {
+            heartbeatInterval: this.heartbeatIntervalMs,
+            timeout: this.connectionTimeout
           }
+        }));
 
-          // Handle different message types
-          switch (data.type) {
-            case 'ping':
-              // Update last ping time and respond with pong
-              if (metadata) {
-                metadata.lastPing = Date.now();
-              }
-              ws.send(JSON.stringify({
-                type: 'pong',
-                timestamp: Date.now(),
-                serverTime: new Date().toISOString()
-              }));
-              break;
+        ws.on('message', (message) => {
+          try {
+            const data = JSON.parse(message.toString());
 
-            case 'request_state':
-              this.sendStateUpdate(ws);
-              break;
+            // Update last activity
+            const metadata = this.clientMetadata.get(ws);
+            if (metadata) {
+              metadata.messageCount++;
+            }
 
-            case 'request_graph':
-              this.sendGraphUpdate(ws);
-              break;
+            // Handle different message types
+            switch (data.type) {
+              case 'ping':
+                // Update last ping time and respond with pong
+                if (metadata) {
+                  metadata.lastPing = Date.now();
+                }
+                ws.send(JSON.stringify({
+                  type: 'pong',
+                  timestamp: Date.now(),
+                  serverTime: new Date().toISOString()
+                }));
+                break;
 
-            default:
-              console.log(`[WebSocket] Unknown message type: \${data.type}`);
+              case 'request_state':
+                this.sendStateUpdate(ws);
+                break;
+
+              case 'request_graph':
+                this.sendGraphUpdate(ws);
+                break;
+
+              default:
+                logger.debug(`[WebSocket] Unknown message type: ${data.type}`);
+            }
+          } catch (error) {
+            logger.error('[WebSocket] Error parsing message', error);
           }
-        } catch (error) {
-          console.error('[WebSocket] Error parsing message:', error.message);
-        }
-      });
+        });
 
-      ws.on('close', (code, _reason) => {
-        this.clients.delete(ws);
-        this.clientMetadata.delete(ws);
-        console.log(`[WebSocket] Client disconnected (code: \${code}). Total: \${this.clients.size}`);
-      });
-
-      ws.on('error', (error) => {
-        console.error('[WebSocket] Connection error:', error.message);
-        this.clients.delete(ws);
-        this.clientMetadata.delete(ws);
-
-        // Ensure socket is closed
-        try {
-          ws.terminate();
-        } catch (e) {
-          // Socket may already be closed
-        }
-      });
-
-      // Set a timeout for initial connection
-      ws._connectionTimeout = setTimeout(() => {
-        if (ws.readyState !== 1) { // 1 = OPEN
-          console.log('[WebSocket] Connection timeout, terminating');
+        ws.on('close', (code, _reason) => {
           this.clients.delete(ws);
           this.clientMetadata.delete(ws);
-          ws.terminate();
-        }
-      }, 10000); // 10 second initial connection timeout
-    });
+          logger.debug(`[WebSocket] Client disconnected (code: ${code}). Total: ${this.clients.size}`);
+        });
 
-    this.server.listen(port, () => {
-      console.log(`[WebSocket] Ultra-Dex WebSocket server running on ws://localhost:${port}/ws`);
-    });
+        ws.on('error', (error) => {
+          logger.error('[WebSocket] Connection error', error);
+          this.clients.delete(ws);
+          this.clientMetadata.delete(ws);
 
-    // Start broadcasting updates
-    this.startBroadcasting();
+          // Ensure socket is closed
+          try {
+            ws.terminate();
+          } catch (e) {
+            // Socket may already be closed
+          }
+        });
 
-    // Start connection cleanup (memory leak prevention)
-    this.startCleanupInterval();
+        // Set a timeout for initial connection
+        ws._connectionTimeout = setTimeout(() => {
+          if (ws.readyState !== 1) { // 1 = OPEN
+            logger.debug('[WebSocket] Connection timeout, terminating');
+            this.clients.delete(ws);
+            this.clientMetadata.delete(ws);
+            ws.terminate();
+          }
+        }, 10000); // 10 second initial connection timeout
+      });
+
+      return new Promise((resolve, reject) => {
+        this.server.on('error', (err) => {
+          if (err.code === 'EADDRINUSE') {
+            reject(new AppError(`WebSocket port ${port} already in use`, { code: 'PORT_IN_USE' }));
+          } else {
+            reject(new AppError(`WebSocket server error: ${err.message}`, { cause: err }));
+          }
+        });
+
+        this.server.listen(port, () => {
+          this.started = true;
+          logger.info(`[WebSocket] Ultra-Dex WebSocket server running on ws://localhost:${port}/ws`);
+          
+          // Start broadcasting updates
+          this.startBroadcasting();
+
+          // Start connection cleanup (memory leak prevention)
+          this.startCleanupInterval();
+          resolve();
+        });
+      });
+    } catch (err) {
+      logger.error('Failed to start WebSocket server', err);
+      throw err;
+    }
   }
 
   startCleanupInterval() {
@@ -170,7 +192,7 @@ class UltraWebSocketServer {
       }
 
       if (removedCount > 0) {
-        console.log(`[WebSocket] Cleanup: Removed ${removedCount} dead connections. Total: ${this.clients.size}`);
+        logger.debug(`[WebSocket] Cleanup: Removed ${removedCount} dead connections. Total: ${this.clients.size}`);
       }
     }, this.cleanupIntervalMs);
   }
@@ -184,11 +206,11 @@ class UltraWebSocketServer {
         this.broadcastErrorCount = 0; // Reset on success
       } catch (error) {
         this.broadcastErrorCount++;
-        console.error(`[WebSocket] Broadcast error (${this.broadcastErrorCount}/${this.maxBroadcastErrors}):`, error.message);
+        logger.error(`[WebSocket] Broadcast error (${this.broadcastErrorCount}/${this.maxBroadcastErrors})`, error);
 
         // Stop broadcasting after too many consecutive errors
         if (this.broadcastErrorCount >= this.maxBroadcastErrors) {
-          console.error('[WebSocket] Too many broadcast errors, stopping automatic updates');
+          logger.error('[WebSocket] Too many broadcast errors, stopping automatic updates');
           clearInterval(this.interval);
           this.interval = null;
         }
@@ -246,13 +268,15 @@ class UltraWebSocketServer {
 
     const message = JSON.stringify(data);
     for (const client of this.clients) {
-      if (client.readyState === 1) { // 1 = OPEN
+      if (client.readyState === WebSocket.OPEN) {
         client.send(message);
       }
     }
   }
 
   async stop() {
+    if (!this.started) return;
+
     // Stop all intervals
     if (this.interval) {
       clearInterval(this.interval);
@@ -284,14 +308,24 @@ class UltraWebSocketServer {
     }
 
     if (this.server) {
-      this.server.close();
-      this.server = null;
+      return new Promise((resolve) => {
+        this.server.close(() => {
+          this.server = null;
+          this.wss = null;
+          this.started = false;
+          this.clients.clear();
+          this.clientMetadata = new WeakMap();
+          this.broadcastErrorCount = 0;
+          logger.info('[WebSocket] Server stopped');
+          resolve();
+        });
+      });
+    } else {
+      this.started = false;
+      this.clients.clear();
+      this.clientMetadata = new WeakMap();
+      this.broadcastErrorCount = 0;
     }
-
-    this.clients.clear();
-    this.clientMetadata = new WeakMap(); // Clear metadata
-    this.broadcastErrorCount = 0;
-    console.log('[WebSocket] Server stopped');
   }
 }
 

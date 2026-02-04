@@ -8,6 +8,7 @@ import Table from 'cli-table3';
 import { ultraMemory } from '../mcp/memory.js';
 import { createSessionPersistence } from '../utils/sessionPersistence.js';
 import { getProjectRoot } from '../utils/config.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 export function registerMemoryCommand(program) {
   const memory = program
@@ -27,20 +28,20 @@ export function registerMemoryCommand(program) {
         return;
       }
 
-      console.log(chalk.cyan.bold('\n🧠 Ultra-Dex Persistent Memory\n'));
+      printInfo(chalk.cyan.bold('\n🧠 Ultra-Dex Persistent Memory\n'));
       
       if (items.length === 0) {
-        console.log(chalk.gray('  Memory is empty.'));
+        printInfo(chalk.gray('  Memory is empty.'));
         return;
       }
 
       items.forEach((item, i) => {
-        console.log(chalk.white(`${i + 1}. [${new Date(item.timestamp).toLocaleDateString()}] (${item.source})`));
-        console.log(chalk.gray(`   ${item.text}`));
+        printInfo(chalk.white(`${i + 1}. [${new Date(item.timestamp).toLocaleDateString()}] (${item.source})`));
+        printInfo(chalk.gray(`   ${item.text}`));
         if (item.tags && item.tags.length > 0) {
-          console.log(chalk.blue(`   Tags: ${item.tags.join(', ')}`));
+          printInfo(chalk.blue(`   Tags: ${item.tags.join(', ')}`));
         }
-        console.log();
+        printInfo('');
       });
     });
 
@@ -49,27 +50,35 @@ export function registerMemoryCommand(program) {
     .description('Add a fact to memory')
     .option('-t, --tags <tags>', 'Comma-separated tags')
     .action(async (text, options) => {
+      if (!text || text.trim().length === 0) {
+          printError(chalk.red('Text content is required.'));
+          return;
+      }
       const tags = options.tags ? options.tags.split(',').map(t => t.trim()) : [];
       await ultraMemory.remember(text, tags, 'manual');
-      console.log(chalk.green('✅ Fact remembered.'));
+      printSuccess(chalk.green('✅ Fact remembered.'));
     });
 
   memory
     .command('search <query>')
     .description('Search memory')
     .action(async (query) => {
+      if (!query || query.trim().length === 0) {
+          printError(chalk.red('Search query is required.'));
+          return;
+      }
       const results = await ultraMemory.search(query);
-      console.log(chalk.cyan.bold(`\n🔍 Search Results for "${query}":\n`));
+      printInfo(chalk.cyan.bold(`\n🔍 Search Results for "${query}":\n`));
       
       if (results.length === 0) {
-        console.log(chalk.gray('  No matches found.'));
+        printInfo(chalk.gray('  No matches found.'));
         return;
       }
 
       results.forEach((item, i) => {
-        console.log(chalk.white(`${i + 1}. [${new Date(item.timestamp).toLocaleDateString()}]`));
-        console.log(chalk.gray(`   ${item.text}`));
-        console.log();
+        printInfo(chalk.white(`${i + 1}. [${new Date(item.timestamp).toLocaleDateString()}]`));
+        printInfo(chalk.gray(`   ${item.text}`));
+        printInfo('');
       });
     });
 
@@ -78,8 +87,15 @@ export function registerMemoryCommand(program) {
     .description('Clear all memory')
     .option('--before <date>', 'Clear before date (ISO)')
     .action(async (options) => {
+      if (options.before) {
+          const date = new Date(options.before);
+          if (isNaN(date.getTime())) {
+              printError(chalk.red('Invalid date format. Use ISO format (e.g. 2023-01-01).'));
+              return;
+          }
+      }
       await ultraMemory.clear(options.before);
-      console.log(chalk.green('✅ Memory cleared.'));
+      printSuccess(chalk.green('✅ Memory cleared.'));
     });
 
   // NEW: Session persistence commands
@@ -97,26 +113,26 @@ export function registerMemoryCommand(program) {
         );
         
         if (sessions.length === 0) {
-          console.log(chalk.yellow('\n📁 No sessions found.\n'));
-          console.log(chalk.gray('Start a swarm to create a session.'));
+          printWarning(chalk.yellow('\n📁 No sessions found.\n'));
+          printInfo(chalk.gray('Start a swarm to create a session.'));
           return;
         }
         
-        console.log(chalk.cyan.bold('\n📁 Persistent Sessions:\n'));
+        printInfo(chalk.cyan.bold('\n📁 Persistent Sessions:\n'));
         
         for (const session of sessions) {
           const stats = await persistence.getDecisionStats(session.id);
           
-          console.log(chalk.white(`${session.name}`));
-          console.log(chalk.gray(`   ID: ${session.id}`));
-          console.log(chalk.gray(`   Created: ${new Date(session.created_at).toLocaleString()}`));
-          console.log(chalk.gray(`   Decisions: ${stats.total_decisions} by ${stats.unique_agents} agents`));
-          console.log();
+          printInfo(chalk.white(`${session.name}`));
+          printInfo(chalk.gray(`   ID: ${session.id}`));
+          printInfo(chalk.gray(`   Created: ${new Date(session.created_at).toLocaleString()}`));
+          printInfo(chalk.gray(`   Decisions: ${stats.total_decisions} by ${stats.unique_agents} agents`));
+          printInfo('');
         }
         
         await persistence.close();
       } catch (error) {
-        console.error(chalk.red('Error:'), error.message);
+        printError(chalk.red('Error:'), error.message);
       }
     });
 
@@ -131,30 +147,30 @@ export function registerMemoryCommand(program) {
         await persistence.init();
         
         if (!sessionId) {
-          console.log(chalk.yellow('No session ID provided.'));
-          console.log(chalk.gray('Use `memory sessions` to list available sessions.'));
+          printWarning(chalk.yellow('No session ID provided.'));
+          printInfo(chalk.gray('Use `memory sessions` to list available sessions.'));
           return;
         }
         
-        console.log(chalk.cyan(`\n📋 Decisions for session ${sessionId}\n`));
+        printInfo(chalk.cyan(`\n📋 Decisions for session ${sessionId}\n`));
         
         const results = await persistence.getRecentDecisions(sessionId, parseInt(options.limit));
         
         if (results.length === 0) {
-          console.log(chalk.yellow('No decisions found for this session.'));
+          printWarning(chalk.yellow('No decisions found for this session.'));
           return;
         }
         
         results.forEach((r, i) => {
-          console.log(chalk.white(`${i + 1}. [${new Date(r.created_at).toLocaleTimeString()}] ${r.agent}`));
-          console.log(chalk.gray(`   Task: ${r.task}`));
-          console.log(chalk.gray(`   Decision: ${r.decision.substring(0, 80)}${r.decision.length > 80 ? '...' : ''}`));
-          console.log();
+          printInfo(chalk.white(`${i + 1}. [${new Date(r.created_at).toLocaleTimeString()}] ${r.agent}`));
+          printInfo(chalk.gray(`   Task: ${r.task}`));
+          printInfo(chalk.gray(`   Decision: ${r.decision.substring(0, 80)}${r.decision.length > 80 ? '...' : ''}`));
+          printInfo('');
         });
         
         await persistence.close();
       } catch (error) {
-        console.error(chalk.red('Error:'), error.message);
+        printError(chalk.red('Error:'), error.message);
       }
     });
 
@@ -168,17 +184,17 @@ export function registerMemoryCommand(program) {
         const persistence = createSessionPersistence(projectRoot);
         await persistence.init();
         
-        console.log(chalk.cyan(`\n🔍 Querying: "${searchQuery}"\n`));
+        printInfo(chalk.cyan(`\n🔍 Querying: "${searchQuery}"\n`));
         
         const results = await persistence.searchDecisions(searchQuery, parseInt(options.limit));
         
         if (results.length === 0) {
-          console.log(chalk.yellow('No matching decisions found.'));
-          console.log(chalk.gray('Try different keywords or check if sessions exist.'));
+          printWarning(chalk.yellow('No matching decisions found.'));
+          printInfo(chalk.gray('Try different keywords or check if sessions exist.'));
           return;
         }
         
-        console.log(chalk.green(`Found ${results.length} results:\n`));
+        printSuccess(chalk.green(`Found ${results.length} results:\n`));
         
         const table = new Table({
           head: ['Date', 'Agent', 'Task', 'Decision'],
@@ -199,7 +215,7 @@ export function registerMemoryCommand(program) {
         
         await persistence.close();
       } catch (error) {
-        console.error(chalk.red('Error:'), error.message);
+        printError(chalk.red('Error:'), error.message);
       }
     });
 
@@ -221,25 +237,25 @@ export function registerMemoryCommand(program) {
             FROM decisions
           `);
         
-        console.log(chalk.cyan.bold('\n📊 Memory Statistics:\n'));
+        printInfo(chalk.cyan.bold('\n📊 Memory Statistics:\n'));
         
         if (sessionId) {
-          console.log(`Session: ${chalk.white(sessionId)}`);
-          console.log(`Total decisions: ${chalk.white(stats.total_decisions)}`);
-          console.log(`Unique agents: ${chalk.white(stats.unique_agents)}`);
+          printInfo(`Session: ${chalk.white(sessionId)}`);
+          printInfo(`Total decisions: ${chalk.white(stats.total_decisions)}`);
+          printInfo(`Unique agents: ${chalk.white(stats.unique_agents)}`);
           if (stats.first_decision) {
-            console.log(`First decision: ${chalk.white(new Date(stats.first_decision).toLocaleString())}`);
-            console.log(`Last decision: ${chalk.white(new Date(stats.last_decision).toLocaleString())}`);
+            printInfo(`First decision: ${chalk.white(new Date(stats.first_decision).toLocaleString())}`);
+            printInfo(`Last decision: ${chalk.white(new Date(stats.last_decision).toLocaleString())}`);
           }
         } else {
-          console.log(`Total decisions (all sessions): ${chalk.white(stats.total_decisions)}`);
-          console.log(`Total sessions: ${chalk.white(stats.total_sessions)}`);
+          printInfo(`Total decisions (all sessions): ${chalk.white(stats.total_decisions)}`);
+          printInfo(`Total sessions: ${chalk.white(stats.total_sessions)}`);
         }
         
-        console.log();
+        printInfo('');
         await persistence.close();
       } catch (error) {
-        console.error(chalk.red('Error:'), error.message);
+        printError(chalk.red('Error:'), error.message);
       }
     });
 }
