@@ -5,6 +5,8 @@ import path from 'path';
 import { registerCheckCommand } from './check-enhanced-v2.js';
 import { verifyCommand, registerVerifyCommand } from './verify.js';
 import { registerAuditCommand } from './audit.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 /**
  * Unified Quality Assurance Command
@@ -23,21 +25,21 @@ export function registerQualityCommand(program) {
     .option('--fix', 'Auto-fix issues where possible')
     .action(async (options) => {
       try {
-        console.log(chalk.cyan.bold('\n🎯 Ultra-Dex Unified Quality Assurance\n'));
+        printInfo(chalk.cyan.bold('\n🎯 Ultra-Dex Unified Quality Assurance\n'));
 
         // Step 1: Enhanced Check
-        console.log(chalk.blue.bold('🔍 Step 1: Enhanced Plan Completeness Check'));
+        printInfo(chalk.blue.bold('🔍 Step 1: Enhanced Plan Completeness Check'));
         await runCheck(options);
 
         // Step 2: 21-Step Verification
         if (options.verify) {
-          console.log(chalk.blue.bold('\n⚖️  Step 2: 21-Step Verification Framework'));
+          printInfo(chalk.blue.bold('\n⚖️  Step 2: 21-Step Verification Framework'));
           await runVerification(options);
         }
 
         // Step 3: Comprehensive Audit
         if (options.audit) {
-          console.log(chalk.blue.bold('\n📊 Step 3: Comprehensive Project Audit'));
+          printInfo(chalk.blue.bold('\n📊 Step 3: Comprehensive Project Audit'));
           await runAudit(options);
         }
 
@@ -45,21 +47,21 @@ export function registerQualityCommand(program) {
         await generateFinalReport(options);
 
         // Summary
-        console.log(chalk.cyan.bold('\n📋 Quality Assessment Summary'));
-        console.log(chalk.white('✓ Enhanced Check: Completed'));
-        if (options.verify) console.log(chalk.white('✓ 21-Step Verification: Completed'));
-        if (options.audit) console.log(chalk.white('✓ Comprehensive Audit: Completed'));
-        
-        console.log(chalk.green('\n✅ Quality assessment complete!'));
+        printInfo(chalk.cyan.bold('\n📋 Quality Assessment Summary'));
+        printInfo(chalk.white('✓ Enhanced Check: Completed'));
+        if (options.verify) printInfo(chalk.white('✓ 21-Step Verification: Completed'));
+        if (options.audit) printInfo(chalk.white('✓ Comprehensive Audit: Completed'));
+
+        printSuccess(chalk.green('\n✅ Quality assessment complete!'));
 
         // Recommendations
         if (options.ai) {
-          console.log(chalk.cyan.bold('\n🤖 AI-Powered Recommendations'));
-          console.log(chalk.white('Ultra-Dex AI agents can provide specific guidance for improvement.'));
+          printInfo(chalk.cyan.bold('\n🤖 AI-Powered Recommendations'));
+          printInfo(chalk.white('Ultra-Dex AI agents can provide specific guidance for improvement.'));
         }
 
       } catch (error) {
-        console.error(chalk.red('Error:'), error.message);
+        printError(chalk.red('Error:'), error.message);
         process.exit(1);
       }
     });
@@ -82,13 +84,13 @@ async function runCheck(options) {
     spinner.succeed(`Enhanced Check: ${checkResults.percentage}% complete`);
     
     // Display summary
-    console.log(chalk.green(`  ✅ ${checkResults.complete}/${checkResults.totalSections} sections complete`));
-    console.log(chalk.yellow(`  📊 Overall completeness: ${checkResults.percentage}%`));
-    
+    printInfo(chalk.green(`  ✅ ${checkResults.complete}/${checkResults.totalSections} sections complete`));
+    printInfo(chalk.yellow(`  📊 Overall completeness: ${checkResults.percentage}%`));
+
     if (checkResults.criticalMissing.length > 0) {
-      console.log(chalk.red(`  ⚠️ Critical sections missing: ${checkResults.criticalMissing.join(', ')}`));
+      printError(chalk.red(`  ⚠️ Critical sections missing: ${checkResults.criticalMissing.join(', ')}`));
     } else {
-      console.log(chalk.green(`  ✅ All critical sections present`));
+      printSuccess(chalk.green(`  ✅ All critical sections present`));
     }
 
   } catch (error) {
@@ -113,13 +115,13 @@ async function runVerification(options) {
     spinner.succeed(`21-Step Verification: ${verificationResults.score}% complete`);
     
     // Display summary
-    console.log(chalk.green(`  ✅ ${verificationResults.passed}/21 steps passed`));
-    console.log(chalk.red(`  ❌ ${verificationResults.failed} critical failures`));
-    console.log(chalk.yellow(`  ⚪ ${verificationResults.skipped} steps skipped`));
-    console.log(chalk.cyan(`  📊 Score: ${verificationResults.score}%`));
-    
+    printInfo(chalk.green(`  ✅ ${verificationResults.passed}/21 steps passed`));
+    printError(chalk.red(`  ❌ ${verificationResults.failed} critical failures`));
+    printWarning(chalk.yellow(`  ⚪ ${verificationResults.skipped} steps skipped`));
+    printInfo(chalk.cyan(`  📊 Score: ${verificationResults.score}%`));
+
     if (verificationResults.criticalFailed.length > 0) {
-      console.log(chalk.red(`  🔴 Critical failures: ${verificationResults.criticalFailed.join(', ')}`));
+      printError(chalk.red(`  🔴 Critical failures: ${verificationResults.criticalFailed.join(', ')}`));
     }
 
   } catch (error) {
@@ -144,11 +146,11 @@ async function runAudit(options) {
     spinner.succeed(`Comprehensive Audit: ${auditResults.overall}% complete`);
     
     // Display summary
-    console.log(chalk.green(`  🛡️  Security: ${auditResults.security.score}% (${auditResults.security.issues} issues)`));
-    console.log(chalk.green(`  ⚡ Performance: ${auditResults.performance.score}% (${auditResults.performance.issues} issues)`));
-    console.log(chalk.green(`  🧩 Maintainability: ${auditResults.maintainability.score}% (${auditResults.maintainability.issues} issues)`));
-    console.log(chalk.green(`  📈 Scalability: ${auditResults.scalability.score}% (${auditResults.scalability.issues} issues)`));
-    console.log(chalk.cyan(`  📊 Overall: ${auditResults.overall}%`));
+    printInfo(chalk.green(`  🛡️  Security: ${auditResults.security.score}% (${auditResults.security.issues} issues)`));
+    printInfo(chalk.green(`  ⚡ Performance: ${auditResults.performance.score}% (${auditResults.performance.issues} issues)`));
+    printInfo(chalk.green(`  🧩 Maintainability: ${auditResults.maintainability.score}% (${auditResults.maintainability.issues} issues)`));
+    printInfo(chalk.green(`  📈 Scalability: ${auditResults.scalability.score}% (${auditResults.scalability.issues} issues)`));
+    printInfo(chalk.cyan(`  📊 Overall: ${auditResults.overall}%`));
 
   } catch (error) {
     spinner.fail('Audit failed');
@@ -213,7 +215,7 @@ Ultra-Dex AI agents recommend:
 `;
 
   await fs.writeFile(reportPath, content);
-  console.log(chalk.blue(`Report generated: ${reportPath}`));
+  printInfo(chalk.blue(`Report generated: ${reportPath}`));
 }
 
 // Export the quality command

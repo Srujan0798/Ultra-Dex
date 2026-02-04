@@ -12,6 +12,8 @@ import { createProvider, getDefaultProvider, checkConfiguredProviders } from '..
 import { SYSTEM_PROMPT, generateReviewPrompt } from '../templates/prompts/review-code.js';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 // File patterns to scan (used for future pattern-based review)
 // eslint-disable-next-line no-unused-vars
@@ -107,11 +109,11 @@ export function registerReviewCommand(program) {
     .option('--quick', 'Quick review without AI (checks file structure only)')
     .option('--json', 'Output as JSON')
     .action(async (options) => {
-      console.log(chalk.cyan('\n🔍 Ultra-Dex Code Review\n'));
+      printInfo(chalk.cyan('\n🔍 Ultra-Dex Code Review\n'));
 
       const dirValidation = validateSafePath(options.dir, 'Review directory');
       if (dirValidation !== true) {
-        console.log(chalk.red(dirValidation));
+        printError(chalk.red(dirValidation));
         process.exit(1);
       }
 
@@ -122,10 +124,10 @@ export function registerReviewCommand(program) {
       const plan = await readFileSafe(planPath);
 
       if (!plan) {
-        console.log(chalk.yellow('⚠️  No IMPLEMENTATION-PLAN.md found.\n'));
-        console.log(chalk.white('Run one of these first:'));
-        console.log(chalk.gray('  npx ultra-dex init'));
-        console.log(chalk.gray('  npx ultra-dex generate\n'));
+        printWarning(chalk.yellow('⚠️  No IMPLEMENTATION-PLAN.md found.\n'));
+        printInfo(chalk.white('Run one of these first:'));
+        printInfo(chalk.gray('  npx ultra-dex init'));
+        printInfo(chalk.gray('  npx ultra-dex generate\n'));
         return;
       }
 
@@ -155,8 +157,8 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
 
       if (options.quick) {
         // Quick review - just check structure
-        console.log(chalk.white('\n📁 Project Structure:\n'));
-        console.log(chalk.gray(structure));
+        printInfo(chalk.white('\n📁 Project Structure:\n'));
+        printInfo(chalk.gray(structure));
 
         // Quick checks
         const checks = [
@@ -168,14 +170,14 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
           { name: 'Tests', path: 'tests' },
         ];
 
-        console.log(chalk.white('\n📋 Quick Checks:\n'));
+        printInfo(chalk.white('\n📋 Quick Checks:\n'));
         for (const check of checks) {
           const exists = await fileExists(path.join(reviewDir, check.path));
           const icon = exists ? chalk.green('✅') : chalk.red('❌');
-          console.log(`  ${icon} ${check.name}`);
+          printInfo(`  ${icon} ${check.name}`);
         }
 
-        console.log(chalk.cyan('\n💡 For full AI-powered review, run without --quick\n'));
+        printInfo(chalk.cyan('\n💡 For full AI-powered review, run without --quick\n'));
         return;
       }
 
