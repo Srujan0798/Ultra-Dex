@@ -6,6 +6,7 @@ import { generateMarkdown } from '../commands/plan.js';
 import { projectGraph } from './graph.js';
 import { ultraMemory } from './memory.js';
 import { glob } from 'glob';
+import { logger } from '../ui/logger.js';
 
 export function registerTools(server) {
   // Tool: Remember Fact
@@ -297,8 +298,8 @@ export function registerTools(server) {
         await fs.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.writeFile(fullPath, content, 'utf8');
 
-        // Log to stderr for server visibility
-        console.error(`[MCP] Write: ${filePath} - ${description || 'No description'}`);
+        // Log for server visibility
+        logger.info(`[MCP] Write: ${filePath} - ${description || 'No description'}`);
 
         return {
           content: [{ type: "text", text: `Successfully wrote ${filePath}` }]
@@ -457,7 +458,7 @@ export function registerTools(server) {
     },
     async ({ feature, mode, provider: providerId, key }) => {
       try {
-        console.error(`[MCP] Starting Swarm: ${feature} (${mode})`);
+        logger.info(`[MCP] Starting Swarm: ${feature} (${mode})`);
 
         if (mode === 'plan_only') {
           const { runAgentLoop } = await import('../commands/run.js');

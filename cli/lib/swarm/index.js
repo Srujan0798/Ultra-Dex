@@ -6,6 +6,8 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
+import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../ui/logger.js';
 import { 
   AgentMessage, 
   HandoffPayload, 
@@ -46,6 +48,7 @@ export class SwarmCoordinator {
     this.history = [];
     this.traces = new Map();
     this.currentTrace = null;
+    this.isRunning = false;
     this.options = {
       verbose: options.verbose || false,
       saveArtifacts: options.saveArtifacts !== false,
@@ -78,6 +81,7 @@ export class SwarmCoordinator {
    * Add or update an agent in the swarm.
    */
   addAgent(name, config) {
+    if (!name) throw new ValidationError('Agent name is required');
     const normalized = name.toLowerCase().replace('@', '');
     const existing = this.agents.get(normalized) || {};
     
@@ -88,7 +92,7 @@ export class SwarmCoordinator {
     });
 
     if (this.options.verbose) {
-      console.log(chalk.gray(`[Swarm] Registered agent: ${normalized}`));
+      logger.debug(`[Swarm] Registered agent: ${normalized}`);
     }
 
     return this;
@@ -98,6 +102,7 @@ export class SwarmCoordinator {
    * Get an agent by name.
    */
   getAgent(name) {
+    if (!name) return null;
     const normalized = name.toLowerCase().replace('@', '');
     return this.agents.get(normalized) || null;
   }
@@ -116,6 +121,7 @@ export class SwarmCoordinator {
    * Check if an agent is registered.
    */
   hasAgent(name) {
+    if (!name) return false;
     const normalized = name.toLowerCase().replace('@', '');
     return this.agents.has(normalized);
   }
@@ -132,7 +138,25 @@ export class SwarmCoordinator {
    * @param {boolean} options.parallel - Enable parallel execution where possible
    */
   async runPipeline(options) {
+    if (this.isRunning) {
+      throw new AppError('A pipeline is already running in this coordinator', { code: 'SWARM_ALREADY_RUNNING' });
+    }
+
+    if (!options || typeof options !== 'object') {
+      throw new ValidationError('Pipeline options are required');
+    }
+
     const { goal, steps, parallel = false } = options;
+
+    if (!goal || typeof goal !== 'string') {
+      throw new ValidationError('Pipeline goal is required');
+    }
+
+    if (!Array.isArray(steps) || steps.length === 0) {
+      throw new ValidationError('Pipeline steps must be a non-empty array');
+    }
+
+    this.isRunning = true;
     
     // Create execution trace
     const trace = new ExecutionTrace(null, goal);
@@ -147,11 +171,12 @@ export class SwarmCoordinator {
     // Validate pipeline
     const validation = validatePipeline(steps);
     if (!validation.valid) {
-      console.log(chalk.red('\n❌ Pipeline validation failed:'));
+      logger.error('Pipeline validation failed');
       validation.errors.forEach(err => {
-        console.log(chalk.red(`   Step ${err.step} (${err.agent}): ${err.error}`));
+        logger.warn(`   Step ${err.step} (${err.agent}): ${err.error}`);
       });
       trace.status = 'failed';
+      this.isRunning = false;
       return trace;
     }
 
@@ -175,6 +200,8 @@ export class SwarmCoordinator {
       if (this.options.enableRollback) {
         await this._attemptRollback(trace);
       }
+    } finally {
+      this.isRunning = false;
     }
 
     // Save trace
@@ -269,7 +296,7 @@ export class SwarmCoordinator {
       const failures = results.filter(r => !r.success);
       if (failures.length > 0) {
         const failedAgents = failures.map(f => f.agent).join(', ');
-        throw new Error(`Parallel execution failed for: ${failedAgents}`);
+        throw new AppError(`Parallel execution failed for: ${failedAgents}`, { code: 'SWARM_PARALLEL_FAIL' });
       }
 
       // Update previous results
@@ -304,7 +331,7 @@ export class SwarmCoordinator {
     } catch (error) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError' || error.message.includes('timeout')) {
-        throw new Error(`Step execution timed out: ${step.agent} - ${step.task.substring(0, 50)}...`);
+        throw new AppError(`Step execution timed out: ${step.agent} - ${step.task.substring(0, 50)}...`, { code: 'SWARM_STEP_TIMEOUT' });
       }
       throw error;
     }
@@ -316,7 +343,7 @@ export class SwarmCoordinator {
   async _executeStep(step, context, trace) {
     const agent = this.getAgent(step.agent);
     if (!agent) {
-      throw new Error(`Unknown agent: ${step.agent}`);
+      throw new ValidationError(`Unknown agent: ${step.agent}`);
     }
 
     // If agent has a handler, use it
@@ -377,18 +404,18 @@ If making decisions, explain the reasoning briefly.`;
   async _attemptRollback(trace) {
     const checkpoint = trace.getLastCheckpoint();
     if (!checkpoint) {
-      console.log(chalk.yellow('  No checkpoint available for rollback'));
+      logger.warn('No checkpoint available for rollback');
       return;
     }
 
-    console.log(chalk.yellow(`  Rolling back to checkpoint: ${checkpoint.name}`));
+    logger.info(`Rolling back to checkpoint: ${checkpoint.name}`);
     
     try {
       const state = trace.rollbackTo(checkpoint.id);
-      console.log(chalk.green(`  Rollback successful`));
+      logger.success(`Rollback successful`);
       return state;
     } catch (error) {
-      console.log(chalk.red(`  Rollback failed: ${error.message}`));
+      logger.error(`Rollback failed`, error);
     }
   }
 
@@ -398,7 +425,7 @@ If making decisions, explain the reasoning briefly.`;
   rollback(taskId, checkpointId) {
     const trace = this.traces.get(taskId);
     if (!trace) {
-      throw new Error(`No trace found for task: ${taskId}`);
+      throw new AppError(`No trace found for task: ${taskId}`, { code: 'SWARM_TRACE_NOT_FOUND' });
     }
 
     return trace.rollbackTo(checkpointId);
@@ -441,11 +468,11 @@ If making decisions, explain the reasoning briefly.`;
       await fs.writeFile(filename, JSON.stringify(trace.toJSON(), null, 2));
       
       if (this.options.verbose) {
-        console.log(chalk.gray(`  Trace saved to ${filename}`));
+        logger.debug(`Trace saved to ${filename}`);
       }
     } catch (error) {
       if (this.options.verbose) {
-        console.log(chalk.yellow(`  Failed to save trace: ${error.message}`));
+        logger.warn(`Failed to save trace: ${error.message}`);
       }
     }
   }
@@ -454,6 +481,7 @@ If making decisions, explain the reasoning briefly.`;
    * Load trace from disk.
    */
   async loadTrace(taskId) {
+    if (!taskId) throw new ValidationError('taskId is required');
     const filename = `${this.options.artifactDir}/trace-${taskId}.json`;
     
     try {
@@ -463,7 +491,7 @@ If making decisions, explain the reasoning briefly.`;
       this.traces.set(taskId, trace);
       return trace;
     } catch (error) {
-      throw new Error(`Failed to load trace: ${error.message}`);
+      throw new AppError(`Failed to load trace: ${error.message}`, { cause: error });
     }
   }
 
@@ -485,7 +513,7 @@ If making decisions, explain the reasoning briefly.`;
    */
   async plan(feature) {
     if (!feature || typeof feature !== 'string' || feature.trim().length === 0) {
-      throw new Error('Feature parameter is required and must be a non-empty string');
+      throw new ValidationError('Feature parameter is required and must be a non-empty string');
     }
 
     const spinner = ora('🧠 Planning feature implementation...').start();
@@ -527,18 +555,18 @@ Output STRICT JSON format only:
       try {
         plan = JSON.parse(jsonStr);
       } catch (parseError) {
-        throw new Error(`Failed to parse planner response as JSON: ${parseError.message}`);
+        throw new AppError(`Failed to parse planner response as JSON: ${parseError.message}`, { cause: parseError });
       }
 
       if (!Array.isArray(plan.tasks)) {
-        throw new Error('Invalid plan format: missing tasks array');
+        throw new AppError('Invalid plan format: missing tasks array');
       }
 
       spinner.succeed(`Plan generated: ${plan.tasks.length} tasks identified.`);
       return plan.tasks;
     } catch (error) {
       spinner.fail('Planning failed.');
-      console.error(chalk.red(error.message));
+      logger.error('Swarm planning failed', error);
       throw error; // Re-throw to allow caller to handle appropriately
     }
   }
@@ -547,6 +575,7 @@ Output STRICT JSON format only:
    * Execute a pre-planned set of tasks.
    */
   async execute(tasks) {
+    if (!Array.isArray(tasks)) throw new ValidationError('tasks must be an array');
     return this.runPipeline({
       goal: 'Execute planned tasks',
       steps: tasks.map(t => ({
@@ -563,6 +592,8 @@ Output STRICT JSON format only:
    * Run a single agent task.
    */
   async runAgent(agent, task, context = {}, options = {}) {
+    if (!agent) throw new ValidationError('agent is required');
+    if (!task) throw new ValidationError('task is required');
     return this.runPipeline({
       goal: task,
       steps: [{ agent, task, context }],

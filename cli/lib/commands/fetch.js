@@ -5,6 +5,7 @@ import path from 'path';
 import { GITHUB_RAW_BASE } from '../config/urls.js';
 import { fetchWithRetry } from '../utils/network.js';
 import { validateSafePath } from '../utils/validation.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 async function downloadFile(url, destPath) {
   try {
@@ -27,11 +28,11 @@ export function registerFetchCommand(program) {
     .option('--rules', 'Fetch only cursor rules')
     .option('--docs', 'Fetch only documentation')
     .action(async (options) => {
-      console.log(chalk.cyan('\n📦 Ultra-Dex Asset Fetcher\n'));
+      printInfo(chalk.cyan('\n📦 Ultra-Dex Asset Fetcher\n'));
 
       const dirValidation = validateSafePath(options.dir, 'Target directory');
       if (dirValidation !== true) {
-        console.log(chalk.red(dirValidation));
+        printError(chalk.red(dirValidation));
         process.exit(1);
       }
 
@@ -163,24 +164,24 @@ export function registerFetchCommand(program) {
         spinner.warn(chalk.yellow(`Downloaded ${downloaded} files, ${failed} failed`));
       }
 
-      console.log(chalk.bold('\n📁 Assets downloaded to:\n'));
+      printInfo(chalk.bold('\n📁 Assets downloaded to:\n'));
       if (fetchAll || options.rules) {
-        console.log(chalk.gray(`  ${targetDir}/cursor-rules/  (12 .mdc files)`));
+        printInfo(chalk.gray(`  ${targetDir}/cursor-rules/  (12 .mdc files)`));
       }
       if (fetchAll || options.agents) {
-        console.log(chalk.gray(`  ${targetDir}/agents/        (16 agent prompts)`));
+        printInfo(chalk.gray(`  ${targetDir}/agents/        (16 agent prompts)`));
       }
       if (fetchAll || options.docs) {
-        console.log(chalk.gray(`  ${targetDir}/docs/          (documentation)`));
-        console.log(chalk.gray(`  ${targetDir}/guides/        (guides)`));
+        printInfo(chalk.gray(`  ${targetDir}/docs/          (documentation)`));
+        printInfo(chalk.gray(`  ${targetDir}/guides/        (guides)`));
       }
 
-      console.log(chalk.bold('\n💡 Usage:\n'));
-      console.log(chalk.cyan('  # Copy cursor rules to project'));
-      console.log(chalk.gray(`  cp -r ${targetDir}/cursor-rules .cursor/rules`));
-      console.log(chalk.cyan('\n  # Copy agents to project'));
-      console.log(chalk.gray(`  cp -r ${targetDir}/agents .agents`));
-      console.log(chalk.cyan('\n  # Works offline now!'));
-      console.log(chalk.gray('  No GitHub access needed after fetch.\n'));
+      printInfo(chalk.bold('\n💡 Usage:\n'));
+      printInfo(chalk.cyan('  # Copy cursor rules to project'));
+      printInfo(chalk.gray(`  cp -r ${targetDir}/cursor-rules .cursor/rules`));
+      printInfo(chalk.cyan('\n  # Copy agents to project'));
+      printInfo(chalk.gray(`  cp -r ${targetDir}/agents .agents`));
+      printInfo(chalk.cyan('\n  # Works offline now!'));
+      printInfo(chalk.gray('  No GitHub access needed after fetch.\n'));
     });
 }

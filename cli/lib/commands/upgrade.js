@@ -5,45 +5,47 @@ import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export async function upgradeCommand(options) {
-  console.log(chalk.cyan.bold('\n⬆️  Ultra-Dex Upgrade Check\n'));
+  printInfo(chalk.cyan.bold('\n⬆️  Ultra-Dex Upgrade Check\n'));
 
   // Get local version from package.json
   const localVersion = getLocalVersion();
-  
+
   const spinner = ora('Checking npm registry...').start();
-  
+
   try {
     // Query npm registry for latest version
     const latestVersion = await getLatestVersion();
     spinner.succeed('Registry check complete');
-    
-    console.log(chalk.gray('─'.repeat(50)));
-    console.log(`  ${chalk.gray('Installed:')}  ${chalk.white(localVersion)}`);
-    console.log(`  ${chalk.gray('Latest:')}     ${chalk.cyan(latestVersion)}`);
-    console.log(chalk.gray('─'.repeat(50)));
-    
+
+    printInfo(chalk.gray('─'.repeat(50)));
+    printInfo(`  ${chalk.gray('Installed:')}  ${chalk.white(localVersion)}`);
+    printInfo(`  ${chalk.gray('Latest:')}     ${chalk.cyan(latestVersion)}`);
+    printInfo(chalk.gray('─'.repeat(50)));
+
     const comparison = compareVersions(localVersion, latestVersion);
-    
+
     if (comparison < 0) {
       // Update available
-      console.log(chalk.yellow.bold('\n  📦 Update available!\n'));
-      
+      printInfo(chalk.yellow.bold('\n  📦 Update available!\n'));
+
       // Show version diff summary
       const [localMajor, localMinor] = localVersion.split('.').map(Number);
       const [latestMajor, latestMinor] = latestVersion.split('.').map(Number);
-      
+
       if (latestMajor > localMajor) {
-        console.log(chalk.red('  ⚠️  Major version update - may contain breaking changes'));
+        printInfo(chalk.red('  ⚠️  Major version update - may contain breaking changes'));
       } else if (latestMinor > localMinor) {
-        console.log(chalk.yellow('  ✨ Minor version update - new features available'));
+        printInfo(chalk.yellow('  ✨ Minor version update - new features available'));
       } else {
-        console.log(chalk.green('  🔧 Patch update - bug fixes and improvements'));
+        printInfo(chalk.green('  🔧 Patch update - bug fixes and improvements'));
       }
-      
+
       // Try to fetch changelog
       if (!options.check) {
         const changelogSpinner = ora('Fetching changelog...').start();
@@ -51,8 +53,8 @@ export async function upgradeCommand(options) {
           const changelog = await fetchChangelog(localVersion, latestVersion);
           if (changelog) {
             changelogSpinner.succeed('Changelog retrieved');
-            console.log(chalk.bold('\n  📋 What\'s New:\n'));
-            console.log(chalk.gray(indent(changelog, 4)));
+            printInfo(chalk.bold('\n  📋 What\'s New:\n'));
+            printInfo(chalk.gray(indent(changelog, 4)));
           } else {
             changelogSpinner.info('No changelog available');
           }
@@ -60,43 +62,43 @@ export async function upgradeCommand(options) {
           changelogSpinner.info('Could not fetch changelog');
         }
       }
-      
+
       // Show install instructions or run update
-      console.log('');
+      printInfo('');
       if (options.install) {
         const installSpinner = ora('Installing update...').start();
         try {
           execSync('npm update -g ultra-dex', { encoding: 'utf-8', stdio: 'pipe' });
           installSpinner.succeed(chalk.green(`Updated to v${latestVersion}`));
-          console.log(chalk.gray('\n  Run `ultra-dex --version` to verify.\n'));
+          printInfo(chalk.gray('\n  Run `ultra-dex --version` to verify.\n'));
         } catch (e) {
           installSpinner.fail('Installation failed');
-          console.log(chalk.red(`  ${e.message}`));
-          console.log(chalk.gray('\n  Try running manually:'));
-          console.log(chalk.white('    npm install -g ultra-dex@latest\n'));
+          printError(chalk.red(`  ${e.message}`));
+          printInfo(chalk.gray('\n  Try running manually:'));
+          printInfo(chalk.white('    npm install -g ultra-dex@latest\n'));
         }
       } else if (!options.check) {
-        console.log(chalk.gray('  To upgrade, run:'));
-        console.log(chalk.white('    npm install -g ultra-dex@latest'));
-        console.log(chalk.gray('  Or use:'));
-        console.log(chalk.white('    ultra-dex upgrade --install\n'));
+        printInfo(chalk.gray('  To upgrade, run:'));
+        printInfo(chalk.white('    npm install -g ultra-dex@latest'));
+        printInfo(chalk.gray('  Or use:'));
+        printInfo(chalk.white('    ultra-dex upgrade --install\n'));
       } else {
-        console.log(chalk.gray('  Check complete. Use --install to update.\n'));
+        printInfo(chalk.gray('  Check complete. Use --install to update.\n'));
       }
-      
+
     } else if (comparison === 0) {
       // Up to date
-      console.log(chalk.green.bold('\n  ✅ You are running the latest version!\n'));
+      printSuccess(chalk.green.bold('\n  ✅ You are running the latest version!\n'));
     } else {
       // Local is newer (dev/beta)
-      console.log(chalk.blue.bold('\n  🔬 You are running a development/pre-release version\n'));
+      printInfo(chalk.blue.bold('\n  🔬 You are running a development/pre-release version\n'));
     }
-    
+
   } catch (e) {
     spinner.warn('Could not reach npm registry');
-    console.log(chalk.gray(`  Current version: ${localVersion}`));
-    console.log(chalk.yellow(`\n  ${e.message}`));
-    console.log(chalk.gray('\n  Check your network connection and try again.\n'));
+    printInfo(chalk.gray(`  Current version: ${localVersion}`));
+    printWarning(chalk.yellow(`\n  ${e.message}`));
+    printInfo(chalk.gray('\n  Check your network connection and try again.\n'));
   }
 }
 
@@ -187,4 +189,13 @@ async function fetchChangelog(fromVersion, toVersion) {
 function indent(text, spaces) {
   const prefix = ' '.repeat(spaces);
   return text.split('\n').map(line => prefix + line).join('\n');
+}
+
+export function registerUpgradeCommand(program) {
+  program
+    .command('upgrade')
+    .description('Check for and install updates')
+    .option('--check', 'Check for updates without installing')
+    .option('--install', 'Install available updates')
+    .action(upgradeCommand);
 }

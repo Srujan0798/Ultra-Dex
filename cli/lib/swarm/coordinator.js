@@ -2,6 +2,8 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { runAgentLoop } from '../commands/run.js';
 import fs from 'fs/promises';
+import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../ui/logger.js';
 
 export class SwarmCoordinator {
   constructor(provider, context) {
@@ -11,6 +13,10 @@ export class SwarmCoordinator {
   }
 
   async plan(feature) {
+    if (!feature || typeof feature !== 'string') {
+      throw new ValidationError('Feature description is required for planning');
+    }
+
     const spinner = ora('🧠 Hive Mind: Planning feature implementation...').start();
     
     // System prompt to force JSON output for the plan
@@ -51,20 +57,29 @@ Output STRICT JSON format only:
       }
 
       const plan = JSON.parse(jsonStr);
+      
+      if (!plan.tasks || !Array.isArray(plan.tasks)) {
+        throw new AppError('Invalid plan format: missing tasks array');
+      }
+
       spinner.succeed(`Plan generated: ${plan.tasks.length} tasks identified.`);
       return plan.tasks;
     } catch (error) {
       spinner.fail('Planning failed.');
-      console.error(chalk.red(error.message));
-      return null;
+      logger.error('Swarm planning failed', error);
+      throw new AppError(`Failed to generate swarm plan: ${error.message}`, { cause: error });
     }
   }
 
   async execute(tasks) {
-    console.log(chalk.bold('\n🐝 Swarm Execution Started\n'));
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      throw new ValidationError('A non-empty list of tasks is required for execution');
+    }
+
+    logger.header('Swarm Execution Started');
 
     for (const task of tasks) {
-      console.log(chalk.bold.cyan(`\n🔹 Step ${task.id}: [${task.agent.toUpperCase()}] ${task.task}`));
+      logger.info(`Step ${task.id}: [${task.agent.toUpperCase()}] ${task.task}`);
       
       // Inject previous history into context
       const currentContext = {
@@ -81,15 +96,15 @@ Output STRICT JSON format only:
         // Save artifact
         const filename = `swarm-task-${task.id}-${task.agent}.md`;
         await fs.writeFile(filename, output);
-        console.log(chalk.green(`   ✓ Output saved to ${filename}`));
+        logger.success(`Output saved to ${filename}`);
 
       } catch (error) {
-        console.log(chalk.red(`   ❌ Task failed: ${error.message}`));
+        logger.error(`Task failed: ${task.task}`, error);
         // Decide whether to continue or stop
-        // For now, we continue
+        // For now, we continue but log it
       }
     }
 
-    console.log(chalk.bold.green('\n✅ Swarm Mission Complete'));
+    logger.success('Swarm Mission Complete');
   }
 }

@@ -100,7 +100,6 @@ function buildInitCommand() {
             default: '',
           },
         ]);
-
         const config = {
           name: answers.name.trim(),
           description: answers.description.trim(),

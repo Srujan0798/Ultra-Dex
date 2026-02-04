@@ -1,6 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../ui/logger.js';
 
 const MEMORY_DIR = '.ultra';
 const MEMORY_FILE = 'memory.json';
@@ -14,44 +16,66 @@ export class UltraMemory {
   constructor() {
     this.memory = [];
     this.initialized = false;
+    this.initializing = null;
+    this.isSaving = false;
   }
 
   async init() {
     if (this.initialized) return;
-    
-    try {
-      if (!existsSync(path.dirname(MEMORY_PATH))) {
-        await fs.mkdir(path.dirname(MEMORY_PATH), { recursive: true });
-      }
+    if (this.initializing) return this.initializing;
 
-      if (existsSync(MEMORY_PATH)) {
-        const data = await fs.readFile(MEMORY_PATH, 'utf-8');
-        this.memory = JSON.parse(data);
-      } else {
+    this.initializing = (async () => {
+      try {
+        if (!existsSync(path.dirname(MEMORY_PATH))) {
+          await fs.mkdir(path.dirname(MEMORY_PATH), { recursive: true });
+        }
+
+        if (existsSync(MEMORY_PATH)) {
+          const data = await fs.readFile(MEMORY_PATH, 'utf-8');
+          this.memory = JSON.parse(data);
+        } else {
+          this.memory = [];
+          await this.saveToFile();
+        }
+        this.initialized = true;
+      } catch (error) {
+        logger.error('Failed to initialize memory', error);
         this.memory = [];
-        await this.saveToFile();
+        this.initializing = null;
       }
-      this.initialized = true;
-    } catch (error) {
-      console.error('Failed to initialize memory:', error);
-      this.memory = [];
-    }
+    })();
+
+    return this.initializing;
   }
 
   async saveToFile() {
+    if (this.isSaving) {
+      // Basic lock to prevent concurrent writes
+      // Could be improved with a queue if needed
+      return;
+    }
+
+    this.isSaving = true;
     try {
       await fs.writeFile(MEMORY_PATH, JSON.stringify(this.memory, null, 2));
     } catch (error) {
-      console.error('Failed to save memory to file:', error);
+      logger.error('Failed to save memory to file', error);
+      throw new AppError(`Failed to save memory: ${error.message}`, { cause: error });
+    } finally {
+      this.isSaving = false;
     }
   }
 
   async remember(text, tags = [], source = 'manual') {
+    if (!text || typeof text !== 'string') {
+      throw new ValidationError('Memory text must be a non-empty string');
+    }
+
     await this.init();
     const entry = {
       id: crypto.randomUUID(),
       text,
-      tags,
+      tags: Array.isArray(tags) ? tags : [tags],
       source,
       timestamp: new Date().toISOString()
     };
@@ -61,6 +85,10 @@ export class UltraMemory {
   }
 
   async search(query, limit = 5) {
+    if (!query || typeof query !== 'string') {
+      throw new ValidationError('Search query must be a non-empty string');
+    }
+
     await this.init();
     const lowerQuery = query.toLowerCase();
     

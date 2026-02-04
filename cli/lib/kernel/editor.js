@@ -35,26 +35,26 @@ export class FileEditor {
         }
 
         // 2. Show Reasoning
-        console.log(theme.dim(`  Reason: ${reason}`));
-        console.log('');
+        process.stdout.write(theme.dim(`  Reason: ${reason}`) + '\n');
+        process.stdout.write('\n');
 
         // 3. Render Codex-Style Diff
         if (fileExists) {
             renderDiff(filePath, originalContent, newContent);
         } else {
             // For new files, show preview
-            console.log(theme.dim('╭──────────────────────────────────────────────────────────╮'));
-            console.log(theme.dim('│ ') + theme.success('NEW FILE: ' + filePath));
-            console.log(theme.dim('├──────────────────────────────────────────────────────────┤'));
-            console.log(newContent.split('\n').slice(0, 10).map(l => theme.dim('│ ') + theme.success('+ ' + l)).join('\n'));
-            if (newContent.split('\n').length > 10) console.log(theme.dim('│ ... (content truncated)'));
-            console.log(theme.dim('╰──────────────────────────────────────────────────────────╯'));
-            console.log('');
+            process.stdout.write(theme.dim('╭──────────────────────────────────────────────────────────╮') + '\n');
+            process.stdout.write(theme.dim('│ ') + theme.success('NEW FILE: ' + filePath) + '\n');
+            process.stdout.write(theme.dim('├──────────────────────────────────────────────────────────┤') + '\n');
+            process.stdout.write(newContent.split('\n').slice(0, 10).map(l => theme.dim('│ ') + theme.success('+ ' + l)).join('\n') + '\n');
+            if (newContent.split('\n').length > 10) process.stdout.write(theme.dim('│ ... (content truncated)') + '\n');
+            process.stdout.write(theme.dim('╰──────────────────────────────────────────────────────────╯') + '\n');
+            process.stdout.write('\n');
         }
 
         // 4. Safety Lock: Ask for Confirmation (Unless Forced)
         let confirm = force;
-        
+
         if (!force) {
             const answer = await inquirer.prompt([
                 {
@@ -66,7 +66,7 @@ export class FileEditor {
             ]);
             confirm = answer.confirm;
         } else {
-            console.log(theme.accent('  ⚡ Autonomous Mode: Applying change automatically.'));
+            process.stdout.write(theme.accent('  ⚡ Autonomous Mode: Applying change automatically.') + '\n');
         }
 
         // 5. Execute or Discard
@@ -81,7 +81,7 @@ export class FileEditor {
                 return false;
             }
         } else {
-            console.log(theme.warning('  ⚠ Change discarded.'));
+            process.stdout.write(theme.warning('  ⚠ Change discarded.') + '\n');
             return false;
         }
     }

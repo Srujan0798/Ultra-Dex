@@ -8,6 +8,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { runQualityScan } from '../quality/scanner.js';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 export function registerFixCommand(program) {
   program
@@ -17,27 +18,27 @@ export function registerFixCommand(program) {
     .option('-k, --key <apiKey>', 'API key')
     .option('--dry-run', 'Show fixes without applying')
     .action(async (options) => {
-      console.log(chalk.cyan('\n🚑 Ultra-Dex Self-Healing\n'));
+      printInfo(chalk.cyan('\n🚑 Ultra-Dex Self-Healing\n'));
 
       // Check for API key
       const configured = checkConfiguredProviders();
       const hasProvider = configured.some(p => p.configured) || options.key;
 
       if (!hasProvider) {
-        console.log(chalk.yellow('⚠️  No AI provider configured.'));
-        console.log(chalk.white('Self-healing requires an AI provider.'));
+        printWarning(chalk.yellow('⚠️  No AI provider configured.'));
+        printInfo(chalk.white('Self-healing requires an AI provider.'));
         return;
       }
 
-      console.log(chalk.gray('Scanning project...'));
+      printInfo(chalk.gray('Scanning project...'));
       const results = await runQualityScan(process.cwd());
 
       if (results.failed === 0 && results.warnings === 0) {
-        console.log(chalk.green('✅ No issues found. System healthy.'));
+        printSuccess(chalk.green('✅ No issues found. System healthy.'));
         return;
       }
 
-      console.log(chalk.yellow(`Found ${results.failed} errors and ${results.warnings} warnings.`));
+      printInfo(chalk.yellow(`Found ${results.failed} errors and ${results.warnings} warnings.`));
       
       const providerId = options.provider || getDefaultProvider();
       const provider = createProvider(providerId, { apiKey: options.key, maxTokens: 4000 });
@@ -50,7 +51,7 @@ export function registerFixCommand(program) {
       });
 
       for (const [file, issues] of Object.entries(issuesByFile)) {
-        console.log(chalk.bold(`\nFixing ${file}...`));
+        printInfo(chalk.bold(`\nFixing ${file}...`));
         
         try {
           const filePath = path.resolve(process.cwd(), file);
@@ -69,7 +70,7 @@ ${content}
 Return ONLY the full corrected file content. Do not include markdown code blocks or explanations. Just the code.`;
 
           if (options.dryRun) {
-            console.log(chalk.gray('Dry run: Skipping AI generation.'));
+            printInfo(chalk.gray('Dry run: Skipping AI generation.'));
             continue;
           }
 
@@ -82,14 +83,14 @@ Return ONLY the full corrected file content. Do not include markdown code blocks
           }
 
           await fs.writeFile(filePath, fixedCode);
-          console.log(chalk.green(`✓ Fixed ${issues.length} issues in ${file}`));
+          printSuccess(chalk.green(`✓ Fixed ${issues.length} issues in ${file}`));
 
         } catch (err) {
-          console.log(chalk.red(`✗ Failed to fix ${file}: ${err.message}`));
+          printError(chalk.red(`✗ Failed to fix ${file}: ${err.message}`));
         }
       }
 
-      console.log(chalk.green('\n✨ Self-healing complete.'));
+      printSuccess(chalk.green('\n✨ Self-healing complete.'));
     });
 }
 

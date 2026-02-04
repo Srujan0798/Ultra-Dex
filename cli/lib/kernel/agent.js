@@ -42,7 +42,7 @@ export class Agent {
                     return createProvider(providerType, { model: modelId });
                 } catch (e) {
                     // Fallback to default if creation fails
-                    console.warn(`⚠️ Failed to create provider for ${modelId}, falling back to default.`);
+                    process.stderr.write(`⚠️ Failed to create provider for ${modelId}, falling back to default.\n`);
                 }
             }
         }
@@ -282,10 +282,10 @@ Please analyze the file structure and implement the requested changes.
 `;
 
         renderer.succeed('Context Packet Generated');
-        console.log(theme.warning('  ⚠ No API Key detected. IDE Companion Mode active.'));
-        console.log('');
+        process.stdout.write(theme.warning('  ⚠ No API Key detected. IDE Companion Mode active.') + '\n');
+        process.stdout.write('\n');
         renderer.box(contextPacket, '📋 COPY TO IDE', 'info');
-        console.log(theme.dim('  (Use this prompt in your AI Code Editor to get the best result)'));
+        process.stdout.write(theme.dim('  (Use this prompt in your AI Code Editor to get the best result)') + '\n');
     }
 }
 

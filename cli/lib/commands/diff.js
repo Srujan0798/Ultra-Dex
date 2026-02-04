@@ -57,8 +57,8 @@ export async function diffCommand(options) {
     if (options.json) {
       console.log(JSON.stringify({ error: 'No sections found', sections: [], alignment: 0 }));
     } else {
-      console.log(chalk.yellow('⚠️  No sections found in IMPLEMENTATION-PLAN.md'));
-      console.log(chalk.gray('   Looking for ## or ### headings\n'));
+      printWarning(chalk.yellow('⚠️  No sections found in IMPLEMENTATION-PLAN.md'));
+      printInfo(chalk.gray('   Looking for ## or ### headings\n'));
     }
     return;
   }
@@ -164,7 +164,7 @@ export async function diffCommand(options) {
   } else if (alignment < 80) {
     printInfo(chalk.yellow('💡 Recommendation: Continue implementation, polish partial features'));
   } else {
-    printInfo(chalk.green('✨ Excellent alignment! Consider testing and optimization'));
+    printSuccess(chalk.green('✨ Excellent alignment! Consider testing and optimization'));
   }
 
   process.stdout.write('\n');

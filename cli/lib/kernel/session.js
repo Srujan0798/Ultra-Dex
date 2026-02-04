@@ -29,6 +29,12 @@ export class SessionManager {
      * Add a user message to history
      */
     addUserMessage(content) {
+        // Prevent memory leaks by limiting history size
+        if (this.history.length > 1000) {
+            // Keep only the most recent 500 messages
+            this.history = this.history.slice(-500);
+        }
+
         this.history.push({ role: 'user', content, timestamp: Date.now() });
         void this.compactHistory();
         this.save();
@@ -38,6 +44,12 @@ export class SessionManager {
      * Add an agent response to history
      */
     addAgentMessage(content) {
+        // Prevent memory leaks by limiting history size
+        if (this.history.length > 1000) {
+            // Keep only the most recent 500 messages
+            this.history = this.history.slice(-500);
+        }
+
         this.history.push({ role: 'assistant', content, timestamp: Date.now() });
         void this.compactHistory();
         this.save();
@@ -60,6 +72,8 @@ export class SessionManager {
             await fs.writeFile(filePath, JSON.stringify(this.history, null, 2));
         } catch (e) {
             // Silently fail if we can't save history (non-critical)
+            // But log for debugging purposes
+            process.stderr.write(`Session save error: ${e.message}\n`);
         }
     }
 
