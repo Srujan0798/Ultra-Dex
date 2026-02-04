@@ -8,9 +8,6 @@ import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
-import { MemoryVectorStore } from '@langchain/community/vectorstores/memory';
-import { OpenAIEmbeddings } from '@langchain/openai';
-import { Document } from '@langchain/core/documents';
 import { validateSafePath } from '../utils/validation.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
@@ -39,7 +36,7 @@ function chunkText(text, size = 1000, overlap = 200) {
 }
 
 async function collectFiles(rootDir, includePatterns, excludeDirs) {
-  const patterns = includePatterns.length ? includePatterns : DEFAULT_INCLUDE;
+  const patterns = includePatterns && includePatterns.length ? includePatterns : DEFAULT_INCLUDE;
   const ignore = excludeDirs.map(dir => `**/${dir}/**`);
   const files = await glob(patterns, {
     cwd: rootDir,
@@ -62,6 +59,20 @@ export function registerVectorSearchCommand(program) {
     .option('--chunk-overlap <number>', 'Chunk overlap in characters', '200')
     .action(async (query, options) => {
       try {
+        // Dynamic imports to prevent top-level failures if langchain is missing
+        let MemoryVectorStore, OpenAIEmbeddings, Document;
+        try {
+          const mvModule = await import('langchain/vectorstores/memory');
+          MemoryVectorStore = mvModule.MemoryVectorStore;
+          const oeModule = await import('@langchain/openai');
+          OpenAIEmbeddings = oeModule.OpenAIEmbeddings;
+          const docModule = await import('@langchain/core/documents');
+          Document = docModule.Document;
+        } catch (err) {
+          printError('LangChain modules not found. Vector search requires optional dependencies: `npm install langchain @langchain/openai @langchain/core`.');
+          return;
+        }
+
         const dirValidation = validateSafePath(options.dir, 'Search directory');
         if (dirValidation !== true) {
           printError(dirValidation);

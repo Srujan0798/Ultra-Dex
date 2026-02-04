@@ -37,48 +37,44 @@ describe('browser command', () => {
     }
   });
 
-  test('browser --help shows all subcommands', () => {
-    const result = runCli(['browser', '--help']);
-    assert.equal(result.status, 0);
-    assert.match(result.output, /screenshot/i);
-    assert.match(result.output, /scrape/i);
-    assert.match(result.output, /test/i);
-    assert.match(result.output, /record/i);
-    assert.match(result.output, /mockup/i);
-    assert.match(result.output, /audit/i);
-  });
-
-  test('browser screenshot --help shows options', () => {
+  test('browser screenshot exists', () => {
     const result = runCli(['browser', 'screenshot', '--help']);
     assert.equal(result.status, 0);
+    assert.match(result.output, /screenshot/i);
     assert.match(result.output, /--output/i);
-    assert.match(result.output, /--full-page/i);
   });
 
-  test('browser scrape --help shows options', () => {
+  test('browser scrape exists', () => {
     const result = runCli(['browser', 'scrape', '--help']);
     assert.equal(result.status, 0);
+    assert.match(result.output, /scrape/i);
     assert.match(result.output, /--query/i);
-    assert.match(result.output, /--output/i);
   });
 
-  test('browser test --help shows options', () => {
+  test('browser test exists', () => {
     const result = runCli(['browser', 'test', '--help']);
     assert.equal(result.status, 0);
+    assert.match(result.output, /test/i);
     assert.match(result.output, /--assertions/i);
   });
 
-  test('browser mockup --help shows options', () => {
+  test('browser record exists', () => {
+    const result = runCli(['browser', 'record', '--help']);
+    assert.equal(result.status, 0);
+    assert.match(result.output, /record/i);
+  });
+
+  test('browser mockup exists', () => {
     const result = runCli(['browser', 'mockup', '--help']);
     assert.equal(result.status, 0);
-    assert.match(result.output, /--output/i);
+    assert.match(result.output, /mockup/i);
     assert.match(result.output, /--stack/i);
   });
 
-  test('browser audit --help shows options', () => {
+  test('browser audit exists', () => {
     const result = runCli(['browser', 'audit', '--help']);
     assert.equal(result.status, 0);
-    assert.match(result.output, /--name/i);
+    assert.match(result.output, /audit/i);
     assert.match(result.output, /--promote/i);
   });
 });

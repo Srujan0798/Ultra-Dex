@@ -7,6 +7,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import fs from 'fs/promises';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 const program = new Command();
 
@@ -68,31 +70,31 @@ async function parseImplementationPlan(planPath) {
     
     return tasks;
   } catch (error) {
-    console.error(chalk.red('Error parsing plan:'), error.message);
+    printError(chalk.red('Error parsing plan:'), error.message);
     return [];
   }
 }
 
 // Linear integration
 async function syncWithLinear(tasks, options) {
-  console.log(chalk.cyan('\n📋 Syncing with Linear...\n'));
-  
+  printInfo(chalk.cyan('\n📋 Syncing with Linear...\n'));
+
   const apiKey = process.env.LINEAR_API_KEY;
   if (!apiKey) {
-    console.log(chalk.yellow('⚠️  LINEAR_API_KEY not found in environment'));
-    console.log(chalk.gray('   Set it with: export LINEAR_API_KEY=your_key\n'));
+    printWarning(chalk.yellow('⚠️  LINEAR_API_KEY not found in environment'));
+    printInfo(chalk.gray('   Set it with: export LINEAR_API_KEY=your_key\n'));
     return;
   }
-  
+
   const teamId = options.teamId || process.env.LINEAR_TEAM_ID;
   if (!teamId) {
-    console.log(chalk.yellow('⚠️  Linear team ID required'));
-    console.log(chalk.gray('   Use --team-id or set LINEAR_TEAM_ID\n'));
+    printWarning(chalk.yellow('⚠️  Linear team ID required'));
+    printInfo(chalk.gray('   Use --team-id or set LINEAR_TEAM_ID\n'));
     return;
   }
-  
-  console.log(chalk.gray(`Found ${tasks.length} tasks to sync`));
-  
+
+  printInfo(chalk.gray(`Found ${tasks.length} tasks to sync`));
+
   for (const task of tasks) {
     try {
       const query = `
@@ -114,7 +116,7 @@ async function syncWithLinear(tasks, options) {
           }
         }
       `;
-      
+
       const response = await fetch('https://api.linear.app/graphql', {
         method: 'POST',
         headers: {
@@ -123,25 +125,25 @@ async function syncWithLinear(tasks, options) {
         },
         body: JSON.stringify({ query })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.data?.issueCreate?.success) {
         const issue = data.data.issueCreate.issue;
-        console.log(chalk.green(`✅ Created: ${issue.identifier} - ${issue.title}`));
+        printSuccess(chalk.green(`✅ Created: ${issue.identifier} - ${issue.title}`));
       } else {
-        console.log(chalk.red(`❌ Failed: ${task.title}`));
+        printError(chalk.red(`❌ Failed: ${task.title}`));
         if (data.errors) {
-          console.log(chalk.gray(`   ${data.errors[0].message}`));
+          printInfo(chalk.gray(`   ${data.errors[0].message}`));
         }
       }
     } catch (error) {
-      console.log(chalk.red(`❌ Error creating issue: ${task.title}`));
-      console.log(chalk.gray(`   ${error.message}`));
+      printError(chalk.red(`❌ Error creating issue: ${task.title}`));
+      printInfo(chalk.gray(`   ${error.message}`));
     }
   }
-  
-  console.log(chalk.green(`\n✅ Synced ${tasks.length} tasks to Linear\n`));
+
+  printSuccess(chalk.green(`\n✅ Synced ${tasks.length} tasks to Linear\n`));
 }
 
 // GitHub Issues integration
