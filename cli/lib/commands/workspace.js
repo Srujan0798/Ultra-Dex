@@ -2,6 +2,8 @@ import chalk from 'chalk';
 import path from 'path';
 import { configManager } from '../utils/config-manager.js';
 import fs from 'fs/promises';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 export function registerWorkspaceCommand(program) {
   const ws = program
@@ -31,7 +33,7 @@ export function registerWorkspaceCommand(program) {
         globalConfig.workspaces.push({ name, path: targetDir, lastUsed: new Date().toISOString() });
         
         await configManager.saveGlobal(globalConfig);
-        console.log(chalk.green(`✅ Added workspace: ${name} (${targetDir})`));
+        printSuccess(chalk.green(`✅ Added workspace: ${name} (${targetDir})`));
     });
 
   ws.command('list')
@@ -43,24 +45,24 @@ export function registerWorkspaceCommand(program) {
             const conf = JSON.parse(content);
             const workspaces = conf.workspaces || [];
             
-            console.log(chalk.bold('\n📂 Ultra-Dex Workspaces\n'));
+            printInfo(chalk.bold('\n📂 Ultra-Dex Workspaces\n'));
             if (workspaces.length === 0) {
-                console.log(chalk.gray('No workspaces tracked. Run `ultra-dex ws add` to track this project.'));
+                printInfo(chalk.gray('No workspaces tracked. Run `ultra-dex ws add` to track this project.'));
                 return;
             }
-            
+
             // Format table nicely
             workspaces.forEach(w => {
                 const isCurrent = process.cwd() === w.path;
                 const prefix = isCurrent ? chalk.green('➜ ') : '  ';
-                console.log(`${prefix}${chalk.bold(w.name)}`);
-                console.log(`    Path: ${chalk.gray(w.path)}`);
-                console.log(`    Last: ${w.lastUsed}`);
-                console.log('');
+                printInfo(`${prefix}${chalk.bold(w.name)}`);
+                printInfo(`    Path: ${chalk.gray(w.path)}`);
+                printInfo(`    Last: ${w.lastUsed}`);
+                printInfo('');
             });
-            
+
         } catch {
-            console.log(chalk.gray('No global configuration found.'));
+            printInfo(chalk.gray('No global configuration found.'));
         }
     });
 
@@ -73,7 +75,7 @@ export function registerWorkspaceCommand(program) {
             const content = await fs.readFile(globalPath, 'utf8');
             globalConfig = JSON.parse(content);
         } catch {
-            console.log(chalk.red('No global configuration found.'));
+            printError(chalk.red('No global configuration found.'));
             return;
         }
         
@@ -86,9 +88,9 @@ export function registerWorkspaceCommand(program) {
         
         if (globalConfig.workspaces.length < initialLen) {
             await configManager.saveGlobal(globalConfig);
-            console.log(chalk.green(`✅ Workspace removed: ${target}`));
+            printSuccess(chalk.green(`✅ Workspace removed: ${target}`));
         } else {
-            console.log(chalk.yellow(`Workspace not found: ${target}`));
+            printWarning(chalk.yellow(`Workspace not found: ${target}`));
         }
     });
 
@@ -97,13 +99,13 @@ export function registerWorkspaceCommand(program) {
     .action(async (name) => {
         const globalConfig = await configManager.loadGlobal();
         if (!globalConfig?.workspaces) {
-            console.log(chalk.red('No workspaces tracked.'));
+            printError(chalk.red('No workspaces tracked.'));
             return;
         }
-        
+
         const workspace = globalConfig.workspaces.find(w => w.name === name);
         if (!workspace) {
-            console.log(chalk.red(`Workspace "${name}" not found.`));
+            printError(chalk.red(`Workspace "${name}" not found.`));
             return;
         }
         
@@ -112,10 +114,10 @@ export function registerWorkspaceCommand(program) {
         globalConfig.activeWorkspace = workspace.path;
         
         await configManager.saveGlobal(globalConfig);
-        
-        console.log(chalk.green(`✅ Switched to workspace: ${name}`));
-        console.log(chalk.gray(`Active path: ${workspace.path}`));
-        console.log(chalk.cyan(`Note: New commands will use this context if supported.`));
+
+        printSuccess(chalk.green(`✅ Switched to workspace: ${name}`));
+        printInfo(chalk.gray(`Active path: ${workspace.path}`));
+        printInfo(chalk.cyan(`Note: New commands will use this context if supported.`));
     });
 }
 

@@ -403,131 +403,136 @@ export function registerSearchCommand(program) {
     .option('-v, --verbose', 'Show detailed output')
     .option('--stats', 'Show index statistics')
     .action(async (query, options) => {
-      console.log(chalk.cyan('\n🔍 Ultra-Dex Search\n'));
+      try {
+        printInfo(chalk.cyan('\n🔍 Ultra-Dex Search\n'));
 
-      if (options.symbol) {
-          const spinner = ora('Scanning code graph...').start();
-          try {
-              await projectGraph.scan();
-              const results = projectGraph.findSymbol(query);
-              spinner.succeed(`Graph scan complete. Found ${results.length} symbol matches.`);
-              
-              if (results.length === 0) {
-                  console.log(chalk.yellow(`No symbols found matching "${query}"`));
-                  return;
-              }
-              
-              console.log(chalk.bold('\nDefinitions found:'));
-              results.forEach(r => {
-                  console.log(`  ${chalk.green(r.symbol)} in ${chalk.gray(r.file)}`);
-              });
-              return;
-          } catch (e) {
-              spinner.fail(`Symbol search failed: ${e.message}`);
-              return;
+        if (options.symbol) {
+            const spinner = ora('Scanning code graph...').start();
+            try {
+                await projectGraph.scan();
+                const results = projectGraph.findSymbol(query);
+                spinner.succeed(`Graph scan complete. Found ${results.length} symbol matches.`);
+
+                if (results.length === 0) {
+                    printWarning(chalk.yellow(`No symbols found matching "${query}"`));
+                    return;
+                }
+
+                printInfo(chalk.bold('\nDefinitions found:'));
+                results.forEach(r => {
+                    printInfo(`  ${chalk.green(r.symbol)} in ${chalk.gray(r.file)}`);
+                });
+                return;
+            } catch (e) {
+                spinner.fail(`Symbol search failed: ${e.message}`);
+                return;
+            }
+        }
+
+        if (options.impact) {
+            const spinner = ora('Analyzing impact in code graph...').start();
+            try {
+                await projectGraph.scan();
+                const impact = projectGraph.getImpact(options.impact);
+                spinner.succeed(`Impact analysis complete.`);
+
+                printInfo(chalk.bold(`\nFiles that depend on ${chalk.cyan(options.impact)}:\n`));
+                if (impact.length === 0) {
+                    printSuccess('  ✓ No direct or indirect dependents found. Change is likely safe.');
+                } else {
+                    impact.forEach(file => {
+                        printInfo(`  ${chalk.yellow('⚠')} ${file}`);
+                    });
+                    printInfo(chalk.gray(`\nTotal affected: ${impact.length} files`));
+                }
+                return;
+            } catch (e) {
+                spinner.fail(`Impact analysis failed: ${e.message}`);
+                return;
+            }
+        }
+
+        const workdir = process.cwd();
+        const indexPath = path.join(workdir, EMBEDDINGS_CONFIG.indexPath);
+
+        if (options.stats) {
+          // Show index stats
+          const loaded = await vectorStore.load(indexPath);
+          if (!loaded) {
+            printWarning(chalk.yellow('No index found.'));
+            return;
           }
-      }
 
-      if (options.impact) {
-          const spinner = ora('Analyzing impact in code graph...').start();
-          try {
-              await projectGraph.scan();
-              const impact = projectGraph.getImpact(options.impact);
-              spinner.succeed(`Impact analysis complete.`);
-              
-              console.log(chalk.bold(`\nFiles that depend on ${chalk.cyan(options.impact)}:\n`));
-              if (impact.length === 0) {
-                  console.log(chalk.green('  ✓ No direct or indirect dependents found. Change is likely safe.'));
-              } else {
-                  impact.forEach(file => {
-                      console.log(`  ${chalk.yellow('⚠')} ${file}`);
-                  });
-                  console.log(chalk.gray(`\nTotal affected: ${impact.length} files`));
-              }
-              return;
-          } catch (e) {
-              spinner.fail(`Impact analysis failed: \${e.message}`);
-              return;
-          }
-      }
-
-      const workdir = process.cwd();
-      const indexPath = path.join(workdir, EMBEDDINGS_CONFIG.indexPath);
-
-      if (options.stats) {
-        // Show index stats
-        const loaded = await vectorStore.load(indexPath);
-        if (!loaded) {
-          console.log(chalk.yellow('No index found.'));
+          printInfo(chalk.bold('Index Statistics:'));
+          printInfo(`  Created: ${vectorStore.metadata.createdAt}`);
+          printInfo(`  Updated: ${vectorStore.metadata.updatedAt}`);
+          printInfo(`  Files: ${vectorStore.metadata.fileCount}`);
+          printInfo(`  Chunks: ${vectorStore.metadata.chunkCount}`);
           return;
         }
 
-        console.log(chalk.bold('Index Statistics:'));
-        console.log(`  Created: ${vectorStore.metadata.createdAt}`);
-        console.log(`  Updated: ${vectorStore.metadata.updatedAt}`);
-        console.log(`  Files: ${vectorStore.metadata.fileCount}`);
-        console.log(`  Chunks: ${vectorStore.metadata.chunkCount}`);
-        return;
-      }
+        if (options.index || !query) {
+          // Build/rebuild index
+          const spinner = ora('Indexing codebase...').start();
 
-      if (options.index || !query) {
-        // Build/rebuild index
-        const spinner = ora('Indexing codebase...').start();
+          try {
+            const result = await indexCodebase(workdir, {
+              force: options.force,
+              verbose: options.verbose,
+            });
+
+            if (result.cached) {
+              spinner.succeed(`Using cached index (${result.files} files, ${result.chunks} chunks)`);
+            } else {
+              spinner.succeed(`Indexed ${result.files} files into ${result.chunks} chunks`);
+            }
+          } catch (err) {
+            spinner.fail(`Indexing failed: ${err.message}`);
+            return;
+          }
+
+          if (!query) {
+            printInfo(chalk.gray('\nIndex ready. Use `ultra-dex search "your query"` to search.'));
+            return;
+          }
+        }
+
+        // Search
+        const spinner = ora(`Searching for: "${query}"`).start();
 
         try {
-          const result = await indexCodebase(workdir, {
-            force: options.force,
-            verbose: options.verbose,
+          const results = await searchCodebase(query, {
+            workdir,
+            topK: parseInt(options.top, 10),
           });
 
-          if (result.cached) {
-            spinner.succeed(`Using cached index (${result.files} files, ${result.chunks} chunks)`);
-          } else {
-            spinner.succeed(`Indexed ${result.files} files into ${result.chunks} chunks`);
+          spinner.succeed(`Found ${results.length} results\n`);
+
+          if (results.length === 0) {
+            printWarning(chalk.yellow('No matches found. Try different keywords or rebuild the index.'));
+            return;
           }
+
+          // Display results
+          for (let i = 0; i < results.length; i++) {
+            const r = results[i];
+            const scoreColor = r.score > 0.7 ? chalk.green : r.score > 0.4 ? chalk.yellow : chalk.gray;
+
+            printInfo(chalk.bold(`${i + 1}. ${r.path}`) + chalk.gray(` (chunk ${r.chunk})`));
+            printInfo(`   Score: ${scoreColor(r.score.toFixed(3))}`);
+            printInfo(chalk.gray(`   ${r.preview.replace(/\n/g, ' ')}`));
+            printInfo('');
+          }
+
+          // Hint
+          printInfo(chalk.gray('Tip: Use --index --force to rebuild embeddings if results seem stale.'));
+
         } catch (err) {
-          spinner.fail(`Indexing failed: ${err.message}`);
-          return;
+          spinner.fail(`Search failed: ${err.message}`);
         }
-
-        if (!query) {
-          console.log(chalk.gray('\nIndex ready. Use `ultra-dex search "your query"` to search.'));
-          return;
-        }
-      }
-
-      // Search
-      const spinner = ora(`Searching for: "${query}"`).start();
-
-      try {
-        const results = await searchCodebase(query, {
-          workdir,
-          topK: parseInt(options.top, 10),
-        });
-
-        spinner.succeed(`Found ${results.length} results\n`);
-
-        if (results.length === 0) {
-          console.log(chalk.yellow('No matches found. Try different keywords or rebuild the index.'));
-          return;
-        }
-
-        // Display results
-        for (let i = 0; i < results.length; i++) {
-          const r = results[i];
-          const scoreColor = r.score > 0.7 ? chalk.green : r.score > 0.4 ? chalk.yellow : chalk.gray;
-
-          console.log(chalk.bold(`${i + 1}. ${r.path}`) + chalk.gray(` (chunk ${r.chunk})`));
-          console.log(`   Score: ${scoreColor(r.score.toFixed(3))}`);
-          console.log(chalk.gray(`   ${r.preview.replace(/\n/g, ' ')}`));
-          console.log();
-        }
-
-        // Hint
-        console.log(chalk.gray('Tip: Use --index --force to rebuild embeddings if results seem stale.'));
-
-      } catch (err) {
-        spinner.fail(`Search failed: ${err.message}`);
+      } catch (error) {
+        printError(`Error in search command: ${error.message}`);
+        process.exit(1);
       }
     });
 }

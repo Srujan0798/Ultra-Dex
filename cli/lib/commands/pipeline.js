@@ -11,6 +11,8 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { execSync } from 'child_process';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 const STEPS_21 = [
   { id: 1, name: 'UNDERSTAND', description: 'Read and comprehend full requirement', time: '5-10 min' },
