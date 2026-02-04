@@ -2,22 +2,33 @@ import fs from 'fs/promises';
 import path from 'path';
 import { loadState, generateMarkdown } from '../commands/plan.js';
 import { projectGraph } from './graph.js';
+import { logger } from '../ui/logger.js';
 
 export function registerResources(server) {
   // Resource: Graph Summary
   server.resource(
-    "graph",
+    "graph_summary",
     "ultradex://graph/summary",
     async (uri) => {
-      if (projectGraph.nodes.size === 0) {
-        await projectGraph.scan();
+      try {
+        if (projectGraph.nodes.size === 0) {
+          await projectGraph.scan();
+        }
+        return {
+          contents: [{
+            uri: uri.href,
+            text: JSON.stringify(projectGraph.getSummary(), null, 2)
+          }]
+        };
+      } catch (error) {
+        logger.error('Failed to get graph summary resource', error);
+        return {
+          contents: [{
+            uri: uri.href,
+            text: JSON.stringify({ error: error.message })
+          }]
+        };
       }
-      return {
-        contents: [{
-          uri: uri.href,
-          text: JSON.stringify(projectGraph.getSummary(), null, 2)
-        }]
-      };
     }
   );
 
@@ -79,7 +90,7 @@ export function registerResources(server) {
 
   // Resource: Agents Index
   server.resource(
-    "agents",
+    "agents_index",
     "ultradex://agents",
     async (uri) => {
       try {
@@ -103,7 +114,7 @@ export function registerResources(server) {
 
   // Resource: Machine State
   server.resource(
-    "state",
+    "machine_state",
     "ultradex://state",
     async (uri) => {
       try {
@@ -125,25 +136,30 @@ export function registerResources(server) {
     }
   );
 
-  // Resource: Code Property Graph (GOD MODE)
+  // Resource: Full Code Property Graph (Structural)
   server.resource(
-    "graph",
-    "ultradex://graph",
+    "full_graph",
+    "ultradex://graph/full",
     async (uri) => {
       try {
-        const { buildGraph } = await import('../utils/graph.js');
-        const graph = await buildGraph();
+        if (projectGraph.nodes.size === 0) {
+          await projectGraph.scan();
+        }
         return {
           contents: [{
             uri: uri.href,
-            text: JSON.stringify(graph, null, 2)
+            text: JSON.stringify({
+              nodes: Array.from(projectGraph.nodes.entries()),
+              edges: projectGraph.edges
+            }, null, 2)
           }]
         };
       } catch (error) {
+        logger.error('Failed to get full graph resource', error);
         return {
           contents: [{
             uri: uri.href,
-            text: JSON.stringify({ error: `Graph build failed: ${error.message}` })
+            text: JSON.stringify({ error: `Graph retrieval failed: ${error.message}` })
           }]
         };
       }
