@@ -11,6 +11,7 @@ import { projectGraph } from '../mcp/graph.js';
 // hybridRAG imported for future use with advanced brain features
 // import { hybridRAG } from '../ai/hybrid-rag.js';
 import ora from 'ora';
+import { execSync } from 'child_process';
 
 export async function brainCommand(options) {
   console.log(chalk.bold.blue('\n🧠 Ultra-Dex Brain Sync\n'));
@@ -61,7 +62,12 @@ Setting up the implementation plan.
     }
 
     // Enhance context with current project information
-    const enhancedContext = await enhanceContextWithProjectInfo(contextContent, state, graphSummary);
+    let enhancedContext = await enhanceContextWithProjectInfo(contextContent, state, graphSummary);
+
+    if (options.diff) {
+      const diffSummary = await buildDiffSummary();
+      enhancedContext = await applyDiffSummary(enhancedContext, diffSummary);
+    }
     
     // Write updated context
     await fs.writeFile(contextPath, enhancedContext);
@@ -155,6 +161,49 @@ export async function enhanceContextWithProjectInfo(context, state, graphSummary
   return newContext + statsBlock;
 }
 
+export async function buildDiffSummary() {
+  try {
+    const upstream = execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}', { encoding: 'utf8', stdio: 'pipe' }).trim();
+    const range = `${upstream}..HEAD`;
+    const stat = execSync(`git diff --stat ${range}`, { encoding: 'utf8', stdio: 'pipe' }).trim();
+    const commits = execSync(`git log --oneline ${range}`, { encoding: 'utf8', stdio: 'pipe' }).trim();
+    return { range, stat, commits };
+  } catch (error) {
+    try {
+      const stat = execSync('git diff --stat HEAD~1..HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim();
+      const commits = execSync('git log -1 --oneline', { encoding: 'utf8', stdio: 'pipe' }).trim();
+      return { range: 'HEAD~1..HEAD', stat, commits };
+    } catch {
+      return { range: 'unknown', stat: '', commits: '' };
+    }
+  }
+}
+
+export async function applyDiffSummary(context, diffSummary) {
+  if (!diffSummary?.stat) return context;
+
+  const heading = '## Recent Changes (Auto)';
+  const block = `${heading}
+
+- **Range**: ${diffSummary.range}
+- **Updated**: ${new Date().toISOString()}
+
+### Diff Summary
+${diffSummary.stat}
+
+### Commits
+${diffSummary.commits || 'No commits detected'}
+`;
+
+  const sectionRegex = /\n## Recent Changes \(Auto\)[\s\S]*?(?=\n## |\n$|$)/;
+
+  if (sectionRegex.test(context)) {
+    return context.replace(sectionRegex, `\n${block}`);
+  }
+
+  return `${context.trim()}\n\n${block}\n`;
+}
+
 export function registerBrainCommand(program) {
   program
     .command('brain')
@@ -162,6 +211,7 @@ export function registerBrainCommand(program) {
     .description('Synchronize project context with codebase (persistent AI memory)')
     .option('-c, --commit', 'Auto-commit changes to git')
     .option('-p, --push', 'Auto-push changes to remote')
+    .option('--diff', 'Include git diff summary in CONTEXT.md')
     .option('-f, --force', 'Force sync even if no changes detected')
     .action(brainCommand);
 }

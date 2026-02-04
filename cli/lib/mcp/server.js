@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { registerResources } from "./resources.js";
 import { registerTools } from "./tools.js";
+import { initializeMcpHost, registerHostTools, mcpHub } from "./host.js";
 import { projectGraph } from "./graph.js";
 import { webSocketServer } from "./websocket.js";
 import { VERSION } from "../utils/version.js";
@@ -13,7 +14,7 @@ import { logger } from '../ui/logger.js';
  * Creates and configures the MCP Server instance
  * @returns {McpServer} Configured MCP Server
  */
-export function createMcpServer() {
+export function createMcpServer(options = {}) {
   const server = new Server(
     {
       name: "Ultra-Dex Active Kernel",
@@ -32,13 +33,17 @@ export function createMcpServer() {
   registerResources(server);
   registerTools(server);
 
+  if (options.hostMode) {
+    registerHostTools(server, mcpHub);
+  }
+
   return server;
 }
 
 /**
  * Starts the MCP Server in Stdio mode (for local usage/extensions)
  */
-export async function startStdioServer() {
+export async function startStdioServer(options = {}) {
   // Initialize Graph
   logger.debug("Initializing Ultra-Dex Active Kernel (Stdio)...");
   try {
@@ -55,7 +60,11 @@ export async function startStdioServer() {
     logger.error("WebSocket server failed", error);
   }
 
-  const server = createMcpServer();
+  if (options.hostMode) {
+    await initializeMcpHost({ servers: options.servers || [] });
+  }
+
+  const server = createMcpServer({ hostMode: options.hostMode });
   const transport = new StdioServerTransport();
   
   // Handle graceful shutdown

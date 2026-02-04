@@ -22,6 +22,7 @@ import {
 } from '../quality/automation.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';
+import { getCache } from '../cache/index.js';
 
 const execAsync = promisify(exec);
 
@@ -393,6 +394,7 @@ export function registerRunCommand(program) {
     .option('-o, --output <file>', 'Output file')
     .option('--stream', 'Stream output in real-time')
     .option('--no-stream', 'Disable streaming')
+    .option('--cache', 'Use response caching to reduce API costs')
     .action(async (agentName, options) => {
       try {
         const configured = checkConfiguredProviders();

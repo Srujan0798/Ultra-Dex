@@ -143,7 +143,8 @@ export function registerGenerateCommand(program) {
             // Cache the result if caching is enabled
             if (options.cache) {
               const cache = getCache();
-              await cache.set(providerId, options.model || provider.getDefaultModel(), SYSTEM_PROMPT, generateUserPrompt(idea), result);
+              const model = options.model || (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
+              await cache.set(providerId, model, SYSTEM_PROMPT, generateUserPrompt(idea), result);
 
               // Show cache metrics
               const stats = cache.getStats();

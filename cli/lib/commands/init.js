@@ -6,6 +6,7 @@ import path from 'path';
 
 import { QUICK_START_TEMPLATE } from '../templates/quick-start.js';
 import { CONTEXT_TEMPLATE } from '../templates/context.js';
+import { ULTRA_TEMPLATE } from '../templates/ultra.js';
 import { validateProjectName, validateSafePath } from '../utils/validation.js';
 import { ASSETS_ROOT, ROOT_FALLBACK, LIVE_TEMPLATES_ROOT } from '../config/paths.js';
 import { copyWithFallback, listWithFallback, readWithFallback } from '../utils/fallback.js';
@@ -75,6 +76,7 @@ function handlePreview() {
   process.stdout.write(chalk.bold.cyan('\n📋 PREVIEW MODE: ARCHITECTURAL BLUEPRINT\n'));
   process.stdout.write('  ├── QUICK-START.md        (Foundation)\n');
   process.stdout.write('  ├── CONTEXT.md            (Project Memory)\n');
+  process.stdout.write('  ├── ULTRA.md              (Agent Synchronization)\n');
   process.stdout.write('  ├── IMPLEMENTATION-PLAN.md (Execution Path)\n');
   process.stdout.write('  ├── docs/CHECKLIST.md     (21-Step Verification)\n');
   process.stdout.write('  └── docs/AI-PROMPTS.md    (Agent Instructions)\n');
@@ -257,14 +259,17 @@ async function scaffoldProject(outputDir, answers) {
 
   let quickStart = QUICK_START_TEMPLATE;
   let context = CONTEXT_TEMPLATE;
+  let ultra = ULTRA_TEMPLATE;
 
   for (const [key, value] of Object.entries(replacements)) {
     quickStart = quickStart.replace(new RegExp(key, 'g'), value);
     context = context.replace(new RegExp(key, 'g'), value);
+    ultra = ultra.replace(new RegExp(key, 'g'), value);
   }
 
   await fs.writeFile(path.join(outputDir, 'QUICK-START.md'), quickStart);
   await fs.writeFile(path.join(outputDir, 'CONTEXT.md'), context);
+  await fs.writeFile(path.join(outputDir, 'ULTRA.md'), ultra);
 
   const planContent = `# ${answers.projectName} - Implementation Plan
 
@@ -401,6 +406,7 @@ function showFinalInstructions(outputDir, answers) {
   process.stdout.write(chalk.gray(`  ${outputDir}/`) + '\n');
   process.stdout.write(chalk.gray('  ├── QUICK-START.md') + '\n');
   process.stdout.write(chalk.gray('  ├── CONTEXT.md') + '\n');
+  process.stdout.write(chalk.gray('  ├── ULTRA.md') + '\n');
   process.stdout.write(chalk.gray('  ├── IMPLEMENTATION-PLAN.md') + '\n');
   if (answers.includeFullTemplate) {
     process.stdout.write(chalk.gray('  ├── docs/MASTER-PLAN.md') + '\n');

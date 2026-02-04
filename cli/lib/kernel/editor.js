@@ -7,6 +7,8 @@ import inquirer from 'inquirer';
 import { renderer } from '../ui/renderer.js';
 import { renderDiff } from '../ui/diff.js';
 import { theme } from '../ui/theme.js';
+import { runPostToolUseHooks } from '../quality/hooks.js';
+import { AppError } from '../utils/errors.js';
 
 export class FileEditor {
     constructor() {
@@ -75,6 +77,27 @@ export class FileEditor {
                 await fs.mkdir(path.dirname(fullPath), { recursive: true });
                 await fs.writeFile(fullPath, newContent, 'utf8');
                 renderer.succeed(`Updated ${filePath}`);
+
+                // Quality Gates: Block invalid code after write
+                try {
+                    await runPostToolUseHooks({
+                        projectDir: this.projectRoot,
+                        tool: 'edit',
+                        mutates: true,
+                        blockOnFailure: true,
+                        fast: false,
+                        context: { filePath, reason }
+                    });
+                } catch (gateError) {
+                    if (fileExists) {
+                        await fs.writeFile(fullPath, originalContent, 'utf8');
+                    } else {
+                        await fs.unlink(fullPath).catch(() => {});
+                    }
+                    renderer.fail('Quality gates failed. Change reverted.');
+                    throw new AppError(gateError.message, { cause: gateError });
+                }
+
                 return true;
             } catch (e) {
                 renderer.fail(`Failed to write file: ${e.message}`);

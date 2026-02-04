@@ -7,6 +7,8 @@ import { projectGraph } from './graph.js';
 import { ultraMemory } from './memory.js';
 import { glob } from 'glob';
 import { logger } from '../ui/logger.js';
+import { runPostToolUseHooks } from '../quality/hooks.js';
+import { AppError } from '../utils/errors.js';
 
 export function registerTools(server) {
   // Tool: Remember Fact
@@ -276,6 +278,9 @@ export function registerTools(server) {
     },
     async ({ filePath, content, description }) => {
       try {
+        let originalContent = '';
+        let fileExists = false;
+
         // Security validation: prevent path traversal
         const normalizedPath = path.normalize(filePath);
         if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
@@ -294,12 +299,38 @@ export function registerTools(server) {
           throw new Error(`Access denied: Cannot write to ${part} directory`);
         }
 
+        try {
+          originalContent = await fs.readFile(fullPath, 'utf8');
+          fileExists = true;
+        } catch {
+          fileExists = false;
+        }
+
         // Ensure directory exists
         await fs.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.writeFile(fullPath, content, 'utf8');
 
         // Log for server visibility
         logger.info(`[MCP] Write: ${filePath} - ${description || 'No description'}`);
+
+        // Quality Gates: Block invalid code automatically
+        try {
+          await runPostToolUseHooks({
+            projectDir: process.cwd(),
+            tool: 'write_code',
+            mutates: true,
+            blockOnFailure: true,
+            fast: false,
+            context: { filePath, description }
+          });
+        } catch (gateError) {
+          if (fileExists) {
+            await fs.writeFile(fullPath, originalContent, 'utf8');
+          } else {
+            await fs.unlink(fullPath).catch(() => {});
+          }
+          throw new AppError(`Quality gates failed after write: ${gateError.message}`, { cause: gateError });
+        }
 
         return {
           content: [{ type: "text", text: `Successfully wrote ${filePath}` }]
