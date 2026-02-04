@@ -93,7 +93,19 @@ export async function listCustomAgents() {
 }
 
 export async function getCustomAgentPath(name) {
-  const filePath = path.join(CUSTOM_AGENTS_DIR, `${name}.md`);
+  // Rigorous validation of agent name
+  const validation = validateSafePath(name, 'Agent name');
+  if (validation !== true || name.includes('/') || name.includes('\\')) {
+    return null;
+  }
+
+  const filePath = path.join(CUSTOM_AGENTS_DIR, `${name.toLowerCase()}.md`);
+  
+  // Final safety check: ensure the resulting path is still inside CUSTOM_AGENTS_DIR
+  if (!filePath.startsWith(CUSTOM_AGENTS_DIR)) {
+    return null;
+  }
+
   if (await pathExists(filePath)) {
     return filePath;
   }
@@ -103,15 +115,51 @@ export async function getCustomAgentPath(name) {
 export async function readCustomAgent(name) {
   const filePath = await getCustomAgentPath(name);
   if (!filePath) {
-    throw new Error(`Custom agent "${name}" not found.`);
+    throw new Error(`Custom agent "${name}" not found or invalid name.`);
   }
   return fs.readFile(filePath, 'utf-8');
 }
 
 export async function readAgentPrompt(agent) {
+  // Validate built-in agent file reference
+  if (agent.file.includes('..') || path.isAbsolute(agent.file)) {
+    throw new Error(`Security breach: Malformed built-in agent file path for @${agent.name}`);
+  }
+
   const agentPath = path.join(ASSETS_ROOT, 'agents', agent.file);
   const fallbackPath = path.join(ROOT_FALLBACK, 'agents', agent.file);
+  
+  // Double-check paths are still within bounds
+  if (!agentPath.startsWith(ASSETS_ROOT) && !agentPath.startsWith(ROOT_FALLBACK)) {
+      throw new Error(`Access denied: Agent prompt path out of bounds for @${agent.name}`);
+  }
+
   return readWithFallback(agentPath, fallbackPath, 'utf-8');
+}
+
+
+export async function checkAgentsHealth() {
+  const healthResults = [];
+  
+  for (const agent of AGENTS) {
+    try {
+      const prompt = await readAgentPrompt(agent);
+      const isHealthy = prompt && prompt.length > 50;
+      healthResults.push({
+        agent: agent.name,
+        status: isHealthy ? 'healthy' : 'malformed',
+        error: isHealthy ? null : 'Prompt content too short or empty'
+      });
+    } catch (err) {
+      healthResults.push({
+        agent: agent.name,
+        status: 'error',
+        error: err.message
+      });
+    }
+  }
+  
+  return healthResults;
 }
 
 export function registerAgentsCommand(program) {
@@ -124,6 +172,26 @@ export function registerAgentsCommand(program) {
   agentsCmd.action(async () => {
     await listAgents();
   });
+
+  // agents health
+  agentsCmd
+    .command('health')
+    .description('Check health of all built-in agents')
+    .action(async () => {
+      const spinner = ora('Checking agent health...').start();
+      const results = await checkAgentsHealth();
+      
+      const errors = results.filter(r => r.status !== 'healthy');
+      if (errors.length === 0) {
+        spinner.succeed(chalk.green(`All ${results.length} built-in agents are healthy and readable.`));
+      } else {
+        spinner.fail(chalk.red(`${errors.length} agents have issues:`));
+        errors.forEach(e => {
+          console.log(`  ${chalk.yellow('@' + e.agent)}: ${chalk.gray(e.error)}`);
+        });
+      }
+    });
+
 
   // agents list
   agentsCmd
