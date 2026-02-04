@@ -504,4 +504,233 @@ export function registerTools(server) {
     }
   );
 
+  // Tool: Deep Impact Analysis (GraphRAG)
+  server.tool(
+    "deep_impact_analysis",
+    "Perform deep impact analysis using graph database. Answers 'What breaks if I change X?'",
+    {
+      filePath: z.string().describe("The file path to analyze for impact"),
+      maxDepth: z.number().optional().default(5).describe("Maximum depth for transitive dependency search"),
+      includeFunctions: z.boolean().optional().default(false).describe("Include function-level impact analysis")
+    },
+    async ({ filePath, maxDepth, includeFunctions }) => {
+      try {
+        const { contextEngine } = await import('./context-engine.js');
+        await contextEngine.initialize();
+        
+        const result = await contextEngine.query(`What breaks if I change ${filePath}?`, {
+          impactDepth: maxDepth,
+          includeFunctions
+        });
+
+        return {
+          content: [{ 
+            type: "text", 
+            text: result.answer || "No impact analysis available."
+          }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Deep impact analysis failed: ${error.message}` }]
+        };
+      }
+    }
+  );
+
+  // Tool: Find Circular Dependencies
+  server.tool(
+    "find_circular_deps",
+    "Detect circular dependencies in the codebase using graph analysis",
+    {},
+    async () => {
+      try {
+        const { projectGraph } = await import('./graph.js');
+        await projectGraph.scan();
+        
+        const cycles = await projectGraph.findCircularDependencies();
+        
+        if (cycles.length === 0) {
+          return {
+            content: [{ type: "text", text: "✅ No circular dependencies found in the codebase." }]
+          };
+        }
+
+        const formatted = cycles.map((cycle, i) => 
+          `${i + 1}. ${cycle.join(' → ')} → ${cycle[0]}`
+        ).join('\n');
+
+        return {
+          content: [{ 
+            type: "text", 
+            text: `⚠️ Found ${cycles.length} circular dependencies:\n\n${formatted}` 
+          }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Circular dependency check failed: ${error.message}` }]
+        };
+      }
+    }
+  );
+
+  // Tool: Get Coupling Metrics
+  server.tool(
+    "get_coupling_metrics",
+    "Analyze code coupling metrics to identify tightly coupled components",
+    {},
+    async () => {
+      try {
+        const { projectGraph } = await import('./graph.js');
+        await projectGraph.scan();
+        
+        const metrics = await projectGraph.getCouplingMetrics();
+        
+        if (!metrics || Object.keys(metrics).length === 0) {
+          return {
+            content: [{ type: "text", text: "Coupling metrics not available." }]
+          };
+        }
+
+        let text = "## Coupling Metrics\n\n";
+        text += `- Average coupling: ${metrics.averageCoupling?.toFixed(2) || 'N/A'}\n`;
+        text += `- Max coupling: ${metrics.maxCoupling || 'N/A'}\n\n`;
+
+        if (metrics.highlyCoupledFiles && metrics.highlyCoupledFiles.length > 0) {
+          text += "### Highly Coupled Files:\n";
+          metrics.highlyCoupledFiles.forEach(f => {
+            text += `- ${f.file} (coupling: ${f.coupling})\n`;
+          });
+        }
+
+        return {
+          content: [{ type: "text", text }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Coupling analysis failed: ${error.message}` }]
+        };
+      }
+    }
+  );
+
+  // Tool: Graph RAG Query
+  server.tool(
+    "graph_rag_query",
+    "Query the codebase graph for context-aware information retrieval",
+    {
+      query: z.string().describe("The query to search for (can be natural language)"),
+      includeImpact: z.boolean().optional().default(false).describe("Include impact analysis in results"),
+      includeCoupling: z.boolean().optional().default(false).describe("Include coupling metrics"),
+      includeCircularDeps: z.boolean().optional().default(false).describe("Include circular dependency detection")
+    },
+    async ({ query, includeImpact, includeCoupling, includeCircularDeps }) => {
+      try {
+        const { contextEngine } = await import('./context-engine.js');
+        await contextEngine.initialize();
+        
+        const result = await contextEngine.query(query, {
+          includeImpact,
+          includeCoupling,
+          includeCircularDeps
+        });
+
+        return {
+          content: [{ 
+            type: "text", 
+            text: result.answer || "No results found."
+          }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Graph RAG query failed: ${error.message}` }]
+        };
+      }
+    }
+  );
+
+  // Tool: Store Architectural Decision
+  server.tool(
+    "store_decision",
+    "Store an architectural decision in the graph for future impact analysis",
+    {
+      title: z.string().describe("Title of the decision"),
+      description: z.string().describe("Description of the decision"),
+      affectedFiles: z.array(z.string()).describe("List of files affected by this decision"),
+      status: z.enum(['active', 'deprecated', 'superseded']).optional().default('active').describe("Decision status")
+    },
+    async ({ title, description, affectedFiles, status }) => {
+      try {
+        const { projectGraph } = await import('./graph.js');
+        await projectGraph.scan();
+        
+        const success = await projectGraph.storeDecision({
+          id: `${Date.now()}`,
+          title,
+          description,
+          affectedFiles,
+          status
+        });
+
+        if (success) {
+          return {
+            content: [{ 
+              type: "text", 
+              text: `✅ Decision stored: "${title}"\n\nAffects ${affectedFiles.length} files.` 
+            }]
+          };
+        } else {
+          return {
+            content: [{ 
+              type: "text", 
+              text: `Decision stored locally (GraphDB not connected).\n\nTitle: "${title}"\nAffects: ${affectedFiles.join(', ')}` 
+            }]
+          };
+        }
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Failed to store decision: ${error.message}` }]
+        };
+      }
+    }
+  );
+
+  // Tool: Search Symbols
+  server.tool(
+    "search_symbols",
+    "Search for functions, classes, or symbols across the codebase using the graph",
+    {
+      query: z.string().describe("Symbol name to search for"),
+      limit: z.number().optional().default(10).describe("Maximum number of results")
+    },
+    async ({ query, limit }) => {
+      try {
+        const { projectGraph } = await import('./graph.js');
+        await projectGraph.scan();
+        
+        const results = await projectGraph.searchSymbols(query, { limit });
+
+        if (results.length === 0) {
+          return {
+            content: [{ type: "text", text: `No symbols found matching "${query}".` }]
+          };
+        }
+
+        const formatted = results.map(r => 
+          `- ${r.name}${r.file ? ` (${r.file})` : ''}${r.type ? ` [${r.type}]` : ''}`
+        ).join('\n');
+
+        return {
+          content: [{ 
+            type: "text", 
+            text: `Found ${results.length} symbols matching "${query}":\n\n${formatted}` 
+          }]
+        };
+      } catch (error) {
+        return {
+          content: [{ type: "text", text: `Symbol search failed: ${error.message}` }]
+        };
+      }
+    }
+  );
+
 }
