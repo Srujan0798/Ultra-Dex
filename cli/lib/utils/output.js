@@ -1,20 +1,21 @@
 import chalk from 'chalk';
+import { formatError, formatWarning, formatInfo, formatSuccess, formatStatus } from './status.js';
 
 export function printError(message, err) {
-  console.log(chalk.red(message));
+  console.log(formatError(message));
   if (err?.message) {
     console.log(chalk.gray(`  → ${err.message}`));
   }
 }
 
 export function printWarning(message) {
-  console.log(chalk.yellow(message));
+  console.log(formatWarning(message));
 }
 
 export function printInfo(message) {
-  console.log(chalk.cyan(message));
+  console.log(formatInfo(message));
 }
 
 export function printSuccess(message) {
-  console.log(chalk.green(message));
+  console.log(formatSuccess(message));
 }
