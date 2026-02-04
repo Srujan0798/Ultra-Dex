@@ -8,9 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md)
-[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-31_Modules-green.svg)](./cursor-rules/)
-[![AI Agents](https://img.shields.io/badge/AI_Agents-18_Prompts-orange.svg)](./agents/)
-[![Commands](https://img.shields.io/badge/CLI_Commands-50+-blue.svg)](./cli/)
+[![Cursor Rules](https://img.shields.io/badge/Cursor_Rules-43_Rules-green.svg)](./cursor-rules/)
+[![AI Agents](https://img.shields.io/badge/AI_Agents-18_Agents-orange.svg)](./agents/)
+[![Commands](https://img.shields.io/badge/CLI_Commands-61-blue.svg)](./cli/)
 
 > **The Autonomous OS for Software Engineering — The Headless CTO.**
 
@@ -55,7 +55,7 @@ npx ultra-dex auth login
 npx ultra-dex workspace switch "my-pro-project"
 ```
 
-**50+ commands. 18 production-ready agents. MCP integration. Autonomous Self-Healing.**
+**61 commands. 18 production-ready agents. MCP integration. Autonomous Self-Healing.**
 
 ---
 

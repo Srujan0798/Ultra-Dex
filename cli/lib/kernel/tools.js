@@ -65,7 +65,7 @@ export class ToolBelt {
 
         if (sandboxOnly) {
             process.stdout.write(chalk.blue(`\n🐳 Sandbox Enforcement: Routing command to Docker...`) + '\n');
-            const { executeInSandbox } = await import('./exec.js');
+            const { executeInSandbox } = await import('../commands/exec.js');
             try {
                 const result = await executeInSandbox(command, { isCommand: true });
                 return result.stdout + (result.stderr ? `\nSTDERR: ${result.stderr}` : '');

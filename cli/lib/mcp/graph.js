@@ -679,6 +679,7 @@ export class CodeGraph {
   }
 
   async analyzeFile(filePath, mtime) {
+    if (!filePath) throw new ValidationError('filePath is required for analysis');
     try {
       const absolutePath = path.resolve(process.cwd(), filePath);
       const stats = await fs.stat(absolutePath);
@@ -794,7 +795,7 @@ export class CodeGraph {
 
     } catch (e) {
       if (process.env.DEBUG) {
-        console.error(`Failed to analyze ${filePath}:`, e.message);
+        logger.error(`Failed to analyze ${filePath}`, e);
       }
       return { edges: [] };
     }
@@ -813,10 +814,12 @@ export class CodeGraph {
   }
 
   findReferences(fileName) {
+    if (!fileName) return [];
     return this.edges.filter(e => e.to.includes(fileName));
   }
 
   findSymbol(name) {
+    if (!name) return [];
     const results = [];
     const lowerName = name.toLowerCase();
     for (const [file, node] of this.nodes) {
@@ -831,6 +834,7 @@ export class CodeGraph {
   }
 
   getImpact(filePath) {
+    if (!filePath) throw new ValidationError('filePath is required for impact analysis');
     // Use GraphRAG if available for more sophisticated impact analysis
     if (this.graphRAG && this.graphRAG.isConnected) {
       return this.graphRAG.getImpactAnalysis(filePath);
@@ -858,6 +862,7 @@ export class CodeGraph {
   }
 
   async updateChangedFiles(changedFiles) {
+    if (!Array.isArray(changedFiles)) return;
     const updateStart = performance.now();
 
     for (const file of changedFiles) {
@@ -870,7 +875,7 @@ export class CodeGraph {
     }
 
     const updateDuration = performance.now() - updateStart;
-    console.debug(`[Performance] Updated ${changedFiles.length} changed files in ${updateDuration.toFixed(2)}ms`);
+    logger.debug(`[Performance] Updated ${changedFiles.length} changed files in ${updateDuration.toFixed(2)}ms`);
   }
 
   clearCache() {
@@ -882,6 +887,7 @@ export class CodeGraph {
 
   // GraphRAG passthrough methods
   async getImpactAnalysis(filePath, options) {
+    if (!filePath) throw new ValidationError('filePath is required');
     if (this.graphRAG && this.graphRAG.isConnected) {
       return await this.graphRAG.getImpactAnalysis(filePath, options);
     }
@@ -903,6 +909,7 @@ export class CodeGraph {
   }
 
   async searchSymbols(query, options) {
+    if (!query) return [];
     if (this.graphRAG && this.graphRAG.isConnected) {
       return await this.graphRAG.searchSymbols(query, options);
     }
@@ -910,6 +917,7 @@ export class CodeGraph {
   }
 
   async getRAGContext(query, options) {
+    if (!query) return { files: [], functions: [], decisions: [], dependencies: [] };
     if (this.graphRAG && this.graphRAG.isConnected) {
       return await this.graphRAG.getRAGContext(query, options);
     }
@@ -917,6 +925,7 @@ export class CodeGraph {
   }
 
   async storeDecision(decision) {
+    if (!decision) throw new ValidationError('decision is required');
     if (this.graphRAG && this.graphRAG.isConnected) {
       return await this.graphRAG.storeDecision(decision);
     }
