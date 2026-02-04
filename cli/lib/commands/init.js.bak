@@ -1309,7 +1309,7 @@ Events to listen for:
 ## License
 
 MIT
-`});
+`);
 
     spinner.succeed(chalk.green('Next.js 15 SaaS infrastructure generated!'));
     
