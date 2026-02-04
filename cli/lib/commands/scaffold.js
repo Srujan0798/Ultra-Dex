@@ -4,6 +4,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,7 +50,7 @@ async function copyDirectory(src, dest) {
   for (const entry of entries) {
     // Prevent any potential symbolic link issues
     if (entry.isSymbolicLink()) {
-      console.warn(`Skipping symbolic link: ${entry.name}`);
+      printWarning(`Skipping symbolic link: ${entry.name}`);
       continue;
     }
 
@@ -64,7 +66,7 @@ async function copyDirectory(src, dest) {
 }
 
 export async function scaffoldCommand(templateName, options) {
-  console.log(chalk.cyan('\n🏗️  Ultra-Dex Scaffold\n'));
+  printInfo(chalk.cyan('\n🏗️  Ultra-Dex Scaffold\n'));
 
   // If no template specified, show selection
   if (!templateName) {
@@ -84,10 +86,10 @@ export async function scaffoldCommand(templateName, options) {
 
   const template = TEMPLATES[templateName];
   if (!template) {
-    console.log(chalk.red(`\n❌ Template "${templateName}" not found.\n`));
-    console.log(chalk.gray('Available templates:'));
+    printError(chalk.red(`\n❌ Template "${templateName}" not found.\n`));
+    printInfo(chalk.gray('Available templates:'));
     Object.entries(TEMPLATES).forEach(([key, val]) => {
-      console.log(chalk.cyan(`  - ${key}`) + chalk.gray(` (${val.name})`));
+      printInfo(chalk.cyan(`  - ${key}`) + chalk.gray(` (${val.name})`));
     });
     process.exit(1);
   }
@@ -103,8 +105,8 @@ export async function scaffoldCommand(templateName, options) {
       await fs.access(assetsDir);
     } catch {
       spinner.fail('Template files not found in assets');
-      console.log(chalk.yellow('\n💡 Templates are bundled with the npm package.'));
-      console.log(chalk.gray('   Make sure you have the full package installed.\n'));
+      printInfo(chalk.yellow('\n💡 Templates are bundled with the npm package.'));
+      printInfo(chalk.gray('   Make sure you have the full package installed.\n'));
       process.exit(1);
     }
 
@@ -113,36 +115,36 @@ export async function scaffoldCommand(templateName, options) {
 
     spinner.succeed(`Scaffolded ${template.name}`);
 
-    console.log(chalk.bold('\n📁 Created files:\n'));
+    printInfo(chalk.bold('\n📁 Created files:\n'));
 
     async function listFiles(dir, prefix = '') {
       const entries = await fs.readdir(dir, { withFileTypes: true });
       for (const entry of entries) {
         if (entry.isDirectory()) {
-          console.log(chalk.gray(`  ${prefix}${entry.name}/`));
+          printInfo(chalk.gray(`  ${prefix}${entry.name}/`));
           await listFiles(path.join(dir, entry.name), prefix + '  ');
         } else {
-          console.log(chalk.green(`  ${prefix}${entry.name}`));
+          printInfo(chalk.green(`  ${prefix}${entry.name}`));
         }
       }
     }
     await listFiles(outputDir);
 
-    console.log(chalk.bold('\n🚀 Next steps:\n'));
-    console.log(chalk.cyan(`  cd ${outputDir}`));
-    console.log(chalk.cyan('  npm install'));
-    console.log(chalk.cyan('  cp .env.example .env.local'));
-    console.log(chalk.cyan('  npm run dev'));
+    printInfo(chalk.bold('\n🚀 Next steps:\n'));
+    printInfo(chalk.cyan(`  cd ${outputDir}`));
+    printInfo(chalk.cyan('  npm install'));
+    printInfo(chalk.cyan('  cp .env.example .env.local'));
+    printInfo(chalk.cyan('  npm run dev'));
 
-    console.log(chalk.bold('\n📚 Stack:\n'));
+    printInfo(chalk.bold('\n📚 Stack:\n'));
     template.stack.forEach(tech => {
-      console.log(chalk.gray(`  • ${tech}`));
+      printInfo(chalk.gray(`  • ${tech}`));
     });
 
-    console.log(chalk.bold('\n💡 Tips:\n'));
-    console.log(chalk.gray('  • Run "ultra-dex init" to add Ultra-Dex planning docs'));
-    console.log(chalk.gray('  • Run "ultra-dex generate" to create implementation plan'));
-    console.log(chalk.gray('  • Run "ultra-dex agents" to see available AI agents\n'));
+    printInfo(chalk.bold('\n💡 Tips:\n'));
+    printInfo(chalk.gray('  • Run "ultra-dex init" to add Ultra-Dex planning docs'));
+    printInfo(chalk.gray('  • Run "ultra-dex generate" to create implementation plan'));
+    printInfo(chalk.gray('  • Run "ultra-dex agents" to see available AI agents\n'));
 
   } catch (error) {
     spinner.fail('Failed to scaffold');

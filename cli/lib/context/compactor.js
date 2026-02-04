@@ -430,25 +430,36 @@ class ContextCompactor {
   intelligentlyReduce(array) {
     if (array.length <= 10) return array; // Don't compress small arrays
 
-    // Keep the most recent items and some key historical items
-    const recentCount = Math.floor(array.length * 0.3); // Keep 30% recent
-    const sampleCount = Math.min(Math.floor(array.length * 0.2), 10); // Sample 20% or max 10 older items
+    // Identify and preserve Sacred DNA sections
+    const sacredItems = array.filter(item => this.isSacredSection(item));
 
-    const recentItems = array.slice(-recentCount);
+    // Get non-sacred items for reduction
+    const nonSacredItems = array.filter(item => !this.isSacredSection(item));
+
+    if (nonSacredItems.length <= 10) {
+      // If there aren't many non-sacred items, return original with sacred items
+      return [...sacredItems, ...nonSacredItems];
+    }
+
+    // Keep the most recent non-sacred items and some key historical items
+    const recentCount = Math.floor(nonSacredItems.length * 0.3); // Keep 30% recent
+    const sampleCount = Math.min(Math.floor(nonSacredItems.length * 0.2), 10); // Sample 20% or max 10 older items
+
+    const recentItems = nonSacredItems.slice(-recentCount);
     const sampledItems = [];
 
-    // Evenly sample from the earlier parts of the array
-    if (array.length - recentCount > sampleCount) {
-      const step = Math.floor((array.length - recentCount) / sampleCount);
-      for (let i = 0; i < sampleCount && i * step < array.length - recentCount; i++) {
-        sampledItems.push(array[i * step]);
+    // Evenly sample from the earlier parts of the non-sacred items
+    if (nonSacredItems.length - recentCount > sampleCount) {
+      const step = Math.floor((nonSacredItems.length - recentCount) / sampleCount);
+      for (let i = 0; i < sampleCount && i * step < nonSacredItems.length - recentCount; i++) {
+        sampledItems.push(nonSacredItems[i * step]);
       }
     } else {
       // If not enough items to sample, take what's available
-      sampledItems.push(...array.slice(0, array.length - recentCount));
+      sampledItems.push(...nonSacredItems.slice(0, nonSacredItems.length - recentCount));
     }
 
-    return [...sampledItems, ...recentItems];
+    return [...sacredItems, ...sampledItems, ...recentItems];
   }
 
   /**

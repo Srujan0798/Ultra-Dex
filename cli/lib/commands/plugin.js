@@ -60,7 +60,7 @@ async function listPlugins() {
       printInfo(`  ${chalk.gray(plugin.description)}`);
     }
     if (plugin.author) {
-      printInfo(`  ${chalk.gray(\`by \${plugin.author}\`)}`);
+      printInfo(`  ${chalk.gray(`by ${plugin.author}`)}`);
     }
     printInfo('');
   });
