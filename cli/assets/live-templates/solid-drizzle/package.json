@@ -1,0 +1,27 @@
+{
+  "name": "ultra-dex-solid-drizzle",
+  "description": "SolidStart and Drizzle ORM starter template",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@solidjs/meta": "^0.29.0",
+    "@solidjs/router": "^0.13.0",
+    "@solidjs/start": "^1.0.0",
+    "drizzle-orm": "^0.31.0",
+    "postgres": "^3.4.0",
+    "solid-js": "^1.8.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.22.0",
+    "typescript": "^5.5.0",
+    "vinxi": "^0.3.0"
+  }
+}

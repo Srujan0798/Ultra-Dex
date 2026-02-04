@@ -1,0 +1,23 @@
+{
+  "name": "ultra-dex-astro-sanity",
+  "description": "Astro and Sanity CMS starter template",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^4.10.0",
+    "@sanity/client": "^6.21.0",
+    "@sanity/astro": "^3.1.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
