@@ -94,7 +94,7 @@ class ContextCompactor {
     // Define criteria for what constitutes Sacred DNA
     // This could be based on keywords, structure, or metadata
     if (!section) return false;
-    
+
     const sacredIndicators = [
       'SACRED_DNA',
       'CRITICAL_TEMPLATE',
@@ -105,12 +105,36 @@ class ContextCompactor {
       'UNTOUCHABLE',
       'IMMUTABLE',
       'FOUNDATION',
-      'BASELINE'
+      'BASELINE',
+      'ARCHITECTURE',
+      'DESIGN_DECISION',
+      'IMPLEMENTATION_PLAN',
+      'REQUIREMENTS',
+      'SPECIFICATIONS',
+      'CONSTRAINTS',
+      'LIMITATIONS',
+      'INTERFACE_DEFINITION',
+      'DATA_MODEL',
+      'SCHEMA',
+      'CONFIGURATION',
+      'ENVIRONMENT_VARIABLES',
+      'DEPLOYMENT_STRATEGY',
+      'SECURITY_MEASURES',
+      'PERFORMANCE_REQUIREMENTS',
+      'TESTING_STRATEGY',
+      'MONITORING',
+      'ERROR_HANDLING',
+      'BACKUP_STRATEGY',
+      'RECOVERY_PROCEDURES',
+      'AUDIT_LOGS',
+      'COMPLIANCE_REQUIREMENTS',
+      'ACCESS_CONTROLS',
+      'VALIDATION_RULES'
     ];
-    
+
     const text = typeof section === 'string' ? section : JSON.stringify(section);
-    
-    return sacredIndicators.some(indicator => 
+
+    return sacredIndicators.some(indicator =>
       text.toUpperCase().includes(indicator)
     );
   }
@@ -126,22 +150,27 @@ class ContextCompactor {
       timestamp: Date.now(),
       originalLength: Array.isArray(conversation) ? conversation.length : 1,
       summary: '',
-      compressionRatio: 0
+      compressionRatio: 0,
+      preservedSections: 0
     };
 
     if (Array.isArray(conversation) && conversation.length > 0) {
       // Create a summary of the conversation
       const messages = conversation.slice();
-      
+
       // Extract key points from the conversation
       const keyPoints = this.extractKeyPoints(messages);
-      
+
+      // Count preserved sections
+      const preservedSections = messages.filter(msg => this.isSacredSection(msg)).length;
+      summaryData.preservedSections = preservedSections;
+
       // Generate summary
       summaryData.summary = this.generateSummary(keyPoints, messages);
       summaryData.compressionRatio = keyPoints.length / messages.length;
     } else {
-      summaryData.summary = typeof conversation === 'string' ? 
-        this.simpleSummarize(conversation) : 
+      summaryData.summary = typeof conversation === 'string' ?
+        this.simpleSummarize(conversation) :
         this.simpleSummarize(JSON.stringify(conversation));
     }
 
