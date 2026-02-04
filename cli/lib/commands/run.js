@@ -14,11 +14,14 @@ import { createProvider, getDefaultProvider, checkConfiguredProviders } from '..
 import { projectGraph } from '../mcp/graph.js';
 import { errorRecovery } from '../utils/error-recovery.js';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
-import { 
-  verifyLinting, 
-  verifyTypeSafety, 
-  verifySecurityPatterns 
+import { authorizeOperation } from '../governance/index.js';
+import {
+  verifyLinting,
+  verifyTypeSafety,
+  verifySecurityPatterns
 } from '../quality/automation.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 const execAsync = promisify(exec);
 
@@ -150,7 +153,8 @@ async function readProjectContext() {
 export async function runAgentLoop(agentName, task, provider, projectContext, depth = 0) {
   if (depth > 5) return `[System]: Max delegation depth reached.`;
 
-  const agent = AGENTS[agentName.toLowerCase()];
+  const agentId = agentName.toLowerCase();
+  const agent = AGENTS[agentId];
   if (!agent) return `[System]: Unknown agent @${agentName}`;
 
   const spinner = ora(`\${agent.name} is working...`).start();
@@ -171,9 +175,23 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
 >> RUN_SHELL: "command"
 >> DELEGATE: @AgentName "Task"`;
 
+  const agentContext = buildAgentContext(agentId, agent);
+  const providerInstance = typeof provider === 'function' ? provider(agentId) : provider;
+
   try {
+    const executionDecision = await authorizeOperation({
+      agent: agentContext,
+      operation: 'execute',
+      resourceType: 'ai',
+      metadata: { task, agentTitle: agent.role },
+    });
+    if (!executionDecision.allowed) {
+      spinner.fail(`${agent.name} blocked: ${executionDecision.reason}`);
+      return `[Governance]: ${executionDecision.reason}`;
+    }
+
     const result = await errorRecovery.executeWithRecovery('ai-provider', async () => {
-        return await provider.generate(agent.systemPrompt, prompt);
+        return await providerInstance.generate(agent.systemPrompt, prompt);
     }, {
         maxRetries: 2,
         retryDelay: 2000
@@ -199,7 +217,17 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         return await runAgentLoop(agentName, `${task}\n\nError reading ${filePath}: Path traversal detected`, provider, projectContext, depth + 1);
       }
 
-      console.log(chalk.cyan(`\n🔍 \${agent.name} is reading \${filePath}...`));
+      const readDecision = await authorizeOperation({
+        agent: agentContext,
+        operation: 'read',
+        filePath,
+        metadata: { agentTitle: agent.role },
+      });
+      if (!readDecision.allowed) {
+        return await runAgentLoop(agentName, `${task}\n\nGovernance blocked READ_CODE on ${filePath}: ${readDecision.reason}`, provider, projectContext, depth + 1);
+      }
+
+      printInfo(chalk.cyan(`\n🔍 \${agent.name} is reading \${filePath}...`));
       await dashboardNotifier.sendLog(`@\${agentName} is reading \${filePath}`, 'info');
       try {
         const fullPath = path.resolve(process.cwd(), filePath);
@@ -226,7 +254,18 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: Path traversal detected`, provider, projectContext, depth + 1);
       }
 
-      console.log(chalk.green(`\n💾 \${agent.name} is writing to \${filePath}...`));
+      const writeDecision = await authorizeOperation({
+        agent: agentContext,
+        operation: 'write',
+        filePath,
+        content: newContent,
+        metadata: { agentTitle: agent.role },
+      });
+      if (!writeDecision.allowed) {
+        return await runAgentLoop(agentName, `${task}\n\nGovernance blocked WRITE_CODE on ${filePath}: ${writeDecision.reason}`, provider, projectContext, depth + 1);
+      }
+
+      printInfo(chalk.green(`\n💾 \${agent.name} is writing to \${filePath}...`));
       await dashboardNotifier.sendLog(`@\${agentName} is writing to \${filePath}`, 'success');
       try {
         const fullPath = path.resolve(process.cwd(), filePath);
@@ -246,7 +285,7 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         await fs.writeFile(fullPath, newContent, 'utf8');
 
         // --- Active Verification Hook ---
-        console.log(chalk.yellow(`\n🛡️  Running Active Verification Gates...`));
+        printInfo(chalk.yellow(`\n🛡️  Running Active Verification Gates...`));
         const projectDir = process.cwd();
         const lintRes = await verifyLinting(projectDir);
         const typeRes = await verifyTypeSafety(projectDir);
@@ -258,15 +297,15 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         if (secRes.status === 'FAIL') failures.push(`Security Check Failed: ${secRes.message}`);
 
         if (failures.length > 0) {
-            console.log(chalk.red(`\n❌ Verification Failed!`));
-            failures.forEach(f => console.log(chalk.red(`  - ${f}`)));
-            
+            printError(`\n❌ Verification Failed!`);
+            failures.forEach(f => printError(`  - ${f}`));
+
             // Return failure to agent so it can fix it
             const errorMsg = `Code written to ${filePath}, BUT verification failed. YOU MUST FIX THIS:\n${failures.join('\n')}`;
             return await runAgentLoop(agentName, `${task}\n\n${errorMsg}`, provider, projectContext, depth + 1);
         }
-        
-        console.log(chalk.green(`\n✅ Verification Passed`));
+
+        printSuccess(`\n✅ Verification Passed`);
         // --------------------------------
 
         const nextPrompt = `Successfully wrote ${filePath} and passed verification. Please proceed or delegate verification.`;
@@ -278,7 +317,17 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
 
     if (runShellMatch) {
       const command = runShellMatch[1];
-      console.log(chalk.yellow(`\n⚡ ${agent.name} is executing shell command: ${command}...`));
+      const execDecision = await authorizeOperation({
+        agent: agentContext,
+        operation: 'execute',
+        resourceType: 'shell',
+        command,
+        metadata: { agentTitle: agent.role },
+      });
+      if (!execDecision.allowed) {
+        return await runAgentLoop(agentName, `${task}\n\nGovernance blocked RUN_SHELL "${command}": ${execDecision.reason}`, provider, projectContext, depth + 1);
+      }
+      printInfo(chalk.yellow(`\n⚡ ${agent.name} is executing shell command: ${command}...`));
 
       try {
         const { stdout, stderr } = await execAsync(command);
@@ -293,7 +342,15 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     if (delegateMatch) {
       const nextAgent = delegateMatch[1];
       const nextTask = delegateMatch[2];
-      console.log(chalk.cyan(`\n↪️  ${agent.name} is delegating to @${nextAgent}: "${nextTask}"`));
+      const delegateDecision = await authorizeOperation({
+        agent: agentContext,
+        operation: 'delegate',
+        metadata: { to: nextAgent, agentTitle: agent.role },
+      });
+      if (!delegateDecision.allowed) {
+        return `${content}\n\n[Governance]: Delegation blocked - ${delegateDecision.reason}`;
+      }
+      printInfo(chalk.cyan(`\n↪️  ${agent.name} is delegating to @${nextAgent}: "${nextTask}"`));
       const subResult = await runAgentLoop(nextAgent, nextTask, provider, projectContext, depth + 1);
       return `${content}\n\n---\n\n## Delegated Result from @${nextAgent}\n${subResult}`;
     }
@@ -303,6 +360,28 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     spinner.fail(`${agent.name} failed: ${err.message}`);
     return `[Error]: ${err.message}`;
   }
+}
+
+function buildAgentContext(agentId, agent) {
+  return {
+    id: agentId,
+    name: agent?.name || agentId,
+    roleId: agentId,
+    title: agent?.role,
+  };
+}
+
+function createAgentProviderFactory(providerId, options = {}) {
+  const cache = new Map();
+  return (agentId) => {
+    const key = agentId.toLowerCase();
+    if (cache.has(key)) return cache.get(key);
+    const agent = AGENTS[key];
+    const agentContext = buildAgentContext(key, agent);
+    const provider = createProvider(providerId, { ...options, agent: agentContext });
+    cache.set(key, provider);
+    return provider;
+  };
 }
 
 export function registerRunCommand(program) {
@@ -315,37 +394,42 @@ export function registerRunCommand(program) {
     .option('--stream', 'Stream output in real-time')
     .option('--no-stream', 'Disable streaming')
     .action(async (agentName, options) => {
-      const configured = checkConfiguredProviders();
-      const hasProvider = configured.some(p => p.configured) || options.key;
+      try {
+        const configured = checkConfiguredProviders();
+        const hasProvider = configured.some(p => p.configured) || options.key;
 
-      if (!hasProvider) {
-        console.log(chalk.yellow('\n⚠️  No AI provider configured.\n'));
-        console.log(chalk.white('To use AI agents, configure one of these:'));
-        console.log(chalk.gray('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude'));
-        console.log(chalk.gray('  export OPENAI_API_KEY=sk-...         # OpenAI'));
-        console.log(chalk.gray('  export GOOGLE_AI_KEY=...             # Gemini'));
-        console.log(chalk.white('\nOr use local AI with Ollama (no key needed):'));
-        console.log(chalk.gray('  ultra-dex run planner -t "task" --provider ollama\n'));
-        return;
-      }
+        if (!hasProvider) {
+          printWarning('\n⚠️  No AI provider configured.\n');
+          printInfo('To use AI agents, configure one of these:');
+          printInfo('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude');
+          printInfo('  export OPENAI_API_KEY=sk-...         # OpenAI');
+          printInfo('  export GOOGLE_AI_KEY=...             # Gemini');
+          printInfo('\nOr use local AI with Ollama (no key needed):');
+          printInfo('  ultra-dex run planner -t "task" --provider ollama\n');
+          return;
+        }
 
-      let task = options.task;
-      if (!task) {
-        const { taskInput } = await inquirer.prompt([{ 
-          type: 'input', name: 'taskInput', message: `Task for ${agentName}?`
-        }]);
-        task = taskInput;
-      }
+        let task = options.task;
+        if (!task) {
+          const { taskInput } = await inquirer.prompt([{
+            type: 'input', name: 'taskInput', message: `Task for ${agentName}?`
+          }]);
+          task = taskInput;
+        }
 
-      const context = await readProjectContext();
-      const providerId = options.provider || getDefaultProvider();
-      const provider = createProvider(providerId, { apiKey: options.key, maxTokens: 8000 });
+        const context = await readProjectContext();
+        const providerId = options.provider || getDefaultProvider();
+        const providerFactory = createAgentProviderFactory(providerId, { apiKey: options.key, maxTokens: 8000 });
 
-      const finalOutput = await runAgentLoop(agentName, task, provider, context);
-      
-      if (options.output) {
-        await fs.writeFile(options.output, finalOutput);
-        console.log(chalk.green(`\n✅ Saved to ${options.output}`));
+        const finalOutput = await runAgentLoop(agentName, task, providerFactory, context);
+
+        if (options.output) {
+          await fs.writeFile(options.output, finalOutput);
+          printSuccess(`\n✅ Saved to ${options.output}`);
+        }
+      } catch (error) {
+        printError(`Error in run command: ${error.message}`);
+        process.exit(1);
       }
     });
 }
@@ -356,16 +440,21 @@ export function registerSwarmCommand(program) {
     .option('-p, --provider <provider>', 'AI provider')
     .option('-k, --key <apiKey>', 'API key')
     .action(async (feature, options) => {
-      console.log(chalk.cyan('\n🐝 Ultra-Dex Agent Swarm\n'));
-      const context = await readProjectContext();
-      const providerId = options.provider || getDefaultProvider();
-      const provider = createProvider(providerId, { apiKey: options.key, maxTokens: 8000 });
+      try {
+        printInfo(chalk.cyan('\n🐝 Ultra-Dex Agent Swarm\n'));
+        const context = await readProjectContext();
+        const providerId = options.provider || getDefaultProvider();
+        const providerFactory = createAgentProviderFactory(providerId, { apiKey: options.key, maxTokens: 8000 });
 
-      console.log(chalk.bold('Step 1: 📋 @Planner breaking down feature...'));
-      const plan = await runAgentLoop('planner', feature, provider, context);
-      
-      console.log(chalk.bold('\nStep 2: 🏗️  @CTO reviewing architecture...'));
-      await runAgentLoop('cto', `Review plan:\n${plan}`, provider, context);
+        printInfo(chalk.bold('Step 1: 📋 @Planner breaking down feature...'));
+        const plan = await runAgentLoop('planner', feature, providerFactory, context);
+
+        printInfo(chalk.bold('\nStep 2: 🏗️  @CTO reviewing architecture...'));
+        await runAgentLoop('cto', `Review plan:\n${plan}`, providerFactory, context);
+      } catch (error) {
+        printError(`Error in swarm command: ${error.message}`);
+        process.exit(1);
+      }
     });
 }
 
