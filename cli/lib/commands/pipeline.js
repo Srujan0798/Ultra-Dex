@@ -283,94 +283,99 @@ export function registerPipelineCommand(program) {
     .option('--auto', 'Run automated steps only')
     .option('--report', 'Generate execution report')
     .action(async (options) => {
-      console.log(chalk.blue('\n🔄 21-Step Task Execution Pipeline\n'));
-      
-      const context = {
-        taskPath: options.task,
-        projectPath: path.resolve(options.project)
-      };
-      
-      // Determine step range
-      let startStep = options.from ? parseInt(options.from) : 1;
-      let endStep = options.to ? parseInt(options.to) : 21;
-      
-      if (options.step) {
-        startStep = endStep = parseInt(options.step);
-      }
-      
-      const results = [];
-      let allPassed = true;
-      
-      for (let stepId = startStep; stepId <= endStep; stepId++) {
-        const step = STEPS_21.find(s => s.id === stepId);
-        const spinner = ora(`${step.id}. ${step.name}...`).start();
-        
-        try {
-          const result = await executeStep(stepId, context);
-          results.push(result);
-          
-          if (result.automated) {
-            if (result.passed) {
-              spinner.succeed(chalk.green(`${step.id}. ${step.name} ✓`));
+      try {
+        printInfo(chalk.blue('\n🔄 21-Step Task Execution Pipeline\n'));
+
+        const context = {
+          taskPath: options.task,
+          projectPath: path.resolve(options.project)
+        };
+
+        // Determine step range
+        let startStep = options.from ? parseInt(options.from) : 1;
+        let endStep = options.to ? parseInt(options.to) : 21;
+
+        if (options.step) {
+          startStep = endStep = parseInt(options.step);
+        }
+
+        const results = [];
+        let allPassed = true;
+
+        for (let stepId = startStep; stepId <= endStep; stepId++) {
+          const step = STEPS_21.find(s => s.id === stepId);
+          const spinner = ora(`${step.id}. ${step.name}...`).start();
+
+          try {
+            const result = await executeStep(stepId, context);
+            results.push(result);
+
+            if (result.automated) {
+              if (result.passed) {
+                spinner.succeed(chalk.green(`${step.id}. ${step.name} ✓`));
+              } else {
+                spinner.fail(chalk.red(`${step.id}. ${step.name} ✗`));
+                allPassed = false;
+              }
             } else {
-              spinner.fail(chalk.red(`${step.id}. ${step.name} ✗`));
-              allPassed = false;
+              spinner.info(chalk.blue(`${step.id}. ${step.name} (Manual)`));
+              printInfo(chalk.gray(`   ${step.description}`));
+              printInfo(chalk.yellow(`   ⏱️  Estimated: ${step.time}`));
+              if (result.guidance) {
+                printInfo(chalk.dim('   Guidance:'));
+                printInfo(chalk.dim(result.guidance.split('\n').map(l => `   ${l}`).join('\n')));
+              }
             }
-          } else {
-            spinner.info(chalk.blue(`${step.id}. ${step.name} (Manual)`));
-            console.log(chalk.gray(`   ${step.description}`));
-            console.log(chalk.yellow(`   ⏱️  Estimated: ${step.time}`));
-            if (result.guidance) {
-              console.log(chalk.dim('   Guidance:'));
-              console.log(chalk.dim(result.guidance.split('\n').map(l => `   ${l}`).join('\n')));
+          } catch (error) {
+            spinner.fail(chalk.red(`${step.id}. ${step.name} - Error: ${error.message}`));
+            allPassed = false;
+          }
+
+          // Stop on failure if not continuing
+          if (!allPassed && !options.continue) {
+            printError(chalk.red('\n⛔ Pipeline stopped due to failure'));
+            printWarning(chalk.yellow('Use --continue to proceed regardless'));
+            break;
+          }
+        }
+
+        // Summary
+        printInfo(chalk.blue('\n📊 Execution Summary\n'));
+        const automated = results.filter(r => r.automated);
+        const manual = results.filter(r => !r.automated);
+        const passed = automated.filter(r => r.passed).length;
+        const failed = automated.filter(r => !r.passed).length;
+
+        printInfo(`  Automated Steps: ${automated.length} (${passed} passed, ${failed} failed)`);
+        printInfo(`  Manual Steps: ${manual.length}`);
+        printInfo(`  Completion: ${Math.round((results.length / (endStep - startStep + 1)) * 100)}%`);
+
+        if (allPassed) {
+          printSuccess(chalk.green('\n✅ All automated steps passed!'));
+        } else {
+          printError(chalk.red('\n❌ Some steps failed. Review output above.'));
+        }
+
+        // Generate report if requested
+        if (options.report) {
+          const reportPath = path.join(context.projectPath, 'pipeline-report.json');
+          await fs.writeFile(reportPath, JSON.stringify({
+            timestamp: new Date().toISOString(),
+            context,
+            results,
+            summary: {
+              total: results.length,
+              automated: automated.length,
+              manual: manual.length,
+              passed,
+              failed
             }
-          }
-        } catch (error) {
-          spinner.fail(chalk.red(`${step.id}. ${step.name} - Error: ${error.message}`));
-          allPassed = false;
+          }, null, 2));
+          printInfo(chalk.blue(`\n📝 Report saved: ${reportPath}`));
         }
-        
-        // Stop on failure if not continuing
-        if (!allPassed && !options.continue) {
-          console.log(chalk.red('\n⛔ Pipeline stopped due to failure'));
-          console.log(chalk.yellow('Use --continue to proceed regardless'));
-          break;
-        }
-      }
-      
-      // Summary
-      console.log(chalk.blue('\n📊 Execution Summary\n'));
-      const automated = results.filter(r => r.automated);
-      const manual = results.filter(r => !r.automated);
-      const passed = automated.filter(r => r.passed).length;
-      const failed = automated.filter(r => !r.passed).length;
-      
-      console.log(`  Automated Steps: ${automated.length} (${passed} passed, ${failed} failed)`);
-      console.log(`  Manual Steps: ${manual.length}`);
-      console.log(`  Completion: ${Math.round((results.length / (endStep - startStep + 1)) * 100)}%`);
-      
-      if (allPassed) {
-        console.log(chalk.green('\n✅ All automated steps passed!'));
-      } else {
-        console.log(chalk.red('\n❌ Some steps failed. Review output above.'));
-      }
-      
-      // Generate report if requested
-      if (options.report) {
-        const reportPath = path.join(context.projectPath, 'pipeline-report.json');
-        await fs.writeFile(reportPath, JSON.stringify({
-          timestamp: new Date().toISOString(),
-          context,
-          results,
-          summary: {
-            total: results.length,
-            automated: automated.length,
-            manual: manual.length,
-            passed,
-            failed
-          }
-        }, null, 2));
-        console.log(chalk.blue(`\n📝 Report saved: ${reportPath}`));
+      } catch (error) {
+        printError(`Error in pipeline command: ${error.message}`);
+        process.exit(1);
       }
     });
 
@@ -379,18 +384,18 @@ export function registerPipelineCommand(program) {
     .command('steps')
     .description('Show all 21 steps')
     .action(() => {
-      console.log(chalk.blue('\n📋 21-Step Verification Framework\n'));
-      
+      printInfo(chalk.blue('\n📋 21-Step Verification Framework\n'));
+
       STEPS_21.forEach(step => {
         const status = step.id <= 5 || step.id === 8 || step.id === 14 || step.id === 19 || step.id === 21
           ? chalk.green('[Automated]')
           : chalk.yellow('[Manual]');
-        
-        console.log(`${chalk.cyan(step.id.toString().padStart(2))}. ${chalk.white(step.name.padEnd(15))} ${status}`);
-        console.log(`   ${chalk.gray(step.description)} (${step.time})`);
+
+        printInfo(`${chalk.cyan(step.id.toString().padStart(2))}. ${chalk.white(step.name.padEnd(15))} ${status}`);
+        printInfo(`   ${chalk.gray(step.description)} (${step.time})`);
       });
-      
-      console.log(chalk.blue('\n💡 Automated steps run without user intervention.'));
-      console.log(chalk.blue('   Manual steps require developer verification.\n'));
+
+      printInfo(chalk.blue('\n💡 Automated steps run without user intervention.'));
+      printInfo(chalk.blue('   Manual steps require developer verification.\n'));
     });
 }
