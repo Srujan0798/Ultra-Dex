@@ -4,8 +4,9 @@ import http from 'http';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
 
-class UltraWebSocketServer {
-  constructor() {
+class UltraDexWebSocketServer {
+  constructor(port = 3002) {
+    this.port = port;
     this.wss = null;
     this.server = null;
     this.clients = new Set();
@@ -145,7 +146,7 @@ class UltraWebSocketServer {
         this.server.listen(port, () => {
           this.started = true;
           logger.info(`[WebSocket] Ultra-Dex WebSocket server running on ws://localhost:${port}/ws`);
-          
+
           // Start broadcasting updates
           this.startBroadcasting();
 
@@ -329,4 +330,5 @@ class UltraWebSocketServer {
   }
 }
 
-export const webSocketServer = new UltraWebSocketServer();
+export const webSocketServer = new UltraDexWebSocketServer();
+export { UltraDexWebSocketServer };
