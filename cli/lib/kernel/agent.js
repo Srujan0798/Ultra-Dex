@@ -20,13 +20,22 @@ import {
 import { modelOrchestrator } from '../ai/model-router.js';
 import { tokenBudget } from '../ui/TokenBudget.js';
 
+import { governance } from '../governance/index.js';
+import { configManager } from '../utils/config-manager.js';
+
 export class Agent {
     constructor() {
         this.name = 'Ultra-Dex';
         this.provider = null;
+        this.role = 'default';
     }
 
     async initialize(modelId = null) {
+        // Initialize Governance
+        await governance.init();
+        const config = await configManager.loadGlobal();
+        this.role = config?.user?.role || 'default';
+
         // If specific model requested, create specific provider
         if (modelId) {
             // Determine provider type from model ID
@@ -159,6 +168,28 @@ RETURN ONLY JSON:
 
                 // 4. Handle Tool Use (Recursive Step)
                 if (decision.type === 'tool_use') {
+                    // GOVERNANCE CHECK
+                    let govAction = null;
+                    let govTarget = null;
+
+                    if (decision.tool === 'read_file' || decision.tool === 'list_files') {
+                        govAction = 'read';
+                        govTarget = decision.params.path;
+                    } else if (decision.tool === 'run_shell') {
+                        govAction = 'execute';
+                        govTarget = decision.params.command;
+                    }
+
+                    if (govAction && govTarget) {
+                        const auth = governance.authorize(this.role, govAction, govTarget);
+                        if (!auth.allowed) {
+                            renderer.fail(`Governance Block: ${auth.reason}`);
+                            session.addAgentMessage(`Action blocked by governance: ${auth.reason}`);
+                            await renderer.text(`> 🛡️ Governance violation blocked. Retrying...`, false);
+                            continue;
+                        }
+                    }
+
                     renderer.succeed(`Action: ${decision.reasoning}`);
                     let toolResult = "";
                     
@@ -180,6 +211,15 @@ RETURN ONLY JSON:
 
                 // 5. Handle Terminal Actions (Final Steps)
                 if (decision.type === 'command') {
+                    // GOVERNANCE CHECK
+                    const auth = governance.authorize(this.role, 'execute', decision.command);
+                    if (!auth.allowed) {
+                        renderer.fail(`Governance Block: ${auth.reason}`);
+                        session.addAgentMessage(`Command blocked by governance: ${auth.reason}`);
+                        await renderer.text(`> 🛡️ Destructive command blocked.`, false);
+                        continue;
+                    }
+
                     renderer.succeed(decision.reasoning);
                     renderer.box(decision.command, 'Executing Plan', 'info');
                     session.addAgentMessage(`Executed: ${decision.command}`);
@@ -189,6 +229,15 @@ RETURN ONLY JSON:
                     break;
 
                 } else if (decision.type === 'edit') {
+                    // GOVERNANCE CHECK
+                    const auth = governance.authorize(this.role, 'write', decision.file);
+                    if (!auth.allowed) {
+                        renderer.fail(`Governance Block: ${auth.reason}`);
+                        session.addAgentMessage(`Edit blocked by governance: ${auth.reason}`);
+                        await renderer.text(`> 🛡️ File access blocked.`, false);
+                        continue;
+                    }
+
                     renderer.succeed('Generating Code Change...');
                     const success = await editor.edit(decision.file, decision.code, decision.reasoning, false);
                     

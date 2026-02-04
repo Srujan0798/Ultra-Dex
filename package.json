@@ -64,6 +64,7 @@
     "ink-spinner": "^5.0.0",
     "inquirer": "^13.2.2",
     "ora": "^9.1.0",
+    "playwright": "^1.58.1",
     "update-notifier": "^7.3.1",
     "uuid": "^9.0.1",
     "winston": "^3.19.0",
