@@ -14,6 +14,8 @@ import { formatInfo, formatWarning, formatSuccess } from '../lib/utils/status.js
 import { monitoring } from '../lib/utils/monitoring.js';
 import { configManager } from '../lib/utils/config-manager.js';
 import { pluginManager } from '../lib/plugin-system.js';
+import { governance } from '../lib/governance/index.js';
+import { installHistoryTracking } from '../lib/history/tracker.js';
 import '../lib/utils/error-recovery.js';
 
 // Wait for initialization
@@ -21,7 +23,9 @@ try {
   await Promise.all([
     monitoring.initialize(),
     configManager.load(),
-    pluginManager.initialize()
+    pluginManager.initialize(),
+    governance.init(),
+    installHistoryTracking()
   ]);
 } catch (error) {
   console.error(chalk.red('Failed to initialize systems:'), error.message);
@@ -127,6 +131,7 @@ import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
 import { registerBrainCommand } from '../lib/commands/brain.js';
 import { registerEstimateCommand } from '../lib/commands/estimate.js';
+import { registerUndoCommand } from '../lib/commands/undo.js';
 import { startACPHost } from '../lib/acp/host.js';
 import { createEnhancedHelp, formatHelpSection, formatUsage, formatDescription, formatOptions } from '../lib/utils/help.js';
 
@@ -299,6 +304,7 @@ registerBatchCommand(program);
 registerPipelineCommand(program);
 registerPTYCommands(program);
 registerEstimateCommand(program);
+registerUndoCommand(program);
 
 // ACP (Agent Client Protocol) Commands
 import { cursorCommand } from '../lib/acp/cursor.js';

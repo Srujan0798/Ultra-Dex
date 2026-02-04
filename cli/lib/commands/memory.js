@@ -6,6 +6,7 @@
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import { ultraMemory } from '../mcp/memory.js';
+import { memex } from '../memory/memex.js';
 import { createSessionPersistence } from '../utils/sessionPersistence.js';
 import { getProjectRoot } from '../utils/config.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
@@ -13,7 +14,37 @@ import { printError, printInfo, printSuccess, printWarning } from '../utils/outp
 export function registerMemoryCommand(program) {
   const memory = program
     .command('memory')
-    .description('Manage persistent agent memory');
+    .description('Manage persistent agent memory')
+    .option('--search <query>', 'Vector search across Memex')
+    .option('-l, --limit <n>', 'Number of results for --search', '5')
+    .action(async (options) => {
+      if (!options.search) {
+        memory.help();
+        return;
+      }
+
+      const limit = parseInt(options.limit, 10) || 5;
+      try {
+        const results = await memex.search(options.search, limit);
+        printInfo(chalk.cyan.bold(`\n🔍 Memex Results for "${options.search}":\n`));
+        if (results.length === 0) {
+          printInfo(chalk.gray('  No matches found.'));
+          return;
+        }
+
+        results.forEach((item, i) => {
+          const score = item.score ? item.score.toFixed(3) : '0.000';
+          printInfo(chalk.white(`${i + 1}. [${new Date(item.created_at).toLocaleDateString()}] (${score}) ${item.agent || 'unknown'}`));
+          const snippet = (item.output || item.input || '').toString().slice(0, 160);
+          if (snippet) {
+            printInfo(chalk.gray(`   ${snippet}${snippet.length >= 160 ? '...' : ''}`));
+          }
+          printInfo('');
+        });
+      } catch (error) {
+        printError(chalk.red(`Memex search failed: ${error.message}`));
+      }
+    });
 
   // Existing commands
   memory

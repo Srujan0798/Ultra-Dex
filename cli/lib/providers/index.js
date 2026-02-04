@@ -9,6 +9,7 @@ import { GeminiProvider } from './gemini.js';
 import { OllamaProvider } from './ollama.js';
 import { RouterProvider } from './router.js';
 import { enforceAgentExecution } from '../governance/index.js';
+import { memex } from '../memory/memex.js';
 
 const PROVIDERS = {
   claude: {
@@ -105,7 +106,8 @@ export function createProvider(providerId, options = {}) {
   }
 
   const provider = new providerConfig.class(apiKey, options);
-  return agent ? wrapProviderWithGovernance(provider, agent) : provider;
+  const wrapped = agent ? wrapProviderWithGovernance(provider, agent) : provider;
+  return wrapProviderWithMemex(wrapped, { agent });
 }
 
 function wrapProviderWithGovernance(provider, agent) {
@@ -127,6 +129,85 @@ function wrapProviderWithGovernance(provider, agent) {
   }
 
   return provider;
+}
+
+function wrapProviderWithMemex(provider, context = {}) {
+  if (!provider || provider.__memexWrapped) return provider;
+  provider.__memexWrapped = true;
+
+  const baseGenerate = provider.generate?.bind(provider);
+  if (baseGenerate) {
+    provider.generate = async (systemPrompt, userPrompt, opts = {}) => {
+      const result = await baseGenerate(systemPrompt, userPrompt, opts);
+      await safeMemexIndex({
+        provider,
+        agent: context.agent,
+        systemPrompt,
+        userPrompt,
+        output: result?.content || result?.text || JSON.stringify(result),
+        metadata: { model: provider.model, task: opts.task }
+      });
+      return result;
+    };
+  }
+
+  const baseStream = provider.generateStream?.bind(provider);
+  if (baseStream) {
+    provider.generateStream = async (systemPrompt, userPrompt, onChunk, opts = {}) => {
+      let buffer = '';
+      const wrappedOnChunk = (text) => {
+        if (text) buffer += text;
+        if (onChunk) onChunk(text);
+      };
+      const result = await baseStream(systemPrompt, userPrompt, wrappedOnChunk, opts);
+      const output = result?.content || result?.text || buffer;
+      await safeMemexIndex({
+        provider,
+        agent: context.agent,
+        systemPrompt,
+        userPrompt,
+        output,
+        metadata: { model: provider.model, task: opts.task }
+      });
+      return result;
+    };
+  }
+
+  const baseAnalyze = provider.analyzeImage?.bind(provider);
+  if (baseAnalyze) {
+    provider.analyzeImage = async (imageBuffer, prompt, opts = {}) => {
+      const result = await baseAnalyze(imageBuffer, prompt, opts);
+      await safeMemexIndex({
+        provider,
+        agent: context.agent,
+        systemPrompt: '',
+        userPrompt: prompt || '',
+        output: result?.content || result?.text || result,
+        metadata: { model: provider.model, task: opts.task, vision: true }
+      });
+      return result;
+    };
+  }
+
+  return provider;
+}
+
+async function safeMemexIndex({ provider, agent, systemPrompt, userPrompt, output, metadata } = {}) {
+  try {
+    await memex.indexInteraction({
+      agent: agent?.id || agent?.roleId || agent?.name || 'unknown',
+      provider: provider?.getName?.() || provider?.constructor?.name || 'unknown',
+      task: metadata?.task || null,
+      input: userPrompt || '',
+      output: output || '',
+      metadata: {
+        ...metadata,
+        systemPrompt: systemPrompt ? systemPrompt.slice(0, 2000) : ''
+      }
+    });
+  } catch {
+    // Memex indexing must never break execution
+  }
 }
 
 /**
