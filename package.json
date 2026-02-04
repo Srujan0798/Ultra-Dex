@@ -43,10 +43,12 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@langchain/community": "^1.1.11",
-    "@langchain/core": "^1.1.19",
-    "@langchain/openai": "^1.2.4",
+    "@langchain/community": "^0.3.0",
+    "@langchain/core": "^0.3.18",
+    "@langchain/langgraph": "^0.2.21",
+    "@langchain/openai": "^0.3.13",
     "@modelcontextprotocol/sdk": "^1.25.3",
+    "axios": "^1.6.8",
     "boxen": "^8.0.1",
     "chalk": "^5.6.2",
     "cli-table3": "^0.6.5",
