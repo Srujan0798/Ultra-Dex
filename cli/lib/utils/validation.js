@@ -14,16 +14,40 @@ export function validateProjectName(name) {
   return true;
 }
 
+import path from 'path';
+
 export function validateSafePath(input, label = 'Path') {
   if (!input || !input.trim()) {
     return `${label} is required`;
   }
+  
   const trimmed = input.trim();
+  
+  // 1. Null byte check (prevents common C-style string termination attacks)
+  if (trimmed.includes('\0')) {
+    return `${label} cannot include null bytes`;
+  }
+
+  // 2. Basic metacharacter check
   if (trimmed.includes('..')) {
     return `${label} cannot include ".."`; 
   }
+
+  // 3. Normalize and check for absolute paths
+  if (path.isAbsolute(trimmed)) {
+    return `${label} cannot be an absolute path`;
+  }
+
+  // 4. Separator check (prevents escaping directory context)
+  const normalized = path.normalize(trimmed);
+  if (normalized.startsWith('..') || normalized.startsWith('/') || normalized.startsWith('\\')) {
+    return `${label} attempted to escape directory context`;
+  }
+
   return true;
 }
+
+
 
 export function assertValidPath(input, label) {
   const result = validateSafePath(input, label);
