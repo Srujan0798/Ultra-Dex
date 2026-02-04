@@ -132,6 +132,7 @@ import { registerMemoryCommand } from '../lib/commands/memory.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
 import { registerBrainCommand } from '../lib/commands/brain.js';
+import { registerEstimateCommand } from '../lib/commands/estimate.js';
 import { startACPHost } from '../lib/acp/host.js';
 
 // v3.4.3 Commands - 2026 Competitive Features
@@ -306,6 +307,7 @@ registerWorkspaceCommand(program);
 registerBatchCommand(program);
 registerPipelineCommand(program);
 registerPTYCommands(program);
+registerEstimateCommand(program);
 
 // ACP (Agent Client Protocol) Commands
 import { cursorCommand } from '../lib/acp/cursor.js';
