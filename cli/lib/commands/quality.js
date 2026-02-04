@@ -11,6 +11,8 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { spawn } from 'child_process';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 // Streaming command execution to avoid blocking
 function runCommandStreaming(command, args, cwd) {
@@ -420,86 +422,91 @@ export function registerQualityCommand(program) {
     .option('--fail-fast', 'Stop on first failure')
     .option('--report', 'Generate quality report')
     .action(async (options) => {
-      console.log(chalk.blue('\n🔍 Quality Validation Automation\n'));
-      
-      const projectPath = path.resolve(options.project);
-      const results = {};
-      let failed = false;
-      
-      // Run tests
-      if (!options.securityOnly && !options.performanceOnly && !options.codeOnly) {
-        results.tests = await runTests(projectPath);
-        if (!results.tests.passed && options.failFast) failed = true;
-      }
-      
-      // Run security scan
-      if (!failed && !options.testsOnly && !options.performanceOnly && !options.codeOnly) {
-        results.security = await runSecurityScan(projectPath);
-        if (!results.security.passed && options.failFast) failed = true;
-      }
-      
-      // Check performance
-      if (!failed && !options.testsOnly && !options.securityOnly && !options.codeOnly) {
-        results.performance = await checkPerformance(projectPath);
-        if (!results.performance.passed && options.failFast) failed = true;
-      }
-      
-      // Check code quality
-      if (!failed && !options.testsOnly && !options.securityOnly && !options.performanceOnly) {
-        results.codeQuality = await checkCodeQuality(projectPath);
-        if (!results.codeQuality.passed && options.failFast) failed = true;
-      }
-      
-      // Summary
-      console.log(chalk.blue('\n📊 Quality Report\n'));
-      
-      const categories = Object.keys(results);
-      const passed = categories.filter(c => results[c].passed).length;
-      const total = categories.length;
-      
-      categories.forEach(category => {
-        const result = results[category];
-        const icon = result.passed ? chalk.green('✓') : chalk.red('✗');
-        const color = result.passed ? chalk.green : chalk.red;
-        
-        console.log(`${icon} ${color(category.toUpperCase())}`);
-        
-        if (result.coverage !== undefined) {
-          console.log(`   Coverage: ${result.coverage}%`);
+      try {
+        printInfo(chalk.blue('\n🔍 Quality Validation Automation\n'));
+
+        const projectPath = path.resolve(options.project);
+        const results = {};
+        let failed = false;
+
+        // Run tests
+        if (!options.securityOnly && !options.performanceOnly && !options.codeOnly) {
+          results.tests = await runTests(projectPath);
+          if (!results.tests.passed && options.failFast) failed = true;
         }
-        if (result.summary) {
-          console.log(`   Findings: ${result.summary.critical} critical, ${result.summary.high} high, ${result.summary.medium} medium`);
+
+        // Run security scan
+        if (!failed && !options.testsOnly && !options.performanceOnly && !options.codeOnly) {
+          results.security = await runSecurityScan(projectPath);
+          if (!results.security.passed && options.failFast) failed = true;
         }
-        if (result.checks) {
-          result.checks.forEach(check => {
-            const status = check.passed === null ? chalk.yellow('⚠') : check.passed ? chalk.green('✓') : chalk.red('✗');
-            console.log(`   ${status} ${check.name}: ${check.value || check.message} ${check.limit ? `(limit: ${check.limit})` : ''}`);
-          });
+
+        // Check performance
+        if (!failed && !options.testsOnly && !options.securityOnly && !options.codeOnly) {
+          results.performance = await checkPerformance(projectPath);
+          if (!results.performance.passed && options.failFast) failed = true;
         }
-      });
-      
-      console.log(chalk.blue(`\nOverall: ${passed}/${total} categories passed`));
-      
-      if (passed === total) {
-        console.log(chalk.green('\n✅ All quality gates passed! Ready for deployment.'));
-      } else {
-        console.log(chalk.red('\n❌ Some quality gates failed. Review issues above.'));
-        process.exit(1);
-      }
-      
-      // Generate report
-      if (options.report) {
-        const reportPath = path.join(projectPath, 'quality-report.json');
-        await fs.writeFile(reportPath, JSON.stringify({
-          timestamp: new Date().toISOString(),
-          results,
-          summary: {
-            total: categories.length,
-            passed,
-            failed: total - passed
+
+        // Check code quality
+        if (!failed && !options.testsOnly && !options.securityOnly && !options.performanceOnly) {
+          results.codeQuality = await checkCodeQuality(projectPath);
+          if (!results.codeQuality.passed && options.failFast) failed = true;
+        }
+
+        // Summary
+        printInfo(chalk.blue('\n📊 Quality Report\n'));
+
+        const categories = Object.keys(results);
+        const passed = categories.filter(c => results[c].passed).length;
+        const total = categories.length;
+
+        categories.forEach(category => {
+          const result = results[category];
+          const icon = result.passed ? chalk.green('✓') : chalk.red('✗');
+          const color = result.passed ? chalk.green : chalk.red;
+
+          printInfo(`${icon} ${color(category.toUpperCase())}`);
+
+          if (result.coverage !== undefined) {
+            printInfo(`   Coverage: ${result.coverage}%`);
           }
-        }, null, 2));
-        console.log(chalk.blue(`\n📝 Report saved: ${reportPath}`));
+          if (result.summary) {
+            printInfo(`   Findings: ${result.summary.critical} critical, ${result.summary.high} high, ${result.summary.medium} medium`);
+          }
+          if (result.checks) {
+            result.checks.forEach(check => {
+              const status = check.passed === null ? chalk.yellow('⚠') : check.passed ? chalk.green('✓') : chalk.red('✗');
+              printInfo(`   ${status} ${check.name}: ${check.value || check.message} ${check.limit ? `(limit: ${check.limit})` : ''}`);
+            });
+          }
+        });
+
+        printInfo(chalk.blue(`\nOverall: ${passed}/${total} categories passed`));
+
+        if (passed === total) {
+          printSuccess(chalk.green('\n✅ All quality gates passed! Ready for deployment.'));
+        } else {
+          printError(chalk.red('\n❌ Some quality gates failed. Review issues above.'));
+          process.exit(1);
+        }
+
+        // Generate report
+        if (options.report) {
+          const reportPath = path.join(projectPath, 'quality-report.json');
+          await fs.writeFile(reportPath, JSON.stringify({
+            timestamp: new Date().toISOString(),
+            results,
+            summary: {
+              total: categories.length,
+              passed,
+              failed: total - passed
+            }
+          }, null, 2));
+          printInfo(chalk.blue(`\n📝 Report saved: ${reportPath}`));
+        }
+      } catch (error) {
+        printError(`Error in quality command: ${error.message}`);
+        process.exit(1);
       }
     });
 }

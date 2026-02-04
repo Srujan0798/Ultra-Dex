@@ -15,9 +15,9 @@ export const banner = asciiLogo;
 
 export function showBanner(version = VERSION) {
   // Apply the gradient multiline
-  console.log(ultraGradient(asciiLogo));
+  process.stdout.write(ultraGradient(asciiLogo));
 
-  console.log(boxen(
+  process.stdout.write(boxen(
     `${theme.primary.bold('⚡ ULTRA-DEX')} ${theme.dim('v' + version)}
 
 ` +
@@ -39,5 +39,5 @@ export function showBanner(version = VERSION) {
 }
 
 export function showCompactBanner() {
-  console.log(`  ${theme.primary.bold('⚡ Ultra-Dex')} ${theme.dim('v' + VERSION)}`);
+  process.stdout.write(`  ${theme.primary.bold('⚡ Ultra-Dex')} ${theme.dim('v' + VERSION)}`);
 }

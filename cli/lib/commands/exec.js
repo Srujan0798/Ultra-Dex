@@ -137,8 +137,8 @@ export async function executeInSandbox(input, options = {}) {
     
     if (issues.length > 0) {
         printWarning(`\n⚠️  Safety Check Warnings for ${filename}:`);
-        issues.forEach(i => console.log(`  ${chalk.red(i.ruleName)}: ${i.message}`));
-        
+        issues.forEach(i => process.stdout.write(`  ${chalk.red(i.ruleName)}: ${i.message}\n`));
+
         if (safeMode && criticalIssues.length > 0) {
             throw new SecurityError(`Execution blocked by Safe Mode due to critical issues in ${filename}`);
         }
@@ -252,7 +252,8 @@ export function registerExecCommand(program) {
 
       } catch (error) {
         await handleError(error, { command: 'exec', file, options });
-        process.exit(error.exitCode || 1);
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
       }
     });
 }
@@ -318,15 +319,15 @@ function displayExecutionResult(result, timeout, allowNetwork) {
       printWarning(`\n⚠️  Exited with code ${result.exitCode}`);
     }
 
-    console.log(chalk.gray('┌' + '─'.repeat(50) + '┐'));
+    process.stdout.write(chalk.gray('┌' + '─'.repeat(50) + '┐\n'));
     if (result.stdout) {
-      result.stdout.trim().split('\n').forEach(line => console.log(`│ ${line.padEnd(48)} │`));
+      result.stdout.trim().split('\n').forEach(line => process.stdout.write(`│ ${line.padEnd(48)} │\n`));
     }
     if (result.stderr) {
-      console.log('│' + '─'.repeat(50) + '│');
-      console.log(`│ ${chalk.red('STDERR:'.padEnd(48))} │`);
-      result.stderr.trim().split('\n').forEach(line => console.log(`│ ${chalk.red(line.padEnd(48))} │`));
+      process.stdout.write('│' + '─'.repeat(50) + '│\n');
+      process.stdout.write(`│ ${chalk.red('STDERR:'.padEnd(48))} │\n`);
+      result.stderr.trim().split('\n').forEach(line => process.stdout.write(`│ ${chalk.red(line.padEnd(48))} │\n`));
     }
-    console.log(chalk.gray('└' + '─'.repeat(50) + '┘'));
+    process.stdout.write(chalk.gray('└' + '─'.repeat(50) + '┘\n'));
     printInfo(chalk.gray(`⏱️  Duration: ${result.duration}ms | 🔒 Network: ${allowNetwork ? 'Enabled' : 'Disabled'}`));
 }

@@ -6,6 +6,8 @@ import { execSync } from 'child_process';
 import { loadConfig } from './config.js';
 import { projectGraph } from '../mcp/graph.js';
 import { loadState } from './state.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
 
 const STATUS = {
   DONE: 'done',
@@ -16,16 +18,16 @@ const STATUS = {
 
 export async function diffCommand(options) {
   if (!options.json) {
-    console.log(chalk.cyan.bold('\n📊 Ultra-Dex Diff - Plan vs Reality v3.5\n'));
+    printInfo(chalk.cyan.bold('\n📊 Ultra-Dex Diff - Plan vs Reality v3.5\n'));
   }
 
   const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
   if (!existsSync(planPath)) {
     if (options.json) {
-      console.log(JSON.stringify({ error: 'No IMPLEMENTATION-PLAN.md found', sections: [], alignment: 0 }));
+      process.stdout.write(JSON.stringify({ error: 'No IMPLEMENTATION-PLAN.md found', sections: [], alignment: 0 }) + '\n');
     } else {
-      console.log(chalk.red('❌ No IMPLEMENTATION-PLAN.md found'));
-      console.log(chalk.gray('   Run: ultra-dex generate "your idea" to create one\n'));
+      printError(chalk.red('❌ No IMPLEMENTATION-PLAN.md found'));
+      printInfo(chalk.gray('   Run: ultra-dex generate "your idea" to create one\n'));
     }
     return;
   }
@@ -33,9 +35,9 @@ export async function diffCommand(options) {
   // Load project graph for enhanced analysis
   let graphSummary = null;
   if (!options.json) {
-    console.log(chalk.gray('🔍 Analyzing codebase structure...'));
+    printInfo(chalk.gray('🔍 Analyzing codebase structure...'));
   }
-  
+
   try {
     await projectGraph.scan();
     graphSummary = projectGraph.getSummary();
@@ -77,7 +79,7 @@ export async function diffCommand(options) {
   );
 
   if (options.json) {
-    console.log(JSON.stringify({
+    process.stdout.write(JSON.stringify({
       alignment,
       totalSections: results.length,
       done: doneCount,
@@ -87,7 +89,7 @@ export async function diffCommand(options) {
       graphStats: graphSummary,
       stateStats: state ? {
         phases: state.phases?.length || 0,
-        completedTasks: state.phases?.reduce((acc, p) => 
+        completedTasks: state.phases?.reduce((acc, p) =>
           acc + p.steps?.filter(s => s.status === 'completed').length, 0) || 0
       } : null,
       sections: results.map(r => ({
@@ -97,75 +99,91 @@ export async function diffCommand(options) {
         matches: r.matches,
         taskStatus: r.taskStatus
       }))
-    }, null, 2));
+    }, null, 2) + '\n');
     return;
   }
 
   // Enhanced visual output
-  console.log(chalk.white.bold('📋 Implementation Analysis:\n'));
-  
+  printInfo(chalk.white.bold('📋 Implementation Analysis:\n'));
+
   // Show stats
   if (graphSummary) {
-    console.log(chalk.gray(`Codebase: ${graphSummary.nodeCount} files, ${graphSummary.edgeCount} dependencies`));
+    printInfo(chalk.gray(`Codebase: ${graphSummary.nodeCount} files, ${graphSummary.edgeCount} dependencies`));
   }
   if (state?.phases) {
-    const completedTasks = state.phases.reduce((acc, p) => 
+    const completedTasks = state.phases.reduce((acc, p) =>
       acc + p.steps?.filter(s => s.status === 'completed').length, 0);
     const totalTasks = state.phases.reduce((acc, p) => acc + p.steps?.length, 0);
-    console.log(chalk.gray(`Tasks: ${completedTasks}/${totalTasks} completed`));
+    printInfo(chalk.gray(`Tasks: ${completedTasks}/${totalTasks} completed`));
   }
-  console.log();
+  process.stdout.write('\n');
 
   // Show results by status
   const statusOrder = [STATUS.DONE, STATUS.PARTIAL, STATUS.PLANNED, STATUS.MISSING];
-  
+
   for (const status of statusOrder) {
     const statusResults = results.filter(r => r.status === status);
     if (statusResults.length === 0) continue;
-    
+
     const statusConfig = {
       [STATUS.DONE]: { icon: '✅', color: 'green', label: 'Implemented' },
       [STATUS.PARTIAL]: { icon: '⚠️', color: 'yellow', label: 'Partial' },
       [STATUS.PLANNED]: { icon: '📝', color: 'blue', label: 'Planned' },
       [STATUS.MISSING]: { icon: '❌', color: 'red', label: 'Missing' }
     }[status];
-    
-    console.log(chalk.bold(`${statusConfig.icon} ${statusConfig.label} (${statusResults.length}):`));
-    
+
+    printInfo(chalk.bold(`${statusConfig.icon} ${statusConfig.label} (${statusResults.length}):`));
+
     statusResults.forEach(({ title, matches, confidence, taskStatus }) => {
       const confidenceIndicator = confidence >= 80 ? '●' : confidence >= 50 ? '◐' : '○';
       const taskIndicator = taskStatus === 'completed' ? '✓' : taskStatus === 'in_progress' ? '⋯' : '○';
-      
-      console.log(`   ${chalk[statusConfig.color](title)} ${chalk.gray(confidenceIndicator)} ${chalk.gray(taskIndicator)}`);
-      
+
+      printInfo(`   ${chalk[statusConfig.color](title)} ${chalk.gray(confidenceIndicator)} ${chalk.gray(taskIndicator)}`);
+
       if (matches && matches.length > 0 && status !== STATUS.MISSING) {
         matches.slice(0, 2).forEach(m => {
-          console.log(chalk.gray(`      └─ ${m}`));
+          printInfo(chalk.gray(`      └─ ${m}`));
         });
       }
     });
-    console.log();
+    process.stdout.write('\n');
   }
-  
+
   // Summary
-  console.log(chalk.white.bold('─────────────────────────────────────'));
+  printInfo(chalk.white.bold('─────────────────────────────────────'));
   const alignColor = alignment >= 80 ? 'green' : alignment >= 50 ? 'yellow' : 'red';
   const alignEmoji = alignment >= 80 ? '🎯' : alignment >= 50 ? '🔧' : '🚨';
-  
-  console.log(`${alignEmoji} ${chalk[alignColor].bold(`Alignment Score: ${alignment}%`)}`);
-  console.log(chalk.gray(`   ${chalk.green(`● Done: ${doneCount}`)} | ${chalk.yellow(`◐ Partial: ${partialCount}`)} | ${chalk.blue(`○ Planned: ${plannedCount}`)} | ${chalk.red(`○ Missing: ${missingCount}`)}`));
-  
+
+  printInfo(`${alignEmoji} ${chalk[alignColor].bold(`Alignment Score: ${alignment}%`)}`);
+  printInfo(chalk.gray(`   ${chalk.green(`● Done: ${doneCount}`)} | ${chalk.yellow(`◐ Partial: ${partialCount}`)} | ${chalk.blue(`○ Planned: ${plannedCount}`)} | ${chalk.red(`○ Missing: ${missingCount}`)}`));
+
   // Recommendations
-  console.log();
+  process.stdout.write('\n');
   if (alignment < 50) {
-    console.log(chalk.yellow('💡 Recommendation: Focus on core features first'));
+    printInfo(chalk.yellow('💡 Recommendation: Focus on core features first'));
   } else if (alignment < 80) {
-    console.log(chalk.yellow('💡 Recommendation: Continue implementation, polish partial features'));
+    printInfo(chalk.yellow('💡 Recommendation: Continue implementation, polish partial features'));
   } else {
-    console.log(chalk.green('✨ Excellent alignment! Consider testing and optimization'));
+    printInfo(chalk.green('✨ Excellent alignment! Consider testing and optimization'));
   }
-  
-  console.log();
+
+  process.stdout.write('\n');
+}
+
+export function registerDiffCommand(program) {
+  program
+    .command('diff')
+    .description('Compare implementation plan vs actual code')
+    .option('--json', 'Output as JSON')
+    .action(async (options) => {
+      try {
+        await diffCommand(options);
+      } catch (error) {
+        await handleError(error, { command: 'diff', options });
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
+      }
+    });
 }
 
 function extractSections(plan) {

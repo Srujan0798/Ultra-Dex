@@ -72,10 +72,10 @@ export async function verifyLive(projectDir) {
     const results = await runAutomatedGates(projectDir);
     
     const failures = Object.entries(results).filter(([_, status]) => status === 'FAIL');
-    
+
     if (failures.length > 0) {
         printError(`\n❌ Verification Failed: ${failures.length} checks failed.`);
-        failures.forEach(([name]) => console.log(chalk.red(`  - ${name}`)));
+        failures.forEach(([name]) => printError(`  - ${name}`));
         const error = new Error('Live verification failed');
         error.exitCode = 1;
         throw error;
@@ -98,7 +98,7 @@ export async function verifyCommand(taskName, options) {
   // 1. Automated Checks
   printInfo(chalk.bold('1. Running Automated Gates...\n'));
   const automatedResults = await runAutomatedGates(projectDir);
-  console.log('');
+  printInfo('');
 
   // 2. AI Review
   printInfo(chalk.bold('2. Initiating AI Deep Review...\n'));
@@ -136,7 +136,7 @@ export async function runAutomatedGates(projectDir) {
         const res = await gate.fn(projectDir);
         automatedResults[gate.name] = res.status;
         const icon = res.status === 'PASS' ? chalk.green('✅') : res.status === 'SKIP' ? chalk.gray('⚪') : chalk.red('❌');
-        console.log(`  ${icon} ${chalk.white(gate.name.padEnd(30))} [${res.status}] ${chalk.gray(`(${res.message})`)}`);
+        printInfo(`  ${icon} ${chalk.white(gate.name.padEnd(30))} [${res.status}] ${chalk.gray(`(${res.message})`)}`);
     } catch (e) {
         automatedResults[gate.name] = 'FAIL';
         printError(`  ❌ ${gate.name} failed to execute: ${e.message}`);
@@ -184,10 +184,10 @@ Final Verdict: [APPROVED/REJECTED]
     spinner.succeed('Verification complete.');
 
     printInfo('\n📋 AI Verification Report:');
-    console.log(chalk.gray('─'.repeat(50)));
-    console.log(chalk.white(report));
-    console.log(chalk.gray('─'.repeat(50)));
-    
+    printInfo(chalk.gray('─'.repeat(50)));
+    printInfo(chalk.white(report));
+    printInfo(chalk.gray('─'.repeat(50)));
+
     return report;
   } catch (e) {
     spinner.fail(chalk.red('AI Verification failed'));

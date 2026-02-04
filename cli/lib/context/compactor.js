@@ -1,0 +1,430 @@
+const { encode, decode } = require('gpt-tokenizer');
+const { v4: uuidv4 } = require('uuid');
+
+/**
+ * Context Compactor - Implements intelligent context compression
+ * Features:
+ * - Auto-compression at 95% token threshold
+ * - Intelligent conversation summarization
+ * - Preservation of "Sacred DNA" (34-section template)
+ * - Optimization for 200k+ token window
+ */
+class ContextCompactor {
+  constructor(options = {}) {
+    this.tokenThreshold = options.tokenThreshold || 0.95; // 95% threshold
+    this.maxTokens = options.maxTokens || 200000; // 200k+ token window
+    this.sacredDNASections = options.sacredDNASections || 34; // Number of sacred sections to preserve
+    this.preservedContext = [];
+    this.summaryHistory = [];
+  }
+
+  /**
+   * Calculate total tokens in context
+   */
+  calculateTokens(context) {
+    const text = this.contextToString(context);
+    return encode(text).length;
+  }
+
+  /**
+   * Convert context object to string representation
+   */
+  contextToString(context) {
+    if (typeof context === 'string') {
+      return context;
+    }
+    
+    if (Array.isArray(context)) {
+      return context.map(item => JSON.stringify(item)).join('\n');
+    }
+    
+    return JSON.stringify(context, null, 2);
+  }
+
+  /**
+   * Check if context exceeds threshold
+   */
+  isAboveThreshold(context) {
+    const currentTokens = this.calculateTokens(context);
+    const threshold = this.maxTokens * this.tokenThreshold;
+    return currentTokens > threshold;
+  }
+
+  /**
+   * Extract and preserve Sacred DNA sections
+   */
+  extractSacredDNA(context) {
+    // Preserve the first N sections (Sacred DNA) that are critical
+    const preserved = [];
+    
+    if (Array.isArray(context)) {
+      // Look for sacred sections in the context array
+      for (let i = 0; i < Math.min(this.sacredDNASections, context.length); i++) {
+        if (this.isSacredSection(context[i])) {
+          preserved.push({
+            index: i,
+            content: context[i],
+            id: uuidv4(),
+            preservedAt: Date.now()
+          });
+        }
+      }
+    } else if (typeof context === 'object' && context !== null) {
+      // Handle object-based context
+      for (const [key, value] of Object.entries(context)) {
+        if (this.isSacredSection(value)) {
+          preserved.push({
+            key,
+            content: value,
+            id: uuidv4(),
+            preservedAt: Date.now()
+          });
+        }
+      }
+    }
+    
+    this.preservedContext = [...this.preservedContext, ...preserved];
+    return preserved;
+  }
+
+  /**
+   * Determine if a section is part of the Sacred DNA
+   */
+  isSacredSection(section) {
+    // Define criteria for what constitutes Sacred DNA
+    // This could be based on keywords, structure, or metadata
+    if (!section) return false;
+    
+    const sacredIndicators = [
+      'SACRED_DNA',
+      'CRITICAL_TEMPLATE',
+      'TEMPLATE_SECTION',
+      'CORE_REQUIREMENT',
+      'ESSENTIAL_INFO',
+      'PRESERVE_FOREVER',
+      'UNTOUCHABLE',
+      'IMMUTABLE',
+      'FOUNDATION',
+      'BASELINE'
+    ];
+    
+    const text = typeof section === 'string' ? section : JSON.stringify(section);
+    
+    return sacredIndicators.some(indicator => 
+      text.toUpperCase().includes(indicator)
+    );
+  }
+
+  /**
+   * Summarize conversation intelligently
+   */
+  async summarizeConversation(conversation) {
+    // This is a simplified version - in a real implementation,
+    // this would use an LLM to generate intelligent summaries
+    const summaryData = {
+      id: uuidv4(),
+      timestamp: Date.now(),
+      originalLength: Array.isArray(conversation) ? conversation.length : 1,
+      summary: '',
+      compressionRatio: 0
+    };
+
+    if (Array.isArray(conversation) && conversation.length > 0) {
+      // Create a summary of the conversation
+      const messages = conversation.slice();
+      
+      // Extract key points from the conversation
+      const keyPoints = this.extractKeyPoints(messages);
+      
+      // Generate summary
+      summaryData.summary = this.generateSummary(keyPoints, messages);
+      summaryData.compressionRatio = keyPoints.length / messages.length;
+    } else {
+      summaryData.summary = typeof conversation === 'string' ? 
+        this.simpleSummarize(conversation) : 
+        this.simpleSummarize(JSON.stringify(conversation));
+    }
+
+    this.summaryHistory.push(summaryData);
+    return summaryData;
+  }
+
+  /**
+   * Extract key points from messages
+   */
+  extractKeyPoints(messages) {
+    const keyPoints = [];
+    const processedContent = new Set();
+    
+    for (const message of messages) {
+      let content = '';
+      
+      if (typeof message === 'string') {
+        content = message;
+      } else if (typeof message === 'object' && message.content) {
+        content = message.content;
+      } else {
+        content = JSON.stringify(message);
+      }
+      
+      // Extract important segments
+      const segments = this.splitIntoSegments(content);
+      
+      for (const segment of segments) {
+        if (!processedContent.has(segment) && this.isKeyPoint(segment)) {
+          keyPoints.push(segment);
+          processedContent.add(segment);
+        }
+      }
+    }
+    
+    return keyPoints;
+  }
+
+  /**
+   * Split content into logical segments
+   */
+  splitIntoSegments(content) {
+    // Split by paragraphs, sentences, or other logical boundaries
+    if (typeof content !== 'string') return [JSON.stringify(content)];
+    
+    // Split by double newlines (paragraphs)
+    const paragraphs = content.split(/\n\s*\n/);
+    
+    // Further split long paragraphs by sentences
+    const segments = [];
+    for (const paragraph of paragraphs) {
+      if (paragraph.length > 500) {
+        // Split long paragraphs into sentences
+        const sentences = paragraph.match(/[^\.!?]+[\.!?]+/g) || [paragraph];
+        segments.push(...sentences.map(s => s.trim()).filter(s => s.length > 0));
+      } else {
+        if (paragraph.trim().length > 0) {
+          segments.push(paragraph.trim());
+        }
+      }
+    }
+    
+    return segments;
+  }
+
+  /**
+   * Determine if a segment is a key point worth preserving
+   */
+  isKeyPoint(segment) {
+    if (typeof segment !== 'string') return false;
+    
+    // Key points typically contain important information
+    const keyPointPatterns = [
+      /(?:requirement|specification|constraint|limitation)/i,
+      /(?:critical|essential|important|vital|crucial)/i,
+      /(?:must|should|shall|will|need to)/i,
+      /(?:error|issue|problem|bug|fix)/i,
+      /(?:decision|agreement|conclusion)/i,
+      /(?:design|architecture|structure)/i,
+      /(?:template|format|schema|model)/i,
+      /^\s*[A-Z][A-Z ]+[A-Z]\s*$/ // All caps headers
+    ];
+    
+    return keyPointPatterns.some(pattern => pattern.test(segment)) || 
+           segment.length > 20; // Longer segments are more likely to contain useful info
+  }
+
+  /**
+   * Generate summary from key points
+   */
+  generateSummary(keyPoints, originalMessages) {
+    const summaryParts = [
+      `Conversation Summary (${keyPoints.length} key points extracted):`,
+      '',
+      ...keyPoints.map((point, index) => `${index + 1}. ${point}`)
+    ];
+    
+    return summaryParts.join('\n');
+  }
+
+  /**
+   * Simple summarization fallback
+   */
+  simpleSummarize(text) {
+    if (typeof text !== 'string') {
+      text = JSON.stringify(text);
+    }
+    
+    // Return first and last parts of the text as a simple summary
+    if (text.length < 500) return text;
+    
+    const firstPart = text.substring(0, 200);
+    const lastPart = text.substring(text.length - 200);
+    
+    return `${firstPart}\n...\n[Content condensed]\n...\n${lastPart}`;
+  }
+
+  /**
+   * Compact context when it exceeds the threshold
+   */
+  async compact(context) {
+    if (!this.isAboveThreshold(context)) {
+      return {
+        originalContext: context,
+        compressed: false,
+        tokensBefore: this.calculateTokens(context),
+        tokensAfter: this.calculateTokens(context),
+        compressionRatio: 1,
+        preservedSections: [],
+        summary: null
+      };
+    }
+
+    // Extract and preserve Sacred DNA sections first
+    const preservedSections = this.extractSacredDNA(context);
+
+    // Create a summary of the conversation
+    const summary = await this.summarizeConversation(context);
+
+    // Create compressed context
+    let compressedContext;
+
+    if (Array.isArray(context)) {
+      // Process array-based context
+      compressedContext = this.compressArrayContext(context, preservedSections);
+    } else if (typeof context === 'object' && context !== null) {
+      // Process object-based context
+      compressedContext = this.compressObjectContext(context, preservedSections);
+    } else {
+      // Handle string-based context
+      compressedContext = await this.compressStringContext(context, summary);
+    }
+
+    const result = {
+      originalContext: context,
+      compressedContext,
+      compressed: true,
+      tokensBefore: this.calculateTokens(context),
+      tokensAfter: this.calculateTokens(compressedContext),
+      compressionRatio: this.calculateTokens(compressedContext) / this.calculateTokens(context),
+      preservedSections,
+      summary
+    };
+
+    return result;
+  }
+
+  /**
+   * Compress array-based context
+   */
+  compressArrayContext(context, preservedSections) {
+    // Create a copy of the context
+    const compressed = [...context];
+
+    // Remove elements that were preserved separately
+    const preservedIndices = preservedSections
+      .map(p => p.index)
+      .filter(i => i !== undefined);
+
+    // Filter out preserved elements from the main context
+    // (they will be added back in a structured way)
+    const filteredContext = compressed.filter((_, index) => !preservedIndices.includes(index));
+
+    // Apply intelligent reduction to remaining elements
+    const reducedContext = this.intelligentlyReduce(filteredContext);
+
+    // Combine preserved sections with reduced context
+    return [
+      ...preservedSections.map(p => p.content),
+      ...reducedContext
+    ];
+  }
+
+  /**
+   * Compress object-based context
+   */
+  compressObjectContext(context, preservedSections) {
+    const compressed = { ...context };
+
+    // Remove preserved keys from the main object
+    for (const preserved of preservedSections) {
+      if (preserved.key) {
+        delete compressed[preserved.key];
+      }
+    }
+
+    // Apply intelligent reduction to remaining properties
+    const reducedObject = this.intelligentlyReduceObject(compressed);
+
+    // Combine preserved sections with reduced object
+    return {
+      preservedSections,
+      compressedContent: reducedObject,
+      summary: this.summaryHistory[this.summaryHistory.length - 1]?.summary || ''
+    };
+  }
+
+  /**
+   * Compress string-based context
+   */
+  async compressStringContext(context, summary) {
+    // For string context, return the summary along with original if it's critical
+    return {
+      original: context,
+      summary: summary.summary,
+      compressed: true
+    };
+  }
+
+  /**
+   * Intelligently reduce array elements
+   */
+  intelligentlyReduce(array) {
+    if (array.length <= 10) return array; // Don't compress small arrays
+
+    // Keep the most recent items and some key historical items
+    const recentCount = Math.floor(array.length * 0.3); // Keep 30% recent
+    const sampleCount = Math.min(Math.floor(array.length * 0.2), 10); // Sample 20% or max 10 older items
+
+    const recentItems = array.slice(-recentCount);
+    const sampledItems = [];
+
+    // Evenly sample from the earlier parts of the array
+    if (array.length - recentCount > sampleCount) {
+      const step = Math.floor((array.length - recentCount) / sampleCount);
+      for (let i = 0; i < sampleCount && i * step < array.length - recentCount; i++) {
+        sampledItems.push(array[i * step]);
+      }
+    } else {
+      // If not enough items to sample, take what's available
+      sampledItems.push(...array.slice(0, array.length - recentCount));
+    }
+
+    return [...sampledItems, ...recentItems];
+  }
+
+  /**
+   * Intelligently reduce object properties
+   */
+  intelligentlyReduceObject(obj) {
+    const keys = Object.keys(obj);
+    if (keys.length <= 10) return obj; // Don't compress small objects
+
+    // For now, return the object as is, but in a real implementation
+    // we would apply intelligent property selection
+    return obj;
+  }
+
+  /**
+   * Get compression statistics
+   */
+  getStats() {
+    return {
+      totalCompactions: this.summaryHistory.length,
+      preservedSectionsCount: this.preservedContext.length,
+      avgCompressionRatio: this.summaryHistory.length > 0 
+        ? this.summaryHistory.reduce((sum, s) => sum + s.compressionRatio, 0) / this.summaryHistory.length 
+        : 0,
+      currentTokenThreshold: this.tokenThreshold,
+      maxTokenWindow: this.maxTokens
+    };
+  }
+}
+
+module.exports = { ContextCompactor };

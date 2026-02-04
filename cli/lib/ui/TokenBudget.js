@@ -130,8 +130,7 @@ export class TokenBudget {
             `${theme.dim('────────────────────────────────')}`,
             `${theme.dim('Usage:')}   $${this.usage.monthlyCost.toFixed(4)} / $${this.budget.toFixed(2)}`,
             `${theme.dim('Status:')}  ${color(bar)} ${Math.round(percent)}%`
-        ].join('
-');
+        ].join('\n');
 
         return boxen(content, {
             padding: 0,

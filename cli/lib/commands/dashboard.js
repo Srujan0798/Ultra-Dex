@@ -8,6 +8,8 @@ import http from 'http';
 import { execSync, spawn } from 'child_process';
 import { loadState } from './state.js';
 import { buildGraph } from '../utils/graph.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
 
 // Global clients for SSE
 const clients = new Set();
@@ -458,18 +460,27 @@ export function registerDashboardCommand(program) {
     .description('Start the Ultra-Dex JARVIS Dashboard')
     .option('-p, --port <port>', 'Port to listen on', '3002')
     .action(async (options) => {
-      const port = parseInt(options.port);
-      console.log(chalk.bold.cyan('\n🖥️  Starting God Mode Dashboard...'));
-      
-      console.log(chalk.gray('Initializing Neural Link (Graph Scan)...'));
-      let graphSummary = null;
       try {
-        const graph = await buildGraph();
-        graphSummary = { nodes: graph.nodes.length, edges: graph.edges.length };
-        console.log(chalk.green(`✅ Neural Link Established: ${graph.nodes.length} nodes mapped.`));
-      } catch (e) {
-        console.log(chalk.yellow('⚠️ Neural Link Warning: ' + e.message));
-      }
+        const port = parseInt(options.port);
+
+        // Validate port
+        if (isNaN(port) || port < 1 || port > 65535) {
+          printError(chalk.red('❌ Error: Invalid port number. Must be between 1 and 65535.'));
+          process.exitCode = 1;
+          process.exit(process.exitCode);
+        }
+
+        printInfo(chalk.bold.cyan('\n🖥️  Starting God Mode Dashboard...'));
+
+        printInfo(chalk.gray('Initializing Neural Link (Graph Scan)...'));
+        let graphSummary = null;
+        try {
+          const graph = await buildGraph();
+          graphSummary = { nodes: graph.nodes.length, edges: graph.edges.length };
+          printSuccess(chalk.green(`✅ Neural Link Established: ${graph.nodes.length} nodes mapped.`));
+        } catch (e) {
+          printWarning(chalk.yellow('⚠️ Neural Link Warning: ' + e.message));
+        }
 
       const server = http.createServer(async (req, res) => {
         // Handle SSE
@@ -493,8 +504,8 @@ export function registerDashboardCommand(program) {
           req.on('end', async () => {
             try {
               const { feature } = JSON.parse(body);
-              console.log(chalk.magenta(`\n⚡ Dashboard Trigger: Starting Swarm for "${feature}"...`));
-              
+              printInfo(chalk.magenta(`\n⚡ Dashboard Trigger: Starting Swarm for "${feature}"...`));
+
               addAction('swarm', `Swarm started: ${feature}`, 'planner');
               sendToClients({ type: 'log', message: `Swarm triggered: ${feature}`, level: 'info' });
 
@@ -600,7 +611,7 @@ export function registerDashboardCommand(program) {
           req.on('end', () => {
             try {
               const { agent, task } = JSON.parse(body);
-              console.log(chalk.cyan(`▶️ Dashboard: Running agent @${agent}`));
+              printInfo(chalk.cyan(`▶️ Dashboard: Running agent @${agent}`));
               addAction('agent_start', `Agent @${agent} started`, agent);
               sendToClients({ type: 'agent_status', agent, status: 'working', activity: task || 'Processing...' });
               
@@ -637,7 +648,7 @@ export function registerDashboardCommand(program) {
           req.on('end', () => {
             try {
               const { agent } = JSON.parse(body);
-              console.log(chalk.yellow(`⏹ Dashboard: Stopping agent @${agent}`));
+              printInfo(chalk.yellow(`⏹ Dashboard: Stopping agent @${agent}`));
               addAction('agent_stop', `Agent @${agent} stopped by user`, agent);
               sendToClients({ type: 'agent_status', agent, status: 'idle', activity: 'Stopped' });
               res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -676,7 +687,19 @@ export function registerDashboardCommand(program) {
       });
 
       server.listen(port, () => {
-        console.log(chalk.green(`✅ Dashboard active at http://localhost:${port}`));
+        printSuccess(chalk.green(`✅ Dashboard active at http://localhost:${port}`));
       });
+
+      // Handle server errors
+      server.on('error', (err) => {
+        printError(chalk.red(`❌ Server error: ${err.message}`));
+        process.exitCode = 1;
+        process.exit(process.exitCode);
+      });
+    } catch (error) {
+      await handleError(error, { command: 'dashboard', options });
+      process.exitCode = error.exitCode || 1;
+      process.exit(process.exitCode);
+    }
     });
 }

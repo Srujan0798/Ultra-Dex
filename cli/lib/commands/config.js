@@ -62,6 +62,8 @@ export function registerConfigCommand(program) {
               await configCommand(options);
           } catch (error) {
               await handleError(error, { command: 'config', options });
+              process.exitCode = error.exitCode || 1;
+              process.exit(process.exitCode);
           }
       });
 }
@@ -104,9 +106,9 @@ function generateMCPConfig() {
     : join(homedir(), 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
   
   printInfo('Add this to your Claude Desktop config:\n');
-  console.log(chalk.gray(claudeConfigPath));
-  console.log();
-  console.log(JSON.stringify(config, null, 2));
+  process.stdout.write(chalk.gray(claudeConfigPath) + '\n');
+  process.stdout.write('\n');
+  process.stdout.write(JSON.stringify(config, null, 2) + '\n');
   
   try {
     writeFileSync('mcp-config.json', JSON.stringify(config, null, 2));
@@ -164,7 +166,7 @@ function showConfig() {
   envVars.forEach(key => {
     const value = process.env[key];
     const status = value ? chalk.green('✓ Set') : chalk.gray('Not set');
-    console.log(`  ${key}: ${status}`);
+    process.stdout.write(`  ${key}: ${status}\n`);
   });
 }
 
@@ -175,7 +177,7 @@ function showUltraDexConfig() {
     printWarning('  No configuration found in .ultra-dex/config.json');
     return;
   }
-  console.log(JSON.stringify(config, null, 2));
+  process.stdout.write(JSON.stringify(config, null, 2) + '\n');
 }
 
 function setConfigValue(keyValue) {
@@ -216,6 +218,6 @@ function getConfigValue(key) {
   if (value === undefined) {
     printWarning(`${key}: (not set)`);
   } else {
-    console.log(`${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}`);
+    process.stdout.write(`${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}\n`);
   }
 }
