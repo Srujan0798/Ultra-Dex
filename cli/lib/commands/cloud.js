@@ -7,7 +7,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
-// import path from "path";
+import path from 'path';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import { getVersion } from '../utils/version.js';
@@ -38,6 +38,27 @@ const CLOUD_CONFIG = {
   // Session settings
   sessionTimeout: 24 * 60 * 60 * 1000, // 24 hours
 };
+
+async function atomicWriteJson(filePath, data) {
+  const dir = path.dirname(filePath);
+  const tempPath = path.join(
+    dir,
+    `.tmp-${path.basename(filePath)}-${process.pid}-${Date.now()}`
+  );
+
+  try {
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(tempPath, JSON.stringify(data, null, 2));
+    await fs.rename(tempPath, filePath);
+  } catch (error) {
+    try {
+      await fs.unlink(tempPath);
+    } catch {
+      // ignore cleanup errors
+    }
+    throw error;
+  }
+}
 
 // ============================================================================
 // SESSION MANAGER
@@ -75,11 +96,12 @@ class SessionManager {
     await fs.mkdir(CLOUD_CONFIG.stateDir, { recursive: true });
 
     const sessions = Object.fromEntries(this.sessions);
-    await fs.writeFile(CLOUD_CONFIG.sessionsFile, JSON.stringify(sessions, null, 2));
+    await atomicWriteJson(CLOUD_CONFIG.sessionsFile, sessions);
 
     const teams = Object.fromEntries(this.teams);
-    await fs.writeFile(CLOUD_CONFIG.teamsFile, JSON.stringify(teams, null, 2));
+    await atomicWriteJson(CLOUD_CONFIG.teamsFile, teams);
   }
+
 
   createSession(userId, teamId = null) {
     const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

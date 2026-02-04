@@ -3,6 +3,9 @@ import chalk from 'chalk';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 const CONFIG_DIR = '.ultra-dex';
 const CONFIG_FILE = 'config.json';
@@ -11,6 +14,9 @@ function getConfigPath() {
   return join(process.cwd(), CONFIG_DIR, CONFIG_FILE);
 }
 
+/**
+ * Load project configuration
+ */
 export function loadConfig() {
   const configPath = getConfigPath();
   if (existsSync(configPath)) {
@@ -23,37 +29,65 @@ export function loadConfig() {
   return {};
 }
 
+/**
+ * Save project configuration
+ */
 function saveConfig(config) {
   const configDir = join(process.cwd(), CONFIG_DIR);
   if (!existsSync(configDir)) {
     mkdirSync(configDir, { recursive: true });
   }
-  writeFileSync(getConfigPath(), JSON.stringify(config, null, 2));
+  try {
+    writeFileSync(getConfigPath(), JSON.stringify(config, null, 2));
+  } catch (error) {
+    throw new AppError('Failed to save configuration', { cause: error });
+  }
 }
 
-export function configCommand(options) {
+/**
+ * Register the config command with Commander
+ */
+export function registerConfigCommand(program) {
+    program
+      .command('config')
+      .description('Show or generate configuration')
+      .option('--mcp', 'Generate MCP config for Claude Desktop')
+      .option('--cursor', 'Generate Cursor IDE rules')
+      .option('--vscode', 'Generate VS Code settings.json')
+      .option('--show', 'Display current Ultra-Dex config')
+      .option('--set <key=value>', 'Set a config value')
+      .option('--get <key>', 'Get a specific config value')
+      .action(async (options) => {
+          try {
+              await configCommand(options);
+          } catch (error) {
+              await handleError(error, { command: 'config', options });
+          }
+      });
+}
+
+export async function configCommand(options) {
   if (options.mcp) {
-    generateMCPConfig();
+    return generateMCPConfig();
   } else if (options.cursor) {
-    generateCursorConfig();
+    return generateCursorConfig();
   } else if (options.vscode) {
-    generateVSCodeConfig();
+    return generateVSCodeConfig();
   } else if (options.show) {
-    showUltraDexConfig();
+    return showUltraDexConfig();
   } else if (options.set) {
-    setConfigValue(options.set);
+    return setConfigValue(options.set);
   } else if (options.get) {
-    getConfigValue(options.get);
+    return getConfigValue(options.get);
   } else {
     showConfig();
   }
 }
 
 function generateMCPConfig() {
-  console.log(chalk.cyan.bold('\n🔌 Generating MCP Config for Claude Desktop\n'));
+  printInfo(chalk.cyan.bold('\n🔌 Generating MCP Config for Claude Desktop\n'));
   
   const projectPath = process.cwd();
-  
   const config = {
     "mcpServers": {
       "ultra-dex": {
@@ -69,28 +103,25 @@ function generateMCPConfig() {
     ? join(process.env.APPDATA, 'Claude', 'claude_desktop_config.json')
     : join(homedir(), 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
   
-  console.log(chalk.white('Add this to your Claude Desktop config:\n'));
+  printInfo('Add this to your Claude Desktop config:\n');
   console.log(chalk.gray(claudeConfigPath));
   console.log();
   console.log(JSON.stringify(config, null, 2));
   
-  // Also save to project
   try {
     writeFileSync('mcp-config.json', JSON.stringify(config, null, 2));
-    console.log(chalk.green('\n✅ Saved to mcp-config.json'));
+    printSuccess('\n✅ Saved to mcp-config.json');
   } catch (e) {
-    console.log(chalk.red(`\n❌ Failed to save mcp-config.json: ${e.message}`));
+    throw new AppError('Failed to save mcp-config.json', { cause: e });
   }
 }
 
 function generateCursorConfig() {
-    console.log(chalk.cyan.bold('\n🖱️  Generating Cursor Rules\n'));
+    printInfo(chalk.cyan.bold('\n🖱️  Generating Cursor Rules\n'));
     const rulesDir = join(process.cwd(), '.cursor', 'rules');
     
-    // Ensure directory exists
     try {
         mkdirSync(rulesDir, { recursive: true });
-        
         const ruleContent = `
 ---
 description: Ultra-Dex Standards
@@ -103,41 +134,33 @@ globs: **/*.{js,ts,md}
 - Maintain valid JSON in all .json files
 `;
         writeFileSync(join(rulesDir, 'ultra-dex.mdc'), ruleContent.trim());
-        console.log(chalk.green(`✅ Created Cursor rules in .cursor/rules/ultra-dex.mdc`));
+        printSuccess(`✅ Created Cursor rules in .cursor/rules/ultra-dex.mdc`);
     } catch (e) {
-        console.log(chalk.red(`❌ Failed to create Cursor config: ${e.message}`));
+        throw new AppError('Failed to create Cursor config', { cause: e });
     }
 }
 
 function generateVSCodeConfig() {
-    console.log(chalk.cyan.bold('\n🆚 Generating VS Code Config\n'));
+    printInfo(chalk.cyan.bold('\n🆚 Generating VS Code Config\n'));
     const vscodeDir = join(process.cwd(), '.vscode');
     
     try {
         mkdirSync(vscodeDir, { recursive: true });
-        
         const settings = {
             "editor.defaultFormatter": "esbenp.prettier-vscode",
             "editor.formatOnSave": true,
             "ultra-dex.contextPath": "CONTEXT.md"
         };
-        
         writeFileSync(join(vscodeDir, 'settings.json'), JSON.stringify(settings, null, 2));
-        console.log(chalk.green(`✅ Created VS Code settings in .vscode/settings.json`));
+        printSuccess(`✅ Created VS Code settings in .vscode/settings.json`);
     } catch (e) {
-        console.log(chalk.red(`❌ Failed to create VS Code config: ${e.message}`));
+        throw new AppError('Failed to create VS Code config', { cause: e });
     }
 }
 
 function showConfig() {
-  console.log(chalk.cyan.bold('\n⚙️  Ultra-Dex Configuration\n'));
-  
-  const envVars = [
-    'ANTHROPIC_API_KEY',
-    'OPENAI_API_KEY', 
-    'GOOGLE_AI_KEY'
-  ];
-  
+  printInfo(chalk.cyan.bold('\n⚙️  Ultra-Dex Configuration\n'));
+  const envVars = ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_AI_KEY'];
   envVars.forEach(key => {
     const value = process.env[key];
     const status = value ? chalk.green('✓ Set') : chalk.gray('Not set');
@@ -146,15 +169,12 @@ function showConfig() {
 }
 
 function showUltraDexConfig() {
-  console.log(chalk.cyan.bold('\n📁 Ultra-Dex Project Configuration\n'));
-  
+  printInfo(chalk.cyan.bold('\n📁 Ultra-Dex Project Configuration\n'));
   const config = loadConfig();
   if (Object.keys(config).length === 0) {
-    console.log(chalk.gray('  No configuration found in .ultra-dex/config.json'));
-    console.log(chalk.gray('  Use --set key=value to set configuration values'));
+    printWarning('  No configuration found in .ultra-dex/config.json');
     return;
   }
-  
   console.log(JSON.stringify(config, null, 2));
 }
 
@@ -163,13 +183,10 @@ function setConfigValue(keyValue) {
   const value = valueParts.join('=');
   
   if (!key || value === undefined) {
-    console.log(chalk.red('❌ Invalid format. Use: --set key=value'));
-    return;
+    throw new ValidationError('Invalid format. Use: --set key=value');
   }
   
   const config = loadConfig();
-  
-  // Handle nested keys (e.g., "server.port")
   const keys = key.split('.');
   let current = config;
   for (let i = 0; i < keys.length - 1; i++) {
@@ -177,7 +194,6 @@ function setConfigValue(keyValue) {
     current = current[keys[i]];
   }
   
-  // Try to parse as JSON for complex values
   try {
     current[keys[keys.length - 1]] = JSON.parse(value);
   } catch {
@@ -185,13 +201,11 @@ function setConfigValue(keyValue) {
   }
   
   saveConfig(config);
-  console.log(chalk.green(`✅ Set ${key} = ${value}`));
+  printSuccess(`✅ Set ${key} = ${value}`);
 }
 
 function getConfigValue(key) {
   const config = loadConfig();
-  
-  // Handle nested keys
   const keys = key.split('.');
   let value = config;
   for (const k of keys) {
@@ -200,7 +214,7 @@ function getConfigValue(key) {
   }
   
   if (value === undefined) {
-    console.log(chalk.gray(`${key}: (not set)`));
+    printWarning(`${key}: (not set)`);
   } else {
     console.log(`${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}`);
   }

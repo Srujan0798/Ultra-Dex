@@ -1,7 +1,6 @@
 /**
  * ultra-dex exec command
  * Docker-based code execution sandbox for running generated code safely
- * This is what makes Ultra-Dex truly autonomous - it can VERIFY code works
  */
 
 import chalk from 'chalk';
@@ -11,6 +10,9 @@ import path from 'path';
 import { spawn, exec as execCallback } from 'child_process';
 import { promisify } from 'util';
 import { scanContent } from '../quality/scanner.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError, ValidationError, SecurityError } from '../utils/errors.js';
 
 const execAsync = promisify(execCallback);
 
@@ -19,10 +21,7 @@ const execAsync = promisify(execCallback);
 // ============================================================================
 
 const SANDBOX_CONFIG = {
-  // Docker image for sandboxed execution
   defaultImage: 'node:20-alpine',
-
-  // Language-specific images
   images: {
     javascript: 'node:20-alpine',
     typescript: 'node:20-alpine',
@@ -31,16 +30,12 @@ const SANDBOX_CONFIG = {
     go: 'golang:1.22-alpine',
     ruby: 'ruby:3.3-alpine',
   },
-
-  // Resource limits
   limits: {
     memory: '512m',
     cpus: '1.0',
-    timeout: 60000, // 60 seconds
+    timeout: 60000,
     networkDisabled: true,
   },
-
-  // Workspace settings
   workspace: {
     containerPath: '/workspace',
     tempDir: '.ultra-dex/sandbox',
@@ -71,12 +66,12 @@ async function ensureImage(image, spinner) {
     await execAsync(`docker image inspect ${image} > /dev/null 2>&1`);
     return true;
   } catch {
-    spinner.text = `Pulling Docker image: ${image}...`;
+    if (spinner) spinner.text = `Pulling Docker image: ${image}...`;
     try {
       await execAsync(`docker pull ${image}`);
       return true;
     } catch (err) {
-      return false;
+      throw new AppError(`Failed to pull Docker image: ${image}`, { cause: err });
     }
   }
 }
@@ -87,14 +82,10 @@ async function ensureImage(image, spinner) {
 function detectLanguage(filepath) {
   const ext = path.extname(filepath).toLowerCase();
   const langMap = {
-    '.js': 'javascript',
-    '.mjs': 'javascript',
-    '.ts': 'typescript',
-    '.tsx': 'typescript',
-    '.py': 'python',
-    '.rs': 'rust',
-    '.go': 'go',
-    '.rb': 'ruby',
+    '.js': 'javascript', '.mjs': 'javascript',
+    '.ts': 'typescript', '.tsx': 'typescript',
+    '.py': 'python', '.rs': 'rust',
+    '.go': 'go', '.rb': 'ruby',
   };
   return langMap[ext] || 'javascript';
 }
@@ -121,7 +112,7 @@ function getExecCommand(language, filename) {
 /**
  * Execute code in Docker sandbox
  */
-export async function executeInSandbox(code, options = {}) {
+export async function executeInSandbox(input, options = {}) {
   const {
     language = 'javascript',
     filename = 'main.js',
@@ -129,204 +120,83 @@ export async function executeInSandbox(code, options = {}) {
     allowNetwork = false,
     env = {},
     workdir = process.cwd(),
-    safeMode = false
+    safeMode = false,
+    isCommand = false,
+    mountProject = false
   } = options;
 
-  // Pre-flight Safety Check
-  const issues = scanContent(code);
-  const criticalIssues = issues.filter(i => i.severity === 'critical');
+  let execCmd;
+  const tempDir = path.join(workdir, SANDBOX_CONFIG.workspace.tempDir);
   
-  if (issues.length > 0) {
-      console.log(chalk.yellow('\n⚠️  Safety Check Warnings:'));
-      issues.forEach(i => console.log(`  ${chalk.red(i.ruleName)}: ${i.message}`));
-      
-      if (safeMode && criticalIssues.length > 0) {
-          throw new Error(`Execution blocked by Safe Mode due to critical issues.`);
-      }
+  if (isCommand) {
+    execCmd = input;
+  } else {
+    // Pre-flight Safety Check
+    const issues = scanContent(input);
+    const criticalIssues = issues.filter(i => i.severity === 'critical');
+    
+    if (issues.length > 0) {
+        printWarning(`\n⚠️  Safety Check Warnings for ${filename}:`);
+        issues.forEach(i => console.log(`  ${chalk.red(i.ruleName)}: ${i.message}`));
+        
+        if (safeMode && criticalIssues.length > 0) {
+            throw new SecurityError(`Execution blocked by Safe Mode due to critical issues in ${filename}`);
+        }
+    }
+
+    const tempFile = path.join(tempDir, filename);
+    await fs.mkdir(tempDir, { recursive: true });
+    await fs.writeFile(tempFile, input, 'utf8');
+    execCmd = getExecCommand(language, filename);
   }
 
   const image = SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
-  const tempDir = path.join(workdir, SANDBOX_CONFIG.workspace.tempDir);
-  const tempFile = path.join(tempDir, filename);
 
-  // Ensure temp directory exists
-  await fs.mkdir(tempDir, { recursive: true });
-
-  // Write code to temp file
-  await fs.writeFile(tempFile, code, 'utf8');
-
-  // Build Docker command
   const dockerArgs = [
-    'run',
-    '--rm',
-    '-i',
+    'run', '--rm', '-i',
     `--memory=${SANDBOX_CONFIG.limits.memory}`,
     `--cpus=${SANDBOX_CONFIG.limits.cpus}`,
     allowNetwork ? '' : '--network=none',
-    `-v`, `${tempDir}:${SANDBOX_CONFIG.workspace.containerPath}:ro`,
+    `-v`, mountProject ? `${workdir}:${SANDBOX_CONFIG.workspace.containerPath}:rw` : `${tempDir}:${SANDBOX_CONFIG.workspace.containerPath}:ro`,
     `-w`, SANDBOX_CONFIG.workspace.containerPath,
   ];
 
-  // Add environment variables
   for (const [key, value] of Object.entries(env)) {
     dockerArgs.push('-e', `${key}=${value}`);
   }
 
   dockerArgs.push(image);
-
-  // Add execution command
-  const execCmd = getExecCommand(language, filename);
   dockerArgs.push('sh', '-c', execCmd);
 
-  // Filter empty strings
-  const filteredArgs = dockerArgs.filter(Boolean);
-
-  return new Promise((resolve, reject) => {
-    const result = {
-      stdout: '',
-      stderr: '',
-      exitCode: null,
-      timedOut: false,
-      duration: 0,
-    };
-
-    const startTime = Date.now();
-    const proc = spawn('docker', filteredArgs);
-
-    const timeoutId = setTimeout(() => {
-      result.timedOut = true;
-      proc.kill('SIGKILL');
-    }, timeout);
-
-    proc.stdout.on('data', (data) => {
-      result.stdout += data.toString();
-    });
-
-    proc.stderr.on('data', (data) => {
-      result.stderr += data.toString();
-    });
-
-    proc.on('close', (code) => {
-      clearTimeout(timeoutId);
-      result.exitCode = code;
-      result.duration = Date.now() - startTime;
-      resolve(result);
-    });
-
-    proc.on('error', (err) => {
-      clearTimeout(timeoutId);
-      reject(err);
-    });
-  });
+  return spawnProcess('docker', dockerArgs.filter(Boolean), timeout);
 }
 
-/**
- * Execute a file in sandbox
- */
-export async function executeFile(filepath, options = {}) {
-  const code = await fs.readFile(filepath, 'utf8');
-  const language = detectLanguage(filepath);
-  const filename = path.basename(filepath);
+async function spawnProcess(cmd, args, timeout) {
+    return new Promise((resolve, reject) => {
+        const result = { stdout: '', stderr: '', exitCode: null, timedOut: false, duration: 0 };
+        const startTime = Date.now();
+        const proc = spawn(cmd, args);
 
-  return executeInSandbox(code, {
-    ...options,
-    language,
-    filename,
-  });
-}
+        const timeoutId = setTimeout(() => {
+          result.timedOut = true;
+          proc.kill('SIGKILL');
+        }, timeout);
 
-/**
- * Execute npm/shell command in sandbox
- */
-export async function executeCommand(command, options = {}) {
-  const {
-    timeout = SANDBOX_CONFIG.limits.timeout,
-    workdir = process.cwd(),
-    allowNetwork = true, // Commands often need network
-  } = options;
+        proc.stdout.on('data', (data) => result.stdout += data.toString());
+        proc.stderr.on('data', (data) => result.stderr += data.toString());
 
-  const tempDir = path.join(workdir, SANDBOX_CONFIG.workspace.tempDir);
-  await fs.mkdir(tempDir, { recursive: true });
+        proc.on('close', (code) => {
+          clearTimeout(timeoutId);
+          result.exitCode = code;
+          result.duration = Date.now() - startTime;
+          resolve(result);
+        });
 
-  const dockerArgs = [
-    'run',
-    '--rm',
-    '-i',
-    `--memory=${SANDBOX_CONFIG.limits.memory}`,
-    `--cpus=${SANDBOX_CONFIG.limits.cpus}`,
-    allowNetwork ? '' : '--network=none',
-    `-v`, `${workdir}:${SANDBOX_CONFIG.workspace.containerPath}`,
-    `-w`, SANDBOX_CONFIG.workspace.containerPath,
-    SANDBOX_CONFIG.defaultImage,
-    'sh', '-c', command,
-  ].filter(Boolean);
-
-  return new Promise((resolve, reject) => {
-    const result = {
-      stdout: '',
-      stderr: '',
-      exitCode: null,
-      timedOut: false,
-      duration: 0,
-    };
-
-    const startTime = Date.now();
-    const proc = spawn('docker', dockerArgs);
-
-    const timeoutId = setTimeout(() => {
-      result.timedOut = true;
-      proc.kill('SIGKILL');
-    }, timeout);
-
-    proc.stdout.on('data', (data) => {
-      result.stdout += data.toString();
+        proc.on('error', (err) => {
+          clearTimeout(timeoutId);
+          reject(new AppError(`Failed to spawn process: ${cmd}`, { cause: err }));
+        });
     });
-
-    proc.stderr.on('data', (data) => {
-      result.stderr += data.toString();
-    });
-
-    proc.on('close', (code) => {
-      clearTimeout(timeoutId);
-      result.exitCode = code;
-      result.duration = Date.now() - startTime;
-      resolve(result);
-    });
-
-    proc.on('error', (err) => {
-      clearTimeout(timeoutId);
-      reject(err);
-    });
-  });
-}
-
-// ============================================================================
-// TEST RUNNER
-// ============================================================================
-
-/**
- * Run tests in sandbox
- */
-export async function runTests(testCommand = 'npm test', options = {}) {
-  const spinner = ora('Running tests in sandbox...').start();
-
-  try {
-    const result = await executeCommand(testCommand, {
-      ...options,
-      allowNetwork: true, // Tests may need to install deps
-    });
-
-    if (result.exitCode === 0) {
-      spinner.succeed(chalk.green('Tests passed!'));
-    } else {
-      spinner.fail(chalk.red('Tests failed'));
-    }
-
-    return result;
-  } catch (err) {
-    spinner.fail(chalk.red(`Test execution failed: ${err.message}`));
-    throw err;
-  }
 }
 
 // ============================================================================
@@ -345,115 +215,118 @@ export function registerExecCommand(program) {
     .option('--test', 'Run npm test in sandbox')
     .option('--safe', 'Block execution if safety checks fail')
     .action(async (file, options) => {
-      console.log(chalk.cyan('\n🐳 Ultra-Dex Code Sandbox\n'));
-
-      // Check Docker availability
-      const spinner = ora('Checking Docker...').start();
-      const hasDocker = await checkDocker();
-
-      if (!hasDocker) {
-        spinner.fail(chalk.red('Docker not found. Please install Docker to use the sandbox.'));
-        console.log(chalk.yellow('\nInstall Docker: https://docs.docker.com/get-docker/'));
-        return;
-      }
-      spinner.succeed('Docker available');
-
-      const timeout = parseInt(options.timeout, 10);
-
       try {
+        printInfo('\n🐳 Ultra-Dex Code Sandbox\n');
+
+        const hasDocker = await checkDocker();
+        if (!hasDocker) {
+          throw new AppError('Docker not found.', {
+              suggestions: [
+                  'Install Docker: https://docs.docker.com/get-docker/',
+                  'Ensure Docker Desktop is running',
+                  'Run without sandbox (not recommended for untrusted code)'
+              ]
+          });
+        }
+
+        const timeout = parseInt(options.timeout, 10);
         let result;
 
         if (options.test) {
-          // Run tests
-          result = await runTests('npm test', { timeout, allowNetwork: true });
+          result = await handleTestExecution(timeout);
         } else if (options.command) {
-          // Run shell command
-          spinner.start(`Executing: ${options.command}`);
-          result = await executeCommand(options.command, {
-            timeout,
-            allowNetwork: options.allowNetwork,
-          });
+          result = await handleCommandExecution(options.command, timeout, options.allowNetwork);
         } else if (options.code) {
-          // Execute inline code
-          const language = options.language || 'javascript';
-          const image = SANDBOX_CONFIG.images[language];
-
-          spinner.start('Preparing sandbox...');
-          await ensureImage(image, spinner);
-
-          spinner.text = 'Executing code...';
-          result = await executeInSandbox(options.code, {
-            language,
-            timeout,
-            allowNetwork: options.allowNetwork,
-            safeMode: options.safe
-          });
+          result = await handleCodeExecution(options.code, options.language, timeout, options);
         } else if (file) {
-          // Execute file
-          const language = options.language || detectLanguage(file);
-          const image = SANDBOX_CONFIG.images[language];
-
-          spinner.start('Preparing sandbox...');
-          await ensureImage(image, spinner);
-
-          spinner.text = `Executing ${file}...`;
-          result = await executeFile(file, {
-            timeout,
-            allowNetwork: options.allowNetwork,
-            safeMode: options.safe
-          });
+          result = await handleFileExecution(file, options.language, timeout, options);
         } else {
-          spinner.fail('No code, file, or command specified');
-          console.log(chalk.yellow('\nUsage:'));
-          console.log('  ultra-dex exec script.js');
-          console.log('  ultra-dex exec -c "console.log(1+1)"');
-          console.log('  ultra-dex exec --command "npm test"');
-          console.log('  ultra-dex exec --test');
-          return;
+          throw new ValidationError('No execution target specified.', [
+              'Provide a file: ultra-dex exec script.js',
+              'Provide inline code: ultra-dex exec -c "console.log(1)"',
+              'Run tests: ultra-dex exec --test'
+          ]);
         }
 
-        // Show results
-        if (result.timedOut) {
-          spinner.fail(chalk.red(`Execution timed out after ${timeout}ms`));
-        } else if (result.exitCode === 0) {
-          spinner.succeed(chalk.green(`Completed in ${result.duration}ms`));
-        } else {
-          spinner.warn(chalk.yellow(`Exited with code ${result.exitCode}`));
-        }
+        displayExecutionResult(result, timeout, options.allowNetwork);
 
-        // Print output
-        console.log(chalk.gray('┌' + '─'.repeat(50) + '┐'));
-        
-        if (result.stdout) {
-          // console.log(chalk.bold('\n📤 Output:'));
-          const lines = result.stdout.trim().split('\n');
-          lines.forEach(line => console.log(`│ ${line.padEnd(48)} │`));
-        }
-
-        if (result.stderr) {
-          console.log('│' + '─'.repeat(50) + '│');
-          console.log(`│ ${chalk.red('STDERR:'.padEnd(48))} │`);
-          const lines = result.stderr.trim().split('\n');
-          lines.forEach(line => console.log(`│ ${chalk.red(line.padEnd(48))} │`));
-        }
-        
-        console.log(chalk.gray('└' + '─'.repeat(50) + '┘'));
-
-        // Summary
-        console.log(chalk.gray(`\n⏱️  Duration: ${result.duration}ms`));
-        console.log(chalk.gray(`🔒 Network: ${options.allowNetwork ? 'Enabled' : 'Disabled'}`));
-
-      } catch (err) {
-        spinner.fail(chalk.red(`Execution failed: ${err.message}`));
+      } catch (error) {
+        await handleError(error, { command: 'exec', file, options });
+        process.exit(error.exitCode || 1);
       }
     });
 }
 
-export default {
-  registerExecCommand,
-  executeInSandbox,
-  executeFile,
-  executeCommand,
-  runTests,
-  checkDocker,
-};
+async function handleTestExecution(timeout) {
+    const spinner = ora('Running npm test in sandbox...').start();
+    const result = await executeInSandbox('npm test', { 
+        timeout, 
+        allowNetwork: true, 
+        isCommand: true, 
+        mountProject: true 
+    });
+    if (result.exitCode === 0) spinner.succeed(chalk.green('Tests passed!'));
+    else spinner.fail(chalk.red('Tests failed'));
+    return result;
+}
+
+async function handleCommandExecution(command, timeout, allowNetwork) {
+    const spinner = ora(`Executing: ${command}`).start();
+    const result = await executeInSandbox(command, { 
+        timeout, 
+        allowNetwork, 
+        isCommand: true, 
+        mountProject: true 
+    });
+    if (result.exitCode === 0) spinner.succeed();
+    else spinner.fail();
+    return result;
+}
+
+async function handleCodeExecution(code, lang, timeout, options) {
+    const language = lang || 'javascript';
+    const image = SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
+    const spinner = ora('Preparing sandbox...').start();
+    await ensureImage(image, spinner);
+    spinner.text = 'Executing code...';
+    const result = await executeInSandbox(code, {
+        language, timeout, allowNetwork: options.allowNetwork, safeMode: options.safe
+    });
+    return result;
+}
+
+async function handleFileExecution(file, lang, timeout, options) {
+    const language = lang || detectLanguage(file);
+    const image = SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
+    const spinner = ora('Preparing sandbox...').start();
+    await ensureImage(image, spinner);
+    spinner.text = `Executing ${file}...`;
+    const code = await fs.readFile(file, 'utf8');
+    const result = await executeInSandbox(code, {
+        filename: path.basename(file),
+        language, timeout, allowNetwork: options.allowNetwork, safeMode: options.safe
+    });
+    return result;
+}
+
+function displayExecutionResult(result, timeout, allowNetwork) {
+    if (result.timedOut) {
+      printError(`\n❌ Execution timed out after ${timeout}ms`);
+    } else if (result.exitCode === 0) {
+      printSuccess(`\n✅ Completed in ${result.duration}ms`);
+    } else {
+      printWarning(`\n⚠️  Exited with code ${result.exitCode}`);
+    }
+
+    console.log(chalk.gray('┌' + '─'.repeat(50) + '┐'));
+    if (result.stdout) {
+      result.stdout.trim().split('\n').forEach(line => console.log(`│ ${line.padEnd(48)} │`));
+    }
+    if (result.stderr) {
+      console.log('│' + '─'.repeat(50) + '│');
+      console.log(`│ ${chalk.red('STDERR:'.padEnd(48))} │`);
+      result.stderr.trim().split('\n').forEach(line => console.log(`│ ${chalk.red(line.padEnd(48))} │`));
+    }
+    console.log(chalk.gray('└' + '─'.repeat(50) + '┘'));
+    printInfo(chalk.gray(`⏱️  Duration: ${result.duration}ms | 🔒 Network: ${allowNetwork ? 'Enabled' : 'Disabled'}`));
+}

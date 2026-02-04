@@ -3,219 +3,200 @@ import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
 import ora from 'ora';
-import { AGENTS } from './agents.js';
+import { agents as AGENTS_MAP } from '../utils/agents.js';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
-import { context } from '../kernel/context.js';
+import { context as contextScanner } from '../kernel/context.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
+// Convert agents map to array for easier usage
+const ALL_AGENTS = Object.values(AGENTS_MAP);
+
+/**
+ * Register the suggest command with Commander
+ */
 export function registerSuggestCommand(program) {
   program
     .command('suggest [query]')
     .description('Get AI agent suggestions for your task')
     .action(async (query) => {
-      console.log(chalk.cyan('\n🤖 Ultra-Dex Agent Suggester\n'));
+      try {
+        printInfo('\n🤖 Ultra-Dex Agent Suggester\n');
 
-      // Check for AI Provider
-      const providerId = getDefaultProvider();
-      
-      let description = query;
-      let taskType = 'custom';
+        let description = query;
+        let taskType = 'custom';
 
-      if (!description) {
-        const answers = await inquirer.prompt([
-            {
-            type: 'list',
-            name: 'taskType',
-            message: 'What are you trying to build?',
-            choices: [
-                'Custom (AI Analysis)',
-                'New feature from scratch',
-                'Authentication system',
-                'Payment integration',
-                'Database changes',
-                'Bug fix',
-                'Performance optimization',
-                'Deployment/DevOps',
-                'API endpoint',
-                'UI component',
-                'Testing',
-            ],
-            },
-        ]);
-        taskType = answers.taskType;
-
-        if (taskType === 'Custom (AI Analysis)') {
-             const input = await inquirer.prompt([{
-                 type: 'input',
-                 name: 'desc',
-                 message: 'Describe your task in detail:',
-             }]);
-             description = input.desc;
-        } else if (['New feature from scratch', 'Bug fix', 'API endpoint', 'UI component'].includes(taskType)) {
-             const input = await inquirer.prompt([{
-                 type: 'input',
-                 name: 'desc',
-                 message: 'Briefly describe your task (optional):',
-             }]);
-             description = input.desc;
+        if (!description) {
+            const result = await promptForTaskDetails();
+            taskType = result.taskType;
+            description = result.description;
         }
+
+        // 1. Environment Analysis
+        const context = await runContextAnalysis();
+
+        // 2. Recommendations
+        const providerId = getDefaultProvider();
+        if (providerId && (description || taskType === 'Custom (AI Analysis)')) {
+            const handled = await handleAiSuggestions(description || taskType, context, providerId);
+            if (handled) return;
+        }
+
+        // 3. Fallback to static logic
+        handleStaticSuggestions(taskType);
+
+      } catch (error) {
+        await handleError(error, { command: 'suggest', query });
+        process.exit(error.exitCode || 1);
       }
+    });
+}
 
-      // 1. Context Phase
-      const spinner = ora('Analyzing environment context...').start();
-      const ctx = await context.scan();
-      spinner.succeed('Environment analyzed');
-      console.log(chalk.gray(`  Stack: ${ctx.stack} | Branch: ${ctx.git.branch || 'none'}`));
+/**
+ * Interactive prompt to gather task details
+ */
+async function promptForTaskDetails() {
+    const { taskType } = await inquirer.prompt([{
+        type: 'list',
+        name: 'taskType',
+        message: 'What are you trying to build?',
+        choices: [
+            'Custom (AI Analysis)',
+            'New feature from scratch',
+            'Authentication system',
+            'Payment integration',
+            'Database changes',
+            'Bug fix',
+            'Performance optimization',
+            'Deployment/DevOps',
+            'API endpoint',
+            'UI component',
+            'Testing',
+        ],
+    }]);
 
-      // AI Mode
-      if (providerId && (description || taskType === 'Custom (AI Analysis)')) {
-          const aiSpinner = ora('Synthesizing expert recommendations...').start();
-          try {
-              const provider = createProvider(providerId);
-              
-              let contextContent = '';
-              try {
-                  contextContent = await fs.readFile(path.resolve(process.cwd(), 'CONTEXT.md'), 'utf8');
-              } catch {}
+    let description = '';
+    if (taskType === 'Custom (AI Analysis)') {
+         const input = await inquirer.prompt([{
+             type: 'input',
+             name: 'desc',
+             message: 'Describe your task in detail:',
+             validate: (val) => val.length > 0 || 'Description is required'
+         }]);
+         description = input.desc;
+    } else if (['New feature from scratch', 'Bug fix', 'API endpoint', 'UI component'].includes(taskType)) {
+         const input = await inquirer.prompt([{
+             type: 'input',
+             name: 'desc',
+             message: 'Briefly describe your task (optional):',
+         }]);
+         description = input.desc;
+    }
+    return { taskType, description };
+}
 
-              const prompt = `
+/**
+ * Scan project environment context
+ */
+async function runContextAnalysis() {
+    const spinner = ora('Analyzing environment context...').start();
+    try {
+        const ctx = await contextScanner.scan();
+        spinner.succeed('Environment analyzed');
+        printInfo(chalk.gray(`  Stack: ${ctx.stack} | Branch: ${ctx.git.branch || 'none'}`));
+        return ctx;
+    } catch (e) {
+        spinner.warn('Environment analysis partial fail');
+        return { stack: 'unknown', git: { branch: 'unknown' }, files: [] };
+    }
+}
+
+/**
+ * Get AI-powered agent recommendations
+ */
+async function handleAiSuggestions(description, ctx, providerId) {
+    const aiSpinner = ora('Synthesizing expert recommendations...').start();
+    try {
+        const provider = createProvider(providerId);
+        let contextContent = '';
+        try {
+            contextContent = await fs.readFile(path.resolve(process.cwd(), 'CONTEXT.md'), 'utf8');
+        } catch {}
+
+        const prompt = `
 You are an expert software architect using the Ultra-Dex framework.
-Based on the user's task and the project environment, suggest the best workflow of agents.
+Suggest the best workflow of agents for this task.
 
 Available Agents:
-${AGENTS.map(a => `- @${a.name}: ${a.description}`).join('\n')}
+${ALL_AGENTS.map(a => `- @${a.name}: ${a.description}`).join('\n')}
 
 Project Environment:
 - Stack: ${ctx.stack}
-- Git: ${ctx.git.branch} (${ctx.git.isDirty ? 'dirty' : 'clean'})
-- Files: ${ctx.files.join(', ')}
+- Git: ${ctx.git?.branch} (${ctx.git?.isDirty ? 'dirty' : 'clean'})
 
-Project Context (from CONTEXT.md):
-${contextContent.slice(0, 1000)}...
+Project Context:
+${contextContent.slice(0, 1000)}
 
-User Task: ${description || taskType}
+User Task: ${description}
 
-Output a JSON object with:
+Output a JSON object:
 {
   "reasoning": "Why this workflow?",
   "agents": ["@Agent1", "@Agent2"],
   "tips": ["Tip 1", "Tip 2"]
 }
 `;
-              const response = await provider.generate('You are a helpful assistant that outputs JSON.', prompt);
-              
-              // Extract JSON
-              const jsonMatch = response.content.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                  const data = JSON.parse(jsonMatch[0]);
-                  aiSpinner.succeed(chalk.green('AI Analysis Complete'));
-                  
-                  console.log(chalk.bold('\n💡 AI Suggested Workflow:\n'));
-                  console.log(chalk.gray(data.reasoning + '\n'));
-                  
-                  data.agents.forEach((agent, i) => {
-                      const arrow = i < data.agents.length - 1 ? '  →' : '';
-                      console.log(chalk.cyan(`  ${i + 1}. ${agent}`) + arrow);
-                  });
+        const response = await provider.generate('You are a helpful assistant that outputs JSON.', prompt);
+        const jsonMatch = response.content.match(/\{[\s\S]*\}/);
+        
+        if (jsonMatch) {
+            const data = JSON.parse(jsonMatch[0]);
+            aiSpinner.succeed(chalk.green('AI Analysis Complete'));
+            
+            printInfo(chalk.bold('\n💡 AI Suggested Workflow:\n'));
+            console.log(chalk.gray(data.reasoning + '\n'));
+            
+            data.agents.forEach((agent, i) => {
+                const arrow = i < data.agents.length - 1 ? '  →' : '';
+                console.log(chalk.cyan(`  ${i + 1}. ${agent}`) + arrow);
+            });
 
-                  if (data.tips && data.tips.length > 0) {
-                      console.log(chalk.bold('\n🧠 Pro Tips:\n'));
-                      data.tips.forEach(tip => console.log(chalk.gray(`  • ${tip}`)));
-                  }
-                  return;
-              }
-          } catch (e) {
-              aiSpinner.fail('AI analysis failed, falling back to static logic.');
-              // Fallthrough to static
-          }
-      }
+            if (data.tips && data.tips.length > 0) {
+                printInfo(chalk.bold('\n🧠 Pro Tips:\n'));
+                data.tips.forEach(tip => console.log(chalk.gray(`  • ${tip}`)));
+            }
+            return true;
+        }
+        return false;
+    } catch (e) {
+        aiSpinner.fail('AI analysis failed, falling back to static logic.');
+        return false;
+    }
+}
 
-      // Static Fallback
-      console.log(chalk.bold('\n💡 Suggested Agent Workflow (Static):\n'));
+/**
+ * Handle static suggestions for common tasks
+ */
+function handleStaticSuggestions(taskType) {
+    printInfo(chalk.bold('\n💡 Suggested Agent Workflow:\n'));
 
-      let suggestedAgents = [];
-      let reasoning = '';
+    const staticMap = {
+        'New feature from scratch': { agents: ['@Planner', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Reviewer'], reasoning: 'Complete feature requires full pipeline.' },
+        'Authentication system': { agents: ['@Planner', '@Security', '@Database', '@Backend', '@Frontend'], reasoning: 'Security-focused implementation.' },
+        'Bug fix': { agents: ['@Debugger', '@Testing', '@Reviewer'], reasoning: 'Focused fix and verification.' },
+        'Deployment/DevOps': { agents: ['@DevOps', '@Security'], reasoning: 'Infrastructure and security review.' }
+    };
 
-      switch (taskType) {
-        case 'New feature from scratch':
-          suggestedAgents = ['@Planner', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Reviewer', '@DevOps'];
-          reasoning = 'Complete feature requires planning, architecture, implementation, testing, and deployment';
-          break;
-
-        case 'Authentication system':
-          suggestedAgents = ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'];
-          reasoning = 'Auth requires research (providers), security review, and full-stack implementation';
-          break;
-
-        case 'Payment integration':
-          suggestedAgents = ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Security', '@DevOps'];
-          reasoning = 'Payments need provider research, webhook handling, testing, and security audit';
-          break;
-
-        case 'Database changes':
-          suggestedAgents = ['@Planner', '@CTO', '@Database', '@Backend', '@Testing'];
-          reasoning = 'Schema changes need planning, architecture review, migration, and testing';
-          break;
-
-        case 'Bug fix':
-          suggestedAgents = ['@Debugger', '@Testing', '@Reviewer'];
-          reasoning = 'Debug issue, add test to prevent regression, review fix';
-          break;
-
-        case 'Performance optimization':
-          suggestedAgents = ['@Performance', '@Backend', '@Frontend', '@Database', '@Testing'];
-          reasoning = 'Identify bottlenecks, optimize code/queries, verify improvements';
-          break;
-
-        case 'Deployment/DevOps':
-          suggestedAgents = ['@DevOps', '@CTO', '@Security'];
-          reasoning = 'Infrastructure setup with security review';
-          break;
-
-        case 'API endpoint':
-          suggestedAgents = ['@Backend', '@Database', '@Testing', '@Reviewer'];
-          reasoning = 'Implement endpoint, add tests, review code quality';
-          break;
-
-        case 'UI component':
-          suggestedAgents = ['@Frontend', '@Reviewer'];
-          reasoning = 'Build component, review for quality and accessibility';
-          break;
-
-        case 'Testing':
-          suggestedAgents = ['@Testing', '@Reviewer'];
-          reasoning = 'Write tests, review coverage';
-          break;
-
-        default:
-          suggestedAgents = ['@Planner', '@CTO'];
-          reasoning = 'Start with planning and architecture review';
-      }
-
-      console.log(chalk.gray(reasoning + '\n'));
-
-      suggestedAgents.forEach((agent, i) => {
-        const agentName = agent.replace('@', '').toLowerCase();
-        const agentInfo = AGENTS.find(a => a.name === agentName);
-        const arrow = i < suggestedAgents.length - 1 ? '  →' : '';
-        console.log(chalk.cyan(`  ${i + 1}. ${agent}`) + chalk.gray(` - ${agentInfo?.description || ''}`) + arrow);
-      });
-
-      console.log(chalk.bold('\n📚 Next Steps:\n'));
-      console.log(chalk.gray(`  1. Start with ${suggestedAgents[0]} to plan the task`));
-      console.log(chalk.gray('  2. Hand off to each agent in sequence'));
-      console.log(chalk.gray('  3. Use "ultra-dex agent <name>" to see full prompts\n'));
-
-      console.log(chalk.bold('🔗 Related Workflows:\n'));
-      if (taskType === 'Authentication system') {
-        console.log(chalk.blue('  ultra-dex workflow auth'));
-        console.log(chalk.blue('  ultra-dex workflow supabase\n'));
-      } else if (taskType === 'Payment integration') {
-        console.log(chalk.blue('  ultra-dex workflow payments\n'));
-      } else if (taskType === 'Deployment/DevOps') {
-        console.log(chalk.blue('  ultra-dex workflow vercel'));
-        console.log(chalk.blue('  ultra-dex workflow cicd\n'));
-      } else {
-        console.log(chalk.gray('  Use "ultra-dex workflow <feature>" to see examples\n'));
-      }
+    const recommendation = staticMap[taskType] || { agents: ['@Planner', '@CTO'], reasoning: 'Standard architectural approach.' };
+    
+    console.log(chalk.gray(recommendation.reasoning + '\n'));
+    recommendation.agents.forEach((agent, i) => {
+        const arrow = i < recommendation.agents.length - 1 ? '  →' : '';
+        console.log(chalk.cyan(`  ${i + 1}. ${agent}`) + arrow);
     });
+
+    printInfo(chalk.bold('\n📚 Next Steps:\n'));
+    printInfo(`  1. Run "ultra-dex swarm '${taskType}'" to execute this workflow.`);
+    printInfo(`  2. Check "ultra-dex agents" for more details on each agent.\n`);
 }

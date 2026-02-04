@@ -40,9 +40,25 @@ export function registerCiMonitorCommand(program) {
 
               if (event === 'workflow_job' && payload.action === 'completed') {
                 if (payload.workflow_job.conclusion === 'failure') {
-                  await handleBuildFailure(payload, options, notifyEvents);
+                  // 1. Return 200 response immediately to prevent webhook timeout
+                  res.writeHead(200, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ status: 'accepted', message: 'Processing build failure...' }));
+
+                  // 2. Process handleBuildFailure asynchronously (fire & forget)
+                  handleBuildFailure(payload, options, notifyEvents).catch(err => {
+                    console.error('Background task failed:', err);
+                  });
+                  return;
                 } else if (payload.workflow_job.conclusion === 'success' && notifyEvents.includes('success')) {
-                  await notifySuccess(payload, options);
+                  // Return 200 immediately, then process notification asynchronously
+                  res.writeHead(200, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ status: 'received', message: 'Build successful' }));
+                  
+                  // Process notification in background (fire & forget)
+                  notifySuccess(payload, options).catch(err => {
+                    console.error('Background notification failed:', err);
+                  });
+                  return;
                 }
               }
 

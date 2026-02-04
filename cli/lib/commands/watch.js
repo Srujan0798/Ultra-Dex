@@ -5,51 +5,52 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { updateStateFile, computeState } from './state.js';
 import { execSync } from 'child_process';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError } from '../utils/errors.js';
 
 async function calculateAlignmentScore() {
   const state = await computeState();
   return state.score || 0;
 }
 
-export function watchCommand(options) {
-  console.log(chalk.cyan.bold('\n👁️  Ultra-Dex Watch Mode v3.1 (Auto-Sync Edition)\n'));
-  console.log(chalk.gray('Watching for file changes...\n'));
+/**
+ * Register the watch command with Commander
+ */
+export function registerWatchCommand(program) {
+    program
+      .command('watch')
+      .description('Auto-update state on file changes')
+      .option('--interval <ms>', 'Debounce interval in milliseconds', '500')
+      .option('--sync', 'Auto-sync CONTEXT.md with brain', false)
+      .action(async (options) => {
+          try {
+              await watchCommand(options);
+          } catch (error) {
+              await handleError(error, { command: 'watch', options });
+          }
+      });
+}
 
-  const interval = options.interval ? parseInt(options.interval, 10) : 500;
-  console.log(chalk.gray(`Debounce interval: ${interval}ms`));
-
-  // Auto-sync configuration
-  const autoSync = options.sync || false;
-  const syncInterval = options.syncInterval ? parseInt(options.syncInterval, 10) : 5000;
+export async function watchCommand(options) {
+  printInfo(chalk.cyan.bold('\n👁️  Ultra-Dex Watch Mode v3.1 (Auto-Sync Edition)\n'));
   
+  const interval = options.interval ? parseInt(options.interval, 10) : 500;
+  printInfo(chalk.gray(`Debounce interval: ${interval}ms`));
+
+  const autoSync = options.sync || false;
   if (autoSync) {
-    console.log(chalk.green('🔄 Auto-sync enabled: CONTEXT.md will update automatically'));
-    console.log(chalk.gray(`   Sync interval: ${syncInterval}ms\n`));
+    printSuccess('🔄 Auto-sync enabled: CONTEXT.md will update automatically\n');
   }
 
-  const watchPaths = [
-    'CONTEXT.md',
-    'IMPLEMENTATION-PLAN.md',
-    'src',
-    'app',
-    'lib'
-  ];
+  const watchPaths = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'src', 'app', 'lib'];
+  const validPaths = watchPaths.filter(p => existsSync(join(process.cwd(), p)));
 
-  const validPaths = watchPaths.filter(p => {
-    const fullPath = join(process.cwd(), p);
-    return existsSync(fullPath);
-  });
-
-  console.log(chalk.gray(`Watching: ${validPaths.join(', ')}\n`));
+  printInfo(chalk.gray(`Watching: ${validPaths.join(', ')}\n`));
 
   let debounceTimer = null;
-  let lastScore = null;
-
-  // Initial score display
-  calculateAlignmentScore().then(score => {
-    lastScore = score;
-    console.log(chalk.blue(`📊 Initial alignment score: ${score}%\n`));
-  });
+  let lastScore = await calculateAlignmentScore();
+  printInfo(chalk.blue(`📊 Initial alignment score: ${lastScore}%\n`));
 
   validPaths.forEach(path => {
     const fullPath = join(process.cwd(), path);
@@ -62,42 +63,31 @@ export function watchCommand(options) {
           
           await updateStateFile();
           
-          // Auto-sync CONTEXT.md if enabled and code files changed
           if (autoSync && !filename?.includes('CONTEXT.md') && !filename?.includes('.md')) {
-            console.log(chalk.blue('🔄 Auto-syncing CONTEXT.md...'));
+            printInfo('🔄 Auto-syncing CONTEXT.md...');
             try {
-              execSync('npx ultra-dex sync --brain', { 
-                stdio: 'pipe',
-                timeout: 30000 
-              });
-              console.log(chalk.green('   ✅ CONTEXT.md synced with brain'));
+              execSync('npx ultra-dex sync --brain', { stdio: 'pipe', timeout: 30000 });
+              printSuccess('   ✅ CONTEXT.md synced with brain');
             } catch (e) {
-              console.log(chalk.gray('   ⚠️  Auto-sync skipped (no changes detected or error)'));
+              printWarning('   ⚠️  Auto-sync skipped or failed');
             }
           }
           
           const newScore = await calculateAlignmentScore();
-          const scoreDiff = lastScore !== null ? newScore - lastScore : 0;
-          const diffIndicator = scoreDiff > 0 
-            ? chalk.green(`↑ +${scoreDiff}`) 
-            : scoreDiff < 0 
-              ? chalk.red(`↓ ${scoreDiff}`) 
-              : chalk.gray('→ 0');
+          const scoreDiff = newScore - lastScore;
+          const diffIndicator = scoreDiff > 0 ? chalk.green(`↑ +${scoreDiff}`) : scoreDiff < 0 ? chalk.red(`↓ ${scoreDiff}`) : chalk.gray('→ 0');
           
           lastScore = newScore;
-          
-          const scoreColor = newScore >= 80 ? 'green' : newScore >= 50 ? 'yellow' : 'red';
-          console.log(chalk[scoreColor](`✅ State updated | Alignment: ${newScore}% ${diffIndicator}`));
+          const scoreColor = newScore >= 80 ? chalk.green : newScore >= 50 ? chalk.yellow : chalk.red;
+          console.log(scoreColor(`✅ State updated | Alignment: ${newScore}% `) + diffIndicator);
           
         }, interval);
       });
     } catch (e) {
-      console.log(chalk.gray(`  ⚠️  Cannot watch ${path}: ${e.message}`));
+        printWarning(`  ⚠️  Cannot watch ${path}: ${e.message}`);
     }
   });
 
-  console.log(chalk.gray('\nPress Ctrl+C to stop'));
-  
-  // Keep process running
+  printInfo(chalk.gray('\nPress Ctrl+C to stop'));
   process.stdin.resume();
 }

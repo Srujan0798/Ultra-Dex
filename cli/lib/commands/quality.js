@@ -10,7 +10,25 @@ import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { execSync } from 'child_process';
+import { spawn } from 'child_process';
+
+// Streaming command execution to avoid blocking
+function runCommandStreaming(command, args, cwd) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: 'inherit', // Stream directly to console
+      shell: true
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`Command failed with code ${code}`));
+    });
+
+    child.on('error', (err) => reject(err));
+  });
+}
 
 // Quality gates configuration
 const QUALITY_GATES = {
@@ -38,35 +56,65 @@ const QUALITY_GATES = {
 // Test runner
 async function runTests(projectPath) {
   const spinner = ora('Running tests...').start();
-  
-  try {
-    const result = execSync('npm test 2>&1', { 
-      cwd: projectPath, 
-      encoding: 'utf-8',
-      timeout: 180000
+
+  return new Promise((resolve) => {
+    const child = spawn('npm', ['test'], {
+      cwd: projectPath,
+      stdio: ['pipe', 'pipe', 'pipe'] // Capture output
     });
-    
-    // Extract coverage
-    const coverageMatch = result.match(/Statements\s*:\s*(\d+(?:\.\d+)?)%/);
-    const coverage = coverageMatch ? parseFloat(coverageMatch[1]) : 0;
-    
-    const passed = !result.includes('FAIL') && !result.includes('failed');
-    
-    spinner.succeed(chalk.green(`Tests passed (${coverage}% coverage)`));
-    
-    return {
-      passed,
-      coverage,
-      output: result.substring(0, 1000)
-    };
-  } catch (error) {
-    spinner.fail(chalk.red('Tests failed'));
-    return {
-      passed: false,
-      coverage: 0,
-      error: error.message
-    };
-  }
+
+    let output = '';
+
+    child.stdout.on('data', (data) => {
+      output += data.toString();
+      // Optionally stream to console in real-time
+      // process.stdout.write(data);
+    });
+
+    child.stderr.on('data', (data) => {
+      output += data.toString();
+      // Optionally stream to console in real-time
+      // process.stderr.write(data);
+    });
+
+    child.on('close', (code) => {
+      try {
+        // Extract coverage
+        const coverageMatch = output.match(/Statements\s*:\s*(\d+(?:\.\d+)?)%/);
+        const coverage = coverageMatch ? parseFloat(coverageMatch[1]) : 0;
+
+        const passed = !output.includes('FAIL') && !output.includes('failed');
+
+        if (passed) {
+          spinner.succeed(chalk.green(`Tests passed (${coverage}% coverage)`));
+        } else {
+          spinner.fail(chalk.red('Tests failed'));
+        }
+
+        resolve({
+          passed,
+          coverage,
+          output: output.substring(0, 1000)
+        });
+      } catch (error) {
+        spinner.fail(chalk.red('Tests failed'));
+        resolve({
+          passed: false,
+          coverage: 0,
+          error: error.message
+        });
+      }
+    });
+
+    child.on('error', (error) => {
+      spinner.fail(chalk.red('Tests failed'));
+      resolve({
+        passed: false,
+        coverage: 0,
+        error: error.message
+      });
+    });
+  });
 }
 
 // Security scan
@@ -238,15 +286,12 @@ async function checkCodeQuality(projectPath) {
     
     // Run ESLint
     try {
-      execSync('npx eslint . --format json --output-file eslint-report.json', { 
-        cwd: projectPath,
-        timeout: 60000
-      });
-      
+      await runCommandStreaming('npx', ['eslint', '.', '--format', 'json', '--output-file', 'eslint-report.json'], projectPath);
+
       const report = await fs.readFile(path.join(projectPath, 'eslint-report.json'), 'utf-8');
       const errors = JSON.parse(report);
       const errorCount = errors.length;
-      
+
       checks.push({
         name: 'ESLint Errors',
         passed: errorCount === 0,
@@ -260,12 +305,12 @@ async function checkCodeQuality(projectPath) {
         message: 'Could not run ESLint'
       });
     }
-    
+
     // Check TypeScript
     try {
       await fs.access(path.join(projectPath, 'tsconfig.json'));
-      execSync('npx tsc --noEmit', { cwd: projectPath, timeout: 60000 });
-      
+      await runCommandStreaming('npx', ['tsc', '--noEmit'], projectPath);
+
       checks.push({
         name: 'TypeScript',
         passed: true,
