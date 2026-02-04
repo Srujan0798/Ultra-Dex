@@ -48,21 +48,21 @@ async function listPlugins() {
   const plugins = pluginManager.getInstalledPlugins();
 
   if (plugins.length === 0) {
-    console.log(chalk.yellow('No plugins installed.'));
+    printWarning(chalk.yellow('No plugins installed.'));
     return;
   }
 
-  console.log(chalk.bold('Installed Plugins:\n'));
+  printInfo(chalk.bold('Installed Plugins:\n'));
   
   plugins.forEach(plugin => {
-    console.log(`• ${chalk.green(plugin.name)} v${plugin.version}`);
+    printInfo(`• ${chalk.green(plugin.name)} v${plugin.version}`);
     if (plugin.description) {
-      console.log(`  ${chalk.gray(plugin.description)}`);
+      printInfo(`  ${chalk.gray(plugin.description)}`);
     }
     if (plugin.author) {
-      console.log(`  ${chalk.gray(`by ${plugin.author}`)}`);
+      printInfo(`  ${chalk.gray(\`by \${plugin.author}\`)}`);
     }
-    console.log('');
+    printInfo('');
   });
 }
 

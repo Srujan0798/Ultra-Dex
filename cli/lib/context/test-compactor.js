@@ -34,15 +34,14 @@ async function runTests() {
   console.log('\n3. Testing context compaction...');
 
   // Create a large context to trigger compaction
-  const largeContext = {
-    SACRED_DNA: 'This is critical information that must be preserved',
-    template_section: 'Another section that should be preserved',
-    messages: []
-  };
+  const largeContext = [
+    { type: 'SACRED_DNA', content: 'This is critical information that must be preserved' },
+    { type: 'TEMPLATE_SECTION', content: 'Another section that should be preserved' }
+  ];
 
   // Add many messages to exceed token threshold
   for (let i = 0; i < 50; i++) {
-    largeContext.messages.push({
+    largeContext.push({
       role: 'user',
       content: `Message ${i}: This is a longer message to increase token count and test the compaction algorithm. It contains various information that might or might not be important for the overall context.`
     });

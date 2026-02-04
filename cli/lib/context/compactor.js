@@ -1,5 +1,5 @@
-const { encode, decode } = require('gpt-tokenizer');
-const { v4: uuidv4 } = require('uuid');
+import { encode, decode } from 'gpt-tokenizer';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Context Compactor - Implements intelligent context compression
@@ -296,13 +296,30 @@ class ContextCompactor {
       compressedContext = await this.compressStringContext(context, summary);
     }
 
+    // Calculate final token counts
+    let tokensAfter = this.calculateTokens(compressedContext);
+
+    // If the compressed version is larger than original, try alternative approach
+    // that only keeps the summary and preserved sections
+    if (tokensAfter > this.calculateTokens(context)) {
+      // Create minimal compressed context with just summary and preserved sections
+      if (Array.isArray(context)) {
+        compressedContext = {
+          summary: summary.summary,
+          preservedSections: preservedSections.map(p => p.content),
+          type: 'compressed_context'
+        };
+        tokensAfter = this.calculateTokens(compressedContext);
+      }
+    }
+
     const result = {
       originalContext: context,
       compressedContext,
       compressed: true,
       tokensBefore: this.calculateTokens(context),
-      tokensAfter: this.calculateTokens(compressedContext),
-      compressionRatio: this.calculateTokens(compressedContext) / this.calculateTokens(context),
+      tokensAfter,
+      compressionRatio: tokensAfter / this.calculateTokens(context),
       preservedSections,
       summary
     };
@@ -324,16 +341,22 @@ class ContextCompactor {
 
     // Filter out preserved elements from the main context
     // (they will be added back in a structured way)
-    const filteredContext = compressed.filter((_, index) => !preservedIndices.includes(index));
+    let filteredContext = compressed.filter((_, index) => !preservedIndices.includes(index));
 
     // Apply intelligent reduction to remaining elements
     const reducedContext = this.intelligentlyReduce(filteredContext);
 
     // Combine preserved sections with reduced context
-    return [
-      ...preservedSections.map(p => p.content),
-      ...reducedContext
-    ];
+    // Only add preserved sections if they don't increase token count too much
+    if (preservedSections.length > 0) {
+      return {
+        preservedSections: preservedSections.map(p => p.content),
+        compressedContent: reducedContext,
+        summary: this.summaryHistory[this.summaryHistory.length - 1]?.summary || ''
+      };
+    } else {
+      return reducedContext;
+    }
   }
 
   /**
@@ -427,4 +450,4 @@ class ContextCompactor {
   }
 }
 
-module.exports = { ContextCompactor };
+export { ContextCompactor };

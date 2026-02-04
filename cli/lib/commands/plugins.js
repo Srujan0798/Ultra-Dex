@@ -9,6 +9,8 @@ import path from 'path';
 import { PluginManager, PLUGIN_MANIFEST_EXAMPLE, PLUGIN_EXAMPLE } from '../utils/plugin-system.js';
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 export function registerPluginsCommand(program) {
   const pluginCmd = program
@@ -25,12 +27,12 @@ export function registerPluginsCommand(program) {
       const plugins = manager.listPlugins();
 
       if (plugins.length === 0) {
-        console.log(chalk.yellow('\nNo plugins installed.'));
-        console.log(chalk.gray('Use "ultra-dex plugin create" to start building one.\n'));
+        printWarning(chalk.yellow('\nNo plugins installed.'));
+        printInfo(chalk.gray('Use "ultra-dex plugin create" to start building one.\n'));
         return;
       }
 
-      console.log(chalk.bold.cyan('\n🔌 Installed Plugins\n'));
+      printInfo(chalk.bold.cyan('\n🔌 Installed Plugins\n'));
       const table = new Table({
         head: ['Name', 'Version', 'Author', 'Description'],
         style: { head: ['cyan'] }
@@ -45,8 +47,8 @@ export function registerPluginsCommand(program) {
         ]);
       });
 
-      console.log(table.toString());
-      console.log();
+      printInfo(table.toString());
+      printInfo('');
     });
 
   pluginCmd
@@ -54,8 +56,8 @@ export function registerPluginsCommand(program) {
     .alias('m')
     .description('Browse community plugins')
     .action(async () => {
-      console.log(chalk.bold.magenta('\n🌟 Ultra-Dex Plugin Marketplace\n'));
-      
+      printInfo(chalk.bold.magenta('\n🌟 Ultra-Dex Plugin Marketplace\n'));
+
       const communityPlugins = [
         { name: 'logger', desc: 'Detailed activity logging for agent swarms', stars: 124, author: '@srujan' },
         { name: 'slack', desc: 'Real-time Slack notifications for task completion', stars: 89, author: '@dex-dev' },
@@ -78,9 +80,9 @@ export function registerPluginsCommand(program) {
         ]);
       });
 
-      console.log(table.toString());
-      console.log(chalk.gray('\nTo install: ultra-dex plugin install <name>'));
-      console.log(chalk.dim('Submit your plugin: https://github.com/Srujan0798/Ultra-Dex/plugins\n'));
+      printInfo(table.toString());
+      printInfo(chalk.gray('\nTo install: ultra-dex plugin install <name>'));
+      printInfo(chalk.dim('Submit your plugin: https://github.com/Srujan0798/Ultra-Dex/plugins\n'));
     });
 
   pluginCmd
@@ -102,12 +104,12 @@ export function registerPluginsCommand(program) {
           path.join(pluginPath, 'index.js'),
           PLUGIN_EXAMPLE
         );
-        
-        console.log(chalk.green(`\n✅ Plugin "${name}" created successfully!`));
-        console.log(chalk.gray(`Location: ${pluginPath}`));
-        console.log(chalk.gray(`Edit index.js to start adding custom hooks and logic.\n`));
+
+        printSuccess(chalk.green(`\n✅ Plugin "${name}" created successfully!`));
+        printInfo(chalk.gray(`Location: ${pluginPath}`));
+        printInfo(chalk.gray(`Edit index.js to start adding custom hooks and logic.\n`));
       } catch (error) {
-        console.error(chalk.red(`\n❌ Failed to create plugin: ${error.message}`));
+        printError(chalk.red(`\n❌ Failed to create plugin: ${error.message}`));
       }
     });
 
@@ -138,7 +140,7 @@ export function registerPluginsCommand(program) {
       try {
         await manager.uninstallPlugin(name);
       } catch (error) {
-        console.error(chalk.red(`\n❌ ${error.message}`));
+        printError(chalk.red(`\n❌ ${error.message}`));
       }
     });
 
