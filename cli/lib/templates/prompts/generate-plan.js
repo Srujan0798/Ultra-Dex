@@ -1,11 +1,11 @@
 /**
  * Prompt templates for ultra-dex generate command
- * Generates a full 34-section implementation plan from an idea
+ * Generates implementation plans from an idea (LITE/FULL/ENTERPRISE)
  */
 
-export const SYSTEM_PROMPT = `You are an expert SaaS architect and product strategist. Your job is to take a simple product idea and generate a complete, production-ready implementation plan.
+const SYSTEM_PROMPT_BASE = `You are an expert SaaS architect and product strategist. Your job is to take a simple product idea and generate a complete, production-ready implementation plan.
 
-You MUST output a complete plan covering all 34 sections of the Ultra-Dex framework. Each section must be actionable and specific - no generic placeholders.
+{{SECTION_REQUIREMENT}} Each section must be actionable and specific - no generic placeholders.
 
 QUALITY STANDARDS:
 - All acceptance criteria MUST be measurable (not "should work well" → use "<200ms response time")
@@ -25,6 +25,22 @@ OUTPUT FORMAT:
 - Use tables for structured data
 - Use code blocks with language tags
 - Use checkboxes (- [ ]) for action items`;
+
+function buildSystemPrompt(sectionRequirement) {
+  return SYSTEM_PROMPT_BASE.replace('{{SECTION_REQUIREMENT}}', sectionRequirement);
+}
+
+export const SYSTEM_PROMPT = buildSystemPrompt(
+  'You MUST output a complete plan covering all 34 sections of the Ultra-Dex FULL framework.'
+);
+
+export const SYSTEM_PROMPT_LITE = buildSystemPrompt(
+  'You MUST output a complete plan covering all 12 sections of the Ultra-Dex LITE framework.'
+);
+
+export const SYSTEM_PROMPT_ENTERPRISE = buildSystemPrompt(
+  'You MUST output a complete plan covering all 50+ sections of the Ultra-Dex ENTERPRISE framework.'
+);
 
 export const USER_PROMPT_TEMPLATE = `Generate a complete Ultra-Dex implementation plan for this idea:
 
@@ -136,12 +152,153 @@ Generate ALL 34 sections with specific, actionable content:
 
 Be thorough and specific. This plan will be used directly for implementation.`;
 
-export function generateUserPrompt(idea) {
-  return USER_PROMPT_TEMPLATE.replace('{{IDEA}}', idea);
+export const LITE_USER_PROMPT_TEMPLATE = `Generate a LITE (12-section) Ultra-Dex implementation plan for this idea:
+
+**IDEA:** {{IDEA}}
+
+Generate ALL 12 sections with specific, actionable content:
+
+## SECTION 1: HIGH-LEVEL SUMMARY
+### 1.1 Product Vision (One-liner)
+### 1.2 Problem Statement
+### 1.3 Solution Overview
+### 1.4 Target Market
+### 1.5 Unique Value Proposition
+
+## SECTION 2: CORE FEATURES
+### 2.1 MVP Features (Max 5)
+### 2.2 Out of Scope (v1)
+
+## SECTION 3: USER PERSONAS
+(Primary persona with goals and pain points)
+
+## SECTION 4: USER FLOWS
+(Core flow with steps + success criteria)
+
+## SECTION 5: SCREEN MAP
+(Key screens + navigation structure)
+
+## SECTION 6: TECH STACK
+(Frontend, backend, database, auth, hosting)
+
+## SECTION 7: DATA MODEL
+(Core entities and relationships)
+
+## SECTION 8: API BLUEPRINT
+(Key endpoints with request/response)
+
+## SECTION 9: IMPLEMENTATION PLAN
+(Atomic tasks with estimates)
+
+## SECTION 10: DEPLOYMENT
+(Environments, CI/CD, rollout)
+
+## SECTION 11: SECURITY
+(Auth, data protection, OWASP basics)
+
+## SECTION 12: 21-STEP VERIFICATION
+(Checklist for QA and launch readiness)
+
+Be concise but specific. This plan should be MVP-ready.`;
+
+export const ENTERPRISE_USER_PROMPT_TEMPLATE = `Generate an ENTERPRISE (50+ section) Ultra-Dex implementation plan for this idea:
+
+**IDEA:** {{IDEA}}
+
+Generate ALL sections with specific, actionable content:
+
+## SECTION 1: EXECUTIVE SUMMARY
+## SECTION 2: STRATEGIC OBJECTIVES
+## SECTION 3: MARKET ANALYSIS
+## SECTION 4: CORE FEATURES
+## SECTION 5: USER PERSONAS
+## SECTION 6: USER FLOWS
+## SECTION 7: SCREEN MAP
+## SECTION 8: DESIGN SYSTEM
+## SECTION 9: UI/UX SPECIFICATIONS
+## SECTION 10: DATA MODEL
+## SECTION 11: API ARCHITECTURE
+## SECTION 12: SYSTEM ARCHITECTURE
+## SECTION 13: AUTHENTICATION & AUTHORIZATION
+## SECTION 14: INTEGRATION ARCHITECTURE
+## SECTION 15: TECH STACK
+## SECTION 16: IMPLEMENTATION PLAN
+## SECTION 17: TESTING STRATEGY
+## SECTION 18: DEPLOYMENT STRATEGY
+## SECTION 19: MONITORING & OBSERVABILITY
+## SECTION 20: SECURITY FRAMEWORK
+## SECTION 21: PERFORMANCE REQUIREMENTS
+## SECTION 22: SCALABILITY PLAN
+## SECTION 23: MULTI-TENANCY
+## SECTION 24: DATA GOVERNANCE
+## SECTION 25: DISASTER RECOVERY
+## SECTION 26: COST MANAGEMENT
+
+## SECTION 27-50: ADDITIONAL ENTERPRISE SECTIONS
+27. Change Management
+28. Vendor Management
+29. API Governance
+30. Feature Flag Strategy
+31. Documentation Standards
+32. Training & Onboarding
+33. Customer Support SLA
+34. Incident Management
+35. Business Continuity
+36. Penetration Testing
+37. Code Review Standards
+38. Release Management
+39. Configuration Management
+40. Capacity Management
+41. Service Level Agreements
+42. IT Asset Management
+43. Identity Governance
+44. Network Security
+45. Endpoint Protection
+46. Audit & Compliance
+47. Risk Management
+48. Privacy Impact Assessment
+49. Third-Party Risk
+50. Continuous Improvement
+
+Be thorough and specific. This plan is intended for large-scale enterprise delivery.`;
+
+export const TEMPLATE_CHOICES = ['lite', 'full', 'enterprise'];
+
+export function normalizeTemplate(input, fallback = 'full') {
+  if (!input) return fallback;
+  const normalized = input.toString().trim().toLowerCase();
+  if (TEMPLATE_CHOICES.includes(normalized)) return normalized;
+  if (['mvp', 'quick', 'small'].includes(normalized)) return 'lite';
+  if (['ent', 'enterprise+', 'scale'].includes(normalized)) return 'enterprise';
+  return null;
+}
+
+export function getSystemPrompt(template = 'full') {
+  const normalized = normalizeTemplate(template);
+  if (normalized === 'lite') return SYSTEM_PROMPT_LITE;
+  if (normalized === 'enterprise') return SYSTEM_PROMPT_ENTERPRISE;
+  return SYSTEM_PROMPT;
+}
+
+export function generateUserPrompt(idea, template = 'full') {
+  const normalized = normalizeTemplate(template);
+  const promptTemplate = normalized === 'lite'
+    ? LITE_USER_PROMPT_TEMPLATE
+    : normalized === 'enterprise'
+      ? ENTERPRISE_USER_PROMPT_TEMPLATE
+      : USER_PROMPT_TEMPLATE;
+  return promptTemplate.replace('{{IDEA}}', idea);
 }
 
 export default {
   SYSTEM_PROMPT,
+  SYSTEM_PROMPT_LITE,
+  SYSTEM_PROMPT_ENTERPRISE,
   USER_PROMPT_TEMPLATE,
+  LITE_USER_PROMPT_TEMPLATE,
+  ENTERPRISE_USER_PROMPT_TEMPLATE,
+  TEMPLATE_CHOICES,
+  normalizeTemplate,
+  getSystemPrompt,
   generateUserPrompt,
 };
