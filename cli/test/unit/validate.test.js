@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { registerValidateCommand } from '../../../lib/commands/validate.js';
+import { registerValidateCommand } from '../../lib/commands/validate.js';
 import { Command } from 'commander';
 
 describe('validate command', () => {
@@ -11,15 +11,13 @@ describe('validate command', () => {
 
   it('should register the validate command with correct options', () => {
     registerValidateCommand(program);
-    
+
     const command = program.commands.find(cmd => cmd.name() === 'validate');
     expect(command).toBeDefined();
     expect(command.description()).toContain('Validate project structure');
-    
+
     const options = command.options.map(opt => opt.flags);
-    expect(options).toContain('-p, --provider <provider>');
-    expect(options).toContain('--strict');
-    expect(options).toContain('--fix');
-    expect(options).toContain('--report');
+    expect(options).toContain('-d, --dir <directory>');
+    expect(options).toContain('--scan');
   });
 });

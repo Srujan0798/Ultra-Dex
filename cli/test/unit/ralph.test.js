@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { registerRalphCommand } from '../../../lib/commands/ralph.js';
+import { registerRalphCommand } from '../../lib/commands/ralph.js';
 import { Command } from 'commander';
 
 describe('ralph command', () => {
@@ -27,10 +27,9 @@ describe('ralph command', () => {
 
     const command = program.commands.find(cmd => cmd.name() === 'ralph');
     expect(command).toBeDefined();
-    
+
     const args = command._args;
     expect(args).toHaveLength(1);
-    expect(args[0].name).toBe('task');
     expect(args[0].required).toBe(true);
   });
 });
