@@ -3,6 +3,8 @@
  * Defines schema for agent handoffs, execution state, and rollback support.
  */
 
+import { ValidationError } from '../utils/errors.js';
+
 // ============================================================================
 // AGENT MESSAGE CLASS
 // ============================================================================
@@ -14,13 +16,13 @@ export class AgentMessage {
   constructor(from, to, content, context = {}) {
     // Validate required parameters
     if (!from || typeof from !== 'string') {
-      throw new Error('from is required and must be a string');
+      throw new ValidationError('from is required and must be a string');
     }
     if (!to || typeof to !== 'string') {
-      throw new Error('to is required and must be a string');
+      throw new ValidationError('to is required and must be a string');
     }
     if (content === undefined || content === null) {
-      throw new Error('content is required');
+      throw new ValidationError('content is required');
     }
 
     this.id = crypto.randomUUID();
@@ -96,10 +98,10 @@ export class HandoffPayload {
   constructor(previousAgent, nextAgent, options = {}) {
     // Validate required parameters
     if (!previousAgent || typeof previousAgent !== 'string') {
-      throw new Error('previousAgent is required and must be a string');
+      throw new ValidationError('previousAgent is required and must be a string');
     }
     if (!nextAgent || typeof nextAgent !== 'string') {
-      throw new Error('nextAgent is required and must be a string');
+      throw new ValidationError('nextAgent is required and must be a string');
     }
 
     this.id = crypto.randomUUID();
@@ -241,16 +243,16 @@ export class ExecutionTrace {
   addStep(step, agent, task, dependencies = []) {
     // Validate required parameters
     if (step === undefined || step === null) {
-      throw new Error('step is required');
+      throw new ValidationError('step is required');
     }
     if (!agent || typeof agent !== 'string') {
-      throw new Error('agent is required and must be a string');
+      throw new ValidationError('agent is required and must be a string');
     }
     if (task === undefined || task === null) {
-      throw new Error('task is required');
+      throw new ValidationError('task is required');
     }
     if (!Array.isArray(dependencies)) {
-      throw new Error('dependencies must be an array');
+      throw new ValidationError('dependencies must be an array');
     }
 
     this.pipeline.push({
@@ -283,7 +285,7 @@ export class ExecutionTrace {
   recordResult(agent, output, success = true) {
     // Validate required parameters
     if (!agent || typeof agent !== 'string') {
-      throw new Error('agent is required and must be a string');
+      throw new ValidationError('agent is required and must be a string');
     }
 
     const step = this.pipeline.find(s => s.agent === agent && s.status === 'executing');
@@ -314,7 +316,7 @@ export class ExecutionTrace {
   createCheckpoint(name, state = {}) {
     // Validate required parameters
     if (!name || typeof name !== 'string') {
-      throw new Error('name is required and must be a string');
+      throw new ValidationError('name is required and must be a string');
     }
 
     const checkpoint = {
@@ -341,7 +343,7 @@ export class ExecutionTrace {
   rollbackTo(checkpointId) {
     const checkpointIndex = this.checkpoints.findIndex(c => c.id === checkpointId);
     if (checkpointIndex === -1) {
-      throw new Error(`Checkpoint ${checkpointId} not found`);
+      throw new AppError(`Checkpoint ${checkpointId} not found`, { code: 'CHECKPOINT_NOT_FOUND' });
     }
 
     const checkpoint = this.checkpoints[checkpointIndex];

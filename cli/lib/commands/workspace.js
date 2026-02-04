@@ -3,7 +3,6 @@ import path from 'path';
 import { configManager } from '../utils/config-manager.js';
 import fs from 'fs/promises';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
-import { AppError, ValidationError } from '../utils/errors.js';
 
 export function registerWorkspaceCommand(program) {
   const ws = program
@@ -22,7 +21,15 @@ export function registerWorkspaceCommand(program) {
         try {
             const content = await fs.readFile(globalPath, 'utf8');
             globalConfig = JSON.parse(content);
-        } catch {} // Ignore if file doesn't exist yet
+        } catch {
+            // Ignore if file doesn't exist yet, but warn if invalid JSON
+            if (globalPath) {
+                try {
+                    await fs.access(globalPath);
+                    printWarning(chalk.yellow('Global config exists but is invalid JSON. Resetting workspace list.'));
+                } catch {}
+            }
+        }
         
         globalConfig.workspaces = globalConfig.workspaces || [];
         
@@ -32,8 +39,12 @@ export function registerWorkspaceCommand(program) {
         // Add new entry
         globalConfig.workspaces.push({ name, path: targetDir, lastUsed: new Date().toISOString() });
         
-        await configManager.saveGlobal(globalConfig);
-        printSuccess(chalk.green(`✅ Added workspace: ${name} (${targetDir})`));
+        try {
+            await configManager.saveGlobal(globalConfig);
+            printSuccess(chalk.green(`✅ Added workspace: ${name} (${targetDir})`));
+        } catch (e) {
+            printError(chalk.red(`Failed to save workspace config: ${e.message}`));
+        }
     });
 
   ws.command('list')
@@ -61,8 +72,9 @@ export function registerWorkspaceCommand(program) {
                 printInfo('');
             });
 
-        } catch {
-            printInfo(chalk.gray('No global configuration found.'));
+        } catch (error) {
+            printError(chalk.red('Failed to load global configuration.'));
+            if (process.env.DEBUG) printError(error.message);
         }
     });
 

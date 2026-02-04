@@ -3,6 +3,7 @@ import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
 import { Command } from 'commander';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const TEAM_DIR = '.ultra-dex';
 const TEAM_FILE = 'team.json';
@@ -38,8 +39,9 @@ async function saveTeamConfig(config) {
 
 function requireTeamConfig(team) {
   if (!team) {
-    console.log(chalk.red('\n❌ Team not initialized. Run "ultra-dex team init" first.\n'));
-    process.exit(1);
+    printError(chalk.red('\n❌ Team not initialized. Run "ultra-dex team init" first.\n'));
+    // process.exit(1); // Removed hard exit, throw error instead for better testing
+    throw new Error('Team not initialized');
   }
 }
 
@@ -67,46 +69,50 @@ function buildInitCommand() {
   command
     .description('Initialize team configuration')
     .action(async () => {
-      const existing = await loadTeamConfig();
-      if (existing) {
-        const { overwrite } = await inquirer.prompt([
+      try {
+        const existing = await loadTeamConfig();
+        if (existing) {
+          const { overwrite } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'overwrite',
+              message: 'Team config already exists. Overwrite it?',
+              default: false,
+            },
+          ]);
+          if (!overwrite) {
+            printWarning(chalk.yellow('\nCanceled.\n'));
+            return;
+          }
+        }
+
+        const answers = await inquirer.prompt([
           {
-            type: 'confirm',
-            name: 'overwrite',
-            message: 'Team config already exists. Overwrite it?',
-            default: false,
+            type: 'input',
+            name: 'name',
+            message: 'Team name:',
+            validate: (input) => (input.trim().length > 0 ? true : 'Team name is required'),
+          },
+          {
+            type: 'input',
+            name: 'description',
+            message: 'Team description:',
+            default: '',
           },
         ]);
-        if (!overwrite) {
-          console.log(chalk.yellow('\nCanceled.\n'));
-          return;
-        }
+
+        const config = {
+          name: answers.name.trim(),
+          description: answers.description.trim(),
+          members: [],
+          createdAt: new Date().toISOString(),
+        };
+
+        await saveTeamConfig(config);
+        printSuccess(chalk.green('\n✅ Team config created at .ultra-dex/team.json\n'));
+      } catch (error) {
+        printError(chalk.red(`Init failed: ${error.message}`));
       }
-
-      const answers = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'name',
-          message: 'Team name:',
-          validate: (input) => (input.trim().length > 0 ? true : 'Team name is required'),
-        },
-        {
-          type: 'input',
-          name: 'description',
-          message: 'Team description:',
-          default: '',
-        },
-      ]);
-
-      const config = {
-        name: answers.name.trim(),
-        description: answers.description.trim(),
-        members: [],
-        createdAt: new Date().toISOString(),
-      };
-
-      await saveTeamConfig(config);
-      console.log(chalk.green('\n✅ Team config created at .ultra-dex/team.json\n'));
     });
 
   return command;
@@ -119,35 +125,41 @@ function buildAddCommand() {
     .argument('<email>', 'Member email')
     .option('-r, --role <role>', 'Role (admin|member|viewer)', 'member')
     .action(async (email, options) => {
-      const normalizedEmail = normalizeEmail(email);
-      if (!isValidEmail(normalizedEmail)) {
-        console.log(chalk.red('\n❌ Invalid email format.\n'));
-        process.exit(1);
+      try {
+        const normalizedEmail = normalizeEmail(email);
+        if (!isValidEmail(normalizedEmail)) {
+          printError(chalk.red('\n❌ Invalid email format.\n'));
+          return;
+        }
+
+        const role = options.role?.toLowerCase() || 'member';
+        if (!VALID_ROLES.includes(role)) {
+          printError(chalk.red(`\n❌ Invalid role. Use one of: ${VALID_ROLES.join(', ')}.\n`));
+          return;
+        }
+
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
+
+        const exists = team.members.some((member) => normalizeEmail(member.email) === normalizedEmail);
+        if (exists) {
+          printWarning(chalk.yellow(`\n⚠️  ${normalizedEmail} is already on the team.\n`));
+          return;
+        }
+
+        team.members.push({
+          email: normalizedEmail,
+          role,
+          addedAt: new Date().toISOString(),
+        });
+
+        await saveTeamConfig(team);
+        printSuccess(chalk.green(`\n✅ Added ${normalizedEmail} as ${role}.\n`));
+      } catch (error) {
+        if (error.message !== 'Team not initialized') {
+            printError(chalk.red(`Add failed: ${error.message}`));
+        }
       }
-
-      const role = options.role?.toLowerCase() || 'member';
-      if (!VALID_ROLES.includes(role)) {
-        console.log(chalk.red(`\n❌ Invalid role. Use one of: ${VALID_ROLES.join(', ')}.\n`));
-        process.exit(1);
-      }
-
-      const team = await loadTeamConfig();
-      requireTeamConfig(team);
-
-      const exists = team.members.some((member) => normalizeEmail(member.email) === normalizedEmail);
-      if (exists) {
-        console.log(chalk.yellow(`\n⚠️  ${normalizedEmail} is already on the team.\n`));
-        process.exit(1);
-      }
-
-      team.members.push({
-        email: normalizedEmail,
-        role,
-        addedAt: new Date().toISOString(),
-      });
-
-      await saveTeamConfig(team);
-      console.log(chalk.green(`\n✅ Added ${normalizedEmail} as ${role}.\n`));
     });
 
   return command;
@@ -158,23 +170,29 @@ function buildListCommand() {
   command
     .description('List team members')
     .action(async () => {
-      const team = await loadTeamConfig();
-      requireTeamConfig(team);
+      try {
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
 
-      if (!team.members.length) {
-        console.log(chalk.yellow('\nNo team members yet.\n'));
-        return;
+        if (!team.members.length) {
+          printWarning(chalk.yellow('\nNo team members yet.\n'));
+          return;
+        }
+
+        const rows = team.members.map((member) => [
+          member.email,
+          member.role,
+          member.addedAt,
+        ]);
+
+        printInfo('\n' + chalk.bold('Team Members'));
+        printInfo(formatTable(rows));
+        printInfo('');
+      } catch (error) {
+        if (error.message !== 'Team not initialized') {
+            printError(chalk.red(`List failed: ${error.message}`));
+        }
       }
-
-      const rows = team.members.map((member) => [
-        member.email,
-        member.role,
-        member.addedAt,
-      ]);
-
-      console.log('\n' + chalk.bold('Team Members'));
-      console.log(formatTable(rows));
-      console.log('');
     });
 
   return command;
@@ -186,38 +204,44 @@ function buildRemoveCommand() {
     .description('Remove a team member')
     .argument('<email>', 'Member email')
     .action(async (email) => {
-      const normalizedEmail = normalizeEmail(email);
-      if (!isValidEmail(normalizedEmail)) {
-        console.log(chalk.red('\n❌ Invalid email format.\n'));
-        process.exit(1);
+      try {
+        const normalizedEmail = normalizeEmail(email);
+        if (!isValidEmail(normalizedEmail)) {
+          printError(chalk.red('\n❌ Invalid email format.\n'));
+          return;
+        }
+
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
+
+        const index = team.members.findIndex((member) => normalizeEmail(member.email) === normalizedEmail);
+        if (index === -1) {
+          printError(chalk.red(`\n❌ ${normalizedEmail} not found in team.\n`));
+          return;
+        }
+
+        const { confirm } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            message: `Remove ${normalizedEmail} from the team?`,
+            default: false,
+          },
+        ]);
+
+        if (!confirm) {
+          printWarning(chalk.yellow('\nCanceled.\n'));
+          return;
+        }
+
+        team.members.splice(index, 1);
+        await saveTeamConfig(team);
+        printSuccess(chalk.green(`\n✅ Removed ${normalizedEmail}.\n`));
+      } catch (error) {
+        if (error.message !== 'Team not initialized') {
+            printError(chalk.red(`Remove failed: ${error.message}`));
+        }
       }
-
-      const team = await loadTeamConfig();
-      requireTeamConfig(team);
-
-      const index = team.members.findIndex((member) => normalizeEmail(member.email) === normalizedEmail);
-      if (index === -1) {
-        console.log(chalk.red(`\n❌ ${normalizedEmail} not found in team.\n`));
-        process.exit(1);
-      }
-
-      const { confirm } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'confirm',
-          message: `Remove ${normalizedEmail} from the team?`,
-          default: false,
-        },
-      ]);
-
-      if (!confirm) {
-        console.log(chalk.yellow('\nCanceled.\n'));
-        return;
-      }
-
-      team.members.splice(index, 1);
-      await saveTeamConfig(team);
-      console.log(chalk.green(`\n✅ Removed ${normalizedEmail}.\n`));
     });
 
   return command;
@@ -230,33 +254,39 @@ function buildConfigCommand() {
     .argument('[key]', 'Setting key (name, description)')
     .argument('[value]', 'Setting value')
     .action(async (key, value) => {
-      const team = await loadTeamConfig();
-      requireTeamConfig(team);
+      try {
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
 
-      const validKeys = ['name', 'description'];
-      if (!key) {
-        console.log(chalk.bold('\nTeam Settings\n'));
-        console.log(chalk.gray(`Name: ${team.name || '-'}`));
-        console.log(chalk.gray(`Description: ${team.description || '-'}`));
-        console.log(chalk.gray(`Created: ${team.createdAt || '-'}`));
-        console.log(chalk.gray(`Members: ${team.members.length}`));
-        console.log('');
-        return;
+        const validKeys = ['name', 'description'];
+        if (!key) {
+          printInfo(chalk.bold('\nTeam Settings\n'));
+          printInfo(chalk.gray(`Name: ${team.name || '-'}`));
+          printInfo(chalk.gray(`Description: ${team.description || '-'}`));
+          printInfo(chalk.gray(`Created: ${team.createdAt || '-'}`));
+          printInfo(chalk.gray(`Members: ${team.members.length}`));
+          printInfo('');
+          return;
+        }
+
+        if (!validKeys.includes(key)) {
+          printError(chalk.red(`\n❌ Invalid key. Use: ${validKeys.join(', ')}.\n`));
+          return;
+        }
+
+        if (value === undefined) {
+          printInfo(chalk.gray(`\n${key}: ${team[key] || '-'}\n`));
+          return;
+        }
+
+        team[key] = value.trim();
+        await saveTeamConfig(team);
+        printSuccess(chalk.green(`\n✅ Updated ${key}.\n`));
+      } catch (error) {
+        if (error.message !== 'Team not initialized') {
+            printError(chalk.red(`Config failed: ${error.message}`));
+        }
       }
-
-      if (!validKeys.includes(key)) {
-        console.log(chalk.red(`\n❌ Invalid key. Use: ${validKeys.join(', ')}.\n`));
-        process.exit(1);
-      }
-
-      if (value === undefined) {
-        console.log(chalk.gray(`\n${key}: ${team[key] || '-'}\n`));
-        return;
-      }
-
-      team[key] = value.trim();
-      await saveTeamConfig(team);
-      console.log(chalk.green(`\n✅ Updated ${key}.\n`));
     });
 
   return command;

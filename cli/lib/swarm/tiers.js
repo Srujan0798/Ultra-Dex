@@ -1,7 +1,4 @@
-/**
- * Ultra-Dex Agent Tier System v3.0
- * Defines the hierarchical structure of agents and their dependencies.
- */
+import { ValidationError } from '../utils/errors.js';
 
 // ============================================================================
 // TIER DEFINITIONS
@@ -374,12 +371,12 @@ export function canInvoke(agentA, agentB) {
  */
 export function getExecutionOrder(agentNames) {
   if (!Array.isArray(agentNames)) {
-    throw new Error('agentNames must be an array');
+    throw new ValidationError('agentNames must be an array');
   }
 
   const normalized = agentNames.map(n => {
     if (!n || typeof n !== 'string') {
-      throw new Error('Each agent name must be a non-empty string');
+      throw new ValidationError('Each agent name must be a non-empty string');
     }
     return n.toLowerCase().replace('@', '');
   });
@@ -459,7 +456,7 @@ export function getTierSummary() {
  */
 export function validatePipeline(pipeline) {
   if (!Array.isArray(pipeline)) {
-    throw new Error('pipeline must be an array');
+    throw new ValidationError('pipeline must be an array');
   }
 
   const errors = [];
