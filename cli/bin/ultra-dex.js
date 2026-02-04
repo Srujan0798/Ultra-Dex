@@ -46,6 +46,30 @@ if (process.argv.includes('--help') && process.argv.includes('--doomsday')) {
   process.exit(0);
 }
 
+// Check for ACP (Agent Client Protocol) mode - GitHub's agent portability standard
+const isAcpMode = process.argv.includes('--acp');
+if (isAcpMode) {
+  const acpPort = process.argv.find(arg => arg.startsWith('--acp-port='))?.split('=')[1];
+  const acpHttp = process.argv.includes('--acp-http');
+  
+  (async () => {
+    try {
+      const { startACPHost } = await import('../lib/acp/host.js');
+      await startACPHost({
+        stdio: !acpHttp,
+        http: acpHttp,
+        port: acpPort ? parseInt(acpPort, 10) : 3002
+      });
+    } catch (error) {
+      console.error(chalk.red('\n✕ Failed to start ACP Host:'), error.message);
+      process.exit(1);
+    }
+  })();
+  
+  // ACP mode takes over completely - don't process other commands
+  await new Promise(() => {});
+}
+
 // Check for updates
 const pkg = { name: PACKAGE_NAME, version: VERSION };
 const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 });
@@ -94,6 +118,7 @@ import { exportCommand } from '../lib/commands/export.js';
 import { upgradeCommand } from '../lib/commands/upgrade.js';
 import { configCommand } from '../lib/commands/config.js';
 
+import { registerRalphCommand } from '../lib/commands/ralph.js';
 import { registerWorkflowCommand } from '../lib/commands/workflows.js';
 import { registerPlanCommand } from '../lib/commands/plan.js';
 import { registerSuggestCommand } from '../lib/commands/suggest.js';
@@ -107,13 +132,16 @@ import { registerMemoryCommand } from '../lib/commands/memory.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
 import { registerBrainCommand } from '../lib/commands/brain.js';
+import { startACPHost } from '../lib/acp/host.js';
 
 // v3.4.3 Commands - 2026 Competitive Features
+import { registerBrowserCommand } from '../lib/commands/browser.js';
 import { registerExecCommand } from '../lib/commands/exec.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
 import { registerSearchCommand } from '../lib/commands/search.js';
 import { registerCloudCommand } from '../lib/commands/cloud.js';
 import { registerAutonomousCommand } from '../lib/commands/autonomous.js';
+import { registerPTYCommands } from '../lib/commands/pty.js';
 import { startInteractiveMode } from '../lib/ui/interactive.js';
 import { theme, ultraGradient } from '../lib/ui/theme.js';
 
@@ -160,7 +188,8 @@ program.configureHelp({
 
     output += `  ${theme.title('OPTIONS')}\n`;
     output += `    ${theme.primary('-V, --version').padEnd(20)} ${theme.dim('output the version number')}\n`;
-    output += `    ${theme.primary('-h, --help').padEnd(20)} ${theme.dim('display help for command')}\n\n`;
+    output += `    ${theme.primary('-h, --help').padEnd(20)} ${theme.dim('display help for command')}\n`;
+    output += `    ${theme.primary('--acp').padEnd(20)} ${theme.dim('start ACP (Agent Client Protocol) host')}\n\n`;
 
     output += `  ${theme.dim('─────────────────────────────────────────────────────────')}\n`;
     output += `  ${theme.subtitle('Run ultra-dex without arguments to launch the Interactive Dashboard')}\n\n`;
@@ -264,14 +293,46 @@ registerDebugCommand(program);
 
 // v3.4.3 Commands - 2026 Competitive Features
 registerExecCommand(program);
+registerBrowserCommand(program);
 registerGitHubCommand(program);
 registerSearchCommand(program);
 registerCloudCommand(program);
 registerBrainCommand(program);
 registerAutonomousCommand(program);
+registerRalphCommand(program);
 registerWorkspaceCommand(program);
 registerBatchCommand(program);
 registerPipelineCommand(program);
+registerPTYCommands(program);
+
+// ACP (Agent Client Protocol) Commands
+import { cursorCommand } from '../lib/acp/cursor.js';
+
+program
+  .command('acp')
+  .description('Start ACP (Agent Client Protocol) host for IDE integration')
+  .option('--http', 'Run in HTTP mode instead of stdio')
+  .option('--port <port>', 'Port for HTTP mode', '3002')
+  .option('--stdio', 'Run in stdio mode (default)', true)
+  .action(async (options) => {
+    const { startACPHost } = await import('../lib/acp/host.js');
+    await startACPHost({
+      stdio: !options.http,
+      http: options.http,
+      port: parseInt(options.port, 10)
+    });
+  });
+
+program
+  .command('cursor')
+  .description('Manage Cursor 2.0 IDE integration')
+  .option('--install', 'Install Cursor ACP integration (default)')
+  .option('--uninstall', 'Remove Cursor ACP integration')
+  .option('--status', 'Check Cursor integration status')
+  .option('--vscode', 'Also update VS Code settings')
+  .action(async (options) => {
+    await cursorCommand(options);
+  });
 
 // Activate plugins after all commands are registered
 try {
