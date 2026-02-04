@@ -148,18 +148,18 @@ async function syncWithLinear(tasks, options) {
 
 // GitHub Issues integration
 async function syncWithGitHub(tasks, options) {
-  console.log(chalk.cyan('\n🐙 Syncing with GitHub Issues...\n'));
-  
+  printInfo(chalk.cyan('\n🐙 Syncing with GitHub Issues...\n'));
+
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
-    console.log(chalk.yellow('⚠️  GITHUB_TOKEN not found in environment'));
-    console.log(chalk.gray('   Set it with: export GITHUB_TOKEN=your_token\n'));
+    printWarning(chalk.yellow('⚠️  GITHUB_TOKEN not found in environment'));
+    printInfo(chalk.gray('   Set it with: export GITHUB_TOKEN=your_token\n'));
     return;
   }
-  
+
   // Parse owner/repo from git remote or options
   let owner, repo;
-  
+
   if (options.repo) {
     [owner, repo] = options.repo.split('/');
   } else {
@@ -172,30 +172,30 @@ async function syncWithGitHub(tasks, options) {
         repo = match[2];
       }
     } catch (e) {
-      console.log(chalk.yellow('⚠️  Could not detect GitHub repo'));
-      console.log(chalk.gray('   Use --repo owner/name\n'));
+      printWarning(chalk.yellow('⚠️  Could not detect GitHub repo'));
+      printInfo(chalk.gray('   Use --repo owner/name\n'));
       return;
     }
   }
-  
+
   if (!owner || !repo) {
-    console.log(chalk.yellow('⚠️  GitHub owner/repo required'));
-    console.log(chalk.gray('   Use --repo owner/name\n'));
+    printWarning(chalk.yellow('⚠️  GitHub owner/repo required'));
+    printInfo(chalk.gray('   Use --repo owner/name\n'));
     return;
   }
-  
-  console.log(chalk.gray(`Target: ${owner}/${repo}`));
-  console.log(chalk.gray(`Found ${tasks.length} tasks to sync\n`));
-  
+
+  printInfo(chalk.gray(`Target: ${owner}/${repo}`));
+  printInfo(chalk.gray(`Found ${tasks.length} tasks to sync\n`));
+
   const labels = options.labels ? options.labels.split(',') : ['ultra-dex', 'enhancement'];
-  
+
   for (const task of tasks) {
     try {
       // Map priority to GitHub labels
-      const priorityLabel = task.priority === 'P0' ? 'priority-critical' : 
+      const priorityLabel = task.priority === 'P0' ? 'priority-critical' :
                            task.priority === 'P1' ? 'priority-high' : 'priority-medium';
       const allLabels = [...labels, priorityLabel];
-      
+
       const body = `
 ## Task
 ${task.title}
@@ -211,7 +211,7 @@ Generated from Ultra-Dex implementation plan
 - [ ] Tests written and passing
 - [ ] Documentation updated
 `;
-      
+
       const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
         method: 'POST',
         headers: {
@@ -224,22 +224,22 @@ Generated from Ultra-Dex implementation plan
           labels: allLabels
         })
       });
-      
+
       if (response.ok) {
         const issue = await response.json();
-        console.log(chalk.green(`✅ Created: #${issue.number} - ${issue.title}`));
+        printSuccess(chalk.green(`✅ Created: #${issue.number} - ${issue.title}`));
       } else {
         const error = await response.text();
-        console.log(chalk.red(`❌ Failed: ${task.title}`));
-        console.log(chalk.gray(`   ${error}`));
+        printError(chalk.red(`❌ Failed: ${task.title}`));
+        printInfo(chalk.gray(`   ${error}`));
       }
     } catch (error) {
-      console.log(chalk.red(`❌ Error creating issue: ${task.title}`));
-      console.log(chalk.gray(`   ${error.message}`));
+      printError(chalk.red(`❌ Error creating issue: ${task.title}`));
+      printInfo(chalk.gray(`   ${error.message}`));
     }
   }
-  
-  console.log(chalk.green(`\n✅ Synced ${tasks.length} issues to GitHub\n`));
+
+  printSuccess(chalk.green(`\n✅ Synced ${tasks.length} issues to GitHub\n`));
 }
 
 // Export to JSON for other tools
@@ -249,9 +249,9 @@ async function exportToJson(tasks, outputPath) {
     total_tasks: tasks.length,
     tasks: tasks
   };
-  
+
   await fs.writeFile(outputPath, JSON.stringify(data, null, 2));
-  console.log(chalk.green(`\n✅ Exported ${tasks.length} tasks to ${outputPath}\n`));
+  printSuccess(chalk.green(`\n✅ Exported ${tasks.length} tasks to ${outputPath}\n`));
 }
 
 // Main sync command
@@ -266,26 +266,26 @@ program
   .option('--dry-run', 'Show what would be synced without creating')
   .action(async (planPath, options) => {
     try {
-      console.log(chalk.cyan.bold('\n🔄 Ultra-Dex Project Management Sync\n'));
-      
+      printInfo(chalk.cyan.bold('\n🔄 Ultra-Dex Project Management Sync\n'));
+
       // Parse implementation plan
-      console.log(chalk.blue(`📖 Parsing: ${planPath}`));
+      printInfo(chalk.blue(`📖 Parsing: ${planPath}`));
       const tasks = await parseImplementationPlan(planPath);
-      
+
       if (tasks.length === 0) {
-        console.log(chalk.yellow('\n⚠️  No tasks found in implementation plan\n'));
+        printWarning(chalk.yellow('\n⚠️  No tasks found in implementation plan\n'));
         return;
       }
-      
-      console.log(chalk.green(`✅ Found ${tasks.length} tasks\n`));
-      
+
+      printSuccess(chalk.green(`✅ Found ${tasks.length} tasks\n`));
+
       // Show preview table
       const table = new Table({
         head: ['#', 'Phase', 'Task', 'Priority', 'Status'],
         colWidths: [5, 25, 40, 10, 12],
         style: { head: ['cyan'] }
       });
-      
+
       tasks.slice(0, 20).forEach((task, i) => {
         table.push([
           i + 1,
@@ -295,46 +295,46 @@ program
           task.status
         ]);
       });
-      
+
       if (tasks.length > 20) {
         table.push(['...', '...', `+ ${tasks.length - 20} more tasks`, '', '']);
       }
-      
-      console.log(table.toString());
-      console.log();
-      
+
+      printInfo(table.toString());
+      printInfo('');
+
       // Dry run mode
       if (options.dryRun) {
-        console.log(chalk.yellow('🔍 Dry run mode - no issues created\n'));
+        printWarning(chalk.yellow('🔍 Dry run mode - no issues created\n'));
         return;
       }
-      
+
       // Sync based on options
       if (options.linear) {
         await syncWithLinear(tasks, options);
       }
-      
+
       if (options.github) {
         await syncWithGitHub(tasks, options);
       }
-      
+
       if (options.json) {
         await exportToJson(tasks, options.json);
       }
-      
+
       if (!options.linear && !options.github && !options.json) {
-        console.log(chalk.yellow('ℹ️  No sync target specified'));
-        console.log(chalk.gray('   Use --linear, --github, or --json'));
-        console.log();
-        console.log(chalk.gray('Examples:'));
-        console.log(chalk.gray('  ultra-dex sync --linear --team-id TEAM_ID'));
-        console.log(chalk.gray('  ultra-dex sync --github --repo owner/repo'));
-        console.log(chalk.gray('  ultra-dex sync --json tasks.json'));
-        console.log();
+        printWarning(chalk.yellow('ℹ️  No sync target specified'));
+        printInfo(chalk.gray('   Use --linear, --github, or --json'));
+        printInfo('');
+        printInfo(chalk.gray('Examples:'));
+        printInfo(chalk.gray('  ultra-dex sync --linear --team-id TEAM_ID'));
+        printInfo(chalk.gray('  ultra-dex sync --github --repo owner/repo'));
+        printInfo(chalk.gray('  ultra-dex sync --json tasks.json'));
+        printInfo('');
       }
-      
+
     } catch (error) {
-      console.error(chalk.red('❌ Error:'), error.message);
+      printError(chalk.red('❌ Error:'), error.message);
       process.exit(1);
     }
   });
@@ -358,18 +358,18 @@ program
         filtered = filtered.filter(t => t.phase.toLowerCase().includes(options.phase.toLowerCase()));
       }
       
-      console.log(chalk.cyan(`\n📋 Tasks (${filtered.length}/${tasks.length}):\n`));
-      
+      printInfo(chalk.cyan(`\n📋 Tasks (${filtered.length}/${tasks.length}):\n`));
+
       filtered.forEach((task, _i) => {
         const icon = task.status === 'completed' ? '✅' : '☐';
         const color = task.status === 'completed' ? chalk.gray : chalk.white;
-        console.log(color(`${icon} [${task.priority}] ${task.title}`));
-        console.log(chalk.gray(`   Phase: ${task.phase}`));
+        printInfo(color(`${icon} [${task.priority}] ${task.title}`));
+        printInfo(chalk.gray(`   Phase: ${task.phase}`));
       });
-      
-      console.log();
+
+      printInfo('');
     } catch (error) {
-      console.error(chalk.red('❌ Error:'), error.message);
+      printError(chalk.red('❌ Error:'), error.message);
     }
   });
 

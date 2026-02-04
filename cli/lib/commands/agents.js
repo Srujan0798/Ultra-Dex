@@ -9,12 +9,7 @@ import { readWithFallback } from '../utils/fallback.js';
 import { pathExists } from '../utils/files.js';
 import { showAgentsTable } from '../utils/tables.js';
 import { validateSafePath } from '../utils/validation.js';
-import { marketplaceClient, FALLBACK_MARKETPLACE_AGENTS } from '../marketplace/client.js';
-
-const COMMUNITY_AGENTS = FALLBACK_MARKETPLACE_AGENTS.reduce((acc, agent) => {
-  acc[agent.id] = agent;
-  return acc;
-}, {});
+import { marketplaceClient } from '../marketplace/client.js';
 
 export const AGENTS = [
   { name: 'architect', description: 'Manifest reality from a raw idea', file: '0-orchestration/architect.md', tier: 'Orchestration' },
