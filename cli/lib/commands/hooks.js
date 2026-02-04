@@ -114,6 +114,7 @@ async function installHook(options) {
   if (!hooksDir) return;
 
   const preCommitPath = path.join(hooksDir, 'pre-commit');
+  const prePushPath = path.join(hooksDir, 'pre-push');
   let minScore = parseInt(options.minScore, 10);
   
   if (isNaN(minScore) || minScore < 0 || minScore > 100) {
@@ -163,6 +164,48 @@ async function installHook(options) {
   }
 
   printHookInfo(minScore);
+
+  if (!options.preCommitOnly) {
+    await installPrePushHook(prePushPath, options);
+  } else {
+    printInfo(chalk.gray('  Skipping pre-push hook (--pre-commit-only).'));
+  }
+}
+
+async function installPrePushHook(prePushPath, options) {
+  const bundledHookPath = await getPrePushHookPath();
+  let hookScript;
+
+  if (bundledHookPath) {
+    hookScript = await fs.readFile(bundledHookPath, 'utf-8');
+    printInfo(chalk.gray(`  Using bundled pre-push hook from: ${bundledHookPath}`));
+  } else {
+    hookScript = generatePrePushScript();
+    printInfo(chalk.gray('  Using embedded pre-push hook script'));
+  }
+
+  try {
+    const existing = await fs.readFile(prePushPath, 'utf-8');
+    if (existing.includes('ultra-dex') || existing.includes('Ultra-Dex')) {
+      if (options.force) {
+        await fs.writeFile(prePushPath, hookScript);
+        await fs.chmod(prePushPath, '755');
+        printSuccess(chalk.green('✅ Ultra-Dex pre-push hook updated (--force).\n'));
+      } else {
+        printWarning(chalk.yellow('⚠️  Ultra-Dex pre-push hook already exists.\n'));
+        return;
+      }
+    } else {
+      const combined = existing + '\n\n' + hookScript;
+      await fs.writeFile(prePushPath, combined);
+      await fs.chmod(prePushPath, '755');
+      printSuccess(chalk.green('✅ Ultra-Dex hook appended to existing pre-push.\n'));
+    }
+  } catch {
+    await fs.writeFile(prePushPath, hookScript);
+    await fs.chmod(prePushPath, '755');
+    printSuccess(chalk.green('✅ Pre-push hook installed.\n'));
+  }
 }
 
 async function removeHook() {
@@ -170,6 +213,7 @@ async function removeHook() {
   if (!hooksDir) return;
   
   const preCommitPath = path.join(hooksDir, 'pre-commit');
+  const prePushPath = path.join(hooksDir, 'pre-push');
 
   try {
     const content = await fs.readFile(preCommitPath, 'utf-8');
@@ -182,6 +226,16 @@ async function removeHook() {
   } catch {
     printInfo(chalk.gray('No Ultra-Dex hooks found.\n'));
   }
+
+  try {
+    const content = await fs.readFile(prePushPath, 'utf-8');
+    if (content.includes('ultra-dex') || content.includes('Ultra-Dex')) {
+      await fs.unlink(prePushPath);
+      printSuccess(chalk.green('✅ Ultra-Dex pre-push hook removed.\n'));
+    }
+  } catch {
+    // ignore
+  }
 }
 
 async function checkHookStatus() {
@@ -189,6 +243,7 @@ async function checkHookStatus() {
   if (!hooksDir) return;
 
   const preCommitPath = path.join(hooksDir, 'pre-commit');
+  const prePushPath = path.join(hooksDir, 'pre-push');
 
   try {
     const content = await fs.readFile(preCommitPath, 'utf-8');
@@ -205,6 +260,18 @@ async function checkHookStatus() {
     }
   } catch {
     printInfo(chalk.gray('❌ No pre-commit hook installed.\n'));
+    printInfo(chalk.cyan('  Install with: npx ultra-dex hooks install\n'));
+  }
+
+  try {
+    const content = await fs.readFile(prePushPath, 'utf-8');
+    if (content.includes('ultra-dex') || content.includes('Ultra-Dex')) {
+      printSuccess(chalk.green('✅ Ultra-Dex pre-push hook is installed.\n'));
+    } else {
+      printWarning(chalk.yellow('⚠️  Pre-push hook exists but is not from Ultra-Dex.\n'));
+    }
+  } catch {
+    printInfo(chalk.gray('❌ No pre-push hook installed.\n'));
     printInfo(chalk.cyan('  Install with: npx ultra-dex hooks install\n'));
   }
 }
@@ -305,6 +372,32 @@ echo ""
 
 # Cleanup
 rm -f "$VALIDATION_LOG" "$ALIGN_LOG" 2>/dev/null || true
+
+exit 0
+`;
+}
+
+function generatePrePushScript() {
+  return `#!/bin/sh
+# Ultra-Dex Pre-Push Hook v1.0
+# Updates CONTEXT.md based on git diff + runs live verification
+
+set -e
+
+echo ""
+echo "🚀 Ultra-Dex: Running pre-push verification..."
+echo ""
+
+if ! command -v ultra-dex >/dev/null 2>&1 && ! npx ultra-dex --version >/dev/null 2>&1; then
+    echo "⚠️  Ultra-Dex not found. Skipping pre-push verification."
+    exit 0
+fi
+
+npx ultra-dex verify --live --pre-push
+
+echo ""
+echo "✅ Ultra-Dex pre-push checks passed"
+echo ""
 
 exit 0
 `;
