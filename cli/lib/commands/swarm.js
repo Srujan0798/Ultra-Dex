@@ -104,6 +104,51 @@ async function withStateLock(callback) {
 }
 
 /**
+ * Save checkpoint for pipeline recovery
+ */
+const CHECKPOINT_FILE = join(process.cwd(), '.ultra-dex', 'swarm-checkpoint.json');
+
+async function saveCheckpoint(task, agentResults, previousOutput, completedAgents, options) {
+  const checkpoint = {
+    timestamp: new Date().toISOString(),
+    task,
+    agentResults,
+    previousOutput,
+    completedAgents,
+    options,
+    version: '1.0'
+  };
+  
+  try {
+    await atomicWrite(CHECKPOINT_FILE, JSON.stringify(checkpoint, null, 2));
+  } catch (error) {
+    printWarning(`Warning: Failed to save checkpoint: ${error.message}`);
+  }
+}
+
+async function loadCheckpoint() {
+  try {
+    if (existsSync(CHECKPOINT_FILE)) {
+      const data = await readFile(CHECKPOINT_FILE, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    printWarning(`Warning: Failed to load checkpoint: ${error.message}`);
+  }
+  return null;
+}
+
+async function clearCheckpoint() {
+  try {
+    if (existsSync(CHECKPOINT_FILE)) {
+      await unlink(CHECKPOINT_FILE);
+    }
+  } catch (error) {
+    // Ignore cleanup errors
+  }
+}
+
+/**
  * Register swarm command with Commander
  */
 export function registerSwarmCommand(program) {
@@ -112,8 +157,14 @@ export function registerSwarmCommand(program) {
       .description('Deploy an autonomous agent swarm for a task')
       .option('-p, --parallel', 'Execute implementation tier in parallel', false)
       .option('--dry-run', 'Preview the swarm pipeline', false)
+      .option('--resume', 'Resume from last checkpoint after a failure', false)
+      .option('--clean', 'Clear checkpoint and start fresh', false)
       .action(async (task, options) => {
           try {
+              if (options.clean) {
+                await clearCheckpoint();
+                printSuccess('Checkpoint cleared. Starting fresh.');
+              }
               await swarmCommand(task, options);
           } catch (error) {
               await handleError(error, { command: 'swarm', task, options });
@@ -325,13 +376,32 @@ async function writeSwarmLog(logDir, task, results, stats) {
 
 export async function swarmCommand(task, options) {
   renderer.clearScreen();
-  await renderer.text(`**🐝 Ultra-Dex Swarm Mode**\nTask: "${task}"`);
+  await renderer.text(`**🐝 Ultra-Dex Swarm Mode**
+Task: "${task}"`);
 
   const startTime = Date.now();
 
   if (options.dryRun) {
     handleDryRun(options);
     return;
+  }
+
+  // Check for checkpoint if resuming
+  let checkpoint = null;
+  let completedAgents = new Set();
+  
+  if (options.resume) {
+    checkpoint = await loadCheckpoint();
+    if (checkpoint && checkpoint.task === task) {
+      printInfo(`📋 Resuming from checkpoint (last updated: ${new Date(checkpoint.timestamp).toLocaleString()})`);
+      printInfo(`✓ Already completed: ${checkpoint.completedAgents.join(', ')}`);
+      completedAgents = new Set(checkpoint.completedAgents);
+    } else if (checkpoint) {
+      printWarning(`⚠️  Checkpoint found for different task. Starting fresh.`);
+      checkpoint = null;
+    } else {
+      printInfo(`No checkpoint found. Starting fresh.`);
+    }
   }
 
   // Load context & Graph
@@ -356,18 +426,28 @@ export async function swarmCommand(task, options) {
     await saveState(state);
   });
 
-  let previousOutput = '';
-  const agentResults = [];
+  // Resume from checkpoint or start fresh
+  let previousOutput = checkpoint ? checkpoint.previousOutput : '';
+  const agentResults = checkpoint ? [...checkpoint.agentResults] : [];
   const agentTimings = {};
+  
+  // Filter out already completed agents from pipeline
+  const remainingPipeline = AGENT_PIPELINE.filter(a => !completedAgents.has(a.name));
+  
+  if (remainingPipeline.length === 0) {
+    printSuccess('✓ All agents already completed!');
+    await clearCheckpoint();
+    return;
+  }
 
   const executionTiers = options.parallel
     ? [
-        { name: '1-Planning', agents: AGENT_PIPELINE.filter(a => a.tier === '1-planning'), parallel: false },
-        { name: '2-Implementation', agents: AGENT_PIPELINE.filter(a => a.tier === '2-implementation'), parallel: true },
-        { name: '3-Security', agents: AGENT_PIPELINE.filter(a => a.tier === '3-security'), parallel: false },
-        { name: '4-Quality', agents: AGENT_PIPELINE.filter(a => a.tier === '4-quality'), parallel: false }
+        { name: '1-Planning', agents: remainingPipeline.filter(a => a.tier === '1-planning'), parallel: false },
+        { name: '2-Implementation', agents: remainingPipeline.filter(a => a.tier === '2-implementation'), parallel: true },
+        { name: '3-Security', agents: remainingPipeline.filter(a => a.tier === '3-security'), parallel: false },
+        { name: '4-Quality', agents: remainingPipeline.filter(a => a.tier === '4-quality'), parallel: false }
       ]
-    : [{ name: 'All', agents: AGENT_PIPELINE, parallel: false }];
+    : [{ name: 'All', agents: remainingPipeline, parallel: false }];
 
   for (const tier of executionTiers) {
     if (tier.agents.length === 0) continue;
@@ -413,14 +493,22 @@ export async function swarmCommand(task, options) {
           console.log(theme.dim(`    › ${preview}`));
 
           agentResults.push({ agent: agent.name, result, success: true });
+          completedAgents.add(agent.name);
+          
+          // Save checkpoint after each successful agent
+          await saveCheckpoint(task, agentResults, previousOutput, Array.from(completedAgents), options);
 
         } catch (error) {
           renderer.fail(`@${agent.name} failed: ${error.message}`);
           agentResults.push({ agent: agent.name, error: error.message, success: false });
           
+          // Save checkpoint before throwing so user can resume
+          await saveCheckpoint(task, agentResults, previousOutput, Array.from(completedAgents), options);
+          printWarning(`💾 Checkpoint saved. Resume with: ultra-dex swarm "${task}" --resume`);
+          
           // Stop sequential pipeline if a critical planning agent fails
           if (agent.tier === '1-planning') {
-              throw new AppError(`Critical failure in planning tier: @${agent.name}`, { cause: error });
+              throw new AppError(`Critical failure in planning tier: @${agent.name}. Checkpoint saved. Resume with --resume flag.`, { cause: error });
           }
           break;
         }
@@ -438,12 +526,19 @@ export async function swarmCommand(task, options) {
   const logPath = await writeSwarmLog(logDir, task, agentResults, stats);
 
   renderer.divider();
-  await renderer.text(`**Execution Complete**\nTotal time: ${totalDuration}ms`);
+  await renderer.text(`**Execution Complete**
+Total time: ${totalDuration}ms`);
   renderer.box(
     `Succeeded: ${successCount}  Failed: ${failCount}\nLog saved: ${logPath}`,
     'Stats',
     failCount > 0 ? 'error' : 'success'
   );
+  
+  // Clear checkpoint on successful completion
+  if (failCount === 0) {
+    await clearCheckpoint();
+    printSuccess('✓ Checkpoint cleared - all agents completed successfully');
+  }
 }
 
 function handleDryRun(options) {
