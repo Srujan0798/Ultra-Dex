@@ -8,6 +8,7 @@ import { OpenAIProvider } from './openai.js';
 import { GeminiProvider } from './gemini.js';
 import { OllamaProvider } from './ollama.js';
 import { RouterProvider } from './router.js';
+import { enforceAgentExecution } from '../governance/index.js';
 
 const PROVIDERS = {
   claude: {
@@ -57,6 +58,11 @@ export function getAvailableProviders() {
  * @returns {BaseProvider}
  */
 export function createProvider(providerId, options = {}) {
+  const agent = options.agent;
+  if (agent) {
+    enforceAgentExecution({ agent, providerId });
+  }
+
   if (providerId === 'router') {
     const cloudId = options.cloudProvider || getDefaultProvider() || 'claude';
     const cloudProvider = createProvider(cloudId, options);
@@ -68,11 +74,12 @@ export function createProvider(providerId, options = {}) {
       // Local not available
     }
 
-    return new RouterProvider(null, {
+    const routerProvider = new RouterProvider(null, {
       ...options,
       cloudProvider,
       localProvider
     });
+    return agent ? wrapProviderWithGovernance(routerProvider, agent) : routerProvider;
   }
 
   const providerConfig = PROVIDERS[providerId];
@@ -97,7 +104,29 @@ export function createProvider(providerId, options = {}) {
     );
   }
 
-  return new providerConfig.class(apiKey, options);
+  const provider = new providerConfig.class(apiKey, options);
+  return agent ? wrapProviderWithGovernance(provider, agent) : provider;
+}
+
+function wrapProviderWithGovernance(provider, agent) {
+  const baseGenerate = provider.generate?.bind(provider);
+  const baseStream = provider.generateStream?.bind(provider);
+
+  if (baseGenerate) {
+    provider.generate = async (systemPrompt, userPrompt, opts = {}) => {
+      enforceAgentExecution({ agent, providerId: provider.getName?.() || 'provider', task: 'generate' });
+      return baseGenerate(systemPrompt, userPrompt, opts);
+    };
+  }
+
+  if (baseStream) {
+    provider.generateStream = async (systemPrompt, userPrompt, onChunk, opts = {}) => {
+      enforceAgentExecution({ agent, providerId: provider.getName?.() || 'provider', task: 'generateStream' });
+      return baseStream(systemPrompt, userPrompt, onChunk, opts);
+    };
+  }
+
+  return provider;
 }
 
 /**
