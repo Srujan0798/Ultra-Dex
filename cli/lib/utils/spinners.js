@@ -2,7 +2,7 @@ import ora from 'ora';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
 
-const ultraGradient = gradient(['#8A2BE2', '#4B0082', '#9400D3']);
+const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
 
 /**
  * Enhanced Ultra-Dex Spinners
@@ -14,11 +14,11 @@ export const SPINNERS = {
   },
   cyber: {
     interval: 100,
-    frames: ['|', '/', '-', '\\'].map(f => chalk.magenta(f))
+    frames: ['|', '/', '-', '\\'].map(f => ultraGradient(f))
   },
   pulse: {
     interval: 200,
-    frames: ['⊙', '⊚', '⊛', '⊜', '⊝'].map(f => chalk.cyan(f))
+    frames: ['⊙', '⊚', '⊛', '⊜', '⊝'].map(f => ultraGradient(f))
   }
 };
 

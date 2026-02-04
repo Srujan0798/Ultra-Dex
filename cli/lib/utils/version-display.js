@@ -7,7 +7,7 @@ import { VERSION } from './version.js';
  * Display a styled version card for Ultra-Dex
  */
 export function showVersionCard() {
-  const ultraGradient = gradient(['#8A2BE2', '#4B0082', '#9400D3']);
+  const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
   
   const content = [
     ultraGradient.bold('ULTRA-DEX AI'),
@@ -23,7 +23,7 @@ export function showVersionCard() {
     padding: 1,
     margin: 1,
     borderStyle: 'round',
-    borderColor: '#9400D3',
+    borderColor: '#8b5cf6',
     title: 'System Info',
     titleAlignment: 'center'
   });
