@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { PluginManager, PLUGIN_MANIFEST_EXAMPLE, PLUGIN_EXAMPLE } from '../utils/plugin-system.js';
+import { pluginRegistry } from '../plugins/index.js'; // Import the new plugin registry
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
@@ -20,11 +21,12 @@ export function registerPluginCommand(program) {
 
   pluginCmd
     .command('list')
+    .alias('ls')
     .description('List installed plugins')
     .action(async () => {
-      const manager = new PluginManager(process.cwd());
-      await manager.loadPlugins();
-      const plugins = manager.listPlugins();
+      // Initialize the plugin registry
+      await pluginRegistry.initialize();
+      const plugins = pluginRegistry.getInstalledPlugins();
 
       if (plugins.length === 0) {
         printWarning(chalk.yellow('\nNo plugins installed.'));
@@ -34,16 +36,17 @@ export function registerPluginCommand(program) {
 
       printInfo(chalk.bold.cyan('\n🔌 Installed Plugins\n'));
       const table = new Table({
-        head: ['Name', 'Version', 'Author', 'Description'],
+        head: ['Name', 'Version', 'Author', 'Description', 'Status'],
         style: { head: ['cyan'] }
       });
 
       plugins.forEach(p => {
         table.push([
           chalk.green(p.name),
-          p.version,
+          p.version || 'N/A',
           p.author || '-',
-          p.description || '-'
+          p.description || '-',
+          p.installed ? chalk.green('✓ Active') : chalk.yellow('○ Inactive')
         ]);
       });
 
@@ -55,51 +58,71 @@ export function registerPluginCommand(program) {
     .command('marketplace')
     .alias('m')
     .description('Browse community plugins')
-    .action(async () => {
+    .option('--search <query>', 'Search for plugins')
+    .option('--sort <by>', 'Sort by (downloads, rating, name)', 'downloads')
+    .action(async (options) => {
       printInfo(chalk.bold.magenta('\n🌟 Ultra-Dex Plugin Marketplace\n'));
 
-      const communityPlugins = [
-        { name: 'logger', desc: 'Detailed activity logging for agent swarms', stars: 124, author: '@srujan' },
-        { name: 'slack', desc: 'Real-time Slack notifications for task completion', stars: 89, author: '@dex-dev' },
-        { name: 'clerk-auth', desc: 'Advanced Clerk integration templates', stars: 215, author: '@clerk' },
-        { name: 'docker-sandbox', desc: 'Enhanced Docker isolation for code execution', stars: 56, author: '@security-team' },
-        { name: 'metrics-viz', desc: 'Visual dashboards for project metrics', stars: 42, author: '@viz-pro' }
-      ];
+      try {
+        // Get available plugins from registry
+        const availablePlugins = await pluginRegistry.getAvailablePlugins();
 
-      const table = new Table({
-        head: ['Plugin', 'Description', 'Rating', 'Author'],
-        colWidths: [15, 40, 10, 15]
-      });
+        // Filter if search query is provided
+        let filteredPlugins = availablePlugins;
+        if (options.search) {
+          filteredPlugins = availablePlugins.filter(p =>
+            p.name.toLowerCase().includes(options.search.toLowerCase()) ||
+            p.description.toLowerCase().includes(options.search.toLowerCase())
+          );
+        }
 
-      communityPlugins.forEach(p => {
-        table.push([
-          chalk.cyan(p.name),
-          chalk.white(p.desc),
-          chalk.yellow('★ ' + p.stars),
-          chalk.gray(p.author)
-        ]);
-      });
+        // Sort plugins
+        if (options.sort === 'name') {
+          filteredPlugins.sort((a, b) => a.name.localeCompare(b.name));
+        } else if (options.sort === 'rating') {
+          filteredPlugins.sort((a, b) => b.rating - a.rating);
+        } else { // default to downloads
+          filteredPlugins.sort((a, b) => b.downloads - a.downloads);
+        }
 
-      printInfo(table.toString());
-      printInfo(chalk.gray('\nTo install: ultra-dex plugin install <name>'));
-      printInfo(chalk.dim('Submit your plugin: https://github.com/Srujan0798/Ultra-Dex/plugins\n'));
+        const table = new Table({
+          head: ['Plugin', 'Description', 'Downloads', 'Rating', 'Author'],
+          colWidths: [15, 35, 12, 8, 15]
+        });
+
+        filteredPlugins.forEach(p => {
+          table.push([
+            chalk.cyan(p.name),
+            chalk.white(p.description.substring(0, 32) + (p.description.length > 32 ? '...' : '')),
+            chalk.blue(p.downloads.toLocaleString()),
+            chalk.yellow('★ ' + p.rating),
+            chalk.gray(p.author)
+          ]);
+        });
+
+        printInfo(table.toString());
+        printInfo(chalk.gray('\nTo install: ultra-dex plugin install <name>'));
+        printInfo(chalk.dim('Submit your plugin: https://github.com/Srujan0798/Ultra-Dex/plugins\n'));
+      } catch (error) {
+        printError(chalk.red(`\n❌ Failed to fetch marketplace: ${error.message}`));
+      }
     });
 
   pluginCmd
     .command('create <name>')
     .description('Create a new plugin template')
     .action(async (name) => {
-      const pluginPath = path.join(process.cwd(), '.ultra/plugins', name);
-      
+      const pluginPath = path.join(process.cwd(), '.ultra-dex/plugins', name);
+
       try {
         await fs.mkdir(pluginPath, { recursive: true });
-        
-        const manifest = { ...PLUGIN_MANIFEST_EXAMPLE, name };
+
+        const manifest = { ...PLUGIN_MANIFEST_EXAMPLE, name, version: '1.0.0' };
         await fs.writeFile(
           path.join(pluginPath, 'ultra-dex-plugin.json'),
           JSON.stringify(manifest, null, 2)
         );
-        
+
         await fs.writeFile(
           path.join(pluginPath, 'index.js'),
           PLUGIN_EXAMPLE
@@ -115,30 +138,53 @@ export function registerPluginCommand(program) {
 
   pluginCmd
     .command('install <source>')
-    .description('Install a plugin from a local path or git URL')
-    .action(async (source) => {
-      const manager = new PluginManager(process.cwd());
-      await manager.installPlugin(source);
+    .description('Install a plugin from a local path, git URL, or registry name')
+    .option('--force', 'Force installation even if plugin exists')
+    .option('--save', 'Save plugin to project configuration')
+    .action(async (source, options) => {
+      try {
+        printInfo(chalk.blue(`\nInstalling plugin: ${source}\n`));
+        const result = await pluginRegistry.installPlugin(source, options);
+
+        if (result.success) {
+          printSuccess(chalk.green(`\n✅ Plugin installed: ${result.name}`));
+          if (options.save) {
+            printInfo(chalk.gray('Plugin saved to project configuration'));
+          }
+          printInfo(chalk.gray('Restart Ultra-Dex to load the new plugin\n'));
+        } else {
+          printError(chalk.red(`\n❌ Installation failed: ${result.error}`));
+        }
+      } catch (error) {
+        printError(chalk.red(`\n❌ Installation failed: ${error.message}`));
+      }
     });
 
   pluginCmd
     .command('uninstall <name>')
+    .alias('remove')
     .description('Uninstall a plugin')
-    .action(async (name) => {
-      const manager = new PluginManager(process.cwd());
-      const { confirm } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'confirm',
-          message: `Are you sure you want to uninstall plugin "${name}"?`,
-          default: false
-        }
-      ]);
+    .option('-y, --yes', 'Skip confirmation prompt')
+    .action(async (name, options) => {
+      if (!options.yes) {
+        const { confirm } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            message: `Are you sure you want to uninstall plugin "${name}"?`,
+            default: false
+          }
+        ]);
 
-      if (!confirm) return;
+        if (!confirm) {
+          printInfo(chalk.yellow('\nUninstallation cancelled.'));
+          return;
+        }
+      }
 
       try {
-        await manager.uninstallPlugin(name);
+        await pluginRegistry.uninstallPlugin(name);
+        printSuccess(chalk.green(`\n✅ Plugin uninstalled: ${name}`));
       } catch (error) {
         printError(chalk.red(`\n❌ ${error.message}`));
       }
@@ -148,9 +194,8 @@ export function registerPluginCommand(program) {
     .command('info <name>')
     .description('Show detailed plugin information')
     .action(async (name) => {
-      const manager = new PluginManager(process.cwd());
-      await manager.loadPlugins();
-      const plugin = manager.plugins.get(name);
+      await pluginRegistry.initialize();
+      const plugin = pluginRegistry.getPluginInfo(name);
 
       if (!plugin) {
         printError(chalk.red(`\nPlugin "${name}" not found.`));
@@ -158,23 +203,96 @@ export function registerPluginCommand(program) {
       }
 
       printInfo(chalk.bold.cyan(`\n🔌 Plugin: ${name}`));
-      printInfo(chalk.gray('─'.repeat(30)));
-      printInfo(`${chalk.bold('Version:')}     ${plugin.manifest.version}`);
-      printInfo(`${chalk.bold('Author:')}      ${plugin.manifest.author || 'N/A'}`);
-      printInfo(`${chalk.bold('License:')}     ${plugin.manifest.license || 'N/A'}`);
-      printInfo(`${chalk.bold('Path:')}        ${plugin.path}`);
-      printInfo(`${chalk.bold('Description:')} ${plugin.manifest.description || 'No description'}`);
+      printInfo(chalk.gray('─'.repeat(40)));
+      printInfo(`${chalk.bold('Version:')}     ${plugin.version || 'N/A'}`);
+      printInfo(`${chalk.bold('Author:')}      ${plugin.author || 'N/A'}`);
+      printInfo(`${chalk.bold('License:')}     ${plugin.license || 'N/A'}`);
+      printInfo(`${chalk.bold('Path:')}        ${plugin.path || 'N/A'}`);
+      printInfo(`${chalk.bold('Description:')} ${plugin.description || 'No description'}`);
+      printInfo(`${chalk.bold('Status:')}      ${plugin.installed ? chalk.green('✓ Active') : chalk.yellow('○ Inactive')}`);
 
-      if (plugin.manifest.hooks && plugin.manifest.hooks.length > 0) {
+      if (plugin.hooks && plugin.hooks.length > 0) {
         printInfo(`\n${chalk.bold('Registered Hooks:')}`);
-        plugin.manifest.hooks.forEach(h => printInfo(`  - ${h}`));
+        plugin.hooks.forEach(h => printInfo(`  - ${h}`));
       }
 
-      if (plugin.manifest.commands && plugin.manifest.commands.length > 0) {
+      if (plugin.commands && plugin.commands.length > 0) {
         printInfo(`\n${chalk.bold('Custom Commands:')}`);
-        plugin.manifest.commands.forEach(c => printInfo(`  - ${c.name}: ${c.description}`));
+        plugin.commands.forEach(c => printInfo(`  - ${c.name}: ${c.description}`));
       }
       printInfo('');
+    });
+
+  pluginCmd
+    .command('update [name]')
+    .description('Update a plugin to the latest version')
+    .option('--all', 'Update all installed plugins')
+    .action(async (name, options) => {
+      if (options.all) {
+        const plugins = pluginRegistry.getInstalledPlugins();
+        printInfo(chalk.blue(`\nUpdating all plugins...\n`));
+
+        for (const plugin of plugins) {
+          if (!plugin.local) { // Skip local plugins
+            try {
+              await pluginRegistry.updatePlugin(plugin.name);
+              printSuccess(chalk.green(`✓ Updated: ${plugin.name}`));
+            } catch (error) {
+              printError(chalk.red(`✗ Failed to update ${plugin.name}: ${error.message}`));
+            }
+          } else {
+            printInfo(chalk.gray(`- Skipping local plugin: ${plugin.name}`));
+          }
+        }
+      } else if (name) {
+        try {
+          await pluginRegistry.updatePlugin(name);
+          printSuccess(chalk.green(`\n✅ Plugin updated: ${name}`));
+        } catch (error) {
+          printError(chalk.red(`\n❌ Update failed: ${error.message}`));
+        }
+      } else {
+        printError(chalk.red('\nPlease specify a plugin name or use --all to update all plugins'));
+      }
+    });
+
+  pluginCmd
+    .command('search <query>')
+    .description('Search for plugins in the marketplace')
+    .action(async (query) => {
+      printInfo(chalk.bold.magenta(`\n🔍 Searching for: ${query}\n`));
+
+      try {
+        const availablePlugins = await pluginRegistry.getAvailablePlugins();
+        const matchedPlugins = availablePlugins.filter(p =>
+          p.name.toLowerCase().includes(query.toLowerCase()) ||
+          p.description.toLowerCase().includes(query.toLowerCase())
+        );
+
+        if (matchedPlugins.length === 0) {
+          printWarning(chalk.yellow('No plugins found matching your search.'));
+          return;
+        }
+
+        const table = new Table({
+          head: ['Plugin', 'Description', 'Downloads', 'Rating'],
+          colWidths: [20, 40, 12, 8]
+        });
+
+        matchedPlugins.forEach(p => {
+          table.push([
+            chalk.cyan(p.name),
+            chalk.white(p.description.substring(0, 37) + (p.description.length > 37 ? '...' : '')),
+            chalk.blue(p.downloads.toLocaleString()),
+            chalk.yellow('★ ' + p.rating)
+          ]);
+        });
+
+        printInfo(table.toString());
+        printInfo('');
+      } catch (error) {
+        printError(chalk.red(`\n❌ Search failed: ${error.message}`));
+      }
     });
 }
 
