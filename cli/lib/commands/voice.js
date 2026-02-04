@@ -1,13 +1,27 @@
-import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
+import inquirer from 'inquirer';
 import fs from 'fs/promises';
-import { existsSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import { spawn } from 'child_process';
-import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
-import { SYSTEM_PROMPT, generateUserPrompt } from '../templates/prompts/generate-plan.js';
+import { createProvider, getDefaultProvider } from '../providers/index.js';
+import { getSystemPrompt, generateUserPrompt, normalizeTemplate } from '../templates/prompts/generate-plan.js';
+import { validateSafePath } from '../utils/validation.js';
+
+const TEMPLATE_LABELS = {
+  lite: 'LITE (12 sections)',
+  full: 'FULL (34 sections)',
+  enterprise: 'ENTERPRISE (50+ sections)',
+};
+
+const TEMPLATE_TOKEN_HINTS = {
+  lite: 8000,
+  full: 16000,
+  enterprise: 16000,
+};
+
+const MODE_OPTIONS = new Set(['auto', 'interactive', 'oneshot']);
 
 export function registerVoiceCommand(program) {
   program
@@ -16,13 +30,33 @@ export function registerVoiceCommand(program) {
     .option('-p, --provider <provider>', 'Speech-to-text provider', 'whisper')
     .option('-l, --language <lang>', 'Language code', 'en')
     .option('-o, --output <file>', 'Output file for generated plan', 'IMPLEMENTATION-PLAN.md')
+    .option('-t, --template <template>', 'Plan template: lite | full | enterprise')
+    .option('--mode <mode>', 'Mode: interactive | one-shot', 'auto')
     .option('--no-transcribe', 'Skip transcription, use text input directly')
     .option('--save-audio', 'Save recorded audio file')
-    .option('--no-plan', 'Only transcribe, do not generate a full 34-section plan')
+    .option('--no-plan', 'Only transcribe, do not generate a plan')
     .option('--ai-provider <provider>', 'AI provider for plan generation')
     .action(async (idea, options) => {
       try {
         console.log(chalk.cyan.bold('\n🎤 Ultra-Dex Voice-to-Plan\n'));
+
+        const modeInput = normalizeModeInput(options.mode);
+        if (!modeInput) {
+          console.log(chalk.red(`❌ Unknown mode "${options.mode}". Use: interactive | one-shot`));
+          return;
+        }
+        const mode = resolveMode(modeInput, idea);
+        const templateSelection = normalizeTemplate(options.template, null);
+        if (options.template && !templateSelection) {
+          console.log(chalk.red(`❌ Unknown template "${options.template}". Use: lite, full, enterprise.`));
+          return;
+        }
+
+        const sttProvider = options.provider?.toLowerCase();
+        if (sttProvider && sttProvider !== 'whisper') {
+          console.log(chalk.red(`❌ Unsupported STT provider "${options.provider}". Only "whisper" is supported.`));
+          return;
+        }
 
         // Check for OpenAI API key if transcribing
         const whisperKey = process.env.OPENAI_API_KEY;
@@ -35,6 +69,23 @@ export function registerVoiceCommand(program) {
         let transcribedText = idea;
 
         // 1. Transcription Phase
+        if (!idea && options.noTranscribe) {
+          if (mode === 'interactive') {
+            const answers = await inquirer.prompt([
+              {
+                type: 'input',
+                name: 'idea',
+                message: 'Describe what you want to build:',
+                validate: input => input.trim().length > 5 || 'Please provide a clearer description',
+              }
+            ]);
+            transcribedText = answers.idea;
+          } else {
+            console.log(chalk.red('❌ No input provided. Provide an idea or enable transcription.'));
+            return;
+          }
+        }
+
         if (!idea && !options.noTranscribe) {
           console.log(chalk.blue('🎙️  Interactive Voice Mode'));
           console.log(chalk.gray('   Speak your idea, then press Enter to stop recording.\n'));
@@ -46,7 +97,31 @@ export function registerVoiceCommand(program) {
           try {
             transcribedText = await transcribeAudio(recording.path, whisperKey, options.language);
             spinner.succeed('Transcription complete');
-            console.log(chalk.green(`\n📝 Heard: "\${transcribedText}"\n`));
+            console.log(chalk.green(`\n📝 Heard: "${transcribedText}"\n`));
+
+            if (mode === 'interactive') {
+              const { confirm } = await inquirer.prompt([
+                {
+                  type: 'confirm',
+                  name: 'confirm',
+                  message: 'Use this transcription?',
+                  default: true,
+                }
+              ]);
+
+              if (!confirm) {
+                const { edited } = await inquirer.prompt([
+                  {
+                    type: 'input',
+                    name: 'edited',
+                    message: 'Edit your idea:',
+                    default: transcribedText,
+                    validate: input => input.trim().length > 5 || 'Please provide a clearer description',
+                  }
+                ]);
+                transcribedText = edited;
+              }
+            }
             
             if (!options.saveAudio) await fs.unlink(recording.path).catch(() => {});
           } catch (error) {
@@ -67,37 +142,89 @@ export function registerVoiceCommand(program) {
             if (!aiProviderId) {
                 console.log(chalk.yellow('⚠️  No AI provider configured for plan generation.'));
                 console.log(chalk.gray('   Skipping plan generation. Here is your transcription:'));
-                console.log(chalk.white(`   \${transcribedText}`));
+                console.log(chalk.white(`   ${transcribedText}`));
                 return;
+            }
+
+            let template = templateSelection || 'full';
+            if (mode === 'interactive' && !templateSelection) {
+              const answer = await inquirer.prompt([
+                {
+                  type: 'list',
+                  name: 'template',
+                  message: 'Choose plan template:',
+                  choices: [
+                    { name: TEMPLATE_LABELS.lite, value: 'lite' },
+                    { name: TEMPLATE_LABELS.full, value: 'full' },
+                    { name: TEMPLATE_LABELS.enterprise, value: 'enterprise' },
+                  ],
+                  default: 'full',
+                }
+              ]);
+              template = answer.template;
+            }
+
+            const outputValidation = validateSafePath(options.output, 'Output file');
+            if (outputValidation !== true) {
+              console.log(chalk.red(outputValidation));
+              return;
             }
 
             const spinner = ora('Manifesting reality (Generating Plan)...').start();
             try {
-                const provider = createProvider(aiProviderId);
-                const result = await provider.generate(SYSTEM_PROMPT, generateUserPrompt(transcribedText));
+                const provider = createProvider(aiProviderId, {
+                  maxTokens: TEMPLATE_TOKEN_HINTS[template] || 16000,
+                });
+                const result = await provider.generate(
+                  getSystemPrompt(template),
+                  generateUserPrompt(transcribedText, template)
+                );
                 const planContent = result.content;
                 
                 const outputPath = path.resolve(options.output);
+                await fs.mkdir(path.dirname(outputPath), { recursive: true });
                 await fs.writeFile(outputPath, planContent);
                 
-                spinner.succeed(chalk.green(`Plan successfully generated and saved to \${options.output}!`));
+                spinner.succeed(
+                  chalk.green(`Plan successfully generated (${TEMPLATE_LABELS[template]}) and saved to ${options.output}!`)
+                );
             } catch (error) {
                 spinner.fail('Plan generation failed');
                 console.error(chalk.red(error.message));
             }
         } else {
             console.log(chalk.green('✅ Transcription ready:'));
-            console.log(chalk.white(`\${transcribedText}`));
+            console.log(chalk.white(`${transcribedText}`));
         }
 
         console.log(chalk.bold('\nNext steps:'));
-        console.log(chalk.cyan('  1. Review your plan: cat \${options.output}'));
-        console.log(chalk.cyan('  2. Initialize project: ultra-dex init'));
+        if (options.plan !== false) {
+          console.log(chalk.cyan(`  1. Review your plan: cat ${options.output}`));
+          console.log(chalk.cyan('  2. Initialize project: ultra-dex init'));
+        } else {
+          console.log(chalk.cyan('  1. Use your transcription to refine the idea'));
+          console.log(chalk.cyan(`  2. Generate a plan: ultra-dex voice "${transcribedText}"`));
+        }
 
       } catch (error) {
         console.error(chalk.red('\n❌ Error:'), error.message);
       }
     });
+}
+
+function resolveMode(modeInput, idea) {
+  if (modeInput === 'auto') {
+    return idea ? 'oneshot' : 'interactive';
+  }
+  return modeInput;
+}
+
+function normalizeModeInput(input) {
+  const raw = (input || 'auto').toString().trim().toLowerCase();
+  const normalized = raw.replace(/[-_]/g, '');
+  if (MODE_OPTIONS.has(normalized)) return normalized;
+  if (MODE_OPTIONS.has(raw)) return raw;
+  return null;
 }
 
 async function recordAudio(options) {
