@@ -5,9 +5,483 @@ import { glob } from 'glob';
 import { performance } from 'perf_hooks';
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
+import neo4j from 'neo4j-driver';
 
+/**
+ * GraphRAG - Deep Graph RAG Implementation with Neo4j
+ * Provides graph-based context storage, relationship mapping, and impact analysis
+ */
+export class GraphRAG {
+  constructor(config = {}) {
+    this.uri = config.uri || process.env.NEO4J_URI || 'bolt://localhost:7687';
+    this.user = config.user || process.env.NEO4J_USER || 'neo4j';
+    this.password = config.password || process.env.NEO4J_PASSWORD || 'password';
+    this.driver = null;
+    this.isConnected = false;
+    this.projectId = config.projectId || 'default';
+  }
+
+  async connect() {
+    try {
+      this.driver = neo4j.driver(this.uri, neo4j.auth.basic(this.user, this.password));
+      await this.driver.verifyConnectivity();
+      this.isConnected = true;
+      console.log(`[GraphRAG] Connected to Neo4j at ${this.uri}`);
+      await this.initializeSchema();
+      return true;
+    } catch (error) {
+      console.warn(`[GraphRAG] Failed to connect to Neo4j: ${error.message}`);
+      console.warn('[GraphRAG] Falling back to in-memory graph storage');
+      this.isConnected = false;
+      return false;
+    }
+  }
+
+  async disconnect() {
+    if (this.driver) {
+      await this.driver.close();
+      this.isConnected = false;
+    }
+  }
+
+  async initializeSchema() {
+    if (!this.isConnected) return;
+
+    const session = this.driver.session();
+    try {
+      // Create constraints and indexes
+      await session.run(`
+        CREATE CONSTRAINT file_path IF NOT EXISTS
+        FOR (f:File) REQUIRE f.path IS UNIQUE
+      `);
+
+      await session.run(`
+        CREATE CONSTRAINT function_name IF NOT EXISTS
+        FOR (fn:Function) REQUIRE (fn.name, fn.file) IS UNIQUE
+      `);
+
+      await session.run(`
+        CREATE CONSTRAINT datatype_name IF NOT EXISTS
+        FOR (d:DataType) REQUIRE (d.name, d.file) IS UNIQUE
+      `);
+
+      await session.run(`
+        CREATE INDEX file_type_idx IF NOT EXISTS
+        FOR (f:File) ON (f.type)
+      `);
+
+      await session.run(`
+        CREATE INDEX relationship_type_idx IF NOT EXISTS
+        FOR ()-[r:DEPENDS_ON]-() ON (r.type)
+      `);
+
+      console.log('[GraphRAG] Schema initialized');
+    } finally {
+      await session.close();
+    }
+  }
+
+  async clearProject() {
+    if (!this.isConnected) return;
+
+    const session = this.driver.session();
+    try {
+      await session.run(`
+        MATCH (n)
+        WHERE n.project = $projectId
+        DETACH DELETE n
+      `, { projectId: this.projectId });
+      console.log(`[GraphRAG] Cleared project: ${this.projectId}`);
+    } finally {
+      await session.close();
+    }
+  }
+
+  async syncFromCodeGraph(codeGraph) {
+    if (!this.isConnected) {
+      console.warn('[GraphRAG] Not connected to Neo4j, skipping sync');
+      return false;
+    }
+
+    const session = this.driver.session();
+    try {
+      const summary = codeGraph.getSummary();
+
+      // Batch insert files
+      const files = Array.from(codeGraph.nodes.entries());
+      const BATCH_SIZE = 100;
+
+      for (let i = 0; i < files.length; i += BATCH_SIZE) {
+        const batch = files.slice(i, i + BATCH_SIZE);
+        await session.run(`
+          UNWIND $files as file
+          MERGE (f:File {path: file.path, project: $projectId})
+          SET f.size = file.size,
+              f.type = file.type,
+              f.mtime = file.mtime,
+              f.isComponent = file.isComponent,
+              f.symbols = file.symbols,
+              f.lastUpdated = datetime()
+        `, { 
+          files: batch.map(([path, node]) => ({
+            path,
+            size: node.size,
+            type: node.type,
+            mtime: node.mtime,
+            isComponent: node.isComponent,
+            symbols: node.symbols || []
+          })),
+          projectId: this.projectId
+        });
+      }
+
+      // Batch insert functions from symbols
+      for (let i = 0; i < files.length; i += BATCH_SIZE) {
+        const batch = files.slice(i, i + BATCH_SIZE);
+        for (const [filePath, node] of batch) {
+          if (node.symbols && node.symbols.length > 0) {
+            await session.run(`
+              UNWIND $symbols as symbol
+              MATCH (f:File {path: $filePath, project: $projectId})
+              MERGE (fn:Function {name: symbol, file: $filePath, project: $projectId})
+              SET fn.lastUpdated = datetime()
+              MERGE (f)-[:CONTAINS]->(fn)
+            `, { 
+              symbols: node.symbols,
+              filePath,
+              projectId: this.projectId
+            });
+          }
+        }
+      }
+
+      // Batch insert edges
+      for (let i = 0; i < summary.dependencies.length; i += BATCH_SIZE) {
+        const batch = summary.dependencies.slice(i, i + BATCH_SIZE);
+        await session.run(`
+          UNWIND $edges as edge
+          MATCH (from:File {path: edge.from, project: $projectId})
+          MATCH (to:File {path: edge.to, project: $projectId})
+          MERGE (from)-[r:DEPENDS_ON {type: edge.type}]->(to)
+          SET r.lastUpdated = datetime()
+        `, { 
+          edges: batch,
+          projectId: this.projectId
+        });
+      }
+
+      console.log(`[GraphRAG] Synced ${files.length} files and ${summary.dependencies.length} dependencies`);
+      return true;
+    } finally {
+      await session.close();
+    }
+  }
+
+  /**
+   * Impact Analysis: Find all files that depend on a given file (transitive)
+   * Answer: "What breaks if I change X?"
+   */
+  async getImpactAnalysis(filePath, options = {}) {
+    if (!this.isConnected) {
+      return { error: 'Neo4j not connected', impactedFiles: [] };
+    }
+
+    const session = this.driver.session();
+    try {
+      const maxDepth = options.maxDepth || 10;
+      const includeFunctions = options.includeFunctions || false;
+
+      // Get transitive dependents
+      const result = await session.run(`
+        MATCH path = (dependent:File)-[:DEPENDS_ON*1..${maxDepth}]->(target:File {path: $filePath, project: $projectId})
+        WHERE dependent.project = $projectId
+        WITH dependent, length(path) as depth
+        RETURN DISTINCT dependent.path as file, depth
+        ORDER BY depth ASC
+      `, { filePath, projectId: this.projectId });
+
+      const impactedFiles = result.records.map(record => ({
+        file: record.get('file'),
+        depth: record.get('depth').toNumber()
+      }));
+
+      // Also get functions that might be affected
+      let impactedFunctions = [];
+      if (includeFunctions) {
+        const funcResult = await session.run(`
+          MATCH (target:File {path: $filePath, project: $projectId})-[:CONTAINS]->(fn:Function)
+          WITH collect(fn.name) as targetFunctions
+          MATCH (dependent:File)-[:CONTAINS]->(caller:Function)
+          WHERE dependent.project = $projectId
+          AND any(fnName IN targetFunctions WHERE caller.name CONTAINS fnName OR caller.calls CONTAINS fnName)
+          RETURN DISTINCT caller.name as function, dependent.path as file
+        `, { filePath, projectId: this.projectId });
+
+        impactedFunctions = funcResult.records.map(record => ({
+          function: record.get('function'),
+          file: record.get('file')
+        }));
+      }
+
+      // Get architectural decisions that might be related
+      const decisionsResult = await session.run(`
+        MATCH (d:Decision)-[:AFFECTS]->(f:File {path: $filePath, project: $projectId})
+        RETURN d.title as decision, d.description as description
+      `, { filePath, projectId: this.projectId });
+
+      const relatedDecisions = decisionsResult.records.map(record => ({
+        title: record.get('decision'),
+        description: record.get('description')
+      }));
+
+      return {
+        file: filePath,
+        totalImpacted: impactedFiles.length,
+        impactedFiles,
+        impactedFunctions,
+        relatedDecisions,
+        riskLevel: impactedFiles.length > 10 ? 'high' : impactedFiles.length > 5 ? 'medium' : 'low'
+      };
+    } finally {
+      await session.close();
+    }
+  }
+
+  /**
+   * Find circular dependencies
+   */
+  async findCircularDependencies() {
+    if (!this.isConnected) {
+      return [];
+    }
+
+    const session = this.driver.session();
+    try {
+      const result = await session.run(`
+        MATCH path = (f:File)-[:DEPENDS_ON*2..10]->(f)
+        WHERE f.project = $projectId
+        WITH path, [node in nodes(path) | node.path] as files
+        RETURN DISTINCT files
+        LIMIT 20
+      `, { projectId: this.projectId });
+
+      return result.records.map(record => record.get('files'));
+    } finally {
+      await session.close();
+    }
+  }
+
+  /**
+   * Get dependency graph for visualization
+   */
+  async getDependencyGraph(filePath, depth = 2) {
+    if (!this.isConnected) {
+      return { nodes: [], edges: [] };
+    }
+
+    const session = this.driver.session();
+    try {
+      const result = await session.run(`
+        MATCH path = (f:File {path: $filePath, project: $projectId})-[:DEPENDS_ON*0..${depth}]-(connected:File)
+        WHERE connected.project = $projectId
+        WITH f, connected, relationships(path) as rels
+        RETURN collect(DISTINCT {id: f.path, type: f.type, size: f.size}) + 
+               collect(DISTINCT {id: connected.path, type: connected.type, size: connected.size}) as nodes,
+               collect(DISTINCT {from: startNode(r).path, to: endNode(r).path, type: type(r)}) as edges
+      `, { filePath, projectId: this.projectId });
+
+      if (result.records.length === 0) {
+        return { nodes: [], edges: [] };
+      }
+
+      return {
+        nodes: result.records[0].get('nodes'),
+        edges: result.records[0].get('edges')
+      };
+    } finally {
+      await session.close();
+    }
+  }
+
+  /**
+   * Search for symbols across the graph
+   */
+  async searchSymbols(query, options = {}) {
+    if (!this.isConnected) {
+      return [];
+    }
+
+    const session = this.driver.session();
+    try {
+      const limit = options.limit || 20;
+      
+      const result = await session.run(`
+        MATCH (fn:Function)
+        WHERE fn.project = $projectId
+        AND fn.name CONTAINS $query
+        MATCH (f:File {path: fn.file, project: $projectId})
+        RETURN fn.name as name, fn.file as file, f.type as type
+        LIMIT $limit
+      `, { query, projectId: this.projectId, limit: parseInt(limit) });
+
+      return result.records.map(record => ({
+        name: record.get('name'),
+        file: record.get('file'),
+        type: record.get('type')
+      }));
+    } finally {
+      await session.close();
+    }
+  }
+
+  /**
+   * Get coupling metrics - how tightly coupled files are
+   */
+  async getCouplingMetrics() {
+    if (!this.isConnected) {
+      return {};
+    }
+
+    const session = this.driver.session();
+    try {
+      const result = await session.run(`
+        MATCH (f:File {project: $projectId})
+        OPTIONAL MATCH (f)-[out:DEPENDS_ON]->()
+        OPTIONAL MATCH ()-[in:DEPENDS_ON]->(f)
+        WITH f, count(DISTINCT out) as outDegree, count(DISTINCT in) as inDegree
+        RETURN avg(outDegree + inDegree) as avgCoupling,
+               max(outDegree + inDegree) as maxCoupling,
+               collect(CASE WHEN outDegree + inDegree > 10 THEN {file: f.path, coupling: outDegree + inDegree} END) as highlyCoupled
+      `, { projectId: this.projectId });
+
+      const record = result.records[0];
+      return {
+        averageCoupling: record.get('avgCoupling'),
+        maxCoupling: record.get('maxCoupling'),
+        highlyCoupledFiles: record.get('highlyCoupled').filter(Boolean)
+      };
+    } finally {
+      await session.close();
+    }
+  }
+
+  /**
+   * Store architectural decision
+   */
+  async storeDecision(decision) {
+    if (!this.isConnected) return false;
+
+    const session = this.driver.session();
+    try {
+      await session.run(`
+        MERGE (d:Decision {id: $id, project: $projectId})
+        SET d.title = $title,
+            d.description = $description,
+            d.date = datetime(),
+            d.status = $status
+        WITH d
+        UNWIND $affectedFiles as filePath
+        MATCH (f:File {path: filePath, project: $projectId})
+        MERGE (d)-[:AFFECTS]->(f)
+      `, {
+        id: decision.id || `${Date.now()}`,
+        title: decision.title,
+        description: decision.description,
+        status: decision.status || 'active',
+        affectedFiles: decision.affectedFiles || [],
+        projectId: this.projectId
+      });
+      return true;
+    } finally {
+      await session.close();
+    }
+  }
+
+  /**
+   * Get related context for RAG
+   * Returns files, functions, and decisions related to a query
+   */
+  async getRAGContext(query, options = {}) {
+    if (!this.isConnected) {
+      return { files: [], functions: [], decisions: [], dependencies: [] };
+    }
+
+    const session = this.driver.session();
+    try {
+      const limit = options.limit || 10;
+
+      // Search for matching files
+      const filesResult = await session.run(`
+        MATCH (f:File)
+        WHERE f.project = $projectId
+        AND (f.path CONTAINS $query OR any(symbol IN f.symbols WHERE symbol CONTAINS $query))
+        RETURN f.path as path, f.symbols as symbols, f.type as type
+        LIMIT $limit
+      `, { query, projectId: this.projectId, limit: parseInt(limit) });
+
+      // Search for matching functions
+      const funcResult = await session.run(`
+        MATCH (fn:Function)
+        WHERE fn.project = $projectId
+        AND fn.name CONTAINS $query
+        RETURN fn.name as name, fn.file as file
+        LIMIT $limit
+      `, { query, projectId: this.projectId, limit: parseInt(limit) });
+
+      // Get related decisions
+      const decisionResult = await session.run(`
+        MATCH (d:Decision)
+        WHERE d.project = $projectId
+        AND (d.title CONTAINS $query OR d.description CONTAINS $query)
+        RETURN d.title as title, d.description as description
+        LIMIT $limit
+      `, { query, projectId: this.projectId, limit: parseInt(limit) });
+
+      // Get dependency chains for matched files
+      const matchedFiles = filesResult.records.map(r => r.get('path'));
+      let dependencies = [];
+      if (matchedFiles.length > 0) {
+        const depResult = await session.run(`
+          UNWIND $files as filePath
+          MATCH (f:File {path: filePath, project: $projectId})-[:DEPENDS_ON|DEPENDED_ON_BY*1..2]-(related:File)
+          WHERE related.project = $projectId
+          RETURN DISTINCT related.path as path, related.type as type
+          LIMIT $limit
+        `, { files: matchedFiles, projectId: this.projectId, limit: parseInt(limit) });
+        dependencies = depResult.records.map(r => ({
+          path: r.get('path'),
+          type: r.get('type')
+        }));
+      }
+
+      return {
+        files: filesResult.records.map(r => ({
+          path: r.get('path'),
+          symbols: r.get('symbols'),
+          type: r.get('type')
+        })),
+        functions: funcResult.records.map(r => ({
+          name: r.get('name'),
+          file: r.get('file')
+        })),
+        decisions: decisionResult.records.map(r => ({
+          title: r.get('title'),
+          description: r.get('description')
+        })),
+        dependencies
+      };
+    } finally {
+      await session.close();
+    }
+  }
+}
+
+/**
+ * CodeGraph - Enhanced with GraphRAG support
+ * Maintains backward compatibility while adding graph database capabilities
+ */
 export class CodeGraph {
-  constructor() {
+  constructor(options = {}) {
     this.nodes = new Map(); // file path -> node info
     this.edges = []; // { from, to, type }
     this.lastScanTime = 0;
@@ -15,6 +489,10 @@ export class CodeGraph {
     this.fileHashes = new Map(); // Track file changes for selective updates
     this.cacheDir = path.resolve(process.cwd(), '.ultra-dex');
     this.cacheFile = path.resolve(this.cacheDir, 'graph.json');
+    
+    // GraphRAG integration
+    this.graphRAG = options.graphRAG || null;
+    this.useGraphDB = options.useGraphDB !== false; // Default to true
   }
 
   async loadCache() {
@@ -49,6 +527,19 @@ export class CodeGraph {
     }
   }
 
+  async initializeGraphRAG() {
+    if (this.graphRAG || !this.useGraphDB) return false;
+
+    this.graphRAG = new GraphRAG({ projectId: path.basename(process.cwd()) });
+    const connected = await this.graphRAG.connect();
+    
+    if (connected) {
+      console.log('[CodeGraph] GraphRAG initialized and connected');
+    }
+    
+    return connected;
+  }
+
   async scan(useCache = true) {
     const now = Date.now();
 
@@ -62,11 +553,15 @@ export class CodeGraph {
       return this.getSummary();
     }
 
+    // Initialize GraphRAG if not already done
+    if (this.useGraphDB && !this.graphRAG) {
+      await this.initializeGraphRAG();
+    }
+
     // Start performance tracking
     const scanStart = performance.now();
 
     // Find all js/ts/jsx/tsx files
-    // Ignoring node_modules, .git, dist, build
     const files = await glob('**/*.{js,ts,jsx,tsx}', {
       ignore: ['**/node_modules/**', '.git/**', 'dist/**', 'build/**', '.next/**'],
       absolute: false,
@@ -96,7 +591,6 @@ export class CodeGraph {
     for (const [file] of this.nodes) {
       if (!currentFiles.has(file)) {
         this.nodes.delete(file);
-        // Remove edges originating from this file
         this.edges = this.edges.filter(e => e.from !== file);
       }
     }
@@ -106,8 +600,8 @@ export class CodeGraph {
       const filesToUpdateSet = new Set(filesToAnalyze.map(f => f.file));
       this.edges = this.edges.filter(e => !filesToUpdateSet.has(e.from));
 
-      // Process files in chunks to prevent EMFILE errors
-      const CONCURRENCY_LIMIT = 100; // Increased for better performance
+      // Process files in chunks
+      const CONCURRENCY_LIMIT = 100;
       const promises = [];
 
       for (let i = 0; i < filesToAnalyze.length; i += CONCURRENCY_LIMIT) {
@@ -116,20 +610,17 @@ export class CodeGraph {
         promises.push(...chunkPromises);
       }
 
-      // Process all files with better error handling
       const results = await Promise.allSettled(promises);
 
-      // Log any errors that occurred during analysis
       results.forEach((result, index) => {
         if (result.status === 'rejected') {
           console.error(`Failed to analyze file at index ${index}:`, result.reason);
         }
       });
 
-      // Add new edges
       for (const result of results) {
         if (result.status === 'fulfilled') {
-          this.edges.push(...result.value);
+          this.edges.push(...result.value.edges);
         }
       }
     }
@@ -138,6 +629,11 @@ export class CodeGraph {
 
     const scanDuration = performance.now() - scanStart;
     console.debug(`[Performance] Graph scan completed in ${scanDuration.toFixed(2)}ms for ${files.length} files`);
+
+    // Sync to GraphRAG if connected
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      await this.graphRAG.syncFromCodeGraph(this);
+    }
 
     // Save cache asynchronously
     this.saveCache().catch(e => console.error('Background cache save failed:', e));
@@ -150,22 +646,18 @@ export class CodeGraph {
       const absolutePath = path.resolve(process.cwd(), filePath);
       const stats = await fs.stat(absolutePath);
 
-      // Check if file has changed since last analysis using mtime
       const currentHash = `${stats.mtimeMs}-${stats.size}`;
-      if (this.fileHashes.get(filePath) === currentHash) {
-        // File hasn't changed, we could potentially skip analysis
-        // For now, we'll still analyze to keep the logic simple
-      }
       this.fileHashes.set(filePath, currentHash);
 
       const content = await fs.readFile(absolutePath, 'utf8');
 
-      // Extract Symbols and Imports
+      // Extract Symbols, Imports, and detailed function info
       const symbols = [];
+      const functions = [];
+      const dataTypes = [];
       const newEdges = [];
 
       try {
-        // Only try AST parsing for JS/JSX files (TS requires a different parser)
         const ext = path.extname(filePath);
         if (ext === '.js' || ext === '.jsx' || ext === '.mjs') {
           const ast = acorn.parse(content, {
@@ -180,10 +672,24 @@ export class CodeGraph {
               if (node.id.type === 'Identifier') symbols.push(node.id.name);
             },
             FunctionDeclaration(node) {
-              if (node.id && node.id.type === 'Identifier') symbols.push(node.id.name);
+              if (node.id && node.id.type === 'Identifier') {
+                symbols.push(node.id.name);
+                functions.push({
+                  name: node.id.name,
+                  line: node.loc?.start?.line || 0,
+                  params: node.params.map(p => p.name || p.value || 'param')
+                });
+              }
             },
             ClassDeclaration(node) {
-              if (node.id && node.id.type === 'Identifier') symbols.push(node.id.name);
+              if (node.id && node.id.type === 'Identifier') {
+                symbols.push(node.id.name);
+                dataTypes.push({
+                  name: node.id.name,
+                  kind: 'class',
+                  line: node.loc?.start?.line || 0
+                });
+              }
             },
             ImportDeclaration(node) {
               const importPath = node.source.value;
@@ -211,12 +717,12 @@ export class CodeGraph {
           throw new Error('Not a JS/JSX file, using regex fallback');
         }
       } catch (e) {
-        // Fallback to Regex for TS or parsing failures
+        // Fallback to Regex
         const symbolRegex = /(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z0-9_]+)/g;
         let symMatch;
         while ((symMatch = symbolRegex.exec(content)) !== null) {
           if (!['default', 'if', 'for', 'while', 'switch'].includes(symMatch[1])) {
-              symbols.push(symMatch[1]);
+            symbols.push(symMatch[1]);
           }
         }
 
@@ -235,24 +741,25 @@ export class CodeGraph {
         }
       }
 
-      // Basic Node Info
+      // Store node info
       this.nodes.set(filePath, {
         id: filePath,
         size: content.length,
         type: path.extname(filePath).substring(1),
         mtime: mtime,
         isComponent: /^[A-Z]/.test(path.basename(filePath)) || content.includes('React') || content.includes('Component'),
-        symbols: [...new Set(symbols)]
+        symbols: [...new Set(symbols)],
+        functions,
+        dataTypes
       });
 
-      return newEdges;
+      return { edges: newEdges };
 
     } catch (e) {
-      // Only log errors in debug mode to avoid spamming console
       if (process.env.DEBUG) {
         console.error(`Failed to analyze ${filePath}:`, e.message);
       }
-      return [];
+      return { edges: [] };
     }
   }
 
@@ -263,7 +770,8 @@ export class CodeGraph {
       files: Array.from(this.nodes.keys()),
       dependencies: this.edges,
       lastScanTime: this.lastScanTime,
-      cacheHit: this.nodes.size > 0
+      cacheHit: this.nodes.size > 0,
+      graphDBConnected: this.graphRAG?.isConnected || false
     };
   }
 
@@ -276,7 +784,6 @@ export class CodeGraph {
     const lowerName = name.toLowerCase();
     for (const [file, node] of this.nodes) {
       if (node.symbols) {
-        // Exact match or partial match
         const match = node.symbols.find(s => s.toLowerCase() === lowerName || s.toLowerCase().includes(lowerName));
         if (match) {
           results.push({ file, symbol: match, type: 'definition' });
@@ -287,6 +794,12 @@ export class CodeGraph {
   }
 
   getImpact(filePath) {
+    // Use GraphRAG if available for more sophisticated impact analysis
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      return this.graphRAG.getImpactAnalysis(filePath);
+    }
+
+    // Fallback to in-memory traversal
     const impact = new Set();
     const visited = new Set();
     
@@ -296,8 +809,8 @@ export class CodeGraph {
       
       const dependents = this.edges.filter(e => e.to === currentPath);
       for (const edge of dependents) {
-        if (edge.from !== filePath) { // Don't include the starting file
-            impact.add(edge.from);
+        if (edge.from !== filePath) {
+          impact.add(edge.from);
         }
         findDependents(edge.from);
       }
@@ -307,7 +820,6 @@ export class CodeGraph {
     return Array.from(impact);
   }
 
-  // New method to selectively update changed files
   async updateChangedFiles(changedFiles) {
     const updateStart = performance.now();
 
@@ -315,18 +827,65 @@ export class CodeGraph {
       await this.analyzeFile(file);
     }
 
+    // Resync to GraphRAG
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      await this.graphRAG.syncFromCodeGraph(this);
+    }
+
     const updateDuration = performance.now() - updateStart;
     console.debug(`[Performance] Updated ${changedFiles.length} changed files in ${updateDuration.toFixed(2)}ms`);
   }
 
-  // Method to clear cache when needed
   clearCache() {
     this.nodes.clear();
     this.edges = [];
     this.fileHashes.clear();
     this.lastScanTime = 0;
   }
+
+  // GraphRAG passthrough methods
+  async getImpactAnalysis(filePath, options) {
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      return await this.graphRAG.getImpactAnalysis(filePath, options);
+    }
+    return { error: 'GraphRAG not connected', impactedFiles: this.getImpact(filePath) };
+  }
+
+  async findCircularDependencies() {
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      return await this.graphRAG.findCircularDependencies();
+    }
+    return [];
+  }
+
+  async getCouplingMetrics() {
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      return await this.graphRAG.getCouplingMetrics();
+    }
+    return {};
+  }
+
+  async searchSymbols(query, options) {
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      return await this.graphRAG.searchSymbols(query, options);
+    }
+    return this.findSymbol(query);
+  }
+
+  async getRAGContext(query, options) {
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      return await this.graphRAG.getRAGContext(query, options);
+    }
+    return { files: [], functions: [], decisions: [], dependencies: [] };
+  }
+
+  async storeDecision(decision) {
+    if (this.graphRAG && this.graphRAG.isConnected) {
+      return await this.graphRAG.storeDecision(decision);
+    }
+    return false;
+  }
 }
 
-// Singleton instance
-export const projectGraph = new CodeGraph();
+// Singleton instance with GraphRAG support
+export const projectGraph = new CodeGraph({ useGraphDB: true });
