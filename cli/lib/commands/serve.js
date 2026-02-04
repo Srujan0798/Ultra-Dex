@@ -88,7 +88,7 @@ async function startUnifiedKernel(portStr) {
   }
       
   printInfo('\n🚀 Opening Multiverse Portal (Infinity Kernel)...\n');
-  console.log(chalk.italic(chalk.gray(`"${getRandomMessage('loading')}"`)));
+  printInfo(chalk.italic(chalk.gray(`"${getRandomMessage('loading')}"`)));
 
   // Initialize Graph
   printInfo('🧠 Linking Neural Interface (Code Graph)...');
@@ -173,7 +173,7 @@ async function startUnifiedKernel(portStr) {
       res.end(JSON.stringify({ error: 'Not found in this timeline' }));
 
     } catch (error) {
-      console.error(error);
+      printError(error);
       if (!res.headersSent) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: error.message }));
@@ -224,9 +224,9 @@ async function startUnifiedKernel(portStr) {
     printInfo(`   • MCP SSE:   http://localhost:${port}/sse`);
 
     printInfo('\n🔌 Weapon Integration (IDE):');
-    console.log(chalk.white('   Cursor IDE: '));
+    printInfo(chalk.white('   Cursor IDE: '));
     printInfo(`     Connect via MCP to http://localhost:${port}/sse`);
-    console.log(chalk.white('   Claude Desktop:'));
+    printInfo(chalk.white('   Claude Desktop:'));
     printInfo(`     Run "ultra-dex config --mcp" to register.`);
 
     // Auto-Pilot with proper cleanup
@@ -306,9 +306,9 @@ function handleApiRoutes(req, res, pathname, url) {
            const { task, feature, parallel } = JSON.parse(body);
            const objective = task || feature;
            if (!objective) throw new Error('Task/Feature objective is required');
-           
-           swarmCommand(objective, { parallel, dryRun: false }).catch(err => console.error(err));
-           
+
+           swarmCommand(objective, { parallel, dryRun: false }).catch(err => printError(err));
+
            res.writeHead(202, { 'Content-Type': 'application/json' });
            res.end(JSON.stringify({ status: 'accepted', message: 'Swarm initiated' }));
          } catch (e) {

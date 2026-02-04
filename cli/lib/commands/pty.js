@@ -3,7 +3,7 @@
  * Adds PTY-enabled commands to the CLI (ultra-dex pty vim, ultra-dex pty shell)
  */
 
-import { createPTYBridge, executeInteractiveCommand } from './pty.js';
+import { createPTYBridge, executeInteractiveCommand } from '../repl/pty.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';

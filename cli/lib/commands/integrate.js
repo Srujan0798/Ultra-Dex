@@ -389,6 +389,14 @@ export function registerIntegrateCommand(program) {
     .option('-p, --project <path>', 'Project root path', '.')
     .option('--list', 'List available integrations')
     .action(async (service, options) => {
+      // Validate project path to prevent path traversal
+      const resolvedPath = path.resolve(options.project);
+      const cwd = process.cwd();
+      if (!resolvedPath.startsWith(cwd) && !path.isAbsolute(options.project)) {
+        console.error(chalk.red('❌ Error: Invalid project path. Path traversal detected.'));
+        process.exit(1);
+      }
+      
       if (options.list) {
         console.log(chalk.blue('\n📦 Available Integrations\n'));
         
@@ -402,10 +410,10 @@ export function registerIntegrateCommand(program) {
         console.log(chalk.blue('Usage:'));
         console.log(chalk.gray('  npx ultra-dex integrate stripe'));
         console.log(chalk.gray('  npx ultra-dex integrate prisma'));
-        return;
+        process.exit(0);
       }
       
-      const projectPath = path.resolve(options.project);
+      const projectPath = resolvedPath;
       
       if (!INTEGRATIONS[service]) {
         console.log(chalk.red(`\n❌ Unknown integration: ${service}`));

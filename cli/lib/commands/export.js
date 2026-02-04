@@ -2,13 +2,34 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
-import { join, basename } from 'path';
+import { join, basename, resolve } from 'path';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+
+const VALID_FORMATS = ['json', 'html', 'markdown', 'md', 'pdf'];
 
 export async function exportCommand(options) {
   const format = options.format || 'json';
   const outputPath = options.output || `ultra-dex-export.${format === 'md' ? 'md' : format}`;
   
-  console.log(chalk.cyan.bold(`\n📦 Ultra-Dex Export\n`));
+  // Validate format
+  if (!VALID_FORMATS.includes(format)) {
+    printError(chalk.red(`❌ Error: Unknown format: ${format}`));
+    printError(chalk.yellow('   Supported formats: json, html, markdown (md), pdf'));
+    process.exitCode = 1;
+    process.exit(process.exitCode);
+  }
+
+  // Validate output path to prevent path traversal
+  const resolvedOutput = resolve(outputPath);
+  const cwd = process.cwd();
+  if (!resolvedOutput.startsWith(cwd)) {
+    printError(chalk.red('❌ Error: Invalid output path. Path traversal detected.'));
+    process.exitCode = 1;
+    process.exit(process.exitCode);
+  }
+
+  printInfo(chalk.cyan.bold(`\n📦 Ultra-Dex Export\n`));
   
   const spinner = ora('Collecting project data...').start();
   
@@ -32,28 +53,29 @@ export async function exportCommand(options) {
         break;
       case 'pdf':
         formatSpinner.warn('PDF export requires external tools');
-        console.log(chalk.gray('  Generating HTML instead. Convert with: '));
-        console.log(chalk.gray('  wkhtmltopdf ultra-dex-export.html ultra-dex-export.pdf'));
+        printInfo(chalk.gray('  Generating HTML instead. Convert with: '));
+        printInfo(chalk.gray('  wkhtmltopdf ultra-dex-export.html ultra-dex-export.pdf'));
         output = generateHTML(context, { forPdf: true });
         break;
-      default:
-        formatSpinner.fail(`Unknown format: ${format}`);
-        console.log(chalk.yellow('  Supported formats: json, html, markdown (md), pdf'));
-        return;
     }
     
-    writeFileSync(outputPath, output);
+    writeFileSync(resolvedOutput, output);
     formatSpinner.succeed(`Generated ${format.toUpperCase()} output`);
-    
-    console.log(chalk.green(`\n✅ Exported to ${chalk.bold(outputPath)}`));
-    console.log(chalk.gray(`   Size: ${(output.length / 1024).toFixed(1)} KB`));
-    
+
+    printSuccess(chalk.green(`\n✅ Exported to ${chalk.bold(resolvedOutput)}`));
+    printInfo(chalk.gray(`   Size: ${(output.length / 1024).toFixed(1)} KB`));
+
     if (options.includeAgents && context.agents.length > 0) {
-      console.log(chalk.gray(`   Agents bundled: ${context.agents.length}`));
+      printInfo(chalk.gray(`   Agents bundled: ${context.agents.length}`));
     }
+
+    process.exitCode = 0;
+    process.exit(process.exitCode);
   } catch (error) {
     spinner.fail('Export failed');
-    console.log(chalk.red(`   ${error.message}`));
+    printError(chalk.red(`   ${error.message || 'Unknown error'}`));
+    process.exitCode = 1;
+    process.exit(process.exitCode);
   }
 }
 
@@ -405,4 +427,22 @@ function generateMarkdown(context) {
   }
 
   return lines.join('\n');
+}
+
+export function registerExportCommand(program) {
+  program
+    .command('export')
+    .description('Export project metadata to various formats')
+    .option('-f, --format <format>', 'Export format: json, markdown, html, pdf', 'json')
+    .option('-o, --output <file>', 'Output file path')
+    .option('--include-agents', 'Include agent prompts in export')
+    .action(async (options) => {
+      try {
+        await exportCommand(options);
+      } catch (error) {
+        await handleError(error, { command: 'export', options });
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
+      }
+    });
 }

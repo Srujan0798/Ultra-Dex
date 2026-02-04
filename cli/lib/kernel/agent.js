@@ -18,6 +18,7 @@ import {
     verifyConsoleLogs 
 } from '../quality/automation.js';
 import { modelOrchestrator } from '../ai/model-router.js';
+import { tokenBudget } from '../ui/TokenBudget.js';
 
 export class Agent {
     constructor() {
@@ -91,6 +92,15 @@ export class Agent {
         let turnCount = 0;
         const maxTurns = 8; // Increased for verification loops
 
+        // Forecast Cost
+        const estimatedContext = 5000; // Base context size
+        const forecast = tokenBudget.forecast(provider.model, estimatedContext, 1000);
+        renderer.box(
+            `Estimated Cost: $${forecast.cost.toFixed(4)}\nInput: ~${forecast.inputTokens} tokens`, 
+            'Token Budget Forecast', 
+            'info'
+        );
+
         while (turnCount < maxTurns) {
             turnCount++;
             
@@ -136,6 +146,11 @@ RETURN ONLY JSON:
                     llmOutput = await provider.complete(systemPrompt);
                 } else {
                     const res = await provider.generate(systemPrompt);
+                    
+                    if (res.usage) {
+                        await tokenBudget.track(provider.model, res.usage.inputTokens, res.usage.outputTokens);
+                    }
+                    
                     llmOutput = res.content || res.text || JSON.stringify(res);
                 }
 

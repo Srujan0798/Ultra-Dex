@@ -155,16 +155,16 @@ Output a JSON object:
             aiSpinner.succeed(chalk.green('AI Analysis Complete'));
             
             printInfo(chalk.bold('\n💡 AI Suggested Workflow:\n'));
-            console.log(chalk.gray(data.reasoning + '\n'));
-            
+            printInfo(chalk.gray(data.reasoning + '\n'));
+
             data.agents.forEach((agent, i) => {
                 const arrow = i < data.agents.length - 1 ? '  →' : '';
-                console.log(chalk.cyan(`  ${i + 1}. ${agent}`) + arrow);
+                printInfo(chalk.cyan(`  ${i + 1}. ${agent}`) + arrow);
             });
 
             if (data.tips && data.tips.length > 0) {
                 printInfo(chalk.bold('\n🧠 Pro Tips:\n'));
-                data.tips.forEach(tip => console.log(chalk.gray(`  • ${tip}`)));
+                data.tips.forEach(tip => printInfo(chalk.gray(`  • ${tip}`)));
             }
             return true;
         }
@@ -189,11 +189,11 @@ function handleStaticSuggestions(taskType) {
     };
 
     const recommendation = staticMap[taskType] || { agents: ['@Planner', '@CTO'], reasoning: 'Standard architectural approach.' };
-    
-    console.log(chalk.gray(recommendation.reasoning + '\n'));
+
+    printInfo(chalk.gray(recommendation.reasoning + '\n'));
     recommendation.agents.forEach((agent, i) => {
         const arrow = i < recommendation.agents.length - 1 ? '  →' : '';
-        console.log(chalk.cyan(`  ${i + 1}. ${agent}`) + arrow);
+        printInfo(chalk.cyan(`  ${i + 1}. ${agent}`) + arrow);
     });
 
     printInfo(chalk.bold('\n📚 Next Steps:\n'));

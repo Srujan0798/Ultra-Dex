@@ -11,6 +11,8 @@ import path from 'path';
 import { glob } from 'glob';
 import { getProvider } from '../providers/index.js';
 import { projectGraph } from '../mcp/graph.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 // ============================================================================
 // VECTOR STORE CONFIGURATION
@@ -195,10 +197,10 @@ async function generateEmbedding(text, provider = null) {
     try {
       return await provider.getEmbedding(text);
     } catch (err) {
-      console.log(chalk.yellow(`\n⚠️  Embedding API failed, falling back to local method: ${err.message}`));
+      printWarning(chalk.yellow(`\n⚠️  Embedding API failed, falling back to local method: ${err.message}`));
     }
   } else if (provider) {
-    console.log(chalk.yellow(`\n⚠️  Provider ${provider.getName()} does not support embeddings. Using local fallback.`));
+    printWarning(chalk.yellow(`\n⚠️  Provider ${provider.getName()} does not support embeddings. Using local fallback.`));
   } else {
     // Only warn once per session ideally, but for now simple warning
     // console.log(chalk.gray('Using local "dumb" embeddings (no AI provider).'));
@@ -293,16 +295,16 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
   vectorStore.metadata.fileCount = uniqueFiles.length;
 
   if (verbose) {
-    console.log(chalk.gray(`Found ${uniqueFiles.length} files to index`));
+    printInfo(chalk.gray(`Found ${uniqueFiles.length} files to index`));
   }
 
   // Get Provider
   const activeProvider = provider || getProvider();
   if (!activeProvider) {
-    console.log(chalk.yellow('\n⚠️  No AI provider configured. Using "dumb" local embeddings (bag-of-words).'));
-    console.log(chalk.gray('   For smart search, set OPENAI_API_KEY or use Ollama.\n'));
+    printWarning(chalk.yellow('\n⚠️  No AI provider configured. Using "dumb" local embeddings (bag-of-words).'));
+    printInfo(chalk.gray('   For smart search, set OPENAI_API_KEY or use Ollama.\n'));
   } else {
-    if (verbose) console.log(chalk.green(`Using ${activeProvider.getName()} for embeddings.`));
+    if (verbose) printInfo(chalk.green(`Using ${activeProvider.getName()} for embeddings.`));
   }
 
   // Index each file
@@ -314,7 +316,7 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
 
       // Skip very large files
       if (content.length > 100000) {
-        if (verbose) console.log(chalk.gray(`Skipping large file: ${file}`));
+        if (verbose) printInfo(chalk.gray(`Skipping large file: ${file}`));
         continue;
       }
 
@@ -338,7 +340,7 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
       }
     } catch (err) {
       if (verbose) {
-        console.log(chalk.yellow(`Failed to index ${file}: ${err.message}`));
+        printWarning(chalk.yellow(`Failed to index ${file}: ${err.message}`));
       }
     }
   }

@@ -63,7 +63,8 @@ export function registerAuditCommand(program) {
 
       } catch (error) {
         await handleError(error, { command: 'audit', options });
-        process.exit(error.exitCode || 1);
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
       }
     });
 }
@@ -202,7 +203,7 @@ async function runSecurityAudit(ctx) {
             
             issues.slice(0, 5).forEach(issue => {
                 const icon = issue.severity === 'critical' || issue.severity === 'error' ? '❌' : '⚠️';
-                console.log(`     ${icon} [${issue.severity.toUpperCase()}] ${issue.file}:${issue.line || ''} - ${issue.message}`);
+                printError(`     ${icon} [${issue.severity.toUpperCase()}] ${issue.file}:${issue.line || ''} - ${issue.message}`);
             });
         }
     } catch (error) {
@@ -226,21 +227,21 @@ function displayResults(ctx) {
     else if (percentage >= 40) { grade = 'D'; gradeColor = chalk.yellow; message = 'Needs work. Focus on documentation and security.'; }
     else { grade = 'F'; gradeColor = chalk.red; message = 'Critical gaps found. Highly recommend a re-init.'; }
 
-    console.log(chalk.bold('─'.repeat(50)));
-    console.log(`\nScore: ${ctx.score}/${ctx.maxScore} (${percentage}%)`);
-    console.log(gradeColor(`Grade: ${grade}`));
+    printInfo(chalk.bold('─'.repeat(50)));
+    printInfo(`\nScore: ${ctx.score}/${ctx.maxScore} (${percentage}%)`);
+    printInfo(gradeColor(`Grade: ${grade}`));
     printInfo(chalk.gray(message));
-    console.log('');
+    printInfo('');
 
     const criticalItems = ctx.results.filter(r => r.status === '❌');
     if (criticalItems.length > 0) {
         printInfo(chalk.bold('Top Priorities:'));
         criticalItems.slice(0, 3).forEach(item => {
-            console.log(chalk.cyan(`  → Fix: ${item.item}`));
+            printInfo(chalk.cyan(`  → Fix: ${item.item}`));
         });
     }
 
-    console.log(`\n${chalk.gray(`Documentation: ${githubWebUrl()}`)}\n`);
+    printInfo(`\n${chalk.gray(`Documentation: ${githubWebUrl()}`)}\n`);
 }
 
 /**

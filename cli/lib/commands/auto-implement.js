@@ -12,6 +12,8 @@ import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';
 import { verifyCommand } from './verify.js';
 import { generateMarkdown } from './plan.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
 
 export function registerAutoImplementCommand(program) {
   program
@@ -21,23 +23,23 @@ export function registerAutoImplementCommand(program) {
     .option('--dry-run', 'Show plan without making changes')
     .option('--no-verify', 'Skip verification gates')
     .action(async (feature, options) => {
-      console.log(chalk.cyan('\n🚀 Ultra-Dex Autonomous Implementation Engine\n'));
-      console.log(chalk.bold(`Target Feature: ${feature}\n`));
-
-      const providerId = options.provider || getDefaultProvider() || 'router';
-      const provider = createProvider(providerId);
-      
-      const spinner = ora('Initializing Autonomous Swarm...').start();
-
       try {
+        printInfo(chalk.cyan('\n🚀 Ultra-Dex Autonomous Implementation Engine\n'));
+        printInfo(chalk.bold(`Target Feature: ${feature}\n`));
+
+        const providerId = options.provider || getDefaultProvider() || 'router';
+        const provider = createProvider(providerId);
+
+        const spinner = ora('Initializing Autonomous Swarm...').start();
+
         // 1. Structural Awareness (CPG)
         spinner.text = 'Analyzing codebase architecture...';
         await projectGraph.scan();
         const graphSummary = projectGraph.getSummary();
-        
+
         // 2. Planning Phase (@Planner)
         spinner.text = '@Planner is breaking down the feature...';
-        
+
         const state = await loadState();
         const planMarkdown = state ? generateMarkdown(state) : (await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => ''));
         const contextMarkdown = await fs.readFile('CONTEXT.md', 'utf8').catch(() => '');
@@ -50,33 +52,33 @@ export function registerAutoImplementCommand(program) {
         };
 
         const plan = await runAgentLoop('planner', `Break down this feature into atomic tasks: ${feature}. List exactly what needs to be changed.`, provider, projectContext);
-        
+
         if (options.dryRun) {
             spinner.succeed('Planning complete (Dry Run)');
-            console.log(chalk.white('\nProposed Implementation Plan:'));
-            console.log(chalk.gray(plan));
+            printInfo(chalk.white('\nProposed Implementation Plan:'));
+            printInfo(chalk.gray(plan));
             return;
         }
 
         // 3. Execution Phase - Iterative Implementation
         spinner.text = 'Executing implementation tasks...';
-        
+
         // Split plan into tasks (naive splitting for now)
         const tasks = plan.split('\n').filter(line => line.match(/^[*-]\s+/) || line.match(/^\d+\.\s+/));
-        
+
         if (tasks.length === 0) {
             // If no clear list, treat the whole plan as one task
             tasks.push(plan);
         }
 
-        console.log(chalk.dim(`\nFound ${tasks.length} sub-tasks to execute...`));
+        printInfo(chalk.dim(`\nFound ${tasks.length} sub-tasks to execute...`));
 
         for (let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
             spinner.text = `[@Orchestrator] Task ${i+1}/${tasks.length}: ${task.substring(0, 50)}...`;
-            
+
             await runAgentLoop('orchestrator', `Implement this specific task from the feature plan: ${task}\n\nOverall Feature: ${feature}\nFull Plan:\n${plan}`, provider, projectContext);
-            
+
             // Incremental state update
             await updateStateFile();
         }
@@ -92,15 +94,15 @@ export function registerAutoImplementCommand(program) {
         // 5. Finalize
         await updateStateFile();
         spinner.succeed(chalk.green('Feature implemented autonomously!'));
-        
-        console.log(chalk.bold('\nFinal Report:'));
-        console.log(chalk.green('✅ Implementation complete'));
-        console.log(chalk.green('✅ Code standards verified'));
-        console.log(chalk.green('✅ Autonomous state synchronized'));
 
-      } catch (e) {
-        spinner.fail(chalk.red(`Auto-Implementation failed: ${e.message}`));
-        console.error(e);
+        printInfo(chalk.bold('\nFinal Report:'));
+        printSuccess('✅ Implementation complete');
+        printSuccess('✅ Code standards verified');
+        printSuccess('✅ Autonomous state synchronized');
+      } catch (error) {
+        await handleError(error, { command: 'auto-implement', feature, options });
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
       }
     });
 }

@@ -183,9 +183,9 @@ export function showSwarmAssemble(activeAgents) {
   activeAgents.forEach((agentInfo) => {
     const agent = agents[agentInfo.name];
     if (agent) {
-      console.log(`  ${agent.emoji} ${theme.accent(agent.name.toUpperCase())}`);
-      console.log(`     ${theme.dim('"' + agent.tagline + '"')}`);
-      console.log('');
+      printInfo(`  ${agent.emoji} ${theme.accent(agent.name.toUpperCase())}`);
+      printInfo(`     ${theme.dim('"' + agent.tagline + '"')}`);
+      printInfo('');
     }
   });
 }
@@ -452,7 +452,7 @@ Task: "${task}"`);
   for (const tier of executionTiers) {
     if (tier.agents.length === 0) continue;
 
-    console.log(theme.dim(`\n📦 Tier: ${tier.name}`));
+    printInfo(theme.dim(`\n📦 Tier: ${tier.name}`));
 
     if (tier.parallel) {
       // Parallel Execution
@@ -490,7 +490,7 @@ Task: "${task}"`);
           renderer.succeed(`@${agent.name} complete (${duration}ms)`);
 
           const preview = result.slice(0, 150).replace(/\n/g, ' ') + '...';
-          console.log(theme.dim(`    › ${preview}`));
+          printInfo(theme.dim(`    › ${preview}`));
 
           agentResults.push({ agent: agent.name, result, success: true });
           completedAgents.add(agent.name);

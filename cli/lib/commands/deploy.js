@@ -10,6 +10,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 // Terraform templates
 const TERRAFORM_TEMPLATES = {
@@ -595,69 +598,91 @@ export function registerDeployCommand(program) {
     .option('-r, --region <region>', 'AWS region', 'us-east-1')
     .option('-d, --domain <domain>', 'Domain name')
     .action(async (options) => {
-      console.log(chalk.blue('\n🚀 Deployment Automation\n'));
-      
-      const projectPath = path.resolve(options.project);
-      
-      // Get project name from options or package.json
-      let projectName = options.name;
-      if (!projectName) {
+      try {
+        printInfo(chalk.blue('\n🚀 Deployment Automation\n'));
+
+        // Validate project path
+        const projectPath = path.resolve(options.project);
         try {
-          const pkg = await fs.readFile(path.join(projectPath, 'package.json'), 'utf-8');
-          projectName = JSON.parse(pkg).name;
+          await fs.access(projectPath);
         } catch {
-          projectName = 'my-app';
+          printError(chalk.red(`❌ Error: Project path does not exist: ${options.project}`));
+          process.exitCode = 1;
+          process.exit(process.exitCode);
         }
-      }
-      
-      const config = {
-        projectName,
-        region: options.region,
-        domain: options.domain || `${projectName}.com`
-      };
-      
-      const results = [];
-      
-      // Determine what to generate
-      const generateAll = options.all || (!options.terraform && !options.docker && !options.k8s && !options.ci);
-      
-      if (generateAll || options.terraform) {
-        results.push({ name: 'Terraform', success: await generateTerraform(projectPath, config) });
-      }
-      
-      if (generateAll || options.docker) {
-        results.push({ name: 'Docker', success: await generateDocker(projectPath, config) });
-      }
-      
-      if (generateAll || options.k8s) {
-        results.push({ name: 'Kubernetes', success: await generateKubernetes(projectPath, config) });
-      }
-      
-      if (generateAll || options.ci) {
-        results.push({ name: 'GitHub Actions', success: await generateGitHubActions(projectPath, config) });
-      }
-      
-      // Summary
-      console.log(chalk.blue('\n📊 Generation Summary\n'));
-      
-      results.forEach(result => {
-        const icon = result.success ? chalk.green('✓') : chalk.red('✗');
-        console.log(`${icon} ${result.name}`);
-      });
-      
-      const allSuccess = results.every(r => r.success);
-      
-      if (allSuccess) {
-        console.log(chalk.green('\n✅ All deployment configurations generated!'));
-        console.log(chalk.yellow('\n⚠️  Next Steps:'));
-        console.log(chalk.gray('  1. Review generated files'));
-        console.log(chalk.gray('  2. Update environment variables'));
-        console.log(chalk.gray('  3. Configure cloud provider credentials'));
-        console.log(chalk.gray('  4. Run: terraform init && terraform plan'));
-        console.log(chalk.gray('  5. Deploy: docker-compose up -d OR kubectl apply -f k8s/'));
-      } else {
-        console.log(chalk.red('\n❌ Some configurations failed. Check errors above.'));
-        process.exit(1);
+
+        // Validate project name if provided
+        if (options.name && !/^[a-z0-9-]+$/i.test(options.name)) {
+          printError(chalk.red('❌ Error: Project name must contain only letters, numbers, and hyphens.'));
+          process.exitCode = 1;
+          process.exit(process.exitCode);
+        }
+
+        // Get project name from options or package.json
+        let projectName = options.name;
+        if (!projectName) {
+          try {
+            const pkg = await fs.readFile(path.join(projectPath, 'package.json'), 'utf-8');
+            projectName = JSON.parse(pkg).name;
+          } catch {
+            projectName = 'my-app';
+          }
+        }
+
+        const config = {
+          projectName,
+          region: options.region,
+          domain: options.domain || `${projectName}.com`
+        };
+
+        const results = [];
+
+        // Determine what to generate
+        const generateAll = options.all || (!options.terraform && !options.docker && !options.k8s && !options.ci);
+
+        if (generateAll || options.terraform) {
+          results.push({ name: 'Terraform', success: await generateTerraform(projectPath, config) });
+        }
+
+        if (generateAll || options.docker) {
+          results.push({ name: 'Docker', success: await generateDocker(projectPath, config) });
+        }
+
+        if (generateAll || options.k8s) {
+          results.push({ name: 'Kubernetes', success: await generateKubernetes(projectPath, config) });
+        }
+
+        if (generateAll || options.ci) {
+          results.push({ name: 'GitHub Actions', success: await generateGitHubActions(projectPath, config) });
+        }
+
+        // Summary
+        printInfo(chalk.blue('\n📊 Generation Summary\n'));
+
+        results.forEach(result => {
+          const icon = result.success ? chalk.green('✓') : chalk.red('✗');
+          printInfo(`${icon} ${result.name}`);
+        });
+
+        const allSuccess = results.every(r => r.success);
+
+        if (allSuccess) {
+          printSuccess(chalk.green('\n✅ All deployment configurations generated!'));
+          printWarning(chalk.yellow('\n⚠️  Next Steps:'));
+          printInfo(chalk.gray('  1. Review generated files'));
+          printInfo(chalk.gray('  2. Update environment variables'));
+          printInfo(chalk.gray('  3. Configure cloud provider credentials'));
+          printInfo(chalk.gray('  4. Run: terraform init && terraform plan'));
+          printInfo(chalk.gray('  5. Deploy: docker-compose up -d OR kubectl apply -f k8s/'));
+        } else {
+          printError(chalk.red('\n❌ Some configurations failed. Check errors above.'));
+          process.exitCode = 1;
+          process.exit(process.exitCode);
+        }
+      } catch (error) {
+        await handleError(error, { command: 'deploy', options });
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
       }
     });
 }

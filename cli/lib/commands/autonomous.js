@@ -16,6 +16,9 @@ import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';
 import { projectGraph } from '../mcp/graph.js';
 import { copyDirectory } from '../utils/files.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 // Autonomous configuration
 const AUTONOMOUS_CONFIG = {
@@ -104,7 +107,7 @@ export class AutonomousEngine {
       await fs.writeFile(path.join(this.historyPath, `${id}.json`), JSON.stringify(entry, null, 2));
       this.fixCount++;
     } catch (e) {
-      console.error(chalk.red(`Failed to save history: ${e.message}`));
+      printError(`Failed to save history: ${e.message}`);
     }
   }
 
@@ -131,7 +134,7 @@ export class AutonomousEngine {
       }
       return snapshotDir;
     } catch (error) {
-      console.error(chalk.red(`Snapshot failed: ${error.message}`));
+      printError(`Snapshot failed: ${error.message}`);
       return null;
     }
   }
@@ -144,13 +147,13 @@ export class AutonomousEngine {
       await copyDirectory(snapshotDir, this.projectPath);
       return true;
     } catch (error) {
-      console.error(chalk.red(`Restore failed: ${error.message}`));
+      printError(`Restore failed: ${error.message}`);
       return false;
     }
   }
 
   async selfHeal(errorOutput, context = '') {
-    console.log(chalk.magenta('\n🔧 Entering Self-Healing Loop...'));
+    printInfo(chalk.magenta('\n🔧 Entering Self-Healing Loop...'));
     this.sendDashboardUpdate('healing', 'Analyzing error patterns...');
     
     // Prepare project context for the agent
@@ -178,10 +181,10 @@ export class AutonomousEngine {
     const scoreMatch = analysis.match(/\[SCORE\]:\s*(\d+)/);
     const confidence = scoreMatch ? parseInt(scoreMatch[1]) : 50;
 
-    console.log(chalk.gray(`\nConfidence Score: \${confidence}/100`));
+    printInfo(chalk.gray(`\nConfidence Score: \${confidence}/100`));
     
     if (confidence < 30) {
-        console.log(chalk.yellow('⚠️ Low confidence in automated fix. Proceeding with caution...'));
+        printWarning('⚠️ Low confidence in automated fix. Proceeding with caution...');
     }
 
     const result = await runAgentLoop(
@@ -243,11 +246,11 @@ export class AutonomousEngine {
   }
   
   startWatchMode() {
-    console.log(chalk.cyan.bold('\n👁️  Starting Watch & Heal Mode...\n'));
+    printInfo(chalk.cyan.bold('\n👁️  Starting Watch & Heal Mode...\n'));
     this.sendDashboardUpdate('idle', 'Watch mode active');
     
     const watchPaths = ['src', 'lib', 'app', 'test', 'cli'].filter(p => existsSync(path.join(this.projectPath, p)));
-    console.log(chalk.gray(`Watching for changes in: ${watchPaths.join(', ')}`));
+    printInfo(chalk.gray(`Watching for changes in: ${watchPaths.join(', ')}`));
 
     let debounceTimer = null;
     let isHealing = false;
@@ -260,17 +263,17 @@ export class AutonomousEngine {
                 
                 debounceTimer = setTimeout(async () => {
                     const timestamp = new Date().toLocaleTimeString();
-                    console.log(chalk.yellow(`\n[${timestamp}] 📝 Change detected in ${filename}. Running tests...`));
+                    printWarning(`\n[${timestamp}] 📝 Change detected in ${filename}. Running tests...`);
                     this.sendDashboardUpdate('checking', `Validating changes in ${filename}...`);
                     
                     const testResult = await this.runTests();
                     if (!testResult.passed) {
-                        console.log(chalk.red('❌ Tests failed! Triggering self-healing...'));
+                        printError('❌ Tests failed! Triggering self-healing...');
                         isHealing = true;
                         
                         // Snapshot before healing
                         const snapshotPath = await this.createSnapshot();
-                        if (snapshotPath) console.log(chalk.gray(`📸 Snapshot: ${snapshotPath}`));
+                        if (snapshotPath) printInfo(chalk.gray(`📸 Snapshot: ${snapshotPath}`));
 
                         try {
                             await this.selfHeal(testResult.output, 'Tests failed during watch mode.');
@@ -278,31 +281,31 @@ export class AutonomousEngine {
                             // Verify fix
                             const verifyResult = await this.runTests();
                             if (verifyResult.passed) {
-                                console.log(chalk.green('✅ Fix verified! Tests passed.'));
+                                printSuccess('✅ Fix verified! Tests passed.');
                                 this.sendDashboardUpdate('fixed', 'Self-healing successful');
                             } else {
-                                console.log(chalk.red('❌ Self-healing failed.'));
+                                printError('❌ Self-healing failed.');
                                 this.sendDashboardUpdate('failed', 'Self-healing failed to resolve issue');
                                 if (snapshotPath) {
-                                    console.log(chalk.yellow(`⚠️  You may want to restore from: ${snapshotPath}`));
+                                    printWarning(`⚠️  You may want to restore from: ${snapshotPath}`);
                                 }
                             }
                         } catch (e) {
-                             console.error(chalk.red(`Self-healing error: ${e.message}`));
+                             printError(`Self-healing error: ${e.message}`);
                              this.sendDashboardUpdate('failed', `Error: ${e.message}`);
                         } finally {
                             isHealing = false;
-                            console.log(chalk.cyan('\n👁️  Resuming watch mode...'));
+                            printInfo('\n👁️  Resuming watch mode...');
                             setTimeout(() => this.sendDashboardUpdate('idle', 'Watch mode active'), 2000);
                         }
                     } else {
-                        console.log(chalk.green('✅ Tests passed.'));
+                        printSuccess('✅ Tests passed.');
                         this.sendDashboardUpdate('idle', 'Tests passed. System healthy.');
                     }
                 }, 1000); // 1s debounce
             });
         } catch (e) {
-            console.log(chalk.gray(`⚠️  Cannot watch ${watchPath}: ${e.message}`));
+            printWarning(`⚠️  Cannot watch ${watchPath}: ${e.message}`);
         }
     });
     
@@ -323,86 +326,92 @@ export function registerAutonomousCommand(program) {
     .option('--provider <provider>', 'AI provider to use')
     .option('--test-cmd <command>', 'Custom test command to run', 'npm test')
     .action(async (options) => {
-      console.log(chalk.bold.cyan('\n🤖 Ultra-Dex Pro: Autonomous Mode\n'));
+      try {
+        printInfo(chalk.bold.cyan('\n🤖 Ultra-Dex Pro: Autonomous Mode\n'));
 
-      const providerId = options.provider || getDefaultProvider();
-      if (!providerId) {
-        console.log(chalk.red('❌ No AI provider configured. Self-healing disabled.'));
-        return;
-      }
-
-      const provider = createProvider(providerId);
-      const engine = new AutonomousEngine(process.cwd(), provider, options.testCmd);
-      
-      if (options.watch) {
-          engine.startWatchMode();
+        const providerId = options.provider || getDefaultProvider();
+        if (!providerId) {
+          printError('❌ No AI provider configured. Self-healing disabled.');
           return;
-      }
-      
-      // 1. Linting Phase
-      const lintSpinner = ora('Checking code standards...').start();
-      const lintResult = await engine.runLint();
-      
-      if (!lintResult.passed && options.fix) {
-        lintSpinner.text = 'Issues found. Triggering self-healing...';
-        await engine.selfHeal(lintResult.output, 'Linter failures detected.');
-        lintSpinner.succeed('Linter issues resolved via self-healing.');
-      } else if (lintResult.passed) {
-        lintSpinner.succeed('Code standards look great.');
-      } else {
-        lintSpinner.warn('Linter failed (healing disabled).');
-      }
-
-      // 2. Test Phase
-      const testSpinner = ora('Running project tests...').start();
-      let testResult = await engine.runTests();
-
-      if (!testResult.passed && options.heal) {
-        testSpinner.text = 'Tests failed. Initiating AI recovery...';
-        
-        // Create Snapshot before healing
-        const snapshotPath = await engine.createSnapshot();
-        if (snapshotPath) {
-          console.log(chalk.gray(`\n📸 Snapshot created at: ${snapshotPath}`));
         }
 
-        let attempts = 0;
-        while (!testResult.passed && attempts < AUTONOMOUS_CONFIG.maxRetries) {
-          attempts++;
-          testSpinner.text = `Self-healing attempt ${attempts}/${AUTONOMOUS_CONFIG.maxRetries}...`;
-          
-          await engine.selfHeal(testResult.output, `Attempt ${attempts}: Fixing test failures.`);
-          testResult = await engine.runTests();
+        const provider = createProvider(providerId);
+        const engine = new AutonomousEngine(process.cwd(), provider, options.testCmd);
+
+        if (options.watch) {
+            engine.startWatchMode();
+            return;
         }
 
-        if (testResult.passed) {
-          testSpinner.succeed(chalk.green(`Self-healing successful after ${attempts} attempts!`));
+        // 1. Linting Phase
+        const lintSpinner = ora('Checking code standards...').start();
+        const lintResult = await engine.runLint();
+
+        if (!lintResult.passed && options.fix) {
+          lintSpinner.text = 'Issues found. Triggering self-healing...';
+          await engine.selfHeal(lintResult.output, 'Linter failures detected.');
+          lintSpinner.succeed('Linter issues resolved via self-healing.');
+        } else if (lintResult.passed) {
+          lintSpinner.succeed('Code standards look great.');
         } else {
-          testSpinner.fail(chalk.red(`Self-healing failed after ${attempts} attempts.`));
+          lintSpinner.warn('Linter failed (healing disabled).');
+        }
+
+        // 2. Test Phase
+        const testSpinner = ora('Running project tests...').start();
+        let testResult = await engine.runTests();
+
+        if (!testResult.passed && options.heal) {
+          testSpinner.text = 'Tests failed. Initiating AI recovery...';
+
+          // Create Snapshot before healing
+          const snapshotPath = await engine.createSnapshot();
           if (snapshotPath) {
-             console.log(chalk.yellow(`\n⚠️ Recovery failed. To restore original state:\n   cp -r ${snapshotPath}/* .`));
-             // Optionally auto-restore here if configured
-             // await engine.restoreSnapshot(snapshotPath);
+            printInfo(chalk.gray(`\n📸 Snapshot created at: ${snapshotPath}`));
+          }
+
+          let attempts = 0;
+          while (!testResult.passed && attempts < AUTONOMOUS_CONFIG.maxRetries) {
+            attempts++;
+            testSpinner.text = `Self-healing attempt ${attempts}/${AUTONOMOUS_CONFIG.maxRetries}...`;
+
+            await engine.selfHeal(testResult.output, `Attempt ${attempts}: Fixing test failures.`);
+            testResult = await engine.runTests();
+          }
+
+          if (testResult.passed) {
+            testSpinner.succeed(chalk.green(`Self-healing successful after ${attempts} attempts!`));
+          } else {
+            testSpinner.fail(chalk.red(`Self-healing failed after ${attempts} attempts.`));
+            if (snapshotPath) {
+               printWarning(chalk.yellow(`\n⚠️ Recovery failed. To restore original state:\n   cp -r ${snapshotPath}/* .`));
+               // Optionally auto-restore here if configured
+               // await engine.restoreSnapshot(snapshotPath);
+            }
+          }
+        } else if (testResult.passed) {
+          testSpinner.succeed('All tests passed.');
+        } else {
+          testSpinner.warn('Tests failed (healing disabled).');
+        }
+
+        // 3. Commit Phase
+        if (options.commit && testResult.passed) {
+          try {
+            execSync('git add . && git commit -m "chore: autonomous self-healing fix applied"', { stdio: 'ignore' });
+            printSuccess(chalk.green('\n✅ Fixes committed to history.'));
+          } catch {
+            printInfo(chalk.gray('\nℹ️ Nothing to commit.'));
           }
         }
-      } else if (testResult.passed) {
-        testSpinner.succeed('All tests passed.');
-      } else {
-        testSpinner.warn('Tests failed (healing disabled).');
-      }
 
-      // 3. Commit Phase
-      if (options.commit && testResult.passed) {
-        try {
-          execSync('git add . && git commit -m "chore: autonomous self-healing fix applied"', { stdio: 'ignore' });
-          console.log(chalk.green('\n✅ Fixes committed to history.'));
-        } catch {
-          console.log(chalk.gray('\nℹ️ Nothing to commit.'));
-        }
+        const reportPath = await engine.generateReport();
+        printInfo(chalk.blue(`\n📝 Autonomous report saved to: ${reportPath}`));
+        printSuccess(chalk.bold.green('\n✅ Autonomous session complete.'));
+      } catch (error) {
+        await handleError(error, { command: 'autonomous', options });
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
       }
-
-      const reportPath = await engine.generateReport();
-      console.log(chalk.blue(`\n📝 Autonomous report saved to: ${reportPath}`));
-      console.log(chalk.bold.green('\n✅ Autonomous session complete.'));
     });
 }

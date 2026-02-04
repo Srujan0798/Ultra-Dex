@@ -77,7 +77,8 @@ export function registerBuildCommand(program) {
         
       } catch (error) {
         await handleError(error, { command: 'build', options });
-        process.exit(error.exitCode || 1);
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
       }
     });
 }
@@ -139,8 +140,8 @@ async function executeBuildTask(nextTask, agentName, options) {
     const provider = createProvider(providerId, { apiKey: options.key, maxTokens: 8000 });
     const context = await readProjectContext();
 
-    console.log(chalk.gray('─'.repeat(50)));
-    
+    process.stdout.write(chalk.gray('─'.repeat(50)) + '\n');
+
     const spinner = ora(getRandomMessage('loading')).start();
     try {
       const result = await runAgentLoop(agentName, nextTask.task, provider, context);
@@ -148,17 +149,17 @@ async function executeBuildTask(nextTask, agentName, options) {
 
       // Ensure output directory exists if we ever use one, currently writing to root
       const filename = `task-${nextTask.id || Date.now()}-${agentName}.md`;
-      
+
       try {
         await fs.writeFile(filename, result, 'utf8');
         printSuccess(`\n✅ Task output saved to ${filename}`);
       } catch (writeError) {
-        throw new AppError(`Failed to save task output to ${filename}`, { 
+        throw new AppError(`Failed to save task output to ${filename}`, {
             cause: writeError,
             details: ['Check file permissions in the current directory.']
         });
       }
-      
+
       printInfo('Review the code and mark the task as completed in .ultra/state.json or using "ultra-dex plan --complete"');
     } catch (error) {
       if (spinner.isSpinning) spinner.fail(chalk.red('Task execution failed'));

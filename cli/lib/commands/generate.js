@@ -14,6 +14,8 @@ import { validateSafePath } from '../utils/validation.js';
 import { githubTreeUrl, githubWebUrl } from '../config/urls.js';
 import { saveState } from './plan.js';
 import { getRandomMessage } from '../utils/messages.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
 
 export function registerGenerateCommand(program) {
   program

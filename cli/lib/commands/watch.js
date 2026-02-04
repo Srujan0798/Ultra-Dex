@@ -28,6 +28,7 @@ export function registerWatchCommand(program) {
               await watchCommand(options);
           } catch (error) {
               await handleError(error, { command: 'watch', options });
+              process.exit(error.exitCode || 1);
           }
       });
 }
@@ -59,10 +60,10 @@ export async function watchCommand(options) {
         if (debounceTimer) clearTimeout(debounceTimer);
         debounceTimer = setTimeout(async () => {
           const timestamp = new Date().toLocaleTimeString();
-          console.log(chalk.yellow(`\n[${timestamp}] 📝 ${filename || path} changed`));
-          
+          printInfo(chalk.yellow(`\n[${timestamp}] 📝 ${filename || path} changed`));
+
           await updateStateFile();
-          
+
           if (autoSync && !filename?.includes('CONTEXT.md') && !filename?.includes('.md')) {
             printInfo('🔄 Auto-syncing CONTEXT.md...');
             try {
@@ -72,15 +73,15 @@ export async function watchCommand(options) {
               printWarning('   ⚠️  Auto-sync skipped or failed');
             }
           }
-          
+
           const newScore = await calculateAlignmentScore();
           const scoreDiff = newScore - lastScore;
           const diffIndicator = scoreDiff > 0 ? chalk.green(`↑ +${scoreDiff}`) : scoreDiff < 0 ? chalk.red(`↓ ${scoreDiff}`) : chalk.gray('→ 0');
-          
+
           lastScore = newScore;
           const scoreColor = newScore >= 80 ? chalk.green : newScore >= 50 ? chalk.yellow : chalk.red;
-          console.log(scoreColor(`✅ State updated | Alignment: ${newScore}% `) + diffIndicator);
-          
+          printInfo(scoreColor(`✅ State updated | Alignment: ${newScore}% `) + diffIndicator);
+
         }, interval);
       });
     } catch (e) {

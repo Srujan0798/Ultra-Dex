@@ -4,6 +4,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,7 +52,7 @@ export function registerScaffoldCommand(program) {
         // Otherwise use template-based scaffolding (existing code)
         await scaffoldFromTemplate(options);
       } catch (error) {
-        console.error(chalk.red('Error:'), error.message);
+        printError(chalk.red('Error:'), error.message);
         process.exit(1);
       }
     });
@@ -60,7 +62,7 @@ export function registerScaffoldCommand(program) {
  * Scaffold project structure from implementation plan - Enhanced Version
  */
 async function scaffoldFromPlan(options) {
-  console.log(chalk.cyan.bold('\n🏗️  Enhanced Scaffolding from Implementation Plan\n'));
+  printInfo(chalk.cyan.bold('\n🏗️  Enhanced Scaffolding from Implementation Plan\n'));
 
   // Check if plan exists
   const planPath = './IMPLEMENTATION-PLAN.md';
@@ -68,21 +70,21 @@ async function scaffoldFromPlan(options) {
   try {
     planContent = await fs.readFile(planPath, 'utf8');
   } catch {
-    console.log(chalk.red('❌ IMPLEMENTATION-PLAN.md not found'));
-    console.log(chalk.gray('   Run: ultra-dex generate "your idea" first\n'));
+    printError(chalk.red('❌ IMPLEMENTATION-PLAN.md not found'));
+    printInfo(chalk.gray('   Run: ultra-dex generate "your idea" first\n'));
     return;
   }
 
   // Parse plan sections
   const sections = parsePlanSections(planContent);
 
-  console.log(chalk.blue(`Parsed ${sections.length} sections from plan\n`));
+  printInfo(chalk.blue(`Parsed ${sections.length} sections from plan\n`));
 
   // Extract tech stack from Section 12 or Context
   const techStack = extractTechStack(planContent, sections);
-  console.log(chalk.cyan('Detected Tech Stack:'));
-  techStack.forEach(tech => console.log(chalk.white(`  • ${tech}`)));
-  console.log();
+  printInfo(chalk.cyan('Detected Tech Stack:'));
+  techStack.forEach(tech => printInfo(chalk.white(`  • ${tech}`)));
+  printInfo('');
 
   // Generate folder structure based on stack
   const structure = generateStructure(techStack, sections);
@@ -91,7 +93,7 @@ async function scaffoldFromPlan(options) {
   const files = generateFiles(sections, techStack, options.advanced);
 
   if (options.dryRun) {
-    console.log(chalk.yellow('🔍 Dry Run Mode - Would create:\n'));
+    printInfo(chalk.yellow('🔍 Dry Run Mode - Would create:\n'));
     displayStructure(structure);
     displayFiles(files);
     return;
@@ -129,16 +131,16 @@ async function scaffoldFromPlan(options) {
   }
 
   // Summary
-  console.log(chalk.green.bold('\n✅ Enhanced Scaffolding Complete!\n'));
-  console.log(chalk.white('Created:'));
-  console.log(chalk.gray(`  • ${structure.length} directories`));
-  console.log(chalk.gray(`  • ${Object.keys(files).length} files with AI-ready patterns`));
-  console.log();
+  printInfo(chalk.green.bold('\n✅ Enhanced Scaffolding Complete!\n'));
+  printInfo(chalk.white('Created:'));
+  printInfo(chalk.gray(`  • ${structure.length} directories`));
+  printInfo(chalk.gray(`  • ${Object.keys(files).length} files with AI-ready patterns`));
+  printInfo('');
 
-  console.log(chalk.cyan('Next Steps:'));
-  console.log(chalk.white('  1. Review generated files with AI patterns'));
-  console.log(chalk.white('  2. Run: ultra-dex swarm to implement features'));
-  console.log(chalk.white('  3. Run: ultra-dex check to verify completeness\n'));
+  printInfo(chalk.cyan('Next Steps:'));
+  printInfo(chalk.white('  1. Review generated files with AI patterns'));
+  printInfo(chalk.white('  2. Run: ultra-dex swarm to implement features'));
+  printInfo(chalk.white('  3. Run: ultra-dex check to verify completeness\n'));
 }
 
 // Enhanced file generation with AI-ready patterns
@@ -269,8 +271,8 @@ export const PROJECT_CONTEXT = {
 
 // Context scanning helper for AI agents
 export async function scanContext() {
-  console.log('Scanning project context...');
-  
+  console.log('Scanning project context...');  // This is inside a generated file, not the command itself
+
   // This function helps AI agents understand the current state
   // Ultra-Dex agents will call this to get context before working
   return {
@@ -698,15 +700,15 @@ function generateStructure(techStack, sections) {
 }
 
 function displayStructure(structure) {
-  console.log(chalk.bold('Directories:'));
-  structure.forEach(dir => console.log(chalk.gray(`  📁 \${dir}`)));
-  console.log();
+  printInfo(chalk.bold('Directories:'));
+  structure.forEach(dir => printInfo(chalk.gray(`  📁 \${dir}`)));
+  printInfo('');
 }
 
 function displayFiles(files) {
-  console.log(chalk.bold('Files:'));
-  Object.keys(files).forEach(file => console.log(chalk.gray(`  📄 \${file}`)));
-  console.log();
+  printInfo(chalk.bold('Files:'));
+  Object.keys(files).forEach(file => printInfo(chalk.gray(`  📄 \${file}`)));
+  printInfo('');
 }
 
 function generateEnvExample(stack) {
@@ -819,7 +821,7 @@ async function scaffoldFromTemplate(options) {
     throw new Error(\`Template '\${templateName}' not found\`);
   }
 
-  console.log(chalk.cyan.bold(\`\\n🏗️  Scaffolding from template: \${template.name}\\n\`));
+  printInfo(chalk.cyan.bold(\`\\n🏗️  Scaffolding from template: \${template.name}\\n\`));
   // Template implementation logic would go here...
 }
 

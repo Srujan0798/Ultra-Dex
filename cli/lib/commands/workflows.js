@@ -150,14 +150,14 @@ export function visualizeWorkflow(workflow) {
        const color = ['@Planner', '@CTO'].includes(a) ? chalk.magenta : ['@Backend', '@Frontend'].includes(a) ? chalk.blue : chalk.yellow;
        return color(a);
     }).join(chalk.gray(' → '));
-    console.log('  ' + agentFlow + '\n');
+    printInfo('  ' + agentFlow + '\n');
 
     printInfo(chalk.bold('Execution Path:'));
     if (workflow.steps) {
         workflow.steps.forEach((step, i) => {
             const isLast = i === workflow.steps.length - 1;
-            console.log(`  ${chalk.green('●')} ${step}`);
-            if (!isLast) console.log(`  ${chalk.gray('│')}`);
+            printInfo(`  ${chalk.green('●')} ${step}`);
+            if (!isLast) printInfo(`  ${chalk.gray('│')}`);
         });
     }
     console.log('');
@@ -229,17 +229,17 @@ export function registerWorkflowCommand(program) {
 
 function displayWorkflowSummary(workflow) {
     printInfo(chalk.bold(`\n📋 ${workflow.name} Workflow\n`));
-    console.log(chalk.gray(workflow.description));
+    printInfo(chalk.gray(workflow.description));
 
     printInfo(chalk.bold('\n🤖 Agents Involved:\n'));
     workflow.agents.forEach((agent, i) => {
-      console.log(chalk.cyan(`  ${i + 1}. ${agent}`));
+      printInfo(chalk.cyan(`  ${i + 1}. ${agent}`));
     });
 
     if (workflow.steps) {
       printInfo(chalk.bold('\n📝 Implementation Steps:\n'));
       workflow.steps.forEach(step => {
-        console.log(chalk.gray(`  • ${step}`));
+        printInfo(chalk.gray(`  • ${step}`));
       });
     }
 

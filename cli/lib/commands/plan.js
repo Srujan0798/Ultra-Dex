@@ -144,17 +144,17 @@ export function generateGantt(phases) {
     printInfo(chalk.bold.cyan('\n📊 Project Timeline (Gantt View)\n'));
     
     const width = 60;
-    console.log(chalk.gray('Phase' + ' '.repeat(25) + 'Progress' + ' '.repeat(width - 8) + 'Status'));
-    console.log(chalk.gray('─'.repeat(30 + width + 10)));
+    printInfo(chalk.gray('Phase' + ' '.repeat(25) + 'Progress' + ' '.repeat(width - 8) + 'Status'));
+    printInfo(chalk.gray('─'.repeat(30 + width + 10)));
 
     phases.forEach((phase) => {
         const completedSteps = phase.steps.filter(s => s.status === 'completed').length;
         const totalSteps = phase.steps.length;
         const percentage = totalSteps > 0 ? (completedSteps / totalSteps) : 0;
-        
+
         const barWidth = Math.floor(percentage * width);
         let bar = '█'.repeat(barWidth) + '░'.repeat(width - barWidth);
-        
+
         // Mark milestones in the bar if any
         phase.steps.forEach((step, idx) => {
             if (step.isMilestone) {
@@ -167,16 +167,16 @@ export function generateGantt(phases) {
 
         const color = percentage === 1 ? chalk.green : percentage > 0 ? chalk.yellow : chalk.gray;
         const status = percentage === 1 ? 'DONE' : percentage > 0 ? 'WIP ' : 'TODO';
-        
+
         let name = phase.name.length > 28 ? phase.name.substring(0, 25) + '...' : phase.name;
         name = name.padEnd(30);
 
         const hasMilestone = phase.steps.some(s => s.isMilestone);
         const milestoneIcon = hasMilestone ? chalk.magenta(' ✦') : '';
 
-        console.log(`${name}${milestoneIcon.padEnd(hasMilestone ? 3 : 0)} ${color(bar)} ${color(status)} (${Math.round(percentage * 100)}%)`);
+        printInfo(`${name}${milestoneIcon.padEnd(hasMilestone ? 3 : 0)} ${color(bar)} ${color(status)} (${Math.round(percentage * 100)}%)`);
     });
-    console.log('');
+    printInfo('');
 }
 
 /**
@@ -193,26 +193,26 @@ export function generateTimeline(phases) {
         const isLast = index === phases.length - 1;
         const symbol = phase.status === 'completed' ? '🟢' : phase.status === 'in_progress' ? '🟡' : '⚪';
         const connector = isLast ? '   ' : ' │ ';
-        
-        console.log(`${symbol} ${chalk.bold(phase.name)}`);
-        
+
+        printInfo(`${symbol} ${chalk.bold(phase.name)}`);
+
         // List specific milestones in this phase
         phase.steps.forEach(step => {
             if (step.isMilestone) {
                 const mSymbol = step.status === 'completed' ? chalk.magenta('✦') : chalk.gray('✧');
-                console.log(`${connector}   ${mSymbol} ${chalk.bold(step.task)}`);
+                printInfo(`${connector}   ${mSymbol} ${chalk.bold(step.task)}`);
             }
         });
 
-        console.log(`${connector} ${chalk.gray(`${completedSteps}/${totalSteps} tasks completed`)}`);
-        
+        printInfo(`${connector} ${chalk.gray(`${completedSteps}/${totalSteps} tasks completed`)}`);
+
         if (phase.status === 'in_progress') {
             const nextTask = phase.steps.find(s => s.status === 'pending');
             if (nextTask) {
-                console.log(`${connector} 👉 Next: ${chalk.cyan(nextTask.task)}`);
+                printInfo(`${connector} 👉 Next: ${chalk.cyan(nextTask.task)}`);
             }
         }
-        console.log(connector);
+        printInfo(connector);
     });
 }
 
@@ -319,12 +319,12 @@ function displayMilestones(state) {
         const milestones = phase.steps.filter(s => s.isMilestone);
         if (milestones.length > 0) {
             found = true;
-            console.log(chalk.bold(`  ${phase.name}`));
+            printInfo(chalk.bold(`  ${phase.name}`));
             milestones.forEach(m => {
                 const icon = m.status === 'completed' ? chalk.green('✅') : chalk.gray('⚪');
-                console.log(`    ${icon} ${m.task}`);
+                printInfo(`    ${icon} ${m.task}`);
             });
-            console.log('');
+            printInfo('');
         }
     });
 
@@ -359,16 +359,16 @@ function displayEstimates(state) {
 
     state.phases.forEach(phase => {
         const baseHours = phase.steps.length * 6;
-        const actualHours = estimateDuration(baseHours, { 
+        const actualHours = estimateDuration(baseHours, {
             uncertainty: phase.status === 'pending',
             newTech: phase.name.toLowerCase().includes('ai')
         });
-        
+
         totalBase += baseHours;
         totalActual += actualHours;
-        console.log(`  ${chalk.bold(phase.name.padEnd(30))} ${chalk.gray(baseHours + 'h base')} → ${chalk.yellow(actualHours.toFixed(1) + 'h actual')}`);
+        printInfo(`  ${chalk.bold(phase.name.padEnd(30))} ${chalk.gray(baseHours + 'h base')} → ${chalk.yellow(actualHours.toFixed(1) + 'h actual')}`);
     });
 
-    console.log(chalk.gray('  ' + '─'.repeat(50)));
+    printInfo(chalk.gray('  ' + '─'.repeat(50)));
     printInfo(`  ${chalk.bold('TOTAL PROJECT EFFORT'.padEnd(30))} ${chalk.gray(totalBase + 'h base')} → ${chalk.green(totalActual.toFixed(1) + 'h actual')}\n`);
 }
