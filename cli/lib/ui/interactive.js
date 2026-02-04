@@ -9,6 +9,7 @@ import { execSync } from 'child_process';
 import { routeIntent } from '../nlp/router.js';
 import { context } from '../kernel/context.js'; // Import Intelligence
 import { agent } from '../kernel/agent.js'; // Import Agent Runtime
+import { tokenBudget } from './TokenBudget.js';
 
 /**
  * Main Interactive Loop
@@ -20,10 +21,12 @@ export async function startInteractiveMode() {
     await renderer.thinking('Initializing Neural Link', [
         'Scanning file system...',
         'Analyzing dependency graph...',
-        'Checking git status...'
+        'Checking git status...',
+        'Loading token budget...'
     ]);
 
     const ctx = await context.scan(); // Real scan
+    await tokenBudget.init();
 
     // 2. Pro-level greeting with Context Awareness
     const stackInfo = ctx.stack !== 'unknown' ? `I see we are working on a **${ctx.stack}** project.` : '';
@@ -38,10 +41,13 @@ export async function startInteractiveMode() {
         console.log(`  │ ${theme.subtitle(label)} ${' '.repeat(Math.max(0, padding))} ${val} │`);
     };
     
+    const budget = tokenBudget.getStatusBarData();
+
     statusLine('STACK', ctx.stack);
     statusLine('BRANCH', ctx.git.branch || 'none');
     statusLine('CHANGES', `${ctx.git.modifiedFiles || 0} files`);
     statusLine('AGENTS', theme.success('17 Online'));
+    statusLine(budget.label, budget.value);
     console.log(theme.dim('  └' + '─'.repeat(56) + '┘'));
     console.log('');
 
