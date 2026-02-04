@@ -11,6 +11,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
 
 // Integration configurations
 const INTEGRATIONS = {
@@ -329,55 +331,55 @@ async function integrateService(serviceKey, projectPath) {
   if (!integration) {
     throw new Error(`Unknown integration: ${serviceKey}`);
   }
-  
-  console.log(chalk.blue(`\n🔌 Setting up ${integration.name}...\n`));
-  
+
+  printInfo(chalk.blue(`\n🔌 Setting up ${integration.name}...\n`));
+
   // Install packages
   if (integration.packages) {
     await installPackages(integration.packages);
   }
-  
+
   if (integration.devPackages) {
     await installPackages(integration.devPackages, true);
   }
-  
+
   // Create files
   if (integration.files) {
     const spinner = ora('Creating configuration files...').start();
     await createFiles(projectPath, integration.files);
     spinner.succeed(chalk.green('Configuration files created'));
   }
-  
+
   // Create webhook handlers
   if (integration.webhooks) {
     const spinner = ora('Setting up webhook handlers...').start();
     await createFiles(projectPath, integration.webhooks);
     spinner.succeed(chalk.green('Webhook handlers created'));
   }
-  
+
   // Update scripts
   if (integration.scripts) {
     const spinner = ora('Updating package.json scripts...').start();
     await updateScripts(projectPath, integration.scripts);
     spinner.succeed(chalk.green('Scripts updated'));
   }
-  
+
   // Update .env.example
   if (integration.envVars) {
     await updateEnvExample(projectPath, integration.envVars);
   }
-  
-  console.log(chalk.green(`\n✅ ${integration.name} integrated successfully!`));
-  console.log(chalk.yellow('\n⚠️  Next Steps:'));
-  console.log(chalk.gray('  1. Add environment variables to .env'));
+
+  printSuccess(chalk.green(`\n✅ ${integration.name} integrated successfully!`));
+  printWarning(chalk.yellow('\n⚠️  Next Steps:'));
+  printInfo(chalk.gray('  1. Add environment variables to .env'));
   if (integration.envVars) {
     integration.envVars.forEach(env => {
-      console.log(chalk.gray(`     - ${env}`));
+      printInfo(chalk.gray(`     - ${env}`));
     });
   }
-  console.log(chalk.gray('  2. Review and customize the generated files'));
-  console.log(chalk.gray('  3. Test the integration'));
-  
+  printInfo(chalk.gray('  2. Review and customize the generated files'));
+  printInfo(chalk.gray('  3. Test the integration'));
+
   return true;
 }
 
@@ -389,43 +391,47 @@ export function registerIntegrateCommand(program) {
     .option('-p, --project <path>', 'Project root path', '.')
     .option('--list', 'List available integrations')
     .action(async (service, options) => {
-      // Validate project path to prevent path traversal
-      const resolvedPath = path.resolve(options.project);
-      const cwd = process.cwd();
-      if (!resolvedPath.startsWith(cwd) && !path.isAbsolute(options.project)) {
-        console.error(chalk.red('❌ Error: Invalid project path. Path traversal detected.'));
-        process.exit(1);
-      }
-      
-      if (options.list) {
-        console.log(chalk.blue('\n📦 Available Integrations\n'));
-        
-        Object.entries(INTEGRATIONS).forEach(([key, integration]) => {
-          console.log(`  ${chalk.cyan(key.padEnd(15))} ${integration.name}`);
-          console.log(`     ${chalk.gray('Packages:')} ${integration.packages.join(', ')}`);
-          console.log(`     ${chalk.gray('Env vars:')} ${integration.envVars.join(', ')}`);
-          console.log();
-        });
-        
-        console.log(chalk.blue('Usage:'));
-        console.log(chalk.gray('  npx ultra-dex integrate stripe'));
-        console.log(chalk.gray('  npx ultra-dex integrate prisma'));
-        process.exit(0);
-      }
-      
-      const projectPath = resolvedPath;
-      
-      if (!INTEGRATIONS[service]) {
-        console.log(chalk.red(`\n❌ Unknown integration: ${service}`));
-        console.log(chalk.blue(`\nRun ${chalk.cyan('npx ultra-dex integrate --list')} to see available integrations`));
-        process.exit(1);
-      }
-      
       try {
+        // Validate project path to prevent path traversal
+        const resolvedPath = path.resolve(options.project);
+        const cwd = process.cwd();
+        if (!resolvedPath.startsWith(cwd) && !path.isAbsolute(options.project)) {
+          printError(chalk.red('❌ Error: Invalid project path. Path traversal detected.'));
+          process.exitCode = 1;
+          process.exit(process.exitCode);
+        }
+
+        if (options.list) {
+          printInfo(chalk.blue('\n📦 Available Integrations\n'));
+
+          Object.entries(INTEGRATIONS).forEach(([key, integration]) => {
+            process.stdout.write(`  ${chalk.cyan(key.padEnd(15))} ${integration.name}\n`);
+            process.stdout.write(`     ${chalk.gray('Packages:')} ${integration.packages.join(', ')}\n`);
+            process.stdout.write(`     ${chalk.gray('Env vars:')} ${integration.envVars.join(', ')}\n`);
+            process.stdout.write('\n');
+          });
+
+          printInfo(chalk.blue('Usage:'));
+          process.stdout.write(chalk.gray('  npx ultra-dex integrate stripe\n'));
+          process.stdout.write(chalk.gray('  npx ultra-dex integrate prisma\n'));
+          process.exitCode = 0;
+          process.exit(process.exitCode);
+        }
+
+        const projectPath = resolvedPath;
+
+        if (!INTEGRATIONS[service]) {
+          printError(chalk.red(`\n❌ Unknown integration: ${service}`));
+          printInfo(chalk.blue(`\nRun ${chalk.cyan('npx ultra-dex integrate --list')} to see available integrations`));
+          process.exitCode = 1;
+          process.exit(process.exitCode);
+        }
+
         await integrateService(service, projectPath);
       } catch (error) {
-        console.log(chalk.red(`\n❌ Integration failed: ${error.message}`));
-        process.exit(1);
+        printError(chalk.red(`\n❌ Integration failed: ${error.message}`));
+        process.exitCode = 1;
+        process.exit(process.exitCode);
       }
     });
 }
