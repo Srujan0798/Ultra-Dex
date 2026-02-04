@@ -21,9 +21,11 @@ export class TokenBudget {
             totalCost: 0,
             monthlyCost: 0,
             lastReset: new Date().toISOString(),
-            history: []
+            history: [],
+            triggeredAlerts: [] // Track which alerts have been shown this month
         };
         this.budget = 50.0; // Monthly budget in USD
+        this.alertThresholds = [50.0, 100.0, 200.0];
         this.initialized = false;
     }
 
@@ -41,6 +43,7 @@ export class TokenBudget {
                 const now = new Date();
                 if (lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear()) {
                     this.usage.monthlyCost = 0;
+                    this.usage.triggeredAlerts = [];
                     this.usage.lastReset = now.toISOString();
                     await this.save();
                 }
@@ -101,8 +104,40 @@ export class TokenBudget {
             this.usage.history = this.usage.history.slice(-500);
         }
 
+        await this.checkAlerts();
         await this.save();
         return cost;
+    }
+
+    async checkAlerts() {
+        const monthly = this.usage.monthlyCost || 0;
+        if (!this.usage.triggeredAlerts) this.usage.triggeredAlerts = [];
+
+        for (const threshold of this.alertThresholds) {
+            if (monthly >= threshold && !this.usage.triggeredAlerts.includes(threshold)) {
+                this.usage.triggeredAlerts.push(threshold);
+                this.showAlert(threshold);
+            }
+        }
+    }
+
+    showAlert(threshold) {
+        const content = [
+            `${theme.error.bold('⚠️  BUDGET ALERT')}`,
+            `${theme.dim('────────────────────────────────')}`,
+            `Monthly cost has exceeded ${theme.title('$' + threshold.toFixed(2))}`,
+            `${theme.dim('Current Usage:')}  $${this.usage.monthlyCost.toFixed(4)}`,
+            `${theme.dim('Time:')}           ${new Date().toLocaleString()}`
+        ].join('\n');
+
+        console.log('\n' + boxen(content, {
+            padding: 1,
+            margin: 1,
+            borderStyle: 'double',
+            borderColor: 'red',
+            title: 'WARNING',
+            titleAlignment: 'center'
+        }) + '\n');
     }
 
     forecast(provider, estimatedInputTokens, estimatedOutputTokens = 1000) {

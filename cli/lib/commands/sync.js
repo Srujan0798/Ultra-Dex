@@ -109,7 +109,7 @@ async function handlePull(projectDir, target) {
 async function handleBrainSync(projectDir) {
   const ora = (await import('ora')).default;
 
-  console.log(chalk.magenta.bold('🧠 Brain Sync: Autonomous Context Update\n'));
+  printInfo(chalk.magenta.bold('🧠 Brain Sync: Autonomous Context Update\n'));
 
   // Step 1: Build Code Property Graph
   const graphSpinner = ora('Building Code Property Graph...').start();

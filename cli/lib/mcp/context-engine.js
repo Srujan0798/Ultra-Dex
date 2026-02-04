@@ -1,6 +1,8 @@
 import { projectGraph, GraphRAG } from './graph.js';
 import fs from 'fs/promises';
 import path from 'path';
+import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../ui/logger.js';
 
 /**
  * ContextEngine - Graph-based context retrieval for RAG
@@ -13,17 +15,29 @@ export class ContextEngine {
     this.maxContextSize = options.maxContextSize || 100000; // Max chars in context
     this.contextCache = new Map();
     this.cacheTimeout = 60000; // 1 minute
+    this.initializing = null;
   }
 
   /**
    * Initialize the context engine
    */
   async initialize() {
-    if (this.useGraphDB && !this.graph.graphRAG) {
-      await this.graph.initializeGraphRAG();
-    }
-    await this.graph.scan();
-    return this;
+    if (this.initializing) return this.initializing;
+
+    this.initializing = (async () => {
+      try {
+        if (this.useGraphDB && !this.graph.graphRAG) {
+          await this.graph.initializeGraphRAG();
+        }
+        await this.graph.scan();
+        return this;
+      } catch (err) {
+        this.initializing = null;
+        throw new AppError(`Failed to initialize ContextEngine: ${err.message}`, { cause: err });
+      }
+    })();
+
+    return this.initializing;
   }
 
   /**
@@ -33,6 +47,10 @@ export class ContextEngine {
    * @returns {object} Context with files, dependencies, and impact analysis
    */
   async buildContext(query, options = {}) {
+    if (!query || typeof query !== 'string') {
+      throw new ValidationError('Context query must be a non-empty string');
+    }
+
     const startTime = Date.now();
     
     // Check cache first
@@ -42,61 +60,66 @@ export class ContextEngine {
       return cached.context;
     }
 
-    const context = {
-      query,
-      files: [],
-      dependencies: [],
-      functions: [],
-      impact: null,
-      decisions: [],
-      coupling: null,
-      circularDeps: [],
-      timestamp: new Date().toISOString()
-    };
+    try {
+      const context = {
+        query,
+        files: [],
+        dependencies: [],
+        functions: [],
+        impact: null,
+        decisions: [],
+        coupling: null,
+        circularDeps: [],
+        timestamp: new Date().toISOString()
+      };
 
-    // Determine if query is a file path or symbol
-    const isFilePath = query.includes('/') || query.includes('\\') || query.endsWith('.js') || query.endsWith('.ts');
-    
-    if (isFilePath) {
-      // Normalize path
-      const normalizedPath = path.normalize(query);
-      context.files = await this.getFileContext(normalizedPath, options);
-      context.impact = await this.graph.getImpactAnalysis(normalizedPath, { 
-        maxDepth: options.impactDepth || 5,
-        includeFunctions: options.includeFunctions || false
-      });
-    } else {
-      // Treat as symbol search
-      context.functions = await this.graph.searchSymbols(query, { limit: options.limit || 10 });
-      context.files = await this.getSymbolContext(query, options);
+      // Determine if query is a file path or symbol
+      const isFilePath = query.includes('/') || query.includes('\\') || query.endsWith('.js') || query.endsWith('.ts');
+      
+      if (isFilePath) {
+        // Normalize path
+        const normalizedPath = path.normalize(query);
+        context.files = await this.getFileContext(normalizedPath, options);
+        context.impact = await this.graph.getImpactAnalysis(normalizedPath, { 
+          maxDepth: options.impactDepth || 5,
+          includeFunctions: options.includeFunctions || false
+        });
+      } else {
+        // Treat as symbol search
+        context.functions = await this.graph.searchSymbols(query, { limit: options.limit || 10 });
+        context.files = await this.getSymbolContext(query, options);
+      }
+
+      // Get graph-based RAG context
+      const ragContext = await this.graph.getRAGContext(query, { limit: options.limit || 10 });
+      context.dependencies = ragContext.dependencies || [];
+      context.decisions = ragContext.decisions || [];
+
+      // Get coupling metrics if requested
+      if (options.includeCoupling) {
+        context.coupling = await this.graph.getCouplingMetrics();
+      }
+
+      // Get circular dependencies if requested
+      if (options.includeCircularDeps) {
+        context.circularDeps = await this.graph.findCircularDependencies();
+      }
+
+      // Read file contents
+      context.fileContents = await this.readFileContents(context.files.map(f => f.path || f));
+
+      // Calculate context size
+      context.size = this.calculateContextSize(context);
+      context.buildTime = Date.now() - startTime;
+
+      // Cache result
+      this.contextCache.set(cacheKey, { context, timestamp: Date.now() });
+
+      return context;
+    } catch (err) {
+      logger.error(`Error building context for: ${query}`, err);
+      throw new AppError(`Failed to build context: ${err.message}`, { cause: err });
     }
-
-    // Get graph-based RAG context
-    const ragContext = await this.graph.getRAGContext(query, { limit: options.limit || 10 });
-    context.dependencies = ragContext.dependencies || [];
-    context.decisions = ragContext.decisions || [];
-
-    // Get coupling metrics if requested
-    if (options.includeCoupling) {
-      context.coupling = await this.graph.getCouplingMetrics();
-    }
-
-    // Get circular dependencies if requested
-    if (options.includeCircularDeps) {
-      context.circularDeps = await this.graph.findCircularDependencies();
-    }
-
-    // Read file contents
-    context.fileContents = await this.readFileContents(context.files.map(f => f.path || f));
-
-    // Calculate context size
-    context.size = this.calculateContextSize(context);
-    context.buildTime = Date.now() - startTime;
-
-    // Cache result
-    this.contextCache.set(cacheKey, { context, timestamp: Date.now() });
-
-    return context;
   }
 
   /**
