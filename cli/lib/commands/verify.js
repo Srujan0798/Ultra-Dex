@@ -49,14 +49,39 @@ export function registerVerifyCommand(program) {
       .command('verify [task]')
       .description('Run executable 21-step verification on a task or project')
       .option('-p, --provider <provider>', 'AI provider')
+      .option('--live', 'Run active verification (automated gates only)')
       .action(async (task, options) => {
           try {
-              await verifyCommand(task, options);
+              if (options.live) {
+                  await verifyLive(process.cwd());
+              } else {
+                  await verifyCommand(task, options);
+              }
           } catch (error) {
               await handleError(error, { command: 'verify', task, options });
               process.exit(error.exitCode || 1);
           }
       });
+}
+
+/**
+ * Live verification mode (Automated Gates Only)
+ */
+export async function verifyLive(projectDir) {
+    printInfo('\n⚡ Ultra-Dex Active Verification (Live Mode)\n');
+    const results = await runAutomatedGates(projectDir);
+    
+    const failures = Object.entries(results).filter(([_, status]) => status === 'FAIL');
+    
+    if (failures.length > 0) {
+        printError(`\n❌ Verification Failed: ${failures.length} checks failed.`);
+        failures.forEach(([name]) => console.log(chalk.red(`  - ${name}`)));
+        const error = new Error('Live verification failed');
+        error.exitCode = 1;
+        throw error;
+    }
+    
+    printSuccess('\n✅ Active Verification Passed');
 }
 
 /**
@@ -86,7 +111,7 @@ export async function verifyCommand(taskName, options) {
 /**
  * Execute all automated verification gates
  */
-async function runAutomatedGates(projectDir) {
+export async function runAutomatedGates(projectDir) {
   const automatedResults = {};
   const gates = [
     { name: 'Context Loaded', fn: verifyContextLoaded },
