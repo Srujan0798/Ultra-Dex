@@ -131,20 +131,15 @@ async function detectStackFromPlan() {
   }
 }
 
-export async function scaffoldCommand(templateName, options) {
-  printInfo(chalk.cyan('\n🏗️  Ultra-Dex Scaffold\n'));
+import { scaffoldFromPlan } from './scaffold-plan.js';
 
+export async function scaffoldCommand(templateName, options) {
   if (options.fromPlan) {
-    printInfo(chalk.blue('  Scaffolding from Implementation Plan...'));
-    const detected = await detectStackFromPlan();
-    if (detected && TEMPLATES[detected]) {
-      printInfo(chalk.green(`  Detected Tech Stack -> Template: ${TEMPLATES[detected].name}`));
-      templateName = detected;
-    } else {
-      printWarning(chalk.yellow('  Could not detect a stack from the plan. Falling back to Next.js template.'));
-      templateName = 'next15-prisma-clerk';
-    }
+    await scaffoldFromPlan(options);
+    return;
   }
+
+  printInfo(chalk.cyan('\n🏗️  Ultra-Dex Scaffold\n'));
 
   // If no template specified, show selection
   if (!templateName) {
@@ -245,6 +240,8 @@ export function registerScaffoldCommand(program) {
     .option('-o, --output <dir>', 'Output directory')
     .option('--list', 'List available templates')
     .option('--from-plan', 'Scaffold based on Implementation Plan')
+    .option('--dry-run', 'Show what would be created when using --from-plan')
+    .option('--force', 'Overwrite existing files when using --from-plan')
     .option('--page <number>', 'Page number for --list', String(1))
     .option('--limit <number>', 'Items per page for --list', String(DEFAULT_PAGE_SIZE))
     .option('--json', 'Output list data as JSON')
@@ -285,6 +282,7 @@ export function registerScaffoldCommand(program) {
   scaffoldCmd._examples = [
     { command: 'ultra-dex scaffold next15-prisma-clerk', description: 'Scaffold a Next.js + Prisma + Clerk project' },
     { command: 'ultra-dex scaffold --from-plan', description: 'Select template based on implementation plan' },
+    { command: 'ultra-dex scaffold --from-plan --dry-run', description: 'Preview plan-based scaffolding without changes' },
     { command: 'ultra-dex scaffold --list --page 1 --limit 5', description: 'List available templates with pagination' },
   ];
 }
