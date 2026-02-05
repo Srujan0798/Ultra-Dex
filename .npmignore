@@ -1,0 +1,13 @@
+_old/
+docs/
+marketing/
+examples/
+assets/
+website/
+web/
+cloud/
+mobile/
+jetbrains-plugin/
+nvim-plugin/
+node_modules/
+*.log

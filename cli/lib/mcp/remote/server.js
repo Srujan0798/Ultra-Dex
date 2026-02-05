@@ -548,6 +548,10 @@ export async function startRemoteMCPServer(options = {}) {
   return server;
 }
 
+export async function startRemoteServer(options = {}) {
+  return startRemoteMCPServer(options);
+}
+
 /**
  * Register the remote command with Commander
  */
@@ -608,6 +612,7 @@ export function registerRemoteCommand(program) {
 
 export default {
   RemoteMCPServer,
+  startRemoteServer,
   startRemoteMCPServer,
   registerRemoteCommand
 };

@@ -670,5 +670,21 @@ export function registerBillingCommands(program) {
 export default {
   BillingSystem,
   createBillingSystem,
-  registerBillingCommands
+  registerBillingCommands,
+  exportBilling
 };
+
+export async function exportBilling(format = 'json', options = {}) {
+  const billingSystem = await createBillingSystem();
+  const report = await billingSystem.getUsageReport(options);
+  switch (format.toLowerCase()) {
+    case 'json':
+      return JSON.stringify(report, null, 2);
+    case 'csv':
+      return billingSystem.convertToCSV(report);
+    case 'txt':
+      return billingSystem.convertToText(report);
+    default:
+      throw new AppError(`Unsupported format: ${format}`, { code: 'UNSUPPORTED_FORMAT' });
+  }
+}

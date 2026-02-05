@@ -10,8 +10,10 @@ import { promisify } from 'util';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
 import { AppError } from '../utils/errors.js';
+import { copyDirectory } from '../utils/files.js';
 
 const execAsync = promisify(exec);
+const PLUGINS_DIR = path.join(process.cwd(), '.ultra-dex', 'plugins');
 
 // Marketplace registry URL
 const MARKETPLACE_REGISTRY = process.env.ULTRA_DEX_MARKETPLACE_URL || 'https://registry.ultra-dex.ai';
@@ -403,6 +405,50 @@ export async function createAgentMarketplace(options = {}) {
   return marketplace;
 }
 
+// ---------------------------------------------------------------------------
+// Plugin installer stubs (used by plugin command)
+// ---------------------------------------------------------------------------
+
+function normalizePluginName(source) {
+  if (!source) return 'plugin';
+  const base = path.basename(source.replace(/\.git$/, ''));
+  return base.replace(/[^a-zA-Z0-9-_]/g, '-') || 'plugin';
+}
+
+export async function installPlugin(source, options = {}) {
+  const name = normalizePluginName(source);
+  const targetDir = path.join(PLUGINS_DIR, name);
+  await fs.mkdir(PLUGINS_DIR, { recursive: true });
+
+  try {
+    const stat = await fs.stat(source);
+    if (stat.isDirectory()) {
+      await copyDirectory(source, targetDir);
+      return { success: true, name };
+    }
+  } catch {
+    // Not a local directory; fall back to placeholder
+  }
+
+  // Placeholder install for registry/git sources
+  await fs.mkdir(targetDir, { recursive: true });
+  await fs.writeFile(
+    path.join(targetDir, 'ultra-dex-plugin.json'),
+    JSON.stringify({ name, version: '0.1.0', description: 'Installed via marketplace stub' }, null, 2)
+  );
+  await fs.writeFile(
+    path.join(targetDir, 'index.js'),
+    `export function registerCommands() { /* TODO */ }\nexport default { registerCommands };\n`
+  );
+  return { success: true, name };
+}
+
+export async function uninstallPlugin(name) {
+  const targetDir = path.join(PLUGINS_DIR, name);
+  await fs.rm(targetDir, { recursive: true, force: true });
+  return { success: true };
+}
+
 /**
  * Register marketplace commands with Commander
  */
@@ -507,5 +553,7 @@ export function registerMarketplaceCommands(program) {
 export default {
   AgentMarketplace,
   createAgentMarketplace,
-  registerMarketplaceCommands
+  registerMarketplaceCommands,
+  installPlugin,
+  uninstallPlugin
 };

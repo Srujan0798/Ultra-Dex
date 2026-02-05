@@ -14,6 +14,12 @@
 
 > **The Autonomous OS for Software Engineering — The Headless CTO.**
 
+## Current State vs Vision
+- **Current:** CLI orchestration, MCP server, templates, memory, REPL, streaming, sandboxed exec.
+- **Vision:** Fully autonomous pipelines, enterprise workflows, marketplace scale.
+
+Planned items are labeled in docs to avoid overpromising.
+
 ---
 
 ## 🎥 Demo Showcase
