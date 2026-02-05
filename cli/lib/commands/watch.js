@@ -4,7 +4,7 @@ import { watch } from 'fs';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { updateStateFile, computeState } from './state.js';
-import { execSync } from 'child_process';
+import { syncContextWithDiff } from './sync.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
@@ -78,11 +78,11 @@ export async function watchCommand(options) {
 
           await updateStateFile();
 
-          if (autoSync && !filename?.includes('CONTEXT.md') && !filename?.includes('.md')) {
+          if (autoSync && !filename?.includes('CONTEXT.md')) {
             printInfo('🔄 Auto-syncing CONTEXT.md...');
             try {
-              execSync('npx ultra-dex sync --brain', { stdio: 'pipe', timeout: 30000 });
-              printSuccess('   ✅ CONTEXT.md synced with brain');
+              await syncContextWithDiff(process.cwd(), filename);
+              printSuccess('   ✅ CONTEXT.md synced');
             } catch (e) {
               printWarning('   ⚠️  Auto-sync skipped or failed');
             }
