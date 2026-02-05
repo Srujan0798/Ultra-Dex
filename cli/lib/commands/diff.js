@@ -26,7 +26,8 @@ async function parseImplementationPlan() {
     const lines = planContent.split('\n');
     let currentSection = '';
 
-    for (const line of lines) {
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index];
       // Identify sections
       const sectionMatch = line.match(/^##\s+(.*)/);
       if (sectionMatch) {
@@ -44,7 +45,8 @@ async function parseImplementationPlan() {
           section: currentSection,
           description: taskDesc.trim(),
           completed: isCompleted,
-          line: line.trim()
+          line: line.trim(),
+          lineNumber: index + 1
         });
       }
     }
@@ -149,7 +151,8 @@ async function comparePlanVsImplementation() {
       results.missingImplementations.push({
         task: task.description,
         section: task.section,
-        line: task.line
+        line: task.line,
+        lineNumber: task.lineNumber
       });
     }
   }
@@ -187,7 +190,8 @@ function generateDriftReport(results) {
     report.push(chalk.bold.red('❌ MISSING IMPLEMENTATIONS\n'));
     for (const missing of results.missingImplementations.slice(0, 10)) {
       report.push(`  • [${missing.section}] ${missing.task}`);
-      report.push('    Location: IMPLEMENTATION-PLAN.md\n');
+      const location = missing.lineNumber ? `IMPLEMENTATION-PLAN.md:${missing.lineNumber}` : 'IMPLEMENTATION-PLAN.md';
+      report.push(`    Location: ${location}\n`);
     }
 
     if (results.missingImplementations.length > 10) {
@@ -268,7 +272,8 @@ function renderDeltaReportMarkdown(data) {
     lines.push('## Missing Implementations');
     lines.push('');
     data.missingImplementations.forEach((missing) => {
-      lines.push(`- [${missing.section}] ${missing.task}`);
+      const location = missing.lineNumber ? ` (IMPLEMENTATION-PLAN.md:${missing.lineNumber})` : '';
+      lines.push(`- [${missing.section}] ${missing.task}${location}`);
     });
     lines.push('');
   }
@@ -379,13 +384,15 @@ export async function diffCommand(options = {}) {
   try {
     printInfo(chalk.cyan.bold('\n🔍 Ultra-Dex Smart Diff\n'));
 
+    const resolvedReport = options.report || options.output || null;
+
     const results = await comparePlanVsImplementation();
     const exampleComparison = options.withExample ? await compareWithExample(options.withExample) : null;
     const reportData = buildDeltaReportData(results, exampleComparison);
 
     let reportInfo = null;
-    if (options.report) {
-      reportInfo = await writeDeltaReport(options.report, reportData);
+    if (resolvedReport) {
+      reportInfo = await writeDeltaReport(resolvedReport, reportData);
       printSuccess(chalk.green(`✅ Delta report saved to ${reportInfo.path}`));
     }
 
@@ -418,7 +425,8 @@ export async function diffCommand(options = {}) {
       if (reportData.missingImplementations.length > 0) {
         printWarning(chalk.red(`\n❌ Missing Implementations (${reportData.missingImplementations.length})`));
         reportData.missingImplementations.slice(0, 10).forEach((missing) => {
-          printWarning(chalk.red(`  • [${missing.section}] ${missing.task}`));
+          const location = missing.lineNumber ? ` (${missing.lineNumber})` : '';
+          printWarning(chalk.red(`  • [${missing.section}] ${missing.task}${location}`));
         });
       }
     }
@@ -455,6 +463,7 @@ export function registerDiffCommand(program) {
     .option('--with-example <name>', 'Compare with example project')
     .option('--json', 'Output as JSON')
     .option('--report <path>', 'Write delta report to a file (json or md)')
+    .option('--output <path>', 'Alias for --report')
     .action(async (options) => {
       await diffCommand(options);
     });
