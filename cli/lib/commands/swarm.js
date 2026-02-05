@@ -14,6 +14,7 @@ import { theme } from '../ui/theme.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError, NetworkError } from '../utils/errors.js';
+import { filterAgentsByAccess } from '../enterprise/agent-access.js';
 
 // Maximum context size limit (100KB)
 const MAX_CONTEXT_SIZE = 100 * 1024; // 100KB in bytes
@@ -429,8 +430,19 @@ Task: "${task}"`);
   const agentResults = checkpoint ? [...checkpoint.agentResults] : [];
   const agentTimings = {};
   
+  const { role, allowedAgents, restrictedAgents } = await filterAgentsByAccess(
+    AGENT_PIPELINE.map(agent => agent.name)
+  );
+
+  const allowedSet = new Set(allowedAgents.map(name => name.toLowerCase()));
+  const allowedPipeline = AGENT_PIPELINE.filter(agent => allowedSet.has(agent.name.toLowerCase()));
+
+  if (restrictedAgents.length > 0) {
+    printWarning(`🔒 Role-based access (${role}) skipped ${restrictedAgents.length} agent(s) in swarm pipeline.`);
+  }
+
   // Filter out already completed agents from pipeline
-  const remainingPipeline = AGENT_PIPELINE.filter(a => !completedAgents.has(a.name));
+  const remainingPipeline = allowedPipeline.filter(a => !completedAgents.has(a.name));
   
   if (remainingPipeline.length === 0) {
     printSuccess('✓ All agents already completed!');

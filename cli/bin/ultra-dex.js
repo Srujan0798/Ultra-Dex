@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
 import { formatInfo, formatWarning, formatSuccess } from '../lib/utils/status.js';
+import { recordUsageEventSync } from '../lib/enterprise/usage.js';
 
 // Initialize monitoring and configuration systems
 import { monitoring } from '../lib/utils/monitoring.js';
@@ -148,6 +149,38 @@ import { startInteractiveMode } from '../lib/ui/interactive.js';
 import { theme, ultraGradient } from '../lib/ui/theme.js';
 
 const program = new Command();
+
+let commandStart = null;
+program.hook('preAction', (thisCommand, actionCommand) => {
+  commandStart = Date.now();
+  let user = null;
+  try {
+    user = configManager.get('user', null);
+  } catch {
+    user = null;
+  }
+  recordUsageEventSync({
+    stage: 'start',
+    command: actionCommand?.name?.(),
+    args: process.argv.slice(2),
+    user: user?.username || null,
+    role: user?.role || null,
+    cwd: process.cwd(),
+    pid: process.pid
+  });
+});
+
+program.hook('postAction', (thisCommand, actionCommand) => {
+  const durationMs = commandStart ? Date.now() - commandStart : null;
+  recordUsageEventSync({
+    stage: 'end',
+    command: actionCommand?.name?.(),
+    durationMs,
+    success: true,
+    cwd: process.cwd()
+  });
+  commandStart = null;
+});
 
 // Custom Help Configuration - Professional Purple Edition
 program.configureHelp({

@@ -5,6 +5,7 @@ import { validateSafePath } from '../utils/validation.js';
 import { pathExists } from '../utils/files.js';
 import { githubWebUrl } from '../config/urls.js';
 import { runQualityScan } from '../quality/scanner.js';
+import { exportAuditLog } from '../governance/audit.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
@@ -20,8 +21,28 @@ export function registerAuditCommand(program) {
     .option('-d, --dir <directory>', 'Project directory to audit', '.')
     .option('--report', 'Generate a detailed JSON report')
     .option('--fix', 'Attempt to fix missing documentation files')
+    .option('--governance-export [format]', 'Export governance audit log (json|csv)', 'json')
+    .option('--governance-since <date>', 'Export governance events since date (ISO)')
+    .option('--governance-until <date>', 'Export governance events until date (ISO)')
+    .option('--governance-output <file>', 'Write governance export to file')
     .action(async (options) => {
       try {
+        if (options.governanceExport) {
+          const exportResult = await exportAuditLog({
+            format: options.governanceExport,
+            since: options.governanceSince,
+            until: options.governanceUntil,
+            outputPath: options.governanceOutput
+          });
+
+          if (exportResult.outputPath) {
+            printSuccess(`\n✅ Governance audit exported to ${exportResult.outputPath} (${exportResult.count} events)\n`);
+          } else {
+            printInfo(exportResult.data);
+          }
+          return;
+        }
+
         printInfo('\n🔍 Ultra-Dex Project Audit\n');
 
         const dirValidation = validateSafePath(options.dir, 'Project directory');

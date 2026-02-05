@@ -113,3 +113,57 @@ export async function generateComplianceReport({ since, until, writeToFile = fal
   return summary;
 }
 
+function toCsv(rows) {
+  if (!rows.length) return '';
+  const headers = Object.keys(rows[0]);
+  const escape = (value) => {
+    if (value === null || value === undefined) return '';
+    const str = String(value);
+    if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+  const lines = [headers.join(',')];
+  for (const row of rows) {
+    lines.push(headers.map(h => escape(row[h])).join(','));
+  }
+  return lines.join('\n');
+}
+
+export async function exportAuditLog({ format = 'json', since, until, outputPath } = {}) {
+  const events = await readAuditLog();
+  const start = since ? new Date(since).getTime() : null;
+  const end = until ? new Date(until).getTime() : null;
+
+  const filtered = events.filter(event => {
+    const ts = new Date(event.timestamp).getTime();
+    if (start && ts < start) return false;
+    if (end && ts > end) return false;
+    return true;
+  });
+
+  let payload = '';
+  if (format === 'csv') {
+    payload = toCsv(filtered);
+  } else {
+    payload = JSON.stringify(
+      {
+        generatedAt: toIso(),
+        count: filtered.length,
+        events: filtered
+      },
+      null,
+      2
+    );
+  }
+
+  if (outputPath) {
+    const dir = path.dirname(outputPath);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(outputPath, payload, 'utf8');
+    return { outputPath, count: filtered.length, format };
+  }
+
+  return { data: payload, count: filtered.length, format };
+}

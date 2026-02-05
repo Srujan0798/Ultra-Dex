@@ -10,6 +10,7 @@ import { pathExists } from '../utils/files.js';
 import { showAgentsTable } from '../utils/tables.js';
 import { validateSafePath } from '../utils/validation.js';
 import { marketplaceClient } from '../marketplace/client.js';
+import { authorizeAgentAccess, filterAgentsByAccess } from '../enterprise/agent-access.js';
 
 export const AGENTS = [
   { name: 'architect', description: 'Manifest reality from a raw idea', file: '0-orchestration/architect.md', tier: 'Orchestration' },
@@ -464,24 +465,37 @@ async function listAgents(builtinOnly = false) {
   const totalAgents = AGENTS.length + customAgents.length;
   const header = builtinOnly ? 'Built-in Agents' : `Ultra-Dex AI Agents (${totalAgents} Total)`;
   console.log(chalk.bold(`\n🤖 ${header}\n`));
-  
-  const agentsForTable = AGENTS.map(agent => ({
+
+  const candidateNames = [
+    ...AGENTS.map(agent => agent.name),
+    ...customAgents
+  ];
+  const { role, allowedAgents, restrictedAgents } = await filterAgentsByAccess(candidateNames);
+  const allowedSet = new Set(allowedAgents.map(name => name.toLowerCase()));
+
+  const agentsForTable = AGENTS.filter(agent => allowedSet.has(agent.name.toLowerCase())).map(agent => ({
     tier: agent.tier,
     name: agent.name,
     status: 'ready'
   }));
 
   if (customAgents.length > 0) {
-    customAgents.forEach(name => {
-      agentsForTable.push({
-        tier: 'Custom',
-        name: name,
-        status: 'ready'
+    customAgents
+      .filter(name => allowedSet.has(name.toLowerCase()))
+      .forEach(name => {
+        agentsForTable.push({
+          tier: 'Custom',
+          name: name,
+          status: 'ready'
+        });
       });
-    });
   }
 
   showAgentsTable(agentsForTable);
+
+  if (restrictedAgents.length > 0) {
+    console.log(chalk.yellow(`\n🔒 Role-based access (${role}) hides ${restrictedAgents.length} agent(s).`));
+  }
 
   console.log('\n' + chalk.bold('Usage:'));
   console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
@@ -491,6 +505,12 @@ async function listAgents(builtinOnly = false) {
 }
 
 async function showAgent(name) {
+  const access = await authorizeAgentAccess(name);
+  if (!access.allowed) {
+    console.log(chalk.red(`\n❌ Access denied: Role "${access.role}" cannot use @${name}.`));
+    return;
+  }
+
   const agent = AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
   if (!agent) {
     const custom = await getCustomAgentPath(name);

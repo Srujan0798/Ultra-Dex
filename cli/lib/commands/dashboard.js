@@ -10,6 +10,7 @@ import { loadState } from './state.js';
 import { buildGraph } from '../utils/graph.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
+import { getUsageSummary } from '../enterprise/usage.js';
 
 // Global clients for SSE
 const clients = new Set();
@@ -48,7 +49,28 @@ async function getGitInfo() {
   }
 }
 
-export function generateDashboardHTML(state, gitInfo, graphSummary) {
+export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary) {
+  const usage = usageSummary || {
+    totalCommands: 0,
+    uniqueCommands: 0,
+    last24h: 0,
+    last7d: 0,
+    errorCount: 0,
+    avgDurationMs: 0,
+    topCommands: []
+  };
+  const topCommand = usage.topCommands[0]?.name || 'n/a';
+
+  const usageSummaryHTML = `
+      <div class="card" style="margin-top: 1rem">
+        <h3>USAGE ANALYTICS</h3>
+        <div style="color: var(--accent)">> commands 7d: ${usage.last7d}</div>
+        <div style="color: var(--success)">> commands 24h: ${usage.last24h}</div>
+        <div style="color: #666">> top cmd: ${topCommand}</div>
+        <div style="color: #666">> errors: ${usage.errorCount}</div>
+        <div style="color: #666">> avg runtime: ${usage.avgDurationMs}ms</div>
+      </div>
+  `;
   const phasesHTML = state.phases.map(phase => {
     const statusClass = phase.status;
     const progress = (phase.steps.filter(s => s.status === 'completed').length / phase.steps.length) * 100;
@@ -226,6 +248,7 @@ export function generateDashboardHTML(state, gitInfo, graphSummary) {
         <div style="color: var(--accent)">> graph: ${graphSummary ? graphSummary.nodes + ' nodes' : 'scanning...'}</div>
         <div style="color: #666">> uptime: <span id="uptime">0s</span></div>
       </div>
+      ${usageSummaryHTML}
     </div>
   </div>
 
@@ -666,7 +689,8 @@ export function registerDashboardCommand(program) {
           try {
             const state = await loadState();
             const gitInfo = await getGitInfo();
-            const html = generateDashboardHTML(state, gitInfo, graphSummary);
+            const usageSummary = await getUsageSummary({ windowDays: 7 });
+            const html = generateDashboardHTML(state, gitInfo, graphSummary, usageSummary);
             res.writeHead(200, {
               'Content-Type': 'text/html',
               'Content-Disposition': 'attachment; filename="ultra-dex-report.html"'
@@ -681,7 +705,8 @@ export function registerDashboardCommand(program) {
 
         const state = await loadState();
         const gitInfo = await getGitInfo();
-        const html = generateDashboardHTML(state, gitInfo, graphSummary);
+        const usageSummary = await getUsageSummary({ windowDays: 7 });
+        const html = generateDashboardHTML(state, gitInfo, graphSummary, usageSummary);
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(html);
       });

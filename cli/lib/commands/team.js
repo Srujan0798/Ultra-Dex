@@ -6,11 +6,12 @@ import { Command } from 'commander';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { hasPermission, PERMISSIONS } from '../auth/rbac.js';
 import { configManager } from '../utils/config-manager.js';
+import { DEFAULT_AGENT_ACCESS } from '../enterprise/agent-access.js';
 
 const TEAM_DIR = '.ultra-dex';
 const TEAM_FILE = 'team.json';
 const TEAM_PATH = path.resolve(process.cwd(), TEAM_DIR, TEAM_FILE);
-const VALID_ROLES = ['admin', 'member', 'viewer'];
+const VALID_ROLES = ['admin', 'maintainer', 'member', 'viewer'];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normalizeEmail(email) {
@@ -119,6 +120,9 @@ function buildInitCommand() {
           name: answers.name.trim(),
           description: answers.description.trim(),
           members: [],
+          workspaces: [],
+          activeWorkspace: null,
+          agentAccess: JSON.parse(JSON.stringify(DEFAULT_AGENT_ACCESS)),
           createdAt: new Date().toISOString(),
         };
 
@@ -323,6 +327,184 @@ function buildConfigCommand() {
   return command;
 }
 
+function buildWorkspaceCommand() {
+  const command = new Command('workspace');
+  command
+    .description('Manage team workspaces')
+    .command('add [path]')
+    .description('Add current or specified directory to team workspaces')
+    .action(async (dir) => {
+      try {
+        await checkPermission(PERMISSIONS.MANAGE_TEAM);
+        const targetDir = path.resolve(dir || process.cwd());
+        const name = path.basename(targetDir);
+
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
+
+        team.workspaces = team.workspaces || [];
+        team.workspaces = team.workspaces.filter(w => w.path !== targetDir && w.name !== name);
+        team.workspaces.push({
+          name,
+          path: targetDir,
+          addedAt: new Date().toISOString()
+        });
+        if (!team.activeWorkspace) {
+          team.activeWorkspace = targetDir;
+        }
+
+        await saveTeamConfig(team);
+        printSuccess(chalk.green(`\n✅ Team workspace added: ${name}\n`));
+      } catch (error) {
+        printError(chalk.red(`Workspace add failed: ${error.message}`));
+      }
+    });
+
+  command
+    .command('list')
+    .description('List team workspaces')
+    .action(async () => {
+      try {
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
+
+        const workspaces = team.workspaces || [];
+        if (!workspaces.length) {
+          printWarning(chalk.yellow('\nNo team workspaces configured.\n'));
+          return;
+        }
+
+        printInfo(chalk.bold('\nTeam Workspaces\n'));
+        workspaces.forEach(ws => {
+          const isActive = team.activeWorkspace === ws.path;
+          const prefix = isActive ? chalk.green('➜ ') : '  ';
+          printInfo(`${prefix}${chalk.bold(ws.name)} ${isActive ? chalk.green('(active)') : ''}`);
+          printInfo(`    Path: ${chalk.gray(ws.path)}`);
+          printInfo(`    Added: ${chalk.gray(ws.addedAt || '-')}`);
+          printInfo('');
+        });
+      } catch (error) {
+        if (error.message !== 'Team not initialized') {
+          printError(chalk.red(`Workspace list failed: ${error.message}`));
+        }
+      }
+    });
+
+  command
+    .command('remove <path_or_name>')
+    .description('Remove a team workspace')
+    .action(async (target) => {
+      try {
+        await checkPermission(PERMISSIONS.MANAGE_TEAM);
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
+
+        const initialLen = team.workspaces?.length || 0;
+        team.workspaces = (team.workspaces || []).filter(w => w.path !== path.resolve(target) && w.name !== target);
+
+        if (team.workspaces.length < initialLen) {
+          if (team.activeWorkspace && team.activeWorkspace === path.resolve(target)) {
+            team.activeWorkspace = null;
+          }
+          await saveTeamConfig(team);
+          printSuccess(chalk.green(`\n✅ Removed workspace: ${target}\n`));
+        } else {
+          printWarning(chalk.yellow(`\nWorkspace not found: ${target}\n`));
+        }
+      } catch (error) {
+        printError(chalk.red(`Workspace remove failed: ${error.message}`));
+      }
+    });
+
+  command
+    .command('switch <path_or_name>')
+    .description('Set the active team workspace')
+    .action(async (target) => {
+      try {
+        await checkPermission(PERMISSIONS.MANAGE_TEAM);
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
+
+        const workspaces = team.workspaces || [];
+        const match = workspaces.find(w => w.name === target || w.path === path.resolve(target));
+        if (!match) {
+          printError(chalk.red(`\n❌ Workspace not found: ${target}\n`));
+          return;
+        }
+
+        team.activeWorkspace = match.path;
+        await saveTeamConfig(team);
+        printSuccess(chalk.green(`\n✅ Active team workspace set to ${match.name}\n`));
+      } catch (error) {
+        printError(chalk.red(`Workspace switch failed: ${error.message}`));
+      }
+    });
+
+  return command;
+}
+
+function buildAgentAccessCommand() {
+  const command = new Command('agents');
+  command
+    .description('Manage role-based agent access')
+    .command('list')
+    .description('List agent access rules by role')
+    .action(async () => {
+      try {
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
+
+        const access = team.agentAccess || DEFAULT_AGENT_ACCESS;
+        printInfo(chalk.bold('\nAgent Access Rules\n'));
+        Object.entries(access).forEach(([role, agents]) => {
+          const list = Array.isArray(agents) ? agents.join(', ') : String(agents || '');
+          printInfo(`${chalk.cyan(role)}: ${chalk.gray(list || '-')}`);
+        });
+        printInfo('');
+      } catch (error) {
+        if (error.message !== 'Team not initialized') {
+          printError(chalk.red(`Agent access list failed: ${error.message}`));
+        }
+      }
+    });
+
+  command
+    .command('set <role> <agents>')
+    .description('Set allowed agents for a role (comma-separated or *)')
+    .action(async (role, agents) => {
+      try {
+        await checkPermission(PERMISSIONS.MANAGE_TEAM);
+        const normalizedRole = role.toLowerCase();
+        if (!VALID_ROLES.includes(normalizedRole)) {
+          printError(chalk.red(`\n❌ Invalid role. Use: ${VALID_ROLES.join(', ')}.\n`));
+          return;
+        }
+
+        const team = await loadTeamConfig();
+        requireTeamConfig(team);
+
+        const parsedAgents = agents
+          .split(',')
+          .map(a => a.trim())
+          .filter(Boolean);
+
+        if (parsedAgents.length === 0) {
+          printError(chalk.red('\n❌ No agents provided.\n'));
+          return;
+        }
+
+        team.agentAccess = team.agentAccess || JSON.parse(JSON.stringify(DEFAULT_AGENT_ACCESS));
+        team.agentAccess[normalizedRole] = parsedAgents;
+        await saveTeamConfig(team);
+        printSuccess(chalk.green(`\n✅ Updated agent access for ${normalizedRole}.\n`));
+      } catch (error) {
+        printError(chalk.red(`Agent access update failed: ${error.message}`));
+      }
+    });
+
+  return command;
+}
+
 export function registerTeamCommand(program) {
   const team = program
     .command('team')
@@ -333,4 +515,6 @@ export function registerTeamCommand(program) {
   team.addCommand(buildListCommand());
   team.addCommand(buildRemoveCommand());
   team.addCommand(buildConfigCommand());
+  team.addCommand(buildWorkspaceCommand());
+  team.addCommand(buildAgentAccessCommand());
 }
