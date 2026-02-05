@@ -1,133 +1,193 @@
+/**
+ * Interactive REPL for Ultra-Dex
+ * Provides a readline-based REPL with session persistence and slash commands
+ */
+
 import readline from 'readline';
+import fs from 'fs/promises';
+import path from 'path';
+import { homedir } from 'os';
 import chalk from 'chalk';
-import { getDefaultProvider, createProvider } from '../providers/index.js';
-import { streamWithProvider, getStreamingProviders } from '../providers/streaming.js';
-import { createSession, getSession, saveSession } from './session.js';
-import { createSlashCommands, executeSlashCommand } from './commands.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import REPLCommands from './commands.js';
+import { SessionManager } from './session.js';
 
-function buildPrompt(session, input) {
-  const history = session.messages.slice(-6).map((msg) => `${msg.role}: ${msg.content}`).join('\n');
-  return `${history}\nuser: ${input}\nassistant:`;
-}
+const HISTORY_FILE = path.join(homedir(), '.ultra-dex', 'repl-history.json');
 
-async function processAIInput(input, session) {
-  const provider = session.config?.provider || getDefaultProvider() || 'openai';
-  const model = session.config?.model || null;
-  const systemPrompt = 'You are Ultra-Dex REPL, a fast and helpful engineering assistant.';
-  const prompt = buildPrompt(session, input);
-
-  session.messages.push({ role: 'user', content: input });
-
-  process.stdout.write(chalk.dim('\n🤖 '));
-  let responseText = '';
-
+async function loadHistory() {
   try {
-    const streamingProviders = getStreamingProviders();
-    if (streamingProviders.includes(provider)) {
-      const streamed = await streamWithProvider({
-        providerId: provider,
-        model,
-        systemPrompt,
-        prompt,
-        onToken: (token) => process.stdout.write(token)
-      });
-      responseText = streamed.text;
-      process.stdout.write('\n');
-    } else {
-      const fallbackProvider = createProvider(provider);
-      const result = await fallbackProvider.generate(systemPrompt, prompt);
-      responseText = result.content;
-      process.stdout.write(`${responseText}\n`);
-    }
-  } catch (error) {
-    process.stdout.write(chalk.yellow('Streaming unavailable, falling back to echo.\n'));
-    responseText = `Echo: ${input}`;
+    const historyData = await fs.readFile(HISTORY_FILE, 'utf8');
+    const history = JSON.parse(historyData);
+    return Array.isArray(history) ? history : [];
+  } catch {
+    return [];
   }
-
-  session.messages.push({ role: 'assistant', content: responseText });
 }
 
-// Main REPL function
+async function saveHistory(history) {
+  try {
+    const dir = path.dirname(HISTORY_FILE);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(HISTORY_FILE, JSON.stringify(history.slice(-200), null, 2));
+  } catch (error) {
+    printWarning(chalk.yellow(`⚠️  Could not save history: ${error.message}`));
+  }
+}
+
+async function loadLatestSession(sessionDir) {
+  try {
+    const files = await fs.readdir(sessionDir);
+    const sessionFiles = files.filter((f) => f.endsWith('.json'));
+    if (sessionFiles.length === 0) return null;
+
+    const sessionStats = await Promise.all(sessionFiles.map(async (file) => {
+      const fullPath = path.join(sessionDir, file);
+      const stat = await fs.stat(fullPath);
+      return { file, fullPath, mtime: stat.mtimeMs };
+    }));
+
+    sessionStats.sort((a, b) => b.mtime - a.mtime);
+    const latest = sessionStats[0];
+    const data = JSON.parse(await fs.readFile(latest.fullPath, 'utf8'));
+    return data;
+  } catch (error) {
+    printWarning(chalk.yellow(`⚠️  Could not load latest session: ${error.message}`));
+    return null;
+  }
+}
+
+function createCompleter(commands) {
+  const completions = new Set();
+  commands.forEach((cmd) => completions.add(`/${cmd}`));
+  completions.add('/exit');
+  completions.add('/quit');
+  completions.add('generate');
+  completions.add('plan');
+  completions.add('swarm');
+  completions.add('run');
+  completions.add('brain');
+  completions.add('state');
+  completions.add('context');
+
+  return function completer(line) {
+    const hits = Array.from(completions).filter((c) => c.startsWith(line));
+    return [hits.length ? hits : Array.from(completions), line];
+  };
+}
+
 export async function startREPL(options = {}) {
-  // Load or create session
-  let session;
-  if (options.continue) {
-    session = await getSession('latest');
-    if (session) {
-      console.log(chalk.green(`\n📂 Resumed session: ${session.id}`));
+  const { continue: continueLast = false } = options;
+  const sessionManager = new SessionManager();
+  await sessionManager.initialize();
+
+  const replContext = {
+    history: [],
+    context: {
+      project: null,
+      lastResult: null,
+      variables: new Map()
+    },
+    sessionDir: sessionManager.sessionsDir,
+    sessionManager
+  };
+
+  const replCommands = new REPLCommands(replContext);
+  const commandList = Array.from(replCommands.commands.keys());
+
+  replContext.history = await loadHistory();
+
+  if (continueLast) {
+    const latestSession = await loadLatestSession(replContext.sessionDir);
+    if (latestSession?.data) {
+      replContext.history = latestSession.data.history || replContext.history;
+      replContext.context = latestSession.data.context || replContext.context;
+      replContext.context.variables = new Map(Object.entries(latestSession.data.variables || {}));
+      printSuccess(chalk.green(`✅ Resumed session: ${latestSession.name || latestSession.id}`));
     }
   }
-  
-  if (!session) {
-    session = await createSession({
-      provider: getDefaultProvider() || 'openai',
-      model: null
-    });
-    console.log(chalk.green(`\n✨ New session created: ${session.id}`));
-  }
 
-  // Create readline interface
+  printInfo(chalk.cyan.bold('\n⚡ Ultra-Dex Interactive REPL\n'));
+  printInfo(chalk.gray('Type /help for commands. Use """ to start multi-line input.'));
+  printInfo(chalk.gray('Use /save <name> to persist sessions. Ctrl+C to cancel input.\n'));
+
+  let multiLineBuffer = null;
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: chalk.cyan.bold('ultra-dex> '),
+    prompt: chalk.blue('ultra-dex> '),
+    completer: createCompleter(commandList)
   });
 
-  // Welcome message
-  console.log(chalk.bold.hex('#7c3aed')('\n🚀 Ultra-Dex Interactive Mode\n'));
-  console.log(chalk.dim('Type /help for commands, /exit to quit\n'));
-  console.log(chalk.gray('Session ID:'), chalk.cyan(session.id), '\n');
+  if (replContext.history.length > 0) {
+    rl.history = [...replContext.history].reverse();
+  }
 
-  const slashCommands = createSlashCommands({ session, rl });
+  const handleSlashCommand = async (input) => {
+    const [commandName, ...args] = input.slice(1).trim().split(/\s+/);
+    if (!commandName) return;
 
-  // Start prompt
-  rl.prompt();
+    if (commandName === 'exit' || commandName === 'quit') {
+      rl.close();
+      return;
+    }
 
-  // Handle input
-  rl.on('line', async (input) => {
-    const trimmed = input.trim();
-    
-    if (!trimmed) {
+    const handler = replCommands.commands.get(commandName);
+    if (!handler) {
+      printError(chalk.red(`❌ Unknown command: /${commandName}. Use /help for available commands.`));
+      return;
+    }
+
+    await handler(args);
+  };
+
+  rl.on('line', async (line) => {
+    let input = line.trimEnd();
+
+    if (input === '"""' && multiLineBuffer === null) {
+      multiLineBuffer = '';
+      rl.setPrompt(chalk.blue('... '));
       rl.prompt();
       return;
     }
 
-    try {
-      if (trimmed.startsWith('/')) {
-        // Execute slash command
-        const shouldContinue = await executeSlashCommand(trimmed, session, rl, slashCommands);
-        if (!shouldContinue && trimmed === '/exit') {
-          return; // Exit handled in command
-        }
+    if (multiLineBuffer !== null) {
+      if (input.includes('"""')) {
+        const [before] = input.split('"""');
+        multiLineBuffer += before;
+        input = multiLineBuffer;
+        multiLineBuffer = null;
+        rl.setPrompt(chalk.blue('ultra-dex> '));
       } else {
-        // Process as AI input
-        await processAIInput(trimmed, session);
+        multiLineBuffer += `${line}\n`;
+        rl.prompt();
+        return;
       }
-      
-      // Auto-save after each interaction
-      await saveSession(session);
-    } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+    }
+
+    if (!input.trim()) {
+      rl.prompt();
+      return;
+    }
+
+    replContext.history.push(input.trim());
+    await saveHistory(replContext.history);
+
+    if (input.startsWith('/')) {
+      await handleSlashCommand(input);
+    } else {
+      printInfo(chalk.gray('Received input. Use /help for commands or prefix with /.'));
+      replContext.context.lastResult = input;
     }
 
     rl.prompt();
   });
 
-  // Handle exit
-  rl.on('close', async () => {
-    await saveSession(session);
-    console.log(chalk.green('\n👋 Session saved. Goodbye!\n'));
+  rl.on('close', () => {
+    printInfo(chalk.green('\n👋 Exiting Ultra-Dex REPL'));
     process.exit(0);
   });
 
-  // Handle Ctrl+C gracefully
-  process.on('SIGINT', async () => {
-    console.log(chalk.yellow('\n\n⚠️ Interrupted'));
-    await saveSession(session);
-    console.log(chalk.green('✅ Session saved'));
-    process.exit(0);
-  });
+  rl.prompt();
+  return rl;
 }
-
-// Export for CLI integration
-export { createSession, getSession, saveSession };
