@@ -101,7 +101,8 @@ import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
 import { registerAlignCommand, registerStatusCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
-import { registerCheckCommand, registerBatchCommand, registerPipelineCommand } from '../lib/commands/advanced.js';
+import { registerCheckCommand } from '../lib/commands/check.js';
+import { registerBatchCommand, registerPipelineCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
 import { registerVerifyCommand } from '../lib/commands/verify.js';
 import { registerPluginCommand } from '../lib/commands/plugin.js';
@@ -146,7 +147,7 @@ import { registerCloudCommand } from '../lib/commands/cloud.js';
 import { registerApiCommand } from '../lib/commands/api.js';
 import { registerAutonomousCommand } from '../lib/commands/autonomous.js';
 import { registerPTYCommands } from '../lib/commands/pty.js';
-import { startInteractiveMode } from '../lib/ui/interactive.js';
+import { startREPL } from '../lib/repl/index.js';
 import { theme, ultraGradient } from '../lib/ui/theme.js';
 
 const program = new Command();
@@ -389,12 +390,15 @@ try {
   console.error(chalk.red('Failed to activate plugins:'), error.message);
 }
 
-// Launch interactive mode if no arguments provided
-if (process.argv.length <= 2) {
+const rawArgs = process.argv.slice(2);
+const isReplOnly = rawArgs.length === 0 || (rawArgs.length === 1 && rawArgs[0] === '--continue');
+
+// Launch REPL mode if no arguments provided (or --continue only)
+if (isReplOnly) {
   try {
-    await startInteractiveMode();
+    await startREPL({ continue: rawArgs.includes('--continue') });
   } catch (error) {
-    console.error(chalk.red('Interactive mode failed:'), error.message);
+    console.error(chalk.red('REPL mode failed:'), error.message);
   }
 } else {
   // Add 'Did you mean?' logic for typos
