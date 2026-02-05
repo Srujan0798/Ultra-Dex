@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { doomsdayTheme } from '../themes/doomsday.js';
 
 export const themes = {
   default: {
@@ -27,6 +28,15 @@ export const themes = {
     warning: '#eab308',
     error: '#ef4444',
     dim: '#6b7280'
+  },
+  doomsday: {
+    primary: doomsdayTheme.primary,
+    secondary: doomsdayTheme.secondary,
+    accent: doomsdayTheme.accent,
+    success: '#f59e0b',
+    warning: '#f97316',
+    error: '#dc2626',
+    dim: '#4b5563'
   }
 };
 

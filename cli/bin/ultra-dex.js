@@ -111,6 +111,9 @@ import { registerVoiceCommand } from '../lib/commands/voice.js';
 import { registerAuthCommand } from '../lib/commands/auth.js';
 import { registerSetupCommand } from '../lib/commands/setup.js';
 import { registerForgeCommand } from '../lib/commands/forge.js';
+import { registerHelpCommand } from '../lib/commands/help.js';
+import { registerCostEstimatorCommand } from '../lib/ops/cost-estimator.js';
+import { registerDataGovernanceCommand } from '../lib/governance/data-policy.js';
 
 // v3.0 Commands
 import { swarmCommand } from '../lib/commands/swarm.js';
@@ -448,6 +451,9 @@ registerVoiceCommand(program);
 registerAuthCommand(program);
 registerSetupCommand(program);
 registerForgeCommand(program);
+registerHelpCommand(program);
+registerCostEstimatorCommand(program);
+registerDataGovernanceCommand(program);
 
 // Monitoring commands (v3.4.3) - note: status uses state.js, sys-config uses monitoring.js
 registerSystemConfigCommand(program);

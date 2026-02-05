@@ -91,6 +91,9 @@ export const AGENTS = {
     role: 'Architecture & tech stack decisions',
     invocation: '@cto',
     file: '1-leadership/cto.md',
+    persona: 'Iron Man',
+    emoji: '🦾',
+    catchphrase: 'I am the architecture.',
     capabilities: ['architecture_design', 'tech_selection', 'system_design'],
     canInvoke: ['research']
   },
@@ -101,6 +104,9 @@ export const AGENTS = {
     role: 'Task breakdown & sprint planning',
     invocation: '@planner',
     file: '1-leadership/planner.md',
+    persona: 'Nick Fury',
+    emoji: '🕶️',
+    catchphrase: 'I have a plan.',
     capabilities: ['task_breakdown', 'estimation', 'prioritization'],
     canInvoke: []
   },
@@ -123,6 +129,9 @@ export const AGENTS = {
     role: 'API & server implementation',
     invocation: '@backend',
     file: '2-development/backend.md',
+    persona: 'Thor',
+    emoji: '⚡',
+    catchphrase: 'Bring me the API!',
     capabilities: ['api_development', 'business_logic', 'integrations'],
     canInvoke: ['database']
   },
@@ -133,6 +142,9 @@ export const AGENTS = {
     role: 'UI & component implementation',
     invocation: '@frontend',
     file: '2-development/frontend.md',
+    persona: 'Spider-Man',
+    emoji: '🕸️',
+    catchphrase: 'Your friendly neighborhood UI.',
     capabilities: ['ui_development', 'components', 'state_management'],
     canInvoke: []
   },
@@ -165,6 +177,9 @@ export const AGENTS = {
     role: 'Security audits & vulnerability fixes',
     invocation: '@security',
     file: '3-security/security.md',
+    persona: 'Captain America',
+    emoji: '🛡️',
+    catchphrase: 'I can do this all day.',
     capabilities: ['security_audit', 'vulnerability_detection', 'hardening'],
     canInvoke: []
   },
