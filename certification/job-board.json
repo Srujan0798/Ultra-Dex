@@ -1,0 +1,7 @@
+{
+  "name": "Ultra-Dex Job Board",
+  "description": "Marketplace for certified Ultra-Dex talent and teams.",
+  "categories": ["Agent Engineering", "AI Ops", "Security", "Product"],
+  "integrations": ["Greenhouse", "Lever", "Ashby"],
+  "status": "beta"
+}

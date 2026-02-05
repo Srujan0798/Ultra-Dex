@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "tracks": {
+    "developer": {
+      "levels": ["Associate", "Professional", "Expert"],
+      "requirements": ["Core Agent Proficiency", "System Design", "Security Practices"],
+      "assessment": "Lab + Interview"
+    },
+    "company": {
+      "levels": ["Certified", "Partner", "Elite"],
+      "requirements": ["Governance", "Compliance", "Agent Ops"],
+      "assessment": "Audit + Case Study"
+    }
+  },
+  "skills": [
+    "Prompt Engineering",
+    "Agent Orchestration",
+    "Security Review",
+    "Deployment Automation"
+  ]
+}
