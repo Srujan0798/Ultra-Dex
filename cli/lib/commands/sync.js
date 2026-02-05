@@ -13,7 +13,7 @@ import { validateSafePath } from '../utils/validation.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 export function registerSyncCommand(program) {
-  program
+  const syncCmd = program
     .command('sync')
     .description('Synchronize project state and graph (God Mode Sync)')
     .option('-d, --dir <directory>', 'Project directory to sync', '.')
@@ -22,42 +22,64 @@ export function registerSyncCommand(program) {
     .option('--brain', 'Auto-update CONTEXT.md from codebase analysis (eliminates human middleware)')
     .option('--target <path>', 'Sync target (local folder or s3-like)', '.ultra/sync')
     .action(async (options) => {
-      printInfo(chalk.cyan('\n🔄 Ultra-Dex State Sync\n'));
+      try {
+        printInfo(chalk.cyan('\n🔄 Ultra-Dex State Sync\n'));
 
-      const dirValidation = validateSafePath(options.dir, 'Project directory');
-      if (dirValidation !== true) {
-        printError(chalk.red(dirValidation));
+        const dirValidation = validateSafePath(options.dir, 'Project directory');
+        if (dirValidation !== true) {
+          printError(chalk.red(dirValidation));
+          process.exit(1);
+        }
+
+        const targetValidation = validateSafePath(options.target, 'Sync target');
+        if (targetValidation !== true) {
+          printError(chalk.red(targetValidation));
+          process.exit(1);
+        }
+
+        if (options.push && options.pull) {
+          printError(chalk.red('Choose either --push or --pull, not both.'));
+          process.exit(1);
+        }
+
+        const projectDir = path.resolve(options.dir);
+
+        // Brain Mode: Full autonomous context update
+        if (options.brain) {
+          await handleBrainSync(projectDir);
+          return;
+        }
+
+        // 1. Snapshot Context (Updates CONTEXT.md)
+        const syncResult = await snapshotContext(projectDir);
+        printSuccess(chalk.green(`  ✅ Context Snapshot Complete (${syncResult.summary.fileCount} Files scanned)`));
+        if (syncResult.updated) {
+          printInfo(chalk.gray('     CONTEXT.md updated with latest project structure.'));
+        }
+
+        const syncTarget = path.resolve(projectDir, options.target);
+        await fs.mkdir(syncTarget, { recursive: true });
+
+        if (options.push) {
+          await handlePush(projectDir, syncTarget);
+        } else if (options.pull) {
+          await handlePull(projectDir, syncTarget);
+        } else {
+          // Default: Bidirectional Sync (Simplified for Phase 2.1)
+          printWarning(chalk.yellow('\nDefaulting to PUSH local state to target.'));
+          await handlePush(projectDir, syncTarget);
+        }
+      } catch (error) {
+        printError(chalk.red(`Sync failed: ${error.message}`));
         process.exit(1);
       }
-
-      const projectDir = path.resolve(options.dir);
-
-      // Brain Mode: Full autonomous context update
-      if (options.brain) {
-        await handleBrainSync(projectDir);
-        return;
-      }
-
-      // 1. Snapshot Context (Updates CONTEXT.md)
-      const syncResult = await snapshotContext(projectDir);
-      printSuccess(chalk.green(`  ✅ Context Snapshot Complete (${syncResult.summary.fileCount} Files scanned)`));
-      if (syncResult.updated) {
-        printInfo(chalk.gray('     CONTEXT.md updated with latest project structure.'));
-      }
-
-      const syncTarget = path.resolve(projectDir, options.target);
-      await fs.mkdir(syncTarget, { recursive: true });
-
-      if (options.push) {
-        await handlePush(projectDir, syncTarget);
-      } else if (options.pull) {
-        await handlePull(projectDir, syncTarget);
-      } else {
-        // Default: Bidirectional Sync (Simplified for Phase 2.1)
-        printWarning(chalk.yellow('\nDefaulting to PUSH local state to target.'));
-        await handlePush(projectDir, syncTarget);
-      }
     });
+
+  syncCmd._examples = [
+    { command: 'ultra-dex sync --push', description: 'Push local state to .ultra/sync' },
+    { command: 'ultra-dex sync --pull --target backups/sync', description: 'Pull state from a custom sync target' },
+    { command: 'ultra-dex sync --brain', description: 'Regenerate CONTEXT.md from code graph' },
+  ];
 }
 
 async function handlePush(projectDir, target) {

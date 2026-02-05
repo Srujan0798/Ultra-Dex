@@ -145,7 +145,7 @@ export async function updateStateFile() {
 }
 
 export function registerAlignCommand(program) {
-  program
+  const alignCmd = program
     .command('align')
     .description('Quick alignment score using Code Property Graph')
     .option('--strict', 'Exit with error if score < 70')
@@ -214,10 +214,16 @@ export function registerAlignCommand(program) {
         process.exit(1);
       }
     });
+
+  alignCmd._examples = [
+    { command: 'ultra-dex align', description: 'Compute alignment score for current project' },
+    { command: 'ultra-dex align --strict', description: 'Fail CI if alignment score is below 70' },
+    { command: 'ultra-dex align --reconcile --json', description: 'Verify tasks against codebase and output JSON' },
+  ];
 }
 
 export function registerStatusCommand(program) {
-  program
+  const statusCmd = program
     .command('status')
     .description('Show current project state')
     .option('--refresh', 'Refresh state before showing')
@@ -302,6 +308,12 @@ export function registerStatusCommand(program) {
         process.exit(1);
       }
     });
+
+  statusCmd._examples = [
+    { command: 'ultra-dex status', description: 'Show current Ultra-Dex project status' },
+    { command: 'ultra-dex status --refresh', description: 'Recompute state before displaying' },
+    { command: 'ultra-dex status --json', description: 'Output raw JSON for automation' },
+  ];
 }
 
 export function registerWatchCommand(program) {

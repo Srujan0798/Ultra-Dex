@@ -17,7 +17,7 @@ const ALL_AGENTS = Object.values(AGENTS_MAP);
  * Register the suggest command with Commander
  */
 export function registerSuggestCommand(program) {
-  program
+  const suggestCmd = program
     .command('suggest [query]')
     .description('Get AI agent suggestions for your task')
     .action(async (query) => {
@@ -41,6 +41,8 @@ export function registerSuggestCommand(program) {
         if (providerId && (description || taskType === 'Custom (AI Analysis)')) {
             const handled = await handleAiSuggestions(description || taskType, context, providerId);
             if (handled) return;
+        } else if (!providerId) {
+            printWarning(chalk.yellow('No AI provider configured. Falling back to static recommendations.'));
         }
 
         // 3. Fallback to static logic
@@ -51,6 +53,12 @@ export function registerSuggestCommand(program) {
         process.exit(error.exitCode || 1);
       }
     });
+
+  suggestCmd._examples = [
+    { command: 'ultra-dex suggest "Add Stripe billing"', description: 'Get agent workflow for a specific task' },
+    { command: 'ultra-dex suggest', description: 'Interactive prompt for task type' },
+    { command: 'ultra-dex suggest "Refactor auth flow"', description: 'AI-assisted agent sequence' },
+  ];
 }
 
 /**

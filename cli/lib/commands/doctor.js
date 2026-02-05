@@ -56,12 +56,15 @@ async function saveConfig(config, global = false) {
 }
 
 export function registerDoctorCommand(program) {
-  program
+  const doctorCmd = program
     .command('doctor')
     .description('System Diagnostics - Check System Health')
     .option('--fix', 'Attempt to fix issues automatically')
     .action(async (options) => {
       try {
+        if (options.fix) {
+          printWarning(chalk.yellow('Auto-fix mode is limited in this release. Running diagnostics only.\n'));
+        }
         header('System Health Diagnostics');
         printInfo(chalk.gray('  Analyzing system components...\n'));
 
@@ -241,6 +244,11 @@ export function registerDoctorCommand(program) {
         process.exit(process.exitCode);
       }
     });
+
+  doctorCmd._examples = [
+    { command: 'ultra-dex doctor', description: 'Run full diagnostics' },
+    { command: 'ultra-dex doctor --fix', description: 'Attempt auto-fix where supported' },
+  ];
 }
 
 export function registerConfigCommand(program) {

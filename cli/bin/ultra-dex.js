@@ -113,9 +113,9 @@ import { registerAuthCommand } from '../lib/commands/auth.js';
 import { swarmCommand } from '../lib/commands/swarm.js';
 import { watchCommand } from '../lib/commands/watch.js';
 import { diffCommand } from '../lib/commands/diff.js';
-import { exportCommand } from '../lib/commands/export.js';
+import { exportCommand, EXPORT_EXAMPLES } from '../lib/commands/export.js';
 import { upgradeCommand } from '../lib/commands/upgrade.js';
-import { configCommand } from '../lib/commands/config.js';
+import { configCommand, CONFIG_EXAMPLES } from '../lib/commands/config.js';
 
 import { registerRalphCommand } from '../lib/commands/ralph.js';
 import { registerWorkflowCommand } from '../lib/commands/workflows.js';
@@ -252,11 +252,18 @@ program
   .option('--parallel', 'Run implementation tier agents in parallel')
   .action(swarmCommand);
 
-program
+const watchCmd = program
   .command('watch')
   .description('Auto-update state on file changes')
   .option('--interval <ms>', 'Debounce interval in milliseconds', '500')
+  .option('--sync', 'Auto-sync CONTEXT.md with brain', false)
   .action(watchCommand);
+
+watchCmd._examples = [
+  { command: 'ultra-dex watch', description: 'Watch project and update state on changes' },
+  { command: 'ultra-dex watch --interval 1000', description: 'Use a 1s debounce interval' },
+  { command: 'ultra-dex watch --sync', description: 'Auto-sync CONTEXT.md on code changes' },
+];
 
 program
   .command('diff')
@@ -264,13 +271,16 @@ program
   .option('--json', 'Output as JSON')
   .action(diffCommand);
 
-program
+const exportCmd = program
   .command('export')
   .description('Export project context')
   .option('--format <type>', 'Output format: json, html, markdown, pdf', 'json')
   .option('--output <path>', 'Output file path')
+  .option('--sections <list>', 'Only include specific sections (e.g., 1,2,3)')
   .option('--include-agents', 'Bundle all agent prompts')
   .action(exportCommand);
+
+exportCmd._examples = EXPORT_EXAMPLES;
 
 program
   .command('upgrade')
@@ -279,7 +289,7 @@ program
   .option('--install', 'Automatically install latest version')
   .action(upgradeCommand);
 
-program
+const configCmd = program
   .command('config')
   .description('Show or generate configuration')
   .option('--mcp', 'Generate MCP config for Claude Desktop')
@@ -289,6 +299,8 @@ program
   .option('--set <key=value>', 'Set a config value')
   .option('--get <key>', 'Get a specific config value')
   .action(configCommand);
+
+configCmd._examples = CONFIG_EXAMPLES;
 
 registerAutoImplementCommand(program);
 registerCiMonitorCommand(program);

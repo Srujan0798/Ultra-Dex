@@ -3,19 +3,35 @@ import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs';
 import { join, basename, resolve } from 'path';
+import yaml from 'js-yaml';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
-const VALID_FORMATS = ['json', 'html', 'markdown', 'md', 'pdf'];
+const VALID_FORMATS = ['json', 'html', 'markdown', 'md', 'pdf', 'yaml'];
+
+export const EXPORT_EXAMPLES = [
+  { command: 'ultra-dex export --format json --output export.json', description: 'Export context as JSON' },
+  { command: 'ultra-dex export --format html --include-agents', description: 'Export as HTML with agent prompts' },
+  { command: 'ultra-dex export --sections 1,2,3 --format markdown', description: 'Export only selected sections' },
+];
 
 export async function exportCommand(options) {
   const format = options.format || 'json';
   const outputPath = options.output || `ultra-dex-export.${format === 'md' ? 'md' : format}`;
-  
+  const sectionFilter = options.sections
+    ? options.sections.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !Number.isNaN(n))
+    : null;
+
   // Validate format
   if (!VALID_FORMATS.includes(format)) {
     printError(chalk.red(`❌ Error: Unknown format: ${format}`));
-    printError(chalk.yellow('   Supported formats: json, html, markdown (md), pdf'));
+    printError(chalk.yellow('   Supported formats: json, html, markdown (md), pdf, yaml'));
+    process.exitCode = 1;
+    process.exit(process.exitCode);
+  }
+
+  if (options.sections && (!sectionFilter || sectionFilter.length === 0)) {
+    printError(chalk.red('❌ Error: Invalid --sections list. Use comma-separated numbers, e.g. 1,2,3.'));
     process.exitCode = 1;
     process.exit(process.exitCode);
   }
@@ -30,15 +46,21 @@ export async function exportCommand(options) {
   }
 
   printInfo(chalk.cyan.bold(`\n📦 Ultra-Dex Export\n`));
-  
+
   const spinner = ora('Collecting project data...').start();
-  
+
   try {
     const context = loadContext(options.includeAgents);
+
+    // Filter sections if specified
+    if (sectionFilter && context.files['IMPLEMENTATION-PLAN.md']) {
+      context.files['IMPLEMENTATION-PLAN.md'] = filterSections(context.files['IMPLEMENTATION-PLAN.md'], sectionFilter);
+    }
+
     spinner.succeed(`Collected ${Object.keys(context.files).length} files`);
-    
+
     const formatSpinner = ora(`Generating ${format.toUpperCase()} output...`).start();
-    
+
     let output;
     switch (format) {
       case 'json':
@@ -57,8 +79,11 @@ export async function exportCommand(options) {
         printInfo(chalk.gray('  wkhtmltopdf ultra-dex-export.html ultra-dex-export.pdf'));
         output = generateHTML(context, { forPdf: true });
         break;
+      case 'yaml':
+        output = generateYAML(context);
+        break;
     }
-    
+
     fs.writeFileSync(resolvedOutput, output);
     formatSpinner.succeed(`Generated ${format.toUpperCase()} output`);
 
@@ -74,6 +99,7 @@ export async function exportCommand(options) {
   } catch (error) {
     spinner.fail('Export failed');
     printError(chalk.red(`   ${error.message || 'Unknown error'}`));
+    await handleError(error, { command: 'export', options });
     process.exitCode = 1;
     process.exit(process.exitCode);
   }
@@ -429,13 +455,54 @@ function generateMarkdown(context) {
   return lines.join('\n');
 }
 
+function filterSections(content, sectionNumbers) {
+  const lines = content.split('\n');
+  const filteredLines = [];
+  let inTargetSection = false;
+  let currentSectionNumber = null;
+
+  for (const line of lines) {
+    const sectionMatch = line.match(/^##\s+(?:SECTION\s+)?(\d+)[:.]?\s*/i);
+    if (sectionMatch) {
+      const num = parseInt(sectionMatch[1]);
+      currentSectionNumber = num;
+      inTargetSection = sectionNumbers.includes(num);
+
+      if (inTargetSection) {
+        filteredLines.push(line);
+      }
+    } else {
+      if (inTargetSection) {
+        filteredLines.push(line);
+      }
+    }
+  }
+
+  return filteredLines.join('\n');
+}
+
+function generateYAML(context) {
+  // Convert context to a simpler structure for YAML
+  const yamlContext = {
+    exportedAt: context.exportedAt,
+    version: context.version,
+    project: context.project,
+    files: context.files,
+    state: context.state,
+    agentCount: context.agents?.length || 0
+  };
+
+  return yaml.dump(yamlContext, { lineWidth: -1 });
+}
+
 export function registerExportCommand(program) {
   program
     .command('export')
     .description('Export project metadata to various formats')
-    .option('-f, --format <format>', 'Export format: json, markdown, html, pdf', 'json')
+    .option('-f, --format <format>', 'Export format: json, markdown, html, pdf, yaml', 'json')
     .option('-o, --output <file>', 'Output file path')
     .option('--include-agents', 'Include agent prompts in export')
+    .option('--sections <numbers>', 'Export specific sections only (comma-separated numbers)')
     .action(async (options) => {
       try {
         await exportCommand(options);

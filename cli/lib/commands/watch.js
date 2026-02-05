@@ -7,7 +7,7 @@ import { updateStateFile, computeState } from './state.js';
 import { execSync } from 'child_process';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
-import { AppError } from '../utils/errors.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 
 async function calculateAlignmentScore() {
   const state = await computeState();
@@ -18,7 +18,7 @@ async function calculateAlignmentScore() {
  * Register the watch command with Commander
  */
 export function registerWatchCommand(program) {
-    program
+    const watchCmd = program
       .command('watch')
       .description('Auto-update state on file changes')
       .option('--interval <ms>', 'Debounce interval in milliseconds', '500')
@@ -31,12 +31,21 @@ export function registerWatchCommand(program) {
               process.exit(error.exitCode || 1);
           }
       });
+
+    watchCmd._examples = [
+      { command: 'ultra-dex watch', description: 'Watch project and update state on changes' },
+      { command: 'ultra-dex watch --interval 1000', description: 'Use a 1s debounce interval' },
+      { command: 'ultra-dex watch --sync', description: 'Auto-sync CONTEXT.md on code changes' },
+    ];
 }
 
 export async function watchCommand(options) {
   printInfo(chalk.cyan.bold('\n👁️  Ultra-Dex Watch Mode v3.1 (Auto-Sync Edition)\n'));
   
   const interval = options.interval ? parseInt(options.interval, 10) : 500;
+  if (Number.isNaN(interval) || interval < 50) {
+    throw new ValidationError('Invalid interval. Use a value >= 50ms.');
+  }
   printInfo(chalk.gray(`Debounce interval: ${interval}ms`));
 
   const autoSync = options.sync || false;
@@ -46,6 +55,11 @@ export async function watchCommand(options) {
 
   const watchPaths = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'src', 'app', 'lib'];
   const validPaths = watchPaths.filter(p => existsSync(join(process.cwd(), p)));
+
+  if (validPaths.length === 0) {
+    printWarning('No watchable paths found. Ensure CONTEXT.md or src/app/lib exists.');
+    return;
+  }
 
   printInfo(chalk.gray(`Watching: ${validPaths.join(', ')}\n`));
 
