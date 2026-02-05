@@ -18,7 +18,9 @@ export function registerCheckCommand(program) {
     .option('--sections <numbers>', 'Check specific sections only (comma-separated numbers)')
     .action(async (options) => {
       try {
-        console.log(chalk.cyan.bold('\n🔍 Ultra-Dex Completeness Check\n'));
+        if (!options.json) {
+          console.log(chalk.cyan.bold('\n🔍 Ultra-Dex Completeness Check\n'));
+        }
 
         // Load implementation plan
         const planPath = './IMPLEMENTATION-PLAN.md';
@@ -30,6 +32,8 @@ export function registerCheckCommand(program) {
           console.log(chalk.gray('   Run: ultra-dex init to create one\n'));
           return;
         }
+
+        const silent = options.json;
 
         // Check CONTEXT.md
         const contextPath = './CONTEXT.md';
@@ -43,37 +47,43 @@ export function registerCheckCommand(program) {
 
           if (contextContent.trim().length < 50) {
             contextValid = false;
-            console.log(chalk.yellow('⚠️  CONTEXT.md is nearly empty'));
-            console.log(chalk.gray('   Run: ultra-dex init to regenerate it\n'));
+            if (!silent) {
+              console.log(chalk.yellow('⚠️  CONTEXT.md is nearly empty'));
+              console.log(chalk.gray('   Run: ultra-dex init to regenerate it\n'));
+            }
           } else {
             const freshness = await checkContextFreshness(contextPath);
             contextFresh = freshness.fresh;
             contextDetails.fresh = freshness.fresh;
             contextDetails.staleRefs = freshness.staleRefs;
 
-            if (freshness.fresh) {
-              console.log(chalk.green('✅ CONTEXT.md is up to date\n'));
-            } else {
-              console.log(chalk.yellow('⚠️  CONTEXT.md may be stale'));
-              freshness.staleRefs.forEach(ref => {
-                console.log(chalk.gray(`   • Newer change detected in ${ref}`));
-              });
-              console.log(chalk.gray('   Run: ultra-dex sync --brain or ultra-dex init\n'));
+            if (!silent) {
+              if (freshness.fresh) {
+                console.log(chalk.green('✅ CONTEXT.md is up to date\n'));
+              } else {
+                console.log(chalk.yellow('⚠️  CONTEXT.md may be stale'));
+                freshness.staleRefs.forEach(ref => {
+                  console.log(chalk.gray(`   • Newer change detected in ${ref}`));
+                });
+                console.log(chalk.gray('   Run: ultra-dex sync --brain or ultra-dex init\n'));
+              }
             }
           }
         } catch {
           contextValid = false;
           contextFresh = false;
           contextDetails.exists = false;
-          console.log(chalk.red('❌ CONTEXT.md not found'));
-          console.log(chalk.gray('   Run: ultra-dex init to create one\n'));
+          if (!silent) {
+            console.log(chalk.red('❌ CONTEXT.md not found'));
+            console.log(chalk.gray('   Run: ultra-dex init to create one\n'));
+          }
         }
 
         // Parse sections
         const sections = parseSections(planContent);
 
         // Define P0 sections (critical for MVP)
-        const p0Sections = [1, 2, 4, 6, 9, 10, 11, 12, 15, 16, 19, 20, 21];
+        const p0Sections = [1, 2, 4, 6, 9, 10, 11, 12, 15, 16, 19];
 
         // Filter sections to check
         let sectionsToCheck = sections;
