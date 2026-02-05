@@ -35,19 +35,22 @@ export class ProgressBar {
     this.spinner = null;
     this.progressBar = null;
     this.multiProgressBar = null;
+    this.startTime = null;
 
     this.options = {
-      format: options.format || ' {bar} {percentage}% | {value}/{total} | {task}',
+      format: options.format || ' {bar} {percentage}% | {value}/{total} | {task} | ETA: {eta_formatted}',
       barCompleteChar: '\u25A0', // ■
       barIncompleteChar: '\u25A1', // □
       hideCursor: true,
       clearOnComplete: true,
+      showEta: options.showEta !== false,
       ...options
     };
   }
 
   // Single progress bar
   start(total, initial = 0, task = 'Processing...') {
+    this.startTime = Date.now();
     this.progressBar = new cliProgress.SingleBar(
       {
         format: this.options.format,
@@ -59,19 +62,24 @@ export class ProgressBar {
       cliProgress.Presets.shades_grey
     );
 
-    this.progressBar.start(total, initial, { task });
+    this.progressBar.start(total, initial, { task, eta_formatted: '--' });
     return this.progressBar;
   }
 
   update(current, task = null) {
     if (this.progressBar) {
-      this.progressBar.update(current, { task: task || this.progressBar.options.task });
+      const payload = { task: task || this.progressBar.options.task };
+      if (this.options.showEta) {
+        payload.eta_formatted = this.calculateEta(current, this.progressBar.getTotal());
+      }
+      this.progressBar.update(current, payload);
     }
   }
 
   increment(task = null) {
     if (this.progressBar) {
-      this.progressBar.increment({ task: task || this.progressBar.options.task });
+      const current = this.progressBar.getCurrent();
+      this.update(current + 1, task || this.progressBar.options.task);
     }
   }
 
@@ -84,6 +92,7 @@ export class ProgressBar {
 
   // Multi-progress bar
   startMulti(tasks) {
+    this.startTime = Date.now();
     this.multiProgressBar = new cliProgress.MultiBar(
       {
         format: this.options.format,
@@ -105,7 +114,11 @@ export class ProgressBar {
 
   updateMulti(bars, id, current, task = null) {
     if (bars[id]) {
-      bars[id].update(current, { task: task || bars[id].options.task });
+      const payload = { task: task || bars[id].options.task };
+      if (this.options.showEta) {
+        payload.eta_formatted = this.calculateEta(current, bars[id].getTotal());
+      }
+      bars[id].update(current, payload);
     }
   }
 
@@ -158,6 +171,24 @@ export class ProgressBar {
       this.spinner.stop();
       this.spinner = null;
     }
+  }
+
+  calculateEta(current, total) {
+    if (!this.startTime || current <= 0 || total <= 0) return '--';
+    const elapsed = Date.now() - this.startTime;
+    const rate = elapsed / current;
+    const remaining = Math.max(total - current, 0);
+    const etaMs = Math.round(rate * remaining);
+    return this.formatTime(etaMs);
+  }
+
+  formatTime(ms) {
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ${minutes % 60}m`;
   }
 }
 
@@ -240,6 +271,117 @@ export function showFancyProgress(current, total, options = {}) {
     console.log(''); // New line when complete
   }
 }
+
+// MultiStepProgress class for multi-step operations
+export class MultiStepProgress {
+  constructor(steps) {
+    this.steps = steps;
+    this.currentStep = 0;
+    this.progressBars = [];
+    this.completedSteps = new Set();
+  }
+
+  async run() {
+    const multiBar = new cliProgress.MultiBar({
+      format: ' {bar} | {percentage}% | {step} | {status}',
+      barCompleteChar: '\u25A0',
+      barIncompleteChar: '\u25A1',
+      hideCursor: true
+    }, cliProgress.Presets.shades_grey);
+
+    // Create progress bars for each step
+    this.progressBars = this.steps.map((step, index) => {
+      return multiBar.create(100, 0, {
+        step: step.name,
+        status: 'Pending'
+      });
+    });
+
+    // Execute each step
+    for (let i = 0; i < this.steps.length; i++) {
+      this.currentStep = i;
+      const step = this.steps[i];
+      const bar = this.progressBars[i];
+
+      try {
+        // Update status to running
+        bar.update(0, { step: step.name, status: chalk.yellow('Running') });
+
+        // Execute the step function
+        await step.execute(bar, this);
+
+        // Mark as completed
+        bar.update(100, { step: step.name, status: chalk.green('Completed') });
+        this.completedSteps.add(i);
+      } catch (error) {
+        // Mark as failed
+        bar.update(100, { step: step.name, status: chalk.red('Failed') });
+        throw error;
+      }
+    }
+
+    multiBar.stop();
+  }
+
+  updateStep(stepIndex, percentage, status = null) {
+    if (this.progressBars[stepIndex]) {
+      const step = this.steps[stepIndex];
+      const statusText = status || this.progressBars[stepIndex].options.status;
+      this.progressBars[stepIndex].update(percentage, {
+        step: step.name,
+        status: statusText
+      });
+    }
+  }
+
+  getCurrentStep() {
+    return this.currentStep;
+  }
+
+  getCompletedSteps() {
+    return Array.from(this.completedSteps);
+  }
+}
+
+// Async wrapper with progress
+export async function withProgress(taskFn, options = {}) {
+  const {
+    message = 'Processing...',
+    total = 100,
+    onProgress = null
+  } = options;
+
+  const progress = new ProgressBar();
+  const bar = progress.start(total, 0, message);
+
+  try {
+    // Call the task function with progress update capability
+    const result = await taskFn((current, msg) => {
+      progress.update(current, msg || message);
+      if (onProgress) onProgress(current, total);
+    });
+
+    progress.succeedSpinner('Completed!');
+    return result;
+  } catch (error) {
+    progress.failSpinner('Failed!');
+    throw error;
+  } finally {
+    progress.stop();
+  }
+}
+
+// Enhanced ProgressBar class with ETA
+export class ProgressBarWithETA extends ProgressBar {}
+
+// Color-coded status indicators
+export const statusIndicators = {
+  success: (text) => chalk.bgGreen.black(' SUCCESS '),
+  warning: (text) => chalk.bgYellow.black(' WARNING '),
+  error: (text) => chalk.bgRed.white(' ERROR '),
+  info: (text) => chalk.bgBlue.white(' INFO '),
+  processing: (text) => chalk.bgMagenta.white(' PROCESSING ')
+};
 
 // Completion animation
 export function animateCompletion(callback) {
