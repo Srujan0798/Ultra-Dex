@@ -1,0 +1,8 @@
+{
+  "visibility": "private",
+  "approvedPublishers": ["internal-team"],
+  "billing": {
+    "mode": "invoice",
+    "currency": "USD"
+  }
+}
