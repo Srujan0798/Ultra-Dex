@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Ultra-Dex",
+    "slug": "ultra-dex",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "sdkVersion": "50.0.0",
+    "platforms": ["ios", "android"],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#0b0c10"
+    }
+  }
+}
