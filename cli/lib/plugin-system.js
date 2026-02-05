@@ -147,8 +147,16 @@ export class PluginManager {
         // Local file
         pluginPath = path.resolve(pluginSource);
       } else {
-        // Assume npm package - this would require additional logic in a real implementation
-        throw new Error('Installing plugins from npm is not yet supported');
+        // NPM package installation coming in v3.6.0
+        throw new Error(
+          `NPM plugin installation coming in v3.6.0 (March 2026).\n\n` +
+          `For now, install plugins from local files:\n` +
+          `  ultra-dex plugin install ./path/to/plugin.js\n\n` +
+          `Or clone from GitHub:\n` +
+          `  git clone https://github.com/user/ultra-dex-plugin-name\n` +
+          `  ultra-dex plugin install ./ultra-dex-plugin-name/index.js\n\n` +
+          `Community plugins: https://github.com/topics/ultra-dex-plugin`
+        );
       }
 
       // Validate plugin file exists

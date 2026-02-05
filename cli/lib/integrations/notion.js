@@ -1,4 +1,11 @@
+import fs from 'fs/promises';
+import path from 'path';
 import { requireConfig, createSyncResult, normalizeWebhookEvent } from './utils.js';
+
+async function loadPlan(planPath) {
+  const resolved = path.resolve(process.cwd(), planPath);
+  return fs.readFile(resolved, 'utf8');
+}
 
 export async function connect(config = {}) {
   requireConfig(config, ['apiToken', 'databaseId'], 'Notion');
@@ -16,6 +23,23 @@ export async function sync({ direction = 'both', state = {} } = {}, config = {})
   return createSyncResult({ direction, pulled, pushed });
 }
 
+export async function exportPlan({ planPath = 'IMPLEMENTATION-PLAN.md' } = {}, config = {}) {
+  requireConfig(config, ['apiToken', 'databaseId'], 'Notion');
+  const content = await loadPlan(planPath);
+  return {
+    ok: true,
+    databaseId: config.databaseId,
+    content
+  };
+}
+
+export async function importPlan({ outputPath = 'IMPLEMENTATION-PLAN.md', content } = {}, config = {}) {
+  requireConfig(config, ['apiToken', 'databaseId'], 'Notion');
+  const resolved = path.resolve(process.cwd(), outputPath);
+  await fs.writeFile(resolved, content || '# Imported from Notion\n');
+  return { ok: true, path: resolved };
+}
+
 export async function handleWebhook(payload, headers = {}) {
   return normalizeWebhookEvent(payload, headers);
 }
@@ -26,6 +50,8 @@ export const integration = {
   connect,
   disconnect,
   sync,
+  exportPlan,
+  importPlan,
   handleWebhook
 };
 

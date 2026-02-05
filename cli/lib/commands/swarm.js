@@ -15,6 +15,7 @@ import { printError, printInfo, printSuccess, printWarning } from '../utils/outp
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError, NetworkError } from '../utils/errors.js';
 import { filterAgentsByAccess } from '../enterprise/agent-access.js';
+import { AgentStateMachine } from '../graph/state-machine.js';
 
 // Maximum context size limit (100KB)
 const MAX_CONTEXT_SIZE = 100 * 1024; // 100KB in bytes
@@ -419,6 +420,9 @@ export async function swarmCommand(task, options) {
 Task: "${task}"`);
 
   const startTime = Date.now();
+  const stateMachine = await AgentStateMachine.load();
+  stateMachine.setState('init', { task });
+  await stateMachine.save();
 
   if (options.dryRun) {
     handleDryRun(options);
@@ -504,6 +508,22 @@ Task: "${task}"`);
 
     printInfo(theme.dim(`\n📦 Tier: ${tier.name}`));
 
+    try {
+      if (tier.name.startsWith('1-')) {
+        stateMachine.transition('planning', { tier: tier.name });
+      } else if (tier.name.startsWith('2-')) {
+        stateMachine.transition('implementing', { tier: tier.name });
+      } else if (tier.name.startsWith('3-')) {
+        stateMachine.transition('reviewing', { tier: tier.name });
+      } else if (tier.name.startsWith('4-')) {
+        stateMachine.transition('testing', { tier: tier.name });
+      }
+      await stateMachine.save();
+    } catch {
+      stateMachine.setState('implementing', { tier: tier.name });
+      await stateMachine.save();
+    }
+
     if (tier.parallel) {
       // Parallel Execution
       const promises = tier.agents.map(async (agent) => {
@@ -555,6 +575,12 @@ Task: "${task}"`);
           // Save checkpoint before throwing so user can resume
           await saveCheckpoint(task, agentResults, previousOutput, Array.from(completedAgents), options);
           printWarning(`💾 Checkpoint saved. Resume with: ultra-dex swarm "${task}" --resume`);
+          try {
+            stateMachine.setState('failed', { agent: agent.name, error: error.message });
+            await stateMachine.save();
+          } catch {
+            // ignore
+          }
           
           // Stop sequential pipeline if a critical planning agent fails
           if (agent.tier === '1-planning') {
@@ -588,6 +614,20 @@ Total time: ${totalDuration}ms`);
   if (failCount === 0) {
     await clearCheckpoint();
     printSuccess('✓ Checkpoint cleared - all agents completed successfully');
+    try {
+      stateMachine.transition('complete', { duration: totalDuration });
+      await stateMachine.save();
+    } catch {
+      stateMachine.setState('complete', { duration: totalDuration });
+      await stateMachine.save();
+    }
+  } else {
+    try {
+      stateMachine.setState('failed', { failed: failCount });
+      await stateMachine.save();
+    } catch {
+      // ignore
+    }
   }
 }
 

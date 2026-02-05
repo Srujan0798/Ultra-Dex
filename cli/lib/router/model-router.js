@@ -5,6 +5,8 @@
 
 import { estimateTokens, forecastCost } from '../utils/token-forecast.js';
 import { monitoring } from '../utils/monitoring.js';
+import { CostOptimizer } from './cost-optimizer.js';
+import { loadBenchmarks, selectBestModel } from './benchmarks.js';
 
 const FALLBACK_CHAIN = ['claude', 'openai', 'gemini'];
 
@@ -70,6 +72,7 @@ export class SmartModelRouter {
   constructor(options = {}) {
     this.fallbackChain = options.fallbackChain || FALLBACK_CHAIN;
     this.costBias = options.costBias || 0.5; // 0 = quality, 1 = cost
+    this.optimizer = new CostOptimizer({ budget: options.budget });
   }
 
   selectProvider(preferred, health) {
@@ -94,14 +97,28 @@ export class SmartModelRouter {
     return forecastCost(inputTokens, estimatedOutputTokens, mapForecastModel(model));
   }
 
-  routeTask(task, options = {}) {
+  async routeTask(task, options = {}) {
     const classification = classifyTask(task || '');
     const health = getProviderHealth();
     const preferredProvider = options.preferredProvider;
 
     const provider = this.selectProvider(preferredProvider, health);
-    const model = this.selectModel(provider, classification.level, options);
+    let model = this.selectModel(provider, classification.level, options);
+
+    if (options.useBenchmarks) {
+      const benchmarks = await loadBenchmarks();
+      const best = selectBestModel(benchmarks.records || [], options.taskType || classification.level);
+      if (best?.model) model = best.model;
+    }
+
     const forecast = this.forecastUsage(task, model);
+
+    if (options.optimizeCost) {
+      const downgrade = await this.optimizer.shouldDowngrade(forecast.totalCost || 0);
+      if (downgrade) {
+        model = this.selectModel(provider, 'simple', { costSensitive: true });
+      }
+    }
 
     monitoring.incrementCounter('router_requests');
 

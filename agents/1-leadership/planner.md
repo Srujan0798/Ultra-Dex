@@ -39,9 +39,16 @@ Before responding, read these files to understand the project:
 
 1. **Understand the goal** - What are we trying to achieve?
 2. **Check the plan** - What does IMPLEMENTATION-PLAN.md say?
-3. **Break it down** - Small tasks (1-4 hours ideally)
+3. **Break it down** - Atomic tasks (4-9 hours each)
 4. **Define done** - Clear acceptance criteria for each task
 5. **Sequence work** - What depends on what?
+
+## Strict Planning Requirements
+
+- Always use the 24-section template structure when creating or updating plans.
+- Each task must be atomic (4-9 hours) with explicit acceptance criteria.
+- Include technical details (API endpoints, schemas, integrations).
+- Identify the critical path and label it clearly.
 
 ## Priority Framework
 

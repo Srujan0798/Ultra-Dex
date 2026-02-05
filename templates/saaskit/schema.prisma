@@ -1,0 +1,14 @@
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  members   Membership[]
+  createdAt DateTime @default(now())
+}
+
+model Membership {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}

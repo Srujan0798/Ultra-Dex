@@ -1,6 +1,6 @@
 {
   "name": "ultra-dex",
-  "version": "3.7.2",
+  "version": "3.7.4",
   "description": "AI Orchestration Meta-Layer for SaaS Development - The Headless CTO",
   "keywords": [
     "ai",
@@ -81,9 +81,9 @@
     "zod": "^3.25.76"
   },
   "scripts": {
-    "test": "node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js",
-    "test:coverage": "c8 --reporter=lcov --reporter=text node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js",
-    "test:ci": "c8 --reporter=lcov --reporter=text-summary --lines=70 --functions=70 --branches=60 node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js",
+    "test": "node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js test/providers/*.test.js",
+    "test:coverage": "c8 --reporter=lcov --reporter=text node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js test/providers/*.test.js",
+    "test:ci": "c8 --reporter=lcov --reporter=text-summary --lines=70 --functions=70 --branches=60 node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js test/providers/*.test.js",
     "lint": "eslint lib bin --fix",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
@@ -93,6 +93,7 @@
     "@anthropic-ai/sdk": "^0.30.0",
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.4.5",
+    "keytar": "^7.9.0",
     "openai": "^4.70.0",
     "playwright": "^1.58.1"
   },

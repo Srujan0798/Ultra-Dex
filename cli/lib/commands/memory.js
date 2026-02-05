@@ -7,7 +7,11 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import { ultraMemory } from '../mcp/memory.js';
 import { memex } from '../memory/memex.js';
+import { titansMemory } from '../memory/titans.js';
+import { ppmManager } from '../memory/manager.js';
 import { createSessionPersistence } from '../utils/sessionPersistence.js';
+import { saveSession, loadSession } from '../memory/session.js';
+import { savePersistent, loadPersistent } from '../memory/persistent.js';
 import { getProjectRoot } from '../utils/config.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
@@ -34,8 +38,9 @@ export function registerMemoryCommand(program) {
 
         results.forEach((item, i) => {
           const score = item.score ? item.score.toFixed(3) : '0.000';
-          printInfo(chalk.white(`${i + 1}. [${new Date(item.created_at).toLocaleDateString()}] (${score}) ${item.agent || 'unknown'}`));
-          const snippet = (item.output || item.input || '').toString().slice(0, 160);
+          const agent = item.metadata?.agent || item.agent || 'unknown';
+          printInfo(chalk.white(`${i + 1}. [${new Date(item.created_at).toLocaleDateString()}] (${score}) ${agent}`));
+          const snippet = (item.text || item.output || item.input || '').toString().slice(0, 160);
           if (snippet) {
             printInfo(chalk.gray(`   ${snippet}${snippet.length >= 160 ? '...' : ''}`));
           }
@@ -80,6 +85,7 @@ export function registerMemoryCommand(program) {
     .command('add <text>')
     .description('Add a fact to memory')
     .option('-t, --tags <tags>', 'Comma-separated tags')
+    .option('--memex', 'Also store in vector memory')
     .action(async (text, options) => {
       if (!text || text.trim().length === 0) {
           printError(chalk.red('Text content is required.'));
@@ -87,7 +93,45 @@ export function registerMemoryCommand(program) {
       }
       const tags = options.tags ? options.tags.split(',').map(t => t.trim()) : [];
       await ultraMemory.remember(text, tags, 'manual');
+      await ppmManager.add({
+        content: text,
+        type: tags.includes('decision') ? 'decision' : 'pattern',
+        source: { agent: 'manual' },
+        relations: tags
+      });
+      if (options.memex) {
+        await memex.storeItem(`memex-${Date.now()}`, text, { tags, source: 'manual' });
+      }
       printSuccess(chalk.green('✅ Fact remembered.'));
+    });
+
+  memory
+    .command('query <query>')
+    .description('Semantic search in vector memory (Memex)')
+    .option('-l, --limit <n>', 'Number of results', '5')
+    .action(async (query, options) => {
+      try {
+        const limit = parseInt(options.limit, 10) || 5;
+        const results = await memex.search(query, limit);
+        printInfo(chalk.cyan.bold(`\n🔍 Memex Query Results for "${query}":\n`));
+        if (results.length === 0) {
+          printInfo(chalk.gray('  No matches found.'));
+          return;
+        }
+
+        results.forEach((item, i) => {
+          const score = item.score ? item.score.toFixed(3) : '0.000';
+          const agent = item.metadata?.agent || 'unknown';
+          printInfo(chalk.white(`${i + 1}. (${score}) ${agent}`));
+          const snippet = (item.text || '').toString().slice(0, 160);
+          if (snippet) {
+            printInfo(chalk.gray(`   ${snippet}${snippet.length >= 160 ? '...' : ''}`));
+          }
+          printInfo('');
+        });
+      } catch (error) {
+        printError(chalk.red(`Memex query failed: ${error.message}`));
+      }
     });
 
   memory
@@ -98,17 +142,18 @@ export function registerMemoryCommand(program) {
           printError(chalk.red('Search query is required.'));
           return;
       }
-      const results = await ultraMemory.search(query);
+      const results = await ppmManager.search(query, 5);
       printInfo(chalk.cyan.bold(`\n🔍 Search Results for "${query}":\n`));
-      
+
       if (results.length === 0) {
         printInfo(chalk.gray('  No matches found.'));
         return;
       }
 
       results.forEach((item, i) => {
-        printInfo(chalk.white(`${i + 1}. [${new Date(item.timestamp).toLocaleDateString()}]`));
-        printInfo(chalk.gray(`   ${item.text}`));
+        const ts = item.timestamp || item.created_at || new Date().toISOString();
+        printInfo(chalk.white(`${i + 1}. [${new Date(ts).toLocaleDateString()}]`));
+        printInfo(chalk.gray(`   ${item.content || item.text || ''}`));
         printInfo('');
       });
     });
@@ -117,6 +162,8 @@ export function registerMemoryCommand(program) {
     .command('clear')
     .description('Clear all memory')
     .option('--before <date>', 'Clear before date (ISO)')
+    .option('--memex', 'Clear vector memory (Memex)')
+    .option('--all', 'Clear both standard memory and Memex')
     .action(async (options) => {
       if (options.before) {
           const date = new Date(options.before);
@@ -125,8 +172,97 @@ export function registerMemoryCommand(program) {
               return;
           }
       }
-      await ultraMemory.clear(options.before);
+      if (options.all || !options.memex) {
+        await ultraMemory.clear(options.before);
+      }
+      if (options.all || options.memex) {
+        await memex.deleteAfter(options.before || new Date(0).toISOString());
+      }
       printSuccess(chalk.green('✅ Memory cleared.'));
+    });
+
+  memory
+    .command('save')
+    .description('Save current session memory snapshot')
+    .action(async () => {
+      const snapshot = {
+        timestamp: new Date().toISOString(),
+        context: await createSessionPersistence(getProjectRoot())
+      };
+      const location = await saveSession(snapshot);
+      await savePersistent(snapshot);
+      printSuccess(chalk.green(`✅ Session memory saved to ${location}`));
+    });
+
+  memory
+    .command('restore')
+    .description('Restore last session memory snapshot')
+    .action(async () => {
+      try {
+        const snapshot = await loadSession();
+        printInfo(chalk.cyan('\n✅ Restored session snapshot:\n'));
+        printInfo(JSON.stringify(snapshot, null, 2));
+      } catch (error) {
+        printError(chalk.red(`Restore failed: ${error.message}`));
+      }
+    });
+
+  memory
+    .command('sync')
+    .description('Sync session memory to persistent store')
+    .action(async () => {
+      try {
+        const snapshot = await loadSession();
+        await savePersistent(snapshot);
+        printSuccess(chalk.green('✅ Session memory synced.'));
+      } catch (error) {
+        printError(chalk.red(`Sync failed: ${error.message}`));
+      }
+    });
+
+  memory
+    .command('tier <tier>')
+    .description('Show memory tier (hot|warm|cold)')
+    .action(async (tier) => {
+      const entries = await ppmManager.getTier(tier);
+      printInfo(chalk.cyan(`\n${tier.toUpperCase()} memory (${entries.length})\n`));
+      entries.slice(0, 10).forEach(entry => {
+        printInfo(chalk.gray(`- ${entry.summary || entry.content?.slice(0, 120) || ''}`));
+      });
+    });
+
+  memory
+    .command('why <query>')
+    .description('Explain why a decision was made (cold tier)')
+    .action(async (query) => {
+      const entries = await ppmManager.why(query);
+      if (!entries.length) {
+        printWarning(chalk.yellow('\nNo related decisions found.\n'));
+        return;
+      }
+      printInfo(chalk.cyan(`\nWhy "${query}"\n`));
+      entries.forEach((entry) => {
+        printInfo(chalk.white(`- ${entry.content}`));
+      });
+    });
+
+  memory
+    .command('consolidate')
+    .description('Consolidate warm memory into cold')
+    .action(async () => {
+      await titansMemory.consolidate();
+      printSuccess(chalk.green('\n✅ Memory consolidated.\n'));
+    });
+
+  memory
+    .command('stats')
+    .description('Show memory statistics')
+    .action(async () => {
+      const stats = await titansMemory.stats();
+      printInfo(chalk.cyan('\nMemory Stats\n'));
+      printInfo(`Hot: ${stats.hot}`);
+      printInfo(`Warm: ${stats.warm}`);
+      printInfo(`Cold: ${stats.cold}`);
     });
 
   // NEW: Session persistence commands

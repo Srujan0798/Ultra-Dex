@@ -16,7 +16,7 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.ts', '.jsx', '.tsx', '.py', '.go', '
 /**
  * Parse IMPLEMENTATION-PLAN.md for expected tasks
  */
-async function parseImplementationPlan() {
+async function parseImplementationPlan(sectionFilter = null) {
   try {
     const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
     const planContent = await fs.readFile(planPath, 'utf8');
@@ -25,13 +25,15 @@ async function parseImplementationPlan() {
     const tasks = [];
     const lines = planContent.split('\n');
     let currentSection = '';
+    let currentSectionNumber = null;
 
     for (let index = 0; index < lines.length; index += 1) {
       const line = lines[index];
       // Identify sections
-      const sectionMatch = line.match(/^##\s+(.*)/);
+      const sectionMatch = line.match(/^##\s+(?:SECTION\s+)?(\d+)[:.]?\s*(.*)/i);
       if (sectionMatch) {
-        currentSection = sectionMatch[1].trim();
+        currentSectionNumber = parseInt(sectionMatch[1], 10);
+        currentSection = sectionMatch[2] ? sectionMatch[2].trim() : `Section ${currentSectionNumber}`;
         continue;
       }
 
@@ -41,8 +43,13 @@ async function parseImplementationPlan() {
         const isCompleted = taskMatch[1] === 'x';
         const taskDesc = taskMatch[2] || taskMatch[3];
 
+        if (sectionFilter && currentSectionNumber && !sectionFilter.includes(currentSectionNumber)) {
+          continue;
+        }
+
         tasks.push({
           section: currentSection,
+          sectionNumber: currentSectionNumber,
           description: taskDesc.trim(),
           completed: isCompleted,
           line: line.trim(),
@@ -111,8 +118,9 @@ async function scanImplementation() {
 /**
  * Compare plan vs implementation
  */
-async function comparePlanVsImplementation() {
-  const planTasks = await parseImplementationPlan();
+async function comparePlanVsImplementation(options = {}) {
+  const sectionFilter = options.sections ? parseSectionRanges(options.sections) : null;
+  const planTasks = await parseImplementationPlan(sectionFilter);
   const implementationFiles = await scanImplementation();
 
   const results = {
@@ -122,7 +130,8 @@ async function comparePlanVsImplementation() {
     extraImplementations: [],
     fileMatches: [],
     driftAnalysis: [],
-    implementationFilesCount: implementationFiles.length
+    implementationFilesCount: implementationFiles.length,
+    sectionStats: {}
   };
 
   // Count completed vs pending tasks from plan
@@ -152,6 +161,7 @@ async function comparePlanVsImplementation() {
       results.missingImplementations.push({
         task: task.description,
         section: task.section,
+        sectionNumber: task.sectionNumber,
         line: task.line,
         lineNumber: task.lineNumber
       });
@@ -171,6 +181,30 @@ async function comparePlanVsImplementation() {
     }
   }
 
+  // Section-level drift stats
+  const sectionStats = {};
+  for (const task of planTasks) {
+    const key = task.sectionNumber || task.section || 'Uncategorized';
+    if (!sectionStats[key]) {
+      sectionStats[key] = {
+        section: task.section,
+        sectionNumber: task.sectionNumber,
+        total: 0,
+        completed: 0,
+        missing: 0
+      };
+    }
+    sectionStats[key].total += 1;
+    if (task.completed) sectionStats[key].completed += 1;
+  }
+
+  for (const missing of results.missingImplementations) {
+    const key = missing.sectionNumber || missing.section || 'Uncategorized';
+    if (sectionStats[key]) sectionStats[key].missing += 1;
+  }
+
+  results.sectionStats = sectionStats;
+
   return results;
 }
 
@@ -186,6 +220,19 @@ function generateDriftReport(results) {
   report.push(`⏳ Pending: ${results.pendingTasks}`);
   report.push(`❌ Missing Implementations: ${results.missingImplementations.length}`);
   report.push(`➕ Extra Implementations: ${results.extraImplementations.length}\n`);
+
+  const sectionEntries = Object.values(results.sectionStats || {});
+  if (sectionEntries.length > 0) {
+    report.push(chalk.bold.cyan('📌 Section Drift Summary\n'));
+    sectionEntries.slice(0, 12).forEach((entry) => {
+      const completed = entry.completed || 0;
+      const total = entry.total || 0;
+      const missing = entry.missing || 0;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      report.push(`  • [${entry.sectionNumber ?? 'N/A'}] ${entry.section || 'Uncategorized'}: ${percentage}% (${completed}/${total}) missing ${missing}`);
+    });
+    report.push('');
+  }
 
   if (results.missingImplementations.length > 0) {
     report.push(chalk.bold.red('❌ MISSING IMPLEMENTATIONS\n'));
@@ -249,6 +296,7 @@ function buildDeltaReportData(results, exampleComparison) {
     missingImplementations: results.missingImplementations,
     extraImplementations: results.extraImplementations,
     implementedPending: results.fileMatches,
+    sectionStats: results.sectionStats,
     exampleComparison
   };
 }
@@ -269,6 +317,19 @@ function renderDeltaReportMarkdown(data) {
   lines.push(`- Extra Implementations: ${data.summary.extraImplementations}`);
   lines.push(`- Implemented but Pending: ${data.summary.implementedPending}`);
   lines.push('');
+
+  if (data.sectionStats) {
+    lines.push('## Section Drift Summary');
+    lines.push('');
+    Object.values(data.sectionStats).forEach((entry) => {
+      const total = entry.total || 0;
+      const completed = entry.completed || 0;
+      const missing = entry.missing || 0;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      lines.push(`- [${entry.sectionNumber ?? 'N/A'}] ${entry.section || 'Uncategorized'}: ${percentage}% (${completed}/${total}) missing ${missing}`);
+    });
+    lines.push('');
+  }
 
   if (data.missingImplementations.length > 0) {
     lines.push('## Missing Implementations');
@@ -317,6 +378,30 @@ function renderDeltaReportMarkdown(data) {
   return lines.join('\n');
 }
 
+function parseSectionRanges(rangesString) {
+  if (!rangesString) return null;
+  const sections = new Set();
+  const parts = rangesString.split(',');
+
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    if (trimmed.includes('-')) {
+      const [start, end] = trimmed.split('-').map(Number);
+      if (Number.isNaN(start) || Number.isNaN(end) || start > end) {
+        return null;
+      }
+      for (let i = start; i <= end; i += 1) sections.add(i);
+    } else {
+      const num = Number(trimmed);
+      if (Number.isNaN(num)) return null;
+      sections.add(num);
+    }
+  }
+
+  return Array.from(sections).sort((a, b) => a - b);
+}
+
 async function writeDeltaReport(reportPath, data) {
   const resolvedPath = path.resolve(process.cwd(), reportPath);
   const cwd = process.cwd();
@@ -325,13 +410,68 @@ async function writeDeltaReport(reportPath, data) {
   }
 
   const extension = path.extname(resolvedPath).toLowerCase();
-  const format = extension === '.json' ? 'json' : 'md';
-  const content = format === 'json' ? JSON.stringify(data, null, 2) : renderDeltaReportMarkdown(data);
+  const format = extension === '.json' ? 'json' : extension === '.html' ? 'html' : 'md';
+  const content = format === 'json'
+    ? JSON.stringify(data, null, 2)
+    : format === 'html'
+      ? renderDeltaReportHtml(data)
+      : renderDeltaReportMarkdown(data);
 
   await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
   await fs.writeFile(resolvedPath, content, 'utf8');
 
   return { path: resolvedPath, format };
+}
+
+function renderDeltaReportHtml(data) {
+  const rows = Object.values(data.sectionStats || {}).map((entry) => {
+    const total = entry.total || 0;
+    const completed = entry.completed || 0;
+    const missing = entry.missing || 0;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const status = percentage >= 80 ? 'good' : percentage >= 50 ? 'warn' : 'bad';
+    return `<tr class="${status}">
+      <td>${entry.sectionNumber ?? 'N/A'}</td>
+      <td>${entry.section || 'Uncategorized'}</td>
+      <td>${percentage}%</td>
+      <td>${completed}/${total}</td>
+      <td>${missing}</td>
+    </tr>`;
+  }).join('');
+
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Ultra-Dex Drift Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; background: #0f172a; color: #e2e8f0; }
+    h1 { color: #38bdf8; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #334155; padding: 8px; text-align: left; }
+    tr.good { background: #0f3d2e; }
+    tr.warn { background: #4a3f0f; }
+    tr.bad { background: #4a1010; }
+    .summary { margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Ultra-Dex Drift Report</h1>
+  <div class="summary">
+    <p>Generated: ${new Date(data.generatedAt).toLocaleString()}</p>
+    <p>Completion: ${data.summary.completionPercentage}% (${data.summary.completedTasks}/${data.summary.totalTasks})</p>
+  </div>
+  <h2>Section Drift Summary</h2>
+  <table>
+    <thead>
+      <tr><th>Section</th><th>Title</th><th>Completion</th><th>Done</th><th>Missing</th></tr>
+    </thead>
+    <tbody>
+      ${rows || '<tr><td colspan="5">No section data</td></tr>'}
+    </tbody>
+  </table>
+</body>
+</html>`;
 }
 
 /**
@@ -386,9 +526,20 @@ export async function diffCommand(options = {}) {
   try {
     printInfo(chalk.cyan.bold('\n🔍 Ultra-Dex Smart Diff\n'));
 
+    if (options.analyzeDrift && !options.drift) {
+      options.drift = true;
+    }
+
     const resolvedReport = options.report || options.output || null;
 
-    const results = await comparePlanVsImplementation();
+    if (options.sections) {
+      const parsed = parseSectionRanges(options.sections);
+      if (!parsed || parsed.length === 0) {
+        throw new AppError('Invalid --sections list. Use comma-separated numbers or ranges.', { code: 'SECTIONS_INVALID' });
+      }
+    }
+
+    const results = await comparePlanVsImplementation(options);
     const exampleComparison = options.withExample ? await compareWithExample(options.withExample) : null;
     const reportData = buildDeltaReportData(results, exampleComparison);
 
@@ -415,7 +566,7 @@ export async function diffCommand(options = {}) {
       const completionPercentage = reportData.summary.completionPercentage;
 
       printSuccess(chalk.green(`\n✅ Found ${totalTasks} tasks in plan`));
-      printSuccess(chalk.green(`✅ Found ${implementationFiles.length} implementation files`));
+      printSuccess(chalk.green(`✅ Found ${reportData.summary.implementationFilesCount} implementation files`));
 
       printInfo(chalk.blue(`\n📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`));
 
@@ -470,7 +621,7 @@ export async function diffCommand(options = {}) {
       const completionPercentage = reportData.summary.completionPercentage;
 
       printSuccess(chalk.green(`\n✅ Found ${totalTasks} tasks in plan`));
-      printSuccess(chalk.green(`✅ Found ${implementationFiles.length} implementation files`));
+      printSuccess(chalk.green(`✅ Found ${reportData.summary.implementationFilesCount} implementation files`));
 
       printInfo(chalk.blue(`\n📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`));
 
@@ -520,8 +671,10 @@ export function registerDiffCommand(program) {
     .command('diff')
     .description('Compare IMPLEMENTATION-PLAN.md vs actual implementation')
     .option('--drift', 'Show detailed drift analysis between plan and implementation')
+    .option('--analyze-drift', 'Alias for --drift')
     .option('--detailed', 'Show detailed diff report with color-coded output')
     .option('--with-example <name>', 'Compare with example project')
+    .option('--sections <list>', 'Limit diff analysis to specific sections (e.g., 1-3,5)')
     .option('--json', 'Output as JSON')
     .option('--report <path>', 'Write delta report to a file (json or md)')
     .option('--output <path>', 'Alias for --report')

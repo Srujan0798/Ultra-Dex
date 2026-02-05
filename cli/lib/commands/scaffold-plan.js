@@ -110,8 +110,9 @@ async function createDirectories(directories) {
 /**
  * Create empty files with TODO comments
  */
-async function createFiles(files) {
+async function createFiles(files, options = {}) {
   const createdFiles = [];
+  const force = Boolean(options.force);
   
   for (const filePath of files) {
     const fullPath = path.resolve(process.cwd(), filePath);
@@ -119,8 +120,10 @@ async function createFiles(files) {
     // Skip if file already exists
     try {
       await fs.access(fullPath);
-      printWarning(chalk.yellow(`⚠️  File already exists, skipping: ${filePath}`));
-      continue;
+      if (!force) {
+        printWarning(chalk.yellow(`⚠️  File already exists, skipping: ${filePath}`));
+        continue;
+      }
     } catch {
       // File doesn't exist, proceed to create
     }
@@ -164,7 +167,7 @@ async function createFiles(files) {
 /**
  * Create configuration files
  */
-async function createConfigFiles() {
+async function createConfigFiles(options = {}) {
   const configs = {
     '.env.example': `# Environment variables for the project
 # Copy to .env and fill in values
@@ -219,16 +222,23 @@ build
   
   const createdConfigs = [];
   
+  const force = Boolean(options.force);
+
   for (const [filename, content] of Object.entries(configs)) {
     const filePath = path.resolve(process.cwd(), filename);
     
     try {
       await fs.access(filePath);
-      printWarning(chalk.yellow(`⚠️  Config file already exists, skipping: ${filename}`));
+      if (!force) {
+        printWarning(chalk.yellow(`⚠️  Config file already exists, skipping: ${filename}`));
+        continue;
+      }
     } catch {
-      await fs.writeFile(filePath, content);
-      createdConfigs.push(filename);
+      // File doesn't exist, proceed to write
     }
+
+    await fs.writeFile(filePath, content);
+    createdConfigs.push(filename);
   }
   
   return createdConfigs;
@@ -237,15 +247,18 @@ build
 /**
  * Generate Prisma schema from data model section
  */
-async function generatePrismaSchema(dataModels) {
+async function generatePrismaSchema(dataModels, options = {}) {
   if (dataModels.length === 0) return null;
   
   const schemaPath = path.resolve(process.cwd(), 'prisma', 'schema.prisma');
+  const force = Boolean(options.force);
   
   try {
     await fs.access(schemaPath);
-    printWarning(chalk.yellow(`⚠️  Prisma schema already exists, skipping generation`));
-    return null;
+    if (!force) {
+      printWarning(chalk.yellow(`⚠️  Prisma schema already exists, skipping generation`));
+      return null;
+    }
   } catch {
     // Schema doesn't exist, proceed to create
   }
@@ -295,13 +308,14 @@ datasource db {
 /**
  * Create placeholder API routes from plan endpoints
  */
-async function createApiRoutes(apiRoutes) {
+async function createApiRoutes(apiRoutes, options = {}) {
   if (apiRoutes.length === 0) return [];
   
   const routesDir = path.resolve(process.cwd(), 'src', 'routes');
   await fs.mkdir(routesDir, { recursive: true });
   
   const createdRoutes = [];
+  const force = Boolean(options.force);
   
   for (const { method, route } of apiRoutes) {
     const cleanRoute = route
@@ -316,8 +330,10 @@ async function createApiRoutes(apiRoutes) {
     
     try {
       await fs.access(filePath);
-      printWarning(chalk.yellow(`⚠️  API route already exists, skipping: ${fileName}`));
-      continue;
+      if (!force) {
+        printWarning(chalk.yellow(`⚠️  API route already exists, skipping: ${fileName}`));
+        continue;
+      }
     } catch {
       // File doesn't exist, proceed to create
     }
@@ -376,6 +392,22 @@ export async function scaffoldFromPlan(options = {}) {
       printInfo(chalk.green(`✅ Would generate ${structure.dataModels.length} data models`));
       return;
     }
+
+    if (options.prismaOnly) {
+      printInfo(chalk.blue('🗄️  Generating Prisma schema (prisma-only)...'));
+      const schemaPath = await generatePrismaSchema(structure.dataModels, options);
+      if (schemaPath) {
+        printSuccess(chalk.green(`✅ Created Prisma schema at ${schemaPath}\n`));
+      }
+      return;
+    }
+
+    if (options.apiOnly) {
+      printInfo(chalk.blue('🌐 Creating API route placeholders (api-only)...'));
+      const createdRoutes = await createApiRoutes(structure.apiRoutes, options);
+      printSuccess(chalk.green(`✅ Created ${createdRoutes.length} API route files\n`));
+      return;
+    }
     
     // Create directories
     printInfo(chalk.blue('📁 Creating directory structure...'));
@@ -384,18 +416,18 @@ export async function scaffoldFromPlan(options = {}) {
     
     // Create files
     printInfo(chalk.blue('📄 Creating files with TODO comments...'));
-    const createdFiles = await createFiles(structure.files);
+    const createdFiles = await createFiles(structure.files, options);
     printSuccess(chalk.green(`✅ Created ${createdFiles.length} files\n`));
     
     // Create config files
     printInfo(chalk.blue('⚙️  Creating configuration files...'));
-    const createdConfigs = await createConfigFiles();
+    const createdConfigs = await createConfigFiles(options);
     printSuccess(chalk.green(`✅ Created ${createdConfigs.length} config files\n`));
     
     // Generate Prisma schema
     if (structure.dataModels.length > 0) {
       printInfo(chalk.blue('🗄️  Generating Prisma schema...'));
-      const schemaPath = await generatePrismaSchema(structure.dataModels);
+      const schemaPath = await generatePrismaSchema(structure.dataModels, options);
       if (schemaPath) {
         printSuccess(chalk.green(`✅ Created Prisma schema at ${schemaPath}\n`));
       } else {
@@ -406,7 +438,7 @@ export async function scaffoldFromPlan(options = {}) {
     // Create API routes
     if (structure.apiRoutes.length > 0) {
       printInfo(chalk.blue('🌐 Creating API route placeholders...'));
-      const createdRoutes = await createApiRoutes(structure.apiRoutes);
+      const createdRoutes = await createApiRoutes(structure.apiRoutes, options);
       printSuccess(chalk.green(`✅ Created ${createdRoutes.length} API route files\n`));
     }
     
@@ -430,6 +462,9 @@ export function registerScaffoldPlanCommand(program) {
     .command('scaffold-plan')
     .description('Generate project structure from IMPLEMENTATION-PLAN.md')
     .option('--dry-run', 'Show what would be created without making changes')
+    .option('--prisma-only', 'Only generate Prisma schema from data models')
+    .option('--api-only', 'Only generate API route placeholders')
+    .option('--force', 'Overwrite existing files where possible')
     .action(async (options) => {
       await scaffoldFromPlan(options);
     });

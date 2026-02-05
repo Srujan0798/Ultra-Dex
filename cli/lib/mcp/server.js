@@ -9,6 +9,7 @@ import { webSocketServer } from "./websocket.js";
 import { VERSION } from "../utils/version.js";
 import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
+import { contextBus } from './context-bus.js';
 
 /**
  * Creates and configures the MCP Server instance
@@ -32,6 +33,7 @@ export function createMcpServer(options = {}) {
 
   registerResources(server);
   registerTools(server);
+  contextBus.register(server);
 
   if (options.hostMode) {
     registerHostTools(server, mcpHub);

@@ -7,19 +7,42 @@ import yaml from 'js-yaml';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
-const VALID_FORMATS = ['json', 'html', 'markdown', 'md', 'pdf', 'yaml', 'yml'];
+const VALID_FORMATS = ['json', 'html', 'markdown', 'md', 'pdf', 'yaml', 'yml', 'notion'];
+const P0_SECTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+const BUILTIN_TEMPLATES = {
+  executive: `# Executive Summary
+
+- Vision & goals
+- KPIs and business impact
+- Risks and mitigations
+- Delivery timeline`,
+  technical: `# Technical Handoff
+
+- Architecture overview
+- Data model
+- API contracts
+- Deployment and ops notes`,
+  handoff: `# Developer Handoff
+
+- What was built
+- How to run locally
+- Known gaps
+- Next tasks`
+};
 
 export const EXPORT_EXAMPLES = [
   { command: 'ultra-dex export --format json --output export.json', description: 'Export context as JSON' },
   { command: 'ultra-dex export --format html --include-agents', description: 'Export as HTML with agent prompts' },
   { command: 'ultra-dex export --sections 1,2,3 --format markdown', description: 'Export only selected sections' },
   { command: 'ultra-dex export --pdf --output ultra-dex-export.pdf', description: 'Export as PDF using Puppeteer' },
+  { command: 'ultra-dex export --format notion --sections 1-5', description: 'Export Notion-compatible markdown' },
 ];
 
 export async function exportCommand(options) {
   const format = options.pdf ? 'pdf' : (options.format || 'json');
   const normalizedFormat = format === 'markdown' ? 'md' : format;
-  const outputExt = normalizedFormat === 'md' ? 'md' : normalizedFormat;
+  const outputExt = normalizedFormat === 'md' || normalizedFormat === 'notion' ? 'md' : normalizedFormat;
   const outputPath = options.output || `ultra-dex-export.${outputExt}`;
 
   // Parse sections - support both comma-separated and range formats (e.g., "1-5" or "1,2,3")
@@ -31,12 +54,24 @@ export async function exportCommand(options) {
       process.exitCode = 1;
       process.exit(process.exitCode);
     }
+  } else if (options.p0) {
+    sectionFilter = [...P0_SECTIONS];
+  }
+
+  let excludeFilter = null;
+  if (options.exclude) {
+    excludeFilter = parseSectionRanges(options.exclude);
+    if (!excludeFilter || excludeFilter.length === 0) {
+      printError(chalk.red('❌ Error: Invalid --exclude list. Use comma-separated numbers or ranges, e.g. 15,16 or 1-5.'));
+      process.exitCode = 1;
+      process.exit(process.exitCode);
+    }
   }
 
   // Validate format
   if (!VALID_FORMATS.includes(format)) {
     printError(chalk.red(`❌ Error: Unknown format: ${format}`));
-    printError(chalk.yellow('   Supported formats: json, html, markdown (md), pdf, yaml (yml)'));
+    printError(chalk.yellow('   Supported formats: json, html, markdown (md), pdf, yaml (yml), notion'));
     process.exitCode = 1;
     process.exit(process.exitCode);
   }
@@ -58,8 +93,8 @@ export async function exportCommand(options) {
     const context = loadContext(options.includeAgents);
 
     // Filter sections if specified
-    if (sectionFilter && context.files['IMPLEMENTATION-PLAN.md']) {
-      context.files['IMPLEMENTATION-PLAN.md'] = filterSections(context.files['IMPLEMENTATION-PLAN.md'], sectionFilter);
+    if ((sectionFilter || excludeFilter) && context.files['IMPLEMENTATION-PLAN.md']) {
+      context.files['IMPLEMENTATION-PLAN.md'] = filterSections(context.files['IMPLEMENTATION-PLAN.md'], sectionFilter, excludeFilter);
     }
 
     spinner.succeed(`Collected ${Object.keys(context.files).length} files`);
@@ -123,6 +158,10 @@ export async function exportCommand(options) {
       case 'yml':
         output = generateYAML(context);
         actualFormat = 'yaml';
+        break;
+      case 'notion':
+        output = generateNotionMarkdown(context, { includeToc });
+        actualFormat = 'md';
         break;
     }
 
@@ -223,7 +262,7 @@ function generateJSON(context) {
   return JSON.stringify(context, null, 2);
 }
 
-function filterSections(content, sectionNumbers) {
+function filterSections(content, sectionNumbers, excludeNumbers = null) {
   const lines = content.split('\n');
   const filteredLines = [];
   let inTargetSection = false;
@@ -234,7 +273,9 @@ function filterSections(content, sectionNumbers) {
     if (sectionMatch) {
       const num = parseInt(sectionMatch[1]);
       currentSectionNumber = num;
-      inTargetSection = sectionNumbers.includes(num);
+      const included = sectionNumbers ? sectionNumbers.includes(num) : true;
+      const excluded = excludeNumbers ? excludeNumbers.includes(num) : false;
+      inTargetSection = included && !excluded;
 
       if (inTargetSection) {
         filteredLines.push(line);
@@ -305,6 +346,9 @@ function parseSectionRanges(rangesString) {
  */
 function loadTemplate(templatePath) {
   try {
+    if (BUILTIN_TEMPLATES[templatePath]) {
+      return BUILTIN_TEMPLATES[templatePath];
+    }
     const resolvedPath = resolve(templatePath);
     const content = fs.readFileSync(resolvedPath, 'utf-8');
     return content;
@@ -336,6 +380,12 @@ function generateMarkdown(context, options = {}) {
     `> **Version:** ${context.version}`,
     ``
   ];
+
+  if (context.template) {
+    lines.push(`## Template Summary`, ``);
+    lines.push(context.template);
+    lines.push(``, `---`, ``);
+  }
 
   // Add table of contents if requested
   if (includeToc) {
@@ -381,6 +431,12 @@ function generateMarkdown(context, options = {}) {
   }
 
   return lines.join('\n');
+}
+
+function generateNotionMarkdown(context, options = {}) {
+  const markdown = generateMarkdown(context, options);
+  // Notion is happiest with Markdown + inline headings; strip HTML if any.
+  return markdown.replace(/<[^>]*>/g, '');
 }
 
 /**

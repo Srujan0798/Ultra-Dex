@@ -360,11 +360,11 @@ export function registerAuthCommand(program) {
         }
 
         if (options.export) {
-          const result = await auditLogger.export('json', options.export);
-          if (result.success) {
+          try {
+            const result = await auditLogger.export('json', options.export);
             printSuccess(chalk.green(`✅ Exported ${result.exported} logs to ${options.export}`));
-          } else {
-            printError(chalk.red(`Export failed: ${result.error}`));
+          } catch (err) {
+            printError(chalk.red(`Export failed: ${err.message}`));
           }
         }
       } catch (error) {

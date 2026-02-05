@@ -1,306 +1,283 @@
 /**
- * Claude AI Provider (Anthropic)
- * Primary provider for Ultra-Dex generate command
+ * Claude Sonnet 5 "Fennec" Integration
+ * Adds support for Claude Sonnet 5 model with new capabilities
  */
 
-import { BaseProvider } from './base.js';
+import Anthropic from '@anthropic-ai/sdk';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import chalk from 'chalk';
+import { AppError } from '../utils/errors.js';
+import { handleError } from '../utils/error-handler.js';
 
-// Model pricing per 1M tokens (as of Jan 2026)
-const PRICING = {
-  'claude-sonnet-4-20250514': { input: 3.00, output: 15.00 },
-  'claude-3-5-sonnet-20241022': { input: 3.00, output: 15.00 },
-  'claude-3-opus-20240229': { input: 15.00, output: 75.00 },
-  'claude-3-haiku-20240307': { input: 0.25, output: 1.25 },
+// Claude Sonnet 5 model constant
+export const CLAUDE_SONNET_5 = 'claude-sonnet-5-20260201';
+
+// Model aliases
+const MODEL_ALIASES = {
+  'sonnet5': CLAUDE_SONNET_5,
+  'fennec': CLAUDE_SONNET_5,
+  'claude-sonnet-5': CLAUDE_SONNET_5,
+  'claude-sonnet-5-20260201': CLAUDE_SONNET_5
 };
 
-const MODELS = [
-  { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4 (Latest)', maxTokens: 8192, default: true },
-  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', maxTokens: 8192 },
-  { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus (Premium)', maxTokens: 4096 },
-  { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku (Fast)', maxTokens: 4096 },
-];
+// Pricing for Claude Sonnet 5 (per 1M tokens)
+const SONNET_5_PRICING = {
+  input: 3.00,  // $3.00 per 1M input tokens
+  output: 15.00 // $15.00 per 1M output tokens
+};
 
-export class ClaudeProvider extends BaseProvider {
-  constructor(apiKey, options = {}) {
-    super(apiKey, options);
-    this.baseUrl = 'https://api.anthropic.com/v1';
-    this.apiVersion = '2023-06-01';
+/**
+ * Check if Claude Sonnet 5 is available in the account
+ */
+export async function checkSonnet5Availability(apiKey) {
+  const anthropic = new Anthropic({ apiKey });
+  
+  try {
+    // Try to make a simple call with the Sonnet 5 model
+    const message = await anthropic.messages.create({
+      model: CLAUDE_SONNET_5,
+      max_tokens: 10,
+      messages: [{ role: 'user', content: 'Test' }]
+    });
+    
+    return {
+      available: true,
+      model: CLAUDE_SONNET_5,
+      capabilities: message.usage ? ['high-context', 'improved-reasoning', 'better-code-generation'] : []
+    };
+  } catch (error) {
+    // If it's an authentication or model access error, the model isn't available
+    if (error.status === 401 || error.status === 403 || error.status === 404) {
+      return {
+        available: false,
+        model: CLAUDE_SONNET_5,
+        error: error.message
+      };
+    }
+    
+    // For other errors, re-throw
+    throw error;
+  }
+}
+
+/**
+ * Get Claude model with Sonnet 5 support
+ */
+export function getClaudeModel(modelName, apiKey) {
+  // Resolve alias if provided
+  const resolvedModel = MODEL_ALIASES[modelName] || modelName;
+  
+  // If requesting Sonnet 5 specifically, check availability
+  if (resolvedModel === CLAUDE_SONNET_5) {
+    printInfo(chalk.blue(`🔍 Checking Claude Sonnet 5 (${CLAUDE_SONNET_5}) availability...`));
+  }
+  
+  return new Anthropic({ apiKey, model: resolvedModel });
+}
+
+/**
+ * Get model pricing information
+ */
+export function getModelPricing(modelName) {
+  const resolvedModel = MODEL_ALIASES[modelName] || modelName;
+  
+  if (resolvedModel === CLAUDE_SONNET_5) {
+    return SONNET_5_PRICING;
+  }
+  
+  // For other Claude models, return their respective pricing
+  if (resolvedModel.includes('sonnet')) {
+    return { input: 3.00, output: 15.00 }; // Sonnet family
+  } else if (resolvedModel.includes('opus')) {
+    return { input: 15.00, output: 75.00 }; // Opus family
+  } else {
+    return { input: 0.25, output: 1.25 }; // Haiku family
+  }
+}
+
+/**
+ * Auto-detect best available Claude model
+ */
+export async function detectBestClaudeModel(apiKey) {
+  const anthropic = new Anthropic({ apiKey });
+  
+  // Check Sonnet 5 first
+  try {
+    await anthropic.messages.create({
+      model: CLAUDE_SONNET_5,
+      max_tokens: 5,
+      messages: [{ role: 'user', content: 'Test' }]
+    });
+    
+    printSuccess(chalk.green(`✅ Claude Sonnet 5 (${CLAUDE_SONNET_5}) is available`));
+    return CLAUDE_SONNET_5;
+  } catch (error) {
+    if (error.status === 401 || error.status === 403 || error.status === 404) {
+      printWarning(chalk.yellow(`⚠️  Claude Sonnet 5 not available, falling back to default`));
+      
+      // Try Sonnet 3.5 next
+      try {
+        await anthropic.messages.create({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 5,
+          messages: [{ role: 'user', content: 'Test' }]
+        });
+        
+        printInfo(chalk.blue(`✅ Defaulting to claude-3-5-sonnet-20241022`));
+        return 'claude-3-5-sonnet-20241022';
+      } catch {
+        printError(chalk.red(`❌ No Claude models available`));
+        throw new AppError('No Claude models available with provided API key', { code: 'MODEL_ACCESS_DENIED' });
+      }
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * Enhanced Claude provider with Sonnet 5 support
+ */
+export class ClaudeSonnet5Provider {
+  constructor(options = {}) {
+    this.apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
+    this.model = options.model || process.env.ULTRA_DEX_CLAUDE_MODEL || CLAUDE_SONNET_5;
+    this.maxTokens = options.maxTokens || 4096;
+    this.temperature = options.temperature || 0.3;
+    
+    if (!this.apiKey) {
+      throw new AppError('ANTHROPIC_API_KEY is required for Claude provider', { code: 'MISSING_API_KEY' });
+    }
+    
+    this.client = new Anthropic({ apiKey: this.apiKey });
   }
 
   getName() {
-    return 'Claude (Anthropic)';
+    return 'Claude';
   }
 
-  getDefaultModel() {
-    return 'claude-sonnet-4-20250514';
-  }
-
-  getAvailableModels() {
-    return MODELS;
-  }
-
-  estimateCost(inputTokens, outputTokens) {
-    const pricing = PRICING[this.model] || PRICING['claude-sonnet-4-20250514'];
-    const inputCost = (inputTokens / 1_000_000) * pricing.input;
-    const outputCost = (outputTokens / 1_000_000) * pricing.output;
-    return {
-      input: inputCost,
-      output: outputCost,
-      total: inputCost + outputCost,
-    };
+  getModel() {
+    return this.model;
   }
 
   async generate(systemPrompt, userPrompt, options = {}) {
-    // Validate required parameters
-    this.validateParams({ systemPrompt, userPrompt }, ['systemPrompt', 'userPrompt']);
-
-    // Retry logic with exponential backoff
-    const maxRetries = options.maxRetries || 3;
-    let lastError;
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-      try {
-        const response = await fetch(`${this.baseUrl}/messages`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': this.apiKey,
-            'anthropic-version': this.apiVersion,
-          },
-          body: JSON.stringify({
-            model: this.model,
-            max_tokens: options.maxTokens || this.maxTokens,
-            temperature: options.temperature !== undefined ? options.temperature : this.temperature,
-            system: systemPrompt,
-            messages: [
-              { role: 'user', content: userPrompt }
-            ],
-          }),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({}));
-
-          // Handle rate limiting
-          if (response.status === 429) {
-            const retryAfter = response.headers.get('Retry-After');
-            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
-
-            if (attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, delay));
-              continue; // Retry
-            }
-          }
-
-          throw this.formatError(
-            error.error?.message || response.statusText,
-            'generate() API call failed'
-          );
-        }
-
-        const data = await response.json();
-
-        return {
-          content: data.content[0]?.text || '',
-          usage: {
-            inputTokens: data.usage?.input_tokens || 0,
-            outputTokens: data.usage?.output_tokens || 0,
-          },
-          model: data.model || this.model,
-        };
-      } catch (error) {
-        clearTimeout(timeoutId);
-
-        if (error.name === 'AbortError') {
-          if (attempt < maxRetries) {
-            // Exponential backoff for timeout
-            const delay = Math.pow(2, attempt) * 1000;
-            await new Promise(resolve => setTimeout(resolve, delay));
-            continue; // Retry
-          }
-          throw this.formatError('Request timed out', 'generate()');
-        }
-
-        lastError = error;
-
-        if (attempt < maxRetries) {
-          // Exponential backoff
-          const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue; // Retry
-        }
-
-        throw this.formatError(lastError, 'generate()');
-      }
-    }
-
-    // This should not be reached, but just in case
-    throw this.formatError(lastError || new Error('Max retries exceeded'), 'generate()');
-  }
-
-  async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
-    // Validate required parameters
-    this.validateParams({ systemPrompt, userPrompt, onChunk }, ['systemPrompt', 'userPrompt', 'onChunk']);
-
-    // Retry logic with exponential backoff
-    const maxRetries = options.maxRetries || 3;
-    let lastError;
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-      try {
-        const response = await fetch(`${this.baseUrl}/messages`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': this.apiKey,
-            'anthropic-version': this.apiVersion,
-          },
-          body: JSON.stringify({
-            model: this.model,
-            max_tokens: options.maxTokens || this.maxTokens,
-            temperature: options.temperature !== undefined ? options.temperature : this.temperature,
-            stream: true,
-            system: systemPrompt,
-            messages: [
-              { role: 'user', content: userPrompt }
-            ],
-          }),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({}));
-
-          // Handle rate limiting
-          if (response.status === 429) {
-            const retryAfter = response.headers.get('Retry-After');
-            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
-
-            if (attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, delay));
-              continue; // Retry
-            }
-          }
-
-          throw this.formatError(
-            error.error?.message || response.statusText,
-            'generateStream() API call failed'
-          );
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullContent = '';
-        let usage = { inputTokens: 0, outputTokens: 0 };
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
-
-              try {
-                const parsed = JSON.parse(data);
-
-                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-                  fullContent += parsed.delta.text;
-                  onChunk(parsed.delta.text);
-                }
-
-                if (parsed.type === 'message_delta' && parsed.usage) {
-                  usage.outputTokens = parsed.usage.output_tokens || 0;
-                }
-
-                if (parsed.type === 'message_start' && parsed.message?.usage) {
-                  usage.inputTokens = parsed.message.usage.input_tokens || 0;
-                }
-              } catch {
-                // Skip malformed JSON
-              }
-            }
-          }
-        }
-
-        return { content: fullContent, usage, model: this.model };
-      } catch (error) {
-        clearTimeout(timeoutId);
-
-        if (error.name === 'AbortError') {
-          if (attempt < maxRetries) {
-            // Exponential backoff for timeout
-            const delay = Math.pow(2, attempt) * 1000;
-            await new Promise(resolve => setTimeout(resolve, delay));
-            continue; // Retry
-          }
-          throw this.formatError('Request timed out', 'generateStream()');
-        }
-
-        lastError = error;
-
-        if (attempt < maxRetries) {
-          // Exponential backoff
-          const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue; // Retry
-        }
-
-        throw this.formatError(lastError, 'generateStream()');
-      }
-    }
-
-    // This should not be reached, but just in case
-    throw this.formatError(lastError || new Error('Max retries exceeded'), 'generateStream()');
-  }
-
-  async validateApiKey() {
+    const resolvedModel = MODEL_ALIASES[this.model] || this.model;
+    
     try {
-      // Make a minimal request to check API key validity
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.timeout / 2); // Half timeout for validation
-
-      const response = await fetch(`${this.baseUrl}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': this.apiKey,
-          'anthropic-version': this.apiVersion,
-        },
-        body: JSON.stringify({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 10,
-          messages: [{ role: 'user', content: 'Hi' }],
-        }),
-        signal: controller.signal
+      const message = await this.client.messages.create({
+        model: resolvedModel,
+        max_tokens: options.maxTokens || this.maxTokens,
+        temperature: options.temperature || this.temperature,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
       });
 
-      clearTimeout(timeoutId);
-
-      // 200 means valid key and successful request
-      // 400 means valid key but bad request (which is expected for validation)
-      // 401/403 means invalid key
-      return response.ok || response.status === 400;
+      return {
+        content: message.content[0]?.text || '',
+        usage: {
+          inputTokens: message.usage?.input_tokens || 0,
+          outputTokens: message.usage?.output_tokens || 0,
+          cacheCreationInputTokens: message.usage?.cache_creation_input_tokens || 0,
+          cacheReadInputTokens: message.usage?.cache_read_input_tokens || 0
+        },
+        model: message.model,
+        finishReason: message.stop_reason
+      };
     } catch (error) {
-      // If there's a timeout or network error, we can't validate
-      return false;
+      if (error.status === 401) {
+        throw new AppError('Invalid Anthropic API key', { code: 'INVALID_API_KEY' });
+      } else if (error.status === 403) {
+        throw new AppError('Access denied to Claude model', { code: 'ACCESS_DENIED' });
+      } else if (error.status === 404) {
+        throw new AppError(`Claude model not found: ${resolvedModel}`, { code: 'MODEL_NOT_FOUND' });
+      }
+      throw error;
+    }
+  }
+
+  async stream(systemPrompt, userPrompt, onToken, options = {}) {
+    const resolvedModel = MODEL_ALIASES[this.model] || this.model;
+    let fullResponse = '';
+    let usage = { inputTokens: 0, outputTokens: 0 };
+
+    try {
+      const stream = await this.client.messages.stream({
+        model: resolvedModel,
+        max_tokens: options.maxTokens || this.maxTokens,
+        temperature: options.temperature || this.temperature,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      });
+
+      for await (const chunk of stream) {
+        if (chunk.type === 'content_block_delta' && chunk.delta?.text) {
+          fullResponse += chunk.delta.text;
+          if (onToken) {
+            onToken(chunk.delta.text);
+          }
+        } else if (chunk.type === 'message_stop') {
+          // Capture usage at the end
+          if (chunk.message?.usage) {
+            usage = {
+              inputTokens: chunk.message.usage.input_tokens || 0,
+              outputTokens: chunk.message.usage.output_tokens || 0
+            };
+          }
+        }
+      }
+
+      return {
+        content: fullResponse,
+        usage,
+        model: resolvedModel
+      };
+    } catch (error) {
+      if (error.status === 401) {
+        throw new AppError('Invalid Anthropic API key', { code: 'INVALID_API_KEY' });
+      } else if (error.status === 403) {
+        throw new AppError('Access denied to Claude model', { code: 'ACCESS_DENIED' });
+      } else if (error.status === 404) {
+        throw new AppError(`Claude model not found: ${resolvedModel}`, { code: 'MODEL_NOT_FOUND' });
+      }
+      throw error;
     }
   }
 }
 
-export default ClaudeProvider;
+/**
+ * Register Claude Sonnet 5 functionality with config manager
+ */
+export function registerClaudeSonnet5Config(configManager) {
+  // Add Claude Sonnet 5 as default if available
+  const defaultModel = process.env.ULTRA_DEX_CLAUDE_MODEL || CLAUDE_SONNET_5;
+  
+  configManager.define('ai.claude.model', {
+    type: 'string',
+    default: defaultModel,
+    description: 'Claude model to use (supports aliases: sonnet5, fennec)',
+    validate: (value) => {
+      const resolvedModel = MODEL_ALIASES[value] || value;
+      const validModels = [
+        CLAUDE_SONNET_5,
+        'claude-3-opus-20240229',
+        'claude-3-sonnet-20240229', 
+        'claude-3-5-sonnet-20240620',
+        'claude-3-5-sonnet-20241022',
+        'claude-3-haiku-20240307'
+      ];
+      return validModels.includes(resolvedModel);
+    }
+  });
+}
+
+export default {
+  CLAUDE_SONNET_5,
+  MODEL_ALIASES,
+  SONNET_5_PRICING,
+  checkSonnet5Availability,
+  getClaudeModel,
+  getModelPricing,
+  detectBestClaudeModel,
+  ClaudeSonnet5Provider,
+  registerClaudeSonnet5Config
+};

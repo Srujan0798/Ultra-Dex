@@ -2,9 +2,9 @@
 
 [![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)
 [![CI Status](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](./cli/package.json)
+[![Coverage](https://img.shields.io/badge/coverage-41%25-yellow.svg)](./cli/test/README.md)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](./cli/tsconfig.json)
-[![Tests](https://img.shields.io/badge/Tests-300+-brightgreen.svg)](./cli/test/README.md)
+[![Tests](https://img.shields.io/badge/Tests-350+-brightgreen.svg)](./cli/test/README.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Template](https://img.shields.io/badge/Template-34_Sections-blue.svg)](./@%20ultra-dex/Saas%20plan/04-Imp-Template.md)
@@ -152,6 +152,23 @@ npx ultra-dex workspace switch "my-pro-project"
 - **API Gateway** — Unified interface for connecting to external services and databases.
 - **Plugin Architecture** — Extend functionality with custom plugins and integrations.
 
+### **Third-Party Integration Status**
+
+| Integration | Status | Capabilities | Full Sync ETA |
+|-------------|--------|--------------|---------------|
+| **GitHub** | ✅ Full Support | Issues, PRs, Actions, Webhooks | Shipped |
+| **MCP (Claude Desktop)** | ✅ Full Support | Tool use, Context sharing | Shipped |
+| **VS Code** | ✅ Full Support | Sidebar, Commands, WebSocket | Shipped |
+| **Jira** | 🚧 Alpha | Parse plans locally, Config check | v3.6.0 (March 2026) |
+| **Notion** | 🚧 Alpha | Parse plans locally, File export | v3.6.0 (March 2026) |
+| **Discord** | 🚧 Webhook Only | Notifications via webhook | v3.6.0 |
+| **Slack** | 🚧 Webhook Only | Notifications via webhook | v3.6.0 |
+| **Linear** | 🚧 Alpha | Local parsing only | v3.7.0 |
+| **Trello** | 🚧 Alpha | Local parsing only | v3.7.0 |
+| **Stripe** | ⚠️ Framework Only | Payment models defined | v4.0.0 |
+
+**Note:** Alpha integrations parse data locally but don't make actual API calls. Full bi-directional sync with real-time webhooks coming in v3.6.0+.
+
 ---
 
 ## 🏗️ Architecture & Components
@@ -263,8 +280,9 @@ Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amn
 
 ## 📈 Performance & Reliability
 
-- **46+ CLI commands** with comprehensive functionality
-- **281+ passing tests** ensuring stability
+- **72 CLI commands** with comprehensive functionality
+- **350+ passing tests** ensuring stability
+- **41% test coverage** (target: 70% by v3.6.0)
 - **0 ESLint warnings** for code quality
 - **Circuit breaker patterns** to prevent cascading failures
 - **Caching systems** for improved performance
@@ -356,13 +374,27 @@ Create a `.ultra-dexrc` file in your project root:
   "maxTokens": 4096,
   "temperature": 0.2,
   "plugins": [
-    "ultra-dex-plugin-auth",
-    "ultra-dex-plugin-db"
+    "./plugins/auth-plugin.js",
+    "./plugins/db-plugin.js"
   ],
   "customAgents": [
     "./custom-agents/payment-agent.js"
   ]
 }
+```
+
+**Note on Plugins:**
+- **v3.5.0**: Plugins must be local files (use relative/absolute paths)
+- **v3.6.0+**: NPM package installation support coming March 2026
+- For now: Clone plugins from GitHub and reference local files
+- Community plugins: https://github.com/topics/ultra-dex-plugin
+
+```bash
+# Current: Install from local file
+ultra-dex plugin install ./my-plugin.js
+
+# Coming v3.6.0: Install from npm
+ultra-dex plugin install ultra-dex-plugin-name
 ```
 
 ---

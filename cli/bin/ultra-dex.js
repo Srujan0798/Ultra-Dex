@@ -110,6 +110,7 @@ import { registerWorkspaceCommand } from '../lib/commands/workspace.js';
 import { registerVoiceCommand } from '../lib/commands/voice.js';
 import { registerAuthCommand } from '../lib/commands/auth.js';
 import { registerSetupCommand } from '../lib/commands/setup.js';
+import { registerForgeCommand } from '../lib/commands/forge.js';
 
 // v3.0 Commands
 import { swarmCommand } from '../lib/commands/swarm.js';
@@ -130,8 +131,53 @@ import { registerFetchCommand } from '../lib/commands/fetch.js';
 import { registerSyncCommand } from '../lib/commands/sync.js';
 import { registerTeamCommand } from '../lib/commands/team.js';
 import { registerMemoryCommand } from '../lib/commands/memory.js';
+import { registerGateCommand } from '../lib/commands/gate.js';
+import { registerLedgerCommand } from '../lib/commands/ledger.js';
+import { registerJiraCommand } from '../lib/commands/jira.js';
+import { registerNotionCommand } from '../lib/commands/notion.js';
+import { registerTrelloCommand } from '../lib/commands/trello.js';
+import { registerSessionCommand } from '../lib/commands/session.js';
+import { registerMcpRemoteCommand } from '../lib/commands/mcp-remote.js';
+import { registerMcpHostCommand } from '../lib/commands/mcp-host.js';
+import { registerBotCommand } from '../lib/commands/bot.js';
+import { registerBudgetCommand } from '../lib/commands/budget.js';
+import { registerDocsCommand } from '../lib/commands/docs.js';
+import { registerBrowseCommand } from '../lib/commands/browse.js';
+import { registerChromeAgentCommand } from '../lib/commands/chrome-agent.js';
+import { registerNeuroPlanCommand } from '../lib/commands/neuro-plan.js';
+import { registerVibeCommand } from '../lib/commands/vibe.js';
+import { registerBackgroundAgentCommand } from '../lib/commands/background-agent.js';
+import { registerDaemonCommand } from '../lib/commands/daemon.js';
+import { registerRealityCheckCommand } from '../lib/commands/reality-check.js';
+import { registerCompareCommand } from '../lib/commands/compare.js';
+import { registerSecurityCommand } from '../lib/commands/security.js';
+import { registerCredentialsCommand } from '../lib/commands/credentials.js';
+import { registerPluginScanCommand } from '../lib/commands/plugin-scan.js';
+import { registerPrivacyCommand } from '../lib/commands/privacy.js';
+import { registerRouteCommand } from '../lib/commands/route.js';
+import { registerCommitCommand } from '../lib/commands/commit.js';
+import { registerRulesCommand } from '../lib/commands/rules.js';
+import { registerCicdCommand } from '../lib/commands/cicd.js';
+import { registerArchitectCommand } from '../lib/commands/architect.js';
+import { registerTemplateCommand } from '../lib/commands/template.js';
+import { registerDbAdvisorCommand } from '../lib/commands/db-advisor.js';
+import { registerAiAdvisorCommand } from '../lib/commands/ai-advisor.js';
+import { registerOnboardCommand } from '../lib/commands/onboard.js';
+import { registerProductionReadyCommand } from '../lib/commands/production-ready.js';
+import { registerDockerCommand } from '../lib/commands/docker.js';
+import { registerK8sCommand } from '../lib/commands/k8s.js';
+import { registerEnvCommand } from '../lib/commands/env.js';
+import { registerMonitorCommand } from '../lib/commands/monitor.js';
+import { registerProfileCommand } from '../lib/commands/profile.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 import { registerScaffoldPlanCommand } from '../lib/commands/scaffold-plan.js';
+import { registerTemplatesCommand } from '../lib/commands/templates.js';
+import { registerBillingCommands } from '../lib/commerce/billing.js';
+import { registerBudgetCommands } from '../lib/commerce/budget.js';
+import { registerUsageCommands } from '../lib/commerce/usage.js';
+import { registerAlertCommands } from '../lib/commerce/alerts.js';
+import { registerRemoteClientCommand } from '../lib/mcp/remote/client.js';
+import { registerSandboxCommand } from '../lib/sandbox/docker.js';
 import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
 import { registerBrainCommand } from '../lib/commands/brain.js';
 import { registerEstimateCommand } from '../lib/commands/estimate.js';
@@ -145,6 +191,8 @@ import { registerExecCommand } from '../lib/commands/exec.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
 import { registerSearchCommand } from '../lib/commands/search.js';
 import { registerVectorSearchCommand } from '../lib/commands/vector-search.js';
+import { registerImpactCommand } from '../lib/commands/impact.js';
+import { registerGraphCommand } from '../lib/commands/graph.js';
 import { registerCloudCommand } from '../lib/commands/cloud.js';
 import { registerApiCommand } from '../lib/commands/api.js';
 import { registerAutonomousCommand } from '../lib/commands/autonomous.js';
@@ -274,6 +322,8 @@ program
   .command('diff')
   .description('Compare plan vs implemented code')
   .option('--drift', 'Show detailed drift analysis between plan and implementation')
+  .option('--analyze-drift', 'Alias for --drift')
+  .option('--sections <list>', 'Limit analysis to specific section numbers')
   .option('--json', 'Output as JSON')
   .option('--with-example <name>', 'Compare with example project')
   .option('--report <path>', 'Write delta report to a file (json or md)')
@@ -283,13 +333,15 @@ program
 const exportCmd = program
   .command('export')
   .description('Export project context')
-  .option('--format <type>', 'Output format: json, html, markdown, pdf, yaml', 'json')
+  .option('--format <type>', 'Output format: json, html, markdown, pdf, yaml, notion', 'json')
   .option('--pdf', 'Shortcut for --format pdf')
   .option('--output <path>', 'Output file path')
   .option('--sections <list>', 'Only include specific sections (e.g., 1,2,3)')
+  .option('--exclude <list>', 'Exclude specific sections (e.g., 15,16)')
+  .option('--p0', 'Only include critical P0 sections')
   .option('--include-agents', 'Bundle all agent prompts')
   .option('--toc', 'Include auto-generated table of contents')
-  .option('--template <file>', 'Use custom template file for export')
+  .option('--template <file>', 'Use custom template file or built-in template (executive|technical|handoff)')
   .action(exportCommand);
 
 exportCmd._examples = EXPORT_EXAMPLES;
@@ -344,12 +396,58 @@ registerFetchCommand(program);
 registerSyncCommand(program);
 registerTeamCommand(program);
 registerMemoryCommand(program);
+registerGateCommand(program);
+registerLedgerCommand(program);
+registerJiraCommand(program);
+registerNotionCommand(program);
+registerTrelloCommand(program);
+registerSessionCommand(program);
+registerMcpRemoteCommand(program);
+registerMcpHostCommand(program);
+registerBotCommand(program);
+registerBudgetCommand(program);
+registerDocsCommand(program);
+registerBrowseCommand(program);
+registerChromeAgentCommand(program);
+registerNeuroPlanCommand(program);
+registerVibeCommand(program);
+registerBackgroundAgentCommand(program);
+registerDaemonCommand(program);
+registerRealityCheckCommand(program);
+registerCompareCommand(program);
+registerSecurityCommand(program);
+registerCredentialsCommand(program);
+registerPluginScanCommand(program);
+registerPrivacyCommand(program);
+registerRouteCommand(program);
+registerCommitCommand(program);
+registerRulesCommand(program);
+registerCicdCommand(program);
+registerArchitectCommand(program);
+registerTemplateCommand(program);
+registerDbAdvisorCommand(program);
+registerAiAdvisorCommand(program);
+registerOnboardCommand(program);
+registerProductionReadyCommand(program);
+registerDockerCommand(program);
+registerK8sCommand(program);
+registerEnvCommand(program);
+registerMonitorCommand(program);
+registerProfileCommand(program);
 registerScaffoldCommand(program);
 registerScaffoldPlanCommand(program);
+registerTemplatesCommand(program);
+registerBillingCommands(program);
+registerBudgetCommands(program);
+registerUsageCommands(program);
+registerAlertCommands(program);
+registerRemoteClientCommand(program);
+registerSandboxCommand(program);
 registerPluginCommand(program);
 registerVoiceCommand(program);
 registerAuthCommand(program);
 registerSetupCommand(program);
+registerForgeCommand(program);
 
 // Monitoring commands (v3.4.3) - note: status uses state.js, sys-config uses monitoring.js
 registerSystemConfigCommand(program);
@@ -363,6 +461,8 @@ registerBrowserCommand(program);
 registerGitHubCommand(program);
 registerSearchCommand(program);
 registerVectorSearchCommand(program);
+registerImpactCommand(program);
+registerGraphCommand(program);
 registerCloudCommand(program);
 registerApiCommand(program);
 registerBrainCommand(program);

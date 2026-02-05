@@ -15,6 +15,7 @@ import { printError, printInfo, printSuccess, printWarning } from '../utils/outp
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { buildDiffSummary, applyDiffSummary } from './brain.js';
+import { VERIFICATION_STEPS, summarizeSteps } from '../verify/21-steps.js';
 import { 
     verifyArchitectureAlignment, 
     verifyErrorHandlingStrategy, 
@@ -55,12 +56,15 @@ export function registerVerifyCommand(program) {
       .option('--template <path>', 'Template file path (optional)')
       .option('--live', 'Run active verification (automated gates only)')
       .option('--pre-push', 'Run pre-push checks (update CONTEXT.md + live gates)')
+      .option('--full', 'Run full 21-step verification')
       .action(async (task, options) => {
           try {
               if (options.prePush) {
                   await runPrePushChecks();
               } else if (options.live) {
                   await verifyLive(process.cwd());
+              } else if (options.full) {
+                  await verifyCommand(task, options);
               } else {
                   await verifyCommand(task, options);
               }
@@ -172,6 +176,7 @@ export async function verifyCommand(taskName, options) {
   // 1. Automated Checks
   printInfo(chalk.bold('1. Running Automated Gates...\n'));
   const automatedResults = await runAutomatedGates(projectDir);
+  reportBlockers(automatedResults);
   printInfo('');
 
   // 2. AI Review
@@ -180,6 +185,22 @@ export async function verifyCommand(taskName, options) {
 
   // 3. Final Verdict
   displayFinalVerdict(report);
+}
+
+function reportBlockers(results) {
+  const failures = Object.entries(results).filter(([_, status]) => status === 'FAIL');
+  if (!failures.length) return;
+  printWarning(chalk.yellow('\nBlockers detected:'));
+  failures.forEach(([name]) => printWarning(`  - ${name}`));
+}
+
+export function listVerificationSteps() {
+  const phases = summarizeSteps();
+  Object.entries(phases).forEach(([phase, steps]) => {
+    printInfo(chalk.bold(`\n${phase}`));
+    steps.forEach(step => printInfo(`  ${step.id}. ${step.name}`));
+  });
+  return VERIFICATION_STEPS;
 }
 
 /**

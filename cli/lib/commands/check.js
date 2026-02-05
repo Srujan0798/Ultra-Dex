@@ -17,6 +17,8 @@ export function registerCheckCommand(program) {
     .option('--p0-only', 'Check only critical (P0) sections')
     .option('--sections <list>', 'Check specific sections (e.g., 1,2,3)')
     .option('--json', 'Output as JSON')
+    .option('--strict', 'Exit with error if any required section is missing/partial')
+    .option('--fix', 'Auto-fill missing sections with suggested content')
     .action(async (options) => {
       try {
         if (!options.json) {
@@ -83,10 +85,8 @@ export function registerCheckCommand(program) {
         // Parse sections
         const sections = parseSections(planContent);
 
-        // Define P0 sections (11 critical sections as per requirements)
-        // Foundation: 1, 2, 4, 6, 10, 11, 12, 15
-        // Core Development: 9, 16, 20
-        const p0Sections = [1, 2, 4, 6, 9, 10, 11, 12, 15, 16, 20];
+        // Define P0 sections (1-12 critical sections as per requirements)
+        const p0Sections = Array.from({ length: 12 }, (_, i) => i + 1);
 
         // Filter sections to check
         let sectionsToCheck = sections;
@@ -113,6 +113,22 @@ export function registerCheckCommand(program) {
           else missingCount++;
         }
 
+        // Auto-fix missing sections (best-effort suggestions)
+        let fixApplied = false;
+        if (options.fix) {
+          const nextPlan = applyAutoFixes(planContent, sections, results);
+          if (nextPlan !== planContent) {
+            await fs.writeFile(planPath, nextPlan);
+            fixApplied = true;
+            if (!silent) {
+              console.log(chalk.green('\n✅ Auto-fill suggestions added to IMPLEMENTATION-PLAN.md'));
+              console.log(chalk.gray('   Review and refine the suggested content.\n'));
+            }
+          } else if (!silent) {
+            console.log(chalk.gray('\nℹ️  No sections required auto-fill suggestions.\n'));
+          }
+        }
+
         // Display results
         if (options.json) {
           console.log(JSON.stringify({
@@ -124,6 +140,7 @@ export function registerCheckCommand(program) {
             contextValid,
             contextFresh,
             contextDetails,
+            fixApplied,
             sections: results
           }, null, 2));
           return;
@@ -177,9 +194,9 @@ export function registerCheckCommand(program) {
           criticalMissing.forEach(msg => {
             console.log(chalk.red(`  • ${msg}`));
           });
-          console.log(chalk.yellow('\nThese 11 sections are required for a Production-Ready plan.\n'));
+          console.log(chalk.yellow('\nThese 12 sections are required for a Production-Ready plan.\n'));
         } else {
-          console.log(chalk.green('\n✅ All 11 critical P0 sections are complete!\n'));
+          console.log(chalk.green('\n✅ All 12 critical P0 sections are complete!\n'));
         }
 
         // Tech stack validation
@@ -212,6 +229,15 @@ export function registerCheckCommand(program) {
             console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
           });
           console.log(chalk.gray('   Tasks must be broken into 4-9 hour chunks.\n'));
+        }
+
+        // Strict mode
+        if (options.strict) {
+          const hasFailures = missingCount > 0 || partialCount > 0 || !contextValid || !contextFresh || criticalMissing.length > 0;
+          if (hasFailures) {
+            console.log(chalk.red('\n❌ Strict mode: validation failed.'));
+            process.exitCode = 1;
+          }
         }
 
       } catch (error) {
@@ -256,10 +282,11 @@ function parseSections(content) {
 
 function analyzeSection(section) {
   const content = section.content.join('\n');
+  const placeholderRegex = /\bTODO\b|\[TODO\]|\bTBD\b|\bTBA\b|\[Fill in\]|\.\.\./i;
   const checks = {
     hasContent: content.trim().length > 50,
     hasBulletPoints: content.includes('- ') || content.includes('* '),
-    noPlaceholders: !content.includes('[TODO]') && !content.includes('TBD') && !content.includes('...'),
+    noPlaceholders: !placeholderRegex.test(content),
     hasAcceptanceCriteria: /acceptance criteria|criteria|verifiable by|audit by/i.test(content),
     hasAtomicTasks: /task|step|atomic|breakdown/i.test(content) && /\b[4-9]\s*hours?\b|\b[4-9]h\b/i.test(content)
   };
@@ -279,13 +306,23 @@ function analyzeSection(section) {
   if (!checks.hasAcceptanceCriteria) issues.push('Missing measurable acceptance criteria');
   if (!checks.hasAtomicTasks && [16, 20].includes(section.number)) issues.push('Tasks not broken into 4-9h chunks');
 
+  const suggestions = [];
+  if (!checks.hasContent) suggestions.push('Add 3-5 sentences describing scope, inputs, and outputs.');
+  if (!checks.noPlaceholders) suggestions.push('Replace TODO/TBD placeholders with concrete details.');
+  if (!checks.hasBulletPoints && section.number !== 1) suggestions.push('Add bullet points for steps, deliverables, or decisions.');
+  if (!checks.hasAcceptanceCriteria) suggestions.push('Add a short "Acceptance Criteria" list with measurable outcomes.');
+  if (!checks.hasAtomicTasks && [16, 20].includes(section.number)) {
+    suggestions.push('Break tasks into 4-9 hour chunks with estimates.');
+  }
+
   return {
     number: section.number,
     title: section.title,
     status,
     percentage,
     checks,
-    issues
+    issues,
+    suggestions
   };
 }
 
@@ -376,4 +413,38 @@ async function checkContextFreshness(contextPath) {
     fresh: staleRefs.length === 0,
     staleRefs
   };
+}
+
+function applyAutoFixes(planContent, sections, results) {
+  const lines = planContent.split('\n');
+  const sectionByNumber = new Map(sections.map(section => [section.number, section]));
+  const edits = [];
+
+  for (const result of results) {
+    if (result.status === 'complete' && result.checks.noPlaceholders) continue;
+
+    const section = sectionByNumber.get(result.number);
+    if (!section) continue;
+
+    const content = section.content.join('\n');
+    if (content.includes('AI Suggested Additions')) continue;
+    if (result.suggestions.length === 0) continue;
+
+    const block = [
+      '',
+      '### AI Suggested Additions',
+      ...result.suggestions.map(item => `- ${item}`),
+      ''
+    ];
+
+    edits.push({ index: section.endLine, block });
+  }
+
+  if (edits.length === 0) return planContent;
+
+  edits.sort((a, b) => b.index - a.index).forEach(({ index, block }) => {
+    lines.splice(index, 0, ...block);
+  });
+
+  return lines.join('\n');
 }

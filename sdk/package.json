@@ -1,0 +1,10 @@
+{
+  "name": "@ultra-dex/sdk",
+  "version": "0.1.0",
+  "description": "Ultra-Dex SDK for AI agent orchestration",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "module": "index.ts",
+  "type": "module",
+  "license": "MIT"
+}

@@ -12,6 +12,7 @@ import { validateSafePath } from '../utils/validation.js';
 import { marketplaceClient } from '../marketplace/client.js';
 import { authorizeAgentAccess, filterAgentsByAccess } from '../enterprise/agent-access.js';
 import { printError, printInfo, printWarning } from '../utils/output.js';
+import { registerAgentGenerator } from './agent-gen.js';
 
 export const AGENTS = [
   { name: 'architect', description: 'Manifest reality from a raw idea', file: '0-orchestration/architect.md', tier: 'Orchestration' },
@@ -198,6 +199,7 @@ export function registerAgentsCommand(program) {
     { command: 'ultra-dex agents', description: 'List all built-in and custom agents' },
     { command: 'ultra-dex agents list --page 2 --limit 10', description: 'Paginate agents list' },
     { command: 'ultra-dex agents show frontend', description: 'Show a specific agent prompt' },
+    { command: 'ultra-dex agent generate --domain fintech', description: 'Generate a domain agent template' },
   ];
 
   // Default action: list agents
@@ -244,6 +246,8 @@ export function registerAgentsCommand(program) {
     .description('List all available agents')
     .option('--marketplace', 'Show marketplace agents')
     .option('--builtin', 'Show built-in agents only')
+    .option('--tier <tier>', 'Filter by tier (Orchestration, Leadership, Development, Security, DevOps, Quality, Specialist)')
+    .option('--category <category>', 'Filter by category (orchestration, leadership, development, security, devops, quality, specialist)')
     .option('--page <number>', 'Page number', String(1))
     .option('--limit <number>', 'Items per page', String(DEFAULT_PAGE_SIZE))
     .option('--json', 'Output list as JSON')
@@ -254,9 +258,9 @@ export function registerAgentsCommand(program) {
         if (options.marketplace) {
           await showMarketplace({ page, limit, json: !!options.json });
         } else if (options.builtin) {
-          await listAgents({ builtinOnly: true, page, limit, json: !!options.json });
+          await listAgents({ builtinOnly: true, page, limit, json: !!options.json, tier: options.tier, category: options.category });
         } else {
-          await listAgents({ builtinOnly: false, page, limit, json: !!options.json });
+          await listAgents({ builtinOnly: false, page, limit, json: !!options.json, tier: options.tier, category: options.category });
         }
       } catch (error) {
         printError(chalk.red(`Failed to list agents: ${error.message}`));
@@ -561,6 +565,7 @@ ${answers.prompt}
       }
     });
 
+  registerAgentGenerator(agentsCmd);
 }
 
 async function showMarketplace({ page = 1, limit = DEFAULT_PAGE_SIZE, json = false } = {}) {
@@ -595,7 +600,20 @@ async function showMarketplace({ page = 1, limit = DEFAULT_PAGE_SIZE, json = fal
   }
 }
 
-async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_SIZE, json = false } = {}) {
+function mapTierToCategory(tier) {
+  const map = {
+    Orchestration: 'orchestration',
+    Leadership: 'leadership',
+    Development: 'development',
+    Security: 'security',
+    DevOps: 'devops',
+    Quality: 'quality',
+    Specialist: 'specialist'
+  };
+  return map[tier] || 'general';
+}
+
+async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_SIZE, json = false, tier, category } = {}) {
   try {
     const customAgents = builtinOnly ? [] : await listCustomAgents();
     const totalAgents = AGENTS.length + customAgents.length;
@@ -621,11 +639,17 @@ async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_
 
     const allowedSet = new Set(allowedAgents.map(name => name.toLowerCase()));
 
-    const agentsForTable = AGENTS.filter(agent => allowedSet.has(agent.name.toLowerCase())).map(agent => ({
-      tier: agent.tier,
-      name: agent.name,
-      status: 'ready'
-    }));
+    const agentsForTable = AGENTS
+      .filter(agent => allowedSet.has(agent.name.toLowerCase()))
+      .map(agent => ({
+        tier: agent.tier,
+        name: agent.name,
+        status: 'ready',
+        category: mapTierToCategory(agent.tier),
+        file: agent.file
+      }))
+      .filter(agent => !tier || agent.tier.toLowerCase() === tier.toLowerCase())
+      .filter(agent => !category || agent.category.toLowerCase() === category.toLowerCase());
 
     if (customAgents.length > 0) {
       customAgents
@@ -634,7 +658,9 @@ async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_
           agentsForTable.push({
             tier: 'Custom',
             name: name,
-            status: 'ready'
+            status: 'ready',
+            category: 'custom',
+            file: `custom-agents/${name}.md`
           });
         });
     }
@@ -657,12 +683,23 @@ async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_
       return;
     }
 
-    showAgentsTable(pageData.items);
+    showAgentsTable(pageData.items.map(item => ({
+      tier: item.tier,
+      name: item.name,
+      status: item.status,
+      capabilities: item.category
+    })));
     printPaginationSummary(pageData);
 
     if (restrictedAgents.length > 0) {
       console.log(chalk.yellow(`\n🔒 Role-based access (${role}) hides ${restrictedAgents.length} agent(s).`));
     }
+
+    console.log(chalk.gray('\nAgent paths:'));
+    pageData.items.forEach(item => {
+      const filePath = item.file ? `agents/${item.file}` : 'custom';
+      console.log(chalk.gray(`  @${item.name}: ${filePath}`));
+    });
 
     console.log('\n' + chalk.bold('Usage:'));
     console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));

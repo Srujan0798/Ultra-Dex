@@ -83,6 +83,22 @@ Check for:
 4. **Check the plan** - Ensure code matches specifications
 5. **Be thorough but fair** - Don't block on style preferences
 
+## Strict Mode Review Checklist
+
+- Quality
+- Security
+- Performance
+- Testing
+- Documentation
+
+## Required Output Format
+
+**Summary:**  
+**Critical:**  
+**Suggestions:**  
+**Praise:**  
+**Status:** Approve | Request Changes | Reject
+
 ---
 
 ## Decision Framework

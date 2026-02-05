@@ -242,6 +242,8 @@ export function registerScaffoldCommand(program) {
     .option('--from-plan', 'Scaffold based on Implementation Plan')
     .option('--dry-run', 'Show what would be created when using --from-plan')
     .option('--force', 'Overwrite existing files when using --from-plan')
+    .option('--prisma-only', 'Only generate Prisma schema when using --from-plan')
+    .option('--api-only', 'Only generate API routes when using --from-plan')
     .option('--page <number>', 'Page number for --list', String(1))
     .option('--limit <number>', 'Items per page for --list', String(DEFAULT_PAGE_SIZE))
     .option('--json', 'Output list data as JSON')
@@ -283,6 +285,7 @@ export function registerScaffoldCommand(program) {
     { command: 'ultra-dex scaffold next15-prisma-clerk', description: 'Scaffold a Next.js + Prisma + Clerk project' },
     { command: 'ultra-dex scaffold --from-plan', description: 'Select template based on implementation plan' },
     { command: 'ultra-dex scaffold --from-plan --dry-run', description: 'Preview plan-based scaffolding without changes' },
+    { command: 'ultra-dex scaffold --from-plan --prisma-only', description: 'Generate only Prisma schema from plan' },
     { command: 'ultra-dex scaffold --list --page 1 --limit 5', description: 'List available templates with pagination' },
   ];
 }

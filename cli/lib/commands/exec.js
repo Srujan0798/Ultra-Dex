@@ -59,6 +59,9 @@ export function registerExecCommand(program) {
     .description('Execute code in isolated Docker sandbox')
     .option('-c, --code <code>', 'Execute inline code')
     .option('-l, --language <lang>', 'Language (js, ts, py, go, rs, rb)')
+    .option('--runtime <runtime>', 'Runtime (node|python|go|rust|custom)')
+    .option('--image <image>', 'Docker image override')
+    .option('--dockerfile <path>', 'Custom Dockerfile to build image')
     .option('-t, --timeout <ms>', 'Timeout in milliseconds', '30000')
     .option('--sandbox', 'Run in Docker sandbox (default)')
     .option('--allow-network', 'Allow network access in sandbox')
@@ -150,28 +153,57 @@ async function handleCommandExecution(command, timeout, allowNetwork) {
     return result;
 }
 
+async function resolveImage(language, options) {
+    if (options.image) return options.image;
+    if (options.dockerfile) {
+        const tag = `ultra-dex-custom:${Date.now()}`;
+        await execSyncSafe(`docker build -f ${options.dockerfile} -t ${tag} .`);
+        return tag;
+    }
+    return SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
+}
+
+async function execSyncSafe(cmd) {
+    try {
+        const { execSync } = await import('child_process');
+        execSync(cmd, { stdio: 'inherit' });
+    } catch (error) {
+        throw new AppError(`Failed to build Docker image: ${error.message}`);
+    }
+}
+
 async function handleCodeExecution(code, lang, timeout, options) {
     const language = lang || 'javascript';
-    const image = SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
+    const image = await resolveImage(language, options);
     const spinner = ora('Preparing sandbox...').start();
     await ensureImage(image, spinner);
     spinner.text = 'Executing code...';
     const result = await executeInSandbox(code, {
-        language, timeout, allowNetwork: options.allowNetwork, safeMode: options.safe
+        language,
+        runtime: options.runtime,
+        timeout,
+        allowNetwork: options.allowNetwork,
+        safeMode: options.safe,
+        image
     });
     return result;
 }
 
 async function handleFileExecution(file, lang, timeout, options) {
     const language = lang || detectLanguage(file);
-    const image = SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
+    const image = await resolveImage(language, options);
     const spinner = ora('Preparing sandbox...').start();
     await ensureImage(image, spinner);
     spinner.text = `Executing ${file}...`;
     const code = await fs.readFile(file, 'utf8');
     const result = await executeInSandbox(code, {
         filename: path.basename(file),
-        language, timeout, allowNetwork: options.allowNetwork, safeMode: options.safe
+        language,
+        runtime: options.runtime,
+        timeout,
+        allowNetwork: options.allowNetwork,
+        safeMode: options.safe,
+        image
     });
     return result;
 }

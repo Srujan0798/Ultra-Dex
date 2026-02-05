@@ -55,10 +55,39 @@ export function registerEstimateCommand(program) {
     .option('-m, --model <model>', 'Specific model name')
     .option('--compare', 'Compare all providers', false)
     .option('--monthly <tasks>', 'Estimate monthly cost (number of tasks per month)', parseInt)
+    .option('--hours <hours>', 'Base hours for overhead calculation', parseFloat)
+    .option('--tasks <count>', 'Number of tasks (for context switching)', parseInt)
+    .option('--new-tech', 'Apply new technology overhead')
+    .option('--integration', 'Apply integration overhead')
+    .option('--uncertainty', 'Apply uncertainty overhead')
     .option('--json', 'Output as JSON')
     .action(async (task, options) => {
       try {
         printInfo(chalk.cyan.bold('⚡ Ultra-Dex Cost Estimator\n'));
+
+        if (options.hours) {
+          const base = Number(options.hours);
+          const factors = [];
+          factors.push({ name: 'Testing', value: 0.25 });
+          factors.push({ name: 'Code Review', value: 0.10 });
+          if ((options.tasks || 1) > 2) factors.push({ name: 'Context Switching', value: 0.15 });
+          if (options.newTech) factors.push({ name: 'New Technology', value: 0.30 });
+          if (options.integration) factors.push({ name: 'Integration', value: 0.20 });
+          if (options.uncertainty) factors.push({ name: 'Uncertainty', value: 0.20 });
+
+          const totalFactor = factors.reduce((sum, f) => sum + f.value, 0);
+          const actualHours = base * (1 + totalFactor);
+          const needsSplit = actualHours > 9;
+
+          printInfo(chalk.white.bold('🧮 Overhead Estimate:'));
+          printInfo(`   Base: ${base}h`);
+          factors.forEach(f => printInfo(`   + ${Math.round(f.value * 100)}% ${f.name}`));
+          printInfo(`   Total: ${actualHours.toFixed(2)}h`);
+          if (needsSplit) {
+            printWarning(chalk.yellow('⚠️  Consider splitting into smaller tasks (<9h each).'));
+          }
+          printInfo('');
+        }
 
         // Validate token inputs
         if (options.tokens !== undefined && (isNaN(options.tokens) || options.tokens < 0)) {

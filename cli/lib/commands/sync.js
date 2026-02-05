@@ -11,6 +11,7 @@ import { buildGraph } from '../utils/graph.js';
 import { snapshotContext } from '../utils/sync.js';
 import { validateSafePath } from '../utils/validation.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import integrations from '../integrations/index.js';
 
 const WATCH_IGNORES = new Set([
   '.git',
@@ -114,6 +115,12 @@ export function registerSyncCommand(program) {
     .option('--target <path>', 'Sync target (local folder or s3-like)', '.ultra/sync')
     .option('--watch', 'Watch codebase changes and auto-sync CONTEXT.md')
     .option('--debounce <ms>', 'Debounce interval for watch mode', '800')
+    .option('--jira', 'Sync IMPLEMENTATION-PLAN.md with Jira')
+    .option('--notion', 'Sync IMPLEMENTATION-PLAN.md with Notion')
+    .option('--trello', 'Sync IMPLEMENTATION-PLAN.md with Trello')
+    .option('--project <key>', 'Project key for Jira sync')
+    .option('--page-id <id>', 'Notion page/database ID')
+    .option('--board-id <id>', 'Trello board ID')
     .action(async (options) => {
       try {
         printInfo(chalk.cyan('\n🔄 Ultra-Dex State Sync\n'));
@@ -136,6 +143,53 @@ export function registerSyncCommand(program) {
         }
 
         const projectDir = path.resolve(options.dir);
+
+        if (options.jira || options.notion || options.trello) {
+          if (options.jira) {
+            try {
+              const result = await integrations.jira.syncPlan({
+                projectKey: options.project,
+                planPath: 'IMPLEMENTATION-PLAN.md'
+              }, {
+                baseUrl: process.env.JIRA_BASE_URL,
+                apiToken: process.env.JIRA_API_TOKEN,
+                email: process.env.JIRA_EMAIL
+              });
+              printSuccess(chalk.green(`✅ Jira sync prepared (${result.summary.epics} epics, ${result.summary.stories} stories)`));
+            } catch (error) {
+              printWarning(chalk.yellow(`Jira sync skipped: ${error.message}`));
+            }
+          }
+
+          if (options.notion) {
+            try {
+              const result = await integrations.notion.exportPlan({
+                planPath: 'IMPLEMENTATION-PLAN.md'
+              }, {
+                apiToken: process.env.NOTION_API_TOKEN,
+                databaseId: options.pageId || process.env.NOTION_DATABASE_ID
+              });
+              printSuccess(chalk.green(`✅ Notion export prepared (${result.databaseId})`));
+            } catch (error) {
+              printWarning(chalk.yellow(`Notion sync skipped: ${error.message}`));
+            }
+          }
+
+          if (options.trello) {
+            try {
+              const result = await integrations.trello.sync({}, {
+                apiKey: process.env.TRELLO_API_KEY,
+                token: process.env.TRELLO_TOKEN,
+                boardId: options.boardId || process.env.TRELLO_BOARD_ID
+              });
+              if (result?.ok) {
+                printSuccess(chalk.green('✅ Trello sync prepared'));
+              }
+            } catch (error) {
+              printWarning(chalk.yellow(`Trello sync skipped: ${error.message}`));
+            }
+          }
+        }
 
         // Watch Mode: Continuous auto-sync
         if (options.watch) {
@@ -180,6 +234,9 @@ export function registerSyncCommand(program) {
     { command: 'ultra-dex sync --pull --target backups/sync', description: 'Pull state from a custom sync target' },
     { command: 'ultra-dex sync --brain', description: 'Regenerate CONTEXT.md from code graph' },
     { command: 'ultra-dex sync --watch', description: 'Auto-sync CONTEXT.md on code changes' },
+    { command: 'ultra-dex sync --jira --project PROJ', description: 'Prepare Jira epic/story sync' },
+    { command: 'ultra-dex sync --notion --page-id xxx', description: 'Prepare Notion export' },
+    { command: 'ultra-dex sync --trello --board-id abc', description: 'Prepare Trello board sync' },
   ];
 }
 
