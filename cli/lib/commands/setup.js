@@ -23,6 +23,7 @@ export function registerSetupCommand(program) {
     .description('Interactive setup wizard for Ultra-Dex')
     .option('--quick', 'Quick setup with defaults')
     .option('--reset', 'Reset configuration to defaults')
+    .option('--completions', 'Install shell completions and exit')
     .action(async (options) => {
       try {
         await runSetup(options);
@@ -35,6 +36,12 @@ export function registerSetupCommand(program) {
 
 async function runSetup(options) {
   printInfo(chalk.cyan.bold('\n⚡ Ultra-Dex Setup Wizard\n'));
+
+  if (options.completions) {
+    await installCompletions();
+    printSuccess(chalk.green('✅ Shell completions installed\n'));
+    return;
+  }
 
   if (options.reset) {
     await resetConfig();
@@ -222,6 +229,22 @@ async function installCompletions() {
       printInfo(chalk.gray('   Add to ~/.zshrc: fpath+=~/.zsh/completions'));
     } catch (error) {
       printWarning(chalk.yellow(`⚠️  Could not install zsh completions: ${error.message}`));
+    }
+    return;
+  }
+
+  if (shell.includes('fish')) {
+    const targetDir = path.join(os.homedir(), '.config', 'fish', 'completions');
+    const sourceFile = path.join(completionsDir, 'ultra-dex.fish');
+    const targetFile = path.join(targetDir, 'ultra-dex.fish');
+
+    try {
+      await fs.mkdir(targetDir, { recursive: true });
+      await fs.copyFile(sourceFile, targetFile);
+      printSuccess(chalk.green('✅ Fish completions installed'));
+      printInfo(chalk.gray('   Reload fish or run: source ~/.config/fish/config.fish'));
+    } catch (error) {
+      printWarning(chalk.yellow(`⚠️  Could not install fish completions: ${error.message}`));
     }
     return;
   }

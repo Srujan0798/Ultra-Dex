@@ -94,7 +94,12 @@ _ultra_dex() {
                         '(--json)'--json'[JSON output]' \
                         '(--drift)'--drift'[Drift analysis]' \
                         '(--with-example)'--with-example'[Compare with example]:name:' \
-                        '(--report)'--report'[Write report to file]:file:_files'
+                        '(--report)'--report'[Write report to file]:file:_files' \
+                        '(--output)'--output'[Alias for --report]:file:_files'
+                    ;;
+                repl)
+                    _arguments \
+                        '(--continue)'--continue'[Resume last session]'
                     ;;
                 scaffold)
                     _arguments \
@@ -112,10 +117,18 @@ _ultra_dex() {
                         '(--dry-run)'--dry-run'[Show what would be created]' \
                         '(--force)'--force'[Overwrite existing files]'
                     ;;
+                watch)
+                    _arguments \
+                        '(--debounce)'--debounce'[Debounce interval in ms]' \
+                        '(--interval)'--interval'[Debounce interval (deprecated)]' \
+                        '(--sync)'--sync'[Auto-sync CONTEXT.md]' \
+                        '(--ignore)'--ignore'[Ignore patterns]:patterns:'
+                    ;;
                 setup)
                     _arguments \
                         '(--quick)'--quick'[Quick setup with defaults]' \
-                        '(--reset)'--reset'[Reset configuration to defaults]'
+                        '(--reset)'--reset'[Reset configuration to defaults]' \
+                        '(--completions)'--completions'[Install shell completions]'
                     ;;
             esac
             ;;
@@ -166,6 +179,7 @@ _ultra_dex_commands() {
         "pty:PTY terminal"
         "ralph:Task runner"
         "review:Code review"
+        "repl:Interactive REPL"
         "run:Run single agent"
         "scaffold:Scaffold from template"
         "scaffold-plan:Scaffold from plan"
