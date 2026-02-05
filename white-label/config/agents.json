@@ -1,0 +1,10 @@
+{
+  "defaultAgents": ["planner", "frontend", "backend", "security"],
+  "customAgents": [
+    {
+      "id": "enterprise-auditor",
+      "name": "Enterprise Auditor",
+      "description": "Compliance and audit specialist"
+    }
+  ]
+}
