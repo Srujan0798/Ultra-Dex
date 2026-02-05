@@ -1,6 +1,7 @@
 import { streamText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 const PROVIDER_MAP = {
   openai: {
@@ -14,6 +15,14 @@ const PROVIDER_MAP = {
   anthropic: {
     create: (apiKey) => anthropic({ apiKey }),
     defaultModel: 'claude-3-5-sonnet-20240620'
+  },
+  google: {
+    create: (apiKey) => createGoogleGenerativeAI({ apiKey }),
+    defaultModel: 'gemini-1.5-pro'
+  },
+  gemini: {
+    create: (apiKey) => createGoogleGenerativeAI({ apiKey }),
+    defaultModel: 'gemini-1.5-pro'
   }
 };
 
@@ -26,6 +35,9 @@ function resolveApiKey(providerId, apiKey) {
   if (apiKey) return apiKey;
   if (providerId === 'openai') return process.env.OPENAI_API_KEY;
   if (providerId === 'claude' || providerId === 'anthropic') return process.env.ANTHROPIC_API_KEY;
+  if (providerId === 'google' || providerId === 'gemini') {
+    return process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY;
+  }
   return null;
 }
 
