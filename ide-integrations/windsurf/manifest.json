@@ -1,0 +1,11 @@
+{
+  "name": "ultra-dex-windsurf",
+  "displayName": "Ultra-Dex Windsurf Integration",
+  "version": "0.1.0",
+  "description": "Official Windsurf integration for Ultra-Dex.",
+  "main": "index.js",
+  "commands": [
+    { "id": "ultraDex.plan", "title": "Ultra-Dex: Generate Plan" },
+    { "id": "ultraDex.review", "title": "Ultra-Dex: Review Code" }
+  ]
+}
