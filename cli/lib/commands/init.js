@@ -16,6 +16,7 @@ import { showBanner } from './banner.js';
 import { printError, printInfo, printSuccess } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
+import { runAutoContext } from '../auto-context/index.js';
 
 const LIVE_STACKS = {
   'next15-saas': 'Next.js 15 SaaS (Clerk + Stripe + Prisma + Admin)',
@@ -131,6 +132,13 @@ async function handleLiveScaffold(options) {
     await copyDirectory(sourcePath, outputDir);
     spinner.succeed(chalk.green('Infrastructure deployment complete.'));
 
+    try {
+      await runAutoContext(outputDir);
+      printSuccess(chalk.green('✅ Auto-context generated.'));
+    } catch (autoError) {
+      printError(chalk.yellow(`⚠️  Auto-context failed: ${autoError.message}`));
+    }
+
     printInfo(`\nStack: ${preset}`);
     process.stdout.write(chalk.gray(`Next steps:`) + '\n');
     process.stdout.write(chalk.cyan(`  1. cd ${outputDir}`) + '\n');
@@ -229,6 +237,14 @@ async function handleInteractiveInit(options) {
   try {
     const outputDir = path.resolve(options.dir, answers.projectName);
     await scaffoldProject(outputDir, answers);
+
+    try {
+      await runAutoContext(outputDir);
+      printSuccess(chalk.green('✅ Auto-context generated.'));
+    } catch (autoError) {
+      printError(chalk.yellow(`⚠️  Auto-context failed: ${autoError.message}`));
+    }
+
     spinner.succeed(chalk.green('Protocol initialization complete.'));
     showFinalInstructions(outputDir, answers);
   } catch (error) {
