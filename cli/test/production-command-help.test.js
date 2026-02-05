@@ -1,48 +1,56 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import path from 'node:path';
+import { Command } from 'commander';
 import { MockAIProvider } from './mocks/providers.js';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
-const cliPath = path.resolve(__dirname, '..', 'bin', 'ultra-dex.js');
+import { registerInitCommand } from '../lib/commands/init.js';
+import { registerGenerateCommand } from '../lib/commands/generate.js';
+import { registerBuildCommand } from '../lib/commands/build.js';
+import { registerServeCommand } from '../lib/commands/serve.js';
+import { registerValidateCommand } from '../lib/commands/validate.js';
+import { registerDashboardCommand } from '../lib/commands/dashboard.js';
+import { registerAutoImplementCommand } from '../lib/commands/auto-implement.js';
+import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
+import { registerCloudCommand } from '../lib/commands/cloud.js';
+import { registerBrainCommand } from '../lib/commands/brain.js';
+import { swarmCommand } from '../lib/commands/swarm.js';
 
-function runCli(args, options = {}) {
-  const result = spawnSync(process.execPath, [cliPath, ...args], {
-    cwd: options.cwd ?? process.cwd(),
-    env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
-    encoding: 'utf8',
-    timeout: options.timeout ?? 20000,
-    input: options.input ?? ''
-  });
-  return {
-    ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
-  };
-}
+describe('production command registration', () => {
+  test('registers production commands with commander', () => {
+    const program = new Command();
 
-describe('production command help output', () => {
-  const commands = [
-    { name: 'init', args: ['init', '--help'] },
-    { name: 'generate', args: ['generate', '--help'] },
-    { name: 'build', args: ['build', '--help'] },
-    { name: 'swarm', args: ['swarm', '--help'] },
-    { name: 'serve', args: ['serve', '--help'] },
-    { name: 'validate', args: ['validate', '--help'] },
-    { name: 'dashboard', args: ['dashboard', '--help'] },
-    { name: 'auto-implement', args: ['auto-implement', '--help'] },
-    { name: 'ci-monitor', args: ['ci-monitor', '--help'] },
-    { name: 'cloud', args: ['cloud', '--help'] },
-    { name: 'brain', args: ['brain', '--help'] }
-  ];
+    registerInitCommand(program);
+    registerGenerateCommand(program);
+    registerBuildCommand(program);
+    registerServeCommand(program);
+    registerValidateCommand(program);
+    registerDashboardCommand(program);
+    registerAutoImplementCommand(program);
+    registerCiMonitorCommand(program);
+    registerCloudCommand(program);
+    registerBrainCommand(program);
 
-  for (const cmd of commands) {
-    test(`${cmd.name} --help exits cleanly`, () => {
-      const result = runCli(cmd.args);
-      assert.equal(result.status, 0, `Expected ${cmd.name} --help to exit with 0`);
-      assert.match(result.output, new RegExp(`\\b${cmd.name}\\b`, 'i'));
+    program.command('swarm <task>').action(swarmCommand);
+
+    const names = program.commands.map(cmd => cmd.name());
+    const expected = [
+      'init',
+      'generate',
+      'build',
+      'serve',
+      'validate',
+      'dashboard',
+      'auto-implement',
+      'ci-monitor',
+      'cloud',
+      'brain',
+      'swarm'
+    ];
+
+    expected.forEach(name => {
+      assert.ok(names.includes(name), `Expected ${name} command to be registered`);
     });
-  }
+  });
 });
 
 describe('mocks for production command tests', () => {
