@@ -12,6 +12,97 @@ import { snapshotContext } from '../utils/sync.js';
 import { validateSafePath } from '../utils/validation.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
+const WATCH_IGNORES = new Set([
+  '.git',
+  'node_modules',
+  '.next',
+  'dist',
+  'build',
+  '.ultra-dex',
+  '.cursor',
+  '.idea',
+  '.vscode',
+  'coverage'
+]);
+
+const WATCH_EXTENSIONS = new Set([
+  '.js', '.ts', '.tsx', '.jsx', '.json', '.md', '.prisma', '.sql', '.py', '.go', '.rb'
+]);
+
+const SCHEMA_PATTERNS = [
+  /schema\.prisma$/i,
+  /drizzle\/schema/i,
+  /supabase\/migrations/i,
+  /migrations\/.*\.(sql|ts|js)$/i,
+  /db\/schema/i
+];
+
+function shouldIgnorePath(filePath) {
+  const parts = filePath.split(path.sep);
+  if (parts.some((part) => WATCH_IGNORES.has(part))) return true;
+  return false;
+}
+
+function isWatchedFile(filePath) {
+  if (SCHEMA_PATTERNS.some((pattern) => pattern.test(filePath))) return true;
+  const ext = path.extname(filePath);
+  return WATCH_EXTENSIONS.has(ext);
+}
+
+function renderInlineDiff(before, after, maxLines = 120) {
+  const beforeLines = before.split('\n');
+  const afterLines = after.split('\n');
+  const diffLines = [];
+  const max = Math.max(beforeLines.length, afterLines.length);
+
+  for (let i = 0; i < max; i += 1) {
+    const prev = beforeLines[i];
+    const next = afterLines[i];
+    if (prev === next) continue;
+    if (prev !== undefined) diffLines.push(`- ${prev}`);
+    if (next !== undefined) diffLines.push(`+ ${next}`);
+    if (diffLines.length >= maxLines) break;
+  }
+
+  return diffLines;
+}
+
+export async function syncContextWithDiff(projectDir, reason = null) {
+  const contextPath = path.join(projectDir, 'CONTEXT.md');
+  let before = null;
+  try {
+    before = await fs.readFile(contextPath, 'utf8');
+  } catch {
+    before = null;
+  }
+
+  const syncResult = await snapshotContext(projectDir);
+  let after = null;
+  try {
+    after = await fs.readFile(contextPath, 'utf8');
+  } catch {
+    after = null;
+  }
+
+  if (syncResult.updated && before && after) {
+    printInfo(chalk.cyan('\n🧠 CONTEXT.md auto-sync updated.'));
+    if (reason) {
+      printInfo(chalk.gray(`Trigger: ${reason}`));
+    }
+    const diffLines = renderInlineDiff(before, after);
+    if (diffLines.length > 0) {
+      printInfo(chalk.gray('Diff (truncated):'));
+      diffLines.forEach((line) => {
+        if (line.startsWith('+')) printInfo(chalk.green(line));
+        else if (line.startsWith('-')) printInfo(chalk.red(line));
+        else printInfo(chalk.gray(line));
+      });
+    }
+  }
+
+  return syncResult;
+}
+
 export function registerSyncCommand(program) {
   const syncCmd = program
     .command('sync')
@@ -21,6 +112,8 @@ export function registerSyncCommand(program) {
     .option('--pull', 'Pull state from sync target')
     .option('--brain', 'Auto-update CONTEXT.md from codebase analysis (eliminates human middleware)')
     .option('--target <path>', 'Sync target (local folder or s3-like)', '.ultra/sync')
+    .option('--watch', 'Watch codebase changes and auto-sync CONTEXT.md')
+    .option('--debounce <ms>', 'Debounce interval for watch mode', '800')
     .action(async (options) => {
       try {
         printInfo(chalk.cyan('\n🔄 Ultra-Dex State Sync\n'));
@@ -44,6 +137,13 @@ export function registerSyncCommand(program) {
 
         const projectDir = path.resolve(options.dir);
 
+        // Watch Mode: Continuous auto-sync
+        if (options.watch) {
+          const debounceMs = Number.parseInt(options.debounce, 10);
+          await startContextAutoSyncWatcher(projectDir, Number.isNaN(debounceMs) ? 800 : debounceMs);
+          return;
+        }
+
         // Brain Mode: Full autonomous context update
         if (options.brain) {
           await handleBrainSync(projectDir);
@@ -51,7 +151,7 @@ export function registerSyncCommand(program) {
         }
 
         // 1. Snapshot Context (Updates CONTEXT.md)
-        const syncResult = await snapshotContext(projectDir);
+        const syncResult = await syncContextWithDiff(projectDir);
         printSuccess(chalk.green(`  ✅ Context Snapshot Complete (${syncResult.summary.fileCount} Files scanned)`));
         if (syncResult.updated) {
           printInfo(chalk.gray('     CONTEXT.md updated with latest project structure.'));
@@ -79,7 +179,35 @@ export function registerSyncCommand(program) {
     { command: 'ultra-dex sync --push', description: 'Push local state to .ultra/sync' },
     { command: 'ultra-dex sync --pull --target backups/sync', description: 'Pull state from a custom sync target' },
     { command: 'ultra-dex sync --brain', description: 'Regenerate CONTEXT.md from code graph' },
+    { command: 'ultra-dex sync --watch', description: 'Auto-sync CONTEXT.md on code changes' },
   ];
+}
+
+export async function startContextAutoSyncWatcher(projectDir, debounceMs = 800) {
+  printInfo(chalk.cyan('🛰️  Auto-sync watch enabled'));
+  printInfo(chalk.gray(`Watching ${projectDir} (debounce ${debounceMs}ms)`));
+
+  let timer = null;
+  let lastTrigger = null;
+
+  const watcher = fs.watch(projectDir, { recursive: true }, async (_event, filename) => {
+    if (!filename) return;
+    if (shouldIgnorePath(filename)) return;
+    if (!isWatchedFile(filename)) return;
+
+    lastTrigger = filename;
+    if (timer) clearTimeout(timer);
+
+    timer = setTimeout(async () => {
+      await syncContextWithDiff(projectDir, lastTrigger);
+    }, debounceMs);
+  });
+
+  process.on('SIGINT', () => {
+    watcher.close();
+    printInfo(chalk.gray('Auto-sync watch stopped.'));
+    process.exit(0);
+  });
 }
 
 async function handlePush(projectDir, target) {
