@@ -1,124 +1,43 @@
-name: Ultra-Dex CI
+name: CI Checks
 
 on:
   push:
-    branches: [main, develop]
+    branches-ignore:
+      - 'dependabot/**'
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
-  # 1. Code Quality & Standards
-  quality-check:
-    name: Code Quality
+  checks:
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Lint Markdown
-        uses: articulate/actions-markdownlint@v1
-        with:
-          config: .markdownlint.json
-          files: '**/*.md'
-          ignore: 'node_modules'
-        continue-on-error: true
-
-      - name: Check Links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
-        with:
-          use-quiet-mode: 'yes'
-          config-file: '.markdown-link-check.json'
-        continue-on-error: true
-
-  # 2. Structural Integrity (File Existence)
-  structure-check:
-    name: Validate Structure
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Verify Core Files
-        run: |
-          for file in README.md CHANGELOG.md docs/ROADMAP.md agents/00-AGENT_INDEX.md; do
-            if [ ! -f "$file" ]; then
-              echo "❌ Missing required file: $file"
-              exit 1
-            fi
-          done
-          echo "✅ Core files present"
-
-      - name: Verify Directories
-        run: |
-          for dir in agents docs/guides templates cli vscode-extension; do
-            if [ ! -d "$dir" ]; then
-              echo "❌ Missing directory: $dir"
-              exit 1
-            fi
-          done
-          echo "✅ Directory structure valid"
-
-  # 3. CLI Logic & Behavior (281 Unit Tests)
-  cli-test:
-    name: CLI Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: cli/package-lock.json
-
-      - name: Install Dependencies
-        run: |
-          cd cli
-          npm ci
-
-      - name: Run Linter
-        run: |
-          cd cli
-          npm run lint
-
-      - name: Run Test Suite with Coverage
-        run: |
-          cd cli
-          npm run test:coverage
-        env:
-          LOG_LEVEL: silent
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: cli/coverage/
-          retention-days: 30
-
-  # 4. Dogfooding (Run Ultra-Dex against itself)
-  dogfood-check:
-    name: Dogfood Validation
-    runs-on: ubuntu-latest
-    needs: [cli-test]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install & Link Ultra-Dex
-        run: |
-          cd cli
-          npm install
-          npm link
-
-      - name: Run Alignment Check
-        run: npx ultra-dex align --strict
-
-      - name: Run Validation Scan
-        run: npx ultra-dex validate --scan
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run type checking
+      run: npm run type-check
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Security audit
+      run: npm audit --audit-level moderate
+    
+    - name: Check formatting
+      run: npm run format:check

@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import fs from 'fs/promises';
+import path from 'path';
 import Table from 'cli-table3';
 
 /**
@@ -14,8 +15,8 @@ export function registerCheckCommand(program) {
     .command('check')
     .description('Comprehensive plan completeness check with P0 validation')
     .option('--p0-only', 'Check only critical (P0) sections')
+    .option('--sections <list>', 'Check specific sections (e.g., 1,2,3)')
     .option('--json', 'Output as JSON')
-    .option('--sections <numbers>', 'Check specific sections only (comma-separated numbers)')
     .action(async (options) => {
       try {
         if (!options.json) {
@@ -82,14 +83,15 @@ export function registerCheckCommand(program) {
         // Parse sections
         const sections = parseSections(planContent);
 
-        // Define P0 sections (critical for MVP)
-        const p0Sections = [1, 2, 4, 6, 9, 10, 11, 12, 15, 16, 19];
+        // Define P0 sections (11 critical sections as per requirements)
+        // Foundation: 1, 2, 4, 6, 10, 11, 12, 15
+        // Core Development: 9, 16, 20
+        const p0Sections = [1, 2, 4, 6, 9, 10, 11, 12, 15, 16, 20];
 
         // Filter sections to check
         let sectionsToCheck = sections;
 
         if (options.sections) {
-          // Parse the sections option (comma-separated numbers)
           const sectionNumbers = options.sections.split(',').map(s => parseInt(s.trim()));
           sectionsToCheck = sections.filter(s => sectionNumbers.includes(s.number));
         } else if (options.p0Only) {
@@ -98,27 +100,27 @@ export function registerCheckCommand(program) {
 
         // Check each section
         const results = [];
-        let complete = 0;
-        let partial = 0;
-        let missing = 0;
+        let completeCount = 0;
+        let partialCount = 0;
+        let missingCount = 0;
 
         for (const section of sectionsToCheck) {
           const result = analyzeSection(section);
           results.push(result);
 
-          if (result.status === 'complete') complete++;
-          else if (result.status === 'partial') partial++;
-          else missing++;
+          if (result.status === 'complete') completeCount++;
+          else if (result.status === 'partial') partialCount++;
+          else missingCount++;
         }
 
         // Display results
         if (options.json) {
           console.log(JSON.stringify({
             total: sectionsToCheck.length,
-            complete,
-            partial,
-            missing,
-            percentage: Math.round((complete / sectionsToCheck.length) * 100),
+            complete: completeCount,
+            partial: partialCount,
+            missing: missingCount,
+            percentage: Math.round((completeCount / sectionsToCheck.length) * 100),
             contextValid,
             contextFresh,
             contextDetails,
@@ -130,7 +132,7 @@ export function registerCheckCommand(program) {
         // Table output
         const table = new Table({
           head: ['Section', 'Status', 'Completeness', 'Issues'],
-          colWidths: [30, 12, 15, 40],
+          colWidths: [35, 12, 15, 45],
           style: { head: ['cyan'] }
         });
 
@@ -140,47 +142,50 @@ export function registerCheckCommand(program) {
                         chalk.red('✗');
 
           table.push([
-            `Section ${r.number}: ${r.title.substring(0, 20)}`,
+            `Section ${r.number}: ${r.title.substring(0, 25)}`,
             status,
             `${r.percentage}%`,
-            r.issues.join(', ').substring(0, 38) || '-'
+            r.issues.join(', ').substring(0, 43) || '-'
           ]);
         });
 
         console.log(table.toString());
 
         // Summary
-        const totalPercentage = Math.round((complete / sectionsToCheck.length) * 100);
+        const totalPercentage = Math.round((completeCount / sectionsToCheck.length) * 100);
         console.log(chalk.bold('\n📊 Summary:'));
-        console.log(`  Total Sections: ${sectionsToCheck.length}`);
-        console.log(chalk.green(`  Complete: ${complete}`));
-        console.log(chalk.yellow(`  Partial: ${partial}`));
-        console.log(chalk.red(`  Missing: ${missing}`));
-        console.log(chalk.cyan(`  Overall: ${totalPercentage}%`));
+        console.log(`  Total Sections Checked: ${sectionsToCheck.length}`);
+        console.log(chalk.green(`  Complete: ${completeCount}`));
+        console.log(chalk.yellow(`  Partial: ${partialCount}`));
+        console.log(chalk.red(`  Missing: ${missingCount}`));
+        console.log(chalk.cyan(`  Overall Plan Score: ${totalPercentage}%`));
 
         if (!contextFresh) {
           console.log(chalk.yellow(`  CONTEXT.md: stale (see warnings above)`));
         }
 
         // Critical warnings
-        const criticalMissing = results.filter(r =>
-          p0Sections.includes(r.number) && r.status === 'missing'
-        );
+        const criticalMissing = p0Sections.filter(num => 
+          !results.some(r => r.number === num && r.status === 'complete')
+        ).map(num => {
+          const found = sections.find(s => s.number === num);
+          return found ? `Section ${num}: ${found.title}` : `Section ${num} (MISSING)`;
+        });
 
         if (criticalMissing.length > 0) {
-          console.log(chalk.red.bold('\n⚠️  Critical P0 Sections Missing:'));
-          criticalMissing.forEach(r => {
-            console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
+          console.log(chalk.red.bold('\n⚠️  Critical P0 Sections Incomplete/Missing:'));
+          criticalMissing.forEach(msg => {
+            console.log(chalk.red(`  • ${msg}`));
           });
-          console.log(chalk.yellow('\nThese sections are required for MVP.\n'));
+          console.log(chalk.yellow('\nThese 11 sections are required for a Production-Ready plan.\n'));
         } else {
-          console.log(chalk.green('\n✅ All critical P0 sections present!\n'));
+          console.log(chalk.green('\n✅ All 11 critical P0 sections are complete!\n'));
         }
 
         // Tech stack validation
         const techStackValid = await validateTechStack(planContent);
         if (techStackValid.valid) {
-          console.log(chalk.green('✅ Tech stack choices validated\n'));
+          console.log(chalk.green('✅ Tech stack choices match package.json\n'));
         } else {
           console.log(chalk.red('❌ Issues with tech stack choices:'));
           techStackValid.issues.forEach(issue => {
@@ -190,27 +195,23 @@ export function registerCheckCommand(program) {
         }
 
         // Acceptance criteria check
-        const missingCriteria = checkAcceptanceCriteria(sectionsToCheck);
+        const missingCriteria = results.filter(r => !r.checks.hasAcceptanceCriteria);
         if (missingCriteria.length > 0) {
           console.log(chalk.red(`❌ Missing acceptance criteria in ${missingCriteria.length} sections:`));
-          missingCriteria.forEach(section => {
-            console.log(chalk.red(`  • Section ${section.number}: ${section.title}`));
+          missingCriteria.forEach(r => {
+            console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
           });
           console.log('');
-        } else {
-          console.log(chalk.green('✅ All sections have acceptance criteria\n'));
         }
 
         // Atomic task breakdown check
-        const missingBreakdown = checkAtomicTaskBreakdown(sectionsToCheck);
+        const missingBreakdown = results.filter(r => [16, 20].includes(r.number) && !r.checks.hasAtomicTasks);
         if (missingBreakdown.length > 0) {
           console.log(chalk.red(`❌ Missing atomic task breakdown in ${missingBreakdown.length} sections:`));
-          missingBreakdown.forEach(section => {
-            console.log(chalk.red(`  • Section ${section.number}: ${section.title}`));
+          missingBreakdown.forEach(r => {
+            console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
           });
-          console.log('');
-        } else {
-          console.log(chalk.green('✅ All sections have atomic task breakdown\n'));
+          console.log(chalk.gray('   Tasks must be broken into 4-9 hour chunks.\n'));
         }
 
       } catch (error) {
@@ -258,13 +259,9 @@ function analyzeSection(section) {
   const checks = {
     hasContent: content.trim().length > 50,
     hasBulletPoints: content.includes('- ') || content.includes('* '),
-    hasTables: content.includes('|'),
-    hasCodeBlocks: content.includes('```'),
-    hasNumbers: /\d+/.test(content),
     noPlaceholders: !content.includes('[TODO]') && !content.includes('TBD') && !content.includes('...'),
-    hasAcceptanceCriteria: content.toLowerCase().includes('acceptance criteria') || content.toLowerCase().includes('criteria'),
-    hasEstimates: content.toLowerCase().includes('hours') || content.toLowerCase().includes('estimate') || content.toLowerCase().includes('time'),
-    hasDependencies: content.toLowerCase().includes('depends on') || content.toLowerCase().includes('dependency')
+    hasAcceptanceCriteria: /acceptance criteria|criteria|verifiable by|audit by/i.test(content),
+    hasAtomicTasks: /task|step|atomic|breakdown/i.test(content) && /\b[4-9]\s*hours?\b|\b[4-9]h\b/i.test(content)
   };
 
   const passedChecks = Object.values(checks).filter(Boolean).length;
@@ -276,11 +273,11 @@ function analyzeSection(section) {
   else if (percentage >= 40) status = 'partial';
 
   const issues = [];
-  if (!checks.hasContent) issues.push('empty');
-  if (!checks.noPlaceholders) issues.push('placeholders');
-  if (!checks.hasBulletPoints && section.number !== 1) issues.push('no details');
-  if (!checks.hasAcceptanceCriteria) issues.push('no acceptance criteria');
-  if (!checks.hasEstimates) issues.push('no time estimates');
+  if (!checks.hasContent) issues.push('Empty content');
+  if (!checks.noPlaceholders) issues.push('Contains placeholders ([TODO]/TBD)');
+  if (!checks.hasBulletPoints && section.number !== 1) issues.push('No bullet point details');
+  if (!checks.hasAcceptanceCriteria) issues.push('Missing measurable acceptance criteria');
+  if (!checks.hasAtomicTasks && [16, 20].includes(section.number)) issues.push('Tasks not broken into 4-9h chunks');
 
   return {
     number: section.number,
@@ -293,71 +290,58 @@ function analyzeSection(section) {
 }
 
 async function validateTechStack(content) {
-  const lines = content.split('\n');
-  let hasTechStack = false;
   const issues = [];
-
-  for (const line of lines) {
-    if (line.toLowerCase().includes('tech stack') || line.toLowerCase().includes('technology stack')) {
-      hasTechStack = true;
-      break;
-    }
-  }
-
-  if (!hasTechStack) {
-    issues.push('No technology stack section found');
-  }
-
-  // Check for common tech stack elements
-  const hasBackend = /backend|server|api|database|prisma|drizzle|typeorm|sequelize|express|fastify|nestjs|django|flask|rails|laravel/i.test(content);
-  const hasFrontend = /frontend|client|ui|react|vue|angular|svelte|next|nuxt|remix|astro|gatsby/i.test(content);
-  const hasDatabase = /database|sql|postgres|mysql|mongodb|sqlite|supabase|firebase|prisma|drizzle/i.test(content);
-  const hasAuth = /auth|authentication|authorization|login|signup|clerk|nextauth|supabase auth/i.test(content);
-
-  if (!hasBackend) issues.push('No backend technology specified');
-  if (!hasFrontend) issues.push('No frontend technology specified');
-  if (!hasDatabase) issues.push('No database technology specified');
-  if (!hasAuth) issues.push('No authentication method specified');
-
-  // Check against package.json if it exists
+  let pkg = {};
+  
   try {
-    const packageJsonPath = './package.json';
-    const packageJsonContent = await fs.readFile(packageJsonPath, 'utf8');
-    const packageJson = JSON.parse(packageJsonContent);
-
-    // Check if declared tech stack matches package.json dependencies
-    const dependencies = {...packageJson.dependencies, ...packageJson.devDependencies};
-
-    // Check for common mismatches
-    if (hasFrontend && !dependencies.react && !dependencies.vue && !dependencies.angular && !dependencies.svelte) {
-      issues.push('Declared frontend tech not found in package.json dependencies');
-    }
-
-    if (hasBackend && !dependencies.express && !dependencies.fastify && !dependencies['@nestjs/core'] &&
-        !dependencies.flask && !dependencies.django) {
-      issues.push('Declared backend tech not found in package.json dependencies');
-    }
-
-    if (hasDatabase && !dependencies.prisma && !dependencies.knex && !dependencies.sequelize &&
-        !dependencies['@prisma/client'] && !dependencies.sqlite3 && !dependencies.pg && !dependencies.mysql) {
-      issues.push('Declared database tech not found in package.json dependencies');
-    }
+    const packageJsonContent = await fs.readFile('./package.json', 'utf8');
+    pkg = JSON.parse(packageJsonContent);
   } catch (err) {
-    // If package.json doesn't exist, add a warning
-    issues.push('package.json not found to validate tech stack choices');
+    try {
+      const packageJsonContent = await fs.readFile('./cli/package.json', 'utf8');
+      pkg = JSON.parse(packageJsonContent);
+    } catch (e) {
+      return { valid: false, issues: ['package.json not found to validate tech stack choices'] };
+    }
+  }
+
+  const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+  
+  // Common stack elements to verify
+  const stackMap = {
+    'Next.js': 'next',
+    'React': 'react',
+    'Prisma': 'prisma',
+    'Tailwind': 'tailwindcss',
+    'TypeScript': 'typescript',
+    'Zod': 'zod',
+    'Clerk': '@clerk',
+    'Supabase': 'supabase',
+    'Express': 'express',
+    'Vitest': 'vitest',
+    'Playwright': 'playwright',
+    'Puppeteer': 'puppeteer'
+  };
+
+  let mentionsAny = false;
+  for (const [name, dep] of Object.entries(stackMap)) {
+    const hasDep = Object.keys(deps).some(d => d.includes(dep));
+    const mentions = content.toLowerCase().includes(name.toLowerCase());
+    
+    if (hasDep && !mentions) {
+      issues.push(`${name} found in package.json but not mentioned in implementation plan`);
+    }
+    if (mentions) mentionsAny = true;
+  }
+
+  if (!mentionsAny) {
+    issues.push('No primary tech stack elements identified in implementation plan');
   }
 
   return {
     valid: issues.length === 0,
     issues
   };
-}
-
-function checkAcceptanceCriteria(sections) {
-  return sections.filter(section => {
-    const content = section.content.join('\n').toLowerCase();
-    return !content.includes('acceptance criteria') && !content.includes('criteria');
-  });
 }
 
 async function checkContextFreshness(contextPath) {
@@ -372,7 +356,7 @@ async function checkContextFreshness(contextPath) {
     'lib',
     'server',
     'api',
-    'packages'
+    'cli'
   ];
 
   const staleRefs = [];
@@ -392,24 +376,4 @@ async function checkContextFreshness(contextPath) {
     fresh: staleRefs.length === 0,
     staleRefs
   };
-}
-
-function checkAtomicTaskBreakdown(sections) {
-  return sections.filter(section => {
-    const content = section.content.join('\n');
-    // Look for task-like structures (bullet points with time estimates)
-    const hasTasks = /- \[.\]|\*\*task|\*\*step|hours|time estimate|implementation steps|4-9 hours|atomic tasks/i.test(content);
-
-    // Additionally check if tasks are properly broken down into 4-9 hour chunks
-    const taskMatches = content.match(/- \[.\]|\*\*task|\*\*step/g);
-    if (taskMatches && taskMatches.length > 0) {
-      // Check if each task has time estimates in the 4-9 hour range
-      const hasTimeEstimates = /4-9 hours|4 to 9 hours|[4-9]\s*hours|[4-9]\s*h/i.test(content);
-      if (!hasTimeEstimates) {
-        return true; // Missing proper time estimates
-      }
-    }
-
-    return !hasTasks;
-  });
 }

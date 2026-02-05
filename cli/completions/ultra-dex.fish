@@ -4,6 +4,18 @@ set -l ultra_dex_commands acp agents align api audit auth auto-implement autonom
 
 complete -c ultra-dex -f -a "$ultra_dex_commands"
 
+# Run command (agent completion)
+set -l ultra_dex_agents planner backend frontend database security devops reviewer debugger
+complete -c ultra-dex -n '__fish_seen_subcommand_from run' -f -a "$ultra_dex_agents"
+
+# AI Provider completion
+set -l ultra_dex_providers openai anthropic google local ollama
+complete -c ultra-dex -l provider -r -a "$ultra_dex_providers"
+
+# Template completion
+set -l ultra_dex_templates lite full enterprise next15-prisma-clerk remix-supabase sveltekit-drizzle astro-sanity nuxt3-supabase tauri-desktop solid-drizzle
+complete -c ultra-dex -l template -r -a "$ultra_dex_templates"
+
 # Common options
 complete -c ultra-dex -l help -d "Show help"
 complete -c ultra-dex -l version -d "Show version"

@@ -427,16 +427,10 @@ export async function scaffoldFromPlan(options = {}) {
  */
 export function registerScaffoldPlanCommand(program) {
   program
-    .command('scaffold')
+    .command('scaffold-plan')
     .description('Generate project structure from IMPLEMENTATION-PLAN.md')
-    .option('--from-plan', 'Generate from IMPLEMENTATION-PLAN.md')
     .option('--dry-run', 'Show what would be created without making changes')
     .action(async (options) => {
-      if (options.fromPlan) {
-        await scaffoldFromPlan(options);
-      } else {
-        // Default behavior - could be extended later
-        printInfo(chalk.yellow('Use --from-plan to generate from IMPLEMENTATION-PLAN.md'));
-      }
+      await scaffoldFromPlan(options);
     });
 }

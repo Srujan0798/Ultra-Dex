@@ -151,13 +151,16 @@ async function clearCheckpoint() {
  * Register swarm command with Commander
  */
 export function registerSwarmCommand(program) {
-    program
+    const swarm = program
       .command('swarm <task>')
       .description('Deploy an autonomous agent swarm for a task')
-      .option('-p, --parallel', 'Execute implementation tier in parallel', false)
+      .option('-p, --parallel <workers>', 'Execute with parallel workers (default: 4)', '4')
       .option('--dry-run', 'Preview the swarm pipeline', false)
       .option('--resume', 'Resume from last checkpoint after a failure', false)
       .option('--clean', 'Clear checkpoint and start fresh', false)
+      .option('--checkpoint <id>', 'Resume from specific checkpoint ID')
+      .option('--cost-tracking', 'Enable detailed cost tracking', false)
+      .option('--save-checkpoints', 'Save checkpoints for resume capability', true)
       .action(async (task, options) => {
           try {
               if (options.clean) {
@@ -169,6 +172,43 @@ export function registerSwarmCommand(program) {
               await handleError(error, { command: 'swarm', task, options });
               process.exit(error.exitCode || 1);
           }
+      });
+
+    // Add swarm subcommands for advanced features
+    swarm
+      .command('status [swarmId]')
+      .description('Show swarm status and checkpoints')
+      .action(async (swarmId) => {
+        try {
+          const { showSwarmStatus } = await import('./swarm-advanced.js');
+          await showSwarmStatus(swarmId);
+        } catch (error) {
+          await handleError(error, { command: 'swarm:status' });
+        }
+      });
+
+    swarm
+      .command('resume <checkpointId>')
+      .description('Resume swarm from a specific checkpoint')
+      .action(async (checkpointId) => {
+        try {
+          const { resumeSwarm } = await import('./swarm-advanced.js');
+          await resumeSwarm(checkpointId);
+        } catch (error) {
+          await handleError(error, { command: 'swarm:resume', checkpointId });
+        }
+      });
+
+    swarm
+      .command('checkpoints')
+      .description('List all saved checkpoints')
+      .action(async () => {
+        try {
+          const { listCheckpoints } = await import('./swarm-advanced.js');
+          await listCheckpoints();
+        } catch (error) {
+          await handleError(error, { command: 'swarm:checkpoints' });
+        }
       });
 }
 

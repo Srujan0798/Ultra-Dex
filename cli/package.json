@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.36",
+    "@ai-sdk/google": "^0.0.55",
     "@ai-sdk/openai": "^3.0.25",
     "@langchain/community": "^0.3.0",
     "@langchain/core": "^0.3.18",
@@ -52,6 +53,7 @@
     "axios": "^1.6.8",
     "boxen": "^7.1.1",
     "chalk": "^5.3.0",
+    "chokidar": "^3.6.0",
     "cli-table3": "^0.6.5",
     "commander": "^11.1.0",
     "express": "^5.2.1",
@@ -76,9 +78,7 @@
     "uuid": "^9.0.0",
     "winston": "^3.19.0",
     "ws": "^8.19.0",
-    "zod": "^3.25.76",
-    "chokidar": "^3.6.0",
-    "@ai-sdk/google": "^0.0.55"
+    "zod": "^3.25.76"
   },
   "scripts": {
     "test": "node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js",

@@ -121,7 +121,8 @@ async function comparePlanVsImplementation() {
     missingImplementations: [],
     extraImplementations: [],
     fileMatches: [],
-    driftAnalysis: []
+    driftAnalysis: [],
+    implementationFilesCount: implementationFiles.length
   };
 
   // Count completed vs pending tasks from plan
@@ -242,7 +243,8 @@ function buildDeltaReportData(results, exampleComparison) {
       completionPercentage,
       missingImplementations: results.missingImplementations.length,
       extraImplementations: results.extraImplementations.length,
-      implementedPending: results.fileMatches.length
+      implementedPending: results.fileMatches.length,
+      implementationFilesCount: results.implementationFilesCount
     },
     missingImplementations: results.missingImplementations,
     extraImplementations: results.extraImplementations,
@@ -406,13 +408,71 @@ export async function diffCommand(options = {}) {
 
     if (options.drift) {
       printInfo(generateDriftReport(results));
+    } else if (options.detailed) {
+      // Generate detailed report with color-coded output
+      const totalTasks = reportData.summary.totalTasks;
+      const completedTasks = reportData.summary.completedTasks;
+      const completionPercentage = reportData.summary.completionPercentage;
+
+      printSuccess(chalk.green(`\n✅ Found ${totalTasks} tasks in plan`));
+      printSuccess(chalk.green(`✅ Found ${implementationFiles.length} implementation files`));
+
+      printInfo(chalk.blue(`\n📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`));
+
+      // Show color-coded status
+      if (completionPercentage >= 80) {
+        printSuccess(chalk.green('🎉 Project is highly aligned with plan'));
+      } else if (completionPercentage >= 50) {
+        printInfo(chalk.yellow('⚠️  Moderate alignment with plan - review discrepancies'));
+      } else {
+        printWarning(chalk.red('🚨 Low alignment with plan - significant drift detected'));
+      }
+
+      // Show missing implementations in red
+      if (reportData.missingImplementations.length > 0) {
+        printInfo(chalk.red.bold('\n❌ MISSING IMPLEMENTATIONS\n'));
+        reportData.missingImplementations.slice(0, 10).forEach((missing) => {
+          const location = missing.lineNumber ? ` (Line ${missing.lineNumber})` : '';
+          printInfo(chalk.red(`  • [${missing.section}] ${missing.task}${location}`));
+        });
+
+        if (reportData.missingImplementations.length > 10) {
+          printInfo(chalk.red(`  ... and ${reportData.missingImplementations.length - 10} more`));
+        }
+      }
+
+      // Show extra implementations in yellow
+      if (reportData.extraImplementations.length > 0) {
+        printInfo(chalk.yellow.bold('\n➕ EXTRA IMPLEMENTATIONS (not in plan)\n'));
+        reportData.extraImplementations.slice(0, 10).forEach((extra) => {
+          printInfo(chalk.yellow(`  • ${extra.todo} (in ${extra.file})`));
+        });
+
+        if (reportData.extraImplementations.length > 10) {
+          printInfo(chalk.yellow(`  ... and ${reportData.extraImplementations.length - 10} more`));
+        }
+      }
+
+      // Show implemented but pending in green
+      if (reportData.implementedPending.length > 0) {
+        printInfo(chalk.green.bold('\n✅ IMPLEMENTED BUT MARKED PENDING\n'));
+        reportData.implementedPending.slice(0, 10).forEach((match) => {
+          printInfo(chalk.green(`  • ${match.task} (found in ${match.file})`));
+        });
+
+        if (reportData.implementedPending.length > 10) {
+          printInfo(chalk.green(`  ... and ${reportData.implementedPending.length - 10} more`));
+        }
+      }
     } else {
       const totalTasks = reportData.summary.totalTasks;
       const completedTasks = reportData.summary.completedTasks;
       const completionPercentage = reportData.summary.completionPercentage;
 
       printSuccess(chalk.green(`\n✅ Found ${totalTasks} tasks in plan`));
-      printInfo(chalk.blue(`📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`));
+      printSuccess(chalk.green(`✅ Found ${implementationFiles.length} implementation files`));
+
+      printInfo(chalk.blue(`\n📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`));
 
       if (completionPercentage >= 80) {
         printSuccess(chalk.green('🎉 Project is highly aligned with plan'));
@@ -460,6 +520,7 @@ export function registerDiffCommand(program) {
     .command('diff')
     .description('Compare IMPLEMENTATION-PLAN.md vs actual implementation')
     .option('--drift', 'Show detailed drift analysis between plan and implementation')
+    .option('--detailed', 'Show detailed diff report with color-coded output')
     .option('--with-example <name>', 'Compare with example project')
     .option('--json', 'Output as JSON')
     .option('--report <path>', 'Write delta report to a file (json or md)')
