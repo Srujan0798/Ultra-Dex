@@ -109,6 +109,7 @@ import { registerPluginCommand } from '../lib/commands/plugin.js';
 import { registerWorkspaceCommand } from '../lib/commands/workspace.js';
 import { registerVoiceCommand } from '../lib/commands/voice.js';
 import { registerAuthCommand } from '../lib/commands/auth.js';
+import { registerSetupCommand } from '../lib/commands/setup.js';
 
 // v3.0 Commands
 import { swarmCommand } from '../lib/commands/swarm.js';
@@ -130,6 +131,7 @@ import { registerSyncCommand } from '../lib/commands/sync.js';
 import { registerTeamCommand } from '../lib/commands/team.js';
 import { registerMemoryCommand } from '../lib/commands/memory.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
+import { registerScaffoldPlanCommand } from '../lib/commands/scaffold-plan.js';
 import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
 import { registerBrainCommand } from '../lib/commands/brain.js';
 import { registerEstimateCommand } from '../lib/commands/estimate.js';
@@ -269,16 +271,22 @@ watchCmd._examples = [
 program
   .command('diff')
   .description('Compare plan vs implemented code')
+  .option('--drift', 'Show detailed drift analysis between plan and implementation')
   .option('--json', 'Output as JSON')
+  .option('--with-example <name>', 'Compare with example project')
+  .option('--report <path>', 'Write delta report to a file (json or md)')
   .action(diffCommand);
 
 const exportCmd = program
   .command('export')
   .description('Export project context')
-  .option('--format <type>', 'Output format: json, html, markdown, pdf', 'json')
+  .option('--format <type>', 'Output format: json, html, markdown, pdf, yaml', 'json')
+  .option('--pdf', 'Shortcut for --format pdf')
   .option('--output <path>', 'Output file path')
   .option('--sections <list>', 'Only include specific sections (e.g., 1,2,3)')
   .option('--include-agents', 'Bundle all agent prompts')
+  .option('--toc', 'Include auto-generated table of contents')
+  .option('--template <file>', 'Use custom template file for export')
   .action(exportCommand);
 
 exportCmd._examples = EXPORT_EXAMPLES;
@@ -326,9 +334,11 @@ registerSyncCommand(program);
 registerTeamCommand(program);
 registerMemoryCommand(program);
 registerScaffoldCommand(program);
+registerScaffoldPlanCommand(program);
 registerPluginCommand(program);
 registerVoiceCommand(program);
 registerAuthCommand(program);
+registerSetupCommand(program);
 
 // Monitoring commands (v3.4.3) - note: status uses state.js, sys-config uses monitoring.js
 registerSystemConfigCommand(program);
