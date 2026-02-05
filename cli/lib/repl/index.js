@@ -1,7 +1,7 @@
 import readline from 'readline';
 import chalk from 'chalk';
-import { getDefaultProvider } from '../providers/index.js';
-import { streamWithProvider } from '../providers/streaming.js';
+import { getDefaultProvider, createProvider } from '../providers/index.js';
+import { streamWithProvider, getStreamingProviders } from '../providers/streaming.js';
 import { createSession, getSession, saveSession } from './session.js';
 import { createSlashCommands, executeSlashCommand } from './commands.js';
 
@@ -22,15 +22,23 @@ async function processAIInput(input, session) {
   let responseText = '';
 
   try {
-    const streamed = await streamWithProvider({
-      providerId: provider,
-      model,
-      systemPrompt,
-      prompt,
-      onToken: (token) => process.stdout.write(token)
-    });
-    responseText = streamed.text;
-    process.stdout.write('\n');
+    const streamingProviders = getStreamingProviders();
+    if (streamingProviders.includes(provider)) {
+      const streamed = await streamWithProvider({
+        providerId: provider,
+        model,
+        systemPrompt,
+        prompt,
+        onToken: (token) => process.stdout.write(token)
+      });
+      responseText = streamed.text;
+      process.stdout.write('\n');
+    } else {
+      const fallbackProvider = createProvider(provider);
+      const result = await fallbackProvider.generate(systemPrompt, prompt);
+      responseText = result.content;
+      process.stdout.write(`${responseText}\n`);
+    }
   } catch (error) {
     process.stdout.write(chalk.yellow('Streaming unavailable, falling back to echo.\n'));
     responseText = `Echo: ${input}`;
