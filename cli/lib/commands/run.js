@@ -23,6 +23,7 @@ import {
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { getCache } from '../cache/index.js';
+import { authorizeAgentAccess } from '../enterprise/agent-access.js';
 
 const execAsync = promisify(exec);
 
@@ -157,6 +158,11 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
   const agentId = agentName.toLowerCase();
   const agent = AGENTS[agentId];
   if (!agent) return `[System]: Unknown agent @${agentName}`;
+
+  const access = await authorizeAgentAccess(agentId);
+  if (!access.allowed) {
+    return `[Access]: Role "${access.role}" cannot run @${agentName}`;
+  }
 
   const spinner = ora(`\${agent.name} is working...`).start();
   

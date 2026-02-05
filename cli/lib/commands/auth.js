@@ -19,14 +19,18 @@ export function registerAuthCommand(program) {
     .description('Manage Enterprise SSO authentication')
     .option('--provider <provider>', 'Identity provider (okta, auth0, azure)')
     .option('--configure', 'Reconfigure SSO settings')
+    .option('--wizard', 'Run SSO/SAML configuration wizard')
+    .option('--saml', 'Configure SAML provider')
+    .option('--oidc', 'Configure OIDC provider')
     .action(async (options) => {
       try {
         if (options.provider) {
           ssoClient.provider = options.provider;
         }
-        
-        if (options.configure) {
-          await ssoClient.configure();
+
+        if (options.configure || options.wizard || options.saml || options.oidc) {
+          const mode = options.saml ? 'saml' : options.oidc ? 'oidc' : undefined;
+          await ssoClient.configureWizard({ mode });
         } else {
           await ssoClient.login();
         }

@@ -29,18 +29,56 @@ const PROVIDERS = {
   }
 };
 
+const SAML_PROVIDERS = [
+  { name: 'Okta', value: 'okta' },
+  { name: 'Azure AD', value: 'azure' },
+  { name: 'Auth0', value: 'auth0' },
+  { name: 'Google Workspace', value: 'google' },
+  { name: 'Custom', value: 'custom' }
+];
+
 export class SSOClient {
   constructor(options = {}) {
     this.provider = options.provider || 'okta';
     this.domain = options.domain;
     this.clientId = options.clientId;
     this.clientSecret = options.clientSecret; // Caution: Secrets in CLI usually require PKCE
+    this.mode = options.mode || 'oidc';
   }
 
   /**
    * Initialize SSO configuration interactively
    */
-  async configure() {
+  async configure(options = {}) {
+    const mode = options.mode || 'oidc';
+    if (mode === 'saml') {
+      return this.configureSaml();
+    }
+    return this.configureOidc();
+  }
+
+  async configureWizard(options = {}) {
+    if (options.mode === 'saml' || options.mode === 'oidc') {
+      return this.configure({ mode: options.mode });
+    }
+
+    const { mode } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'mode',
+        message: 'Select SSO protocol:',
+        choices: [
+          { name: 'OIDC (Okta/Auth0/Azure)', value: 'oidc' },
+          { name: 'SAML 2.0', value: 'saml' }
+        ],
+        default: 'oidc'
+      }
+    ]);
+
+    return this.configure({ mode });
+  }
+
+  async configureOidc() {
     printInfo(chalk.bold(`\n🔐 Configure ${PROVIDERS[this.provider]?.name || 'SSO'} Provider\n`));
 
     const answers = await inquirer.prompt([
@@ -75,6 +113,7 @@ export class SSOClient {
     // Save to global config
     const config = await configManager.loadGlobal() || {};
     config.sso = {
+      mode: 'oidc',
       provider: this.provider,
       domain: this.domain,
       clientId: this.clientId
@@ -85,6 +124,60 @@ export class SSOClient {
     return config.sso;
   }
 
+  async configureSaml() {
+    printInfo(chalk.bold('\n🔐 Configure SAML 2.0 Provider\n'));
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'idp',
+        message: 'Select Identity Provider:',
+        choices: SAML_PROVIDERS.map(p => ({ name: p.name, value: p.value })),
+        default: 'okta'
+      },
+      {
+        type: 'input',
+        name: 'entryPoint',
+        message: 'SSO URL / Entry Point:',
+        validate: input => input.length > 0 || 'Entry point is required'
+      },
+      {
+        type: 'input',
+        name: 'issuer',
+        message: 'Issuer / Entity ID:',
+        validate: input => input.length > 0 || 'Issuer is required'
+      },
+      {
+        type: 'input',
+        name: 'cert',
+        message: 'X509 Certificate (single line or PEM):',
+        validate: input => input.length > 0 || 'Certificate is required'
+      },
+      {
+        type: 'input',
+        name: 'callbackUrl',
+        message: 'Callback URL:',
+        default: 'http://localhost:8080/saml/callback'
+      }
+    ]);
+
+    const config = await configManager.loadGlobal() || {};
+    config.sso = {
+      mode: 'saml',
+      provider: answers.idp,
+      saml: {
+        entryPoint: answers.entryPoint,
+        issuer: answers.issuer,
+        cert: answers.cert,
+        callbackUrl: answers.callbackUrl
+      }
+    };
+    await configManager.saveGlobal(config);
+
+    printSuccess(`\n✅ SAML configuration saved (${answers.idp}).`);
+    return config.sso;
+  }
+
   /**
    * Simulate login flow
    * In a real implementation, this would start a local server, 
@@ -92,10 +185,48 @@ export class SSOClient {
    */
   async login() {
     const config = await configManager.loadGlobal();
-    
-    if (!config?.sso?.domain) {
+
+    if (config?.sso && !config.sso.mode) {
+      config.sso.mode = 'oidc';
+      await configManager.saveGlobal(config);
+    }
+
+    if (!config?.sso?.mode) {
       printWarning('SSO not configured. Launching configuration...');
-      await this.configure();
+      await this.configureWizard();
+    }
+
+    if (config?.sso?.mode === 'saml') {
+      const samlConfig = config.sso.saml || {};
+      printInfo(`\n🔐 Initiating SAML login via ${config.sso.provider || 'IdP'}...`);
+      printInfo(`   Entry Point: ${chalk.cyan(samlConfig.entryPoint || 'unknown')}`);
+      printInfo(`   Issuer: ${chalk.cyan(samlConfig.issuer || 'unknown')}`);
+      printInfo(`   Callback: ${chalk.cyan(samlConfig.callbackUrl || 'http://localhost:8080/saml/callback')}`);
+
+      const { response } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'response',
+          message: 'Paste SAMLResponse (simulated):'
+        }
+      ]);
+
+      if (!response) {
+        throw new Error('SAMLResponse is required to complete login.');
+      }
+
+      const user = {
+        username: 'saml-user@enterprise.com',
+        provider: `SAML:${config.sso.provider || 'IdP'}`,
+        role: 'member',
+        loginTime: new Date().toISOString()
+      };
+
+      config.user = user;
+      await configManager.saveGlobal(config);
+
+      printSuccess(`\n✅ Successfully logged in as ${chalk.bold(user.username)} via SAML`);
+      return user;
     }
 
     const { provider, domain, clientId } = config.sso;
