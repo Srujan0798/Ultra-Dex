@@ -1,6 +1,7 @@
 import readline from 'readline';
 import chalk from 'chalk';
 import { getDefaultProvider } from '../providers/index.js';
+import { streamWithProvider } from '../providers/streaming.js';
 import { createSession, getSession, saveSession } from './session.js';
 import { createSlashCommands, executeSlashCommand } from './commands.js';
 
@@ -9,17 +10,33 @@ function buildPrompt(session, input) {
   return `${history}\nuser: ${input}\nassistant:`;
 }
 
-// Process regular AI input (placeholder for now; streaming wired in prompt 12)
 async function processAIInput(input, session) {
-  console.log(chalk.dim('\n🤖 AI Response:'));
-  console.log(chalk.cyan(`Received: "${input}"`));
-  console.log(chalk.dim(`Session has ${session.messages.length} previous messages\n`));
+  const provider = session.config?.provider || getDefaultProvider() || 'openai';
+  const model = session.config?.model || null;
+  const systemPrompt = 'You are Ultra-Dex REPL, a fast and helpful engineering assistant.';
+  const prompt = buildPrompt(session, input);
 
   session.messages.push({ role: 'user', content: input });
-  session.messages.push({
-    role: 'assistant',
-    content: `Echo: ${input}`
-  });
+
+  process.stdout.write(chalk.dim('\n🤖 '));
+  let responseText = '';
+
+  try {
+    const streamed = await streamWithProvider({
+      providerId: provider,
+      model,
+      systemPrompt,
+      prompt,
+      onToken: (token) => process.stdout.write(token)
+    });
+    responseText = streamed.text;
+    process.stdout.write('\n');
+  } catch (error) {
+    process.stdout.write(chalk.yellow('Streaming unavailable, falling back to echo.\n'));
+    responseText = `Echo: ${input}`;
+  }
+
+  session.messages.push({ role: 'assistant', content: responseText });
 }
 
 // Main REPL function

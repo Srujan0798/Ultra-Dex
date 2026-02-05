@@ -9,6 +9,7 @@ import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
+import { streamWithProvider, getStreamingProviders } from '../providers/streaming.js';
 import { SYSTEM_PROMPT, generateUserPrompt } from '../templates/prompts/generate-plan.js';
 import { validateSafePath } from '../utils/validation.js';
 import { githubTreeUrl, githubWebUrl } from '../config/urls.js';
@@ -124,14 +125,33 @@ export function registerGenerateCommand(program) {
               printInfo(chalk.cyan('📝 Manifesting Reality:\n'));
               process.stdout.write(chalk.gray('─'.repeat(60)) + '\n');
 
-              result = await provider.generateStream(
-                SYSTEM_PROMPT,
-                generateUserPrompt(idea),
-                (chunk) => {
-                  process.stdout.write(chunk);
-                  planContent += chunk;
-                }
-              );
+              const streamingProviders = getStreamingProviders();
+              if (streamingProviders.includes(providerId)) {
+                const streamed = await streamWithProvider({
+                  providerId,
+                  model: options.model,
+                  apiKey: options.key,
+                  systemPrompt: SYSTEM_PROMPT,
+                  prompt: generateUserPrompt(idea),
+                  onToken: (chunk) => {
+                    process.stdout.write(chunk);
+                    planContent += chunk;
+                  }
+                });
+                result = {
+                  content: streamed.text,
+                  usage: streamed.usage || { inputTokens: 0, outputTokens: 0 }
+                };
+              } else {
+                result = await provider.generateStream(
+                  SYSTEM_PROMPT,
+                  generateUserPrompt(idea),
+                  (chunk) => {
+                    process.stdout.write(chunk);
+                    planContent += chunk;
+                  }
+                );
+              }
 
               process.stdout.write(chalk.gray('\n' + '─'.repeat(60)) + '\n');
             } else {
