@@ -23,6 +23,7 @@ const LIVE_STACKS = {
   'sveltekit-drizzle': 'SvelteKit + Drizzle',
   'next15-saas': 'Next.js 15 SaaS (Clerk + Stripe + Prisma + Admin)',
   'remix-saas': 'Remix SaaS (Clerk + Stripe + Prisma)',
+  'sveltekit-saas': 'SvelteKit SaaS (Clerk + Stripe + Prisma)',
   'astro-sanity': 'Astro + Sanity CMS',
   'nuxt3-supabase': 'Nuxt 3 + Supabase',
   'tauri-desktop': 'Tauri Desktop App',
