@@ -8,6 +8,7 @@ import path from 'path';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
 import { AppError } from '../utils/errors.js';
+import { createBudgetManager } from './budget.js';
 
 // Alert configuration
 const DEFAULT_ALERT_CONFIG = {
@@ -576,5 +577,26 @@ export function registerAlertCommands(program) {
 export default {
   BudgetAlertSystem,
   createBudgetAlertSystem,
-  registerAlertCommands
+  registerAlertCommands,
+  checkAlerts
 };
+
+export async function checkAlerts() {
+  const budgetManager = await createBudgetManager();
+  const status = budgetManager.getBudgetStatus();
+  const thresholds = budgetManager.config.alerts?.thresholds || DEFAULT_ALERT_CONFIG.thresholds;
+  const dailyPct = status.daily.percentage;
+  const monthlyPct = status.monthly.percentage;
+  const alerts = [];
+
+  for (const threshold of thresholds) {
+    if (dailyPct >= threshold) {
+      alerts.push({ period: 'daily', threshold, percentage: Number(dailyPct.toFixed(1)) });
+    }
+    if (monthlyPct >= threshold) {
+      alerts.push({ period: 'monthly', threshold, percentage: Number(monthlyPct.toFixed(1)) });
+    }
+  }
+
+  return { alerts, dailyPct: Number(dailyPct.toFixed(1)), monthlyPct: Number(monthlyPct.toFixed(1)) };
+}

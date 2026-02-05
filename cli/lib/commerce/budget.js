@@ -571,6 +571,35 @@ export async function createBudgetManager(options = {}) {
   return budgetManager;
 }
 
+// Lightweight helpers used by cli/lib/commands/budget.js
+export async function loadBudget() {
+  const budgetManager = await createBudgetManager();
+  const status = budgetManager.getBudgetStatus();
+  return {
+    daily: status.daily.budget,
+    monthly: status.monthly.budget,
+    perAgent: budgetManager.config.perAgentBudget,
+    spending: {
+      daily: status.daily.spent,
+      monthly: status.monthly.spent
+    }
+  };
+}
+
+export async function saveBudget(config = {}) {
+  const budgetManager = await createBudgetManager();
+  const daily = Number.isFinite(config.daily) ? config.daily : budgetManager.config.dailyBudget;
+  const monthly = Number.isFinite(config.monthly) ? config.monthly : budgetManager.config.monthlyBudget;
+  const perAgent = Number.isFinite(config.perAgent) ? config.perAgent : budgetManager.config.perAgentBudget;
+  await budgetManager.setBudgetLimits(daily, monthly, perAgent);
+  return { daily, monthly, perAgent };
+}
+
+export async function recordSpend(amount, agentName = 'unknown') {
+  const budgetManager = await createBudgetManager();
+  return budgetManager.trackSpending(agentName, amount);
+}
+
 /**
  * Register budget commands with Commander
  */

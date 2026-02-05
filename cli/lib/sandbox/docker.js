@@ -13,6 +13,21 @@ import { AppError } from '../utils/errors.js';
 
 const execAsync = promisify(exec);
 
+export const SANDBOX_CONFIG = {
+  defaultImage: 'node:20-alpine',
+  images: {
+    javascript: 'node:20-alpine',
+    typescript: 'node:20-alpine',
+    python: 'python:3.12-alpine',
+    go: 'golang:1.22-alpine',
+    rust: 'rust:1.76-alpine',
+    ruby: 'ruby:3.3-alpine'
+  },
+  memory: '512m',
+  cpu: '1',
+  workDir: '/workspace'
+};
+
 // Runtime configurations
 const RUNTIME_CONFIGS = {
   node: {
@@ -56,6 +71,125 @@ const RUNTIME_CONFIGS = {
     ]
   }
 };
+
+export function detectLanguage(filePath = '') {
+  const ext = path.extname(filePath).toLowerCase();
+  switch (ext) {
+    case '.ts':
+    case '.tsx':
+      return 'typescript';
+    case '.py':
+      return 'python';
+    case '.go':
+      return 'go';
+    case '.rs':
+      return 'rust';
+    case '.rb':
+      return 'ruby';
+    default:
+      return 'javascript';
+  }
+}
+
+export function detectRuntimeFromExtension(filePath = '') {
+  return detectLanguage(filePath);
+}
+
+export function getExecCommand(language, filename) {
+  switch (language) {
+    case 'python':
+      return `python ${filename}`;
+    case 'go':
+      return `go run ${filename}`;
+    case 'rust':
+      return `rustc ${filename} -o app && ./app`;
+    case 'ruby':
+      return `ruby ${filename}`;
+    case 'typescript':
+      return `node ${filename}`;
+    case 'javascript':
+    default:
+      return `node ${filename}`;
+  }
+}
+
+export async function checkDocker() {
+  try {
+    await execAsync('docker --version');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function ensureImage(image, spinner) {
+  try {
+    await execAsync(`docker image inspect ${image}`);
+  } catch {
+    if (spinner) spinner.text = `Pulling Docker image ${image}...`;
+    await execAsync(`docker pull ${image}`);
+  }
+}
+
+export async function executeInSandbox(input, options = {}) {
+  const start = Date.now();
+  const timeout = options.timeout ?? 30000;
+  const allowNetwork = options.allowNetwork ?? false;
+  const language = options.language || options.runtime || 'javascript';
+  const image = options.image || SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
+  const runId = `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+  const runDir = path.join(process.cwd(), '.ultra-dex', 'sandbox', runId);
+  await fs.mkdir(runDir, { recursive: true });
+
+  let command;
+  let filename;
+  if (options.isCommand) {
+    command = input;
+  } else {
+    const extMap = { javascript: 'js', typescript: 'ts', python: 'py', go: 'go', rust: 'rs', ruby: 'rb' };
+    const ext = extMap[language] || 'txt';
+    filename = options.filename || `code.${ext}`;
+    await fs.writeFile(path.join(runDir, filename), input, 'utf8');
+    command = getExecCommand(language, filename);
+  }
+
+  const mountDir = options.mountProject ? process.cwd() : runDir;
+  const dockerArgs = [
+    'run', '--rm',
+    '--network', allowNetwork ? 'bridge' : 'none',
+    '--memory', options.memory || SANDBOX_CONFIG.memory,
+    '--cpus', options.cpus || SANDBOX_CONFIG.cpu,
+    '-v', `${mountDir}:${SANDBOX_CONFIG.workDir}`,
+    '-w', SANDBOX_CONFIG.workDir,
+    image,
+    'sh', '-c', command
+  ];
+
+  const result = { stdout: '', stderr: '', exitCode: null, timedOut: false, duration: 0 };
+  const proc = spawn('docker', dockerArgs);
+
+  const timeoutId = setTimeout(() => {
+    result.timedOut = true;
+    proc.kill('SIGKILL');
+  }, timeout);
+
+  proc.stdout.on('data', (data) => {
+    result.stdout += data.toString();
+  });
+
+  proc.stderr.on('data', (data) => {
+    result.stderr += data.toString();
+  });
+
+  return await new Promise((resolve) => {
+    proc.on('close', (code) => {
+      clearTimeout(timeoutId);
+      result.exitCode = code;
+      result.duration = Date.now() - start;
+      resolve(result);
+    });
+  });
+}
 
 /**
  * Docker Sandbox Class

@@ -10,6 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
 import { streamWithProvider, getStreamingProviders } from '../providers/streaming.js';
+import { captureVoiceInput } from '../input/voice.js';
 import { SYSTEM_PROMPT, generateUserPrompt } from '../templates/prompts/generate-plan.js';
 import { validateSafePath } from '../utils/validation.js';
 import { githubTreeUrl, githubWebUrl } from '../config/urls.js';
@@ -29,6 +30,7 @@ export function registerGenerateCommand(program) {
     .option('-k, --key <apiKey>', 'API key (or use environment variable)')
     .option('--stream', 'Stream output in real-time', true)
     .option('--no-stream', 'Disable streaming')
+    .option('--voice', 'Use voice input for the prompt')
     .option('--cache', 'Use response caching to reduce API costs')
     .action(async (idea, options) => {
       try {
@@ -60,6 +62,11 @@ export function registerGenerateCommand(program) {
 
         // Get idea if not provided
         if (!idea) {
+          if (options.voice) {
+            printInfo(chalk.blue('🎤 Voice input enabled. Press ENTER to stop recording.\n'));
+            idea = await captureVoiceInput();
+            printInfo(chalk.gray(`Transcribed: ${idea}`));
+          } else {
           const answers = await inquirer.prompt([
             {
               type: 'input',
@@ -69,6 +76,7 @@ export function registerGenerateCommand(program) {
             },
           ]);
           idea = answers.idea;
+          }
         }
 
         // Select provider

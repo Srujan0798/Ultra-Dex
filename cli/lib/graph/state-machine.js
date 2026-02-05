@@ -285,6 +285,8 @@ export class AgentStateMachine {
   }
 }
 
+export const StateMachine = AgentStateMachine;
+
 /**
  * Create a standard agent workflow state machine
  */

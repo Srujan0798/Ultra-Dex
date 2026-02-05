@@ -71,6 +71,10 @@ export function registerAuditCommand(program) {
         printInfo(chalk.bold('\n📄 DOCUMENTATION AUDIT\n'));
         await runDocumentationAudit(auditContext);
 
+        // 2.5. Glass Box Drift Audit
+        printInfo(chalk.bold('\n🔍 CONTEXT DRIFT AUDIT\n'));
+        await runContextDriftAudit(auditContext);
+
         // 3. Security Audit
         printInfo(chalk.bold('\n🛡️  SECURITY SCAN\n'));
         await runSecurityAudit(auditContext);
@@ -90,6 +94,30 @@ export function registerAuditCommand(program) {
     });
 }
 
+async function runContextDriftAudit(ctx) {
+    try {
+        const { execSync } = await import('child_process');
+        const contextTime = execSync('git log -1 --format=%ct -- CONTEXT.md', { encoding: 'utf8' }).trim();
+        const repoTime = execSync('git log -1 --format=%ct', { encoding: 'utf8' }).trim();
+
+        ctx.maxScore += 10;
+
+        if (!contextTime || !repoTime) {
+            ctx.results.push({ name: 'Context Drift', status: 'warn', detail: 'No git history available', points: 0 });
+            return;
+        }
+
+        if (Number(repoTime) > Number(contextTime)) {
+            ctx.results.push({ name: 'Context Drift', status: 'warn', detail: 'Code changed after last CONTEXT.md update', points: 4 });
+            ctx.score += 4;
+        } else {
+            ctx.results.push({ name: 'Context Drift', status: 'ok', detail: 'CONTEXT.md is current', points: 10 });
+            ctx.score += 10;
+        }
+    } catch (error) {
+        ctx.results.push({ name: 'Context Drift', status: 'warn', detail: `Git audit failed: ${error.message}`, points: 0 });
+    }
+}
 /**
  * Automatically create missing required files
  */
