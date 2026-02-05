@@ -11,6 +11,7 @@ import { showAgentsTable } from '../utils/tables.js';
 import { validateSafePath } from '../utils/validation.js';
 import { marketplaceClient } from '../marketplace/client.js';
 import { authorizeAgentAccess, filterAgentsByAccess } from '../enterprise/agent-access.js';
+import { printError, printInfo, printWarning } from '../utils/output.js';
 
 export const AGENTS = [
   { name: 'architect', description: 'Manifest reality from a raw idea', file: '0-orchestration/architect.md', tier: 'Orchestration' },
@@ -49,6 +50,39 @@ const TIERS = [
   { name: '5 - Quality', value: 'Quality' },
   { name: '6 - Specialist', value: 'Specialist' },
 ];
+
+const DEFAULT_PAGE_SIZE = 25;
+const DEFAULT_SEARCH_PAGE_SIZE = 10;
+
+function parsePositiveInt(value, fallback) {
+  if (value === undefined || value === null) return fallback;
+  const parsed = parseInt(String(value), 10);
+  if (Number.isNaN(parsed) || parsed <= 0) return fallback;
+  return parsed;
+}
+
+function paginate(items, page, limit) {
+  const safeLimit = Math.max(1, limit);
+  const total = items.length;
+  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const startIdx = (safePage - 1) * safeLimit;
+  const endIdx = Math.min(startIdx + safeLimit, total);
+  return {
+    total,
+    totalPages,
+    page: safePage,
+    limit: safeLimit,
+    start: total === 0 ? 0 : startIdx + 1,
+    end: endIdx,
+    items: items.slice(startIdx, endIdx),
+  };
+}
+
+function printPaginationSummary({ total, totalPages, page, start, end }) {
+  if (totalPages <= 1) return;
+  printInfo(chalk.gray(`Showing ${start}-${end} of ${total} (page ${page}/${totalPages}). Use --page/--limit to navigate.`));
+}
 
 export function findBuiltInAgent(name) {
   return AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
@@ -155,11 +189,27 @@ export function registerAgentsCommand(program) {
   const agentsCmd = program
     .command('agents')
     .alias('agent')
-    .description('Agent Management - list, create, and manage agents');
+    .description('Agent Management - list, create, and manage agents')
+    .option('--page <number>', 'Page number for list output', String(1))
+    .option('--limit <number>', 'Items per page for list output', String(DEFAULT_PAGE_SIZE))
+    .option('--json', 'Output list as JSON');
+
+  agentsCmd._examples = [
+    { command: 'ultra-dex agents', description: 'List all built-in and custom agents' },
+    { command: 'ultra-dex agents list --page 2 --limit 10', description: 'Paginate agents list' },
+    { command: 'ultra-dex agents show frontend', description: 'Show a specific agent prompt' },
+  ];
 
   // Default action: list agents
-  agentsCmd.action(async () => {
-    await listAgents();
+  agentsCmd.action(async (options) => {
+    try {
+      const page = parsePositiveInt(options.page, 1);
+      const limit = parsePositiveInt(options.limit, DEFAULT_PAGE_SIZE);
+      await listAgents({ builtinOnly: false, page, limit, json: !!options.json });
+    } catch (error) {
+      printError(chalk.red(`Agents listing failed: ${error.message}`));
+      process.exitCode = 1;
+    }
   });
 
   // agents health
@@ -168,16 +218,21 @@ export function registerAgentsCommand(program) {
     .description('Check health of all built-in agents')
     .action(async () => {
       const spinner = ora('Checking agent health...').start();
-      const results = await checkAgentsHealth();
-      
-      const errors = results.filter(r => r.status !== 'healthy');
-      if (errors.length === 0) {
-        spinner.succeed(chalk.green(`All ${results.length} built-in agents are healthy and readable.`));
-      } else {
-        spinner.fail(chalk.red(`${errors.length} agents have issues:`));
-        errors.forEach(e => {
-          console.log(`  ${chalk.yellow('@' + e.agent)}: ${chalk.gray(e.error)}`);
-        });
+      try {
+        const results = await checkAgentsHealth();
+        
+        const errors = results.filter(r => r.status !== 'healthy');
+        if (errors.length === 0) {
+          spinner.succeed(chalk.green(`All ${results.length} built-in agents are healthy and readable.`));
+        } else {
+          spinner.fail(chalk.red(`${errors.length} agents have issues:`));
+          errors.forEach(e => {
+            console.log(`  ${chalk.yellow('@' + e.agent)}: ${chalk.gray(e.error)}`);
+          });
+        }
+      } catch (error) {
+        spinner.fail('Health check failed');
+        printError(chalk.red(error.message));
       }
     });
 
@@ -189,13 +244,22 @@ export function registerAgentsCommand(program) {
     .description('List all available agents')
     .option('--marketplace', 'Show marketplace agents')
     .option('--builtin', 'Show built-in agents only')
+    .option('--page <number>', 'Page number', String(1))
+    .option('--limit <number>', 'Items per page', String(DEFAULT_PAGE_SIZE))
+    .option('--json', 'Output list as JSON')
     .action(async (options) => {
-      if (options.marketplace) {
-        await showMarketplace();
-      } else if (options.builtin) {
-        await listAgents(true);
-      } else {
-        await listAgents();
+      try {
+        const page = parsePositiveInt(options.page, 1);
+        const limit = parsePositiveInt(options.limit, DEFAULT_PAGE_SIZE);
+        if (options.marketplace) {
+          await showMarketplace({ page, limit, json: !!options.json });
+        } else if (options.builtin) {
+          await listAgents({ builtinOnly: true, page, limit, json: !!options.json });
+        } else {
+          await listAgents({ builtinOnly: false, page, limit, json: !!options.json });
+        }
+      } catch (error) {
+        printError(chalk.red(`Failed to list agents: ${error.message}`));
       }
     });
 
@@ -204,7 +268,11 @@ export function registerAgentsCommand(program) {
     .command('show <name>')
     .description('Show agent prompt and details')
     .action(async (name) => {
-      await showAgent(name);
+      try {
+        await showAgent(name);
+      } catch (error) {
+        printError(chalk.red(`Failed to show agent: ${error.message}`));
+      }
     });
 
   // agents validate <name>
@@ -212,11 +280,15 @@ export function registerAgentsCommand(program) {
     .command('validate <name>')
     .description('Validate agent configuration')
     .action(async (name) => {
-      const agent = findBuiltInAgent(name);
-      if (agent) {
-        console.log(chalk.green(`✅ Agent @${name} is valid (built-in).`));
-      } else {
-        console.log(chalk.yellow(`⚠️ Agent @${name} is not a built-in agent.`));
+      try {
+        const agent = findBuiltInAgent(name);
+        if (agent) {
+          console.log(chalk.green(`✅ Agent @${name} is valid (built-in).`));
+        } else {
+          console.log(chalk.yellow(`⚠️ Agent @${name} is not a built-in agent.`));
+        }
+      } catch (error) {
+        printError(chalk.red(`Validation failed: ${error.message}`));
       }
     });
 
@@ -224,31 +296,61 @@ export function registerAgentsCommand(program) {
   agentsCmd
     .command('search <query>')
     .description('Search for agents in the marketplace')
-    .action(async (query) => {
-      console.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
+    .option('--page <number>', 'Page number', String(1))
+    .option('--limit <number>', 'Items per page', String(DEFAULT_SEARCH_PAGE_SIZE))
+    .option('--json', 'Output search results as JSON')
+    .action(async (query, options) => {
+      try {
+        console.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
 
-      const lowerQuery = query.toLowerCase();
-      const builtinResults = SEARCHABLE_AGENTS.filter(a =>
-        a.searchStr.includes(lowerQuery)
-      );
-      const marketplaceResults = await marketplaceClient.searchAgents(query);
-      const results = [
-        ...builtinResults.map(result => ({ ...result, source: 'builtin' })),
-        ...marketplaceResults.map(result => ({ ...result, source: 'marketplace' }))
-      ];
+        const lowerQuery = query.toLowerCase();
+        const builtinResults = SEARCHABLE_AGENTS.filter(a =>
+          a.searchStr.includes(lowerQuery)
+        );
 
-      if (results.length === 0) {
-        console.log(chalk.yellow('No agents found matching your query.'));
-      } else {
-        console.log(chalk.bold(`Found ${results.length} agent(s):\n`));
-        results.forEach(a => {
-          const badge = a.source === 'builtin' ? chalk.blue('[built-in]') : chalk.yellow('[marketplace]');
-          const name = a.name.startsWith('@') ? a.name : `@${a.name}`;
-          console.log(`  ${chalk.green(name)} ${badge}`);
-          if (a.version) console.log(`    ${chalk.gray(`v${a.version}`)}`);
-          if (a.rating) console.log(`    ${chalk.gray(`Rating: ${a.rating}`)}`);
-          console.log(`    ${chalk.gray(a.description)}\n`);
-        });
+        let marketplaceResults = [];
+        try {
+          marketplaceResults = await marketplaceClient.searchAgents(query);
+        } catch (error) {
+          printWarning(chalk.yellow('Marketplace search failed. Showing built-in results only.'));
+        }
+
+        const results = [
+          ...builtinResults.map(result => ({ ...result, source: 'builtin' })),
+          ...marketplaceResults.map(result => ({ ...result, source: 'marketplace' }))
+        ];
+
+        const page = parsePositiveInt(options.page, 1);
+        const limit = parsePositiveInt(options.limit, DEFAULT_SEARCH_PAGE_SIZE);
+        const pageData = paginate(results, page, limit);
+
+        if (options.json) {
+          process.stdout.write(JSON.stringify({
+            query,
+            total: pageData.total,
+            page: pageData.page,
+            totalPages: pageData.totalPages,
+            results: pageData.items
+          }, null, 2) + '\n');
+          return;
+        }
+
+        if (results.length === 0) {
+          console.log(chalk.yellow('No agents found matching your query.'));
+        } else {
+          console.log(chalk.bold(`Found ${results.length} agent(s):\n`));
+          pageData.items.forEach(a => {
+            const badge = a.source === 'builtin' ? chalk.blue('[built-in]') : chalk.yellow('[marketplace]');
+            const name = a.name.startsWith('@') ? a.name : `@${a.name}`;
+            console.log(`  ${chalk.green(name)} ${badge}`);
+            if (a.version) console.log(`    ${chalk.gray(`v${a.version}`)}`);
+            if (a.rating) console.log(`    ${chalk.gray(`Rating: ${a.rating}`)}`);
+            console.log(`    ${chalk.gray(a.description)}\n`);
+          });
+          printPaginationSummary(pageData);
+        }
+      } catch (error) {
+        printError(chalk.red(`Search failed: ${error.message}`));
       }
     });
 
@@ -261,58 +363,59 @@ export function registerAgentsCommand(program) {
     .option('-e, --expertise <expertise>', 'Expertise (comma-separated)')
     .option('-p, --prompt <prompt>', 'Base system prompt')
     .action(async (name, options) => {
-      const validation = validateSafePath(name, 'Agent name');
-      if (validation !== true) {
-        console.log(chalk.red(validation));
-        return;
-      }
+      try {
+        const validation = validateSafePath(name, 'Agent name');
+        if (validation !== true) {
+          console.log(chalk.red(validation));
+          return;
+        }
 
-      if (findBuiltInAgent(name)) {
-        console.log(chalk.red(`\n❌ "${name}" conflicts with a built-in agent.\n`));
-        return;
-      }
+        if (findBuiltInAgent(name)) {
+          console.log(chalk.red(`\n❌ "${name}" conflicts with a built-in agent.\n`));
+          return;
+        }
 
-      let answers;
-      if (options.description || options.tier || options.expertise || options.prompt) {
-          // Non-interactive mode
-          answers = {
-              role: options.description || 'Custom AI Agent',
-              tier: options.tier || 'Specialist',
-              expertise: options.expertise || 'General',
-              prompt: options.prompt || `You are @${name}, an AI assistant.`
-          };
-      } else {
-          // Interactive mode
-          answers = await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'role',
-              message: 'Role description (1 sentence):',
-              validate: input => input.trim().length > 0 || 'Role description is required',
-            },
-            {
-              type: 'list',
-              name: 'tier',
-              message: 'Select tier:',
-              choices: TIERS,
-            },
-            {
-              type: 'input',
-              name: 'expertise',
-              message: 'Expertise areas (comma-separated):',
-              validate: input => input.trim().length > 0 || 'Expertise is required',
-            },
-            {
-              type: 'editor',
-              name: 'prompt',
-              message: 'Base system prompt:',
-              default: `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent\n\nYou are an expert in...`,
-              validate: input => input.trim().length > 0 || 'System prompt is required',
-            },
-          ]);
-      }
+        let answers;
+        if (options.description || options.tier || options.expertise || options.prompt) {
+            // Non-interactive mode
+            answers = {
+                role: options.description || 'Custom AI Agent',
+                tier: options.tier || 'Specialist',
+                expertise: options.expertise || 'General',
+                prompt: options.prompt || `You are @${name}, an AI assistant.`
+            };
+        } else {
+            // Interactive mode
+            answers = await inquirer.prompt([
+              {
+                type: 'input',
+                name: 'role',
+                message: 'Role description (1 sentence):',
+                validate: input => input.trim().length > 0 || 'Role description is required',
+              },
+              {
+                type: 'list',
+                name: 'tier',
+                message: 'Select tier:',
+                choices: TIERS,
+              },
+              {
+                type: 'input',
+                name: 'expertise',
+                message: 'Expertise areas (comma-separated):',
+                validate: input => input.trim().length > 0 || 'Expertise is required',
+              },
+              {
+                type: 'editor',
+                name: 'prompt',
+                message: 'Base system prompt:',
+                default: `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent\n\nYou are an expert in...`,
+                validate: input => input.trim().length > 0 || 'System prompt is required',
+              },
+            ]);
+        }
 
-      const agentContent = `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent
+        const agentContent = `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent
 
 ## Role
 ${answers.role}
@@ -332,12 +435,15 @@ ${answers.prompt}
 - >> SEARCH_CODE: "query"
 - >> DELEGATE: @AgentName "Task"
 `;
-      
-      await fs.mkdir(CUSTOM_AGENTS_DIR, { recursive: true });
-      const outputPath = path.join(CUSTOM_AGENTS_DIR, `${name.toLowerCase()}.md`);
-      await fs.writeFile(outputPath, agentContent);
-      
-      console.log(chalk.green(`\n✅ Custom agent created: ${name.toLowerCase()}\n`));
+        
+        await fs.mkdir(CUSTOM_AGENTS_DIR, { recursive: true });
+        const outputPath = path.join(CUSTOM_AGENTS_DIR, `${name.toLowerCase()}.md`);
+        await fs.writeFile(outputPath, agentContent);
+        
+        console.log(chalk.green(`\n✅ Custom agent created: ${name.toLowerCase()}\n`));
+      } catch (error) {
+        printError(chalk.red(`Failed to create agent: ${error.message}`));
+      }
     });
 
   // agents delete <name>
@@ -345,24 +451,28 @@ ${answers.prompt}
     .command('delete <name>')
     .description('Delete a custom agent')
     .action(async (name) => {
-      const filePath = await getCustomAgentPath(name);
-      if (!filePath) {
-        console.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
-        return;
-      }
+      try {
+        const filePath = await getCustomAgentPath(name);
+        if (!filePath) {
+          console.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
+          return;
+        }
 
-      const { confirmDelete } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'confirmDelete',
-          message: `Delete custom agent "${name}"?`,
-          default: false,
-        },
-      ]);
+        const { confirmDelete } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirmDelete',
+            message: `Delete custom agent "${name}"?`,
+            default: false,
+          },
+        ]);
 
-      if (confirmDelete) {
-        await fs.unlink(filePath);
-        console.log(chalk.green(`\n✅ Deleted custom agent "${name}".\n`));
+        if (confirmDelete) {
+          await fs.unlink(filePath);
+          console.log(chalk.green(`\n✅ Deleted custom agent "${name}".\n`));
+        }
+      } catch (error) {
+        printError(chalk.red(`Failed to delete agent: ${error.message}`));
       }
     });
 
@@ -387,32 +497,36 @@ ${answers.prompt}
     .command('publish <name>')
     .description('Publish an agent to the marketplace')
     .action(async (name) => {
-      console.log(chalk.cyan(`\n🚀 Preparing to publish agent: ${name}...`));
-      const agentPath = await getCustomAgentPath(name);
-      if (!agentPath) {
-        console.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
-        return;
+      try {
+        console.log(chalk.cyan(`\n🚀 Preparing to publish agent: ${name}...`));
+        const agentPath = await getCustomAgentPath(name);
+        if (!agentPath) {
+          console.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
+          return;
+        }
+
+        const content = await fs.readFile(agentPath, 'utf-8');
+        const metadata = extractAgentMetadata(content);
+
+        const payload = {
+          id: name.toLowerCase(),
+          name: metadata.name || `@${name}`,
+          description: metadata.description || 'Custom Ultra-Dex agent',
+          version: metadata.version || '1.0.0',
+          systemPrompt: metadata.prompt || content,
+          tags: metadata.tags || [],
+        };
+
+        const spinner = ora('Publishing to marketplace...').start();
+        const result = await marketplaceClient.submitAgent(payload);
+        if (result?.success === false) {
+          spinner.fail(result.message || 'Marketplace submission failed');
+          return;
+        }
+        spinner.succeed(`Published ${payload.name} v${payload.version}`);
+      } catch (error) {
+        printError(chalk.red(`Publish failed: ${error.message}`));
       }
-
-      const content = await fs.readFile(agentPath, 'utf-8');
-      const metadata = extractAgentMetadata(content);
-
-      const payload = {
-        id: name.toLowerCase(),
-        name: metadata.name || `@${name}`,
-        description: metadata.description || 'Custom Ultra-Dex agent',
-        version: metadata.version || '1.0.0',
-        systemPrompt: metadata.prompt || content,
-        tags: metadata.tags || [],
-      };
-
-      const spinner = ora('Publishing to marketplace...').start();
-      const result = await marketplaceClient.submitAgent(payload);
-      if (result?.success === false) {
-        spinner.fail(result.message || 'Marketplace submission failed');
-        return;
-      }
-      spinner.succeed(`Published ${payload.name} v${payload.version}`);
     });
 
   // agents install <name>
@@ -422,86 +536,142 @@ ${answers.prompt}
     .description('Install an agent from the marketplace')
     .action(async (name) => {
       const spinner = ora(`Installing ${name}...`).start();
-      const agent = await marketplaceClient.getAgent(name.toLowerCase());
-      if (!agent) {
-        spinner.fail(`Agent "${name}" not found in marketplace`);
-        console.log(chalk.gray('\nUse `ultra-dex agents list --marketplace` to see available agents'));
-        return;
+      try {
+        const agent = await marketplaceClient.getAgent(name.toLowerCase());
+        if (!agent) {
+          spinner.fail(`Agent "${name}" not found in marketplace`);
+          console.log(chalk.gray('\nUse `ultra-dex agents list --marketplace` to see available agents'));
+          return;
+        }
+        const agentsDir = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents');
+        await fs.mkdir(agentsDir, { recursive: true });
+        const agentConfig = {
+          id: agent.id || name.toLowerCase(),
+          name: agent.name,
+          description: agent.description,
+          version: agent.version,
+          rating: agent.rating || null,
+          installedAt: new Date().toISOString(),
+          systemPrompt: agent.systemPrompt || `You are ${agent.name}, ${agent.description}`,
+        };
+        await fs.writeFile(path.join(agentsDir, `${name.toLowerCase()}.json`), JSON.stringify(agentConfig, null, 2));
+        spinner.succeed(`Installed ${chalk.green(agent.name)} v${agent.version}`);
+      } catch (error) {
+        spinner.fail(`Install failed: ${error.message}`);
       }
-      const agentsDir = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents');
-      await fs.mkdir(agentsDir, { recursive: true });
-      const agentConfig = {
-        id: agent.id || name.toLowerCase(),
-        name: agent.name,
-        description: agent.description,
-        version: agent.version,
-        rating: agent.rating || null,
-        installedAt: new Date().toISOString(),
-        systemPrompt: agent.systemPrompt || `You are ${agent.name}, ${agent.description}`,
-      };
-      await fs.writeFile(path.join(agentsDir, `${name.toLowerCase()}.json`), JSON.stringify(agentConfig, null, 2));
-      spinner.succeed(`Installed ${chalk.green(agent.name)} v${agent.version}`);
     });
 
 }
 
-async function showMarketplace() {
-  console.log(chalk.cyan('\n🏪 Ultra-Dex Agent Marketplace\n'));
-  console.log(chalk.bold('Available Community Agents:'));
-  console.log(chalk.gray('─'.repeat(50)));
-  const agents = await marketplaceClient.listAgents();
-  for (const agent of agents) {
-    const name = agent.name.startsWith('@') ? agent.name : `@${agent.name}`;
-    console.log(`  ${chalk.yellow(name)} ${chalk.gray(`v${agent.version}`)}`);
-    console.log(`    ${chalk.white(agent.description)}`);
-    if (agent.rating) console.log(`    ${chalk.gray(`★ ${agent.rating}`)}`);
-    console.log(`    ${chalk.gray(`↓ ${agent.downloads || 0} downloads`)}\n`);
+async function showMarketplace({ page = 1, limit = DEFAULT_PAGE_SIZE, json = false } = {}) {
+  try {
+    console.log(chalk.cyan('\n🏪 Ultra-Dex Agent Marketplace\n'));
+    console.log(chalk.bold('Available Community Agents:'));
+    console.log(chalk.gray('─'.repeat(50)));
+    const agents = await marketplaceClient.listAgents();
+    const pageData = paginate(agents, page, limit);
+
+    if (json) {
+      process.stdout.write(JSON.stringify({
+        total: pageData.total,
+        page: pageData.page,
+        totalPages: pageData.totalPages,
+        agents: pageData.items
+      }, null, 2) + '\n');
+      return;
+    }
+
+    for (const agent of pageData.items) {
+      const name = agent.name.startsWith('@') ? agent.name : `@${agent.name}`;
+      console.log(`  ${chalk.yellow(name)} ${chalk.gray(`v${agent.version}`)}`);
+      console.log(`    ${chalk.white(agent.description)}`);
+      if (agent.rating) console.log(`    ${chalk.gray(`★ ${agent.rating}`)}`);
+      console.log(`    ${chalk.gray(`↓ ${agent.downloads || 0} downloads`)}\n`);
+    }
+    printPaginationSummary(pageData);
+    console.log(chalk.gray('Install with: ultra-dex agents install <name>\n'));
+  } catch (error) {
+    printError(chalk.red(`Marketplace listing failed: ${error.message}`));
   }
-  console.log(chalk.gray('Install with: ultra-dex agents install <name>\n'));
 }
 
-async function listAgents(builtinOnly = false) {
-  const customAgents = builtinOnly ? [] : await listCustomAgents();
-  const totalAgents = AGENTS.length + customAgents.length;
-  const header = builtinOnly ? 'Built-in Agents' : `Ultra-Dex AI Agents (${totalAgents} Total)`;
-  console.log(chalk.bold(`\n🤖 ${header}\n`));
+async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_SIZE, json = false } = {}) {
+  try {
+    const customAgents = builtinOnly ? [] : await listCustomAgents();
+    const totalAgents = AGENTS.length + customAgents.length;
+    const header = builtinOnly ? 'Built-in Agents' : `Ultra-Dex AI Agents (${totalAgents} Total)`;
+    console.log(chalk.bold(`\n🤖 ${header}\n`));
 
-  const candidateNames = [
-    ...AGENTS.map(agent => agent.name),
-    ...customAgents
-  ];
-  const { role, allowedAgents, restrictedAgents } = await filterAgentsByAccess(candidateNames);
-  const allowedSet = new Set(allowedAgents.map(name => name.toLowerCase()));
+    const candidateNames = [
+      ...AGENTS.map(agent => agent.name),
+      ...customAgents
+    ];
 
-  const agentsForTable = AGENTS.filter(agent => allowedSet.has(agent.name.toLowerCase())).map(agent => ({
-    tier: agent.tier,
-    name: agent.name,
-    status: 'ready'
-  }));
+    let role = 'default';
+    let allowedAgents = candidateNames;
+    let restrictedAgents = [];
+    try {
+      const access = await filterAgentsByAccess(candidateNames);
+      role = access.role;
+      allowedAgents = access.allowedAgents;
+      restrictedAgents = access.restrictedAgents;
+    } catch (error) {
+      printWarning(chalk.yellow('Role-based access checks failed. Showing all agents.'));
+    }
 
-  if (customAgents.length > 0) {
-    customAgents
-      .filter(name => allowedSet.has(name.toLowerCase()))
-      .forEach(name => {
-        agentsForTable.push({
-          tier: 'Custom',
-          name: name,
-          status: 'ready'
+    const allowedSet = new Set(allowedAgents.map(name => name.toLowerCase()));
+
+    const agentsForTable = AGENTS.filter(agent => allowedSet.has(agent.name.toLowerCase())).map(agent => ({
+      tier: agent.tier,
+      name: agent.name,
+      status: 'ready'
+    }));
+
+    if (customAgents.length > 0) {
+      customAgents
+        .filter(name => allowedSet.has(name.toLowerCase()))
+        .forEach(name => {
+          agentsForTable.push({
+            tier: 'Custom',
+            name: name,
+            status: 'ready'
+          });
         });
-      });
+    }
+
+    const pageData = paginate(agentsForTable, page, limit);
+
+    if (json) {
+      process.stdout.write(JSON.stringify({
+        total: pageData.total,
+        page: pageData.page,
+        totalPages: pageData.totalPages,
+        restrictedAgents,
+        agents: pageData.items
+      }, null, 2) + '\n');
+      return;
+    }
+
+    if (pageData.items.length === 0) {
+      printWarning(chalk.yellow('No agents found for this page.'));
+      return;
+    }
+
+    showAgentsTable(pageData.items);
+    printPaginationSummary(pageData);
+
+    if (restrictedAgents.length > 0) {
+      console.log(chalk.yellow(`\n🔒 Role-based access (${role}) hides ${restrictedAgents.length} agent(s).`));
+    }
+
+    console.log('\n' + chalk.bold('Usage:'));
+    console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
+    console.log(chalk.gray('  ultra-dex pack <name>           Package agent + context'));
+
+    console.log(`\n${chalk.gray(`Agent Index: ${githubBlobUrl('agents/00-AGENT_INDEX.md')}\n`)}`);
+  } catch (error) {
+    printError(chalk.red(`Failed to list agents: ${error.message}`));
   }
-
-  showAgentsTable(agentsForTable);
-
-  if (restrictedAgents.length > 0) {
-    console.log(chalk.yellow(`\n🔒 Role-based access (${role}) hides ${restrictedAgents.length} agent(s).`));
-  }
-
-  console.log('\n' + chalk.bold('Usage:'));
-  console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
-  console.log(chalk.gray('  ultra-dex pack <name>           Package agent + context'));
-
-  console.log(`\n${chalk.gray(`Agent Index: ${githubBlobUrl('agents/00-AGENT_INDEX.md')}\n`)}`);
 }
 
 async function showAgent(name) {

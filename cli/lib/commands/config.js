@@ -10,6 +10,12 @@ import { AppError, ValidationError } from '../utils/errors.js';
 const CONFIG_DIR = '.ultra-dex';
 const CONFIG_FILE = 'config.json';
 
+export const CONFIG_EXAMPLES = [
+  { command: 'ultra-dex config --show', description: 'Display current project configuration' },
+  { command: 'ultra-dex config --set providers.default=claude', description: 'Set a config key/value pair' },
+  { command: 'ultra-dex config --mcp', description: 'Generate MCP config for Claude Desktop' },
+];
+
 function getConfigPath() {
   return join(process.cwd(), CONFIG_DIR, CONFIG_FILE);
 }
@@ -187,6 +193,9 @@ function setConfigValue(keyValue) {
   if (!key || value === undefined) {
     throw new ValidationError('Invalid format. Use: --set key=value');
   }
+  if (!key.trim()) {
+    throw new ValidationError('Config key is required.');
+  }
   
   const config = loadConfig();
   const keys = key.split('.');
@@ -207,6 +216,9 @@ function setConfigValue(keyValue) {
 }
 
 function getConfigValue(key) {
+  if (!key || !key.trim()) {
+    throw new ValidationError('Config key is required.');
+  }
   const config = loadConfig();
   const keys = key.split('.');
   let value = config;

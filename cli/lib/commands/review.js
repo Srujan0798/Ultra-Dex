@@ -13,6 +13,7 @@ import { SYSTEM_PROMPT, generateReviewPrompt } from '../templates/prompts/review
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 
 // File patterns to scan (used for future pattern-based review)
@@ -100,7 +101,7 @@ async function findKeyFiles(dir) {
 }
 
 export function registerReviewCommand(program) {
-  program
+  const reviewCmd = program
     .command('review')
     .description('Review code against the implementation plan')
     .option('-d, --dir <directory>', 'Directory to review', '.')
@@ -109,38 +110,39 @@ export function registerReviewCommand(program) {
     .option('--quick', 'Quick review without AI (checks file structure only)')
     .option('--json', 'Output as JSON')
     .action(async (options) => {
-      printInfo(chalk.cyan('\n🔍 Ultra-Dex Code Review\n'));
-
-      const dirValidation = validateSafePath(options.dir, 'Review directory');
-      if (dirValidation !== true) {
-        printError(chalk.red(dirValidation));
-        process.exit(1);
-      }
-
-      const reviewDir = path.resolve(options.dir);
-
-      // Check for plan
-      const planPath = path.join(reviewDir, 'IMPLEMENTATION-PLAN.md');
-      const plan = await readFileSafe(planPath);
-
-      if (!plan) {
-        printWarning(chalk.yellow('⚠️  No IMPLEMENTATION-PLAN.md found.\n'));
-        printInfo(chalk.white('Run one of these first:'));
-        printInfo(chalk.gray('  npx ultra-dex init'));
-        printInfo(chalk.gray('  npx ultra-dex generate\n'));
-        return;
-      }
-
-      // Get directory structure & Build Graph
-      const spinner = ora('Scanning codebase & Building Graph...').start();
-      const structure = await getDirectoryStructure(reviewDir);
-      const keyFiles = await findKeyFiles(reviewDir);
-      
-      // GOD MODE: Build CPG
-      let graphSummary = "Graph Not Available";
       try {
-        const graph = await buildGraph();
-        graphSummary = `
+        printInfo(chalk.cyan('\n🔍 Ultra-Dex Code Review\n'));
+
+        const dirValidation = validateSafePath(options.dir, 'Review directory');
+        if (dirValidation !== true) {
+          printError(chalk.red(dirValidation));
+          process.exit(1);
+        }
+
+        const reviewDir = path.resolve(options.dir);
+
+        // Check for plan
+        const planPath = path.join(reviewDir, 'IMPLEMENTATION-PLAN.md');
+        const plan = await readFileSafe(planPath);
+
+        if (!plan) {
+          printWarning(chalk.yellow('⚠️  No IMPLEMENTATION-PLAN.md found.\n'));
+          printInfo(chalk.white('Run one of these first:'));
+          printInfo(chalk.gray('  npx ultra-dex init'));
+          printInfo(chalk.gray('  npx ultra-dex generate\n'));
+          return;
+        }
+
+        // Get directory structure & Build Graph
+        const spinner = ora('Scanning codebase & Building Graph...').start();
+        const structure = await getDirectoryStructure(reviewDir);
+        const keyFiles = await findKeyFiles(reviewDir);
+        
+        // GOD MODE: Build CPG
+        let graphSummary = "Graph Not Available";
+        try {
+          const graph = await buildGraph();
+          graphSummary = `
 Code Property Graph Stats:
 - Files: ${graph.nodes.filter(n => n.type === 'file').length}
 - Functions: ${graph.nodes.filter(n => n.type === 'function').length}
@@ -149,171 +151,181 @@ Code Property Graph Stats:
 Top Dependencies:
 ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
         `;
-      } catch (e) {
-        // Fallback if graph fails
-      }
-
-      spinner.succeed('Codebase scanned & Graph built');
-
-      if (options.quick) {
-        // Quick review - just check structure
-        printInfo(chalk.white('\n📁 Project Structure:\n'));
-        printInfo(chalk.gray(structure));
-
-        // Quick checks
-        const checks = [
-          { name: 'IMPLEMENTATION-PLAN.md', path: 'IMPLEMENTATION-PLAN.md' },
-          { name: 'CONTEXT.md', path: 'CONTEXT.md' },
-          { name: 'package.json', path: 'package.json' },
-          { name: 'Database schema', path: 'prisma/schema.prisma' },
-          { name: 'API routes', path: 'src/app/api' },
-          { name: 'Tests', path: 'tests' },
-        ];
-
-        printInfo(chalk.white('\n📋 Quick Checks:\n'));
-        for (const check of checks) {
-          const exists = await fileExists(path.join(reviewDir, check.path));
-          const icon = exists ? chalk.green('✅') : chalk.red('❌');
-          printInfo(`  ${icon} ${check.name}`);
+        } catch (e) {
+          // Fallback if graph fails
         }
 
-        printInfo(chalk.cyan('\n💡 For full AI-powered review, run without --quick\n'));
-        return;
-      }
+        spinner.succeed('Codebase scanned & Graph built');
 
-      // Full AI review
-      const configured = checkConfiguredProviders();
-      const hasProvider = configured.some(p => p.configured) || options.key;
+        if (options.quick) {
+          // Quick review - just check structure
+          printInfo(chalk.white('\n📁 Project Structure:\n'));
+          printInfo(chalk.gray(structure));
 
-      if (!hasProvider) {
-        printWarning(chalk.yellow('\n⚠️  No AI provider configured for full review.\n'));
-        printInfo(chalk.white('Options:'));
-        printInfo(chalk.gray('  1. Set API key: export ANTHROPIC_API_KEY=your-key'));
-        printInfo(chalk.gray('  2. Use --quick for structure-only review'));
-        printInfo(chalk.gray('  3. Use --key option: npx ultra-dex review --key sk-...\n'));
-        return;
-      }
+          // Quick checks
+          const checks = [
+            { name: 'IMPLEMENTATION-PLAN.md', path: 'IMPLEMENTATION-PLAN.md' },
+            { name: 'CONTEXT.md', path: 'CONTEXT.md' },
+            { name: 'package.json', path: 'package.json' },
+            { name: 'Database schema', path: 'prisma/schema.prisma' },
+            { name: 'API routes', path: 'src/app/api' },
+            { name: 'Tests', path: 'tests' },
+          ];
 
-      const providerId = options.provider || getDefaultProvider();
-      printInfo(chalk.gray(`Using provider: ${providerId}\n`));
-
-      let provider;
-      try {
-        provider = createProvider(providerId, {
-          apiKey: options.key,
-          maxTokens: 4000,
-        });
-      } catch (err) {
-        printError(chalk.red(`Error: ${err.message}`));
-        return;
-      }
-
-      // Build file summary
-      const filesSummary = keyFiles.map(f => `### ${f.path}\n\`\`\`\n${f.content}\n\`\`\``).join('\n\n');
-      
-      // Inject Graph Summary into context
-      const contextWithGraph = `${structure}\n\n## ARCHITECTURAL GRAPH (TRUTH)\n${graphSummary}`;
-
-      spinner.start('Analyzing code & graph against plan...');
-
-      try {
-        const result = await provider.generate(
-          SYSTEM_PROMPT,
-          generateReviewPrompt(plan.slice(0, 15000), contextWithGraph, filesSummary)
-        );
-
-        spinner.succeed('Analysis complete');
-
-        // Parse the result
-        let report;
-        try {
-          // Try to extract JSON from the response
-          const jsonMatch = result.content.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            report = JSON.parse(jsonMatch[0]);
-          } else {
-            report = { raw: result.content };
+          printInfo(chalk.white('\n📋 Quick Checks:\n'));
+          for (const check of checks) {
+            const exists = await fileExists(path.join(reviewDir, check.path));
+            const icon = exists ? chalk.green('✅') : chalk.red('❌');
+            printInfo(`  ${icon} ${check.name}`);
           }
-        } catch {
-          report = { raw: result.content };
-        }
 
-        if (options.json) {
-          printInfo(JSON.stringify(report, null, 2));
+          printInfo(chalk.cyan('\n💡 For full AI-powered review, run without --quick\n'));
           return;
         }
 
-        // Display formatted report
-        printInfo(chalk.white('\n' + '═'.repeat(60)));
-        printInfo(chalk.bold.cyan('  ULTRA-DEX CODE REVIEW REPORT'));
-        printInfo(chalk.white('═'.repeat(60) + '\n'));
+        // Full AI review
+        const configured = checkConfiguredProviders();
+        const hasProvider = configured.some(p => p.configured) || options.key;
 
-        if (report.alignmentScore !== undefined) {
-          const score = report.alignmentScore;
-          const color = score >= 80 ? chalk.green : score >= 60 ? chalk.yellow : chalk.red;
-          printInfo(chalk.white('  Alignment Score: ') + color.bold(`${score}/100`));
-          printInfo('');
+        if (!hasProvider) {
+          printWarning(chalk.yellow('\n⚠️  No AI provider configured for full review.\n'));
+          printInfo(chalk.white('Options:'));
+          printInfo(chalk.gray('  1. Set API key: export ANTHROPIC_API_KEY=your-key'));
+          printInfo(chalk.gray('  2. Use --quick for structure-only review'));
+          printInfo(chalk.gray('  3. Use --key option: npx ultra-dex review --key sk-...\n'));
+          return;
         }
 
-        if (report.summary) {
-          printInfo(chalk.white('  Summary:'));
-          printInfo(chalk.gray(`  ${report.summary}\n`));
+        const providerId = options.provider || getDefaultProvider();
+        printInfo(chalk.gray(`Using provider: ${providerId}\n`));
+
+        let provider;
+        try {
+          provider = createProvider(providerId, {
+            apiKey: options.key,
+            maxTokens: 4000,
+          });
+        } catch (err) {
+          printError(chalk.red(`Error: ${err.message}`));
+          return;
         }
 
-        if (report.sections) {
-          printInfo(chalk.white('  Section Scores:\n'));
-          for (const [section, data] of Object.entries(report.sections)) {
-            const icon = data.status === 'aligned' ? '✅' :
-                         data.status === 'deviated' ? '⚠️' : '❌';
-            const scoreColor = data.score >= 80 ? chalk.green :
-                              data.score >= 60 ? chalk.yellow : chalk.red;
-            printInfo(`    ${icon} ${section.padEnd(12)} ${scoreColor(`${data.score}%`)} - ${data.notes || ''}`);
+        // Build file summary
+        const filesSummary = keyFiles.map(f => `### ${f.path}\n\`\`\`\n${f.content}\n\`\`\``).join('\n\n');
+        
+        // Inject Graph Summary into context
+        const contextWithGraph = `${structure}\n\n## ARCHITECTURAL GRAPH (TRUTH)\n${graphSummary}`;
+
+        spinner.start('Analyzing code & graph against plan...');
+
+        try {
+          const result = await provider.generate(
+            SYSTEM_PROMPT,
+            generateReviewPrompt(plan.slice(0, 15000), contextWithGraph, filesSummary)
+          );
+
+          spinner.succeed('Analysis complete');
+
+          // Parse the result
+          let report;
+          try {
+            // Try to extract JSON from the response
+            const jsonMatch = result.content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              report = JSON.parse(jsonMatch[0]);
+            } else {
+              report = { raw: result.content };
+            }
+          } catch {
+            report = { raw: result.content };
           }
-          printInfo('');
+
+          if (options.json) {
+            printInfo(JSON.stringify(report, null, 2));
+            return;
+          }
+
+          // Display formatted report
+          printInfo(chalk.white('\n' + '═'.repeat(60)));
+          printInfo(chalk.bold.cyan('  ULTRA-DEX CODE REVIEW REPORT'));
+          printInfo(chalk.white('═'.repeat(60) + '\n'));
+
+          if (report.alignmentScore !== undefined) {
+            const score = report.alignmentScore;
+            const color = score >= 80 ? chalk.green : score >= 60 ? chalk.yellow : chalk.red;
+            printInfo(chalk.white('  Alignment Score: ') + color.bold(`${score}/100`));
+            printInfo('');
+          }
+
+          if (report.summary) {
+            printInfo(chalk.white('  Summary:'));
+            printInfo(chalk.gray(`  ${report.summary}\n`));
+          }
+
+          if (report.sections) {
+            printInfo(chalk.white('  Section Scores:\n'));
+            for (const [section, data] of Object.entries(report.sections)) {
+              const icon = data.status === 'aligned' ? '✅' :
+                           data.status === 'deviated' ? '⚠️' : '❌';
+              const scoreColor = data.score >= 80 ? chalk.green :
+                                data.score >= 60 ? chalk.yellow : chalk.red;
+              printInfo(`    ${icon} ${section.padEnd(12)} ${scoreColor(`${data.score}%`)} - ${data.notes || ''}`);
+            }
+            printInfo('');
+          }
+
+          if (report.criticalIssues?.length) {
+            printInfo(chalk.red.bold('  ⚠️  Critical Issues:\n'));
+            report.criticalIssues.forEach((issue, i) => {
+              printInfo(chalk.red(`    ${i + 1}. ${issue}`));
+            });
+            printInfo('');
+          }
+
+          if (report.suggestions?.length) {
+            printInfo(chalk.yellow('  💡 Suggestions:\n'));
+            report.suggestions.forEach((suggestion, i) => {
+              printInfo(chalk.gray(`    ${i + 1}. ${suggestion}`));
+            });
+            printInfo('');
+          }
+
+          if (report.nextSteps?.length) {
+            printInfo(chalk.cyan('  📋 Next Steps:\n'));
+            report.nextSteps.forEach((step, i) => {
+              printInfo(chalk.white(`    ${i + 1}. ${step}`));
+            });
+            printInfo('');
+          }
+
+          // If we couldn't parse, show raw
+          if (report.raw) {
+            printInfo(chalk.white('  Analysis:\n'));
+            printInfo(chalk.gray(report.raw));
+          }
+
+          printInfo(chalk.white('═'.repeat(60) + '\n'));
+
+          // Cost info
+          const cost = provider.estimateCost(result.usage.inputTokens, result.usage.outputTokens);
+          printInfo(chalk.gray(`  Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`));
+          printInfo(chalk.gray(`  Cost: ~$${cost.total.toFixed(4)}\n`));
+
+        } catch (err) {
+          spinner.fail('Review failed');
+          printError(chalk.red(`\nError: ${err.message}`));
         }
-
-        if (report.criticalIssues?.length) {
-          printInfo(chalk.red.bold('  ⚠️  Critical Issues:\n'));
-          report.criticalIssues.forEach((issue, i) => {
-            printInfo(chalk.red(`    ${i + 1}. ${issue}`));
-          });
-          printInfo('');
-        }
-
-        if (report.suggestions?.length) {
-          printInfo(chalk.yellow('  💡 Suggestions:\n'));
-          report.suggestions.forEach((suggestion, i) => {
-            printInfo(chalk.gray(`    ${i + 1}. ${suggestion}`));
-          });
-          printInfo('');
-        }
-
-        if (report.nextSteps?.length) {
-          printInfo(chalk.cyan('  📋 Next Steps:\n'));
-          report.nextSteps.forEach((step, i) => {
-            printInfo(chalk.white(`    ${i + 1}. ${step}`));
-          });
-          printInfo('');
-        }
-
-        // If we couldn't parse, show raw
-        if (report.raw) {
-          printInfo(chalk.white('  Analysis:\n'));
-          printInfo(chalk.gray(report.raw));
-        }
-
-        printInfo(chalk.white('═'.repeat(60) + '\n'));
-
-        // Cost info
-        const cost = provider.estimateCost(result.usage.inputTokens, result.usage.outputTokens);
-        printInfo(chalk.gray(`  Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`));
-        printInfo(chalk.gray(`  Cost: ~$${cost.total.toFixed(4)}\n`));
-
-      } catch (err) {
-        spinner.fail('Review failed');
-        printError(chalk.red(`\nError: ${err.message}`));
+      } catch (error) {
+        await handleError(error, { command: 'review', options });
+        process.exit(error.exitCode || 1);
       }
     });
+
+  reviewCmd._examples = [
+    { command: 'ultra-dex review', description: 'Run full AI review using default provider' },
+    { command: 'ultra-dex review --quick', description: 'Quick structural review without AI' },
+    { command: 'ultra-dex review --dir ./apps/web --json', description: 'Review a specific directory and emit JSON' },
+  ];
 }
 
 export default { registerReviewCommand };

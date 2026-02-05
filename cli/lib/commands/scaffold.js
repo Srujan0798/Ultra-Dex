@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';
+import { validateSafePath } from '../utils/validation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,6 +48,37 @@ const TEMPLATES = {
     stack: ['SolidStart', 'Drizzle ORM', 'PostgreSQL', 'TypeScript'],
   },
 };
+
+const DEFAULT_PAGE_SIZE = 10;
+
+function parsePositiveInt(value, fallback) {
+  if (value === undefined || value === null) return fallback;
+  const parsed = parseInt(String(value), 10);
+  if (Number.isNaN(parsed) || parsed <= 0) return fallback;
+  return parsed;
+}
+
+function paginate(items, page, limit) {
+  const safeLimit = Math.max(1, limit);
+  const total = items.length;
+  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const startIdx = (safePage - 1) * safeLimit;
+  const endIdx = Math.min(startIdx + safeLimit, total);
+  return {
+    total,
+    totalPages,
+    page: safePage,
+    start: total === 0 ? 0 : startIdx + 1,
+    end: endIdx,
+    items: items.slice(startIdx, endIdx),
+  };
+}
+
+function printPaginationSummary(pageData) {
+  if (pageData.totalPages <= 1) return;
+  printInfo(chalk.gray(`Showing ${pageData.start}-${pageData.end} of ${pageData.total} (page ${pageData.page}/${pageData.totalPages}).`));
+}
 
 async function copyDirectory(src, dest) {
   // Validate source and destination paths to prevent directory traversal
@@ -141,6 +173,13 @@ export async function scaffoldCommand(templateName, options) {
   }
 
   const outputDir = options.output || templateName;
+  if (outputDir) {
+    const outputValidation = validateSafePath(outputDir, 'Output directory');
+    if (outputValidation !== true) {
+      printError(chalk.red(outputValidation));
+      process.exit(1);
+    }
+  }
   const spinner = ora(`Scaffolding ${template.name}...`).start();
 
   try {
@@ -200,22 +239,52 @@ export async function scaffoldCommand(templateName, options) {
 }
 
 export function registerScaffoldCommand(program) {
-  program
+  const scaffoldCmd = program
     .command('scaffold [template]')
     .description('Generate a production-ready project from a template')
     .option('-o, --output <dir>', 'Output directory')
     .option('--list', 'List available templates')
     .option('--from-plan', 'Scaffold based on Implementation Plan')
+    .option('--page <number>', 'Page number for --list', String(1))
+    .option('--limit <number>', 'Items per page for --list', String(DEFAULT_PAGE_SIZE))
+    .option('--json', 'Output list data as JSON')
     .action(async (template, options) => {
       if (options.list) {
+        const items = Object.entries(TEMPLATES).map(([key, val]) => ({
+          key,
+          name: val.name,
+          description: val.description,
+          stack: val.stack
+        }));
+        const page = parsePositiveInt(options.page, 1);
+        const limit = parsePositiveInt(options.limit, DEFAULT_PAGE_SIZE);
+        const pageData = paginate(items, page, limit);
+
+        if (options.json) {
+          process.stdout.write(JSON.stringify({
+            total: pageData.total,
+            page: pageData.page,
+            totalPages: pageData.totalPages,
+            templates: pageData.items
+          }, null, 2) + '\n');
+          return;
+        }
+
         printInfo(chalk.cyan('\n📦 Available Templates\n'));
-        Object.entries(TEMPLATES).forEach(([key, val]) => {
-          printInfo(chalk.bold(`  ${key}`));
-          printInfo(chalk.gray(`    ${val.description}`));
-          printInfo(chalk.gray(`    Stack: ${val.stack.join(', ')}\n`));
+        pageData.items.forEach((item) => {
+          printInfo(chalk.bold(`  ${item.key}`));
+          printInfo(chalk.gray(`    ${item.description}`));
+          printInfo(chalk.gray(`    Stack: ${item.stack.join(', ')}\n`));
         });
+        printPaginationSummary(pageData);
         return;
       }
       await scaffoldCommand(template, options);
     });
+
+  scaffoldCmd._examples = [
+    { command: 'ultra-dex scaffold next15-prisma-clerk', description: 'Scaffold a Next.js + Prisma + Clerk project' },
+    { command: 'ultra-dex scaffold --from-plan', description: 'Select template based on implementation plan' },
+    { command: 'ultra-dex scaffold --list --page 1 --limit 5', description: 'List available templates with pagination' },
+  ];
 }
