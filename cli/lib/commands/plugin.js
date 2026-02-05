@@ -8,6 +8,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { PluginManager, PLUGIN_MANIFEST_EXAMPLE, PLUGIN_EXAMPLE } from '../utils/plugin-system.js';
 import { pluginRegistry } from '../plugins/index.js'; // Import the new plugin registry
+import { createPluginFromTemplate, installPlugin as marketplaceInstallPlugin, uninstallPlugin as marketplaceUninstallPlugin, listInstalledPlugins } from '../marketplace/index.js';
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
@@ -24,9 +25,7 @@ export function registerPluginCommand(program) {
     .alias('ls')
     .description('List installed plugins')
     .action(async () => {
-      // Initialize the plugin registry
-      await pluginRegistry.initialize();
-      const plugins = pluginRegistry.getInstalledPlugins();
+      const plugins = await listInstalledPlugins();
 
       if (plugins.length === 0) {
         printWarning(chalk.yellow('\nNo plugins installed.'));
@@ -111,22 +110,27 @@ export function registerPluginCommand(program) {
   pluginCmd
     .command('create <name>')
     .description('Create a new plugin template')
-    .action(async (name) => {
+    .option('-t, --template <type>', 'Template type (agent, template, integration)')
+    .action(async (name, options) => {
       const pluginPath = path.join(process.cwd(), '.ultra-dex/plugins', name);
 
       try {
         await fs.mkdir(pluginPath, { recursive: true });
 
-        const manifest = { ...PLUGIN_MANIFEST_EXAMPLE, name, version: '1.0.0' };
-        await fs.writeFile(
-          path.join(pluginPath, 'ultra-dex-plugin.json'),
-          JSON.stringify(manifest, null, 2)
-        );
+        if (options.template) {
+          await createPluginFromTemplate(name, options.template, pluginPath);
+        } else {
+          const manifest = { ...PLUGIN_MANIFEST_EXAMPLE, name, version: '1.0.0' };
+          await fs.writeFile(
+            path.join(pluginPath, 'ultra-dex-plugin.json'),
+            JSON.stringify(manifest, null, 2)
+          );
 
-        await fs.writeFile(
-          path.join(pluginPath, 'index.js'),
-          PLUGIN_EXAMPLE
-        );
+          await fs.writeFile(
+            path.join(pluginPath, 'index.js'),
+            PLUGIN_EXAMPLE
+          );
+        }
 
         printSuccess(chalk.green(`\n✅ Plugin "${name}" created successfully!`));
         printInfo(chalk.gray(`Location: ${pluginPath}`));
@@ -144,7 +148,7 @@ export function registerPluginCommand(program) {
     .action(async (source, options) => {
       try {
         printInfo(chalk.blue(`\nInstalling plugin: ${source}\n`));
-        const result = await pluginRegistry.installPlugin(source, options);
+        const result = await marketplaceInstallPlugin(source, options);
 
         if (result.success) {
           printSuccess(chalk.green(`\n✅ Plugin installed: ${result.name}`));
@@ -183,7 +187,7 @@ export function registerPluginCommand(program) {
       }
 
       try {
-        await pluginRegistry.uninstallPlugin(name);
+        await marketplaceUninstallPlugin(name);
         printSuccess(chalk.green(`\n✅ Plugin uninstalled: ${name}`));
       } catch (error) {
         printError(chalk.red(`\n❌ ${error.message}`));
