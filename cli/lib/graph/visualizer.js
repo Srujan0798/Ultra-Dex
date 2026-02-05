@@ -8,6 +8,35 @@ import path from 'path';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
 import { AppError } from '../utils/errors.js';
+import { AgentStateMachine } from './state-machine.js';
+
+function machineToGraph(machine) {
+  const state = machine?.getState ? machine.getState() : machine?.state || {};
+  const steps = ['init', 'planning', 'implementing', 'testing', 'reviewing', 'deploying', 'completed', 'failed'];
+  const graph = {
+    nodes: {},
+    edges: {},
+    currentState: state.currentStep || 'init',
+    completedNodes: [],
+    failedNodes: []
+  };
+
+  steps.forEach((step) => {
+    const status = step === graph.currentState ? 'running' : step === 'completed' && state.status === 'completed' ? 'completed' : 'pending';
+    graph.nodes[step] = { id: step, label: step, status };
+    if (status === 'completed') graph.completedNodes.push(step);
+  });
+
+  for (let i = 0; i < steps.length - 1; i += 1) {
+    graph.edges[`${steps[i]}-${steps[i + 1]}`] = {
+      source: steps[i],
+      target: steps[i + 1],
+      label: 'next'
+    };
+  }
+
+  return graph;
+}
 
 /**
  * Generate Mermaid diagram from state graph
@@ -305,5 +334,51 @@ export default {
   createStateGraph,
   exportStateGraph,
   visualizeSwarmState,
-  registerGraphCommand
+  registerGraphCommand,
+  toMermaid,
+  toAscii,
+  exportMermaid,
+  exportSvg,
+  loadStateMachine
 };
+
+export function toMermaid(machine) {
+  const graph = machineToGraph(machine);
+  return generateMermaidDiagram(graph);
+}
+
+export function toAscii(machine) {
+  const graph = machineToGraph(machine);
+  return generateAsciiVisualization(graph);
+}
+
+export async function exportMermaid(outputPath, machine) {
+  const content = toMermaid(machine);
+  await fs.writeFile(outputPath, content, 'utf8');
+}
+
+export async function exportSvg(outputPath, machine) {
+  const content = await generateSvgFromMermaid(toMermaid(machine));
+  await fs.writeFile(outputPath, content, 'utf8');
+}
+
+export async function loadStateMachine() {
+  const candidatePaths = [
+    path.join(process.cwd(), '.ultra-dex', 'state-machine.json'),
+    path.join(process.cwd(), 'state-machine.json')
+  ];
+
+  for (const filePath of candidatePaths) {
+    try {
+      const raw = await fs.readFile(filePath, 'utf8');
+      const data = JSON.parse(raw);
+      return new AgentStateMachine(data.state || data);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        printWarning(chalk.yellow(`⚠️  Failed to load state machine from ${filePath}: ${error.message}`));
+      }
+    }
+  }
+
+  return new AgentStateMachine();
+}
