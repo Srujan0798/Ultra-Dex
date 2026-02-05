@@ -11,6 +11,7 @@ import { buildGraph } from '../utils/graph.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { getUsageSummary } from '../enterprise/usage.js';
+import { startWebSocketServer, broadcastWebSocketEvent } from '../server/websocket.js';
 
 // Global clients for SSE
 const clients = new Set();
@@ -35,6 +36,7 @@ function sendToClients(data) {
 
 `;
   clients.forEach(client => client.res.write(payload));
+  broadcastWebSocketEvent(data.type || 'log', data);
 }
 
 async function getGitInfo() {
@@ -711,8 +713,11 @@ export function registerDashboardCommand(program) {
         res.end(html);
       });
 
+      startWebSocketServer({ server });
+
       server.listen(port, () => {
         printSuccess(chalk.green(`✅ Dashboard active at http://localhost:${port}`));
+        printInfo(chalk.gray(`🔌 WebSocket active at ws://localhost:${port}`));
       });
 
       // Handle server errors
