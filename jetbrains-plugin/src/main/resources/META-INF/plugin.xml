@@ -1,0 +1,8 @@
+<idea-plugin>
+  <id>com.ultradex.plugin</id>
+  <name>Ultra-Dex</name>
+  <version>1.0.0</version>
+  <vendor>Ultra-Dex Team</vendor>
+  <description>AI Orchestration Layer for SaaS Development</description>
+  <depends>com.intellij.modules.platform</depends>
+</idea-plugin>

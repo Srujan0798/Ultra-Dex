@@ -60,7 +60,10 @@ export async function streamWithProvider({
   }
 
   const modelName = model || provider.defaultModel;
-  const modelClient = provider.create(resolvedKey)(modelName);
+  const resolvedModelName = (providerId === 'claude' || providerId === 'anthropic')
+    ? normalizeClaudeModel(modelName)
+    : modelName;
+  const modelClient = provider.create(resolvedKey)(resolvedModelName);
 
   const response = await streamText({
     model: modelClient,

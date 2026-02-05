@@ -1,0 +1,36 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: validate
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x'
+          - script: npm ci
+          - script: npx ultra-dex doctor
+          - script: npx ultra-dex validate
+  - stage: Test
+    dependsOn: Validate
+    jobs:
+      - job: test
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x'
+          - script: npm ci
+          - script: npm test
+  - stage: Deploy
+    dependsOn: Test
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: deploy
+        steps:
+          - script: echo "Deploy placeholder"
+          - publish: $(Build.SourcesDirectory)
+            artifact: drop

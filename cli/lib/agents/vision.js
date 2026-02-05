@@ -3,7 +3,6 @@
  * Handles screenshot analysis, Figma imports, and design system reasoning
  */
 
-import { BaseProvider } from './base.js';
 
 export class VisionAgent {
     constructor(options = {}) {
@@ -41,32 +40,19 @@ Output Format:
             return await this.provider.analyzeImage(imagePath, systemPrompt, userPrompt);
         }
 
-        // Fallback: return structured placeholder
-        return {
-            components: [
-                { type: 'header', children: ['logo', 'nav', 'cta'] },
-                { type: 'hero', children: ['heading', 'subheading', 'button'] },
-                { type: 'features', children: ['card', 'card', 'card'] },
-                { type: 'footer', children: ['links', 'social', 'copyright'] }
-            ],
-            colors: {
-                primary: '#6366f1',
-                secondary: '#a855f7',
-                background: '#0f172a',
-                text: '#f8fafc'
-            },
-            typography: {
-                headingFont: 'Inter',
-                bodyFont: 'Inter',
-                sizes: ['4xl', '2xl', 'lg', 'base', 'sm']
-            },
-            layout: 'single-column-centered',
-            suggestions: [
-                'Consider adding more whitespace between sections',
-                'CTA button could be more prominent',
-                'Add hover states for interactive elements'
-            ]
-        };
+        // Provider doesn't support vision - throw clear error
+        throw new Error(
+            `Vision analysis requires a provider with image analysis capabilities.\n\n` +
+            `Supported providers:\n` +
+            `  • OpenAI GPT-4V (gpt-4-vision-preview)\n` +
+            `  • Claude 3.5 Sonnet (claude-3-5-sonnet-20241022)\n` +
+            `  • Claude 3 Opus (claude-3-opus-20240229)\n\n` +
+            `Current provider: ${this.provider?.constructor?.name || 'None'}\n\n` +
+            `To enable vision analysis:\n` +
+            `  1. Set AI_PROVIDER=anthropic or AI_PROVIDER=openai\n` +
+            `  2. Use a vision-capable model\n` +
+            `  3. Ensure your API key has vision access`
+        );
     }
 
     /**

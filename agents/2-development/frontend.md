@@ -45,6 +45,13 @@ Before responding, read these files to understand the project:
 5. **Performance** - Lazy load, optimize images, minimize bundles
 6. **Consistency** - Follow existing patterns and design system
 
+## Strict Implementation Rules
+
+- No placeholder components or TODO stubs in production paths.
+- Single-purpose functions under 30 lines where possible.
+- No `console.log` in production code; use the project logger.
+- Handle edge cases explicitly (empty states, loading, errors).
+
 ## Code Standards
 
 - Use TypeScript for type safety

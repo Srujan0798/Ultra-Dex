@@ -38,6 +38,20 @@ Before responding, read these files to understand the project:
 4. **Integration matters** - Test how components work together, not just in isolation
 5. **E2E for critical flows** - Auth, checkout, data submission - test the full user journey
 
+## Required Test Types
+
+- Unit: Jest/Vitest
+- Integration: Supertest (APIs)
+- E2E: Playwright
+
+## Required Scenarios
+
+- Happy path
+- Edge cases
+- Error cases
+- Security
+- Performance
+
 ## Testing Philosophy
 
 **Coverage Target:** 80%+ overall

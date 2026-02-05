@@ -3,59 +3,61 @@
  * Manages long-term memory storage and retrieval
  */
 
+import { VectorStore } from './vector-store.js';
+
 export class Memex {
   constructor(options = {}) {
-    this.storagePath = options.storagePath || '.ultra-dex/memex';
-    this.index = new Map(); // In-memory index for quick lookups
+    this.storagePath = options.storagePath;
+    this.store = new VectorStore({ storagePath: this.storagePath });
+    this.ready = false;
   }
 
   async init() {
-    // Initialize storage and load existing memories
-    console.debug('Memex initialized');
+    if (this.ready) return;
+    await this.store.init();
+    this.ready = true;
+  }
+
+  async storeItem(key, data, metadata = {}) {
+    await this.init();
+    const text = typeof data === 'string' ? data : JSON.stringify(data);
+    await this.store.add(key, text, metadata);
   }
 
   async store(key, data, metadata = {}) {
-    // Store data in persistent storage
-    this.index.set(key, {
-      data,
-      metadata,
-      timestamp: new Date().toISOString()
-    });
+    return this.storeItem(key, data, metadata);
   }
 
   async retrieve(key) {
-    // Retrieve data from storage
-    const entry = this.index.get(key);
-    return entry ? entry.data : null;
+    await this.init();
+    const rows = await this.store.query(key, 1);
+    return rows.length ? rows[0].text : null;
   }
 
   async delete(key) {
-    // Delete data from storage
-    this.index.delete(key);
+    await this.init();
+    await this.store.remove(key);
   }
 
   async deleteAfter(timestamp) {
-    // Delete entries after a specific timestamp
-    for (const [key, entry] of this.index.entries()) {
-      if (new Date(entry.timestamp) > new Date(timestamp)) {
-        this.index.delete(key);
-      }
-    }
+    await this.init();
+    await this.store.clear({ olderThan: timestamp });
   }
 
-  async search(query) {
-    // Search through stored memories
-    return Array.from(this.index.values()).filter(entry =>
-      JSON.stringify(entry.data).includes(query)
-    );
+  async search(query, limit = 5) {
+    await this.init();
+    return this.store.query(query, limit);
   }
 
-  async list() {
-    // List all stored memories
-    return Array.from(this.index.entries()).map(([key, value]) => ({
-      key,
-      ...value
-    }));
+  async list(limit = 50) {
+    await this.init();
+    return this.store.list(limit);
+  }
+
+  async recordInteraction({ agent = 'unknown', input = '', output = '', metadata = {} }) {
+    const id = `memex-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const text = `${input}\n\n${output}`.trim();
+    return this.storeItem(id, text, { agent, ...metadata });
   }
 }
 

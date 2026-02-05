@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { QUICK_START_TEMPLATE } from '../templates/quick-start.js';
 import { CONTEXT_TEMPLATE } from '../templates/context.js';
@@ -34,6 +35,11 @@ const LIVE_STACKS = {
   'solid-drizzle': 'SolidStart + Drizzle',
 };
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const TEMPLATE_ROOT = path.resolve(__dirname, '../../templates');
+const TEMPLATE_FALLBACK = path.join(ROOT_FALLBACK, 'cli', 'templates');
+
 /**
  * Register the init command with Commander
  * @param {Command} program Commander program instance
@@ -46,6 +52,7 @@ export function registerInitCommand(program) {
     .option('-d, --dir <directory>', 'Output directory', '.')
     .option('--preview', 'Preview files without creating them')
     .option('--live', 'Generate a runnable scaffold')
+    .option('--template <name>', 'Copy a starter template from cli/templates')
     .option('--stack <preset>', 'Preset: next15-saas, remix-saas, sveltekit-saas, fastapi-api, ecommerce-next, ai-saas (plus others)')
     .action(async (options) => {
       try {
@@ -61,6 +68,10 @@ export function registerInitCommand(program) {
         const dirValidation = validateSafePath(options.dir, 'Output directory');
         if (dirValidation !== true) {
           throw new ValidationError(dirValidation);
+        }
+
+        if (options.template) {
+          return await handleTemplateInit(options);
         }
 
         if (options.live) {
@@ -88,6 +99,41 @@ function handlePreview() {
   process.stdout.write('  └── docs/AI-PROMPTS.md    (Agent Instructions)\n');
   process.stdout.write('\n');
   printSuccess('  ✓ Blueprint Validated. Ready to Execute.');
+}
+
+async function handleTemplateInit(options) {
+  const templateName = options.template;
+  const outputDir = path.resolve(options.dir);
+  const validation = validateSafePath(templateName, 'Template name');
+  if (validation !== true) {
+    throw new ValidationError(validation);
+  }
+
+  if (await pathExists(outputDir, 'dir')) {
+    const existing = await fs.readdir(outputDir);
+    if (existing.length > 0) {
+      throw new AppError('Target sector is occupied. Execution halted to prevent data loss.', {
+        code: 'DIR_NOT_EMPTY',
+        suggestions: ['Choose a different directory', 'Empty the target directory']
+      });
+    }
+  }
+
+  const primary = path.join(TEMPLATE_ROOT, templateName);
+  const fallback = path.join(TEMPLATE_FALLBACK, templateName);
+  let sourcePath = primary;
+  try {
+    await fs.access(primary);
+  } catch {
+    sourcePath = fallback;
+  }
+
+  await copyDirectory(sourcePath, outputDir);
+  printSuccess(`\n✅ Template "${templateName}" deployed to ${outputDir}\n`);
+  printInfo(chalk.gray('Next steps:'));
+  printInfo(chalk.cyan(`  1. cd ${outputDir}`));
+  printInfo(chalk.cyan('  2. npm install'));
+  printInfo(chalk.cyan('  3. npm run dev'));
 }
 
 /**
@@ -261,6 +307,7 @@ async function handleInteractiveInit(options) {
 async function scaffoldProject(outputDir, answers) {
   await fs.mkdir(outputDir, { recursive: true });
   await fs.mkdir(path.join(outputDir, 'docs'), { recursive: true });
+  await ensureProviderConfig(outputDir);
 
   const replacements = {
     '{{PROJECT_NAME}}': answers.projectName,
@@ -326,6 +373,31 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
   if (answers.includeAgents) {
     await deployAgents(outputDir);
   }
+}
+
+async function ensureProviderConfig(outputDir) {
+  const provider = detectProviderFromEnv();
+  if (!provider) return;
+  const configDir = path.join(outputDir, '.ultra-dex');
+  const configPath = path.join(configDir, 'config.json');
+  try {
+    await fs.mkdir(configDir, { recursive: true });
+    const payload = {
+      ai: {
+        defaultProvider: provider
+      }
+    };
+    await fs.writeFile(configPath, JSON.stringify(payload, null, 2));
+  } catch {
+    // ignore
+  }
+}
+
+function detectProviderFromEnv() {
+  if (process.env.ANTHROPIC_API_KEY) return 'claude';
+  if (process.env.OPENAI_API_KEY) return 'openai';
+  if (process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY) return 'google';
+  return null;
 }
 
 async function deployCursorRules(outputDir) {

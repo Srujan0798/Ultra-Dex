@@ -3,7 +3,7 @@
  * Creates and manages AI providers for the generate command
  */
 
-import { ClaudeProvider } from './claude.js';
+import { ClaudeSonnet5Provider } from './claude.js';
 import { OpenAIProvider } from './openai.js';
 import { GeminiProvider } from './gemini.js';
 import { OllamaProvider } from './ollama.js';
@@ -13,7 +13,7 @@ import { memex } from '../memory/memex.js';
 
 const PROVIDERS = {
   claude: {
-    class: ClaudeProvider,
+    class: ClaudeSonnet5Provider,
     envKey: 'ANTHROPIC_API_KEY',
     name: 'Claude (Anthropic)',
   },
@@ -254,8 +254,11 @@ export function getProvider() {
 }
 
 // Core providers
-export { ClaudeProvider, OpenAIProvider, GeminiProvider, OllamaProvider, RouterProvider };
+export { ClaudeSonnet5Provider, OpenAIProvider, GeminiProvider, OllamaProvider, RouterProvider };
 
 // Ecosystem adapters
 export { LangChainAdapter } from './langchain.js';
+
+// Test providers
+export { MockOpenAI, MockAnthropic, MockGoogle } from './mock.js';
 export { OpenAIAssistantsProvider } from './openai-assistants.js';

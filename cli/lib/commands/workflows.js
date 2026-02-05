@@ -5,6 +5,7 @@ import { githubBlobUrl } from '../config/urls.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
+import { displayWorkflowSearch, installWorkflow, uninstallWorkflow, runWorkflow, listWorkflows, infoWorkflow } from '../marketplace/workflows.js';
 
 export const WORKFLOWS = {
   auth: {
@@ -194,35 +195,106 @@ export async function startWorkflow(feature) {
  * Register the workflow command with Commander
  */
 export function registerWorkflowCommand(program) {
-  program
-    .command('workflow <feature>')
-    .description('Show or start workflow for common features (auth, payments, etc.)')
+  const workflowCmd = program
+    .command('workflow')
+    .description('Show or manage workflows');
+
+  workflowCmd
+    .argument('[feature]')
     .option('--viz', 'Visualize the workflow')
     .option('--start', 'Add workflow to implementation plan')
-    .action(async (feature, options) => {
+    .action(async (feature, options, command) => {
       try {
+        if (!feature) {
+          command.help();
+          return;
+        }
+
         const workflow = WORKFLOWS[feature.toLowerCase()];
 
         if (!workflow) {
-            const available = Object.keys(WORKFLOWS).join(', ');
-            throw new ValidationError(`Workflow "${feature}" not found.`, [`Available: ${available}`]);
+          const available = Object.keys(WORKFLOWS).join(', ');
+          throw new ValidationError(`Workflow "${feature}" not found.`, [`Available: ${available}`]);
         }
 
         if (options.viz) {
-            visualizeWorkflow(workflow);
-            return;
+          visualizeWorkflow(workflow);
+          return;
         }
 
         if (options.start) {
-            await startWorkflow(feature);
-            return;
+          await startWorkflow(feature);
+          return;
         }
 
         displayWorkflowSummary(workflow);
-
       } catch (error) {
         await handleError(error, { command: 'workflow', feature, options });
         process.exit(error.exitCode || 1);
+      }
+    });
+
+  workflowCmd
+    .command('search <query>')
+    .description('Search workflow marketplace')
+    .action(async (query) => {
+      await displayWorkflowSearch(query);
+    });
+
+  workflowCmd
+    .command('install <name>')
+    .description('Install workflow from marketplace')
+    .action(async (name) => {
+      await installWorkflow(name);
+    });
+
+  workflowCmd
+    .command('uninstall <name>')
+    .description('Uninstall workflow')
+    .action(async (name) => {
+      await uninstallWorkflow(name);
+    });
+
+  workflowCmd
+    .command('run <name>')
+    .description('Run installed workflow')
+    .action(async (name) => {
+      await runWorkflow(name);
+    });
+
+  workflowCmd
+    .command('list')
+    .description('List installed workflows')
+    .action(async () => {
+      await listWorkflows();
+    });
+
+  workflowCmd
+    .command('info <name>')
+    .description('Show workflow details')
+    .action(async (name) => {
+      await infoWorkflow(name);
+    });
+
+  workflowCmd
+    .command('validate')
+    .description('Validate multi-tool handoff documentation')
+    .option('--file <path>', 'Handoff file', 'HANDOFF.md')
+    .action(async (options) => {
+      try {
+        const target = path.resolve(process.cwd(), options.file);
+        const content = await fs.readFile(target, 'utf8');
+        const required = ['## Handoff', '### What I Built', '### API Contract', '### Next Steps'];
+        const missing = required.filter(section => !content.includes(section));
+        if (missing.length) {
+          printWarning(chalk.yellow(`Missing sections: ${missing.join(', ')}`));
+          process.exitCode = 1;
+          return;
+        }
+        printSuccess(chalk.green('✅ Handoff documentation looks complete.'));
+      } catch {
+        printWarning(chalk.yellow(`Handoff file not found.`));
+        process.exitCode = 1;
       }
     });
 }

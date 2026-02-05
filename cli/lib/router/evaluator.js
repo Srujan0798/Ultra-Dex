@@ -1,0 +1,21 @@
+import { runQualityGates } from '../quality/gate.js';
+
+export async function evaluateOutput({ output = '', projectDir = process.cwd(), requireQuality = false } = {}) {
+  if (!requireQuality) {
+    return { passed: Boolean(output), reason: output ? 'Output present' : 'Empty output' };
+  }
+
+  const { results } = await runQualityGates(projectDir);
+  const failed = results.filter((result) => {
+    const threshold = result.rule?.threshold ?? null;
+    if (threshold === null) return false;
+    if (result.value === null || result.value === undefined) return false;
+    return result.rule?.severity === 'error' && result.value < threshold;
+  });
+
+  return {
+    passed: failed.length === 0,
+    reason: failed.length ? `${failed.length} quality gates failed` : 'Quality gates passed',
+    failed
+  };
+}

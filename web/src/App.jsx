@@ -185,10 +185,41 @@ function App() {
               </button>
             ))}
           </div>
-          <div className="agent-context">
-            <h3>Active Agent</h3>
-            <p>{activeAgent?.name}</p>
-            <small>{activeAgent?.specialty}</small>
+          <div className="agent-chat">
+            <div className="chat-header">
+              <h3>Chat with @{activeAgent?.name}</h3>
+            </div>
+            <div className="chat-messages">
+              {collabLog.filter(l => l.includes('Agent') || l.includes('@{')).map((msg, idx) => (
+                <div key={idx} className="message agent">
+                  <p>{msg}</p>
+                </div>
+              ))}
+              <div className="message system">
+                <p>Welcome. I am the {activeAgent?.name} agent. How can I help you with your {language} code today?</p>
+              </div>
+            </div>
+            <div className="chat-input-wrapper">
+              <input 
+                type="text" 
+                placeholder={`Message @${activeAgent?.id}...`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.target.value) {
+                    const msg = e.target.value;
+                    setCollabLog(prev => [...prev, `You: ${msg}`]);
+                    if (wsRef.current?.readyState === WebSocket.OPEN) {
+                      wsRef.current.send(JSON.stringify({ 
+                        type: 'agent-chat', 
+                        agent: selectedAgent, 
+                        message: msg,
+                        context: code 
+                      }));
+                    }
+                    e.target.value = '';
+                  }
+                }}
+              />
+            </div>
           </div>
         </aside>
 

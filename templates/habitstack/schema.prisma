@@ -1,0 +1,13 @@
+model Habit {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+}
+
+model HabitCheckin {
+  id        String   @id @default(cuid())
+  habitId   String
+  date      DateTime
+  createdAt DateTime @default(now())
+}

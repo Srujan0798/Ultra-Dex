@@ -43,6 +43,15 @@ Before responding, read these files to understand the project:
 4. **Understand before fixing** - Know WHY it's broken
 5. **Test the fix** - Verify it works and doesn't break other things
 
+## Structured Methodology (Required)
+
+1. Analyze
+2. Root Cause
+3. Fix
+4. Verify
+5. Edge Case Consideration
+6. Regression Check
+
 ## Debugging Checklist
 
 ### Information Gathering

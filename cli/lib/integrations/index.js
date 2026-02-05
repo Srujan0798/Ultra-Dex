@@ -1,6 +1,7 @@
 import jira from './jira.js';
 import linear from './linear.js';
 import notion from './notion.js';
+import trello from './trello.js';
 import slack from './slack.js';
 import discord from './discord.js';
 import githubProjects from './github-projects.js';
@@ -13,6 +14,7 @@ export const integrations = {
   jira,
   linear,
   notion,
+  trello,
   slack,
   discord,
   'github-projects': githubProjects,

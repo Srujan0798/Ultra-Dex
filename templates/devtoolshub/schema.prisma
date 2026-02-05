@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ApiKey {
+  id         String   @id @default(cuid())
+  prefix     String   @unique
+  hashedKey  String
+  name       String?
+  createdAt  DateTime @default(now())
+  revokedAt  DateTime?
+  usage      Usage[]
+}
+
+model Usage {
+  id        String   @id @default(cuid())
+  apiKeyId  String
+  endpoint  String
+  count     Int      @default(0)
+  window    DateTime
+  createdAt DateTime @default(now())
+
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id])
+}
+
+model WebhookEndpoint {
+  id        String   @id @default(cuid())
+  url       String
+  secret    String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

@@ -8,11 +8,105 @@ import fs from 'fs/promises';
 import path from 'path';
 import { PluginManager, PLUGIN_MANIFEST_EXAMPLE, PLUGIN_EXAMPLE } from '../utils/plugin-system.js';
 import { pluginRegistry } from '../plugins/index.js'; // Import the new plugin registry
-import { createPluginFromTemplate, installPlugin as marketplaceInstallPlugin, uninstallPlugin as marketplaceUninstallPlugin, listInstalledPlugins } from '../marketplace/index.js';
+import { installPlugin as marketplaceInstallPlugin, uninstallPlugin as marketplaceUninstallPlugin } from '../marketplace/index.js';
+
+/**
+ * Create a plugin from a template
+ */
+async function createPluginFromTemplate(name, template, pluginPath) {
+  const templates = {
+    'basic': {
+      'ultra-dex-plugin.json': JSON.stringify({
+        name: name,
+        version: '1.0.0',
+        description: 'A basic Ultra-Dex plugin',
+        main: 'index.js',
+        ultraDex: {
+          version: '>=3.0.0',
+          commands: []
+        }
+      }, null, 2),
+      'index.js': `/**
+ * ${name} - Ultra-Dex Plugin
+ */
+
+export function registerCommands(program) {
+  // Add your plugin commands here
+  program
+    .command('${name}')
+    .description('A custom plugin command')
+    .action(async (options) => {
+      console.log('Plugin ${name} executed');
+    });
+}
+
+export default {
+  registerCommands
+};
+`,
+      'README.md': `# ${name} Plugin\n\nA custom Ultra-Dex plugin.`
+    },
+    'command': {
+      'ultra-dex-plugin.json': JSON.stringify({
+        name: name,
+        version: '1.0.0',
+        description: 'A command plugin for Ultra-Dex',
+        main: 'index.js',
+        ultraDex: {
+          version: '>=3.0.0',
+          commands: [name]
+        }
+      }, null, 2),
+      'index.js': `/**
+ * ${name} Command Plugin
+ */
+
+export function registerCommands(program) {
+  program
+    .command('${name} <task>')
+    .description('Execute ${name} functionality')
+    .option('--option <value>', 'An example option')
+    .action(async (task, options) => {
+      console.log('Executing ${name} for task:', task);
+      console.log('Options:', options);
+    });
+}
+
+export default {
+  registerCommands
+};
+`,
+      'README.md': `# ${name} Command Plugin\n\nA command plugin for Ultra-Dex.`
+    }
+  };
+
+  const templateData = templates[template] || templates.basic;
+
+  for (const [filename, content] of Object.entries(templateData)) {
+    await fs.writeFile(path.join(pluginPath, filename), content);
+  }
+}
+
+const TRUST_REGISTRY = path.join(process.cwd(), '.ultra-dex', 'plugin-trust.json');
+
+async function loadTrustRegistry() {
+  try {
+    const data = await fs.readFile(TRUST_REGISTRY, 'utf8');
+    return JSON.parse(data);
+  } catch {
+    return { trusted: [] };
+  }
+}
+
+async function saveTrustRegistry(registry) {
+  await fs.mkdir(path.dirname(TRUST_REGISTRY), { recursive: true });
+  await fs.writeFile(TRUST_REGISTRY, JSON.stringify(registry, null, 2));
+}
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';
+import { scanPlugin } from '../security/plugin-validator.js';
 
 export function registerPluginCommand(program) {
   const pluginCmd = program
@@ -296,6 +390,40 @@ export function registerPluginCommand(program) {
         printInfo('');
       } catch (error) {
         printError(chalk.red(`\n❌ Search failed: ${error.message}`));
+      }
+    });
+
+  pluginCmd
+    .command('scan <name>')
+    .description('Scan a plugin for risky patterns')
+    .action(async (name) => {
+      try {
+        const pluginPath = path.join(process.cwd(), '.ultra-dex/plugins', name);
+        const findings = await scanPlugin(pluginPath);
+        if (!findings.length) {
+          printSuccess(chalk.green('✅ No risky patterns detected.'));
+          return;
+        }
+        printWarning(chalk.yellow(`⚠️  ${findings.length} potential issues found:`));
+        findings.forEach((f) => {
+          printWarning(`- ${f.file}: ${f.pattern}`);
+        });
+      } catch (error) {
+        printError(chalk.red(`Plugin scan failed: ${error.message}`));
+      }
+    });
+
+  pluginCmd
+    .command('trust <name>')
+    .description('Mark a plugin as trusted')
+    .action(async (name) => {
+      try {
+        const registry = await loadTrustRegistry();
+        if (!registry.trusted.includes(name)) registry.trusted.push(name);
+        await saveTrustRegistry(registry);
+        printSuccess(chalk.green(`✅ Plugin ${name} marked as trusted.`));
+      } catch (error) {
+        printError(chalk.red(`Failed to trust plugin: ${error.message}`));
       }
     });
 }

@@ -45,6 +45,13 @@ Before responding, read these files to understand the project:
 5. **Handle errors gracefully** - Per Section 15 error handling patterns.
 6. **Think about security** - Validate inputs, sanitize outputs.
 
+## Strict Implementation Rules
+
+- No placeholder code or TODO stubs in production paths.
+- Single-purpose functions under 30 lines where possible.
+- No `console.log` in production code; use the project logger.
+- Handle edge cases explicitly (nulls, timeouts, empty lists).
+
 ## Code Standards
 
 - Use TypeScript for type safety

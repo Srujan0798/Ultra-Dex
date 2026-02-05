@@ -7,6 +7,7 @@ import { printError, printInfo, printSuccess, printWarning } from '../utils/outp
 import { hasPermission, PERMISSIONS } from '../auth/rbac.js';
 import { configManager } from '../utils/config-manager.js';
 import { DEFAULT_AGENT_ACCESS } from '../enterprise/agent-access.js';
+import { TeamContext, ContextSyncManager } from '../team/collaboration.js';
 
 const TEAM_DIR = '.ultra-dex';
 const TEAM_FILE = 'team.json';
@@ -443,6 +444,52 @@ function buildWorkspaceCommand() {
   return command;
 }
 
+function buildActivityCommand() {
+  const command = new Command('activity');
+  command
+    .description('Show recent team activity')
+    .action(async () => {
+      try {
+        const ctx = new TeamContext({ workspacePath: process.cwd() });
+        await ctx.initialize();
+        const activity = ctx.getActivityLog().slice(-20);
+        if (activity.length === 0) {
+          printWarning(chalk.yellow('\nNo team activity yet.\n'));
+          return;
+        }
+        printInfo(chalk.cyan('\nRecent team activity:\n'));
+        activity.forEach((entry) => {
+          try {
+            const parsed = JSON.parse(entry);
+            printInfo(chalk.gray(`- ${parsed.timestamp} ${parsed.action || 'activity'}`));
+          } catch {
+            printInfo(chalk.gray(`- ${entry}`));
+          }
+        });
+      } catch (error) {
+        printError(chalk.red(`Activity failed: ${error.message}`));
+      }
+    });
+
+  return command;
+}
+
+function buildSyncCommand() {
+  const command = new Command('sync');
+  command
+    .description('Create a team sync snapshot')
+    .action(async () => {
+      try {
+        const syncManager = new ContextSyncManager({ workspacePath: process.cwd() });
+        const snapshot = syncManager.createSnapshot();
+        printSuccess(chalk.green(`\n✅ Created sync snapshot: ${snapshot.id}\n`));
+      } catch (error) {
+        printError(chalk.red(`Sync failed: ${error.message}`));
+      }
+    });
+  return command;
+}
+
 function buildAgentAccessCommand() {
   const command = new Command('agents');
   command
@@ -517,4 +564,6 @@ export function registerTeamCommand(program) {
   team.addCommand(buildConfigCommand());
   team.addCommand(buildWorkspaceCommand());
   team.addCommand(buildAgentAccessCommand());
+  team.addCommand(buildActivityCommand());
+  team.addCommand(buildSyncCommand());
 }

@@ -6,6 +6,7 @@
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
 import { VERSION } from '../utils/version.js';
@@ -327,6 +328,7 @@ export function registerPreCommitCommand(program) {
     .command('pre-commit')
     .description('Pre-commit hook - verify standards before commit')
     .option('--install', 'Install git pre-commit hook')
+    .option('--uninstall', 'Remove pre-commit config and git hook')
     .option('--scan', 'Include deep code quality scan in hook')
     .option('--ai', 'Run AI-powered quality review on staged changes')
     .option('-d, --dir <directory>', 'Project directory', '.')
@@ -340,7 +342,29 @@ export function registerPreCommitCommand(program) {
 
         const rootDir = path.resolve(options.dir);
 
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const templatePath = path.resolve(__dirname, '../../../templates/pre-commit-config.yaml');
+
+        if (options.uninstall) {
+          const hookPath = path.resolve(rootDir, '.git/hooks/pre-commit');
+          const configPath = path.resolve(rootDir, '.pre-commit-config.yaml');
+          await fs.rm(hookPath, { force: true });
+          await fs.rm(configPath, { force: true });
+          printSuccess('✓ Pre-commit hooks removed.');
+          return;
+        }
+
         if (options.install) {
+          const configPath = path.resolve(rootDir, '.pre-commit-config.yaml');
+          try {
+            const template = await fs.readFile(templatePath, 'utf8');
+            await fs.writeFile(configPath, template, 'utf8');
+            printSuccess('✓ Pre-commit config installed.');
+          } catch {
+            printWarning(chalk.yellow('Could not install pre-commit config template.'));
+          }
+
           const hookPath = path.resolve(rootDir, '.git/hooks/pre-commit');
           const scanCmd = options.scan ? '\nnpx ultra-dex validate --scan' : '';
           const aiCmd = options.ai ? '\nnpx ultra-dex pre-commit --ai' : '';

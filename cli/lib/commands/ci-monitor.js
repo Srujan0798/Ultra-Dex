@@ -11,6 +11,7 @@ import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';
 import { projectGraph } from '../mcp/graph.js';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
+import { CiHealer } from '../ci/healer.js';
 
 export function registerCiMonitorCommand(program) {
   program
@@ -22,6 +23,8 @@ export function registerCiMonitorCommand(program) {
     .option('--discord-webhook <url>', 'Discord webhook URL for notifications')
     .option('--notify-on <events>', 'Comma-separated events: failure,success,fix (default: failure)', 'failure')
     .option('--dashboard', 'Notify Ultra-Dex Dashboard of CI events')
+    .option('--heal', 'Enable automatic healing loop')
+    .option('--max-attempts <n>', 'Max healing attempts', '3')
     .action(async (options) => {
       const port = parseInt(options.port);
       const notifyEvents = options.notifyOn.split(',').map(e => e.trim());
@@ -123,6 +126,8 @@ async function handleBuildFailure(payload, options, notifyEvents) {
   }
 
   const logs = await fetchGithubLogs(repo, job.id);
+  const healer = new CiHealer({ maxAttempts: parseInt(options.maxAttempts, 10) || 3 });
+  const analysis = healer.analyze(logs);
   console.log(chalk.red(`\n🚨 Build Failed: ${job.name} in ${repo}`));
   console.log(chalk.yellow('   Initiating Self-Healing Protocol...'));
 
@@ -137,10 +142,13 @@ async function handleBuildFailure(payload, options, notifyEvents) {
   };
 
   // 2. Fix Generation
-  const fixPlan = await runAgentLoop('debugger', `Analyze build failure and fix code using WRITE_CODE:\n${logs}`, provider, context);
+  const fixPrompt = `Analyze build failure and fix code using WRITE_CODE.\nFailure type: ${analysis.type}\nSuggested strategy: ${analysis.suggestion}\nLogs:\n${logs}`;
+  const fixPlan = await runAgentLoop('debugger', fixPrompt, provider, context);
     
   // 3. Apply & Push
-  await runAgentLoop('devops', `Commit the fix to a new branch 'fix/${job.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}' and push.`, provider, context);
+  if (options.heal) {
+    await runAgentLoop('devops', `Commit the fix to a new branch 'fix/${job.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}' and push.`, provider, context);
+  }
 
   // 4. Notifications
   const notification = {
@@ -149,7 +157,8 @@ async function handleBuildFailure(payload, options, notifyEvents) {
     commit: job.head_sha?.substring(0, 7),
     url: job.html_url,
     error: logs.substring(0, 500),
-    fix: fixPlan.substring(0, 300)
+    fix: fixPlan.substring(0, 300),
+    strategy: analysis.suggestion
   };
 
   if (options.slackWebhook) await sendSlackNotification(options.slackWebhook, notification, 'failure');

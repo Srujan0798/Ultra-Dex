@@ -1,0 +1,29 @@
+version: '3.9'
+services:
+  ultra-dex:
+    build:
+      context: ..
+      dockerfile: templates/docker/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/app
+    networks:
+      - ultra
+
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - ultra-dex
+    ports:
+      - "80:80"
+    volumes:
+      - ./templates/docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - ultra
+
+networks:
+  ultra:
+    driver: bridge

@@ -1,0 +1,19 @@
+export function summarizeMemory(entries = []) {
+  const text = entries.map(e => e.content || e.text || '').join('\n');
+  if (!text) return '';
+  const sentences = text.split(/[\.\n]/).map(s => s.trim()).filter(Boolean);
+  return sentences.slice(0, 5).join('. ') + (sentences.length > 5 ? '...' : '');
+}
+
+export function compressEntries(entries = []) {
+  return entries.map(entry => ({
+    id: entry.id,
+    summary: summarizeMemory([entry]),
+    createdAt: entry.createdAt
+  }));
+}
+
+export default {
+  summarizeMemory,
+  compressEntries
+};

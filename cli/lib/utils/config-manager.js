@@ -17,12 +17,20 @@ const DEFAULT_CONFIG = {
   // AI Provider settings
   ai: {
     defaultProvider: 'claude',
-    defaultModel: 'claude-sonnet-4-20250514',
+    defaultModel: 'claude-sonnet-5-20260201',  // Claude Sonnet 5 "Fennec"
     temperature: 0.7,
     maxTokens: 8192,
     timeout: 120000, // 2 minutes
     retryAttempts: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
+    // Claude Sonnet 5 specific settings
+    claudeSonnet5: {
+      enableAdvancedFeatures: true,
+      contextWindow: 200000,  // Sonnet 5 has larger context window
+      reasoningCapabilities: true,
+      codeGenerationQuality: 'high',
+      multimodalSupport: true
+    }
   },
   
   // MCP settings
@@ -301,6 +309,11 @@ class ConfigManager {
     if (process.env.ULTRA_DEX_AI_TEMPERATURE) {
       overrides.ai = overrides.ai || {};
       overrides.ai.temperature = parseFloat(process.env.ULTRA_DEX_AI_TEMPERATURE);
+    }
+
+    if (process.env.ULTRA_DEX_CLAUDE_MODEL) {
+      overrides.ai = overrides.ai || {};
+      overrides.ai.defaultModel = process.env.ULTRA_DEX_CLAUDE_MODEL;
     }
 
     // MCP settings

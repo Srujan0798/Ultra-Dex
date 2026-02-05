@@ -1,0 +1,28 @@
+export function detectFailureType(logs = '') {
+  const text = logs.toLowerCase();
+  if (text.includes('lint') || text.includes('eslint')) return 'lint';
+  if (text.includes('test') || text.includes('jest') || text.includes('vitest')) return 'tests';
+  if (text.includes('type') || text.includes('tsc')) return 'type';
+  if (text.includes('build') || text.includes('compile')) return 'build';
+  return 'unknown';
+}
+
+export function suggestStrategy(type) {
+  switch (type) {
+    case 'lint':
+      return 'Run lint autofix and re-run CI.';
+    case 'tests':
+      return 'Inspect failing tests, update mocks or implementation.';
+    case 'type':
+      return 'Fix TypeScript type errors and re-run build.';
+    case 'build':
+      return 'Check missing dependencies or incorrect build config.';
+    default:
+      return 'Manual inspection required.';
+  }
+}
+
+export default {
+  detectFailureType,
+  suggestStrategy
+};
