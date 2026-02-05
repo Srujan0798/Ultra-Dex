@@ -30,6 +30,7 @@ _ultra_dex() {
                 swarm)
                     _arguments \
                         '(--dry-run)'--dry-run'[Dry run only]' \
+                        '(--parallel)'--parallel'[Run implementation agents in parallel]' \
                         '(--agents)'--agents'[Specific agents]:agents:' \
                         '(--timeout)'--timeout'[Timeout in ms]:timeout:'
                     ;;
@@ -37,6 +38,14 @@ _ultra_dex() {
                     _arguments \
                         '1:action:(list install create publish)' \
                         '(--marketplace)'--marketplace'[Browse marketplace]'
+                    ;;
+                plugin)
+                    _arguments \
+                        '1:action:(list marketplace create install uninstall info update search)'
+                    ;;
+                browser)
+                    _arguments \
+                        '1:action:(screenshot scrape test record mockup audit)'
                     ;;
                 sync)
                     _arguments \
@@ -52,7 +61,7 @@ _ultra_dex() {
                     _arguments \
                         '1:task type:(simple-task feature-impl plan-generation complex-refactor agent-swarm context-sync)' \
                         '(--tokens)'--tokens'[Token count]:tokens:' \
-                        '(--provider)'--provider'[AI provider]:provider:(openai anthropic google local)' \
+                        '(--provider)'--provider'[AI provider]:provider:(openai anthropic google gemini ollama local)' \
                         '(--monthly)'--monthly'[Monthly estimate]:count:' \
                         '(--json)'--json'[JSON output]'
                     ;;
@@ -64,6 +73,50 @@ _ultra_dex() {
                         '(--template)'--template'[Template]:template:(lite full enterprise)' \
                         '(--save-audio)'--save-audio'[Save audio file]'
                     ;;
+                check)
+                    _arguments \
+                        '(--p0-only)'--p0-only'[Check only P0 sections]' \
+                        '(--json)'--json'[JSON output]' \
+                        '(--sections)'--sections'[Specific sections]:numbers:'
+                    ;;
+                export)
+                    _arguments \
+                        '(--format)'--format'[Export format]:format:(json html md markdown pdf yaml)' \
+                        '(--pdf)'--pdf'[Shortcut for PDF export]' \
+                        '(--output)'--output'[Output file]:file:_files' \
+                        '(--sections)'--sections'[Specific sections]:numbers:' \
+                        '(--include-agents)'--include-agents'[Include agent prompts]' \
+                        '(--toc)'--toc'[Include table of contents]' \
+                        '(--template)'--template'[Custom template file]:file:_files'
+                    ;;
+                diff)
+                    _arguments \
+                        '(--json)'--json'[JSON output]' \
+                        '(--drift)'--drift'[Drift analysis]' \
+                        '(--with-example)'--with-example'[Compare with example]:name:' \
+                        '(--report)'--report'[Write report to file]:file:_files'
+                    ;;
+                scaffold)
+                    _arguments \
+                        '(--output)'--output'[Output directory]:dir:_files' \
+                        '(--list)'--list'[List templates]' \
+                        '(--from-plan)'--from-plan'[Scaffold from plan]' \
+                        '(--dry-run)'--dry-run'[Show plan-based output only]' \
+                        '(--force)'--force'[Overwrite existing files]' \
+                        '(--page)'--page'[List page]:page:' \
+                        '(--limit)'--limit'[Items per page]:count:' \
+                        '(--json)'--json'[JSON output]'
+                    ;;
+                scaffold-plan)
+                    _arguments \
+                        '(--dry-run)'--dry-run'[Show what would be created]' \
+                        '(--force)'--force'[Overwrite existing files]'
+                    ;;
+                setup)
+                    _arguments \
+                        '(--quick)'--quick'[Quick setup with defaults]' \
+                        '(--reset)'--reset'[Reset configuration to defaults]'
+                    ;;
             esac
             ;;
     esac
@@ -71,59 +124,94 @@ _ultra_dex() {
 
 _ultra_dex_commands() {
     local commands=(
-        "init:Initialize new project"
-        "generate:Generate implementation plan"
-        "build:Build the project"
-        "run:Run single agent"
-        "swarm:Run agent swarm"
+        "acp:Start ACP host for IDE integration"
         "agents:Manage agents"
-        "agent:Alias for run"
-        "auto-implement:Auto-implement features"
-        "serve:Start MCP server"
-        "dashboard:Open dashboard"
-        "watch:Watch mode"
-        "ci-monitor:CI/CD monitor"
-        "status:Show status"
-        "state:Manage state"
-        "sync:Sync project"
-        "memory:Memory management"
         "align:Check alignment"
-        "validate:Validate project"
-        "check:Check completeness"
-        "doctor:Diagnose issues"
-        "verify:Verify implementation"
-        "fix:Auto-fix issues"
-        "diff:Show diff"
-        "export:Export plan"
-        "pack:Pack project"
-        "config:Configuration"
-        "hooks:Git hooks"
-        "upgrade:Upgrade Ultra-Dex"
-        "exec:Execute code"
-        "search:Semantic search"
-        "github:GitHub integration"
-        "cloud:Cloud features"
-        "metrics:Show metrics"
-        "health:Health check"
-        "debug:Debug mode"
+        "api:Start API server"
+        "audit:Run audit checks"
+        "auth:Authentication helpers"
+        "auto-implement:Auto-implement features"
+        "autonomous:Run autonomous mode"
+        "batch:Run batch pipeline"
         "brain:Brain sync"
-        "advanced:Advanced commands"
+        "browser:Browser automation"
+        "build:Build the project"
+        "check:Check completeness"
+        "ci-monitor:CI/CD monitor"
+        "cloud:Cloud features"
+        "config:Configuration"
+        "cursor:Cursor IDE integration"
+        "dashboard:Open dashboard"
+        "debug:Debug mode"
+        "diff:Show diff"
+        "doctor:Diagnose issues"
         "estimate:Cost estimation"
+        "examples:List examples"
+        "exec:Execute code"
+        "export:Export plan"
+        "fetch:Fetch resources"
+        "fix:Auto-fix issues"
+        "generate:Generate implementation plan"
+        "github:GitHub integration"
+        "health:Health check"
+        "hooks:Git hooks"
+        "init:Initialize new project"
+        "memory:Memory management"
+        "metrics:Show metrics"
+        "pack:Pack project"
+        "pipeline:Run pipeline"
+        "plan:Manage plan"
+        "plugin:Manage plugins"
+        "pre-commit:Pre-commit checks"
+        "pty:PTY terminal"
+        "ralph:Task runner"
+        "review:Code review"
+        "run:Run single agent"
+        "scaffold:Scaffold from template"
+        "scaffold-plan:Scaffold from plan"
+        "search:Semantic search"
+        "serve:Start MCP server"
+        "setup:Setup wizard"
+        "state:Manage state"
+        "status:Show status"
+        "suggest:Suggest improvements"
+        "swarm:Run agent swarm"
+        "sync:Sync project"
+        "sys-config:System configuration"
+        "team:Team management"
+        "undo:Undo operations"
+        "upgrade:Upgrade Ultra-Dex"
+        "validate:Validate project"
+        "vector-search:Vector search"
+        "verify:Verify implementation"
         "voice:Voice-to-plan"
+        "watch:Watch mode"
+        "workflow:Workflow runner"
+        "workspace:Workspace management"
     )
     _describe -t commands 'ultra-dex commands' commands
 }
 
 _ultra_dex_agents() {
     local agents=(
+        "architect:Architect agent"
+        "meta-orchestrator:Meta orchestrator"
+        "orchestrator:Orchestrator"
+        "cto:CTO agent"
         "planner:Planning agent"
+        "research:Research agent"
         "backend:Backend developer"
-        "frontend:Frontend developer"
         "database:Database specialist"
+        "frontend:Frontend developer"
+        "auth:Auth specialist"
         "security:Security auditor"
         "devops:DevOps engineer"
-        "reviewer:Code reviewer"
         "debugger:Debug specialist"
+        "documentation:Documentation agent"
+        "reviewer:Code reviewer"
+        "testing:Testing agent"
+        "performance:Performance optimizer"
+        "refactoring:Refactoring agent"
     )
     _describe -t agents 'agents' agents
 }
