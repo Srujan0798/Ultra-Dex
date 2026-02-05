@@ -1,7 +1,7 @@
 // cli/lib/commands/watch.js
 import chalk from 'chalk';
-import { watch } from 'fs';
-import { join } from 'path';
+import chokidar from 'chokidar';
+import { join, relative } from 'path';
 import { existsSync } from 'fs';
 import { updateStateFile, computeState } from './state.js';
 import { syncContextWithDiff } from './sync.js';
@@ -21,7 +21,9 @@ export function registerWatchCommand(program) {
     const watchCmd = program
       .command('watch')
       .description('Auto-update state on file changes')
-      .option('--interval <ms>', 'Debounce interval in milliseconds', '500')
+      .option('--interval <ms>', 'Debounce interval in milliseconds (deprecated, use --debounce)', '500')
+      .option('--debounce <ms>', 'Debounce interval in milliseconds', '500')
+      .option('--ignore <globs>', 'Comma-separated glob patterns to ignore')
       .option('--sync', 'Auto-sync CONTEXT.md with brain', false)
       .action(async (options) => {
           try {
@@ -42,9 +44,10 @@ export function registerWatchCommand(program) {
 export async function watchCommand(options) {
   printInfo(chalk.cyan.bold('\n👁️  Ultra-Dex Watch Mode v3.1 (Auto-Sync Edition)\n'));
   
-  const interval = options.interval ? parseInt(options.interval, 10) : 500;
+  const debounce = options.debounce ?? options.interval ?? '500';
+  const interval = parseInt(debounce, 10);
   if (Number.isNaN(interval) || interval < 50) {
-    throw new ValidationError('Invalid interval. Use a value >= 50ms.');
+    throw new ValidationError('Invalid debounce interval. Use a value >= 50ms.');
   }
   printInfo(chalk.gray(`Debounce interval: ${interval}ms`));
 
@@ -63,45 +66,71 @@ export async function watchCommand(options) {
 
   printInfo(chalk.gray(`Watching: ${validPaths.join(', ')}\n`));
 
+  const defaultIgnores = [
+    '**/node_modules/**',
+    '**/.git/**',
+    '**/dist/**',
+    '**/build/**',
+    '**/.ultra-dex/**',
+    '**/.next/**',
+    '**/coverage/**'
+  ];
+  const extraIgnores = options.ignore
+    ? options.ignore.split(',').map(p => p.trim()).filter(Boolean)
+    : [];
+  const ignorePatterns = [...defaultIgnores, ...extraIgnores];
+
   let debounceTimer = null;
   let lastScore = await calculateAlignmentScore();
   printInfo(chalk.blue(`📊 Initial alignment score: ${lastScore}%\n`));
 
-  validPaths.forEach(path => {
-    const fullPath = join(process.cwd(), path);
-    try {
-      watch(fullPath, { recursive: true }, (eventType, filename) => {
-        if (debounceTimer) clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(async () => {
-          const timestamp = new Date().toLocaleTimeString();
-          printInfo(chalk.yellow(`\n[${timestamp}] 📝 ${filename || path} changed`));
+  try {
+    const watcher = chokidar.watch(validPaths, {
+      ignored: ignorePatterns,
+      ignoreInitial: true,
+      persistent: true
+    });
 
-          await updateStateFile();
+    const handleChange = async (filePath) => {
+      const timestamp = new Date().toLocaleTimeString();
+      const relativePath = relative(process.cwd(), filePath);
+      printInfo(chalk.yellow(`\n[${timestamp}] 📝 ${relativePath} changed`));
 
-          if (autoSync && !filename?.includes('CONTEXT.md')) {
-            printInfo('🔄 Auto-syncing CONTEXT.md...');
-            try {
-              await syncContextWithDiff(process.cwd(), filename);
-              printSuccess('   ✅ CONTEXT.md synced');
-            } catch (e) {
-              printWarning('   ⚠️  Auto-sync skipped or failed');
-            }
+      await updateStateFile();
+
+      if (autoSync && !relativePath.includes('CONTEXT.md')) {
+        printInfo('🔄 Auto-syncing CONTEXT.md...');
+        try {
+          const syncResult = await syncContextWithDiff(process.cwd(), relativePath);
+          printSuccess('   ✅ CONTEXT.md synced');
+          if (syncResult?.summary) {
+            printInfo(chalk.gray(`   📊 Files: ${syncResult.summary.fileCount} | App: ${syncResult.summary.appCount} | API: ${syncResult.summary.apiCount}`));
           }
+        } catch (e) {
+          printWarning('   ⚠️  Auto-sync skipped or failed');
+        }
+      }
 
-          const newScore = await calculateAlignmentScore();
-          const scoreDiff = newScore - lastScore;
-          const diffIndicator = scoreDiff > 0 ? chalk.green(`↑ +${scoreDiff}`) : scoreDiff < 0 ? chalk.red(`↓ ${scoreDiff}`) : chalk.gray('→ 0');
+      const newScore = await calculateAlignmentScore();
+      const scoreDiff = newScore - lastScore;
+      const diffIndicator = scoreDiff > 0 ? chalk.green(`↑ +${scoreDiff}`) : scoreDiff < 0 ? chalk.red(`↓ ${scoreDiff}`) : chalk.gray('→ 0');
 
-          lastScore = newScore;
-          const scoreColor = newScore >= 80 ? chalk.green : newScore >= 50 ? chalk.yellow : chalk.red;
-          printInfo(scoreColor(`✅ State updated | Alignment: ${newScore}% `) + diffIndicator);
+      lastScore = newScore;
+      const scoreColor = newScore >= 80 ? chalk.green : newScore >= 50 ? chalk.yellow : chalk.red;
+      printInfo(scoreColor(`✅ State updated | Alignment: ${newScore}% `) + diffIndicator);
+    };
 
-        }, interval);
-      });
-    } catch (e) {
-        printWarning(`  ⚠️  Cannot watch ${path}: ${e.message}`);
-    }
-  });
+    watcher.on('all', (_event, filePath) => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        handleChange(filePath).catch((err) => {
+          printWarning(`⚠️  Watch handler error: ${err.message}`);
+        });
+      }, interval);
+    });
+  } catch (e) {
+    printWarning(`  ⚠️  Cannot start watcher: ${e.message}`);
+  }
 
   printInfo(chalk.gray('\nPress Ctrl+C to stop'));
   process.stdin.resume();
