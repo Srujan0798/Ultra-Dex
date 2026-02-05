@@ -18,12 +18,15 @@ import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 
 const LIVE_STACKS = {
-  'next15-prisma-clerk': 'Next.js 15 + Prisma + Clerk',
-  'remix-supabase': 'Remix + Supabase',
-  'sveltekit-drizzle': 'SvelteKit + Drizzle',
   'next15-saas': 'Next.js 15 SaaS (Clerk + Stripe + Prisma + Admin)',
+  'next15-prisma-clerk': 'Next.js 15 + Prisma + Clerk',
   'remix-saas': 'Remix SaaS (Clerk + Stripe + Prisma)',
+  'remix-supabase': 'Remix + Supabase',
   'sveltekit-saas': 'SvelteKit SaaS (Clerk + Stripe + Prisma)',
+  'sveltekit-drizzle': 'SvelteKit + Drizzle',
+  'fastapi-api': 'FastAPI API Starter',
+  'ecommerce-next': 'Next.js E-commerce Starter',
+  'ai-saas': 'AI SaaS Starter',
   'astro-sanity': 'Astro + Sanity CMS',
   'nuxt3-supabase': 'Nuxt 3 + Supabase',
   'tauri-desktop': 'Tauri Desktop App',
@@ -42,7 +45,7 @@ export function registerInitCommand(program) {
     .option('-d, --dir <directory>', 'Output directory', '.')
     .option('--preview', 'Preview files without creating them')
     .option('--live', 'Generate a runnable scaffold')
-    .option('--stack <preset>', 'Preset: next15-prisma-clerk, remix-supabase, sveltekit-drizzle')
+    .option('--stack <preset>', 'Preset: next15-saas, remix-saas, sveltekit-saas, fastapi-api, ecommerce-next, ai-saas (plus others)')
     .action(async (options) => {
       try {
         showBanner();
@@ -91,7 +94,7 @@ function handlePreview() {
  * @param {Object} options Command options
  */
 async function handleLiveScaffold(options) {
-  const preset = options.stack || 'next15-prisma-clerk';
+  const preset = options.stack || 'next15-saas';
   if (!LIVE_STACKS[preset]) {
     throw new ValidationError(`Unknown frequency modulation: ${preset}`, [
       `Available presets: ${Object.keys(LIVE_STACKS).join(', ')}`
@@ -479,4 +482,3 @@ async function generateNext15SaaSStack(outputDir) {
     throw error;
   }
 }
-

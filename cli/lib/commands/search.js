@@ -9,12 +9,12 @@ import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
+import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+import { OpenAIEmbeddings } from '@langchain/openai';
+import { Document } from '@langchain/core/documents';
 import { getProvider } from '../providers/index.js';
 import { projectGraph } from '../mcp/graph.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
-
-// We'll use dynamic imports for langchain to avoid top-level failures if not perfectly linked
-// since they are optional dependencies.
 
 // ============================================================================
 // VECTOR STORE CONFIGURATION
@@ -69,12 +69,7 @@ class UltraDexVectorStore {
         // If it's LangChain provider, it might have embeddings configured
         // For now, default to OpenAIEmbeddings if API key is present
         if (process.env.OPENAI_API_KEY) {
-            try {
-                const { OpenAIEmbeddings } = await import('@langchain/openai');
-                return new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY });
-            } catch (e) {
-                // Fallback to local
-            }
+            return new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY });
         }
     }
     
@@ -111,14 +106,7 @@ class UltraDexVectorStore {
   async init() {
     if (!this.store) {
       const embeddings = await this.getEmbeddingsModel();
-      try {
-        const { MemoryVectorStore } = await import('langchain/vectorstores/memory');
-        this.store = new MemoryVectorStore(embeddings);
-      } catch (err) {
-        // Fallback for non-langchain environments if needed, but erroring is safer
-        // Actually, let's just warn and use a dummy store if possible or rethrow
-        throw new Error('LangChain is required for semantic search. Run `npm install langchain @langchain/openai @langchain/core` to enable.');
-      }
+      this.store = new MemoryVectorStore(embeddings);
     }
   }
 
@@ -168,7 +156,6 @@ class UltraDexVectorStore {
       this.metadata = data.metadata;
       
       const embeddings = await this.getEmbeddingsModel();
-      const { MemoryVectorStore } = await import('langchain/vectorstores/memory');
       this.store = new MemoryVectorStore(embeddings);
       
       // Restore vectors
@@ -205,7 +192,6 @@ const vectorStore = new UltraDexVectorStore();
  * Split text into overlapping chunks
  */
 async function chunkText(text, filepath) {
-  const { Document } = await import('@langchain/core/documents');
   const chunks = [];
   const { chunkSize, chunkOverlap } = EMBEDDINGS_CONFIG;
 
