@@ -258,7 +258,9 @@ program
 const watchCmd = program
   .command('watch')
   .description('Auto-update state on file changes')
-  .option('--interval <ms>', 'Debounce interval in milliseconds', '500')
+  .option('--interval <ms>', 'Debounce interval in milliseconds (deprecated, use --debounce)', '500')
+  .option('--debounce <ms>', 'Debounce interval in milliseconds', '500')
+  .option('--ignore <globs>', 'Comma-separated glob patterns to ignore')
   .option('--sync', 'Auto-sync CONTEXT.md with brain', false)
   .action(watchCommand);
 
@@ -275,6 +277,7 @@ program
   .option('--json', 'Output as JSON')
   .option('--with-example <name>', 'Compare with example project')
   .option('--report <path>', 'Write delta report to a file (json or md)')
+  .option('--output <path>', 'Alias for --report')
   .action(diffCommand);
 
 const exportCmd = program
@@ -297,6 +300,14 @@ program
   .option('--check', 'Check only, do not show install instructions')
   .option('--install', 'Automatically install latest version')
   .action(upgradeCommand);
+
+program
+  .command('repl')
+  .description('Start the Ultra-Dex interactive REPL')
+  .option('--continue', 'Resume the most recent REPL session')
+  .action(async (options) => {
+    await startREPL({ continue: options.continue });
+  });
 
 const configCmd = program
   .command('config')
