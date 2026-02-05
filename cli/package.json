@@ -76,12 +76,14 @@
     "uuid": "^9.0.0",
     "winston": "^3.19.0",
     "ws": "^8.19.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "chokidar": "^3.6.0",
+    "@ai-sdk/google": "^0.0.55"
   },
   "scripts": {
-    "test": "node --test test/*.test.js test/mcp/*.test.js",
-    "test:coverage": "c8 --reporter=lcov --reporter=text node --test test/*.test.js test/mcp/*.test.js",
-    "test:ci": "c8 --reporter=lcov --reporter=text-summary --lines=70 --functions=70 --branches=60 node --test test/*.test.js test/mcp/*.test.js",
+    "test": "node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js",
+    "test:coverage": "c8 --reporter=lcov --reporter=text node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js",
+    "test:ci": "c8 --reporter=lcov --reporter=text-summary --lines=70 --functions=70 --branches=60 node --test test/*.test.js test/commands/*.test.js test/mcp/*.test.js",
     "lint": "eslint lib bin --fix",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
