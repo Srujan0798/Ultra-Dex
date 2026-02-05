@@ -6,6 +6,7 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { execSync } from 'child_process';
+import { recordError } from '../analytics/index.js';
 
 // Error patterns and their solutions
 const ERROR_SOLUTIONS = {
@@ -142,6 +143,17 @@ const ERROR_SOLUTIONS = {
 export async function handleError(error, context = {}) {
   const errorMessage = error.message || error.toString();
   const suggestions = getSuggestions(errorMessage);
+
+  try {
+    await recordError({
+      message: errorMessage,
+      command: context.command,
+      stack: error.stack,
+      metadata: context
+    });
+  } catch {
+    // Analytics should never block error handling
+  }
   
   console.error(chalk.red('\n❌ Error:'), errorMessage);
   
