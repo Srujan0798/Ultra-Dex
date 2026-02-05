@@ -27,6 +27,7 @@
 | **Phase 17** | 15 | 🛡️ Quality & Intelligence | ⏳ Pending | [PHASE17_PROMPTS.md](./PHASE17_PROMPTS.md) |
 | **Phase 18** | 15 | 📦 Completion Inventory | ⏳ Pending | [PHASE18_PROMPTS.md](./PHASE18_PROMPTS.md) |
 | **Phase 19** | 15 | 🎮 Deep Tech & Games | ⏳ Pending | [PHASE19_PROMPTS.md](./PHASE19_PROMPTS.md) |
+| **Phase 20** | 10 | 📐 Final Specifications | ⏳ Pending | [PHASE20_PROMPTS.md](./PHASE20_PROMPTS.md) |
 
 ---
 
@@ -335,10 +336,22 @@
 229. **Privacy Layer** - PII Stripping
 230. **Final Omnibus** - V4.0 Release Note
 
+### Phase 20: Final Specifications (#231-240)
+231. **Quality Config** - Strict JSON Schema
+232. **Ledger Schema** - Immutable JSONL
+233. **Env Defaults** - v3.4.5 Migration
+234. **RAG Defaults** - Research-based Stack
+235. **Version Utility** - Compatibility Check
+236. **Structural Gates** - Static Analysis Engine
+237. **Architectural Gates** - Pattern Enforcement
+238. **Ledger CLI** - Query & Search
+239. **Scaffold Update** - New Project Structure
+240. **Final Seal** - Completion Manifesto
+
 ---
 
 ## 🏁 Final Summary
 
-**Total Prompts:** 230
-**Coverage:** 2026 Strategy + Legacy Archives + Deep Tech + Gamification.
-**Status:** ABSOLUTE COMPLETION.
+**Total Prompts:** 240
+**Coverage:** 20 Phases. From Strategy to Schemas.
+**Status:** THE END.
