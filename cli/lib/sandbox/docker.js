@@ -22,7 +22,7 @@ export const SANDBOX_CONFIG = {
   limits: {
     memory: '512m',
     cpus: '1.0',
-    timeout: 60000,
+    timeout: 30000,
     networkDisabled: true,
   },
   workspace: {
