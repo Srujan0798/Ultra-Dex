@@ -24,6 +24,8 @@ import { printInfo, printSuccess, printWarning, printError } from '../utils/outp
 import { AppError, ValidationError } from '../utils/errors.js';
 import { getCache } from '../cache/index.js';
 import { authorizeAgentAccess } from '../enterprise/agent-access.js';
+import { recordAgentPerformance, recordTokenUsage, recordError } from '../analytics/index.js';
+import { estimateTokens } from '../utils/token-forecast.js';
 
 const execAsync = promisify(exec);
 
@@ -159,6 +161,8 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
   const agent = AGENTS[agentId];
   if (!agent) return `[System]: Unknown agent @${agentName}`;
 
+  const startedAt = Date.now();
+
   const access = await authorizeAgentAccess(agentId);
   if (!access.allowed) {
     return `[Access]: Role "${access.role}" cannot run @${agentName}`;
@@ -203,6 +207,28 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         maxRetries: 2,
         retryDelay: 2000
     });
+
+    try {
+      const durationMs = Date.now() - startedAt;
+      await recordAgentPerformance({
+        agent: agentId,
+        durationMs,
+        success: true,
+        task,
+        provider: providerInstance?.getName?.() || 'provider'
+      });
+
+      const inputTokens = result?.usage?.inputTokens ?? estimateTokens(agent.systemPrompt + prompt);
+      const outputTokens = result?.usage?.outputTokens ?? estimateTokens(result?.content || '');
+      await recordTokenUsage({
+        agent: agentId,
+        model: result?.model || providerInstance?.model || null,
+        inputTokens,
+        outputTokens
+      });
+    } catch {
+      // analytics should not block execution
+    }
     
     spinner.succeed(`\${agent.name} completed.`);
     await dashboardNotifier.sendAgentStatus(agentName, 'completed', 'Task finished');
@@ -365,6 +391,23 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     return content;
   } catch (err) {
     spinner.fail(`${agent.name} failed: ${err.message}`);
+    try {
+      await recordAgentPerformance({
+        agent: agentId,
+        durationMs: Date.now() - startedAt,
+        success: false,
+        task,
+        provider: providerInstance?.getName?.() || 'provider'
+      });
+      await recordError({
+        message: err.message,
+        command: 'run',
+        stack: err.stack,
+        metadata: { agent: agentId }
+      });
+    } catch {
+      // ignore analytics failures
+    }
     return `[Error]: ${err.message}`;
   }
 }
