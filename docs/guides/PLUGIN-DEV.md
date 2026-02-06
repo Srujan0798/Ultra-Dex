@@ -8,12 +8,15 @@
 ## 🔌 Introduction
 
 Ultra-Dex plugins allow you to:
+
 - Add new CLI commands
 - Hook into existing workflows (pre-init, post-build, etc.)
 - Register custom AI agents
 - Add new project templates
 
 Plugins are simple JavaScript modules that export an `activate` function.
+Starting with v4.1, every plugin must also include a `capability_manifest.json`
+to declare side effects, rate limits, and approval requirements.
 
 ## 🚀 Quick Start
 
@@ -54,16 +57,40 @@ npx ultra-dex plugin install ./my-plugin.js
 npx ultra-dex hello
 ```
 
+4. **Add capability manifest (required):**
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "write_code",
+      "type": "mutation",
+      "sideEffects": ["filesystem:write"],
+      "rateLimit": { "max": 10, "window": "1m" },
+      "riskScore": "high",
+      "requiresApproval": true
+    }
+  ]
+}
+```
+
 ## 🧩 Plugin Structure
 
 A plugin module must export the following:
 
-| Export | Type | Description |
-|--------|------|-------------|
-| `name` | string | Unique name of your plugin (e.g., `ultra-dex-stripe`) |
-| `version` | string | Semantic version (e.g., `1.0.0`) |
-| `activate` | function | Entry point called when CLI starts |
-| `deactivate` | function | (Optional) Cleanup function |
+| Export       | Type     | Description                                           |
+| ------------ | -------- | ----------------------------------------------------- |
+| `name`       | string   | Unique name of your plugin (e.g., `ultra-dex-stripe`) |
+| `version`    | string   | Semantic version (e.g., `1.0.0`)                      |
+| `activate`   | function | Entry point called when CLI starts                    |
+| `deactivate` | function | (Optional) Cleanup function                           |
+
+### Capability Manifest (Required)
+
+Place a `capability_manifest.json` next to `ultra-dex-plugin.json`. The MCP
+capabilities router will enforce approvals and rate limits before tool calls.
 
 ### The `activate` Context
 
@@ -94,7 +121,7 @@ export async function activate({ agents }) {
     name: 'sql-expert',
     role: 'Database Optimizer',
     capabilities: ['sql-optimization', 'index-tuning'],
-    systemPrompt: 'You are an expert in PostgreSQL performance...'
+    systemPrompt: 'You are an expert in PostgreSQL performance...',
   });
 }
 ```
@@ -122,4 +149,4 @@ npx ultra-dex plugin link my-plugin
 
 ---
 
-*Need help? Check the [examples/plugins](../examples/plugins) directory.*
+_Need help? Check the [examples/plugins](../examples/plugins) directory._

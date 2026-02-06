@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Plugin Development Guide
  * How to create and distribute Ultra-Dex plugins
@@ -5,32 +7,44 @@
 
 // Example plugin manifest file: ultra-dex-plugin.json
 const EXAMPLE_MANIFEST = {
-  "name": "my-awesome-plugin",
-  "version": "1.0.0",
-  "description": "Does awesome things with Ultra-Dex",
-  "main": "index.js",
-  "author": "Your Name",
-  "license": "MIT",
-  "keywords": ["ultra-dex", "ai", "development"],
-  "hooks": [
-    "pre-build",
-    "post-generate", 
-    "before-command-execution"
-  ],
-  "commands": [
+  name: 'my-awesome-plugin',
+  version: '1.0.0',
+  description: 'Does awesome things with Ultra-Dex',
+  main: 'index.js',
+  author: 'Your Name',
+  license: 'MIT',
+  keywords: ['ultra-dex', 'ai', 'development'],
+  hooks: ['pre-build', 'post-generate', 'before-command-execution'],
+  commands: [
     {
-      "name": "my-command",
-      "description": "Custom command provided by plugin",
-      "usage": "ultra-dex my-command [options]"
-    }
+      name: 'my-command',
+      description: 'Custom command provided by plugin',
+      usage: 'ultra-dex my-command [options]',
+    },
   ],
-  "dependencies": {
-    "ultra-dex": ">=3.0.0"
+  dependencies: {
+    'ultra-dex': '>=3.0.0',
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/username/my-awesome-plugin.git"
-  }
+  repository: {
+    type: 'git',
+    url: 'https://github.com/username/my-awesome-plugin.git',
+  },
+};
+
+// Capability manifest (required for v4.1+)
+const CAPABILITY_MANIFEST_EXAMPLE = {
+  name: 'my-awesome-plugin',
+  version: '1.0.0',
+  tools: [
+    {
+      name: 'write_code',
+      type: 'mutation',
+      sideEffects: ['filesystem:write'],
+      rateLimit: { max: 10, window: '1m' },
+      riskScore: 'high',
+      requiresApproval: true,
+    },
+  ],
 };
 
 // Example plugin implementation
@@ -77,39 +91,35 @@ export default {
 
 // Plugin development best practices
 const BEST_PRACTICES = {
-  "performance": "Keep plugin initialization lightweight",
-  "compatibility": "Test against multiple Ultra-Dex versions",
-  "error_handling": "Always handle errors gracefully",
-  "documentation": "Provide clear usage instructions",
-  "security": "Validate all inputs and sanitize data",
-  "modularity": "Keep plugins focused on specific functionality"
+  performance: 'Keep plugin initialization lightweight',
+  compatibility: 'Test against multiple Ultra-Dex versions',
+  error_handling: 'Always handle errors gracefully',
+  documentation: 'Provide clear usage instructions',
+  security: 'Validate all inputs and sanitize data',
+  modularity: 'Keep plugins focused on specific functionality',
 };
 
 // Common hook types
 const HOOK_TYPES = {
-  "before-command-execution": "Called before any Ultra-Dex command executes",
-  "after-command-execution": "Called after any Ultra-Dex command completes",
-  "pre-build": "Called before build process starts",
-  "post-build": "Called after build process completes", 
-  "pre-generate": "Called before code generation",
-  "post-generate": "Called after code generation",
-  "pre-commit": "Called before git commit (if git hooks enabled)",
-  "validation-error": "Called when validation errors occur",
-  "project-initialize": "Called when initializing a new project",
-  "agent-start": "Called when an agent starts processing",
-  "agent-complete": "Called when an agent completes processing"
+  'before-command-execution': 'Called before any Ultra-Dex command executes',
+  'after-command-execution': 'Called after any Ultra-Dex command completes',
+  'pre-build': 'Called before build process starts',
+  'post-build': 'Called after build process completes',
+  'pre-generate': 'Called before code generation',
+  'post-generate': 'Called after code generation',
+  'pre-commit': 'Called before git commit (if git hooks enabled)',
+  'validation-error': 'Called when validation errors occur',
+  'project-initialize': 'Called when initializing a new project',
+  'agent-start': 'Called when an agent starts processing',
+  'agent-complete': 'Called when an agent completes processing',
 };
 
-export {
-  EXAMPLE_MANIFEST,
-  EXAMPLE_PLUGIN_CODE,
-  BEST_PRACTICES,
-  HOOK_TYPES
-};
+export { EXAMPLE_MANIFEST, EXAMPLE_PLUGIN_CODE, BEST_PRACTICES, HOOK_TYPES };
 
 export default {
   EXAMPLE_MANIFEST,
+  CAPABILITY_MANIFEST_EXAMPLE,
   EXAMPLE_PLUGIN_CODE,
   BEST_PRACTICES,
-  HOOK_TYPES
+  HOOK_TYPES,
 };
