@@ -4,21 +4,25 @@
 > **Source:** Orchestration/Copilot.md (Strategic Requirement #3)
 
 ## 1. Overview
+
 Quality Gates are the "enforcers" of the system. They block AI-generated code from being accepted or committed unless it meets specific, measurable criteria. This prevents "hallucinated" or broken code from entering the codebase.
 
 ## 2. Gate Types
 
 ### 2.1. Structural Gates (Static Analysis)
+
 - **Syntax Check**: Does it parse?
 - **Linting**: Does it pass `eslint` / `ruff`?
 - **Type Check**: Does `tsc` pass without errors?
 
 ### 2.2. Functional Gates (Dynamic Analysis)
+
 - **Unit Tests**: Do existing tests pass?
 - **New Tests**: Did the AI generate a test for the new code?
 - **Sandbox Run**: Does the code execute in the Docker sandbox without crashing?
 
 ### 2.3. Architectural Gates (Semantic Analysis)
+
 - **Pattern Compliance**: Does it use the correct ORM pattern? (e.g., "Use Prisma, not raw SQL")
 - **Forbidden Imports**: Does it import blocked libraries?
 - **Security Scan**: Are there hardcoded secrets or known vuln patterns?
@@ -50,20 +54,12 @@ This file resides in the project root or `.ultra/config/`.
       "scan_secrets": true
     },
     "architecture": {
-      "banned_patterns": [
-        "console.log",
-        "TODO:",
-        "var "
-      ],
-      "required_patterns": [
-        "export function",
-        "try {",
-        "} catch"
-      ]
+      "banned_patterns": ["console.log", "TODO:", "var "],
+      "required_patterns": ["export function", "try {", "} catch"]
     }
   },
   "on_failure": {
-    "action": "reject", 
+    "action": "reject",
     "retry_attempts": 2,
     "feedback_prompt": "Your code failed the quality gate: {{error}}. Please fix it."
   }
@@ -71,6 +67,7 @@ This file resides in the project root or `.ultra/config/`.
 ```
 
 ## 4. Integration
+
 - **Pre-commit**: Runs purely static checks (fast).
 - **CI/CD**: Runs full suite (slow).
 - **Agent Loop**: The `Reviewer` agent uses this config to evaluate `Backend` agent outputs.

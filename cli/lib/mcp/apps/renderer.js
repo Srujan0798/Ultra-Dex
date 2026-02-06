@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * MCP Apps Renderer
  * Renders UI components for MCP-compatible tools (Cursor, Claude Desktop, etc.)
@@ -42,8 +44,8 @@ export class MCPAppRenderer {
     // Validate props
     const validation = validateComponentProps(type, props);
     if (!validation.valid) {
-      throw new AppError(`Invalid props for component ${type}: ${validation.errors.join(', ')}`, { 
-        code: 'INVALID_COMPONENT_PROPS' 
+      throw new AppError(`Invalid props for component ${type}: ${validation.errors.join(', ')}`, {
+        code: 'INVALID_COMPONENT_PROPS',
       });
     }
 
@@ -62,7 +64,7 @@ export class MCPAppRenderer {
 
     // Get current state
     const currentState = this.state.get(appId);
-    
+
     // Update state if needed
     if (params.stateUpdate) {
       const newState = { ...currentState, ...params.stateUpdate };
@@ -80,12 +82,14 @@ export class MCPAppRenderer {
   async handleInteraction(appId, interactionType, data) {
     const app = this.apps.get(appId);
     if (!app || !app.handlers || !app.handlers[interactionType]) {
-      throw new AppError(`No handler for ${interactionType} in app ${appId}`, { code: 'NO_HANDLER' });
+      throw new AppError(`No handler for ${interactionType} in app ${appId}`, {
+        code: 'NO_HANDLER',
+      });
     }
 
     // Execute the handler
     const result = await app.handlers[interactionType](data);
-    
+
     // Update state if handler returns state changes
     if (result && result.stateUpdate) {
       const currentState = this.state.get(appId);
@@ -164,7 +168,7 @@ export class MCPAppRenderer {
    */
   getComponentHTML(componentType, props) {
     const component = this.renderComponent(componentType, props);
-    
+
     // Return MCP-compatible format
     return {
       type: 'mcp/app/render',
@@ -173,8 +177,8 @@ export class MCPAppRenderer {
         props,
         html: component.html,
         interactive: component.interactive || false,
-        handlers: component.handlers || {}
-      }
+        handlers: component.handlers || {},
+      },
     };
   }
 
@@ -183,7 +187,7 @@ export class MCPAppRenderer {
    */
   renderTerminal(componentType, props) {
     const component = this.renderComponent(componentType, props);
-    
+
     // For terminal, just return a text representation
     switch (componentType) {
       case 'dashboard':
@@ -202,12 +206,12 @@ export class MCPAppRenderer {
    */
   renderDashboardTerminal(props) {
     const { project, status, score, agents = [], tasks = [] } = props;
-    
+
     let output = chalk.bold.blue(`📊 ${props.title || 'Project Dashboard'}\n`);
     output += chalk.bold(`Project: ${project}\n`);
     output += chalk.bold(`Status: ${status}\n`);
     output += chalk.bold(`Score: ${score}%\n\n`);
-    
+
     if (agents.length > 0) {
       output += chalk.bold('👥 Active Agents:\n');
       for (const agent of agents) {
@@ -215,16 +219,16 @@ export class MCPAppRenderer {
       }
       output += '\n';
     }
-    
+
     if (tasks.length > 0) {
       output += chalk.bold('📋 Tasks:\n');
-      const pendingTasks = tasks.filter(t => !t.completed);
-      const completedTasks = tasks.filter(t => t.completed);
-      
+      const pendingTasks = tasks.filter((t) => !t.completed);
+      const completedTasks = tasks.filter((t) => t.completed);
+
       output += `  Pending: ${pendingTasks.length}\n`;
       output += `  Completed: ${completedTasks.length}\n`;
     }
-    
+
     return output;
   }
 
@@ -234,19 +238,19 @@ export class MCPAppRenderer {
   renderProgressTerminal(props) {
     const { title, current, total, description } = props;
     const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
-    
+
     let output = chalk.bold.blue(`⏳ ${title}\n`);
     if (description) {
       output += `${description}\n\n`;
     }
-    
+
     // Create a simple progress bar
     const barLength = 30;
     const filledLength = Math.round((percentage / 100) * barLength);
     const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
-    
+
     output += `[${bar}] ${percentage}% (${current}/${total})\n`;
-    
+
     return output;
   }
 
@@ -255,23 +259,23 @@ export class MCPAppRenderer {
    */
   renderTableTerminal(props) {
     const { title, headers, rows } = props;
-    
+
     let output = chalk.bold.blue(`📋 ${title}\n`);
-    
+
     // Create header row
     output += '| ';
     for (const header of headers) {
       output += `${header.padEnd(15)} | `;
     }
     output += '\n';
-    
+
     // Create separator
     output += '|';
     for (let i = 0; i < headers.length; i++) {
       output += ' ' + '-'.repeat(15) + ' |';
     }
     output += '\n';
-    
+
     // Create data rows
     for (const row of rows) {
       output += '| ';
@@ -280,7 +284,7 @@ export class MCPAppRenderer {
       }
       output += '\n';
     }
-    
+
     return output;
   }
 }
@@ -308,17 +312,17 @@ mcpAppRenderer.registerComponent('button', (props) => renderComponent('button', 
 export async function sendAppRender(appData) {
   // This would send the app data to MCP-compatible tools
   // In a real implementation, this would use MCP protocol
-  
+
   printInfo(chalk.blue('📱 Rendering MCP App...'));
-  
+
   // Simulate sending to MCP tools
   const mcpResponse = {
     success: true,
     appId: appData.id,
     rendered: true,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
-  
+
   return mcpResponse;
 }
 
@@ -327,12 +331,12 @@ export async function sendAppRender(appData) {
  */
 export async function handleMCPAppEvent(event) {
   const { appId, eventType, eventData } = event;
-  
+
   printInfo(chalk.blue(`📡 MCP App Event: ${eventType} for ${appId}`));
-  
+
   try {
     const result = await mcpAppRenderer.handleInteraction(appId, eventType, eventData);
-    
+
     printSuccess(chalk.green(`✅ MCP App event handled successfully`));
     return result;
   } catch (error) {
@@ -346,7 +350,7 @@ export async function handleMCPAppEvent(event) {
  */
 export async function initializeMCPApps() {
   printInfo(chalk.cyan('🚀 Initializing MCP Apps System...'));
-  
+
   // Register default apps
   mcpAppRenderer.registerApp('project-dashboard', {
     initialState: {
@@ -354,25 +358,26 @@ export async function initializeMCPApps() {
       status: 'active',
       score: 0,
       agents: [],
-      tasks: []
+      tasks: [],
     },
-    renderer: (state) => mcpAppRenderer.createDashboard({
-      title: 'Project Dashboard',
-      project: state.project,
-      status: state.status,
-      score: state.score,
-      agents: state.agents,
-      tasks: state.tasks
-    }),
+    renderer: (state) =>
+      mcpAppRenderer.createDashboard({
+        title: 'Project Dashboard',
+        project: state.project,
+        status: state.status,
+        score: state.score,
+        agents: state.agents,
+        tasks: state.tasks,
+      }),
     handlers: {
       update: (data) => {
         return { stateUpdate: data };
-      }
-    }
+      },
+    },
   });
-  
+
   printSuccess(chalk.green('✅ MCP Apps System Initialized'));
-  
+
   return mcpAppRenderer;
 }
 
@@ -383,5 +388,5 @@ export default {
   handleMCPAppEvent,
   initializeMCPApps,
   renderComponent,
-  validateComponentProps
+  validateComponentProps,
 };

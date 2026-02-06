@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * API WebSocket Server for real-time updates
  */
@@ -9,16 +11,16 @@ export function startWebSocketServer(server, { path = '/ws' } = {}) {
 
   function broadcast(payload) {
     const data = JSON.stringify(payload);
-    wss.clients.forEach(client => {
+    wss.clients.forEach((client) => {
       if (client.readyState === client.OPEN) {
         client.send(data);
       }
     });
   }
 
-  wss.on('connection', ws => {
+  wss.on('connection', (ws) => {
     ws.send(JSON.stringify({ type: 'connected', timestamp: new Date().toISOString() }));
-    ws.on('message', message => {
+    ws.on('message', (message) => {
       const text = message.toString();
       broadcast({ type: 'message', payload: text });
     });

@@ -1,49 +1,70 @@
-import { glob } from 'glob';
+// Copyright (c) 2026 Ultra-Dex
+
+/**
+ * Architectural Pattern Enforcement Gates
+ * Provides semantic analysis for code quality and security
+ */
+
 import fs from 'fs/promises';
+import path from 'path';
+import chalk from 'chalk';
+import { glob } from 'glob';
 
-const DEFAULT_IGNORE = ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/.ultra-dex/**', '**/.ultra/**'];
+export async function runArchitecturalGates(projectDir = process.cwd()) {
+  console.log(chalk.bold('\n🏛️  Running Architectural Gates...\n'));
 
-export async function runArchitecturalGates(projectDir, config = {}) {
-  const banned = config.banned_patterns || [];
-  const required = config.required_patterns || [];
+  const files = await glob('**/*.{js,ts,py,go}', {
+    ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'],
+    nodir: true,
+    cwd: projectDir,
+  });
 
-  const files = await glob('**/*.{js,ts,tsx,jsx}', { cwd: projectDir, ignore: DEFAULT_IGNORE, nodir: true });
-  const bannedHits = [];
-  const requiredHits = new Set();
+  const violations = [];
 
   for (const file of files) {
-    let content = '';
-    try {
-      content = await fs.readFile(`${projectDir}/${file}`, 'utf8');
-    } catch {
-      continue;
+    const fullPath = path.join(projectDir, file);
+    const content = await fs.readFile(fullPath, 'utf8');
+
+    // 1. Banned Patterns (Forbidden imports/code)
+    if (content.includes('console.log')) {
+      violations.push({ file, type: 'BANNED_PATTERN', message: 'Forbidden console.log found' });
     }
 
-    banned.forEach((pattern) => {
-      if (content.includes(pattern)) {
-        bannedHits.push({ file, pattern });
-      }
-    });
+    // 2. Required Patterns (Must have try/catch for async functions)
+    if (
+      content.includes('async function') &&
+      !content.includes('try') &&
+      !content.includes('catch')
+    ) {
+      violations.push({
+        file,
+        type: 'REQUIRED_PATTERN',
+        message: 'Async function missing error handling (try/catch)',
+      });
+    }
 
-    required.forEach((pattern) => {
-      if (content.includes(pattern)) {
-        requiredHits.add(pattern);
-      }
-    });
+    // 3. Security (Secret Scanning)
+    const secretRegex =
+      /(?:key|secret|password|token|api_key)\s*[:=]\s*['"][a-zA-Z0-9_\-\.]{10,}['"]/i;
+    if (secretRegex.test(content)) {
+      violations.push({
+        file,
+        type: 'SECURITY_RISK',
+        message: 'Potential hardcoded secret or API key detected',
+      });
+    }
   }
 
-  const missingRequired = required.filter((pattern) => !requiredHits.has(pattern));
+  if (violations.length > 0) {
+    console.error(chalk.red(`\n✕ Architectural violations detected (${violations.length}):`));
+    violations.slice(0, 10).forEach((v) => {
+      console.error(chalk.red(`  • [${v.type}] ${v.file}: ${v.message}`));
+    });
+    if (violations.length > 10)
+      console.log(chalk.gray(`    ... and ${violations.length - 10} more`));
+    return { ok: false, violations };
+  }
 
-  return [
-    {
-      id: 'architecture-banned',
-      value: bannedHits.length,
-      details: { bannedHits }
-    },
-    {
-      id: 'architecture-required',
-      value: missingRequired.length,
-      details: { missingRequired }
-    }
-  ];
+  console.log(chalk.green('\n✅ Architectural patterns verified.\n'));
+  return { ok: true };
 }

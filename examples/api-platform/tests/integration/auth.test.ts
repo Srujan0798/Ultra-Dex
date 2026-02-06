@@ -21,9 +21,7 @@ describe('Authentication Middleware', () => {
   });
 
   it('should authenticate with valid API key', async () => {
-    const response = await request(app)
-      .get('/test')
-      .set('X-API-Key', apiKey);
+    const response = await request(app).get('/test').set('X-API-Key', apiKey);
 
     expect(response.status).toBe(200);
     expect(response.body.apiKey).toBeDefined();
@@ -37,9 +35,7 @@ describe('Authentication Middleware', () => {
   });
 
   it('should reject request with invalid API key', async () => {
-    const response = await request(app)
-      .get('/test')
-      .set('X-API-Key', 'invalid-key');
+    const response = await request(app).get('/test').set('X-API-Key', 'invalid-key');
 
     expect(response.status).toBe(401);
     expect(response.body.error.code).toBe('unauthorized');

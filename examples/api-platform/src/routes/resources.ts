@@ -17,21 +17,21 @@ router.get('/', async (req, res, next) => {
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
     const cursor = req.query.cursor as string | undefined;
     const status = req.query.status as string | undefined;
-    
+
     const result = await resourceService.listResources({
       userId: req.apiKey.userId,
       limit,
       cursor,
-      status
+      status,
     });
-    
+
     res.json({
       data: result.data,
       pagination: {
         has_more: result.hasMore,
         next_cursor: result.nextCursor,
-        prev_cursor: result.prevCursor
-      }
+        prev_cursor: result.prevCursor,
+      },
     });
   } catch (error) {
     next(error);
@@ -42,28 +42,28 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const validation = createResourceSchema.safeParse(req.body);
-    
+
     if (!validation.success) {
       throw new ValidationError(
         'Invalid request data',
-        validation.error.errors.map(err => ({
+        validation.error.errors.map((err) => ({
           field: err.path.join('.'),
-          message: err.message
+          message: err.message,
         }))
       );
     }
-    
+
     const resource = await resourceService.createResource({
       userId: req.apiKey.userId,
-      ...validation.data
+      ...validation.data,
     });
-    
+
     // Emit event for webhooks
     eventEmitter.emit('resource.created', {
       userId: req.apiKey.userId,
-      resource
+      resource,
     });
-    
+
     res.status(201).json(resource);
   } catch (error) {
     next(error);
@@ -74,11 +74,11 @@ router.post('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const resource = await resourceService.getResource(req.params.id, req.apiKey.userId);
-    
+
     if (!resource) {
       throw new NotFoundError('Resource not found');
     }
-    
+
     res.json(resource);
   } catch (error) {
     next(error);
@@ -89,33 +89,33 @@ router.get('/:id', async (req, res, next) => {
 router.patch('/:id', async (req, res, next) => {
   try {
     const validation = updateResourceSchema.safeParse(req.body);
-    
+
     if (!validation.success) {
       throw new ValidationError(
         'Invalid request data',
-        validation.error.errors.map(err => ({
+        validation.error.errors.map((err) => ({
           field: err.path.join('.'),
-          message: err.message
+          message: err.message,
         }))
       );
     }
-    
+
     const resource = await resourceService.updateResource(
       req.params.id,
       req.apiKey.userId,
       validation.data
     );
-    
+
     if (!resource) {
       throw new NotFoundError('Resource not found');
     }
-    
+
     // Emit event for webhooks
     eventEmitter.emit('resource.updated', {
       userId: req.apiKey.userId,
-      resource
+      resource,
     });
-    
+
     res.json(resource);
   } catch (error) {
     next(error);
@@ -126,17 +126,17 @@ router.patch('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const success = await resourceService.deleteResource(req.params.id, req.apiKey.userId);
-    
+
     if (!success) {
       throw new NotFoundError('Resource not found');
     }
-    
+
     // Emit event for webhooks
     eventEmitter.emit('resource.deleted', {
       userId: req.apiKey.userId,
-      resourceId: req.params.id
+      resourceId: req.params.id,
     });
-    
+
     res.status(204).send();
   } catch (error) {
     next(error);

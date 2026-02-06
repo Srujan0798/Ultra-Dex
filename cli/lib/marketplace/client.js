@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Agent Marketplace Client
  * Handles agent submission, retrieval, versioning, ratings, and discovery.
@@ -19,11 +21,46 @@ const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 // Fallback agents for offline mode or when API is unreachable
 export const FALLBACK_MARKETPLACE_AGENTS = [
-  { id: 'security-auditor', name: 'SecurityAuditor', description: 'Advanced security scanning & vulnerability detection', version: '1.2.0', rating: 4.8, downloads: 1250 },
-  { id: 'accessibility-pro', name: 'Accessibility', description: 'WCAG 2.1 compliance auditing', version: '1.0.5', rating: 4.5, downloads: 850 },
-  { id: 'api-designer', name: 'APIDesigner', description: 'OpenAPI/Swagger architect', version: '2.1.0', rating: 4.9, downloads: 2100 },
-  { id: 'ml-engineer', name: 'MLEngineer', description: 'Python/PyTorch/TensorFlow integration expert', version: '0.9.5', rating: 4.2, downloads: 420 },
-  { id: 'marketplace-adapter', name: 'Marketplace', description: 'Community agent discovery', version: '1.0.0', rating: 5.0, downloads: 5000 }
+  {
+    id: 'security-auditor',
+    name: 'SecurityAuditor',
+    description: 'Advanced security scanning & vulnerability detection',
+    version: '1.2.0',
+    rating: 4.8,
+    downloads: 1250,
+  },
+  {
+    id: 'accessibility-pro',
+    name: 'Accessibility',
+    description: 'WCAG 2.1 compliance auditing',
+    version: '1.0.5',
+    rating: 4.5,
+    downloads: 850,
+  },
+  {
+    id: 'api-designer',
+    name: 'APIDesigner',
+    description: 'OpenAPI/Swagger architect',
+    version: '2.1.0',
+    rating: 4.9,
+    downloads: 2100,
+  },
+  {
+    id: 'ml-engineer',
+    name: 'MLEngineer',
+    description: 'Python/PyTorch/TensorFlow integration expert',
+    version: '0.9.5',
+    rating: 4.2,
+    downloads: 420,
+  },
+  {
+    id: 'marketplace-adapter',
+    name: 'Marketplace',
+    description: 'Community agent discovery',
+    version: '1.0.0',
+    rating: 5.0,
+    downloads: 5000,
+  },
 ];
 
 function normalizeQuery(query) {
@@ -43,10 +80,10 @@ function stripContentFields(metadata = {}) {
 
 function normalizeTags(tags) {
   if (!tags) return [];
-  if (Array.isArray(tags)) return tags.map(tag => String(tag).trim()).filter(Boolean);
+  if (Array.isArray(tags)) return tags.map((tag) => String(tag).trim()).filter(Boolean);
   return String(tags)
     .split(',')
-    .map(tag => tag.trim())
+    .map((tag) => tag.trim())
     .filter(Boolean);
 }
 
@@ -54,10 +91,7 @@ export class AgentMarketplaceClient {
   constructor(apiEndpoint = DEFAULT_MARKETPLACE_API, apiKey = null) {
     this.apiEndpoint = apiEndpoint;
     this.apiKey =
-      apiKey ||
-      process.env.ULTRA_DEX_MARKETPLACE_KEY ||
-      process.env.MARKETPLACE_API_KEY ||
-      null;
+      apiKey || process.env.ULTRA_DEX_MARKETPLACE_KEY || process.env.MARKETPLACE_API_KEY || null;
     this.httpClient = null;
   }
 
@@ -68,8 +102,8 @@ export class AgentMarketplaceClient {
       timeout: DEFAULT_TIMEOUT_MS,
       headers: {
         'Content-Type': 'application/json',
-        ...(this.apiKey && { Authorization: `Bearer ${this.apiKey}` })
-      }
+        ...(this.apiKey && { Authorization: `Bearer ${this.apiKey}` }),
+      },
     });
   }
 
@@ -79,7 +113,8 @@ export class AgentMarketplaceClient {
       return response.data;
     } catch (err) {
       if (err.response) {
-        const message = err.response.data?.message || err.response.statusText || 'Marketplace API error';
+        const message =
+          err.response.data?.message || err.response.statusText || 'Marketplace API error';
         throw new AppError(message, { code: 'MARKETPLACE_API_ERROR', details: err.response.data });
       }
       throw new NetworkError('Marketplace API unavailable', { cause: err });
@@ -148,7 +183,7 @@ export class AgentMarketplaceClient {
       tags: normalizeTags(meta.tags),
       categories: normalizeTags(meta.categories),
       keywords: normalizeTags(meta.keywords),
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
     };
 
     this.validateMetadata(metadataToSend);
@@ -168,7 +203,7 @@ export class AgentMarketplaceClient {
       success: true,
       agentId: data.id || data.agentId,
       version: data.version || payload.metadata.version,
-      message: data.message || 'Agent submitted successfully'
+      message: data.message || 'Agent submitted successfully',
     };
   }
 
@@ -188,9 +223,11 @@ export class AgentMarketplaceClient {
     }
     const payload = {
       metadata: { ...stripContentFields(metadata), version, updatedAt: new Date().toISOString() },
-      content
+      content,
     };
-    const data = await this.request('post', `/agents/${encodeURIComponent(agentId)}/versions`, { data: payload });
+    const data = await this.request('post', `/agents/${encodeURIComponent(agentId)}/versions`, {
+      data: payload,
+    });
     return { success: true, version: data.version || version };
   }
 
@@ -217,7 +254,11 @@ export class AgentMarketplaceClient {
       const result = await this.retrieveAgent(agentId, version);
       return result.agent;
     } catch {
-      return FALLBACK_MARKETPLACE_AGENTS.find(agent => agent.id === agentId || agent.name.toLowerCase() === agentId) || null;
+      return (
+        FALLBACK_MARKETPLACE_AGENTS.find(
+          (agent) => agent.id === agentId || agent.name.toLowerCase() === agentId
+        ) || null
+      );
     }
   }
 
@@ -245,9 +286,11 @@ export class AgentMarketplaceClient {
     const payload = {
       rating: normalizedRating,
       review: review || undefined,
-      metadata: metadata || {}
+      metadata: metadata || {},
     };
-    const data = await this.request('post', `/agents/${encodeURIComponent(agentId)}/ratings`, { data: payload });
+    const data = await this.request('post', `/agents/${encodeURIComponent(agentId)}/ratings`, {
+      data: payload,
+    });
     return { success: true, rating: data.rating || normalizedRating, summary: data.summary };
   }
 
@@ -268,7 +311,9 @@ export class AgentMarketplaceClient {
     }
     const content = agent.content || agent.systemPrompt || agent.prompt;
     if (!content) {
-      throw new AppError(`Agent '${agentId}' has no downloadable content`, { code: 'MARKETPLACE_AGENT_NO_CONTENT' });
+      throw new AppError(`Agent '${agentId}' has no downloadable content`, {
+        code: 'MARKETPLACE_AGENT_NO_CONTENT',
+      });
     }
     await fs.mkdir(path.dirname(downloadPath), { recursive: true });
     await fs.writeFile(downloadPath, content, 'utf8');
@@ -283,8 +328,10 @@ export class AgentMarketplaceClient {
       const params = new URLSearchParams();
       if (normalized.q) params.append('q', normalized.q);
       if (normalized.tags) params.append('tags', normalizeTags(normalized.tags).join(','));
-      if (normalized.categories) params.append('categories', normalizeTags(normalized.categories).join(','));
-      if (normalized.minRating !== undefined) params.append('minRating', String(normalized.minRating));
+      if (normalized.categories)
+        params.append('categories', normalizeTags(normalized.categories).join(','));
+      if (normalized.minRating !== undefined)
+        params.append('minRating', String(normalized.minRating));
       if (normalized.sort) params.append('sort', normalized.sort);
       if (normalized.limit) params.append('limit', String(normalized.limit));
       if (normalized.page) params.append('page', String(normalized.page));
@@ -293,8 +340,9 @@ export class AgentMarketplaceClient {
       return data.agents || [];
     } catch {
       const q = (normalized.q || '').toLowerCase();
-      return FALLBACK_MARKETPLACE_AGENTS.filter(agent =>
-        agent.name.toLowerCase().includes(q) || agent.description.toLowerCase().includes(q)
+      return FALLBACK_MARKETPLACE_AGENTS.filter(
+        (agent) =>
+          agent.name.toLowerCase().includes(q) || agent.description.toLowerCase().includes(q)
       );
     }
   }
@@ -336,4 +384,3 @@ export class AgentMarketplaceClient {
 
 // Global instance
 export const marketplaceClient = new AgentMarketplaceClient();
-

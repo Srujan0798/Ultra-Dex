@@ -5,19 +5,18 @@ export default {
       if (!webhook) return;
 
       const message = {
-        text: `🚀 *Ultra-Dex Update*\nTask: ${context.task}\nStatus: ${context.status}`
+        text: `🚀 *Ultra-Dex Update*\nTask: ${context.task}\nStatus: ${context.status}`,
       };
 
       try {
         await fetch(webhook, {
           method: 'POST',
           body: JSON.stringify(message),
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         });
       } catch (e) {
         console.warn('Slack notification failed');
       }
     });
-  }
+  },
 };
-

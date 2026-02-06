@@ -4,7 +4,5 @@
   "description": "Scaffold Clerk authentication components",
   "main": "index.js",
   "author": "Ultra-Dex Team",
-  "commands": [
-    { "name": "clerk-setup", "description": "Add Clerk auth to project" }
-  ]
+  "commands": [{ "name": "clerk-setup", "description": "Add Clerk auth to project" }]
 }

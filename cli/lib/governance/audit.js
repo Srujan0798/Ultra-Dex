@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Governance audit trail
  * Enterprise-grade logging for agent operations
@@ -45,7 +47,7 @@ export async function readAuditLog() {
     return data
       .split('\n')
       .filter(Boolean)
-      .map(line => {
+      .map((line) => {
         try {
           return JSON.parse(line);
         } catch {
@@ -64,7 +66,7 @@ export async function generateComplianceReport({ since, until, writeToFile = fal
   const start = since ? new Date(since).getTime() : null;
   const end = until ? new Date(until).getTime() : null;
 
-  const filtered = events.filter(event => {
+  const filtered = events.filter((event) => {
     const ts = new Date(event.timestamp).getTime();
     if (start && ts < start) return false;
     if (end && ts > end) return false;
@@ -79,8 +81,8 @@ export async function generateComplianceReport({ since, until, writeToFile = fal
     },
     totals: {
       events: filtered.length,
-      allowed: filtered.filter(e => e.allowed).length,
-      blocked: filtered.filter(e => !e.allowed).length,
+      allowed: filtered.filter((e) => e.allowed).length,
+      blocked: filtered.filter((e) => !e.allowed).length,
     },
     byAgent: {},
     byOperation: {},
@@ -126,7 +128,7 @@ function toCsv(rows) {
   };
   const lines = [headers.join(',')];
   for (const row of rows) {
-    lines.push(headers.map(h => escape(row[h])).join(','));
+    lines.push(headers.map((h) => escape(row[h])).join(','));
   }
   return lines.join('\n');
 }
@@ -136,7 +138,7 @@ export async function exportAuditLog({ format = 'json', since, until, outputPath
   const start = since ? new Date(since).getTime() : null;
   const end = until ? new Date(until).getTime() : null;
 
-  const filtered = events.filter(event => {
+  const filtered = events.filter((event) => {
     const ts = new Date(event.timestamp).getTime();
     if (start && ts < start) return false;
     if (end && ts > end) return false;
@@ -151,7 +153,7 @@ export async function exportAuditLog({ format = 'json', since, until, outputPath
       {
         generatedAt: toIso(),
         count: filtered.length,
-        events: filtered
+        events: filtered,
       },
       null,
       2

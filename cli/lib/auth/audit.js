@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enterprise Audit Logging
  * Tracks all actions for compliance and security
@@ -21,7 +23,7 @@ export class AuditLogger {
     this.buffer = [];
     this.bufferSize = options.bufferSize || 100;
     this.flushInterval = options.flushInterval || 5000; // 5 seconds
-    
+
     this.init();
   }
 
@@ -66,7 +68,7 @@ export class AuditLogger {
       ip: action.ip || null,
       userAgent: action.userAgent || null,
       duration: action.duration || null,
-      error: action.error || null
+      error: action.error || null,
     };
 
     this.buffer.push(entry);
@@ -99,7 +101,7 @@ export class AuditLogger {
     const logFile = path.join(this.logDir, `audit-${date}.log`);
 
     try {
-      const lines = entries.map(e => JSON.stringify(e)).join('\n') + '\n';
+      const lines = entries.map((e) => JSON.stringify(e)).join('\n') + '\n';
       await fs.appendFile(logFile, lines, 'utf8');
     } catch (error) {
       console.error(chalk.red('[Audit] Failed to write logs:', error.message));
@@ -112,21 +114,12 @@ export class AuditLogger {
    * Query audit logs
    */
   async query(filters = {}) {
-    const {
-      startDate,
-      endDate,
-      user,
-      action,
-      resource,
-      status,
-      limit = 100,
-      offset = 0
-    } = filters;
+    const { startDate, endDate, user, action, resource, status, limit = 100, offset = 0 } = filters;
 
     try {
       const files = await fs.readdir(this.logDir);
       const logFiles = files
-        .filter(f => f.startsWith('audit-') && f.endsWith('.log'))
+        .filter((f) => f.startsWith('audit-') && f.endsWith('.log'))
         .sort()
         .reverse();
 
@@ -180,7 +173,7 @@ export class AuditLogger {
 
     const logs = await this.query({
       startDate: startDate.toISOString(),
-      limit: 10000
+      limit: 10000,
     });
 
     const stats = {
@@ -188,7 +181,7 @@ export class AuditLogger {
       byAction: {},
       byUser: {},
       byStatus: {},
-      byDay: {}
+      byDay: {},
     };
 
     for (const log of logs) {
@@ -270,10 +263,10 @@ export class AuditLogger {
     if (logs.length === 0) return '';
 
     const headers = Object.keys(logs[0]).join(',');
-    const rows = logs.map(log => 
-      Object.values(log).map(v => 
-        typeof v === 'object' ? JSON.stringify(v) : String(v)
-      ).join(',')
+    const rows = logs.map((log) =>
+      Object.values(log)
+        .map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v)))
+        .join(',')
     );
 
     return [headers, ...rows].join('\n');
@@ -289,7 +282,7 @@ export function auditMiddleware(logger) {
 
     // Capture response
     const originalEnd = res.end;
-    res.end = function(...args) {
+    res.end = function (...args) {
       const duration = Date.now() - startTime;
 
       logger.log({
@@ -305,9 +298,9 @@ export function auditMiddleware(logger) {
         details: {
           statusCode: res.statusCode,
           params: req.params,
-          query: req.query
+          query: req.query,
         },
-        duration
+        duration,
       });
 
       originalEnd.apply(this, args);

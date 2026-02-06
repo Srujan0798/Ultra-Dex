@@ -39,13 +39,13 @@
 
 **Use the 5-step mini-checklist instead:**
 
-| Step | Question | Time |
-|------|----------|------|
-| 1. Plan | What exactly am I changing? | 5 min |
-| 2. Code | Does it work? Manual test passed? | 1-2 hours |
-| 3. Test | Did I add/update tests? | 15 min |
-| 4. Document | Any comments needed? | 5 min |
-| 5. Deploy | Can I deploy safely? | 10 min |
+| Step        | Question                          | Time      |
+| ----------- | --------------------------------- | --------- |
+| 1. Plan     | What exactly am I changing?       | 5 min     |
+| 2. Code     | Does it work? Manual test passed? | 1-2 hours |
+| 3. Test     | Did I add/update tests?           | 15 min    |
+| 4. Document | Any comments needed?              | 5 min     |
+| 5. Deploy   | Can I deploy safely?              | 10 min    |
 
 **When to use 5-step:** Bug fixes, UI tweaks, config changes, docs updates.
 
@@ -58,6 +58,7 @@
 **Yes! Here's your minimal path:**
 
 **Must fill:**
+
 - Section 1: High-Level Summary
 - Section 2: Core Features
 - Section 10: Data Model
@@ -66,10 +67,12 @@
 - Section 16: Implementation Plan (tasks)
 
 **Skip entirely:**
+
 - Sections 23-26: Stakeholder/Compliance (solo = skip)
 - Sections 31-34: Advanced (add later if needed)
 
 **Fill when you hit the problem:**
+
 - Section 19: Deployment (when you deploy)
 - Section 21: Security (before production)
 - Section 27: Error Handling (when you need logging)
@@ -83,6 +86,7 @@
 **Solutions:**
 
 1. **Use full template option:**
+
    ```bash
    npx ultra-dex init --include-full-template
    ```
@@ -102,15 +106,15 @@
 
 **Quick guide:**
 
-| Working On | Load These |
-|------------|------------|
+| Working On       | Load These                   |
+| ---------------- | ---------------------------- |
 | Starting project | `00-ultra-dex-core.mdc` only |
-| Database schema | + `01-database.mdc` |
-| API routes | + `02-api.mdc` |
-| Authentication | + `03-auth.mdc` |
-| React/Vue/Svelte | + `04-frontend.mdc` |
-| Stripe/payments | + `05-payments.mdc` |
-| Writing tests | + `06-testing.mdc` |
+| Database schema  | + `01-database.mdc`          |
+| API routes       | + `02-api.mdc`               |
+| Authentication   | + `03-auth.mdc`              |
+| React/Vue/Svelte | + `04-frontend.mdc`          |
+| Stripe/payments  | + `05-payments.mdc`          |
+| Writing tests    | + `06-testing.mdc`           |
 
 **Rule:** Start with core, add domain rules as you work on that domain.
 
@@ -119,17 +123,20 @@
 ## 📊 "How do I know if I'm on track?"
 
 **Phase 1 complete when:**
+
 - [ ] Sections 1-12 filled
 - [ ] First commit pushed
 - [ ] Database schema designed
 - [ ] Core entity models created
 
 **Phase 2 in progress when:**
+
 - [ ] At least 3 features shipped
 - [ ] 21-step used for 5+ tasks
 - [ ] API endpoints working
 
 **Phase 3 ready when:**
+
 - [ ] Sections 19-28 filled
 - [ ] All tests passing
 - [ ] Deployment script working

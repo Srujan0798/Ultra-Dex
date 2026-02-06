@@ -4,6 +4,7 @@
 **For whom:** Marketing teams and bloggers.
 
 ## MVP Features
+
 - [ ] OpenAI/Claude Integration
 - [ ] User authentication
 - [ ] Prompt templates

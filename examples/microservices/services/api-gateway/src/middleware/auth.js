@@ -19,13 +19,13 @@ const authenticateToken = (req, res, next) => {
     logger.warn({
       requestId: req.id,
       error: error.message,
-      message: 'Token verification failed'
+      message: 'Token verification failed',
     });
-    
+
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Token expired' });
     }
-    
+
     return res.status(403).json({ error: 'Invalid token' });
   }
 };

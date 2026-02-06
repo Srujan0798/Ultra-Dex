@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { chromium } from 'playwright';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -24,8 +26,15 @@ export function registerBrowserCommand(program) {
     .option('--audit <url>', 'Perform AI Visual Regression Audit')
     .option('--stack <stack>', 'Tech stack (e.g., next15-tailwind)', 'next15-tailwind')
     .option('-o, --output <path>', 'Output file path')
-    .option('-q, --query <query>', 'What to extract (e.g., "all pricing tiers")', 'Summarize the page content')
-    .option('-a, --assertions <list>', 'Comma-separated assertions (e.g., "Login button exists, Title is Home")')
+    .option(
+      '-q, --query <query>',
+      'What to extract (e.g., "all pricing tiers")',
+      'Summarize the page content'
+    )
+    .option(
+      '-a, --assertions <list>',
+      'Comma-separated assertions (e.g., "Login button exists, Title is Home")'
+    )
     .option('--name <name>', 'Snapshot name', 'ui-audit')
     .option('--promote', 'Promote current run to baseline')
     .option('--full-page', 'Capture full page', true)
@@ -38,8 +47,8 @@ export function registerBrowserCommand(program) {
           { key: 'test', value: options.test },
           { key: 'record', value: options.record },
           { key: 'mockup', value: options.mockup },
-          { key: 'audit', value: options.audit }
-        ].filter(entry => Boolean(entry.value));
+          { key: 'audit', value: options.audit },
+        ].filter((entry) => Boolean(entry.value));
 
         if (modes.length === 0) {
           browserCmd.help();
@@ -47,7 +56,9 @@ export function registerBrowserCommand(program) {
         }
 
         if (modes.length > 1) {
-          printError('Please specify only one action flag at a time (e.g., --screenshot or --scrape).');
+          printError(
+            'Please specify only one action flag at a time (e.g., --screenshot or --scrape).'
+          );
           return;
         }
 
@@ -107,7 +118,11 @@ export function registerBrowserCommand(program) {
   browserCmd
     .command('scrape <url>')
     .description('Extract content from a URL using AI')
-    .option('-q, --query <query>', 'What to extract (e.g., "all pricing tiers")', 'Summarize the page content')
+    .option(
+      '-q, --query <query>',
+      'What to extract (e.g., "all pricing tiers")',
+      'Summarize the page content'
+    )
     .option('-o, --output <path>', 'Save output to file')
     .action(async (url, options) => {
       try {
@@ -121,7 +136,10 @@ export function registerBrowserCommand(program) {
   browserCmd
     .command('test <url>')
     .description('Run automated tests with AI assertions')
-    .option('-a, --assertions <list>', 'Comma-separated assertions (e.g., "Login button exists, Title is Home")')
+    .option(
+      '-a, --assertions <list>',
+      'Comma-separated assertions (e.g., "Login button exists, Title is Home")'
+    )
     .action(async (url, options) => {
       try {
         await handleTest(url, options);
@@ -176,10 +194,10 @@ export function registerBrowserCommand(program) {
 
 async function handleAudit(url, options) {
   const spinner = ora(`Initializing Visual Audit for ${url}...`).start();
-  
+
   try {
     const screenshotPath = await visionScanner.capture(url, options.name);
-    
+
     if (options.promote) {
       await visionScanner.promoteToBaseline(screenshotPath, options.name);
       spinner.succeed(chalk.green('Current screenshot promoted to baseline.'));
@@ -188,7 +206,7 @@ async function handleAudit(url, options) {
 
     spinner.text = 'Performing Visual Comparison...';
     const result = await visionScanner.compare(options.name, screenshotPath);
-    
+
     if (result.status === 'ANALYZED') {
       spinner.succeed('Visual Audit Complete');
       console.log(chalk.magenta('\n🔍 AI Review Results:'));
@@ -208,12 +226,12 @@ async function captureScreenshot(url, options) {
   try {
     browser = await chromium.launch();
     const page = await browser.newPage();
-    
+
     // Validate URL
     if (!url.startsWith('http')) url = 'https://' + url;
 
     await page.goto(url, { waitUntil: 'networkidle' });
-    
+
     // Determine output path
     let outputPath = options.output;
     if (!outputPath) {
@@ -222,9 +240,9 @@ async function captureScreenshot(url, options) {
       outputPath = `${hostname}-${timestamp}.png`;
     }
 
-    await page.screenshot({ 
-      path: outputPath, 
-      fullPage: options.fullPage 
+    await page.screenshot({
+      path: outputPath,
+      fullPage: options.fullPage,
     });
 
     return outputPath;
@@ -259,7 +277,9 @@ async function handleScreenshotToCode(url, options) {
   }
 
   if (!provider.analyzeImage) {
-    printError(`Current provider (${provider.constructor.name}) does not support Vision. Please use OpenAI (GPT-4o) or Claude 3.5 Sonnet.`);
+    printError(
+      `Current provider (${provider.constructor.name}) does not support Vision. Please use OpenAI (GPT-4o) or Claude 3.5 Sonnet.`
+    );
     return;
   }
 
@@ -307,9 +327,9 @@ async function handleScrape(url, options) {
     browser = await chromium.launch();
     const page = await browser.newPage();
     if (!url.startsWith('http')) url = 'https://' + url;
-    
+
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    
+
     // Extract main text content
     const content = await page.evaluate(() => {
       return document.body.innerText;
@@ -337,13 +357,16 @@ ${content.substring(0, 15000)} ... (truncated)
       await fs.writeFile(options.output, outputText);
       printSuccess(`Result saved to ${options.output}`);
     } else {
-      console.log(chalk.cyan(`
---- Extraction Result ---`));
+      console.log(
+        chalk.cyan(`
+--- Extraction Result ---`)
+      );
       console.log(outputText);
-      console.log(chalk.cyan(`-------------------------
-`));
+      console.log(
+        chalk.cyan(`-------------------------
+`)
+      );
     }
-
   } catch (error) {
     spinner.fail(chalk.red('Scraping failed'));
     if (error.message.includes("Executable doesn't exist")) {
@@ -379,7 +402,7 @@ async function handleTest(url, options) {
     spinner.text = 'Verifying assertions...';
 
     const assertions = options.assertions || 'The page loaded correctly and has no visible errors.';
-    
+
     // Construct prompt
     const prompt = `
 I need you to verify the following assertions for a webpage:
@@ -397,10 +420,10 @@ Response Format:
     // If provider supports image analysis, we could use that too.
     let response;
     if (provider.analyzeImage) {
-        response = await provider.analyzeImage(screenshotBuffer, prompt);
+      response = await provider.analyzeImage(screenshotBuffer, prompt);
     } else {
-        const result = await provider.generate('You are a QA automation engineer.', prompt);
-        response = result.content || result;
+      const result = await provider.generate('You are a QA automation engineer.', prompt);
+      response = result.content || result;
     }
 
     if (response.includes('[PASS]')) {
@@ -408,10 +431,13 @@ Response Format:
     } else {
       spinner.fail(chalk.red('Tests Failed'));
     }
-    
-    console.log(chalk.gray(`
-` + response));
 
+    console.log(
+      chalk.gray(
+        `
+` + response
+      )
+    );
   } catch (error) {
     spinner.fail(chalk.red('Test execution failed'));
     throw error;
@@ -428,7 +454,7 @@ async function handleRecord(options) {
   // Playwright Codegen is usually run via CLI: npx playwright codegen
   // We can spawn it as a child process.
   const { spawn } = await import('child_process');
-  
+
   const args = ['playwright', 'codegen'];
   if (options.output) {
     args.push('--output', options.output);
@@ -436,7 +462,7 @@ async function handleRecord(options) {
 
   const child = spawn('npx', args, {
     stdio: 'inherit',
-    shell: true
+    shell: true,
   });
 
   child.on('close', (code) => {
@@ -455,9 +481,11 @@ async function handleMockup(imagePath, options) {
     printError('AI Provider not configured. Set OPENAI_API_KEY or ANTHROPIC_API_KEY.');
     return;
   }
-  
+
   if (!provider.analyzeImage) {
-    printError(`Current provider (${provider.constructor.name}) does not support Vision. Please use OpenAI (GPT-4o) or Claude 3.5 Sonnet.`);
+    printError(
+      `Current provider (${provider.constructor.name}) does not support Vision. Please use OpenAI (GPT-4o) or Claude 3.5 Sonnet.`
+    );
     return;
   }
 
@@ -465,7 +493,7 @@ async function handleMockup(imagePath, options) {
 
   try {
     const buffer = await fs.readFile(imagePath);
-    
+
     const prompt = `
 You are an expert Frontend Engineer.
 Convert this UI mockup into clean, production-ready code.
@@ -485,13 +513,16 @@ Tech Stack: ${options.stack}
       await fs.writeFile(options.output, response);
       printSuccess(`Component saved to ${options.output}`);
     } else {
-      console.log(chalk.cyan(`
---- Generated Code ---`));
+      console.log(
+        chalk.cyan(`
+--- Generated Code ---`)
+      );
       console.log(response);
-      console.log(chalk.cyan(`----------------------
-`));
+      console.log(
+        chalk.cyan(`----------------------
+`)
+      );
     }
-
   } catch (error) {
     spinner.fail(chalk.red('Mockup conversion failed'));
     throw error;

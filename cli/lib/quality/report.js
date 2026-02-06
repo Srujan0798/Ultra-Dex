@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Quality gate reporting utilities
  */
@@ -9,16 +11,19 @@ export function summarizeGateResults(results = []) {
     total: results.length,
     failed: 0,
     passed: 0,
-    warnings: 0
+    warnings: 0,
   };
 
   results.forEach((gate) => {
     const { rule, value } = gate;
     if (!rule) return;
     const threshold = rule.threshold;
-    const isPass = value === null ? true : rule.severity === 'warning'
-      ? value >= threshold
-      : value >= threshold && value !== null;
+    const isPass =
+      value === null
+        ? true
+        : rule.severity === 'warning'
+          ? value >= threshold
+          : value >= threshold && value !== null;
 
     if (isPass) summary.passed += 1;
     else {
@@ -41,26 +46,32 @@ export function formatGateTable(results = []) {
     const value = gate.value === null ? 'N/A' : gate.value;
     const pass = gate.value === null ? true : gate.value >= threshold;
     const color = pass ? chalk.green : severity === 'warning' ? chalk.yellow : chalk.red;
-    lines.push(color(`${gate.id.padEnd(24)} ${String(value).padEnd(8)} ${String(threshold).padEnd(10)} ${severity}`));
+    lines.push(
+      color(
+        `${gate.id.padEnd(24)} ${String(value).padEnd(8)} ${String(threshold).padEnd(10)} ${severity}`
+      )
+    );
   });
 
   return lines.join('\n');
 }
 
 export function renderGateReportHtml(results = [], summary = null) {
-  const rows = results.map((gate) => {
-    const threshold = gate.rule?.threshold ?? '-';
-    const severity = gate.rule?.severity ?? 'info';
-    const value = gate.value === null ? 'N/A' : gate.value;
-    const pass = gate.value === null ? true : gate.value >= threshold;
-    const cls = pass ? 'good' : severity === 'warning' ? 'warn' : 'bad';
-    return `<tr class="${cls}">
+  const rows = results
+    .map((gate) => {
+      const threshold = gate.rule?.threshold ?? '-';
+      const severity = gate.rule?.severity ?? 'info';
+      const value = gate.value === null ? 'N/A' : gate.value;
+      const pass = gate.value === null ? true : gate.value >= threshold;
+      const cls = pass ? 'good' : severity === 'warning' ? 'warn' : 'bad';
+      return `<tr class="${cls}">
       <td>${gate.id}</td>
       <td>${value}</td>
       <td>${threshold}</td>
       <td>${severity}</td>
     </tr>`;
-  }).join('');
+    })
+    .join('');
 
   return `<!doctype html>
 <html>
@@ -94,5 +105,5 @@ export function renderGateReportHtml(results = [], summary = null) {
 export default {
   summarizeGateResults,
   formatGateTable,
-  renderGateReportHtml
+  renderGateReportHtml,
 };

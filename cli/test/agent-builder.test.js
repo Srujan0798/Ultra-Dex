@@ -19,11 +19,11 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
@@ -67,6 +67,9 @@ describe('agent command', () => {
     const result = runCli(['agent', 'show', 'planner'], { cwd: tmpDir });
     assert.match(result.output, /PLANNER Agent/i);
     // It either shows full prompt or link
-    assert.ok(result.output.includes('You are a technical project planner') || result.output.includes('github.com'));
+    assert.ok(
+      result.output.includes('You are a technical project planner') ||
+        result.output.includes('github.com')
+    );
   });
 });

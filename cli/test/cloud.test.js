@@ -42,7 +42,7 @@ describe('Cloud Command', () => {
   describe('Cloud Configuration', () => {
     test('CLOUD_CONFIG has required properties', async () => {
       const cloudModule = await import('../lib/commands/cloud.js');
-      
+
       // Access internal CLOUD_CONFIG if exported, or verify through behavior
       assert.ok(true, 'Cloud config structure verified');
     });
@@ -52,9 +52,9 @@ describe('Cloud Command', () => {
       const expectedPorts = {
         api: 4001,
         websocket: 4002,
-        dashboard: 4003
+        dashboard: 4003,
       };
-      
+
       assert.strictEqual(expectedPorts.api, 4001);
       assert.strictEqual(expectedPorts.websocket, 4002);
       assert.strictEqual(expectedPorts.dashboard, 4003);
@@ -83,9 +83,9 @@ describe('Cloud Command', () => {
         teamId: 'string|null',
         createdAt: 'string',
         expiresAt: 'string',
-        state: 'object'
+        state: 'object',
       };
-      
+
       assert.ok(expectedSessionStructure.id);
       assert.ok(expectedSessionStructure.userId);
       assert.ok(expectedSessionStructure.state);
@@ -119,9 +119,9 @@ describe('Cloud Command', () => {
         members: 'array',
         createdAt: 'string',
         projects: 'array',
-        settings: 'object'
+        settings: 'object',
       };
-      
+
       assert.ok(expectedTeamStructure.id);
       assert.ok(expectedTeamStructure.members);
       assert.ok(expectedTeamStructure.projects);
@@ -137,13 +137,13 @@ describe('Cloud Command', () => {
       // Should add userId to team.members array
       const team = {
         members: ['owner123'],
-        id: 'team_123'
+        id: 'team_123',
       };
-      
+
       if (!team.members.includes('newUser')) {
         team.members.push('newUser');
       }
-      
+
       assert.ok(team.members.includes('newUser'));
     });
 
@@ -165,9 +165,9 @@ describe('Cloud Command', () => {
       const expectedHeaders = [
         'Access-Control-Allow-Origin',
         'Access-Control-Allow-Methods',
-        'Access-Control-Allow-Headers'
+        'Access-Control-Allow-Headers',
       ];
-      
+
       assert.strictEqual(expectedHeaders.length, 3);
       assert.ok(expectedHeaders.includes('Access-Control-Allow-Origin'));
     });
@@ -175,9 +175,9 @@ describe('Cloud Command', () => {
     test('health endpoint returns status', async () => {
       // GET /api/health should return { status: 'ok', version }
       const expectedResponse = {
-        status: 'ok'
+        status: 'ok',
       };
-      
+
       assert.ok(expectedResponse.status);
     });
 
@@ -185,9 +185,9 @@ describe('Cloud Command', () => {
       // POST /api/session with { userId, teamId } should create session
       const requestBody = {
         userId: 'user123',
-        teamId: 'team456'
+        teamId: 'team456',
       };
-      
+
       assert.ok(requestBody.userId);
       assert.ok(requestBody.teamId);
     });
@@ -196,9 +196,9 @@ describe('Cloud Command', () => {
       // POST /api/team with { name, ownerId } should create team
       const requestBody = {
         name: 'Test Team',
-        ownerId: 'owner123'
+        ownerId: 'owner123',
       };
-      
+
       assert.ok(requestBody.name);
       assert.ok(requestBody.ownerId);
     });
@@ -206,9 +206,9 @@ describe('Cloud Command', () => {
     test('state endpoint requires authorization', async () => {
       // GET /api/state requires Bearer token in Authorization header
       const headers = {
-        authorization: 'Bearer sess_123456'
+        authorization: 'Bearer sess_123456',
       };
-      
+
       assert.ok(headers.authorization.startsWith('Bearer '));
     });
   });
@@ -218,9 +218,9 @@ describe('Cloud Command', () => {
       // Based on cloud.js lines 33-36
       const rateLimits = {
         requestsPerMinute: 60,
-        swarmRunsPerHour: 10
+        swarmRunsPerHour: 10,
       };
-      
+
       assert.strictEqual(rateLimits.requestsPerMinute, 60);
       assert.strictEqual(rateLimits.swarmRunsPerHour, 10);
     });
@@ -270,31 +270,34 @@ describe('Cloud Command', () => {
     test('registers cloud command with options', async () => {
       const cloudModule = await import('../lib/commands/cloud.js');
       const { registerCloudCommand } = cloudModule;
-      
+
       const mockProgram = {
-        command: function(name) {
+        command: function (name) {
           this.commandName = name;
           return this;
         },
-        description: function(desc) {
+        description: function (desc) {
           this.commandDescription = desc;
           return this;
         },
-        option: function(flags, description, defaultValue) {
+        option: function (flags, description, defaultValue) {
           if (!this.options) this.options = [];
           this.options.push({ flags, description, defaultValue });
           return this;
         },
-        action: function(fn) {
+        action: function (fn) {
           this.actionFn = fn;
           return this;
-        }
+        },
       };
 
       registerCloudCommand(mockProgram);
-      
+
       assert.strictEqual(mockProgram.commandName, 'cloud');
-      assert.ok(mockProgram.commandDescription.includes('cloud') || mockProgram.commandDescription.includes('hosted'));
+      assert.ok(
+        mockProgram.commandDescription.includes('cloud') ||
+          mockProgram.commandDescription.includes('hosted')
+      );
       assert.ok(mockProgram.options.length >= 3);
       assert.strictEqual(typeof mockProgram.actionFn, 'function');
     });
@@ -302,45 +305,50 @@ describe('Cloud Command', () => {
     test('cloud command has port options', async () => {
       const cloudModule = await import('../lib/commands/cloud.js');
       const { registerCloudCommand } = cloudModule;
-      
+
       const mockProgram = {
         command: () => mockProgram,
         description: () => mockProgram,
         options: [],
-        option: function(flags, description, defaultValue) {
+        option: function (flags, description, defaultValue) {
           this.options.push({ flags, description, defaultValue });
           return this;
         },
-        action: () => mockProgram
+        action: () => mockProgram,
       };
 
       registerCloudCommand(mockProgram);
-      
-      const apiPortOption = mockProgram.options.find(o => o.flags.includes('--api-port'));
-      const wsPortOption = mockProgram.options.find(o => o.flags.includes('--ws-port'));
-      const dashboardPortOption = mockProgram.options.find(o => o.flags.includes('--dashboard-port'));
-      
-      assert.ok(apiPortOption || mockProgram.options.some(o => o.flags.includes('port')), 'Should have API port option');
+
+      const apiPortOption = mockProgram.options.find((o) => o.flags.includes('--api-port'));
+      const wsPortOption = mockProgram.options.find((o) => o.flags.includes('--ws-port'));
+      const dashboardPortOption = mockProgram.options.find((o) =>
+        o.flags.includes('--dashboard-port')
+      );
+
+      assert.ok(
+        apiPortOption || mockProgram.options.some((o) => o.flags.includes('port')),
+        'Should have API port option'
+      );
     });
 
     test('cloud command has no-dashboard option', async () => {
       const cloudModule = await import('../lib/commands/cloud.js');
       const { registerCloudCommand } = cloudModule;
-      
+
       const mockProgram = {
         command: () => mockProgram,
         description: () => mockProgram,
         options: [],
-        option: function(flags, description, defaultValue) {
+        option: function (flags, description, defaultValue) {
           this.options.push({ flags, description, defaultValue });
           return this;
         },
-        action: () => mockProgram
+        action: () => mockProgram,
       };
 
       registerCloudCommand(mockProgram);
-      
-      const noDashboardOption = mockProgram.options.find(o => o.flags.includes('--no-dashboard'));
+
+      const noDashboardOption = mockProgram.options.find((o) => o.flags.includes('--no-dashboard'));
       assert.ok(noDashboardOption || true, 'May have no-dashboard option');
     });
   });
@@ -348,7 +356,7 @@ describe('Cloud Command', () => {
   describe('Integration Tests', () => {
     test('cloud module loads all components', async () => {
       const cloudModule = await import('../lib/commands/cloud.js');
-      
+
       assert.ok(cloudModule, 'Module loads');
       assert.ok(cloudModule.registerCloudCommand, 'Has register function');
     });
@@ -358,15 +366,15 @@ describe('Cloud Command', () => {
       const team = {
         id: 'team_123',
         name: 'Test Team',
-        members: ['owner123']
+        members: ['owner123'],
       };
-      
+
       const session = {
         id: 'sess_456',
         userId: 'member123',
-        teamId: team.id
+        teamId: team.id,
       };
-      
+
       assert.strictEqual(session.teamId, team.id);
     });
   });

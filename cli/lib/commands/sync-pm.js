@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Project Management Integrations for Ultra-Dex
  * Sync tasks with Linear, GitHub Issues, Jira, Notion
@@ -22,37 +24,40 @@ async function parseImplementationPlan(planPath) {
   try {
     const content = await fs.readFile(planPath, 'utf8');
     const tasks = [];
-    
+
     // Extract tasks from markdown tables (simplified parser)
     const lines = content.split('\n');
     let currentPhase = '';
-    
+
     for (const line of lines) {
       // Detect phase headers
       if (line.startsWith('## Sprint ') || line.startsWith('### Phase ')) {
         currentPhase = line.replace(/^#+\s+/, '').trim();
       }
-      
+
       // Parse task rows from tables
       if (line.startsWith('|') && line.includes('☐')) {
-        const parts = line.split('|').map(p => p.trim()).filter(Boolean);
+        const parts = line
+          .split('|')
+          .map((p) => p.trim())
+          .filter(Boolean);
         if (parts.length >= 2) {
           const taskText = parts[1].replace('☐', '').trim();
           const priority = parts[2] || 'P1';
           const status = parts[3] || 'todo';
-          
+
           if (taskText) {
             tasks.push({
               title: taskText,
               phase: currentPhase,
               priority: priority,
               status: status === 'done' || status === 'completed' ? 'completed' : 'todo',
-              source: 'implementation-plan'
+              source: 'implementation-plan',
             });
           }
         }
       }
-      
+
       // Parse checklist items
       if (line.match(/^\s*- \[([ x])\]\s+(.+)$/)) {
         const match = line.match(/^\s*- \[([ x])\]\s+(.+)$/);
@@ -62,12 +67,12 @@ async function parseImplementationPlan(planPath) {
             phase: currentPhase,
             priority: 'P2',
             status: match[1] === 'x' ? 'completed' : 'todo',
-            source: 'checklist'
+            source: 'checklist',
           });
         }
       }
     }
-    
+
     return tasks;
   } catch (error) {
     printError(chalk.red('Error parsing plan:'), error.message);
@@ -120,10 +125,10 @@ async function syncWithLinear(tasks, options) {
       const response = await fetch('https://api.linear.app/graphql', {
         method: 'POST',
         headers: {
-          'Authorization': apiKey,
-          'Content-Type': 'application/json'
+          Authorization: apiKey,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query })
+        body: JSON.stringify({ query }),
       });
 
       const data = await response.json();
@@ -192,8 +197,12 @@ async function syncWithGitHub(tasks, options) {
   for (const task of tasks) {
     try {
       // Map priority to GitHub labels
-      const priorityLabel = task.priority === 'P0' ? 'priority-critical' :
-                           task.priority === 'P1' ? 'priority-high' : 'priority-medium';
+      const priorityLabel =
+        task.priority === 'P0'
+          ? 'priority-critical'
+          : task.priority === 'P1'
+            ? 'priority-high'
+            : 'priority-medium';
       const allLabels = [...labels, priorityLabel];
 
       const body = `
@@ -215,14 +224,14 @@ Generated from Ultra-Dex implementation plan
       const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
         method: 'POST',
         headers: {
-          'Authorization': `token ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `token ${token}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           title: task.title,
           body: body,
-          labels: allLabels
-        })
+          labels: allLabels,
+        }),
       });
 
       if (response.ok) {
@@ -247,7 +256,7 @@ async function exportToJson(tasks, outputPath) {
   const data = {
     exported_at: new Date().toISOString(),
     total_tasks: tasks.length,
-    tasks: tasks
+    tasks: tasks,
   };
 
   await fs.writeFile(outputPath, JSON.stringify(data, null, 2));
@@ -283,7 +292,7 @@ program
       const table = new Table({
         head: ['#', 'Phase', 'Task', 'Priority', 'Status'],
         colWidths: [5, 25, 40, 10, 12],
-        style: { head: ['cyan'] }
+        style: { head: ['cyan'] },
       });
 
       tasks.slice(0, 20).forEach((task, i) => {
@@ -292,7 +301,7 @@ program
           task.phase.substring(0, 23),
           task.title.substring(0, 38),
           task.priority,
-          task.status
+          task.status,
         ]);
       });
 
@@ -332,7 +341,6 @@ program
         printInfo(chalk.gray('  ultra-dex sync --json tasks.json'));
         printInfo('');
       }
-
     } catch (error) {
       printError(chalk.red('❌ Error:'), error.message);
       process.exit(1);
@@ -349,15 +357,17 @@ program
   .action(async (planPath, options) => {
     try {
       const tasks = await parseImplementationPlan(planPath);
-      
+
       let filtered = tasks;
       if (options.status !== 'all') {
-        filtered = filtered.filter(t => t.status === options.status);
+        filtered = filtered.filter((t) => t.status === options.status);
       }
       if (options.phase) {
-        filtered = filtered.filter(t => t.phase.toLowerCase().includes(options.phase.toLowerCase()));
+        filtered = filtered.filter((t) =>
+          t.phase.toLowerCase().includes(options.phase.toLowerCase())
+        );
       }
-      
+
       printInfo(chalk.cyan(`\n📋 Tasks (${filtered.length}/${tasks.length}):\n`));
 
       filtered.forEach((task, _i) => {

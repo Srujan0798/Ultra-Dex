@@ -1,17 +1,17 @@
-"use client"
+'use client';
 
-import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, LogOut, User } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Sparkles, LogOut, User } from 'lucide-react';
 
 interface DashboardHeaderProps {
   user: any;
@@ -39,19 +39,15 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
-                  <AvatarFallback>
-                    {user?.name?.charAt(0).toUpperCase() || "U"}
-                  </AvatarFallback>
+                  <AvatarImage src={user?.image || ''} alt={user?.name || ''} />
+                  <AvatarFallback>{user?.name?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuItem className="flex flex-col items-start">
                 <div className="text-sm font-medium">{user?.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {user?.email}
-                </div>
+                <div className="text-xs text-muted-foreground">{user?.email}</div>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

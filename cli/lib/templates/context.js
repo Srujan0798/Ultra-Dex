@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { githubBlobUrl, githubWebUrl } from '../config/urls.js';
 
 export const CONTEXT_TEMPLATE = `# {{PROJECT_NAME}} - Context

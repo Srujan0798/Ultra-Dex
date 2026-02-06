@@ -29,7 +29,10 @@ async function testCommandImport(commandPath, functionName) {
 describe('Large Commands - Smoke Tests', () => {
   describe('scaffold-enhanced command', () => {
     test('should load module without critical errors', async () => {
-      const result = await testCommandImport('../../lib/commands/scaffold-enhanced.js', 'registerScaffoldEnhancedCommand');
+      const result = await testCommandImport(
+        '../../lib/commands/scaffold-enhanced.js',
+        'registerScaffoldEnhancedCommand'
+      );
       assert.ok(result.success);
     });
   });
@@ -43,28 +46,40 @@ describe('Large Commands - Smoke Tests', () => {
 
   describe('dashboard command', () => {
     test('should load module without critical errors', async () => {
-      const result = await testCommandImport('../../lib/commands/dashboard.js', 'registerDashboardCommand');
+      const result = await testCommandImport(
+        '../../lib/commands/dashboard.js',
+        'registerDashboardCommand'
+      );
       assert.ok(result.success);
     });
   });
 
   describe('export command', () => {
     test('should load module without critical errors', async () => {
-      const result = await testCommandImport('../../lib/commands/export.js', 'registerExportCommand');
+      const result = await testCommandImport(
+        '../../lib/commands/export.js',
+        'registerExportCommand'
+      );
       assert.ok(result.success);
     });
   });
 
   describe('code-gen command', () => {
     test('should load module without critical errors', async () => {
-      const result = await testCommandImport('../../lib/commands/code-gen.js', 'registerCodeGenCommand');
+      const result = await testCommandImport(
+        '../../lib/commands/code-gen.js',
+        'registerCodeGenCommand'
+      );
       assert.ok(result.success);
     });
   });
 
   describe('deploy command', () => {
     test('should load module without critical errors', async () => {
-      const result = await testCommandImport('../../lib/commands/deploy.js', 'registerDeployCommand');
+      const result = await testCommandImport(
+        '../../lib/commands/deploy.js',
+        'registerDeployCommand'
+      );
       assert.ok(result.success);
     });
   });
@@ -85,7 +100,10 @@ describe('Large Commands - Smoke Tests', () => {
 
   describe('search command', () => {
     test('should load module without critical errors', async () => {
-      const result = await testCommandImport('../../lib/commands/search.js', 'registerSearchCommand');
+      const result = await testCommandImport(
+        '../../lib/commands/search.js',
+        'registerSearchCommand'
+      );
       assert.ok(result.success);
     });
   });
@@ -99,7 +117,10 @@ describe('Large Commands - Smoke Tests', () => {
 
   describe('quality command', () => {
     test('should load module without critical errors', async () => {
-      const result = await testCommandImport('../../lib/commands/quality.js', 'registerQualityCommand');
+      const result = await testCommandImport(
+        '../../lib/commands/quality.js',
+        'registerQualityCommand'
+      );
       assert.ok(result.success);
     });
   });
@@ -113,7 +134,10 @@ describe('Large Commands - Smoke Tests', () => {
 
   describe('scaffold-plan command', () => {
     test('should load module without critical errors', async () => {
-      const result = await testCommandImport('../../lib/commands/scaffold-plan.js', 'registerScaffoldPlanCommand');
+      const result = await testCommandImport(
+        '../../lib/commands/scaffold-plan.js',
+        'registerScaffoldPlanCommand'
+      );
       assert.ok(result.success);
     });
   });

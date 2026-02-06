@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * SQLite-backed Vector Store (local)
  */
@@ -10,7 +12,8 @@ import { embedText } from './embeddings.js';
 
 export class VectorStore {
   constructor(options = {}) {
-    this.storagePath = options.storagePath || path.resolve(process.cwd(), '.ultra-dex', 'memory.db');
+    this.storagePath =
+      options.storagePath || path.resolve(process.cwd(), '.ultra-dex', 'memory.db');
     this.db = null;
   }
 
@@ -35,7 +38,7 @@ export class VectorStore {
       text,
       embedding: JSON.stringify(embedding),
       metadata: JSON.stringify(metadata),
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
     await this.db.run(
       `INSERT OR REPLACE INTO vectors (id, text, embedding, metadata, created_at)
@@ -51,9 +54,9 @@ export class VectorStore {
 
   async list(limit = 50) {
     const rows = await this.db.all(`SELECT * FROM vectors ORDER BY created_at DESC LIMIT ?`, limit);
-    return rows.map(row => ({
+    return rows.map((row) => ({
       ...row,
-      metadata: safeJson(row.metadata)
+      metadata: safeJson(row.metadata),
     }));
   }
 
@@ -64,15 +67,13 @@ export class VectorStore {
   async query(queryText, limit = 5) {
     const queryEmbedding = embedText(queryText);
     const rows = await this.db.all(`SELECT * FROM vectors`);
-    const scored = rows.map(row => {
+    const scored = rows.map((row) => {
       const embedding = JSON.parse(row.embedding);
       const score = cosineSimilarity(queryEmbedding, embedding);
       return { ...row, score, metadata: safeJson(row.metadata) };
     });
 
-    return scored
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+    return scored.sort((a, b) => b.score - a.score).slice(0, limit);
   }
 
   async clear({ olderThan = null } = {}) {

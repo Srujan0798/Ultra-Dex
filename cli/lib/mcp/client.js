@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * MCP Client - Consume External MCP Servers
  * This allows Ultra-Dex to connect to GitHub MCP, Linear MCP, Notion MCP, etc.
@@ -167,35 +169,37 @@ export class MCPConnection extends EventEmitter {
           name: 'ultra-dex',
           version: VERSION,
         },
-      }).then(async (result) => {
-        clearTimeout(timeout);
-        this.connected = true;
+      })
+        .then(async (result) => {
+          clearTimeout(timeout);
+          this.connected = true;
 
-        // Send initialized notification
-        this._sendNotification('notifications/initialized', {});
+          // Send initialized notification
+          this._sendNotification('notifications/initialized', {});
 
-        // List available tools
-        try {
-          const toolsResult = await this._sendRequest('tools/list', {});
-          this.tools = toolsResult.tools || [];
-        } catch {
-          this.tools = [];
-        }
+          // List available tools
+          try {
+            const toolsResult = await this._sendRequest('tools/list', {});
+            this.tools = toolsResult.tools || [];
+          } catch {
+            this.tools = [];
+          }
 
-        // List available resources
-        try {
-          const resourcesResult = await this._sendRequest('resources/list', {});
-          this.resources = resourcesResult.resources || [];
-        } catch {
-          this.resources = [];
-        }
+          // List available resources
+          try {
+            const resourcesResult = await this._sendRequest('resources/list', {});
+            this.resources = resourcesResult.resources || [];
+          } catch {
+            this.resources = [];
+          }
 
-        resolve({
-          tools: this.tools,
-          resources: this.resources,
-          serverInfo: result.serverInfo,
-        });
-      }).catch(reject);
+          resolve({
+            tools: this.tools,
+            resources: this.resources,
+            serverInfo: result.serverInfo,
+          });
+        })
+        .catch(reject);
     });
   }
 
@@ -220,7 +224,9 @@ export class MCPConnection extends EventEmitter {
     }
 
     if (!this.connected) {
-      throw new AppError(`Not connected to MCP server: ${this.config.name}`, { code: 'MCP_NOT_CONNECTED' });
+      throw new AppError(`Not connected to MCP server: ${this.config.name}`, {
+        code: 'MCP_NOT_CONNECTED',
+      });
     }
 
     return this._sendRequest('tools/call', {
@@ -238,7 +244,9 @@ export class MCPConnection extends EventEmitter {
     }
 
     if (!this.connected) {
-      throw new AppError(`Not connected to MCP server: ${this.config.name}`, { code: 'MCP_NOT_CONNECTED' });
+      throw new AppError(`Not connected to MCP server: ${this.config.name}`, {
+        code: 'MCP_NOT_CONNECTED',
+      });
     }
 
     return this._sendRequest('resources/read', { uri });
@@ -383,7 +391,11 @@ export class MCPHub {
         }, 100);
         setTimeout(() => {
           clearInterval(check);
-          reject(new AppError(`Timeout waiting for ${serverName} to connect`, { code: 'MCP_HUB_TIMEOUT' }));
+          reject(
+            new AppError(`Timeout waiting for ${serverName} to connect`, {
+              code: 'MCP_HUB_TIMEOUT',
+            })
+          );
         }, 35000);
       });
     }
@@ -402,7 +414,7 @@ export class MCPHub {
       this.connections.set(serverName, connection);
 
       logger.success(`Connected to ${config.name}`);
-      logger.debug(`  Tools: ${result.tools.map(t => t.name).join(', ') || 'none'}`);
+      logger.debug(`  Tools: ${result.tools.map((t) => t.name).join(', ') || 'none'}`);
 
       return connection;
     } catch (err) {
@@ -433,7 +445,7 @@ export class MCPHub {
    * Disconnect from all servers
    */
   async disconnectAll() {
-    const disconnects = Array.from(this.connections.keys()).map(name => this.disconnect(name));
+    const disconnects = Array.from(this.connections.keys()).map((name) => this.disconnect(name));
     await Promise.all(disconnects);
   }
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Agent2Agent Protocol (JSON-RPC 2.0)
  */
@@ -8,7 +10,7 @@ export const COMM_RULES = [
   'Sign work with agent name',
   'Update state.json after changes',
   'Comment WHY, not just WHAT',
-  'Respect directory ownership'
+  'Respect directory ownership',
 ];
 
 export function createMessage(method, params = {}, id = null) {
@@ -16,7 +18,7 @@ export function createMessage(method, params = {}, id = null) {
     jsonrpc: '2.0',
     method,
     params,
-    id: id || `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+    id: id || `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
   };
 }
 
@@ -27,19 +29,25 @@ export function validateMessage(message) {
   return { valid: true };
 }
 
-export function buildStateUpdate({ version, lastUpdated, activeAgents = [], completedTasks = [], pendingTasks = [] }) {
+export function buildStateUpdate({
+  version,
+  lastUpdated,
+  activeAgents = [],
+  completedTasks = [],
+  pendingTasks = [],
+}) {
   return {
     version,
     lastUpdated: lastUpdated || new Date().toISOString(),
     activeAgents,
     completedTasks,
-    pendingTasks
+    pendingTasks,
   };
 }
 
 export function detectConflicts(changesA = [], changesB = []) {
   const setA = new Set(changesA);
-  const conflicts = changesB.filter(file => setA.has(file));
+  const conflicts = changesB.filter((file) => setA.has(file));
   return conflicts;
 }
 
@@ -56,5 +64,5 @@ export class AgentProtocolBus extends EventEmitter {
 export default {
   createMessage,
   validateMessage,
-  AgentProtocolBus
+  AgentProtocolBus,
 };

@@ -32,6 +32,7 @@ Ultra-Dex provides **16 specialized AI agents** organized in **6 tiers**. Each a
 **Agents Used:** 7 agents across all tiers
 
 **Prerequisites:**
+
 - Ultra-Dex initialized (`npx ultra-dex init`)
 - Your AI tool ready (Claude Code, Cursor, ChatGPT, etc.)
 
@@ -559,6 +560,7 @@ Handoff to Team:
 ## 📊 What You Just Built
 
 **In 30 minutes, you orchestrated 7 agents to build:**
+
 - ✅ Database schema (User table)
 - ✅ 4 API endpoints (signup, login, me, logout)
 - ✅ 4 UI components (signup form, login form, protected routes, logout)
@@ -567,6 +569,7 @@ Handoff to Team:
 - ✅ Deployed to production
 
 **Agents Used:**
+
 1. @Planner - Broke down feature into tasks
 2. @CTO - Approved architecture
 3. @Database - Created schema
@@ -589,6 +592,7 @@ Handoff to Team:
 #### 1. Leadership Tier (Planning & Architecture)
 
 **@Planner** - Start here for ANY feature
+
 ```
 Use when: Starting any new feature
 Input: Feature description
@@ -597,6 +601,7 @@ Next: @CTO for architecture review
 ```
 
 **@CTO** - Architecture decisions
+
 ```
 Use when: Need to decide tech stack, API design, data model
 Input: Feature requirements from @Planner
@@ -605,6 +610,7 @@ Next: @Database, @Backend, or @Frontend
 ```
 
 **@Research** - Technology evaluation
+
 ```
 Use when: Choosing between frameworks, libraries, tools
 Input: Problem to solve, options to compare
@@ -617,6 +623,7 @@ Next: @CTO for final decision
 #### 2. Development Tier (Implementation)
 
 **@Database** - Schema design
+
 ```
 Use when: Need to create/modify database schema
 Input: Data requirements from @CTO
@@ -625,6 +632,7 @@ Next: @Backend (to use the schema)
 ```
 
 **@Backend** - API development
+
 ```
 Use when: Need to build server logic, API endpoints
 Input: Database schema from @Database, requirements from @CTO
@@ -633,6 +641,7 @@ Next: @Frontend (to consume API) or @Testing
 ```
 
 **@Frontend** - UI development
+
 ```
 Use when: Need to build user interface, components
 Input: API contract from @Backend, design requirements
@@ -645,6 +654,7 @@ Next: @Testing or @Reviewer
 #### 3. Security Tier (Authentication & Audits)
 
 **@Auth** - Authentication implementation
+
 ```
 Use when: Building login, signup, sessions, permissions
 Input: Requirements from @CTO
@@ -653,6 +663,7 @@ Next: @Security for audit
 ```
 
 **@Security** - Security audits
+
 ```
 Use when: Before deploying ANY feature (mandatory)
 Input: Code from @Backend, @Frontend, @Auth
@@ -665,6 +676,7 @@ Next: @Reviewer or @DevOps (if approved)
 #### 4. DevOps Tier (Deployment)
 
 **@DevOps** - Infrastructure & deployment
+
 ```
 Use when: Ready to deploy (after @Reviewer approval)
 Input: Approved code, environment requirements
@@ -677,6 +689,7 @@ Next: Monitoring and maintenance
 #### 5. Quality Tier (Testing & Review)
 
 **@Testing** - Test automation
+
 ```
 Use when: After ANY code is written (mandatory)
 Input: Code from @Backend, @Frontend, @Database
@@ -685,6 +698,7 @@ Next: @Reviewer
 ```
 
 **@Documentation** - Technical writing
+
 ```
 Use when: Need to update docs (README, API docs, guides)
 Input: New features, API changes
@@ -693,6 +707,7 @@ Next: @Reviewer
 ```
 
 **@Reviewer** - Code review
+
 ```
 Use when: Before merging ANY code (mandatory)
 Input: Code + tests from any agent
@@ -701,6 +716,7 @@ Next: @DevOps (if approved) or back to developer agent
 ```
 
 **@Debugger** - Bug fixing
+
 ```
 Use when: Something breaks in production or dev
 Input: Bug report, error logs
@@ -713,6 +729,7 @@ Next: @Testing (add regression test), then @Reviewer
 #### 6. Specialist Tier (Optimization)
 
 **@Performance** - Performance optimization
+
 ```
 Use when: Feature works but is slow
 Input: Performance metrics, slow endpoints/pages
@@ -721,6 +738,7 @@ Next: @Testing (verify no breakage), then @Reviewer
 ```
 
 **@Refactoring** - Code quality improvement
+
 ```
 Use when: Code works but is messy, duplicated, or hard to maintain
 Input: Existing code that needs cleanup
@@ -883,6 +901,7 @@ Timeline: 1 hour (vs 4 hours manual)
 **Solution:** Break it down smaller with @Planner
 
 **Example:** Instead of "Build entire dashboard", break it into:
+
 - Task 1: Dashboard layout
 - Task 2: Chart component
 - Task 3: Data fetching
@@ -931,6 +950,7 @@ All three update PHASE-TRACKER.md with progress
 ```
 
 **Benefits:**
+
 - 3x faster development
 - Each agent focuses on their specialty
 - Shared context prevents conflicts
@@ -940,15 +960,18 @@ All three update PHASE-TRACKER.md with progress
 ## Next Steps
 
 **Just finished this guide?**
+
 1. ✅ Create your `PHASE-TRACKER.md` (see [templates/PHASE-TRACKER-TEMPLATE.md](../templates/PHASE-TRACKER-TEMPLATE.md))
 2. ✅ Copy the authentication workflow above and adapt to your project
 3. ✅ Join the Ultra-Dex community for support
 
 **Want more examples?**
+
 - [Workflow Examples](../Orchestration/EXAMPLES.md)
 - [Orchestration Overview](../Orchestration/README.md)
 
 **Need templates?**
+
 - [Phase Tracker Template](../templates/PHASE-TRACKER-TEMPLATE.md)
 - [Master Plan Template](../templates/MASTER-PLAN-TEMPLATE.md)
 
@@ -964,4 +987,4 @@ All three update PHASE-TRACKER.md with progress
 
 ---
 
-*Ultra-Dex v1.7.0 - The only framework that shows you HOW to coordinate AI agents*
+_Ultra-Dex v1.7.0 - The only framework that shows you HOW to coordinate AI agents_

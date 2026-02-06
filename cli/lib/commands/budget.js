@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import { loadBudget, saveBudget, recordSpend } from '../commerce/budget.js';
@@ -7,9 +9,7 @@ import { printInfo, printSuccess, printWarning, printError } from '../utils/outp
 import { checkBudgets, setBudget as setPerfBudget } from '../perf/budget-checker.js';
 
 export function registerBudgetCommand(program) {
-  const budget = program
-    .command('budget')
-    .description('Manage budget limits and usage');
+  const budget = program.command('budget').description('Manage budget limits and usage');
 
   budget
     .command('set [operation] [ms]')

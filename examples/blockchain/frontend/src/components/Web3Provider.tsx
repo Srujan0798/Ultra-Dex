@@ -1,21 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import {
-  RainbowKitProvider,
-  getDefaultWallets,
-  getDefaultConfig,
-} from '@rainbow-me/rainbowkit';
-import {
-  argentWallet,
-  trustWallet,
-  ledgerWallet,
-} from '@rainbow-me/rainbowkit/wallets';
-import {
-  mainnet,
-  sepolia,
-  hardhat,
-} from 'wagmi/chains';
+import { RainbowKitProvider, getDefaultWallets, getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { argentWallet, trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets';
+import { mainnet, sepolia, hardhat } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
 
@@ -34,11 +22,7 @@ const config = getDefaultConfig({
       wallets: [argentWallet, trustWallet, ledgerWallet],
     },
   ],
-  chains: [
-    mainnet,
-    sepolia,
-    hardhat,
-  ],
+  chains: [mainnet, sepolia, hardhat],
   ssr: true,
 });
 

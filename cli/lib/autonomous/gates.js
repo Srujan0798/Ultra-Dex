@@ -1,7 +1,9 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export const AUTONOMOUS_GATES = [
   { id: 'architecture', description: 'Architecture approval required' },
   { id: 'security', description: 'Security review required' },
-  { id: 'deploy', description: 'Deploy confirmation required' }
+  { id: 'deploy', description: 'Deploy confirmation required' },
 ];
 
 export function requireGateApproval(gateId, approvals = []) {

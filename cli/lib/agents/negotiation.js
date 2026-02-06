@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Agent negotiation utilities
  */
@@ -12,8 +14,8 @@ export function requestTaskAssignment({ from, to, task, priority = 'medium', dea
     payload: {
       task,
       priority,
-      deadline
-    }
+      deadline,
+    },
   });
 }
 
@@ -22,7 +24,7 @@ export function respondToAssignment({ from, to, accepted, reason = null }) {
     from,
     to,
     accepted,
-    reason
+    reason,
   });
 }
 
@@ -31,12 +33,12 @@ export function resolveConflict({ from, to, conflict, resolution }) {
     from,
     to,
     conflict,
-    resolution
+    resolution,
   });
 }
 
 export default {
   requestTaskAssignment,
   respondToAssignment,
-  resolveConflict
+  resolveConflict,
 };

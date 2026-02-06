@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Deployment Automation
@@ -132,7 +133,7 @@ output "ecs_cluster_name" {
   description = "ECS Cluster name"
   value       = aws_ecs_cluster.main.name
 }
-`
+`,
 };
 
 // Docker templates
@@ -263,7 +264,7 @@ README.md
 CHANGELOG.md
 Dockerfile.dev
 docker-compose.override.yml
-`
+`,
 };
 
 // Kubernetes templates
@@ -380,7 +381,7 @@ metadata:
   name: {{PROJECT_NAME}}
   labels:
     name: {{PROJECT_NAME}}
-`
+`,
 };
 
 // GitHub Actions templates
@@ -455,23 +456,23 @@ jobs:
       run: |
         kubectl apply -f k8s/
         kubectl rollout status deployment/{{PROJECT_NAME}}
-`
+`,
 };
 
 // Generate deployment configurations
 async function generateTerraform(projectPath, config) {
   const spinner = ora('Generating Terraform configuration...').start();
-  
+
   try {
     const tfDir = path.join(projectPath, 'infrastructure', 'terraform');
     await fs.mkdir(tfDir, { recursive: true });
-    
+
     // Replace placeholders
     const replacements = {
       '{{PROJECT_NAME}}': config.projectName,
-      '{{REGION}}': config.region || 'us-east-1'
+      '{{REGION}}': config.region || 'us-east-1',
     };
-    
+
     const replacePlaceholders = (template) => {
       let result = template;
       for (const [key, value] of Object.entries(replacements)) {
@@ -479,11 +480,17 @@ async function generateTerraform(projectPath, config) {
       }
       return result;
     };
-    
+
     await fs.writeFile(path.join(tfDir, 'main.tf'), replacePlaceholders(TERRAFORM_TEMPLATES.main));
-    await fs.writeFile(path.join(tfDir, 'variables.tf'), replacePlaceholders(TERRAFORM_TEMPLATES.variables));
-    await fs.writeFile(path.join(tfDir, 'outputs.tf'), replacePlaceholders(TERRAFORM_TEMPLATES.outputs));
-    
+    await fs.writeFile(
+      path.join(tfDir, 'variables.tf'),
+      replacePlaceholders(TERRAFORM_TEMPLATES.variables)
+    );
+    await fs.writeFile(
+      path.join(tfDir, 'outputs.tf'),
+      replacePlaceholders(TERRAFORM_TEMPLATES.outputs)
+    );
+
     spinner.succeed(chalk.green('Terraform configuration generated'));
     return true;
   } catch (error) {
@@ -494,12 +501,12 @@ async function generateTerraform(projectPath, config) {
 
 async function generateDocker(projectPath, config) {
   const spinner = ora('Generating Docker configuration...').start();
-  
+
   try {
     const replacements = {
-      '{{PROJECT_NAME}}': config.projectName
+      '{{PROJECT_NAME}}': config.projectName,
     };
-    
+
     const replacePlaceholders = (template) => {
       let result = template;
       for (const [key, value] of Object.entries(replacements)) {
@@ -507,11 +514,17 @@ async function generateDocker(projectPath, config) {
       }
       return result;
     };
-    
-    await fs.writeFile(path.join(projectPath, 'Dockerfile'), replacePlaceholders(DOCKER_TEMPLATES.dockerfile));
-    await fs.writeFile(path.join(projectPath, 'docker-compose.yml'), replacePlaceholders(DOCKER_TEMPLATES.dockerCompose));
+
+    await fs.writeFile(
+      path.join(projectPath, 'Dockerfile'),
+      replacePlaceholders(DOCKER_TEMPLATES.dockerfile)
+    );
+    await fs.writeFile(
+      path.join(projectPath, 'docker-compose.yml'),
+      replacePlaceholders(DOCKER_TEMPLATES.dockerCompose)
+    );
     await fs.writeFile(path.join(projectPath, '.dockerignore'), DOCKER_TEMPLATES.dockerIgnore);
-    
+
     spinner.succeed(chalk.green('Docker configuration generated'));
     return true;
   } catch (error) {
@@ -522,16 +535,16 @@ async function generateDocker(projectPath, config) {
 
 async function generateKubernetes(projectPath, config) {
   const spinner = ora('Generating Kubernetes manifests...').start();
-  
+
   try {
     const k8sDir = path.join(projectPath, 'k8s');
     await fs.mkdir(k8sDir, { recursive: true });
-    
+
     const replacements = {
       '{{PROJECT_NAME}}': config.projectName,
-      '{{DOMAIN}}': config.domain || 'example.com'
+      '{{DOMAIN}}': config.domain || 'example.com',
     };
-    
+
     const replacePlaceholders = (template) => {
       let result = template;
       for (const [key, value] of Object.entries(replacements)) {
@@ -539,13 +552,28 @@ async function generateKubernetes(projectPath, config) {
       }
       return result;
     };
-    
-    await fs.writeFile(path.join(k8sDir, 'namespace.yaml'), replacePlaceholders(K8S_TEMPLATES.namespace));
-    await fs.writeFile(path.join(k8sDir, 'deployment.yaml'), replacePlaceholders(K8S_TEMPLATES.deployment));
-    await fs.writeFile(path.join(k8sDir, 'service.yaml'), replacePlaceholders(K8S_TEMPLATES.service));
-    await fs.writeFile(path.join(k8sDir, 'ingress.yaml'), replacePlaceholders(K8S_TEMPLATES.ingress));
-    await fs.writeFile(path.join(k8sDir, 'secrets.yaml'), replacePlaceholders(K8S_TEMPLATES.secrets));
-    
+
+    await fs.writeFile(
+      path.join(k8sDir, 'namespace.yaml'),
+      replacePlaceholders(K8S_TEMPLATES.namespace)
+    );
+    await fs.writeFile(
+      path.join(k8sDir, 'deployment.yaml'),
+      replacePlaceholders(K8S_TEMPLATES.deployment)
+    );
+    await fs.writeFile(
+      path.join(k8sDir, 'service.yaml'),
+      replacePlaceholders(K8S_TEMPLATES.service)
+    );
+    await fs.writeFile(
+      path.join(k8sDir, 'ingress.yaml'),
+      replacePlaceholders(K8S_TEMPLATES.ingress)
+    );
+    await fs.writeFile(
+      path.join(k8sDir, 'secrets.yaml'),
+      replacePlaceholders(K8S_TEMPLATES.secrets)
+    );
+
     spinner.succeed(chalk.green('Kubernetes manifests generated'));
     return true;
   } catch (error) {
@@ -556,15 +584,15 @@ async function generateKubernetes(projectPath, config) {
 
 async function generateGitHubActions(projectPath, config) {
   const spinner = ora('Generating GitHub Actions workflow...').start();
-  
+
   try {
     const workflowsDir = path.join(projectPath, '.github', 'workflows');
     await fs.mkdir(workflowsDir, { recursive: true });
-    
+
     const replacements = {
-      '{{PROJECT_NAME}}': config.projectName
+      '{{PROJECT_NAME}}': config.projectName,
     };
-    
+
     const replacePlaceholders = (template) => {
       let result = template;
       for (const [key, value] of Object.entries(replacements)) {
@@ -572,9 +600,12 @@ async function generateGitHubActions(projectPath, config) {
       }
       return result;
     };
-    
-    await fs.writeFile(path.join(workflowsDir, 'deploy.yml'), replacePlaceholders(GITHUB_ACTIONS_TEMPLES.deploy));
-    
+
+    await fs.writeFile(
+      path.join(workflowsDir, 'deploy.yml'),
+      replacePlaceholders(GITHUB_ACTIONS_TEMPLES.deploy)
+    );
+
     spinner.succeed(chalk.green('GitHub Actions workflow generated'));
     return true;
   } catch (error) {
@@ -613,7 +644,9 @@ export function registerDeployCommand(program) {
 
         // Validate project name if provided
         if (options.name && !/^[a-z0-9-]+$/i.test(options.name)) {
-          printError(chalk.red('❌ Error: Project name must contain only letters, numbers, and hyphens.'));
+          printError(
+            chalk.red('❌ Error: Project name must contain only letters, numbers, and hyphens.')
+          );
           process.exitCode = 1;
           process.exit(process.exitCode);
         }
@@ -632,16 +665,20 @@ export function registerDeployCommand(program) {
         const config = {
           projectName,
           region: options.region,
-          domain: options.domain || `${projectName}.com`
+          domain: options.domain || `${projectName}.com`,
         };
 
         const results = [];
 
         // Determine what to generate
-        const generateAll = options.all || (!options.terraform && !options.docker && !options.k8s && !options.ci);
+        const generateAll =
+          options.all || (!options.terraform && !options.docker && !options.k8s && !options.ci);
 
         if (generateAll || options.terraform) {
-          results.push({ name: 'Terraform', success: await generateTerraform(projectPath, config) });
+          results.push({
+            name: 'Terraform',
+            success: await generateTerraform(projectPath, config),
+          });
         }
 
         if (generateAll || options.docker) {
@@ -649,22 +686,28 @@ export function registerDeployCommand(program) {
         }
 
         if (generateAll || options.k8s) {
-          results.push({ name: 'Kubernetes', success: await generateKubernetes(projectPath, config) });
+          results.push({
+            name: 'Kubernetes',
+            success: await generateKubernetes(projectPath, config),
+          });
         }
 
         if (generateAll || options.ci) {
-          results.push({ name: 'GitHub Actions', success: await generateGitHubActions(projectPath, config) });
+          results.push({
+            name: 'GitHub Actions',
+            success: await generateGitHubActions(projectPath, config),
+          });
         }
 
         // Summary
         printInfo(chalk.blue('\n📊 Generation Summary\n'));
 
-        results.forEach(result => {
+        results.forEach((result) => {
           const icon = result.success ? chalk.green('✓') : chalk.red('✗');
           printInfo(`${icon} ${result.name}`);
         });
 
-        const allSuccess = results.every(r => r.success);
+        const allSuccess = results.every((r) => r.success);
 
         if (allSuccess) {
           printSuccess(chalk.green('\n✅ All deployment configurations generated!'));

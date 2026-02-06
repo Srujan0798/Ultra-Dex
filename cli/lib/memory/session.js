@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -18,7 +20,7 @@ export async function loadSession() {
 export async function listSessions() {
   try {
     const files = await fs.readdir(SESSION_DIR);
-    return files.filter(f => f.endsWith('.json'));
+    return files.filter((f) => f.endsWith('.json'));
   } catch {
     return [];
   }

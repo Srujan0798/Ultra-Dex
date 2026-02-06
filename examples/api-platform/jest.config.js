@@ -5,13 +5,9 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   coverageDirectory: 'coverage',
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '/tests/'
-  ],
+  coveragePathIgnorePatterns: ['/node_modules/', '/dist/', '/tests/'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1'
-  }
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 };

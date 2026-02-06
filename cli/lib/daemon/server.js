@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { EventEmitter } from 'node:events';
 import { DaemonScheduler } from './scheduler.js';
 import { collectDaemonHealth } from './health.js';
@@ -15,13 +17,13 @@ export class DaemonServer extends EventEmitter {
       {
         name: 'nightly-review',
         intervalMs: 24 * 60 * 60 * 1000,
-        handler: async () => this.emit('log', 'Nightly code review placeholder')
+        handler: async () => this.emit('log', 'Nightly code review placeholder'),
       },
       {
         name: 'daily-tests',
         intervalMs: 24 * 60 * 60 * 1000,
-        handler: async () => this.emit('log', 'Daily tests placeholder')
-      }
+        handler: async () => this.emit('log', 'Daily tests placeholder'),
+      },
     ];
 
     tasks.forEach((task) => this.scheduler.registerTask(task));
@@ -46,7 +48,7 @@ export class DaemonServer extends EventEmitter {
       running: Boolean(this.startedAt),
       startedAt: this.startedAt,
       tasks: this.scheduler.listTasks(),
-      health: collectDaemonHealth()
+      health: collectDaemonHealth(),
     };
   }
 }

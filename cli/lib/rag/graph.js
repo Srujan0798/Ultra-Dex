@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Graph RAG - Knowledge Graph Implementation for Context Retrieval
  * Uses Neo4j or FalkorDB for graph-based context storage
@@ -20,7 +22,7 @@ const NODE_TYPES = {
   CLASS: 'Class',
   VARIABLE: 'Variable',
   MODULE: 'Module',
-  DECISION: 'Decision'
+  DECISION: 'Decision',
 };
 
 // Relationship types
@@ -33,7 +35,7 @@ const RELATIONSHIPS = {
   USED_BY: 'USED_BY',
   EXPORTS: 'EXPORTS',
   CONTAINS: 'CONTAINS',
-  AFFECTS: 'AFFECTS'
+  AFFECTS: 'AFFECTS',
 };
 
 /**
@@ -67,12 +69,12 @@ export class GraphRAG {
           this.uri,
           neo4j.default.auth.basic(this.user, this.password)
         );
-        
+
         // Test connection
         const session = this.driver.session();
         await session.run('RETURN 1');
         await session.close();
-        
+
         console.log(chalk.green('[GraphRAG] Connected to Neo4j'));
         await this.initializeSchema();
         return true;
@@ -103,7 +105,7 @@ export class GraphRAG {
         CREATE CONSTRAINT file_path IF NOT EXISTS
         FOR (f:File) REQUIRE f.path IS UNIQUE
       `);
-      
+
       await session.run(`
         CREATE CONSTRAINT function_id IF NOT EXISTS
         FOR (fn:Function) REQUIRE fn.id IS UNIQUE
@@ -114,7 +116,7 @@ export class GraphRAG {
         CREATE INDEX file_type IF NOT EXISTS
         FOR (f:File) ON (f.type)
       `);
-      
+
       await session.run(`
         CREATE INDEX function_name IF NOT EXISTS
         FOR (fn:Function) ON (fn.name)
@@ -133,10 +135,10 @@ export class GraphRAG {
    */
   async indexCodebase(rootDir = process.cwd()) {
     console.log(chalk.blue('[GraphRAG] Indexing codebase...'));
-    
+
     const files = await glob('**/*.{js,ts,jsx,tsx}', {
       cwd: rootDir,
-      ignore: ['node_modules/**', 'dist/**', 'build/**', '.git/**']
+      ignore: ['node_modules/**', 'dist/**', 'build/**', '.git/**'],
     });
 
     const batchSize = 50;
@@ -144,9 +146,9 @@ export class GraphRAG {
 
     for (let i = 0; i < files.length; i += batchSize) {
       const batch = files.slice(i, i + batchSize);
-      await Promise.all(batch.map(file => this.indexFile(path.join(rootDir, file))));
+      await Promise.all(batch.map((file) => this.indexFile(path.join(rootDir, file))));
       processed += batch.length;
-      
+
       if (processed % 100 === 0) {
         console.log(chalk.gray(`[GraphRAG] Indexed ${processed}/${files.length} files...`));
       }
@@ -163,22 +165,22 @@ export class GraphRAG {
     try {
       const content = await fs.readFile(filePath, 'utf8');
       const stats = await fs.stat(filePath);
-      
+
       const fileNode = {
         id: filePath,
         type: NODE_TYPES.FILE,
         path: filePath,
         extension: path.extname(filePath),
         size: stats.size,
-        symbols: []
+        symbols: [],
       };
 
       // Extract imports
       const imports = this.extractImports(content, filePath);
-      
+
       // Extract functions
       const functions = this.extractFunctions(content, filePath);
-      
+
       // Extract classes
       const classes = this.extractClasses(content, filePath);
 
@@ -189,7 +191,7 @@ export class GraphRAG {
           node: fileNode,
           imports,
           functions,
-          classes
+          classes,
         });
       } else {
         await this.saveToDatabase(fileNode, imports, functions, classes);
@@ -204,7 +206,7 @@ export class GraphRAG {
    */
   extractImports(content, filePath) {
     const imports = [];
-    
+
     // ES6 imports
     const es6Regex = /import\s+(?:(?:{[^}]*}|\*\s+as\s+\w+|\w+)\s+from\s+)?['"]([^'"]+)['"];?/g;
     let match;
@@ -212,7 +214,7 @@ export class GraphRAG {
       imports.push({
         source: match[1],
         type: 'es6',
-        file: filePath
+        file: filePath,
       });
     }
 
@@ -222,7 +224,7 @@ export class GraphRAG {
       imports.push({
         source: match[1],
         type: 'commonjs',
-        file: filePath
+        file: filePath,
       });
     }
 
@@ -234,7 +236,7 @@ export class GraphRAG {
    */
   extractFunctions(content, filePath) {
     const functions = [];
-    
+
     // Function declarations
     const funcRegex = /(?:export\s+(?:default\s+)?)?(?:async\s+)?function\s+(\w+)\s*\(/g;
     let match;
@@ -243,7 +245,7 @@ export class GraphRAG {
         name: match[1],
         type: 'function',
         file: filePath,
-        id: `${filePath}#${match[1]}`
+        id: `${filePath}#${match[1]}`,
       });
     }
 
@@ -254,7 +256,7 @@ export class GraphRAG {
         name: match[1],
         type: 'arrow',
         file: filePath,
-        id: `${filePath}#${match[1]}`
+        id: `${filePath}#${match[1]}`,
       });
     }
 
@@ -266,7 +268,7 @@ export class GraphRAG {
           name: match[1],
           type: 'method',
           file: filePath,
-          id: `${filePath}#${match[1]}`
+          id: `${filePath}#${match[1]}`,
         });
       }
     }
@@ -279,7 +281,7 @@ export class GraphRAG {
    */
   extractClasses(content, filePath) {
     const classes = [];
-    
+
     const classRegex = /(?:export\s+(?:default\s+)?)?class\s+(\w+)(?:\s+extends\s+(\w+))?/g;
     let match;
     while ((match = classRegex.exec(content)) !== null) {
@@ -287,7 +289,7 @@ export class GraphRAG {
         name: match[1],
         extends: match[2] || null,
         file: filePath,
-        id: `${filePath}#${match[1]}`
+        id: `${filePath}#${match[1]}`,
       });
     }
 
@@ -303,17 +305,21 @@ export class GraphRAG {
     const session = this.driver.session();
     try {
       // Create file node
-      await session.run(`
+      await session.run(
+        `
         MERGE (f:File {path: $path})
         SET f.type = $type,
             f.extension = $extension,
             f.size = $size,
             f.symbols = $symbols
-      `, fileNode);
+      `,
+        fileNode
+      );
 
       // Create function nodes
       for (const fn of functions) {
-        await session.run(`
+        await session.run(
+          `
           MERGE (fn:Function {id: $id})
           SET fn.name = $name,
               fn.type = $type,
@@ -321,38 +327,49 @@ export class GraphRAG {
           WITH fn
           MATCH (f:File {path: $file})
           MERGE (f)-[:CONTAINS]->(fn)
-        `, fn);
+        `,
+          fn
+        );
       }
 
       // Create class nodes
       for (const cls of classes) {
-        await session.run(`
+        await session.run(
+          `
           MERGE (c:Class {id: $id})
           SET c.name = $name,
               c.file = $file
           WITH c
           MATCH (f:File {path: $file})
           MERGE (f)-[:CONTAINS]->(c)
-        `, cls);
+        `,
+          cls
+        );
 
         // Create extends relationship
         if (cls.extends) {
-          await session.run(`
+          await session.run(
+            `
             MATCH (c:Class {id: $id})
             MATCH (parent:Class {name: $extends})
             MERGE (c)-[:EXTENDS]->(parent)
-          `, cls);
+          `,
+            cls
+          );
         }
       }
 
       // Create import relationships
       for (const imp of imports) {
-        await session.run(`
+        await session.run(
+          `
           MATCH (f:File {path: $file})
           MERGE (target:File {path: $source})
           ON CREATE SET target.path = $source
           MERGE (f)-[:IMPORTS]->(target)
-        `, imp);
+        `,
+          imp
+        );
       }
     } finally {
       await session.close();
@@ -364,7 +381,7 @@ export class GraphRAG {
    */
   async query(queryText, options = {}) {
     const { limit = 10, depth = 2 } = options;
-    
+
     if (this.useInMemory) {
       return this.queryInMemory(queryText, limit);
     }
@@ -372,16 +389,19 @@ export class GraphRAG {
     const session = this.driver.session();
     try {
       // Search for files matching query
-      const result = await session.run(`
+      const result = await session.run(
+        `
         MATCH (f:File)
         WHERE f.path CONTAINS $query OR ANY(symbol IN f.symbols WHERE symbol CONTAINS $query)
         RETURN f.path AS path, f.symbols AS symbols
         LIMIT $limit
-      `, { query: queryText.toLowerCase(), limit: parseInt(limit) });
+      `,
+        { query: queryText.toLowerCase(), limit: parseInt(limit) }
+      );
 
-      return result.records.map(record => ({
+      return result.records.map((record) => ({
         path: record.get('path'),
-        symbols: record.get('symbols') || []
+        symbols: record.get('symbols') || [],
       }));
     } finally {
       await session.close();
@@ -399,16 +419,16 @@ export class GraphRAG {
       if (path.toLowerCase().includes(query)) {
         results.push({
           path,
-          symbols: data.node.symbols
+          symbols: data.node.symbols,
         });
       } else {
-        const matchingSymbols = data.node.symbols.filter(s => 
+        const matchingSymbols = data.node.symbols.filter((s) =>
           s.name.toLowerCase().includes(query)
         );
         if (matchingSymbols.length > 0) {
           results.push({
             path,
-            symbols: matchingSymbols
+            symbols: matchingSymbols,
           });
         }
       }
@@ -429,25 +449,28 @@ export class GraphRAG {
 
     const session = this.driver.session();
     try {
-      const result = await session.run(`
+      const result = await session.run(
+        `
         MATCH path = (f:File {path: $path})-[:IMPORTS*1..${depth}]->(dependent:File)
         RETURN dependent.path AS impactedFile, length(path) AS distance
         ORDER BY distance
-      `, { path: filePath });
+      `,
+        { path: filePath }
+      );
 
-      const impactedFiles = result.records.map(record => ({
+      const impactedFiles = result.records.map((record) => ({
         path: record.get('impactedFile'),
-        distance: record.get('distance').toNumber()
+        distance: record.get('distance').toNumber(),
       }));
 
-      const riskLevel = impactedFiles.length > 10 ? 'high' : 
-                        impactedFiles.length > 5 ? 'medium' : 'low';
+      const riskLevel =
+        impactedFiles.length > 10 ? 'high' : impactedFiles.length > 5 ? 'medium' : 'low';
 
       return {
         file: filePath,
         riskLevel,
         impactedFiles,
-        impactedCount: impactedFiles.length
+        impactedCount: impactedFiles.length,
       };
     } finally {
       await session.close();
@@ -464,7 +487,7 @@ export class GraphRAG {
 
     while (queue.length > 0) {
       const { path: currentPath, distance } = queue.shift();
-      
+
       if (visited.has(currentPath) || distance > depth) continue;
       visited.add(currentPath);
 
@@ -481,17 +504,17 @@ export class GraphRAG {
 
     const impactedFiles = Array.from(impacted).map((p, i) => ({
       path: p,
-      distance: Math.floor(i / 5) + 1
+      distance: Math.floor(i / 5) + 1,
     }));
 
-    const riskLevel = impactedFiles.length > 10 ? 'high' : 
-                      impactedFiles.length > 5 ? 'medium' : 'low';
+    const riskLevel =
+      impactedFiles.length > 10 ? 'high' : impactedFiles.length > 5 ? 'medium' : 'low';
 
     return {
       file: filePath,
       riskLevel,
       impactedFiles,
-      impactedCount: impactedFiles.length
+      impactedCount: impactedFiles.length,
     };
   }
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -26,13 +28,19 @@ export async function fetchContext7Docs(packageName, version = null) {
 
   const apiUrl = process.env.CONTEXT7_API_URL;
   if (!apiUrl) {
-    const fallback = { package: packageName, version: version || 'latest', content: `Docs cache missing for ${packageName}. Set CONTEXT7_API_URL to fetch live docs.` };
+    const fallback = {
+      package: packageName,
+      version: version || 'latest',
+      content: `Docs cache missing for ${packageName}. Set CONTEXT7_API_URL to fetch live docs.`,
+    };
     cache.entries[key] = fallback;
     await saveCache(cache);
     return fallback;
   }
 
-  const res = await fetch(`${apiUrl}/docs/${packageName}?version=${encodeURIComponent(version || 'latest')}`);
+  const res = await fetch(
+    `${apiUrl}/docs/${packageName}?version=${encodeURIComponent(version || 'latest')}`
+  );
   if (!res.ok) {
     throw new Error(`Context7 fetch failed: ${res.status}`);
   }
@@ -52,5 +60,5 @@ export async function detectDependencies(projectDir = process.cwd()) {
 }
 
 export const context7Paths = {
-  cache: CACHE_PATH
+  cache: CACHE_PATH,
 };

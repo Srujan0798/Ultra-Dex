@@ -30,9 +30,9 @@ describe('RateLimiterService', () => {
     it('should reset limit after window expires', async () => {
       // Use very short window for testing
       await service.checkLimit('key-3', 1, 10);
-      
+
       // Wait for window to expire
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       const result = await service.checkLimit('key-3', 1, 10);
       expect(result.allowed).toBe(true);

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex memory command
  * Manage persistent memory for AI agents
@@ -39,7 +41,11 @@ export function registerMemoryCommand(program) {
         results.forEach((item, i) => {
           const score = item.score ? item.score.toFixed(3) : '0.000';
           const agent = item.metadata?.agent || item.agent || 'unknown';
-          printInfo(chalk.white(`${i + 1}. [${new Date(item.created_at).toLocaleDateString()}] (${score}) ${agent}`));
+          printInfo(
+            chalk.white(
+              `${i + 1}. [${new Date(item.created_at).toLocaleDateString()}] (${score}) ${agent}`
+            )
+          );
           const snippet = (item.text || item.output || item.input || '').toString().slice(0, 160);
           if (snippet) {
             printInfo(chalk.gray(`   ${snippet}${snippet.length >= 160 ? '...' : ''}`));
@@ -58,21 +64,25 @@ export function registerMemoryCommand(program) {
     .option('--json', 'Output as JSON')
     .action(async (options) => {
       const items = await ultraMemory.getAll();
-      
+
       if (options.json) {
         console.log(JSON.stringify(items, null, 2));
         return;
       }
 
       printInfo(chalk.cyan.bold('\n🧠 Ultra-Dex Persistent Memory\n'));
-      
+
       if (items.length === 0) {
         printInfo(chalk.gray('  Memory is empty.'));
         return;
       }
 
       items.forEach((item, i) => {
-        printInfo(chalk.white(`${i + 1}. [${new Date(item.timestamp).toLocaleDateString()}] (${item.source})`));
+        printInfo(
+          chalk.white(
+            `${i + 1}. [${new Date(item.timestamp).toLocaleDateString()}] (${item.source})`
+          )
+        );
         printInfo(chalk.gray(`   ${item.text}`));
         if (item.tags && item.tags.length > 0) {
           printInfo(chalk.blue(`   Tags: ${item.tags.join(', ')}`));
@@ -88,16 +98,16 @@ export function registerMemoryCommand(program) {
     .option('--memex', 'Also store in vector memory')
     .action(async (text, options) => {
       if (!text || text.trim().length === 0) {
-          printError(chalk.red('Text content is required.'));
-          return;
+        printError(chalk.red('Text content is required.'));
+        return;
       }
-      const tags = options.tags ? options.tags.split(',').map(t => t.trim()) : [];
+      const tags = options.tags ? options.tags.split(',').map((t) => t.trim()) : [];
       await ultraMemory.remember(text, tags, 'manual');
       await ppmManager.add({
         content: text,
         type: tags.includes('decision') ? 'decision' : 'pattern',
         source: { agent: 'manual' },
-        relations: tags
+        relations: tags,
       });
       if (options.memex) {
         await memex.storeItem(`memex-${Date.now()}`, text, { tags, source: 'manual' });
@@ -139,8 +149,8 @@ export function registerMemoryCommand(program) {
     .description('Search memory')
     .action(async (query) => {
       if (!query || query.trim().length === 0) {
-          printError(chalk.red('Search query is required.'));
-          return;
+        printError(chalk.red('Search query is required.'));
+        return;
       }
       const results = await ppmManager.search(query, 5);
       printInfo(chalk.cyan.bold(`\n🔍 Search Results for "${query}":\n`));
@@ -166,11 +176,11 @@ export function registerMemoryCommand(program) {
     .option('--all', 'Clear both standard memory and Memex')
     .action(async (options) => {
       if (options.before) {
-          const date = new Date(options.before);
-          if (isNaN(date.getTime())) {
-              printError(chalk.red('Invalid date format. Use ISO format (e.g. 2023-01-01).'));
-              return;
-          }
+        const date = new Date(options.before);
+        if (isNaN(date.getTime())) {
+          printError(chalk.red('Invalid date format. Use ISO format (e.g. 2023-01-01).'));
+          return;
+        }
       }
       if (options.all || !options.memex) {
         await ultraMemory.clear(options.before);
@@ -187,7 +197,7 @@ export function registerMemoryCommand(program) {
     .action(async () => {
       const snapshot = {
         timestamp: new Date().toISOString(),
-        context: await createSessionPersistence(getProjectRoot())
+        context: await createSessionPersistence(getProjectRoot()),
       };
       const location = await saveSession(snapshot);
       await savePersistent(snapshot);
@@ -226,7 +236,7 @@ export function registerMemoryCommand(program) {
     .action(async (tier) => {
       const entries = await ppmManager.getTier(tier);
       printInfo(chalk.cyan(`\n${tier.toUpperCase()} memory (${entries.length})\n`));
-      entries.slice(0, 10).forEach(entry => {
+      entries.slice(0, 10).forEach((entry) => {
         printInfo(chalk.gray(`- ${entry.summary || entry.content?.slice(0, 120) || ''}`));
       });
     });
@@ -256,13 +266,52 @@ export function registerMemoryCommand(program) {
 
   memory
     .command('stats')
+    .alias('status') // Alias for status
     .description('Show memory statistics')
-    .action(async () => {
-      const stats = await titansMemory.stats();
+    .option('--visual', 'Show visual progress bar')
+    .action(async (options) => {
+      const state = await titansMemory.stats(); // Gets base stats
+
+      // v4.0.1: Stats logic
+      if (options.visual) {
+        // Dynamic imports to save startup time
+        const { configManager } = await import('../utils/config-manager.js');
+        const { default: terminalLink } = await import('terminal-link');
+
+        const config = configManager.getConfig();
+        const maxTokens = config.memory?.maxContextTokens || 8192;
+
+        // Helper to estimate current tokens (Hot tier)
+        // In a real implementation this would come from the state, 
+        // but for v4.0.1 we estimate based on item count * avg
+        const estimatedTokens = state.hot * 150; // Avg 150 tokens per turn
+        const percent = Math.min(100, Math.round((estimatedTokens / maxTokens) * 100));
+
+        // Create the bar manually since we don't want a heavy deps for just this
+        const width = 40;
+        const filled = Math.round((width * percent) / 100);
+        const empty = width - filled;
+
+        const barColor = percent > 80 ? chalk.red : (percent > 50 ? chalk.yellow : chalk.green);
+        const bar = barColor('█'.repeat(filled)) + chalk.gray('░'.repeat(empty));
+
+        printInfo(chalk.cyan.bold('\n🧠 Memory Context Window\n'));
+        printInfo(`Usage: ${bar} ${percent}%`);
+        printInfo(chalk.gray(`       ${estimatedTokens} / ${maxTokens} tokens (est)\n`));
+
+        if (percent > 80) {
+          printWarning(chalk.yellow('⚠️  Token Limit Approaching. Auto-Prune pending.'));
+        }
+
+        printInfo('');
+        return;
+      }
+
+      // Default stats output
       printInfo(chalk.cyan('\nMemory Stats\n'));
-      printInfo(`Hot: ${stats.hot}`);
-      printInfo(`Warm: ${stats.warm}`);
-      printInfo(`Cold: ${stats.cold}`);
+      printInfo(`Hot: ${state.hot}`);
+      printInfo(`Warm: ${state.warm}`);
+      printInfo(`Cold: ${state.cold}`);
     });
 
   // NEW: Session persistence commands
@@ -274,29 +323,31 @@ export function registerMemoryCommand(program) {
         const projectRoot = getProjectRoot();
         const persistence = createSessionPersistence(projectRoot);
         await persistence.init();
-        
+
         const sessions = await persistence.db.all(
           'SELECT * FROM sessions ORDER BY created_at DESC'
         );
-        
+
         if (sessions.length === 0) {
           printWarning(chalk.yellow('\n📁 No sessions found.\n'));
           printInfo(chalk.gray('Start a swarm to create a session.'));
           return;
         }
-        
+
         printInfo(chalk.cyan.bold('\n📁 Persistent Sessions:\n'));
-        
+
         for (const session of sessions) {
           const stats = await persistence.getDecisionStats(session.id);
-          
+
           printInfo(chalk.white(`${session.name}`));
           printInfo(chalk.gray(`   ID: ${session.id}`));
           printInfo(chalk.gray(`   Created: ${new Date(session.created_at).toLocaleString()}`));
-          printInfo(chalk.gray(`   Decisions: ${stats.total_decisions} by ${stats.unique_agents} agents`));
+          printInfo(
+            chalk.gray(`   Decisions: ${stats.total_decisions} by ${stats.unique_agents} agents`)
+          );
           printInfo('');
         }
-        
+
         await persistence.close();
       } catch (error) {
         printError(chalk.red('Error:'), error.message);
@@ -312,29 +363,35 @@ export function registerMemoryCommand(program) {
         const projectRoot = getProjectRoot();
         const persistence = createSessionPersistence(projectRoot);
         await persistence.init();
-        
+
         if (!sessionId) {
           printWarning(chalk.yellow('No session ID provided.'));
           printInfo(chalk.gray('Use `memory sessions` to list available sessions.'));
           return;
         }
-        
+
         printInfo(chalk.cyan(`\n📋 Decisions for session ${sessionId}\n`));
-        
+
         const results = await persistence.getRecentDecisions(sessionId, parseInt(options.limit));
-        
+
         if (results.length === 0) {
           printWarning(chalk.yellow('No decisions found for this session.'));
           return;
         }
-        
+
         results.forEach((r, i) => {
-          printInfo(chalk.white(`${i + 1}. [${new Date(r.created_at).toLocaleTimeString()}] ${r.agent}`));
+          printInfo(
+            chalk.white(`${i + 1}. [${new Date(r.created_at).toLocaleTimeString()}] ${r.agent}`)
+          );
           printInfo(chalk.gray(`   Task: ${r.task}`));
-          printInfo(chalk.gray(`   Decision: ${r.decision.substring(0, 80)}${r.decision.length > 80 ? '...' : ''}`));
+          printInfo(
+            chalk.gray(
+              `   Decision: ${r.decision.substring(0, 80)}${r.decision.length > 80 ? '...' : ''}`
+            )
+          );
           printInfo('');
         });
-        
+
         await persistence.close();
       } catch (error) {
         printError(chalk.red('Error:'), error.message);
@@ -350,36 +407,36 @@ export function registerMemoryCommand(program) {
         const projectRoot = getProjectRoot();
         const persistence = createSessionPersistence(projectRoot);
         await persistence.init();
-        
+
         printInfo(chalk.cyan(`\n🔍 Querying: "${searchQuery}"\n`));
-        
+
         const results = await persistence.searchDecisions(searchQuery, parseInt(options.limit));
-        
+
         if (results.length === 0) {
           printWarning(chalk.yellow('No matching decisions found.'));
           printInfo(chalk.gray('Try different keywords or check if sessions exist.'));
           return;
         }
-        
+
         printSuccess(chalk.green(`Found ${results.length} results:\n`));
-        
+
         const table = new Table({
           head: ['Date', 'Agent', 'Task', 'Decision'],
           colWidths: [20, 15, 30, 35],
-          style: { head: ['cyan'] }
+          style: { head: ['cyan'] },
         });
-        
-        results.forEach(r => {
+
+        results.forEach((r) => {
           table.push([
             new Date(r.created_at).toLocaleDateString(),
             chalk.white(r.agent),
             r.task.substring(0, 28),
-            r.decision.substring(0, 32) + (r.decision.length > 32 ? '...' : '')
+            r.decision.substring(0, 32) + (r.decision.length > 32 ? '...' : ''),
           ]);
         });
-        
+
         console.log(table.toString());
-        
+
         await persistence.close();
       } catch (error) {
         printError(chalk.red('Error:'), error.message);
@@ -394,8 +451,8 @@ export function registerMemoryCommand(program) {
         const projectRoot = getProjectRoot();
         const persistence = createSessionPersistence(projectRoot);
         await persistence.init();
-        
-        const stats = sessionId 
+
+        const stats = sessionId
           ? await persistence.getDecisionStats(sessionId)
           : await persistence.db.get(`
             SELECT 
@@ -403,22 +460,26 @@ export function registerMemoryCommand(program) {
               COUNT(DISTINCT session_id) as total_sessions 
             FROM decisions
           `);
-        
+
         printInfo(chalk.cyan.bold('\n📊 Memory Statistics:\n'));
-        
+
         if (sessionId) {
           printInfo(`Session: ${chalk.white(sessionId)}`);
           printInfo(`Total decisions: ${chalk.white(stats.total_decisions)}`);
           printInfo(`Unique agents: ${chalk.white(stats.unique_agents)}`);
           if (stats.first_decision) {
-            printInfo(`First decision: ${chalk.white(new Date(stats.first_decision).toLocaleString())}`);
-            printInfo(`Last decision: ${chalk.white(new Date(stats.last_decision).toLocaleString())}`);
+            printInfo(
+              `First decision: ${chalk.white(new Date(stats.first_decision).toLocaleString())}`
+            );
+            printInfo(
+              `Last decision: ${chalk.white(new Date(stats.last_decision).toLocaleString())}`
+            );
           }
         } else {
           printInfo(`Total decisions (all sessions): ${chalk.white(stats.total_decisions)}`);
           printInfo(`Total sessions: ${chalk.white(stats.total_sessions)}`);
         }
-        
+
         printInfo('');
         await persistence.close();
       } catch (error) {

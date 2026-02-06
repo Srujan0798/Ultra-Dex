@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { githubTreeUrl } from '../config/urls.js';
 
 export const CORE_CURSOR_RULE = `# Ultra-Dex Core Rules

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export function computeConsensus(votes = []) {
   const tally = votes.reduce((acc, vote) => {
     acc[vote.choice] = (acc[vote.choice] || 0) + 1;
@@ -8,7 +10,7 @@ export function computeConsensus(votes = []) {
   return {
     tally,
     winner: winner ? { choice: winner[0], votes: winner[1] } : null,
-    totalVotes: votes.length
+    totalVotes: votes.length,
   };
 }
 
@@ -18,6 +20,6 @@ export function requestConsensus(options = {}) {
   return {
     proposal: options.proposal,
     consensus,
-    required: options.required || Math.ceil(votes.length / 2)
+    required: options.required || Math.ceil(votes.length / 2),
   };
 }

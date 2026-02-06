@@ -7,9 +7,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -17,80 +17,81 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-        
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run tests
-      run: npm test
-      
-    - name: Run linting
-      run: npm run lint
-      
-    - name: Run security audit
-      run: npm audit --audit-level moderate
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run security audit
+        run: npm audit --audit-level moderate
 
   build:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18.x'
-        registry-url: 'https://registry.npmjs.org/'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build
-      run: npm run build
-      
-    - name: Run performance benchmarks
-      run: node benchmark.js
-      
-    - name: Run comprehensive test suite
-      run: node --test test-suite.js
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run performance benchmarks
+        run: node benchmark.js
+
+      - name: Run comprehensive test suite
+        run: node --test test-suite.js
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18.x'
-        registry-url: 'https://registry.npmjs.org/'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Publish to npm
-      run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 ## Docker Configuration
 
 ### Dockerfile
+
 ```Dockerfile
 FROM node:18-alpine
 
@@ -126,6 +127,7 @@ CMD ["npx", "ultra-dex", "serve", "--port", "3001"]
 ```
 
 ### docker-compose.yml
+
 ```yaml
 version: '3.8'
 
@@ -133,7 +135,7 @@ services:
   ultradex:
     build: .
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       - NODE_ENV=production
       - LOG_LEVEL=info
@@ -149,8 +151,8 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
-      - "443.4.5"
+      - '80:80'
+      - '443.4.5'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl
@@ -171,6 +173,7 @@ networks:
 ## Kubernetes Configuration
 
 ### deployment.yaml
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -189,44 +192,44 @@ spec:
         app: ultra-dex
     spec:
       containers:
-      - name: ultra-dex
-        image: ultradex/ultra-dex:latest
-        ports:
-        - containerPort: 3001
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: LOG_LEVEL
-          value: "info"
-        - name: ANTHROPIC_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ultra-dex-secrets
-              key: anthropic-api-key
-        - name: OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ultra-dex-secrets
-              key: openai-api-key
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /api/info
-            port: 3001
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/info
-            port: 3001
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: ultra-dex
+          image: ultradex/ultra-dex:latest
+          ports:
+            - containerPort: 3001
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: LOG_LEVEL
+              value: 'info'
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ultra-dex-secrets
+                  key: anthropic-api-key
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ultra-dex-secrets
+                  key: openai-api-key
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '250m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
+          livenessProbe:
+            httpGet:
+              path: /api/info
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/info
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ---
 apiVersion: v1
 kind: Service
@@ -245,6 +248,7 @@ spec:
 ## Environment Configuration
 
 ### .env.production
+
 ```env
 # Ultra-Dex Production Environment
 NODE_ENV=production
@@ -274,6 +278,7 @@ HEALTH_CHECK_INTERVAL=30000
 ```
 
 ### .env.staging
+
 ```env
 # Ultra-Dex Staging Environment
 NODE_ENV=staging
@@ -302,6 +307,7 @@ HEALTH_CHECK_INTERVAL=15000
 ## Monitoring Configuration
 
 ### prometheus.yml
+
 ```yaml
 global:
   scrape_interval: 15s
@@ -315,6 +321,7 @@ scrape_configs:
 ```
 
 ### grafana-dashboard.json
+
 ```json
 {
   "dashboard": {
@@ -353,6 +360,7 @@ scrape_configs:
 ## Security Configuration
 
 ### .snykrc
+
 ```json
 {
   "organization": "ultra-dex-org",
@@ -365,6 +373,7 @@ scrape_configs:
 ```
 
 ### .deepsource.toml
+
 ```toml
 version = 1
 
@@ -387,6 +396,7 @@ enabled = true
 ## Performance Configuration
 
 ### nginx.conf
+
 ```nginx
 upstream ultradex_backend {
     server ultra-dex:3001;
@@ -402,7 +412,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # Performance optimizations
         proxy_cache_valid 200 302 10m;
         proxy_cache_valid 404 1m;

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Team settings storage
  */
@@ -14,7 +16,7 @@ const DEFAULT_SETTINGS = {
   defaultRole: 'member',
   contextSync: true,
   auditLogging: true,
-  createdAt: new Date().toISOString()
+  createdAt: new Date().toISOString(),
 };
 
 function resolveSettingsPath(workspace = process.cwd()) {

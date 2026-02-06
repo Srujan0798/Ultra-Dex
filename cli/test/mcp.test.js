@@ -2,23 +2,26 @@
  * MCP (Model Context Protocol) Server Tests
  * Tests HTTP endpoints, tools, and resources with mocked file system
  */
-import { test, describe, beforeEach, afterEach, mock } from 'node:test';
+import { test, describe, before, after, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import http from 'node:http';
+import { setTimeout as delay } from 'node:timers/promises';
+import { startUnifiedKernel } from '../lib/commands/serve.js';
 
 // Helper to create temp directory with test files
 async function createTempProject(files = {}) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-mcp-test-'));
-  
+
   for (const [filePath, content] of Object.entries(files)) {
     const fullPath = path.join(tmpDir, filePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, content);
   }
-  
+
   return tmpDir;
 }
 
@@ -28,7 +31,7 @@ async function createTempProject(files = {}) {
 describe('MCP Tools', () => {
   let tmpDir;
   let originalCwd;
-  
+
   beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await createTempProject({
@@ -47,16 +50,16 @@ describe('MCP Tools', () => {
         score: 45,
         updatedAt: new Date().toISOString(),
         phases: [
-          { 
-            name: 'Setup', 
+          {
+            name: 'Setup',
             status: 'in_progress',
             steps: [
               { id: '1.1', task: 'Initialize project', status: 'pending' },
-              { id: '1.2', task: 'Configure build tools', status: 'completed' }
-            ]
-          }
+              { id: '1.2', task: 'Configure build tools', status: 'completed' },
+            ],
+          },
         ],
-        agents: { registry: ['planner', 'backend', 'frontend'], active: [] }
+        agents: { registry: ['planner', 'backend', 'frontend'], active: [] },
       }),
       'src/api/users.js': `
 export async function getUsers() {
@@ -73,11 +76,11 @@ export function Button({ children, onClick }) {
 }
 `,
       'agents/backend.md': '# Backend Agent\nYou are a skilled backend developer.',
-      'agents/1-leadership/cto.md': '# CTO Agent\nYou are the technical leader.'
+      'agents/1-leadership/cto.md': '# CTO Agent\nYou are the technical leader.',
     });
     process.chdir(tmpDir);
   });
-  
+
   afterEach(async () => {
     process.chdir(originalCwd);
     if (tmpDir) {
@@ -112,7 +115,7 @@ export function Button({ children, onClick }) {
     test('creates new file', async () => {
       const newContent = 'export const VERSION = "1.0.0";';
       await fs.writeFile('src/version.js', newContent);
-      
+
       const content = await fs.readFile('src/version.js', 'utf8');
       assert.equal(content, newContent);
     });
@@ -120,7 +123,7 @@ export function Button({ children, onClick }) {
     test('creates directories recursively', async () => {
       await fs.mkdir('src/deep/nested/path', { recursive: true });
       await fs.writeFile('src/deep/nested/path/file.js', 'test');
-      
+
       assert.ok(existsSync('src/deep/nested/path/file.js'));
     });
 
@@ -135,7 +138,7 @@ export function Button({ children, onClick }) {
     test('loads and parses state correctly', async () => {
       const stateContent = await fs.readFile('.ultra/state.json', 'utf8');
       const state = JSON.parse(stateContent);
-      
+
       assert.equal(state.project.name, 'test-project');
       assert.equal(state.score, 45);
       assert.equal(state.phases[0].steps[0].status, 'pending');
@@ -145,13 +148,13 @@ export function Button({ children, onClick }) {
       // Read state
       const stateContent = await fs.readFile('.ultra/state.json', 'utf8');
       const state = JSON.parse(stateContent);
-      
+
       // Update task
       state.phases[0].steps[0].status = 'completed';
-      
+
       // Save state
       await fs.writeFile('.ultra/state.json', JSON.stringify(state, null, 2));
-      
+
       // Verify
       const newState = JSON.parse(await fs.readFile('.ultra/state.json', 'utf8'));
       assert.equal(newState.phases[0].steps[0].status, 'completed');
@@ -178,8 +181,8 @@ export function Button({ children, onClick }) {
   describe('query_codebase tool', () => {
     test('can list source files', async () => {
       const srcFiles = await fs.readdir('src', { recursive: true });
-      assert.ok(srcFiles.some(f => f.includes('users.js')));
-      assert.ok(srcFiles.some(f => f.includes('Button.jsx')));
+      assert.ok(srcFiles.some((f) => f.includes('users.js')));
+      assert.ok(srcFiles.some((f) => f.includes('Button.jsx')));
     });
 
     test('can search for content in files', async () => {
@@ -196,7 +199,7 @@ export function Button({ children, onClick }) {
 describe('MCP Resources', () => {
   let tmpDir;
   let originalCwd;
-  
+
   beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await createTempProject({
@@ -206,13 +209,13 @@ describe('MCP Resources', () => {
         project: { name: 'resource-test', version: '1.0.0' },
         score: 75,
         phases: [],
-        agents: { registry: [], active: [] }
+        agents: { registry: [], active: [] },
       }),
-      'agents/00-AGENT_INDEX.md': '# Agent Index\n- backend\n- frontend\n- cto'
+      'agents/00-AGENT_INDEX.md': '# Agent Index\n- backend\n- frontend\n- cto',
     });
     process.chdir(tmpDir);
   });
-  
+
   afterEach(async () => {
     process.chdir(originalCwd);
     if (tmpDir) {
@@ -245,7 +248,7 @@ describe('MCP Resources', () => {
     test('returns project state as JSON', async () => {
       const content = await fs.readFile('.ultra/state.json', 'utf8');
       const state = JSON.parse(content);
-      
+
       assert.equal(state.project.name, 'resource-test');
       assert.equal(state.score, 75);
     });
@@ -262,18 +265,181 @@ describe('MCP Resources', () => {
 });
 
 // ===============================
+// MCP HTTP + WebSocket Tests
+// ===============================
+describe('MCP HTTP Server', { concurrency: 1 }, () => {
+  let tmpDir;
+  let originalCwd;
+  let port;
+  let kernel;
+
+  before(async () => {
+    originalCwd = process.cwd();
+    tmpDir = await createTempProject({
+      'CONTEXT.md': '# Context\nTest project.',
+      '.ultra/state.json': JSON.stringify({
+        project: { name: 'mcp-http-test', version: '0.1.0' },
+        score: 80,
+        phases: [],
+        agents: { registry: [], active: [] },
+      }),
+      'src/index.js': 'export const hello = "world";',
+    });
+    process.chdir(tmpDir);
+
+    port = await getFreePort();
+    kernel = await startUnifiedKernel(String(port), { testMode: true, disableWatch: true });
+
+    await waitForServer(`http://localhost:${port}/api/info`);
+  });
+
+  after(async () => {
+    process.chdir(originalCwd);
+    if (kernel?.close) {
+      kernel.close();
+    }
+    if (kernel?.server?.listening) {
+      await new Promise((resolve) => kernel.server.close(resolve));
+    }
+    if (tmpDir) {
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  test('GET /api/info returns status payload', async () => {
+    const response = await httpGetJson(`http://localhost:${port}/api/info`);
+    assert.equal(response.status, 200);
+    assert.equal(response.body.status, 'online');
+    assert.ok(Array.isArray(response.body.endpoints));
+  });
+
+  test('GET /api/state returns project state', async () => {
+    const response = await httpGetJson(`http://localhost:${port}/api/state`);
+    assert.equal(response.status, 200);
+    assert.equal(response.body.project.name, 'mcp-http-test');
+  });
+
+  test('POST /messages without sessionId returns 400', async () => {
+    const response = await httpPostJson(`http://localhost:${port}/messages`, { ping: true });
+    assert.equal(response.status, 400);
+    assert.match(response.body.error, /sessionId/i);
+  });
+
+  test('GET /sse responds with event-stream', async () => {
+    const res = await httpGetStream(`http://localhost:${port}/sse`);
+    assert.equal(res.statusCode, 200);
+    assert.match(res.headers['content-type'] || '', /text\/event-stream/);
+    res.destroy();
+  });
+
+  test('WebSocket server accepts connection', async () => {
+    const { WebSocket } = await import('ws');
+    const ws = new WebSocket(`ws://localhost:${port + 1}/ws`);
+
+    const opened = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('WebSocket timeout')), 4000);
+      ws.on('open', () => {
+        clearTimeout(timer);
+        resolve(true);
+      });
+      ws.on('error', (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+
+    assert.ok(opened);
+    ws.close();
+  });
+});
+
+async function getFreePort() {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer();
+    server.listen(0, () => {
+      const { port } = server.address();
+      server.close(() => resolve(port));
+    });
+    server.on('error', reject);
+  });
+}
+
+async function waitForServer(url, retries = 60) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await httpGetJson(url);
+      if (res.status === 200) return true;
+    } catch {
+      // ignore
+    }
+    await delay(250);
+  }
+  throw new Error(`Server not ready: ${url}`);
+}
+
+async function httpGetJson(url) {
+  return new Promise((resolve, reject) => {
+    http
+      .get(url, (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            const body = JSON.parse(data || '{}');
+            resolve({ status: res.statusCode, body });
+          } catch (error) {
+            reject(error);
+          }
+        });
+      })
+      .on('error', reject);
+  });
+}
+
+async function httpPostJson(url, payload) {
+  const data = JSON.stringify(payload);
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      url,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': data.length },
+      },
+      (res) => {
+        let raw = '';
+        res.on('data', (chunk) => (raw += chunk));
+        res.on('end', () => {
+          const body = raw ? JSON.parse(raw) : {};
+          resolve({ status: res.statusCode, body });
+        });
+      }
+    );
+    req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
+}
+
+async function httpGetStream(url) {
+  return new Promise((resolve, reject) => {
+    const req = http.get(url, (res) => resolve(res));
+    req.on('error', reject);
+  });
+}
+
+// ===============================
 // ERROR HANDLING TESTS
 // ===============================
 describe('Error Handling', () => {
   let tmpDir;
   let originalCwd;
-  
+
   beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await createTempProject({});
     process.chdir(tmpDir);
   });
-  
+
   afterEach(async () => {
     process.chdir(originalCwd);
     if (tmpDir) {
@@ -290,7 +456,7 @@ describe('Error Handling', () => {
   test('handles invalid JSON in state file', async () => {
     await fs.mkdir('.ultra', { recursive: true });
     await fs.writeFile('.ultra/state.json', '{ invalid json }');
-    
+
     try {
       const content = await fs.readFile('.ultra/state.json', 'utf8');
       JSON.parse(content);
@@ -314,7 +480,7 @@ describe('Error Handling', () => {
     // Security check: path traversal should be prevented
     const safePath = path.resolve(tmpDir, 'src/file.js');
     const unsafePath = path.resolve(tmpDir, '../../../etc/passwd');
-    
+
     assert.ok(safePath.startsWith(tmpDir));
     assert.ok(!unsafePath.startsWith(tmpDir));
   });
@@ -326,7 +492,7 @@ describe('Error Handling', () => {
 describe('Graph Functionality', () => {
   let tmpDir;
   let originalCwd;
-  
+
   beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await createTempProject({
@@ -341,11 +507,11 @@ export function helper() { return 'help'; }
       'src/api/index.js': `
 import { helper } from '../utils/helper.js';
 export const api = { helper };
-`
+`,
     });
     process.chdir(tmpDir);
   });
-  
+
   afterEach(async () => {
     process.chdir(originalCwd);
     if (tmpDir) {
@@ -355,7 +521,7 @@ export const api = { helper };
 
   test('can identify import relationships', async () => {
     const indexContent = await fs.readFile('src/index.js', 'utf8');
-    
+
     // Extract imports
     const importMatches = indexContent.match(/import .+ from ['"](.+)['"]/g) || [];
     assert.ok(importMatches.length >= 2);
@@ -363,14 +529,17 @@ export const api = { helper };
 
   test('can detect circular dependencies', async () => {
     // Add circular dependency
-    await fs.writeFile('src/utils/helper.js', `
+    await fs.writeFile(
+      'src/utils/helper.js',
+      `
 import { api } from '../api/index.js';
 export function helper() { return api; }
-`);
-    
+`
+    );
+
     const helperContent = await fs.readFile('src/utils/helper.js', 'utf8');
     const apiContent = await fs.readFile('src/api/index.js', 'utf8');
-    
+
     // Both files import from each other
     assert.match(helperContent, /import .+ from ['"]..\/api/);
     assert.match(apiContent, /import .+ from ['"]..\/utils/);
@@ -378,7 +547,7 @@ export function helper() { return api; }
 
   test('can find files by extension', async () => {
     const files = await fs.readdir('src', { recursive: true });
-    const jsFiles = files.filter(f => f.endsWith('.js'));
+    const jsFiles = files.filter((f) => f.endsWith('.js'));
     assert.ok(jsFiles.length >= 3);
   });
 });
@@ -395,7 +564,7 @@ describe('Mock AI Provider', () => {
 
     async generate(system, prompt) {
       this.calls.push({ system, prompt });
-      
+
       // Return mock response based on content
       if (prompt.includes('plan')) {
         return { content: 'Mock plan: 1. Design 2. Implement 3. Test' };
@@ -413,10 +582,10 @@ describe('Mock AI Provider', () => {
 
   test('mock provider records calls', async () => {
     const provider = new MockProvider();
-    
+
     await provider.generate('system', 'Generate a plan');
     await provider.generate('system', 'Write some code');
-    
+
     assert.equal(provider.calls.length, 2);
     assert.match(provider.calls[0].prompt, /plan/);
     assert.match(provider.calls[1].prompt, /code/);
@@ -424,17 +593,17 @@ describe('Mock AI Provider', () => {
 
   test('mock provider returns appropriate responses', async () => {
     const provider = new MockProvider();
-    
+
     const planResult = await provider.generate('', 'Create a plan');
     assert.match(planResult.content, /Mock plan/);
-    
+
     const codeResult = await provider.generate('', 'Generate code');
     assert.match(codeResult.content, /export function/);
   });
 
   test('mock provider supports custom responses', async () => {
     const provider = new MockProvider({ default: 'Custom response' });
-    
+
     const result = await provider.generate('', 'Something else');
     assert.equal(result.content, 'Custom response');
   });
@@ -445,17 +614,17 @@ describe('Mock AI Provider', () => {
 // ===============================
 describe('HTTP Endpoint Behavior', () => {
   // Simulating endpoint behavior without actual HTTP server
-  
+
   function simulateEndpoint(method, path, body = null) {
     // Simulate routing
     const routes = {
-      'GET /api/state': () => ({ 
-        status: 200, 
-        body: { project: 'test', score: 80 } 
+      'GET /api/state': () => ({
+        status: 200,
+        body: { project: 'test', score: 80 },
       }),
-      'GET /api/graph': () => ({ 
-        status: 200, 
-        body: { nodes: 10, edges: 15 } 
+      'GET /api/graph': () => ({
+        status: 200,
+        body: { nodes: 10, edges: 15 },
       }),
       'POST /api/swarm': (data) => {
         if (!data?.feature) {
@@ -463,23 +632,23 @@ describe('HTTP Endpoint Behavior', () => {
         }
         return { status: 200, body: { success: true, message: 'Swarm started' } };
       },
-      'POST /api/action/build': () => ({ 
-        status: 200, 
-        body: { success: true } 
+      'POST /api/action/build': () => ({
+        status: 200,
+        body: { success: true },
       }),
-      'GET /api/unknown': () => ({ 
-        status: 404, 
-        body: { error: 'Not found' } 
-      })
+      'GET /api/unknown': () => ({
+        status: 404,
+        body: { error: 'Not found' },
+      }),
     };
 
     const routeKey = `${method} ${path}`;
     const handler = routes[routeKey];
-    
+
     if (!handler) {
       return { status: 404, body: { error: 'Not found' } };
     }
-    
+
     return handler(body);
   }
 
@@ -532,7 +701,7 @@ describe('HTTP Endpoint Behavior', () => {
 describe('State Management', () => {
   let tmpDir;
   let originalCwd;
-  
+
   beforeEach(async () => {
     originalCwd = process.cwd();
     tmpDir = await createTempProject({
@@ -545,16 +714,16 @@ describe('State Management', () => {
             status: 'in_progress',
             steps: [
               { id: '1.1', task: 'Task 1', status: 'completed' },
-              { id: '1.2', task: 'Task 2', status: 'pending' }
-            ]
-          }
+              { id: '1.2', task: 'Task 2', status: 'pending' },
+            ],
+          },
         ],
-        agents: { registry: ['test'], active: [] }
-      })
+        agents: { registry: ['test'], active: [] },
+      }),
     });
     process.chdir(tmpDir);
   });
-  
+
   afterEach(async () => {
     process.chdir(originalCwd);
     if (tmpDir) {
@@ -571,12 +740,12 @@ describe('State Management', () => {
   test('state can be updated', async () => {
     const content = await fs.readFile('.ultra/state.json', 'utf8');
     const state = JSON.parse(content);
-    
+
     state.score = 75;
     state.updatedAt = new Date().toISOString();
-    
+
     await fs.writeFile('.ultra/state.json', JSON.stringify(state, null, 2));
-    
+
     const updated = JSON.parse(await fs.readFile('.ultra/state.json', 'utf8'));
     assert.equal(updated.score, 75);
   });
@@ -584,13 +753,13 @@ describe('State Management', () => {
   test('calculates progress from steps', async () => {
     const content = await fs.readFile('.ultra/state.json', 'utf8');
     const state = JSON.parse(content);
-    
+
     const totalSteps = state.phases.reduce((sum, p) => sum + p.steps.length, 0);
     const completedSteps = state.phases.reduce(
-      (sum, p) => sum + p.steps.filter(s => s.status === 'completed').length, 
+      (sum, p) => sum + p.steps.filter((s) => s.status === 'completed').length,
       0
     );
-    
+
     const progress = Math.round((completedSteps / totalSteps) * 100);
     assert.equal(totalSteps, 2);
     assert.equal(completedSteps, 1);

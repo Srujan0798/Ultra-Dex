@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'node:crypto';
@@ -37,7 +39,7 @@ export class ColdTier {
       type: entry.type || 'decision',
       timestamp: entry.timestamp || new Date().toISOString(),
       source: entry.source || { agent: 'system' },
-      relations: entry.relations || []
+      relations: entry.relations || [],
     };
     this.entries.push(record);
     await this.persist();
@@ -63,7 +65,9 @@ export class ColdTier {
     const relatedIds = new Set();
     matched.forEach((entry) => entry.relations.forEach((rel) => relatedIds.add(rel)));
 
-    const related = this.entries.filter((entry) => relatedIds.has(entry.id) || relatedIds.has(entry.content));
+    const related = this.entries.filter(
+      (entry) => relatedIds.has(entry.id) || relatedIds.has(entry.content)
+    );
     return [...matched, ...related];
   }
 }

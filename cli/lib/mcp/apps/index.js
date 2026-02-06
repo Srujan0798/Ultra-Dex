@@ -1,14 +1,16 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * MCP Apps - Main Entry Point
  * Provides interactive UI components for MCP-compatible tools
  */
 
 import { MCPAppRenderer, mcpAppRenderer, initializeMCPApps } from './renderer.js';
-import { 
-  renderComponent, 
-  registerComponent, 
-  getSupportedComponents, 
-  validateComponentProps 
+import {
+  renderComponent,
+  registerComponent,
+  getSupportedComponents,
+  validateComponentProps,
 } from './components.js';
 import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
 import chalk from 'chalk';
@@ -30,7 +32,7 @@ export async function initMCPApps() {
   }
 
   printInfo(chalk.cyan('🔌 Initializing MCP Apps System...'));
-  
+
   try {
     await initializeMCPApps();
     mcpAppsInitialized = true;
@@ -144,12 +146,12 @@ export class MCPAppProtocolHandler {
    */
   async handleAppRender(params) {
     const { component, data } = params;
-    
+
     printInfo(chalk.blue(`🎨 Rendering MCP App: ${component}`));
-    
+
     try {
       let componentResult;
-      
+
       switch (component) {
         case 'dashboard':
           componentResult = await renderDashboard(data);
@@ -172,18 +174,18 @@ export class MCPAppProtocolHandler {
         default:
           throw new Error(`Unsupported component type: ${component}`);
       }
-      
+
       return {
         success: true,
         component: componentResult,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       printError(chalk.red(`❌ Failed to render component ${component}: ${error.message}`));
       return {
         success: false,
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -193,15 +195,15 @@ export class MCPAppProtocolHandler {
    */
   async handleAppUpdate(params) {
     const { appId, updates } = params;
-    
+
     printInfo(chalk.blue(`🔄 Updating MCP App: ${appId}`));
-    
+
     // In a real implementation, this would update the app state
     return {
       success: true,
       appId,
       updated: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -210,16 +212,16 @@ export class MCPAppProtocolHandler {
    */
   async handleAppInteract(params) {
     const { appId, interaction, data } = params;
-    
+
     printInfo(chalk.blue(`🖱️  MCP App Interaction: ${interaction} in ${appId}`));
-    
+
     // In a real implementation, this would handle the interaction
     return {
       success: true,
       appId,
       interaction,
       result: 'processed',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -254,18 +256,24 @@ export const mcpAppProtocolHandler = new MCPAppProtocolHandler();
  */
 export function showMCPAppsExample() {
   printInfo(chalk.bold.cyan('\n🎨 MCP Apps Example Usage:\n'));
-  
+
   printInfo(chalk.blue('1. Dashboard Component:'));
   printInfo(chalk.gray('   renderDashboard({ project: "MyApp", status: "active", score: 85 })\n'));
-  
+
   printInfo(chalk.blue('2. Progress Component:'));
   printInfo(chalk.gray('   renderProgress({ title: "Building API", current: 7, total: 10 })\n'));
-  
+
   printInfo(chalk.blue('3. Form Component:'));
-  printInfo(chalk.gray('   renderForm({ title: "Create Task", fields: [{ name: "title", label: "Task Title" }] })\n'));
-  
+  printInfo(
+    chalk.gray(
+      '   renderForm({ title: "Create Task", fields: [{ name: "title", label: "Task Title" }] })\n'
+    )
+  );
+
   printInfo(chalk.blue('4. Table Component:'));
-  printInfo(chalk.gray('   renderTable({ headers: ["Name", "Status"], rows: [["API", "Complete"]] })\n'));
+  printInfo(
+    chalk.gray('   renderTable({ headers: ["Name", "Status"], rows: [["API", "Complete"]] })\n')
+  );
 }
 
 export default {
@@ -281,5 +289,5 @@ export default {
   validateMCPComponentProps,
   MCPAppProtocolHandler,
   mcpAppProtocolHandler,
-  showMCPAppsExample
+  showMCPAppsExample,
 };

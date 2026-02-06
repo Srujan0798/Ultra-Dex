@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex auto-implement command
  * Fully autonomous feature implementation (GOD MODE)
@@ -42,82 +44,96 @@ export function registerAutoImplementCommand(program) {
         const graphSummary = projectGraph.getSummary();
 
         if (options.full || options.noStop || options.approve) {
-            spinner.text = 'Running full automation pipeline...';
-            spinner.stop();
+          spinner.text = 'Running full automation pipeline...';
+          spinner.stop();
 
-            const pipeline = new AutomationPipeline({
-              feature,
-              provider,
-              options: {
-                noStop: options.noStop,
-                approve: options.approve,
-                noVerify: options.noVerify,
-                provider: providerId
-              }
-            });
+          const pipeline = new AutomationPipeline({
+            feature,
+            provider,
+            options: {
+              noStop: options.noStop,
+              approve: options.approve,
+              noVerify: options.noVerify,
+              provider: providerId,
+            },
+          });
 
-            try {
-              await pipeline.run();
-              spinner.start('Finalizing implementation...');
-              await updateStateFile();
-              spinner.succeed(chalk.green('Feature implemented autonomously!'));
-            } catch (err) {
-              spinner.fail(chalk.yellow(err.message));
-              return;
-            }
+          try {
+            await pipeline.run();
+            spinner.start('Finalizing implementation...');
+            await updateStateFile();
+            spinner.succeed(chalk.green('Feature implemented autonomously!'));
+          } catch (err) {
+            spinner.fail(chalk.yellow(err.message));
+            return;
+          }
         } else {
           // 2. Planning Phase (@Planner)
           spinner.text = '@Planner is breaking down the feature...';
 
           const state = await loadState();
-          const planMarkdown = state ? generateMarkdown(state) : (await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => ''));
+          const planMarkdown = state
+            ? generateMarkdown(state)
+            : await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => '');
           const contextMarkdown = await fs.readFile('CONTEXT.md', 'utf8').catch(() => '');
 
           const projectContext = {
-              state,
-              plan: planMarkdown,
-              context: contextMarkdown,
-              graph: graphSummary
+            state,
+            plan: planMarkdown,
+            context: contextMarkdown,
+            graph: graphSummary,
           };
 
-          const plan = await runAgentLoop('planner', `Break down this feature into atomic tasks: ${feature}. List exactly what needs to be changed.`, provider, projectContext);
+          const plan = await runAgentLoop(
+            'planner',
+            `Break down this feature into atomic tasks: ${feature}. List exactly what needs to be changed.`,
+            provider,
+            projectContext
+          );
 
           if (options.dryRun) {
-              spinner.succeed('Planning complete (Dry Run)');
-              printInfo(chalk.white('\nProposed Implementation Plan:'));
-              printInfo(chalk.gray(plan));
-              return;
+            spinner.succeed('Planning complete (Dry Run)');
+            printInfo(chalk.white('\nProposed Implementation Plan:'));
+            printInfo(chalk.gray(plan));
+            return;
           }
 
           // 3. Execution Phase - Iterative Implementation
           spinner.text = 'Executing implementation tasks...';
 
           // Split plan into tasks (naive splitting for now)
-          const tasks = plan.split('\n').filter(line => line.match(/^[*-]\s+/) || line.match(/^\d+\.\s+/));
+          const tasks = plan
+            .split('\n')
+            .filter((line) => line.match(/^[*-]\s+/) || line.match(/^\d+\.\s+/));
 
           if (tasks.length === 0) {
-              // If no clear list, treat the whole plan as one task
-              tasks.push(plan);
+            // If no clear list, treat the whole plan as one task
+            tasks.push(plan);
           }
 
           printInfo(chalk.dim(`\nFound ${tasks.length} sub-tasks to execute...`));
 
           for (let i = 0; i < tasks.length; i++) {
-              const task = tasks[i];
-              spinner.text = `[@Orchestrator] Task ${i+1}/${tasks.length}: ${task.substring(0, 50)}...`;
+            const task = tasks[i];
+            spinner.text = `[@Orchestrator] Task ${i + 1}/${tasks.length}: ${task.substring(0, 50)}...`;
 
-              await runAgentLoop('orchestrator', `Implement this specific task from the feature plan: ${task}\n\nOverall Feature: ${feature}\nFull Plan:\n${plan}`, provider, projectContext);
+            await runAgentLoop(
+              'orchestrator',
+              `Implement this specific task from the feature plan: ${task}\n\nOverall Feature: ${feature}\nFull Plan:\n${plan}`,
+              provider,
+              projectContext
+            );
 
-              // Incremental state update
-              await updateStateFile();
+            // Incremental state update
+            await updateStateFile();
           }
 
           // 4. Verification Phase (@Testing)
           if (!options.noVerify) {
-              spinner.text = 'Running verification gates...';
-              spinner.stop();
-              await verifyCommand(feature, { provider: providerId });
-              spinner.start('Finalizing implementation...');
+            spinner.text = 'Running verification gates...';
+            spinner.stop();
+            await verifyCommand(feature, { provider: providerId });
+            spinner.start('Finalizing implementation...');
           }
 
           // 5. Finalize

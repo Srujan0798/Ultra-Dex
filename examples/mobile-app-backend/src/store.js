@@ -26,7 +26,7 @@ export function getSession(token) {
 }
 
 export function listTasks(userId) {
-  return Array.from(tasks.values()).filter(task => task.userId === userId);
+  return Array.from(tasks.values()).filter((task) => task.userId === userId);
 }
 
 export function addTask(userId, payload) {
@@ -36,7 +36,7 @@ export function addTask(userId, payload) {
     userId,
     title: payload.title,
     status: payload.status || 'todo',
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
   tasks.set(id, task);
   return task;

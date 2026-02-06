@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { VisionAgent } from '../agents/vision.js';
 import { loadDesignInput, extractDesignTokens, buildComponentBlueprint } from './design.js';
 import { generateDocsFromFiles, writeDocsReport } from './docs.js';
@@ -15,7 +17,7 @@ export class MultimodalAgent {
     return {
       design,
       blueprint,
-      message: 'Generated blueprint from design input.'
+      message: 'Generated blueprint from design input.',
     };
   }
 

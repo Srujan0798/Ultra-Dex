@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import http from 'http';
 import { Command } from 'commander';
@@ -13,11 +15,15 @@ export function registerBotCommand(program) {
     .command('setup <provider>')
     .description('Configure bot provider (github|gitlab)')
     .action(async (provider) => {
-      const config = await configManager.loadGlobal() || {};
+      const config = (await configManager.loadGlobal()) || {};
       if (provider === 'github') {
-        config.github = { token: process.env.ULTRA_DEX_GITHUB_TOKEN || process.env.GITHUB_TOKEN || '' };
+        config.github = {
+          token: process.env.ULTRA_DEX_GITHUB_TOKEN || process.env.GITHUB_TOKEN || '',
+        };
       } else if (provider === 'gitlab') {
-        config.gitlab = { token: process.env.ULTRA_DEX_GITLAB_TOKEN || process.env.GITLAB_TOKEN || '' };
+        config.gitlab = {
+          token: process.env.ULTRA_DEX_GITLAB_TOKEN || process.env.GITLAB_TOKEN || '',
+        };
       }
       await configManager.saveGlobal(config);
       printSuccess(chalk.green('\n✅ Bot configuration saved.\n'));
@@ -75,4 +81,3 @@ export function registerBotCommand(program) {
 
   program.addCommand(bot);
 }
-

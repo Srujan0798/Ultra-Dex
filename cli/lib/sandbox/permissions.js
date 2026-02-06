@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import path from 'path';
 import { SecurityError, ValidationError } from '../utils/errors.js';
 
@@ -9,7 +11,7 @@ const BLOCKED_COMMAND_PATTERNS = [
   /:\(\)\s*\{\s*:\|\:\s*;\s*\}/, // fork bomb
   /\bdd\s+if=/i,
   /\bsudo\b/i,
-  /\bdocker\b/i
+  /\bdocker\b/i,
 ];
 
 export function assertSafeCommand(command) {

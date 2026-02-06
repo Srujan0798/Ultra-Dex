@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2024-12-18.acacia'
+  apiVersion: '2024-12-18.acacia',
 });
 
 export async function createCheckoutSession({ priceId, customerEmail }) {
@@ -17,6 +17,6 @@ export async function createCheckoutSession({ priceId, customerEmail }) {
     line_items: [{ price: priceId, quantity: 1 }],
     customer_email: customerEmail,
     success_url: process.env.STRIPE_SUCCESS_URL || 'https://ultra-dex.ai/billing/success',
-    cancel_url: process.env.STRIPE_CANCEL_URL || 'https://ultra-dex.ai/billing'
+    cancel_url: process.env.STRIPE_CANCEL_URL || 'https://ultra-dex.ai/billing',
   });
 }

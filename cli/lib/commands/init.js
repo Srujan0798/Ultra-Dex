@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -18,6 +20,7 @@ import { printError, printInfo, printSuccess } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { runAutoContext } from '../auto-context/index.js';
+import { ensureTelemetryConsent, recordTelemetryEvent } from '../utils/telemetry.js';
 
 const LIVE_STACKS = {
   'next15-saas': 'Next.js 15 SaaS (Clerk + Stripe + Prisma + Admin)',
@@ -52,8 +55,12 @@ export function registerInitCommand(program) {
     .option('-d, --dir <directory>', 'Output directory', '.')
     .option('--preview', 'Preview files without creating them')
     .option('--live', 'Generate a runnable scaffold')
+    .option('--enterprise', 'Initialize with enterprise defaults')
     .option('--template <name>', 'Copy a starter template from cli/templates')
-    .option('--stack <preset>', 'Preset: next15-saas, remix-saas, sveltekit-saas, fastapi-api, ecommerce-next, ai-saas (plus others)')
+    .option(
+      '--stack <preset>',
+      'Preset: next15-saas, remix-saas, sveltekit-saas, fastapi-api, ecommerce-next, ai-saas (plus others)'
+    )
     .action(async (options) => {
       try {
         showBanner();
@@ -114,7 +121,7 @@ async function handleTemplateInit(options) {
     if (existing.length > 0) {
       throw new AppError('Target sector is occupied. Execution halted to prevent data loss.', {
         code: 'DIR_NOT_EMPTY',
-        suggestions: ['Choose a different directory', 'Empty the target directory']
+        suggestions: ['Choose a different directory', 'Empty the target directory'],
       });
     }
   }
@@ -129,11 +136,19 @@ async function handleTemplateInit(options) {
   }
 
   await copyDirectory(sourcePath, outputDir);
+  if (options.enterprise) {
+    await applyEnterprisePreset(outputDir);
+  }
   printSuccess(`\n✅ Template "${templateName}" deployed to ${outputDir}\n`);
   printInfo(chalk.gray('Next steps:'));
   printInfo(chalk.cyan(`  1. cd ${outputDir}`));
   printInfo(chalk.cyan('  2. npm install'));
   printInfo(chalk.cyan('  3. npm run dev'));
+  await maybePromptTelemetry({
+    mode: 'template',
+    template: templateName,
+    enterprise: options.enterprise,
+  });
 }
 
 /**
@@ -144,7 +159,7 @@ async function handleLiveScaffold(options) {
   const preset = options.stack || 'next15-saas';
   if (!LIVE_STACKS[preset]) {
     throw new ValidationError(`Unknown frequency modulation: ${preset}`, [
-      `Available presets: ${Object.keys(LIVE_STACKS).join(', ')}`
+      `Available presets: ${Object.keys(LIVE_STACKS).join(', ')}`,
     ]);
   }
 
@@ -154,14 +169,14 @@ async function handleLiveScaffold(options) {
     if (existing.length > 0) {
       throw new AppError('Target sector is occupied. Execution halted to prevent data loss.', {
         code: 'DIR_NOT_EMPTY',
-        suggestions: ['Choose a different directory', 'Empty the target directory']
+        suggestions: ['Choose a different directory', 'Empty the target directory'],
       });
     }
   }
 
   // Handle next15-saas stack with programmatic generation
   if (preset === 'next15-saas') {
-    return await generateNext15SaaSStack(outputDir);
+    return await generateNext15SaaSStack(outputDir, options);
   }
 
   const liveSourcePath = path.join(LIVE_TEMPLATES_ROOT, preset);
@@ -176,6 +191,9 @@ async function handleLiveScaffold(options) {
   const spinner = ora(`Fabricating ${LIVE_STACKS[preset]} infrastructure...`).start();
   try {
     await copyDirectory(sourcePath, outputDir);
+    if (options.enterprise) {
+      await applyEnterprisePreset(outputDir);
+    }
     spinner.succeed(chalk.green('Infrastructure deployment complete.'));
 
     try {
@@ -190,6 +208,7 @@ async function handleLiveScaffold(options) {
     process.stdout.write(chalk.cyan(`  1. cd ${outputDir}`) + '\n');
     process.stdout.write(chalk.cyan('  2. npm install') + '\n');
     process.stdout.write(chalk.cyan('  3. npm run dev\n') + '\n');
+    await maybePromptTelemetry({ mode: 'live', stack: preset, enterprise: options.enterprise });
   } catch (error) {
     spinner.fail(chalk.red('Infrastructure deployment failed'));
     throw error;
@@ -277,12 +296,22 @@ async function handleInteractiveInit(options) {
     },
   ]);
 
+  const finalAnswers = { ...answers };
+  if (options.enterprise) {
+    finalAnswers.database = 'PostgreSQL';
+    finalAnswers.auth = 'Auth0';
+    finalAnswers.payments = 'Stripe';
+  }
+
   process.stdout.write('\n');
   const spinner = ora(chalk.hex('#8b5cf6')('Compiling project matrix...')).start();
 
   try {
-    const outputDir = path.resolve(options.dir, answers.projectName);
-    await scaffoldProject(outputDir, answers);
+    const outputDir = path.resolve(options.dir, finalAnswers.projectName);
+    await scaffoldProject(outputDir, finalAnswers);
+    if (options.enterprise) {
+      await applyEnterprisePreset(outputDir);
+    }
 
     try {
       await runAutoContext(outputDir);
@@ -292,10 +321,89 @@ async function handleInteractiveInit(options) {
     }
 
     spinner.succeed(chalk.green('Protocol initialization complete.'));
-    showFinalInstructions(outputDir, answers);
+    showFinalInstructions(outputDir, finalAnswers);
+    await maybePromptTelemetry({
+      mode: 'interactive',
+      template: finalAnswers.frontend,
+      enterprise: options.enterprise,
+    });
   } catch (error) {
     spinner.fail(chalk.red('Initialization failed'));
     throw error;
+  }
+}
+
+async function maybePromptTelemetry(context = {}) {
+  try {
+    const enabled = await ensureTelemetryConsent({ prompt: true, source: 'init' });
+    if (enabled) {
+      await recordTelemetryEvent({ event: 'init', ...context });
+    }
+  } catch {
+    // Telemetry should never block initialization
+  }
+}
+
+async function applyEnterprisePreset(outputDir) {
+  const enterpriseDir = path.join(TEMPLATE_ROOT, 'enterprise');
+  const fallbackDir = path.join(TEMPLATE_FALLBACK, 'enterprise');
+  let sourceDir = enterpriseDir;
+  try {
+    await fs.access(enterpriseDir);
+  } catch {
+    sourceDir = fallbackDir;
+  }
+
+  const docsOpsDir = path.join(outputDir, 'docs', 'ops');
+  await fs.mkdir(docsOpsDir, { recursive: true });
+  const drSource = path.join(sourceDir, 'disaster-recovery.md');
+  const drTarget = path.join(docsOpsDir, 'DISASTER-RECOVERY.md');
+  try {
+    const drContent = await fs.readFile(drSource, 'utf8');
+    await fs.writeFile(drTarget, drContent);
+  } catch {
+    // ignore missing template
+  }
+
+  const prismaDir = path.join(outputDir, 'prisma');
+  await fs.mkdir(prismaDir, { recursive: true });
+  const schemaSource = path.join(sourceDir, 'schema-multitenant.prisma');
+  const schemaTarget = path.join(prismaDir, 'schema.prisma');
+  const fallbackTarget = path.join(prismaDir, 'schema.enterprise.prisma');
+  try {
+    const schemaContent = await fs.readFile(schemaSource, 'utf8');
+    if (await pathExists(schemaTarget, 'file')) {
+      await fs.writeFile(fallbackTarget, schemaContent);
+    } else {
+      await fs.writeFile(schemaTarget, schemaContent);
+    }
+  } catch {
+    // ignore missing template
+  }
+
+  const enterpriseDoc = path.join(outputDir, 'docs', 'ENTERPRISE-PRESET.md');
+  const enterpriseContent =
+    `# Enterprise Preset\n\n` +
+    `Applied defaults:\n` +
+    `- Multi-tenant database schema\n` +
+    `- SOC2 + compliance focus\n` +
+    `- SSO authentication ready\n` +
+    `- High-scale architecture planning\n`;
+  await fs.mkdir(path.dirname(enterpriseDoc), { recursive: true });
+  await fs.writeFile(enterpriseDoc, enterpriseContent);
+
+  const planPath = path.join(outputDir, 'IMPLEMENTATION-PLAN.md');
+  try {
+    const plan = await fs.readFile(planPath, 'utf8');
+    const header =
+      `# Enterprise Preset\\n\\n` +
+      `This project was initialized with **--enterprise** defaults.\\n` +
+      `- Multi-tenant DB\\n- SOC2 Compliance\\n- SSO Authentication\\n\\n`;
+    if (!plan.startsWith('# Enterprise Preset')) {
+      await fs.writeFile(planPath, header + plan);
+    }
+  } catch {
+    // ignore missing plan
   }
 }
 
@@ -369,10 +477,6 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
   if (answers.includeDocs) {
     await deployDocs(outputDir);
   }
-
-  if (answers.includeAgents) {
-    await deployAgents(outputDir);
-  }
 }
 
 async function ensureProviderConfig(outputDir) {
@@ -384,8 +488,8 @@ async function ensureProviderConfig(outputDir) {
     await fs.mkdir(configDir, { recursive: true });
     const payload = {
       ai: {
-        defaultProvider: provider
-      }
+        defaultProvider: provider,
+      },
     };
     await fs.writeFile(configPath, JSON.stringify(payload, null, 2));
   } catch {
@@ -407,12 +511,12 @@ async function deployCursorRules(outputDir) {
   const cursorRulesPath = path.join(ASSETS_ROOT, 'cursor-rules');
   const fallbackRulesPath = path.join(ROOT_FALLBACK, 'cursor-rules');
   try {
-    const { files: ruleFiles, sourcePath } = await listWithFallback(cursorRulesPath, fallbackRulesPath);
-    for (const file of ruleFiles.filter(f => f.endsWith('.mdc'))) {
-      await fs.copyFile(
-        path.join(sourcePath, file),
-        path.join(rulesDir, file)
-      );
+    const { files: ruleFiles, sourcePath } = await listWithFallback(
+      cursorRulesPath,
+      fallbackRulesPath
+    );
+    for (const file of ruleFiles.filter((f) => f.endsWith('.mdc'))) {
+      await fs.copyFile(path.join(sourcePath, file), path.join(rulesDir, file));
     }
 
     const coreRulePath = path.join(sourcePath, '00-ultra-dex-core.mdc');
@@ -431,9 +535,18 @@ async function deployCursorRules(outputDir) {
 
 async function deployMasterPlan(outputDir) {
   const templatePath = path.join(ASSETS_ROOT, 'saas-plan', '04-Imp-Template.md');
-  const fallbackTemplatePath = path.join(ROOT_FALLBACK, '@ ultra-dex', 'Saas plan', '04-Imp-Template.md');
+  const fallbackTemplatePath = path.join(
+    ROOT_FALLBACK,
+    '@ ultra-dex',
+    'Saas plan',
+    '04-Imp-Template.md'
+  );
   try {
-    await copyWithFallback(templatePath, fallbackTemplatePath, path.join(outputDir, 'docs', 'MASTER-PLAN.md'));
+    await copyWithFallback(
+      templatePath,
+      fallbackTemplatePath,
+      path.join(outputDir, 'docs', 'MASTER-PLAN.md')
+    );
   } catch (error) {
     printWarning('⚠️  Could not deploy master plan template: ' + error.message);
   }
@@ -445,8 +558,16 @@ async function deployDocs(outputDir) {
   const fallbackVerificationPath = path.join(ROOT_FALLBACK, 'docs', 'VERIFICATION.md');
   const fallbackAgentPath = path.join(ROOT_FALLBACK, 'agents', 'AGENT-INSTRUCTIONS.md');
   try {
-    await copyWithFallback(verificationPath, fallbackVerificationPath, path.join(outputDir, 'docs', 'CHECKLIST.md'));
-    await copyWithFallback(agentPath, fallbackAgentPath, path.join(outputDir, 'docs', 'AI-PROMPTS.md'));
+    await copyWithFallback(
+      verificationPath,
+      fallbackVerificationPath,
+      path.join(outputDir, 'docs', 'CHECKLIST.md')
+    );
+    await copyWithFallback(
+      agentPath,
+      fallbackAgentPath,
+      path.join(outputDir, 'docs', 'AI-PROMPTS.md')
+    );
   } catch (error) {
     printWarning('⚠️  Could not deploy documentation files: ' + error.message);
   }
@@ -459,7 +580,14 @@ async function deployAgents(outputDir) {
   const agentsSourcePath = path.join(ASSETS_ROOT, 'agents');
   const fallbackAgentsPath = path.join(ROOT_FALLBACK, 'agents');
   try {
-    const tiers = ['1-leadership', '2-development', '3-security', '4-devops', '5-quality', '6-specialist'];
+    const tiers = [
+      '1-leadership',
+      '2-development',
+      '3-security',
+      '4-devops',
+      '5-quality',
+      '6-specialist',
+    ];
     let sourceRoot = agentsSourcePath;
     try {
       await fs.access(agentsSourcePath);
@@ -473,11 +601,8 @@ async function deployAgents(outputDir) {
 
       const tierPath = path.join(sourceRoot, tier);
       const tierFiles = await fs.readdir(tierPath);
-      for (const file of tierFiles.filter(f => f.endsWith('.md'))) {
-        await fs.copyFile(
-          path.join(tierPath, file),
-          path.join(tierDir, file)
-        );
+      for (const file of tierFiles.filter((f) => f.endsWith('.md'))) {
+        await fs.copyFile(path.join(tierPath, file), path.join(tierDir, file));
       }
     }
 
@@ -485,10 +610,7 @@ async function deployAgents(outputDir) {
       path.join(sourceRoot, '00-AGENT_INDEX.md'),
       path.join(agentsDir, '00-AGENT_INDEX.md')
     );
-    await fs.copyFile(
-      path.join(sourceRoot, 'README.md'),
-      path.join(agentsDir, 'README.md')
-    );
+    await fs.copyFile(path.join(sourceRoot, 'README.md'), path.join(agentsDir, 'README.md'));
   } catch (error) {
     printWarning('⚠️  Could not deploy agent configurations: ' + error.message);
   }
@@ -511,9 +633,6 @@ function showFinalInstructions(outputDir, answers) {
   if (answers.includeCursorRules) {
     process.stdout.write(chalk.gray('  ├── .cursor/rules/') + '\n');
   }
-  if (answers.includeAgents) {
-    process.stdout.write(chalk.gray('  └── .agents/') + '\n');
-  }
 
   process.stdout.write('\n' + chalk.bold('Mission Directives:') + '\n');
   process.stdout.write(chalk.cyan(`  1. cd ${answers.projectName}`) + '\n');
@@ -528,7 +647,7 @@ function showFinalInstructions(outputDir, answers) {
  * Uses template directory instead of inline templates for maintainability
  * @param {string} outputDir Target directory
  */
-async function generateNext15SaaSStack(outputDir) {
+async function generateNext15SaaSStack(outputDir, options = {}) {
   const spinner = ora('Generating Next.js 15 SaaS infrastructure...').start();
 
   try {
@@ -544,6 +663,9 @@ async function generateNext15SaaSStack(outputDir) {
     }
 
     await copyDirectory(sourcePath, outputDir);
+    if (options.enterprise) {
+      await applyEnterprisePreset(outputDir);
+    }
 
     spinner.succeed(chalk.green('Next.js 15 SaaS infrastructure deployed!'));
 
@@ -552,7 +674,9 @@ async function generateNext15SaaSStack(outputDir) {
     printInfo('\n✨ Features included:');
     process.stdout.write(chalk.gray('  • Clerk authentication with middleware\n'));
     process.stdout.write(chalk.gray('  • Stripe payments with checkout & webhooks\n'));
-    process.stdout.write(chalk.gray('  • Prisma ORM with User, Subscription, Invoice, Feature, Usage models\n'));
+    process.stdout.write(
+      chalk.gray('  • Prisma ORM with User, Subscription, Invoice, Feature, Usage models\n')
+    );
     process.stdout.write(chalk.gray('  • Email integration with Resend\n'));
     process.stdout.write(chalk.gray('  • S3 file upload utilities\n'));
     process.stdout.write(chalk.gray('  • Tailwind CSS styling\n'));
@@ -564,7 +688,6 @@ async function generateNext15SaaSStack(outputDir) {
     process.stdout.write(chalk.cyan('  4. # Add your API keys to .env.local') + '\n');
     process.stdout.write(chalk.cyan('  5. npx prisma migrate dev') + '\n');
     process.stdout.write(chalk.cyan('  6. npm run dev\n') + '\n');
-
   } catch (error) {
     spinner.fail(chalk.red('Failed to generate SaaS infrastructure'));
     throw error;

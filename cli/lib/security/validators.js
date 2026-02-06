@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
@@ -8,7 +10,7 @@ const SECRET_PATTERNS = [
   /AIza[0-9A-Za-z\-_]{35}/g, // Google API key
   /AKIA[0-9A-Z]{16}/g, // AWS Access Key
   /-----BEGIN PRIVATE KEY-----/g,
-  /xoxb-[0-9A-Za-z\-]{10,}/g // Slack
+  /xoxb-[0-9A-Za-z\-]{10,}/g, // Slack
 ];
 
 export function validateSafePath(inputPath) {
@@ -25,7 +27,7 @@ export async function scanForSecrets(rootDir) {
   const files = await glob('**/*.{js,ts,tsx,jsx,md,json,yml,yaml,env}', {
     cwd: rootDir,
     nodir: true,
-    ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**']
+    ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**'],
   });
 
   const findings = [];

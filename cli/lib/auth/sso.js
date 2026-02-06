@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enterprise SSO/SAML Integration
  * Supports Okta, Auth0, and Azure AD
@@ -13,20 +15,20 @@ const PROVIDERS = {
     name: 'Okta',
     icon: '🔵',
     discovery: '.well-known/openid-configuration',
-    defaultScopes: ['openid', 'profile', 'email', 'offline_access']
+    defaultScopes: ['openid', 'profile', 'email', 'offline_access'],
   },
   auth0: {
     name: 'Auth0',
     icon: '🟠',
     discovery: '.well-known/openid-configuration',
-    defaultScopes: ['openid', 'profile', 'email', 'offline_access']
+    defaultScopes: ['openid', 'profile', 'email', 'offline_access'],
   },
   azure: {
     name: 'Azure AD',
     icon: '🟦',
     discovery: 'v2.0/.well-known/openid-configuration',
-    defaultScopes: ['openid', 'profile', 'email', 'offline_access', 'User.Read']
-  }
+    defaultScopes: ['openid', 'profile', 'email', 'offline_access', 'User.Read'],
+  },
 };
 
 const SAML_PROVIDERS = [
@@ -34,7 +36,7 @@ const SAML_PROVIDERS = [
   { name: 'Azure AD', value: 'azure' },
   { name: 'Auth0', value: 'auth0' },
   { name: 'Google Workspace', value: 'google' },
-  { name: 'Custom', value: 'custom' }
+  { name: 'Custom', value: 'custom' },
 ];
 
 export class SSOClient {
@@ -69,10 +71,10 @@ export class SSOClient {
         message: 'Select SSO protocol:',
         choices: [
           { name: 'OIDC (Okta/Auth0/Azure)', value: 'oidc' },
-          { name: 'SAML 2.0', value: 'saml' }
+          { name: 'SAML 2.0', value: 'saml' },
         ],
-        default: 'oidc'
-      }
+        default: 'oidc',
+      },
     ]);
 
     return this.configure({ mode });
@@ -88,22 +90,22 @@ export class SSOClient {
         message: 'Select Identity Provider:',
         choices: Object.entries(PROVIDERS).map(([key, val]) => ({
           name: `${val.icon} ${val.name}`,
-          value: key
+          value: key,
         })),
-        default: this.provider
+        default: this.provider,
       },
       {
         type: 'input',
         name: 'domain',
         message: 'Domain (e.g., dev-12345.okta.com):',
-        validate: input => input.length > 0 || 'Domain is required'
+        validate: (input) => input.length > 0 || 'Domain is required',
       },
       {
         type: 'input',
         name: 'clientId',
         message: 'Client ID:',
-        validate: input => input.length > 0 || 'Client ID is required'
-      }
+        validate: (input) => input.length > 0 || 'Client ID is required',
+      },
     ]);
 
     this.provider = answers.provider;
@@ -111,12 +113,12 @@ export class SSOClient {
     this.clientId = answers.clientId;
 
     // Save to global config
-    const config = await configManager.loadGlobal() || {};
+    const config = (await configManager.loadGlobal()) || {};
     config.sso = {
       mode: 'oidc',
       provider: this.provider,
       domain: this.domain,
-      clientId: this.clientId
+      clientId: this.clientId,
     };
     await configManager.saveGlobal(config);
 
@@ -132,36 +134,36 @@ export class SSOClient {
         type: 'list',
         name: 'idp',
         message: 'Select Identity Provider:',
-        choices: SAML_PROVIDERS.map(p => ({ name: p.name, value: p.value })),
-        default: 'okta'
+        choices: SAML_PROVIDERS.map((p) => ({ name: p.name, value: p.value })),
+        default: 'okta',
       },
       {
         type: 'input',
         name: 'entryPoint',
         message: 'SSO URL / Entry Point:',
-        validate: input => input.length > 0 || 'Entry point is required'
+        validate: (input) => input.length > 0 || 'Entry point is required',
       },
       {
         type: 'input',
         name: 'issuer',
         message: 'Issuer / Entity ID:',
-        validate: input => input.length > 0 || 'Issuer is required'
+        validate: (input) => input.length > 0 || 'Issuer is required',
       },
       {
         type: 'input',
         name: 'cert',
         message: 'X509 Certificate (single line or PEM):',
-        validate: input => input.length > 0 || 'Certificate is required'
+        validate: (input) => input.length > 0 || 'Certificate is required',
       },
       {
         type: 'input',
         name: 'callbackUrl',
         message: 'Callback URL:',
-        default: 'http://localhost:8080/saml/callback'
-      }
+        default: 'http://localhost:8080/saml/callback',
+      },
     ]);
 
-    const config = await configManager.loadGlobal() || {};
+    const config = (await configManager.loadGlobal()) || {};
     config.sso = {
       mode: 'saml',
       provider: answers.idp,
@@ -169,8 +171,8 @@ export class SSOClient {
         entryPoint: answers.entryPoint,
         issuer: answers.issuer,
         cert: answers.cert,
-        callbackUrl: answers.callbackUrl
-      }
+        callbackUrl: answers.callbackUrl,
+      },
     };
     await configManager.saveGlobal(config);
 
@@ -180,7 +182,7 @@ export class SSOClient {
 
   /**
    * Simulate login flow
-   * In a real implementation, this would start a local server, 
+   * In a real implementation, this would start a local server,
    * open a browser, and handle the OIDC callback.
    */
   async login() {
@@ -201,14 +203,16 @@ export class SSOClient {
       printInfo(`\n🔐 Initiating SAML login via ${config.sso.provider || 'IdP'}...`);
       printInfo(`   Entry Point: ${chalk.cyan(samlConfig.entryPoint || 'unknown')}`);
       printInfo(`   Issuer: ${chalk.cyan(samlConfig.issuer || 'unknown')}`);
-      printInfo(`   Callback: ${chalk.cyan(samlConfig.callbackUrl || 'http://localhost:8080/saml/callback')}`);
+      printInfo(
+        `   Callback: ${chalk.cyan(samlConfig.callbackUrl || 'http://localhost:8080/saml/callback')}`
+      );
 
       const { response } = await inquirer.prompt([
         {
           type: 'input',
           name: 'response',
-          message: 'Paste SAMLResponse (simulated):'
-        }
+          message: 'Paste SAMLResponse (simulated):',
+        },
       ]);
 
       if (!response) {
@@ -219,7 +223,7 @@ export class SSOClient {
         username: 'saml-user@enterprise.com',
         provider: `SAML:${config.sso.provider || 'IdP'}`,
         role: 'member',
-        loginTime: new Date().toISOString()
+        loginTime: new Date().toISOString(),
       };
 
       config.user = user;
@@ -249,27 +253,29 @@ export class SSOClient {
         name: 'code',
         message: 'Enter the authorization code (simulated):',
         // In real CLI, this is automated via localhost server
-      }
+      },
     ]);
 
     // Simulate token exchange
     printInfo('\n🔄 Exchanging code for tokens...');
-    
+
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Mock successful login
     const user = {
       username: 'sso-user@enterprise.com',
       provider: providerConfig.name,
       role: 'member', // Default role
-      loginTime: new Date().toISOString()
+      loginTime: new Date().toISOString(),
     };
 
     config.user = user;
     await configManager.saveGlobal(config);
 
-    printSuccess(`\n✅ Successfully logged in as ${chalk.bold(user.username)} via ${user.provider}`);
+    printSuccess(
+      `\n✅ Successfully logged in as ${chalk.bold(user.username)} via ${user.provider}`
+    );
     return user;
   }
 }

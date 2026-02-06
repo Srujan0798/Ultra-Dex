@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Impact Visualizer
  * Converts impact analysis to graph data and HTML reports.
@@ -16,7 +18,7 @@ export function buildImpactGraph(analysis, target) {
     id: rootId,
     label: target,
     type: 'root',
-    risk: analysis.riskLevel || 'low'
+    risk: analysis.riskLevel || 'low',
   });
 
   (analysis.impactedFiles || []).forEach((file, index) => {
@@ -25,12 +27,12 @@ export function buildImpactGraph(analysis, target) {
       id: nodeId,
       label: file.path,
       type: 'dependent',
-      distance: file.distance
+      distance: file.distance,
     });
     links.push({
       source: rootId,
       target: nodeId,
-      distance: file.distance
+      distance: file.distance,
     });
   });
 
@@ -121,13 +123,13 @@ export async function writeImpactReport(outputPath, graph) {
   const resolvedPath = path.resolve(process.cwd(), outputPath);
   const cwd = process.cwd();
   if (!resolvedPath.startsWith(cwd)) {
-    throw new AppError('Invalid output path. Path traversal detected.', { code: 'REPORT_PATH_INVALID' });
+    throw new AppError('Invalid output path. Path traversal detected.', {
+      code: 'REPORT_PATH_INVALID',
+    });
   }
 
   const extension = path.extname(resolvedPath).toLowerCase();
-  const content = extension === '.json'
-    ? JSON.stringify(graph, null, 2)
-    : renderImpactHtml(graph);
+  const content = extension === '.json' ? JSON.stringify(graph, null, 2) : renderImpactHtml(graph);
 
   await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
   await fs.writeFile(resolvedPath, content, 'utf8');

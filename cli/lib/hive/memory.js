@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -29,7 +31,7 @@ export async function addHiveEntry(entry) {
     id: entry.id || `${Date.now()}`,
     agent: entry.agent || 'unknown',
     content: entry.content,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   });
   return await writeHiveMemory(memory);
 }

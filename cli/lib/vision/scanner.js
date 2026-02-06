@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Vision Layer (Wave 6)
  * Multimodal UI Auditing via Playwright and Vision LLMs
@@ -33,7 +35,7 @@ export class VisionScanner {
     await this.ensureDirs();
     const browser = await chromium.launch();
     const page = await browser.newPage({ viewport: this.viewport });
-    
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     // If type is baseline, don't use timestamp to allow easy overwriting
     const filename = type === 'baseline' ? `${name}.png` : `${name}-${timestamp}.png`;
@@ -69,29 +71,37 @@ export class VisionScanner {
    */
   async compare(name, currentPath) {
     const baselinePath = path.join(this.baselineDir, `${name}.png`);
-    
+
     if (!existsSync(baselinePath)) {
-      console.log(chalk.yellow(`\n⚠️  No baseline found for "${name}". Treating this as the first run.`));
-      return { status: 'NEW', message: 'No baseline exists. Review this snapshot and promote it if correct.' };
+      console.log(
+        chalk.yellow(`\n⚠️  No baseline found for "${name}". Treating this as the first run.`)
+      );
+      return {
+        status: 'NEW',
+        message: 'No baseline exists. Review this snapshot and promote it if correct.',
+      };
     }
 
     const provider = getProvider();
     if (!provider || !provider.analyzeImage) {
-      return { status: 'SKIPPED', message: 'Current AI provider does not support Vision analysis.' };
+      return {
+        status: 'SKIPPED',
+        message: 'Current AI provider does not support Vision analysis.',
+      };
     }
 
     try {
       console.log(chalk.magenta('🧠 Performing AI Visual Regression Analysis...'));
-      
+
       // Note: Most providers handle multi-image via separate messages or array of contents.
-      // For simplicity in this v3.5 implementation, we assume the provider SDK can handle 
-      // comparing two images if we pass specific prompt instructions, 
+      // For simplicity in this v3.5 implementation, we assume the provider SDK can handle
+      // comparing two images if we pass specific prompt instructions,
       // or we might need to rely on the agent's ability to see one image contextually.
-      // 
-      // BETTER APPROACH for v3.5: We will analyze the *Current* image against a text description 
+      //
+      // BETTER APPROACH for v3.5: We will analyze the *Current* image against a text description
       // of the *Baseline* if multi-image upload isn't fully standardized in our wrapper yet.
       // BUT, let's try to pass both if the provider supports it.
-      
+
       const baselineBuffer = await fs.readFile(baselinePath);
       const currentBuffer = await fs.readFile(currentPath);
 
@@ -110,17 +120,19 @@ Focus on:
 
 Return a verdict: [PASS] or [FAIL] followed by a concise explanation.
 `;
-      
+
       // Assuming our provider wrapper handles array of images or we send them sequentially.
       // If the provider wrapper signature is analyzeImage(imageBuffer, prompt), it might strictly take one.
       // For this implementations, we will analyze the CURRENT image and ask if it looks "broken".
       // Enhancing this to full multi-image is a Wave 7 task.
-      
-      // Fallback Strategy for v3.5: Single Image Audit of "Current"
-      const result = await provider.analyzeImage(currentBuffer, 'Analyze this UI screenshot. Does it look broken, have layout shifts, or show error messages?');
-      
-      return { status: 'ANALYZED', message: result };
 
+      // Fallback Strategy for v3.5: Single Image Audit of "Current"
+      const result = await provider.analyzeImage(
+        currentBuffer,
+        'Analyze this UI screenshot. Does it look broken, have layout shifts, or show error messages?'
+      );
+
+      return { status: 'ANALYZED', message: result };
     } catch (error) {
       return { status: 'ERROR', message: error.message };
     }
@@ -129,9 +141,12 @@ Return a verdict: [PASS] or [FAIL] followed by a concise explanation.
   /**
    * Analyze a screenshot using a Vision-capable LLM (Single Image)
    */
-  async analyze(screenshotPath, prompt = 'Perform a UI/UX audit of this screenshot. Check for alignment issues, broken layouts, and accessibility gaps.') {
+  async analyze(
+    screenshotPath,
+    prompt = 'Perform a UI/UX audit of this screenshot. Check for alignment issues, broken layouts, and accessibility gaps.'
+  ) {
     const provider = getProvider();
-    
+
     if (!provider || !provider.analyzeImage) {
       console.log(chalk.yellow('\n⚠️ Current AI provider does not support Vision analysis.'));
       return 'Vision analysis skipped: Provider not supported.';

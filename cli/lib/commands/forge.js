@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex forge command
  * NL-to-Code: Manifests a project from a natural language request
@@ -21,10 +23,10 @@ export function registerForgeCommand(program) {
         printInfo(chalk.gray(`Request: "${request}"\n`));
 
         const spinner = ora('Initializing NL-to-Code pipeline...').start();
-        
+
         // Execute the full pipeline
         const result = await runPipeline(request);
-        
+
         spinner.succeed('Pipeline execution complete!');
 
         printSuccess(chalk.green('\n✅ Project forged successfully!'));
@@ -47,7 +49,6 @@ export function registerForgeCommand(program) {
         printInfo(chalk.cyan(`  1. cd ${options.output}`));
         printInfo(chalk.cyan('  2. ultra-dex serve (Start the kernel)'));
         printInfo(chalk.cyan('  3. ultra-dex dashboard (Monitor the build)\n'));
-
       } catch (error) {
         await handleError(error, { command: 'forge', request, options });
         process.exitCode = 1;

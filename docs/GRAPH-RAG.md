@@ -9,22 +9,26 @@ The Deep Graph RAG system provides graph-based context storage and retrieval for
 ## Features
 
 ### 1. Neo4j Integration
+
 - Automatic connection to Neo4j database (configurable via environment variables)
 - Graceful fallback to in-memory storage when Neo4j is unavailable
 - Schema initialization with constraints and indexes
 
 ### 2. Relationship Mapping
+
 - Maps relationships between files (imports/dependencies)
 - Extracts and indexes functions, classes, and data types
 - Tracks architectural decisions and their affected files
 
 ### 3. Impact Analysis Queries
+
 - **"What breaks if I change X?"** - Transitive dependency analysis
 - Function-level impact tracking
 - Risk level assessment (low/medium/high)
 - Related architectural decisions
 
 ### 4. Graph-Based Context
+
 - ContextEngine for building rich context from graph queries
 - Replaces file-based context with semantic graph retrieval
 - Supports natural language queries
@@ -82,7 +86,7 @@ await contextEngine.initialize();
 const context = await contextEngine.buildContext('src/api/users.js', {
   includeImpact: true,
   includeCoupling: true,
-  depth: 2
+  depth: 2,
 });
 
 // Natural language query
@@ -110,15 +114,12 @@ New MCP tools available:
   - `type`: File extension (js, ts, etc.)
   - `size`: File size
   - `symbols`: Array of exported symbols
-  
 - **Function**: Represents a function or method
   - `name`: Function name
   - `file`: Containing file
-  
 - **DataType**: Represents classes, interfaces, types
   - `name`: Type name
   - `kind`: 'class', 'interface', etc.
-  
 - **Decision**: Represents an architectural decision
   - `title`: Decision title
   - `description`: Full description

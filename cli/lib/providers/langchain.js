@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * LangGraph Native Integration for Ultra-Dex
  * Implements core workflows using StateGraph
@@ -17,11 +19,11 @@ const GraphState = {
   },
   context: {
     value: (x, y) => y, // Last write wins
-    default: () => "",
+    default: () => '',
   },
   summary: {
     value: (x, y) => y,
-    default: () => "",
+    default: () => '',
   },
   tasks: {
     value: (x, y) => y,
@@ -29,8 +31,8 @@ const GraphState = {
   },
   review: {
     value: (x, y) => y,
-    default: () => "",
-  }
+    default: () => '',
+  },
 };
 
 /**
@@ -41,7 +43,7 @@ export class LangChainAdapter extends BaseProvider {
     super(options.apiKey || process.env.OPENAI_API_KEY, options);
     this.memory = options.memory || null;
     this.verbose = options.verbose || false;
-    
+
     // Core LLM
     this.llm = new ChatOpenAI({
       modelName: this.model || 'gpt-4',
@@ -68,7 +70,7 @@ export class LangChainAdapter extends BaseProvider {
       codeReview: this.createCodeReviewGraph(),
       taskBreakdown: this.createTaskBreakdownGraph(),
       rag: this.createRAGGraph(),
-      memory: this.createMemoryGraph()
+      memory: this.createMemoryGraph(),
     };
   }
 
@@ -77,16 +79,16 @@ export class LangChainAdapter extends BaseProvider {
   // ============================================================================
   createSummarizeGraph() {
     const workflow = new StateGraph({ channels: GraphState })
-      .addNode("summarize", async (state) => {
+      .addNode('summarize', async (state) => {
         const text = state.messages[state.messages.length - 1].content;
         const response = await this.llm.invoke([
-          new SystemMessage("Summarize the following text concisely."),
-          new HumanMessage(text)
+          new SystemMessage('Summarize the following text concisely.'),
+          new HumanMessage(text),
         ]);
         return { summary: response.content, messages: [response] };
       })
-      .addEdge(START, "summarize")
-      .addEdge("summarize", END);
+      .addEdge(START, 'summarize')
+      .addEdge('summarize', END);
 
     return workflow.compile();
   }
@@ -96,16 +98,18 @@ export class LangChainAdapter extends BaseProvider {
   // ============================================================================
   createCodeReviewGraph() {
     const workflow = new StateGraph({ channels: GraphState })
-      .addNode("review", async (state) => {
+      .addNode('review', async (state) => {
         const code = state.messages[state.messages.length - 1].content;
         const response = await this.llm.invoke([
-          new SystemMessage("You are a senior engineer. Review the following code for bugs, security, and style."),
-          new HumanMessage(code)
+          new SystemMessage(
+            'You are a senior engineer. Review the following code for bugs, security, and style.'
+          ),
+          new HumanMessage(code),
         ]);
         return { review: response.content, messages: [response] };
       })
-      .addEdge(START, "review")
-      .addEdge("review", END);
+      .addEdge(START, 'review')
+      .addEdge('review', END);
 
     return workflow.compile();
   }
@@ -115,19 +119,25 @@ export class LangChainAdapter extends BaseProvider {
   // ============================================================================
   createTaskBreakdownGraph() {
     const workflow = new StateGraph({ channels: GraphState })
-      .addNode("breakdown", async (state) => {
+      .addNode('breakdown', async (state) => {
         const task = state.messages[state.messages.length - 1].content;
         const response = await this.llm.invoke([
-          new SystemMessage("Break down the following high-level task into atomic, actionable subtasks. Return JSON list."),
-          new HumanMessage(task)
+          new SystemMessage(
+            'Break down the following high-level task into atomic, actionable subtasks. Return JSON list.'
+          ),
+          new HumanMessage(task),
         ]);
         // Simple parsing simulation
         let tasks = [];
-        try { tasks = JSON.parse(response.content); } catch { tasks = [response.content]; }
+        try {
+          tasks = JSON.parse(response.content);
+        } catch {
+          tasks = [response.content];
+        }
         return { tasks: tasks, messages: [response] };
       })
-      .addEdge(START, "breakdown")
-      .addEdge("breakdown", END);
+      .addEdge(START, 'breakdown')
+      .addEdge('breakdown', END);
 
     return workflow.compile();
   }
@@ -138,25 +148,25 @@ export class LangChainAdapter extends BaseProvider {
   createRAGGraph() {
     const workflow = new StateGraph({ channels: GraphState })
       // Retrieve Node (Placeholder - expects context to be injected or retrieved here)
-      .addNode("retrieve", async (state) => {
+      .addNode('retrieve', async (state) => {
         // In a real implementation, this would call vectorStore.search
         // For now, we assume context might be passed in input, or we return mock
         const query = state.messages[state.messages.length - 1].content;
-        const context = state.context || ""; 
+        const context = state.context || '';
         return { context };
       })
       // Generate Node
-      .addNode("generate", async (state) => {
+      .addNode('generate', async (state) => {
         const query = state.messages[state.messages.length - 1].content;
         const response = await this.llm.invoke([
           new SystemMessage(`Answer based on context:\n${state.context}`),
-          new HumanMessage(query)
+          new HumanMessage(query),
         ]);
         return { messages: [response] };
       })
-      .addEdge(START, "retrieve")
-      .addEdge("retrieve", "generate")
-      .addEdge("generate", END);
+      .addEdge(START, 'retrieve')
+      .addEdge('retrieve', 'generate')
+      .addEdge('generate', END);
 
     return workflow.compile();
   }
@@ -165,15 +175,15 @@ export class LangChainAdapter extends BaseProvider {
   // 5. Memory Graph
   // ============================================================================
   createMemoryGraph() {
-    // Uses LangGraph's checkpointer mechanism conceptually, 
+    // Uses LangGraph's checkpointer mechanism conceptually,
     // but here we define a simple conversational graph
     const workflow = new StateGraph({ channels: GraphState })
-      .addNode("agent", async (state) => {
+      .addNode('agent', async (state) => {
         const response = await this.llm.invoke(state.messages);
         return { messages: [response] };
       })
-      .addEdge(START, "agent")
-      .addEdge("agent", END);
+      .addEdge(START, 'agent')
+      .addEdge('agent', END);
 
     // In a real app, pass a checkpointer to compile()
     return workflow.compile();
@@ -193,12 +203,12 @@ export class LangChainAdapter extends BaseProvider {
     } else if (inputs.messages) {
       messages = inputs.messages;
     } else if (inputs.text) {
-        messages = [new HumanMessage(inputs.text)];
+      messages = [new HumanMessage(inputs.text)];
     }
 
     const result = await graph.invoke({
       messages,
-      context: inputs.context || "",
+      context: inputs.context || '',
     });
 
     return result;
@@ -206,15 +216,12 @@ export class LangChainAdapter extends BaseProvider {
 
   // BaseProvider implementation
   async generate(systemPrompt, userPrompt) {
-    const messages = [
-      new SystemMessage(systemPrompt),
-      new HumanMessage(userPrompt),
-    ];
+    const messages = [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
     const response = await this.llm.invoke(messages);
     return {
       content: response.content,
-      usage: { inputTokens: 0, outputTokens: 0 }, 
-      model: this.model
+      usage: { inputTokens: 0, outputTokens: 0 },
+      model: this.model,
     };
   }
 }

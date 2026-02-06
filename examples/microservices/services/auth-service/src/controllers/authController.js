@@ -23,10 +23,7 @@ class AuthController {
 
     try {
       // Check if user exists
-      const existingUser = await this.pool.query(
-        'SELECT id FROM users WHERE email = $1',
-        [email]
-      );
+      const existingUser = await this.pool.query('SELECT id FROM users WHERE email = $1', [email]);
 
       if (existingUser.rows.length > 0) {
         return res.status(409).json({ error: 'User already exists' });
@@ -53,9 +50,9 @@ class AuthController {
           id: user.id,
           email: user.email,
           role: user.role,
-          createdAt: user.created_at
+          createdAt: user.created_at,
         },
-        tokens
+        tokens,
       });
     } catch (error) {
       logger.error('Registration error:', error);
@@ -103,9 +100,9 @@ class AuthController {
         user: {
           id: user.id,
           email: user.email,
-          role: user.role
+          role: user.role,
         },
-        tokens
+        tokens,
       });
     } catch (error) {
       logger.error('Login error:', error);
@@ -133,10 +130,7 @@ class AuthController {
       // Delete refresh token
       if (refreshToken) {
         const tokenHash = await bcrypt.hash(refreshToken, BCRYPT_ROUNDS);
-        await this.pool.query(
-          'DELETE FROM refresh_tokens WHERE token_hash = $1',
-          [tokenHash]
-        );
+        await this.pool.query('DELETE FROM refresh_tokens WHERE token_hash = $1', [tokenHash]);
       }
 
       logger.info({ message: 'User logged out', userId: req.user?.id });
@@ -183,7 +177,7 @@ class AuthController {
       const user = {
         id: tokenData.user_id,
         email: tokenData.email,
-        role: tokenData.role
+        role: tokenData.role,
       };
 
       const tokens = await this.generateTokens(user);
@@ -220,8 +214,8 @@ class AuthController {
         user: {
           id: decoded.id,
           email: decoded.email,
-          role: decoded.role
-        }
+          role: decoded.role,
+        },
       });
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
@@ -259,10 +253,9 @@ class AuthController {
 
     try {
       // Get current password hash
-      const result = await this.pool.query(
-        'SELECT password_hash FROM users WHERE id = $1',
-        [userId]
-      );
+      const result = await this.pool.query('SELECT password_hash FROM users WHERE id = $1', [
+        userId,
+      ]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'User not found' });
@@ -295,11 +288,9 @@ class AuthController {
 
   async generateTokens(user) {
     // Generate access token
-    const accessToken = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
+    const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
 
     // Generate refresh token
     const refreshToken = uuidv4();
@@ -319,7 +310,7 @@ class AuthController {
     return {
       accessToken,
       refreshToken,
-      expiresIn: JWT_EXPIRES_IN
+      expiresIn: JWT_EXPIRES_IN,
     };
   }
 }

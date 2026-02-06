@@ -21,7 +21,7 @@ export interface Conversation {
 export interface Message {
   id: string;
   conversationId: string;
-  role: "user" | "assistant" | "system";
+  role: 'user' | 'assistant' | 'system';
   content: string;
   tokensUsed: number | null;
   createdAt: Date;
@@ -31,7 +31,7 @@ export interface CreditTransaction {
   id: string;
   userId: string;
   amount: number;
-  type: "PURCHASE" | "USAGE" | "BONUS" | "REFUND";
+  type: 'PURCHASE' | 'USAGE' | 'BONUS' | 'REFUND';
   description: string | null;
   createdAt: Date;
 }
@@ -49,7 +49,7 @@ export interface Plan {
 
 export interface ChatCompletionRequest {
   messages: Array<{
-    role: "user" | "assistant" | "system";
+    role: 'user' | 'assistant' | 'system';
     content: string;
   }>;
   model?: string;

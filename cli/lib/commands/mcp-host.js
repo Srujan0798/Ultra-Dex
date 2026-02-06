@@ -1,11 +1,11 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { initializeMcpHost, mcpHub } from '../mcp/host.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
 export function registerMcpHostCommand(program) {
-  const cmd = program
-    .command('mcp-host')
-    .description('Manage MCP host connections');
+  const cmd = program.command('mcp-host').description('Manage MCP host connections');
 
   cmd
     .command('mount <server>')
@@ -42,7 +42,7 @@ export function registerMcpHostCommand(program) {
         printWarning(chalk.yellow('No MCP servers connected.'));
         return;
       }
-      status.forEach(s => printInfo(`- ${s.name} (${s.status})`));
+      status.forEach((s) => printInfo(`- ${s.name} (${s.status})`));
     });
 
   cmd
@@ -57,7 +57,7 @@ export function registerMcpHostCommand(program) {
       }
       if (result.failures.length) {
         printWarning(chalk.yellow('Failures:'));
-        result.failures.forEach(f => printWarning(`- ${f.server}: ${f.error}`));
+        result.failures.forEach((f) => printWarning(`- ${f.server}: ${f.error}`));
       }
     });
 }

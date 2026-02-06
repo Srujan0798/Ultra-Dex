@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Response Cache Layer
  * Implements LRU caching with semantic similarity matching for API responses
@@ -25,14 +27,14 @@ class UltraDexCache {
       dispose: (value, key) => {
         // Clean up file when evicted from LRU
         this.cleanupFile(key);
-      }
+      },
     });
 
     // Track cost savings
     this.costMetrics = {
       hits: 0,
       misses: 0,
-      estimatedSavings: 0 // in USD
+      estimatedSavings: 0, // in USD
     };
 
     this.ensureCacheDir();
@@ -45,7 +47,7 @@ class UltraDexCache {
       console.error('Failed to create cache directory:', error.message);
     }
   }
-  
+
   /**
    * Generate a cache key based on input parameters
    */
@@ -54,30 +56,38 @@ class UltraDexCache {
       provider,
       model,
       systemPrompt: systemPrompt || '',
-      userPrompt
+      userPrompt,
     });
-    
+
     return createHash('sha256').update(input).digest('hex');
   }
-  
+
   /**
    * Calculate semantic similarity between two texts using simple approach
    */
   calculateSimilarity(text1, text2) {
     if (!text1 || !text2) return 0;
 
-    const clean1 = text1.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
-    const clean2 = text2.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
+    const clean1 = text1
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+    const clean2 = text2
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
 
     const set1 = new Set(clean1);
     const set2 = new Set(clean2);
 
-    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const intersection = new Set([...set1].filter((x) => set2.has(x)));
     const union = new Set([...set1, ...set2]);
 
     return union.size > 0 ? intersection.size / union.size : 0;
   }
-  
+
   /**
    * Find semantically similar cached response
    */
@@ -97,7 +107,7 @@ class UltraDexCache {
             return {
               ...cachedData,
               similarity,
-              hitType: 'semantic'
+              hitType: 'semantic',
             };
           }
         }
@@ -109,7 +119,7 @@ class UltraDexCache {
 
     return null;
   }
-  
+
   /**
    * Get list of cache files
    */
@@ -117,26 +127,26 @@ class UltraDexCache {
     try {
       const files = await fs.readdir(this.cacheDir);
       return files
-        .filter(file => file.endsWith('.json'))
-        .map(file => path.join(this.cacheDir, file));
+        .filter((file) => file.endsWith('.json'))
+        .map((file) => path.join(this.cacheDir, file));
     } catch {
       return [];
     }
   }
-  
+
   /**
    * Get cached response
    */
   async get(provider, model, systemPrompt, userPrompt) {
     const key = this.generateKey(provider, model, systemPrompt, userPrompt);
-    
+
     // Check in-memory LRU cache first
     let cached = this.lruCache.get(key);
-    
+
     if (!cached) {
       // Check file system
       const cachePath = path.join(this.cacheDir, `${key}.json`);
-      
+
       try {
         const content = await fs.readFile(cachePath, 'utf8');
         cached = JSON.parse(content);
@@ -146,25 +156,25 @@ class UltraDexCache {
         cached = await this.findSimilar(provider, model, systemPrompt, userPrompt);
       }
     }
-    
+
     if (cached) {
       this.costMetrics.hits++;
       // Estimate cost savings (assuming $0.01 per API call)
       this.costMetrics.estimatedSavings += 0.01;
       return cached;
     }
-    
+
     this.costMetrics.misses++;
     return null;
   }
-  
+
   /**
    * Set cached response
    */
   async set(provider, model, systemPrompt, userPrompt, response) {
     const key = this.generateKey(provider, model, systemPrompt, userPrompt);
     const cachePath = path.join(this.cacheDir, `${key}.json`);
-    
+
     const cacheData = {
       provider,
       model,
@@ -172,9 +182,9 @@ class UltraDexCache {
       userPrompt,
       response,
       timestamp: new Date().toISOString(),
-      ttl: this.ttl
+      ttl: this.ttl,
     };
-    
+
     try {
       await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2));
       this.lruCache.set(key, cacheData);
@@ -182,14 +192,14 @@ class UltraDexCache {
       console.error('Failed to write cache:', error.message);
     }
   }
-  
+
   /**
    * Invalidate specific cache entry
    */
   async invalidate(provider, model, systemPrompt, userPrompt) {
     const key = this.generateKey(provider, model, systemPrompt, userPrompt);
     const cachePath = path.join(this.cacheDir, `${key}.json`);
-    
+
     try {
       await fs.unlink(cachePath);
       this.lruCache.delete(key);
@@ -197,14 +207,14 @@ class UltraDexCache {
       // File might not exist
     }
   }
-  
+
   /**
    * Clear expired entries
    */
   async clearExpired() {
     const cacheFiles = await this.getCacheFiles();
     const now = Date.now();
-    
+
     for (const file of cacheFiles) {
       try {
         const stat = await fs.stat(file);
@@ -216,7 +226,7 @@ class UltraDexCache {
       }
     }
   }
-  
+
   /**
    * Clean up specific file
    */
@@ -228,7 +238,7 @@ class UltraDexCache {
       // File might not exist
     }
   }
-  
+
   /**
    * Get cache statistics
    */
@@ -239,10 +249,10 @@ class UltraDexCache {
       hitRate: this.costMetrics.hits / (this.costMetrics.hits + this.costMetrics.misses || 1),
       estimatedSavings: this.costMetrics.estimatedSavings,
       cacheSize: this.lruCache.size,
-      maxEntries: this.maxEntries
+      maxEntries: this.maxEntries,
     };
   }
-  
+
   /**
    * Clear entire cache
    */
@@ -276,5 +286,5 @@ export function getCache(options = {}) {
 
 export default {
   getCache,
-  UltraDexCache
+  UltraDexCache,
 };

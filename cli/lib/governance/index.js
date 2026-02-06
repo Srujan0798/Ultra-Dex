@@ -1,15 +1,17 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Agent Governance Engine
  * Enforces security, role-based access, and constitutional AI rules
  */
 
 import path from 'path';
-import { 
-  ROLE_DEFINITIONS, 
-  FILE_TYPE_DEFINITIONS, 
-  SENSITIVE_PATH_PATTERNS, 
+import {
+  ROLE_DEFINITIONS,
+  FILE_TYPE_DEFINITIONS,
+  SENSITIVE_PATH_PATTERNS,
   FILE_ACCESS_RULES,
-  DESTRUCTIVE_COMMAND_PATTERNS 
+  DESTRUCTIVE_COMMAND_PATTERNS,
 } from './rules.js';
 import { configManager } from '../utils/config-manager.js';
 import { logOperation } from './audit.js';
@@ -48,7 +50,7 @@ export class GovernanceEngine {
   authorize(agentRole, action, target) {
     const roleDef = ROLE_DEFINITIONS[agentRole] || ROLE_DEFINITIONS.default;
     const normalizedTarget = this.normalizeTarget(target);
-    
+
     // 1. Constitutional Checks (Global Bans)
     if (action === 'execute') {
       if (this.isDestructiveCommand(normalizedTarget)) {
@@ -59,9 +61,12 @@ export class GovernanceEngine {
     if (action === 'write' || action === 'read') {
       if (this.isSensitivePath(normalizedTarget)) {
         // Strict sensitive file block
-        return { allowed: false, reason: `Access to sensitive file '${path.basename(normalizedTarget)}' is restricted.` };
+        return {
+          allowed: false,
+          reason: `Access to sensitive file '${path.basename(normalizedTarget)}' is restricted.`,
+        };
       }
-      
+
       // Path Traversal Check
       if (!this.isPathSafe(normalizedTarget)) {
         return { allowed: false, reason: 'Path traversal detected. Stay within project root.' };
@@ -75,9 +80,9 @@ export class GovernanceEngine {
 
     // 2. Role-Based Access Control (RBAC)
     if (!this.checkRolePermission(roleDef, action, normalizedTarget)) {
-      return { 
-        allowed: false, 
-        reason: `Role '${agentRole}' is not authorized to ${action} ${this.getFileType(normalizedTarget)} files.` 
+      return {
+        allowed: false,
+        reason: `Role '${agentRole}' is not authorized to ${action} ${this.getFileType(normalizedTarget)} files.`,
       };
     }
 
@@ -99,15 +104,19 @@ export class GovernanceEngine {
    * Check if command is destructive
    */
   isDestructiveCommand(command) {
-    return DESTRUCTIVE_COMMAND_PATTERNS.some(pattern => pattern.test(command));
+    return DESTRUCTIVE_COMMAND_PATTERNS.some((pattern) => pattern.test(command));
   }
 
   /**
    * Check if path is sensitive
    */
   isSensitivePath(filePath) {
-    const relPath = path.isAbsolute(filePath) ? path.relative(this.projectRoot, filePath) : filePath;
-    return SENSITIVE_PATH_PATTERNS.some(pattern => pattern.test(relPath) || pattern.test('/' + relPath));
+    const relPath = path.isAbsolute(filePath)
+      ? path.relative(this.projectRoot, filePath)
+      : filePath;
+    return SENSITIVE_PATH_PATTERNS.some(
+      (pattern) => pattern.test(relPath) || pattern.test('/' + relPath)
+    );
   }
 
   /**
@@ -133,14 +142,16 @@ export class GovernanceEngine {
 
   matchesConfiguredPatterns(patterns, target) {
     if (!Array.isArray(patterns)) return false;
-    return patterns.some(pattern => {
+    return patterns.some((pattern) => {
       if (!pattern) return false;
       if (pattern instanceof RegExp) return pattern.test(target);
       if (typeof pattern !== 'string') return false;
       const trimmed = pattern.trim();
       if (trimmed.length === 0) return false;
       if (trimmed.includes('*')) {
-        const regex = new RegExp('^' + trimmed.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
+        const regex = new RegExp(
+          '^' + trimmed.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$'
+        );
         return regex.test(target);
       }
       return target.includes(trimmed);
@@ -152,12 +163,14 @@ export class GovernanceEngine {
    */
   getFileType(filePath) {
     const ext = path.extname(filePath).toLowerCase();
-    const relPath = path.isAbsolute(filePath) ? path.relative(this.projectRoot, filePath) : filePath;
+    const relPath = path.isAbsolute(filePath)
+      ? path.relative(this.projectRoot, filePath)
+      : filePath;
 
     // Check patterns first
     for (const type of FILE_TYPE_DEFINITIONS) {
       if (type.patterns) {
-        if (type.patterns.some(p => p.test(relPath))) return type.id;
+        if (type.patterns.some((p) => p.test(relPath))) return type.id;
       }
     }
 
@@ -174,7 +187,7 @@ export class GovernanceEngine {
    */
   checkRolePermission(roleDef, action, target) {
     const permissions = roleDef.permissions[action];
-    
+
     if (!permissions) return false; // No permissions for this action type defined
     if (permissions.includes('*')) return true; // Superuser for this action
 
@@ -222,7 +235,7 @@ export class GovernanceEngine {
    */
   containsSensitivePath(text) {
     if (!text) return false;
-    return SENSITIVE_PATH_PATTERNS.some(pattern => pattern.test(text));
+    return SENSITIVE_PATH_PATTERNS.some((pattern) => pattern.test(text));
   }
 
   /**
@@ -230,13 +243,21 @@ export class GovernanceEngine {
    */
   containsDestructiveCommand(text) {
     if (!text) return false;
-    return DESTRUCTIVE_COMMAND_PATTERNS.some(pattern => pattern.test(text));
+    return DESTRUCTIVE_COMMAND_PATTERNS.some((pattern) => pattern.test(text));
   }
 }
 
 export const governance = new GovernanceEngine();
 
-export async function authorizeOperation({ agent, operation, resourceType, filePath, command, content, metadata } = {}) {
+export async function authorizeOperation({
+  agent,
+  operation,
+  resourceType,
+  filePath,
+  command,
+  content,
+  metadata,
+} = {}) {
   await governance.init();
   const roleId = agent?.roleId || agent?.id || 'default';
 
@@ -251,7 +272,10 @@ export async function authorizeOperation({ agent, operation, resourceType, fileP
     // Router-level constitutional checks for AI execution
     const text = [metadata?.task, metadata?.prompt, content].filter(Boolean).join('\n');
     if (governance.containsDestructiveCommand(text)) {
-      const decision = { allowed: false, reason: 'AI request includes destructive command patterns.' };
+      const decision = {
+        allowed: false,
+        reason: 'AI request includes destructive command patterns.',
+      };
       void logOperation({ agent, operation, resourceType, target, ...decision, metadata });
       return decision;
     }
@@ -271,7 +295,7 @@ export async function authorizeOperation({ agent, operation, resourceType, fileP
     allowed: decision.allowed,
     reason: decision.reason,
     metadata,
-    content
+    content,
   });
   return decision;
 }
@@ -302,7 +326,7 @@ export function enforceAgentExecution({ agent, providerId, task, systemPrompt, u
     resourceType: 'ai',
     target,
     allowed: true,
-    metadata: { task }
+    metadata: { task },
   });
 
   return true;

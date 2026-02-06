@@ -13,6 +13,7 @@ npm publish
 ```
 
 **Changelog v3.2.0:**
+
 - Doomsday theme CLI interface
 - Matrix green styling
 - New UI module (theme.js, interface.js, spinners.js)
@@ -23,6 +24,7 @@ npm publish
 ## Phase 2: VS Code Extension (30 min)
 
 ### Step 1: Update package.json
+
 ```json
 {
   "name": "ultra-dex-vscode",
@@ -34,6 +36,7 @@ npm publish
 ```
 
 ### Step 2: Package
+
 ```bash
 cd vscode-extension
 npm install -g @vscode/vsce
@@ -41,6 +44,7 @@ vsce package
 ```
 
 ### Step 3: Publish
+
 ```bash
 vsce publish
 ```
@@ -52,36 +56,42 @@ vsce publish
 ### Demo GIF Script
 
 #### Scene 1: Init (5s)
+
 ```bash
 npx ultra-dex init myapp
 # Show: Doomsday banner, green theme
 ```
 
 #### Scene 2: Generate (10s)
+
 ```bash
 npx ultra-dex generate "Build a task manager SaaS"
 # Show: AI generating plan
 ```
 
 #### Scene 3: Agents (5s)
+
 ```bash
 npx ultra-dex agents
 # Show: 16 agents listed
 ```
 
 #### Scene 4: Swarm (10s)
+
 ```bash
 npx ultra-dex swarm "Add user auth" --dry-run
 # Show: Agent pipeline
 ```
 
 #### Scene 5: Dashboard (5s)
+
 ```bash
 npx ultra-dex dashboard
 # Show: Web UI opening
 ```
 
 ### Record with:
+
 ```bash
 # macOS
 brew install asciinema
@@ -94,6 +104,7 @@ asciinema rec demo.cast
 ## Phase 4: Launch Posts (20 min)
 
 ### Twitter/X Post
+
 ```
 🚀 Just launched Ultra-Dex v3.2 — the AI Orchestration Meta-Layer
 
@@ -115,6 +126,7 @@ github.com/Srujan0798/Ultra-Dex
 **Title:** Ultra-Dex v3.2 — Open source AI orchestration framework with 16 agents, swarm mode, and MCP server
 
 **Body:**
+
 ```
 Hey everyone! Just released Ultra-Dex v3.2.
 
@@ -142,6 +154,7 @@ Would love feedback!
 **Title:** Show HN: Ultra-Dex – AI Orchestration Meta-Layer (35 commands, 16 agents, MCP)
 
 **Body:**
+
 ```
 Ultra-Dex is an open-source CLI that orchestrates AI coding tools.
 
@@ -171,6 +184,7 @@ https://github.com/Srujan0798/Ultra-Dex
 **Tagline:** AI Orchestration Meta-Layer for SaaS Development
 
 **Description:**
+
 ```
 Ultra-Dex is the command-line framework that sits above AI coding tools like Claude Code, Cursor, and Devin. It solves the "AI amnesia" problem with git-versioned context files.
 
@@ -189,6 +203,7 @@ Works with ANY AI tool. Free and open source.
 **Topics:** Developer Tools, Artificial Intelligence, Open Source, Command Line
 
 **First Comment:**
+
 ```
 Hi Product Hunt! 👋
 
@@ -204,16 +219,19 @@ I'd love to hear your feedback and answer any questions!
 ## Phase 6: Post-Launch (Ongoing)
 
 ### Day 1
+
 - [ ] Monitor GitHub issues
 - [ ] Respond to comments
 - [ ] Fix any bugs reported
 
 ### Week 1
+
 - [ ] Gather feedback
 - [ ] Plan v3.3 features
 - [ ] Update roadmap
 
 ### Week 2-4
+
 - [ ] Implement top requests
 - [ ] More integrations
 - [ ] Enterprise features
@@ -241,4 +259,4 @@ asciinema rec demo.cast
 
 ---
 
-*Ready to execute. Let's launch! 🚀*
+_Ready to execute. Let's launch! 🚀_

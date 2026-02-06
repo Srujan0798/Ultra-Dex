@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Architect graph - produces high-level system design guidance
  */
@@ -12,7 +14,7 @@ export function createArchitectGraph(options = {}) {
   return createSimpleGraph({
     ...options,
     nodeName: 'architect',
-    systemPrompt: SYSTEM_PROMPT
+    systemPrompt: SYSTEM_PROMPT,
   });
 }
 

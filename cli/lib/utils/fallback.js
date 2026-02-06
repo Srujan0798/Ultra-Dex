@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 
 export async function readWithFallback(primaryPath, fallbackPath, encoding = 'utf-8') {

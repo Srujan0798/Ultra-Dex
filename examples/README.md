@@ -5,9 +5,11 @@ Complete, production-ready example applications built with Ultra-Dex methodology
 ## Available Examples
 
 ### 1. E-Commerce Store 🛍️
+
 **Tech Stack:** Next.js + Stripe + PostgreSQL
 
 Full e-commerce platform with:
+
 - Product catalog with search
 - Shopping cart & checkout
 - Stripe payments
@@ -23,9 +25,11 @@ npm run dev
 ```
 
 ### 2. SaaS Analytics 📊
+
 **Tech Stack:** Next.js + ClickHouse + Redis
 
 Real-time analytics platform with:
+
 - Event tracking SDK
 - Live dashboard
 - SQL query interface
@@ -41,9 +45,11 @@ npm run dev
 ```
 
 ### 3. Real-Time Chat 💬
+
 **Tech Stack:** Next.js + Socket.io + PostgreSQL
 
 Team chat application with:
+
 - WebSocket messaging
 - Presence indicators
 - Typing indicators
@@ -111,6 +117,7 @@ npx ultra-dex align
 ## Common Patterns
 
 ### Authentication (All Examples)
+
 ```typescript
 // Using NextAuth.js or Clerk
 import { auth } from '@clerk/nextjs';
@@ -123,6 +130,7 @@ export default async function Dashboard() {
 ```
 
 ### Database (All Examples)
+
 ```typescript
 // Using Prisma
 import { prisma } from '@/lib/db';
@@ -130,11 +138,12 @@ import { prisma } from '@/lib/db';
 // Type-safe queries
 const products = await prisma.product.findMany({
   where: { status: 'active' },
-  include: { variants: true }
+  include: { variants: true },
 });
 ```
 
 ### API Routes (All Examples)
+
 ```typescript
 // Using Next.js App Router
 import { NextResponse } from 'next/server';
@@ -166,6 +175,7 @@ Want to add an example?
 4. Submit a PR
 
 Example categories we're looking for:
+
 - AI/ML application
 - Mobile app (React Native)
 - DevOps tool

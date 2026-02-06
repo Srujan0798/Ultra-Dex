@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex auth command
  * Identity and API key management for local and cloud operations
@@ -23,7 +25,8 @@ export function registerAuthCommand(program) {
     .description('Manage identity, SSO, API keys, RBAC, and audit logs');
 
   // SSO command
-  auth.command('sso')
+  auth
+    .command('sso')
     .description('Manage Enterprise SSO authentication')
     .option('--provider <provider>', 'Identity provider (okta, auth0, azure)')
     .option('--configure', 'Reconfigure SSO settings')
@@ -49,7 +52,8 @@ export function registerAuthCommand(program) {
     });
 
   // Login command
-  auth.command('login')
+  auth
+    .command('login')
     .description('Log in to Ultra-Dex Cloud or local session')
     .option('--local', 'Create a local identity only')
     .option('--sso', 'Log in via SSO')
@@ -61,40 +65,40 @@ export function registerAuthCommand(program) {
         }
 
         printInfo(chalk.cyan('\n🔐 Ultra-Dex Authentication\n'));
-        
+
         const answers = await inquirer.prompt([
           {
             type: 'input',
             name: 'username',
             message: 'Username:',
-            validate: input => input.length > 0 || 'Username is required'
+            validate: (input) => input.length > 0 || 'Username is required',
           },
           {
             type: 'password',
             name: 'password',
             message: 'Password (local session):',
-            mask: '*'
-          }
+            mask: '*',
+          },
         ]);
 
         // Save identity to global config
-        const globalConfig = await configManager.loadGlobal() || {};
+        const globalConfig = (await configManager.loadGlobal()) || {};
         globalConfig.user = {
           username: answers.username,
           role: 'member',
-          lastLogin: new Date().toISOString()
+          lastLogin: new Date().toISOString(),
         };
-        
+
         await configManager.saveGlobal(globalConfig);
-        
+
         // Log to audit
         await auditLogger.log({
           type: 'user_login',
           user: answers.username,
           status: 'success',
-          details: { method: 'local' }
+          details: { method: 'local' },
         });
-        
+
         printSuccess(chalk.green(`\n✅ Welcome back, ${answers.username}!`));
       } catch (error) {
         printError(chalk.red(`\n❌ Login failed: ${error.message}`));
@@ -102,7 +106,8 @@ export function registerAuthCommand(program) {
     });
 
   // Whoami command
-  auth.command('whoami')
+  auth
+    .command('whoami')
     .description('Show current active identity')
     .action(async () => {
       try {
@@ -112,7 +117,9 @@ export function registerAuthCommand(program) {
           console.log(`Role: ${chalk.cyan(globalConfig.user.role || 'member')}`);
           console.log(`Last session: ${chalk.gray(globalConfig.user.lastLogin)}`);
         } else {
-          printWarning(chalk.yellow('Not logged in. Run `ultra-dex auth login` to set up identity.'));
+          printWarning(
+            chalk.yellow('Not logged in. Run `ultra-dex auth login` to set up identity.')
+          );
         }
       } catch (error) {
         printError(chalk.red(`\n❌ Error checking identity: ${error.message}`));
@@ -120,25 +127,26 @@ export function registerAuthCommand(program) {
     });
 
   // Logout command
-  auth.command('logout')
+  auth
+    .command('logout')
     .description('Clear current session')
     .action(async () => {
       try {
-        const globalConfig = await configManager.loadGlobal() || {};
+        const globalConfig = (await configManager.loadGlobal()) || {};
         const username = globalConfig.user?.username;
-        
+
         delete globalConfig.user;
         await configManager.saveGlobal(globalConfig);
-        
+
         // Log to audit
         if (username) {
           await auditLogger.log({
             type: 'user_logout',
             user: username,
-            status: 'success'
+            status: 'success',
           });
         }
-        
+
         printSuccess(chalk.green('✅ Successfully logged out.'));
       } catch (error) {
         printError(chalk.red(`\n❌ Logout failed: ${error.message}`));
@@ -146,7 +154,8 @@ export function registerAuthCommand(program) {
     });
 
   // API Key management
-  auth.command('key')
+  auth
+    .command('key')
     .description('Manage API keys')
     .option('--create', 'Create a new API key')
     .option('--list', 'List all API keys')
@@ -165,7 +174,7 @@ export function registerAuthCommand(program) {
               type: 'input',
               name: 'name',
               message: 'Key name:',
-              validate: input => input.length > 0 || 'Name is required'
+              validate: (input) => input.length > 0 || 'Name is required',
             },
             {
               type: 'checkbox',
@@ -175,13 +184,13 @@ export function registerAuthCommand(program) {
                 { name: 'Read', value: 'read', checked: true },
                 { name: 'Write', value: 'write' },
                 { name: 'Delete', value: 'delete' },
-                { name: 'Admin', value: 'admin' }
-              ]
-            }
+                { name: 'Admin', value: 'admin' },
+              ],
+            },
           ]);
 
           const key = apiKeyManager.generateKey(answers.name, {
-            permissions: answers.permissions
+            permissions: answers.permissions,
           });
 
           printSuccess(chalk.green('\n✅ API Key created successfully!'));
@@ -197,16 +206,16 @@ export function registerAuthCommand(program) {
           } else {
             const table = new Table({
               head: ['Name', 'Prefix', 'Created', 'Last Used', 'Status'],
-              style: { head: ['cyan'] }
+              style: { head: ['cyan'] },
             });
 
-            keys.forEach(key => {
+            keys.forEach((key) => {
               table.push([
                 key.name,
                 key.prefix,
                 new Date(key.createdAt).toLocaleDateString(),
                 key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : 'Never',
-                key.enabled ? chalk.green('Active') : chalk.red('Revoked')
+                key.enabled ? chalk.green('Active') : chalk.red('Revoked'),
               ]);
             });
 
@@ -228,7 +237,8 @@ export function registerAuthCommand(program) {
     });
 
   // RBAC Roles command
-  auth.command('roles')
+  auth
+    .command('roles')
     .description('Manage RBAC roles and permissions')
     .option('--list', 'List all roles')
     .option('--check <role>', 'Check permissions for a role')
@@ -237,13 +247,13 @@ export function registerAuthCommand(program) {
       try {
         if (options.list || (!options.check && !options.assign)) {
           printInfo(chalk.cyan.bold('\n📋 Available Roles\n'));
-          
+
           Object.entries(ROLES).forEach(([key, role]) => {
             const definition = getRoleDefinition(role);
             console.log(chalk.white.bold(`${key}:`));
             console.log(chalk.gray(`  Role: ${role}`));
             console.log(chalk.gray(`  Permissions (${definition.permissions.length}):`));
-            definition.permissions.forEach(perm => {
+            definition.permissions.forEach((perm) => {
               console.log(chalk.gray(`    • ${perm}`));
             });
             console.log('');
@@ -254,33 +264,35 @@ export function registerAuthCommand(program) {
           const definition = getRoleDefinition(options.check);
           printInfo(chalk.cyan.bold(`\n🔍 Role: ${options.check}\n`));
           console.log(chalk.white('Permissions:'));
-          definition.permissions.forEach(perm => {
+          definition.permissions.forEach((perm) => {
             console.log(chalk.gray(`  ✓ ${perm}`));
           });
         }
 
         if (options.assign) {
-          const { role } = await inquirer.prompt([{
-            type: 'list',
-            name: 'role',
-            message: `Select role for ${options.assign}:`,
-            choices: Object.values(ROLES)
-          }]);
+          const { role } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'role',
+              message: `Select role for ${options.assign}:`,
+              choices: Object.values(ROLES),
+            },
+          ]);
 
-          const globalConfig = await configManager.loadGlobal() || {};
+          const globalConfig = (await configManager.loadGlobal()) || {};
           if (!globalConfig.userRoles) globalConfig.userRoles = {};
-          
+
           globalConfig.userRoles[options.assign] = role;
           await configManager.saveGlobal(globalConfig);
 
           printSuccess(chalk.green(`✅ Assigned ${role} role to ${options.assign}`));
-          
+
           // Audit log
           await auditLogger.log({
             type: 'role_assignment',
             user: options.assign,
             details: { role, assignedBy: globalConfig.user?.username },
-            status: 'success'
+            status: 'success',
           });
         }
       } catch (error) {
@@ -289,7 +301,8 @@ export function registerAuthCommand(program) {
     });
 
   // Audit log command
-  auth.command('audit')
+  auth
+    .command('audit')
     .description('View and manage audit logs')
     .option('--view', 'View recent audit logs')
     .option('--stats', 'Show audit statistics')
@@ -301,10 +314,10 @@ export function registerAuthCommand(program) {
       try {
         if (options.stats) {
           const stats = await auditLogger.getStats(parseInt(options.days));
-          
+
           printInfo(chalk.cyan.bold(`\n📊 Audit Statistics (Last ${options.days} days)\n`));
           console.log(chalk.white(`Total Actions: ${stats.totalActions}`));
-          
+
           if (Object.keys(stats.byAction).length > 0) {
             console.log(chalk.white('\nBy Action:'));
             Object.entries(stats.byAction)
@@ -326,32 +339,34 @@ export function registerAuthCommand(program) {
         if (options.view || (!options.stats && !options.export)) {
           const filters = {
             limit: 50,
-            startDate: new Date(Date.now() - parseInt(options.days) * 24 * 60 * 60 * 1000).toISOString()
+            startDate: new Date(
+              Date.now() - parseInt(options.days) * 24 * 60 * 60 * 1000
+            ).toISOString(),
           };
 
           if (options.user) filters.user = options.user;
           if (options.action) filters.action = options.action;
 
           const logs = await auditLogger.query(filters);
-          
+
           printInfo(chalk.cyan.bold(`\n📝 Recent Audit Logs (${logs.length} entries)\n`));
-          
+
           if (logs.length === 0) {
             printWarning(chalk.yellow('No audit logs found'));
           } else {
             const table = new Table({
               head: ['Timestamp', 'Action', 'User', 'Status'],
               style: { head: ['cyan'] },
-              colWidths: [25, 20, 20, 15]
+              colWidths: [25, 20, 20, 15],
             });
 
-            logs.forEach(log => {
+            logs.forEach((log) => {
               const status = log.status === 'success' ? chalk.green('✓') : chalk.red('✗');
               table.push([
                 new Date(log.timestamp).toLocaleString(),
                 log.action,
                 log.user || 'system',
-                status
+                status,
               ]);
             });
 
@@ -373,7 +388,8 @@ export function registerAuthCommand(program) {
     });
 
   // Secure storage command
-  auth.command('secure-storage')
+  auth
+    .command('secure-storage')
     .description('Manage secure token storage')
     .option('--list', 'List stored accounts')
     .option('--clear', 'Clear all stored tokens')
@@ -381,11 +397,11 @@ export function registerAuthCommand(program) {
       try {
         await secureTokenStorage.initialize();
 
-        if (options.list || (!options.clear)) {
+        if (options.list || !options.clear) {
           const result = await secureTokenStorage.listAccounts();
           if (result.success && result.accounts.length > 0) {
             printInfo(chalk.cyan.bold('\n🔐 Stored Accounts\n'));
-            result.accounts.forEach(acc => {
+            result.accounts.forEach((acc) => {
               console.log(chalk.white(`  • ${acc.account}`));
             });
           } else {
@@ -394,12 +410,14 @@ export function registerAuthCommand(program) {
         }
 
         if (options.clear) {
-          const { confirm } = await inquirer.prompt([{
-            type: 'confirm',
-            name: 'confirm',
-            message: 'Clear all stored tokens?',
-            default: false
-          }]);
+          const { confirm } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'confirm',
+              message: 'Clear all stored tokens?',
+              default: false,
+            },
+          ]);
 
           if (confirm) {
             const result = await secureTokenStorage.listAccounts();

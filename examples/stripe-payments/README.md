@@ -3,6 +3,7 @@
 End-to-end Stripe workflow with agent handoffs.
 
 ## Workflow
+
 1. @Planner: task breakdown
 2. @Research: provider comparison
 3. @CTO: architecture approval

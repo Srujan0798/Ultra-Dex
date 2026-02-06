@@ -1,30 +1,30 @@
-"use client"
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { MessageSquare, History, Settings, CreditCard } from "lucide-react";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, History, Settings, CreditCard } from 'lucide-react';
 
 const sidebarItems = [
   {
-    title: "Chat",
-    href: "/dashboard/chat",
+    title: 'Chat',
+    href: '/dashboard/chat',
     icon: MessageSquare,
   },
   {
-    title: "History",
-    href: "/dashboard/history",
+    title: 'History',
+    href: '/dashboard/history',
     icon: History,
   },
   {
-    title: "Billing",
-    href: "/dashboard/billing",
+    title: 'Billing',
+    href: '/dashboard/billing',
     icon: CreditCard,
   },
   {
-    title: "Settings",
-    href: "/dashboard/settings",
+    title: 'Settings',
+    href: '/dashboard/settings',
     icon: Settings,
   },
 ];
@@ -40,11 +40,8 @@ export function DashboardSidebar() {
           return (
             <Button
               key={item.href}
-              variant={pathname === item.href ? "secondary" : "ghost"}
-              className={cn(
-                "w-full justify-start",
-                pathname === item.href && "bg-secondary"
-              )}
+              variant={pathname === item.href ? 'secondary' : 'ghost'}
+              className={cn('w-full justify-start', pathname === item.href && 'bg-secondary')}
               asChild
             >
               <Link href={item.href}>

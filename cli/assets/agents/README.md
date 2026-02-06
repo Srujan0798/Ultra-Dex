@@ -21,6 +21,7 @@ See [00-AGENT_INDEX.md](./00-AGENT_INDEX.md) for complete agent directory with "
 Agents are organized into **6 tiers** representing the production pipeline:
 
 ### 1. Leadership Tier (`1-leadership/`)
+
 **Strategic planning and architecture decisions**
 
 - **[@CTO](./1-leadership/cto.md)** - Architecture & tech stack decisions
@@ -36,6 +37,7 @@ Agents are organized into **6 tiers** representing the production pipeline:
   - Example: "Compare Prisma vs Drizzle ORM for PostgreSQL"
 
 ### 2. Development Tier (`2-development/`)
+
 **Core feature implementation**
 
 - **[@Backend](./2-development/backend.md)** - API & server logic
@@ -51,6 +53,7 @@ Agents are organized into **6 tiers** representing the production pipeline:
   - Example: "Build login page with form validation"
 
 ### 3. Security Tier (`3-security/`)
+
 **Authentication, authorization, and security audits**
 
 - **[@Auth](./3-security/auth.md)** - Auth flows & permissions
@@ -62,6 +65,7 @@ Agents are organized into **6 tiers** representing the production pipeline:
   - Example: "Audit authentication system for security vulnerabilities"
 
 ### 4. DevOps Tier (`4-devops/`)
+
 **Deployment and infrastructure management**
 
 - **[@DevOps](./4-devops/devops.md)** - CI/CD & deployment
@@ -69,6 +73,7 @@ Agents are organized into **6 tiers** representing the production pipeline:
   - Example: "Deploy to Vercel with PostgreSQL on Railway"
 
 ### 5. Quality Tier (`5-quality/`)
+
 **Testing, debugging, code review, and documentation**
 
 - **[@Debugger](./5-quality/debugger.md)** - Bug investigation
@@ -88,6 +93,7 @@ Agents are organized into **6 tiers** representing the production pipeline:
   - Example: "Write unit tests for auth API (80% coverage)"
 
 ### 6. Specialist Tier (`6-specialist/`)
+
 **Advanced optimization and code improvement**
 
 - **[@Performance](./6-specialist/performance.md)** - Performance optimization
@@ -135,11 +141,13 @@ See [Project Orchestration Guide](../guides/PROJECT-ORCHESTRATION.md) for comple
 For coordinating multiple agents on complex features, see:
 
 **Production Guides:**
+
 - **[Project Orchestration](../guides/PROJECT-ORCHESTRATION.md)** - Step-by-step multi-agent workflows
 - **[Advanced Workflows](../guides/ADVANCED-WORKFLOWS.md)** - Stripe, emails, migrations, real-time
 - **[Multi-Tool Workflow](../guides/MULTI-TOOL-WORKFLOW.md)** - Coordinate multiple AI tools
 
 **Examples:**
+
 - **[Orchestration Examples](../Orchestration/EXAMPLES.md)** - Real-world workflow examples
 - **[Orchestration README](../Orchestration/README.md)** - Pattern overview
 
@@ -148,6 +156,7 @@ For coordinating multiple agents on complex features, see:
 ## Integration with Ultra-Dex
 
 All agents are designed to work with:
+
 - `IMPLEMENTATION-PLAN.md` - Your 34-section project plan
 - `CONTEXT.md` - Project background and decisions
 - `QUICK-START.md` - Core project summary
@@ -178,22 +187,28 @@ Follow this template:
 You are a [role description] for this project.
 
 ## Your Context
+
 - Read `IMPLEMENTATION-PLAN.md` for full specification
 - Read `CONTEXT.md` for project background
 
 ## Your Responsibilities
+
 - [List specific tasks]
 
 ## Works With
+
 - Request review from: @[OtherAgent]
 - Hand off to: @[NextAgent]
 
 ## Quality Checklist
+
 Before handing off work, verify:
+
 - [ ] [Criterion 1]
 - [ ] [Criterion 2]
 
 ## Handoff Protocol
+
 [Use standardized handoff format from other agents]
 ```
 
@@ -229,4 +244,4 @@ npx ultra-dex init
 
 ---
 
-*Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*
+_Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer_

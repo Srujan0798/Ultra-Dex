@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Scaffold from Plan Command
  * Generates project structure from IMPLEMENTATION-PLAN.md
@@ -23,7 +25,7 @@ async function parsePlanStructure() {
       files: [],
       configFiles: [],
       apiRoutes: [],
-      dataModels: []
+      dataModels: [],
     };
 
     // Look for common patterns indicating file structure
@@ -34,7 +36,10 @@ async function parsePlanStructure() {
       for (const line of lines) {
         // Match directory patterns like "src/", "components/", etc.
         if (line.trim().endsWith('/') && !line.includes('http')) {
-          const dirPath = line.trim().replace(/[^\w\-_./]/g, '').replace(/\/$/, '');
+          const dirPath = line
+            .trim()
+            .replace(/[^\w\-_./]/g, '')
+            .replace(/\/$/, '');
           if (dirPath) {
             structure.directories.add(dirPath);
 
@@ -211,7 +216,7 @@ build
 .env
 *.log
 .DS_Store
-`
+`,
   };
 
   const createdConfigs = [];
@@ -269,8 +274,12 @@ datasource db {
     const modelName = model
       .replace(/[^a-zA-Z0-9_]/g, ' ')
       .split(' ')
-      .filter(word => word.length > 0)
-      .map((word, index) => index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word.charAt(0).toUpperCase() + word.slice(1))
+      .filter((word) => word.length > 0)
+      .map((word, index) =>
+        index === 0
+          ? word.charAt(0).toUpperCase() + word.slice(1)
+          : word.charAt(0).toUpperCase() + word.slice(1)
+      )
       .join('');
 
     if (modelName) {
@@ -412,7 +421,6 @@ export async function scaffoldFromPlan(options = {}) {
     printInfo(chalk.gray('  1. Review generated files and implement TODOs'));
     printInfo(chalk.gray('  2. Update configuration files with your values'));
     printInfo(chalk.gray('  3. Run your project to verify structure'));
-
   } catch (error) {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);

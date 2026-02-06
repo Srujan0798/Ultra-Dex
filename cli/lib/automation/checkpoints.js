@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -11,7 +13,7 @@ export class CheckpointManager {
       id,
       stage,
       createdAt: new Date().toISOString(),
-      data
+      data,
     };
     await fs.writeFile(path.join(CHECKPOINT_DIR, `${id}.json`), JSON.stringify(payload, null, 2));
     return payload;
@@ -25,7 +27,7 @@ export class CheckpointManager {
   async listCheckpoints() {
     try {
       const entries = await fs.readdir(CHECKPOINT_DIR);
-      return entries.filter(e => e.endsWith('.json')).map(e => e.replace('.json', ''));
+      return entries.filter((e) => e.endsWith('.json')).map((e) => e.replace('.json', ''));
     } catch {
       return [];
     }

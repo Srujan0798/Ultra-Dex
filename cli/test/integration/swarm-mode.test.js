@@ -25,28 +25,28 @@ describe('swarm mode integration tests', () => {
   it('should register swarm command with correct options', async () => {
     // Import the swarm command function
     const { swarmCommand } = await import('../../lib/commands/swarm.js');
-    
+
     // Mock dependencies to avoid complex setup
     const mockProvider = {
       generate: vi.fn().mockResolvedValue({
-        content: 'Test response from provider'
-      })
+        content: 'Test response from provider',
+      }),
     };
 
     vi.doMock('../../lib/providers/index.js', () => ({
       createProvider: vi.fn().mockReturnValue(mockProvider),
-      getDefaultProvider: vi.fn().mockReturnValue('test-provider')
+      getDefaultProvider: vi.fn().mockReturnValue('test-provider'),
     }));
 
     vi.doMock('../../lib/commands/run.js', () => ({
-      runAgentLoop: vi.fn().mockResolvedValue('Test agent loop result')
+      runAgentLoop: vi.fn().mockResolvedValue('Test agent loop result'),
     }));
 
     vi.doMock('../../lib/mcp/graph.js', () => ({
       projectGraph: {
         scan: vi.fn().mockResolvedValue({}),
-        getSummary: vi.fn().mockReturnValue({ files: [], dependencies: [] })
-      }
+        getSummary: vi.fn().mockReturnValue({ files: [], dependencies: [] }),
+      },
     }));
 
     // Since swarmCommand is an action function, we can't really test it without a full setup
@@ -56,35 +56,39 @@ describe('swarm mode integration tests', () => {
 
   it('should handle basic swarm execution with mocked dependencies', async () => {
     // Create a basic project structure for testing
-    await writeTestFile(testProjectDir, 'CONTEXT.md', `# Test Project Context
+    await writeTestFile(
+      testProjectDir,
+      'CONTEXT.md',
+      `# Test Project Context
 This is a test project for swarm mode integration.
-`);
+`
+    );
 
     // Mock the necessary dependencies
     const mockProvider = {
       generate: vi.fn().mockResolvedValue({
-        content: 'Mocked provider response'
-      })
+        content: 'Mocked provider response',
+      }),
     };
 
     vi.doMock('../../lib/providers/index.js', () => ({
       createProvider: vi.fn().mockReturnValue(mockProvider),
-      getDefaultProvider: vi.fn().mockReturnValue('test-provider')
+      getDefaultProvider: vi.fn().mockReturnValue('test-provider'),
     }));
 
     vi.doMock('../../lib/commands/run.js', () => ({
-      runAgentLoop: vi.fn().mockResolvedValue('Mocked agent loop result')
+      runAgentLoop: vi.fn().mockResolvedValue('Mocked agent loop result'),
     }));
 
     vi.doMock('../../lib/mcp/graph.js', () => ({
       projectGraph: {
         scan: vi.fn().mockResolvedValue({}),
-        getSummary: vi.fn().mockReturnValue({ files: [], dependencies: [] })
-      }
+        getSummary: vi.fn().mockReturnValue({ files: [], dependencies: [] }),
+      },
     }));
 
     const { swarmCommand } = await import('../../lib/commands/swarm.js');
-    
+
     // Mock console output to prevent actual logging during test
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -93,13 +97,13 @@ This is a test project for swarm mode integration.
     process.chdir(testProjectDir);
 
     try {
-      // Since the actual swarm command involves complex async operations, 
+      // Since the actual swarm command involves complex async operations,
       // we'll just verify it doesn't throw with mocked dependencies
       expect(typeof swarmCommand).toBe('function');
-      
+
       // Test that it accepts the expected parameters
       const options = { dryRun: true }; // Use dry run to avoid actual execution
-      
+
       // We can't fully test the function without setting up the entire ecosystem,
       // but we can at least verify it's callable
       expect(() => {

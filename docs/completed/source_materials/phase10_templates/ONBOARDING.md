@@ -5,6 +5,7 @@
 Welcome to the most comprehensive AI orchestration framework for SaaS development. This guide will walk you through everything you need to know to get started with Ultra-Dex.
 
 ## Table of Contents
+
 1. [What is Ultra-Dex?](#what-is-ultra-dex)
 2. [Prerequisites](#prerequisites)
 3. [Installation](#installation)
@@ -22,6 +23,7 @@ Ultra-Dex is an AI orchestration meta-layer that doesn't write code for you, but
 **Core Philosophy**: "Your Skeleton, Not Your Cage" - Ultra-Dex provides structure without restriction.
 
 ### Key Benefits:
+
 - ✅ **AI-Agnostic**: Works with Claude, GPT, Gemini, Cursor, Copilot
 - ✅ **Comprehensive**: 34-section template prevents "forgot to plan X" syndrome
 - ✅ **Flexible**: Add, remove, modify any section to fit your needs
@@ -32,17 +34,21 @@ Ultra-Dex is an AI orchestration meta-layer that doesn't write code for you, but
 Before getting started, ensure you have:
 
 ### System Requirements
+
 - **Node.js**: Version 18 or higher
 - **Git**: Version control system
 - **Operating System**: macOS, Linux, or Windows with WSL2
 
 ### AI Provider Account
+
 Choose one or more AI providers:
+
 - Anthropic API key (Claude)
 - OpenAI API key (GPT-4, GPT-4 Turbo)
 - Google AI key (Gemini)
 
 ### Recommended Setup
+
 - VS Code or Cursor IDE
 - Git client
 - Terminal/shell access
@@ -50,16 +56,19 @@ Choose one or more AI providers:
 ## Installation
 
 ### Option 1: Global Installation (Recommended)
+
 ```bash
 npm install -g ultra-dex
 ```
 
 ### Option 2: npx (No Installation Required)
+
 ```bash
 npx ultra-dex --help
 ```
 
 ### Verify Installation
+
 ```bash
 ultra-dex --version
 # Should output: Ultra-Dex v3.4.5
@@ -68,6 +77,7 @@ ultra-dex --version
 ## Quick Start
 
 ### Step 1: Set Up Your AI Provider
+
 ```bash
 # For Claude (recommended)
 export ANTHROPIC_API_KEY=your-claude-api-key
@@ -80,6 +90,7 @@ export GOOGLE_AI_KEY=your-google-ai-key
 ```
 
 ### Step 2: Create Your First Project
+
 ```bash
 # Create a new directory for your project
 mkdir my-awesome-saas
@@ -103,11 +114,13 @@ my-awesome-saas/
 ```
 
 ### Step 3: Generate Your Implementation Plan
+
 ```bash
 ultra-dex generate "A task management SaaS for remote teams"
 ```
 
 ### Step 4: Start Building
+
 ```bash
 ultra-dex build
 ```
@@ -117,6 +130,7 @@ This will start the auto-pilot system that executes the next pending task from y
 ## Core Concepts
 
 ### 1. The 34-Section Template
+
 The foundation of Ultra-Dex is the comprehensive 34-section implementation template that covers every aspect of a production application:
 
 - **Sections 1-10**: Product definition, tech stack, database, API, auth, frontend
@@ -124,6 +138,7 @@ The foundation of Ultra-Dex is the comprehensive 34-section implementation templ
 - **Sections 21-34**: Advanced topics like docs, roadmap, accessibility, analytics
 
 ### 2. The 21-Step Verification Framework
+
 Every task goes through a rigorous 21-step verification process to ensure quality:
 
 1. Atomic Scope Defined
@@ -149,6 +164,7 @@ Every task goes through a rigorous 21-step verification process to ensure qualit
 21. Deployment Readiness
 
 ### 3. AI Agent System
+
 Ultra-Dex includes 17 specialized AI agents organized into 6 tiers:
 
 **Leadership Tier**: @CTO, @Planner, @Research
@@ -161,6 +177,7 @@ Ultra-Dex includes 17 specialized AI agents organized into 6 tiers:
 ## New Features in v3.4.5
 
 ### 1. Plugin Architecture 🧩
+
 Extend Ultra-Dex functionality with custom plugins:
 
 ```bash
@@ -175,6 +192,7 @@ ultra-dex plugin info my-plugin
 ```
 
 **Creating a Plugin**:
+
 ```javascript
 // my-awesome-plugin.js
 export const name = 'my-awesome-plugin';
@@ -195,18 +213,21 @@ export default { name, version, description, activate };
 ```
 
 ### 2. Performance Optimizations ⚡
+
 - Enhanced graph analysis with caching
 - Improved file processing with concurrency
 - Better memory management
 - Performance monitoring and benchmarks
 
 ### 3. Enhanced Security 🔐
+
 - Advanced path validation
 - Improved input sanitization
 - Better credential management
 - Comprehensive security documentation
 
 ### 4. Comprehensive Documentation 📚
+
 - API Documentation (`APIDOC.md`)
 - User Guide (`USERGUIDE.md`)
 - Best Practices (`BESTPRACTICES.md`)
@@ -218,16 +239,19 @@ export default { name, version, description, activate };
 ## Best Practices
 
 ### 1. Start Small
+
 - Begin with a clear, focused idea
 - Use the 34-section template but customize it to your needs
 - Start with the core features first
 
 ### 2. Iterate Frequently
+
 - Use `ultra-dex build` for incremental progress
 - Validate regularly with `ultra-dex validate`
 - Review with `ultra-dex review`
 
 ### 3. Leverage AI Agents Appropriately
+
 - Use @Planner for task breakdown
 - Use @CTO for architecture decisions
 - Use @Backend for API implementation
@@ -235,17 +259,21 @@ export default { name, version, description, activate };
 - Use @Testing for quality assurance
 
 ### 4. Maintain Quality Standards
+
 - Follow the 21-step verification framework
 - Use the 21-step checklist for each task
 - Regularly run `ultra-dex validate` to check standards
 
 ### 5. Use the Dashboard
+
 ```bash
 ultra-dex dashboard
 ```
+
 Monitor your project's progress and status in real-time.
 
 ### 6. Secure Your Credentials
+
 - Never commit API keys to version control
 - Use environment variables for sensitive data
 - Implement proper secret rotation policies
@@ -255,8 +283,10 @@ Monitor your project's progress and status in real-time.
 ### Common Issues
 
 #### API Key Not Recognized
+
 **Problem**: Getting authentication errors
-**Solution**: 
+**Solution**:
+
 ```bash
 # Verify your API key is set
 echo $ANTHROPIC_API_KEY
@@ -266,8 +296,10 @@ export ANTHROPIC_API_KEY=your-actual-key-without-spaces
 ```
 
 #### Command Not Found
+
 **Problem**: `ultra-dex: command not found`
 **Solution**:
+
 ```bash
 # Reinstall globally
 npm uninstall -g ultra-dex
@@ -278,8 +310,10 @@ npx ultra-dex --help
 ```
 
 #### Slow Performance
+
 **Problem**: Commands taking too long
 **Solution**:
+
 - Check your internet connection
 - Verify your AI provider API is responding normally
 - Consider using a different AI provider if one is slow
@@ -305,6 +339,7 @@ npx ultra-dex --help
 ## Advanced Features
 
 ### MCP Integration
+
 Ultra-Dex includes a Model Context Protocol (MCP) server:
 
 ```bash
@@ -316,6 +351,7 @@ ultra-dex config --mcp
 ```
 
 ### Plugin Development
+
 Create custom functionality with the plugin system:
 
 ```bash
@@ -330,6 +366,7 @@ ultra-dex my-command  # if your plugin adds this command
 ```
 
 ### Performance Monitoring
+
 Monitor system performance:
 
 ```bash
@@ -341,27 +378,32 @@ ultra-dex status --all
 ## Next Steps
 
 ### 1. Complete the Quick Start
+
 - Finish the initialization process
 - Generate your first implementation plan
 - Start building with `ultra-dex build`
 
 ### 2. Explore Advanced Features
+
 - Try the dashboard: `ultra-dex dashboard`
 - Experiment with agents: `ultra-dex agents`
 - Test the swarm feature: `ultra-dex swarm "Build auth feature"`
 
 ### 3. Customize for Your Needs
+
 - Modify the 34-section template to fit your project
 - Create custom plugins for specialized functionality
 - Set up your preferred AI provider
 
 ### 4. Join the Community
+
 - Star the project on GitHub
 - Share your experiences and plugins
 - Contribute to the documentation
 - Report issues and suggest improvements
 
 ### 5. Scale Your Project
+
 - Use the 21-step verification for quality
 - Implement proper testing strategies
 - Plan for deployment and scaling
@@ -413,8 +455,9 @@ Happy building! 🚀
 ---
 
 **Need more help?** Check out the comprehensive documentation files in the root directory:
+
 - `USERGUIDE.md` - Complete user guide
-- `BESTPRACTICES.md` - Recommended practices  
+- `BESTPRACTICES.md` - Recommended practices
 - `TROUBLESHOOTING.md` - Issue resolution
 - `APIDOC.md` - API reference
 - `CONTRIBUTING.md` - How to contribute

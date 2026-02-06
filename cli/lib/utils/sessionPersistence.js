@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Session Persistence with Vector Store
  * Stores agent decisions and context for long-term memory
@@ -29,7 +31,7 @@ class SessionPersistence {
     // Open database
     this.db = await open({
       filename: this.dbPath,
-      driver: sqlite3.Database
+      driver: sqlite3.Database,
     });
 
     // Create tables
@@ -74,22 +76,23 @@ class SessionPersistence {
 
   async createSession(name, metadata = {}) {
     await this.init();
-    
+
     const id = this.generateId();
-    await this.db.run(
-      'INSERT INTO sessions (id, name, metadata) VALUES (?, ?, ?)',
-      [id, name, JSON.stringify(metadata)]
-    );
-    
+    await this.db.run('INSERT INTO sessions (id, name, metadata) VALUES (?, ?, ?)', [
+      id,
+      name,
+      JSON.stringify(metadata),
+    ]);
+
     return { id, name, metadata };
   }
 
   async saveDecision(sessionId, agent, task, decision, context = {}) {
     await this.init();
-    
+
     const id = this.generateId();
     const embedding = this.generateSimpleEmbedding(decision + ' ' + task);
-    
+
     await this.db.run(
       'INSERT INTO decisions (id, session_id, agent, task, decision, context, embedding) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [id, sessionId, agent, task, decision, JSON.stringify(context), JSON.stringify(embedding)]
@@ -98,10 +101,11 @@ class SessionPersistence {
     // Index keywords for search
     const keywords = this.extractKeywords(decision + ' ' + task);
     for (const keyword of keywords) {
-      await this.db.run(
-        'INSERT INTO memory_index (id, decision_id, keyword) VALUES (?, ?, ?)',
-        [this.generateId(), id, keyword]
-      );
+      await this.db.run('INSERT INTO memory_index (id, decision_id, keyword) VALUES (?, ?, ?)', [
+        this.generateId(),
+        id,
+        keyword,
+      ]);
     }
 
     return id;
@@ -109,7 +113,7 @@ class SessionPersistence {
 
   async searchDecisions(query, limit = 10) {
     await this.init();
-    
+
     const keywords = this.extractKeywords(query);
     if (keywords.length === 0) return [];
 
@@ -126,16 +130,16 @@ class SessionPersistence {
       [...keywords, limit]
     );
 
-    return decisions.map(d => ({
+    return decisions.map((d) => ({
       ...d,
       context: JSON.parse(d.context || '{}'),
-      embedding: JSON.parse(d.embedding || '[]')
+      embedding: JSON.parse(d.embedding || '[]'),
     }));
   }
 
   async getRecentDecisions(sessionId, limit = 20) {
     await this.init();
-    
+
     const decisions = await this.db.all(
       `SELECT d.*, s.name as session_name
        FROM decisions d
@@ -146,16 +150,16 @@ class SessionPersistence {
       [sessionId, limit]
     );
 
-    return decisions.map(d => ({
+    return decisions.map((d) => ({
       ...d,
       context: JSON.parse(d.context || '{}'),
-      embedding: JSON.parse(d.embedding || '[]')
+      embedding: JSON.parse(d.embedding || '[]'),
     }));
   }
 
   async getDecisionStats(sessionId) {
     await this.init();
-    
+
     const stats = await this.db.get(
       `SELECT 
         COUNT(*) as total_decisions,
@@ -187,13 +191,98 @@ class SessionPersistence {
 
   extractKeywords(text) {
     // Simple keyword extraction
-    const stopWords = new Set(['the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'and', 'but', 'if', 'or', 'because', 'until', 'while']);
-    
+    const stopWords = new Set([
+      'the',
+      'a',
+      'an',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'must',
+      'shall',
+      'can',
+      'need',
+      'dare',
+      'ought',
+      'used',
+      'to',
+      'of',
+      'in',
+      'for',
+      'on',
+      'with',
+      'at',
+      'by',
+      'from',
+      'as',
+      'into',
+      'through',
+      'during',
+      'before',
+      'after',
+      'above',
+      'below',
+      'between',
+      'under',
+      'again',
+      'further',
+      'then',
+      'once',
+      'here',
+      'there',
+      'when',
+      'where',
+      'why',
+      'how',
+      'all',
+      'each',
+      'few',
+      'more',
+      'most',
+      'other',
+      'some',
+      'such',
+      'no',
+      'nor',
+      'not',
+      'only',
+      'own',
+      'same',
+      'so',
+      'than',
+      'too',
+      'very',
+      'just',
+      'and',
+      'but',
+      'if',
+      'or',
+      'because',
+      'until',
+      'while',
+    ]);
+
     return text
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .split(/\s+/)
-      .filter(word => word.length > 3 && !stopWords.has(word))
+      .filter((word) => word.length > 3 && !stopWords.has(word))
       .slice(0, 10);
   }
 
@@ -202,14 +291,14 @@ class SessionPersistence {
     // In production, you'd use a real embedding model like OpenAI's text-embedding-3-small
     const words = this.extractKeywords(text);
     const embedding = new Array(50).fill(0);
-    
+
     words.forEach((word, _i) => {
       const hash = word.split('').reduce((acc, char) => {
         return acc + char.charCodeAt(0);
       }, 0);
       embedding[hash % 50] = 1;
     });
-    
+
     return embedding;
   }
 }

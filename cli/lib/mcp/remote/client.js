@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Remote MCP Client
  * Connects to remote MCP server for team collaboration
@@ -15,7 +17,8 @@ import { AppError } from '../../utils/errors.js';
  */
 export class RemoteMCPClient {
   constructor(options = {}) {
-    this.serverUrl = options.serverUrl || process.env.ULTRA_DEX_REMOTE_SERVER_URL || 'ws://localhost:4000';
+    this.serverUrl =
+      options.serverUrl || process.env.ULTRA_DEX_REMOTE_SERVER_URL || 'ws://localhost:4000';
     this.apiKey = options.apiKey || process.env.ULTRA_DEX_REMOTE_KEY;
     this.ws = null;
     this.connected = false;
@@ -33,25 +36,25 @@ export class RemoteMCPClient {
   async connect() {
     return new Promise((resolve, reject) => {
       printInfo(chalk.cyan(`🔗 Connecting to remote MCP server: ${this.serverUrl}`));
-      
+
       const headers = {};
       if (this.apiKey) {
         headers.Authorization = `Bearer ${this.apiKey}`;
       }
-      
+
       this.ws = new WebSocket(this.serverUrl, { headers });
-      
+
       this.ws.on('open', () => {
         this.connected = true;
         this.reconnectAttempts = 0;
         printSuccess(chalk.green('✅ Connected to remote MCP server'));
-        
+
         // Process queued messages
         this.processMessageQueue();
-        
+
         resolve();
       });
-      
+
       this.ws.on('message', (data) => {
         try {
           const message = JSON.parse(data.toString());
@@ -60,18 +63,24 @@ export class RemoteMCPClient {
           printWarning(chalk.yellow(`⚠️  Invalid message received: ${error.message}`));
         }
       });
-      
+
       this.ws.on('close', (code, reason) => {
         this.connected = false;
-        printWarning(chalk.yellow(`🔗 Disconnected from server (code: ${code}, reason: ${reason})`));
-        
+        printWarning(
+          chalk.yellow(`🔗 Disconnected from server (code: ${code}, reason: ${reason})`)
+        );
+
         // Attempt to reconnect
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++;
-          printInfo(chalk.gray(`🔄 Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`));
-          
+          printInfo(
+            chalk.gray(
+              `🔄 Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+            )
+          );
+
           setTimeout(() => {
-            this.connect().catch(err => {
+            this.connect().catch((err) => {
               printError(chalk.red(`❌ Reconnection failed: ${err.message}`));
             });
           }, this.reconnectDelay);
@@ -79,7 +88,7 @@ export class RemoteMCPClient {
           printError(chalk.red('❌ Max reconnection attempts reached'));
         }
       });
-      
+
       this.ws.on('error', (error) => {
         printError(chalk.red(`❌ Connection error: ${error.message}`));
         reject(error);
@@ -92,39 +101,39 @@ export class RemoteMCPClient {
    */
   handleMessage(message) {
     const { type, data, timestamp } = message;
-    
+
     printInfo(chalk.gray(`📥 Received: ${type}`));
-    
+
     // Handle specific message types
     switch (type) {
       case 'welcome':
         printSuccess(chalk.green(`🎉 ${data.message}`));
         break;
-        
+
       case 'context_response':
         this.handleContextResponse(data);
         break;
-        
+
       case 'plan_response':
         this.handlePlanResponse(data);
         break;
-        
+
       case 'state_response':
         this.handleStateResponse(data);
         break;
-        
+
       case 'tool_result':
         this.handleToolResult(data);
         break;
-        
+
       case 'file_change':
         this.handleFileChange(data);
         break;
-        
+
       case 'error':
         printError(chalk.red(`❌ Server error: ${data.message}`));
         break;
-        
+
       default:
         // Check if there's a custom handler
         if (this.messageHandlers.has(type)) {
@@ -172,7 +181,7 @@ export class RemoteMCPClient {
    */
   async handleFileChange(data) {
     printInfo(chalk.yellow(`📝 File change detected: ${data.filePath} (${data.action})`));
-    
+
     // In a real implementation, this would sync the file change locally
     if (data.action === 'update' || data.action === 'create') {
       try {
@@ -193,7 +202,7 @@ export class RemoteMCPClient {
       this.messageQueue.push(message);
       return false;
     }
-    
+
     try {
       this.ws.send(JSON.stringify(message));
       return true;
@@ -219,7 +228,7 @@ export class RemoteMCPClient {
   requestContext() {
     return this.sendMessage({
       type: 'request_context',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -229,7 +238,7 @@ export class RemoteMCPClient {
   requestPlan() {
     return this.sendMessage({
       type: 'request_plan',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -239,7 +248,7 @@ export class RemoteMCPClient {
   requestState() {
     return this.sendMessage({
       type: 'request_state',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -250,7 +259,7 @@ export class RemoteMCPClient {
     return this.sendMessage({
       type: 'execute_tool',
       params: { toolName, toolParams: params },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -261,7 +270,7 @@ export class RemoteMCPClient {
     return this.sendMessage({
       type: 'request_file',
       params: { filePath },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -272,7 +281,7 @@ export class RemoteMCPClient {
     return this.sendMessage({
       type: 'file_update',
       params: { filePath, content },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -310,7 +319,7 @@ export class RemoteMCPClient {
       serverUrl: this.serverUrl,
       reconnectAttempts: this.reconnectAttempts,
       messageQueueSize: this.messageQueue.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -322,18 +331,18 @@ export class RemoteMCPClient {
       printInfo(chalk.blue('📥 Pulling context from server...'));
       this.requestContext();
     }
-    
+
     if (direction === 'push' || direction === 'both') {
       printInfo(chalk.blue('📤 Pushing local context to server...'));
       // In a real implementation, this would read local context and send it
       try {
         const contextPath = path.join(this.projectRoot, 'CONTEXT.md');
         const contextContent = await fs.readFile(contextPath, 'utf8');
-        
+
         this.sendMessage({
           type: 'context_update',
           params: { content: contextContent },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       } catch (error) {
         if (error.code !== 'ENOENT') {
@@ -351,17 +360,17 @@ export class RemoteMCPClient {
       printInfo(chalk.blue('📥 Pulling plan from server...'));
       this.requestPlan();
     }
-    
+
     if (direction === 'push' || direction === 'both') {
       printInfo(chalk.blue('📤 Pushing local plan to server...'));
       try {
         const planPath = path.join(this.projectRoot, 'IMPLEMENTATION-PLAN.md');
         const planContent = await fs.readFile(planPath, 'utf8');
-        
+
         this.sendMessage({
           type: 'plan_update',
           params: { content: planContent },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       } catch (error) {
         if (error.code !== 'ENOENT') {
@@ -379,18 +388,18 @@ export class RemoteMCPClient {
       printInfo(chalk.blue('📥 Pulling state from server...'));
       this.requestState();
     }
-    
+
     if (direction === 'push' || direction === 'both') {
       printInfo(chalk.blue('📤 Pushing local state to server...'));
       try {
         const statePath = path.join(this.projectRoot, '.ultra', 'state.json');
         const stateContent = await fs.readFile(statePath, 'utf8');
         const state = JSON.parse(stateContent);
-        
+
         this.sendMessage({
           type: 'state_update',
           params: { state },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       } catch (error) {
         if (error.code !== 'ENOENT') {
@@ -417,7 +426,11 @@ export function registerRemoteClientCommand(program) {
   program
     .command('mcp:connect')
     .description('Connect to remote MCP server for team sync')
-    .option('--server <url>', 'Remote server URL (default: ws://localhost:4000)', 'ws://localhost:4000')
+    .option(
+      '--server <url>',
+      'Remote server URL (default: ws://localhost:4000)',
+      'ws://localhost:4000'
+    )
     .option('--api-key <key>', 'API key for authentication')
     .option('--project-root <path>', 'Project root directory', process.cwd())
     .option('--sync-context', 'Sync context with server')
@@ -427,38 +440,38 @@ export function registerRemoteClientCommand(program) {
     .action(async (options) => {
       try {
         printInfo(chalk.cyan('\n🔗 Connecting to Remote MCP Server\n'));
-        
+
         const clientOptions = {
           serverUrl: options.server,
           apiKey: options.apiKey,
-          projectRoot: options.projectRoot
+          projectRoot: options.projectRoot,
         };
-        
+
         const client = await createRemoteMCPClient(clientOptions);
-        
+
         // Perform requested sync operations
         if (options.syncContext) {
           await client.syncContext(options.direction);
         }
-        
+
         if (options.syncPlan) {
           await client.syncPlan(options.direction);
         }
-        
+
         if (options.syncState) {
           await client.syncState(options.direction);
         }
-        
+
         // Keep connection alive if syncing continuously
         if (options.syncContext || options.syncPlan || options.syncState) {
           printInfo(chalk.blue('\n🔄 Continuous sync enabled. Press Ctrl+C to disconnect.\n'));
-          
+
           process.on('SIGINT', async () => {
             printInfo(chalk.yellow('\n⚠️  Disconnecting from remote MCP server...'));
             await client.disconnect();
             process.exit(0);
           });
-          
+
           process.on('SIGTERM', async () => {
             printInfo(chalk.yellow('\n⚠️  Received SIGTERM, disconnecting...'));
             await client.disconnect();
@@ -479,5 +492,5 @@ export function registerRemoteClientCommand(program) {
 export default {
   RemoteMCPClient,
   createRemoteMCPClient,
-  registerRemoteClientCommand
+  registerRemoteClientCommand,
 };

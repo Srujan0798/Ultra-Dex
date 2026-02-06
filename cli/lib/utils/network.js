@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 400) {
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -10,7 +12,7 @@ export async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 4
     } catch (err) {
       lastError = err;
       if (attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
   }

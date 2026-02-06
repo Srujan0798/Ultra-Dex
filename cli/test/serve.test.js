@@ -33,73 +33,78 @@ describe('serve command', () => {
 
     test('registers serve command', async () => {
       const { registerServeCommand } = await import('../lib/commands/serve.js');
-      
+
       const mockProgram = {
-        command: function(name) {
+        command: function (name) {
           this.commandName = name;
           return this;
         },
-        description: function(desc) {
+        description: function (desc) {
           this.commandDescription = desc;
           return this;
         },
-        option: function(flags, description, defaultValue) {
+        option: function (flags, description, defaultValue) {
           if (!this.options) this.options = [];
           this.options.push({ flags, description, defaultValue });
           return this;
         },
-        action: function(fn) {
+        action: function (fn) {
           this.actionFn = fn;
           return this;
-        }
+        },
       };
 
       registerServeCommand(mockProgram);
-      
+
       assert.strictEqual(mockProgram.commandName, 'serve');
-      assert.ok(mockProgram.commandDescription.includes('Portal') || mockProgram.commandDescription.includes('Kernel'));
+      assert.ok(
+        mockProgram.commandDescription.includes('Portal') ||
+          mockProgram.commandDescription.includes('Kernel')
+      );
       assert.ok(mockProgram.options.length >= 2);
       assert.strictEqual(typeof mockProgram.actionFn, 'function');
     });
 
     test('registers port option', async () => {
       const { registerServeCommand } = await import('../lib/commands/serve.js');
-      
+
       const mockProgram = {
         command: () => mockProgram,
         description: () => mockProgram,
         options: [],
-        option: function(flags, description, defaultValue) {
+        option: function (flags, description, defaultValue) {
           this.options.push({ flags, description, defaultValue });
           return this;
         },
-        action: () => mockProgram
+        action: () => mockProgram,
       };
 
       registerServeCommand(mockProgram);
-      
-      const portOption = mockProgram.options.find(o => o.flags.includes('--port') || o.flags.includes('-p'));
+
+      const portOption = mockProgram.options.find(
+        (o) => o.flags.includes('--port') || o.flags.includes('-p')
+      );
       assert.ok(portOption, 'Should have port option');
       assert.strictEqual(portOption.defaultValue, '3001', 'Should default to port 3001');
     });
 
     test('registers stdio option', async () => {
       const { registerServeCommand } = await import('../lib/commands/serve.js');
-      
+
       const mockProgram = {
         command: () => mockProgram,
         description: () => mockProgram,
         options: [],
-        option: function(flags, description, defaultValue) {
+        option: function (flags, description, defaultValue) {
           this.options.push({ flags, description, defaultValue });
           return this;
         },
-        action: () => mockProgram
+        action: () => mockProgram,
       };
 
       registerServeCommand(mockProgram);
-      
-      const stdioOption = mockProgram.options.find(o => o.flags.includes('--stdio'));
+
+      const stdioOption = mockProgram.options.find((o) => o.flags.includes('--stdio'));
       assert.ok(stdioOption, 'Should have stdio option');
       assert.strictEqual(stdioOption.defaultValue, false, 'Should default to false');
     });
@@ -116,7 +121,7 @@ describe('serve command', () => {
         await fs.writeFile(path.join(tmpDir, 'test.txt'), 'test');
         execSync('git add .', { cwd: tmpDir });
         execSync('git commit -m "initial"', { cwd: tmpDir });
-        
+
         // Now test getGitInfo
         const serveModule = await import('../lib/commands/serve.js');
         // getGitInfo is not exported, but we can test the command behavior
@@ -152,12 +157,12 @@ describe('serve command', () => {
         '/api/plan',
         '/api/context',
         '/api/graph',
-        '/api/swarm'
+        '/api/swarm',
       ];
-      
+
       // Verify the array structure
       assert.ok(expectedEndpoints.length > 0);
-      assert.ok(expectedEndpoints.every(e => e.startsWith('/api/')));
+      assert.ok(expectedEndpoints.every((e) => e.startsWith('/api/')));
     });
   });
 
@@ -167,9 +172,9 @@ describe('serve command', () => {
       const expectedHeaders = [
         'Access-Control-Allow-Origin',
         'Access-Control-Allow-Methods',
-        'Access-Control-Allow-Headers'
+        'Access-Control-Allow-Headers',
       ];
-      
+
       assert.strictEqual(expectedHeaders.length, 3);
       assert.ok(expectedHeaders.includes('Access-Control-Allow-Origin'));
     });
@@ -199,9 +204,9 @@ describe('serve command', () => {
       // Should return JSON with name, version, status, endpoints
       const expectedInfo = {
         name: 'Ultra-Dex Multiverse Kernel',
-        status: 'online'
+        status: 'online',
       };
-      
+
       assert.ok(expectedInfo.name);
       assert.ok(expectedInfo.status);
     });

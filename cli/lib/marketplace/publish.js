@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { marketplaceClient } from './client.js';
@@ -7,7 +9,7 @@ export async function publishAgent(agentPath) {
   const payload = {
     name: path.basename(agentPath, path.extname(agentPath)),
     version: '1.0.0',
-    systemPrompt: content
+    systemPrompt: content,
   };
 
   return marketplaceClient.submitAgent(payload);

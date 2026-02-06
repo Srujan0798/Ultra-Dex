@@ -17,11 +17,11 @@ describe('swarm command', () => {
       .option('--parallel', 'Run implementation tier agents in parallel')
       .action(swarmCommand);
 
-    const command = program.commands.find(cmd => cmd.name() === 'swarm');
+    const command = program.commands.find((cmd) => cmd.name() === 'swarm');
     expect(command).toBeDefined();
     expect(command.description()).toContain('Run autonomous agent pipeline');
-    
-    const options = command.options.map(opt => opt.flags);
+
+    const options = command.options.map((opt) => opt.flags);
     expect(options).toContain('--dry-run');
     expect(options).toContain('--parallel');
   });
@@ -34,7 +34,7 @@ describe('swarm command', () => {
       .option('--parallel', 'Run implementation tier agents in parallel')
       .action(swarmCommand);
 
-    const command = program.commands.find(cmd => cmd.name() === 'swarm');
+    const command = program.commands.find((cmd) => cmd.name() === 'swarm');
     expect(command).toBeDefined();
 
     const args = command._args;

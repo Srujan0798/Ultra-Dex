@@ -7,6 +7,7 @@ A complete e-commerce implementation using Ultra-Dex methodology.
 **Product:** Modern e-commerce platform with real-time inventory, payments, and admin dashboard.
 
 **Tech Stack:**
+
 - Frontend: Next.js 15 + Tailwind CSS
 - Database: PostgreSQL + Prisma
 - Auth: NextAuth.js
@@ -28,17 +29,18 @@ A complete e-commerce implementation using Ultra-Dex methodology.
 
 ### 2. Core Features (MVP)
 
-| Feature | Priority | Description |
-|---------|----------|-------------|
-| Product management | P0 | Add/edit products with variants |
-| Shopping cart | P0 | Persistent cart with localStorage |
-| Stripe checkout | P0 | One-click payments |
-| Order dashboard | P1 | View and manage orders |
-| Basic analytics | P2 | Sales and revenue stats |
+| Feature            | Priority | Description                       |
+| ------------------ | -------- | --------------------------------- |
+| Product management | P0       | Add/edit products with variants   |
+| Shopping cart      | P0       | Persistent cart with localStorage |
+| Stripe checkout    | P0       | One-click payments                |
+| Order dashboard    | P1       | View and manage orders            |
+| Basic analytics    | P2       | Sales and revenue stats           |
 
 ### 3. User Personas
 
 **Primary: Creative Sarah**
+
 - YouTuber with 50K subscribers
 - Sells merch + digital presets
 - Needs: Easy setup, low fees, instant payouts
@@ -46,6 +48,7 @@ A complete e-commerce implementation using Ultra-Dex methodology.
 ### 4. User Flows
 
 **Purchase Flow:**
+
 ```
 Browse → Product Page → Add to Cart → Checkout → Payment → Confirmation
 ```
@@ -60,20 +63,21 @@ Browse → Product Page → Add to Cart → Checkout → Payment → Confirmatio
 
 ### 6. Tech Stack
 
-| Layer | Technology | Rationale |
-|-------|------------|-----------|
-| Frontend | Next.js 15 | SSR, SEO, performance |
-| Styling | Tailwind CSS | Rapid development |
-| Database | PostgreSQL | ACID for inventory |
-| ORM | Prisma | Type safety |
-| Auth | NextAuth.js | Multiple providers |
-| Payments | Stripe | Industry standard |
-| Search | Algolia | Instant search |
-| Hosting | Vercel | Edge deployment |
+| Layer    | Technology   | Rationale             |
+| -------- | ------------ | --------------------- |
+| Frontend | Next.js 15   | SSR, SEO, performance |
+| Styling  | Tailwind CSS | Rapid development     |
+| Database | PostgreSQL   | ACID for inventory    |
+| ORM      | Prisma       | Type safety           |
+| Auth     | NextAuth.js  | Multiple providers    |
+| Payments | Stripe       | Industry standard     |
+| Search   | Algolia      | Instant search        |
+| Hosting  | Vercel       | Edge deployment       |
 
 ### 7. Data Model
 
 **Product:**
+
 ```
 - id: UUID
 - name: String
@@ -86,6 +90,7 @@ Browse → Product Page → Add to Cart → Checkout → Payment → Confirmatio
 ```
 
 **Order:**
+
 ```
 - id: UUID
 - userId: UUID
@@ -98,35 +103,41 @@ Browse → Product Page → Add to Cart → Checkout → Payment → Confirmatio
 ### 8. API Blueprint
 
 **Products:**
+
 - `GET /api/products` - List with filters
 - `GET /api/products/:id` - Get single
 - `POST /api/products` - Create (admin)
 - `PUT /api/products/:id` - Update (admin)
 
 **Orders:**
+
 - `POST /api/orders` - Create order
 - `GET /api/orders` - List user orders
 - `GET /api/orders/:id` - Get order details
 
 **Checkout:**
+
 - `POST /api/checkout` - Create Stripe session
 - `POST /api/webhooks/stripe` - Handle payments
 
 ### 9. Implementation Plan
 
 **Week 1: Foundation**
+
 - [ ] Setup Next.js project with TypeScript
 - [ ] Configure Prisma with PostgreSQL
 - [ ] Setup Tailwind and base UI components
 - [ ] Create database schema
 
 **Week 2: Core Features**
+
 - [ ] Product listing page
 - [ ] Product detail page
 - [ ] Shopping cart with localStorage
 - [ ] Stripe checkout integration
 
 **Week 3: Dashboard & Polish**
+
 - [ ] Admin dashboard layout
 - [ ] Product management CRUD
 - [ ] Order management
@@ -134,6 +145,7 @@ Browse → Product Page → Add to Cart → Checkout → Payment → Confirmatio
 - [ ] Responsive design
 
 **Week 4: Launch**
+
 - [ ] SEO optimization
 - [ ] Performance testing
 - [ ] Deploy to Vercel
@@ -145,6 +157,7 @@ Browse → Product Page → Add to Cart → Checkout → Payment → Confirmatio
 **Platform:** Vercel + Supabase
 
 **Environment Variables:**
+
 ```
 DATABASE_URL=
 NEXTAUTH_SECRET=

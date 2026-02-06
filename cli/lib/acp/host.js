@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * ACP (Agent Client Protocol) Host Implementation
@@ -30,7 +31,7 @@ const ErrorCode = {
   INVALID_PARAMS: -32602,
   INTERNAL_ERROR: -32603,
   AUTH_REQUIRED: -32000,
-  RESOURCE_NOT_FOUND: -32002
+  RESOURCE_NOT_FOUND: -32002,
 };
 
 /**
@@ -40,7 +41,7 @@ function createResponse(id, result) {
   return JSON.stringify({
     jsonrpc: '2.0',
     id,
-    result
+    result,
   });
 }
 
@@ -53,7 +54,7 @@ function createErrorResponse(id, code, message, data = null) {
   return JSON.stringify({
     jsonrpc: '2.0',
     id,
-    error
+    error,
   });
 }
 
@@ -66,7 +67,7 @@ export class ACPHost {
       stdio: options.stdio ?? true,
       port: options.port ?? 3002,
       http: options.http ?? false,
-      ...options
+      ...options,
     };
     this.initialized = false;
     this.clientCapabilities = null;
@@ -77,10 +78,10 @@ export class ACPHost {
    */
   async start() {
     printInfo(`\n🚀 Starting ACP Host (Agent Client Protocol) v${ACP_PROTOCOL_VERSION}...\n`);
-    
+
     monitoring.info('ACP Host starting', {
       protocolVersion: ACP_PROTOCOL_VERSION,
-      mode: this.options.stdio ? 'stdio' : 'http'
+      mode: this.options.stdio ? 'stdio' : 'http',
     });
 
     if (this.options.stdio) {
@@ -95,19 +96,19 @@ export class ACPHost {
    */
   async startStdioMode() {
     printInfo('ACP Host running in stdio mode');
-    
+
     process.stdin.setEncoding('utf8');
-    
+
     let buffer = '';
-    
+
     process.stdin.on('data', async (chunk) => {
       buffer += chunk;
-      
+
       let newlineIndex;
       while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
         const line = buffer.slice(0, newlineIndex).trim();
         buffer = buffer.slice(newlineIndex + 1);
-        
+
         if (line) {
           try {
             const response = await this.handleMessage(line);
@@ -137,7 +138,7 @@ export class ACPHost {
    */
   async startHttpMode() {
     const http = await import('http');
-    
+
     const server = http.createServer(async (req, res) => {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -156,7 +157,7 @@ export class ACPHost {
       }
 
       let body = '';
-      req.on('data', chunk => body += chunk);
+      req.on('data', (chunk) => (body += chunk));
       req.on('end', async () => {
         try {
           const response = await this.handleMessage(body);
@@ -179,10 +180,10 @@ export class ACPHost {
    */
   async handleMessage(messageStr) {
     let requestId = null;
-    
+
     try {
       const message = JSON.parse(messageStr);
-      
+
       if (!message.jsonrpc || message.jsonrpc !== '2.0') {
         return createErrorResponse(null, ErrorCode.INVALID_REQUEST, 'Invalid JSON-RPC version');
       }
@@ -205,7 +206,6 @@ export class ACPHost {
 
       const result = await this.handleRequest(method, params, requestId);
       return createResponse(requestId, result);
-
     } catch (error) {
       if (error instanceof SyntaxError) {
         return createErrorResponse(requestId, ErrorCode.PARSE_ERROR, 'Parse error: Invalid JSON');
@@ -279,13 +279,13 @@ export class ACPHost {
         promptCapabilities: { text: true, embeddedContext: true },
         sessionCapabilities: { modes: ['ask', 'architect', 'code', 'review', 'test'] },
         terminalCapabilities: { shell: true },
-        filesystemCapabilities: { read: true, write: true }
+        filesystemCapabilities: { read: true, write: true },
       },
       agentInfo: {
         name: 'ultra-dex',
         version: VERSION,
-        vendor: 'Ultra-Dex AI'
-      }
+        vendor: 'Ultra-Dex AI',
+      },
     };
   }
 
@@ -300,7 +300,7 @@ export class ACPHost {
       mode: params.initialMode || 'ask',
       availableModes: ['ask', 'architect', 'code', 'review', 'test'],
       history: [],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
     sessions.set(sessionId, session);
     printSuccess(`✅ ACP Session created: ${sessionId.slice(0, 8)}`);
@@ -323,7 +323,7 @@ export class ACPHost {
   async handleSessionPrompt(params) {
     const session = sessions.get(params.sessionId);
     if (!session) throw new Error('Session not found');
-    
+
     printInfo(`ACP: Processing ${session.mode} prompt`);
 
     // In a production environment, this would call the internal Ultra-Dex orchestration engine
@@ -332,10 +332,10 @@ export class ACPHost {
       content: [
         {
           type: 'text',
-          text: `Ultra-Dex [${session.mode.toUpperCase()}] is processing your request.\n\nContext: Local codebase analysis active.\nTask: ${params.prompt}\n\nI am ready to help you build, architect, or review your SaaS application.`
-        }
+          text: `Ultra-Dex [${session.mode.toUpperCase()}] is processing your request.\n\nContext: Local codebase analysis active.\nTask: ${params.prompt}\n\nI am ready to help you build, architect, or review your SaaS application.`,
+        },
       ],
-      stopReason: 'end_turn'
+      stopReason: 'end_turn',
     };
   }
 
@@ -345,12 +345,12 @@ export class ACPHost {
       const child = spawn(params.command, params.args || [], {
         cwd: params.cwd || process.cwd(),
         shell: true,
-        env: { ...process.env, ...params.env }
+        env: { ...process.env, ...params.env },
       });
 
       let output = '';
-      child.stdout.on('data', data => output += data.toString());
-      child.stderr.on('data', data => output += data.toString());
+      child.stdout.on('data', (data) => (output += data.toString()));
+      child.stderr.on('data', (data) => (output += data.toString()));
 
       terminals.set(terminalId, { id: terminalId, process: child, output });
       return { terminalId };
@@ -407,7 +407,8 @@ export class ACPHost {
     try {
       rules = await fs.readFile(path.join(process.cwd(), '.cursor', 'rules'), 'utf8');
     } catch {
-      rules = '# Standard Ultra-Dex Rules\n- Follow CONTEXT.md\n- Use modular architecture\n- Implement validation before delivery';
+      rules =
+        '# Standard Ultra-Dex Rules\n- Follow CONTEXT.md\n- Use modular architecture\n- Implement validation before delivery';
     }
     return { rules, timestamp: new Date().toISOString() };
   }
@@ -420,7 +421,11 @@ export class ACPHost {
   shutdown() {
     printInfo('\nShutting down ACP Host...');
     for (const t of terminals.values()) {
-      try { t.process.kill(); } catch (e) { /* ignore */ }
+      try {
+        t.process.kill();
+      } catch (e) {
+        /* ignore */
+      }
     }
     process.exit(0);
   }
@@ -433,7 +438,7 @@ export async function startACPHost(options = {}) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  startACPHost().catch(err => {
+  startACPHost().catch((err) => {
     console.error(chalk.red('Fatal error in ACP Host:'), err);
     process.exit(1);
   });

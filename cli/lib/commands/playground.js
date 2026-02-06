@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Web Playground Command
@@ -55,14 +56,11 @@ export function registerPlaygroundCommand(program) {
           printInfo('  • Export to Markdown, JSON, or YAML');
           printInfo('  • Share via short links\n');
 
-
-
           printInfo(chalk.yellow('Press Ctrl+C to stop\n'));
         });
 
         // Keep process running
         await new Promise(() => {});
-
       } catch (error) {
         printError(`Failed to start playground: ${error.message}`);
         process.exit(1);

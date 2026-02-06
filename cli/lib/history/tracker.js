@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * History Tracking Instrumentation
  * Wraps fs operations to record write/delete events for Universal Undo.
@@ -18,7 +20,7 @@ const original = {
   copyFile: fsPromises.copyFile,
   readFile: fsPromises.readFile,
   stat: fsPromises.stat,
-  lstat: fsPromises.lstat
+  lstat: fsPromises.lstat,
 };
 
 function normalizePath(input) {
@@ -34,7 +36,7 @@ function encodeData(data) {
     const binary = isProbablyBinary(data);
     return {
       value: binary ? data.toString('base64') : data.toString('utf8'),
-      binary
+      binary,
     };
   }
   if (data instanceof Uint8Array) {
@@ -42,7 +44,7 @@ function encodeData(data) {
     const binary = isProbablyBinary(buffer);
     return {
       value: binary ? buffer.toString('base64') : buffer.toString('utf8'),
-      binary
+      binary,
     };
   }
   return { value: String(data), binary: false };
@@ -89,8 +91,8 @@ async function recordWrite(filePath, beforeSnapshot, afterData, metadata = {}) {
     metadata: {
       ...metadata,
       beforeBinary: beforeSnapshot?.binary || false,
-      afterBinary: afterSnapshot.binary || false
-    }
+      afterBinary: afterSnapshot.binary || false,
+    },
   });
 }
 
@@ -103,8 +105,8 @@ async function recordDelete(filePath, beforeSnapshot, metadata = {}) {
     reason: metadata.reason || 'delete',
     metadata: {
       ...metadata,
-      beforeBinary: beforeSnapshot?.binary || false
-    }
+      beforeBinary: beforeSnapshot?.binary || false,
+    },
   });
 }
 
@@ -126,7 +128,9 @@ function wrapPromiseWrite() {
     const beforeSnapshot = shouldTrack && normalized ? await readSnapshot(normalized) : null;
     const result = await original.appendFile(filePath, data, options);
     if (normalized && shouldTrack) {
-      const base = beforeSnapshot?.binary ? Buffer.from(beforeSnapshot.value || '', 'base64') : decodeToBuffer(beforeSnapshot?.value || '');
+      const base = beforeSnapshot?.binary
+        ? Buffer.from(beforeSnapshot.value || '', 'base64')
+        : decodeToBuffer(beforeSnapshot?.value || '');
       const appended = decodeToBuffer(data, beforeSnapshot?.binary ? 'base64' : 'utf8');
       const combined = base && appended ? Buffer.concat([base, appended]) : data;
       await recordWrite(normalized, beforeSnapshot, combined, { reason: 'appendFile' });
@@ -165,14 +169,23 @@ function wrapPromiseWrite() {
   fsPromises.rename = async (from, to) => {
     const fromPath = normalizePath(from);
     const toPath = normalizePath(to);
-    const fromSnapshot = fromPath && historyManager.shouldTrack(fromPath) ? await readSnapshot(fromPath) : null;
-    const toSnapshot = toPath && historyManager.shouldTrack(toPath) ? await readSnapshot(toPath) : null;
+    const fromSnapshot =
+      fromPath && historyManager.shouldTrack(fromPath) ? await readSnapshot(fromPath) : null;
+    const toSnapshot =
+      toPath && historyManager.shouldTrack(toPath) ? await readSnapshot(toPath) : null;
     const result = await original.rename(from, to);
     if (fromPath && historyManager.shouldTrack(fromPath) && fromSnapshot?.value !== null) {
       await recordDelete(fromPath, fromSnapshot, { reason: 'rename' });
     }
     if (toPath && historyManager.shouldTrack(toPath)) {
-      await recordWrite(toPath, toSnapshot, fromSnapshot?.binary ? Buffer.from(fromSnapshot.value || '', 'base64') : (fromSnapshot?.value ?? ''), { reason: 'rename' });
+      await recordWrite(
+        toPath,
+        toSnapshot,
+        fromSnapshot?.binary
+          ? Buffer.from(fromSnapshot.value || '', 'base64')
+          : (fromSnapshot?.value ?? ''),
+        { reason: 'rename' }
+      );
     }
     return result;
   };
@@ -180,7 +193,8 @@ function wrapPromiseWrite() {
   fsPromises.copyFile = async (src, dest, mode) => {
     const srcPath = normalizePath(src);
     const destPath = normalizePath(dest);
-    const destSnapshot = destPath && historyManager.shouldTrack(destPath) ? await readSnapshot(destPath) : null;
+    const destSnapshot =
+      destPath && historyManager.shouldTrack(destPath) ? await readSnapshot(destPath) : null;
     let srcBuffer = null;
     if (srcPath && historyManager.shouldTrack(destPath)) {
       try {
@@ -206,7 +220,7 @@ function wrapSyncWrite() {
     renameSync: fs.renameSync.bind(fs),
     copyFileSync: fs.copyFileSync.bind(fs),
     readFileSync: fs.readFileSync.bind(fs),
-    statSync: fs.statSync.bind(fs)
+    statSync: fs.statSync.bind(fs),
   };
 
   fs.writeFileSync = (filePath, data, options) => {
@@ -329,7 +343,14 @@ function wrapSyncWrite() {
       recordDelete(fromPath, fromSnapshot, { reason: 'renameSync' }).catch(() => {});
     }
     if (toPath && historyManager.shouldTrack(toPath)) {
-      recordWrite(toPath, toSnapshot, fromSnapshot?.binary ? Buffer.from(fromSnapshot.value || '', 'base64') : (fromSnapshot?.value ?? ''), { reason: 'renameSync' }).catch(() => {});
+      recordWrite(
+        toPath,
+        toSnapshot,
+        fromSnapshot?.binary
+          ? Buffer.from(fromSnapshot.value || '', 'base64')
+          : (fromSnapshot?.value ?? ''),
+        { reason: 'renameSync' }
+      ).catch(() => {});
     }
     return result;
   };
@@ -356,7 +377,9 @@ function wrapSyncWrite() {
     }
     const result = originalSync.copyFileSync(src, dest, mode);
     if (destPath && historyManager.shouldTrack(destPath)) {
-      recordWrite(destPath, destSnapshot, srcBuffer || '', { reason: 'copyFileSync' }).catch(() => {});
+      recordWrite(destPath, destSnapshot, srcBuffer || '', { reason: 'copyFileSync' }).catch(
+        () => {}
+      );
     }
     return result;
   };

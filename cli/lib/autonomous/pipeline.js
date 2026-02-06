@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { AUTONOMOUS_GATES, requireGateApproval } from './gates.js';
 
 export class AutonomousPipeline {
@@ -12,7 +14,7 @@ export class AutonomousPipeline {
       { id: 'tasks', label: 'Break into tasks' },
       { id: 'swarm', label: 'Execute with swarm' },
       { id: 'tests', label: 'Run tests' },
-      { id: 'deploy', label: 'Deploy' }
+      { id: 'deploy', label: 'Deploy' },
     ];
 
     const executed = [];

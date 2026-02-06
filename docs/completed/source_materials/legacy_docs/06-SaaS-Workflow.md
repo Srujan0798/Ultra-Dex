@@ -22,10 +22,10 @@
 
 ## 📝 From Tuna Taung's Framework
 
-| Step | Phase |
-|------|-------|
-| 1 | Meta Prompt |
-| 2 | PRD (Product Requirements Document) |
-| 3 | Implementation Plan |
-| 4 | Debugging |
-| 5 | DEPLOYMENT |
+| Step | Phase                               |
+| ---- | ----------------------------------- |
+| 1    | Meta Prompt                         |
+| 2    | PRD (Product Requirements Document) |
+| 3    | Implementation Plan                 |
+| 4    | Debugging                           |
+| 5    | DEPLOYMENT                          |

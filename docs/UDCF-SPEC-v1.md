@@ -15,6 +15,7 @@ The Ultra-Dex Context Format (UDCF) is an open specification for describing and 
 ## Overview
 
 UDCF defines a collection of markdown-based files that capture:
+
 1. Project context and configuration
 2. Implementation plans and task tracking
 3. Agent definitions and prompts
@@ -42,26 +43,32 @@ The primary context file MUST contain these sections:
 # Project Name
 
 ## Overview
+
 Brief project description (1-3 paragraphs)
 
 ## Tech Stack
+
 - Framework: [e.g., Next.js 15]
 - Language: [e.g., TypeScript]
 - Database: [e.g., PostgreSQL + Prisma]
 - ...
 
 ## Architecture
+
 High-level architecture description
 
 ## Key Decisions
+
 | Decision | Rationale | Date |
-|----------|-----------|------|
+| -------- | --------- | ---- |
 | ...      | ...       | ...  |
 
 ## Current Focus
+
 What the team is currently working on
 
 ## Conventions
+
 Project-specific coding conventions
 ```
 
@@ -71,23 +78,28 @@ Project-specific coding conventions
 # [Feature/Sprint Name]
 
 ## Objective
+
 What this plan aims to achieve
 
 ## Tasks
+
 - [ ] Task 1
   - [ ] Subtask 1.1
 - [x] Completed task
 
 ## Timeline
+
 | Phase | Duration | Status |
-|-------|----------|--------|
+| ----- | -------- | ------ |
 | ...   | ...      | ...    |
 
 ## Dependencies
+
 - External dependencies
 - Internal dependencies
 
 ## Verification
+
 - [ ] 21-step verification checklist
 ```
 
@@ -99,20 +111,25 @@ Agent files MUST follow this structure:
 # Agent Name
 
 ## Role
+
 Brief description of agent's role
 
 ## Expertise
+
 - Domain expertise 1
 - Domain expertise 2
 
 ## System Prompt
+
 The actual prompt used to initialize this agent
 
 ## Tools
+
 - Available tool 1
 - Available tool 2
 
 ## Examples
+
 Example interactions
 ```
 
@@ -137,16 +154,19 @@ The `.ultra-dex/state.json` file maintains machine-readable state:
 ## Interoperability
 
 ### UDCF → Cursor
+
 ```javascript
 // Read CONTEXT.md → Generate .cursorrules
 ```
 
 ### UDCF → Continue.dev
+
 ```javascript
 // Read agents/ → Generate .continue/config.json
 ```
 
 ### UDCF → MCP
+
 ```javascript
 // Expose via ultradex://context resource
 ```

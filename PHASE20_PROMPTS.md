@@ -11,6 +11,7 @@
 ---
 
 ### PROMPT 231: Quality Gate Configuration
+
 > **Source:** 03-quality-gates.md
 > **Status:** Specification
 
@@ -32,6 +33,7 @@
 ---
 
 ### PROMPT 232: Decision Ledger Schema
+
 > **Source:** 04-decision-ledger.md
 > **Status:** Specification
 
@@ -53,6 +55,7 @@
 ---
 
 ### PROMPT 233: Environment Defaults (Migration)
+
 > **Source:** MIGRATION-GUIDE.md
 > **Status:** DevOps
 
@@ -75,6 +78,7 @@
 ---
 
 ### PROMPT 234: RAG Defaults (Research)
+
 > **Source:** AI-RESEARCH.md
 > **Status:** AI Core
 
@@ -96,6 +100,7 @@
 ---
 
 ### PROMPT 235: Migration Utility
+
 > **Source:** MIGRATION-GUIDE.md
 > **Status:** Utility
 
@@ -116,6 +121,7 @@
 ---
 
 ### PROMPT 236: Structural Gate Logic
+
 > **Source:** 03-quality-gates.md
 > **Status:** Quality
 
@@ -138,6 +144,7 @@
 ---
 
 ### PROMPT 237: Architectural Gate Logic
+
 > **Source:** 03-quality-gates.md
 > **Status:** Quality
 
@@ -159,6 +166,7 @@
 ---
 
 ### PROMPT 238: Ledger Query Engine
+
 > **Source:** 04-decision-ledger.md
 > **Status:** Intelligence
 
@@ -180,6 +188,7 @@
 ---
 
 ### PROMPT 239: Project Template Update
+
 > **Source:** MIGRATION-GUIDE.md
 > **Status:** Templates
 
@@ -202,6 +211,7 @@
 ---
 
 ### PROMPT 240: The Final Seal
+
 > **Source:** Completion
 > **Status:** Milestone
 

@@ -9,7 +9,10 @@ import { spawn } from 'node:child_process';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { ListToolsResultSchema, ListResourcesResultSchema } from '@modelcontextprotocol/sdk/types.js';
+import {
+  ListToolsResultSchema,
+  ListResourcesResultSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 
 import { createMcpServer } from '../../lib/mcp/server.js';
 
@@ -38,7 +41,7 @@ async function waitForHttp(port, pathName = '/api/info') {
     } catch {
       // keep retrying
     }
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 
   throw new Error(`Server on port ${port} did not respond in time`);
@@ -63,11 +66,20 @@ describe('MCP Server Integration (stdio via in-memory transport)', () => {
 
     const tools = await client.request({ method: 'tools/list', params: {} }, ListToolsResultSchema);
     assert.ok(tools.tools.length > 0, 'Expected tools to be available');
-    assert.ok(tools.tools.some(tool => tool.name === 'remember'), 'Expected remember tool');
+    assert.ok(
+      tools.tools.some((tool) => tool.name === 'remember'),
+      'Expected remember tool'
+    );
 
-    const resources = await client.request({ method: 'resources/list', params: {} }, ListResourcesResultSchema);
+    const resources = await client.request(
+      { method: 'resources/list', params: {} },
+      ListResourcesResultSchema
+    );
     assert.ok(resources.resources.length > 0, 'Expected resources to be available');
-    assert.ok(resources.resources.some(resource => resource.name === 'graph'), 'Expected graph resource');
+    assert.ok(
+      resources.resources.some((resource) => resource.name === 'graph'),
+      'Expected graph resource'
+    );
 
     await clientTransport.close();
   });
@@ -101,7 +113,7 @@ describe('MCP Server Integration (HTTP + SSE)', () => {
     child = spawn(process.execPath, [cliPath, 'serve', '--port', String(port)], {
       cwd: tmpDir,
       env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent' },
-      stdio: 'ignore'
+      stdio: 'ignore',
     });
 
     await waitForHttp(port);
@@ -113,7 +125,10 @@ describe('MCP Server Integration (HTTP + SSE)', () => {
     const tools = await client.request({ method: 'tools/list', params: {} }, ListToolsResultSchema);
     assert.ok(tools.tools.length > 0, 'Expected tools to be available over SSE');
 
-    const resources = await client.request({ method: 'resources/list', params: {} }, ListResourcesResultSchema);
+    const resources = await client.request(
+      { method: 'resources/list', params: {} },
+      ListResourcesResultSchema
+    );
     assert.ok(resources.resources.length > 0, 'Expected resources to be available over SSE');
   });
 });

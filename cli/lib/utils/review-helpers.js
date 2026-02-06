@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Review Command Utilities
  * Helpers for code-to-plan alignment checking
@@ -13,19 +15,26 @@ import { extractSection, SECTION_TITLES } from './build-helpers.js';
  * @param {string[]} extensions - File extensions to include
  * @returns {Promise<string[]>} List of file paths
  */
-export async function scanCodeFiles(dir, extensions = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go']) {
+export async function scanCodeFiles(
+  dir,
+  extensions = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go']
+) {
   const files = [];
-  
+
   async function scan(currentDir) {
     try {
       const entries = await fs.readdir(currentDir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(currentDir, entry.name);
-        
+
         // Skip common non-code directories
         if (entry.isDirectory()) {
-          if (!['node_modules', '.git', '.next', 'dist', 'build', '__pycache__', '.venv'].includes(entry.name)) {
+          if (
+            !['node_modules', '.git', '.next', 'dist', 'build', '__pycache__', '.venv'].includes(
+              entry.name
+            )
+          ) {
             await scan(fullPath);
           }
         } else if (entry.isFile()) {
@@ -39,7 +48,7 @@ export async function scanCodeFiles(dir, extensions = ['.ts', '.tsx', '.js', '.j
       // Directory not accessible
     }
   }
-  
+
   await scan(dir);
   return files;
 }
@@ -58,27 +67,35 @@ export async function analyzeCodeStructure(files) {
     tests: [],
     configs: [],
   };
-  
+
   for (const file of files) {
     const relativePath = file;
     const filename = path.basename(file);
-    
+
     // Categorize files
     if (relativePath.includes('/components/') || relativePath.includes('/Components/')) {
       structure.components.push(relativePath);
     } else if (relativePath.includes('/api/') || relativePath.includes('/routes/')) {
       structure.apiRoutes.push(relativePath);
-    } else if (relativePath.includes('/models/') || relativePath.includes('/schema/') || filename.includes('schema')) {
+    } else if (
+      relativePath.includes('/models/') ||
+      relativePath.includes('/schema/') ||
+      filename.includes('schema')
+    ) {
       structure.models.push(relativePath);
     } else if (relativePath.includes('/services/') || relativePath.includes('/lib/')) {
       structure.services.push(relativePath);
-    } else if (relativePath.includes('/test') || relativePath.includes('.test.') || relativePath.includes('.spec.')) {
+    } else if (
+      relativePath.includes('/test') ||
+      relativePath.includes('.test.') ||
+      relativePath.includes('.spec.')
+    ) {
       structure.tests.push(relativePath);
     } else if (filename.includes('config') || filename.includes('.env')) {
       structure.configs.push(relativePath);
     }
   }
-  
+
   return structure;
 }
 
@@ -92,9 +109,14 @@ export async function analyzeCodeStructure(files) {
 export function checkSectionAlignment(planContent, codeStructure, sectionNum) {
   const section = extractSection(planContent, sectionNum);
   if (!section) {
-    return { section: sectionNum, score: 0, status: 'missing', issues: ['Section not found in plan'] };
+    return {
+      section: sectionNum,
+      score: 0,
+      status: 'missing',
+      issues: ['Section not found in plan'],
+    };
   }
-  
+
   const result = {
     section: sectionNum,
     title: SECTION_TITLES[sectionNum] || `Section ${sectionNum}`,
@@ -103,7 +125,7 @@ export function checkSectionAlignment(planContent, codeStructure, sectionNum) {
     issues: [],
     suggestions: [],
   };
-  
+
   // Section-specific checks
   switch (sectionNum) {
     case 10: // Data Model
@@ -123,7 +145,7 @@ export function checkSectionAlignment(planContent, codeStructure, sectionNum) {
       result.status = 'not-verified';
       result.issues.push('Automated verification not available for this section');
   }
-  
+
   // Set status based on score
   if (result.score >= 90) {
     result.status = 'complete';
@@ -134,7 +156,7 @@ export function checkSectionAlignment(planContent, codeStructure, sectionNum) {
   } else {
     result.status = 'missing';
   }
-  
+
   return result;
 }
 
@@ -143,24 +165,26 @@ export function checkSectionAlignment(planContent, codeStructure, sectionNum) {
  */
 function checkDataModelAlignment(section, codeStructure) {
   let score = 0;
-  
+
   // Check if schema/model files exist
   if (codeStructure.models.length > 0) {
     score += 50;
   }
-  
+
   // Check for Prisma schema
-  const hasPrisma = codeStructure.models.some(f => f.includes('prisma') || f.includes('schema.prisma'));
+  const hasPrisma = codeStructure.models.some(
+    (f) => f.includes('prisma') || f.includes('schema.prisma')
+  );
   if (hasPrisma) {
     score += 30;
   }
-  
+
   // Check for migrations
-  const hasMigrations = codeStructure.models.some(f => f.includes('migration'));
+  const hasMigrations = codeStructure.models.some((f) => f.includes('migration'));
   if (hasMigrations) {
     score += 20;
   }
-  
+
   return Math.min(score, 100);
 }
 
@@ -169,23 +193,23 @@ function checkDataModelAlignment(section, codeStructure) {
  */
 function checkApiAlignment(section, codeStructure) {
   let score = 0;
-  
+
   // Check if API routes exist
   if (codeStructure.apiRoutes.length > 0) {
     score += 40;
   }
-  
+
   // Count endpoints mentioned in plan vs implemented
   const planEndpoints = (section.match(/(?:GET|POST|PUT|DELETE|PATCH)\s+\/[^\s]+/gi) || []).length;
   const implementedRoutes = codeStructure.apiRoutes.length;
-  
+
   if (planEndpoints > 0) {
     const coverage = Math.min(implementedRoutes / planEndpoints, 1);
     score += Math.round(coverage * 60);
   } else {
     score += 30; // No specific endpoints in plan
   }
-  
+
   return Math.min(score, 100);
 }
 
@@ -194,30 +218,31 @@ function checkApiAlignment(section, codeStructure) {
  */
 function checkAuthAlignment(section, codeStructure) {
   let score = 0;
-  
+
   // Check for auth-related files
-  const authFiles = [...codeStructure.apiRoutes, ...codeStructure.services].filter(f => 
-    f.toLowerCase().includes('auth') || 
-    f.toLowerCase().includes('login') ||
-    f.toLowerCase().includes('session')
+  const authFiles = [...codeStructure.apiRoutes, ...codeStructure.services].filter(
+    (f) =>
+      f.toLowerCase().includes('auth') ||
+      f.toLowerCase().includes('login') ||
+      f.toLowerCase().includes('session')
   );
-  
+
   if (authFiles.length > 0) {
     score += 50;
   }
-  
+
   // Check for NextAuth config
-  const hasNextAuth = codeStructure.configs.some(f => f.includes('auth'));
+  const hasNextAuth = codeStructure.configs.some((f) => f.includes('auth'));
   if (hasNextAuth) {
     score += 30;
   }
-  
+
   // Check for middleware
-  const hasMiddleware = codeStructure.services.some(f => f.includes('middleware'));
+  const hasMiddleware = codeStructure.services.some((f) => f.includes('middleware'));
   if (hasMiddleware) {
     score += 20;
   }
-  
+
   return Math.min(score, 100);
 }
 
@@ -226,19 +251,22 @@ function checkAuthAlignment(section, codeStructure) {
  */
 function checkTestingAlignment(section, codeStructure) {
   let score = 0;
-  
+
   // Check if test files exist
   if (codeStructure.tests.length > 0) {
     score += 40;
   }
-  
+
   // Calculate test coverage ratio (tests vs code files)
-  const codeFiles = codeStructure.components.length + codeStructure.apiRoutes.length + codeStructure.services.length;
+  const codeFiles =
+    codeStructure.components.length +
+    codeStructure.apiRoutes.length +
+    codeStructure.services.length;
   if (codeFiles > 0) {
     const testRatio = codeStructure.tests.length / codeFiles;
     score += Math.min(Math.round(testRatio * 100), 60);
   }
-  
+
   return Math.min(score, 100);
 }
 
@@ -250,12 +278,12 @@ function checkTestingAlignment(section, codeStructure) {
 export function generateAlignmentReport(results) {
   const totalScore = results.reduce((sum, r) => sum + r.score, 0);
   const avgScore = Math.round(totalScore / results.length);
-  
-  const complete = results.filter(r => r.status === 'complete').length;
-  const partial = results.filter(r => r.status === 'partial').length;
-  const incomplete = results.filter(r => r.status === 'incomplete').length;
-  const missing = results.filter(r => r.status === 'missing').length;
-  
+
+  const complete = results.filter((r) => r.status === 'complete').length;
+  const partial = results.filter((r) => r.status === 'partial').length;
+  const incomplete = results.filter((r) => r.status === 'incomplete').length;
+  const missing = results.filter((r) => r.status === 'missing').length;
+
   return {
     overallScore: avgScore,
     grade: getGrade(avgScore),
@@ -268,10 +296,10 @@ export function generateAlignmentReport(results) {
     },
     sections: results,
     topIssues: results
-      .filter(r => r.score < 70)
+      .filter((r) => r.score < 70)
       .sort((a, b) => a.score - b.score)
       .slice(0, 5)
-      .map(r => ({
+      .map((r) => ({
         section: r.section,
         title: r.title,
         score: r.score,
@@ -298,19 +326,19 @@ function getGrade(score) {
  */
 export function formatReportForCLI(report) {
   let output = '';
-  
+
   output += `\n╔════════════════════════════════════════╗\n`;
   output += `║     Ultra-Dex Alignment Report         ║\n`;
   output += `╚════════════════════════════════════════╝\n\n`;
-  
+
   output += `Overall Score: ${report.overallScore}% (Grade: ${report.grade})\n\n`;
-  
+
   output += `Summary:\n`;
   output += `  ✅ Complete:   ${report.summary.complete} sections\n`;
   output += `  ⚠️  Partial:    ${report.summary.partial} sections\n`;
   output += `  ❌ Incomplete: ${report.summary.incomplete} sections\n`;
   output += `  ⬜ Missing:    ${report.summary.missing} sections\n\n`;
-  
+
   if (report.topIssues.length > 0) {
     output += `Top Issues:\n`;
     for (const issue of report.topIssues) {
@@ -320,7 +348,7 @@ export function formatReportForCLI(report) {
       }
     }
   }
-  
+
   return output;
 }
 

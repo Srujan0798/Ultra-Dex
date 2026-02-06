@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -43,7 +45,12 @@ export function registerBackgroundAgentCommand(program) {
         printInfo(chalk.gray(outcome.notes));
       });
 
-      await writeState({ status: 'running', source, intervalMs, startedAt: new Date().toISOString() });
+      await writeState({
+        status: 'running',
+        source,
+        intervalMs,
+        startedAt: new Date().toISOString(),
+      });
       await agent.start();
       printSuccess(chalk.green('Background agent running. Press Ctrl+C to stop.'));
 
@@ -57,29 +64,25 @@ export function registerBackgroundAgentCommand(program) {
       process.stdin.resume();
     });
 
-  cmd
-    .command('status')
-    .action(async () => {
-      const state = await readState();
-      if (!state) {
-        printWarning(chalk.yellow('Background agent not started.'));
-        return;
-      }
-      printInfo(chalk.cyan(`Status: ${state.status}`));
-      if (state.startedAt) printInfo(chalk.gray(`Started: ${state.startedAt}`));
-    });
+  cmd.command('status').action(async () => {
+    const state = await readState();
+    if (!state) {
+      printWarning(chalk.yellow('Background agent not started.'));
+      return;
+    }
+    printInfo(chalk.cyan(`Status: ${state.status}`));
+    if (state.startedAt) printInfo(chalk.gray(`Started: ${state.startedAt}`));
+  });
 
-  cmd
-    .command('stop')
-    .action(async () => {
-      const state = await readState();
-      if (!state || state.status !== 'running') {
-        printWarning(chalk.yellow('Background agent not running.'));
-        return;
-      }
-      await writeState({ status: 'stopped', stoppedAt: new Date().toISOString() });
-      printSuccess(chalk.green('Background agent stopped.'));
-    });
+  cmd.command('stop').action(async () => {
+    const state = await readState();
+    if (!state || state.status !== 'running') {
+      printWarning(chalk.yellow('Background agent not running.'));
+      return;
+    }
+    await writeState({ status: 'stopped', stoppedAt: new Date().toISOString() });
+    printSuccess(chalk.green('Background agent stopped.'));
+  });
 
   cmd.on('command:*', () => {
     printError(chalk.red('Unknown background-agent command.'));

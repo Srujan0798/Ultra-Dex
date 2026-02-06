@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { EventEmitter } from 'node:events';
 
 export class CanvasSession extends EventEmitter {
@@ -12,7 +14,7 @@ export class CanvasSession extends EventEmitter {
     return {
       id: this.id,
       content: this.content,
-      cursors: Array.from(this.cursors.entries()).map(([id, position]) => ({ id, position }))
+      cursors: Array.from(this.cursors.entries()).map(([id, position]) => ({ id, position })),
     };
   }
 

@@ -26,7 +26,7 @@ export async function activate(pluginManager, cliProgram) {
 
   // Register a hook to modify project initialization
   pluginManager.registerHook('project-init', 'Called when initializing a new project');
-  
+
   // Attach a function to the hook
   pluginManager.attachToHook('project-init', name, async (context) => {
     console.log(`Sample plugin: Modifying project initialization for ${context.projectName}`);
@@ -50,5 +50,5 @@ export default {
   version,
   description,
   author,
-  activate
+  activate,
 };

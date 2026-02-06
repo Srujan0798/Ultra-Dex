@@ -147,9 +147,10 @@
 ### Marketing (Human Action Required)
 
 12. **3-Minute Demo Video**
-   - Script: init → generate → swarm → serve → dashboard
-   - Host on YouTube, embed in README
-   - Show voice mode when implemented
+
+- Script: init → generate → swarm → serve → dashboard
+- Host on YouTube, embed in README
+- Show voice mode when implemented
 
 10. **Partner Case Studies**
     - Find 2-3 Cursor/Claude power users
@@ -171,6 +172,7 @@
    - Next: Auto-sync on file save (watch mode enhancement)
 
 2. **Plugin System**: Allow third-party agent plugins
+
    ```
    ultra-dex plugin install @company/custom-agent
    ```
@@ -234,6 +236,7 @@
 ## Marketing & Launch Checklist
 
 ### Ready Now
+
 - [x] npm package published (v3.4.5)
 - [x] GitHub repo updated
 - [x] CHANGELOG.md created
@@ -241,6 +244,7 @@
 - [ ] VS Code extension to marketplace
 
 ### Needs Human Action
+
 - [ ] Record 3-min demo video (script: init → swarm → serve → dashboard)
 - [ ] Hacker News launch post
 - [ ] Reddit posts (r/programming, r/AItools)
@@ -249,6 +253,7 @@
 - [ ] Dev.to blog post
 
 ### Future Marketing
+
 - [ ] Partner case studies
 - [ ] Influencer outreach
 - [ ] Enterprise sales deck
@@ -258,16 +263,16 @@
 
 ## Commands Reference (44+)
 
-| Category | Commands |
-|----------|----------|
-| Core | init, generate, build, review, align |
-| Agents | agents, agent, run, swarm, auto-implement |
-| Server | serve, dashboard, watch, ci-monitor |
-| State | status, state, sync, memory |
-| Tools | validate, check, doctor, verify, fix |
-| Export | export, diff, pack |
-| Config | config, hooks, upgrade |
-| v3.3.0 | exec, search, github, cloud, metrics, health, debug |
+| Category | Commands                                            |
+| -------- | --------------------------------------------------- |
+| Core     | init, generate, build, review, align                |
+| Agents   | agents, agent, run, swarm, auto-implement           |
+| Server   | serve, dashboard, watch, ci-monitor                 |
+| State    | status, state, sync, memory                         |
+| Tools    | validate, check, doctor, verify, fix                |
+| Export   | export, diff, pack                                  |
+| Config   | config, hooks, upgrade                              |
+| v3.3.0   | exec, search, github, cloud, metrics, health, debug |
 
 ---
 
@@ -300,37 +305,37 @@ cd cli && npm run lint
 
 ## Review Status (from previous audits)
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Version consistency | ✅ Fixed | All files say 3.4.2 |
-| Race condition in swarm | ✅ Fixed | withStateLock implemented |
-| MCP server version | ✅ Fixed | 3.4.2 |
-| 25+ cursor rules | ✅ Done | 26 rules |
-| sync --brain | ✅ Done | Eliminates human middleware |
-| Provider null check | ✅ OK | swarm.js handles this |
-| Test failures | ✅ Fixed | All 95/95 pass |
-| ESLint | ✅ Clean | 0 errors, 0 warnings |
-| LangChain adapter | ✅ Done | v3.4.1 |
-| OpenAI Assistants | ✅ Done | v3.4.1 |
-| Agent Marketplace | ✅ Done | v3.4.1 |
-| Streaming support | ✅ Done | --stream flag |
-| Error messages | ✅ Improved | Ollama fallback shown |
-| WebSocket real-time | ✅ Done | v3.3.0 |
-| Voice input | ⏳ Future | v3.4.5 planned |
+| Item                    | Status      | Notes                       |
+| ----------------------- | ----------- | --------------------------- |
+| Version consistency     | ✅ Fixed    | All files say 3.4.2         |
+| Race condition in swarm | ✅ Fixed    | withStateLock implemented   |
+| MCP server version      | ✅ Fixed    | 3.4.2                       |
+| 25+ cursor rules        | ✅ Done     | 26 rules                    |
+| sync --brain            | ✅ Done     | Eliminates human middleware |
+| Provider null check     | ✅ OK       | swarm.js handles this       |
+| Test failures           | ✅ Fixed    | All 95/95 pass              |
+| ESLint                  | ✅ Clean    | 0 errors, 0 warnings        |
+| LangChain adapter       | ✅ Done     | v3.4.1                      |
+| OpenAI Assistants       | ✅ Done     | v3.4.1                      |
+| Agent Marketplace       | ✅ Done     | v3.4.1                      |
+| Streaming support       | ✅ Done     | --stream flag               |
+| Error messages          | ✅ Improved | Ollama fallback shown       |
+| WebSocket real-time     | ✅ Done     | v3.3.0                      |
+| Voice input             | ⏳ Future   | v3.4.5 planned              |
 
 ---
 
 ## Current Metrics (v3.4.5)
 
-| Metric | Value |
-|--------|-------|
-| Commands | 46 |
-| Agents | 17 built-in + marketplace |
-| Cursor Rules | 31 |
-| Tests | 95/95 (100%) |
-| ESLint | 0 warnings |
-| npm Size | ~362 KB |
-| Score | 9.8/10 |
+| Metric       | Value                     |
+| ------------ | ------------------------- |
+| Commands     | 46                        |
+| Agents       | 17 built-in + marketplace |
+| Cursor Rules | 31                        |
+| Tests        | 95/95 (100%)              |
+| ESLint       | 0 warnings                |
+| npm Size     | ~362 KB                   |
+| Score        | 9.8/10                    |
 
 ---
 
@@ -346,11 +351,13 @@ cd cli && npm run lint
 ### v3.4.5 - High Priority (From Reviews)
 
 #### 1. **VS Code Extension Sidebar Integration** ⭐ CRITICAL
+
 **Source:** Gemini_Review.md, AGENT-CEO-VISION.md  
 **Effort:** 2 weeks  
 **Impact:** 10/10
 
 **Description:** Move from terminal-based dashboard to native VS Code sidebar experience
+
 - Real-time agent status in sidebar
 - One-click agent execution
 - CONTEXT.md preview panel
@@ -362,6 +369,7 @@ cd cli && npm run lint
 ---
 
 #### 2. **Real-Time WebSocket Push (vs Polling)**
+
 **Source:** Gemini_Review.md  
 **Effort:** 1 week  
 **Impact:** 8/10
@@ -370,6 +378,7 @@ cd cli && npm run lint
 **Target:** WebSocket push for instant updates
 
 **Implementation:**
+
 - Upgrade dashboard.js to use WebSocket
 - Push events: agent.started, agent.completed, build.success, error.occurred
 - Reconnect logic for reliability
@@ -377,6 +386,7 @@ cd cli && npm run lint
 ---
 
 #### 3. **Session Persistence with Vector Store**
+
 **Source:** Gemini_Review.md  
 **Effort:** 2 weeks  
 **Impact:** 9/10
@@ -385,6 +395,7 @@ cd cli && npm run lint
 **Solution:** SQLite/JSON-based decision log + vector search
 
 **Features:**
+
 - Persist all swarm outputs to `.ultra/memory/`
 - Vector embeddings of decisions
 - Query: "What did we decide about auth last week?"
@@ -393,6 +404,7 @@ cd cli && npm run lint
 ---
 
 #### 4. **Dashboard Agent Control**
+
 **Source:** Gemini_Review.md  
 **Effort:** 3 days  
 **Impact:** 7/10
@@ -401,6 +413,7 @@ cd cli && npm run lint
 **Target:** Start agents from UI
 
 **Actions to Add:**
+
 - [Run Agent] button per agent
 - [Start Swarm] with task input
 - [Stop Agent] kill switch
@@ -411,6 +424,7 @@ cd cli && npm run lint
 ### v3.6.0 - Medium Priority (From Reviews)
 
 #### 5. **Deep Graph RAG with FalkorDB/Neo4j**
+
 **Source:** Gemini_Review.md, devin_ceo_1.md  
 **Effort:** 3 weeks  
 **Impact:** 8/10
@@ -419,6 +433,7 @@ cd cli && npm run lint
 **Target:** Full graph database for impact analysis
 
 **Features:**
+
 - Import codebase into graph DB
 - Query: "If I change User.login, what breaks?"
 - Dependency visualizer
@@ -426,6 +441,7 @@ cd cli && npm run lint
 - Semantic code search
 
 **Query Examples:**
+
 ```
 ultra-dex graph impact "User.login"
 ultra-dex graph visualize --format svg
@@ -435,12 +451,14 @@ ultra-dex graph search "auth middleware"
 ---
 
 #### 6. **Enterprise Auth & SSO (RBAC)**
+
 **Source:** Gemini_Review.md, AGENT-CEO-VISION.md  
 **Effort:** 2 weeks  
 **Impact:** 7/10
 
 **For:** Team/Enterprise tiers  
 **Features:**
+
 - SSO integration (SAML, OIDC)
 - Role-based access control
 - Team workspaces
@@ -450,11 +468,13 @@ ultra-dex graph search "auth middleware"
 ---
 
 #### 7. **Voice-to-Plan Feature**
+
 **Source:** AGENT-CEO-VISION.md (Radical Ideas), FUTURE-TASKS.md  
 **Effort:** 1 week  
 **Impact:** 6/10
 
 **Command:**
+
 ```bash
 ultra-dex voice              # Start listening
 ultra-dex voice "build a SaaS login"   # One-shot
@@ -462,6 +482,7 @@ ultra-dex voice --provider whisper     # Specify STT
 ```
 
 **Implementation:**
+
 - OpenAI Whisper API integration
 - Speech-to-text for natural language ideas
 - Auto-generate implementation plan from voice
@@ -469,6 +490,7 @@ ultra-dex voice --provider whisper     # Specify STT
 ---
 
 #### 8. **Token Cost Estimator**
+
 **Source:** SELF-ASSESSMENT-v3.4.5.md  
 **Effort:** 2 days  
 **Impact:** 6/10
@@ -476,6 +498,7 @@ ultra-dex voice --provider whisper     # Specify STT
 **Command:** `ultra-dex estimate "task description"`
 
 **Features:**
+
 - Estimate tokens for agent execution
 - Cost breakdown by provider (OpenAI, Anthropic, etc.)
 - Budget warnings
@@ -486,6 +509,7 @@ ultra-dex voice --provider whisper     # Specify STT
 ### v4.0.0 - Strategic Vision (From AGENT-CEO-VISION.md)
 
 #### 9. **AI Agent Protocol (SDK)**
+
 **Effort:** 4 weeks  
 **Impact:** 10/10
 
@@ -500,7 +524,7 @@ const agent = new UltraAgent({
   mode: 'planner',
 });
 
-await agent.fill({ idea: "AI recipe generator", sections: [1,2,3] });
+await agent.fill({ idea: 'AI recipe generator', sections: [1, 2, 3] });
 const tasks = await agent.generateTasks({ from: 'Section 16' });
 await agent.execute(tasks[0], { verify: true, autoCommit: true });
 ```
@@ -510,32 +534,35 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 ---
 
 #### 10. **IDE Plugin Ecosystem**
+
 **Effort:** 6 weeks  
 **Impact:** 9/10
 
-| IDE | Priority | Status |
-|-----|----------|--------|
-| VS Code | P0 | ✅ Exists, needs sidebar |
-| Cursor | P0 | Native support |
-| JetBrains | P1 | Not started |
-| Neovim | P2 | Not started |
+| IDE       | Priority | Status                   |
+| --------- | -------- | ------------------------ |
+| VS Code   | P0       | ✅ Exists, needs sidebar |
+| Cursor    | P0       | Native support           |
+| JetBrains | P1       | Not started              |
+| Neovim    | P2       | Not started              |
 
 ---
 
 #### 11. **Project Management Integrations** ✅ COMPLETED (v1)
+
 **Effort:** 3 weeks  
 **Impact:** 7/10  
 **Completed:** Feb 1, 2026 (Linear + GitHub Issues)
 
-| Tool | Status | Integration |
-|------|--------|-------------|
-| Linear | ✅ Done | Sync Section 16 tasks to Linear issues |
-| GitHub Issues | ✅ Done | Create issues from implementation plan |
-| Jira | ⏳ Future | Epic/Story generator |
-| Notion | ⏳ Future | Template sync |
-| Trello | ⏳ Future | Board generator |
+| Tool          | Status    | Integration                            |
+| ------------- | --------- | -------------------------------------- |
+| Linear        | ✅ Done   | Sync Section 16 tasks to Linear issues |
+| GitHub Issues | ✅ Done   | Create issues from implementation plan |
+| Jira          | ⏳ Future | Epic/Story generator                   |
+| Notion        | ⏳ Future | Template sync                          |
+| Trello        | ⏳ Future | Board generator                        |
 
-**Command:** 
+**Command:**
+
 ```bash
 ultra-dex sync --linear --team-id TEAM_ID
 ultra-dex sync --github --repo owner/repo
@@ -547,6 +574,7 @@ ultra-dex sync --json output.json
 ---
 
 #### 12. **CI/CD GitHub Action** ✅ COMPLETED
+
 **Effort:** 1 week  
 **Impact:** 7/10  
 **Completed:** Feb 1, 2026
@@ -561,6 +589,7 @@ ultra-dex sync --json output.json
 ```
 
 **Actions Created:**
+
 - ✅ `verify` - Template completeness check
 - ✅ `align` - Alignment score gate with PR comments
 - ✅ `fix` - Auto-fix common issues
@@ -570,6 +599,7 @@ ultra-dex sync --json output.json
 ---
 
 #### 13. **LangGraph Native Integration**
+
 **Effort:** 3 weeks  
 **Impact:** 8/10
 
@@ -581,6 +611,7 @@ ultra-dex sync --json output.json
 ---
 
 #### 14. **Agent Marketplace Backend**
+
 **Effort:** 4 weeks  
 **Impact:** 7/10
 
@@ -588,6 +619,7 @@ ultra-dex sync --json output.json
 **Target:** Remote registry at registry.ultra-dex.dev
 
 **Features:**
+
 - Agent versioning and dependencies
 - Community rating system
 - `ultra-dex agents publish` full implementation
@@ -598,10 +630,12 @@ ultra-dex sync --json output.json
 ### v5.0.0 - Platform Vision (Long-term)
 
 #### 15. **Ultra-Dex Cloud Platform**
+
 **Effort:** 3 months  
 **Impact:** 10/10
 
 **Architecture:**
+
 ```
 ┌─────────────────────────────────────────┐
 │         ULTRA-DEX CLOUD                 │
@@ -615,6 +649,7 @@ ultra-dex sync --json output.json
 ```
 
 **Services:**
+
 - Template Cloud (store, version, collaborate)
 - AI Agent Hub (pre-configured agents)
 - Task Orchestration (queue, dependencies)
@@ -631,6 +666,7 @@ ultra-dex sync --json output.json
 ---
 
 #### 16. **Example Repository Program** ✅ COMPLETED (Phase 1)
+
 **Effort:** 1 month  
 **Impact:** 6/10  
 **Completed:** Feb 1, 2026 (3 core examples)
@@ -638,11 +674,13 @@ ultra-dex sync --json output.json
 **Goal:** 50 community examples in 6 months
 
 **Templates Created (LITE format - 12 sections):**
+
 - ✅ [E-commerce store](./examples/ecommerce-store/) - Next.js + Stripe + PostgreSQL
-- ✅ [SaaS analytics](./examples/saas-analytics/) - Next.js + ClickHouse + Redis  
+- ✅ [SaaS analytics](./examples/saas-analytics/) - Next.js + ClickHouse + Redis
 - ✅ [Real-time chat](./examples/realtime-chat/) - Next.js + Socket.io + PostgreSQL
 
 **Future Examples:**
+
 - ⏳ Mobile app (React Native)
 - ⏳ API backend (Headless)
 - ⏳ AI-powered app (LLM integration)
@@ -654,6 +692,7 @@ ultra-dex sync --json output.json
 ---
 
 #### 17. **Cursor Rules Marketplace**
+
 **Effort:** 2 weeks  
 **Impact:** 6/10
 
@@ -676,10 +715,12 @@ cursor-rules/
 ### Moonshots (2-3 Year Vision)
 
 #### 18. **Ultra-Dex AI Agent (Fully Autonomous)**
+
 **Effort:** 6 months  
 **Impact:** 10/10
 
 **Autonomous Flow:**
+
 1. Takes raw idea from voice/text
 2. Fills complete 34-section plan
 3. Breaks into atomic tasks
@@ -692,10 +733,12 @@ cursor-rules/
 ---
 
 #### 19. **Ultra-Dex OS Concept**
+
 **Effort:** 1 year  
 **Impact:** 9/10
 
 Operating system for software development:
+
 ```
 ultra-dex-os/
 ├── Workspaces (Project containers)
@@ -708,10 +751,12 @@ ultra-dex-os/
 ---
 
 #### 20. **Ultra-Dex Certification Program**
+
 **Effort:** 3 months  
 **Impact:** 5/10
 
 **Levels:**
+
 - Ultra-Dex Associate (Template mastery)
 - Ultra-Dex Professional (Full methodology)
 - Ultra-Dex Architect (Enterprise systems)
@@ -722,9 +767,11 @@ ultra-dex-os/
 ---
 
 #### 21. **Ultra-Dex University**
-**Effort:** 6 months  **Impact:** 5/10
+
+**Effort:** 6 months **Impact:** 5/10
 
 Online learning platform:
+
 - Free courses on methodology
 - Paid masterclasses
 - Live workshops
@@ -734,18 +781,18 @@ Online learning platform:
 
 ## Summary: Reviews → Implementation
 
-| Priority | Tasks | Status |
-|----------|-------|--------|
-| **v3.4.5** | 4 tasks (Sidebar, WebSocket, Memory, Dashboard) | Planned |
-| **v3.6.0** | 5 tasks (Graph RAG, SSO, Voice, Cost, Protocol) | Planned |
-| **v4.0.0** | 6 tasks (SDK, IDE plugins, PM tools, CI/CD, LangGraph) | Planned |
-| **v5.0.0** | 3 tasks (Cloud platform, Examples, Marketplace) | Vision |
-| **Moonshots** | 4 tasks (AI Agent, OS, Certification, University) | Future |
+| Priority      | Tasks                                                  | Status  |
+| ------------- | ------------------------------------------------------ | ------- |
+| **v3.4.5**    | 4 tasks (Sidebar, WebSocket, Memory, Dashboard)        | Planned |
+| **v3.6.0**    | 5 tasks (Graph RAG, SSO, Voice, Cost, Protocol)        | Planned |
+| **v4.0.0**    | 6 tasks (SDK, IDE plugins, PM tools, CI/CD, LangGraph) | Planned |
+| **v5.0.0**    | 3 tasks (Cloud platform, Examples, Marketplace)        | Vision  |
+| **Moonshots** | 4 tasks (AI Agent, OS, Certification, University)      | Future  |
 
 **Total:** 22 major features from reviews analysis
 
 ---
 
-*All recommendations sourced from Reviews/ folder analysis - February 1, 2026*
-*"Ultra-Dex: The Kubernetes of AI Coding"*
-*"From Idea to Full-Scale, Production-Ready Application"*
+_All recommendations sourced from Reviews/ folder analysis - February 1, 2026_
+_"Ultra-Dex: The Kubernetes of AI Coding"_
+_"From Idea to Full-Scale, Production-Ready Application"_

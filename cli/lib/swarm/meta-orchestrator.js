@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { executeSwarm } from './orchestrator.js';
 import { classifyTask } from '../router/model-router.js';
 
@@ -8,7 +10,7 @@ export function selectAgents(tier) {
     security: ['auth', 'security'],
     devops: ['devops'],
     quality: ['testing', 'reviewer', 'debugger'],
-    specialist: ['performance', 'refactoring']
+    specialist: ['performance', 'refactoring'],
   };
   return mapping[tier] || ['planner'];
 }

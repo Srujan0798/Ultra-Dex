@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { WebSocketServer } from 'ws';
 import { printInfo, printWarning } from '../utils/output.js';
 
@@ -9,11 +11,13 @@ export function startWebSocketServer({ port = 3002, server = null } = {}) {
   wss = new WebSocketServer(server ? { server } : { port });
 
   wss.on('connection', (socket) => {
-    socket.send(JSON.stringify({
-      type: 'status',
-      data: { message: 'Connected to Ultra-Dex WebSocket' },
-      timestamp: new Date().toISOString()
-    }));
+    socket.send(
+      JSON.stringify({
+        type: 'status',
+        data: { message: 'Connected to Ultra-Dex WebSocket' },
+        timestamp: new Date().toISOString(),
+      })
+    );
 
     socket.on('error', (err) => {
       printWarning(`WebSocket client error: ${err.message}`);
@@ -38,7 +42,7 @@ export function broadcastWebSocketEvent(type, data) {
   const payload = JSON.stringify({
     type,
     data,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   wss.clients.forEach((client) => {

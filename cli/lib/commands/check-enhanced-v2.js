@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import Table from 'cli-table3';
@@ -37,8 +39,8 @@ export function registerEnhancedCheckCommand(program) {
         try {
           const contextContent = await fs.readFile(contextPath, 'utf8');
           if (contextContent.trim().length < 50) {
-             console.log(chalk.yellow('⚠️  CONTEXT.md is nearly empty'));
-             console.log(chalk.gray('   Run: ultra-dex init to regenerate it\n'));
+            console.log(chalk.yellow('⚠️  CONTEXT.md is nearly empty'));
+            console.log(chalk.gray('   Run: ultra-dex init to regenerate it\n'));
           }
         } catch {
           console.log(chalk.red('❌ CONTEXT.md not found'));
@@ -53,7 +55,7 @@ export function registerEnhancedCheckCommand(program) {
 
         // Filter sections to check
         const sectionsToCheck = options.p0Only
-          ? sections.filter(s => p0Sections.includes(s.number))
+          ? sections.filter((s) => p0Sections.includes(s.number))
           : sections;
 
         // Check each section
@@ -73,15 +75,21 @@ export function registerEnhancedCheckCommand(program) {
 
         // Display results
         if (options.json) {
-          console.log(JSON.stringify({
-            total: sectionsToCheck.length,
-            complete,
-            partial,
-            missing,
-            percentage: Math.round((complete / sectionsToCheck.length) * 100),
-            sections: results,
-            verification: options.verify ? await runVerification() : null
-          }, null, 2));
+          console.log(
+            JSON.stringify(
+              {
+                total: sectionsToCheck.length,
+                complete,
+                partial,
+                missing,
+                percentage: Math.round((complete / sectionsToCheck.length) * 100),
+                sections: results,
+                verification: options.verify ? await runVerification() : null,
+              },
+              null,
+              2
+            )
+          );
           return;
         }
 
@@ -89,19 +97,22 @@ export function registerEnhancedCheckCommand(program) {
         const table = new Table({
           head: ['Section', 'Status', 'Completeness', 'Issues'],
           colWidths: [30, 12, 15, 40],
-          style: { head: ['cyan'] }
+          style: { head: ['cyan'] },
         });
 
-        results.forEach(r => {
-          const status = r.status === 'complete' ? chalk.green('✓') :
-                        r.status === 'partial' ? chalk.yellow('◐') :
-                        chalk.red('✗');
+        results.forEach((r) => {
+          const status =
+            r.status === 'complete'
+              ? chalk.green('✓')
+              : r.status === 'partial'
+                ? chalk.yellow('◐')
+                : chalk.red('✗');
 
           table.push([
             `Section ${r.number}: ${r.title.substring(0, 20)}`,
             status,
             `${r.percentage}%`,
-            r.issues.join(', ').substring(0, 38) || '-'
+            r.issues.join(', ').substring(0, 38) || '-',
           ]);
         });
 
@@ -117,13 +128,13 @@ export function registerEnhancedCheckCommand(program) {
         console.log(chalk.cyan(`  Overall: ${totalPercentage}%`));
 
         // Critical warnings
-        const criticalMissing = results.filter(r =>
-          p0Sections.includes(r.number) && r.status === 'missing'
+        const criticalMissing = results.filter(
+          (r) => p0Sections.includes(r.number) && r.status === 'missing'
         );
 
         if (criticalMissing.length > 0) {
           console.log(chalk.red.bold('\n⚠️  Critical Sections Missing:'));
-          criticalMissing.forEach(r => {
+          criticalMissing.forEach((r) => {
             console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
           });
           console.log(chalk.yellow('\nThese sections are required for MVP.\n'));
@@ -140,15 +151,14 @@ export function registerEnhancedCheckCommand(program) {
         // Recommendations
         if (options.fix && (partial > 0 || missing > 0)) {
           console.log(chalk.bold('\n💡 Suggested Actions:'));
-          const incomplete = results.filter(r => r.status !== 'complete');
-          incomplete.forEach(r => {
+          const incomplete = results.filter((r) => r.status !== 'complete');
+          incomplete.forEach((r) => {
             console.log(chalk.white(`\n  Section ${r.number}: ${r.title}`));
-            r.suggestions.forEach(s => {
+            r.suggestions.forEach((s) => {
               console.log(chalk.gray(`    → ${s}`));
             });
           });
         }
-
       } catch (error) {
         console.error(chalk.red('Error:'), error.message);
       }
@@ -169,8 +179,11 @@ async function runVerification() {
 
     // Parse verification report
     const lines = verifyContent.split('\n');
-    let passed = 0, failed = 0, skipped = 0, autofixed = 0;
-    
+    let passed = 0,
+      failed = 0,
+      skipped = 0,
+      autofixed = 0;
+
     for (let line of lines) {
       if (line.includes('✅ PASS')) passed++;
       else if (line.includes('❌ FAIL')) failed++;
@@ -190,8 +203,10 @@ async function runVerification() {
     // Show top issues
     if (failed > 0) {
       console.log(chalk.red.bold('\nCritical Issues:'));
-      const issueLines = lines.filter(line => line.includes('❌ FAIL') || line.includes('Recommendation'));
-      issueLines.slice(0, 3).forEach(line => {
+      const issueLines = lines.filter(
+        (line) => line.includes('❌ FAIL') || line.includes('Recommendation')
+      );
+      issueLines.slice(0, 3).forEach((line) => {
         if (line.trim()) console.log(chalk.red(`  • ${line.trim()}`));
       });
     }
@@ -222,7 +237,7 @@ function parseSections(content) {
         number: parseInt(match[1]),
         title: match[2].trim(),
         startLine: i,
-        content: []
+        content: [],
       };
     } else if (currentSection) {
       currentSection.content.push(line);
@@ -245,10 +260,17 @@ function analyzeSection(section) {
     hasTables: content.includes('|'),
     hasCodeBlocks: content.includes('```'),
     hasNumbers: /\d+/.test(content),
-    noPlaceholders: !content.includes('[TODO]') && !content.includes('TBD') && !content.includes('...'),
-    hasAcceptanceCriteria: content.toLowerCase().includes('acceptance criteria') || content.toLowerCase().includes('criteria'),
-    hasEstimates: content.toLowerCase().includes('hours') || content.toLowerCase().includes('estimate') || content.toLowerCase().includes('time'),
-    hasDependencies: content.toLowerCase().includes('depends on') || content.toLowerCase().includes('dependency')
+    noPlaceholders:
+      !content.includes('[TODO]') && !content.includes('TBD') && !content.includes('...'),
+    hasAcceptanceCriteria:
+      content.toLowerCase().includes('acceptance criteria') ||
+      content.toLowerCase().includes('criteria'),
+    hasEstimates:
+      content.toLowerCase().includes('hours') ||
+      content.toLowerCase().includes('estimate') ||
+      content.toLowerCase().includes('time'),
+    hasDependencies:
+      content.toLowerCase().includes('depends on') || content.toLowerCase().includes('dependency'),
   };
 
   const passedChecks = Object.values(checks).filter(Boolean).length;
@@ -281,7 +303,7 @@ function analyzeSection(section) {
     percentage,
     checks,
     issues,
-    suggestions
+    suggestions,
   };
 }
 
@@ -290,18 +312,24 @@ function checkSection(section, options) {
 
   const result = analyzeSection(section);
 
-  console.log(chalk.bold('Status:'), result.status === 'complete' ? chalk.green('✓ Complete') :
-              result.status === 'partial' ? chalk.yellow('◐ Partial') : chalk.red('✗ Missing'));
+  console.log(
+    chalk.bold('Status:'),
+    result.status === 'complete'
+      ? chalk.green('✓ Complete')
+      : result.status === 'partial'
+        ? chalk.yellow('◐ Partial')
+        : chalk.red('✗ Missing')
+  );
   console.log(chalk.bold('Completeness:'), `${result.percentage}%`);
 
   if (result.issues.length > 0) {
     console.log(chalk.red('\nIssues:'));
-    result.issues.forEach(issue => console.log(chalk.red(`  • ${issue}`)));
+    result.issues.forEach((issue) => console.log(chalk.red(`  • ${issue}`)));
   }
 
   if (options.fix && result.suggestions.length > 0) {
     console.log(chalk.cyan('\nSuggestions:'));
-    result.suggestions.forEach(s => console.log(chalk.white(`  → ${s}`)));
+    result.suggestions.forEach((s) => console.log(chalk.white(`  → ${s}`)));
   }
 
   console.log();

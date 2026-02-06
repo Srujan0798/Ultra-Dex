@@ -21,23 +21,23 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
 async function createTempProject(files = {}) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-test-'));
-  
+
   for (const [filePath, content] of Object.entries(files)) {
     const fullPath = path.join(tmpDir, filePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, content);
   }
-  
+
   return tmpDir;
 }
 
@@ -57,12 +57,17 @@ describe('serve command', () => {
       env: { ...process.env, FORCE_COLOR: '0' },
       encoding: 'utf8',
       timeout: 2000, // Kill after 2 seconds
-      input: '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n'
+      input: '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n',
     });
-    
+
     // Server should start (may timeout, that's ok)
-    assert.ok(result.signal === 'SIGTERM' || result.output.includes('MCP') || result.output.includes('server') || true,
-      'Serve --stdio should start MCP server');
+    assert.ok(
+      result.signal === 'SIGTERM' ||
+        result.output.includes('MCP') ||
+        result.output.includes('server') ||
+        true,
+      'Serve --stdio should start MCP server'
+    );
   });
 
   test('serve accepts custom port', () => {
@@ -70,9 +75,9 @@ describe('serve command', () => {
     const result = spawnSync(process.execPath, [cliPath, 'serve', '--port', '9999'], {
       env: { ...process.env, FORCE_COLOR: '0' },
       encoding: 'utf8',
-      timeout: 1000 // Kill quickly
+      timeout: 1000, // Kill quickly
     });
-    
+
     // Should attempt to start (will likely fail or timeout)
     assert.ok(result.signal === 'SIGTERM' || result.status !== null);
   });
@@ -100,7 +105,7 @@ Test Project for Ultra-Dex
 ## Phase 1: Setup
 - Initialize project
 - Configure CI/CD
-`
+`,
     });
   });
 
@@ -127,7 +132,12 @@ Test Project for Ultra-Dex
 
     const result = runCli(['brain', 'sync'], { cwd: tmpDir });
     // Command should execute (may succeed or fail gracefully)
-    assert.ok(result.output.includes('sync') || result.output.includes('brain') || result.status === 0 || result.status === 1);
+    assert.ok(
+      result.output.includes('sync') ||
+        result.output.includes('brain') ||
+        result.status === 0 ||
+        result.status === 1
+    );
   });
 
   test('brain status shows project state', async () => {
@@ -139,7 +149,12 @@ Test Project for Ultra-Dex
   test('brain index creates agent index', async () => {
     const result = runCli(['brain', 'index'], { cwd: tmpDir });
     // Should create or update agent index
-    assert.ok(result.output.includes('index') || result.output.includes('agent') || result.status === 0 || result.status === 1);
+    assert.ok(
+      result.output.includes('index') ||
+        result.output.includes('agent') ||
+        result.status === 0 ||
+        result.status === 1
+    );
   });
 });
 
@@ -152,7 +167,7 @@ describe('monitoring command', () => {
   beforeEach(async () => {
     tmpDir = await createTempProject({
       'CONTEXT.md': '# Test Context',
-      'IMPLEMENTATION-PLAN.md': '# Test Plan'
+      'IMPLEMENTATION-PLAN.md': '# Test Plan',
     });
   });
 
@@ -172,7 +187,13 @@ describe('monitoring command', () => {
     const result = runCli(['monitoring', 'status'], { cwd: tmpDir });
     // Should show status or helpful message
     assert.ok(result.output.length > 0);
-    assert.ok(result.output.includes('status') || result.output.includes('monitor') || result.output.includes('Health') || result.status === 0 || result.status === 1);
+    assert.ok(
+      result.output.includes('status') ||
+        result.output.includes('monitor') ||
+        result.output.includes('Health') ||
+        result.status === 0 ||
+        result.status === 1
+    );
   });
 
   test('monitoring metrics shows performance metrics', async () => {
@@ -197,9 +218,9 @@ describe('state command', () => {
   beforeEach(async () => {
     tmpDir = await createTempProject({
       'CONTEXT.md': '# Test Context',
-      'IMPLEMENTATION-PLAN.md': '# Test Plan'
+      'IMPLEMENTATION-PLAN.md': '# Test Plan',
     });
-    
+
     // Create .ultra-dex directory
     const ultraDexDir = path.join(tmpDir, '.ultra-dex');
     await fs.mkdir(ultraDexDir, { recursive: true });
@@ -220,21 +241,30 @@ describe('state command', () => {
   test('state show displays current state', async () => {
     // Create a state file
     const stateFile = path.join(tmpDir, '.ultra-dex', 'state.json');
-    await fs.writeFile(stateFile, JSON.stringify({
-      project: { name: 'Test Project', phase: '1' },
-      agents: { active: [] },
-      updatedAt: new Date().toISOString()
-    }));
+    await fs.writeFile(
+      stateFile,
+      JSON.stringify({
+        project: { name: 'Test Project', phase: '1' },
+        agents: { active: [] },
+        updatedAt: new Date().toISOString(),
+      })
+    );
 
     const result = runCli(['state', 'show'], { cwd: tmpDir });
-    assert.ok(result.output.includes('Test Project') || result.output.includes('state') || result.output.includes('phase'));
+    assert.ok(
+      result.output.includes('Test Project') ||
+        result.output.includes('state') ||
+        result.output.includes('phase')
+    );
   });
 
   test('state init creates initial state', async () => {
     const result = runCli(['state', 'init'], { cwd: tmpDir });
     // Should create state file
     const stateFile = path.join(tmpDir, '.ultra-dex', 'state.json');
-    assert.ok(existsSync(stateFile) || result.output.includes('init') || result.output.includes('state'));
+    assert.ok(
+      existsSync(stateFile) || result.output.includes('init') || result.output.includes('state')
+    );
   });
 });
 
@@ -264,7 +294,7 @@ describe('doctor command', () => {
   beforeEach(async () => {
     tmpDir = await createTempProject({
       'CONTEXT.md': '# Test Context',
-      'IMPLEMENTATION-PLAN.md': '# Test Plan'
+      'IMPLEMENTATION-PLAN.md': '# Test Plan',
     });
   });
 
@@ -283,7 +313,13 @@ describe('doctor command', () => {
   test('doctor runs diagnostics', async () => {
     const result = runCli(['doctor'], { cwd: tmpDir });
     // Should run diagnostics
-    assert.ok(result.output.includes('check') || result.output.includes('diagnos') || result.output.includes('doctor') || result.status === 0 || result.status === 1);
+    assert.ok(
+      result.output.includes('check') ||
+        result.output.includes('diagnos') ||
+        result.output.includes('doctor') ||
+        result.status === 0 ||
+        result.status === 1
+    );
   });
 
   test('doctor --fix attempts to fix issues', async () => {
@@ -320,7 +356,7 @@ describe('validate command', () => {
   beforeEach(async () => {
     tmpDir = await createTempProject({
       'CONTEXT.md': '# Test Context',
-      'IMPLEMENTATION-PLAN.md': '# Test Plan'
+      'IMPLEMENTATION-PLAN.md': '# Test Plan',
     });
   });
 
@@ -339,7 +375,13 @@ describe('validate command', () => {
   test('validate checks project structure', async () => {
     const result = runCli(['validate'], { cwd: tmpDir });
     // Should validate project
-    assert.ok(result.output.includes('validate') || result.output.includes('check') || result.output.includes('21') || result.status === 0 || result.status === 1);
+    assert.ok(
+      result.output.includes('validate') ||
+        result.output.includes('check') ||
+        result.output.includes('21') ||
+        result.status === 0 ||
+        result.status === 1
+    );
   });
 
   test('validate --strict enforces strict mode', async () => {
@@ -375,7 +417,7 @@ describe('team command', () => {
   beforeEach(async () => {
     tmpDir = await createTempProject({
       'CONTEXT.md': '# Test Context',
-      'IMPLEMENTATION-PLAN.md': '# Test Plan'
+      'IMPLEMENTATION-PLAN.md': '# Test Plan',
     });
   });
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -10,17 +12,67 @@ import Table from 'cli-table3';
  * verify atomic task breakdown, and report completeness percentage by section
  */
 
+import { runA11yCheck } from '../quality/a11y-check.js';
+
 export function registerCheckCommand(program) {
-  program
+  const check = program
     .command('check')
-    .description('Comprehensive plan completeness check with P0 validation')
+    .description('Comprehensive plan completeness check with P0 validation');
+
+  check
+    .command('a11y')
+    .description('Run basic accessibility checks on the codebase')
+    .action(async () => {
+      const result = await runA11yCheck({ rootDir: process.cwd() });
+      if (result.passed) {
+        console.log(chalk.green('✅ Accessibility check passed.'));
+        return;
+      }
+      console.log(chalk.yellow(`⚠️  Accessibility issues found: ${result.issues.length}`));
+      result.issues.slice(0, 20).forEach((issue) => {
+        console.log(chalk.gray(`- ${issue.file}: ${issue.issue}`));
+      });
+    });
+
+  check
     .option('--p0-only', 'Check only critical (P0) sections')
     .option('--sections <list>', 'Check specific sections (e.g., 1,2,3)')
     .option('--json', 'Output as JSON')
     .option('--strict', 'Exit with error if any required section is missing/partial')
     .option('--fix', 'Auto-fill missing sections with suggested content')
+    .option('--compliance', 'Show compliance checklist guidance (GDPR/CCPA/SOC2)')
     .action(async (options) => {
       try {
+        if (options.compliance) {
+          const compliancePath = path.resolve(process.cwd(), 'docs', 'COMPLIANCE.md');
+          const complianceExists = await fileExists(compliancePath);
+          if (!options.json) {
+            console.log(chalk.cyan.bold('\n🛡️  Compliance Checklist\n'));
+            if (complianceExists) {
+              console.log(chalk.gray(`Review: ${compliancePath}\n`));
+            } else {
+              console.log(
+                chalk.yellow(
+                  'COMPLIANCE.md not found. Add one or generate from templates to proceed.\n'
+                )
+              );
+            }
+          }
+          if (options.json) {
+            console.log(
+              JSON.stringify(
+                {
+                  compliance: complianceExists ? 'available' : 'missing',
+                  path: complianceExists ? compliancePath : null,
+                },
+                null,
+                2
+              )
+            );
+          }
+          return;
+        }
+
         if (!options.json) {
           console.log(chalk.cyan.bold('\n🔍 Ultra-Dex Completeness Check\n'));
         }
@@ -65,7 +117,7 @@ export function registerCheckCommand(program) {
                 console.log(chalk.green('✅ CONTEXT.md is up to date\n'));
               } else {
                 console.log(chalk.yellow('⚠️  CONTEXT.md may be stale'));
-                freshness.staleRefs.forEach(ref => {
+                freshness.staleRefs.forEach((ref) => {
                   console.log(chalk.gray(`   • Newer change detected in ${ref}`));
                 });
                 console.log(chalk.gray('   Run: ultra-dex sync --brain or ultra-dex init\n'));
@@ -92,10 +144,10 @@ export function registerCheckCommand(program) {
         let sectionsToCheck = sections;
 
         if (options.sections) {
-          const sectionNumbers = options.sections.split(',').map(s => parseInt(s.trim()));
-          sectionsToCheck = sections.filter(s => sectionNumbers.includes(s.number));
+          const sectionNumbers = options.sections.split(',').map((s) => parseInt(s.trim()));
+          sectionsToCheck = sections.filter((s) => sectionNumbers.includes(s.number));
         } else if (options.p0Only) {
-          sectionsToCheck = sections.filter(s => p0Sections.includes(s.number));
+          sectionsToCheck = sections.filter((s) => p0Sections.includes(s.number));
         }
 
         // Check each section
@@ -121,7 +173,9 @@ export function registerCheckCommand(program) {
             await fs.writeFile(planPath, nextPlan);
             fixApplied = true;
             if (!silent) {
-              console.log(chalk.green('\n✅ Auto-fill suggestions added to IMPLEMENTATION-PLAN.md'));
+              console.log(
+                chalk.green('\n✅ Auto-fill suggestions added to IMPLEMENTATION-PLAN.md')
+              );
               console.log(chalk.gray('   Review and refine the suggested content.\n'));
             }
           } else if (!silent) {
@@ -131,18 +185,24 @@ export function registerCheckCommand(program) {
 
         // Display results
         if (options.json) {
-          console.log(JSON.stringify({
-            total: sectionsToCheck.length,
-            complete: completeCount,
-            partial: partialCount,
-            missing: missingCount,
-            percentage: Math.round((completeCount / sectionsToCheck.length) * 100),
-            contextValid,
-            contextFresh,
-            contextDetails,
-            fixApplied,
-            sections: results
-          }, null, 2));
+          console.log(
+            JSON.stringify(
+              {
+                total: sectionsToCheck.length,
+                complete: completeCount,
+                partial: partialCount,
+                missing: missingCount,
+                percentage: Math.round((completeCount / sectionsToCheck.length) * 100),
+                contextValid,
+                contextFresh,
+                contextDetails,
+                fixApplied,
+                sections: results,
+              },
+              null,
+              2
+            )
+          );
           return;
         }
 
@@ -150,19 +210,22 @@ export function registerCheckCommand(program) {
         const table = new Table({
           head: ['Section', 'Status', 'Completeness', 'Issues'],
           colWidths: [35, 12, 15, 45],
-          style: { head: ['cyan'] }
+          style: { head: ['cyan'] },
         });
 
-        results.forEach(r => {
-          const status = r.status === 'complete' ? chalk.green('✓') :
-                        r.status === 'partial' ? chalk.yellow('◐') :
-                        chalk.red('✗');
+        results.forEach((r) => {
+          const status =
+            r.status === 'complete'
+              ? chalk.green('✓')
+              : r.status === 'partial'
+                ? chalk.yellow('◐')
+                : chalk.red('✗');
 
           table.push([
             `Section ${r.number}: ${r.title.substring(0, 25)}`,
             status,
             `${r.percentage}%`,
-            r.issues.join(', ').substring(0, 43) || '-'
+            r.issues.join(', ').substring(0, 43) || '-',
           ]);
         });
 
@@ -182,19 +245,21 @@ export function registerCheckCommand(program) {
         }
 
         // Critical warnings
-        const criticalMissing = p0Sections.filter(num => 
-          !results.some(r => r.number === num && r.status === 'complete')
-        ).map(num => {
-          const found = sections.find(s => s.number === num);
-          return found ? `Section ${num}: ${found.title}` : `Section ${num} (MISSING)`;
-        });
+        const criticalMissing = p0Sections
+          .filter((num) => !results.some((r) => r.number === num && r.status === 'complete'))
+          .map((num) => {
+            const found = sections.find((s) => s.number === num);
+            return found ? `Section ${num}: ${found.title}` : `Section ${num} (MISSING)`;
+          });
 
         if (criticalMissing.length > 0) {
           console.log(chalk.red.bold('\n⚠️  Critical P0 Sections Incomplete/Missing:'));
-          criticalMissing.forEach(msg => {
+          criticalMissing.forEach((msg) => {
             console.log(chalk.red(`  • ${msg}`));
           });
-          console.log(chalk.yellow('\nThese 12 sections are required for a Production-Ready plan.\n'));
+          console.log(
+            chalk.yellow('\nThese 12 sections are required for a Production-Ready plan.\n')
+          );
         } else {
           console.log(chalk.green('\n✅ All 12 critical P0 sections are complete!\n'));
         }
@@ -205,27 +270,33 @@ export function registerCheckCommand(program) {
           console.log(chalk.green('✅ Tech stack choices match package.json\n'));
         } else {
           console.log(chalk.red('❌ Issues with tech stack choices:'));
-          techStackValid.issues.forEach(issue => {
+          techStackValid.issues.forEach((issue) => {
             console.log(chalk.red(`  • ${issue}`));
           });
           console.log('');
         }
 
         // Acceptance criteria check
-        const missingCriteria = results.filter(r => !r.checks.hasAcceptanceCriteria);
+        const missingCriteria = results.filter((r) => !r.checks.hasAcceptanceCriteria);
         if (missingCriteria.length > 0) {
-          console.log(chalk.red(`❌ Missing acceptance criteria in ${missingCriteria.length} sections:`));
-          missingCriteria.forEach(r => {
+          console.log(
+            chalk.red(`❌ Missing acceptance criteria in ${missingCriteria.length} sections:`)
+          );
+          missingCriteria.forEach((r) => {
             console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
           });
           console.log('');
         }
 
         // Atomic task breakdown check
-        const missingBreakdown = results.filter(r => [16, 20].includes(r.number) && !r.checks.hasAtomicTasks);
+        const missingBreakdown = results.filter(
+          (r) => [16, 20].includes(r.number) && !r.checks.hasAtomicTasks
+        );
         if (missingBreakdown.length > 0) {
-          console.log(chalk.red(`❌ Missing atomic task breakdown in ${missingBreakdown.length} sections:`));
-          missingBreakdown.forEach(r => {
+          console.log(
+            chalk.red(`❌ Missing atomic task breakdown in ${missingBreakdown.length} sections:`)
+          );
+          missingBreakdown.forEach((r) => {
             console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
           });
           console.log(chalk.gray('   Tasks must be broken into 4-9 hour chunks.\n'));
@@ -233,13 +304,17 @@ export function registerCheckCommand(program) {
 
         // Strict mode
         if (options.strict) {
-          const hasFailures = missingCount > 0 || partialCount > 0 || !contextValid || !contextFresh || criticalMissing.length > 0;
+          const hasFailures =
+            missingCount > 0 ||
+            partialCount > 0 ||
+            !contextValid ||
+            !contextFresh ||
+            criticalMissing.length > 0;
           if (hasFailures) {
             console.log(chalk.red('\n❌ Strict mode: validation failed.'));
             process.exitCode = 1;
           }
         }
-
       } catch (error) {
         console.error(chalk.red('Error:'), error.message);
       }
@@ -265,7 +340,7 @@ function parseSections(content) {
         number: parseInt(match[1]),
         title: match[2].trim(),
         startLine: i,
-        content: []
+        content: [],
       };
     } else if (currentSection) {
       currentSection.content.push(line);
@@ -288,7 +363,8 @@ function analyzeSection(section) {
     hasBulletPoints: content.includes('- ') || content.includes('* '),
     noPlaceholders: !placeholderRegex.test(content),
     hasAcceptanceCriteria: /acceptance criteria|criteria|verifiable by|audit by/i.test(content),
-    hasAtomicTasks: /task|step|atomic|breakdown/i.test(content) && /\b[4-9]\s*hours?\b|\b[4-9]h\b/i.test(content)
+    hasAtomicTasks:
+      /task|step|atomic|breakdown/i.test(content) && /\b[4-9]\s*hours?\b|\b[4-9]h\b/i.test(content),
   };
 
   const passedChecks = Object.values(checks).filter(Boolean).length;
@@ -304,13 +380,18 @@ function analyzeSection(section) {
   if (!checks.noPlaceholders) issues.push('Contains placeholders ([TODO]/TBD)');
   if (!checks.hasBulletPoints && section.number !== 1) issues.push('No bullet point details');
   if (!checks.hasAcceptanceCriteria) issues.push('Missing measurable acceptance criteria');
-  if (!checks.hasAtomicTasks && [16, 20].includes(section.number)) issues.push('Tasks not broken into 4-9h chunks');
+  if (!checks.hasAtomicTasks && [16, 20].includes(section.number))
+    issues.push('Tasks not broken into 4-9h chunks');
 
   const suggestions = [];
-  if (!checks.hasContent) suggestions.push('Add 3-5 sentences describing scope, inputs, and outputs.');
-  if (!checks.noPlaceholders) suggestions.push('Replace TODO/TBD placeholders with concrete details.');
-  if (!checks.hasBulletPoints && section.number !== 1) suggestions.push('Add bullet points for steps, deliverables, or decisions.');
-  if (!checks.hasAcceptanceCriteria) suggestions.push('Add a short "Acceptance Criteria" list with measurable outcomes.');
+  if (!checks.hasContent)
+    suggestions.push('Add 3-5 sentences describing scope, inputs, and outputs.');
+  if (!checks.noPlaceholders)
+    suggestions.push('Replace TODO/TBD placeholders with concrete details.');
+  if (!checks.hasBulletPoints && section.number !== 1)
+    suggestions.push('Add bullet points for steps, deliverables, or decisions.');
+  if (!checks.hasAcceptanceCriteria)
+    suggestions.push('Add a short "Acceptance Criteria" list with measurable outcomes.');
   if (!checks.hasAtomicTasks && [16, 20].includes(section.number)) {
     suggestions.push('Break tasks into 4-9 hour chunks with estimates.');
   }
@@ -322,14 +403,14 @@ function analyzeSection(section) {
     percentage,
     checks,
     issues,
-    suggestions
+    suggestions,
   };
 }
 
 async function validateTechStack(content) {
   const issues = [];
   let pkg = {};
-  
+
   try {
     const packageJsonContent = await fs.readFile('./package.json', 'utf8');
     pkg = JSON.parse(packageJsonContent);
@@ -343,28 +424,28 @@ async function validateTechStack(content) {
   }
 
   const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-  
+
   // Common stack elements to verify
   const stackMap = {
     'Next.js': 'next',
-    'React': 'react',
-    'Prisma': 'prisma',
-    'Tailwind': 'tailwindcss',
-    'TypeScript': 'typescript',
-    'Zod': 'zod',
-    'Clerk': '@clerk',
-    'Supabase': 'supabase',
-    'Express': 'express',
-    'Vitest': 'vitest',
-    'Playwright': 'playwright',
-    'Puppeteer': 'puppeteer'
+    React: 'react',
+    Prisma: 'prisma',
+    Tailwind: 'tailwindcss',
+    TypeScript: 'typescript',
+    Zod: 'zod',
+    Clerk: '@clerk',
+    Supabase: 'supabase',
+    Express: 'express',
+    Vitest: 'vitest',
+    Playwright: 'playwright',
+    Puppeteer: 'puppeteer',
   };
 
   let mentionsAny = false;
   for (const [name, dep] of Object.entries(stackMap)) {
-    const hasDep = Object.keys(deps).some(d => d.includes(dep));
+    const hasDep = Object.keys(deps).some((d) => d.includes(dep));
     const mentions = content.toLowerCase().includes(name.toLowerCase());
-    
+
     if (hasDep && !mentions) {
       issues.push(`${name} found in package.json but not mentioned in implementation plan`);
     }
@@ -377,7 +458,7 @@ async function validateTechStack(content) {
 
   return {
     valid: issues.length === 0,
-    issues
+    issues,
   };
 }
 
@@ -393,7 +474,7 @@ async function checkContextFreshness(contextPath) {
     'lib',
     'server',
     'api',
-    'cli'
+    'cli',
   ];
 
   const staleRefs = [];
@@ -411,13 +492,22 @@ async function checkContextFreshness(contextPath) {
 
   return {
     fresh: staleRefs.length === 0,
-    staleRefs
+    staleRefs,
   };
+}
+
+async function fileExists(targetPath) {
+  try {
+    await fs.access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function applyAutoFixes(planContent, sections, results) {
   const lines = planContent.split('\n');
-  const sectionByNumber = new Map(sections.map(section => [section.number, section]));
+  const sectionByNumber = new Map(sections.map((section) => [section.number, section]));
   const edits = [];
 
   for (const result of results) {
@@ -433,8 +523,8 @@ function applyAutoFixes(planContent, sections, results) {
     const block = [
       '',
       '### AI Suggested Additions',
-      ...result.suggestions.map(item => `- ${item}`),
-      ''
+      ...result.suggestions.map((item) => `- ${item}`),
+      '',
     ];
 
     edits.push({ index: section.endLine, block });
@@ -442,9 +532,11 @@ function applyAutoFixes(planContent, sections, results) {
 
   if (edits.length === 0) return planContent;
 
-  edits.sort((a, b) => b.index - a.index).forEach(({ index, block }) => {
-    lines.splice(index, 0, ...block);
-  });
+  edits
+    .sort((a, b) => b.index - a.index)
+    .forEach(({ index, block }) => {
+      lines.splice(index, 0, ...block);
+    });
 
   return lines.join('\n');
 }

@@ -46,7 +46,7 @@ export class ResourceService {
       status: 'active',
       metadata: input.metadata || {},
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     resourcesStore.set(resource.id, resource);
@@ -59,18 +59,16 @@ export class ResourceService {
     cursor?: string;
     status?: string;
   }): Promise<ListResourcesResult> {
-    let resources = Array.from(resourcesStore.values()).filter(
-      r => r.userId === options.userId
-    );
+    let resources = Array.from(resourcesStore.values()).filter((r) => r.userId === options.userId);
 
     if (options.status) {
-      resources = resources.filter(r => r.status === options.status);
+      resources = resources.filter((r) => r.status === options.status);
     }
 
     // Simple cursor-based pagination
     let startIndex = 0;
     if (options.cursor) {
-      const cursorIndex = resources.findIndex(r => r.id > options.cursor!);
+      const cursorIndex = resources.findIndex((r) => r.id > options.cursor!);
       startIndex = cursorIndex >= 0 ? cursorIndex : resources.length;
     }
 
@@ -81,7 +79,7 @@ export class ResourceService {
       data,
       hasMore,
       nextCursor: hasMore ? data[data.length - 1]?.id : undefined,
-      prevCursor: options.cursor
+      prevCursor: options.cursor,
     };
   }
 
@@ -105,7 +103,7 @@ export class ResourceService {
       ...(input.description !== undefined && { description: input.description }),
       ...(input.status && { status: input.status }),
       ...(input.metadata && { metadata: { ...resource.metadata, ...input.metadata } }),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     resourcesStore.set(id, updated);

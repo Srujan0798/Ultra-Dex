@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { parseChainOfThought } from './cot-parser.js';
@@ -29,5 +31,5 @@ function escape(text) {
 
 export default {
   toMermaid,
-  exportReasoningReport
+  exportReasoningReport,
 };

@@ -62,18 +62,26 @@ async function runVerificationSuite() {
     const templatePath = path.join(PROJECT_ROOT, '@ ultra-dex', 'Saas plan', '04-Imp-Template.md');
     try {
       const content = await fs.readFile(templatePath, 'utf8');
-      
+
       // Check that old example passwords are not present
-      const hasOldPasswords = /password.*['"]SecurePass123['"]|password.*['"]TestPass123['"]|password.*['"]AdminPass123['"]|password.*['"]anything['"]/i.test(content);
-      
+      const hasOldPasswords =
+        /password.*['"]SecurePass123['"]|password.*['"]TestPass123['"]|password.*['"]AdminPass123['"]|password.*['"]anything['"]/i.test(
+          content
+        );
+
       // Check that new secure placeholders are present
-      const hasSecurePlaceholders = content.includes('Use a secure, randomly generated password following company standards');
-      
+      const hasSecurePlaceholders = content.includes(
+        'Use a secure, randomly generated password following company standards'
+      );
+
       if (!hasOldPasswords && hasSecurePlaceholders) {
         logResult('Example passwords replaced with secure placeholders', true);
       } else {
-        logResult('Example passwords replaced with secure placeholders', false, 
-          `Old passwords found: ${hasOldPasswords}, Secure placeholders found: ${hasSecurePlaceholders}`);
+        logResult(
+          'Example passwords replaced with secure placeholders',
+          false,
+          `Old passwords found: ${hasOldPasswords}, Secure placeholders found: ${hasSecurePlaceholders}`
+        );
         assert.fail('Example passwords not properly replaced');
       }
     } catch (error) {
@@ -91,7 +99,9 @@ async function runVerificationSuite() {
 
       // Check that plugin command is registered
       try {
-        const helpOutput = execSync('node cli/bin/ultra-dex.js plugin --help', { encoding: 'utf8' });
+        const helpOutput = execSync('node cli/bin/ultra-dex.js plugin --help', {
+          encoding: 'utf8',
+        });
         if (helpOutput.includes('plugin') && helpOutput.includes('Manage')) {
           logResult('Plugin command is registered', true);
         } else {
@@ -99,7 +109,11 @@ async function runVerificationSuite() {
           // Don't fail the test if command isn't available in test environment
         }
       } catch {
-        logResult('Plugin command is registered', false, 'Command execution failed (may be expected in test env)');
+        logResult(
+          'Plugin command is registered',
+          false,
+          'Command execution failed (may be expected in test env)'
+        );
         // Don't fail the test if command isn't available in test environment
       }
     } catch {
@@ -113,16 +127,20 @@ async function runVerificationSuite() {
     const graphPath = path.join(PROJECT_ROOT, 'cli', 'lib', 'mcp', 'graph.js');
     try {
       const content = await fs.readFile(graphPath, 'utf8');
-      
+
       const hasCaching = content.includes('cacheTimeout') || content.includes('lastScanTime');
-      const hasConcurrency = content.includes('CONCURRENCY_LIMIT') || content.includes('Promise.allSettled');
+      const hasConcurrency =
+        content.includes('CONCURRENCY_LIMIT') || content.includes('Promise.allSettled');
       const hasPerformanceHooks = content.includes('performance') || content.includes('perf_hooks');
-      
+
       if (hasCaching && hasConcurrency && hasPerformanceHooks) {
         logResult('Performance optimizations implemented', true);
       } else {
-        logResult('Performance optimizations implemented', false, 
-          `Caching: ${hasCaching}, Concurrency: ${hasConcurrency}, Perf Hooks: ${hasPerformanceHooks}`);
+        logResult(
+          'Performance optimizations implemented',
+          false,
+          `Caching: ${hasCaching}, Concurrency: ${hasConcurrency}, Perf Hooks: ${hasPerformanceHooks}`
+        );
         assert.fail('Not all performance optimizations implemented');
       }
     } catch {
@@ -135,14 +153,14 @@ async function runVerificationSuite() {
   await test('New documentation files exist', async () => {
     const docs = [
       'APIDOC.md',
-      'USERGUIDE.md', 
+      'USERGUIDE.md',
       'BESTPRACTICES.md',
       'TROUBLESHOOTING.md',
       'CONTRIBUTING.md',
       'MIGRATION-GUIDE.md',
       'SECURITY.md',
       'TUTORIAL.md',
-      'API-REFERENCE.md'
+      'API-REFERENCE.md',
     ];
 
     let missingDocs = 0;
@@ -177,7 +195,7 @@ async function runVerificationSuite() {
     try {
       const packagePath = path.join(PROJECT_ROOT, 'package.json');
       const pkg = JSON.parse(await fs.readFile(packagePath, 'utf8'));
-      
+
       if (pkg.version === '3.4.3') {
         logResult('Version updated to 3.4.3', true);
       } else {
@@ -218,7 +236,11 @@ async function runVerificationSuite() {
       await fs.access(path.join(PROJECT_ROOT, 'archived_reports'));
       logResult('Reports directory archived to archived_reports', true);
     } catch {
-      logResult('Reports directory archived to archived_reports', false, 'Archive directory not found');
+      logResult(
+        'Reports directory archived to archived_reports',
+        false,
+        'Archive directory not found'
+      );
       try {
         // Check if old reports directory still exists
         await fs.access(path.join(PROJECT_ROOT, 'reports'));
@@ -235,15 +257,27 @@ async function runVerificationSuite() {
     try {
       const readme = await fs.readFile(path.join(PROJECT_ROOT, 'README.md'), 'utf8');
 
-      const hasPluginSystem = readme.includes('Plugin Architecture') || readme.includes('ultra-dex plugin');
-      const hasPerformanceSection = readme.includes('Performance & Optimization') || readme.includes('Performance Optimizations');
-      const hasNewDocs = readme.includes('API Documentation') || readme.includes('User Guide') || readme.includes('Comprehensive Documentation') || readme.includes('Best Practices') || readme.includes('Troubleshooting Guide') || readme.includes('Contribution Guidelines');
+      const hasPluginSystem =
+        readme.includes('Plugin Architecture') || readme.includes('ultra-dex plugin');
+      const hasPerformanceSection =
+        readme.includes('Performance & Optimization') ||
+        readme.includes('Performance Optimizations');
+      const hasNewDocs =
+        readme.includes('API Documentation') ||
+        readme.includes('User Guide') ||
+        readme.includes('Comprehensive Documentation') ||
+        readme.includes('Best Practices') ||
+        readme.includes('Troubleshooting Guide') ||
+        readme.includes('Contribution Guidelines');
 
       if (hasPluginSystem && hasPerformanceSection && hasNewDocs) {
         logResult('README updated with new features', true);
       } else {
-        logResult('README updated with new features', false,
-          `Plugin System: ${hasPluginSystem}, Performance: ${hasPerformanceSection}, New Docs: ${hasNewDocs}`);
+        logResult(
+          'README updated with new features',
+          false,
+          `Plugin System: ${hasPluginSystem}, Performance: ${hasPerformanceSection}, New Docs: ${hasNewDocs}`
+        );
         // Don't fail the test if README isn't fully updated in test environment
       }
     } catch {
@@ -256,7 +290,7 @@ async function runVerificationSuite() {
   console.log('\n📊 VERIFICATION SUMMARY');
   console.log('=====================');
 
-  const passed = TEST_RESULTS.filter(r => r.success).length;
+  const passed = TEST_RESULTS.filter((r) => r.success).length;
   const total = TEST_RESULTS.length;
   const percentage = ((passed / total) * 100).toFixed(1);
 
@@ -275,7 +309,7 @@ async function runVerificationSuite() {
 }
 
 // Run the verification suite
-runVerificationSuite().catch(error => {
+runVerificationSuite().catch((error) => {
   console.error('Verification suite failed:', error);
   process.exit(1);
 });

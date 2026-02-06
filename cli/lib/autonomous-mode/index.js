@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Autonomous Agent Mode
  * Overnight execution, morning summary, auto-PR creation, human review queue.
@@ -36,7 +38,7 @@ export async function generateMorningSummary(results = []) {
     '# Morning Summary',
     `Generated: ${new Date().toISOString()}`,
     '',
-    ...results.map(r => `- ${r.task}: ${r.completedAt}`)
+    ...results.map((r) => `- ${r.task}: ${r.completedAt}`),
   ].join('\n');
 
   await fs.writeFile(SUMMARY_PATH, summary, 'utf8');
@@ -67,5 +69,5 @@ export default {
   runOvernight,
   generateMorningSummary,
   createPullRequest,
-  enqueueForReview
+  enqueueForReview,
 };

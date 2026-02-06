@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex github command
  * GitHub App integration for issue tracking, auto-PR creation, and CI/CD
@@ -24,16 +26,16 @@ const GITHUB_CONFIG = {
 
   // Label mappings
   labelToAgent: {
-    'backend': '@Backend',
-    'frontend': '@Frontend',
-    'database': '@Database',
-    'auth': '@Auth',
-    'security': '@Security',
-    'testing': '@Testing',
-    'devops': '@DevOps',
-    'bug': '@Debugger',
-    'documentation': '@Documentation',
-    'performance': '@Performance',
+    backend: '@Backend',
+    frontend: '@Frontend',
+    database: '@Database',
+    auth: '@Auth',
+    security: '@Security',
+    testing: '@Testing',
+    devops: '@DevOps',
+    bug: '@Debugger',
+    documentation: '@Documentation',
+    performance: '@Performance',
   },
 
   // PR template
@@ -90,7 +92,16 @@ async function getRepoInfo() {
 async function listIssues(options = {}) {
   const { limit = 20, labels = [], state = 'open' } = options;
 
-  const args = ['issue', 'list', '--state', state, '--limit', String(limit), '--json', 'number,title,labels,body,assignees,createdAt'];
+  const args = [
+    'issue',
+    'list',
+    '--state',
+    state,
+    '--limit',
+    String(limit),
+    '--json',
+    'number,title,labels,body,assignees,createdAt',
+  ];
 
   if (labels.length > 0) {
     args.push('--label', labels.join(','));
@@ -145,7 +156,13 @@ async function createPullRequest(title, body, options = {}) {
  */
 // eslint-disable-next-line no-unused-vars
 async function getPRStatus(prNumber) {
-  const { stdout } = await execFileAsync('gh', ['pr', 'view', String(prNumber), '--json', 'state,mergeable,reviews,statusCheckRollup']);
+  const { stdout } = await execFileAsync('gh', [
+    'pr',
+    'view',
+    String(prNumber),
+    '--json',
+    'state,mergeable,reviews,statusCheckRollup',
+  ]);
   return JSON.parse(stdout);
 }
 
@@ -155,7 +172,16 @@ async function getPRStatus(prNumber) {
 async function listPRs(options = {}) {
   const { state = 'open', limit = 10 } = options;
 
-  const args = ['pr', 'list', '--state', state, '--limit', String(limit), '--json', 'number,title,headRefName,state,createdAt'];
+  const args = [
+    'pr',
+    'list',
+    '--state',
+    state,
+    '--limit',
+    String(limit),
+    '--json',
+    'number,title,headRefName,state,createdAt',
+  ];
 
   const { stdout } = await execFileAsync('gh', args);
   return JSON.parse(stdout);
@@ -186,7 +212,7 @@ function issueToTask(issue) {
     title: issue.title,
     description: issue.body || '',
     agent,
-    labels: (issue.labels || []).map(l => l.name || l),
+    labels: (issue.labels || []).map((l) => l.name || l),
     createdAt: issue.createdAt,
     status: 'pending',
   };
@@ -270,7 +296,6 @@ async function createPRFromSwarm(swarmResult, options = {}) {
 
   return { branch: branchName, prUrl };
 }
-
 
 // ============================================================================
 // WEBHOOK HANDLER (for CI integration)
@@ -373,7 +398,7 @@ export function registerGitHubCommand(program) {
           }
 
           for (const issue of issues) {
-            const labels = (issue.labels || []).map(l => chalk.cyan(`[${l.name}]`)).join(' ');
+            const labels = (issue.labels || []).map((l) => chalk.cyan(`[${l.name}]`)).join(' ');
             console.log(`#${chalk.bold(issue.number)} ${issue.title} ${labels}`);
           }
           return;
@@ -386,7 +411,9 @@ export function registerGitHubCommand(program) {
           spinner.succeed(`Found ${prs.length} open PRs\n`);
 
           for (const pr of prs) {
-            console.log(`#${chalk.bold(pr.number)} ${pr.title} ${chalk.gray(`(${pr.headRefName})`)}`);
+            console.log(
+              `#${chalk.bold(pr.number)} ${pr.title} ${chalk.gray(`(${pr.headRefName})`)}`
+            );
           }
           return;
         }
@@ -408,11 +435,13 @@ export function registerGitHubCommand(program) {
 
         if (options.createIssue) {
           // Create issue
-          const { body } = await inquirer.prompt([{
-            type: 'editor',
-            name: 'body',
-            message: 'Issue description:',
-          }]);
+          const { body } = await inquirer.prompt([
+            {
+              type: 'editor',
+              name: 'body',
+              message: 'Issue description:',
+            },
+          ]);
 
           spinner.start('Creating issue...');
           const url = await createIssue(options.createIssue, body);
@@ -440,26 +469,27 @@ export function registerGitHubCommand(program) {
         }
 
         // Default: show menu
-        const { action } = await inquirer.prompt([{
-          type: 'list',
-          name: 'action',
-          message: 'What would you like to do?',
-          choices: [
-            { name: '📋 List open issues', value: 'issues' },
-            { name: '🔀 List open PRs', value: 'prs' },
-            { name: '🔄 Sync issues to tasks', value: 'sync' },
-            { name: '➕ Create new issue', value: 'create-issue' },
-            { name: '🚀 Create PR from changes', value: 'create-pr' },
-            { name: '❌ Cancel', value: 'cancel' },
-          ],
-        }]);
+        const { action } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'action',
+            message: 'What would you like to do?',
+            choices: [
+              { name: '📋 List open issues', value: 'issues' },
+              { name: '🔀 List open PRs', value: 'prs' },
+              { name: '🔄 Sync issues to tasks', value: 'sync' },
+              { name: '➕ Create new issue', value: 'create-issue' },
+              { name: '🚀 Create PR from changes', value: 'create-pr' },
+              { name: '❌ Cancel', value: 'cancel' },
+            ],
+          },
+        ]);
 
         // Recurse with selected action
         if (action !== 'cancel') {
           const newOptions = { ...options, [action.replace('-', '')]: true };
           await registerGitHubCommand(program).action(newOptions);
         }
-
       } catch (err) {
         spinner.fail(`Failed: ${err.message}`);
       }

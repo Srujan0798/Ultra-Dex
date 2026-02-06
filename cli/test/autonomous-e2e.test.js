@@ -10,28 +10,37 @@ const tempDir = path.join(__dirname, 'temp-autonomous-test');
 
 async function setup() {
   await fs.mkdir(tempDir, { recursive: true });
-  
+
   // Create a buggy file
-  await fs.writeFile(path.join(tempDir, 'math.js'), `
+  await fs.writeFile(
+    path.join(tempDir, 'math.js'),
+    `
     export function add(a, b) {
       return a - b; // BUG: subtraction instead of addition
     }
-  `);
+  `
+  );
 
   // Create a test file (simple check script)
-  await fs.writeFile(path.join(tempDir, 'test-math.js'), `
+  await fs.writeFile(
+    path.join(tempDir, 'test-math.js'),
+    `
     import { add } from './math.js';
     if (add(2, 3) !== 5) {
       console.error('Test failed: 2 + 3 should be 5');
       process.exit(1);
     }
-  `);
-  
+  `
+  );
+
   // Mock package.json so it looks like a project
-  await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({
-    name: "test-project",
-    type: "module"
-  }));
+  await fs.writeFile(
+    path.join(tempDir, 'package.json'),
+    JSON.stringify({
+      name: 'test-project',
+      type: 'module',
+    })
+  );
 }
 
 async function teardown() {
@@ -41,20 +50,20 @@ async function teardown() {
 test('AutonomousEngine self-healing E2E', async (t) => {
   await setup();
   const originalCwd = process.cwd();
-  
+
   try {
     process.chdir(tempDir);
-    
+
     // Mock Provider
     const mockProvider = {
       generate: async (system, prompt) => {
         // Return a fix instruction
         // Note: Using absolute path resolution in runAgentLoop might still be tricky if not handled right,
         // but changing CWD should fix relative paths.
-        
+
         // Return null for subsequent calls to stop recursion
         if (prompt.includes('Successfully wrote')) {
-            return { content: 'Fix applied.' };
+          return { content: 'Fix applied.' };
         }
 
         return {
@@ -64,9 +73,9 @@ test('AutonomousEngine self-healing E2E', async (t) => {
       return a + b; // FIXED
     }
 "
-`
+`,
         };
-      }
+      },
     };
 
     const engine = new AutonomousEngine(tempDir, mockProvider, 'node test-math.js');

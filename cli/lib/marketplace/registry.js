@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Plugin Registry Resolver
  * Fetches registry metadata from GitHub and handles version resolution.
@@ -17,7 +19,7 @@ const FALLBACK_REGISTRY = {
       latest: '1.0.0',
       versions: ['1.0.0'],
       repository: 'github:Srujan0798/Ultra-Dex',
-      author: 'Ultra-Dex Team'
+      author: 'Ultra-Dex Team',
     },
     {
       name: '@ultra-dex/template-pack',
@@ -26,7 +28,7 @@ const FALLBACK_REGISTRY = {
       latest: '1.2.0',
       versions: ['1.2.0', '1.1.0'],
       repository: 'github:Srujan0798/Ultra-Dex',
-      author: 'Ultra-Dex Team'
+      author: 'Ultra-Dex Team',
     },
     {
       name: '@ultra-dex/integration-pack',
@@ -35,14 +37,14 @@ const FALLBACK_REGISTRY = {
       latest: '0.9.0',
       versions: ['0.9.0'],
       repository: 'github:Srujan0798/Ultra-Dex',
-      author: 'Ultra-Dex Team'
-    }
-  ]
+      author: 'Ultra-Dex Team',
+    },
+  ],
 };
 
 export async function fetchRegistry(url = DEFAULT_REGISTRY_URL) {
   try {
-    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!response.ok) {
       throw new Error(`Registry fetch failed: ${response.status}`);
     }
@@ -80,9 +82,8 @@ export function selectPluginVersion(plugin, requestedVersion) {
 
 export function parsePluginSpecifier(specifier) {
   if (!specifier) return { name: '', version: null };
-  const [name, version] = specifier.split('@').length > 2
-    ? [specifier, null]
-    : specifier.split('@');
+  const [name, version] =
+    specifier.split('@').length > 2 ? [specifier, null] : specifier.split('@');
 
   if (specifier.startsWith('@')) {
     const atIndex = specifier.lastIndexOf('@');
@@ -96,5 +97,5 @@ export function parsePluginSpecifier(specifier) {
 }
 
 export const registryDefaults = {
-  url: DEFAULT_REGISTRY_URL
+  url: DEFAULT_REGISTRY_URL,
 };

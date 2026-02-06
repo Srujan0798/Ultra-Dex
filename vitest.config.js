@@ -21,15 +21,15 @@ export default defineConfig({
         'docs/**',
         'README.md',
         'package*.json',
-        'vitest.config.js'
+        'vitest.config.js',
       ],
       lines: 80,
       branches: 80,
       functions: 80,
-      statements: 80
+      statements: 80,
     },
     testTimeout: 10000,
-    hookTimeout: 15000
+    hookTimeout: 15000,
   },
   resolve: {
     alias: {
@@ -37,7 +37,7 @@ export default defineConfig({
       '@lib': new URL('./cli/lib', import.meta.url).pathname,
       '@test': new URL('./cli/test', import.meta.url).pathname,
       '@utils': new URL('./cli/lib/utils', import.meta.url).pathname,
-      '@commands': new URL('./cli/lib/commands', import.meta.url).pathname
-    }
-  }
+      '@commands': new URL('./cli/lib/commands', import.meta.url).pathname,
+    },
+  },
 });

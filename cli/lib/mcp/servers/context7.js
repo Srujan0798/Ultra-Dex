@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Context7 MCP server adaptor
  */
@@ -11,5 +13,5 @@ export async function handleContext7Request(params) {
 }
 
 export default {
-  handleContext7Request
+  handleContext7Request,
 };

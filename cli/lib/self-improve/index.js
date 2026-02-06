@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Self-Improving Agents
  * Tracks outcomes, learns from corrections, runs prompt A/B tests.
@@ -40,7 +42,7 @@ export async function recordOutcome(agent, { success, durationMs, task } = {}) {
     success,
     durationMs,
     task,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
   return saveState(state);
 }
@@ -50,7 +52,7 @@ export async function recordCorrection(agent, correction) {
   const entry = {
     agent,
     correction,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
   await fs.appendFile(CORRECTIONS_LOG, JSON.stringify(entry) + '\n', 'utf8');
 
@@ -65,7 +67,7 @@ export async function runABTest(agent, variants = []) {
   const test = {
     agent,
     variants,
-    startedAt: new Date().toISOString()
+    startedAt: new Date().toISOString(),
   };
   await fs.appendFile(AB_LOG, JSON.stringify(test) + '\n', 'utf8');
   return test;
@@ -96,5 +98,5 @@ export default {
   runABTest,
   optimizePrompt,
   exportPatterns,
-  getAgentStats
+  getAgentStats,
 };

@@ -7,6 +7,7 @@ Real-time analytics dashboard for SaaS applications using Ultra-Dex methodology.
 **Product:** Plug-and-play analytics for SaaS - track users, events, and revenue.
 
 **Tech Stack:**
+
 - Frontend: Next.js 15 + Tremor (dashboard UI)
 - Backend: Node.js + tRPC
 - Database: ClickHouse (time-series analytics)
@@ -20,6 +21,7 @@ Real-time analytics dashboard for SaaS applications using Ultra-Dex methodology.
 **Problem:** Google Analytics is too generic for SaaS. Mixpanel is expensive. Developers need simple, code-first analytics.
 
 **Solution:** Developer-friendly analytics SDK with:
+
 - Simple event tracking: `analytics.track('signup', { plan: 'pro' })`
 - Real-time dashboard
 - SQL query interface
@@ -67,21 +69,21 @@ import { Analytics } from '@ultra-analytics/sdk';
 
 const analytics = new Analytics({
   apiKey: 'your-api-key',
-  host: 'https://analytics.yourapp.com'
+  host: 'https://analytics.yourapp.com',
 });
 
 // Track events
 analytics.track('user_signup', {
   plan: 'pro',
   source: 'google',
-  referrer: document.referrer
+  referrer: document.referrer,
 });
 
 // Identify users
 analytics.identify('user_123', {
   email: 'user@example.com',
   plan: 'pro',
-  mrr: 99
+  mrr: 99,
 });
 
 // Page views (auto)
@@ -100,7 +102,7 @@ analytics.page();
 
 ```sql
 -- Automatic funnel queries
-SELECT 
+SELECT
   step_1,
   step_2,
   step_3,
@@ -126,18 +128,21 @@ WHERE time > now() - INTERVAL 30 DAY
 ### Phase 1: Foundation (Week 1)
 
 **Day 1-2: Project Setup**
+
 - [ ] Next.js project with TypeScript
 - [ ] tRPC setup with type-safe API
 - [ ] Tremor dashboard components
 - [ ] ClickHouse schema design
 
 **Day 3-4: Event Ingestion**
+
 - [ ] REST API for event collection
 - [ ] Event validation (Zod schemas)
 - [ ] Redis queue for buffering
 - [ ] Background worker (BullMQ)
 
 **Day 5: SDK**
+
 - [ ] Browser SDK (umd + esm)
 - [ ] Node.js SDK
 - [ ] React hooks
@@ -146,18 +151,21 @@ WHERE time > now() - INTERVAL 30 DAY
 ### Phase 2: Dashboard (Week 2)
 
 **Day 1-2: Real-time Views**
+
 - [ ] Live user counter (WebSocket)
 - [ ] Event stream component
 - [ ] Time-series charts
 - [ ] Auto-refresh (30s)
 
 **Day 3-4: Analytics**
+
 - [ ] Event explorer (filterable)
 - [ ] User segmentation
 - [ ] Basic retention chart
 - [ ] CSV export
 
 **Day 5: Polish**
+
 - [ ] Dark mode
 - [ ] Mobile responsive
 - [ ] Loading states
@@ -166,6 +174,7 @@ WHERE time > now() - INTERVAL 30 DAY
 ### Phase 3: Advanced (Week 3)
 
 **Week 3: Power Features**
+
 - [ ] Funnel builder UI
 - [ ] SQL query editor
 - [ ] Custom dashboards
@@ -184,6 +193,7 @@ WHERE time > now() - INTERVAL 30 DAY
 ## Database Schema
 
 **Events Table:**
+
 ```sql
 CREATE TABLE events (
   timestamp DateTime64(3),
@@ -199,6 +209,7 @@ ORDER BY (project_id, event_name, timestamp);
 ```
 
 **Sessions Table:**
+
 ```sql
 CREATE TABLE sessions (
   session_id UUID,
@@ -256,7 +267,7 @@ import { useAnalytics } from '@ultra-analytics/react';
 
 function SignupButton() {
   const { track } = useAnalytics();
-  
+
   return (
     <button onClick={() => track('signup_click')}>
       Sign Up
@@ -268,11 +279,13 @@ function SignupButton() {
 ## API Endpoints
 
 **Events:**
+
 - `POST /api/v1/track` - Track event
 - `POST /api/v1/identify` - Identify user
 - `POST /api/v1/page` - Page view
 
 **Query:**
+
 - `POST /api/v1/query` - SQL query
 - `GET /api/v1/metrics` - Pre-built metrics
 - `GET /api/v1/funnel` - Funnel analysis

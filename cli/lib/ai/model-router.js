@@ -1,588 +1,606 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
- * Ultra-Dex Model Router & Evaluation Engine
- * Routes tasks to optimal AI models based on task type, cost, and quality
+ * Model Router Configuration
+ * Routing Table logic for AI model selection
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { getProvider } from '../providers/index.js';
-import { monitoring } from '../utils/monitoring.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { loadRouterConfigSync, resolveOverrides } from './router-config.js';
 
-class TaskClassifier {
-  constructor() {
-    this.classificationRules = {
-      // Task type patterns
-      'bugfix': [
-        /fix|bug|error|issue|debug|correct|patch|resolve|solve|troubleshoot/i,
-        /broken|failing|not working|crash|exception|failure/i
-      ],
-      'refactor': [
-        /refactor|clean|improve|optimize|performance|speed|efficiency|simplify|restructure|modernize/i,
-        /code quality|lint|format|maintainability|readability|patterns/i
-      ],
-      'feature': [
-        /implement|add|create|build|develop|new|feature|functionality|capability/i,
-        /api|endpoint|service|component|page|screen|module|library/i
-      ],
-      'security': [
-        /security|vulnerability|auth|authentication|authorization|permission|secure|protect|cve|owasp/i,
-        /xss|csrf|sql injection|injection|validation|sanitiz/i
-      ],
-      'testing': [
-        /test|spec|jest|unit|integration|e2e|coverage|qa|quality|verify|validate|check/i,
-        /assert|expect|mock|stub|snapshot|behavior/i
-      ],
-      'documentation': [
-        /docs|documentation|readme|guide|tutorial|comment|explain|describe|api doc|swagger/i,
-        /write|update|improve|create|generate|content/i
-      ],
-      'deployment': [
-        /deploy|release|build|prod|production|staging|ci|cd|pipeline|github action|docker|kubernetes/i,
-        /environment|config|secrets|variables|hosting|server/i
-      ],
-      'database': [
-        /database|schema|migration|query|sql|prisma|orm|model|table|column|relationship|index/i,
-        /data|storage|persist|save|retrieve|postgres|mysql|mongo/i
-      ],
-      'frontend': [
-        /ui|component|react|vue|angular|html|css|style|tailwind|bootstrap|responsive|mobile|design/i,
-        /frontend|client|browser|render|display|visual|interface/i
-      ],
-      'backend': [
-        /api|backend|server|express|fastify|rest|graphql|endpoint|route|controller|service/i,
-        /backend|server|logic|business|function|algorithm|compute/i
-      ]
-    };
-  }
+// Model configurations with capabilities and costs
+const MODEL_CONFIGS = {
+  // Claude models
+  'claude-3-opus': {
+    provider: 'anthropic',
+    capabilities: ['complex-reasoning', 'analysis', 'long-context'],
+    cost: { input: 0.015, output: 0.075 }, // per 1K tokens
+    maxTokens: 200000,
+    description: 'Best for complex reasoning and analysis',
+  },
+  'claude-3-5-sonnet': {
+    provider: 'anthropic',
+    capabilities: ['coding', 'reasoning', 'balanced'],
+    cost: { input: 0.003, output: 0.015 },
+    maxTokens: 200000,
+    description: 'Balanced model for coding and reasoning',
+  },
+  'claude-3-haiku': {
+    provider: 'anthropic',
+    capabilities: ['quick-tasks', 'simple-queries', 'fast-response'],
+    cost: { input: 0.00025, output: 0.00125 },
+    maxTokens: 200000,
+    description: 'Fast model for simple tasks',
+  },
 
-  classifyTask(taskDescription) {
-    const lowerTask = taskDescription.toLowerCase();
-    const scores = {};
+  // OpenAI models
+  'gpt-4o': {
+    provider: 'openai',
+    capabilities: ['coding', 'multimodal', 'balanced'],
+    cost: { input: 0.005, output: 0.015 },
+    maxTokens: 128000,
+    description: 'Great for coding and multimodal tasks',
+  },
+  'gpt-4o-mini': {
+    provider: 'openai',
+    capabilities: ['quick-tasks', 'simple-queries', 'cost-effective'],
+    cost: { input: 0.00015, output: 0.0006 },
+    maxTokens: 128000,
+    description: 'Cost-effective for simple tasks',
+  },
 
-    // Score each category based on pattern matches
-    for (const [category, patterns] of Object.entries(this.classificationRules)) {
-      let score = 0;
-      for (const pattern of patterns) {
-        const matches = lowerTask.match(pattern);
-        if (matches) {
-          score += matches.length;
-        }
-      }
-      scores[category] = score;
-    }
+  // Google models
+  'gemini-1.5-pro': {
+    provider: 'google',
+    capabilities: ['reasoning', 'multimodal', 'long-context'],
+    cost: { input: 0.0035, output: 0.0105 },
+    maxTokens: 2000000,
+    description: 'Good for reasoning and long context',
+  },
+  'gemini-1.5-flash': {
+    provider: 'google',
+    capabilities: ['quick-tasks', 'multimodal', 'fast-response'],
+    cost: { input: 0.0007, output: 0.0021 },
+    maxTokens: 1000000,
+    description: 'Fast model for quick tasks',
+  },
+};
 
-    // Find the highest scoring category
-    let bestCategory = 'general';
-    let bestScore = 0;
-    
-    for (const [category, score] of Object.entries(scores)) {
-      if (score > bestScore) {
-        bestScore = score;
-        bestCategory = category;
-      }
-    }
+// Routing table - maps task types to preferred models
+const ROUTING_TABLE = {
+  'code-generation': {
+    preferred: ['gpt-4o', 'claude-3-5-sonnet'],
+    fallbacks: ['claude-3-opus', 'gemini-1.5-pro'],
+    description: 'Code generation tasks',
+  },
+  refactoring: {
+    preferred: ['claude-3-5-sonnet', 'gpt-4o'],
+    fallbacks: ['claude-3-opus', 'gemini-1.5-pro'],
+    description: 'Code refactoring tasks',
+  },
+  documentation: {
+    preferred: ['gemini-1.5-pro', 'claude-3-5-sonnet'],
+    fallbacks: ['gpt-4o', 'claude-3-opus'],
+    description: 'Documentation generation',
+  },
+  analysis: {
+    preferred: ['claude-3-opus', 'gemini-1.5-pro'],
+    fallbacks: ['claude-3-5-sonnet', 'gpt-4o'],
+    description: 'Complex analysis tasks',
+  },
+  'quick-query': {
+    preferred: ['claude-3-haiku', 'gpt-4o-mini'],
+    fallbacks: ['gemini-1.5-flash'],
+    description: 'Simple queries and quick tasks',
+  },
+  reasoning: {
+    preferred: ['claude-3-5-sonnet', 'claude-3-opus'],
+    fallbacks: ['gemini-1.5-pro', 'gpt-4o'],
+    description: 'Logical reasoning tasks',
+  },
+  review: {
+    preferred: ['claude-3-5-sonnet', 'gpt-4o'],
+    fallbacks: ['claude-3-opus', 'gemini-1.5-pro'],
+    description: 'Code review tasks',
+  },
+};
 
-    // If no strong match, use general
-    if (bestScore === 0) {
-      bestCategory = 'general';
-    }
+// Task classification keywords
+const TASK_CLASSIFICATIONS = {
+  'code-generation': [
+    'write',
+    'create',
+    'implement',
+    'build',
+    'develop',
+    'generate',
+    'code',
+    'function',
+    'class',
+    'method',
+    'endpoint',
+    'api',
+    'component',
+    'service',
+    'module',
+    'library',
+    'framework',
+  ],
+  refactoring: [
+    'refactor',
+    'improve',
+    'optimize',
+    'clean',
+    'simplify',
+    'restructure',
+    'modernize',
+    'upgrade',
+    'migrate',
+    'transform',
+    'reorganize',
+    'consolidate',
+    'extract',
+  ],
+  documentation: [
+    'document',
+    'explain',
+    'describe',
+    'summarize',
+    'outline',
+    'specify',
+    'write-docs',
+    'comment',
+    'annotate',
+    'spec',
+    'manual',
+    'guide',
+    'tutorial',
+    'readme',
+    'api-docs',
+  ],
+  analysis: [
+    'analyze',
+    'evaluate',
+    'assess',
+    'review',
+    'audit',
+    'examine',
+    'investigate',
+    'study',
+    'research',
+    'compare',
+    'benchmark',
+    'profile',
+    'debug',
+  ],
+  'quick-query': [
+    'what',
+    'how',
+    'when',
+    'where',
+    'why',
+    'define',
+    'explain',
+    'tell',
+    'find',
+    'search',
+    'lookup',
+    'calculate',
+    'convert',
+    'translate',
+    'count',
+    'list',
+  ],
+  reasoning: [
+    'think',
+    'consider',
+    'reason',
+    'infer',
+    'deduce',
+    'conclude',
+    'justify',
+    'argue',
+    'evaluate',
+    'assess',
+    'judge',
+    'determine',
+    'decide',
+    'solve',
+  ],
+  review: [
+    'review',
+    'check',
+    'verify',
+    'validate',
+    'inspect',
+    'examine',
+    'critique',
+    'feedback',
+    'improve',
+    'fix',
+    'correct',
+    'identify',
+    'spot',
+    'find-bugs',
+  ],
+};
 
-    return {
-      category: bestCategory,
-      confidence: bestScore > 0 ? Math.min(bestScore / 10, 1) : 0,
-      scores
-    };
-  }
-}
+// Configuration for the model router
+const DEFAULT_CONFIG = {
+  defaultModel: 'gpt-4o-mini',
+  enableFallback: true,
+  maxRetries: 2,
+  costThreshold: 0.1, // Max cost per request in USD
+  performancePriority: 'balanced', // 'speed', 'accuracy', 'cost', 'balanced'
+  preferredProvider: null, // Override to force specific provider
+};
 
 class ModelRouter {
-  constructor() {
-    this.taskClassifier = new TaskClassifier();
-    this.modelCapabilities = {
-      'claude-sonnet-4-20250514': { reasoning: 9, coding: 8, creative: 7, speed: 6, cost: 4 },
-      'claude-opus-20240229': { reasoning: 10, coding: 9, creative: 8, speed: 3, cost: 8 },
-      'claude-haiku-20240307': { reasoning: 6, coding: 5, creative: 4, speed: 9, cost: 1 },
-      'gpt-4-turbo': { coding: 9, creative: 8, reasoning: 7, speed: 7, cost: 5 },
-      'gpt-4': { coding: 8, creative: 9, reasoning: 8, speed: 5, cost: 7 },
-      'gpt-3.5-turbo': { coding: 6, creative: 5, reasoning: 4, speed: 8, cost: 2 },
-      'gemini-pro': { reasoning: 7, coding: 8, creative: 6, speed: 8, cost: 3 }
-    };
-
-    // Default hardcoded policies as fallback
-    this.routingPolicies = {
-      costEffective: {
-        priority: ['claude-haiku-20240307', 'gpt-3.5-turbo', 'gemini-pro'],
-        fallback: 'claude-sonnet-4-20250514'
-      },
-      qualityFirst: {
-        priority: ['claude-opus-20240229', 'claude-sonnet-4-20250514', 'gpt-4-turbo'],
-        fallback: 'gpt-4'
-      },
-      balanced: {
-        priority: ['claude-sonnet-4-20250514', 'gpt-4-turbo', 'gpt-4'],
-        fallback: 'gpt-3.5-turbo'
-      }
-    };
-    
-    this.configLoaded = false;
-  }
-
-  async loadConfig() {
-    if (this.configLoaded) return;
-
-    try {
-      // Try project config first, then template
-      const projectConfigPath = path.resolve(process.cwd(), '.ultra-dex/router.json');
-      const templateConfigPath = path.resolve(new URL(import.meta.url).pathname, '../../../../assets/templates/config/router.json');
-      
-      let configData;
-      try {
-        configData = await fs.readFile(projectConfigPath, 'utf8');
-      } catch {
-        try {
-          // Fallback to template if project config missing
-          // Note: Relative path handling might need adjustment based on install location
-           configData = await fs.readFile(templateConfigPath, 'utf8');
-        } catch (e) {
-          // Fallback to internal defaults if files missing
-          console.warn('⚠️  Could not load router.json, using defaults.');
-          this.configLoaded = true;
-          return;
-        }
-      }
-
-      if (configData) {
-        const config = JSON.parse(configData);
-        // Map config strategies to routing policies
-        if (config.strategies) {
-          if (config.strategies.cost_optimized) {
-            this.routingPolicies.costEffective = {
-              priority: [config.strategies.cost_optimized.default],
-              fallback: config.strategies.cost_optimized.complex
-            };
-          }
-          if (config.strategies.performance) {
-            this.routingPolicies.qualityFirst = {
-              priority: [config.strategies.performance.default],
-              fallback: config.strategies.performance.complex
-            };
-          }
-        }
-        
-        // Load overrides
-        if (config.overrides) {
-            this.overrides = config.overrides;
-        }
-      }
-    } catch (e) {
-      console.warn('⚠️  Error parsing router configuration:', e.message);
-    } finally {
-      this.configLoaded = true;
-    }
-  }
-
-  /**
-   * Route a task to the optimal model based on classification and policy
-   */
-  async routeTask(taskDescription, policy = 'balanced', _options = {}) {
-    await this.loadConfig(); // Ensure config is loaded
-
-    const classification = this.taskClassifier.classifyTask(taskDescription);
-    
-    // Check overrides first
-    if (this.overrides) {
-        for (const override of this.overrides) {
-            if (taskDescription.toLowerCase().includes(override.keyword)) {
-                return {
-                    model: override.model,
-                    classification,
-                    candidates: [override.model],
-                    policy: 'override'
-                };
-            }
-        }
-    }
-
-    const policyConfig = this.routingPolicies[policy] || this.routingPolicies.balanced;
-
-    // Adjust routing based on task category
-    let candidateModels = [...policyConfig.priority];
-
-    // For specific task types, prefer models with stronger capabilities in that area
-    switch (classification.category) {
-      case 'security':
-        // Prioritize models with strong reasoning for security analysis
-        candidateModels = this._prioritizeModels(candidateModels, 'reasoning');
-        break;
-      case 'coding':
-      case 'backend':
-      case 'frontend':
-      case 'database':
-      case 'bugfix':
-      case 'feature':
-      case 'deployment':
-        // Prioritize models with strong coding capabilities
-        candidateModels = this._prioritizeModels(candidateModels, 'coding');
-        break;
-      case 'testing':
-        // Prioritize models with attention to detail
-        candidateModels = this._prioritizeModels(candidateModels, 'coding');
-        break;
-      case 'refactor':
-        // Prioritize models with strong reasoning and code understanding
-        candidateModels = this._prioritizeModels(candidateModels, 'reasoning');
-        break;
-      case 'documentation':
-        // Prioritize models with strong creative/writing skills
-        candidateModels = this._prioritizeModels(candidateModels, 'creative');
-        break;
-      default:
-        // Use policy default
-    }
-
-    return {
-      model: candidateModels[0] || policyConfig.fallback,
-      classification,
-      candidates: candidateModels,
-      policy
-    };
-  }
-
-  _prioritizeModels(models, capability) {
-    return models.sort((a, b) => {
-      const capA = this.modelCapabilities[a]?.[capability] || 0;
-      const capB = this.modelCapabilities[b]?.[capability] || 0;
-      return capB - capA; // Higher capability first
-    });
-  }
-
-  /**
-   * Get model performance metrics for cost/quality analysis
-   */
-  getModelMetrics(modelId) {
-    const capabilities = this.modelCapabilities[modelId] || {};
-    
-    // Calculate composite score
-    const compositeScore = Object.values(capabilities).reduce((sum, val) => sum + val, 0);
-    
-    return {
-      modelId,
-      capabilities,
-      compositeScore,
-      estimatedCost: this._estimateCost(modelId),
-      estimatedSpeed: this._estimateSpeed(modelId)
-    };
-  }
-
-  _estimateCost(modelId) {
-    // Cost estimates based on model capabilities and usage patterns
-    const baseCosts = {
-      'claude-haiku-20240307': 0.25,
-      'gpt-3.5-turbo': 0.50,
-      'gemini-pro': 0.75,
-      'claude-sonnet-4-20250514': 3.00,
-      'gpt-4-turbo': 10.00,
-      'gpt-4': 15.00,
-      'claude-opus-20240229': 15.00
-    };
-    
-    return baseCosts[modelId] || 5.00; // Default cost
-  }
-
-  _estimateSpeed(modelId) {
-    // Speed estimates based on model capabilities (higher = faster)
-    const speeds = {
-      'claude-haiku-20240307': 9,
-      'gpt-3.5-turbo': 8,
-      'gemini-pro': 8,
-      'claude-sonnet-4-20250514': 6,
-      'gpt-4-turbo': 5,
-      'gpt-4': 4,
-      'claude-opus-20240229': 3
-    };
-    
-    return speeds[modelId] || 5; // Default speed
-  }
-}
-
-class EvaluationEngine {
-  constructor() {
-    this.evaluationRules = {
-      'code-quality': {
-        checks: [
-          { name: 'no-any-types', pattern: /:\s*any\b|<\s*any\s*>/, severity: 'error', message: 'Avoid explicit "any" types' },
-          { name: 'no-console-logs', pattern: /console\.log\(/, severity: 'warning', message: 'Remove console.log statements' },
-          { name: 'no-commented-code', pattern: /^[\s\t]*\/\/\s*[^\n]+/gm, severity: 'warning', message: 'Remove commented-out code blocks' },
-          { name: 'proper-error-handling', pattern: /try\s*{|catch\s*\(|finally/, severity: 'error', message: 'Add error handling' }
-        ]
-      },
-      'security': {
-        checks: [
-          { name: 'no-hardcoded-secrets', pattern: /process\.env\.[A-Z_]+/, severity: 'critical', message: 'Avoid hardcoded secrets' },
-          { name: 'input-validation', pattern: /z\.string\(\)|validate|sanitize/, severity: 'error', message: 'Add input validation' },
-          { name: 'auth-check', pattern: /auth|permission|role|acl/, severity: 'error', message: 'Add authentication/authorization' }
-        ]
-      },
-      'performance': {
-        checks: [
-          { name: 'response-time', pattern: /<\d+ms|performance|timeout/, severity: 'warning', message: 'Consider performance implications' },
-          { name: 'caching', pattern: /cache|memoize|ttl/, severity: 'warning', message: 'Consider caching strategies' }
-        ]
-      }
+  constructor(config = {}) {
+    this.routerConfig = loadRouterConfigSync();
+    this.config = { ...DEFAULT_CONFIG, ...config };
+    this.routingTable = { ...ROUTING_TABLE, ...(this.routerConfig.routes || {}) };
+    this.taskClassifications = { ...TASK_CLASSIFICATIONS };
+    this.modelConfigs = { ...MODEL_CONFIGS };
+    this.overrides = Array.isArray(this.routerConfig.overrides) ? this.routerConfig.overrides : [];
+    this.stats = {
+      requests: 0,
+      cost: 0,
+      successes: 0,
+      failures: 0,
     };
   }
 
   /**
-   * Evaluate content against quality gates
+   * Determine the best model for a given task
    */
-  async evaluateContent(content, taskType = 'general', _context = {}) {
-    const results = {
-      taskType,
-      passed: true,
-      issues: [],
-      score: 100,
-      recommendations: []
-    };
+  determineModel(taskDescription, options = {}) {
+    // Update stats
+    this.stats.requests++;
 
-    const rules = this.evaluationRules[taskType] || this.evaluationRules['code-quality'];
-    
-    for (const check of rules.checks) {
-      if (check.pattern) {
-        const matches = content.match(check.pattern);
-        if (matches) {
-          const issue = {
-            check: check.name,
-            severity: check.severity,
-            message: check.message,
-            matches: matches.length,
-            context: content.substring(0, 200) + (content.length > 200 ? '...' : '')
-          };
-          
-          results.issues.push(issue);
-          
-          // Adjust score based on severity
-          switch (check.severity) {
-            case 'critical':
-              results.score -= 25;
-              break;
-            case 'error':
-              results.score -= 15;
-              break;
-            case 'warning':
-              results.score -= 5;
-              break;
-          }
-          
-          if (check.severity === 'critical' || check.severity === 'error') {
-            results.passed = false;
-          }
-        }
-      }
-    }
+    // Classify the task
+    const taskType = this.classifyTask(taskDescription);
 
-    // Add task-specific recommendations
-    results.recommendations = this._getRecommendations(taskType, content);
-
-    return results;
-  }
-
-  _getRecommendations(taskType, content) {
-    const recommendations = [];
-    
-    switch (taskType) {
-      case 'code-quality':
-        if (!content.includes('test') && !content.includes('spec')) {
-          recommendations.push('Consider adding unit tests for the implemented functionality');
-        }
-        if (!content.includes('error') && !content.includes('catch')) {
-          recommendations.push('Add comprehensive error handling for edge cases');
-        }
-        break;
-        
-      case 'security':
-        if (!content.includes('validate') && !content.includes('sanitize')) {
-          recommendations.push('Add input validation and sanitization');
-        }
-        if (!content.includes('auth') && !content.includes('permission')) {
-          recommendations.push('Add authentication and authorization checks');
-        }
-        break;
-        
-      case 'performance':
-        if (!content.includes('cache') && !content.includes('memo')) {
-          recommendations.push('Consider implementing caching strategies');
-        }
-        if (!content.includes('debounce') && !content.includes('throttle')) {
-          recommendations.push('Consider rate limiting or throttling for performance');
-        }
-        break;
-    }
-    
-    return recommendations;
-  }
-
-  /**
-   * Run evaluation loop with feedback-driven re-routing
-   */
-  async evaluationLoop(task, content, provider = null, options = {}) {
-    const { maxIterations = 3, policy: _policy = 'balanced', taskType = 'general' } = options;
-
-    let currentContent = content;
-    let iteration = 0;
-    let finalResult = null;
-    
-    // Ensure we have a provider
-    if (!provider) {
-       provider = getProvider();
-    }
-
-    while (iteration < maxIterations) {
-      iteration++;
-
-      // Evaluate current content
-      const evaluation = await this.evaluateContent(currentContent, taskType);
-
-      if (evaluation.passed) {
-        monitoring.info('Evaluation loop completed successfully', {
-          iterations: iteration,
-          finalScore: evaluation.score,
-          taskType
-        });
-        finalResult = { content: currentContent, evaluation, iterations };
-        break;
-      }
-
-      if (evaluation.issues.length > 0) {
-        // Generate improvement suggestions
-        const improvementPrompt = `
-Current content has quality issues that need to be addressed:
-
-Issues found:
-${evaluation.issues.map(issue => `- ${issue.severity.toUpperCase()}: ${issue.message}`).join('\n')}
-
-Recommendations:
-${evaluation.recommendations.join('\n')}
-
-Task: ${task}
-
-Please improve the content to address these issues while maintaining the original functionality.
-Return ONLY the improved code/content.
-        `.trim();
-
-        try {
-          if (!provider) {
-             console.warn('⚠️ No AI provider available for self-correction loop.');
-             break;
-          }
-          
-          // Route to appropriate model based on issues (in future iterations, pass explicit model)
-          // For now, reuse the active provider
-          let improved;
-          if (provider.complete) {
-              improved = await provider.complete(improvementPrompt);
-          } else if (provider.generate) {
-              const res = await provider.generate(improvementPrompt);
-              improved = res.content || res.text || (typeof res === 'string' ? res : JSON.stringify(res));
-          }
-          
-          if (improved) {
-             currentContent = improved;
-             monitoring.info('Content improved in evaluation loop', {
-                iteration,
-                issuesAddressed: evaluation.issues.length
-             });
-          }
-
-        } catch (error) {
-          monitoring.error('Evaluation loop iteration failed', {
-            iteration,
-            error: error.message
-          });
-          // Continue with current content if improvement fails
-          finalResult = { content: currentContent, evaluation, iterations: iteration, error: error.message };
-          break;
-        }
-      }
-    }
-
-    if (!finalResult) {
-      finalResult = { content: currentContent, evaluation: null, iterations: maxIterations };
-    }
-
-    return finalResult;
-  }
-}
-
-// Global instances
-export const taskClassifier = new TaskClassifier();
-export const modelRouter = new ModelRouter();
-export const evaluationEngine = new EvaluationEngine();
-
-// Combined orchestrator
-export class ModelOrchestrator {
-  constructor() {
-    this.router = new ModelRouter();
-    this.evaluator = new EvaluationEngine();
-    this.classifier = new TaskClassifier();
-  }
-
-  /**
-   * Complete orchestration: classify → route → evaluate → improve
-   */
-  async orchestrate(task, initialContent = '', options = {}) {
-    const startTime = Date.now();
-    
-    // 1. Classify the task
-    const classification = this.classifier.classifyTask(task);
-    
-    // 2. Route to appropriate model
-    const routing = await this.router.routeTask(task, options.policy || 'balanced');
-    
-    // 3. If initial content exists, run evaluation loop
-    let result;
-    if (initialContent) {
-      result = await this.evaluator.evaluationLoop(
-        task,
-        initialContent,
-        null, // provider will be determined dynamically
-        {
-          taskType: classification.category,
-          policy: options.policy || 'balanced',
-          maxIterations: options.maxIterations || 3
-        }
-      );
-    } else {
-      // Just return routing information
-      result = {
-        content: initialContent,
-        evaluation: null,
-        iterations: 0,
-        routing
+    // Check override rules by keyword
+    const override = resolveOverrides(taskDescription, this.overrides);
+    if (override?.model) {
+      return {
+        model: override.model,
+        taskType,
+        routingConfig: { preferred: [override.model], fallbacks: [] },
+        confidence: 0.9,
+        reason: `Override rule matched keyword "${override.keyword}"`,
       };
     }
-    
-    const duration = Date.now() - startTime;
-    
-    monitoring.recordPerformance('model_orchestration', duration, {
-      taskType: classification.category,
-      model: routing.model,
-      duration
-    });
-    
+
+    // Get routing configuration
+    const routingConfig = this.routingTable[taskType] || this.routingTable['quick-query'];
+
+    // Get preferred models based on configuration
+    let candidateModels = [...routingConfig.preferred];
+
+    // Apply strategy defaults if requested
+    const strategy = options.strategy || options.profile;
+    if (strategy && this.routerConfig.strategies?.[strategy]) {
+      const strategyConfig = this.routerConfig.strategies[strategy];
+      if (strategyConfig?.defaultModel) {
+        candidateModels.unshift(strategyConfig.defaultModel);
+      }
+      if (strategyConfig?.performancePriority) {
+        this.config.performancePriority = strategyConfig.performancePriority;
+      }
+    }
+
+    // Add fallbacks if enabled
+    if (this.config.enableFallback) {
+      candidateModels = [...candidateModels, ...routingConfig.fallbacks];
+    }
+
+    // Apply filters
+    candidateModels = this.filterModels(candidateModels, options);
+
+    // Select model based on priority
+    const selectedModel = this.selectModelByPriority(candidateModels, options);
+
+    // Update stats with estimated cost
+    const modelConfig = this.modelConfigs[selectedModel];
+    if (modelConfig) {
+      this.stats.cost += (modelConfig.cost.input + modelConfig.cost.output) * 0.001; // Estimate for 1K tokens
+    }
+
     return {
-      ...result,
-      classification,
-      routing,
-      duration
+      model: selectedModel,
+      taskType,
+      routingConfig,
+      confidence: this.calculateConfidence(selectedModel, taskType),
+      reason: `Selected ${selectedModel} for ${taskType} task based on routing table`,
     };
+  }
+
+  /**
+   * Classify a task based on description
+   */
+  classifyTask(taskDescription) {
+    const lowerDesc = taskDescription.toLowerCase();
+
+    // Score each task type based on keyword matches
+    const scores = {};
+
+    for (const [taskType, keywords] of Object.entries(this.taskClassifications)) {
+      let score = 0;
+      for (const keyword of keywords) {
+        if (lowerDesc.includes(keyword)) {
+          score++;
+        }
+      }
+      scores[taskType] = score;
+    }
+
+    // Find the highest scoring task type
+    let bestType = 'quick-query';
+    let bestScore = 0;
+
+    for (const [taskType, score] of Object.entries(scores)) {
+      if (score > bestScore) {
+        bestScore = score;
+        bestType = taskType;
+      }
+    }
+
+    // If no strong match, use default
+    if (bestScore === 0) {
+      bestType = 'quick-query';
+    }
+
+    return bestType;
+  }
+
+  /**
+   * Filter models based on options
+   */
+  filterModels(models, options) {
+    return models.filter((modelId) => {
+      const config = this.modelConfigs[modelId];
+      if (!config) return false;
+
+      // Filter by preferred provider if specified
+      if (this.config.preferredProvider && config.provider !== this.config.preferredProvider) {
+        return false;
+      }
+
+      // Filter by cost threshold
+      const avgCost = (config.cost.input + config.cost.output) / 2;
+      if (avgCost > this.config.costThreshold) {
+        return false;
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Select model based on priority
+   */
+  selectModelByPriority(models, options) {
+    if (models.length === 0) {
+      return this.config.defaultModel;
+    }
+
+    switch (this.config.performancePriority) {
+      case 'speed':
+        // Prefer faster models (typically smaller/cheaper)
+        return models.sort((a, b) => {
+          const configA = this.modelConfigs[a];
+          const configB = this.modelConfigs[b];
+          return (
+            configA.cost.input + configA.cost.output - (configB.cost.input + configB.cost.output)
+          );
+        })[0];
+
+      case 'accuracy':
+        // Prefer more capable models (typically larger/more expensive)
+        return models.sort((a, b) => {
+          const configA = this.modelConfigs[a];
+          const configB = this.modelConfigs[b];
+          // Reverse sort for accuracy (assuming higher cost = higher capability)
+          return (
+            configB.cost.input + configB.cost.output - (configA.cost.input + configA.cost.output)
+          );
+        })[0];
+
+      case 'cost':
+        // Prefer cheapest models
+        return models.sort((a, b) => {
+          const configA = this.modelConfigs[a];
+          const configB = this.modelConfigs[b];
+          const costA = configA.cost.input + configA.cost.output;
+          const costB = configB.cost.input + configB.cost.output;
+          return costA - costB;
+        })[0];
+
+      case 'balanced':
+      default:
+        // Return the first model in the list (presumably the best for the task)
+        return models[0];
+    }
+  }
+
+  /**
+   * Calculate confidence in model selection
+   */
+  calculateConfidence(model, taskType) {
+    const routingConfig = this.routingTable[taskType];
+    if (!routingConfig) return 0.5;
+
+    const position = [...routingConfig.preferred, ...routingConfig.fallbacks].indexOf(model);
+    if (position === -1) return 0.1;
+
+    // Higher confidence for preferred models
+    if (position < routingConfig.preferred.length) {
+      return 0.9 - position * 0.1; // 0.9, 0.8, 0.7...
+    } else {
+      return 0.6 - (position - routingConfig.preferred.length) * 0.1; // 0.6, 0.5, 0.4...
+    }
+  }
+
+  /**
+   * Estimate cost for a task
+   */
+  estimateCost(model, inputTokens = 1000, outputTokens = 500) {
+    const config = this.modelConfigs[model];
+    if (!config) return 0;
+
+    const inputCost = (inputTokens / 1000) * config.cost.input;
+    const outputCost = (outputTokens / 1000) * config.cost.output;
+
+    return inputCost + outputCost;
+  }
+
+  /**
+   * Get router statistics
+   */
+  getStats() {
+    return { ...this.stats };
+  }
+
+  /**
+   * Reset router statistics
+   */
+  resetStats() {
+    this.stats = {
+      requests: 0,
+      cost: 0,
+      successes: 0,
+      failures: 0,
+    };
+  }
+
+  /**
+   * Update routing table dynamically
+   */
+  updateRouting(taskType, config) {
+    this.routingTable[taskType] = { ...this.routingTable[taskType], ...config };
+  }
+
+  /**
+   * Get available models for a task type
+   */
+  getModelsForTask(taskType) {
+    const routingConfig = this.routingTable[taskType];
+    if (!routingConfig) return [];
+
+    return [...routingConfig.preferred, ...routingConfig.fallbacks];
   }
 }
 
-export const modelOrchestrator = new ModelOrchestrator();
+// Global instance
+const modelRouter = new ModelRouter();
+
+/**
+ * Register model router command
+ */
+export function registerModelRouterCommand(program) {
+  const routerCmd = program
+    .command('model-router')
+    .alias('router')
+    .description('AI model routing configuration');
+
+  routerCmd
+    .command('route')
+    .description('Route a task to the best model')
+    .argument('<task>', 'Task description')
+    .option('-p, --priority <priority>', 'Priority (speed|accuracy|cost|balanced)', 'balanced')
+    .option('-v, --verbose', 'Show detailed routing information')
+    .action(async (task, options) => {
+      try {
+        printInfo(`🤖 Routing task: "${task}"`);
+
+        // Update config if needed
+        if (options.priority) {
+          modelRouter.config.performancePriority = options.priority;
+        }
+
+        const result = modelRouter.determineModel(task);
+
+        printSuccess(`✅ Selected model: ${result.model}`);
+        printInfo(`Task type: ${result.taskType}`);
+        printInfo(`Confidence: ${(result.confidence * 100).toFixed(1)}%`);
+        printInfo(`Reason: ${result.reason}`);
+
+        if (options.verbose) {
+          printInfo(`Routing config: ${JSON.stringify(result.routingConfig, null, 2)}`);
+        }
+
+        // Show cost estimate
+        const costEstimate = modelRouter.estimateCost(result.model);
+        printInfo(`Estimated cost: $${costEstimate.toFixed(4)} per request`);
+      } catch (error) {
+        printError(`Model routing failed: ${error.message}`);
+      }
+    });
+
+  routerCmd
+    .command('list')
+    .description('List all available models and their capabilities')
+    .action(() => {
+      printInfo('📚 Available AI Models:\n');
+
+      for (const [modelId, config] of Object.entries(modelRouter.modelConfigs)) {
+        printSuccess(`${modelId} (${config.provider})`);
+        printInfo(`  Capabilities: ${config.capabilities.join(', ')}`);
+        printInfo(`  Cost: $${config.cost.input}/inputK + $${config.cost.output}/outputK`);
+        printInfo(`  Max Tokens: ${config.maxTokens}`);
+        printInfo(`  Description: ${config.description}\n`);
+      }
+    });
+
+  routerCmd
+    .command('table')
+    .description('Show routing table')
+    .action(() => {
+      printInfo('📋 Model Routing Table:\n');
+
+      for (const [taskType, config] of Object.entries(modelRouter.routingTable)) {
+        printSuccess(`${taskType}:`);
+        printInfo(`  Preferred: ${config.preferred.join(', ')}`);
+        printInfo(`  Fallbacks: ${config.fallbacks.join(', ')}`);
+        printInfo(`  Description: ${config.description}\n`);
+      }
+    });
+
+  routerCmd
+    .command('stats')
+    .description('Show router statistics')
+    .action(() => {
+      const stats = modelRouter.getStats();
+      printSuccess('📊 Model Router Statistics:');
+      printInfo(`  Requests: ${stats.requests}`);
+      printInfo(`  Estimated Cost: $${stats.cost.toFixed(4)}`);
+      printInfo(`  Successes: ${stats.successes}`);
+      printInfo(`  Failures: ${stats.failures}`);
+    });
+
+  routerCmd._examples = [
+    {
+      command: 'ultra-dex model-router route "Write a React component"',
+      description: 'Route code generation task',
+    },
+    {
+      command: 'ultra-dex model-router route "Explain quantum computing" --priority accuracy',
+      description: 'Route with accuracy priority',
+    },
+    { command: 'ultra-dex model-router list', description: 'List all available models' },
+    { command: 'ultra-dex model-router table', description: 'Show routing table' },
+    { command: 'ultra-dex model-router stats', description: 'Show router statistics' },
+  ];
+}
 
 export default {
-  taskClassifier,
+  ModelRouter,
   modelRouter,
-  evaluationEngine,
-  modelOrchestrator
+  MODEL_CONFIGS,
+  ROUTING_TABLE,
+  TASK_CLASSIFICATIONS,
+  DEFAULT_CONFIG,
+  registerModelRouterCommand,
 };

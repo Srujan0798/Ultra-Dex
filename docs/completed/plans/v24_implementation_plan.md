@@ -12,6 +12,7 @@
 **Target Version:** 2.4.0
 
 ### Existing Architecture
+
 ```
 cli/
 ├── bin/ultra-dex.js          # Entry point
@@ -30,14 +31,14 @@ cli/
 
 ### Commands to Create
 
-| Command | Priority | File to Create |
-|---------|----------|----------------|
-| `swarm` | P1 | `lib/commands/swarm.js` |
-| `watch` | P2 | `lib/commands/watch.js` |
-| `diff` | P2 | `lib/commands/diff.js` |
-| `export` | P3 | `lib/commands/export.js` |
-| `upgrade` | P3 | `lib/commands/upgrade.js` |
-| `config` | P3 | `lib/commands/config.js` |
+| Command   | Priority | File to Create            |
+| --------- | -------- | ------------------------- |
+| `swarm`   | P1       | `lib/commands/swarm.js`   |
+| `watch`   | P2       | `lib/commands/watch.js`   |
+| `diff`    | P2       | `lib/commands/diff.js`    |
+| `export`  | P3       | `lib/commands/export.js`  |
+| `upgrade` | P3       | `lib/commands/upgrade.js` |
+| `config`  | P3       | `lib/commands/config.js`  |
 
 ---
 
@@ -48,6 +49,7 @@ cli/
 **Purpose:** Run multiple agents in sequence to complete a task autonomously.
 
 **Usage:**
+
 ```bash
 npx ultra-dex swarm "Build user authentication"
 npx ultra-dex swarm "Add payments" --dry-run
@@ -71,7 +73,7 @@ const AGENT_PIPELINE = [
   { name: 'backend', description: 'Implement API' },
   { name: 'frontend', description: 'Build UI' },
   { name: 'testing', description: 'Write tests' },
-  { name: 'reviewer', description: 'Code review' }
+  { name: 'reviewer', description: 'Code review' },
 ];
 
 export async function swarmCommand(task, options) {
@@ -89,19 +91,23 @@ export async function swarmCommand(task, options) {
   // Load context
   const contextPath = join(process.cwd(), 'CONTEXT.md');
   const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
-  
+
   let context = '';
   if (existsSync(contextPath)) {
     context += await readFile(contextPath, 'utf-8');
   }
   if (existsSync(planPath)) {
-    context += '\n\n' + await readFile(planPath, 'utf-8');
+    context += '\n\n' + (await readFile(planPath, 'utf-8'));
   }
 
   // Get AI provider
   const provider = getProvider();
   if (!provider) {
-    console.log(chalk.red('No AI provider configured. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_AI_KEY'));
+    console.log(
+      chalk.red(
+        'No AI provider configured. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_AI_KEY'
+      )
+    );
     return;
   }
 
@@ -109,7 +115,7 @@ export async function swarmCommand(task, options) {
   let previousOutput = '';
   for (const agent of AGENT_PIPELINE) {
     const spinner = ora(`Running @${agent.name}...`).start();
-    
+
     try {
       const agentPrompt = await loadAgentPrompt(agent.name);
       const prompt = `
@@ -129,10 +135,9 @@ Provide your output for the next agent in the pipeline.
 
       const response = await provider.complete(prompt);
       previousOutput = response;
-      
+
       spinner.succeed(`@${agent.name} complete`);
       console.log(chalk.gray(`  → ${response.slice(0, 100)}...`));
-      
     } catch (error) {
       spinner.fail(`@${agent.name} failed: ${error.message}`);
       break;
@@ -170,17 +175,11 @@ export function watchCommand(options) {
   console.log(chalk.cyan.bold('\n👁️  Ultra-Dex Watch Mode\n'));
   console.log(chalk.gray('Watching for file changes...\n'));
 
-  const watchPaths = [
-    'CONTEXT.md',
-    'IMPLEMENTATION-PLAN.md',
-    'src',
-    'app',
-    'lib'
-  ];
+  const watchPaths = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'src', 'app', 'lib'];
 
   let debounceTimer = null;
 
-  watchPaths.forEach(path => {
+  watchPaths.forEach((path) => {
     const fullPath = join(process.cwd(), path);
     try {
       watch(fullPath, { recursive: true }, (eventType, filename) => {
@@ -197,7 +196,7 @@ export function watchCommand(options) {
   });
 
   console.log(chalk.gray('Press Ctrl+C to stop'));
-  
+
   // Keep process running
   process.stdin.resume();
 }
@@ -227,44 +226,44 @@ export function diffCommand(options) {
   }
 
   const plan = readFileSync(planPath, 'utf-8');
-  
+
   // Extract planned features
   const plannedFeatures = extractFeatures(plan);
-  
+
   // Check what exists in code
   const implemented = checkImplemented(plannedFeatures);
-  
+
   console.log(chalk.white.bold('Planned vs Implemented:\n'));
-  
+
   implemented.forEach(({ feature, exists }) => {
     const icon = exists ? chalk.green('✅') : chalk.red('❌');
     console.log(`  ${icon} ${feature}`);
   });
-  
-  const score = implemented.filter(f => f.exists).length / implemented.length * 100;
+
+  const score = (implemented.filter((f) => f.exists).length / implemented.length) * 100;
   console.log(chalk.white.bold(`\nAlignment: ${score.toFixed(0)}%`));
 }
 
 function extractFeatures(plan) {
   const features = [];
   const lines = plan.split('\n');
-  
-  lines.forEach(line => {
+
+  lines.forEach((line) => {
     if (line.match(/^###?\s+/)) {
       features.push(line.replace(/^#+\s+/, '').trim());
     }
   });
-  
+
   return features.slice(0, 20); // Limit for demo
 }
 
 function checkImplemented(features) {
   const srcExists = existsSync(join(process.cwd(), 'src'));
   const appExists = existsSync(join(process.cwd(), 'app'));
-  
-  return features.map(feature => {
+
+  return features.map((feature) => {
     const keywords = feature.toLowerCase().split(' ');
-    const exists = keywords.some(kw => 
+    const exists = keywords.some((kw) =>
       searchInCode(kw, srcExists ? 'src' : appExists ? 'app' : '.')
     );
     return { feature, exists };
@@ -275,7 +274,7 @@ function searchInCode(keyword, dir) {
   // Simple check - in real impl, use grep
   try {
     const files = readdirSync(join(process.cwd(), dir), { recursive: true });
-    return files.some(f => f.toLowerCase().includes(keyword));
+    return files.some((f) => f.toLowerCase().includes(keyword));
   } catch (e) {
     return false;
   }
@@ -299,9 +298,9 @@ export function exportCommand(options) {
   console.log(chalk.cyan.bold(`\n📦 Exporting as ${format.toUpperCase()}\n`));
 
   const context = loadContext();
-  
+
   const outputFile = `ultra-dex-export.${format}`;
-  
+
   if (format === 'json') {
     writeFileSync(outputFile, JSON.stringify(context, null, 2));
   } else if (format === 'html') {
@@ -309,21 +308,21 @@ export function exportCommand(options) {
   } else {
     writeFileSync(outputFile, generateMarkdown(context));
   }
-  
+
   console.log(chalk.green(`✅ Exported to ${outputFile}`));
 }
 
 function loadContext() {
   const files = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'QUICK-START.md'];
   const context = {};
-  
-  files.forEach(file => {
+
+  files.forEach((file) => {
     const path = join(process.cwd(), file);
     if (existsSync(path)) {
       context[file] = readFileSync(path, 'utf-8');
     }
   });
-  
+
   return context;
 }
 
@@ -334,9 +333,9 @@ function generateHTML(context) {
 }
 
 function generateMarkdown(context) {
-  return Object.entries(context).map(([file, content]) => 
-    `# ${file}\n\n${content}`
-  ).join('\n\n---\n\n');
+  return Object.entries(context)
+    .map(([file, content]) => `# ${file}\n\n${content}`)
+    .join('\n\n---\n\n');
 }
 ```
 
@@ -356,13 +355,14 @@ export async function upgradeCommand(options) {
 
   try {
     const current = execSync('npm show ultra-dex version', { encoding: 'utf-8' }).trim();
-    const local = JSON.parse(
-      execSync('npm pkg get version', { encoding: 'utf-8' })
-    ).replace(/"/g, '');
-    
+    const local = JSON.parse(execSync('npm pkg get version', { encoding: 'utf-8' })).replace(
+      /"/g,
+      ''
+    );
+
     console.log(`  Local:  ${local}`);
     console.log(`  Latest: ${current}`);
-    
+
     if (local !== current) {
       console.log(chalk.yellow('\n  Update available!'));
       console.log(chalk.gray('  Run: npm install -g ultra-dex@latest'));
@@ -398,27 +398,32 @@ export function configCommand(options) {
 
 function generateMCPConfig() {
   console.log(chalk.cyan.bold('\n🔌 Generating MCP Config for Claude Desktop\n'));
-  
+
   const projectPath = process.cwd();
-  
+
   const config = {
-    "mcpServers": {
-      "ultra-dex": {
-        "command": "npx",
-        "args": ["ultra-dex", "serve"],
-        "cwd": projectPath
-      }
-    }
+    mcpServers: {
+      'ultra-dex': {
+        command: 'npx',
+        args: ['ultra-dex', 'serve'],
+        cwd: projectPath,
+      },
+    },
   };
-  
-  const claudeConfigPath = join(homedir(), 'Library', 'Application Support', 
-    'Claude', 'claude_desktop_config.json');
-  
+
+  const claudeConfigPath = join(
+    homedir(),
+    'Library',
+    'Application Support',
+    'Claude',
+    'claude_desktop_config.json'
+  );
+
   console.log(chalk.white('Add this to your Claude Desktop config:\n'));
   console.log(chalk.gray(claudeConfigPath));
   console.log();
   console.log(JSON.stringify(config, null, 2));
-  
+
   // Also save to project
   writeFileSync('mcp-config.json', JSON.stringify(config, null, 2));
   console.log(chalk.green('\n✅ Saved to mcp-config.json'));
@@ -426,14 +431,10 @@ function generateMCPConfig() {
 
 function showConfig() {
   console.log(chalk.cyan.bold('\n⚙️  Ultra-Dex Configuration\n'));
-  
-  const envVars = [
-    'ANTHROPIC_API_KEY',
-    'OPENAI_API_KEY', 
-    'GOOGLE_AI_KEY'
-  ];
-  
-  envVars.forEach(key => {
+
+  const envVars = ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_AI_KEY'];
+
+  envVars.forEach((key) => {
     const value = process.env[key];
     const status = value ? chalk.green('✓ Set') : chalk.gray('Not set');
     console.log(`  ${key}: ${status}`);
@@ -465,15 +466,9 @@ program
   .option('--dry-run', 'Show pipeline without executing')
   .action(swarmCommand);
 
-program
-  .command('watch')
-  .description('Auto-update state on file changes')
-  .action(watchCommand);
+program.command('watch').description('Auto-update state on file changes').action(watchCommand);
 
-program
-  .command('diff')
-  .description('Compare plan vs implemented code')
-  .action(diffCommand);
+program.command('diff').description('Compare plan vs implemented code').action(diffCommand);
 
 program
   .command('export')
@@ -514,6 +509,7 @@ Add to top of CHANGELOG.md:
 ## [2.4.0] - 2026-01-27
 
 ### Added
+
 - **🐝 `ultra-dex swarm`** - Autonomous agent pipeline
 - **👁️ `ultra-dex watch`** - Auto-update on file changes
 - **📊 `ultra-dex diff`** - Plan vs code comparison
@@ -522,6 +518,7 @@ Add to top of CHANGELOG.md:
 - **⚙️ `ultra-dex config --mcp`** - Generate Claude Desktop config
 
 ### Changed
+
 - Total CLI commands: 28+
 - Version bump to 2.4.0
 ```
@@ -551,15 +548,15 @@ npm publish
 
 ## Summary
 
-| Task | File | Priority |
-|------|------|----------|
-| Create swarm.js | lib/commands/swarm.js | P1 |
-| Create watch.js | lib/commands/watch.js | P2 |
-| Create diff.js | lib/commands/diff.js | P2 |
-| Create export.js | lib/commands/export.js | P3 |
-| Create upgrade.js | lib/commands/upgrade.js | P3 |
-| Create config.js | lib/commands/config.js | P3 |
-| Register in ultra-dex.js | bin/ultra-dex.js | Required |
-| Update version | package.json | Required |
-| Update changelog | CHANGELOG.md | Required |
-| Test & publish | npm publish | Final |
+| Task                     | File                    | Priority |
+| ------------------------ | ----------------------- | -------- |
+| Create swarm.js          | lib/commands/swarm.js   | P1       |
+| Create watch.js          | lib/commands/watch.js   | P2       |
+| Create diff.js           | lib/commands/diff.js    | P2       |
+| Create export.js         | lib/commands/export.js  | P3       |
+| Create upgrade.js        | lib/commands/upgrade.js | P3       |
+| Create config.js         | lib/commands/config.js  | P3       |
+| Register in ultra-dex.js | bin/ultra-dex.js        | Required |
+| Update version           | package.json            | Required |
+| Update changelog         | CHANGELOG.md            | Required |
+| Test & publish           | npm publish             | Final    |

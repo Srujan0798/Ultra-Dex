@@ -4,8 +4,7 @@ export function summarizeFindings({ metadata, security, performance }) {
     ...metadata,
     ok: issues.length === 0,
     issues,
-    summary: issues.length === 0
-      ? '✅ No critical findings.'
-      : `⚠️ ${issues.length} issues detected.`
+    summary:
+      issues.length === 0 ? '✅ No critical findings.' : `⚠️ ${issues.length} issues detected.`,
   };
 }

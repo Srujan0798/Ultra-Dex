@@ -1,30 +1,25 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { z } from "zod";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { openai, AI_MODELS, ChatMessage, estimateTokens } from "@/lib/openai";
-import { ratelimit } from "@/lib/rate-limit";
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { z } from 'zod';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { openai, AI_MODELS, ChatMessage, estimateTokens } from '@/lib/openai';
+import { ratelimit } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     // Rate limiting
-    const { success: rateLimitSuccess } = await ratelimit.chat.limit(
-      session.user.id
-    );
+    const { success: rateLimitSuccess } = await ratelimit.chat.limit(session.user.id);
 
     if (!rateLimitSuccess) {
       return NextResponse.json(
-        { success: false, error: "Rate limit exceeded. Please try again later." },
+        { success: false, error: 'Rate limit exceeded. Please try again later.' },
         { status: 429 }
       );
     }
@@ -37,7 +32,7 @@ export async function POST(req: Request) {
 
     if (!user || user.credits <= 0) {
       return NextResponse.json(
-        { success: false, error: "Insufficient credits. Please upgrade your plan." },
+        { success: false, error: 'Insufficient credits. Please upgrade your plan.' },
         { status: 403 }
       );
     }
@@ -46,7 +41,7 @@ export async function POST(req: Request) {
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
-        { success: false, error: "Invalid messages format" },
+        { success: false, error: 'Invalid messages format' },
         { status: 400 }
       );
     }
@@ -63,7 +58,7 @@ export async function POST(req: Request) {
       conversation = await prisma.conversation.create({
         data: {
           userId: session.user.id,
-          title: messages[0]?.content?.slice(0, 50) || "New Conversation",
+          title: messages[0]?.content?.slice(0, 50) || 'New Conversation',
           model,
         },
       });
@@ -73,7 +68,7 @@ export async function POST(req: Request) {
     const userMessage = await prisma.message.create({
       data: {
         conversationId: conversation.id,
-        role: "user",
+        role: 'user',
         content: messages[messages.length - 1].content,
         tokensUsed: estimateTokens(messages[messages.length - 1].content),
       },
@@ -83,16 +78,16 @@ export async function POST(req: Request) {
     const estimatedCost = Math.ceil(estimateTokens(messages[messages.length - 1].content) / 10);
     if (user.credits < estimatedCost) {
       return NextResponse.json(
-        { success: false, error: "Insufficient credits for this request" },
+        { success: false, error: 'Insufficient credits for this request' },
         { status: 403 }
       );
     }
 
     // Prepare messages for OpenAI
     const chatMessages: ChatMessage[] = [
-      { role: "system", content: "You are a helpful AI assistant." },
+      { role: 'system', content: 'You are a helpful AI assistant.' },
       ...messages.map((m: any) => ({
-        role: m.role as "user" | "assistant",
+        role: m.role as 'user' | 'assistant',
         content: m.content,
       })),
     ];
@@ -106,7 +101,7 @@ export async function POST(req: Request) {
       stream: true,
     });
 
-    let fullResponse = "";
+    let fullResponse = '';
     const encoder = new TextEncoder();
 
     const readable = new ReadableStream({
@@ -116,9 +111,7 @@ export async function POST(req: Request) {
             const content = chunk.choices[0]?.delta?.content;
             if (content) {
               fullResponse += content;
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ content })}\n\n`)
-              );
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
             }
           }
 
@@ -127,7 +120,7 @@ export async function POST(req: Request) {
           await prisma.message.create({
             data: {
               conversationId: conversation.id,
-              role: "assistant",
+              role: 'assistant',
               content: fullResponse,
               tokensUsed,
             },
@@ -144,7 +137,7 @@ export async function POST(req: Request) {
               data: {
                 userId: session.user.id,
                 amount: -cost,
-                type: "USAGE",
+                type: 'USAGE',
                 description: `Chat usage - ${tokensUsed} tokens`,
               },
             }),
@@ -160,16 +153,13 @@ export async function POST(req: Request) {
 
     return new Response(readable, {
       headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
       },
     });
   } catch (error) {
-    console.error("Chat error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Chat error:', error);
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -20,23 +20,23 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
 async function createTempProject(files = {}) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-prod-ext-'));
-  
+
   for (const [filePath, content] of Object.entries(files)) {
     const fullPath = path.join(tmpDir, filePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, content);
   }
-  
+
   return tmpDir;
 }
 
@@ -50,8 +50,8 @@ describe('Extended Production Commands', () => {
       'src/index.js': 'console.log("hello");',
       '.ultra/state.json': JSON.stringify({
         project: { name: 'Test' },
-        phases: []
-      })
+        phases: [],
+      }),
     });
   });
 
@@ -147,12 +147,14 @@ describe('Extended Production Commands', () => {
 
     test('export generates json output', async () => {
       const outputFile = path.join(tmpDir, 'export.json');
-      const result = runCli(['export', '--format', 'json', '--output', outputFile], { cwd: tmpDir });
-      
+      const result = runCli(['export', '--format', 'json', '--output', outputFile], {
+        cwd: tmpDir,
+      });
+
       assert.equal(result.status, 0);
       assert.match(result.output, /Exported/i);
       assert.ok(existsSync(outputFile));
-      
+
       const content = await fs.readFile(outputFile, 'utf-8');
       assert.ok(content.includes('Test'), 'Export should contain project name');
     });

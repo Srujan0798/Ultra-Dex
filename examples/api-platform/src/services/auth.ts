@@ -54,7 +54,7 @@ export class ApiKeyService {
       tier: input.tier || 'free',
       status: 'active',
       createdAt: new Date().toISOString(),
-      lastUsedAt: null
+      lastUsedAt: null,
     };
 
     apiKeysStore.set(id, keyData);
@@ -66,7 +66,7 @@ export class ApiKeyService {
   }
 
   async listKeys(userId: string): Promise<ApiKeyData[]> {
-    return Array.from(apiKeysStore.values()).filter(key => key.userId === userId);
+    return Array.from(apiKeysStore.values()).filter((key) => key.userId === userId);
   }
 
   async getKey(id: string, userId: string): Promise<ApiKeyData | null> {

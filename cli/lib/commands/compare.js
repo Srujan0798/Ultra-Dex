@@ -1,23 +1,25 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { printInfo, printWarning } from '../utils/output.js';
 
 const COMPETITORS = {
   devin: {
     gap: 'No live boilerplate',
-    counter: '--live mode with full SaaS templates'
+    counter: '--live mode with full SaaS templates',
   },
   cursor: {
     gap: 'Missing rules',
-    counter: '31+ .mdc rules + MCP context'
+    counter: '31+ .mdc rules + MCP context',
   },
   replit: {
     gap: 'CLI too static',
-    counter: 'Voice + auto-sync + swarm'
+    counter: 'Voice + auto-sync + swarm',
   },
   'claude-code': {
     gap: 'Amnesia',
-    counter: 'CONTEXT.md + memex + session memory'
-  }
+    counter: 'CONTEXT.md + memex + session memory',
+  },
 };
 
 export function registerCompareCommand(program) {
@@ -32,14 +34,16 @@ export function registerCompareCommand(program) {
         return;
       }
 
-      keys.forEach(key => {
+      keys.forEach((key) => {
         const competitor = COMPETITORS[key];
         if (!competitor) {
           printWarning(`Unknown competitor: ${key}`);
           return;
         }
-        printInfo(chalk.cyan(`
-${key.toUpperCase()}`));
+        printInfo(
+          chalk.cyan(`
+${key.toUpperCase()}`)
+        );
         printInfo(`Gap: ${competitor.gap}`);
         printInfo(`Ultra-Dex Counter: ${competitor.counter}`);
       });

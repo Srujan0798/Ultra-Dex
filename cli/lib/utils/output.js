@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { formatError, formatWarning, formatInfo, formatSuccess, formatStatus } from './status.js';
 

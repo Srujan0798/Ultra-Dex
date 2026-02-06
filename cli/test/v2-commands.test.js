@@ -8,7 +8,6 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const CLI = `node ${path.resolve(__dirname, '..', 'bin', 'ultra-dex.js')}`;
 
 test('v3.0 Command Smoke Tests', async (t) => {
-  
   await t.test('agents command lists agents', () => {
     const output = execSync(`${CLI} agents`).toString();
     assert.ok(output.includes('Ultra-Dex AI Agents'));
@@ -31,9 +30,9 @@ test('v3.0 Command Smoke Tests', async (t) => {
   await t.test('swarm command exists', () => {
     // We expect it to run or show help, ensuring the command is registered
     try {
-        execSync(`${CLI} swarm --help`);
+      execSync(`${CLI} swarm --help`);
     } catch (e) {
-        assert.fail('swarm command failed');
+      assert.fail('swarm command failed');
     }
   });
 

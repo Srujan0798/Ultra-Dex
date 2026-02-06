@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enterprise API Key Management
  * Handles API key creation, validation, and revocation
@@ -24,7 +26,7 @@ export class APIKeyManager {
     const id = crypto.randomUUID();
     const secret = crypto.randomBytes(this.keyLength).toString('hex');
     const key = `${this.prefix}${secret}`;
-    
+
     const keyData = {
       id,
       name,
@@ -37,18 +39,18 @@ export class APIKeyManager {
       lastUsed: null,
       usageCount: 0,
       enabled: true,
-      createdBy: options.createdBy || null
+      createdBy: options.createdBy || null,
     };
 
     this.keys.set(id, keyData);
-    
+
     return {
       id,
       name,
       key, // Return full key only once
       prefix: keyData.prefix,
       createdAt: keyData.createdAt,
-      expiresAt: keyData.expiresAt
+      expiresAt: keyData.expiresAt,
     };
   }
 
@@ -68,7 +70,7 @@ export class APIKeyManager {
     }
 
     const hashedKey = this.hashKey(key);
-    
+
     for (const [id, keyData] of this.keys) {
       if (keyData.key === hashedKey && keyData.enabled) {
         // Check expiration
@@ -84,7 +86,7 @@ export class APIKeyManager {
           valid: true,
           keyId: id,
           name: keyData.name,
-          permissions: keyData.permissions
+          permissions: keyData.permissions,
         };
       }
     }
@@ -103,7 +105,7 @@ export class APIKeyManager {
 
     keyData.enabled = false;
     keyData.revokedAt = new Date().toISOString();
-    
+
     return { success: true };
   }
 
@@ -111,7 +113,7 @@ export class APIKeyManager {
    * List all API keys (without secrets)
    */
   listKeys() {
-    return Array.from(this.keys.values()).map(key => ({
+    return Array.from(this.keys.values()).map((key) => ({
       id: key.id,
       name: key.name,
       prefix: key.prefix,
@@ -120,7 +122,7 @@ export class APIKeyManager {
       lastUsed: key.lastUsed,
       usageCount: key.usageCount,
       enabled: key.enabled,
-      permissions: key.permissions
+      permissions: key.permissions,
     }));
   }
 
@@ -141,7 +143,7 @@ export class APIKeyManager {
     // Simple rate limiting - in production use Redis or similar
     const now = Date.now();
     const windowStart = now - 60000; // 1 minute window
-    
+
     // This is a simplified version - production would track timestamps
     if (keyData.usageCount > keyData.rateLimit) {
       return { allowed: false, error: 'Rate limit exceeded' };
@@ -158,17 +160,19 @@ export async function manageAPIKeys() {
   const { default: inquirer } = await import('inquirer');
   const manager = new APIKeyManager();
 
-  const { action } = await inquirer.prompt([{
-    type: 'list',
-    name: 'action',
-    message: 'API Key Management:',
-    choices: [
-      { name: 'Create new API key', value: 'create' },
-      { name: 'List all keys', value: 'list' },
-      { name: 'Revoke a key', value: 'revoke' },
-      { name: 'Exit', value: 'exit' }
-    ]
-  }]);
+  const { action } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'action',
+      message: 'API Key Management:',
+      choices: [
+        { name: 'Create new API key', value: 'create' },
+        { name: 'List all keys', value: 'list' },
+        { name: 'Revoke a key', value: 'revoke' },
+        { name: 'Exit', value: 'exit' },
+      ],
+    },
+  ]);
 
   switch (action) {
     case 'create': {
@@ -177,7 +181,7 @@ export async function manageAPIKeys() {
           type: 'input',
           name: 'name',
           message: 'Key name:',
-          validate: input => input.length > 0 || 'Name is required'
+          validate: (input) => input.length > 0 || 'Name is required',
         },
         {
           type: 'checkbox',
@@ -187,21 +191,21 @@ export async function manageAPIKeys() {
             { name: 'Read', value: 'read', checked: true },
             { name: 'Write', value: 'write' },
             { name: 'Delete', value: 'delete' },
-            { name: 'Admin', value: 'admin' }
-          ]
+            { name: 'Admin', value: 'admin' },
+          ],
         },
         {
           type: 'input',
           name: 'rateLimit',
           message: 'Rate limit (requests per minute):',
           default: '100',
-          validate: input => !isNaN(input) || 'Must be a number'
-        }
+          validate: (input) => !isNaN(input) || 'Must be a number',
+        },
       ]);
 
       const key = manager.generateKey(answers.name, {
         permissions: answers.permissions,
-        rateLimit: parseInt(answers.rateLimit)
+        rateLimit: parseInt(answers.rateLimit),
       });
 
       printSuccess(chalk.green('\n✅ API Key created successfully!'));
@@ -219,7 +223,7 @@ export async function manageAPIKeys() {
         printWarning(chalk.yellow('No API keys found'));
       } else {
         printInfo(chalk.white(`\n📋 API Keys (${keys.length} total):\n`));
-        keys.forEach(key => {
+        keys.forEach((key) => {
           const status = key.enabled ? chalk.green('✓') : chalk.red('✗');
           console.log(`${status} ${key.name} (${key.prefix}...)`);
           console.log(chalk.gray(`   ID: ${key.id}`));
@@ -233,28 +237,32 @@ export async function manageAPIKeys() {
     }
 
     case 'revoke': {
-      const keys = manager.listKeys().filter(k => k.enabled);
+      const keys = manager.listKeys().filter((k) => k.enabled);
       if (keys.length === 0) {
         printWarning(chalk.yellow('No active keys to revoke'));
         break;
       }
 
-      const { keyId } = await inquirer.prompt([{
-        type: 'list',
-        name: 'keyId',
-        message: 'Select key to revoke:',
-        choices: keys.map(k => ({
-          name: `${k.name} (${k.prefix}...)`,
-          value: k.id
-        }))
-      }]);
+      const { keyId } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'keyId',
+          message: 'Select key to revoke:',
+          choices: keys.map((k) => ({
+            name: `${k.name} (${k.prefix}...)`,
+            value: k.id,
+          })),
+        },
+      ]);
 
-      const { confirm } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'confirm',
-        message: 'Are you sure? This cannot be undone.',
-        default: false
-      }]);
+      const { confirm } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'confirm',
+          message: 'Are you sure? This cannot be undone.',
+          default: false,
+        },
+      ]);
 
       if (confirm) {
         const result = manager.revokeKey(keyId);

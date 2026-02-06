@@ -1,6 +1,6 @@
 const plans = [
   { name: 'Starter', price: '$29/mo', status: 'Active' },
-  { name: 'Enterprise', price: 'Custom', status: 'Upgrade' }
+  { name: 'Enterprise', price: 'Custom', status: 'Upgrade' },
 ];
 
 export default function BillingPage() {

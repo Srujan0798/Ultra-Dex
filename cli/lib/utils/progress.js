@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import gradient from 'gradient-string';
 import ora from 'ora';
@@ -38,13 +40,14 @@ export class ProgressBar {
     this.startTime = null;
 
     this.options = {
-      format: options.format || ' {bar} {percentage}% | {value}/{total} | {task} | ETA: {eta_formatted}',
+      format:
+        options.format || ' {bar} {percentage}% | {value}/{total} | {task} | ETA: {eta_formatted}',
       barCompleteChar: '\u25A0', // ■
       barIncompleteChar: '\u25A1', // □
       hideCursor: true,
       clearOnComplete: true,
       showEta: options.showEta !== false,
-      ...options
+      ...options,
     };
   }
 
@@ -57,7 +60,7 @@ export class ProgressBar {
         barCompleteChar: this.options.barCompleteChar,
         barIncompleteChar: this.options.barIncompleteChar,
         hideCursor: this.options.hideCursor,
-        clearOnComplete: this.options.clearOnComplete
+        clearOnComplete: this.options.clearOnComplete,
       },
       cliProgress.Presets.shades_grey
     );
@@ -99,14 +102,16 @@ export class ProgressBar {
         barCompleteChar: this.options.barCompleteChar,
         barIncompleteChar: this.options.barIncompleteChar,
         hideCursor: this.options.hideCursor,
-        clearOnComplete: false
+        clearOnComplete: false,
       },
       cliProgress.Presets.rect
     );
 
     const bars = {};
     tasks.forEach((task, index) => {
-      bars[task.id || `task-${index}`] = this.multiProgressBar.create(task.total || 100, 0, { task: task.name });
+      bars[task.id || `task-${index}`] = this.multiProgressBar.create(task.total || 100, 0, {
+        task: task.name,
+      });
     });
 
     return bars;
@@ -133,7 +138,7 @@ export class ProgressBar {
   startSpinner(text = 'Processing...', spinnerType = 'clock') {
     this.spinner = ora({
       text: gradient(['#6366f1', '#8b5cf6'])(text),
-      spinner: spinnerType
+      spinner: spinnerType,
     });
     this.spinner.start();
     return this.spinner;
@@ -224,10 +229,15 @@ export function showAnimatedProgress(current, total, message = 'Progress') {
   let gradientBar = '';
   if (filled > 0) {
     const gradientColors = ['#6366f1', '#8b5cf6', '#d946ef']; // Blue to purple to pink
-    const gradientText = filledChars.split('').map((char, idx) => {
-      const colorIndex = Math.floor((idx / filled) * gradientColors.length);
-      return chalk.hex(gradientColors[colorIndex] || gradientColors[gradientColors.length - 1])(char);
-    }).join('');
+    const gradientText = filledChars
+      .split('')
+      .map((char, idx) => {
+        const colorIndex = Math.floor((idx / filled) * gradientColors.length);
+        return chalk.hex(gradientColors[colorIndex] || gradientColors[gradientColors.length - 1])(
+          char
+        );
+      })
+      .join('');
     gradientBar = gradientText;
   }
 
@@ -235,7 +245,9 @@ export function showAnimatedProgress(current, total, message = 'Progress') {
   const progressBar = gradientBar + emptyBar;
 
   // Clear line and show progress
-  process.stdout.write(`\r${progressBar} ${chalk.bold(`${percentage}%`)} ${message} (${current}/${total})`);
+  process.stdout.write(
+    `\r${progressBar} ${chalk.bold(`${percentage}%`)} ${message} (${current}/${total})`
+  );
 
   if (current >= total) {
     console.log(''); // New line when complete
@@ -248,7 +260,7 @@ export function showFancyProgress(current, total, options = {}) {
     message = 'Processing',
     symbol = '⚡',
     showPercentage = true,
-    showCount = true
+    showCount = true,
   } = options;
 
   const percentage = Math.round((current / total) * 100);
@@ -261,7 +273,8 @@ export function showFancyProgress(current, total, options = {}) {
   const progressBar = leftSide + rightSide;
 
   let output = `${symbol} ${message} `;
-  if (showPercentage) output += `${chalk.bold(gradient(['#10b981', '#34d399'])(`${percentage}%`))} `;
+  if (showPercentage)
+    output += `${chalk.bold(gradient(['#10b981', '#34d399'])(`${percentage}%`))} `;
   if (showCount) output += chalk.dim(`(${current}/${total})`);
   output += ` ${progressBar}`;
 
@@ -282,18 +295,21 @@ export class MultiStepProgress {
   }
 
   async run() {
-    const multiBar = new cliProgress.MultiBar({
-      format: ' {bar} | {percentage}% | {step} | {status}',
-      barCompleteChar: '\u25A0',
-      barIncompleteChar: '\u25A1',
-      hideCursor: true
-    }, cliProgress.Presets.shades_grey);
+    const multiBar = new cliProgress.MultiBar(
+      {
+        format: ' {bar} | {percentage}% | {step} | {status}',
+        barCompleteChar: '\u25A0',
+        barIncompleteChar: '\u25A1',
+        hideCursor: true,
+      },
+      cliProgress.Presets.shades_grey
+    );
 
     // Create progress bars for each step
     this.progressBars = this.steps.map((step, index) => {
       return multiBar.create(100, 0, {
         step: step.name,
-        status: 'Pending'
+        status: 'Pending',
       });
     });
 
@@ -329,7 +345,7 @@ export class MultiStepProgress {
       const statusText = status || this.progressBars[stepIndex].options.status;
       this.progressBars[stepIndex].update(percentage, {
         step: step.name,
-        status: statusText
+        status: statusText,
       });
     }
   }
@@ -345,11 +361,7 @@ export class MultiStepProgress {
 
 // Async wrapper with progress
 export async function withProgress(taskFn, options = {}) {
-  const {
-    message = 'Processing...',
-    total = 100,
-    onProgress = null
-  } = options;
+  const { message = 'Processing...', total = 100, onProgress = null } = options;
 
   const progress = new ProgressBar();
   const bar = progress.start(total, 0, message);
@@ -380,7 +392,7 @@ export const statusIndicators = {
   warning: (text) => chalk.bgYellow.black(' WARNING '),
   error: (text) => chalk.bgRed.white(' ERROR '),
   info: (text) => chalk.bgBlue.white(' INFO '),
-  processing: (text) => chalk.bgMagenta.white(' PROCESSING ')
+  processing: (text) => chalk.bgMagenta.white(' PROCESSING '),
 };
 
 // Completion animation

@@ -1,87 +1,455 @@
+// Copyright (c) 2026 Ultra-Dex
+
+/**
+ * MCP Context Bus
+ * Standard protocol for context sharing between tools
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
-import { z } from 'zod';
-import { EventEmitter } from 'node:events';
-import { loadState } from '../commands/state.js';
-import { memex } from '../memory/memex.js';
-import { ppmManager } from '../memory/manager.js';
-import { projectGraph } from './graph.js';
-import { runQualityGates } from '../quality/gate.js';
-import { ultraMemory } from './memory.js';
+import { EventEmitter } from 'events';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import { glob } from 'glob';
 
-export class ContextBus extends EventEmitter {
+// Context bus singleton
+class ContextBus extends EventEmitter {
   constructor() {
     super();
+    this.context = new Map();
+    this.subscribers = new Set();
+    this.server = null;
+    this.wss = null;
+    this.port = 3003; // Default MCP context bus port
+
+    // Initialize with default context
+    this.initializeDefaultContext();
   }
 
-  register(server) {
-    // Resources
-    server.resource('project_state', 'ultra://project/state', async (uri) => {
-      const state = await loadState();
-      return {
-        contents: [{ uri: uri.href, text: JSON.stringify(state || {}, null, 2) }]
-      };
-    });
+  /**
+   * Initialize default context
+   */
+  async initializeDefaultContext() {
+    try {
+      // Load CONTEXT.md if it exists
+      const contextPath = path.join(process.cwd(), 'CONTEXT.md');
+      const contextContent = await fs.readFile(contextPath, 'utf8');
 
-    server.resource('project_context', 'ultra://project/context', async (uri) => {
-      try {
-        const content = await fs.readFile(path.resolve(process.cwd(), 'CONTEXT.md'), 'utf8');
-        return { contents: [{ uri: uri.href, text: content }] };
-      } catch {
-        return { contents: [{ uri: uri.href, text: 'CONTEXT.md not found.' }] };
-      }
-    });
+      this.context.set('project.context', {
+        content: contextContent,
+        timestamp: new Date().toISOString(),
+        source: 'CONTEXT.md',
+      });
+    } catch (error) {
+      // CONTEXT.md doesn't exist, that's OK
+      this.context.set('project.context', {
+        content: '# Project Context\n\nNo context defined yet.',
+        timestamp: new Date().toISOString(),
+        source: 'default',
+      });
+    }
+  }
 
-    server.resource('memory_relevant', 'ultra://memory/relevant', async (uri) => {
-      const query = uri.searchParams.get('q') || '';
-      const results = await memex.search(query, 5);
-      return {
-        contents: [{ uri: uri.href, text: JSON.stringify(results, null, 2) }]
-      };
-    });
+  /**
+   * Publish context update
+   */
+  publish(key, value, metadata = {}) {
+    const contextUpdate = {
+      key,
+      value,
+      timestamp: new Date().toISOString(),
+      metadata,
+      source: metadata.source || 'ultra-dex',
+    };
 
-    // Tools
-    server.tool(
-      'remember',
-      'Save project fact to memory',
-      {
-        text: z.string(),
-        tags: z.array(z.string()).optional()
-      },
-      async ({ text, tags }) => {
-        await ultraMemory.remember(text, tags || [], 'context-bus');
-        await ppmManager.add({ content: text, type: 'decision', source: { agent: 'context-bus' }, relations: tags || [] });
-        return { content: [{ type: 'text', text: '✅ Remembered.' }] };
-      }
-    );
+    this.context.set(key, contextUpdate);
 
-    server.tool(
-      'query_graph',
-      'Query the codebase graph',
-      {
-        query: z.string()
-      },
-      async ({ query }) => {
-        if (projectGraph.nodes.size === 0) {
-          await projectGraph.scan();
+    // Emit to local subscribers
+    this.emit('context-update', contextUpdate);
+
+    // Broadcast to connected MCP clients if server is running
+    if (this.wss) {
+      const message = JSON.stringify({
+        type: 'context-update',
+        data: contextUpdate,
+      });
+
+      this.wss.clients.forEach((client) => {
+        if (client.readyState === WebSocketServer.OPEN) {
+          client.send(message);
         }
-        const matches = projectGraph.getSummary().files.filter((file) => file.includes(query));
-        return { content: [{ type: 'text', text: matches.join('\n') || 'No matches.' }] };
+      });
+    }
+
+    console.log(`Context bus: Published ${key}`);
+  }
+
+  /**
+   * Subscribe to context updates
+   */
+  subscribe(callback) {
+    this.on('context-update', callback);
+    this.subscribers.add(callback);
+
+    return () => {
+      this.removeListener('context-update', callback);
+      this.subscribers.delete(callback);
+    };
+  }
+
+  /**
+   * Get context value
+   */
+  get(key) {
+    return this.context.get(key);
+  }
+
+  /**
+   * Get all context
+   */
+  getAll() {
+    return Object.fromEntries(this.context);
+  }
+
+  /**
+   * Start MCP context server
+   */
+  async startServer(port = null) {
+    if (this.server) {
+      console.log('Context bus server already running');
+      return;
+    }
+
+    this.port = port || this.port;
+
+    this.server = createServer();
+    this.wss = new WebSocketServer({ server: this.server });
+
+    this.wss.on('connection', (ws) => {
+      console.log('Context bus: New MCP client connected');
+
+      // Send current context to new client
+      const currentContext = this.getAll();
+      ws.send(
+        JSON.stringify({
+          type: 'initial-context',
+          data: currentContext,
+        })
+      );
+
+      ws.on('message', (message) => {
+        try {
+          const data = JSON.parse(message.toString());
+
+          if (data.type === 'context-request') {
+            // Client is requesting specific context
+            const requestedContext = this.get(data.key);
+            ws.send(
+              JSON.stringify({
+                type: 'context-response',
+                key: data.key,
+                data: requestedContext,
+              })
+            );
+          } else if (data.type === 'context-update') {
+            // Client is updating context
+            this.publish(data.key, data.value, data.metadata);
+          }
+        } catch (error) {
+          console.error('Context bus: Error processing message:', error.message);
+        }
+      });
+
+      ws.on('close', () => {
+        console.log('Context bus: MCP client disconnected');
+      });
+    });
+
+    this.server.listen(this.port, () => {
+      console.log(`Context bus server running on port ${this.port}`);
+    });
+  }
+
+  /**
+   * Stop MCP context server
+   */
+  async stopServer() {
+    if (this.wss) {
+      this.wss.close();
+      this.wss = null;
+    }
+
+    if (this.server) {
+      this.server.close();
+      this.server = null;
+    }
+
+    console.log('Context bus server stopped');
+  }
+
+  /**
+   * Sync context with external tools
+   */
+  async syncWithExternalTools() {
+    // Sync with CONTEXT.md
+    await this.syncWithContextMd();
+
+    // Sync with other potential context sources
+    await this.syncWithImplementationPlan();
+    await this.syncWithState();
+  }
+
+  /**
+   * Sync with CONTEXT.md file
+   */
+  async syncWithContextMd() {
+    try {
+      const contextPath = path.join(process.cwd(), 'CONTEXT.md');
+      const content = await fs.readFile(contextPath, 'utf8');
+
+      // Only update if content has changed
+      const currentValue = this.get('project.context');
+      if (!currentValue || currentValue.value !== content) {
+        this.publish('project.context', content, {
+          source: 'CONTEXT.md',
+          sync: true,
+        });
+      }
+    } catch (error) {
+      // CONTEXT.md doesn't exist, that's OK
+    }
+  }
+
+  /**
+   * Sync with IMPLEMENTATION-PLAN.md
+   */
+  async syncWithImplementationPlan() {
+    try {
+      const planPath = path.join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
+      const content = await fs.readFile(planPath, 'utf8');
+
+      this.publish('project.plan', content, {
+        source: 'IMPLEMENTATION-PLAN.md',
+        sync: true,
+      });
+    } catch (error) {
+      // IMPLEMENTATION-PLAN.md doesn't exist, that's OK
+    }
+  }
+
+  /**
+   * Sync with state.json
+   */
+  async syncWithState() {
+    try {
+      const statePaths = [
+        path.join(process.cwd(), '.ultra', 'state.json'),
+        path.join(process.cwd(), 'state.json'),
+        path.join(process.cwd(), '.ultra-dex', 'state.json'),
+      ];
+
+      for (const statePath of statePaths) {
+        try {
+          const content = await fs.readFile(statePath, 'utf8');
+          const state = JSON.parse(content);
+
+          this.publish('project.state', state, {
+            source: statePath,
+            sync: true,
+          });
+
+          break; // Found and processed one
+        } catch (err) {
+          // Try next path
+          continue;
+        }
+      }
+    } catch (error) {
+      // No state file found, that's OK
+    }
+  }
+
+  /**
+   * Watch for context changes
+   */
+  async startWatching() {
+    // Watch for changes to context files
+    const chokidar = await import('chokidar');
+
+    const watcher = chokidar.watch(
+      [
+        'CONTEXT.md',
+        'IMPLEMENTATION-PLAN.md',
+        '.ultra/state.json',
+        '.ultra-dex/state.json',
+        'state.json',
+      ],
+      {
+        cwd: process.cwd(),
+        ignoreInitial: true,
       }
     );
 
-    server.tool(
-      'validate_output',
-      'Run quality gates on output',
-      {
-        code: z.string().optional()
-      },
-      async () => {
-        const { results } = await runQualityGates(process.cwd());
-        return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] };
+    watcher.on('change', async (filePath) => {
+      console.log(`Context bus: Detected change in ${filePath}`);
+
+      try {
+        await this.syncWithExternalTools();
+      } catch (error) {
+        console.error(`Context bus: Error syncing after change: ${error.message}`);
       }
-    );
+    });
+
+    return watcher;
+  }
+
+  /**
+   * Register context bus resources with an MCP server
+   */
+  register(server) {
+    if (!server?.resource) return;
+
+    try {
+      server.resource('context_bus', 'ultradex://context-bus', async (uri) => {
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              text: JSON.stringify(this.getAll(), null, 2),
+            },
+          ],
+        };
+      });
+    } catch (error) {
+      // Avoid crashing server on duplicate registration
+      console.warn(`Context bus resource registration skipped: ${error.message}`);
+    }
   }
 }
 
-export const contextBus = new ContextBus();
+// Singleton instance
+const contextBus = new ContextBus();
+
+/**
+ * Register context bus command
+ */
+export function registerContextBusCommand(program) {
+  const busCmd = program
+    .command('context-bus')
+    .alias('mcp-context')
+    .description('MCP context sharing protocol');
+
+  busCmd
+    .command('start')
+    .description('Start context bus server')
+    .option('-p, --port <port>', 'Port to run server on', '3003')
+    .action(async (options) => {
+      try {
+        console.log('🚀 Starting MCP Context Bus server...');
+        await contextBus.startServer(parseInt(options.port));
+
+        // Keep process alive
+        await new Promise(() => {});
+      } catch (error) {
+        console.error(`Error starting context bus: ${error.message}`);
+      }
+    });
+
+  busCmd
+    .command('publish')
+    .description('Publish context to bus')
+    .argument('<key>', 'Context key')
+    .argument('<value>', 'Context value')
+    .option('-m, --metadata <json>', 'Additional metadata as JSON')
+    .action(async (key, value, options) => {
+      try {
+        let metadata = {};
+        if (options.metadata) {
+          metadata = JSON.parse(options.metadata);
+        }
+
+        contextBus.publish(key, value, metadata);
+        console.log(`✅ Published to context bus: ${key}`);
+      } catch (error) {
+        console.error(`Error publishing to context bus: ${error.message}`);
+      }
+    });
+
+  busCmd
+    .command('get')
+    .description('Get context from bus')
+    .argument('<key>', 'Context key')
+    .action((key) => {
+      try {
+        const value = contextBus.get(key);
+        if (value) {
+          console.log(JSON.stringify(value, null, 2));
+        } else {
+          console.log(`Context key '${key}' not found`);
+        }
+      } catch (error) {
+        console.error(`Error getting context: ${error.message}`);
+      }
+    });
+
+  busCmd
+    .command('list')
+    .description('List all context keys')
+    .action(() => {
+      try {
+        const allContext = contextBus.getAll();
+        console.log('Context keys:');
+        for (const [key] of Object.entries(allContext)) {
+          console.log(`- ${key}`);
+        }
+      } catch (error) {
+        console.error(`Error listing context: ${error.message}`);
+      }
+    });
+
+  busCmd
+    .command('sync')
+    .description('Sync context with external files')
+    .action(async () => {
+      try {
+        console.log('🔄 Syncing context with external files...');
+        await contextBus.syncWithExternalTools();
+        console.log('✅ Context sync complete');
+      } catch (error) {
+        console.error(`Error syncing context: ${error.message}`);
+      }
+    });
+
+  busCmd
+    .command('watch')
+    .description('Watch for context changes')
+    .action(async () => {
+      try {
+        console.log('👀 Watching for context changes...');
+        await contextBus.startWatching();
+
+        // Keep process alive
+        await new Promise(() => {});
+      } catch (error) {
+        console.error(`Error watching context: ${error.message}`);
+      }
+    });
+
+  busCmd._examples = [
+    { command: 'ultra-dex context-bus start', description: 'Start context bus server' },
+    {
+      command: 'ultra-dex context-bus publish project.name "My App"',
+      description: 'Publish context to bus',
+    },
+    { command: 'ultra-dex context-bus get project.name', description: 'Get context from bus' },
+    { command: 'ultra-dex context-bus sync', description: 'Sync context with files' },
+    { command: 'ultra-dex context-bus watch', description: 'Watch for context changes' },
+  ];
+}
+
+export { contextBus };
+
+export default {
+  contextBus,
+  registerContextBusCommand,
+};

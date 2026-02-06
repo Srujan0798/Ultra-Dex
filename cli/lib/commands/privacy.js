@@ -1,5 +1,13 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
-import { exportPrivacyData, deletePrivacyData, updateConsent, readConsent, getPrivacyAudit } from '../privacy/gdpr.js';
+import {
+  exportPrivacyData,
+  deletePrivacyData,
+  updateConsent,
+  readConsent,
+  getPrivacyAudit,
+} from '../privacy/gdpr.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
 export function registerPrivacyCommand(program) {

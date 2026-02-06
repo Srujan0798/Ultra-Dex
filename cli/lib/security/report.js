@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export function summarizeFindings(findings) {
   const summary = { critical: 0, warning: 0, info: 0 };
   findings.forEach((finding) => {
@@ -22,7 +24,9 @@ export function formatSecurityReport(findings, format = 'markdown') {
       `Warnings: ${summary.warning}`,
       `Info: ${summary.info}`,
       '',
-      ...findings.map((finding) => `- [${finding.severity}] ${finding.file}:${finding.line} ${finding.message}`)
+      ...findings.map(
+        (finding) => `- [${finding.severity}] ${finding.file}:${finding.line} ${finding.message}`
+      ),
     ].join('\n');
   }
 
@@ -34,6 +38,9 @@ export function formatSecurityReport(findings, format = 'markdown') {
     `- Info: ${summary.info}`,
     '',
     '## Findings',
-    ...findings.map((finding) => `- **${finding.severity.toUpperCase()}** ${finding.file}:${finding.line} - ${finding.message}`)
+    ...findings.map(
+      (finding) =>
+        `- **${finding.severity.toUpperCase()}** ${finding.file}:${finding.line} - ${finding.message}`
+    ),
   ].join('\n');
 }

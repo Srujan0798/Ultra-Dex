@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import fs from 'fs/promises';
@@ -56,7 +58,9 @@ async function getCurrentRole() {
 async function checkPermission(permission) {
   const role = await getCurrentRole();
   if (!hasPermission(role, permission)) {
-    throw new Error(`Permission denied: You need permission '${permission}' (Current role: ${role})`);
+    throw new Error(
+      `Permission denied: You need permission '${permission}' (Current role: ${role})`
+    );
   }
 }
 
@@ -67,9 +71,7 @@ function formatTable(rows) {
     return Math.max(header.length, maxRow);
   });
 
-  const headerLine = headers
-    .map((header, index) => header.padEnd(widths[index]))
-    .join(' | ');
+  const headerLine = headers.map((header, index) => header.padEnd(widths[index])).join(' | ');
   const divider = widths.map((width) => '-'.repeat(width)).join('-|-');
 
   const body = rows
@@ -81,68 +83,66 @@ function formatTable(rows) {
 
 function buildInitCommand() {
   const command = new Command('init');
-  command
-    .description('Initialize team configuration')
-    .action(async () => {
-      try {
-        // Init usually allows anyone to start if it doesn't exist, 
-        // effectively claiming adminship of the local workspace.
-        const existing = await loadTeamConfig();
-        if (existing) {
-          const { overwrite } = await inquirer.prompt([
-            {
-              type: 'confirm',
-              name: 'overwrite',
-              message: 'Team config already exists. Overwrite it?',
-              default: false,
-            },
-          ]);
-          if (!overwrite) {
-            printWarning(chalk.yellow('\nCanceled.\n'));
-            return;
-          }
-        }
-
-        const answers = await inquirer.prompt([
+  command.description('Initialize team configuration').action(async () => {
+    try {
+      // Init usually allows anyone to start if it doesn't exist,
+      // effectively claiming adminship of the local workspace.
+      const existing = await loadTeamConfig();
+      if (existing) {
+        const { overwrite } = await inquirer.prompt([
           {
-            type: 'input',
-            name: 'name',
-            message: 'Team name:',
-            validate: (input) => (input.trim().length > 0 ? true : 'Team name is required'),
-          },
-          {
-            type: 'input',
-            name: 'description',
-            message: 'Team description:',
-            default: '',
+            type: 'confirm',
+            name: 'overwrite',
+            message: 'Team config already exists. Overwrite it?',
+            default: false,
           },
         ]);
-        const config = {
-          name: answers.name.trim(),
-          description: answers.description.trim(),
-          members: [],
-          workspaces: [],
-          activeWorkspace: null,
-          agentAccess: JSON.parse(JSON.stringify(DEFAULT_AGENT_ACCESS)),
-          createdAt: new Date().toISOString(),
-        };
-
-        // Add current user as admin
-        const globalConfig = await configManager.loadGlobal();
-        if (globalConfig?.user?.username) {
-            config.members.push({
-                email: globalConfig.user.username,
-                role: 'admin',
-                addedAt: new Date().toISOString()
-            });
+        if (!overwrite) {
+          printWarning(chalk.yellow('\nCanceled.\n'));
+          return;
         }
-
-        await saveTeamConfig(config);
-        printSuccess(chalk.green('\n✅ Team config created at .ultra-dex/team.json\n'));
-      } catch (error) {
-        printError(chalk.red(`Init failed: ${error.message}`));
       }
-    });
+
+      const answers = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'name',
+          message: 'Team name:',
+          validate: (input) => (input.trim().length > 0 ? true : 'Team name is required'),
+        },
+        {
+          type: 'input',
+          name: 'description',
+          message: 'Team description:',
+          default: '',
+        },
+      ]);
+      const config = {
+        name: answers.name.trim(),
+        description: answers.description.trim(),
+        members: [],
+        workspaces: [],
+        activeWorkspace: null,
+        agentAccess: JSON.parse(JSON.stringify(DEFAULT_AGENT_ACCESS)),
+        createdAt: new Date().toISOString(),
+      };
+
+      // Add current user as admin
+      const globalConfig = await configManager.loadGlobal();
+      if (globalConfig?.user?.username) {
+        config.members.push({
+          email: globalConfig.user.username,
+          role: 'admin',
+          addedAt: new Date().toISOString(),
+        });
+      }
+
+      await saveTeamConfig(config);
+      printSuccess(chalk.green('\n✅ Team config created at .ultra-dex/team.json\n'));
+    } catch (error) {
+      printError(chalk.red(`Init failed: ${error.message}`));
+    }
+  });
 
   return command;
 }
@@ -172,7 +172,9 @@ function buildAddCommand() {
         const team = await loadTeamConfig();
         requireTeamConfig(team);
 
-        const exists = team.members.some((member) => normalizeEmail(member.email) === normalizedEmail);
+        const exists = team.members.some(
+          (member) => normalizeEmail(member.email) === normalizedEmail
+        );
         if (exists) {
           printWarning(chalk.yellow(`\n⚠️  ${normalizedEmail} is already on the team.\n`));
           return;
@@ -188,7 +190,7 @@ function buildAddCommand() {
         printSuccess(chalk.green(`\n✅ Added ${normalizedEmail} as ${role}.\n`));
       } catch (error) {
         if (error.message !== 'Team not initialized') {
-            printError(chalk.red(`Add failed: ${error.message}`));
+          printError(chalk.red(`Add failed: ${error.message}`));
         }
       }
     });
@@ -198,33 +200,27 @@ function buildAddCommand() {
 
 function buildListCommand() {
   const command = new Command('list');
-  command
-    .description('List team members')
-    .action(async () => {
-      try {
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+  command.description('List team members').action(async () => {
+    try {
+      const team = await loadTeamConfig();
+      requireTeamConfig(team);
 
-        if (!team.members.length) {
-          printWarning(chalk.yellow('\nNo team members yet.\n'));
-          return;
-        }
-
-        const rows = team.members.map((member) => [
-          member.email,
-          member.role,
-          member.addedAt,
-        ]);
-
-        printInfo('\n' + chalk.bold('Team Members'));
-        printInfo(formatTable(rows));
-        printInfo('');
-      } catch (error) {
-        if (error.message !== 'Team not initialized') {
-            printError(chalk.red(`List failed: ${error.message}`));
-        }
+      if (!team.members.length) {
+        printWarning(chalk.yellow('\nNo team members yet.\n'));
+        return;
       }
-    });
+
+      const rows = team.members.map((member) => [member.email, member.role, member.addedAt]);
+
+      printInfo('\n' + chalk.bold('Team Members'));
+      printInfo(formatTable(rows));
+      printInfo('');
+    } catch (error) {
+      if (error.message !== 'Team not initialized') {
+        printError(chalk.red(`List failed: ${error.message}`));
+      }
+    }
+  });
 
   return command;
 }
@@ -247,7 +243,9 @@ function buildRemoveCommand() {
         const team = await loadTeamConfig();
         requireTeamConfig(team);
 
-        const index = team.members.findIndex((member) => normalizeEmail(member.email) === normalizedEmail);
+        const index = team.members.findIndex(
+          (member) => normalizeEmail(member.email) === normalizedEmail
+        );
         if (index === -1) {
           printError(chalk.red(`\n❌ ${normalizedEmail} not found in team.\n`));
           return;
@@ -272,7 +270,7 @@ function buildRemoveCommand() {
         printSuccess(chalk.green(`\n✅ Removed ${normalizedEmail}.\n`));
       } catch (error) {
         if (error.message !== 'Team not initialized') {
-            printError(chalk.red(`Remove failed: ${error.message}`));
+          printError(chalk.red(`Remove failed: ${error.message}`));
         }
       }
     });
@@ -320,7 +318,7 @@ function buildConfigCommand() {
         printSuccess(chalk.green(`\n✅ Updated ${key}.\n`));
       } catch (error) {
         if (error.message !== 'Team not initialized') {
-            printError(chalk.red(`Config failed: ${error.message}`));
+          printError(chalk.red(`Config failed: ${error.message}`));
         }
       }
     });
@@ -344,11 +342,11 @@ function buildWorkspaceCommand() {
         requireTeamConfig(team);
 
         team.workspaces = team.workspaces || [];
-        team.workspaces = team.workspaces.filter(w => w.path !== targetDir && w.name !== name);
+        team.workspaces = team.workspaces.filter((w) => w.path !== targetDir && w.name !== name);
         team.workspaces.push({
           name,
           path: targetDir,
-          addedAt: new Date().toISOString()
+          addedAt: new Date().toISOString(),
         });
         if (!team.activeWorkspace) {
           team.activeWorkspace = targetDir;
@@ -376,7 +374,7 @@ function buildWorkspaceCommand() {
         }
 
         printInfo(chalk.bold('\nTeam Workspaces\n'));
-        workspaces.forEach(ws => {
+        workspaces.forEach((ws) => {
           const isActive = team.activeWorkspace === ws.path;
           const prefix = isActive ? chalk.green('➜ ') : '  ';
           printInfo(`${prefix}${chalk.bold(ws.name)} ${isActive ? chalk.green('(active)') : ''}`);
@@ -401,7 +399,9 @@ function buildWorkspaceCommand() {
         requireTeamConfig(team);
 
         const initialLen = team.workspaces?.length || 0;
-        team.workspaces = (team.workspaces || []).filter(w => w.path !== path.resolve(target) && w.name !== target);
+        team.workspaces = (team.workspaces || []).filter(
+          (w) => w.path !== path.resolve(target) && w.name !== target
+        );
 
         if (team.workspaces.length < initialLen) {
           if (team.activeWorkspace && team.activeWorkspace === path.resolve(target)) {
@@ -427,7 +427,7 @@ function buildWorkspaceCommand() {
         requireTeamConfig(team);
 
         const workspaces = team.workspaces || [];
-        const match = workspaces.find(w => w.name === target || w.path === path.resolve(target));
+        const match = workspaces.find((w) => w.name === target || w.path === path.resolve(target));
         if (!match) {
           printError(chalk.red(`\n❌ Workspace not found: ${target}\n`));
           return;
@@ -446,47 +446,43 @@ function buildWorkspaceCommand() {
 
 function buildActivityCommand() {
   const command = new Command('activity');
-  command
-    .description('Show recent team activity')
-    .action(async () => {
-      try {
-        const ctx = new TeamContext({ workspacePath: process.cwd() });
-        await ctx.initialize();
-        const activity = ctx.getActivityLog().slice(-20);
-        if (activity.length === 0) {
-          printWarning(chalk.yellow('\nNo team activity yet.\n'));
-          return;
-        }
-        printInfo(chalk.cyan('\nRecent team activity:\n'));
-        activity.forEach((entry) => {
-          try {
-            const parsed = JSON.parse(entry);
-            printInfo(chalk.gray(`- ${parsed.timestamp} ${parsed.action || 'activity'}`));
-          } catch {
-            printInfo(chalk.gray(`- ${entry}`));
-          }
-        });
-      } catch (error) {
-        printError(chalk.red(`Activity failed: ${error.message}`));
+  command.description('Show recent team activity').action(async () => {
+    try {
+      const ctx = new TeamContext({ workspacePath: process.cwd() });
+      await ctx.initialize();
+      const activity = ctx.getActivityLog().slice(-20);
+      if (activity.length === 0) {
+        printWarning(chalk.yellow('\nNo team activity yet.\n'));
+        return;
       }
-    });
+      printInfo(chalk.cyan('\nRecent team activity:\n'));
+      activity.forEach((entry) => {
+        try {
+          const parsed = JSON.parse(entry);
+          printInfo(chalk.gray(`- ${parsed.timestamp} ${parsed.action || 'activity'}`));
+        } catch {
+          printInfo(chalk.gray(`- ${entry}`));
+        }
+      });
+    } catch (error) {
+      printError(chalk.red(`Activity failed: ${error.message}`));
+    }
+  });
 
   return command;
 }
 
 function buildSyncCommand() {
   const command = new Command('sync');
-  command
-    .description('Create a team sync snapshot')
-    .action(async () => {
-      try {
-        const syncManager = new ContextSyncManager({ workspacePath: process.cwd() });
-        const snapshot = syncManager.createSnapshot();
-        printSuccess(chalk.green(`\n✅ Created sync snapshot: ${snapshot.id}\n`));
-      } catch (error) {
-        printError(chalk.red(`Sync failed: ${error.message}`));
-      }
-    });
+  command.description('Create a team sync snapshot').action(async () => {
+    try {
+      const syncManager = new ContextSyncManager({ workspacePath: process.cwd() });
+      const snapshot = syncManager.createSnapshot();
+      printSuccess(chalk.green(`\n✅ Created sync snapshot: ${snapshot.id}\n`));
+    } catch (error) {
+      printError(chalk.red(`Sync failed: ${error.message}`));
+    }
+  });
   return command;
 }
 
@@ -532,7 +528,7 @@ function buildAgentAccessCommand() {
 
         const parsedAgents = agents
           .split(',')
-          .map(a => a.trim())
+          .map((a) => a.trim())
           .filter(Boolean);
 
         if (parsedAgents.length === 0) {
@@ -553,9 +549,7 @@ function buildAgentAccessCommand() {
 }
 
 export function registerTeamCommand(program) {
-  const team = program
-    .command('team')
-    .description('Team collaboration');
+  const team = program.command('team').description('Team collaboration');
 
   team.addCommand(buildInitCommand());
   team.addCommand(buildAddCommand());

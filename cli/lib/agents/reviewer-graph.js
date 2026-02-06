@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Reviewer graph - audits code for quality and risks
  */
@@ -12,7 +14,7 @@ export function createReviewerGraph(options = {}) {
   return createSimpleGraph({
     ...options,
     nodeName: 'reviewer',
-    systemPrompt: SYSTEM_PROMPT
+    systemPrompt: SYSTEM_PROMPT,
   });
 }
 

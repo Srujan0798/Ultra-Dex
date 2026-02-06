@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Cursor 2.0 Integration for ACP
@@ -37,8 +38,8 @@ export class CursorIntegration {
           args: ['--acp'],
           stdio: 'pipe',
           env: {
-            FORCE_COLOR: '3'
-          }
+            FORCE_COLOR: '3',
+          },
         },
         capabilities: {
           text: true,
@@ -47,82 +48,74 @@ export class CursorIntegration {
           terminal: true,
           filesystem: {
             read: true,
-            write: true
-          }
-        }
+            write: true,
+          },
+        },
       },
       context: {
         ultraDex: {
           enabled: true,
           contextFile: 'CONTEXT.md',
-          autoSync: true
+          autoSync: true,
         },
-        include: [
-          'README.md',
-          'package.json',
-          'tsconfig.json',
-          'CONTEXT.md',
-          'AGENTS.md'
-        ],
-        exclude: [
-          'node_modules/**',
-          '.git/**',
-          'dist/**',
-          'build/**',
-          'coverage/**',
-          '*.log'
-        ]
+        include: ['README.md', 'package.json', 'tsconfig.json', 'CONTEXT.md', 'AGENTS.md'],
+        exclude: ['node_modules/**', '.git/**', 'dist/**', 'build/**', 'coverage/**', '*.log'],
       },
       modes: {
         ask: {
           name: 'Ask',
           description: 'General questions and explanations',
-          systemPrompt: 'You are a helpful assistant. Use the Ultra-Dex context to provide accurate information about the project.'
+          systemPrompt:
+            'You are a helpful assistant. Use the Ultra-Dex context to provide accurate information about the project.',
         },
         architect: {
           name: 'Architect',
           description: 'Design and planning mode',
-          systemPrompt: 'You are a software architect. Analyze requirements and create detailed implementation plans. Consider the existing codebase structure and Ultra-Dex guidelines.'
+          systemPrompt:
+            'You are a software architect. Analyze requirements and create detailed implementation plans. Consider the existing codebase structure and Ultra-Dex guidelines.',
         },
         code: {
           name: 'Code',
           description: 'Implementation mode',
-          systemPrompt: 'You are a software engineer. Write clean, well-documented code following the project\'s coding standards and Ultra-Dex best practices.'
+          systemPrompt:
+            "You are a software engineer. Write clean, well-documented code following the project's coding standards and Ultra-Dex best practices.",
         },
         review: {
           name: 'Review',
           description: 'Code review mode',
-          systemPrompt: 'You are a code reviewer. Analyze code for bugs, security issues, and improvements. Be thorough and constructive.'
+          systemPrompt:
+            'You are a code reviewer. Analyze code for bugs, security issues, and improvements. Be thorough and constructive.',
         },
         test: {
           name: 'Test',
           description: 'Testing mode',
-          systemPrompt: 'You are a QA engineer. Write comprehensive tests and help debug issues. Follow the project\'s testing conventions.'
-        }
+          systemPrompt:
+            "You are a QA engineer. Write comprehensive tests and help debug issues. Follow the project's testing conventions.",
+        },
       },
       tools: {
         ultraDex: {
           commands: {
             sync: {
               description: 'Sync Ultra-Dex context',
-              command: 'ultra-dex sync --brain'
+              command: 'ultra-dex sync --brain',
             },
             plan: {
               description: 'Generate implementation plan',
-              command: 'ultra-dex plan'
+              command: 'ultra-dex plan',
             },
             validate: {
               description: 'Validate project state',
-              command: 'ultra-dex validate'
+              command: 'ultra-dex validate',
             },
             swarm: {
               description: 'Run agent swarm',
-              command: 'ultra-dex swarm'
-            }
-          }
-        }
+              command: 'ultra-dex swarm',
+            },
+          },
+        },
       },
-      ...options
+      ...options,
     };
 
     return config;
@@ -140,19 +133,11 @@ export class CursorIntegration {
 
       // Generate and write ACP config
       const config = await this.generateConfig();
-      await fs.writeFile(
-        this.acpConfigPath,
-        JSON.stringify(config, null, 2),
-        'utf8'
-      );
+      await fs.writeFile(this.acpConfigPath, JSON.stringify(config, null, 2), 'utf8');
 
       // Create rules file for Cursor
       const rulesContent = this.generateRulesFile();
-      await fs.writeFile(
-        path.join(this.cursorDir, 'rules'),
-        rulesContent,
-        'utf8'
-      );
+      await fs.writeFile(path.join(this.cursorDir, 'rules'), rulesContent, 'utf8');
 
       printSuccess('✅ Cursor 2.0 ACP integration installed');
       printInfo(`   Config: ${this.acpConfigPath}`);
@@ -206,20 +191,16 @@ export class CursorIntegration {
       'cursor.acp.enabled': true,
       'cursor.acp.host': 'stdio',
       'cursor.acp.command': 'ultra-dex --acp',
-      'cursor.context.files': [
-        'CONTEXT.md',
-        'README.md',
-        'package.json'
-      ],
+      'cursor.context.files': ['CONTEXT.md', 'README.md', 'package.json'],
       'cursor.tools.ultradex.enabled': true,
-      'cursor.tools.ultradex.syncOnSave': true
+      'cursor.tools.ultradex.syncOnSave': true,
     };
 
     const vscodeDir = path.join(this.projectPath, '.vscode');
     await fs.mkdir(vscodeDir, { recursive: true });
 
     const settingsPath = path.join(vscodeDir, 'settings.json');
-    
+
     // Merge with existing settings if present
     let existingSettings = {};
     try {
@@ -230,12 +211,8 @@ export class CursorIntegration {
     }
 
     const mergedSettings = { ...existingSettings, ...settings };
-    
-    await fs.writeFile(
-      settingsPath,
-      JSON.stringify(mergedSettings, null, 2),
-      'utf8'
-    );
+
+    await fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2), 'utf8');
 
     printSuccess('✅ VS Code settings updated for Cursor compatibility');
     return mergedSettings;
@@ -250,7 +227,7 @@ export class CursorIntegration {
     try {
       await fs.unlink(this.acpConfigPath).catch(() => {});
       await fs.unlink(path.join(this.cursorDir, 'rules')).catch(() => {});
-      
+
       // Try to remove .cursor directory if empty
       try {
         const files = await fs.readdir(this.cursorDir);
@@ -295,14 +272,10 @@ export class CursorIntegration {
    * Update configuration
    */
   async updateConfig(updates) {
-    const config = await this.getConfig() || await this.generateConfig();
+    const config = (await this.getConfig()) || (await this.generateConfig());
     const updated = { ...config, ...updates };
-    
-    await fs.writeFile(
-      this.acpConfigPath,
-      JSON.stringify(updated, null, 2),
-      'utf8'
-    );
+
+    await fs.writeFile(this.acpConfigPath, JSON.stringify(updated, null, 2), 'utf8');
 
     return updated;
   }
@@ -342,7 +315,7 @@ export async function cursorCommand(options) {
 
   // Default: install
   await integration.install();
-  
+
   if (options.vscode) {
     await integration.generateVSCodeSettings();
   }

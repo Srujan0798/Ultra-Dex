@@ -28,11 +28,13 @@ What's your project scope?
 ### Pattern 1A: Full-Stack Framework (Next.js, Remix)
 
 **Best For:**
+
 - MVPs and side projects
 - Solo developers or small teams (1-3 people)
 - Fast iteration and deployment
 
 **Architecture:**
+
 ```
 ┌─────────────────────────────────────┐
 │         Next.js Application         │
@@ -53,12 +55,14 @@ What's your project scope?
 ```
 
 **Tech Stack:**
+
 - **Frontend + Backend:** Next.js 14 (App Router)
 - **Database:** PostgreSQL (Neon, Supabase)
 - **ORM:** Prisma
 - **Deployment:** Vercel (frontend + API routes)
 
 **Pros:**
+
 - ✅ Fastest to build and deploy
 - ✅ No CORS issues (same origin)
 - ✅ Shared TypeScript types
@@ -66,17 +70,20 @@ What's your project scope?
 - ✅ Perfect for MVPs
 
 **Cons:**
+
 - ⚠️ Hard to separate concerns later
 - ⚠️ API routes have limitations (serverless functions)
 - ⚠️ Not ideal for heavy backend processing
 
 **When to Use:**
+
 - Building an MVP in 1-4 weeks
 - Solo developer or small team
 - Standard CRUD operations
 - Don't need background jobs (yet)
 
 **Example Project Structure:**
+
 ```
 my-saas/
 ├── app/
@@ -98,6 +105,7 @@ my-saas/
 ```
 
 **Example API Route:**
+
 ```typescript
 // app/api/users/route.ts
 import { NextResponse } from 'next/server';
@@ -120,11 +128,13 @@ export async function POST(request: Request) {
 ### Pattern 1B: Separate Frontend & Backend Monolith
 
 **Best For:**
+
 - Small to medium teams (3-10 people)
 - Need background processing or long-running tasks
 - Want clear separation of concerns
 
 **Architecture:**
+
 ```
 ┌──────────────┐        ┌──────────────────────┐
 │   Next.js    │        │   Backend (Node.js)  │
@@ -151,6 +161,7 @@ export async function POST(request: Request) {
 ```
 
 **Tech Stack:**
+
 - **Frontend:** Next.js (React)
 - **Backend:** Node.js + Express (or Fastify)
 - **Database:** PostgreSQL + Prisma
@@ -159,6 +170,7 @@ export async function POST(request: Request) {
   - Backend: Railway, Render, or AWS
 
 **Pros:**
+
 - ✅ Clear separation (frontend team / backend team)
 - ✅ Can handle background jobs (BullMQ)
 - ✅ Better for CPU-intensive tasks
@@ -166,17 +178,20 @@ export async function POST(request: Request) {
 - ✅ Can add WebSockets easily
 
 **Cons:**
+
 - ⚠️ Need to handle CORS
 - ⚠️ Two deployments to manage
 - ⚠️ More complex than full-stack framework
 
 **When to Use:**
+
 - You have background tasks (email sending, PDF generation)
 - You need WebSockets or long-polling
 - Team is growing (5+ developers)
 - Need more control over backend
 
 **Example Backend Structure:**
+
 ```
 backend/
 ├── src/
@@ -200,6 +215,7 @@ backend/
 ```
 
 **Example Express Setup:**
+
 ```typescript
 // src/index.ts
 import express from 'express';
@@ -225,11 +241,13 @@ app.listen(4000, () => {
 ## 2. Modular Monolith (For Growing Teams)
 
 **Best For:**
+
 - Medium to large teams (10-50 people)
 - Established product with multiple features
 - Want microservices benefits without the complexity
 
 **Architecture:**
+
 ```
 ┌────────────────────────────────────────────┐
 │          Modular Monolith Backend          │
@@ -259,6 +277,7 @@ app.listen(4000, () => {
 **Key Principle:** Modules are organized by domain, but deployed as one application.
 
 **Pros:**
+
 - ✅ Better code organization
 - ✅ Team can own specific modules
 - ✅ Easier to refactor than pure monolith
@@ -266,10 +285,12 @@ app.listen(4000, () => {
 - ✅ Can extract to microservices later if needed
 
 **Cons:**
+
 - ⚠️ Requires discipline (don't let modules depend on each other)
 - ⚠️ Still scales as one unit
 
 **Example Structure:**
+
 ```
 backend/
 ├── modules/
@@ -293,6 +314,7 @@ backend/
 ```
 
 **Module Example:**
+
 ```typescript
 // modules/users/user.service.ts
 export class UserService {
@@ -324,17 +346,20 @@ export class UserController {
 ## 3. Microservices (Only for Large Teams)
 
 **WARNING:** Don't use microservices unless you have:
+
 - 50+ developers
 - Established product with millions of users
 - DevOps team to manage infrastructure
 - Strong monitoring and observability
 
 **Best For:**
+
 - Large enterprises (100+ engineers)
 - Independent team scaling
 - Different languages per service
 
 **Architecture:**
+
 ```
 ┌──────────┐
 │ Frontend │
@@ -357,11 +382,13 @@ export class UserController {
 ```
 
 **Pros:**
+
 - ✅ Independent deployment
 - ✅ Technology flexibility (Node, Python, Go per service)
 - ✅ Team autonomy
 
 **Cons:**
+
 - ❌ **Extreme complexity**
 - ❌ Network latency between services
 - ❌ Distributed transactions are hard
@@ -370,12 +397,14 @@ export class UserController {
 - ❌ DevOps overhead
 
 **When to Use:**
+
 - You have 50+ engineers
 - You've outgrown a monolith
 - You understand the trade-offs
 - You have a dedicated DevOps team
 
 **DO NOT use microservices for:**
+
 - MVPs
 - Small teams
 - Because it's "modern" or "best practice"
@@ -385,11 +414,13 @@ export class UserController {
 ## 4. Serverless Architecture
 
 **Best For:**
+
 - Variable/spiky traffic
 - Want zero infrastructure management
 - Cost optimization (pay per request)
 
 **Architecture:**
+
 ```
 ┌──────────────┐
 │   Frontend   │
@@ -410,23 +441,27 @@ export class UserController {
 ```
 
 **Tech Stack:**
+
 - **Frontend:** Next.js (Vercel)
 - **API:** Vercel Edge Functions or AWS Lambda
 - **Database:** Neon (serverless PostgreSQL)
 - **Auth:** Clerk, Auth0
 
 **Pros:**
+
 - ✅ Automatic scaling
 - ✅ Pay per request (cheap for low traffic)
 - ✅ Zero server management
 
 **Cons:**
+
 - ⚠️ Cold starts (latency)
 - ⚠️ Vendor lock-in
 - ⚠️ Hard to debug locally
 - ⚠️ Stateless (no WebSockets, long-running tasks)
 
 **When to Use:**
+
 - Unpredictable traffic patterns
 - Want minimal ops work
 - Building on Vercel/AWS ecosystem
@@ -438,6 +473,7 @@ export class UserController {
 ### Example 1: SaaS Project Management Tool
 
 **Requirements:**
+
 - User authentication
 - Projects, tasks, comments
 - Real-time updates
@@ -446,11 +482,13 @@ export class UserController {
 **Recommended:** **Separate Frontend/Backend Monolith**
 
 **Why:**
+
 - Need WebSockets for real-time (Socket.io)
 - Background jobs (email notifications)
 - Clear separation for frontend/backend teams
 
 **Tech Stack:**
+
 - Frontend: Next.js (Vercel)
 - Backend: Node.js + Express + Socket.io (Railway)
 - Database: PostgreSQL (Neon)
@@ -461,6 +499,7 @@ export class UserController {
 ### Example 2: E-Commerce Store
 
 **Requirements:**
+
 - Product catalog
 - Shopping cart
 - Checkout (Stripe)
@@ -470,11 +509,13 @@ export class UserController {
 **Recommended:** **Full-Stack Next.js** (for MVP) → **Separate Monolith** (for scale)
 
 **Start with:**
+
 - Next.js full-stack (Vercel)
 - PostgreSQL (Neon)
 - Stripe API
 
 **Grow to:**
+
 - Separate backend for inventory management
 - Background jobs for order processing
 
@@ -483,6 +524,7 @@ export class UserController {
 ### Example 3: Content Platform (Blog, CMS)
 
 **Requirements:**
+
 - Articles, authors
 - Comments
 - Search
@@ -491,11 +533,13 @@ export class UserController {
 **Recommended:** **Full-Stack Next.js + ISR**
 
 **Why:**
+
 - Mostly static content (use Incremental Static Regeneration)
 - Simple CRUD operations
 - No complex backend logic
 
 **Tech Stack:**
+
 - Next.js with ISR (Vercel)
 - PostgreSQL or MongoDB
 - Algolia (search)
@@ -507,11 +551,13 @@ export class UserController {
 ### From Full-Stack Next.js → Separate Backend
 
 **When to migrate:**
+
 - API routes becoming complex
 - Need background jobs
 - Team growing (5+ developers)
 
 **Migration Steps:**
+
 1. Create separate backend repo (Express)
 2. Move API route logic to Express endpoints
 3. Add CORS configuration
@@ -524,11 +570,13 @@ export class UserController {
 ### From Monolith → Modular Monolith
 
 **When to migrate:**
+
 - Codebase becoming hard to navigate
 - Multiple teams working on same repo
 - Want better organization
 
 **Migration Steps:**
+
 1. Create `modules/` directory
 2. Group related code by domain (auth, users, billing)
 3. Refactor to use module structure
@@ -541,20 +589,24 @@ export class UserController {
 ### For 90% of SaaS Projects:
 
 **Start:** Full-Stack Next.js (Pattern 1A)
+
 - Perfect for MVP
 - Fastest to market
 - One deployment
 
 **Grow:** Separate Frontend/Backend (Pattern 1B)
+
 - When you need background jobs
 - When team grows to 5+ people
 - When you need WebSockets
 
 **Eventually:** Modular Monolith (Pattern 2)
+
 - Only when you have 20+ developers
 - When you need better code organization
 
 **Never:** Microservices
+
 - Unless you have 50+ developers and a DevOps team
 
 ---
@@ -631,13 +683,13 @@ npx tsc --init
 
 ## 10. Decision Matrix
 
-| Pattern | Team Size | Complexity | Best For |
-|---------|-----------|------------|----------|
-| **Full-Stack Next.js** | 1-3 | Low | MVPs, side projects |
-| **Separate Monolith** | 3-10 | Medium | Growing SaaS |
-| **Modular Monolith** | 10-50 | Medium-High | Established products |
-| **Microservices** | 50+ | Very High | Large enterprises |
-| **Serverless** | Any | Low-Medium | Variable traffic |
+| Pattern                | Team Size | Complexity  | Best For             |
+| ---------------------- | --------- | ----------- | -------------------- |
+| **Full-Stack Next.js** | 1-3       | Low         | MVPs, side projects  |
+| **Separate Monolith**  | 3-10      | Medium      | Growing SaaS         |
+| **Modular Monolith**   | 10-50     | Medium-High | Established products |
+| **Microservices**      | 50+       | Very High   | Large enterprises    |
+| **Serverless**         | Any       | Low-Medium  | Variable traffic     |
 
 ---
 
@@ -662,14 +714,16 @@ Use the [@Research](../agents/1-leadership/research.md) agent to compare options
 ## Related Guides
 
 **Database & Tech Stack:**
+
 - [Database Decision Framework](./DATABASE-DECISION-FRAMEWORK.md) - PostgreSQL vs MongoDB vs MySQL
 - [AI Model Selection](./AI-MODEL-SELECTION.md) - Choose the right AI for each task
 
 **Workflows & Implementation:**
+
 - [Project Orchestration](./PROJECT-ORCHESTRATION.md) - Multi-agent workflows for building features
 - [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Real-world examples (Stripe, emails, migrations)
 - [Multi-Tool Workflow](./MULTI-TOOL-WORKFLOW.md) - Coordinate multiple AI tools together
 
 ---
 
-*Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*
+_Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer_

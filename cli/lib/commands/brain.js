@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Brain Sync Command
  * Auto-sync CONTEXT.md with codebase changes, git history, and project state
@@ -22,15 +24,15 @@ export async function brainCommand(options) {
   try {
     // Load current state
     const state = await loadState();
-    
+
     // Scan project graph
     await projectGraph.scan();
     const graphSummary = projectGraph.getSummary();
-    
+
     // Update CONTEXT.md with latest information
     const contextPath = path.resolve(process.cwd(), 'CONTEXT.md');
     let contextContent = '';
-    
+
     try {
       contextContent = await fs.readFile(contextPath, 'utf8');
     } catch (error) {
@@ -68,17 +70,17 @@ Setting up the implementation plan.
       const diffSummary = await buildDiffSummary();
       enhancedContext = await applyDiffSummary(enhancedContext, diffSummary);
     }
-    
+
     // Write updated context
     await fs.writeFile(contextPath, enhancedContext);
-    
+
     spinner.succeed('Context synchronized with project state');
-    
+
     console.log(chalk.green('✅ CONTEXT.md updated with current project information'));
     console.log(chalk.gray(`  - Files analyzed: ${graphSummary.nodeCount}`));
     console.log(chalk.gray(`  - Dependencies mapped: ${graphSummary.edgeCount}`));
     console.log(chalk.gray(`  - Project phases: ${state?.phases?.length || 0}`));
-    
+
     if (options.commit) {
       console.log(chalk.cyan('\n committing changes...'));
       try {
@@ -90,7 +92,7 @@ Setting up the implementation plan.
         console.log(chalk.yellow('⚠️  Git commit failed (not in git repo or no changes)'));
       }
     }
-    
+
     if (options.push) {
       console.log(chalk.cyan(' pushing to remote...'));
       try {
@@ -101,7 +103,6 @@ Setting up the implementation plan.
         console.log(chalk.yellow('⚠️  Git push failed'));
       }
     }
-    
   } catch (error) {
     spinner.fail('Context sync failed');
     console.error(chalk.red(`❌ ${error.message}`));
@@ -113,7 +114,7 @@ export async function enhanceContextWithProjectInfo(context, state, graphSummary
   // 1. Remove existing "Current State" blocks (and their content up to next header)
   // We use a regex that matches "### Current State" and everything until the next "## " header or end of string
   let newContext = context
-    .replace(/\n### Current State[\s\S]*?(?=\n## |\n$|$)/g, '') 
+    .replace(/\n### Current State[\s\S]*?(?=\n## |\n$|$)/g, '')
     .replace(/\n## Project Statistics[\s\S]*?(?=\n## |\n$|$)/g, '')
     .trim();
 
@@ -127,8 +128,9 @@ export async function enhanceContextWithProjectInfo(context, state, graphSummary
 
   if (state?.phases && state.phases.length > 0) {
     currentStateBlock += `\n### Active Phases:\n`;
-    for (const phase of state.phases.slice(0, 3)) { // Show first 3 phases
-      currentStateBlock += `- **${phase.name}**: ${phase.status} (${phase.steps.filter(s => s.status === 'completed').length}/${phase.steps.length} tasks complete)\n`;
+    for (const phase of state.phases.slice(0, 3)) {
+      // Show first 3 phases
+      currentStateBlock += `- **${phase.name}**: ${phase.status} (${phase.steps.filter((s) => s.status === 'completed').length}/${phase.steps.length} tasks complete)\n`;
     }
   }
 
@@ -136,7 +138,7 @@ export async function enhanceContextWithProjectInfo(context, state, graphSummary
   // Find "## Current Focus"
   const focusRegex = /(## Current Focus[\s\S]*?)(?=\n## |$)/;
   const match = newContext.match(focusRegex);
-  
+
   if (match) {
     // We found the section. We append our block to it.
     // match[0] is the entire "Current Focus" section content
@@ -163,14 +165,23 @@ export async function enhanceContextWithProjectInfo(context, state, graphSummary
 
 export async function buildDiffSummary() {
   try {
-    const upstream = execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}', { encoding: 'utf8', stdio: 'pipe' }).trim();
+    const upstream = execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}', {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    }).trim();
     const range = `${upstream}..HEAD`;
     const stat = execSync(`git diff --stat ${range}`, { encoding: 'utf8', stdio: 'pipe' }).trim();
-    const commits = execSync(`git log --oneline ${range}`, { encoding: 'utf8', stdio: 'pipe' }).trim();
+    const commits = execSync(`git log --oneline ${range}`, {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    }).trim();
     return { range, stat, commits };
   } catch (error) {
     try {
-      const stat = execSync('git diff --stat HEAD~1..HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim();
+      const stat = execSync('git diff --stat HEAD~1..HEAD', {
+        encoding: 'utf8',
+        stdio: 'pipe',
+      }).trim();
       const commits = execSync('git log -1 --oneline', { encoding: 'utf8', stdio: 'pipe' }).trim();
       return { range: 'HEAD~1..HEAD', stat, commits };
     } catch {

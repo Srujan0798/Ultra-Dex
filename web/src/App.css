@@ -86,8 +86,8 @@
   grid-template-columns: 220px minmax(0, 1.7fr) minmax(0, 1fr);
   grid-template-rows: auto auto;
   grid-template-areas:
-    "agents editor preview"
-    "agents terminal preview";
+    'agents editor preview'
+    'agents terminal preview';
   gap: 20px;
 }
 
@@ -162,7 +162,9 @@
   background: #0f1117;
   color: var(--text);
   cursor: pointer;
-  transition: border 0.2s ease, transform 0.2s ease;
+  transition:
+    border 0.2s ease,
+    transform 0.2s ease;
 }
 
 .agent-card span {
@@ -322,9 +324,9 @@
   .ide-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "agents"
-      "editor"
-      "preview"
-      "terminal";
+      'agents'
+      'editor'
+      'preview'
+      'terminal';
   }
 }

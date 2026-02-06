@@ -20,14 +20,14 @@
 
 **Ultra-Dex = Memory + Structure + Quality for AI Development**
 
-| Component | What It Does |
-|-----------|--------------|
-| **CONTEXT.md** | Version-controlled memory (auditable via git diff) |
-| **18 Agents** | Specialized AI roles (CTO, Backend, Security, etc.) |
-| **50+ Commands** | CLI for orchestration, verification, generation |
-| **34-Section Template** | Structure for complex SaaS implementation |
-| **21-Step Verification** | Quality gates before code is "done" |
-| **MCP Server** | Integration with Cursor, Claude Code, Windsurf |
+| Component                | What It Does                                        |
+| ------------------------ | --------------------------------------------------- |
+| **CONTEXT.md**           | Version-controlled memory (auditable via git diff)  |
+| **18 Agents**            | Specialized AI roles (CTO, Backend, Security, etc.) |
+| **50+ Commands**         | CLI for orchestration, verification, generation     |
+| **34-Section Template**  | Structure for complex SaaS implementation           |
+| **21-Step Verification** | Quality gates before code is "done"                 |
+| **MCP Server**           | Integration with Cursor, Claude Code, Windsurf      |
 
 ---
 
@@ -76,12 +76,12 @@ npx ultra-dex watch                   # Auto-execute on changes
 
 ## 🆚 COMPETITIVE POSITIONING
 
-| Tool | What They Do | Our Relationship |
-|------|--------------|------------------|
-| **Cursor** | IDE with AI | We are their memory |
-| **Devin** | Full agent | We give it structure |
-| **Claude Code** | Codebase agent | We prevent its amnesia |
-| **Bolt.new** | Quick prototypes | We productionize |
+| Tool            | What They Do     | Our Relationship       |
+| --------------- | ---------------- | ---------------------- |
+| **Cursor**      | IDE with AI      | We are their memory    |
+| **Devin**       | Full agent       | We give it structure   |
+| **Claude Code** | Codebase agent   | We prevent its amnesia |
+| **Bolt.new**    | Quick prototypes | We productionize       |
 
 **We are the META-LAYER that sits above all tools.**
 
@@ -89,15 +89,16 @@ npx ultra-dex watch                   # Auto-execute on changes
 
 ## 📊 CURRENT STATUS (v3.5.0 → v3.6.0)
 
-| Category | Status |
-|----------|--------|
+| Category      | Status                 |
+| ------------- | ---------------------- |
 | **Published** | ultra-dex@3.5.0 on npm |
-| **Commands** | 50+ working |
-| **Agents** | 18 tiered |
-| **Tests** | 300+ passing |
-| **Coverage** | ~90% |
+| **Commands**  | 50+ working            |
+| **Agents**    | 18 tiered              |
+| **Tests**     | 300+ passing           |
+| **Coverage**  | ~90%                   |
 
 ### v3.6.0 In Progress (8 terminals)
+
 - Voice-to-Plan ✅ Pushed
 - Live Boilerplate ✅ Pushed
 - PTY Mode ✅ Done
@@ -112,15 +113,18 @@ npx ultra-dex watch                   # Auto-execute on changes
 ## 🎯 THE PHILOSOPHY
 
 ### "Glass Box" vs "Black Box"
+
 - **Black Box (others):** AI manages context invisibly
 - **Glass Box (us):** Context is static Markdown, auditable via git
 
 ### "Skeleton, Not Cage"
+
 - We don't restrict creativity
 - We provide structure that prevents chaos
 - AI can still do anything, but within a trackable framework
 
 ### Key Principles
+
 1. **Version-Controlled Context** - Not chat history
 2. **Atomic Tasks** - Fresh context per task, no bleed
 3. **Human Loop** - Verify after each "atom" of work
@@ -128,4 +132,4 @@ npx ultra-dex watch                   # Auto-execute on changes
 
 ---
 
-*Ultra-Dex is "The Headless CTO" - infrastructure that makes AI tools production-ready.*
+_Ultra-Dex is "The Headless CTO" - infrastructure that makes AI tools production-ready._

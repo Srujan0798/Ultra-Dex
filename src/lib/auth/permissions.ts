@@ -3,7 +3,7 @@ export type Role = 'admin' | 'editor' | 'viewer';
 export const ROLE_PERMISSIONS: Record<Role, string[]> = {
   admin: ['*'],
   editor: ['post:create', 'post:edit', 'post:delete', 'settings:view'],
-  viewer: ['post:view', 'settings:view']
+  viewer: ['post:view', 'settings:view'],
 };
 
 export function hasPermission(role: Role, permission: string) {

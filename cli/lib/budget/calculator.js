@@ -1,8 +1,10 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export const PROVIDER_PRICING = {
   'gpt-4o': { input: 5, output: 15 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
   'claude-3-5-sonnet': { input: 3, output: 15 },
-  'gemini-1.5-pro': { input: 1.25, output: 5 }
+  'gemini-1.5-pro': { input: 1.25, output: 5 },
 };
 
 export function estimateCost(model, inputTokens, outputTokens) {
@@ -13,6 +15,6 @@ export function estimateCost(model, inputTokens, outputTokens) {
   return {
     input: inputCost,
     output: outputCost,
-    total: inputCost + outputCost
+    total: inputCost + outputCost,
   };
 }

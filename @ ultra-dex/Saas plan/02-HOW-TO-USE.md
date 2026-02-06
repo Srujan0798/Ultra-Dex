@@ -18,20 +18,21 @@ Don't fill all 34 sections before writing code. That's the paralysis trap.
 
 **Fill ONLY these sections before coding:**
 
-| Section | What to Fill | Time |
-|---------|--------------|------|
-| 1. High-Level Summary | 2-sentence description | 10 min |
-| 2. Core Features | P0 features only (3-5 max) | 30 min |
-| 4. User Personas | 2-3 personas max | 20 min |
-| 6. Screen/Page Map | Core screens only | 30 min |
-| 10. Data Model | Core entities only | 1 hour |
-| 11. API Blueprint | Core endpoints only | 1 hour |
-| 12. System Architecture | High-level diagram | 30 min |
-| 15. Tech Stack | Your choices | 15 min |
+| Section                 | What to Fill               | Time   |
+| ----------------------- | -------------------------- | ------ |
+| 1. High-Level Summary   | 2-sentence description     | 10 min |
+| 2. Core Features        | P0 features only (3-5 max) | 30 min |
+| 4. User Personas        | 2-3 personas max           | 20 min |
+| 6. Screen/Page Map      | Core screens only          | 30 min |
+| 10. Data Model          | Core entities only         | 1 hour |
+| 11. API Blueprint       | Core endpoints only        | 1 hour |
+| 12. System Architecture | High-level diagram         | 30 min |
+| 15. Tech Stack          | Your choices               | 15 min |
 
 **Total: ~4-5 hours**
 
 **Then START CODING:**
+
 - Set up project structure
 - Implement database models from Section 10
 - Build API endpoints from Section 11
@@ -43,11 +44,11 @@ Don't fill all 34 sections before writing code. That's the paralysis trap.
 
 **Fill as you build:**
 
-| Section | When to Fill | How |
-|---------|--------------|-----|
-| 9. Feature Specs | Before each feature | One feature at a time |
-| 16. Implementation Plan | Weekly update | Track progress |
-| 20. Test Plan | As you code | Write tests alongside code |
+| Section                 | When to Fill        | How                        |
+| ----------------------- | ------------------- | -------------------------- |
+| 9. Feature Specs        | Before each feature | One feature at a time      |
+| 16. Implementation Plan | Weekly update       | Track progress             |
+| 20. Test Plan           | As you code         | Write tests alongside code |
 
 **Use the 21-step as quality gates, not ceremony:**
 
@@ -64,13 +65,13 @@ Verification (16-21):     QA/staging check
 
 **Fill production sections:**
 
-| Section | Fill When |
-|---------|-----------|
-| 19. Deployment Plan | Before first deploy |
-| 21. Security Guidelines | Before production |
-| 22. Non-Functional Requirements | Performance tuning |
-| 27. Error Handling | After core features |
-| 28. Legal & Compliance | Before public launch |
+| Section                         | Fill When            |
+| ------------------------------- | -------------------- |
+| 19. Deployment Plan             | Before first deploy  |
+| 21. Security Guidelines         | Before production    |
+| 22. Non-Functional Requirements | Performance tuning   |
+| 27. Error Handling              | After core features  |
+| 28. Legal & Compliance          | Before public launch |
 
 ---
 
@@ -90,13 +91,13 @@ Verification (16-21):     QA/staging check
 
 For bug fixes and small changes, use this simplified version:
 
-| Step | Question | Time |
-|------|----------|------|
-| 1. Plan | What exactly am I changing? | 5 min |
-| 2. Code | Does it work? Manual test passed? | 4-8 hours |
-| 3. Test | Did I add/update tests? | 30 min |
-| 4. Document | Any comments needed for complex logic? | 10 min |
-| 5. Deploy | Can I deploy this without breaking things? | 15 min |
+| Step        | Question                                   | Time      |
+| ----------- | ------------------------------------------ | --------- |
+| 1. Plan     | What exactly am I changing?                | 5 min     |
+| 2. Code     | Does it work? Manual test passed?          | 4-8 hours |
+| 3. Test     | Did I add/update tests?                    | 30 min    |
+| 4. Document | Any comments needed for complex logic?     | 10 min    |
+| 5. Deploy   | Can I deploy this without breaking things? | 15 min    |
 
 **Use full 21-step for:** New features, security changes, database migrations, API changes.
 
@@ -144,12 +145,14 @@ Week 9-12:   Sections 25-34 (Polish & Compliance)
 ### B2B SaaS (Stripe, Linear, Notion style)
 
 **High Priority:**
+
 - Section 21: Security Guidelines
 - Section 27: Error Handling
 - Section 28: Legal & Compliance
 - Section 22: Non-Functional Requirements
 
 **Lower Priority:**
+
 - Section 29: SEO (less critical for B2B)
 - Section 30: i18n (start with one language)
 
@@ -158,12 +161,14 @@ Week 9-12:   Sections 25-34 (Polish & Compliance)
 ### Consumer App (Instagram, TikTok style)
 
 **High Priority:**
+
 - Section 29: SEO Strategy
 - Section 30: Internationalization
 - Section 32: Real-time Features
 - Section 22: Performance (critical for UX)
 
 **Lower Priority:**
+
 - Section 28: Legal (simpler for consumer)
 - Section 34: AI/ML (unless core feature)
 
@@ -172,12 +177,14 @@ Week 9-12:   Sections 25-34 (Polish & Compliance)
 ### Marketplace (Airbnb, Uber style)
 
 **High Priority:**
+
 - Section 21: Security (payment handling)
 - Section 27: Error Handling (transactions)
 - Section 28: Legal (two-sided compliance)
 - Section 32: Real-time (matching, notifications)
 
 **Lower Priority:**
+
 - Section 34: AI/ML (add later for recommendations)
 
 ---
@@ -185,6 +192,7 @@ Week 9-12:   Sections 25-34 (Polish & Compliance)
 ### Enterprise SaaS (Salesforce, ServiceNow style)
 
 **Use ALL sections, but:**
+
 - Focus heavily on Sections 21-23 (Security, Performance, Risks)
 - Section 28: Legal (SOC2, GDPR, etc.)
 - Section 31: Feature Flags (enterprise rollouts)
@@ -196,11 +204,13 @@ Week 9-12:   Sections 25-34 (Polish & Compliance)
 **Don't fill sections you haven't hit yet.**
 
 When you encounter a problem:
+
 1. Open the relevant section
 2. Fill it with YOUR specific solution
 3. Move on
 
 **Example:**
+
 - Hit a caching issue? Open Section 22 (Non-Functional), fill the caching part
 - Adding Stripe? Open Section 11 (API), add payment endpoints
 - Need error pages? Open Section 27, fill error handling strategy
@@ -252,24 +262,24 @@ Then **start coding**.
 
 ### When to Reference Each Section
 
-| You're Doing... | Open Section... |
-|-----------------|-----------------|
-| Starting the project | 1, 2, 15 |
-| Designing database | 10 |
-| Building APIs | 11 |
-| Creating UI | 6, 7, 8 |
-| Writing a feature | 9 |
-| Planning sprint | 16 |
-| Deploying | 19 |
-| Writing tests | 20 |
-| Security audit | 21 |
-| Performance issues | 22 |
-| Error handling | 27 |
-| Legal/compliance | 28 |
-| SEO setup | 29 |
-| Adding i18n | 30 |
-| Feature flags | 31 |
-| Real-time features | 32 |
+| You're Doing...      | Open Section... |
+| -------------------- | --------------- |
+| Starting the project | 1, 2, 15        |
+| Designing database   | 10              |
+| Building APIs        | 11              |
+| Creating UI          | 6, 7, 8         |
+| Writing a feature    | 9               |
+| Planning sprint      | 16              |
+| Deploying            | 19              |
+| Writing tests        | 20              |
+| Security audit       | 21              |
+| Performance issues   | 22              |
+| Error handling       | 27              |
+| Legal/compliance     | 28              |
+| SEO setup            | 29              |
+| Adding i18n          | 30              |
+| Feature flags        | 31              |
+| Real-time features   | 32              |
 
 ---
 
@@ -286,12 +296,12 @@ Then **start coding**.
 
 ---
 
-*"Do it right the first time, verify it the 21st time - but only for things that matter."*
+_"Do it right the first time, verify it the 21st time - but only for things that matter."_
 
 ---
 
 ## Navigation
 
-| ← Previous | Current | Next → |
-|------------|---------|--------|
+| ← Previous                            | Current           | Next →                                |
+| ------------------------------------- | ----------------- | ------------------------------------- |
 | [01-QUICK-START](./01-QUICK-START.md) | **02-HOW-TO-USE** | [03-METHODOLOGY](./03-METHODOLOGY.md) |

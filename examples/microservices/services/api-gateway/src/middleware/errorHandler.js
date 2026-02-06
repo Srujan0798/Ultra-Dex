@@ -6,7 +6,7 @@ const errorHandler = (err, req, res, next) => {
     error: err.message,
     stack: err.stack,
     path: req.path,
-    method: req.method
+    method: req.method,
   });
 
   if (err.name === 'UnauthorizedError') {
@@ -19,7 +19,7 @@ const errorHandler = (err, req, res, next) => {
 
   res.status(err.status || 500).json({
     error: err.message || 'Internal Server Error',
-    requestId: req.id
+    requestId: req.id,
   });
 };
 

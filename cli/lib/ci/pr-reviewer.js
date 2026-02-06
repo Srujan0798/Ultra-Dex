@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -17,7 +19,7 @@ async function main() {
   const summary = {
     alignmentScore: score,
     status: score >= 50 ? 'pass' : 'fail',
-    suggestions: score >= 50 ? [] : ['Update CONTEXT.md and IMPLEMENTATION-PLAN.md']
+    suggestions: score >= 50 ? [] : ['Update CONTEXT.md and IMPLEMENTATION-PLAN.md'],
   };
 
   process.stdout.write(JSON.stringify(summary, null, 2) + '\n');

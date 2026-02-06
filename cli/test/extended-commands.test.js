@@ -20,23 +20,23 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
 async function createTempProject(files = {}) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-test-'));
-  
+
   for (const [filePath, content] of Object.entries(files)) {
     const fullPath = path.join(tmpDir, filePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, content);
   }
-  
+
   return tmpDir;
 }
 
@@ -53,23 +53,23 @@ describe('watch command', () => {
 
   test('watch requires --run option', async () => {
     const tmpDir = await createTempProject({
-      'test.txt': 'hello'
+      'test.txt': 'hello',
     });
-    
+
     // Run watch briefly - it will be killed after timeout
     const result = spawnSync(process.execPath, [cliPath, 'watch'], {
       cwd: tmpDir,
       encoding: 'utf8',
-      timeout: 2000
+      timeout: 2000,
     });
-    
+
     // Should show error about missing --run
     assert.ok(
-      result.output.includes('run') || 
-      result.output.includes('command') ||
-      result.output.includes('error')
+      result.output.includes('run') ||
+        result.output.includes('command') ||
+        result.output.includes('error')
     );
-    
+
     await fs.rm(tmpDir, { recursive: true });
   });
 
@@ -87,9 +87,9 @@ describe('watch command', () => {
   test('watch --only-ts flag', () => {
     const result = runCli(['watch', '--only-ts', '--run', 'echo test']);
     assert.ok(
-      result.output.includes('TypeScript') || 
-      result.output.includes('.ts') ||
-      result.output.includes('Watching')
+      result.output.includes('TypeScript') ||
+        result.output.includes('.ts') ||
+        result.output.includes('Watching')
     );
   });
 });
@@ -106,10 +106,10 @@ describe('fix command', () => {
         name: 'test-project',
         devDependencies: {
           eslint: '^8.0.0',
-          prettier: '^3.0.0'
-        }
+          prettier: '^3.0.0',
+        },
       }),
-      'src/index.js': 'const x = 1; console.log(x)'
+      'src/index.js': 'const x = 1; console.log(x)',
     });
   });
 
@@ -127,35 +127,35 @@ describe('fix command', () => {
 
   test('fix --dry-run shows what would be fixed', async () => {
     const result = runCli(['fix', '--dry-run'], { cwd: tmpDir });
-    
+
     // Should show dry run information
     assert.ok(
-      result.output.includes('dry') || 
-      result.output.includes('Dry') ||
-      result.output.includes('Would fix') ||
-      result.output.includes('No fixers')
+      result.output.includes('dry') ||
+        result.output.includes('Dry') ||
+        result.output.includes('Would fix') ||
+        result.output.includes('No fixers')
     );
   });
 
   test('fix --lint option', async () => {
     const result = runCli(['fix', '--lint', '--dry-run'], { cwd: tmpDir });
-    
+
     assert.ok(
-      result.output.includes('lint') || 
-      result.output.includes('ESLint') ||
-      result.output.includes('No fixers') ||
-      result.output.includes('Would fix')
+      result.output.includes('lint') ||
+        result.output.includes('ESLint') ||
+        result.output.includes('No fixers') ||
+        result.output.includes('Would fix')
     );
   });
 
   test('fix --format option', async () => {
     const result = runCli(['fix', '--format', '--dry-run'], { cwd: tmpDir });
-    
+
     assert.ok(
-      result.output.includes('format') || 
-      result.output.includes('Prettier') ||
-      result.output.includes('No fixers') ||
-      result.output.includes('Would fix')
+      result.output.includes('format') ||
+        result.output.includes('Prettier') ||
+        result.output.includes('No fixers') ||
+        result.output.includes('Would fix')
     );
   });
 
@@ -179,20 +179,20 @@ describe('upgrade command', () => {
     const result = runCli(['upgrade', '--check']);
     // Should either show current version or check npm
     assert.ok(
-      result.output.includes('version') || 
-      result.output.includes('3.4') ||
-      result.output.includes('check') ||
-      result.output.includes('latest')
+      result.output.includes('version') ||
+        result.output.includes('3.4') ||
+        result.output.includes('check') ||
+        result.output.includes('latest')
     );
   });
 
   test('upgrade shows current version', () => {
     const result = runCli(['upgrade']);
     assert.ok(
-      result.output.includes('version') || 
-      result.output.includes('3.4') ||
-      result.output.includes('Upgrade') ||
-      result.output.includes('npm')
+      result.output.includes('version') ||
+        result.output.includes('3.4') ||
+        result.output.includes('Upgrade') ||
+        result.output.includes('npm')
     );
   });
 
@@ -216,10 +216,10 @@ describe('fetch command', () => {
     const result = runCli(['fetch']);
     // Should show error about missing URL
     assert.ok(
-      result.output.includes('url') || 
-      result.output.includes('URL') ||
-      result.output.includes('required') ||
-      result.output.includes('argument')
+      result.output.includes('url') ||
+        result.output.includes('URL') ||
+        result.output.includes('required') ||
+        result.output.includes('argument')
     );
   });
 
@@ -265,10 +265,10 @@ describe('performance command', () => {
     const result = runCli(['perf'], { cwd: tmpDir });
     // May show "no data" or summary
     assert.ok(
-      result.output.includes('performance') || 
-      result.output.includes('Performance') ||
-      result.output.includes('No performance data') ||
-      result.output.includes('Summary')
+      result.output.includes('performance') ||
+        result.output.includes('Performance') ||
+        result.output.includes('No performance data') ||
+        result.output.includes('Summary')
     );
   });
 
@@ -285,9 +285,9 @@ describe('performance command', () => {
   test('perf --clear clears history', async () => {
     const result = runCli(['perf', '--clear'], { cwd: tmpDir });
     assert.ok(
-      result.output.includes('clear') || 
-      result.output.includes('Cleared') ||
-      result.output.includes('No performance data')
+      result.output.includes('clear') ||
+        result.output.includes('Cleared') ||
+        result.output.includes('No performance data')
     );
   });
 });
@@ -299,22 +299,35 @@ describe('doctor command (extended)', () => {
   test('doctor runs all 17 checks', () => {
     const result = runCli(['doctor']);
     assert.equal(result.status, 0);
-    
+
     // Should run multiple checks
     const checkKeywords = [
-      'Node.js', 'Git', 'AI Providers', 'Project Structure',
-      'Git Hooks', 'Configuration', 'MCP Port', 'Disk Space',
-      'Ultra-Dex', 'Package Manager', 'Docker', 'IDE',
-      'Memory', 'Network', 'TypeScript', 'Environment', 'Linting'
+      'Node.js',
+      'Git',
+      'AI Providers',
+      'Project Structure',
+      'Git Hooks',
+      'Configuration',
+      'MCP Port',
+      'Disk Space',
+      'Ultra-Dex',
+      'Package Manager',
+      'Docker',
+      'IDE',
+      'Memory',
+      'Network',
+      'TypeScript',
+      'Environment',
+      'Linting',
     ];
-    
-    const foundChecks = checkKeywords.filter(kw => 
-      result.output.includes(kw)
-    );
-    
+
+    const foundChecks = checkKeywords.filter((kw) => result.output.includes(kw));
+
     // Should find at least 10 of the 17 checks
-    assert.ok(foundChecks.length >= 10, 
-      `Expected at least 10 checks, found ${foundChecks.length}: ${foundChecks.join(', ')}`);
+    assert.ok(
+      foundChecks.length >= 10,
+      `Expected at least 10 checks, found ${foundChecks.length}: ${foundChecks.join(', ')}`
+    );
   });
 
   test('doctor shows diagnostics report', () => {
@@ -326,11 +339,11 @@ describe('doctor command (extended)', () => {
     const result = runCli(['doctor']);
     // Should show some form of summary
     assert.ok(
-      result.output.includes('✓') || 
-      result.output.includes('✗') ||
-      result.output.includes('⚠') ||
-      result.output.includes('passed') ||
-      result.output.includes('failed')
+      result.output.includes('✓') ||
+        result.output.includes('✗') ||
+        result.output.includes('⚠') ||
+        result.output.includes('passed') ||
+        result.output.includes('failed')
     );
   });
 });
@@ -358,49 +371,49 @@ describe('config command (extended)', () => {
 
   test('config --validate validates configuration', async () => {
     const result = runCli(['config', '--validate'], { cwd: tmpDir });
-    
+
     assert.ok(
-      result.output.includes('valid') || 
-      result.output.includes('Validation') ||
-      result.output.includes('Configuration')
+      result.output.includes('valid') ||
+        result.output.includes('Validation') ||
+        result.output.includes('Configuration')
     );
   });
 
   test('config --export exports configuration', async () => {
     const exportPath = path.join(tmpDir, 'config-export.json');
     const result = runCli(['config', '--export', 'json'], { cwd: tmpDir });
-    
+
     assert.ok(
-      result.output.includes('export') || 
-      result.output.includes('Exported') ||
-      result.output.includes('config')
+      result.output.includes('export') ||
+        result.output.includes('Exported') ||
+        result.output.includes('config')
     );
   });
 
   test('config --set and --get work', async () => {
     // Set a value
     runCli(['config', '--set', 'test.key=value123'], { cwd: tmpDir });
-    
+
     // Get the value
     const result = runCli(['config', '--get', 'test.key'], { cwd: tmpDir });
-    
+
     assert.ok(
-      result.output.includes('value123') || 
-      result.output.includes('test.key') ||
-      result.output.includes('not set') ||
-      result.output.includes('(not set)')
+      result.output.includes('value123') ||
+        result.output.includes('test.key') ||
+        result.output.includes('not set') ||
+        result.output.includes('(not set)')
     );
   });
 
   test('config shows current configuration', async () => {
     const result = runCli(['config'], { cwd: tmpDir });
-    
+
     // Should show some configuration info
     assert.ok(
-      result.output.includes('provider') || 
-      result.output.includes('API') ||
-      result.output.includes('Configuration') ||
-      result.output.includes('wizard')
+      result.output.includes('provider') ||
+        result.output.includes('API') ||
+        result.output.includes('Configuration') ||
+        result.output.includes('wizard')
     );
   });
 });
@@ -423,13 +436,13 @@ describe('scaffold command (extended)', () => {
 
   test('scaffold lists 8 templates', () => {
     const result = runCli(['scaffold', '--help']);
-    
+
     // Help should mention templates
     assert.ok(
-      result.output.includes('template') || 
-      result.output.includes('next15') ||
-      result.output.includes('remix') ||
-      result.output.includes('sveltekit')
+      result.output.includes('template') ||
+        result.output.includes('next15') ||
+        result.output.includes('remix') ||
+        result.output.includes('sveltekit')
     );
   });
 
@@ -441,12 +454,12 @@ describe('scaffold command (extended)', () => {
 
   test('scaffold with invalid template shows error', async () => {
     const result = runCli(['scaffold', 'invalid-template'], { cwd: tmpDir });
-    
+
     assert.ok(
-      result.output.includes('not found') || 
-      result.output.includes('error') ||
-      result.output.includes('Error') ||
-      result.output.includes('available')
+      result.output.includes('not found') ||
+        result.output.includes('error') ||
+        result.output.includes('Error') ||
+        result.output.includes('available')
     );
   });
 
@@ -465,7 +478,7 @@ describe('command integration', () => {
   beforeEach(async () => {
     tmpDir = await createTempProject({
       'CONTEXT.md': '# Test',
-      'IMPLEMENTATION-PLAN.md': '# Plan'
+      'IMPLEMENTATION-PLAN.md': '# Plan',
     });
   });
 
@@ -480,7 +493,7 @@ describe('command integration', () => {
     const configResult = runCli(['config', '--validate'], { cwd: tmpDir });
     const doctorResult = runCli(['doctor'], { cwd: tmpDir });
     const validateResult = runCli(['validate'], { cwd: tmpDir });
-    
+
     // All should execute without crashing
     assert.ok(configResult.status !== null);
     assert.ok(doctorResult.status !== null);
@@ -489,14 +502,14 @@ describe('command integration', () => {
 
   test('multiple commands can run in sequence', async () => {
     const results = [];
-    
+
     results.push(runCli(['--version'], { cwd: tmpDir }));
     results.push(runCli(['doctor'], { cwd: tmpDir }));
     results.push(runCli(['config'], { cwd: tmpDir }));
     results.push(runCli(['agents'], { cwd: tmpDir }));
-    
+
     // All should complete (not hang)
-    results.forEach(r => {
+    results.forEach((r) => {
       assert.ok(r.status !== null || r.signal !== null);
     });
   });
@@ -508,11 +521,11 @@ describe('command integration', () => {
 describe('edge cases', () => {
   test('handles empty directory', async () => {
     const tmpDir = await createTempProject({});
-    
+
     const result = runCli(['validate'], { cwd: tmpDir });
     // Should handle gracefully
     assert.ok(result.output.length > 0);
-    
+
     await fs.rm(tmpDir, { recursive: true });
   });
 
@@ -531,16 +544,11 @@ describe('edge cases', () => {
 
   test('handles concurrent commands', async () => {
     // Run multiple commands "concurrently" (sequentially but quickly)
-    const commands = [
-      ['--version'],
-      ['--help'],
-      ['doctor'],
-      ['config']
-    ];
-    
-    const results = commands.map(args => runCli(args));
-    
+    const commands = [['--version'], ['--help'], ['doctor'], ['config']];
+
+    const results = commands.map((args) => runCli(args));
+
     // All should complete
-    results.forEach(r => assert.ok(r.status !== null));
+    results.forEach((r) => assert.ok(r.status !== null));
   });
 });

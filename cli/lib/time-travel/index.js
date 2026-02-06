@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Codebase Time-Travel
  * Visualize history, rollback with AI explanation, diff analysis, branch comparison.
@@ -14,7 +16,7 @@ export async function getHistory(limit = 20) {
   return stdout
     .split('\n')
     .filter(Boolean)
-    .map(line => {
+    .map((line) => {
       const [hash, author, date, message] = line.split('|');
       return { hash, author, date, message };
     });
@@ -41,7 +43,8 @@ export async function explainRollback(commitHash) {
     return { ok: false, message: 'No provider configured' };
   }
   const diff = await diffBetween(`${commitHash}^`, commitHash);
-  const systemPrompt = 'You are a senior engineer. Explain why rolling back this change is safe and what it impacts.';
+  const systemPrompt =
+    'You are a senior engineer. Explain why rolling back this change is safe and what it impacts.';
   const userPrompt = `Commit ${commitHash} diff:\n${diff}`;
   const response = await provider.generate(systemPrompt, userPrompt);
   return { ok: true, explanation: response.content || '' };
@@ -52,5 +55,5 @@ export default {
   diffBetween,
   compareBranches,
   rollbackTo,
-  explainRollback
+  explainRollback,
 };

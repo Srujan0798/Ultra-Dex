@@ -1,70 +1,70 @@
 import * as vscode from 'vscode';
 
 export class DashboardPanel {
-    public static currentPanel: DashboardPanel | undefined;
-    private readonly _panel: vscode.WebviewPanel;
-    private _disposables: vscode.Disposable[] = [];
+  public static currentPanel: DashboardPanel | undefined;
+  private readonly _panel: vscode.WebviewPanel;
+  private _disposables: vscode.Disposable[] = [];
 
-    public static createOrShow(extensionUri: vscode.Uri) {
-        const column = vscode.window.activeTextEditor
-            ? vscode.window.activeTextEditor.viewColumn
-            : undefined;
+  public static createOrShow(extensionUri: vscode.Uri) {
+    const column = vscode.window.activeTextEditor
+      ? vscode.window.activeTextEditor.viewColumn
+      : undefined;
 
-        if (DashboardPanel.currentPanel) {
-            DashboardPanel.currentPanel._panel.reveal(column);
+    if (DashboardPanel.currentPanel) {
+      DashboardPanel.currentPanel._panel.reveal(column);
+      return;
+    }
+
+    const panel = vscode.window.createWebviewPanel(
+      'ultraDexDashboard',
+      'Ultra-Dex Dashboard',
+      column || vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [extensionUri],
+      }
+    );
+
+    DashboardPanel.currentPanel = new DashboardPanel(panel, extensionUri);
+  }
+
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+    this._panel = panel;
+    this._panel.webview.html = this._getHtmlContent();
+
+    this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+
+    this._panel.webview.onDidReceiveMessage(
+      (message) => {
+        switch (message.command) {
+          case 'selectAgent':
+            vscode.commands.executeCommand('ultra-dex.selectAgent');
+            return;
+          case 'runSwarm':
+            vscode.commands.executeCommand('ultra-dex.runSwarm');
+            return;
+          case 'refresh':
+            this._panel.webview.html = this._getHtmlContent();
             return;
         }
+      },
+      null,
+      this._disposables
+    );
+  }
 
-        const panel = vscode.window.createWebviewPanel(
-            'ultraDexDashboard',
-            'Ultra-Dex Dashboard',
-            column || vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true,
-                localResourceRoots: [extensionUri]
-            }
-        );
-
-        DashboardPanel.currentPanel = new DashboardPanel(panel, extensionUri);
+  public dispose() {
+    DashboardPanel.currentPanel = undefined;
+    this._panel.dispose();
+    while (this._disposables.length) {
+      const x = this._disposables.pop();
+      if (x) x.dispose();
     }
+  }
 
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-        this._panel = panel;
-        this._panel.webview.html = this._getHtmlContent();
-
-        this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-
-        this._panel.webview.onDidReceiveMessage(
-            message => {
-                switch (message.command) {
-                    case 'selectAgent':
-                        vscode.commands.executeCommand('ultra-dex.selectAgent');
-                        return;
-                    case 'runSwarm':
-                        vscode.commands.executeCommand('ultra-dex.runSwarm');
-                        return;
-                    case 'refresh':
-                        this._panel.webview.html = this._getHtmlContent();
-                        return;
-                }
-            },
-            null,
-            this._disposables
-        );
-    }
-
-    public dispose() {
-        DashboardPanel.currentPanel = undefined;
-        this._panel.dispose();
-        while (this._disposables.length) {
-            const x = this._disposables.pop();
-            if (x) x.dispose();
-        }
-    }
-
-    private _getHtmlContent(): string {
-        return `<!DOCTYPE html>
+  private _getHtmlContent(): string {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -203,5 +203,5 @@ export class DashboardPanel {
   </script>
 </body>
 </html>`;
-    }
+  }
 }

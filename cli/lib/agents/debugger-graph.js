@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Debugger graph - analyzes failures and proposes fixes
  */
@@ -12,7 +14,7 @@ export function createDebuggerGraph(options = {}) {
   return createSimpleGraph({
     ...options,
     nodeName: 'debugger',
-    systemPrompt: SYSTEM_PROMPT
+    systemPrompt: SYSTEM_PROMPT,
   });
 }
 

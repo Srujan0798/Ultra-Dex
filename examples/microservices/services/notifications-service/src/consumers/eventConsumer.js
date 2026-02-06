@@ -54,7 +54,7 @@ const consumeEvents = async (channel, pool) => {
 
 const handleOrderEvent = async (content, pool) => {
   const { event, data } = content;
-  
+
   logger.info({ message: `Handling order event: ${event}`, data });
 
   if (event === 'order.created') {
@@ -63,9 +63,9 @@ const handleOrderEvent = async (content, pool) => {
       'SELECT * FROM notification_preferences WHERE user_id = $1',
       [data.userId]
     );
-    
+
     const preferences = prefResult.rows[0] || {};
-    
+
     if (preferences.email_enabled !== false) {
       // Send order confirmation email
       await createNotification(pool, {
@@ -74,7 +74,7 @@ const handleOrderEvent = async (content, pool) => {
         channel: 'order',
         title: `Order #${data.orderId} Confirmation`,
         content: `Thank you for your order! Your order #${data.orderId} for ${data.totalAmount} ${data.currency} has been received.`,
-        metadata: { orderId: data.orderId, amount: data.totalAmount }
+        metadata: { orderId: data.orderId, amount: data.totalAmount },
       });
     }
   }
@@ -86,14 +86,14 @@ const handleOrderEvent = async (content, pool) => {
       channel: 'order',
       title: `Order #${data.orderId} Status Update`,
       content: `Your order #${data.orderId} status has been updated to: ${data.status}`,
-      metadata: { orderId: data.orderId, status: data.status }
+      metadata: { orderId: data.orderId, status: data.status },
     });
   }
 };
 
 const handlePaymentEvent = async (content, pool) => {
   const { event, data } = content;
-  
+
   logger.info({ message: `Handling payment event: ${event}`, data });
 
   if (event === 'payment.processed') {
@@ -103,7 +103,7 @@ const handlePaymentEvent = async (content, pool) => {
       channel: 'payment',
       title: 'Payment Successful',
       content: `Your payment of ${data.amount} ${data.currency} has been processed successfully.`,
-      metadata: { paymentId: data.paymentId, amount: data.amount }
+      metadata: { paymentId: data.paymentId, amount: data.amount },
     });
   }
 
@@ -114,7 +114,7 @@ const handlePaymentEvent = async (content, pool) => {
       channel: 'payment',
       title: 'Payment Failed',
       content: `We were unable to process your payment of ${data.amount} ${data.currency}. Reason: ${data.reason}. Please try again.`,
-      metadata: { paymentId: data.paymentId, amount: data.amount, reason: data.reason }
+      metadata: { paymentId: data.paymentId, amount: data.amount, reason: data.reason },
     });
   }
 };
@@ -138,20 +138,20 @@ const createNotification = async (pool, notificationData) => {
       await emailProvider.send({
         to: userId, // In real implementation, fetch email from users service
         subject: title,
-        body: content
+        body: content,
       });
     } else if (type === 'sms') {
       await smsProvider.send({
         to: userId,
-        message: content
+        message: content,
       });
     }
 
     // Update as sent
-    await pool.query(
-      'UPDATE notifications SET status = $1, sent_at = NOW() WHERE id = $2',
-      ['sent', notification.id]
-    );
+    await pool.query('UPDATE notifications SET status = $1, sent_at = NOW() WHERE id = $2', [
+      'sent',
+      notification.id,
+    ]);
 
     logger.info({ message: 'Notification sent', notificationId: notification.id });
   } catch (error) {

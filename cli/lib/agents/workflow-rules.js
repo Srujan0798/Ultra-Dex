@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -8,7 +10,7 @@ export const GOLDEN_FLOW = [
   'Read AI-AGENT-PLAN.md',
   'Check agents/00-AGENT_INDEX.md',
   'Execute task',
-  'Update CONTEXT.md'
+  'Update CONTEXT.md',
 ];
 
 export async function runPreflight(projectRoot) {
@@ -16,7 +18,7 @@ export async function runPreflight(projectRoot) {
     contextLoaded: false,
     agentSelected: false,
     cursorRulesChecked: false,
-    noConflicts: true
+    noConflicts: true,
   };
 
   try {
@@ -45,8 +47,8 @@ export function warnIfSkipping(preflight) {
 
   if (missing.length) {
     printWarning(chalk.yellow('⚠️  Agent workflow steps missing:'));
-    missing.forEach(item => printWarning(`- ${item}`));
+    missing.forEach((item) => printWarning(`- ${item}`));
     printInfo(chalk.gray('Golden flow:'));
-    GOLDEN_FLOW.forEach(step => printInfo(chalk.gray(`  • ${step}`)));
+    GOLDEN_FLOW.forEach((step) => printInfo(chalk.gray(`  • ${step}`)));
   }
 }

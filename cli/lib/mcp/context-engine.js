@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { projectGraph, GraphRAG } from './graph.js';
 import fs from 'fs/promises';
 import path from 'path';
@@ -52,11 +54,11 @@ export class ContextEngine {
     }
 
     const startTime = Date.now();
-    
+
     // Check cache first
     const cacheKey = `${query}:${JSON.stringify(options)}`;
     const cached = this.contextCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
+    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
       return cached.context;
     }
 
@@ -70,19 +72,23 @@ export class ContextEngine {
         decisions: [],
         coupling: null,
         circularDeps: [],
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       // Determine if query is a file path or symbol
-      const isFilePath = query.includes('/') || query.includes('\\') || query.endsWith('.js') || query.endsWith('.ts');
-      
+      const isFilePath =
+        query.includes('/') ||
+        query.includes('\\') ||
+        query.endsWith('.js') ||
+        query.endsWith('.ts');
+
       if (isFilePath) {
         // Normalize path
         const normalizedPath = path.normalize(query);
         context.files = await this.getFileContext(normalizedPath, options);
-        context.impact = await this.graph.getImpactAnalysis(normalizedPath, { 
+        context.impact = await this.graph.getImpactAnalysis(normalizedPath, {
           maxDepth: options.impactDepth || 5,
-          includeFunctions: options.includeFunctions || false
+          includeFunctions: options.includeFunctions || false,
         });
       } else {
         // Treat as symbol search
@@ -106,7 +112,7 @@ export class ContextEngine {
       }
 
       // Read file contents
-      context.fileContents = await this.readFileContents(context.files.map(f => f.path || f));
+      context.fileContents = await this.readFileContents(context.files.map((f) => f.path || f));
 
       // Calculate context size
       context.size = this.calculateContextSize(context);
@@ -142,12 +148,14 @@ export class ContextEngine {
           symbols: node.symbols || [],
           functions: node.functions || [],
           dataTypes: node.dataTypes || [],
-          depth: currentDepth
+          depth: currentDepth,
         });
       }
 
       // Get dependencies
-      const deps = this.graph.edges.filter(e => e.from === currentPath && e.type === 'depends_on');
+      const deps = this.graph.edges.filter(
+        (e) => e.from === currentPath && e.type === 'depends_on'
+      );
       for (const dep of deps) {
         await traverse(dep.to, currentDepth + 1);
       }
@@ -173,7 +181,7 @@ export class ContextEngine {
           symbols: node.symbols || [],
           matchedSymbol: result.symbol,
           functions: node.functions || [],
-          dataTypes: node.dataTypes || []
+          dataTypes: node.dataTypes || [],
         });
       }
     }
@@ -186,7 +194,7 @@ export class ContextEngine {
    */
   async readFileContents(filePaths) {
     const contents = {};
-    
+
     for (const filePath of filePaths) {
       try {
         const fullPath = path.resolve(process.cwd(), filePath);
@@ -205,13 +213,13 @@ export class ContextEngine {
    */
   calculateContextSize(context) {
     let size = 0;
-    
+
     if (context.fileContents) {
       for (const [path, content] of Object.entries(context.fileContents)) {
         size += content.length;
       }
     }
-    
+
     return size;
   }
 
@@ -231,12 +239,14 @@ export class ContextEngine {
     if (context.impact && !context.impact.error) {
       sections.push('## Impact Analysis');
       sections.push(`**Risk Level:** ${context.impact.riskLevel || 'unknown'}`);
-      sections.push(`**Total Impacted Files:** ${context.impact.totalImpacted || context.impact.impactedFiles?.length || 0}`);
-      
+      sections.push(
+        `**Total Impacted Files:** ${context.impact.totalImpacted || context.impact.impactedFiles?.length || 0}`
+      );
+
       if (context.impact.impactedFiles && context.impact.impactedFiles.length > 0) {
         sections.push('');
         sections.push('### Files That Depend on This Change:');
-        context.impact.impactedFiles.slice(0, 20).forEach(item => {
+        context.impact.impactedFiles.slice(0, 20).forEach((item) => {
           if (typeof item === 'string') {
             sections.push(`- ${item}`);
           } else {
@@ -251,7 +261,7 @@ export class ContextEngine {
       if (context.impact.impactedFunctions && context.impact.impactedFunctions.length > 0) {
         sections.push('');
         sections.push('### Impacted Functions:');
-        context.impact.impactedFunctions.forEach(fn => {
+        context.impact.impactedFunctions.forEach((fn) => {
           sections.push(`- ${fn.function} in ${fn.file}`);
         });
       }
@@ -259,7 +269,7 @@ export class ContextEngine {
       if (context.impact.relatedDecisions && context.impact.relatedDecisions.length > 0) {
         sections.push('');
         sections.push('### Related Architectural Decisions:');
-        context.impact.relatedDecisions.forEach(d => {
+        context.impact.relatedDecisions.forEach((d) => {
           sections.push(`- **${d.title}**: ${d.description}`);
         });
       }
@@ -269,7 +279,7 @@ export class ContextEngine {
     // Dependencies
     if (context.dependencies && context.dependencies.length > 0) {
       sections.push('## Related Dependencies');
-      context.dependencies.forEach(dep => {
+      context.dependencies.forEach((dep) => {
         sections.push(`- ${dep.path} (${dep.type})`);
       });
       sections.push('');
@@ -278,7 +288,7 @@ export class ContextEngine {
     // Circular Dependencies
     if (context.circularDeps && context.circularDeps.length > 0) {
       sections.push('## ⚠️ Circular Dependencies Detected');
-      context.circularDeps.forEach(cycle => {
+      context.circularDeps.forEach((cycle) => {
         sections.push(`- ${cycle.join(' → ')} → ${cycle[0]}`);
       });
       sections.push('');
@@ -289,11 +299,11 @@ export class ContextEngine {
       sections.push('## Coupling Metrics');
       sections.push(`- Average coupling: ${context.coupling.averageCoupling?.toFixed(2) || 'N/A'}`);
       sections.push(`- Max coupling: ${context.coupling.maxCoupling || 'N/A'}`);
-      
+
       if (context.coupling.highlyCoupledFiles && context.coupling.highlyCoupledFiles.length > 0) {
         sections.push('');
         sections.push('### Highly Coupled Files:');
-        context.coupling.highlyCoupledFiles.forEach(f => {
+        context.coupling.highlyCoupledFiles.forEach((f) => {
           sections.push(`- ${f.file} (coupling: ${f.coupling})`);
         });
       }
@@ -303,7 +313,7 @@ export class ContextEngine {
     // Functions
     if (context.functions && context.functions.length > 0) {
       sections.push('## Related Functions');
-      context.functions.forEach(fn => {
+      context.functions.forEach((fn) => {
         if (typeof fn === 'string') {
           sections.push(`- ${fn}`);
         } else {
@@ -323,7 +333,7 @@ export class ContextEngine {
         const maxFileSize = options.maxFileSize || 5000;
         let truncatedContent = content;
         let wasTruncated = false;
-        
+
         if (content.length > maxFileSize) {
           truncatedContent = content.substring(0, maxFileSize) + '\n\n... [truncated]';
           wasTruncated = true;
@@ -346,7 +356,7 @@ export class ContextEngine {
    */
   async query(question, options = {}) {
     const lowerQuestion = question.toLowerCase();
-    
+
     // Parse question patterns
     const impactPattern = /what breaks|impact of|depend(s|encies) on/i;
     const couplingPattern = /coupling|tightly connected|highly coupled/i;
@@ -355,18 +365,20 @@ export class ContextEngine {
 
     if (impactPattern.test(lowerQuestion)) {
       // Extract file path or module name
-      const matches = question.match(/(?:change|modify|update)\s+(?:the\s+)?(.+?)(?:\?|\s+module|\s+file|$)/i);
+      const matches = question.match(
+        /(?:change|modify|update)\s+(?:the\s+)?(.+?)(?:\?|\s+module|\s+file|$)/i
+      );
       const target = matches ? matches[1].trim() : null;
-      
+
       if (target) {
-        const context = await this.buildContext(target, { 
-          ...options, 
-          includeFunctions: true 
+        const context = await this.buildContext(target, {
+          ...options,
+          includeFunctions: true,
         });
         return {
           type: 'impact_analysis',
           answer: this.formatImpactAnswer(context),
-          context
+          context,
         };
       }
     }
@@ -376,7 +388,7 @@ export class ContextEngine {
       return {
         type: 'coupling_analysis',
         answer: this.formatCouplingAnswer(coupling),
-        coupling
+        coupling,
       };
     }
 
@@ -385,19 +397,19 @@ export class ContextEngine {
       return {
         type: 'circular_deps',
         answer: this.formatCircularDepsAnswer(cycles),
-        cycles
+        cycles,
       };
     }
 
     if (symbolPattern.test(lowerQuestion)) {
       const matches = question.match(/(?:find|where is|search for)\s+(.+?)(?:\?|$)/i);
       const symbol = matches ? matches[1].trim() : question;
-      
+
       const results = await this.graph.searchSymbols(symbol, { limit: 10 });
       return {
         type: 'symbol_search',
         answer: this.formatSymbolAnswer(results, symbol),
-        results
+        results,
       };
     }
 
@@ -406,7 +418,7 @@ export class ContextEngine {
     return {
       type: 'general_context',
       answer: this.formatContextForLLM(context, options),
-      context
+      context,
     };
   }
 
@@ -420,12 +432,12 @@ export class ContextEngine {
       '',
       `**Risk Level:** ${context.impact.riskLevel}`,
       `**Total Files Impacted:** ${context.impact.totalImpacted}`,
-      ''
+      '',
     ];
 
     if (context.impact.impactedFiles.length > 0) {
       lines.push('### Affected Files:');
-      context.impact.impactedFiles.slice(0, 15).forEach(item => {
+      context.impact.impactedFiles.slice(0, 15).forEach((item) => {
         const file = typeof item === 'string' ? item : item.file;
         const depth = typeof item === 'string' ? '' : ` (depth: ${item.depth})`;
         lines.push(`- ${file}${depth}`);
@@ -438,7 +450,7 @@ export class ContextEngine {
 
     if (context.impact.relatedDecisions.length > 0) {
       lines.push('### Related Decisions:');
-      context.impact.relatedDecisions.forEach(d => {
+      context.impact.relatedDecisions.forEach((d) => {
         lines.push(`- ${d.title}`);
       });
       lines.push('');
@@ -457,12 +469,12 @@ export class ContextEngine {
       '',
       `- Average coupling: ${coupling.averageCoupling?.toFixed(2) || 'N/A'}`,
       `- Max coupling: ${coupling.maxCoupling || 'N/A'}`,
-      ''
+      '',
     ];
 
     if (coupling.highlyCoupledFiles && coupling.highlyCoupledFiles.length > 0) {
       lines.push('### Highly Coupled Files:');
-      coupling.highlyCoupledFiles.forEach(f => {
+      coupling.highlyCoupledFiles.forEach((f) => {
         lines.push(`- ${f.file} (coupling: ${f.coupling})`);
       });
     }
@@ -475,10 +487,7 @@ export class ContextEngine {
       return 'No circular dependencies found. ✓';
     }
 
-    const lines = [
-      `## ⚠️ Found ${cycles.length} Circular Dependencies`,
-      ''
-    ];
+    const lines = [`## ⚠️ Found ${cycles.length} Circular Dependencies`, ''];
 
     cycles.forEach((cycle, i) => {
       lines.push(`${i + 1}. ${cycle.join(' → ')} → ${cycle[0]}`);
@@ -492,13 +501,9 @@ export class ContextEngine {
       return `No results found for "${symbol}".`;
     }
 
-    const lines = [
-      `## Search Results for "${symbol}"`,
-      `Found ${results.length} matches:`,
-      ''
-    ];
+    const lines = [`## Search Results for "${symbol}"`, `Found ${results.length} matches:`, ''];
 
-    results.forEach(r => {
+    results.forEach((r) => {
       lines.push(`- **${r.name || r.symbol}** in ${r.file}${r.type ? ` (${r.type})` : ''}`);
     });
 

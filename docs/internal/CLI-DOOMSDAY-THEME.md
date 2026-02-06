@@ -6,16 +6,16 @@
 
 ## 🎨 Theme Colors
 
-| Element | Color | Hex |
-|---------|-------|-----|
-| **Primary** | Blood Red | `#dc2626` |
-| **Secondary** | Thanos Purple | `#7c3aed` |
-| **Accent** | Infinity Gold | `#fbbf24` |
-| **Dark** | Doomsday Black | `#0f0f0f` |
-| **Glow** | Power Stone Pink | `#ec4899` |
-| **Success** | Time Stone Green | `#22c55e` |
-| **Warning** | Mind Stone Yellow | `#eab308` |
-| **Error** | Reality Stone Red | `#ef4444` |
+| Element       | Color             | Hex       |
+| ------------- | ----------------- | --------- |
+| **Primary**   | Blood Red         | `#dc2626` |
+| **Secondary** | Thanos Purple     | `#7c3aed` |
+| **Accent**    | Infinity Gold     | `#fbbf24` |
+| **Dark**      | Doomsday Black    | `#0f0f0f` |
+| **Glow**      | Power Stone Pink  | `#ec4899` |
+| **Success**   | Time Stone Green  | `#22c55e` |
+| **Warning**   | Mind Stone Yellow | `#eab308` |
+| **Error**     | Reality Stone Red | `#ef4444` |
 
 ---
 
@@ -48,19 +48,21 @@ export function showBanner(version = '3.1.0') {
   console.log(doomsdayGradient(epicBanner));
   console.log(infinityGradient(infinityGauntlet));
   console.log('');
-  console.log(boxen(
-    `${chalk.hex('#dc2626').bold('⚡ DOOMSDAY EDITION ⚡')}\n\n` +
-    `${chalk.hex('#7c3aed')('The Multiverse of Code has a new defender')}\n\n` +
-    `${chalk.hex('#fbbf24')('v' + version)} • ${chalk.dim('Snap your fingers... ship to production')}`,
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'double',
-      borderColor: '#dc2626',
-      title: '🔥 ULTRA-DEX',
-      titleAlignment: 'center'
-    }
-  ));
+  console.log(
+    boxen(
+      `${chalk.hex('#dc2626').bold('⚡ DOOMSDAY EDITION ⚡')}\n\n` +
+        `${chalk.hex('#7c3aed')('The Multiverse of Code has a new defender')}\n\n` +
+        `${chalk.hex('#fbbf24')('v' + version)} • ${chalk.dim('Snap your fingers... ship to production')}`,
+      {
+        padding: 1,
+        margin: 1,
+        borderStyle: 'double',
+        borderColor: '#dc2626',
+        title: '🔥 ULTRA-DEX',
+        titleAlignment: 'center',
+      }
+    )
+  );
 }
 ```
 
@@ -73,22 +75,22 @@ export function showBanner(version = '3.1.0') {
 import chalk from 'chalk';
 
 export const stones = {
-  power: chalk.hex('#ec4899')('◆'),    // Power Stone - Pink
-  space: chalk.hex('#3b82f6')('◆'),    // Space Stone - Blue  
-  reality: chalk.hex('#ef4444')('◆'),  // Reality Stone - Red
-  soul: chalk.hex('#f97316')('◆'),     // Soul Stone - Orange
-  time: chalk.hex('#22c55e')('◆'),     // Time Stone - Green
-  mind: chalk.hex('#eab308')('◆')      // Mind Stone - Yellow
+  power: chalk.hex('#ec4899')('◆'), // Power Stone - Pink
+  space: chalk.hex('#3b82f6')('◆'), // Space Stone - Blue
+  reality: chalk.hex('#ef4444')('◆'), // Reality Stone - Red
+  soul: chalk.hex('#f97316')('◆'), // Soul Stone - Orange
+  time: chalk.hex('#22c55e')('◆'), // Time Stone - Green
+  mind: chalk.hex('#eab308')('◆'), // Mind Stone - Yellow
 };
 
 export const icons = {
-  success: chalk.hex('#22c55e')('✦'),     // Time Stone success
-  error: chalk.hex('#dc2626')('✖'),       // Doomsday error
-  warning: chalk.hex('#eab308')('⚠'),     // Mind Stone warning
-  info: chalk.hex('#3b82f6')('ℹ'),        // Space Stone info
-  running: chalk.hex('#ec4899')('⟳'),     // Power Stone running
-  complete: chalk.hex('#fbbf24')('★'),    // Infinity complete
-  snap: chalk.hex('#7c3aed')('✵')         // Thanos snap!
+  success: chalk.hex('#22c55e')('✦'), // Time Stone success
+  error: chalk.hex('#dc2626')('✖'), // Doomsday error
+  warning: chalk.hex('#eab308')('⚠'), // Mind Stone warning
+  info: chalk.hex('#3b82f6')('ℹ'), // Space Stone info
+  running: chalk.hex('#ec4899')('⟳'), // Power Stone running
+  complete: chalk.hex('#fbbf24')('★'), // Infinity complete
+  snap: chalk.hex('#7c3aed')('✵'), // Thanos snap!
 };
 
 export function showInfinityStatus() {
@@ -110,28 +112,32 @@ export const avengersAgents = {
   cto: { name: 'IRON MAN', emoji: '🤖', tagline: 'I am the architecture' },
   planner: { name: 'NICK FURY', emoji: '👁️', tagline: 'I have a plan' },
   research: { name: 'JARVIS', emoji: '🤖', tagline: 'Running analysis, sir' },
-  
-  // Development Tier - The Builders  
+
+  // Development Tier - The Builders
   backend: { name: 'THOR', emoji: '⚡', tagline: 'Bring me the API!' },
   frontend: { name: 'SPIDER-MAN', emoji: '🕷️', tagline: 'Web development, literally' },
   database: { name: 'VISION', emoji: '💎', tagline: 'Data... must be preserved' },
-  
+
   // Security Tier - The Defenders
   auth: { name: 'BLACK PANTHER', emoji: '🐆', tagline: 'Wakanda authenticates forever' },
   security: { name: 'CAPTAIN AMERICA', emoji: '🛡️', tagline: 'I can do this all day' },
-  
+
   // DevOps Tier - The Operators
   devops: { name: 'WAR MACHINE', emoji: '🚀', tagline: 'Deploy the payload' },
-  
+
   // Quality Tier - The Guardians
   testing: { name: 'ANT-MAN', emoji: '🐜', tagline: 'Testing at every scale' },
   documentation: { name: 'BRUCE BANNER', emoji: '🧑‍🔬', tagline: 'Document everything... carefully' },
   reviewer: { name: 'DOCTOR STRANGE', emoji: '🔮', tagline: 'I see 14 million code paths' },
   debugger: { name: 'HAWKEYE', emoji: '🎯', tagline: 'I never miss a bug' },
-  
+
   // Specialist Tier - The Legends
   performance: { name: 'QUICKSILVER', emoji: '💨', tagline: 'You didnt see that benchmark?' },
-  refactoring: { name: 'SCARLET WITCH', emoji: '🔴', tagline: 'Reality can be whatever I refactor' }
+  refactoring: {
+    name: 'SCARLET WITCH',
+    emoji: '🔴',
+    tagline: 'Reality can be whatever I refactor',
+  },
 };
 ```
 
@@ -146,26 +152,28 @@ import chalk from 'chalk';
 export function thanoSnap(tasks) {
   const total = tasks.length;
   let complete = 0;
-  
+
   console.log('');
   console.log(chalk.hex('#7c3aed').bold('  ✵ INITIATING THE SNAP...'));
   console.log('');
-  
+
   tasks.forEach((task, idx) => {
     const stones = ['◆', '◆', '◆', '◆', '◆', '◆'];
     const colors = ['#ec4899', '#3b82f6', '#ef4444', '#f97316', '#22c55e', '#eab308'];
-    
+
     // Light up stones as progress
-    let stoneDisplay = stones.map((s, i) => {
-      if (i <= Math.floor((idx / total) * 6)) {
-        return chalk.hex(colors[i])(s);
-      }
-      return chalk.dim(s);
-    }).join(' ');
-    
+    let stoneDisplay = stones
+      .map((s, i) => {
+        if (i <= Math.floor((idx / total) * 6)) {
+          return chalk.hex(colors[i])(s);
+        }
+        return chalk.dim(s);
+      })
+      .join(' ');
+
     console.log(`  ${stoneDisplay}  ${chalk.dim(task)}`);
   });
-  
+
   console.log('');
   console.log(chalk.hex('#fbbf24').bold('  ★ PERFECTLY BALANCED, AS ALL CODE SHOULD BE.'));
   console.log('');
@@ -173,7 +181,7 @@ export function thanoSnap(tasks) {
 
 export function dustEffect() {
   const particles = ['░', '▒', '▓', '█'];
-  console.log(chalk.hex('#7c3aed')('  ' + particles.map(p => p.repeat(10)).join('')));
+  console.log(chalk.hex('#7c3aed')('  ' + particles.map((p) => p.repeat(10)).join('')));
 }
 ```
 
@@ -195,50 +203,50 @@ export function showHelp() {
   console.log(doomsdayGradient('  ║        U L T R A - D E X  :  D O O M S D A Y'));
   console.log(doomsdayGradient('  ═══════════════════════════════════════════════'));
   console.log('');
-  
+
   const sections = [
     {
       title: '⚡ ASSEMBLE THE CODE',
       commands: [
         ['init', 'Initialize new universe'],
         ['generate', 'Create the plan (Thanos style)'],
-        ['swarm', 'Assemble the Avengers']
-      ]
+        ['swarm', 'Assemble the Avengers'],
+      ],
     },
     {
       title: '🛡️ DEFEND THE REALM',
       commands: [
         ['review', 'Doctor Strange code review'],
         ['validate', 'Shield integrity check'],
-        ['hooks', 'Deploy perimeter defenses']
-      ]
+        ['hooks', 'Deploy perimeter defenses'],
+      ],
     },
     {
       title: '💎 HARNESS INFINITY',
       commands: [
         ['serve', 'Open the multiverse portal'],
         ['dashboard', 'Monitor all realities'],
-        ['agents', 'Summon your heroes']
-      ]
+        ['agents', 'Summon your heroes'],
+      ],
     },
     {
       title: '✵ THE SNAP',
       commands: [
         ['build', 'Snap to production'],
         ['deploy', 'Across all multiverses'],
-        ['doctor', 'Reality stone diagnostics']
-      ]
-    }
+        ['doctor', 'Reality stone diagnostics'],
+      ],
+    },
   ];
-  
-  sections.forEach(section => {
+
+  sections.forEach((section) => {
     console.log(`  ${chalk.hex('#dc2626').bold(section.title)}`);
     section.commands.forEach(([cmd, desc]) => {
       console.log(`    ${chalk.hex('#fbbf24')(cmd.padEnd(16))} ${chalk.dim(desc)}`);
     });
     console.log('');
   });
-  
+
   console.log(chalk.dim('  "With great CLI comes great responsibility."'));
   console.log('');
 }
@@ -254,7 +262,7 @@ export function showSwarmAssemble(agents) {
   console.log('');
   console.log(chalk.hex('#dc2626').bold('  ⚡ A V E N G E R S . . . A S S E M B L E ! ⚡'));
   console.log('');
-  
+
   agents.forEach((agent, idx) => {
     const avenger = avengersAgents[agent.name];
     setTimeout(() => {
@@ -274,32 +282,32 @@ export function showSwarmAssemble(agents) {
 // cli/lib/utils/messages.js
 export const epicMessages = {
   start: [
-    "The Multiverse awaits your command...",
+    'The Multiverse awaits your command...',
     "Reality Stone: Online. Let's bend some code.",
     "Tony Stark: 'Part of the journey is the end... of bugs.'",
-    "Whatever it takes to ship this feature."
+    'Whatever it takes to ship this feature.',
   ],
-  
+
   success: [
-    "★ Perfectly balanced, as all code should be.",
-    "⚡ This... does put a smile on my face.",
-    "🛡️ Avengers assembled. Mission complete.",
-    "💎 Inevitable. Just like your deployment."
+    '★ Perfectly balanced, as all code should be.',
+    '⚡ This... does put a smile on my face.',
+    '🛡️ Avengers assembled. Mission complete.',
+    '💎 Inevitable. Just like your deployment.',
   ],
-  
+
   error: [
-    "Reality is often disappointing... but this error is fixable.",
-    "I am... not impressed by this stack trace.",
+    'Reality is often disappointing... but this error is fixable.',
+    'I am... not impressed by this stack trace.',
     "Mr. Stark, I don't feel so good about this bug...",
-    "The hardest errors require the strongest debuggers."
+    'The hardest errors require the strongest debuggers.',
   ],
-  
+
   loading: [
-    "Opening multiverse portal...",
-    "Charging Infinity Stones...",
-    "Summoning the Avengers...",
-    "Snapping fingers metaphorically..."
-  ]
+    'Opening multiverse portal...',
+    'Charging Infinity Stones...',
+    'Summoning the Avengers...',
+    'Snapping fingers metaphorically...',
+  ],
 };
 
 export function getRandomMessage(type) {
@@ -331,8 +339,8 @@ export function getRandomMessage(type) {
 ```
 ██╗   ██╗██╗  ████████╗██████╗  █████╗       ██████╗ ███████╗██╗  ██╗
 ██║   ██║██║  ╚══██╔══╝██╔══██╗██╔══██╗      ██╔══██╗██╔════╝╚██╗██╔╝
-██║   ██║██║     ██║   ██████╔╝███████║█████╗██║  ██║█████╗   ╚███╔╝ 
-██║   ██║██║     ██║   ██╔══██╗██╔══██║╚════╝██║  ██║██╔══╝   ██╔██╗ 
+██║   ██║██║     ██║   ██████╔╝███████║█████╗██║  ██║█████╗   ╚███╔╝
+██║   ██║██║     ██║   ██╔══██╗██╔══██║╚════╝██║  ██║██╔══╝   ██╔██╗
 ╚██████╔╝███████╗██║   ██║  ██║██║  ██║      ██████╔╝███████╗██╔╝ ██╗
  ╚═════╝ ╚══════╝╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝      ╚═════╝ ╚══════╝╚═╝  ╚═╝
                     (RED → PURPLE → PINK GRADIENT)
@@ -362,10 +370,10 @@ export function getRandomMessage(type) {
 
     🤖 IRON MAN
        "I am the architecture"
-    
+
     ⚡ THOR
        "Bring me the API!"
-    
+
     🕷️ SPIDER-MAN
        "Web development, literally"
 
@@ -374,4 +382,4 @@ export function getRandomMessage(type) {
 
 ---
 
-*"I am... inevitable." — Ultra-Dex*
+_"I am... inevitable." — Ultra-Dex_

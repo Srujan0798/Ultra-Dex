@@ -15,14 +15,12 @@
 
 -
 -
--
-
----
+- ***
 
 ## 3. MVP Features (5 max)
 
 | Feature | Priority | Why it's MVP? |
-|---------|----------|---------------|
+| ------- | -------- | ------------- |
 |         | P0       |               |
 |         | P0       |               |
 |         | P1       |               |
@@ -33,13 +31,13 @@
 
 ## 4. Tech Stack
 
-| Layer | Your Choice |
-|-------|-------------|
-| Frontend | Next.js / Remix / SvelteKit / ___ |
-| Database | PostgreSQL / Supabase / MongoDB / ___ |
-| Auth | NextAuth / Clerk / Auth0 / ___ |
-| Payments | Stripe / Lemonsqueezy / ___ |
-| Hosting | Vercel / Railway / Fly.io / ___ |
+| Layer    | Your Choice                              |
+| -------- | ---------------------------------------- |
+| Frontend | Next.js / Remix / SvelteKit / \_\_\_     |
+| Database | PostgreSQL / Supabase / MongoDB / \_\_\_ |
+| Auth     | NextAuth / Clerk / Auth0 / \_\_\_        |
+| Payments | Stripe / Lemonsqueezy / \_\_\_           |
+| Hosting  | Vercel / Railway / Fly.io / \_\_\_       |
 
 ---
 
@@ -55,16 +53,16 @@
 
 **FIRST:** Understand the phased approach (5 min)
 → Read [02-HOW-TO-USE.md](./02-HOW-TO-USE.md)
-   Learn: "Fill 8 sections → Start coding" strategy
+Learn: "Fill 8 sections → Start coding" strategy
 
 **THEN:** See a real example
 → Browse [TaskFlow-Complete.md](./Examples/TaskFlow-Complete.md)
-   See how Quick-Start expands into full implementation
+See how Quick-Start expands into full implementation
 
 **FINALLY:** Fill your foundation sections
 → Open [04-Imp-Template.md](./04-Imp-Template.md)
-   Fill Sections 1, 2, 4, 6, 10, 11, 12, 15 (Phase 1)
-   Then **START CODING**
+Fill Sections 1, 2, 4, 6, 10, 11, 12, 15 (Phase 1)
+Then **START CODING**
 
 **REFERENCE:** Understand the methodology
 → [03-METHODOLOGY.md](./03-METHODOLOGY.md) - How 21-step works
@@ -73,6 +71,6 @@
 
 ## Navigation
 
-| ← Previous | Current | Next → |
-|------------|---------|--------|
+| ← Previous                  | Current            | Next →                              |
+| --------------------------- | ------------------ | ----------------------------------- |
 | [00-README](./00-README.md) | **01-QUICK-START** | [02-HOW-TO-USE](./02-HOW-TO-USE.md) |

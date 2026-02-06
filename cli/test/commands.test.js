@@ -10,8 +10,11 @@ import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
+import { fileURLToPath } from 'node:url';
+
 // Use import.meta.url to get correct path regardless of cwd
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const cliPath = path.resolve(__dirname, '..', 'bin', 'ultra-dex.js');
 
 function runCli(args, options = {}) {
@@ -20,24 +23,24 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
 // Helper to create temp directory with test files
 async function createTempProject(files = {}) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-test-'));
-  
+
   for (const [filePath, content] of Object.entries(files)) {
     const fullPath = path.join(tmpDir, filePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, content);
   }
-  
+
   return tmpDir;
 }
 
@@ -85,7 +88,7 @@ describe('watch command', () => {
   test('watch command starts and shows message', async () => {
     const tmpDir = await createTempProject({
       'CONTEXT.md': '# Test Context',
-      'IMPLEMENTATION-PLAN.md': '# Test Plan'
+      'IMPLEMENTATION-PLAN.md': '# Test Plan',
     });
 
     // Run watch briefly with timeout - it will be killed after timeout
@@ -93,17 +96,22 @@ describe('watch command', () => {
       cwd: tmpDir,
       env: { ...process.env, FORCE_COLOR: '0' },
       encoding: 'utf8',
-      timeout: 2000  // Kill after 2 seconds
+      timeout: 2000, // Kill after 2 seconds
     });
 
     // Combine all output sources
     const allOutput = [result.stdout, result.stderr].filter(Boolean).join('');
-    
+
     // Watch command runs continuously, so it will be killed by timeout
     // Check that it started (even if output is empty due to timeout)
-    assert.ok(result.signal === 'SIGTERM' || allOutput.includes('Watch') || allOutput.includes('watch') || true, 
-      'Watch command should start (may be killed by timeout)');
-    
+    assert.ok(
+      result.signal === 'SIGTERM' ||
+        allOutput.includes('Watch') ||
+        allOutput.includes('watch') ||
+        true,
+      'Watch command should start (may be killed by timeout)'
+    );
+
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 });
@@ -144,7 +152,7 @@ export const UserSchema = {
   email: 'string',
   password: 'hash'
 };
-`
+`,
     });
   });
 
@@ -163,11 +171,11 @@ export const UserSchema = {
   test('diff --json outputs valid JSON', () => {
     const result = runCli(['diff', '--json'], { cwd: tmpDir });
     assert.equal(result.status, 0);
-    
+
     // Find JSON in output
     const jsonMatch = result.output.match(/\{[\s\S]*\}/);
     assert.ok(jsonMatch, 'Should contain JSON object');
-    
+
     const parsed = JSON.parse(jsonMatch[0]);
     assert.ok('alignment' in parsed);
     assert.ok('sections' in parsed);
@@ -198,7 +206,7 @@ describe('export command', () => {
     tmpDir = await createTempProject({
       'CONTEXT.md': '# Project Context\nThis is a test project.',
       'IMPLEMENTATION-PLAN.md': '## Phase 1\n- Task 1\n- Task 2',
-      'QUICK-START.md': '# Quick Start\nRun npm start'
+      'QUICK-START.md': '# Quick Start\nRun npm start',
     });
   });
 
@@ -219,7 +227,7 @@ describe('export command', () => {
     const result = runCli(['export', '--format', 'json', '--output', outputPath], { cwd: tmpDir });
     assert.equal(result.status, 0);
     assert.ok(existsSync(outputPath), 'Export file should exist');
-    
+
     const content = JSON.parse(await fs.readFile(outputPath, 'utf8'));
     assert.ok('files' in content);
     assert.ok('CONTEXT.md' in content.files);
@@ -230,7 +238,7 @@ describe('export command', () => {
     const result = runCli(['export', '--format', 'html', '--output', outputPath], { cwd: tmpDir });
     assert.equal(result.status, 0);
     assert.ok(existsSync(outputPath), 'Export file should exist');
-    
+
     const content = await fs.readFile(outputPath, 'utf8');
     assert.match(content, /<!DOCTYPE html>/i);
     assert.match(content, /Ultra-Dex/i);
@@ -241,7 +249,7 @@ describe('export command', () => {
     const result = runCli(['export', '--format', 'md', '--output', outputPath], { cwd: tmpDir });
     assert.equal(result.status, 0);
     assert.ok(existsSync(outputPath), 'Export file should exist');
-    
+
     const content = await fs.readFile(outputPath, 'utf8');
     assert.match(content, /# Ultra-Dex Export/i);
   });
@@ -249,11 +257,17 @@ describe('export command', () => {
   test('export with --includeAgents flag', async () => {
     // Create agents directory
     await fs.mkdir(path.join(tmpDir, 'agents'), { recursive: true });
-    await fs.writeFile(path.join(tmpDir, 'agents', 'backend.md'), '# Backend Agent\nYou are a backend developer.');
-    
+    await fs.writeFile(
+      path.join(tmpDir, 'agents', 'backend.md'),
+      '# Backend Agent\nYou are a backend developer.'
+    );
+
     const outputPath = path.join(tmpDir, 'export-agents.json');
-    const result = runCli(['export', '--format', 'json', '--includeAgents', '--output', outputPath], { cwd: tmpDir });
-    
+    const result = runCli(
+      ['export', '--format', 'json', '--includeAgents', '--output', outputPath],
+      { cwd: tmpDir }
+    );
+
     if (result.status === 0 && existsSync(outputPath)) {
       const content = JSON.parse(await fs.readFile(outputPath, 'utf8'));
       // Agents may or may not be included depending on command implementation
@@ -337,7 +351,7 @@ describe('config command', () => {
     const result = runCli(['config', '--set', 'testKey=testValue'], { cwd: tmpDir });
     assert.equal(result.status, 0);
     assert.match(result.output, /set|testKey/i);
-    
+
     // Verify value was stored
     const getResult = runCli(['config', '--get', 'testKey'], { cwd: tmpDir });
     assert.match(getResult.output, /testValue/i);
@@ -346,7 +360,7 @@ describe('config command', () => {
   test('config --get retrieves configuration value', () => {
     // First set a value
     runCli(['config', '--set', 'myKey=myValue'], { cwd: tmpDir });
-    
+
     const result = runCli(['config', '--get', 'myKey'], { cwd: tmpDir });
     assert.match(result.output, /myValue/);
   });
@@ -355,7 +369,7 @@ describe('config command', () => {
     // Set some config first
     runCli(['config', '--set', 'key1=value1'], { cwd: tmpDir });
     runCli(['config', '--set', 'key2=value2'], { cwd: tmpDir });
-    
+
     const result = runCli(['config', '--show'], { cwd: tmpDir });
     assert.equal(result.status, 0);
     // Should show config or indicate no config
@@ -365,7 +379,7 @@ describe('config command', () => {
   test('config handles nested keys', () => {
     const result = runCli(['config', '--set', 'server.port=3000'], { cwd: tmpDir });
     assert.equal(result.status, 0);
-    
+
     const getResult = runCli(['config', '--get', 'server.port'], { cwd: tmpDir });
     assert.match(getResult.output, /3000/);
   });
@@ -388,24 +402,27 @@ describe('dashboard command', () => {
 describe('command integration', () => {
   test('init then diff workflow', async () => {
     const tmpDir = await createTempProject({});
-    
+
     // Initialize project
-    const initResult = runCli(['init', '--live', '--stack', 'next15-prisma-clerk', '--dir', tmpDir], { timeout: 30000 });
-    
+    const initResult = runCli(
+      ['init', '--live', '--stack', 'next15-prisma-clerk', '--dir', tmpDir],
+      { timeout: 30000 }
+    );
+
     if (initResult.status === 0) {
       // Run diff on initialized project
       const diffResult = runCli(['diff'], { cwd: tmpDir });
       // Should work even if alignment is 0%
       assert.ok(diffResult.output.length > 0);
     }
-    
+
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
   test('validate command returns proper exit code', async () => {
     const tmpDir = await createTempProject({
       'CONTEXT.md': '# Context',
-      'IMPLEMENTATION-PLAN.md': '# Plan'
+      'IMPLEMENTATION-PLAN.md': '# Plan',
     });
 
     const result = runCli(['validate', '--dir', tmpDir]);
@@ -441,7 +458,10 @@ describe('agents marketplace (v3.4)', () => {
   test('agents list --marketplace shows community agents', () => {
     const result = runCli(['agents', 'list', '--marketplace']);
     assert.equal(result.status, 0);
-    assert.match(result.output, /SecurityAuditor|Accessibility|APIDesigner|MLEngineer|marketplace/i);
+    assert.match(
+      result.output,
+      /SecurityAuditor|Accessibility|APIDesigner|MLEngineer|marketplace/i
+    );
   });
 
   test('agents search finds matching agents', () => {
@@ -456,7 +476,12 @@ describe('agents marketplace (v3.4)', () => {
     assert.match(result.output, /installed|SecurityAuditor/i);
 
     // Verify agent file created
-    const agentPath = path.join(tmpDir, '.ultra-dex', 'marketplace-agents', 'security-auditor.json');
+    const agentPath = path.join(
+      tmpDir,
+      '.ultra-dex',
+      'marketplace-agents',
+      'security-auditor.json'
+    );
     assert.ok(existsSync(agentPath), 'Agent file should be created');
   });
 
@@ -471,7 +496,9 @@ describe('agents marketplace (v3.4)', () => {
   });
 
   test('agents create generates custom agent', async () => {
-    const result = runCli(['agents', 'create', 'myagent', '-d', 'My custom agent'], { cwd: tmpDir });
+    const result = runCli(['agents', 'create', 'myagent', '-d', 'My custom agent'], {
+      cwd: tmpDir,
+    });
     assert.equal(result.status, 0);
     assert.match(result.output, /created|myagent/i);
 
@@ -499,7 +526,7 @@ describe('run command options (v3.4)', () => {
 
   test('run command shows provider configuration notice', () => {
     const result = runCli(['run', 'planner', '-t', 'test'], {
-      env: { ANTHROPIC_API_KEY: '', OPENAI_API_KEY: '' }
+      env: { ANTHROPIC_API_KEY: '', OPENAI_API_KEY: '' },
     });
     // Should warn about missing provider
     assert.match(result.output, /provider|configured|API/i);

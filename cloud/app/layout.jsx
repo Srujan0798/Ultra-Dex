@@ -2,7 +2,7 @@ import './globals.css';
 
 export const metadata = {
   title: 'Ultra-Dex Cloud',
-  description: 'Ultra-Dex hosted platform'
+  description: 'Ultra-Dex hosted platform',
 };
 
 export default function RootLayout({ children }) {

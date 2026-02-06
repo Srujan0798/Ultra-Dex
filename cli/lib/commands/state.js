@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex state management commands
  * align, status, watch, pre-commit, state
@@ -68,7 +70,10 @@ export async function loadState() {
 export async function saveState(state) {
   const ultraDir = path.resolve(process.cwd(), '.ultra');
   const statePath = path.resolve(ultraDir, 'state.json');
-  const tempPath = path.resolve(ultraDir, `state.json.tmp.${Date.now()}.${Math.random().toString(36).substr(2, 9)}`);
+  const tempPath = path.resolve(
+    ultraDir,
+    `state.json.tmp.${Date.now()}.${Math.random().toString(36).substr(2, 9)}`
+  );
 
   try {
     await fs.mkdir(ultraDir, { recursive: true });
@@ -88,7 +93,7 @@ export async function saveState(state) {
 
 export async function updateState(updates) {
   return await withStateLock(async () => {
-    const state = await loadState() || await computeState();
+    const state = (await loadState()) || (await computeState());
     if (state && updates) {
       Object.assign(state, updates);
     }
@@ -109,7 +114,7 @@ export async function computeState() {
     project: { name: path.basename(process.cwd()), mode: 'ULTRA_MODE' },
     files: {},
     sections: { total: 34, completed: 0, list: [] },
-    score: 0
+    score: 0,
   };
 
   const coreFiles = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'CHECKLIST.md', 'QUICK-START.md'];
@@ -130,10 +135,13 @@ export async function computeState() {
       state.sections.list.push({ number: parseInt(match[1]), title: match[2].trim() });
     }
     state.sections.completed = state.sections.list.length;
-  } catch { /* no plan */ }
+  } catch {
+    /* no plan */
+  }
 
-  const fileScore = Object.values(state.files).filter(f => f.exists).length / coreFiles.length * 40;
-  const sectionScore = Math.min(state.sections.completed / state.sections.total * 60, 60);
+  const fileScore =
+    (Object.values(state.files).filter((f) => f.exists).length / coreFiles.length) * 40;
+  const sectionScore = Math.min((state.sections.completed / state.sections.total) * 60, 60);
   state.score = Math.round(fileScore + sectionScore);
 
   return state;
@@ -178,29 +186,37 @@ export function registerAlignCommand(program) {
           // Graph failed
         }
 
-        const totalScore = Math.min(Math.round((state.score * 0.6) + graphScore), 100);
+        const totalScore = Math.min(Math.round(state.score * 0.6 + graphScore), 100);
 
         if (options.json) {
-          printInfo(JSON.stringify({
+          printInfo(
+            JSON.stringify({
               score: totalScore,
               documentationScore: state.score,
               graphScore,
               graphStats,
               reconciliation,
-              files: Object.values(state.files).filter(f => f.exists).length,
-              sections: state.sections.completed
-          }));
+              files: Object.values(state.files).filter((f) => f.exists).length,
+              sections: state.sections.completed,
+            })
+          );
         } else {
           const icon = totalScore >= 80 ? '✅' : totalScore >= 50 ? '⚠️' : '❌';
           printInfo(`${icon} Alignment: ${totalScore}/100`);
           printInfo(chalk.gray(`   • Documentation: ${state.score}/100`));
-          printInfo(chalk.gray(`   • Code Graph: ${graphScore}/40 (Nodes: ${graphStats.nodes}, Edges: ${graphStats.edges})`));
+          printInfo(
+            chalk.gray(
+              `   • Code Graph: ${graphScore}/40 (Nodes: ${graphStats.nodes}, Edges: ${graphStats.edges})`
+            )
+          );
 
           if (reconciliation) {
             printInfo(chalk.gray(`   • Truth Score: ${reconciliation.score}/100`));
             if (reconciliation.hallucinatedTasks.length > 0) {
-              printError(`   ⚠️  Detected ${reconciliation.hallucinatedTasks.length} hallucinated tasks!`);
-              reconciliation.hallucinatedTasks.forEach(t => printError(`      - ${t.task}`));
+              printError(
+                `   ⚠️  Detected ${reconciliation.hallucinatedTasks.length} hallucinated tasks!`
+              );
+              reconciliation.hallucinatedTasks.forEach((t) => printError(`      - ${t.task}`));
             } else {
               printSuccess(`   ✅ All completed tasks verified.`);
             }
@@ -219,7 +235,10 @@ export function registerAlignCommand(program) {
   alignCmd._examples = [
     { command: 'ultra-dex align', description: 'Compute alignment score for current project' },
     { command: 'ultra-dex align --strict', description: 'Fail CI if alignment score is below 70' },
-    { command: 'ultra-dex align --reconcile --json', description: 'Verify tasks against codebase and output JSON' },
+    {
+      command: 'ultra-dex align --reconcile --json',
+      description: 'Verify tasks against codebase and output JSON',
+    },
   ];
 }
 
@@ -255,53 +274,53 @@ export function registerStatusCommand(program) {
         printInfo(chalk.gray('─'.repeat(50)));
 
         if (state.phases) {
-            printInfo(chalk.cyan(`  MODE: ${state.project?.mode || 'ULTRA_MODE'}`));
-            printInfo(chalk.gray(`  Version: ${state.project?.version || state.version}`));
-            printInfo(chalk.gray('─'.repeat(50)));
+          printInfo(chalk.cyan(`  MODE: ${state.project?.mode || 'ULTRA_MODE'}`));
+          printInfo(chalk.gray(`  Version: ${state.project?.version || state.version}`));
+          printInfo(chalk.gray('─'.repeat(50)));
 
-            printInfo(chalk.bold('\n🚀 Implementation Phases:'));
-            state.phases.forEach(phase => {
-                const icon = phase.status === 'completed' ? '✅' : phase.status === 'in_progress' ? '🔄' : '⏳';
-                printInfo(`  ${icon} ${chalk.bold(phase.name)}`);
-                phase.steps.forEach(step => {
-                    const stepIcon = step.status === 'completed' ? chalk.green('✓') : chalk.gray('-');
-                    printInfo(`    ${stepIcon} ${step.task}`);
-                });
-                printInfo('');
+          printInfo(chalk.bold('\n🚀 Implementation Phases:'));
+          state.phases.forEach((phase) => {
+            const icon =
+              phase.status === 'completed' ? '✅' : phase.status === 'in_progress' ? '🔄' : '⏳';
+            printInfo(`  ${icon} ${chalk.bold(phase.name)}`);
+            phase.steps.forEach((step) => {
+              const stepIcon = step.status === 'completed' ? chalk.green('✓') : chalk.gray('-');
+              printInfo(`    ${stepIcon} ${step.task}`);
             });
+            printInfo('');
+          });
 
-            if (state.agents) {
-              printInfo(chalk.bold('🤖 Orchestration Agents:'));
-              state.agents.registry?.forEach(agent => {
-                  const active = state.agents.active?.includes(agent) ? chalk.green('(Active)') : '';
-                  printInfo(`  • @${agent} ${active}`);
-              });
-            }
-
+          if (state.agents) {
+            printInfo(chalk.bold('🤖 Orchestration Agents:'));
+            state.agents.registry?.forEach((agent) => {
+              const active = state.agents.active?.includes(agent) ? chalk.green('(Active)') : '';
+              printInfo(`  • @${agent} ${active}`);
+            });
+          }
         } else {
-            const scoreColor = state.score >= 80 ? 'green' : state.score >= 50 ? 'yellow' : 'red';
-            printInfo(chalk[scoreColor](`  Score: ${state.score}/100`));
-            printInfo(chalk.gray(`  Updated: ${state.updatedAt}`));
-            printInfo(chalk.gray('─'.repeat(50)));
+          const scoreColor = state.score >= 80 ? 'green' : state.score >= 50 ? 'yellow' : 'red';
+          printInfo(chalk[scoreColor](`  Score: ${state.score}/100`));
+          printInfo(chalk.gray(`  Updated: ${state.updatedAt}`));
+          printInfo(chalk.gray('─'.repeat(50)));
 
-            printInfo(chalk.bold('\n📁 Documentation Files:'));
-            if (state.files) {
-              Object.entries(state.files).forEach(([name, info]) => {
-                  const icon = info.exists ? chalk.green('✓') : chalk.red('✕');
-                  const size = info.exists ? chalk.gray(` (${info.size} bytes)`) : '';
-                  printInfo(`  ${icon} ${name}${size}`);
-              });
-            }
+          printInfo(chalk.bold('\n📁 Documentation Files:'));
+          if (state.files) {
+            Object.entries(state.files).forEach(([name, info]) => {
+              const icon = info.exists ? chalk.green('✓') : chalk.red('✕');
+              const size = info.exists ? chalk.gray(` (${info.size} bytes)`) : '';
+              printInfo(`  ${icon} ${name}${size}`);
+            });
+          }
 
-            printInfo(chalk.bold('\n📝 Implementation Sections:'));
-            printInfo(`  ${state.sections.completed}/${state.sections.total} completed`);
-            if (state.sections.list?.length > 0) {
-              const recent = state.sections.list.slice(-3);
-              recent.forEach(s => printInfo(chalk.gray(`    ${s.number}. ${s.title}`)));
-              if (state.sections.list.length > 3) {
+          printInfo(chalk.bold('\n📝 Implementation Sections:'));
+          printInfo(`  ${state.sections.completed}/${state.sections.total} completed`);
+          if (state.sections.list?.length > 0) {
+            const recent = state.sections.list.slice(-3);
+            recent.forEach((s) => printInfo(chalk.gray(`    ${s.number}. ${s.title}`)));
+            if (state.sections.list.length > 3) {
               printInfo(chalk.gray(`    ... and ${state.sections.list.length - 3} more`));
-              }
             }
+          }
         }
         printInfo('');
       } catch (error) {
@@ -318,9 +337,7 @@ export function registerStatusCommand(program) {
 }
 
 export function registerWatchCommand(program) {
-    program
-    .command('watch-legacy')
-    .action(() => console.log("Use 'ultra-dex watch' instead."));
+  program.command('watch-legacy').action(() => console.log("Use 'ultra-dex watch' instead."));
 }
 
 export function registerPreCommitCommand(program) {
@@ -381,7 +398,9 @@ fi
             await fs.mkdir(path.dirname(hookPath), { recursive: true });
             await fs.writeFile(hookPath, hookScript, { mode: 0o755 });
             printSuccess('✓ Pre-commit hook installed!');
-            printInfo(chalk.gray('   Commits will be blocked if alignment score < 70 or AI review fails.'));
+            printInfo(
+              chalk.gray('   Commits will be blocked if alignment score < 70 or AI review fails.')
+            );
           } catch (e) {
             printError('✕ Failed to install hook: ' + e.message);
           }
@@ -391,31 +410,43 @@ fi
         const state = await loadState();
 
         if (options.ai) {
-            const spinner = (await import('ora')).default('🤖 AI Quality Review: Analyzing staged changes...').start();
-            try {
-                const { execSync } = await import('child_process');
-                const staged = execSync('git diff --cached --name-only', { encoding: 'utf8' }).split('\n').filter(Boolean);
-                if (staged.length === 0) {
-                    spinner.succeed('No staged changes to review.');
-                    return;
-                }
-
-                const { createProvider, getDefaultProvider } = await import('../providers/index.js');
-                const { runAgentLoop } = await import('./run.js');
-
-                const provider = createProvider(getDefaultProvider());
-                const reviewResult = await runAgentLoop('reviewer', `Review these staged files for architectural violations (e.g. missing validation, security risks):\n${staged.join('\n')}`, provider, { state });
-
-                if (reviewResult.toLowerCase().includes('reject') || reviewResult.toLowerCase().includes('blocking violation')) {
-                    spinner.fail('Quality Gate: REJECTED');
-                    printError('\nViolations found:');
-                    printInfo(reviewResult);
-                    process.exit(1);
-                }
-                spinner.succeed('Quality Gate: PASSED');
-            } catch (e) {
-                spinner.warn('Quality Gate skipped: ' + e.message);
+          const spinner = (await import('ora'))
+            .default('🤖 AI Quality Review: Analyzing staged changes...')
+            .start();
+          try {
+            const { execSync } = await import('child_process');
+            const staged = execSync('git diff --cached --name-only', { encoding: 'utf8' })
+              .split('\n')
+              .filter(Boolean);
+            if (staged.length === 0) {
+              spinner.succeed('No staged changes to review.');
+              return;
             }
+
+            const { createProvider, getDefaultProvider } = await import('../providers/index.js');
+            const { runAgentLoop } = await import('./run.js');
+
+            const provider = createProvider(getDefaultProvider());
+            const reviewResult = await runAgentLoop(
+              'reviewer',
+              `Review these staged files for architectural violations (e.g. missing validation, security risks):\n${staged.join('\n')}`,
+              provider,
+              { state }
+            );
+
+            if (
+              reviewResult.toLowerCase().includes('reject') ||
+              reviewResult.toLowerCase().includes('blocking violation')
+            ) {
+              spinner.fail('Quality Gate: REJECTED');
+              printError('\nViolations found:');
+              printInfo(reviewResult);
+              process.exit(1);
+            }
+            spinner.succeed('Quality Gate: PASSED');
+          } catch (e) {
+            spinner.warn('Quality Gate skipped: ' + e.message);
+          }
         }
 
         if (state && state.score < 70) {

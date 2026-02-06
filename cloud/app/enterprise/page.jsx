@@ -1,13 +1,13 @@
 const teams = [
   { name: 'Global Admins', members: 4, region: 'US-East' },
   { name: 'Platform Engineering', members: 18, region: 'EU-West' },
-  { name: 'Security & Compliance', members: 6, region: 'APAC' }
+  { name: 'Security & Compliance', members: 6, region: 'APAC' },
 ];
 
 const compliance = [
   { label: 'SOC 2 Type II', status: 'In Progress' },
   { label: 'ISO 27001', status: 'Ready' },
-  { label: 'HIPAA', status: 'Requires Review' }
+  { label: 'HIPAA', status: 'Requires Review' },
 ];
 
 export default function EnterprisePage() {

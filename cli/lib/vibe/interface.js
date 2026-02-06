@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import readline from 'node:readline';
 import fs from 'fs/promises';
 import path from 'path';
@@ -51,11 +53,20 @@ async function applyActions(actions, history) {
     if (!action?.path) continue;
     const targetPath = path.resolve(action.path);
     if (action.type === 'create') {
-      const exists = await fs.access(targetPath).then(() => true).catch(() => false);
+      const exists = await fs
+        .access(targetPath)
+        .then(() => true)
+        .catch(() => false);
       if (!exists) {
         await fs.mkdir(path.dirname(targetPath), { recursive: true });
         await fs.writeFile(targetPath, action.content || '', 'utf8');
-        await history.recordWrite({ filePath: targetPath, before: null, after: action.content || '', actor: 'vibe', reason: action.reason });
+        await history.recordWrite({
+          filePath: targetPath,
+          before: null,
+          after: action.content || '',
+          actor: 'vibe',
+          reason: action.reason,
+        });
         printSuccess(chalk.green(`Created ${path.relative(process.cwd(), targetPath)}`));
       } else {
         printWarning(chalk.yellow(`File exists: ${path.relative(process.cwd(), targetPath)}`));
@@ -67,7 +78,13 @@ async function applyActions(actions, history) {
       const next = before + (action.content || '');
       await fs.mkdir(path.dirname(targetPath), { recursive: true });
       await fs.writeFile(targetPath, next, 'utf8');
-      await history.recordWrite({ filePath: targetPath, before, after: next, actor: 'vibe', reason: action.reason });
+      await history.recordWrite({
+        filePath: targetPath,
+        before,
+        after: next,
+        actor: 'vibe',
+        reason: action.reason,
+      });
       printSuccess(chalk.green(`Updated ${path.relative(process.cwd(), targetPath)}`));
     }
   }
@@ -93,7 +110,7 @@ function createReadline() {
   return readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: chalk.cyan('vibe> ')
+    prompt: chalk.cyan('vibe> '),
   });
 }
 
@@ -107,7 +124,7 @@ export async function startVibeSession(options = {}) {
     id: options.sessionId || crypto.randomUUID() || `${Date.now()}`,
     mode: options.mode || 'create',
     startedAt: new Date().toISOString(),
-    history: []
+    history: [],
   };
 
   const rl = createReadline();

@@ -31,6 +31,6 @@ export function generateReply(message = '', history = []) {
 
 export function summarizeConversation(history = []) {
   if (!history.length) return 'No conversation yet.';
-  const userMessages = history.filter(item => item.role === 'user').map(item => item.content);
+  const userMessages = history.filter((item) => item.role === 'user').map((item) => item.content);
   return `You asked about: ${userMessages.slice(-3).join(' | ')}`;
 }

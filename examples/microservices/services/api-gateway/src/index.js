@@ -45,7 +45,7 @@ app.use((req, res, next) => {
       statusCode: res.statusCode,
       duration: Date.now() - start,
       userAgent: req.get('user-agent'),
-      ip: req.ip
+      ip: req.ip,
     });
   });
   next();
@@ -71,7 +71,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'api-gateway',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -81,18 +81,18 @@ const services = {
   '/api/v1/users': 'users-service',
   '/api/v1/orders': 'orders-service',
   '/api/v1/payments': 'payments-service',
-  '/api/v1/notifications': 'notifications-service'
+  '/api/v1/notifications': 'notifications-service',
 };
 
 // Create proxy middleware for each service
 Object.entries(services).forEach(([path, serviceName]) => {
   const serviceUrl = serviceRegistry.getServiceUrl(serviceName);
-  
+
   const proxyOptions = {
     target: serviceUrl,
     changeOrigin: true,
     pathRewrite: {
-      [`^/api/v1/${path.split('/')[3]}`]: ''
+      [`^/api/v1/${path.split('/')[3]}`]: '',
     },
     onProxyReq: (proxyReq, req) => {
       proxyReq.setHeader('x-request-id', req.id);
@@ -105,13 +105,13 @@ Object.entries(services).forEach(([path, serviceName]) => {
       logger.error({
         requestId: req.id,
         error: err.message,
-        service: serviceName
+        service: serviceName,
       });
       res.status(503).json({
         error: 'Service temporarily unavailable',
-        service: serviceName
+        service: serviceName,
       });
-    }
+    },
   };
 
   // Apply authentication for protected routes
@@ -126,7 +126,7 @@ Object.entries(services).forEach(([path, serviceName]) => {
 app.use((req, res) => {
   res.status(404).json({
     error: 'Not Found',
-    path: req.path
+    path: req.path,
   });
 });
 

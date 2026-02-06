@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Verification Checklist Runner (21-step)
  * Provides a unified checklist for quality gates and post-tool-use hooks.
@@ -20,7 +22,7 @@ import {
   verifyAccessibility,
   verifyPerformance,
   verifyDeploymentReadiness,
-  verifyMigrationScripts
+  verifyMigrationScripts,
 } from './automation.js';
 
 const CHECKLIST_STEPS = [
@@ -44,14 +46,14 @@ const CHECKLIST_STEPS = [
   'Linting & Formatting',
   'Code Review Approved',
   'Migration Scripts Ready',
-  'Deployment Readiness'
+  'Deployment Readiness',
 ];
 
 const HEAVY_STEPS = new Set([
   'Type Safety Check',
   'Unit Tests Passed',
   'Linting & Formatting',
-  'Integration Tests Passed'
+  'Integration Tests Passed',
 ]);
 
 function skipStep(message) {
@@ -101,7 +103,10 @@ function evaluateManualStep(name, context) {
     case 'Cross-browser Check':
       return skipStep('Manual confirmation required');
     case 'Code Review Approved':
-      if (process.env.CODE_REVIEW_APPROVED === 'true' || process.env.ULTRA_DEX_CODE_REVIEW === 'approved') {
+      if (
+        process.env.CODE_REVIEW_APPROVED === 'true' ||
+        process.env.ULTRA_DEX_CODE_REVIEW === 'approved'
+      ) {
         return { status: 'PASS', message: 'Code review approval set via env' };
       }
       return skipStep('Manual approval required');
@@ -129,7 +134,7 @@ export async function runVerificationChecklist(projectDir, options = {}) {
     'Unit Tests Passed': verifyUnitTests,
     'Linting & Formatting': verifyLinting,
     'Migration Scripts Ready': verifyMigrationScripts,
-    'Deployment Readiness': verifyDeploymentReadiness
+    'Deployment Readiness': verifyDeploymentReadiness,
   };
 
   for (const step of CHECKLIST_STEPS) {
@@ -158,7 +163,7 @@ export async function runVerificationChecklist(projectDir, options = {}) {
     }
   }
 
-  const failures = results.filter(r => r.status === 'FAIL');
+  const failures = results.filter((r) => r.status === 'FAIL');
   return {
     results,
     failures,
@@ -166,10 +171,9 @@ export async function runVerificationChecklist(projectDir, options = {}) {
     summary: {
       total: results.length,
       failed: failures.length,
-      skipped: results.filter(r => r.status === 'SKIP').length
-    }
+      skipped: results.filter((r) => r.status === 'SKIP').length,
+    },
   };
 }
 
 export { CHECKLIST_STEPS };
-

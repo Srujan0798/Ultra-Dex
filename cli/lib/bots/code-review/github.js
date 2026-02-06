@@ -1,21 +1,26 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import https from 'https';
 
 function requestGitHub(path, token) {
   return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'api.github.com',
-      path,
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Ultra-Dex',
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
+    const req = https.request(
+      {
+        hostname: 'api.github.com',
+        path,
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Ultra-Dex',
+          Authorization: `token ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+        },
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk.toString()));
+        res.on('end', () => resolve({ status: res.statusCode, data }));
       }
-    }, (res) => {
-      let data = '';
-      res.on('data', (chunk) => (data += chunk.toString()));
-      res.on('end', () => resolve({ status: res.statusCode, data }));
-    });
+    );
     req.on('error', reject);
     req.end();
   });
@@ -29,16 +34,19 @@ export async function fetchPullRequestDiff(owner, repo, prNumber, token) {
   const payload = JSON.parse(response.data);
 
   const diffResponse = await new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'github.com',
-      path: `/${owner}/${repo}/pull/${prNumber}.diff`,
-      method: 'GET',
-      headers: { 'User-Agent': 'Ultra-Dex' }
-    }, (res) => {
-      let diff = '';
-      res.on('data', chunk => diff += chunk.toString());
-      res.on('end', () => resolve(diff));
-    });
+    const req = https.request(
+      {
+        hostname: 'github.com',
+        path: `/${owner}/${repo}/pull/${prNumber}.diff`,
+        method: 'GET',
+        headers: { 'User-Agent': 'Ultra-Dex' },
+      },
+      (res) => {
+        let diff = '';
+        res.on('data', (chunk) => (diff += chunk.toString()));
+        res.on('end', () => resolve(diff));
+      }
+    );
     req.on('error', reject);
     req.end();
   });
@@ -47,5 +55,5 @@ export async function fetchPullRequestDiff(owner, repo, prNumber, token) {
 }
 
 export default {
-  fetchPullRequestDiff
+  fetchPullRequestDiff,
 };

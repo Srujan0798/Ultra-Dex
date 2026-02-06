@@ -10,7 +10,7 @@ const AGENTS = [
   { id: 'frontend', name: 'Frontend', specialty: 'UI flows & components' },
   { id: 'backend', name: 'Backend', specialty: 'APIs & data services' },
   { id: 'testing', name: 'Testing', specialty: 'QA & validation' },
-  { id: 'reviewer', name: 'Reviewer', specialty: 'Code review & risk' }
+  { id: 'reviewer', name: 'Reviewer', specialty: 'Code review & risk' },
 ];
 
 const DEFAULT_CODE = `<!doctype html>
@@ -48,7 +48,10 @@ function App() {
   const fitRef = useRef(null);
   const termContainerRef = useRef(null);
 
-  const activeAgent = useMemo(() => AGENTS.find(agent => agent.id === selectedAgent), [selectedAgent]);
+  const activeAgent = useMemo(
+    () => AGENTS.find((agent) => agent.id === selectedAgent),
+    [selectedAgent]
+  );
 
   useEffect(() => {
     const term = new Terminal({
@@ -58,8 +61,8 @@ function App() {
         background: '#0b0c10',
         foreground: '#e5e7eb',
         green: '#7bf1a8',
-        blue: '#7aa2f7'
-      }
+        blue: '#7aa2f7',
+      },
     });
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
@@ -190,30 +193,37 @@ function App() {
               <h3>Chat with @{activeAgent?.name}</h3>
             </div>
             <div className="chat-messages">
-              {collabLog.filter(l => l.includes('Agent') || l.includes('@{')).map((msg, idx) => (
-                <div key={idx} className="message agent">
-                  <p>{msg}</p>
-                </div>
-              ))}
+              {collabLog
+                .filter((l) => l.includes('Agent') || l.includes('@{'))
+                .map((msg, idx) => (
+                  <div key={idx} className="message agent">
+                    <p>{msg}</p>
+                  </div>
+                ))}
               <div className="message system">
-                <p>Welcome. I am the {activeAgent?.name} agent. How can I help you with your {language} code today?</p>
+                <p>
+                  Welcome. I am the {activeAgent?.name} agent. How can I help you with your{' '}
+                  {language} code today?
+                </p>
               </div>
             </div>
             <div className="chat-input-wrapper">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder={`Message @${activeAgent?.id}...`}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && e.target.value) {
                     const msg = e.target.value;
-                    setCollabLog(prev => [...prev, `You: ${msg}`]);
+                    setCollabLog((prev) => [...prev, `You: ${msg}`]);
                     if (wsRef.current?.readyState === WebSocket.OPEN) {
-                      wsRef.current.send(JSON.stringify({ 
-                        type: 'agent-chat', 
-                        agent: selectedAgent, 
-                        message: msg,
-                        context: code 
-                      }));
+                      wsRef.current.send(
+                        JSON.stringify({
+                          type: 'agent-chat',
+                          agent: selectedAgent,
+                          message: msg,
+                          context: code,
+                        })
+                      );
                     }
                     e.target.value = '';
                   }
@@ -237,10 +247,7 @@ function App() {
                 <option value="markdown">Markdown</option>
                 <option value="json">JSON</option>
               </select>
-              <button
-                type="button"
-                onClick={() => setCode(DEFAULT_CODE)}
-              >
+              <button type="button" onClick={() => setCode(DEFAULT_CODE)}>
                 Reset
               </button>
             </div>
@@ -257,7 +264,7 @@ function App() {
                 fontSize: 13,
                 minimap: { enabled: false },
                 wordWrap: 'on',
-                smoothScrolling: true
+                smoothScrolling: true,
               }}
             />
           </div>

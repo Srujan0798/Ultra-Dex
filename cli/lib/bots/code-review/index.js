@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { analyzeDiff, formatMarkdownReport } from './analyzer.js';
 import { fetchPullRequestDiff } from './github.js';
 import { fetchMergeRequestDiff } from './gitlab.js';
@@ -10,12 +12,12 @@ export async function reviewGitHubPR({ owner, repo, prNumber, token }) {
 
 export async function reviewGitLabMR({ projectId, mrIid, token }) {
   const mr = await fetchMergeRequestDiff(projectId, mrIid, token);
-  const diff = (mr.changes || []).map(change => change.diff).join('\n');
+  const diff = (mr.changes || []).map((change) => change.diff).join('\n');
   const issues = analyzeDiff(diff);
   return { issues, report: formatMarkdownReport(issues) };
 }
 
 export default {
   reviewGitHubPR,
-  reviewGitLabMR
+  reviewGitLabMR,
 };

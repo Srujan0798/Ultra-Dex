@@ -1,7 +1,13 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
-import { fetchWorkflowRegistry, parseWorkflowSpecifier, selectWorkflowVersion } from './workflow-registry.js';
+import {
+  fetchWorkflowRegistry,
+  parseWorkflowSpecifier,
+  selectWorkflowVersion,
+} from './workflow-registry.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
 const WORKFLOW_DIR = path.resolve(process.cwd(), '.ultra-dex', 'workflows');
@@ -15,10 +21,11 @@ export class WorkflowMarketplace {
     const registry = await fetchWorkflowRegistry();
     const list = registry.workflows || [];
     if (!query) return list;
-    return list.filter((entry) =>
-      entry.name.toLowerCase().includes(query.toLowerCase()) ||
-      entry.description.toLowerCase().includes(query.toLowerCase()) ||
-      (entry.tags || []).some((tag) => tag.toLowerCase().includes(query.toLowerCase()))
+    return list.filter(
+      (entry) =>
+        entry.name.toLowerCase().includes(query.toLowerCase()) ||
+        entry.description.toLowerCase().includes(query.toLowerCase()) ||
+        (entry.tags || []).some((tag) => tag.toLowerCase().includes(query.toLowerCase()))
     );
   }
 
@@ -51,7 +58,7 @@ export class WorkflowMarketplace {
       name: entry.name,
       version: resolvedVersion,
       description: entry.description,
-      tags: entry.tags || []
+      tags: entry.tags || [],
     };
     const target = path.join(WORKFLOW_DIR, `${name.replace(/[@/]/g, '_')}.json`);
     await fs.writeFile(target, JSON.stringify(manifest, null, 2), 'utf8');

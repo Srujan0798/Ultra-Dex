@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -16,7 +18,7 @@ export async function recordOutcome(entry) {
     task: entry.task || 'unknown',
     outcome: entry.outcome || 'unknown',
     rating: entry.rating ?? null,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
   await fs.appendFile(LOG_PATH, JSON.stringify(payload) + '\n', 'utf8');
   return payload;

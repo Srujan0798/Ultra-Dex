@@ -3,6 +3,7 @@
 ## Phase 1: Project Setup & Infrastructure
 
 ### 1.1 Create Project Structure
+
 ```bash
 mkdir -p examples/microservices
 cd examples/microservices
@@ -12,12 +13,14 @@ mkdir -p docker
 ```
 
 ### 1.2 Initialize Root Configuration
+
 - Create root `package.json` with workspace configuration
 - Set up `.gitignore` for Node.js and Docker
 - Create `.env.example` with all environment variables
 - Create `docker-compose.yml` with all infrastructure services
 
 ### 1.3 Docker Infrastructure
+
 - PostgreSQL containers (5 instances - one per service)
 - Redis container for caching
 - RabbitMQ container with management plugin
@@ -27,6 +30,7 @@ mkdir -p docker
 ## Phase 2: Shared Components
 
 ### 2.1 Shared Middleware
+
 - Authentication middleware (JWT validation)
 - Error handling middleware
 - Request logging middleware
@@ -34,6 +38,7 @@ mkdir -p docker
 - Health check middleware
 
 ### 2.2 Shared Utilities
+
 - Database connection utilities
 - Redis client utilities
 - RabbitMQ connection utilities
@@ -44,12 +49,14 @@ mkdir -p docker
 - Validation utilities
 
 ### 2.3 Shared Models
+
 - Base model class
 - Common interfaces/types
 
 ## Phase 3: API Gateway Implementation
 
 ### 3.1 Core Gateway Features
+
 - Express server setup
 - Request routing configuration
 - JWT validation middleware
@@ -58,6 +65,7 @@ mkdir -p docker
 - Service discovery integration
 
 ### 3.2 Routes Configuration
+
 - Auth service routes: `/api/v1/auth/*`
 - Users service routes: `/api/v1/users/*`
 - Orders service routes: `/api/v1/orders/*`
@@ -65,6 +73,7 @@ mkdir -p docker
 - Notifications service routes: `/api/v1/notifications/*`
 
 ### 3.3 Gateway Middleware
+
 - CORS configuration
 - Body parsing
 - Request ID generation
@@ -74,6 +83,7 @@ mkdir -p docker
 ## Phase 4: Auth Service Implementation
 
 ### 4.1 Database Schema
+
 ```sql
 -- Users table
 CREATE TABLE users (
@@ -106,6 +116,7 @@ CREATE TABLE sessions (
 ```
 
 ### 4.2 API Endpoints
+
 - `POST /auth/register` - User registration
 - `POST /auth/login` - User login
 - `POST /auth/logout` - User logout
@@ -115,6 +126,7 @@ CREATE TABLE sessions (
 - `POST /auth/change-password` - Change password
 
 ### 4.3 Business Logic
+
 - Password hashing with bcrypt
 - JWT generation and validation
 - Refresh token rotation
@@ -124,6 +136,7 @@ CREATE TABLE sessions (
 ## Phase 5: Users Service Implementation
 
 ### 5.1 Database Schema
+
 ```sql
 -- User profiles table
 CREATE TABLE user_profiles (
@@ -152,6 +165,7 @@ CREATE TABLE user_settings (
 ```
 
 ### 5.2 API Endpoints
+
 - `GET /users` - List users (admin)
 - `GET /users/:id` - Get user by ID
 - `POST /users` - Create user profile
@@ -161,6 +175,7 @@ CREATE TABLE user_settings (
 - `PUT /users/:id/settings` - Update user settings
 
 ### 5.3 Integration
+
 - Validate JWT tokens via Auth Service
 - Cache user profiles in Redis
 - Publish user events to message queue
@@ -168,6 +183,7 @@ CREATE TABLE user_settings (
 ## Phase 6: Orders Service Implementation
 
 ### 6.1 Database Schema
+
 ```sql
 -- Orders table
 CREATE TABLE orders (
@@ -206,6 +222,7 @@ CREATE TABLE order_status_history (
 ```
 
 ### 6.2 API Endpoints
+
 - `GET /orders` - List orders (with pagination)
 - `GET /orders/:id` - Get order by ID
 - `POST /orders` - Create new order
@@ -216,6 +233,7 @@ CREATE TABLE order_status_history (
 - `GET /users/:userId/orders` - Get user's orders
 
 ### 6.3 Event Publishing
+
 - Publish `order.created` event
 - Publish `order.updated` event
 - Publish `order.cancelled` event
@@ -224,6 +242,7 @@ CREATE TABLE order_status_history (
 ## Phase 7: Payments Service Implementation
 
 ### 7.1 Database Schema
+
 ```sql
 -- Payments table
 CREATE TABLE payments (
@@ -267,6 +286,7 @@ CREATE TABLE refunds (
 ```
 
 ### 7.2 API Endpoints
+
 - `GET /payments` - List payments
 - `GET /payments/:id` - Get payment by ID
 - `POST /payments` - Process payment
@@ -277,12 +297,14 @@ CREATE TABLE refunds (
 - `GET /orders/:orderId/payments` - Get order payments
 
 ### 7.3 Event Consumption & Publishing
+
 - Consume `order.created` events
 - Publish `payment.processed` events
 - Publish `payment.failed` events
 - Publish `refund.processed` events
 
 ### 7.4 Mock Payment Gateway
+
 - Simulate payment processing
 - Support multiple payment methods
 - Simulate failures and retries
@@ -290,6 +312,7 @@ CREATE TABLE refunds (
 ## Phase 8: Notifications Service Implementation
 
 ### 8.1 Database Schema
+
 ```sql
 -- Notifications table
 CREATE TABLE notifications (
@@ -334,6 +357,7 @@ CREATE TABLE notification_preferences (
 ```
 
 ### 8.2 API Endpoints
+
 - `GET /notifications` - List notifications
 - `GET /notifications/:id` - Get notification by ID
 - `POST /notifications` - Create notification (admin)
@@ -344,6 +368,7 @@ CREATE TABLE notification_preferences (
 - `GET /notifications/unread-count` - Get unread count
 
 ### 8.3 Event Consumption
+
 - Consume `order.created` events → Send order confirmation
 - Consume `order.status_changed` events → Send status updates
 - Consume `payment.processed` events → Send payment confirmation
@@ -351,6 +376,7 @@ CREATE TABLE notification_preferences (
 - Consume `user.registered` events → Send welcome email
 
 ### 8.4 Notification Channels
+
 - Email (mock SMTP)
 - SMS (mock provider)
 - Push notifications (mock FCM/APNS)
@@ -358,18 +384,21 @@ CREATE TABLE notification_preferences (
 ## Phase 9: Service Discovery & Communication
 
 ### 9.1 Consul Setup
+
 - Service registration on startup
 - Health check endpoints
 - Service deregistration on shutdown
 - Service lookup utilities
 
 ### 9.2 Inter-Service Communication
+
 - HTTP client with retry logic
 - Circuit breaker pattern
 - Service discovery integration
 - Load balancing (round-robin)
 
 ### 9.3 Message Queue Integration
+
 - RabbitMQ connection management
 - Queue declaration and binding
 - Publisher implementation
@@ -379,12 +408,14 @@ CREATE TABLE notification_preferences (
 ## Phase 10: Distributed Tracing
 
 ### 10.1 OpenTelemetry Setup
+
 - Tracer configuration
 - Automatic instrumentation
 - Custom span creation
 - Trace context propagation
 
 ### 10.2 Tracing Integration
+
 - HTTP request tracing
 - Database query tracing
 - Message queue tracing
@@ -393,33 +424,39 @@ CREATE TABLE notification_preferences (
 ## Phase 11: Testing Strategy
 
 ### 11.1 Unit Tests
+
 - Service layer tests
 - Controller tests
 - Utility function tests
 
 ### 11.2 Integration Tests
+
 - API endpoint tests
 - Database integration tests
 - Message queue tests
 - Service communication tests
 
 ### 11.3 E2E Tests
+
 - Full workflow tests
 - Docker Compose test environment
 
 ## Phase 12: Documentation
 
 ### 12.1 API Documentation
+
 - OpenAPI/Swagger specification
 - Endpoint documentation
 - Authentication documentation
 
 ### 12.2 Deployment Documentation
+
 - Docker setup guide
 - Environment configuration
 - Scaling guidelines
 
 ### 12.3 Development Documentation
+
 - Local development setup
 - Debugging guide
 - Testing guide

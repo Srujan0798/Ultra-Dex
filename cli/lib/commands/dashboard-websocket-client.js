@@ -1,7 +1,9 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * WebSocket Push Updates for Dashboard
  * Replaces polling with real-time WebSocket events
- * 
+ *
  * Add this to your dashboard.html script section
  */
 
@@ -20,22 +22,22 @@ class DashboardWebSocket {
   connect() {
     try {
       this.ws = new WebSocket(this.url);
-      
+
       this.ws.onopen = () => {
         console.log('[WebSocket] Connected to Ultra-Dex server');
         this.isConnected = true;
         this.reconnectAttempts = 0;
-        
+
         // Show connection status
         showConnectionStatus('connected');
-        
+
         // Request initial state
         this.send({ type: 'request_state' });
-        
+
         // Emit connection event
         this.emit('connected', {});
       };
-      
+
       this.ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
@@ -44,29 +46,28 @@ class DashboardWebSocket {
           console.error('[WebSocket] Failed to parse message:', e);
         }
       };
-      
+
       this.ws.onclose = (event) => {
         console.log('[WebSocket] Disconnected:', event.code, event.reason);
         this.isConnected = false;
         showConnectionStatus('disconnected');
-        
+
         // Attempt to reconnect
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           this.attemptReconnect();
         }
       };
-      
+
       this.ws.onerror = (error) => {
         console.error('[WebSocket] Error:', error);
         this.emit('error', error);
       };
-      
     } catch (error) {
       console.error('[WebSocket] Failed to connect:', error);
       this.attemptReconnect();
     }
   }
-  
+
   handleMessage(data) {
     // Route message to appropriate handler
     switch (data.type) {
@@ -74,80 +75,82 @@ class DashboardWebSocket {
         this.emit('system_update', data.data);
         updateDashboardMetrics(data.data);
         break;
-        
+
       case 'agent_status':
         this.emit('agent_status', data);
         updateAgentStatus(data.agent, data.status, data.activity);
         break;
-        
+
       case 'swarm_update':
         this.emit('swarm_update', data.data);
         updateSwarmStatus(data.data);
         break;
-        
+
       case 'state_update':
         this.emit('state_update', data.data);
         updatePhaseProgress(data.data);
         break;
-        
+
       case 'graph_update':
         this.emit('graph_update', data.data);
         updateGraphMetrics(data.data);
         break;
-        
+
       case 'action':
         this.emit('action', data.action);
         addActionToTimeline(data.action);
         break;
-        
+
       case 'log':
         this.emit('log', data);
         addLogEntry(data.message, data.level || 'info');
         break;
-        
+
       case 'connected':
         console.log('[WebSocket] Server says:', data.message);
         break;
-        
+
       case 'pong':
         // Heartbeat response
         break;
-        
+
       default:
         console.log('[WebSocket] Unknown message type:', data.type);
     }
   }
-  
+
   send(data) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(data));
     }
   }
-  
+
   on(event, callback) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
     this.listeners.get(event).push(callback);
   }
-  
+
   emit(event, data) {
     const callbacks = this.listeners.get(event);
     if (callbacks) {
-      callbacks.forEach(cb => cb(data));
+      callbacks.forEach((cb) => cb(data));
     }
   }
-  
+
   attemptReconnect() {
     this.reconnectAttempts++;
-    console.log(`[WebSocket] Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    console.log(
+      `[WebSocket] Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+    );
     showConnectionStatus('reconnecting', this.reconnectAttempts);
-    
+
     setTimeout(() => {
       this.connect();
     }, this.reconnectDelay);
   }
-  
+
   disconnect() {
     if (this.ws) {
       this.ws.close();
@@ -161,7 +164,7 @@ const wsClient = new DashboardWebSocket();
 // Connect when page loads
 document.addEventListener('DOMContentLoaded', () => {
   wsClient.connect();
-  
+
   // Setup heartbeat to keep connection alive
   setInterval(() => {
     if (wsClient.isConnected) {
@@ -174,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function showConnectionStatus(status, attempt = null) {
   const statusEl = document.getElementById('connection-status');
   if (!statusEl) return;
-  
+
   switch (status) {
     case 'connected':
       statusEl.innerHTML = '🟢 Live';
@@ -199,7 +202,7 @@ function updateDashboardMetrics(data) {
     if (scoreDisplay) {
       const score = Math.round(data.state.progress);
       scoreDisplay.innerText = score + '%';
-      
+
       // Update color based on score
       if (score >= 80) {
         scoreDisplay.style.color = 'var(--success)';
@@ -210,7 +213,7 @@ function updateDashboardMetrics(data) {
       }
     }
   }
-  
+
   // Update graph metrics
   if (data.graph) {
     const graphEl = document.querySelector('[data-metric="graph"]');
@@ -218,7 +221,7 @@ function updateDashboardMetrics(data) {
       graphEl.innerText = `${data.graph.nodes} nodes`;
     }
   }
-  
+
   // Update client count
   const clientsEl = document.getElementById('client-count');
   if (clientsEl) {
@@ -229,21 +232,21 @@ function updateDashboardMetrics(data) {
 function updateAgentStatus(agentName, status, activity) {
   const agentCard = document.getElementById(`agent-${agentName}`);
   if (!agentCard) return;
-  
+
   const statusEl = agentCard.querySelector('.agent-status');
   const activityEl = agentCard.querySelector('.agent-activity');
   const runBtn = agentCard.querySelector('.agent-btn.run');
   const stopBtn = agentCard.querySelector('.agent-btn.stop');
-  
+
   if (statusEl) {
     statusEl.className = `agent-status status-${status}`;
     statusEl.innerText = status.toUpperCase();
   }
-  
+
   if (activityEl && activity) {
     activityEl.innerText = activity;
   }
-  
+
   // Update button states
   if (status === 'working') {
     if (runBtn) runBtn.disabled = true;
@@ -254,7 +257,7 @@ function updateAgentStatus(agentName, status, activity) {
     if (stopBtn) stopBtn.disabled = true;
     agentCard.classList.remove('active');
   }
-  
+
   // Flash animation for status change
   agentCard.style.animation = 'none';
   setTimeout(() => {
@@ -269,16 +272,16 @@ function updateSwarmStatus(data) {
     progressEl.style.width = data.progress + '%';
     progressEl.innerText = data.progress + '%';
   }
-  
+
   // Update objective
   const objectiveEl = document.getElementById('swarm-objective');
   if (objectiveEl && data.objective) {
     objectiveEl.innerText = data.objective;
   }
-  
+
   // Update active agents list
   if (data.agents) {
-    data.agents.forEach(agent => {
+    data.agents.forEach((agent) => {
       updateAgentStatus(agent.name, agent.status, agent.activity);
     });
   }
@@ -286,8 +289,8 @@ function updateSwarmStatus(data) {
 
 function updatePhaseProgress(state) {
   if (!state || !state.phases) return;
-  
-  state.phases.forEach(phase => {
+
+  state.phases.forEach((phase) => {
     const phaseCard = document.querySelector(`[data-phase="${phase.name}"]`);
     if (phaseCard) {
       // Update status badge
@@ -296,17 +299,17 @@ function updatePhaseProgress(state) {
         badge.innerText = phase.status.replace('_', ' ');
         badge.className = `status-badge ${phase.status}`;
       }
-      
+
       // Update progress bar
       const progress = phaseCard.querySelector('.progress-mini .fill');
       if (progress) {
-        const completedSteps = phase.steps.filter(s => s.status === 'completed').length;
+        const completedSteps = phase.steps.filter((s) => s.status === 'completed').length;
         const percent = (completedSteps / phase.steps.length) * 100;
         progress.style.width = percent + '%';
       }
-      
+
       // Update step list
-      phase.steps.forEach(step => {
+      phase.steps.forEach((step) => {
         const stepEl = phaseCard.querySelector(`[data-step="${step.task}"]`);
         if (stepEl) {
           stepEl.className = step.status;
@@ -327,7 +330,7 @@ function updateGraphMetrics(graphData) {
 function addActionToTimeline(action) {
   const container = document.getElementById('actions-container');
   if (!container) return;
-  
+
   const actionEl = document.createElement('div');
   actionEl.className = 'action-item';
   actionEl.innerHTML = `
@@ -337,9 +340,9 @@ function addActionToTimeline(action) {
       <div class="action-time">${new Date(action.timestamp).toLocaleTimeString()}</div>
     </div>
   `;
-  
+
   container.insertBefore(actionEl, container.firstChild);
-  
+
   // Keep only last 50 actions
   while (container.children.length > 50) {
     container.removeChild(container.lastChild);
@@ -349,17 +352,17 @@ function addActionToTimeline(action) {
 function addLogEntry(message, level = 'info') {
   const container = document.getElementById('log-container');
   if (!container) return;
-  
+
   const entry = document.createElement('div');
   entry.className = `log-entry ${level}`;
   entry.innerHTML = `
     <span class="time">${new Date().toLocaleTimeString()}</span>
     ${escapeHtml(message)}
   `;
-  
+
   container.appendChild(entry);
   container.scrollTop = container.scrollHeight;
-  
+
   // Keep only last 100 log entries
   while (container.children.length > 100) {
     container.removeChild(container.firstChild);
@@ -368,14 +371,14 @@ function addLogEntry(message, level = 'info') {
 
 function getActionIcon(type) {
   const icons = {
-    'agent_start': '🤖',
-    'agent_complete': '✅',
-    'agent_error': '❌',
-    'agent_stop': '🛑',
-    'swarm': '🐝',
-    'build': '🔨',
-    'deploy': '🚀',
-    'default': '📌'
+    agent_start: '🤖',
+    agent_complete: '✅',
+    agent_error: '❌',
+    agent_stop: '🛑',
+    swarm: '🐝',
+    build: '🔨',
+    deploy: '🚀',
+    default: '📌',
   };
   return icons[type] || icons.default;
 }

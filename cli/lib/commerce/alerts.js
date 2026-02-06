@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Budget Alert System
  * Handles notifications and alerts for budget thresholds
@@ -17,11 +19,11 @@ const DEFAULT_ALERT_CONFIG = {
     console: true,
     slack: false,
     discord: false,
-    email: false
+    email: false,
   },
   slackWebhook: process.env.SLACK_WEBHOOK_URL,
   discordWebhook: process.env.DISCORD_WEBHOOK_URL,
-  email: process.env.ALERT_EMAIL
+  email: process.env.ALERT_EMAIL,
 };
 
 // Alert storage
@@ -43,14 +45,14 @@ export class BudgetAlertSystem {
    */
   async initialize() {
     if (this.initialized) return;
-    
+
     try {
       // Create alerts data directory
       await fs.mkdir(ALERT_DATA_DIR, { recursive: true });
-      
+
       // Load existing alert history
       await this.loadAlertHistory();
-      
+
       this.initialized = true;
       printSuccess(chalk.green('✅ Budget alert system initialized'));
     } catch (error) {
@@ -92,14 +94,15 @@ export class BudgetAlertSystem {
    */
   shouldSendAlert(threshold, currentPercentage, alertType) {
     // Check if we've already sent this specific alert recently
-    const recentAlert = this.alertHistory.find(alert => 
-      alert.threshold === threshold && 
-      alert.type === alertType &&
-      alert.percentage === currentPercentage &&
-      // Check if alert was sent in the last hour
-      (Date.now() - new Date(alert.timestamp).getTime()) < 3600000
+    const recentAlert = this.alertHistory.find(
+      (alert) =>
+        alert.threshold === threshold &&
+        alert.type === alertType &&
+        alert.percentage === currentPercentage &&
+        // Check if alert was sent in the last hour
+        Date.now() - new Date(alert.timestamp).getTime() < 3600000
     );
-    
+
     return !recentAlert;
   }
 
@@ -112,27 +115,27 @@ export class BudgetAlertSystem {
     }
 
     const message = this.formatAlertMessage(alertType, threshold, currentPercentage, budgetInfo);
-    
+
     // Log to console
     if (this.config.channels.console) {
       this.logToConsole(alertType, message);
     }
-    
+
     // Send to Slack if configured
     if (this.config.channels.slack && this.config.slackWebhook) {
       await this.sendToSlack(message, alertType);
     }
-    
+
     // Send to Discord if configured
     if (this.config.channels.discord && this.config.discordWebhook) {
       await this.sendToDiscord(message, alertType);
     }
-    
+
     // Send email if configured
     if (this.config.channels.email && this.config.email) {
       await this.sendToEmail(message, alertType);
     }
-    
+
     // Add to alert history
     const alertRecord = {
       id: Date.now().toString(36) + Math.random().toString(36).substr(2),
@@ -141,18 +144,18 @@ export class BudgetAlertSystem {
       currentPercentage,
       budgetInfo,
       message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     this.alertHistory.push(alertRecord);
-    
+
     // Keep only last 100 alerts to prevent unlimited growth
     if (this.alertHistory.length > 100) {
       this.alertHistory = this.alertHistory.slice(-100);
     }
-    
+
     await this.saveAlertHistory();
-    
+
     return alertRecord;
   }
 
@@ -160,18 +163,20 @@ export class BudgetAlertSystem {
    * Format alert message
    */
   formatAlertMessage(alertType, threshold, currentPercentage, budgetInfo) {
-    const emoji = {
-      'warning': '⚠️',
-      'critical': '🚨',
-      'exceeded': '❌'
-    }[alertType] || '🔔';
-    
-    const typeText = {
-      'warning': 'Warning',
-      'critical': 'Critical',
-      'exceeded': 'Exceeded'
-    }[alertType] || 'Alert';
-    
+    const emoji =
+      {
+        warning: '⚠️',
+        critical: '🚨',
+        exceeded: '❌',
+      }[alertType] || '🔔';
+
+    const typeText =
+      {
+        warning: 'Warning',
+        critical: 'Critical',
+        exceeded: 'Exceeded',
+      }[alertType] || 'Alert';
+
     return `${emoji} Ultra-Dex Budget ${typeText}: ${alertType} budget at ${currentPercentage.toFixed(1)}% of ${threshold}% threshold
     
 Current Status:
@@ -188,12 +193,13 @@ Timestamp: ${new Date().toISOString()}`;
    * Log alert to console
    */
   logToConsole(alertType, message) {
-    const color = {
-      'warning': chalk.yellow,
-      'critical': chalk.redBright,
-      'exceeded': chalk.red
-    }[alertType] || chalk.blue;
-    
+    const color =
+      {
+        warning: chalk.yellow,
+        critical: chalk.redBright,
+        exceeded: chalk.red,
+      }[alertType] || chalk.blue;
+
     printInfo(color(message));
   }
 
@@ -209,31 +215,34 @@ Timestamp: ${new Date().toISOString()}`;
     try {
       const payload = {
         text: message,
-        attachments: [{
-          color: {
-            'warning': 'warning',
-            'critical': 'danger',
-            'exceeded': 'danger'
-          }[alertType] || 'good',
-          fields: [
-            {
-              title: 'Alert Type',
-              value: alertType,
-              short: true
-            },
-            {
-              title: 'Threshold',
-              value: `${alertType}%`,
-              short: true
-            }
-          ]
-        }]
+        attachments: [
+          {
+            color:
+              {
+                warning: 'warning',
+                critical: 'danger',
+                exceeded: 'danger',
+              }[alertType] || 'good',
+            fields: [
+              {
+                title: 'Alert Type',
+                value: alertType,
+                short: true,
+              },
+              {
+                title: 'Threshold',
+                value: `${alertType}%`,
+                short: true,
+              },
+            ],
+          },
+        ],
       };
 
       const response = await fetch(this.config.slackWebhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -256,29 +265,32 @@ Timestamp: ${new Date().toISOString()}`;
     }
 
     try {
-      const color = {
-        'warning': 16776960,   // Yellow
-        'critical': 15548997,  // Red
-        'exceeded': 15158332   // Dark Red
-      }[alertType] || 3447003; // Blue
+      const color =
+        {
+          warning: 16776960, // Yellow
+          critical: 15548997, // Red
+          exceeded: 15158332, // Dark Red
+        }[alertType] || 3447003; // Blue
 
       const payload = {
         content: null,
-        embeds: [{
-          title: `Ultra-Dex Budget ${alertType.charAt(0).toUpperCase() + alertType.slice(1)}`,
-          description: message,
-          color: color,
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: 'Ultra-Dex Budget Alert System'
-          }
-        }]
+        embeds: [
+          {
+            title: `Ultra-Dex Budget ${alertType.charAt(0).toUpperCase() + alertType.slice(1)}`,
+            description: message,
+            color: color,
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: 'Ultra-Dex Budget Alert System',
+            },
+          },
+        ],
       };
 
       const response = await fetch(this.config.discordWebhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -303,7 +315,11 @@ Timestamp: ${new Date().toISOString()}`;
     // In a real implementation, this would use an email service like nodemailer
     // For now, we'll just log it
     printInfo(chalk.gray(`📧 Email alert prepared for: ${this.config.email}`));
-    printInfo(chalk.gray(`   Subject: Ultra-Dex Budget ${alertType.charAt(0).toUpperCase() + alertType.slice(1)}`));
+    printInfo(
+      chalk.gray(
+        `   Subject: Ultra-Dex Budget ${alertType.charAt(0).toUpperCase() + alertType.slice(1)}`
+      )
+    );
     printInfo(chalk.gray(`   Message: ${message}`));
   }
 
@@ -319,30 +335,42 @@ Timestamp: ${new Date().toISOString()}`;
 
     // Check daily budget alerts
     for (const threshold of this.config.thresholds) {
-      if (daily.percentage >= threshold && this.shouldSendAlert(threshold, daily.percentage, 'daily')) {
-        const alertType = daily.percentage >= 100 ? 'exceeded' : daily.percentage >= 90 ? 'critical' : 'warning';
-        
+      if (
+        daily.percentage >= threshold &&
+        this.shouldSendAlert(threshold, daily.percentage, 'daily')
+      ) {
+        const alertType =
+          daily.percentage >= 100 ? 'exceeded' : daily.percentage >= 90 ? 'critical' : 'warning';
+
         await this.sendAlert(alertType, threshold, daily.percentage, {
           spent: daily.spent,
           budget: daily.budget,
           type: 'daily',
           project: budgetStatus.project,
-          agent: budgetStatus.agent
+          agent: budgetStatus.agent,
         });
       }
     }
 
     // Check monthly budget alerts
     for (const threshold of this.config.thresholds) {
-      if (monthly.percentage >= threshold && this.shouldSendAlert(threshold, monthly.percentage, 'monthly')) {
-        const alertType = monthly.percentage >= 100 ? 'exceeded' : monthly.percentage >= 90 ? 'critical' : 'warning';
-        
+      if (
+        monthly.percentage >= threshold &&
+        this.shouldSendAlert(threshold, monthly.percentage, 'monthly')
+      ) {
+        const alertType =
+          monthly.percentage >= 100
+            ? 'exceeded'
+            : monthly.percentage >= 90
+              ? 'critical'
+              : 'warning';
+
         await this.sendAlert(alertType, threshold, monthly.percentage, {
           spent: monthly.spent,
           budget: monthly.budget,
           type: 'monthly',
           project: budgetStatus.project,
-          agent: budgetStatus.agent
+          agent: budgetStatus.agent,
         });
       }
     }
@@ -352,15 +380,23 @@ Timestamp: ${new Date().toISOString()}`;
       for (const [agentName, agentBudget] of Object.entries(budgetStatus.perAgent)) {
         if (typeof agentBudget === 'object' && agentBudget.percentage) {
           for (const threshold of this.config.thresholds) {
-            if (agentBudget.percentage >= threshold && this.shouldSendAlert(threshold, agentBudget.percentage, `agent-${agentName}`)) {
-              const alertType = agentBudget.percentage >= 100 ? 'exceeded' : agentBudget.percentage >= 90 ? 'critical' : 'warning';
-              
+            if (
+              agentBudget.percentage >= threshold &&
+              this.shouldSendAlert(threshold, agentBudget.percentage, `agent-${agentName}`)
+            ) {
+              const alertType =
+                agentBudget.percentage >= 100
+                  ? 'exceeded'
+                  : agentBudget.percentage >= 90
+                    ? 'critical'
+                    : 'warning';
+
               await this.sendAlert(alertType, threshold, agentBudget.percentage, {
                 spent: agentBudget.spent,
                 budget: agentBudget.budget,
                 type: `agent-${agentName}`,
                 project: budgetStatus.project,
-                agent: agentName
+                agent: agentName,
               });
             }
           }
@@ -381,20 +417,20 @@ Timestamp: ${new Date().toISOString()}`;
 
     if (options.startDate) {
       const start = new Date(options.startDate);
-      filteredHistory = filteredHistory.filter(alert => new Date(alert.timestamp) >= start);
+      filteredHistory = filteredHistory.filter((alert) => new Date(alert.timestamp) >= start);
     }
 
     if (options.endDate) {
       const end = new Date(options.endDate);
-      filteredHistory = filteredHistory.filter(alert => new Date(alert.timestamp) <= end);
+      filteredHistory = filteredHistory.filter((alert) => new Date(alert.timestamp) <= end);
     }
 
     if (options.type) {
-      filteredHistory = filteredHistory.filter(alert => alert.type === options.type);
+      filteredHistory = filteredHistory.filter((alert) => alert.type === options.type);
     }
 
     if (options.threshold) {
-      filteredHistory = filteredHistory.filter(alert => alert.threshold === options.threshold);
+      filteredHistory = filteredHistory.filter((alert) => alert.threshold === options.threshold);
     }
 
     // Sort by timestamp descending
@@ -405,8 +441,8 @@ Timestamp: ${new Date().toISOString()}`;
       count: filteredHistory.length,
       period: {
         start: options.startDate || filteredHistory[filteredHistory.length - 1]?.timestamp,
-        end: options.endDate || filteredHistory[0]?.timestamp
-      }
+        end: options.endDate || filteredHistory[0]?.timestamp,
+      },
     };
   }
 
@@ -429,9 +465,9 @@ Timestamp: ${new Date().toISOString()}`;
    */
   async configureChannels(channels) {
     this.config.channels = { ...this.config.channels, ...channels };
-    
+
     printSuccess(chalk.green('✅ Alert channels configured'));
-    
+
     return this.config.channels;
   }
 
@@ -446,7 +482,7 @@ Timestamp: ${new Date().toISOString()}`;
     printInfo(chalk.cyan('🧪 Testing alert delivery...\n'));
 
     const testMessage = 'This is a test alert from Ultra-Dex Budget Alert System';
-    
+
     // Test console
     if (this.config.channels.console) {
       printSuccess(chalk.green('✅ Console alert: Test message delivered'));
@@ -515,33 +551,37 @@ export function registerAlertCommands(program) {
     .action(async (options) => {
       try {
         printInfo(chalk.cyan('\n🔔 Ultra-Dex Budget Alert System\n'));
-        
+
         const alertSystem = await createBudgetAlertSystem();
-        
+
         if (options.history) {
           const historyOptions = {
             startDate: options.startDate,
             endDate: options.endDate,
             type: options.type,
-            threshold: options.threshold ? parseInt(options.threshold) : undefined
+            threshold: options.threshold ? parseInt(options.threshold) : undefined,
           };
-          
+
           const history = await alertSystem.getAlertHistory(historyOptions);
-          
+
           if (history.alerts.length === 0) {
             printInfo(chalk.gray('No alerts found in the specified period'));
             return;
           }
-          
+
           printInfo(chalk.bold(`📋 Alert History (${history.count} alerts):\n`));
-          
+
           for (const alert of history.alerts) {
             const time = new Date(alert.timestamp).toLocaleTimeString();
-            const color = alert.type.includes('exceeded') ? chalk.red : 
-                         alert.type.includes('critical') ? chalk.redBright : 
-                         chalk.yellow;
-            
-            printInfo(`${color('●')} ${time} - ${alert.type} at ${alert.threshold}% (${alert.currentPercentage.toFixed(1)}%)`);
+            const color = alert.type.includes('exceeded')
+              ? chalk.red
+              : alert.type.includes('critical')
+                ? chalk.redBright
+                : chalk.yellow;
+
+            printInfo(
+              `${color('●')} ${time} - ${alert.type} at ${alert.threshold}% (${alert.currentPercentage.toFixed(1)}%)`
+            );
             printInfo(chalk.gray(`  ${alert.message.split('\n')[0]}`));
             printInfo(''); // Empty line
           }
@@ -558,12 +598,20 @@ export function registerAlertCommands(program) {
         } else {
           // Default: show current configuration
           printInfo(chalk.bold('🔔 Current Alert Configuration:\n'));
-          printInfo(`Console: ${alertSystem.config.channels.console ? chalk.green('✅ Enabled') : chalk.red('❌ Disabled')}`);
-          printInfo(`Slack: ${alertSystem.config.channels.slack && alertSystem.config.slackWebhook ? chalk.green('✅ Configured') : chalk.gray('Disabled')}`);
-          printInfo(`Discord: ${alertSystem.config.channels.discord && alertSystem.config.discordWebhook ? chalk.green('✅ Configured') : chalk.gray('Disabled')}`);
-          printInfo(`Email: ${alertSystem.config.channels.email && alertSystem.config.email ? chalk.green('✅ Configured') : chalk.gray('Disabled')}`);
+          printInfo(
+            `Console: ${alertSystem.config.channels.console ? chalk.green('✅ Enabled') : chalk.red('❌ Disabled')}`
+          );
+          printInfo(
+            `Slack: ${alertSystem.config.channels.slack && alertSystem.config.slackWebhook ? chalk.green('✅ Configured') : chalk.gray('Disabled')}`
+          );
+          printInfo(
+            `Discord: ${alertSystem.config.channels.discord && alertSystem.config.discordWebhook ? chalk.green('✅ Configured') : chalk.gray('Disabled')}`
+          );
+          printInfo(
+            `Email: ${alertSystem.config.channels.email && alertSystem.config.email ? chalk.green('✅ Configured') : chalk.gray('Disabled')}`
+          );
           printInfo(`\nThresholds: ${alertSystem.config.thresholds.join('% , ')}%`);
-          
+
           printInfo(chalk.gray('\nUse --history, --test, --configure, or --help for more options'));
         }
       } catch (error) {
@@ -578,7 +626,7 @@ export default {
   BudgetAlertSystem,
   createBudgetAlertSystem,
   registerAlertCommands,
-  checkAlerts
+  checkAlerts,
 };
 
 export async function checkAlerts() {
@@ -598,5 +646,9 @@ export async function checkAlerts() {
     }
   }
 
-  return { alerts, dailyPct: Number(dailyPct.toFixed(1)), monthlyPct: Number(monthlyPct.toFixed(1)) };
+  return {
+    alerts,
+    dailyPct: Number(dailyPct.toFixed(1)),
+    monthlyPct: Number(monthlyPct.toFixed(1)),
+  };
 }

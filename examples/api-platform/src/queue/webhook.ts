@@ -25,10 +25,10 @@ const webhookQueue = new Bull<WebhookJobData>('webhook-delivery', {
     attempts: config.webhook.maxRetries,
     backoff: {
       type: 'exponential',
-      delay: config.webhook.retryDelayMs
+      delay: config.webhook.retryDelayMs,
     },
-    timeout: config.webhook.timeoutMs
-  }
+    timeout: config.webhook.timeoutMs,
+  },
 });
 
 // Process jobs
@@ -50,9 +50,9 @@ webhookQueue.process('deliver', async (job) => {
         'X-Webhook-ID': deliveryId,
         'X-Event-ID': event.id,
         'X-Event-Type': event.type,
-        ...(signature && { 'X-Webhook-Signature': signature })
+        ...(signature && { 'X-Webhook-Signature': signature }),
       },
-      body: payload
+      body: payload,
     });
 
     if (!response.ok) {
@@ -63,7 +63,7 @@ webhookQueue.process('deliver', async (job) => {
 
     return {
       success: true,
-      status: response.status
+      status: response.status,
     };
   } catch (error) {
     logger.error({ deliveryId, error: (error as Error).message }, 'Webhook delivery failed');

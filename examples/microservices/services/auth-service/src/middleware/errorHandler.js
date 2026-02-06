@@ -5,7 +5,7 @@ const errorHandler = (err, req, res, next) => {
     error: err.message,
     stack: err.stack,
     path: req.path,
-    method: req.method
+    method: req.method,
   });
 
   if (err.code === 'ECONNREFUSED') {
@@ -13,7 +13,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error'
+    error: err.message || 'Internal Server Error',
   });
 };
 

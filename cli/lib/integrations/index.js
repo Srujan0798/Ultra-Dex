@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import jira from './jira.js';
 import linear from './linear.js';
 import notion from './notion.js';
@@ -21,7 +23,7 @@ export const integrations = {
   vercel,
   supabase,
   stripe,
-  segment
+  segment,
 };
 
 export default integrations;

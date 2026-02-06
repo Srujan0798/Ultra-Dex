@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Plugin Integration Layer
  * Connects the plugin system with the main Ultra-Dex CLI
@@ -13,7 +15,7 @@ import chalk from 'chalk';
 export async function initializePlugins(cliProgram) {
   try {
     await pluginRegistry.initialize();
-    
+
     // Register core hooks that plugins can subscribe to
     pluginRegistry.registerHook('before-command-execution', 'Called before any command executes');
     pluginRegistry.registerHook('after-command-execution', 'Called after any command executes');
@@ -23,9 +25,9 @@ export async function initializePlugins(cliProgram) {
     pluginRegistry.registerHook('post-generate', 'Called after code generation');
     pluginRegistry.registerHook('pre-commit', 'Called before git commit (if git hooks enabled)');
     pluginRegistry.registerHook('validation-error', 'Called when validation errors occur');
-    
+
     printSuccess(chalk.green('✓ Plugin system initialized'));
-    
+
     // Activate all installed plugins with the CLI program
     const installedPlugins = pluginRegistry.getInstalledPlugins();
     for (const plugin of installedPlugins) {
@@ -40,7 +42,6 @@ export async function initializePlugins(cliProgram) {
         }
       }
     }
-    
   } catch (error) {
     printError(chalk.red(`Plugin initialization failed: ${error.message}`));
   }
@@ -64,14 +65,14 @@ export function getPlugin(name) {
  * Check if a plugin is installed
  */
 export function isPluginInstalled(name) {
-  return pluginRegistry.getInstalledPlugins().some(p => p.name === name);
+  return pluginRegistry.getInstalledPlugins().some((p) => p.name === name);
 }
 
 /**
  * Get all installed plugin names
  */
 export function getInstalledPluginNames() {
-  return pluginRegistry.getInstalledPlugins().map(p => p.name);
+  return pluginRegistry.getInstalledPlugins().map((p) => p.name);
 }
 
 /**
@@ -83,9 +84,9 @@ export async function executeCommandWithPlugins(commandName, args, options) {
     command: commandName,
     args,
     options,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
-  
+
   let result;
   try {
     // Execute the actual command
@@ -95,20 +96,20 @@ export async function executeCommandWithPlugins(commandName, args, options) {
     await executeHook('validation-error', {
       command: commandName,
       error: error.message,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
     throw error;
   }
-  
+
   // Execute post-command hook
   await executeHook('after-command-execution', {
     command: commandName,
     args,
     options,
     result,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
-  
+
   return result;
 }
 
@@ -125,5 +126,5 @@ export default {
   getPlugin,
   isPluginInstalled,
   getInstalledPluginNames,
-  executeCommandWithPlugins
+  executeCommandWithPlugins,
 };

@@ -9,7 +9,9 @@ import { Database, Save, Plus, RefreshCw } from 'lucide-react';
 export default function StoragePage() {
   const { isConnected } = useAccount();
   const [newValue, setNewValue] = useState('');
-  const [events, setEvents] = useState<{ oldValue: string; newValue: string; changedBy: string; timestamp: number }[]>([]);
+  const [events, setEvents] = useState<
+    { oldValue: string; newValue: string; changedBy: string; timestamp: number }[]
+  >([]);
 
   const contractAddress = contracts.contracts.SimpleStorage as `0x${string}`;
 
@@ -61,7 +63,9 @@ export default function StoragePage() {
 
       {!isConnected ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <p className="text-yellow-800">Please connect your wallet to interact with the storage contract.</p>
+          <p className="text-yellow-800">
+            Please connect your wallet to interact with the storage contract.
+          </p>
         </div>
       ) : (
         <>
@@ -73,9 +77,7 @@ export default function StoragePage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New Value
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Value</label>
                 <div className="flex gap-4">
                   <input
                     type="number"
@@ -126,11 +128,16 @@ export default function StoragePage() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Events</h2>
             {events.length === 0 ? (
-              <p className="text-gray-500">No events yet. Interact with the contract to see events here.</p>
+              <p className="text-gray-500">
+                No events yet. Interact with the contract to see events here.
+              </p>
             ) : (
               <div className="space-y-3">
                 {events.map((event, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div>
                       <span className="text-sm text-gray-500">{event.oldValue} → </span>
                       <span className="font-semibold text-blue-600">{event.newValue}</span>

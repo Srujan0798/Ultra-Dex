@@ -27,13 +27,16 @@ export function validateProjectName(name: string | null | undefined): Validation
  * @param label - Label for error messages (default: 'Path')
  * @returns true if valid, error message string if invalid
  */
-export function validateSafePath(input: string | null | undefined, label: string = 'Path'): ValidationResult {
+export function validateSafePath(
+  input: string | null | undefined,
+  label: string = 'Path'
+): ValidationResult {
   if (!input || !input.trim()) {
     return `${label} is required`;
   }
   const trimmed = input.trim();
   if (trimmed.includes('..')) {
-    return `${label} cannot include ".."`; 
+    return `${label} cannot include ".."`;
   }
   return true;
 }

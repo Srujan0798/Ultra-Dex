@@ -21,7 +21,7 @@ Describe what you'd like to see added.
 - [ ] METHODOLOGY.md
 - [ ] Rule Book 21.md
 - [ ] Examples
-- [ ] Other: ___
+- [ ] Other: \_\_\_
 
 ## Example Content
 

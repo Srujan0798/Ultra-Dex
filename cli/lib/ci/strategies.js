@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export function detectFailureType(logs = '') {
   const text = logs.toLowerCase();
   if (text.includes('lint') || text.includes('eslint')) return 'lint';
@@ -24,5 +26,5 @@ export function suggestStrategy(type) {
 
 export default {
   detectFailureType,
-  suggestStrategy
+  suggestStrategy,
 };

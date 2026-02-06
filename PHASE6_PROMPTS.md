@@ -187,7 +187,7 @@ npx ultra-dex diff --sections 8,9,10 --output drift-report.html
 
 ### PROMPT 20: Deep Graph RAG with FalkorDB
 
-```
+````
 ## Task: Implement Full Graph Database for Code Analysis
 
 **Files to create:**
@@ -231,9 +231,10 @@ CREATE (fn:Function {name: 'login', file: '/src/auth/login.js', line: 25})
 CREATE (c:Class {name: 'User', file: '/src/models/user.js'})
 CREATE (f)-[:DEFINES]->(fn)
 CREATE (fn)-[:USES]->(c)
-```
+````
 
 **Commit:** "feat: Add deep graph RAG with FalkorDB"
+
 ```
 
 ---
@@ -241,9 +242,11 @@ CREATE (fn)-[:USES]->(c)
 ### PROMPT 21: GraphRAG Impact Visualizer
 
 ```
+
 ## Task: Visual Impact Analysis Dashboard
 
 **Files to create:**
+
 - cli/lib/graph/impact-visualizer.js (NEW)
 - dashboard/src/components/ImpactGraph.tsx (NEW)
 
@@ -276,6 +279,7 @@ npx ultra-dex impact "src/api/payments.js"
 npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 
 **Commit:** "feat: Add GraphRAG impact visualizer"
+
 ```
 
 ---
@@ -283,9 +287,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 22: Agent2Agent Protocol
 
 ```
+
 ## Task: Implement Agent Communication Protocol
 
 **Files to create:**
+
 - cli/lib/agents/protocol.js (NEW)
 - cli/lib/agents/handshake.js (NEW)
 - cli/lib/agents/negotiation.js (NEW)
@@ -320,6 +326,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
    - Error tracking
 
 **Message Format:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -339,6 +346,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ```
 
 **Commit:** "feat: Add Agent2Agent communication protocol"
+
 ```
 
 ---
@@ -346,9 +354,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 23: Template Marketplace
 
 ```
+
 ## Task: Create Template Marketplace System
 
 **Files to create:**
+
 - cli/lib/marketplace/templates.js (NEW)
 - cli/lib/marketplace/template-registry.js (NEW)
 
@@ -384,6 +394,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
    - Featured templates
 
 **Template Manifest:**
+
 ```json
 {
   "name": "@ultra-dex/saas-starter",
@@ -401,6 +412,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ```
 
 **Commit:** "feat: Add template marketplace"
+
 ```
 
 ---
@@ -408,9 +420,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 24: Persistent Project Memory (Vector Store)
 
 ```
+
 ## Task: Long-Term Project Memory with Vector Search
 
 **Files to create:**
+
 - cli/lib/memory/vector-store.js (NEW)
 - cli/lib/memory/embeddings.js (NEW)
 - cli/lib/memory/retriever.js (NEW)
@@ -447,6 +461,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
    - Maintain consistency across sessions
 
 **Commit:** "feat: Add persistent project memory with vector search"
+
 ```
 
 ---
@@ -454,9 +469,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 25: Model Router & Cost Optimizer
 
 ```
+
 ## Task: Intelligent Model Selection and Cost Optimization
 
 **Files to create:**
+
 - cli/lib/router/model-router.js (NEW)
 - cli/lib/router/cost-optimizer.js (NEW)
 - cli/lib/router/benchmarks.js (NEW)
@@ -490,19 +507,21 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
    - Team-wide defaults
 
 **Router Config:**
+
 ```json
 {
   "routes": [
-    {"task": "code-review", "model": "claude-sonnet-5", "fallback": "gpt-4o"},
-    {"task": "quick-fix", "model": "gpt-4o-mini"},
-    {"task": "architecture", "model": "claude-opus", "minTokens": 8000}
+    { "task": "code-review", "model": "claude-sonnet-5", "fallback": "gpt-4o" },
+    { "task": "quick-fix", "model": "gpt-4o-mini" },
+    { "task": "architecture", "model": "claude-opus", "minTokens": 8000 }
   ],
-  "budget": {"daily": 10, "monthly": 200},
+  "budget": { "daily": 10, "monthly": 200 },
   "optimization": "cost" // or "quality" or "speed"
 }
 ```
 
 **Commit:** "feat: Add intelligent model router and cost optimizer"
+
 ```
 
 ---
@@ -510,9 +529,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 26: Quality Gate System
 
 ```
+
 ## Task: Automated Quality Gates for CI/CD
 
 **Files to create:**
+
 - cli/lib/quality/gate.js (NEW)
 - cli/lib/quality/rules.js (NEW)
 - cli/lib/quality/report.js (NEW)
@@ -550,19 +571,21 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
    - `ultra-dex gate report` - Generate report
 
 **Quality Gate Config:**
+
 ```json
 {
   "gates": {
-    "p0-complete": {"threshold": 100, "severity": "error"},
-    "alignment": {"threshold": 80, "severity": "error"},
-    "test-coverage": {"threshold": 70, "severity": "warning"},
-    "lint-clean": {"threshold": 0, "severity": "error"}
+    "p0-complete": { "threshold": 100, "severity": "error" },
+    "alignment": { "threshold": 80, "severity": "error" },
+    "test-coverage": { "threshold": 70, "severity": "warning" },
+    "lint-clean": { "threshold": 0, "severity": "error" }
   },
   "ignore": ["docs/**", "*.test.js"]
 }
 ```
 
 **Commit:** "feat: Add quality gate system for CI/CD"
+
 ```
 
 ---
@@ -570,9 +593,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 27: Decision Ledger (Audit Trail)
 
 ```
+
 ## Task: Immutable Audit Trail for AI Decisions
 
 **Files to create:**
+
 - cli/lib/ledger/index.js (NEW)
 - cli/lib/ledger/storage.js (NEW)
 - cli/lib/ledger/query.js (NEW)
@@ -609,6 +634,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
    - Link to affected files
 
 **Ledger Entry:**
+
 ```json
 {
   "id": "led-12345",
@@ -624,6 +650,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ```
 
 **Commit:** "feat: Add decision ledger for audit trail"
+
 ```
 
 ---
@@ -635,9 +662,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 28: JetBrains Plugin Foundation
 
 ```
+
 ## Task: Create JetBrains IDE Plugin
 
 **Files to create:**
+
 - jetbrains-plugin/ (NEW directory)
 - jetbrains-plugin/src/main/kotlin/UltraDexPlugin.kt
 - jetbrains-plugin/build.gradle.kts
@@ -666,6 +695,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
    - Quick check alignment
 
 **Plugin.xml:**
+
 ```xml
 <idea-plugin>
   <id>com.ultradex.plugin</id>
@@ -677,6 +707,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ```
 
 **Commit:** "feat: Add JetBrains IDE plugin foundation"
+
 ```
 
 ---
@@ -684,9 +715,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 29: Neovim Plugin
 
 ```
+
 ## Task: Create Neovim Plugin
 
 **Files to create:**
+
 - nvim-plugin/ (NEW directory)
 - nvim-plugin/lua/ultra-dex/init.lua
 - nvim-plugin/lua/ultra-dex/commands.lua
@@ -716,6 +749,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
    - Virtual text for inline hints
 
 **Lazy.nvim Config:**
+
 ```lua
 {
   "ultra-dex/nvim-plugin",
@@ -729,6 +763,7 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ```
 
 **Commit:** "feat: Add Neovim plugin"
+
 ```
 
 ---
@@ -736,9 +771,11 @@ npx ultra-dex impact "processPayment" --depth 5 --output impact.html
 ### PROMPT 30: Auto-Implement Full Automation
 
 ```
+
 ## Task: Fully Autonomous Feature Implementation
 
 **Files to create:**
+
 - cli/lib/commands/auto-implement.js (enhance)
 - cli/lib/automation/pipeline.js (NEW)
 - cli/lib/automation/checkpoints.js (NEW)
@@ -778,6 +815,7 @@ npx ultra-dex auto-implement "Add user profile page" --full
 npx ultra-dex auto-implement "Fix auth bug" --no-stop
 
 **Commit:** "feat: Add fully autonomous auto-implement pipeline"
+
 ```
 
 ---
@@ -785,12 +823,15 @@ npx ultra-dex auto-implement "Fix auth bug" --no-stop
 ### PROMPT 31: Self-Healing CI/CD Monitor
 
 ```
+
 ## Task: CI/CD Auto-Fix System
 
 **Files to modify:**
+
 - cli/lib/commands/ci-monitor.js (enhance)
 
 **Files to create:**
+
 - cli/lib/ci/healer.js (NEW)
 - cli/lib/ci/strategies.js (NEW)
 
@@ -827,6 +868,7 @@ npx ultra-dex ci-monitor --watch
 npx ultra-dex ci-monitor --heal --max-attempts 3
 
 **Commit:** "feat: Add self-healing CI/CD monitor"
+
 ```
 
 ---
@@ -834,9 +876,11 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
 ### PROMPT 32: Team Workspace Collaboration
 
 ```
+
 ## Task: Multi-User Team Workspaces
 
 **Files to create:**
+
 - cli/lib/team/workspace.js (NEW)
 - cli/lib/team/sync.js (NEW)
 - cli/lib/team/permissions.js (NEW)
@@ -870,6 +914,7 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
    - `ultra-dex team activity`
 
 **Commit:** "feat: Add team workspace collaboration"
+
 ```
 
 ---
@@ -877,9 +922,11 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
 ### PROMPT 33: Jira Integration
 
 ```
+
 ## Task: Jira Epic/Story Generator
 
 **Files to create:**
+
 - cli/lib/integrations/jira.js (NEW)
 
 **Requirements:**
@@ -907,6 +954,7 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
    - `ultra-dex jira link PROJ-123`
 
 **Commit:** "feat: Add Jira epic/story integration"
+
 ```
 
 ---
@@ -914,9 +962,11 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
 ### PROMPT 34: Notion Integration
 
 ```
+
 ## Task: Notion Template Sync
 
 **Files to create:**
+
 - cli/lib/integrations/notion.js (NEW)
 
 **Requirements:**
@@ -942,6 +992,7 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
    - `ultra-dex notion import <url>`
 
 **Commit:** "feat: Add Notion template sync"
+
 ```
 
 ---
@@ -949,9 +1000,11 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
 ### PROMPT 35: Trello Board Generator
 
 ```
+
 ## Task: Trello Board Auto-Generator
 
 **Files to create:**
+
 - cli/lib/integrations/trello.js (NEW)
 
 **Requirements:**
@@ -977,6 +1030,7 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
    - `ultra-dex trello status`
 
 **Commit:** "feat: Add Trello board generator"
+
 ```
 
 ---
@@ -1021,3 +1075,4 @@ npx ultra-dex ci-monitor --heal --max-attempts 3
 
 *All prompts extracted from docs/completed/, docs/FUTURE-TASKS.md, docs/ROADMAP.md*
 *Copy any prompt and paste to Codex/Claude/Gemini!*
+```

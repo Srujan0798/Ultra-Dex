@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { BaseProvider } from './base.js';
@@ -14,8 +16,8 @@ export async function loadRouterConfig() {
         planning: 'claude-sonnet',
         coding: 'gpt-4',
         review: 'claude-opus',
-        simple: 'ollama'
-      }
+        simple: 'ollama',
+      },
     };
   }
 }

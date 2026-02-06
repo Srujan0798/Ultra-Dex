@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Secure Token Storage
  * Uses keytar for secure credential storage
@@ -92,9 +94,9 @@ export class SecureTokenStorage {
     if (this.available && this.keytar) {
       try {
         const accounts = await this.keytar.default.findCredentials(SERVICE_NAME);
-        return { 
-          success: true, 
-          accounts: accounts.map(a => ({ account: a.account })) // Don't return passwords
+        return {
+          success: true,
+          accounts: accounts.map((a) => ({ account: a.account })), // Don't return passwords
         };
       } catch (error) {
         console.error(chalk.red('[TokenStorage] Failed to list accounts:', error.message));
@@ -112,7 +114,7 @@ export class SecureTokenStorage {
     const fs = await import('fs/promises');
     const path = await import('path');
     const { fileURLToPath } = await import('url');
-    
+
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const storageDir = path.join(process.cwd(), '.ultra-dex', 'tokens');
@@ -167,8 +169,8 @@ export class SecureTokenStorage {
     try {
       const files = await fs.readdir(storageDir);
       const accounts = files
-        .filter(f => f.endsWith('.token'))
-        .map(f => ({ account: f.replace('.token', '') }));
+        .filter((f) => f.endsWith('.token'))
+        .map((f) => ({ account: f.replace('.token', '') }));
       return { success: true, accounts };
     } catch (error) {
       return { success: true, accounts: [] };
@@ -182,10 +184,10 @@ export class SecureTokenStorage {
 export async function storeAuthToken(provider, tokens) {
   const storage = new SecureTokenStorage();
   await storage.initialize();
-  
+
   const account = `auth_${provider}`;
   const tokenString = JSON.stringify(tokens);
-  
+
   return await storage.setToken(account, tokenString);
 }
 
@@ -195,10 +197,10 @@ export async function storeAuthToken(provider, tokens) {
 export async function getAuthToken(provider) {
   const storage = new SecureTokenStorage();
   await storage.initialize();
-  
+
   const account = `auth_${provider}`;
   const result = await storage.getToken(account);
-  
+
   if (result.success && result.token) {
     try {
       return { ...result, tokens: JSON.parse(result.token) };
@@ -206,7 +208,7 @@ export async function getAuthToken(provider) {
       return result;
     }
   }
-  
+
   return result;
 }
 
@@ -216,7 +218,7 @@ export async function getAuthToken(provider) {
 export async function deleteAuthToken(provider) {
   const storage = new SecureTokenStorage();
   await storage.initialize();
-  
+
   const account = `auth_${provider}`;
   return await storage.deleteToken(account);
 }
@@ -227,7 +229,7 @@ export async function deleteAuthToken(provider) {
 export async function storeAPIKey(keyId, key) {
   const storage = new SecureTokenStorage();
   await storage.initialize();
-  
+
   const account = `apikey_${keyId}`;
   return await storage.setToken(account, key);
 }
@@ -238,7 +240,7 @@ export async function storeAPIKey(keyId, key) {
 export async function getAPIKey(keyId) {
   const storage = new SecureTokenStorage();
   await storage.initialize();
-  
+
   const account = `apikey_${keyId}`;
   return await storage.getToken(account);
 }

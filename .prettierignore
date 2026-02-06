@@ -1,0 +1,23 @@
+node_modules
+.dist
+build
+dist
+coverage
+cli/coverage
+.docs-site
+docs-site
+.documentation-site
+documentation-site
+website
+web/dist
+web/.next
+cloud/.next
+mobile/.expo
+.ultra
+.ultra-dex
+.git
+*.log
+
+# Large generated artifacts
+**/*.min.js
+**/*.min.css

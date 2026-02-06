@@ -5,7 +5,7 @@ services:
       context: ..
       dockerfile: templates/docker/Dockerfile
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       - NODE_ENV=production
     volumes:
@@ -18,7 +18,7 @@ services:
     depends_on:
       - ultra-dex
     ports:
-      - "80:80"
+      - '80:80'
     volumes:
       - ./templates/docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:

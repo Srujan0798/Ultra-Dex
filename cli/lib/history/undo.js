@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Universal Undo / History Manager
  * Tracks file operations and can revert recent changes.
@@ -79,10 +81,12 @@ export class HistoryManager {
     const resolved = path.resolve(this.projectRoot, filePath);
     const rel = path.relative(this.projectRoot, resolved);
     if (!rel || rel.startsWith('..')) return false;
-    if (rel.startsWith('.ultra' + path.sep) || rel.startsWith('.ultra-dex' + path.sep)) return false;
+    if (rel.startsWith('.ultra' + path.sep) || rel.startsWith('.ultra-dex' + path.sep))
+      return false;
     if (rel.includes(`${path.sep}node_modules${path.sep}`)) return false;
     if (resolved === HISTORY_FILE) return false;
-    if (SENSITIVE_PATH_PATTERNS.some(pattern => pattern.test(rel) || pattern.test('/' + rel))) return false;
+    if (SENSITIVE_PATH_PATTERNS.some((pattern) => pattern.test(rel) || pattern.test('/' + rel)))
+      return false;
     return true;
   }
 
@@ -91,7 +95,7 @@ export class HistoryManager {
     const record = {
       id: crypto.randomUUID(),
       timestamp: nowIso(),
-      ...entry
+      ...entry,
     };
     this.history.push(record);
     await this.save();
@@ -107,7 +111,7 @@ export class HistoryManager {
       after: after ?? '',
       actor: actor || 'system',
       reason: reason || 'write',
-      metadata: metadata || {}
+      metadata: metadata || {},
     });
   }
 
@@ -120,7 +124,7 @@ export class HistoryManager {
       after: null,
       actor: actor || 'system',
       reason: reason || 'delete',
-      metadata: metadata || {}
+      metadata: metadata || {},
     });
   }
 
@@ -208,11 +212,11 @@ export class HistoryManager {
     let targetIndex = -1;
 
     if (id) {
-      targetIndex = this.history.findIndex(op => op.id === id);
+      targetIndex = this.history.findIndex((op) => op.id === id);
     } else if (timestamp) {
       const ts = new Date(timestamp).getTime();
       if (!Number.isNaN(ts)) {
-        targetIndex = this.history.findIndex(op => new Date(op.timestamp).getTime() >= ts);
+        targetIndex = this.history.findIndex((op) => new Date(op.timestamp).getTime() >= ts);
       }
     } else if (typeof index === 'number' && index >= 0) {
       targetIndex = index;

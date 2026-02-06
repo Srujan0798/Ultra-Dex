@@ -23,31 +23,31 @@ class ApiEventEmitter extends NodeEventEmitter {
 
   private async handleResourceCreated(payload: EventPayload): Promise<void> {
     await this.triggerWebhooks(payload.userId, 'resource.created', {
-      resource: payload.resource
+      resource: payload.resource,
     });
   }
 
   private async handleResourceUpdated(payload: EventPayload): Promise<void> {
     await this.triggerWebhooks(payload.userId, 'resource.updated', {
-      resource: payload.resource
+      resource: payload.resource,
     });
   }
 
   private async handleResourceDeleted(payload: EventPayload): Promise<void> {
     await this.triggerWebhooks(payload.userId, 'resource.deleted', {
-      resourceId: payload.resourceId
+      resourceId: payload.resourceId,
     });
   }
 
   private async handleApiKeyCreated(payload: EventPayload): Promise<void> {
     await this.triggerWebhooks(payload.userId, 'api_key.created', {
-      apiKey: payload.apiKey
+      apiKey: payload.apiKey,
     });
   }
 
   private async handleApiKeyDeleted(payload: EventPayload): Promise<void> {
     await this.triggerWebhooks(payload.userId, 'api_key.deleted', {
-      keyId: payload.keyId
+      keyId: payload.keyId,
     });
   }
 
@@ -67,7 +67,7 @@ class ApiEventEmitter extends NodeEventEmitter {
           id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           type: eventType,
           createdAt: new Date().toISOString(),
-          data
+          data,
         };
 
         await webhookService.triggerWebhook(endpoint, event);

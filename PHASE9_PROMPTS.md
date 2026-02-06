@@ -15,7 +15,7 @@
 > **Source:** CUSTOM-AGENTS-GUIDE.md
 > **Status:** Template exists, needs automated generator
 
-```
+````
 ## Task: Create Domain Agent Generator CLI
 
 **Files to create:**
@@ -41,21 +41,22 @@
 3. Template structure:
    ```markdown
    # [Agent Name] Agent
-   
+
    ## Your Responsibilities
    ### [Responsibility Area 1]
-   
+
    ## Domain Rules
    ### Business Logic
    ### Constraints
    ### Edge Cases
-   
+
    ## Code Patterns
-   ```
+````
 
 4. Auto-add to agents/7-domain/
 
 **Commit:** "feat: Add custom domain agent generator"
+
 ```
 
 ---
@@ -66,9 +67,11 @@
 > **Status:** Documentation complete, needs code
 
 ```
+
 ## Task: Implement Invoice Engine Agent
 
 **Files to create:**
+
 - agents/7-domain/invoice-engine.md (NEW)
 - cli/lib/domain/invoice-calculator.js (NEW)
 - cli/lib/domain/invoice-state.js (NEW)
@@ -76,12 +79,13 @@
 **Requirements:**
 
 1. Invoice calculation logic:
+
 ```typescript
 interface InvoiceLineItem {
   description: string;
   quantity: number;
-  unitPrice: number;  // In cents
-  taxRate: number;    // e.g., 0.08 for 8%
+  unitPrice: number; // In cents
+  taxRate: number; // e.g., 0.08 for 8%
 }
 
 function calculateInvoice(items: InvoiceLineItem[], discountPercent = 0) {
@@ -90,7 +94,7 @@ function calculateInvoice(items: InvoiceLineItem[], discountPercent = 0) {
   const taxableAmount = subtotal - discount;
   const tax = items.reduce((sum, item) => {
     const itemTotal = item.quantity * item.unitPrice;
-    return sum + Math.round((itemTotal * (1 - discountPercent/100)) * item.taxRate);
+    return sum + Math.round(itemTotal * (1 - discountPercent / 100) * item.taxRate);
   }, 0);
   return { subtotal, discount, tax, total: taxableAmount + tax };
 }
@@ -107,6 +111,7 @@ function calculateInvoice(items: InvoiceLineItem[], discountPercent = 0) {
    - Auto-send if configured
 
 **Commit:** "feat: Add invoice engine domain agent"
+
 ```
 
 ---
@@ -117,9 +122,11 @@ function calculateInvoice(items: InvoiceLineItem[], discountPercent = 0) {
 > **Status:** Documentation complete, needs code
 
 ```
+
 ## Task: Implement Booking Engine Agent
 
 **Files to create:**
+
 - agents/7-domain/booking-engine.md (NEW)
 - cli/lib/domain/availability.js (NEW)
 - cli/lib/domain/booking-conflict.js (NEW)
@@ -133,6 +140,7 @@ function calculateInvoice(items: InvoiceLineItem[], discountPercent = 0) {
    - Handle buffer times
 
 2. Double-booking prevention:
+
 ```typescript
 async function createBooking(data: BookingInput): Promise<Booking> {
   return await prisma.$transaction(async (tx) => {
@@ -140,10 +148,12 @@ async function createBooking(data: BookingInput): Promise<Booking> {
       where: {
         resourceId: data.resourceId,
         status: { in: ['confirmed', 'pending'] },
-        OR: [{
-          startTime: { lt: data.endTime },
-          endTime: { gt: data.startTime },
-        }],
+        OR: [
+          {
+            startTime: { lt: data.endTime },
+            endTime: { gt: data.startTime },
+          },
+        ],
       },
     });
     if (conflicts.length > 0) {
@@ -161,6 +171,7 @@ async function createBooking(data: BookingInput): Promise<Booking> {
    - Cancellation policy (24h = full refund)
 
 **Commit:** "feat: Add booking engine domain agent"
+
 ```
 
 ---
@@ -175,15 +186,18 @@ async function createBooking(data: BookingInput): Promise<Booking> {
 > **Status:** Full documentation exists
 
 ```
+
 ## Task: Implement Architecture Advisor Command
 
 **Files to create:**
+
 - cli/lib/commands/architect.js (NEW)
 - cli/lib/architect/decision-tree.js (NEW)
 
 **Requirements:**
 
 1. Interactive decision tree:
+
 ```bash
 ultra-dex architect
 # What's your team size?
@@ -207,6 +221,7 @@ ultra-dex architect
 3. Output project structure template based on selection
 
 **Commit:** "feat: Add architecture advisor CLI"
+
 ```
 
 ---
@@ -217,9 +232,11 @@ ultra-dex architect
 > **Status:** Pattern documented, needs scaffold
 
 ```
+
 ## Task: Create Next.js Full-Stack Template
 
 **Files to create:**
+
 - templates/nextjs-fullstack/README.md (NEW)
 - templates/nextjs-fullstack/package.json (NEW)
 - templates/nextjs-fullstack/app/ (NEW directory)
@@ -227,6 +244,7 @@ ultra-dex architect
 **Requirements:**
 
 1. Project structure:
+
 ```
 my-saas/
 ├── app/
@@ -256,6 +274,7 @@ my-saas/
    - `ultra-dex init --template nextjs-fullstack`
 
 **Commit:** "feat: Add Next.js full-stack starter template"
+
 ```
 
 ---
@@ -266,9 +285,11 @@ my-saas/
 > **Status:** Pattern documented, needs scaffold
 
 ```
+
 ## Task: Create Separate Frontend/Backend Template
 
 **Files to create:**
+
 - templates/separate-monolith/README.md (NEW)
 - templates/separate-monolith/frontend/ (NEW)
 - templates/separate-monolith/backend/ (NEW)
@@ -276,6 +297,7 @@ my-saas/
 **Requirements:**
 
 1. Backend structure:
+
 ```
 backend/
 ├── src/
@@ -305,6 +327,7 @@ backend/
    - `ultra-dex init --template separate-monolith`
 
 **Commit:** "feat: Add separate monolith template"
+
 ```
 
 ---
@@ -315,15 +338,18 @@ backend/
 > **Status:** Pattern documented, needs scaffold
 
 ```
+
 ## Task: Create Modular Monolith Template
 
 **Files to create:**
+
 - templates/modular-monolith/README.md (NEW)
 - templates/modular-monolith/modules/ (NEW)
 
 **Requirements:**
 
 1. Module structure:
+
 ```
 backend/
 ├── modules/
@@ -350,6 +376,7 @@ backend/
    - `ultra-dex init --template modular-monolith`
 
 **Commit:** "feat: Add modular monolith template"
+
 ```
 
 ---
@@ -364,9 +391,11 @@ backend/
 > **Status:** Full YAML exists, needs CLI integration
 
 ```
+
 ## Task: Add GitHub Actions Super Template
 
 **Files to create:**
+
 - cli/lib/commands/cicd.js (NEW)
 - templates/cicd/github-advanced.yml (NEW)
 
@@ -388,6 +417,7 @@ backend/
    - `ultra-dex cicd init --platform github --advanced`
 
 **Commit:** "feat: Add GitHub Actions advanced template"
+
 ```
 
 ---
@@ -398,9 +428,11 @@ backend/
 > **Status:** Full YAML exists
 
 ```
+
 ## Task: Add GitLab CI Template
 
 **Files to create:**
+
 - templates/cicd/gitlab-ci.yml (NEW)
 
 **Requirements:**
@@ -410,10 +442,11 @@ backend/
 3. JUnit reports for validation
 4. Artifacts with 1-week expiry
 
-3. Command:
+5. Command:
    - `ultra-dex cicd init --platform gitlab`
 
 **Commit:** "feat: Add GitLab CI template"
+
 ```
 
 ---
@@ -424,9 +457,11 @@ backend/
 > **Status:** Full YAML exists
 
 ```
+
 ## Task: Add CircleCI Template
 
 **Files to create:**
+
 - templates/cicd/circleci-config.yml (NEW)
 
 **Requirements:**
@@ -436,10 +471,11 @@ backend/
 3. Node orb integration
 4. Artifact storage
 
-3. Command:
+5. Command:
    - `ultra-dex cicd init --platform circleci`
 
 **Commit:** "feat: Add CircleCI template"
+
 ```
 
 ---
@@ -450,9 +486,11 @@ backend/
 > **Status:** Full YAML exists
 
 ```
+
 ## Task: Add Azure DevOps Template
 
 **Files to create:**
+
 - templates/cicd/azure-pipelines.yml (NEW)
 
 **Requirements:**
@@ -462,10 +500,11 @@ backend/
 3. Build artifacts publication
 4. Conditional deployment (main branch)
 
-3. Command:
+5. Command:
    - `ultra-dex cicd init --platform azure`
 
 **Commit:** "feat: Add Azure DevOps template"
+
 ```
 
 ---
@@ -476,9 +515,11 @@ backend/
 > **Status:** Full Groovy exists
 
 ```
+
 ## Task: Add Jenkins Template
 
 **Files to create:**
+
 - templates/cicd/Jenkinsfile (NEW)
 
 **Requirements:**
@@ -488,10 +529,11 @@ backend/
 3. Archive artifacts
 4. Branch-based deployment
 
-3. Command:
+5. Command:
    - `ultra-dex cicd init --platform jenkins`
 
 **Commit:** "feat: Add Jenkins template"
+
 ```
 
 ---
@@ -502,9 +544,11 @@ backend/
 > **Status:** Config exists, needs enhancement
 
 ```
+
 ## Task: Add Pre-commit Hooks
 
 **Files to create:**
+
 - cli/lib/commands/pre-commit.js (NEW)
 - templates/pre-commit-config.yaml (NEW)
 
@@ -521,6 +565,7 @@ backend/
 3. Auto-add to .pre-commit-config.yaml
 
 **Commit:** "feat: Add pre-commit hooks integration"
+
 ```
 
 ---
@@ -531,9 +576,11 @@ backend/
 > **Status:** Workflow exists, needs enhancement
 
 ```
+
 ## Task: Add PR Auto-Review Workflow
 
 **Files to create:**
+
 - templates/cicd/pr-review.yml (NEW)
 - cli/lib/ci/pr-reviewer.js (NEW)
 
@@ -553,6 +600,7 @@ backend/
    - Part of `ultra-dex cicd init --pr-review`
 
 **Commit:** "feat: Add PR auto-review workflow"
+
 ```
 
 ---
@@ -563,14 +611,17 @@ backend/
 > **Status:** All templates exist, need unified command
 
 ```
+
 ## Task: Create Unified CI/CD Generator
 
 **Files to create:**
+
 - cli/lib/commands/cicd.js (enhance)
 
 **Requirements:**
 
 1. Single command for all platforms:
+
 ```bash
 ultra-dex cicd init --platform github
 ultra-dex cicd init --platform gitlab
@@ -587,6 +638,7 @@ ultra-dex cicd init --platform jenkins
 3. Auto-detect platform from repo
 
 **Commit:** "feat: Add unified CI/CD generator command"
+
 ```
 
 ---
@@ -629,3 +681,4 @@ ultra-dex cicd init --platform jenkins
 - Phase 9: #66-80 (Developer Tools)
 
 *All prompts are copy-paste ready for Codex/Claude/Gemini/Qwen!*
+```

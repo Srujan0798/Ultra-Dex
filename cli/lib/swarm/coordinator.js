@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import ora from 'ora';
 import { runAgentLoop } from '../commands/run.js';
@@ -18,7 +20,7 @@ export class SwarmCoordinator {
     }
 
     const spinner = ora('🧠 Hive Mind: Planning feature implementation...').start();
-    
+
     // System prompt to force JSON output for the plan
     const plannerPrompt = `
 You are the Hive Mind Planner.
@@ -47,7 +49,7 @@ Output STRICT JSON format only:
 
     try {
       const result = await this.provider.generate(plannerPrompt, `Feature: ${feature}`);
-      
+
       // Attempt to parse JSON (handling potential markdown code blocks)
       let jsonStr = result.content.trim();
       if (jsonStr.startsWith('```json')) {
@@ -57,7 +59,7 @@ Output STRICT JSON format only:
       }
 
       const plan = JSON.parse(jsonStr);
-      
+
       if (!plan.tasks || !Array.isArray(plan.tasks)) {
         throw new AppError('Invalid plan format: missing tasks array');
       }
@@ -80,24 +82,25 @@ Output STRICT JSON format only:
 
     for (const task of tasks) {
       logger.info(`Step ${task.id}: [${task.agent.toUpperCase()}] ${task.task}`);
-      
+
       // Inject previous history into context
       const currentContext = {
         ...this.context,
-        history: this.history.join('\n\n---\n\n')
+        history: this.history.join('\n\n---\n\n'),
       };
 
       try {
         const output = await runAgentLoop(task.agent, task.task, this.provider, currentContext);
-        
+
         // Save to history
-        this.history.push(`## Task ${task.id} (${task.agent})\n**Goal:** ${task.task}\n\n**Output:**\n${output}`);
-        
+        this.history.push(
+          `## Task ${task.id} (${task.agent})\n**Goal:** ${task.task}\n\n**Output:**\n${output}`
+        );
+
         // Save artifact
         const filename = `swarm-task-${task.id}-${task.agent}.md`;
         await fs.writeFile(filename, output);
         logger.success(`Output saved to ${filename}`);
-
       } catch (error) {
         logger.error(`Task failed: ${task.task}`, error);
         // Decide whether to continue or stop

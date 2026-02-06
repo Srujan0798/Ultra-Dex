@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
@@ -40,4 +42,3 @@ export async function determineSyncDirection(localContent, remoteContent) {
   if (localHash === remoteHash) return 'in-sync';
   return 'conflict';
 }
-

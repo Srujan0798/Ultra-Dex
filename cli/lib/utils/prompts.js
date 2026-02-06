@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
@@ -11,7 +13,7 @@ export const PROMPT_TYPES = {
   PASSWORD: 'password',
   CONFIRM: 'confirm',
   RAWLIST: 'rawlist',
-  EXPAND: 'expand'
+  EXPAND: 'expand',
 };
 
 // Enhanced prompt functions
@@ -26,77 +28,91 @@ export async function selectAgent() {
     { name: '🛡️  Security - Security review', value: 'security' },
     { name: '📝  Testing - Write tests', value: 'testing' },
     { name: '📖  Docs - Documentation', value: 'documentation' },
-    { name: '👀  Reviewer - Code review', value: 'reviewer' }
+    { name: '👀  Reviewer - Code review', value: 'reviewer' },
   ];
-  const { agent } = await inquirer.prompt([{
-    type: 'list',
-    name: 'agent',
-    message: gradient(['#6366f1', '#8b5cf6'])('Select an agent:'),
-    choices: agents,
-    pageSize: 12,
-    loop: false
-  }]);
+  const { agent } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'agent',
+      message: gradient(['#6366f1', '#8b5cf6'])('Select an agent:'),
+      choices: agents,
+      pageSize: 12,
+      loop: false,
+    },
+  ]);
 
   return agent;
 }
 
 export async function confirmAction(message) {
-  const { confirm } = await inquirer.prompt([{
-    type: 'confirm',
-    name: 'confirm',
-    message: chalk.yellow(message),
-    default: false
-  }]);
+  const { confirm } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'confirm',
+      message: chalk.yellow(message),
+      default: false,
+    },
+  ]);
   return confirm;
 }
 
 export async function inputText(message, defaultValue = '') {
-  const { value } = await inquirer.prompt([{
-    type: 'input',
-    name: 'value',
-    message: chalk.cyan(message),
-    default: defaultValue,
-    validate: input => input.trim() !== '' || 'Input cannot be empty'
-  }]);
+  const { value } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'value',
+      message: chalk.cyan(message),
+      default: defaultValue,
+      validate: (input) => input.trim() !== '' || 'Input cannot be empty',
+    },
+  ]);
   return value;
 }
 
 // Enhanced prompt functions
 export async function selectOption(message, choices, options = {}) {
-  const { value } = await inquirer.prompt([{
-    type: options.type || 'list',
-    name: 'value',
-    message: gradient(['#6366f1', '#8b5cf6'])(message),
-    choices: choices,
-    pageSize: options.pageSize || 10,
-    loop: options.loop !== false,
-    default: options.default
-  }]);
+  const { value } = await inquirer.prompt([
+    {
+      type: options.type || 'list',
+      name: 'value',
+      message: gradient(['#6366f1', '#8b5cf6'])(message),
+      choices: choices,
+      pageSize: options.pageSize || 10,
+      loop: options.loop !== false,
+      default: options.default,
+    },
+  ]);
 
   return value;
 }
 
 export async function multiSelect(message, choices, options = {}) {
-  const { values } = await inquirer.prompt([{
-    type: 'checkbox',
-    name: 'values',
-    message: gradient(['#6366f1', '#8b5cf6'])(message),
-    choices: choices,
-    pageSize: options.pageSize || 10,
-    default: options.default
-  }]);
+  const { values } = await inquirer.prompt([
+    {
+      type: 'checkbox',
+      name: 'values',
+      message: gradient(['#6366f1', '#8b5cf6'])(message),
+      choices: choices,
+      pageSize: options.pageSize || 10,
+      default: options.default,
+    },
+  ]);
 
   return values;
 }
 
 export async function passwordPrompt(message, options = {}) {
-  const { password } = await inquirer.prompt([{
-    type: 'password',
-    name: 'password',
-    message: chalk.red(message),
-    mask: options.mask || '*',
-    validate: options.validate || ((input) => input.length >= 6 || 'Password must be at least 6 characters')
-  }]);
+  const { password } = await inquirer.prompt([
+    {
+      type: 'password',
+      name: 'password',
+      message: chalk.red(message),
+      mask: options.mask || '*',
+      validate:
+        options.validate ||
+        ((input) => input.length >= 6 || 'Password must be at least 6 characters'),
+    },
+  ]);
 
   return password;
 }
@@ -106,26 +122,30 @@ export async function searchPrompt(message, choices, options = {}) {
   // but we can implement filtering
 
   // First, show all choices
-  const { selected } = await inquirer.prompt([{
-    type: 'list',
-    name: 'selected',
-    message: gradient(['#6366f1', '#8b5cf6'])(message),
-    choices: choices,
-    pageSize: options.pageSize || 10,
-    loop: false
-  }]);
+  const { selected } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'selected',
+      message: gradient(['#6366f1', '#8b5cf6'])(message),
+      choices: choices,
+      pageSize: options.pageSize || 10,
+      loop: false,
+    },
+  ]);
 
   return selected;
 }
 
 export async function expandPrompt(message, choices, options = {}) {
-  const { value } = await inquirer.prompt([{
-    type: 'expand',
-    name: 'value',
-    message: gradient(['#6366f1', '#8b5cf6'])(message),
-    choices: choices,
-    default: options.default || 0
-  }]);
+  const { value } = await inquirer.prompt([
+    {
+      type: 'expand',
+      name: 'value',
+      message: gradient(['#6366f1', '#8b5cf6'])(message),
+      choices: choices,
+      default: options.default || 0,
+    },
+  ]);
 
   return value;
 }
@@ -135,7 +155,7 @@ export async function autocompletePrompt(message, source, options = {}) {
   const choicesWithFilter = async (answersSoFar, input) => {
     if (!input) return source;
 
-    const filtered = source.filter(choice =>
+    const filtered = source.filter((choice) =>
       typeof choice === 'string'
         ? choice.toLowerCase().includes(input.toLowerCase())
         : choice.name.toLowerCase().includes(input.toLowerCase())
@@ -144,13 +164,15 @@ export async function autocompletePrompt(message, source, options = {}) {
     return filtered.slice(0, 10); // Limit to 10 suggestions
   };
 
-  const { value } = await inquirer.prompt([{
-    type: 'autocomplete',
-    name: 'value',
-    message: gradient(['#6366f1', '#8b5cf6'])(message),
-    source: choicesWithFilter,
-    default: options.default
-  }]);
+  const { value } = await inquirer.prompt([
+    {
+      type: 'autocomplete',
+      name: 'value',
+      message: gradient(['#6366f1', '#8b5cf6'])(message),
+      source: choicesWithFilter,
+      default: options.default,
+    },
+  ]);
 
   return value;
 }
@@ -171,8 +193,8 @@ export async function styledPrompt(type, message, choicesOrOptions, extraOptions
     type,
     name: 'value',
     message: gradient(['#6366f1', '#8b5cf6'])(message),
-    ...Array.isArray(choicesOrOptions) ? { choices: choicesOrOptions } : { ...choicesOrOptions },
-    ...extraOptions
+    ...(Array.isArray(choicesOrOptions) ? { choices: choicesOrOptions } : { ...choicesOrOptions }),
+    ...extraOptions,
   };
 
   const { value } = await inquirer.prompt([prompt]);
@@ -180,14 +202,14 @@ export async function styledPrompt(type, message, choicesOrOptions, extraOptions
 }
 
 export async function formPrompt(fields) {
-  const questions = fields.map(field => ({
+  const questions = fields.map((field) => ({
     type: field.type || 'input',
     name: field.name,
     message: gradient(['#6366f1', '#8b5cf6'])(field.message),
     default: field.default,
     validate: field.validate,
     choices: field.choices,
-    pageSize: field.pageSize || 10
+    pageSize: field.pageSize || 10,
   }));
 
   const answers = await inquirer.prompt(questions);
@@ -200,30 +222,34 @@ export async function interactiveMenu(title, menuItems) {
   const choices = menuItems.map((item, index) => ({
     name: `${item.emoji || '🔸'} ${item.label}`,
     value: item.value || index,
-    short: item.short || item.label
+    short: item.short || item.label,
   }));
 
-  const { selection } = await inquirer.prompt([{
-    type: 'list',
-    name: 'selection',
-    message: chalk.cyan('Choose an option:'),
-    choices: choices,
-    pageSize: Math.min(menuItems.length, 10)
-  }]);
+  const { selection } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'selection',
+      message: chalk.cyan('Choose an option:'),
+      choices: choices,
+      pageSize: Math.min(menuItems.length, 10),
+    },
+  ]);
 
   return selection;
 }
 
 export async function yesNoPrompt(message, yesLabel = 'Yes', noLabel = 'No') {
-  const { answer } = await inquirer.prompt([{
-    type: 'list',
-    name: 'answer',
-    message: gradient(['#6366f1', '#8b5cf6'])(message),
-    choices: [
-      { name: `✅ ${yesLabel}`, value: true },
-      { name: `❌ ${noLabel}`, value: false }
-    ]
-  }]);
+  const { answer } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'answer',
+      message: gradient(['#6366f1', '#8b5cf6'])(message),
+      choices: [
+        { name: `✅ ${yesLabel}`, value: true },
+        { name: `❌ ${noLabel}`, value: false },
+      ],
+    },
+  ]);
 
   return answer;
 }

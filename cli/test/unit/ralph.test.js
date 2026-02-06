@@ -11,12 +11,12 @@ describe('ralph command', () => {
 
   it('should register the ralph command with correct options', () => {
     registerRalphCommand(program);
-    
-    const command = program.commands.find(cmd => cmd.name() === 'ralph');
+
+    const command = program.commands.find((cmd) => cmd.name() === 'ralph');
     expect(command).toBeDefined();
     expect(command.description()).toContain('Run the autonomous Ralph loop');
-    
-    const options = command.options.map(opt => opt.flags);
+
+    const options = command.options.map((opt) => opt.flags);
     expect(options).toContain('-p, --provider <provider>');
     expect(options).toContain('--test <command>');
     expect(options).toContain('--retries <number>');
@@ -25,7 +25,7 @@ describe('ralph command', () => {
   it('should have required task argument', () => {
     registerRalphCommand(program);
 
-    const command = program.commands.find(cmd => cmd.name() === 'ralph');
+    const command = program.commands.find((cmd) => cmd.name() === 'ralph');
     expect(command).toBeDefined();
 
     const args = command._args;

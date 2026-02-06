@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'node:crypto';
@@ -7,7 +9,8 @@ const DEFAULT_TTL_MS = 1000 * 60 * 60; // 1 hour
 export class HotTier {
   constructor(options = {}) {
     this.ttlMs = options.ttlMs || DEFAULT_TTL_MS;
-    this.storagePath = options.storagePath || path.resolve(process.cwd(), '.ultra-dex', 'memory', 'hot.json');
+    this.storagePath =
+      options.storagePath || path.resolve(process.cwd(), '.ultra-dex', 'memory', 'hot.json');
     this.entries = new Map();
     this.initialized = false;
   }
@@ -32,7 +35,7 @@ export class HotTier {
 
   async persist() {
     const payload = {
-      entries: Array.from(this.entries.values())
+      entries: Array.from(this.entries.values()),
     };
     await fs.writeFile(this.storagePath, JSON.stringify(payload, null, 2), 'utf8');
   }
@@ -46,7 +49,7 @@ export class HotTier {
       timestamp: entry.timestamp || new Date().toISOString(),
       source: entry.source || { agent: 'system' },
       relations: entry.relations || [],
-      expiresAt: new Date(Date.now() + this.ttlMs).toISOString()
+      expiresAt: new Date(Date.now() + this.ttlMs).toISOString(),
     };
     this.entries.set(record.id, record);
     await this.persist();

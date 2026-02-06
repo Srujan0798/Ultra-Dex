@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -8,7 +10,7 @@ const CHECKS = [
   { key: 'dynamic', label: 'DYNAMIC not STATIC', pass: 'Auto-sync, live MCP' },
   { key: 'executes', label: 'EXECUTES not just PLANS', pass: 'Generates runnable code' },
   { key: 'integrates', label: 'INTEGRATES not ISOLATES', pass: 'MCP, IDE extensions' },
-  { key: 'modern', label: '2026 not 2024', pass: 'No copy-paste workflows' }
+  { key: 'modern', label: '2026 not 2024', pass: 'No copy-paste workflows' },
 ];
 
 export function registerRealityCheckCommand(program) {
@@ -31,10 +33,10 @@ export function registerRealityCheckCommand(program) {
       results.push({ key: 'integrates', ok: hasIde });
       results.push({ key: 'modern', ok: true });
 
-      const score = results.filter(r => r.ok).length;
+      const score = results.filter((r) => r.ok).length;
       printInfo(chalk.cyan.bold(`\n✅ 2026 Reality Check\n`));
-      CHECKS.forEach(check => {
-        const result = results.find(r => r.key === check.key);
+      CHECKS.forEach((check) => {
+        const result = results.find((r) => r.key === check.key);
         const icon = result?.ok ? chalk.green('●') : chalk.yellow('○');
         printInfo(`${icon} ${check.label} — ${check.pass}`);
       });
@@ -42,7 +44,9 @@ export function registerRealityCheckCommand(program) {
       if (score === CHECKS.length) {
         printSuccess(chalk.green(`\nScore: ${score}/${CHECKS.length} — Ready for 2026.\n`));
       } else {
-        printWarning(chalk.yellow(`\nScore: ${score}/${CHECKS.length} — Improvements recommended.\n`));
+        printWarning(
+          chalk.yellow(`\nScore: ${score}/${CHECKS.length} — Improvements recommended.\n`)
+        );
       }
     });
 }

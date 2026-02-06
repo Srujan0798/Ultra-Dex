@@ -1,6 +1,7 @@
 # Remix SaaS Starter
 
 Production-ready Remix SaaS template with:
+
 - **Authentication**: Clerk
 - **Payments**: Stripe (checkout, webhooks, subscriptions)
 - **Database**: Prisma + PostgreSQL

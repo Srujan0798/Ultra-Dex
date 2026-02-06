@@ -7,12 +7,14 @@
 ## What Ultra-Dex Is
 
 **Ultra-Dex is NOT:**
+
 - A competitor to Cursor, Windsurf, or any IDE
 - A competitor to Devin, OpenHands, or any AI agent
 - A competitor to Bolt.new, Lovable, or any code generator
 - A planning template that humans fill out manually
 
 **Ultra-Dex IS:**
+
 - An **AI Orchestration Layer** that sits above all AI tools
 - A **Meta Layer** filling the gap between human ideas and AI execution
 - A **Context Provider** that keeps AI agents aligned with the original vision
@@ -27,6 +29,7 @@ Human Idea → [GAP] → AI Agents → [DEVIATION] → Wrong Product
 ```
 
 When users go directly to AI agents (Cursor, Devin, Bolt):
+
 1. AI starts building immediately without full context
 2. Each prompt adds new ideas, causing scope creep
 3. Original vision gets lost in implementation details
@@ -70,12 +73,12 @@ Human Idea → Ultra-Dex → AI-Generated Plan → AI Agents → Correct Product
 
 Ultra-Dex doesn't replace any tool. It **enhances** every tool.
 
-| Tool | Without Ultra-Dex | With Ultra-Dex |
-|------|-------------------|----------------|
-| Cursor | Generates code from prompts | Generates code aligned with full plan |
-| Devin | Builds features ad-hoc | Builds features per specification |
-| Bolt.new | Creates scaffolds | Creates scaffolds matching architecture |
-| Any AI | Works in isolation | Works with shared context |
+| Tool     | Without Ultra-Dex           | With Ultra-Dex                          |
+| -------- | --------------------------- | --------------------------------------- |
+| Cursor   | Generates code from prompts | Generates code aligned with full plan   |
+| Devin    | Builds features ad-hoc      | Builds features per specification       |
+| Bolt.new | Creates scaffolds           | Creates scaffolds matching architecture |
+| Any AI   | Works in isolation          | Works with shared context               |
 
 ---
 
@@ -114,12 +117,14 @@ Ultra-Dex doesn't replace any tool. It **enhances** every tool.
 Ultra-Dex v3 introduces the "Active Kernel" - a persistent process that manages project state and agent coordination.
 
 **v3.4.5 (Current)**
+
 - `ultra-dex serve` - Start the MCP + WebSocket + Dashboard server
 - `ultra-dex swarm` - Run autonomous agent swarms with parallel execution
 - `ultra-dex watch` - Real-time state updates on file changes
 - `ultra-dex config` - Automated editor setup (Cursor, VS Code, MCP)
 
 **v3.x+**
+
 - `ultra-dex auto-implement` - Full autonomous feature delivery
 - `ultra-dex ci-monitor` - Self-healing CI/CD integration
 - `ultra-dex team` - Distributed state for remote teams
@@ -160,6 +165,7 @@ ultra-dex watch
 **Ultra-Dex asks:** "What product do you want?"
 
 Then it:
+
 1. Generates the complete specification
 2. Provides context to any AI agent via MCP
 3. Keeps everything aligned with your vision (State Management)
@@ -179,15 +185,18 @@ Then it:
 ## Roadmap (v3.4.5 Update)
 
 ### Phase 1: Foundation (Legacy - v1.x) ✅
+
 - 34-section template
 - 17 agents
 - CLI basics
 
 ### Phase 2: AI Generation (Legacy - v2.x) ✅
+
 - `ultra-dex generate`
 - Multi-provider support
 
 ### Phase 3: Active Kernel (Current - v3.x) 🔄
+
 - [x] MCP Server integration
 - [x] Real-time Dashboard
 - [x] Autonomous Swarms
@@ -195,6 +204,7 @@ Then it:
 - [ ] Auto-Implement (Full Automation)
 
 ### Phase 4: Intelligence (Future - v4.x)
+
 - Project-specific Fine-tuning
 - Multi-modal Agent Reasoning
 - Global Deployment Orchestration
@@ -209,4 +219,4 @@ Human provides the idea. AI does the rest. Ultra-Dex ensures it's right.
 
 ---
 
-*Ultra-Dex v3 - The AI Orchestration Meta Layer*
+_Ultra-Dex v3 - The AI Orchestration Meta Layer_

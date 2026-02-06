@@ -33,16 +33,18 @@ npx ultra-dex hooks                   # Git hooks
 ## Phase 2: MCP Full Implementation (4-6 hrs)
 
 ### Current State
+
 `ultra-dex serve` exists but is a placeholder. Need full MCP implementation.
 
 ### Copilot CLI Prompt
+
 ```
 Implement full MCP server in cli/lib/commands/serve.js:
 
 1. Use @modelcontextprotocol/sdk package
 2. Expose these resources:
    - ultradex://context → CONTEXT.md
-   - ultradex://plan → IMPLEMENTATION-PLAN.md  
+   - ultradex://plan → IMPLEMENTATION-PLAN.md
    - ultradex://agents → agents/00-AGENT_INDEX.md
 3. Expose these tools:
    - verify_task(taskName) → Run 21-step verification
@@ -52,6 +54,7 @@ Implement full MCP server in cli/lib/commands/serve.js:
 ```
 
 ### Files to Create
+
 - `cli/lib/mcp/server.js` - MCP server core
 - `cli/lib/mcp/resources.js` - Resource handlers
 - `cli/lib/mcp/tools.js` - Tool handlers
@@ -63,6 +66,7 @@ Implement full MCP server in cli/lib/commands/serve.js:
 ### Reddit Posts
 
 **r/programming:**
+
 ```
 Title: Ultra-Dex v2.2 - AI Orchestration Layer for SaaS Development (Free, Open Source)
 
@@ -80,6 +84,7 @@ GitHub: https://github.com/Srujan0798/Ultra-Dex
 ```
 
 **r/SideProject:**
+
 ```
 Title: I built an AI orchestration framework to prevent AI-generated code from going off-rails
 
@@ -96,6 +101,7 @@ Free, MIT licensed. Would love feedback!
 ```
 
 ### HackerNews
+
 ```
 Title: Show HN: Ultra-Dex – AI Orchestration Layer for SaaS Development
 
@@ -115,6 +121,7 @@ https://github.com/Srujan0798/Ultra-Dex
 ## Phase 4: VSCode Extension (8-12 hrs)
 
 ### Structure
+
 ```
 vscode-extension/
 ├── package.json
@@ -132,6 +139,7 @@ vscode-extension/
 ```
 
 ### Copilot CLI Prompt
+
 ```
 Create VSCode extension for Ultra-Dex:
 
@@ -147,12 +155,12 @@ Create VSCode extension for Ultra-Dex:
 
 ## Priority Order
 
-| Priority | Task | Time | Tool |
-|----------|------|------|------|
-| **P1** | Test all v2.x commands | 30 min | Terminal |
-| **P2** | MCP full implementation | 4-6 hrs | Copilot CLI |
-| **P3** | Community launch posts | 2 hrs | Manual |
-| **P4** | VSCode extension | 8-12 hrs | Copilot CLI |
+| Priority | Task                    | Time     | Tool        |
+| -------- | ----------------------- | -------- | ----------- |
+| **P1**   | Test all v2.x commands  | 30 min   | Terminal    |
+| **P2**   | MCP full implementation | 4-6 hrs  | Copilot CLI |
+| **P3**   | Community launch posts  | 2 hrs    | Manual      |
+| **P4**   | VSCode extension        | 8-12 hrs | Copilot CLI |
 
 ---
 
@@ -173,9 +181,9 @@ gh copilot suggest "Add vitest unit tests for cli/lib/commands/serve.js"
 
 ## Version Roadmap
 
-| Version | Features | Target |
-|---------|----------|--------|
-| v2.2.0 | Current (published) | ✅ Done |
-| v2.3.0 | MCP full implementation | This week |
-| v2.4.0 | VSCode extension beta | Next week |
-| v3.0.0 | Agent swarms, auto-orchestration | Feb 2026 |
+| Version | Features                         | Target    |
+| ------- | -------------------------------- | --------- |
+| v2.2.0  | Current (published)              | ✅ Done   |
+| v2.3.0  | MCP full implementation          | This week |
+| v2.4.0  | VSCode extension beta            | Next week |
+| v3.0.0  | Agent swarms, auto-orchestration | Feb 2026  |

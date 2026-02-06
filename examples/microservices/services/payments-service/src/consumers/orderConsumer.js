@@ -60,7 +60,7 @@ const handleOrderCreated = async (data, pool, channel) => {
     const gatewayResult = await paymentGateway.processPayment({
       amount: totalAmount,
       currency,
-      paymentMethod: 'credit_card'
+      paymentMethod: 'credit_card',
     });
 
     if (gatewayResult.success) {
@@ -69,7 +69,12 @@ const handleOrderCreated = async (data, pool, channel) => {
         `UPDATE payments 
          SET status = $1, transaction_id = $2, gateway_response = $3, updated_at = NOW() 
          WHERE id = $4`,
-        ['completed', gatewayResult.transactionId, JSON.stringify(gatewayResult.gatewayResponse), payment.id]
+        [
+          'completed',
+          gatewayResult.transactionId,
+          JSON.stringify(gatewayResult.gatewayResponse),
+          payment.id,
+        ]
       );
 
       // Publish payment processed event
@@ -81,13 +86,13 @@ const handleOrderCreated = async (data, pool, channel) => {
           userId,
           amount: totalAmount,
           currency,
-          transactionId: gatewayResult.transactionId
+          transactionId: gatewayResult.transactionId,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       channel.publish('payments', 'payment.processed', Buffer.from(message), {
-        persistent: true
+        persistent: true,
       });
 
       logger.info({ message: 'Payment processed successfully', paymentId: payment.id });
@@ -109,13 +114,13 @@ const handleOrderCreated = async (data, pool, channel) => {
           userId,
           amount: totalAmount,
           currency,
-          reason: gatewayResult.error
+          reason: gatewayResult.error,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       channel.publish('payments', 'payment.failed', Buffer.from(message), {
-        persistent: true
+        persistent: true,
       });
 
       logger.warn({ message: 'Payment failed', paymentId: payment.id, error: gatewayResult.error });

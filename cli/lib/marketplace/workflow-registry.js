@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 const DEFAULT_WORKFLOW_REGISTRY_URL =
   process.env.ULTRA_DEX_WORKFLOW_REGISTRY ||
   'https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/workflows/registry.json';
@@ -9,28 +11,28 @@ const FALLBACK_WORKFLOWS = {
       description: 'Complete authentication workflow with tests',
       latest: '1.0.0',
       versions: ['1.0.0'],
-      tags: ['auth', 'security', 'backend']
+      tags: ['auth', 'security', 'backend'],
     },
     {
       name: '@ultra-dex/api-builder',
       description: 'REST API scaffolding workflow',
       latest: '1.2.0',
       versions: ['1.2.0', '1.1.0'],
-      tags: ['api', 'backend']
+      tags: ['api', 'backend'],
     },
     {
       name: '@ultra-dex/testing-suite',
       description: 'Full test automation workflow',
       latest: '0.9.0',
       versions: ['0.9.0'],
-      tags: ['tests', 'qa']
-    }
-  ]
+      tags: ['tests', 'qa'],
+    },
+  ],
 };
 
 export async function fetchWorkflowRegistry(url = DEFAULT_WORKFLOW_REGISTRY_URL) {
   try {
-    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error('Registry fetch failed');
     const data = await response.json();
     return normalizeWorkflowRegistry(data);
@@ -70,5 +72,5 @@ export function parseWorkflowSpecifier(specifier) {
 }
 
 export const workflowRegistryDefaults = {
-  url: DEFAULT_WORKFLOW_REGISTRY_URL
+  url: DEFAULT_WORKFLOW_REGISTRY_URL,
 };

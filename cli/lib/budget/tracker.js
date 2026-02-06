@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -28,6 +30,7 @@ export async function recordUsage(amount) {
 export function getBudgetWarnings(state) {
   const warnings = [];
   if (state.limits.daily && state.usage.daily >= state.limits.daily * 0.8) warnings.push('daily');
-  if (state.limits.monthly && state.usage.monthly >= state.limits.monthly * 0.8) warnings.push('monthly');
+  if (state.limits.monthly && state.usage.monthly >= state.limits.monthly * 0.8)
+    warnings.push('monthly');
   return warnings;
 }

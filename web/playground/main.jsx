@@ -19,9 +19,7 @@ function Playground() {
       <button onClick={() => setOutput(context)} style={{ marginTop: 12 }}>
         Preview
       </button>
-      <pre style={{ background: '#111', color: '#fff', padding: 16, marginTop: 12 }}>
-        {output}
-      </pre>
+      <pre style={{ background: '#111', color: '#fff', padding: 16, marginTop: 12 }}>{output}</pre>
     </div>
   );
 }

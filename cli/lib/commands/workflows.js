@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -5,12 +7,28 @@ import { githubBlobUrl } from '../config/urls.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
-import { displayWorkflowSearch, installWorkflow, uninstallWorkflow, runWorkflow, listWorkflows, infoWorkflow } from '../marketplace/workflows.js';
+import {
+  displayWorkflowSearch,
+  installWorkflow,
+  uninstallWorkflow,
+  runWorkflow,
+  listWorkflows,
+  infoWorkflow,
+} from '../marketplace/workflows.js';
 
 export const WORKFLOWS = {
   auth: {
     name: 'Authentication (General)',
-    agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
+    agents: [
+      '@Planner',
+      '@Research',
+      '@CTO',
+      '@Database',
+      '@Backend',
+      '@Frontend',
+      '@Security',
+      '@DevOps',
+    ],
     description: 'Complete authentication with email/password and OAuth',
     steps: [
       'Define auth strategy',
@@ -18,12 +36,21 @@ export const WORKFLOWS = {
       'Implement API endpoints',
       'Build frontend pages',
       'Secure routes',
-      'Verify email/OAuth flows'
-    ]
+      'Verify email/OAuth flows',
+    ],
   },
   supabase: {
     name: 'Supabase Authentication Setup',
-    agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps'],
+    agents: [
+      '@Planner',
+      '@Research',
+      '@CTO',
+      '@Database',
+      '@Backend',
+      '@Frontend',
+      '@Security',
+      '@DevOps',
+    ],
     description: 'Set up Supabase auth with RLS policies and triggers',
     steps: [
       'Create Supabase project and get API keys',
@@ -36,7 +63,17 @@ export const WORKFLOWS = {
   },
   payments: {
     name: 'Payment Integration (Stripe)',
-    agents: ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Testing', '@Security', '@DevOps'],
+    agents: [
+      '@Planner',
+      '@Research',
+      '@CTO',
+      '@Database',
+      '@Backend',
+      '@Frontend',
+      '@Testing',
+      '@Security',
+      '@DevOps',
+    ],
     description: 'Integrate Stripe for subscriptions and one-time payments',
     steps: [
       'Create Stripe account and get API keys',
@@ -137,67 +174,72 @@ export const WORKFLOWS = {
       'Build user/subscription management interface',
       'Set up monitoring and incident response tools',
     ],
-  }
+  },
 };
 
 /**
  * Visualize the agent and step flow for a workflow
  */
 export function visualizeWorkflow(workflow) {
-    printInfo(chalk.bold.cyan(`\n📊 ${workflow.name} Flow\n`));
-    
-    printInfo(chalk.bold('Team Handoff:'));
-    const agentFlow = workflow.agents.map((a) => {
-       const color = ['@Planner', '@CTO'].includes(a) ? chalk.magenta : ['@Backend', '@Frontend'].includes(a) ? chalk.blue : chalk.yellow;
-       return color(a);
-    }).join(chalk.gray(' → '));
-    printInfo('  ' + agentFlow + '\n');
+  printInfo(chalk.bold.cyan(`\n📊 ${workflow.name} Flow\n`));
 
-    printInfo(chalk.bold('Execution Path:'));
-    if (workflow.steps) {
-        workflow.steps.forEach((step, i) => {
-            const isLast = i === workflow.steps.length - 1;
-            printInfo(`  ${chalk.green('●')} ${step}`);
-            if (!isLast) printInfo(`  ${chalk.gray('│')}`);
-        });
-    }
-    console.log('');
+  printInfo(chalk.bold('Team Handoff:'));
+  const agentFlow = workflow.agents
+    .map((a) => {
+      const color = ['@Planner', '@CTO'].includes(a)
+        ? chalk.magenta
+        : ['@Backend', '@Frontend'].includes(a)
+          ? chalk.blue
+          : chalk.yellow;
+      return color(a);
+    })
+    .join(chalk.gray(' → '));
+  printInfo('  ' + agentFlow + '\n');
+
+  printInfo(chalk.bold('Execution Path:'));
+  if (workflow.steps) {
+    workflow.steps.forEach((step, i) => {
+      const isLast = i === workflow.steps.length - 1;
+      printInfo(`  ${chalk.green('●')} ${step}`);
+      if (!isLast) printInfo(`  ${chalk.gray('│')}`);
+    });
+  }
+  console.log('');
 }
 
 /**
  * Add a workflow to the project implementation plan
  */
 export async function startWorkflow(feature) {
-    const workflow = WORKFLOWS[feature.toLowerCase()];
-    if (!workflow) throw new ValidationError(`Workflow "${feature}" not found.`);
+  const workflow = WORKFLOWS[feature.toLowerCase()];
+  if (!workflow) throw new ValidationError(`Workflow "${feature}" not found.`);
 
-    const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
-    try {
-        let content = await fs.readFile(planPath, 'utf8');
-        
-        if (content.includes(`## Workflow: ${workflow.name}`)) {
-            printWarning(`Workflow "${workflow.name}" already exists in the plan.`);
-            return;
-        }
+  const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
+  try {
+    let content = await fs.readFile(planPath, 'utf8');
 
-        const newSection = `\n## Workflow: ${workflow.name}\n` +
-            workflow.steps.map(s => `- [ ] ${s}`).join('\n') +
-            '\n';
-
-        await fs.appendFile(planPath, newSection);
-        printSuccess(`✅ Added "${workflow.name}" workflow to IMPLEMENTATION-PLAN.md`);
-    } catch (e) {
-        throw new AppError('Failed to update implementation plan', { cause: e });
+    if (content.includes(`## Workflow: ${workflow.name}`)) {
+      printWarning(`Workflow "${workflow.name}" already exists in the plan.`);
+      return;
     }
+
+    const newSection =
+      `\n## Workflow: ${workflow.name}\n` +
+      workflow.steps.map((s) => `- [ ] ${s}`).join('\n') +
+      '\n';
+
+    await fs.appendFile(planPath, newSection);
+    printSuccess(`✅ Added "${workflow.name}" workflow to IMPLEMENTATION-PLAN.md`);
+  } catch (e) {
+    throw new AppError('Failed to update implementation plan', { cause: e });
+  }
 }
 
 /**
  * Register the workflow command with Commander
  */
 export function registerWorkflowCommand(program) {
-  const workflowCmd = program
-    .command('workflow')
-    .description('Show or manage workflows');
+  const workflowCmd = program.command('workflow').description('Show or manage workflows');
 
   workflowCmd
     .argument('[feature]')
@@ -214,7 +256,9 @@ export function registerWorkflowCommand(program) {
 
         if (!workflow) {
           const available = Object.keys(WORKFLOWS).join(', ');
-          throw new ValidationError(`Workflow "${feature}" not found.`, [`Available: ${available}`]);
+          throw new ValidationError(`Workflow "${feature}" not found.`, [
+            `Available: ${available}`,
+          ]);
         }
 
         if (options.viz) {
@@ -285,7 +329,7 @@ export function registerWorkflowCommand(program) {
         const target = path.resolve(process.cwd(), options.file);
         const content = await fs.readFile(target, 'utf8');
         const required = ['## Handoff', '### What I Built', '### API Contract', '### Next Steps'];
-        const missing = required.filter(section => !content.includes(section));
+        const missing = required.filter((section) => !content.includes(section));
         if (missing.length) {
           printWarning(chalk.yellow(`Missing sections: ${missing.join(', ')}`));
           process.exitCode = 1;
@@ -300,21 +344,21 @@ export function registerWorkflowCommand(program) {
 }
 
 function displayWorkflowSummary(workflow) {
-    printInfo(chalk.bold(`\n📋 ${workflow.name} Workflow\n`));
-    printInfo(chalk.gray(workflow.description));
+  printInfo(chalk.bold(`\n📋 ${workflow.name} Workflow\n`));
+  printInfo(chalk.gray(workflow.description));
 
-    printInfo(chalk.bold('\n🤖 Agents Involved:\n'));
-    workflow.agents.forEach((agent, i) => {
-      printInfo(chalk.cyan(`  ${i + 1}. ${agent}`));
+  printInfo(chalk.bold('\n🤖 Agents Involved:\n'));
+  workflow.agents.forEach((agent, i) => {
+    printInfo(chalk.cyan(`  ${i + 1}. ${agent}`));
+  });
+
+  if (workflow.steps) {
+    printInfo(chalk.bold('\n📝 Implementation Steps:\n'));
+    workflow.steps.forEach((step) => {
+      printInfo(chalk.gray(`  • ${step}`));
     });
+  }
 
-    if (workflow.steps) {
-      printInfo(chalk.bold('\n📝 Implementation Steps:\n'));
-      workflow.steps.forEach(step => {
-        printInfo(chalk.gray(`  • ${step}`));
-      });
-    }
-
-    printInfo(chalk.bold('\n📚 Documentation:\n'));
-    printInfo(`  Guide: ${githubBlobUrl('guides/ADVANCED-WORKFLOWS.md')}\n`);
+  printInfo(chalk.bold('\n📚 Documentation:\n'));
+  printInfo(`  Guide: ${githubBlobUrl('guides/ADVANCED-WORKFLOWS.md')}\n`);
 }

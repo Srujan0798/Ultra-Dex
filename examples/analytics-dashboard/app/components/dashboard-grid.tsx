@@ -1,38 +1,38 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import { LineChartComponent } from '@/app/components/charts/line-chart'
-import { BarChartComponent } from '@/app/components/charts/bar-chart'
-import { PieChartComponent } from '@/app/components/charts/pie-chart'
-import { AreaChartComponent } from '@/app/components/charts/area-chart'
-import { MetricCard } from '@/app/components/widgets/metric-card'
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card'
-import { Button } from '@/app/components/ui/button'
-import { Download, RefreshCw, Filter } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { LineChartComponent } from '@/app/components/charts/line-chart';
+import { BarChartComponent } from '@/app/components/charts/bar-chart';
+import { PieChartComponent } from '@/app/components/charts/pie-chart';
+import { AreaChartComponent } from '@/app/components/charts/area-chart';
+import { MetricCard } from '@/app/components/widgets/metric-card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Button } from '@/app/components/ui/button';
+import { Download, RefreshCw, Filter } from 'lucide-react';
 
 // Mock data generators
 const generateTimeSeriesData = (days: number) => {
-  const data = []
-  const now = new Date()
+  const data = [];
+  const now = new Date();
   for (let i = days; i >= 0; i--) {
-    const date = new Date(now)
-    date.setDate(date.getDate() - i)
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
     data.push({
       name: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       pageViews: Math.floor(Math.random() * 5000) + 1000,
       sessions: Math.floor(Math.random() * 3000) + 500,
       purchases: Math.floor(Math.random() * 200) + 50,
       conversionRate: parseFloat((Math.random() * 5 + 1).toFixed(2)),
-    })
+    });
   }
-  return data
-}
+  return data;
+};
 
 const generatePieData = () => [
   { name: 'Desktop', value: 65 },
   { name: 'Mobile', value: 30 },
   { name: 'Tablet', value: 5 },
-]
+];
 
 const generateMetricData = () => ({
   totalRevenue: {
@@ -56,26 +56,26 @@ const generateMetricData = () => ({
     previous: 42100,
     format: 'number' as const,
   },
-})
+});
 
 export function DashboardGrid() {
-  const [timeRange, setTimeRange] = useState(7)
-  const [data, setData] = useState(generateTimeSeriesData(7))
-  const [metrics, setMetrics] = useState(generateMetricData())
-  const [isLoading, setIsLoading] = useState(false)
+  const [timeRange, setTimeRange] = useState(7);
+  const [data, setData] = useState(generateTimeSeriesData(7));
+  const [metrics, setMetrics] = useState(generateMetricData());
+  const [isLoading, setIsLoading] = useState(false);
 
   const refreshData = () => {
-    setIsLoading(true)
+    setIsLoading(true);
     setTimeout(() => {
-      setData(generateTimeSeriesData(timeRange))
-      setMetrics(generateMetricData())
-      setIsLoading(false)
-    }, 1000)
-  }
+      setData(generateTimeSeriesData(timeRange));
+      setMetrics(generateMetricData());
+      setIsLoading(false);
+    }, 1000);
+  };
 
   useEffect(() => {
-    refreshData()
-  }, [timeRange])
+    refreshData();
+  }, [timeRange]);
 
   return (
     <div className="space-y-6">
@@ -172,11 +172,7 @@ export function DashboardGrid() {
             height={350}
           />
         </div>
-        <PieChartComponent
-          title="Device Distribution"
-          data={generatePieData()}
-          height={350}
-        />
+        <PieChartComponent title="Device Distribution" data={generatePieData()} height={350} />
         <div className="col-span-2">
           <AreaChartComponent
             title="Revenue & Conversions"
@@ -218,20 +214,23 @@ export function DashboardGrid() {
                 </tr>
               </thead>
               <tbody>
-                {data.slice(-5).reverse().map((row, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="px-6 py-4">{row.name}</td>
-                    <td className="px-6 py-4">{row.pageViews.toLocaleString()}</td>
-                    <td className="px-6 py-4">{row.sessions.toLocaleString()}</td>
-                    <td className="px-6 py-4">{row.purchases}</td>
-                    <td className="px-6 py-4">{row.conversionRate}%</td>
-                  </tr>
-                ))}
+                {data
+                  .slice(-5)
+                  .reverse()
+                  .map((row, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="px-6 py-4">{row.name}</td>
+                      <td className="px-6 py-4">{row.pageViews.toLocaleString()}</td>
+                      <td className="px-6 py-4">{row.sessions.toLocaleString()}</td>
+                      <td className="px-6 py-4">{row.purchases}</td>
+                      <td className="px-6 py-4">{row.conversionRate}%</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

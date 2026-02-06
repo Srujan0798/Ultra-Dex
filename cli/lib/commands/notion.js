@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { Command } from 'commander';
 import integrations from '../integrations/index.js';
@@ -16,12 +18,15 @@ export function registerNotionCommand(program) {
       printInfo(chalk.cyan('ℹ️  Full bi-directional sync coming in v3.6.0 (March 2026).\n'));
 
       try {
-        await integrations.notion.exportPlan({
-          planPath: 'IMPLEMENTATION-PLAN.md'
-        }, {
-          apiToken: process.env.NOTION_API_TOKEN,
-          databaseId: options.pageId || process.env.NOTION_DATABASE_ID
-        });
+        await integrations.notion.exportPlan(
+          {
+            planPath: 'IMPLEMENTATION-PLAN.md',
+          },
+          {
+            apiToken: process.env.NOTION_API_TOKEN,
+            databaseId: options.pageId || process.env.NOTION_DATABASE_ID,
+          }
+        );
         printSuccess(chalk.green('\n✅ Plan content prepared (no API call made).\n'));
         printInfo(chalk.dim('   Use the Notion API manually or wait for v3.6.0.\n'));
       } catch (error) {
@@ -36,13 +41,16 @@ export function registerNotionCommand(program) {
       printWarning(chalk.yellow('\n⚠️  Notion import is in Alpha - placeholder only.\n'));
 
       try {
-        await integrations.notion.importPlan({
-          outputPath: pathArg,
-          content: '# Imported from Notion\n'
-        }, {
-          apiToken: process.env.NOTION_API_TOKEN,
-          databaseId: process.env.NOTION_DATABASE_ID
-        });
+        await integrations.notion.importPlan(
+          {
+            outputPath: pathArg,
+            content: '# Imported from Notion\n',
+          },
+          {
+            apiToken: process.env.NOTION_API_TOKEN,
+            databaseId: process.env.NOTION_DATABASE_ID,
+          }
+        );
         printSuccess(chalk.green('\n✅ Placeholder file created.\n'));
         printInfo(chalk.dim('   (No actual API call to Notion - full sync in v3.6.0)\n'));
       } catch (error) {

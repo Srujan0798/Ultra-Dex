@@ -41,8 +41,8 @@ class NotificationController {
         notifications: result.rows,
         pagination: {
           page: parseInt(page),
-          limit: parseInt(limit)
-        }
+          limit: parseInt(limit),
+        },
       });
     } catch (error) {
       logger.error('List notifications error:', error);
@@ -164,7 +164,8 @@ class NotificationController {
 
   async updatePreferences(req, res) {
     const userId = req.headers['x-user-id'] || req.user?.id;
-    const { emailEnabled, smsEnabled, pushEnabled, orderUpdates, paymentUpdates, marketingEmails } = req.body;
+    const { emailEnabled, smsEnabled, pushEnabled, orderUpdates, paymentUpdates, marketingEmails } =
+      req.body;
 
     try {
       const result = await this.pool.query(
@@ -181,7 +182,15 @@ class NotificationController {
            marketing_emails = COALESCE($7, notification_preferences.marketing_emails),
            updated_at = NOW()
          RETURNING *`,
-        [userId, emailEnabled, smsEnabled, pushEnabled, orderUpdates, paymentUpdates, marketingEmails]
+        [
+          userId,
+          emailEnabled,
+          smsEnabled,
+          pushEnabled,
+          orderUpdates,
+          paymentUpdates,
+          marketingEmails,
+        ]
       );
 
       logger.info({ message: 'Notification preferences updated', userId });

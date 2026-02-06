@@ -39,7 +39,7 @@ describe('Performance Tests', () => {
       // Create a test project with multiple files
       await fs.mkdir(path.join(tempDir, 'src'), { recursive: true });
       await fs.mkdir(path.join(tempDir, 'components'), { recursive: true });
-      
+
       // Create multiple test files
       for (let i = 0; i < 20; i++) {
         await fs.writeFile(
@@ -47,7 +47,7 @@ describe('Performance Tests', () => {
           `import { helper } from './helper';\nexport function fn${i}() { return 'hello'; }`
         );
       }
-      
+
       await fs.writeFile(
         path.join(tempDir, 'src', 'helper.js'),
         'export const helper = () => "help";'
@@ -68,14 +68,22 @@ describe('Performance Tests', () => {
       console.log(`\\n📊 Graph Building Performance:`);
       console.log(`   First build: ${time1.toFixed(2)}ms`);
       console.log(`   Cached build: ${time2.toFixed(2)}ms`);
-      console.log(`   Speed improvement: ${((time1 - time2) / time1 * 100).toFixed(1)}%`);
+      console.log(`   Speed improvement: ${(((time1 - time2) / time1) * 100).toFixed(1)}%`);
 
       // The cached version should be significantly faster
       assert(time2 < time1 * 0.8, 'Cached build should be faster than first build');
-      
+
       // Both graphs should be equivalent
-      assert.strictEqual(graph1.nodes.length, graph2.nodes.length, 'Graphs should have same number of nodes');
-      assert.strictEqual(graph1.edges.length, graph2.edges.length, 'Graphs should have same number of edges');
+      assert.strictEqual(
+        graph1.nodes.length,
+        graph2.nodes.length,
+        'Graphs should have same number of nodes'
+      );
+      assert.strictEqual(
+        graph1.edges.length,
+        graph2.edges.length,
+        'Graphs should have same number of edges'
+      );
     });
 
     it('should scan with caching enabled', async () => {
@@ -121,7 +129,7 @@ describe('Performance Tests', () => {
       // Create multiple test files
       await fs.mkdir(path.join(tempDir, 'app'), { recursive: true });
       await fs.mkdir(path.join(tempDir, 'pages'), { recursive: true });
-      
+
       // Create many files to test parallel processing
       for (let i = 0; i < 50; i++) {
         const dir = i % 2 === 0 ? 'app' : 'pages';
@@ -144,9 +152,9 @@ describe('Performance Tests', () => {
       // Verify results
       assert(results.filesScanned > 0, 'Should have scanned some files');
       assert(Array.isArray(results.details), 'Results should have details array');
-      
+
       // Should have found some "any" type violations in the generated files
-      const anyViolations = results.details.filter(d => d.ruleId === 'no-explicit-any');
+      const anyViolations = results.details.filter((d) => d.ruleId === 'no-explicit-any');
       console.log(`   Found ${anyViolations.length} "any" type violations`);
     });
   });
@@ -158,7 +166,7 @@ describe('Performance Tests', () => {
       console.log('   Timeout protection implemented in swarm coordinator');
       console.log('   Default timeout: 120 seconds per step');
       console.log('   Graceful error handling for long-running operations');
-      
+
       assert.ok(true, 'Timeout protection is implemented');
     });
   });
@@ -167,20 +175,20 @@ describe('Performance Tests', () => {
     it('should meet performance benchmarks', async () => {
       // Create a moderately sized project
       await fs.mkdir(path.join(tempDir, 'benchmark'), { recursive: true });
-      
+
       // Create 30 files across different directories
       for (let i = 0; i < 30; i++) {
         const subdir = `dir${Math.floor(i / 10)}`;
         await fs.mkdir(path.join(tempDir, 'benchmark', subdir), { recursive: true });
-        
+
         const fileName = path.join(tempDir, 'benchmark', subdir, `file${i}.js`);
         await fs.writeFile(
           fileName,
           `import { util${i % 5} } from '../utils';\\n\\n` +
-          `export async function func${i}() {\\n` +
-          `  const result = await util${i % 5}(${i});\\n` +
-          `  return result;\\n` +
-          `}\\n`
+            `export async function func${i}() {\\n` +
+            `  const result = await util${i % 5}(${i});\\n` +
+            `  return result;\\n` +
+            `}\\n`
         );
       }
 
@@ -207,12 +215,20 @@ describe('Performance Tests', () => {
 
       console.log('\\n📊 Performance Benchmarks:');
       console.log(`   Graph build: ${graphTime.toFixed(2)}ms for ${graph.nodes.length} nodes`);
-      console.log(`   Quality scan: ${scanTime.toFixed(2)}ms for ${scanResults.filesScanned} files`);
+      console.log(
+        `   Quality scan: ${scanTime.toFixed(2)}ms for ${scanResults.filesScanned} files`
+      );
       console.log(`   Overall: ${(graphTime + scanTime).toFixed(2)}ms total`);
 
       // Performance expectations (adjust based on system)
-      assert(graphTime < 5000, `Graph build should complete in reasonable time (${graphTime.toFixed(2)}ms)`);
-      assert(scanTime < 10000, `Quality scan should complete in reasonable time (${scanTime.toFixed(2)}ms)`);
+      assert(
+        graphTime < 5000,
+        `Graph build should complete in reasonable time (${graphTime.toFixed(2)}ms)`
+      );
+      assert(
+        scanTime < 10000,
+        `Quality scan should complete in reasonable time (${scanTime.toFixed(2)}ms)`
+      );
     });
   });
 });
@@ -220,19 +236,19 @@ describe('Performance Tests', () => {
 // Helper function to run the tests
 async function runPerformanceTests() {
   console.log('⏱️  Running Performance Tests...\n');
-  
+
   const tests = [
     'Graph Building Performance',
-    'CodeGraph Scanning Performance', 
+    'CodeGraph Scanning Performance',
     'Quality Scanner Performance',
     'Swarm Performance',
-    'Overall Performance Benchmarks'
+    'Overall Performance Benchmarks',
   ];
-  
+
   for (const testName of tests) {
     console.log(`✓ ${testName} tests completed`);
   }
-  
+
   console.log('\n✅ All performance tests completed!');
 }
 

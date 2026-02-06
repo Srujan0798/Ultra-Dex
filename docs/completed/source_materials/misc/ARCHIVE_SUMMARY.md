@@ -1,4 +1,5 @@
 # Ultra-Dex Archive Summary
+
 > Last Updated: February 3, 2026
 
 ## 📂 Archive Structure Overview
@@ -6,6 +7,7 @@
 The project archives are organized into three main categories to maintain a clean root directory while preserving historical context and planning documents.
 
 ### 1. `archives/` - Transformation & Session Reports
+
 Contains high-level reports from major development sessions and "waves" of transformation.
 
 - **`REVIEWS-ANALYSIS-COMPLETE.md`**: Detailed audit of 9 external reviews.
@@ -14,6 +16,7 @@ Contains high-level reports from major development sessions and "waves" of trans
 - **`transformation-waves/`**: Intermediate progress reports from development waves (1st through 5th).
 
 ### 2. `archived_docs/` - Deprecated Guides & specialized Docs
+
 Contains older versions of documentation, guides that have been consolidated, and release notes.
 
 - **`reports_and_planning/`**: Technical reports, benchmark scripts, and internal structure analysis.
@@ -23,11 +26,13 @@ Contains older versions of documentation, guides that have been consolidated, an
 - **`excessive_documentation/`**: Overspecified templates and guides that were streamlined for better usability.
 
 ### 3. `archived_reports/` (Removed)
+
 Consolidated into `archived_docs/reports_and_planning/reviews/` for better organization.
 
 ---
 
 ## 🛠️ Key Archived Scripts & Tools
+
 (Located in `archived_docs/reports_and_planning/`)
 
 - **`benchmark.js`**: Performance testing script.
@@ -37,7 +42,9 @@ Consolidated into `archived_docs/reports_and_planning/reviews/` for better organ
 ---
 
 ## 📄 Streamlined Documentation
+
 The current source of truth for the project resides in:
+
 1.  **`00-START/`**: Core project manifest and onboarding.
 2.  **`docs/`**: Essential user guides and technical reference.
 3.  **`README.md`**: Project hub.

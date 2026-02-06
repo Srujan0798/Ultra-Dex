@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
@@ -6,14 +8,14 @@ const DEFAULT_RATES = {
   vercelPer1000DAU: 15,
   dbPerGb: 1.5,
   storagePerGb: 0.15,
-  bandwidthPerGb: 0.09
+  bandwidthPerGb: 0.09,
 };
 
 export function estimateInfraCost({
   dailyActiveUsers = 1000,
   storagePerUserMb = 50,
   bandwidthGb = 500,
-  rates = {}
+  rates = {},
 } = {}) {
   const pricing = { ...DEFAULT_RATES, ...rates };
   const monthlyActiveUsers = dailyActiveUsers * 30;
@@ -31,15 +33,15 @@ export function estimateInfraCost({
       dailyActiveUsers,
       monthlyActiveUsers,
       storagePerUserMb,
-      bandwidthGb
+      bandwidthGb,
     },
     breakdown: {
       vercel,
       db,
       storage,
-      bandwidth
+      bandwidth,
     },
-    total
+    total,
   };
 }
 
@@ -55,7 +57,7 @@ export function registerCostEstimatorCommand(program) {
       const estimate = estimateInfraCost({
         dailyActiveUsers: options.dau,
         storagePerUserMb: options.storagePerUser,
-        bandwidthGb: options.bandwidth
+        bandwidthGb: options.bandwidth,
       });
 
       printInfo(chalk.cyan('\nInfrastructure Cost Estimate\n'));
@@ -72,12 +74,16 @@ export function registerCostEstimatorCommand(program) {
       printSuccess(chalk.green(`\nEstimated Total: $${estimate.total.toFixed(2)} / month\n`));
 
       if (Number.isFinite(options.budget) && estimate.total > options.budget) {
-        printWarning(chalk.yellow(`⚠️  Budget threshold exceeded: $${estimate.total.toFixed(2)} > $${options.budget}`));
+        printWarning(
+          chalk.yellow(
+            `⚠️  Budget threshold exceeded: $${estimate.total.toFixed(2)} > $${options.budget}`
+          )
+        );
       }
     });
 }
 
 export default {
   estimateInfraCost,
-  registerCostEstimatorCommand
+  registerCostEstimatorCommand,
 };

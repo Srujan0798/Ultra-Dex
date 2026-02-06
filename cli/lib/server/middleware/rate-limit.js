@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enterprise Rate Limiting
  * Rate limiting for API and user requests
@@ -25,12 +27,12 @@ export class RateLimiter {
     const storageKey = `${this.keyPrefix}${key}`;
 
     let record = this.storage.get(storageKey);
-    
+
     if (!record) {
       record = {
         requests: [],
         blocked: false,
-        blockedUntil: null
+        blockedUntil: null,
       };
     }
 
@@ -40,7 +42,7 @@ export class RateLimiter {
         allowed: false,
         retryAfter: Math.ceil((record.blockedUntil - now) / 1000),
         limit: this.maxRequests,
-        remaining: 0
+        remaining: 0,
       };
     }
 
@@ -52,7 +54,7 @@ export class RateLimiter {
     }
 
     // Remove old requests outside window
-    record.requests = record.requests.filter(time => time > windowStart);
+    record.requests = record.requests.filter((time) => time > windowStart);
 
     // Check limit
     if (record.requests.length >= this.maxRequests) {
@@ -65,7 +67,7 @@ export class RateLimiter {
         allowed: false,
         retryAfter: Math.ceil(this.windowMs / 1000),
         limit: this.maxRequests,
-        remaining: 0
+        remaining: 0,
       };
     }
 
@@ -77,7 +79,7 @@ export class RateLimiter {
       allowed: true,
       limit: this.maxRequests,
       remaining: Math.max(0, this.maxRequests - record.requests.length),
-      resetTime: now + this.windowMs
+      resetTime: now + this.windowMs,
     };
   }
 
@@ -87,23 +89,23 @@ export class RateLimiter {
   async getUsage(key) {
     const storageKey = `${this.keyPrefix}${key}`;
     const record = this.storage.get(storageKey);
-    
+
     if (!record) {
       return {
         requests: 0,
         limit: this.maxRequests,
-        remaining: this.maxRequests
+        remaining: this.maxRequests,
       };
     }
 
     const now = Date.now();
     const windowStart = now - this.windowMs;
-    const recentRequests = record.requests.filter(time => time > windowStart);
+    const recentRequests = record.requests.filter((time) => time > windowStart);
 
     return {
       requests: recentRequests.length,
       limit: this.maxRequests,
-      remaining: Math.max(0, this.maxRequests - recentRequests.length)
+      remaining: Math.max(0, this.maxRequests - recentRequests.length),
     };
   }
 
@@ -125,8 +127,8 @@ export class RateLimiter {
 
     for (const [key, record] of this.storage) {
       // Remove old requests
-      record.requests = record.requests.filter(time => time > windowStart);
-      
+      record.requests = record.requests.filter((time) => time > windowStart);
+
       // Remove empty records
       if (record.requests.length === 0 && !record.blocked) {
         this.storage.delete(key);
@@ -149,7 +151,7 @@ export function rateLimitMiddleware(options = {}) {
 
   return async (req, res, next) => {
     const key = req.user?.id || req.ip || req.connection?.remoteAddress || 'anonymous';
-    
+
     const result = await limiter.check(key);
 
     // Set headers
@@ -162,7 +164,7 @@ export function rateLimitMiddleware(options = {}) {
       res.status(429).json({
         error: 'Too Many Requests',
         message: 'Rate limit exceeded. Please try again later.',
-        retryAfter: result.retryAfter
+        retryAfter: result.retryAfter,
       });
       return;
     }
@@ -176,7 +178,7 @@ export function rateLimitMiddleware(options = {}) {
  */
 export function roleBasedRateLimit(roleLimits = {}) {
   const limiters = {};
-  
+
   // Create limiter for each role
   for (const [role, config] of Object.entries(roleLimits)) {
     limiters[role] = new RateLimiter(config);
@@ -200,7 +202,7 @@ export function roleBasedRateLimit(roleLimits = {}) {
       res.status(429).json({
         error: 'Too Many Requests',
         message: 'Rate limit exceeded for your role.',
-        retryAfter: result.retryAfter
+        retryAfter: result.retryAfter,
       });
       return;
     }
@@ -215,7 +217,7 @@ export const DEFAULT_ROLE_LIMITS = {
   maintainer: { windowMs: 60000, maxRequests: 500 },
   member: { windowMs: 60000, maxRequests: 100 },
   viewer: { windowMs: 60000, maxRequests: 50 },
-  default: { windowMs: 60000, maxRequests: 100 }
+  default: { windowMs: 60000, maxRequests: 100 },
 };
 
 // Export singleton

@@ -55,7 +55,7 @@ export class WebhookService {
       status: 'active',
       secret: input.secret,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     endpointsStore.set(endpoint.id, endpoint);
@@ -65,7 +65,7 @@ export class WebhookService {
   }
 
   async listEndpoints(userId: string): Promise<WebhookEndpoint[]> {
-    return Array.from(endpointsStore.values()).filter(e => e.userId === userId);
+    return Array.from(endpointsStore.values()).filter((e) => e.userId === userId);
   }
 
   async getEndpoint(id: string, userId: string): Promise<WebhookEndpoint | null> {
@@ -91,7 +91,7 @@ export class WebhookService {
       id: `evt_${uuidv4().replace(/-/g, '')}`,
       type: 'test.event',
       createdAt: new Date().toISOString(),
-      data: { message: 'This is a test webhook event' }
+      data: { message: 'This is a test webhook event' },
     };
 
     const delivery = await this.triggerWebhook(endpoint, event);
@@ -108,30 +108,27 @@ export class WebhookService {
 
     // Filter by user's endpoints
     const userEndpoints = await this.listEndpoints(options.userId);
-    const userEndpointIds = new Set(userEndpoints.map(e => e.id));
-    deliveries = deliveries.filter(d => userEndpointIds.has(d.endpointId));
+    const userEndpointIds = new Set(userEndpoints.map((e) => e.id));
+    deliveries = deliveries.filter((d) => userEndpointIds.has(d.endpointId));
 
     if (options.endpointId) {
-      deliveries = deliveries.filter(d => d.endpointId === options.endpointId);
+      deliveries = deliveries.filter((d) => d.endpointId === options.endpointId);
     }
 
     if (options.status) {
-      deliveries = deliveries.filter(d => d.status === options.status);
+      deliveries = deliveries.filter((d) => d.status === options.status);
     }
 
     return deliveries.slice(0, options.limit);
   }
 
-  async triggerWebhook(
-    endpoint: WebhookEndpoint,
-    event: WebhookEvent
-  ): Promise<WebhookDelivery> {
+  async triggerWebhook(endpoint: WebhookEndpoint, event: WebhookEvent): Promise<WebhookDelivery> {
     const delivery: WebhookDelivery = {
       id: `del_${uuidv4().replace(/-/g, '')}`,
       endpointId: endpoint.id,
       eventId: event.id,
       status: 'pending',
-      retryCount: 0
+      retryCount: 0,
     };
 
     deliveriesStore.set(delivery.id, delivery);
@@ -140,17 +137,14 @@ export class WebhookService {
     await webhookQueue.add('deliver', {
       deliveryId: delivery.id,
       endpoint,
-      event
+      event,
     });
 
     return delivery;
   }
 
   generateSignature(payload: string, secret: string): string {
-    return crypto
-      .createHmac('sha256', secret)
-      .update(payload)
-      .digest('hex');
+    return crypto.createHmac('sha256', secret).update(payload).digest('hex');
   }
 
   verifySignature(payload: string, signature: string, secret: string): boolean {

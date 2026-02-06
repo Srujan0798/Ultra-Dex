@@ -20,13 +20,13 @@ class PaymentController {
       const message = JSON.stringify({
         event: eventType,
         data,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       this.channel.publish('payments', eventType, Buffer.from(message), {
         persistent: true,
         messageId: data.id || data.paymentId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       logger.info({ message: `Published event: ${eventType}`, data });
@@ -67,8 +67,8 @@ class PaymentController {
         payments: result.rows,
         pagination: {
           page: parseInt(page),
-          limit: parseInt(limit)
-        }
+          limit: parseInt(limit),
+        },
       });
     } catch (error) {
       logger.error('List payments error:', error);
@@ -80,26 +80,22 @@ class PaymentController {
     const { id } = req.params;
 
     try {
-      const result = await this.pool.query(
-        'SELECT * FROM payments WHERE id = $1',
-        [id]
-      );
+      const result = await this.pool.query('SELECT * FROM payments WHERE id = $1', [id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Payment not found' });
       }
 
       // Get refunds if any
-      const refundsResult = await this.pool.query(
-        'SELECT * FROM refunds WHERE payment_id = $1',
-        [id]
-      );
+      const refundsResult = await this.pool.query('SELECT * FROM refunds WHERE payment_id = $1', [
+        id,
+      ]);
 
       res.json({
         payment: {
           ...result.rows[0],
-          refunds: refundsResult.rows
-        }
+          refunds: refundsResult.rows,
+        },
       });
     } catch (error) {
       logger.error('Get payment error:', error);
@@ -134,7 +130,7 @@ class PaymentController {
       const gatewayResult = await paymentGateway.processPayment({
         amount,
         currency,
-        paymentMethod
+        paymentMethod,
       });
 
       if (gatewayResult.success) {
@@ -144,7 +140,12 @@ class PaymentController {
            SET status = $1, transaction_id = $2, gateway_response = $3, updated_at = NOW() 
            WHERE id = $4
            RETURNING *`,
-          ['completed', gatewayResult.transactionId, JSON.stringify(gatewayResult.gatewayResponse), payment.id]
+          [
+            'completed',
+            gatewayResult.transactionId,
+            JSON.stringify(gatewayResult.gatewayResponse),
+            payment.id,
+          ]
         );
 
         await client.query('COMMIT');
@@ -156,7 +157,7 @@ class PaymentController {
           userId,
           amount,
           currency,
-          transactionId: gatewayResult.transactionId
+          transactionId: gatewayResult.transactionId,
         });
 
         logger.info({ message: 'Payment processed successfully', paymentId: payment.id });
@@ -181,14 +182,18 @@ class PaymentController {
           userId,
           amount,
           currency,
-          reason: gatewayResult.error
+          reason: gatewayResult.error,
         });
 
-        logger.warn({ message: 'Payment failed', paymentId: payment.id, error: gatewayResult.error });
+        logger.warn({
+          message: 'Payment failed',
+          paymentId: payment.id,
+          error: gatewayResult.error,
+        });
 
         res.status(402).json({
           error: 'Payment failed',
-          payment: updatedResult.rows[0]
+          payment: updatedResult.rows[0],
         });
       }
     } catch (error) {
@@ -210,10 +215,7 @@ class PaymentController {
       await client.query('BEGIN');
 
       // Get payment
-      const paymentResult = await client.query(
-        'SELECT * FROM payments WHERE id = $1',
-        [id]
-      );
+      const paymentResult = await client.query('SELECT * FROM payments WHERE id = $1', [id]);
 
       if (paymentResult.rows.length === 0) {
         await client.query('ROLLBACK');
@@ -240,7 +242,7 @@ class PaymentController {
         await client.query('ROLLBACK');
         return res.status(400).json({
           error: 'Refund amount exceeds available amount',
-          availableForRefund
+          availableForRefund,
         });
       }
 
@@ -257,7 +259,7 @@ class PaymentController {
       // Process through gateway
       const gatewayResult = await paymentGateway.processRefund({
         amount,
-        paymentId: id
+        paymentId: id,
       });
 
       if (gatewayResult.success) {
@@ -278,7 +280,7 @@ class PaymentController {
           paymentId: id,
           orderId: payment.order_id,
           userId: payment.user_id,
-          amount
+          amount,
         });
 
         logger.info({ message: 'Refund processed successfully', refundId: refund.id });
@@ -300,7 +302,7 @@ class PaymentController {
 
         res.status(500).json({
           error: 'Refund failed',
-          refund: updatedRefund.rows[0]
+          refund: updatedRefund.rows[0],
         });
       }
     } catch (error) {
@@ -337,7 +339,7 @@ class PaymentController {
       type,
       lastFour,
       expiryMonth,
-      expiryYear
+      expiryYear,
     });
 
     if (!validation.valid) {
@@ -351,10 +353,9 @@ class PaymentController {
 
       // If setting as default, unset other defaults
       if (isDefault) {
-        await client.query(
-          'UPDATE payment_methods SET is_default = false WHERE user_id = $1',
-          [userId]
-        );
+        await client.query('UPDATE payment_methods SET is_default = false WHERE user_id = $1', [
+          userId,
+        ]);
       }
 
       // Add new payment method

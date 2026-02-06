@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex exec command
  * Docker-based code execution sandbox for running generated code safely
@@ -8,7 +10,14 @@ import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
-import { checkDocker, ensureImage, executeInSandbox, detectLanguage, getExecCommand, SANDBOX_CONFIG } from '../sandbox/docker.js';
+import {
+  checkDocker,
+  ensureImage,
+  executeInSandbox,
+  detectLanguage,
+  getExecCommand,
+  SANDBOX_CONFIG,
+} from '../sandbox/docker.js';
 import { assertSafeCommand, assertSafePath } from '../sandbox/permissions.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
@@ -24,7 +33,7 @@ async function spawnLocal(command, timeout, options = {}) {
     const proc = spawn(command, {
       shell: true,
       cwd: options.cwd || process.cwd(),
-      env: options.env || process.env
+      env: options.env || process.env,
     });
 
     const timeoutId = setTimeout(() => {
@@ -32,8 +41,8 @@ async function spawnLocal(command, timeout, options = {}) {
       proc.kill('SIGKILL');
     }, timeout);
 
-    proc.stdout.on('data', (data) => result.stdout += data.toString());
-    proc.stderr.on('data', (data) => result.stderr += data.toString());
+    proc.stdout.on('data', (data) => (result.stdout += data.toString()));
+    proc.stderr.on('data', (data) => (result.stderr += data.toString()));
 
     proc.on('close', (code) => {
       clearTimeout(timeoutId);
@@ -84,8 +93,8 @@ export function registerExecCommand(program) {
               suggestions: [
                 'Install Docker: https://docs.docker.com/get-docker/',
                 'Ensure Docker Desktop is running',
-                'Run with --unsafe (not recommended for untrusted code)'
-              ]
+                'Run with --unsafe (not recommended for untrusted code)',
+              ],
             });
           }
         }
@@ -111,14 +120,13 @@ export function registerExecCommand(program) {
             : await handleFileExecution(file, options.language, timeout, options);
         } else {
           throw new ValidationError('No execution target specified.', [
-              'Provide a file: ultra-dex exec script.js',
-              'Provide inline code: ultra-dex exec -c "console.log(1)"',
-              'Run tests: ultra-dex exec --test'
+            'Provide a file: ultra-dex exec script.js',
+            'Provide inline code: ultra-dex exec -c "console.log(1)"',
+            'Run tests: ultra-dex exec --test',
           ]);
         }
 
         displayExecutionResult(result, timeout, options.allowNetwork);
-
       } catch (error) {
         await handleError(error, { command: 'exec', file, options });
         process.exitCode = error.exitCode || 1;
@@ -128,162 +136,172 @@ export function registerExecCommand(program) {
 }
 
 async function handleTestExecution(timeout) {
-    const spinner = ora('Running npm test in sandbox...').start();
-    const result = await executeInSandbox('npm test', { 
-        timeout, 
-        allowNetwork: true, 
-        isCommand: true, 
-        mountProject: true 
-    });
-    if (result.exitCode === 0) spinner.succeed(chalk.green('Tests passed!'));
-    else spinner.fail(chalk.red('Tests failed'));
-    return result;
+  const spinner = ora('Running npm test in sandbox...').start();
+  const result = await executeInSandbox('npm test', {
+    timeout,
+    allowNetwork: true,
+    isCommand: true,
+    mountProject: true,
+  });
+  if (result.exitCode === 0) spinner.succeed(chalk.green('Tests passed!'));
+  else spinner.fail(chalk.red('Tests failed'));
+  return result;
 }
 
 async function handleCommandExecution(command, timeout, allowNetwork) {
-    const spinner = ora(`Executing: ${command}`).start();
-    const result = await executeInSandbox(command, { 
-        timeout, 
-        allowNetwork, 
-        isCommand: true, 
-        mountProject: true 
-    });
-    if (result.exitCode === 0) spinner.succeed();
-    else spinner.fail();
-    return result;
+  const spinner = ora(`Executing: ${command}`).start();
+  const result = await executeInSandbox(command, {
+    timeout,
+    allowNetwork,
+    isCommand: true,
+    mountProject: true,
+  });
+  if (result.exitCode === 0) spinner.succeed();
+  else spinner.fail();
+  return result;
 }
 
 async function resolveImage(language, options) {
-    if (options.image) return options.image;
-    if (options.dockerfile) {
-        const tag = `ultra-dex-custom:${Date.now()}`;
-        await execSyncSafe(`docker build -f ${options.dockerfile} -t ${tag} .`);
-        return tag;
-    }
-    return SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
+  if (options.image) return options.image;
+  if (options.dockerfile) {
+    const tag = `ultra-dex-custom:${Date.now()}`;
+    await execSyncSafe(`docker build -f ${options.dockerfile} -t ${tag} .`);
+    return tag;
+  }
+  return SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
 }
 
 async function execSyncSafe(cmd) {
-    try {
-        const { execSync } = await import('child_process');
-        execSync(cmd, { stdio: 'inherit' });
-    } catch (error) {
-        throw new AppError(`Failed to build Docker image: ${error.message}`);
-    }
+  try {
+    const { execSync } = await import('child_process');
+    execSync(cmd, { stdio: 'inherit' });
+  } catch (error) {
+    throw new AppError(`Failed to build Docker image: ${error.message}`);
+  }
 }
 
 async function handleCodeExecution(code, lang, timeout, options) {
-    const language = lang || 'javascript';
-    const image = await resolveImage(language, options);
-    const spinner = ora('Preparing sandbox...').start();
-    await ensureImage(image, spinner);
-    spinner.text = 'Executing code...';
-    const result = await executeInSandbox(code, {
-        language,
-        runtime: options.runtime,
-        timeout,
-        allowNetwork: options.allowNetwork,
-        safeMode: options.safe,
-        image
-    });
-    return result;
+  const language = lang || 'javascript';
+  const image = await resolveImage(language, options);
+  const spinner = ora('Preparing sandbox...').start();
+  await ensureImage(image, spinner);
+  spinner.text = 'Executing code...';
+  const result = await executeInSandbox(code, {
+    language,
+    runtime: options.runtime,
+    timeout,
+    allowNetwork: options.allowNetwork,
+    safeMode: options.safe,
+    image,
+  });
+  return result;
 }
 
 async function handleFileExecution(file, lang, timeout, options) {
-    const language = lang || detectLanguage(file);
-    const image = await resolveImage(language, options);
-    const spinner = ora('Preparing sandbox...').start();
-    await ensureImage(image, spinner);
-    spinner.text = `Executing ${file}...`;
-    const code = await fs.readFile(file, 'utf8');
-    const result = await executeInSandbox(code, {
-        filename: path.basename(file),
-        language,
-        runtime: options.runtime,
-        timeout,
-        allowNetwork: options.allowNetwork,
-        safeMode: options.safe,
-        image
-    });
-    return result;
+  const language = lang || detectLanguage(file);
+  const image = await resolveImage(language, options);
+  const spinner = ora('Preparing sandbox...').start();
+  await ensureImage(image, spinner);
+  spinner.text = `Executing ${file}...`;
+  const code = await fs.readFile(file, 'utf8');
+  const result = await executeInSandbox(code, {
+    filename: path.basename(file),
+    language,
+    runtime: options.runtime,
+    timeout,
+    allowNetwork: options.allowNetwork,
+    safeMode: options.safe,
+    image,
+  });
+  return result;
 }
 
 async function handleUnsafeTestExecution(timeout) {
-    const spinner = ora('Running npm test (unsafe mode)...').start();
-    assertSafeCommand('npm test');
-    const result = await spawnLocal('npm test', timeout);
-    if (result.exitCode === 0) spinner.succeed(chalk.green('Tests passed!'));
-    else spinner.fail(chalk.red('Tests failed'));
-    return result;
+  const spinner = ora('Running npm test (unsafe mode)...').start();
+  assertSafeCommand('npm test');
+  const result = await spawnLocal('npm test', timeout);
+  if (result.exitCode === 0) spinner.succeed(chalk.green('Tests passed!'));
+  else spinner.fail(chalk.red('Tests failed'));
+  return result;
 }
 
 async function handleUnsafeCommandExecution(command, timeout) {
-    const spinner = ora(`Executing (unsafe): ${command}`).start();
-    assertSafeCommand(command);
-    const result = await spawnLocal(command, timeout);
-    if (result.exitCode === 0) spinner.succeed();
-    else spinner.fail();
-    return result;
+  const spinner = ora(`Executing (unsafe): ${command}`).start();
+  assertSafeCommand(command);
+  const result = await spawnLocal(command, timeout);
+  if (result.exitCode === 0) spinner.succeed();
+  else spinner.fail();
+  return result;
 }
 
 async function handleUnsafeCodeExecution(code, lang, timeout) {
-    const language = lang || 'javascript';
-    const tempDir = path.join(process.cwd(), '.ultra-dex', 'unsafe-exec');
-    const extMap = {
-      javascript: 'js',
-      typescript: 'ts',
-      python: 'py',
-      rust: 'rs',
-      go: 'go',
-      ruby: 'rb'
-    };
-    const ext = extMap[language] || 'txt';
-    const filename = `unsafe-${Date.now()}.${ext}`;
-    const tempFile = path.join(tempDir, filename);
-    await fs.mkdir(tempDir, { recursive: true });
-    await fs.writeFile(tempFile, code, 'utf8');
+  const language = lang || 'javascript';
+  const tempDir = path.join(process.cwd(), '.ultra-dex', 'unsafe-exec');
+  const extMap = {
+    javascript: 'js',
+    typescript: 'ts',
+    python: 'py',
+    rust: 'rs',
+    go: 'go',
+    ruby: 'rb',
+  };
+  const ext = extMap[language] || 'txt';
+  const filename = `unsafe-${Date.now()}.${ext}`;
+  const tempFile = path.join(tempDir, filename);
+  await fs.mkdir(tempDir, { recursive: true });
+  await fs.writeFile(tempFile, code, 'utf8');
 
-    const execCmd = getExecCommand(language, filename);
-    assertSafeCommand(execCmd);
+  const execCmd = getExecCommand(language, filename);
+  assertSafeCommand(execCmd);
 
-    const spinner = ora('Executing code (unsafe)...').start();
-    const result = await spawnLocal(execCmd, timeout, { cwd: tempDir });
-    if (result.exitCode === 0) spinner.succeed();
-    else spinner.fail();
-    return result;
+  const spinner = ora('Executing code (unsafe)...').start();
+  const result = await spawnLocal(execCmd, timeout, { cwd: tempDir });
+  if (result.exitCode === 0) spinner.succeed();
+  else spinner.fail();
+  return result;
 }
 
 async function handleUnsafeFileExecution(file, lang, timeout) {
-    const resolved = assertSafePath(file, process.cwd());
-    const language = lang || detectLanguage(resolved);
-    const execCmd = getExecCommand(language, path.basename(resolved));
-    assertSafeCommand(execCmd);
+  const resolved = assertSafePath(file, process.cwd());
+  const language = lang || detectLanguage(resolved);
+  const execCmd = getExecCommand(language, path.basename(resolved));
+  assertSafeCommand(execCmd);
 
-    const spinner = ora(`Executing ${file} (unsafe)...`).start();
-    const result = await spawnLocal(execCmd, timeout, { cwd: path.dirname(resolved) });
-    if (result.exitCode === 0) spinner.succeed();
-    else spinner.fail();
-    return result;
+  const spinner = ora(`Executing ${file} (unsafe)...`).start();
+  const result = await spawnLocal(execCmd, timeout, { cwd: path.dirname(resolved) });
+  if (result.exitCode === 0) spinner.succeed();
+  else spinner.fail();
+  return result;
 }
 
 function displayExecutionResult(result, timeout, allowNetwork) {
-    if (result.timedOut) {
-      printError(`\n❌ Execution timed out after ${timeout}ms`);
-    } else if (result.exitCode === 0) {
-      printSuccess(`\n✅ Completed in ${result.duration}ms`);
-    } else {
-      printWarning(`\n⚠️  Exited with code ${result.exitCode}`);
-    }
+  if (result.timedOut) {
+    printError(`\n❌ Execution timed out after ${timeout}ms`);
+  } else if (result.exitCode === 0) {
+    printSuccess(`\n✅ Completed in ${result.duration}ms`);
+  } else {
+    printWarning(`\n⚠️  Exited with code ${result.exitCode}`);
+  }
 
-    process.stdout.write(chalk.gray('┌' + '─'.repeat(50) + '┐\n'));
-    if (result.stdout) {
-      result.stdout.trim().split('\n').forEach(line => process.stdout.write(`│ ${line.padEnd(48)} │\n`));
-    }
-    if (result.stderr) {
-      process.stdout.write('│' + '─'.repeat(50) + '│\n');
-      process.stdout.write(`│ ${chalk.red('STDERR:'.padEnd(48))} │\n`);
-      result.stderr.trim().split('\n').forEach(line => process.stdout.write(`│ ${chalk.red(line.padEnd(48))} │\n`));
-    }
-    process.stdout.write(chalk.gray('└' + '─'.repeat(50) + '┘\n'));
-    printInfo(chalk.gray(`⏱️  Duration: ${result.duration}ms | 🔒 Network: ${allowNetwork ? 'Enabled' : 'Disabled'}`));
+  process.stdout.write(chalk.gray('┌' + '─'.repeat(50) + '┐\n'));
+  if (result.stdout) {
+    result.stdout
+      .trim()
+      .split('\n')
+      .forEach((line) => process.stdout.write(`│ ${line.padEnd(48)} │\n`));
+  }
+  if (result.stderr) {
+    process.stdout.write('│' + '─'.repeat(50) + '│\n');
+    process.stdout.write(`│ ${chalk.red('STDERR:'.padEnd(48))} │\n`);
+    result.stderr
+      .trim()
+      .split('\n')
+      .forEach((line) => process.stdout.write(`│ ${chalk.red(line.padEnd(48))} │\n`));
+  }
+  process.stdout.write(chalk.gray('└' + '─'.repeat(50) + '┘\n'));
+  printInfo(
+    chalk.gray(
+      `⏱️  Duration: ${result.duration}ms | 🔒 Network: ${allowNetwork ? 'Enabled' : 'Disabled'}`
+    )
+  );
 }

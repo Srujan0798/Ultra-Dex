@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -20,7 +22,7 @@ export class WhisperProvider {
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${this.apiKey}` },
-      body: data
+      body: data,
     });
 
     if (!response.ok) {

@@ -2,7 +2,7 @@
 
 ![Cover Image: Abstract representation of interconnected AI agents forming a neural network with command lines flowing between them](https://images.unsplash.com/photo-1677442135722-5f11e06a4e62?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=600&w=1200)
 
-*Cover Image Suggestion: Abstract representation of interconnected AI agents forming a neural network with command lines flowing between them*
+_Cover Image Suggestion: Abstract representation of interconnected AI agents forming a neural network with command lines flowing between them_
 
 ---
 
@@ -46,7 +46,7 @@ class UltraDexOrchestrationLayer {
     // Coordinate agents based on task requirements
     const pipeline = this.buildPipeline(task, options);
     const context = await this.gatherContext();
-    
+
     return await this.executePipeline(pipeline, context);
   }
 }
@@ -65,28 +65,34 @@ The architecture consists of:
 Our agent ecosystem is organized into six tiers, each with specific responsibilities:
 
 ### Leadership Tier (1-planning)
+
 - **@Planner**: Breaks down complex tasks into actionable steps
 - **@CTO**: Defines overall architecture and technical decisions
 
 ### Development Tier (2-implementation)
+
 - **@Backend**: Implements API endpoints and business logic
 - **@Frontend**: Creates user interfaces and client-side functionality
 - **@Database**: Designs and implements database schemas
 
 ### Security Tier (3-security)
+
 - **@Auth**: Handles authentication and authorization systems
 - **@Security**: Reviews code for security vulnerabilities
 
 ### DevOps Tier (4-devops)
+
 - **@DevOps**: Sets up deployment infrastructure and CI/CD
 - **@Deployment**: Manages deployment processes
 
 ### Quality Tier (5-quality)
+
 - **@Testing**: Writes unit, integration, and end-to-end tests
 - **@Reviewer**: Performs code reviews and quality checks
 - **@Debugger**: Identifies and fixes bugs
 
 ### Specialist Tier (6-specialist)
+
 - **@Documentation**: Creates and maintains documentation
 - **@Performance**: Optimizes for performance and scalability
 - **@UI/UX**: Focuses on user experience and interface design
@@ -105,11 +111,11 @@ async function runAgentPipeline(task) {
     { name: 'backend', tier: '2-implementation' },
     { name: 'frontend', tier: '2-implementation' },
     { name: 'testing', tier: '4-quality' },
-    { name: 'reviewer', tier: '4-quality' }
+    { name: 'reviewer', tier: '4-quality' },
   ];
 
   let previousOutput = '';
-  
+
   for (const agent of agents) {
     const result = await runAgent(agent, task, context, previousOutput);
     previousOutput = result;
@@ -122,28 +128,33 @@ async function runAgentPipeline(task) {
 Our command system is organized into functional categories, each serving a specific aspect of the development lifecycle:
 
 ### Core Workflow Commands
+
 - `ultra-dex init`: Initialize a new project
 - `ultra-dex build`: Execute the next pending task
 - `ultra-dex plan`: Manage project plans and timelines
 - `ultra-dex swarm`: Deploy an autonomous agent swarm
 
 ### Quality & Verification Commands
+
 - `ultra-dex audit`: Comprehensive project audit
 - `ultra-dex validate`: Validate project structure
 - `ultra-dex quality`: Run automated quality validation
 - `ultra-dex align`: Quick alignment score using Code Property Graph
 
 ### AI & Orchestration Commands
+
 - `ultra-dex run`: Execute a single agent
 - `ultra-dex agents`: List and manage agents
 - `ultra-dex prompt`: Generate and manage AI prompts
 
 ### Integration Commands
+
 - `ultra-dex github`: GitHub integration for issues and PRs
 - `ultra-dex ci-monitor`: Self-healing CI/CD pipeline monitor
 - `ultra-dex cloud`: Cloud server for team collaboration
 
 ### Development Commands
+
 - `ultra-dex serve`: Start the development server
 - `ultra-dex watch`: Watch for changes and auto-execute
 - `ultra-dex review`: Review and analyze code
@@ -170,7 +181,6 @@ export function registerBuildCommand(program) {
 
         // 3. Execute task
         await executeBuildTask(nextTask, options);
-
       } catch (error) {
         await handleError(error, { command: 'build', options });
         process.exit(error.exitCode || 1);
@@ -218,10 +228,26 @@ We support both sequential and parallel execution based on the task requirements
 // Parallel vs sequential execution
 const executionTiers = options.parallel
   ? [
-      { name: '1-Planning', agents: AGENT_PIPELINE.filter(a => a.tier === '1-planning'), parallel: false },
-      { name: '2-Implementation', agents: AGENT_PIPELINE.filter(a => a.tier === '2-implementation'), parallel: true },
-      { name: '3-Security', agents: AGENT_PIPELINE.filter(a => a.tier === '3-security'), parallel: false },
-      { name: '4-Quality', agents: AGENT_PIPELINE.filter(a => a.tier === '4-quality'), parallel: false }
+      {
+        name: '1-Planning',
+        agents: AGENT_PIPELINE.filter((a) => a.tier === '1-planning'),
+        parallel: false,
+      },
+      {
+        name: '2-Implementation',
+        agents: AGENT_PIPELINE.filter((a) => a.tier === '2-implementation'),
+        parallel: true,
+      },
+      {
+        name: '3-Security',
+        agents: AGENT_PIPELINE.filter((a) => a.tier === '3-security'),
+        parallel: false,
+      },
+      {
+        name: '4-Quality',
+        agents: AGENT_PIPELINE.filter((a) => a.tier === '4-quality'),
+        parallel: false,
+      },
     ]
   : [{ name: 'All', agents: AGENT_PIPELINE, parallel: false }];
 ```
@@ -235,8 +261,11 @@ One of our critical implementations is atomic state management to prevent corrup
 export async function saveState(state) {
   const ultraDir = path.resolve(process.cwd(), '.ultra');
   const statePath = path.resolve(ultraDir, 'state.json');
-  const tempPath = path.resolve(ultraDir, `state.json.tmp.${Date.now()}.${Math.random().toString(36).substr(2, 9)}`);
-  
+  const tempPath = path.resolve(
+    ultraDir,
+    `state.json.tmp.${Date.now()}.${Math.random().toString(36).substr(2, 9)}`
+  );
+
   try {
     await fs.mkdir(ultraDir, { recursive: true });
     await fs.writeFile(tempPath, JSON.stringify(state, null, 2));
@@ -266,16 +295,16 @@ async function gatherSwarmContext() {
 
   let context = '';
   if (existsSync(contextPath)) context += await readFile(contextPath, 'utf-8');
-  if (existsSync(planPath)) context += '\n\n' + await readFile(planPath, 'utf-8');
+  if (existsSync(planPath)) context += '\n\n' + (await readFile(planPath, 'utf-8'));
 
   // Enforce context size limit to prevent unbounded growth
   if (Buffer.byteLength(context, 'utf-8') > MAX_CONTEXT_SIZE) {
     printWarning(`Context size exceeds limit (${MAX_CONTEXT_SIZE / 1024}KB), truncating...`);
-    
+
     const contextBytes = Buffer.from(context, 'utf-8');
     const truncatedContext = contextBytes.subarray(0, MAX_CONTEXT_SIZE - 1000);
     const truncatedString = new TextDecoder().decode(truncatedContext);
-    
+
     context = truncatedString + `\n\n[Context was truncated due to size limits.]`;
   }
 
@@ -293,7 +322,7 @@ We support multiple AI providers with automatic routing:
 // Provider abstraction
 class ProviderFactory {
   static create(providerId, config) {
-    switch(providerId) {
+    switch (providerId) {
       case 'openai':
         return new OpenAIProvider(config);
       case 'anthropic':
@@ -324,11 +353,16 @@ async function handleBuildFailure(payload, options) {
   await projectGraph.scan();
   const context = {
     context: `Build Failure Log:\n${logs}\n\nJob: ${job.name}\nRepo: ${repo}`,
-    graph: projectGraph.getSummary()
+    graph: projectGraph.getSummary(),
   };
 
   // 2. Fix Generation
-  const fixPlan = await runAgentLoop('debugger', `Analyze build failure and fix code: ${logs}`, provider, context);
+  const fixPlan = await runAgentLoop(
+    'debugger',
+    `Analyze build failure and fix code: ${logs}`,
+    provider,
+    context
+  );
 
   // 3. Apply & Push
   await runAgentLoop('devops', `Commit the fix to a new branch and push.`, provider, context);
@@ -409,11 +443,11 @@ We implemented atomic writes to prevent corruption during concurrent operations:
 // State locking mechanism
 async function withStateLock(callback) {
   const lockFile = join(process.cwd(), '.ultra-dex', 'state.lock');
-  
+
   // Wait for lock to be available
   let retries = 0;
   while (existsSync(lockFile) && retries < 50) {
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
     retries++;
   }
 
@@ -452,7 +486,7 @@ const executionStrategy = {
   '1-planning': { parallel: false, critical: true },
   '2-implementation': { parallel: true, critical: false },
   '3-security': { parallel: false, critical: true },
-  '4-quality': { parallel: false, critical: false }
+  '4-quality': { parallel: false, critical: false },
 };
 ```
 
@@ -527,4 +561,4 @@ Guidelines for contributing code, documentation, and ideas to the Ultra-Dex proj
 
 ---
 
-*This article was written to showcase the technical depth and innovative approach of the Ultra-Dex AI orchestration platform. For more information, visit the official repository and join our community of developers building the future of software development.*
+_This article was written to showcase the technical depth and innovative approach of the Ultra-Dex AI orchestration platform. For more information, visit the official repository and join our community of developers building the future of software development._

@@ -13,6 +13,7 @@ These examples show how to use Ultra-Dex agents for complex features with concre
 ### Workflow
 
 **User Request:**
+
 ```
 "Add Stripe payment integration for Pro plan ($29/month)"
 ```
@@ -23,6 +24,7 @@ These examples show how to use Ultra-Dex agents for complex features with concre
 
 ```markdown
 ## Tasks
+
 1. Stripe account setup & API keys
 2. Database schema for subscriptions
 3. Stripe webhook endpoints
@@ -30,6 +32,7 @@ These examples show how to use Ultra-Dex agents for complex features with concre
 5. Subscription management page
 
 ## Dependencies
+
 Research → CTO → Database → Backend → Frontend → Security → Deploy
 
 Handoff to @Research for Stripe integration patterns.
@@ -39,19 +42,21 @@ Handoff to @Research for Stripe integration patterns.
 
 ### @Research: Stripe Integration Research
 
-```markdown
+````markdown
 ## Research: Stripe Integration Best Practices
 
 ### Options Compared
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| **Stripe Checkout** | Pre-built UI, PCI compliant | Less customization |
-| **Stripe Elements** | Full control | More code to maintain |
-| **Stripe Pricing Table** | No code needed | Limited customization |
+| Approach                 | Pros                        | Cons                  |
+| ------------------------ | --------------------------- | --------------------- |
+| **Stripe Checkout**      | Pre-built UI, PCI compliant | Less customization    |
+| **Stripe Elements**      | Full control                | More code to maintain |
+| **Stripe Pricing Table** | No code needed              | Limited customization |
 
 ### Recommendation: Stripe Checkout
+
 **Why:**
+
 - Pre-built, secure payment UI
 - Automatic tax calculation
 - Supports one-time and subscriptions
@@ -59,13 +64,14 @@ Handoff to @Research for Stripe integration patterns.
 - PCI compliance handled by Stripe
 
 ### Implementation Pattern
+
 ```typescript
 // 1. Create Checkout Session (Backend)
 const session = await stripe.checkout.sessions.create({
   mode: 'subscription',
   line_items: [{ price: 'price_xxx', quantity: 1 }],
   success_url: 'https://app.com/success',
-  cancel_url: 'https://app.com/pricing'
+  cancel_url: 'https://app.com/pricing',
 });
 
 // 2. Redirect to Stripe (Frontend)
@@ -74,13 +80,16 @@ window.location.href = session.url;
 // 3. Handle webhook events (Backend)
 stripe.webhooks.constructEvent(body, signature, secret);
 ```
+````
 
 ### Resources
+
 - [Stripe Checkout Docs](https://stripe.com/docs/payments/checkout)
 - [Webhook Events Guide](https://stripe.com/docs/webhooks)
 
 Handoff to @CTO for architecture approval.
-```
+
+````
 
 ---
 
@@ -111,20 +120,23 @@ model Subscription {
 
   user User @relation(fields: [userId], references: [id])
 }
-```
+````
 
 **3. Security**
+
 - Validate webhook signatures (prevent fake events)
 - Store Stripe keys in environment variables
 - Never expose secret key to frontend
 
 **4. Edge Cases**
+
 - Handle failed payments (email user, retry)
 - Allow subscription cancellation (cancel_at_period_end)
 - Prorate upgrades/downgrades
 
 Architecture approved. Handoff to @Database.
-```
+
+````
 
 ---
 
@@ -134,9 +146,10 @@ Architecture approved. Handoff to @Database.
 ```bash
 # Add Subscription model to schema.prisma and run migration
 npx prisma migrate dev --name add_stripe_subscriptions
-```
+````
 
 **Expected output:**
+
 ```
 ✔ Generated Prisma Client
 ✔ Migration created successfully
@@ -148,6 +161,7 @@ npx prisma migrate dev --name add_stripe_subscriptions
 ### @Backend: Stripe Endpoints
 
 **Command to test:**
+
 ```bash
 curl -X POST http://localhost:4000/api/stripe/create-checkout-session \
   -H "Authorization: Bearer YOUR_JWT" \
@@ -156,6 +170,7 @@ curl -X POST http://localhost:4000/api/stripe/create-checkout-session \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "url": "https://checkout.stripe.com/c/pay/cs_test_xxx"
@@ -193,13 +208,14 @@ git push production main
 ### @Research: Email Provider Comparison
 
 ```markdown
-| Provider | Cost | Pros | Cons |
-|----------|------|------|------|
-| **Resend** | $20/mo (50k emails) | Modern API, React email | Newer service |
-| **SendGrid** | $15/mo (40k emails) | Established, templates | Complex UI |
-| **AWS SES** | $0.10/1k emails | Cheapest | Requires AWS setup |
+| Provider     | Cost                | Pros                    | Cons               |
+| ------------ | ------------------- | ----------------------- | ------------------ |
+| **Resend**   | $20/mo (50k emails) | Modern API, React email | Newer service      |
+| **SendGrid** | $15/mo (40k emails) | Established, templates  | Complex UI         |
+| **AWS SES**  | $0.10/1k emails     | Cheapest                | Requires AWS setup |
 
 ### Recommendation: Resend
+
 - React Email for type-safe templates
 - Best developer experience
 - Automatic DKIM/SPF setup
@@ -212,6 +228,7 @@ git push production main
 
 ```markdown
 ### Design Decisions
+
 1. **Async Processing:** Queue emails with BullMQ (don't block API responses)
 2. **Template Storage:** React Email components in codebase
 3. **Retry Logic:** 3 retries with exponential backoff
@@ -251,7 +268,7 @@ export async function sendWelcomeEmail(user: User) {
     from: 'noreply@myapp.com',
     to: user.email,
     subject: 'Welcome to MyApp!',
-    react: WelcomeEmail({ name: user.name })
+    react: WelcomeEmail({ name: user.name }),
   });
 
   // Log to database
@@ -261,13 +278,14 @@ export async function sendWelcomeEmail(user: User) {
       to: user.email,
       subject: 'Welcome to MyApp!',
       type: 'welcome',
-      status: 'sent'
-    }
+      status: 'sent',
+    },
   });
 }
 ```
 
 **Test command:**
+
 ```bash
 npm run email:test -- --to=your@email.com --type=welcome
 ```
@@ -281,6 +299,7 @@ npm run email:test -- --to=your@email.com --type=welcome
 ### @Database: Schema Change
 
 **Step 1: Update schema.prisma**
+
 ```prisma
 model User {
   id       String  @id @default(uuid())
@@ -292,11 +311,13 @@ model User {
 ```
 
 **Step 2: Create migration**
+
 ```bash
 npx prisma migrate dev --name add_user_profile_fields
 ```
 
 **Step 3: Test migration**
+
 ```bash
 npx prisma studio
 # Verify: name and bio columns exist in User table
@@ -307,6 +328,7 @@ npx prisma studio
 ### @Backend: Update API
 
 **Test command:**
+
 ```bash
 curl -X PUT http://localhost:4000/api/user/profile \
   -H "Authorization: Bearer YOUR_JWT" \
@@ -320,12 +342,14 @@ curl -X PUT http://localhost:4000/api/user/profile \
 
 ```markdown
 ### ✅ Passed
+
 - [x] Fields are nullable (won't break existing users)
 - [x] No default values required
 - [x] Backward compatible
 - [x] Rollback plan: Can safely remove fields
 
 ### Deployment Plan
+
 1. Deploy backend first (handles new fields)
 2. Run migration on production
 3. Deploy frontend (shows new fields)
@@ -355,7 +379,7 @@ curl -X PUT http://localhost:4000/api/user/profile \
 // Backend: Emit event
 io.to(userId).emit('notification', {
   type: 'new_message',
-  message: 'You have a new message'
+  message: 'You have a new message',
 });
 
 // Frontend: Listen for events
@@ -373,6 +397,7 @@ socket.on('notification', (data) => {
 ### Workflow
 
 **User Request:**
+
 ```
 "Add authentication to my SaaS using Supabase with Google OAuth and Row Level Security"
 ```
@@ -383,6 +408,7 @@ socket.on('notification', (data) => {
 
 ```markdown
 ## Tasks
+
 1. Create Supabase project and get API keys
 2. Set up database schema with RLS policies
 3. Configure authentication providers (email + Google OAuth)
@@ -391,6 +417,7 @@ socket.on('notification', (data) => {
 6. Test authentication flow
 
 ## Dependencies
+
 Planner → Research → CTO → Database → Backend → Frontend → Security → DevOps
 
 Handoff to @Research for authentication provider comparison.
@@ -400,19 +427,21 @@ Handoff to @Research for authentication provider comparison.
 
 ### @Research: Authentication Provider Research
 
-```markdown
+````markdown
 ## Research: Supabase vs Auth0 vs Custom Auth
 
 ### Options Compared
 
-| Provider | Pros | Cons | Cost |
-|----------|------|------|------|
-| **Supabase Auth** | Built-in with database, RLS policies, free tier generous | Newer, less enterprise features | Free (50k MAU) |
-| **Auth0** | Most features, enterprise-ready | Complex, expensive | $23/mo (7k MAU) |
-| **Custom JWT** | Full control | Have to build everything | Dev time cost |
+| Provider          | Pros                                                     | Cons                            | Cost            |
+| ----------------- | -------------------------------------------------------- | ------------------------------- | --------------- |
+| **Supabase Auth** | Built-in with database, RLS policies, free tier generous | Newer, less enterprise features | Free (50k MAU)  |
+| **Auth0**         | Most features, enterprise-ready                          | Complex, expensive              | $23/mo (7k MAU) |
+| **Custom JWT**    | Full control                                             | Have to build everything        | Dev time cost   |
 
 ### Recommendation: Supabase Auth
+
 **Why:**
+
 - PostgreSQL database included (no separate service)
 - Row Level Security (RLS) for multi-tenant apps
 - Pre-built auth UI components
@@ -421,6 +450,7 @@ Handoff to @Research for authentication provider comparison.
 - JWT tokens with auto-refresh
 
 ### Implementation Pattern
+
 ```typescript
 // 1. Initialize Supabase client
 import { createClient } from '@supabase/supabase-js';
@@ -433,21 +463,24 @@ const supabase = createClient(
 // 2. Sign up user
 const { data, error } = await supabase.auth.signUp({
   email: 'user@example.com',
-  password: 'secure-password'
+  password: 'secure-password',
 });
 
 // 3. Sign in with OAuth
 const { data } = await supabase.auth.signInWithOAuth({
-  provider: 'google'
+  provider: 'google',
 });
 ```
+````
 
 ### Resources
+
 - [Supabase Auth Docs](https://supabase.com/docs/guides/auth)
 - [Row Level Security Guide](https://supabase.com/docs/guides/auth/row-level-security)
 
 Handoff to @CTO for architecture review.
-```
+
+````
 
 ---
 
@@ -492,22 +525,25 @@ CREATE POLICY "Users can update own profile"
   ON public.profiles
   FOR UPDATE
   USING (auth.uid() = id);
-```
+````
 
 **3. Security Considerations**
+
 - RLS policies on all user tables (prevent data leaks)
 - API keys environment-specific (dev/staging/prod)
 - Email verification required (prevent fake accounts)
 - Password requirements: min 8 chars
 
 **4. Edge Cases**
+
 - Handle email already exists error
 - OAuth email mismatch (user signs up with email, then OAuth)
 - Session expiry and auto-refresh
 - Password reset flow
 
 Architecture approved. Handoff to @Database for RLS implementation.
-```
+
+````
 
 ---
 
@@ -516,9 +552,10 @@ Architecture approved. Handoff to @Database for RLS implementation.
 **Step 1: Create profiles table migration**
 ```bash
 npx supabase migration new create_profiles_table
-```
+````
 
 **Edit migration file:**
+
 ```sql
 -- Create profiles table
 CREATE TABLE public.profiles (
@@ -564,17 +601,20 @@ CREATE TRIGGER on_auth_user_created
 ```
 
 **Step 2: Apply migration**
+
 ```bash
 npx supabase migration up
 ```
 
 **Expected output:**
+
 ```
 Applying migration 20260124_create_profiles_table...
 ✔ Migration applied successfully
 ```
 
 **Step 3: Test RLS policies**
+
 ```sql
 -- Test as authenticated user
 SELECT auth.uid(); -- Returns your user ID
@@ -588,11 +628,13 @@ Handoff to @Backend for auth API implementation.
 ### @Backend: Authentication API
 
 **Install Supabase:**
+
 ```bash
 npm install @supabase/supabase-js @supabase/auth-helpers-nextjs
 ```
 
 **Create API route for signup:**
+
 ```typescript
 // app/api/auth/signup/route.ts
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
@@ -608,9 +650,9 @@ export async function POST(request: Request) {
     password,
     options: {
       data: {
-        full_name
-      }
-    }
+        full_name,
+      },
+    },
   });
 
   if (error) {
@@ -619,12 +661,13 @@ export async function POST(request: Request) {
 
   return Response.json({
     message: 'Check your email for confirmation link',
-    user: data.user
+    user: data.user,
   });
 }
 ```
 
 **Create API route for login:**
+
 ```typescript
 // app/api/auth/login/route.ts
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
@@ -637,7 +680,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password
+    password,
   });
 
   if (error) {
@@ -646,12 +689,13 @@ export async function POST(request: Request) {
 
   return Response.json({
     message: 'Logged in successfully',
-    user: data.user
+    user: data.user,
   });
 }
 ```
 
 **Create middleware for protected routes:**
+
 ```typescript
 // middleware.ts
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
@@ -662,7 +706,9 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
     return NextResponse.redirect(new URL('/login', req.url));
@@ -672,11 +718,12 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*']
+  matcher: ['/dashboard/:path*'],
 };
 ```
 
 **Test commands:**
+
 ```bash
 # Test signup
 curl -X POST http://localhost:3000/api/auth/signup \
@@ -697,6 +744,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "message": "Logged in successfully",
@@ -717,6 +765,7 @@ Handoff to @Frontend for UI components.
 ### @Frontend: Authentication UI
 
 **Create signup form:**
+
 ```tsx
 // app/signup/page.tsx
 'use client';
@@ -741,8 +790,8 @@ export default function SignUpPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName }
-      }
+        data: { full_name: fullName },
+      },
     });
 
     if (error) {
@@ -800,6 +849,7 @@ export default function SignUpPage() {
 ```
 
 **Add Google OAuth button:**
+
 ```tsx
 // components/GoogleSignIn.tsx
 'use client';
@@ -812,8 +862,8 @@ export function GoogleSignIn() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
-      }
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
   };
 
@@ -832,6 +882,7 @@ export function GoogleSignIn() {
 ```
 
 **Test in browser:**
+
 1. Visit http://localhost:3000/signup
 2. Fill form and submit
 3. Check email for confirmation link
@@ -851,6 +902,7 @@ Handoff to @Security for security audit.
 ### ✅ Security Checklist
 
 **Authentication:**
+
 - [x] Email confirmation required before login
 - [x] Password minimum 8 characters enforced
 - [x] JWT tokens expire after 1 hour (Supabase default)
@@ -858,17 +910,20 @@ Handoff to @Security for security audit.
 - [x] OAuth redirect URLs whitelisted in Supabase dashboard
 
 **Database Security:**
+
 - [x] Row Level Security enabled on all tables
 - [x] RLS policies restrict users to own data only
 - [x] Foreign key constraints prevent orphaned records
 - [x] Database credentials not exposed to frontend
 
 **API Security:**
+
 - [x] ANON key used (not SERVICE_ROLE key in frontend)
 - [x] Protected routes use middleware authentication check
 - [x] API routes validate authentication before operations
 
 **OAuth Security:**
+
 - [x] Redirect URLs validated (prevent open redirect)
 - [x] State parameter used (prevent CSRF)
 - [x] Google OAuth configured with correct scopes
@@ -880,6 +935,7 @@ Handoff to @Security for security audit.
 3. **Audit logs** - Track authentication events
 
 ### Approval Status
+
 ✅ **APPROVED** - Authentication implementation is secure for production
 
 Critical issues: None
@@ -893,6 +949,7 @@ Handoff to @DevOps for deployment.
 ### @DevOps: Deployment
 
 **Step 1: Configure Supabase project**
+
 ```bash
 # In Supabase Dashboard:
 # 1. Go to Authentication → Providers
@@ -905,6 +962,7 @@ Handoff to @DevOps for deployment.
 ```
 
 **Step 2: Set environment variables**
+
 ```bash
 # In Vercel/Railway dashboard or .env.local
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -912,6 +970,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
 **Step 3: Deploy application**
+
 ```bash
 # Deploy to Vercel
 vercel --prod
@@ -921,6 +980,7 @@ railway up
 ```
 
 **Step 4: Test production authentication**
+
 ```bash
 # Test signup
 curl -X POST https://your-app.vercel.app/api/auth/signup \
@@ -933,6 +993,7 @@ curl -X POST https://your-app.vercel.app/api/auth/signup \
 ```
 
 **Step 5: Verify in Supabase Dashboard**
+
 1. Go to Authentication → Users
 2. See new user listed
 3. Click user to see metadata (full_name)
@@ -940,6 +1001,7 @@ curl -X POST https://your-app.vercel.app/api/auth/signup \
 5. Verify profile auto-created via trigger
 
 **Expected outcome:**
+
 ```
 ✔ User created in auth.users
 ✔ Profile created in public.profiles
@@ -960,6 +1022,7 @@ curl -X POST https://your-app.vercel.app/api/auth/signup \
 ### Workflow
 
 **User Request:**
+
 ```
 "Deploy my Next.js SaaS to Vercel with staging and production environments"
 ```
@@ -970,6 +1033,7 @@ curl -X POST https://your-app.vercel.app/api/auth/signup \
 
 ```markdown
 ## Tasks
+
 1. Set up Vercel project and link Git repository
 2. Configure environment variables for staging/production
 3. Set up custom domain
@@ -978,6 +1042,7 @@ curl -X POST https://your-app.vercel.app/api/auth/signup \
 6. Test deployment pipeline
 
 ## Dependencies
+
 Planner → CTO → Frontend → DevOps
 
 Handoff to @CTO for deployment architecture.
@@ -993,6 +1058,7 @@ Handoff to @CTO for deployment architecture.
 ### Tech Decisions
 
 **1. Git-Based Deployments**
+
 - **Production branch:** `main` → deploys to production
 - **Staging branch:** `staging` → deploys to staging
 - **Feature branches:** `feature/*` → deploys to preview URLs
@@ -1000,11 +1066,13 @@ Handoff to @CTO for deployment architecture.
 
 **2. Environment Strategy**
 ```
-Development (local)  → localhost:3000
-Preview (PRs)        → unique-url-git-branch.vercel.app
-Staging              → staging.myapp.com
-Production           → myapp.com
-```
+
+Development (local) → localhost:3000
+Preview (PRs) → unique-url-git-branch.vercel.app
+Staging → staging.myapp.com
+Production → myapp.com
+
+````
 
 **3. Build Configuration**
 ```json
@@ -1014,22 +1082,25 @@ Production           → myapp.com
   "installCommand": "npm ci",
   "framework": "nextjs"
 }
-```
+````
 
 **4. Environment Variables**
+
 - **Development:** `.env.local` (not committed)
 - **Preview:** Vercel dashboard (shared across previews)
 - **Production:** Vercel dashboard (production only)
 - **Secrets:** Use Vercel's encrypted secrets for API keys
 
 **5. Edge Cases**
+
 - Build failures → notify team via Slack integration
 - Database migrations → run before deployment
 - Cache invalidation → automatic on new deployment
 - Rollback strategy → redeploy previous commit
 
 Architecture approved. Handoff to @Frontend for build optimization.
-```
+
+````
 
 ---
 
@@ -1079,9 +1150,10 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-```
+````
 
 **Add build verification script:**
+
 ```json
 // package.json
 {
@@ -1096,6 +1168,7 @@ module.exports = nextConfig;
 ```
 
 **Test build locally:**
+
 ```bash
 npm run build
 npm run start
@@ -1104,6 +1177,7 @@ npm run start
 ```
 
 **Expected output:**
+
 ```
 ✓ Creating an optimized production build
 ✓ Compiled successfully
@@ -1125,16 +1199,19 @@ Handoff to @DevOps for Vercel deployment.
 ### @DevOps: Vercel Deployment
 
 **Step 1: Install Vercel CLI**
+
 ```bash
 npm i -g vercel
 ```
 
 **Step 2: Login to Vercel**
+
 ```bash
 vercel login
 ```
 
 **Step 3: Link project to Vercel**
+
 ```bash
 # Run from project root
 vercel link
@@ -1148,11 +1225,13 @@ vercel link
 ```
 
 **Expected output:**
+
 ```
 ✔ Linked to your-team/myapp (created .vercel directory)
 ```
 
 **Step 4: Configure environment variables**
+
 ```bash
 # Add production environment variables
 vercel env add DATABASE_URL production
@@ -1170,6 +1249,7 @@ vercel env pull .env.local
 ```
 
 **Step 5: Deploy to preview (test deployment)**
+
 ```bash
 vercel
 
@@ -1178,6 +1258,7 @@ vercel --env preview
 ```
 
 **Expected output:**
+
 ```
 🔗  Inspect: https://vercel.com/your-team/myapp/abc123
 ✅  Preview: https://myapp-abc123.vercel.app
@@ -1185,6 +1266,7 @@ vercel --env preview
 ```
 
 **Step 6: Test preview deployment**
+
 ```bash
 # Visit preview URL
 curl https://myapp-abc123.vercel.app
@@ -1194,6 +1276,7 @@ curl https://myapp-abc123.vercel.app/api/health
 ```
 
 **Expected response:**
+
 ```json
 {
   "status": "ok",
@@ -1203,6 +1286,7 @@ curl https://myapp-abc123.vercel.app/api/health
 ```
 
 **Step 7: Deploy to production**
+
 ```bash
 vercel --prod
 
@@ -1211,12 +1295,14 @@ git push origin main
 ```
 
 **Expected output:**
+
 ```
 🔗  Inspect: https://vercel.com/your-team/myapp/prod123
 ✅  Production: https://myapp.vercel.app
 ```
 
 **Step 8: Configure custom domain**
+
 ```bash
 # Add custom domain via CLI
 vercel domains add myapp.com
@@ -1226,6 +1312,7 @@ vercel domains add myapp.com
 ```
 
 **Configure DNS records:**
+
 ```
 Type    Name    Value                           TTL
 A       @       76.76.21.21                     Auto
@@ -1233,6 +1320,7 @@ CNAME   www     cname.vercel-dns.com            Auto
 ```
 
 **Step 9: Set up deployment protection (optional)**
+
 ```bash
 # In Vercel Dashboard:
 # Project Settings → Deployment Protection
@@ -1241,6 +1329,7 @@ CNAME   www     cname.vercel-dns.com            Auto
 ```
 
 **Step 10: Configure GitHub integration**
+
 ```yaml
 # Vercel automatically:
 # 1. Deploys on every push to main (production)
@@ -1250,6 +1339,7 @@ CNAME   www     cname.vercel-dns.com            Auto
 ```
 
 **Step 11: Verify production deployment**
+
 ```bash
 # Check production URL
 curl https://myapp.com
@@ -1262,6 +1352,7 @@ vercel logs myapp.com
 ```
 
 **Expected output:**
+
 ```
 myapp.com     Ready    Production    2m ago
 ├── abc123    Ready    Preview       5m ago
@@ -1296,6 +1387,7 @@ Feature Branch Push
 ### Troubleshooting Common Issues
 
 **Build fails on Vercel but works locally:**
+
 ```bash
 # Check Node.js version matches
 # In vercel.json:
@@ -1309,6 +1401,7 @@ Feature Branch Push
 ```
 
 **Environment variables not working:**
+
 ```bash
 # Redeploy after adding env vars
 vercel --prod --force
@@ -1318,6 +1411,7 @@ vercel env ls
 ```
 
 **Custom domain not working:**
+
 ```bash
 # Check DNS propagation
 dig myapp.com
@@ -1340,6 +1434,7 @@ nslookup myapp.com
 ### Workflow
 
 **User Request:**
+
 ```
 "Create a CI/CD pipeline that runs tests on every PR and deploys to production on merge to main"
 ```
@@ -1350,6 +1445,7 @@ nslookup myapp.com
 
 ```markdown
 ## Tasks
+
 1. Create workflow file for CI (tests + lint)
 2. Add build verification job
 3. Add deployment job for production
@@ -1358,6 +1454,7 @@ nslookup myapp.com
 6. Test workflow on PR
 
 ## Dependencies
+
 Planner → CTO → Testing → DevOps
 
 Handoff to @CTO for CI/CD architecture.
@@ -1373,6 +1470,7 @@ Handoff to @CTO for CI/CD architecture.
 ### Tech Decisions
 
 **1. Workflow Strategy**
+
 - **On PR:** Run tests, lint, build (CI only)
 - **On push to main:** Run CI + deploy to production (CI/CD)
 - **Manual:** Allow manual deployment trigger
@@ -1380,20 +1478,22 @@ Handoff to @CTO for CI/CD architecture.
 
 **2. Pipeline Stages**
 ```
+
 Pull Request Opened
-      ↓
-   Install Dependencies (cache npm)
-      ↓
-   Lint Code (ESLint)
-      ↓
-   Run Tests (Jest/Vitest)
-      ↓
-   Build Application (Next.js)
-      ↓
-   Comment PR with Status
-      ↓
-   [If main branch] Deploy to Production
-```
+↓
+Install Dependencies (cache npm)
+↓
+Lint Code (ESLint)
+↓
+Run Tests (Jest/Vitest)
+↓
+Build Application (Next.js)
+↓
+Comment PR with Status
+↓
+[If main branch] Deploy to Production
+
+````
 
 **3. Caching Strategy**
 - Cache `node_modules` (speeds up by 60%)
@@ -1408,15 +1508,17 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-```
+````
 
 **5. Security**
+
 - Store deployment keys in GitHub Secrets
 - Use GITHUB_TOKEN for PR comments (automatic)
 - Don't expose secrets in logs
 
 Architecture approved. Handoff to @Testing for workflow implementation.
-```
+
+````
 
 ---
 
@@ -1426,9 +1528,10 @@ Architecture approved. Handoff to @Testing for workflow implementation.
 ```bash
 mkdir -p .github/workflows
 touch .github/workflows/ci.yml
-```
+````
 
 **Complete CI/CD workflow:**
+
 ```yaml
 # .github/workflows/ci.yml
 name: CI/CD Pipeline
@@ -1620,6 +1723,7 @@ jobs:
 ```
 
 **Add scripts to package.json:**
+
 ```json
 {
   "scripts": {
@@ -1640,6 +1744,7 @@ jobs:
 ### @DevOps: Configure GitHub Secrets
 
 **Step 1: Add deployment secrets**
+
 ```bash
 # In GitHub: Repository → Settings → Secrets and variables → Actions
 
@@ -1664,6 +1769,7 @@ jobs:
 ```
 
 **Step 2: Test workflow on PR**
+
 ```bash
 # Create a test branch
 git checkout -b test-ci-pipeline
@@ -1681,6 +1787,7 @@ gh pr create --title "Test CI/CD Pipeline" --body "Testing GitHub Actions workfl
 ```
 
 **Step 3: Monitor workflow execution**
+
 ```bash
 # Watch workflow status
 gh run watch
@@ -1690,6 +1797,7 @@ gh run watch
 ```
 
 **Expected output:**
+
 ```
 ✓ install          Install Dependencies    (1m 23s)
 ✓ lint             Lint Code               (45s)
@@ -1702,6 +1810,7 @@ All checks have passed
 ```
 
 **Step 4: Test production deployment**
+
 ```bash
 # Merge PR to main
 gh pr merge --merge
@@ -1711,6 +1820,7 @@ gh run watch
 ```
 
 **Expected output:**
+
 ```
 ✓ install          Install Dependencies    (1m 23s)
 ✓ lint             Lint Code               (45s)
@@ -1729,6 +1839,7 @@ URL: https://myapp.vercel.app
 
 ```markdown
 <!-- Add to top of README.md -->
+
 # My SaaS Application
 
 [![CI/CD Pipeline](https://github.com/username/repo/actions/workflows/ci.yml/badge.svg)](https://github.com/username/repo/actions/workflows/ci.yml)
@@ -1741,6 +1852,7 @@ URL: https://myapp.vercel.app
 ### Advanced: Parallel Testing with Matrix
 
 **Test across multiple environments:**
+
 ```yaml
 test:
   strategy:
@@ -1767,6 +1879,7 @@ test:
 ### Workflow Optimization Tips
 
 **1. Cache dependencies:**
+
 ```yaml
 - uses: actions/cache@v3
   with:
@@ -1778,6 +1891,7 @@ test:
 ```
 
 **2. Use concurrency to cancel old runs:**
+
 ```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -1785,6 +1899,7 @@ concurrency:
 ```
 
 **3. Add timeout to prevent hanging jobs:**
+
 ```yaml
 jobs:
   test:
@@ -1797,6 +1912,7 @@ jobs:
 ### Troubleshooting
 
 **Build fails on CI but works locally:**
+
 ```yaml
 # Add debug logging
 - name: Debug environment
@@ -1808,6 +1924,7 @@ jobs:
 ```
 
 **Tests time out:**
+
 ```yaml
 # Increase Jest timeout
 - name: Run tests
@@ -1815,6 +1932,7 @@ jobs:
 ```
 
 **Deployment fails:**
+
 ```bash
 # Check Vercel token is valid
 vercel whoami --token=${{ secrets.VERCEL_TOKEN }}
@@ -1833,6 +1951,7 @@ vercel whoami --token=${{ secrets.VERCEL_TOKEN }}
 ### Workflow
 
 **User Request:**
+
 ```
 "Add Sentry error tracking to catch and monitor production errors in our Next.js app"
 ```
@@ -1843,6 +1962,7 @@ vercel whoami --token=${{ secrets.VERCEL_TOKEN }}
 
 ```markdown
 ## Tasks
+
 1. Create Sentry account and project
 2. Install Sentry SDKs for frontend and backend
 3. Configure error boundaries for React
@@ -1851,6 +1971,7 @@ vercel whoami --token=${{ secrets.VERCEL_TOKEN }}
 6. Test error capture in development
 
 ## Dependencies
+
 Planner → Research → CTO → Backend → Frontend → DevOps
 
 Handoff to @Research for error tracking comparison.
@@ -1860,19 +1981,21 @@ Handoff to @Research for error tracking comparison.
 
 ### @Research: Error Tracking Comparison
 
-```markdown
+````markdown
 ## Research: Sentry vs Rollbar vs LogRocket
 
 ### Options Compared
 
-| Provider | Pros | Cons | Cost |
-|----------|------|------|------|
-| **Sentry** | Best error grouping, source maps, free tier | Can be expensive at scale | Free (5k errors/mo) |
-| **Rollbar** | Good integrations, fast | Less features than Sentry | $12/mo (5k errors) |
-| **LogRocket** | Session replay included | Expensive, slow | $99/mo (1k sessions) |
+| Provider      | Pros                                        | Cons                      | Cost                 |
+| ------------- | ------------------------------------------- | ------------------------- | -------------------- |
+| **Sentry**    | Best error grouping, source maps, free tier | Can be expensive at scale | Free (5k errors/mo)  |
+| **Rollbar**   | Good integrations, fast                     | Less features than Sentry | $12/mo (5k errors)   |
+| **LogRocket** | Session replay included                     | Expensive, slow           | $99/mo (1k sessions) |
 
 ### Recommendation: Sentry
+
 **Why:**
+
 - Industry standard for error tracking
 - Excellent error grouping and deduplication
 - Source map support for debugging minified code
@@ -1882,6 +2005,7 @@ Handoff to @Research for error tracking comparison.
 - PII scrubbing built-in
 
 ### Key Features
+
 ```typescript
 // 1. Automatic error capture
 try {
@@ -1898,16 +2022,19 @@ Sentry.setContext('order', { id: '123', total: 99.99 });
 // 3. Breadcrumbs (trail of events leading to error)
 Sentry.addBreadcrumb({
   message: 'User clicked checkout',
-  level: 'info'
+  level: 'info',
 });
 ```
+````
 
 ### Resources
+
 - [Sentry Next.js Docs](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
 - [Error Handling Best Practices](https://docs.sentry.io/platforms/javascript/best-practices/)
 
 Handoff to @CTO for architecture review.
-```
+
+````
 
 ---
 
@@ -1925,19 +2052,23 @@ Handoff to @CTO for architecture review.
 - **Performance:** Track slow API calls and page loads
 
 **2. Error Capture Scope**
-```
+````
+
 Frontend:
+
 - Unhandled Promise rejections
 - React component errors (ErrorBoundary)
 - API fetch failures
 - User interactions that trigger errors
 
 Backend:
+
 - Unhandled exceptions
 - API endpoint errors
 - Database query errors
 - Third-party service failures
-```
+
+````
 
 **3. PII Protection**
 - Scrub sensitive data (passwords, credit cards, tokens)
@@ -1951,15 +2082,17 @@ Sentry.init({
   release: process.env.VERCEL_GIT_COMMIT_SHA,
   environment: process.env.NODE_ENV
 });
-```
+````
 
 **5. Alert Configuration**
+
 - Email on new issues
 - Slack notification for critical errors
 - Weekly digest for team
 
 Architecture approved. Handoff to @Backend for server-side setup.
-```
+
+````
 
 ---
 
@@ -1968,19 +2101,22 @@ Architecture approved. Handoff to @Backend for server-side setup.
 **Step 1: Install Sentry SDK**
 ```bash
 npm install @sentry/nextjs
-```
+````
 
 **Step 2: Initialize Sentry Wizard**
+
 ```bash
 npx @sentry/wizard@latest -i nextjs
 ```
 
 **This creates three config files:**
+
 1. `sentry.client.config.ts` - Frontend configuration
 2. `sentry.server.config.ts` - Backend configuration
 3. `sentry.edge.config.ts` - Edge runtime configuration
 
 **Step 3: Configure server-side Sentry**
+
 ```typescript
 // sentry.server.config.ts
 import * as Sentry from '@sentry/nextjs';
@@ -2013,15 +2149,12 @@ Sentry.init({
   },
 
   // Ignore specific errors
-  ignoreErrors: [
-    'Non-Error promise rejection captured',
-    'Network request failed',
-    /AbortError/
-  ]
+  ignoreErrors: ['Non-Error promise rejection captured', 'Network request failed', /AbortError/],
 });
 ```
 
 **Step 4: Add error handling to API routes**
+
 ```typescript
 // app/api/users/route.ts
 import * as Sentry from '@sentry/nextjs';
@@ -2034,23 +2167,21 @@ export async function GET(request: Request) {
     Sentry.captureException(error, {
       tags: {
         endpoint: '/api/users',
-        method: 'GET'
+        method: 'GET',
       },
       extra: {
         url: request.url,
-        headers: Object.fromEntries(request.headers)
-      }
+        headers: Object.fromEntries(request.headers),
+      },
     });
 
-    return Response.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    );
+    return Response.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
 }
 ```
 
 **Test backend error capture:**
+
 ```bash
 # Create test endpoint
 # app/api/test-sentry/route.ts
@@ -2063,6 +2194,7 @@ curl http://localhost:3000/api/test-sentry
 ```
 
 **Expected in Sentry Dashboard:**
+
 ```
 New Issue: Error
 Message: Test backend error for Sentry
@@ -2077,6 +2209,7 @@ Handoff to @Frontend for client-side setup.
 ### @Frontend: Client-Side Sentry Setup
 
 **Configure client-side Sentry:**
+
 ```typescript
 // sentry.client.config.ts
 import * as Sentry from '@sentry/nextjs';
@@ -2107,13 +2240,14 @@ Sentry.init({
   // User context
   initialScope: {
     tags: {
-      app_version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'
-    }
-  }
+      app_version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+    },
+  },
 });
 ```
 
 **Create Error Boundary component:**
+
 ```tsx
 // components/ErrorBoundary.tsx
 'use client';
@@ -2122,7 +2256,7 @@ import { useEffect } from 'react';
 
 export function ErrorBoundary({
   error,
-  reset
+  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -2135,9 +2269,7 @@ export function ErrorBoundary({
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <h2 className="text-2xl font-bold mb-4">Something went wrong!</h2>
-      <p className="text-gray-600 mb-6">
-        We've been notified and are working on a fix.
-      </p>
+      <p className="text-gray-600 mb-6">We've been notified and are working on a fix.</p>
       <button
         onClick={reset}
         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -2154,6 +2286,7 @@ export { ErrorBoundary as default } from '@/components/ErrorBoundary';
 ```
 
 **Add user context:**
+
 ```typescript
 // lib/sentry.ts
 import * as Sentry from '@sentry/nextjs';
@@ -2161,7 +2294,7 @@ import * as Sentry from '@sentry/nextjs';
 export function identifyUser(user: { id: string; email: string }) {
   Sentry.setUser({
     id: user.id,
-    email: user.email
+    email: user.email,
   });
 }
 
@@ -2175,6 +2308,7 @@ identifyUser({ id: user.id, email: user.email });
 ```
 
 **Test frontend error capture:**
+
 ```tsx
 // Create test component
 // app/test-error/page.tsx
@@ -2185,11 +2319,7 @@ export default function TestErrorPage() {
     throw new Error('Test frontend error for Sentry');
   };
 
-  return (
-    <button onClick={triggerError}>
-      Trigger Test Error
-    </button>
-  );
+  return <button onClick={triggerError}>Trigger Test Error</button>;
 }
 ```
 
@@ -2200,6 +2330,7 @@ Handoff to @DevOps for source maps and deployment.
 ### @DevOps: Source Maps & Deployment
 
 **Step 1: Configure Next.js for source maps**
+
 ```javascript
 // next.config.js
 const { withSentryConfig } = require('@sentry/nextjs');
@@ -2215,7 +2346,7 @@ module.exports = withSentryConfig(
     // Sentry webpack plugin options
     silent: true,
     org: 'your-org-slug',
-    project: 'your-project-slug'
+    project: 'your-project-slug',
   },
   {
     // Upload source maps during build
@@ -2223,12 +2354,13 @@ module.exports = withSentryConfig(
     transpileClientSDK: true,
     tunnelRoute: '/monitoring',
     hideSourceMaps: true,
-    disableLogger: true
+    disableLogger: true,
   }
 );
 ```
 
 **Step 2: Set environment variables**
+
 ```bash
 # In Vercel/Railway dashboard
 SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
@@ -2243,6 +2375,7 @@ SENTRY_PROJECT=your-project-slug
 ```
 
 **Step 3: Deploy and verify source maps**
+
 ```bash
 # Build with source maps
 npm run build
@@ -2255,6 +2388,7 @@ vercel --prod
 ```
 
 **Step 4: Create release and notify Sentry**
+
 ```bash
 # In CI/CD (GitHub Actions)
 - name: Create Sentry release
@@ -2266,6 +2400,7 @@ vercel --prod
 ```
 
 **Step 5: Test production error tracking**
+
 ```bash
 # Trigger production error
 curl https://myapp.com/api/test-sentry
@@ -2279,6 +2414,7 @@ curl https://myapp.com/api/test-sentry
 ```
 
 **Expected Sentry Issue:**
+
 ```
 Error: Test backend error for Sentry
   at GET (app/api/test-sentry/route.ts:2:9)
@@ -2298,6 +2434,7 @@ Breadcrumbs:
 ### Configure Alerts
 
 **In Sentry Dashboard:**
+
 ```
 1. Alerts → Create Alert Rule
 
@@ -2319,6 +2456,7 @@ Breadcrumbs:
 ### Best Practices
 
 **1. Set sample rates appropriately:**
+
 ```typescript
 // Development: Capture everything
 const tracesSampleRate = process.env.NODE_ENV === 'development' ? 1.0 : 0.1;
@@ -2327,6 +2465,7 @@ const tracesSampleRate = process.env.NODE_ENV === 'development' ? 1.0 : 0.1;
 ```
 
 **2. Add context to errors:**
+
 ```typescript
 Sentry.withScope((scope) => {
   scope.setTag('payment_method', 'stripe');
@@ -2336,12 +2475,13 @@ Sentry.withScope((scope) => {
 ```
 
 **3. Ignore known errors:**
+
 ```typescript
 ignoreErrors: [
   /^Network request failed$/,
   /^Timeout exceeded$/,
-  'ResizeObserver loop limit exceeded'
-]
+  'ResizeObserver loop limit exceeded',
+];
 ```
 
 ---
@@ -2357,6 +2497,7 @@ ignoreErrors: [
 ### Workflow
 
 **User Request:**
+
 ```
 "Integrate Shopify so products from our store automatically sync to our app's database"
 ```
@@ -2367,6 +2508,7 @@ ignoreErrors: [
 
 ```markdown
 ## Tasks
+
 1. Create Shopify Partner account and development store
 2. Set up Shopify app with Admin API access
 3. Design database schema for products
@@ -2376,6 +2518,7 @@ ignoreErrors: [
 7. Test with Shopify test store
 
 ## Dependencies
+
 Planner → Research → CTO → Database → Backend → DevOps
 
 Handoff to @Research for Shopify API comparison.
@@ -2385,25 +2528,28 @@ Handoff to @Research for Shopify API comparison.
 
 ### @Research: Shopify API Options
 
-```markdown
+````markdown
 ## Research: Shopify Admin API vs Storefront API
 
 ### Options Compared
 
-| API | Use Case | Pros | Cons |
-|-----|----------|------|------|
-| **Admin API** | Backend product management | Full product data, webhooks, bulk operations | Requires app approval |
-| **Storefront API** | Customer-facing features | Public data, GraphQL, fast | Limited to published products |
-| **Multipass API** | SSO login | Seamless authentication | Shopify Plus only |
+| API                | Use Case                   | Pros                                         | Cons                          |
+| ------------------ | -------------------------- | -------------------------------------------- | ----------------------------- |
+| **Admin API**      | Backend product management | Full product data, webhooks, bulk operations | Requires app approval         |
+| **Storefront API** | Customer-facing features   | Public data, GraphQL, fast                   | Limited to published products |
+| **Multipass API**  | SSO login                  | Seamless authentication                      | Shopify Plus only             |
 
 ### Recommendation: Admin API
+
 **Why:**
+
 - Access to all product data (inventory, variants, images, metafields)
 - Webhook support for real-time updates
 - Bulk operations API for large catalogs (1000+ products)
 - Rate limits: 2 requests/second (REST) or 1000 points/second (GraphQL)
 
 ### Implementation Pattern
+
 ```typescript
 // Using @shopify/shopify-api package
 import '@shopify/shopify-api/adapters/node';
@@ -2415,7 +2561,7 @@ const shopify = shopifyApi({
   scopes: ['read_products', 'write_products'],
   hostName: process.env.SHOPIFY_HOST_NAME,
   apiVersion: LATEST_API_VERSION,
-  isEmbeddedApp: false
+  isEmbeddedApp: false,
 });
 
 // Fetch products
@@ -2424,16 +2570,19 @@ const client = new shopify.clients.Rest({ session });
 
 const products = await client.get({
   path: 'products',
-  query: { limit: 250 }
+  query: { limit: 250 },
 });
 ```
+````
 
 ### Resources
+
 - [Shopify Admin API Docs](https://shopify.dev/docs/api/admin-rest)
 - [Building Shopify Apps](https://shopify.dev/docs/apps/build)
 
 Handoff to @CTO for architecture review.
-```
+
+````
 
 ---
 
@@ -2485,15 +2634,17 @@ model WebhookLog {
 
   @@index([processed, createdAt])
 }
-```
+````
 
 **3. Webhook Topics**
+
 - `products/create` - New product created
 - `products/update` - Product updated
 - `products/delete` - Product deleted
 - `inventory_levels/update` - Inventory changed
 
 **4. Rate Limit Handling**
+
 ```typescript
 // Implement exponential backoff
 async function fetchWithRetry(url: string, retries = 3) {
@@ -2509,12 +2660,14 @@ async function fetchWithRetry(url: string, retries = 3) {
 ```
 
 **5. Security**
+
 - Verify webhook HMAC signatures (prevent fake webhooks)
 - Store Shopify credentials in env variables
 - Use private app tokens (not OAuth for this use case)
 
 Architecture approved. Handoff to @Database for schema implementation.
-```
+
+````
 
 ---
 
@@ -2523,9 +2676,10 @@ Architecture approved. Handoff to @Database for schema implementation.
 **Create migration:**
 ```bash
 npx prisma migrate dev --name add_shopify_products
-```
+````
 
 **Prisma schema:**
+
 ```prisma
 // prisma/schema.prisma
 model Product {
@@ -2565,12 +2719,14 @@ model WebhookLog {
 ```
 
 **Apply migration:**
+
 ```bash
 npx prisma migrate deploy
 npx prisma generate
 ```
 
 **Expected output:**
+
 ```
 ✔ Generated Prisma Client
 ✔ Migration applied: 20260124_add_shopify_products
@@ -2583,11 +2739,13 @@ Handoff to @Backend for Shopify integration.
 ### @Backend: Shopify API Integration
 
 **Step 1: Install Shopify SDK**
+
 ```bash
 npm install @shopify/shopify-api
 ```
 
 **Step 2: Create Shopify client utility**
+
 ```typescript
 // lib/shopify.ts
 import '@shopify/shopify-api/adapters/node';
@@ -2599,17 +2757,16 @@ export const shopify = shopifyApi({
   scopes: ['read_products', 'write_products'],
   hostName: process.env.SHOPIFY_HOST_NAME!,
   apiVersion: LATEST_API_VERSION,
-  isEmbeddedApp: false
+  isEmbeddedApp: false,
 });
 
 export function getShopifySession() {
-  return shopify.session.customAppSession(
-    process.env.SHOPIFY_SHOP_DOMAIN!
-  );
+  return shopify.session.customAppSession(process.env.SHOPIFY_SHOP_DOMAIN!);
 }
 ```
 
 **Step 3: Create product sync function**
+
 ```typescript
 // lib/shopify-sync.ts
 import { shopify, getShopifySession } from './shopify';
@@ -2628,8 +2785,8 @@ export async function syncAllProducts() {
       path: 'products',
       query: {
         limit: 250,
-        page_info: pageInfo
-      }
+        page_info: pageInfo,
+      },
     });
 
     const products = response.body.products;
@@ -2658,7 +2815,7 @@ export async function syncAllProducts() {
           compareAtPrice: product.variants[0]?.compare_at_price
             ? parseFloat(product.variants[0].compare_at_price)
             : null,
-          syncedAt: new Date()
+          syncedAt: new Date(),
         },
         update: {
           title: product.title,
@@ -2674,8 +2831,8 @@ export async function syncAllProducts() {
             0
           ),
           price: parseFloat(product.variants[0]?.price || '0'),
-          syncedAt: new Date()
-        }
+          syncedAt: new Date(),
+        },
       });
 
       syncedCount++;
@@ -2698,6 +2855,7 @@ function extractPageInfo(linkHeader: string | null): string | undefined {
 ```
 
 **Step 4: Create webhook handler**
+
 ```typescript
 // app/api/shopify/webhooks/route.ts
 import { NextRequest } from 'next/server';
@@ -2729,8 +2887,8 @@ export async function POST(request: NextRequest) {
       topic: topic!,
       shopifyId: payload.id.toString(),
       payload,
-      processed: false
-    }
+      processed: false,
+    },
   });
 
   // Handle different webhook topics
@@ -2760,19 +2918,19 @@ async function handleProductUpdate(product: any) {
       shopifyHandle: product.handle,
       title: product.title,
       // ... full product data
-      syncedAt: new Date()
+      syncedAt: new Date(),
     },
     update: {
       title: product.title,
       // ... updated fields
-      syncedAt: new Date()
-    }
+      syncedAt: new Date(),
+    },
   });
 }
 
 async function handleProductDelete(product: any) {
   await prisma.product.delete({
-    where: { shopifyId: product.id.toString() }
+    where: { shopifyId: product.id.toString() },
   });
 }
 
@@ -2783,6 +2941,7 @@ async function handleInventoryUpdate(inventoryLevel: any) {
 ```
 
 **Step 5: Create manual sync endpoint**
+
 ```typescript
 // app/api/shopify/sync/route.ts
 import { syncAllProducts } from '@/lib/shopify-sync';
@@ -2792,18 +2951,16 @@ export async function POST() {
     const result = await syncAllProducts();
     return Response.json({
       message: 'Sync completed',
-      synced: result.synced
+      synced: result.synced,
     });
   } catch (error) {
-    return Response.json(
-      { error: 'Sync failed', details: error.message },
-      { status: 500 }
-    );
+    return Response.json({ error: 'Sync failed', details: error.message }, { status: 500 });
   }
 }
 ```
 
 **Test sync:**
+
 ```bash
 # Trigger manual sync
 curl -X POST http://localhost:3000/api/shopify/sync
@@ -2825,6 +2982,7 @@ Handoff to @DevOps for webhook configuration.
 ### @DevOps: Shopify Webhook Configuration
 
 **Step 1: Get Shopify API credentials**
+
 ```
 1. Go to Shopify Partner Dashboard: https://partners.shopify.com
 2. Create App → Custom App
@@ -2836,6 +2994,7 @@ Handoff to @DevOps for webhook configuration.
 ```
 
 **Step 2: Set environment variables**
+
 ```bash
 # .env.local
 SHOPIFY_API_KEY=your-api-key
@@ -2846,6 +3005,7 @@ SHOPIFY_ACCESS_TOKEN=shpat_xxxxx
 ```
 
 **Step 3: Register webhooks**
+
 ```bash
 # Register webhook via Shopify API
 curl -X POST "https://${SHOPIFY_SHOP_DOMAIN}/admin/api/2024-01/webhooks.json" \
@@ -2866,6 +3026,7 @@ curl -X POST "https://${SHOPIFY_SHOP_DOMAIN}/admin/api/2024-01/webhooks.json" \
 ```
 
 **Step 4: Test webhook delivery**
+
 ```bash
 # In Shopify admin, create a test product
 # Check webhook logs
@@ -2885,6 +3046,7 @@ curl http://localhost:3000/api/shopify/webhook-logs
 ```
 
 **Step 5: Set up cron job for daily full sync**
+
 ```typescript
 // Using Vercel Cron or node-cron
 
@@ -2902,6 +3064,7 @@ curl http://localhost:3000/api/shopify/webhook-logs
 ```
 
 **Step 6: Monitor sync status**
+
 ```bash
 # Check last sync time
 curl https://your-app.com/api/shopify/sync-status
@@ -2919,6 +3082,7 @@ curl https://your-app.com/api/shopify/sync-status
 ### Troubleshooting
 
 **Webhooks not received:**
+
 ```bash
 # Verify webhook registration
 curl "https://${SHOPIFY_SHOP_DOMAIN}/admin/api/2024-01/webhooks.json" \
@@ -2929,6 +3093,7 @@ curl "https://${SHOPIFY_SHOP_DOMAIN}/admin/api/2024-01/webhooks.json" \
 ```
 
 **Rate limit errors:**
+
 ```typescript
 // Check rate limit headers
 const rateLimitRemaining = response.headers.get('x-shopify-shop-api-call-limit');
@@ -2953,6 +3118,7 @@ if (rateLimitRemaining && parseInt(rateLimitRemaining.split('/')[0]) > 35) {
 ### Workflow
 
 **User Request:**
+
 ```
 "Add analytics to track user signups, feature usage, and conversion funnel with PostHog"
 ```
@@ -2963,6 +3129,7 @@ if (rateLimitRemaining && parseInt(rateLimitRemaining.split('/')[0]) > 35) {
 
 ```markdown
 ## Tasks
+
 1. Create PostHog account and project
 2. Install PostHog SDKs for frontend and backend
 3. Set up core event tracking (signup, login, feature usage)
@@ -2971,6 +3138,7 @@ if (rateLimitRemaining && parseInt(rateLimitRemaining.split('/')[0]) > 35) {
 6. Configure user identification
 
 ## Dependencies
+
 Planner → Research → CTO → Backend → Frontend → DevOps
 
 Handoff to @Research for analytics platform comparison.
@@ -2980,20 +3148,22 @@ Handoff to @Research for analytics platform comparison.
 
 ### @Research: Analytics Platform Comparison
 
-```markdown
+````markdown
 ## Research: PostHog vs Mixpanel vs Amplitude
 
 ### Options Compared
 
-| Platform | Pros | Cons | Cost |
-|----------|------|------|------|
-| **PostHog** | Self-hosted option, feature flags, session replay | Newer platform | Free (1M events/mo) |
-| **Mixpanel** | Mature, great UI, cohort analysis | Expensive at scale | $28/mo (10k MTU) |
-| **Amplitude** | Best for B2B, powerful analytics | Complex setup | $49/mo (10k MTU) |
-| **Google Analytics** | Free, familiar | Poor event tracking | Free |
+| Platform             | Pros                                              | Cons                | Cost                |
+| -------------------- | ------------------------------------------------- | ------------------- | ------------------- |
+| **PostHog**          | Self-hosted option, feature flags, session replay | Newer platform      | Free (1M events/mo) |
+| **Mixpanel**         | Mature, great UI, cohort analysis                 | Expensive at scale  | $28/mo (10k MTU)    |
+| **Amplitude**        | Best for B2B, powerful analytics                  | Complex setup       | $49/mo (10k MTU)    |
+| **Google Analytics** | Free, familiar                                    | Poor event tracking | Free                |
 
 ### Recommendation: PostHog
+
 **Why:**
+
 - Open source with self-hosted option (data privacy)
 - All-in-one: analytics + feature flags + session replay + A/B testing
 - Generous free tier: 1M events/month
@@ -3002,18 +3172,19 @@ Handoff to @Research for analytics platform comparison.
 - Tracks both pageviews and custom events
 
 ### Key Features
+
 ```typescript
 // 1. Event tracking
 posthog.capture('user_signed_up', {
   plan: 'pro',
-  source: 'landing_page'
+  source: 'landing_page',
 });
 
 // 2. User identification
 posthog.identify(userId, {
   email: user.email,
   name: user.name,
-  plan: 'pro'
+  plan: 'pro',
 });
 
 // 3. Feature flags
@@ -3022,16 +3193,19 @@ const showNewFeature = posthog.isFeatureEnabled('new-checkout-flow');
 // 4. Group analytics (for B2B)
 posthog.group('company', companyId, {
   name: 'Acme Corp',
-  employees: 50
+  employees: 50,
 });
 ```
+````
 
 ### Resources
+
 - [PostHog Docs](https://posthog.com/docs)
 - [Next.js Integration Guide](https://posthog.com/docs/libraries/next-js)
 
 Handoff to @CTO for analytics architecture.
-```
+
+````
 
 ---
 
@@ -3048,23 +3222,28 @@ Handoff to @CTO for analytics architecture.
 - **Hybrid:** Track both sides for complete picture
 
 **2. Event Taxonomy**
-```
+````
+
 User Lifecycle Events:
+
 - user_signed_up
 - user_logged_in
 - subscription_started
 - subscription_cancelled
 
 Feature Usage Events:
+
 - dashboard_viewed
 - report_generated
 - export_downloaded
 
 Conversion Events:
+
 - checkout_started
 - payment_completed
 - onboarding_completed
-```
+
+````
 
 **3. User Properties**
 ```typescript
@@ -3077,21 +3256,24 @@ Conversion Events:
   mrr: number, // Monthly recurring revenue
   teamSize: number
 }
-```
+````
 
 **4. Privacy & GDPR**
+
 - Respect Do Not Track (DNT) headers
 - Allow users to opt out of tracking
 - Don't track PII without consent
 - Use PostHog's autocapture sparingly (disable for sensitive pages)
 
 **5. Performance**
+
 - Load PostHog async (don't block page load)
 - Batch events (reduce network requests)
 - Use capture buffering for high-volume events
 
 Architecture approved. Handoff to @Backend for server-side tracking.
-```
+
+````
 
 ---
 
@@ -3100,21 +3282,19 @@ Architecture approved. Handoff to @Backend for server-side tracking.
 **Step 1: Install PostHog Node SDK**
 ```bash
 npm install posthog-node
-```
+````
 
 **Step 2: Create PostHog client**
+
 ```typescript
 // lib/posthog.ts
 import { PostHog } from 'posthog-node';
 
-export const posthogServer = new PostHog(
-  process.env.POSTHOG_API_KEY!,
-  {
-    host: process.env.POSTHOG_HOST || 'https://app.posthog.com',
-    flushAt: 20, // Batch 20 events before sending
-    flushInterval: 10000 // Or flush every 10 seconds
-  }
-);
+export const posthogServer = new PostHog(process.env.POSTHOG_API_KEY!, {
+  host: process.env.POSTHOG_HOST || 'https://app.posthog.com',
+  flushAt: 20, // Batch 20 events before sending
+  flushInterval: 10000, // Or flush every 10 seconds
+});
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
@@ -3123,6 +3303,7 @@ process.on('SIGTERM', async () => {
 ```
 
 **Step 3: Track backend events**
+
 ```typescript
 // app/api/auth/signup/route.ts
 import { posthogServer } from '@/lib/posthog';
@@ -3144,9 +3325,9 @@ export async function POST(request: Request) {
       $set: {
         email: user.email,
         name: user.name,
-        signupDate: new Date().toISOString()
-      }
-    }
+        signupDate: new Date().toISOString(),
+      },
+    },
   });
 
   return Response.json({ user });
@@ -3154,6 +3335,7 @@ export async function POST(request: Request) {
 ```
 
 **Step 4: Track subscription events**
+
 ```typescript
 // lib/stripe-webhook-handler.ts
 import { posthogServer } from '@/lib/posthog';
@@ -3172,9 +3354,9 @@ export async function handleSubscriptionCreated(subscription: any) {
       interval: subscription.items.data[0].price.recurring.interval,
       $set: {
         plan: subscription.items.data[0].price.nickname,
-        mrr: subscription.items.data[0].price.unit_amount / 100
-      }
-    }
+        mrr: subscription.items.data[0].price.unit_amount / 100,
+      },
+    },
   });
 
   // Update user properties
@@ -3183,13 +3365,14 @@ export async function handleSubscriptionCreated(subscription: any) {
     properties: {
       plan: subscription.items.data[0].price.nickname,
       mrr: subscription.items.data[0].price.unit_amount / 100,
-      subscriptionStatus: 'active'
-    }
+      subscriptionStatus: 'active',
+    },
   });
 }
 ```
 
 **Step 5: Create analytics utility functions**
+
 ```typescript
 // lib/analytics.ts
 import { posthogServer } from './posthog';
@@ -3204,24 +3387,20 @@ export async function trackFeatureUsage(
     event: `feature_used_${feature}`,
     properties: {
       feature,
-      ...metadata
-    }
+      ...metadata,
+    },
   });
 }
 
-export async function trackApiCall(
-  userId: string,
-  endpoint: string,
-  duration: number
-) {
+export async function trackApiCall(userId: string, endpoint: string, duration: number) {
   posthogServer.capture({
     distinctId: userId,
     event: 'api_call',
     properties: {
       endpoint,
       duration,
-      timestamp: new Date().toISOString()
-    }
+      timestamp: new Date().toISOString(),
+    },
   });
 }
 
@@ -3236,11 +3415,13 @@ Handoff to @Frontend for client-side tracking.
 ### @Frontend: Client-Side PostHog Setup
 
 **Step 1: Install PostHog React SDK**
+
 ```bash
 npm install posthog-js posthog-react
 ```
 
 **Step 2: Create PostHog provider**
+
 ```tsx
 // app/providers.tsx
 'use client';
@@ -3258,7 +3439,7 @@ if (typeof window !== 'undefined') {
       if (process.env.NODE_ENV === 'development') {
         posthog.debug();
       }
-    }
+    },
   });
 }
 
@@ -3275,6 +3456,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 ```
 
 **Step 3: Wrap app with provider**
+
 ```tsx
 // app/layout.tsx
 import { PostHogProvider } from './providers';
@@ -3283,9 +3465,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <PostHogProvider>
-          {children}
-        </PostHogProvider>
+        <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>
   );
@@ -3293,6 +3473,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 **Step 4: Track user identification**
+
 ```tsx
 // app/dashboard/page.tsx
 'use client';
@@ -3309,7 +3490,7 @@ export default function Dashboard({ user }: { user: User }) {
         email: user.email,
         name: user.name,
         plan: user.plan,
-        signupDate: user.createdAt
+        signupDate: user.createdAt,
       });
     }
   }, [user, posthog]);
@@ -3319,6 +3500,7 @@ export default function Dashboard({ user }: { user: User }) {
 ```
 
 **Step 5: Track button clicks and events**
+
 ```tsx
 // components/UpgradeButton.tsx
 'use client';
@@ -3330,22 +3512,19 @@ export function UpgradeButton() {
   const handleClick = () => {
     posthog.capture('upgrade_button_clicked', {
       location: 'pricing_page',
-      currentPlan: 'free'
+      currentPlan: 'free',
     });
 
     // Navigate to checkout
     window.location.href = '/checkout';
   };
 
-  return (
-    <button onClick={handleClick}>
-      Upgrade to Pro
-    </button>
-  );
+  return <button onClick={handleClick}>Upgrade to Pro</button>;
 }
 ```
 
 **Step 6: Track page views with Next.js App Router**
+
 ```tsx
 // app/components/PageViewTracker.tsx
 'use client';
@@ -3366,7 +3545,7 @@ export function PageViewTracker() {
       }
 
       posthog.capture('$pageview', {
-        $current_url: url
+        $current_url: url,
       });
     }
   }, [pathname, searchParams, posthog]);
@@ -3375,7 +3554,7 @@ export function PageViewTracker() {
 }
 
 // Add to layout.tsx
-<PageViewTracker />
+<PageViewTracker />;
 ```
 
 Handoff to @DevOps for deployment and dashboard setup.
@@ -3385,6 +3564,7 @@ Handoff to @DevOps for deployment and dashboard setup.
 ### @DevOps: PostHog Deployment & Dashboard
 
 **Step 1: Set environment variables**
+
 ```bash
 # In Vercel/Railway dashboard
 POSTHOG_API_KEY=phc_xxxxxxxxxxxxxxxx
@@ -3395,6 +3575,7 @@ NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
 ```
 
 **Step 2: Test event tracking**
+
 ```bash
 # In browser console (after deployment)
 posthog.capture('test_event', {
@@ -3407,6 +3588,7 @@ posthog.capture('test_event', {
 ```
 
 **Step 3: Create conversion funnel**
+
 ```
 In PostHog Dashboard:
 1. Go to Insights → New Insight → Funnel
@@ -3423,6 +3605,7 @@ Expected output:
 ```
 
 **Step 4: Set up user retention cohorts**
+
 ```
 In PostHog Dashboard:
 1. Go to Persons → Cohorts → New Cohort
@@ -3434,6 +3617,7 @@ In PostHog Dashboard:
 ```
 
 **Step 5: Create dashboard**
+
 ```
 1. Go to Dashboards → New Dashboard
 2. Add tiles:
@@ -3450,6 +3634,7 @@ In PostHog Dashboard:
 ### Best Practices
 
 **1. Don't track everything:**
+
 ```typescript
 // Bad: Too noisy
 posthog.capture('mouse_moved');
@@ -3459,6 +3644,7 @@ posthog.capture('report_exported', { format: 'pdf' });
 ```
 
 **2. Use consistent naming:**
+
 ```typescript
 // Good: snake_case for events
 posthog.capture('user_signed_up');
@@ -3468,17 +3654,18 @@ posthog.capture('subscription_started');
 posthog.capture('purchase', {
   productId: '123',
   productName: 'Pro Plan',
-  amount: 29.99
+  amount: 29.99,
 });
 ```
 
 **3. Add context to events:**
+
 ```typescript
 posthog.capture('button_clicked', {
   buttonText: 'Upgrade Now',
   location: 'pricing_page',
   plan: 'free',
-  experimentVariant: 'new_design'
+  experimentVariant: 'new_design',
 });
 ```
 
@@ -3487,6 +3674,7 @@ posthog.capture('button_clicked', {
 ### Verify Setup
 
 **Check events are being tracked:**
+
 ```bash
 # In PostHog dashboard
 # Activity → Live Events
@@ -3509,15 +3697,19 @@ posthog.capture('button_clicked', {
 ## Common Patterns
 
 ### 1. Always Start with @Planner
+
 Break down complex features into discrete tasks before implementing.
 
 ### 2. Get Architecture Approval from @CTO
+
 Validate technical decisions before building.
 
 ### 3. Test at Each Step
+
 Every agent provides test commands to verify their work.
 
 ### 4. Document Decisions
+
 Record WHY choices were made, not just WHAT was built.
 
 ---
@@ -3525,10 +3717,11 @@ Record WHY choices were made, not just WHAT was built.
 ## Next Steps
 
 For more workflow examples, see:
+
 - [Project Orchestration Guide](./PROJECT-ORCHESTRATION.md)
 - [Database Decision Framework](./DATABASE-DECISION-FRAMEWORK.md)
 - [Architecture Patterns](./ARCHITECTURE-PATTERNS.md)
 
 ---
 
-*Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*
+_Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer_

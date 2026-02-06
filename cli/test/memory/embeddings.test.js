@@ -57,7 +57,7 @@ describe('Embeddings - Edge Cases', () => {
     assert.strictEqual(embedding.length, 128);
 
     // Empty string should produce zero vector
-    const allZeros = embedding.every(v => v === 0);
+    const allZeros = embedding.every((v) => v === 0);
     assert.ok(allZeros);
   });
 
@@ -65,7 +65,7 @@ describe('Embeddings - Edge Cases', () => {
     const embedding = embedText('   \t\n   ');
 
     assert.ok(Array.isArray(embedding));
-    const allZeros = embedding.every(v => v === 0);
+    const allZeros = embedding.every((v) => v === 0);
     assert.ok(allZeros);
   });
 
@@ -73,16 +73,12 @@ describe('Embeddings - Edge Cases', () => {
     const embedding = embedText(undefined);
 
     assert.ok(Array.isArray(embedding));
-    const allZeros = embedding.every(v => v === 0);
+    const allZeros = embedding.every((v) => v === 0);
     assert.ok(allZeros);
   });
 
   test('should throw error for null input', () => {
-    assert.throws(
-      () => embedText(null),
-      TypeError,
-      'Should throw TypeError when given null'
-    );
+    assert.throws(() => embedText(null), TypeError, 'Should throw TypeError when given null');
   });
 
   test('should handle single word', () => {
@@ -211,7 +207,7 @@ describe('Embeddings - Hash Distribution', () => {
     const embedding = embedText('multiple different words here');
 
     // Count non-zero dimensions
-    const nonZero = embedding.filter(v => v !== 0).length;
+    const nonZero = embedding.filter((v) => v !== 0).length;
 
     // Should have multiple non-zero dimensions
     assert.ok(nonZero > 0);
@@ -268,16 +264,10 @@ describe('Embeddings - Performance', () => {
   });
 
   test('should handle multiple embeddings efficiently', () => {
-    const texts = [
-      'first text',
-      'second text',
-      'third text',
-      'fourth text',
-      'fifth text'
-    ];
+    const texts = ['first text', 'second text', 'third text', 'fourth text', 'fifth text'];
 
     const start = Date.now();
-    texts.forEach(text => embedText(text));
+    texts.forEach((text) => embedText(text));
     const duration = Date.now() - start;
 
     // Should complete in under 50ms

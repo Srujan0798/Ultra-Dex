@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { loadOutcomes } from './learner.js';
 
 export async function evaluatePerformance() {
@@ -11,6 +13,6 @@ export async function evaluatePerformance() {
   return {
     total: outcomes.length,
     successRate: success / outcomes.length,
-    averageRating: avgRating
+    averageRating: avgRating,
   };
 }

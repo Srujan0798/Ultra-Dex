@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Parser Utility
  * Parses AI responses into structured output
@@ -14,13 +16,13 @@ export function extractProjectName(content) {
   if (projectMatch) {
     return projectMatch[1].trim();
   }
-  
+
   // Try to find product name in Section 1
   const productMatch = content.match(/Product Vision.*?:\s*(.+?)(?:\.|$)/im);
   if (productMatch) {
     return productMatch[1].trim().slice(0, 50);
   }
-  
+
   return 'My SaaS Project';
 }
 
@@ -35,12 +37,12 @@ export function extractSummary(content) {
   if (visionMatch) {
     return visionMatch[1].trim().slice(0, 200);
   }
-  
+
   const problemMatch = content.match(/### 1\.2 Problem Statement.*?\n(.+?)(?=\n###|\n##|$)/is);
   if (problemMatch) {
     return problemMatch[1].trim().slice(0, 200);
   }
-  
+
   return 'A SaaS application';
 }
 
@@ -58,18 +60,18 @@ export function extractTechStack(content) {
     payments: 'Stripe',
     hosting: 'Vercel',
   };
-  
+
   // Try to find tech stack section
   const stackSection = content.match(/## SECTION 15.*?(?=## SECTION 16|$)/is);
   if (!stackSection) return defaults;
-  
+
   const text = stackSection[0];
-  
+
   // Extract each layer
   const frontendMatch = text.match(/Frontend.*?:\s*(.+?)(?=\n|$)/i);
   const backendMatch = text.match(/Backend.*?:\s*(.+?)(?=\n|$)/i);
   const databaseMatch = text.match(/Database.*?:\s*(.+?)(?=\n|$)/i);
-  
+
   return {
     frontend: frontendMatch?.[1]?.trim() || defaults.frontend,
     backend: backendMatch?.[1]?.trim() || defaults.backend,
@@ -87,16 +89,16 @@ export function extractTechStack(content) {
  */
 export function validateCompleteness(content) {
   const missingSections = [];
-  
+
   for (let i = 1; i <= 34; i++) {
     const regex = new RegExp(`## SECTION ${i}:`, 'i');
     if (!regex.test(content)) {
       missingSections.push(i);
     }
   }
-  
+
   const percentage = Math.round(((34 - missingSections.length) / 34) * 100);
-  
+
   return {
     complete: missingSections.length === 0,
     missingSections,
@@ -111,17 +113,17 @@ export function validateCompleteness(content) {
  */
 export function splitIntoSections(content) {
   const sections = new Map();
-  
+
   for (let i = 1; i <= 34; i++) {
     const nextSection = i < 34 ? `## SECTION ${i + 1}:` : '═══════════════';
     const regex = new RegExp(`(## SECTION ${i}:.*?)(?=${nextSection}|$)`, 'is');
     const match = content.match(regex);
-    
+
     if (match) {
       sections.set(i, match[1].trim());
     }
   }
-  
+
   return sections;
 }
 

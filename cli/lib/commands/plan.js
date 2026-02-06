@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
@@ -25,7 +27,7 @@ export async function saveState(state) {
   try {
     await fs.mkdir(path.resolve(process.cwd(), '.ultra'), { recursive: true });
     await fs.writeFile(
-      path.resolve(process.cwd(), '.ultra/state.json'), 
+      path.resolve(process.cwd(), '.ultra/state.json'),
       JSON.stringify(state, null, 2)
     );
     return true;
@@ -39,7 +41,10 @@ export async function saveState(state) {
  */
 export async function parsePlanFromMarkdown() {
   try {
-    const content = await fs.readFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), 'utf8');
+    const content = await fs.readFile(
+      path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'),
+      'utf8'
+    );
     const phases = [];
     let currentPhase = null;
 
@@ -107,13 +112,13 @@ export async function parsePlanFromMarkdown() {
       }
     }
     if (currentPhase) phases.push(currentPhase);
-    
-    phases.forEach(phase => {
-        if (phase.steps.length === 0) return;
-        const allCompleted = phase.steps.every(s => s.status === 'completed');
-        const someCompleted = phase.steps.some(s => s.status === 'completed');
-        if (allCompleted) phase.status = 'completed';
-        else if (someCompleted) phase.status = 'in_progress';
+
+    phases.forEach((phase) => {
+      if (phase.steps.length === 0) return;
+      const allCompleted = phase.steps.every((s) => s.status === 'completed');
+      const someCompleted = phase.steps.some((s) => s.status === 'completed');
+      if (allCompleted) phase.status = 'completed';
+      else if (someCompleted) phase.status = 'in_progress';
     });
 
     return phases;
@@ -126,94 +131,97 @@ export async function parsePlanFromMarkdown() {
  * Calculate effort estimates
  */
 export function estimateDuration(baseHours, factors = {}) {
-    let multiplier = 1.0;
-    if (factors.testing !== false) multiplier += 0.25;
-    if (factors.codeReview !== false) multiplier += 0.10;
-    if (factors.contextSwitching) multiplier += 0.15;
-    if (factors.newTech) multiplier += 0.30;
-    if (factors.integration) multiplier += 0.20;
-    if (factors.uncertainty) multiplier += 0.20;
-    
-    return baseHours * multiplier;
+  let multiplier = 1.0;
+  if (factors.testing !== false) multiplier += 0.25;
+  if (factors.codeReview !== false) multiplier += 0.1;
+  if (factors.contextSwitching) multiplier += 0.15;
+  if (factors.newTech) multiplier += 0.3;
+  if (factors.integration) multiplier += 0.2;
+  if (factors.uncertainty) multiplier += 0.2;
+
+  return baseHours * multiplier;
 }
 
 /**
  * Render Gantt chart to console
  */
 export function generateGantt(phases) {
-    printInfo(chalk.bold.cyan('\n📊 Project Timeline (Gantt View)\n'));
-    
-    const width = 60;
-    printInfo(chalk.gray('Phase' + ' '.repeat(25) + 'Progress' + ' '.repeat(width - 8) + 'Status'));
-    printInfo(chalk.gray('─'.repeat(30 + width + 10)));
+  printInfo(chalk.bold.cyan('\n📊 Project Timeline (Gantt View)\n'));
 
-    phases.forEach((phase) => {
-        const completedSteps = phase.steps.filter(s => s.status === 'completed').length;
-        const totalSteps = phase.steps.length;
-        const percentage = totalSteps > 0 ? (completedSteps / totalSteps) : 0;
+  const width = 60;
+  printInfo(chalk.gray('Phase' + ' '.repeat(25) + 'Progress' + ' '.repeat(width - 8) + 'Status'));
+  printInfo(chalk.gray('─'.repeat(30 + width + 10)));
 
-        const barWidth = Math.floor(percentage * width);
-        let bar = '█'.repeat(barWidth) + '░'.repeat(width - barWidth);
+  phases.forEach((phase) => {
+    const completedSteps = phase.steps.filter((s) => s.status === 'completed').length;
+    const totalSteps = phase.steps.length;
+    const percentage = totalSteps > 0 ? completedSteps / totalSteps : 0;
 
-        // Mark milestones in the bar if any
-        phase.steps.forEach((step, idx) => {
-            if (step.isMilestone) {
-                const pos = Math.floor((idx / totalSteps) * width);
-                const char = step.status === 'completed' ? '⭐' : '☆';
-                // Replace characters in the bar - handle emoji width (2 chars usually)
-                // This is a bit tricky with ASCII bars, let's just append an icon instead or use a different symbol
-            }
-        });
+    const barWidth = Math.floor(percentage * width);
+    let bar = '█'.repeat(barWidth) + '░'.repeat(width - barWidth);
 
-        const color = percentage === 1 ? chalk.green : percentage > 0 ? chalk.yellow : chalk.gray;
-        const status = percentage === 1 ? 'DONE' : percentage > 0 ? 'WIP ' : 'TODO';
-
-        let name = phase.name.length > 28 ? phase.name.substring(0, 25) + '...' : phase.name;
-        name = name.padEnd(30);
-
-        const hasMilestone = phase.steps.some(s => s.isMilestone);
-        const milestoneIcon = hasMilestone ? chalk.magenta(' ✦') : '';
-
-        printInfo(`${name}${milestoneIcon.padEnd(hasMilestone ? 3 : 0)} ${color(bar)} ${color(status)} (${Math.round(percentage * 100)}%)`);
+    // Mark milestones in the bar if any
+    phase.steps.forEach((step, idx) => {
+      if (step.isMilestone) {
+        const pos = Math.floor((idx / totalSteps) * width);
+        const char = step.status === 'completed' ? '⭐' : '☆';
+        // Replace characters in the bar - handle emoji width (2 chars usually)
+        // This is a bit tricky with ASCII bars, let's just append an icon instead or use a different symbol
+      }
     });
-    printInfo('');
+
+    const color = percentage === 1 ? chalk.green : percentage > 0 ? chalk.yellow : chalk.gray;
+    const status = percentage === 1 ? 'DONE' : percentage > 0 ? 'WIP ' : 'TODO';
+
+    let name = phase.name.length > 28 ? phase.name.substring(0, 25) + '...' : phase.name;
+    name = name.padEnd(30);
+
+    const hasMilestone = phase.steps.some((s) => s.isMilestone);
+    const milestoneIcon = hasMilestone ? chalk.magenta(' ✦') : '';
+
+    printInfo(
+      `${name}${milestoneIcon.padEnd(hasMilestone ? 3 : 0)} ${color(bar)} ${color(status)} (${Math.round(percentage * 100)}%)`
+    );
+  });
+  printInfo('');
 }
 
 /**
  * Render milestone timeline to console
  */
 export function generateTimeline(phases) {
-    printInfo(chalk.bold.cyan('\n📅 Milestone Timeline\n'));
-    
-    phases.forEach((phase, index) => {
-        const completedSteps = phase.steps.filter(s => s.status === 'completed').length;
-        const totalSteps = phase.steps.length;
-        if (totalSteps === 0) return;
+  printInfo(chalk.bold.cyan('\n📅 Milestone Timeline\n'));
 
-        const isLast = index === phases.length - 1;
-        const symbol = phase.status === 'completed' ? '🟢' : phase.status === 'in_progress' ? '🟡' : '⚪';
-        const connector = isLast ? '   ' : ' │ ';
+  phases.forEach((phase, index) => {
+    const completedSteps = phase.steps.filter((s) => s.status === 'completed').length;
+    const totalSteps = phase.steps.length;
+    if (totalSteps === 0) return;
 
-        printInfo(`${symbol} ${chalk.bold(phase.name)}`);
+    const isLast = index === phases.length - 1;
+    const symbol =
+      phase.status === 'completed' ? '🟢' : phase.status === 'in_progress' ? '🟡' : '⚪';
+    const connector = isLast ? '   ' : ' │ ';
 
-        // List specific milestones in this phase
-        phase.steps.forEach(step => {
-            if (step.isMilestone) {
-                const mSymbol = step.status === 'completed' ? chalk.magenta('✦') : chalk.gray('✧');
-                printInfo(`${connector}   ${mSymbol} ${chalk.bold(step.task)}`);
-            }
-        });
+    printInfo(`${symbol} ${chalk.bold(phase.name)}`);
 
-        printInfo(`${connector} ${chalk.gray(`${completedSteps}/${totalSteps} tasks completed`)}`);
-
-        if (phase.status === 'in_progress') {
-            const nextTask = phase.steps.find(s => s.status === 'pending');
-            if (nextTask) {
-                printInfo(`${connector} 👉 Next: ${chalk.cyan(nextTask.task)}`);
-            }
-        }
-        printInfo(connector);
+    // List specific milestones in this phase
+    phase.steps.forEach((step) => {
+      if (step.isMilestone) {
+        const mSymbol = step.status === 'completed' ? chalk.magenta('✦') : chalk.gray('✧');
+        printInfo(`${connector}   ${mSymbol} ${chalk.bold(step.task)}`);
+      }
     });
+
+    printInfo(`${connector} ${chalk.gray(`${completedSteps}/${totalSteps} tasks completed`)}`);
+
+    if (phase.status === 'in_progress') {
+      const nextTask = phase.steps.find((s) => s.status === 'pending');
+      if (nextTask) {
+        printInfo(`${connector} 👉 Next: ${chalk.cyan(nextTask.task)}`);
+      }
+    }
+    printInfo(connector);
+  });
 }
 
 export function generateMarkdown(state) {
@@ -226,26 +234,27 @@ export function generateMarkdown(state) {
   md += `## 🚀 Execution Phases\n\n`;
 
   if (phases) {
-    phases.forEach(phase => {
-        const statusIcon = phase.status === 'completed' ? '✅' : phase.status === 'in_progress' ? '🔄' : '⏳';
-        md += `### ${statusIcon} ${phase.name}\n\n`;
-        
-        if (phase.steps && phase.steps.length > 0) {
-        phase.steps.forEach(step => {
-            const stepIcon = step.status === 'completed' ? '- [x]' : '- [ ]';
-            const milestoneMarker = step.isMilestone ? ' 🚩' : '';
-            md += `${stepIcon} **${step.id || ''}**: ${step.task}${milestoneMarker}\n`;
+    phases.forEach((phase) => {
+      const statusIcon =
+        phase.status === 'completed' ? '✅' : phase.status === 'in_progress' ? '🔄' : '⏳';
+      md += `### ${statusIcon} ${phase.name}\n\n`;
+
+      if (phase.steps && phase.steps.length > 0) {
+        phase.steps.forEach((step) => {
+          const stepIcon = step.status === 'completed' ? '- [x]' : '- [ ]';
+          const milestoneMarker = step.isMilestone ? ' 🚩' : '';
+          md += `${stepIcon} **${step.id || ''}**: ${step.task}${milestoneMarker}\n`;
         });
-        } else {
+      } else {
         md += `_No steps defined for this phase._\n`;
-        }
-        md += `\n`;
+      }
+      md += `\n`;
     });
   }
 
   md += `## 🤖 Agent Registry\n\n`;
   if (state.agents && state.agents.registry) {
-    state.agents.registry.forEach(agent => {
+    state.agents.registry.forEach((agent) => {
       const active = state.agents.active?.includes(agent) ? '(Active)' : '';
       md += `- ${agent} ${active}\n`;
     });
@@ -273,38 +282,39 @@ export function registerPlanCommand(program) {
     .action(async (options) => {
       try {
         let state = await loadState();
-        
+
         if (!state || !state.phases) {
-            const phases = await parsePlanFromMarkdown();
-            if (phases.length > 0) {
-                if (!state) state = { project: { name: 'Current Project' } };
-                state.phases = phases;
-            }
+          const phases = await parsePlanFromMarkdown();
+          if (phases.length > 0) {
+            if (!state) state = { project: { name: 'Current Project' } };
+            state.phases = phases;
+          }
         }
 
         if (!state || !state.phases) {
-            throw new ValidationError('No project plan found. Initialize your project with "ultra-dex init".');
+          throw new ValidationError(
+            'No project plan found. Initialize your project with "ultra-dex init".'
+          );
         }
 
         if (options.milestone) {
-            return await handleMilestone(state, options.milestone);
+          return await handleMilestone(state, options.milestone);
         }
 
         if (options.milestones) {
-            return displayMilestones(state);
+          return displayMilestones(state);
         }
 
         if (options.estimate) {
-            return displayEstimates(state);
+          return displayEstimates(state);
         }
 
         if (options.timeline) {
-            return generateTimeline(state.phases);
+          return generateTimeline(state.phases);
         }
 
         // Default: Show Gantt
         generateGantt(state.phases);
-
       } catch (error) {
         await handleError(error, { command: 'plan', options });
         process.exit(error.exitCode || 1);
@@ -313,62 +323,66 @@ export function registerPlanCommand(program) {
 }
 
 function displayMilestones(state) {
-    printInfo(chalk.bold.magenta('\n✦ Project Milestones\n'));
-    let found = false;
-    state.phases.forEach(phase => {
-        const milestones = phase.steps.filter(s => s.isMilestone);
-        if (milestones.length > 0) {
-            found = true;
-            printInfo(chalk.bold(`  ${phase.name}`));
-            milestones.forEach(m => {
-                const icon = m.status === 'completed' ? chalk.green('✅') : chalk.gray('⚪');
-                printInfo(`    ${icon} ${m.task}`);
-            });
-            printInfo('');
-        }
-    });
-
-    if (!found) {
-        printWarning('  No milestones defined. Use --milestone <taskName> to mark one.');
+  printInfo(chalk.bold.magenta('\n✦ Project Milestones\n'));
+  let found = false;
+  state.phases.forEach((phase) => {
+    const milestones = phase.steps.filter((s) => s.isMilestone);
+    if (milestones.length > 0) {
+      found = true;
+      printInfo(chalk.bold(`  ${phase.name}`));
+      milestones.forEach((m) => {
+        const icon = m.status === 'completed' ? chalk.green('✅') : chalk.gray('⚪');
+        printInfo(`    ${icon} ${m.task}`);
+      });
+      printInfo('');
     }
+  });
+
+  if (!found) {
+    printWarning('  No milestones defined. Use --milestone <taskName> to mark one.');
+  }
 }
 
 async function handleMilestone(state, milestoneId) {
-    let found = false;
-    state.phases.forEach(p => {
-        p.steps.forEach(s => {
-            if (s.id === milestoneId || s.task.includes(milestoneId)) {
-                s.isMilestone = true;
-                found = true;
-            }
-        });
+  let found = false;
+  state.phases.forEach((p) => {
+    p.steps.forEach((s) => {
+      if (s.id === milestoneId || s.task.includes(milestoneId)) {
+        s.isMilestone = true;
+        found = true;
+      }
     });
+  });
 
-    if (found) {
-        await saveState(state);
-        printSuccess(`✅ Step "${milestoneId}" marked as milestone.`);
-    } else {
-        throw new ValidationError(`Step "${milestoneId}" not found in any phase.`);
-    }
+  if (found) {
+    await saveState(state);
+    printSuccess(`✅ Step "${milestoneId}" marked as milestone.`);
+  } else {
+    throw new ValidationError(`Step "${milestoneId}" not found in any phase.`);
+  }
 }
 
 function displayEstimates(state) {
-    printInfo(chalk.bold.cyan('\n🕒 Effort Estimates (Ultra-Dex Methodology)\n'));
-    let totalBase = 0;
-    let totalActual = 0;
+  printInfo(chalk.bold.cyan('\n🕒 Effort Estimates (Ultra-Dex Methodology)\n'));
+  let totalBase = 0;
+  let totalActual = 0;
 
-    state.phases.forEach(phase => {
-        const baseHours = phase.steps.length * 6;
-        const actualHours = estimateDuration(baseHours, {
-            uncertainty: phase.status === 'pending',
-            newTech: phase.name.toLowerCase().includes('ai')
-        });
-
-        totalBase += baseHours;
-        totalActual += actualHours;
-        printInfo(`  ${chalk.bold(phase.name.padEnd(30))} ${chalk.gray(baseHours + 'h base')} → ${chalk.yellow(actualHours.toFixed(1) + 'h actual')}`);
+  state.phases.forEach((phase) => {
+    const baseHours = phase.steps.length * 6;
+    const actualHours = estimateDuration(baseHours, {
+      uncertainty: phase.status === 'pending',
+      newTech: phase.name.toLowerCase().includes('ai'),
     });
 
-    printInfo(chalk.gray('  ' + '─'.repeat(50)));
-    printInfo(`  ${chalk.bold('TOTAL PROJECT EFFORT'.padEnd(30))} ${chalk.gray(totalBase + 'h base')} → ${chalk.green(totalActual.toFixed(1) + 'h actual')}\n`);
+    totalBase += baseHours;
+    totalActual += actualHours;
+    printInfo(
+      `  ${chalk.bold(phase.name.padEnd(30))} ${chalk.gray(baseHours + 'h base')} → ${chalk.yellow(actualHours.toFixed(1) + 'h actual')}`
+    );
+  });
+
+  printInfo(chalk.gray('  ' + '─'.repeat(50)));
+  printInfo(
+    `  ${chalk.bold('TOTAL PROJECT EFFORT'.padEnd(30))} ${chalk.gray(totalBase + 'h base')} → ${chalk.green(totalActual.toFixed(1) + 'h actual')}\n`
+  );
 }

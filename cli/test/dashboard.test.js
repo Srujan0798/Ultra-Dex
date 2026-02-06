@@ -42,7 +42,7 @@ describe('Dashboard Command', () => {
   describe('Dashboard HTML Generation', () => {
     test('generateDashboardHTML creates valid HTML', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test Project' },
         phases: [
@@ -51,26 +51,26 @@ describe('Dashboard Command', () => {
             status: 'in_progress',
             steps: [
               { task: 'Step 1', status: 'completed' },
-              { task: 'Step 2', status: 'pending' }
-            ]
-          }
+              { task: 'Step 2', status: 'pending' },
+            ],
+          },
         ],
-        agents: { registry: ['backend', 'frontend'] }
+        agents: { registry: ['backend', 'frontend'] },
       };
-      
+
       const mockGitInfo = {
         branch: 'main',
         lastCommit: 'abc123 Initial commit',
-        changedFiles: 0
+        changedFiles: 0,
       };
-      
+
       const mockGraphSummary = {
         nodeCount: 10,
-        edges: 25
+        edges: 25,
       };
-      
+
       const html = generateDashboardHTML(mockState, mockGitInfo, mockGraphSummary);
-      
+
       assert.ok(html.includes('<!DOCTYPE html>'), 'Should be valid HTML5');
       assert.ok(html.includes('<html'), 'Should have html tag');
       assert.ok(html.includes('</html>'), 'Should close html tag');
@@ -79,90 +79,89 @@ describe('Dashboard Command', () => {
 
     test('HTML includes phase cards', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test' },
-        phases: [
-          { name: 'Setup', status: 'completed', steps: [] }
-        ],
-        agents: { registry: [] }
+        phases: [{ name: 'Setup', status: 'completed', steps: [] }],
+        agents: { registry: [] },
       };
-      
+
       const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-      
+
       assert.ok(html.includes('phase-card'), 'Should have phase cards');
       assert.ok(html.includes('Setup'), 'Should include phase name');
     });
 
     test('HTML includes agent cards', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test' },
         phases: [],
-        agents: { registry: ['backend', 'frontend'] }
+        agents: { registry: ['backend', 'frontend'] },
       };
-      
+
       const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-      
+
       assert.ok(html.includes('agent-card'), 'Should have agent cards');
       assert.ok(html.includes('@backend'), 'Should include backend agent');
     });
 
     test('HTML includes alignment score', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test' },
         phases: [
           {
             name: 'Phase 1',
             status: 'completed',
-            steps: [
-              { status: 'completed' },
-              { status: 'completed' }
-            ]
-          }
+            steps: [{ status: 'completed' }, { status: 'completed' }],
+          },
         ],
-        agents: { registry: [] }
+        agents: { registry: [] },
       };
-      
+
       const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-      
+
       assert.ok(html.includes('100%') || html.includes('%'), 'Should show progress percentage');
     });
 
     test('HTML includes git information', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test' },
         phases: [],
-        agents: { registry: [] }
+        agents: { registry: [] },
       };
-      
+
       const mockGitInfo = {
         branch: 'feature-branch',
         lastCommit: 'xyz789 Test commit',
-        changedFiles: 3
+        changedFiles: 3,
       };
-      
+
       const html = generateDashboardHTML(mockState, mockGitInfo, { nodeCount: 5 });
-      
+
       assert.ok(html.includes('feature-branch'), 'Should include branch name');
     });
 
     test('HTML includes graph statistics', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test' },
         phases: [],
-        agents: { registry: [] }
+        agents: { registry: [] },
       };
-      
-      const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 42, edges: 100 });
-      
+
+      const html = generateDashboardHTML(
+        mockState,
+        { branch: 'main' },
+        { nodeCount: 42, edges: 100 }
+      );
+
       assert.ok(html.includes('42') || html.includes('100'), 'Should include graph stats');
     });
   });
@@ -170,52 +169,57 @@ describe('Dashboard Command', () => {
   describe('Command Registration', () => {
     test('registers dashboard command', async () => {
       const { registerDashboardCommand } = await import('../lib/commands/dashboard.js');
-      
+
       const mockProgram = {
-        command: function(name) {
+        command: function (name) {
           this.commandName = name;
           return this;
         },
-        description: function(desc) {
+        description: function (desc) {
           this.commandDescription = desc;
           return this;
         },
-        option: function(flags, description, defaultValue) {
+        option: function (flags, description, defaultValue) {
           if (!this.options) this.options = [];
           this.options.push({ flags, description, defaultValue });
           return this;
         },
-        action: function(fn) {
+        action: function (fn) {
           this.actionFn = fn;
           return this;
-        }
+        },
       };
 
       registerDashboardCommand(mockProgram);
-      
+
       assert.strictEqual(mockProgram.commandName, 'dashboard');
-      assert.ok(mockProgram.commandDescription.includes('Dashboard') || mockProgram.commandDescription.includes('God Mode'));
+      assert.ok(
+        mockProgram.commandDescription.includes('Dashboard') ||
+          mockProgram.commandDescription.includes('God Mode')
+      );
       assert.ok(mockProgram.options.length >= 1);
       assert.strictEqual(typeof mockProgram.actionFn, 'function');
     });
 
     test('dashboard command has port option', async () => {
       const { registerDashboardCommand } = await import('../lib/commands/dashboard.js');
-      
+
       const mockProgram = {
         command: () => mockProgram,
         description: () => mockProgram,
         options: [],
-        option: function(flags, description, defaultValue) {
+        option: function (flags, description, defaultValue) {
           this.options.push({ flags, description, defaultValue });
           return this;
         },
-        action: () => mockProgram
+        action: () => mockProgram,
       };
 
       registerDashboardCommand(mockProgram);
-      
-      const portOption = mockProgram.options.find(o => o.flags.includes('--port') || o.flags.includes('-p'));
+
+      const portOption = mockProgram.options.find(
+        (o) => o.flags.includes('--port') || o.flags.includes('-p')
+      );
       assert.ok(portOption, 'Should have port option');
     });
   });
@@ -245,43 +249,43 @@ describe('Dashboard Command', () => {
   describe('Agent Controls', () => {
     test('agent run buttons exist', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test' },
         phases: [],
-        agents: { registry: ['backend'] }
+        agents: { registry: ['backend'] },
       };
-      
+
       const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-      
+
       assert.ok(html.includes('runAgent'), 'Should have run agent button/function');
     });
 
     test('agent stop buttons exist', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test' },
         phases: [],
-        agents: { registry: ['backend'] }
+        agents: { registry: ['backend'] },
       };
-      
+
       const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-      
+
       assert.ok(html.includes('stopAgent'), 'Should have stop agent button/function');
     });
 
     test('agent logs buttons exist', async () => {
       const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-      
+
       const mockState = {
         project: { name: 'Test' },
         phases: [],
-        agents: { registry: ['backend'] }
+        agents: { registry: ['backend'] },
       };
-      
+
       const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-      
+
       assert.ok(html.includes('viewAgentLogs'), 'Should have view logs button/function');
     });
   });
@@ -315,9 +319,9 @@ describe('Dashboard Command', () => {
       const fallback = {
         branch: 'unknown',
         lastCommit: 'N/A',
-        changedFiles: 0
+        changedFiles: 0,
       };
-      
+
       assert.strictEqual(fallback.branch, 'unknown');
     });
   });
@@ -325,7 +329,7 @@ describe('Dashboard Command', () => {
   describe('Integration', () => {
     test('dashboard module loads all components', async () => {
       const dashboardModule = await import('../lib/commands/dashboard.js');
-      
+
       assert.ok(dashboardModule.registerDashboardCommand);
       assert.ok(dashboardModule.generateDashboardHTML);
     });

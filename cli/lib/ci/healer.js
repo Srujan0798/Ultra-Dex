@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { detectFailureType, suggestStrategy } from './strategies.js';
 
 export class CiHealer {

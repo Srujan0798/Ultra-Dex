@@ -55,7 +55,8 @@
     "onView:ultra-dex.agentExplorer",
     "onView:ultra-dex.quickActions",
     "onView:ultra-dex.swarmStatus",
-    "onView:ultra-dex.contextPreview"
+    "onView:ultra-dex.contextPreview",
+    "onView:ultra-dex.sidebar"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -85,6 +86,10 @@
         {
           "id": "ultra-dex.quickActions",
           "name": "Quick Actions"
+        },
+        {
+          "id": "ultra-dex.sidebar",
+          "name": "Agent Sidebar"
         }
       ]
     },
@@ -212,7 +217,11 @@
         "ultra-dex.defaultProvider": {
           "type": "string",
           "default": "anthropic",
-          "enum": ["anthropic", "openai", "google"],
+          "enum": [
+            "anthropic",
+            "openai",
+            "google"
+          ],
           "description": "Default AI provider for agents"
         },
         "ultra-dex.kernelPort": {

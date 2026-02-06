@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * JSONL storage helpers for analytics events.
  */
@@ -17,7 +19,7 @@ export async function readJsonl(filePath, { since, limit } = {}) {
     let events = data
       .split('\n')
       .filter(Boolean)
-      .map(line => {
+      .map((line) => {
         try {
           return JSON.parse(line);
         } catch {
@@ -29,7 +31,9 @@ export async function readJsonl(filePath, { since, limit } = {}) {
     if (since) {
       const sinceTs = new Date(since).getTime();
       if (!Number.isNaN(sinceTs)) {
-        events = events.filter(event => new Date(event.timestamp || event.receivedAt).getTime() >= sinceTs);
+        events = events.filter(
+          (event) => new Date(event.timestamp || event.receivedAt).getTime() >= sinceTs
+        );
       }
     }
 

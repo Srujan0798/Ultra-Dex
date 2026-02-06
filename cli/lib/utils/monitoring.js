@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Monitoring and Observability System
  * Provides comprehensive logging, metrics, and health monitoring
@@ -16,7 +18,7 @@ const MONITORING_CONFIG = {
   metricsEnabled: process.env.METRICS_ENABLED !== 'false',
   healthCheckInterval: parseInt(process.env.HEALTH_CHECK_INTERVAL) || 30000, // 30 seconds
   maxLogSize: process.env.MAX_LOG_SIZE || '20m',
-  maxLogFiles: parseInt(process.env.MAX_LOG_FILES) || 5
+  maxLogFiles: parseInt(process.env.MAX_LOG_FILES) || 5,
 };
 
 // Metrics storage
@@ -27,7 +29,7 @@ class MetricsCollector {
       errors: 0,
       performance: [],
       agents: {},
-      operations: {}
+      operations: {},
     };
     this.startTime = Date.now();
   }
@@ -45,7 +47,7 @@ class MetricsCollector {
       operation,
       duration,
       timestamp: Date.now(),
-      metadata
+      metadata,
     });
 
     // Keep only last 1000 performance records
@@ -61,13 +63,13 @@ class MetricsCollector {
         successful: 0,
         failed: 0,
         avgDuration: 0,
-        durations: []
+        durations: [],
       };
     }
 
     const agentStats = this.metrics.agents[agentName];
     agentStats.total++;
-    
+
     if (success) {
       agentStats.successful++;
     } else {
@@ -79,13 +81,14 @@ class MetricsCollector {
     if (agentStats.durations.length > 100) {
       agentStats.durations = agentStats.durations.slice(-100); // Keep last 100
     }
-    
-    agentStats.avgDuration = agentStats.durations.reduce((a, b) => a + b, 0) / agentStats.durations.length;
+
+    agentStats.avgDuration =
+      agentStats.durations.reduce((a, b) => a + b, 0) / agentStats.durations.length;
   }
 
   getMetrics() {
     const uptime = Date.now() - this.startTime;
-    
+
     return {
       ...this.metrics,
       uptime,
@@ -96,8 +99,8 @@ class MetricsCollector {
         totalMemory: os.totalmem(),
         freeMemory: os.freemem(),
         loadAverage: os.loadavg(),
-        cpuCount: os.cpus().length
-      }
+        cpuCount: os.cpus().length,
+      },
     };
   }
 
@@ -107,7 +110,7 @@ class MetricsCollector {
       errors: 0,
       performance: [],
       agents: {},
-      operations: {}
+      operations: {},
     };
     this.startTime = Date.now();
   }
@@ -127,7 +130,7 @@ class HealthChecker {
       interval,
       lastRun: null,
       status: 'unknown',
-      message: 'Not checked yet'
+      message: 'Not checked yet',
     });
   }
 
@@ -151,26 +154,26 @@ class HealthChecker {
 
     return {
       name,
-      ...check
+      ...check,
     };
   }
 
   async runAllChecks() {
     const results = [];
-    
+
     for (const [name] of this.healthChecks) {
       results.push(await this.runHealthCheck(name));
     }
 
     // Determine overall status
-    const unhealthyChecks = results.filter(r => r.status !== 'healthy');
+    const unhealthyChecks = results.filter((r) => r.status !== 'healthy');
     this.status = unhealthyChecks.length === 0 ? 'healthy' : 'degraded';
     this.lastCheck = new Date().toISOString();
 
     return {
       overallStatus: this.status,
       checks: results,
-      timestamp: this.lastCheck
+      timestamp: this.lastCheck,
     };
   }
 
@@ -178,7 +181,7 @@ class HealthChecker {
     return {
       status: this.status,
       lastCheck: this.lastCheck,
-      checks: Array.from(this.healthChecks.keys())
+      checks: Array.from(this.healthChecks.keys()),
     };
   }
 }
@@ -199,7 +202,7 @@ async function createLoggerInstance() {
   if (MONITORING_CONFIG.logLevel === 'silent') {
     return createLogger({
       silent: true,
-      transports: []
+      transports: [],
     });
   }
 
@@ -210,18 +213,15 @@ async function createLoggerInstance() {
     new transports.File({
       filename: MONITORING_CONFIG.logFile,
       maxSize: MONITORING_CONFIG.maxLogSize,
-      maxFiles: MONITORING_CONFIG.maxLogFiles
-    })
+      maxFiles: MONITORING_CONFIG.maxLogFiles,
+    }),
   ];
 
   // Add console transport only for debug mode
   if (MONITORING_CONFIG.logLevel === 'debug' || process.env.DEBUG) {
     logTransports.push(
       new transports.Console({
-        format: format.combine(
-          format.colorize(),
-          format.simple()
-        )
+        format: format.combine(format.colorize(), format.simple()),
       })
     );
   }
@@ -235,7 +235,7 @@ async function createLoggerInstance() {
       format.json()
     ),
     defaultMeta: { service: 'ultra-dex' },
-    transports: logTransports
+    transports: logTransports,
   });
 }
 
@@ -251,13 +251,13 @@ class MonitoringSystem {
 
   async initialize() {
     if (this.initialized) return;
-    
+
     this.logger = await createLoggerInstance();
     this.setupDefaultHealthChecks();
     this.initialized = true;
-    
+
     this.logger.info('Monitoring system initialized', {
-      config: MONITORING_CONFIG
+      config: MONITORING_CONFIG,
     });
   }
 
@@ -267,39 +267,39 @@ class MonitoringSystem {
       const start = performance.now();
       const memoryUsage = process.memoryUsage();
       const uptime = process.uptime();
-      
+
       const healthy = memoryUsage.heapUsed < memoryUsage.heapTotal * 0.8; // Less than 80% heap used
-      
+
       return {
         healthy,
         message: healthy ? 'System resources within limits' : 'High memory usage detected',
         responseTime: performance.now() - start,
         memory: memoryUsage,
-        uptime
+        uptime,
       };
     });
 
     // Disk space check
     this.healthChecker.registerCheck('disk', async () => {
       const start = performance.now();
-      
+
       try {
         // This is a simplified check - in a real system, you'd use a library like 'check-disk-space'
         const stats = { available: 1024 * 1024 * 1024, total: 1024 * 1024 * 1024 * 100 }; // 1GB available, 100GB total
         const healthy = stats.available > 100 * 1024 * 1024; // At least 100MB available
-        
+
         return {
           healthy,
           message: healthy ? 'Sufficient disk space available' : 'Low disk space',
           responseTime: performance.now() - start,
           available: stats.available,
-          total: stats.total
+          total: stats.total,
         };
       } catch (error) {
         return {
           healthy: false,
           message: `Disk check failed: ${error.message}`,
-          responseTime: performance.now() - start
+          responseTime: performance.now() - start,
         };
       }
     });
@@ -369,18 +369,20 @@ class MonitoringSystem {
 
     // Memory alert
     if (metrics.system) {
-      const usedMemPercent = ((metrics.system.totalMemory - metrics.system.freeMemory) / metrics.system.totalMemory) * 100;
+      const usedMemPercent =
+        ((metrics.system.totalMemory - metrics.system.freeMemory) / metrics.system.totalMemory) *
+        100;
       if (usedMemPercent > 90) {
         alerts.push({
           level: 'critical',
           type: 'memory',
-          message: `High memory usage: \${usedMemPercent.toFixed(1)}%`
+          message: `High memory usage: \${usedMemPercent.toFixed(1)}%`,
         });
       } else if (usedMemPercent > 80) {
         alerts.push({
           level: 'warning',
           type: 'memory',
-          message: `Elevated memory usage: \${usedMemPercent.toFixed(1)}%`
+          message: `Elevated memory usage: \${usedMemPercent.toFixed(1)}%`,
         });
       }
     }
@@ -390,17 +392,17 @@ class MonitoringSystem {
       alerts.push({
         level: 'critical',
         type: 'errors',
-        message: `High error count detected: \${metrics.errors} errors`
+        message: `High error count detected: \${metrics.errors} errors`,
       });
     }
 
     // Performance alert
-    const slowOps = metrics.performance.filter(p => p.duration > 5000);
+    const slowOps = metrics.performance.filter((p) => p.duration > 5000);
     if (slowOps.length > 0) {
       alerts.push({
         level: 'warning',
         type: 'performance',
-        message: `\${slowOps.length} operations took longer than 5s`
+        message: `\${slowOps.length} operations took longer than 5s`,
       });
     }
 
@@ -444,7 +446,7 @@ class MonitoringSystem {
 
   async exportMetrics(format = 'json') {
     const metrics = this.getMetrics();
-    
+
     switch (format.toLowerCase()) {
       case 'json':
         return JSON.stringify(metrics, null, 2);

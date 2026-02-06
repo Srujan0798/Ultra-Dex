@@ -1,9 +1,12 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { fileURLToPath } from 'url';
+import { installTemplatePack, listRemoteTemplates } from '../templates/pack-manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,7 +40,7 @@ export function registerTemplateCommand(program) {
         }
         const answers = await inquirer.prompt([
           { type: 'list', name: 'template', message: 'Choose a template', choices: templates },
-          { type: 'input', name: 'dir', message: 'Target directory', default: options.dir }
+          { type: 'input', name: 'dir', message: 'Target directory', default: options.dir },
         ]);
         await copyTemplate(answers.template, path.resolve(answers.dir));
         printSuccess(chalk.green(`✅ Template ${answers.template} generated.`));
@@ -63,6 +66,37 @@ export function registerTemplateCommand(program) {
     .action(async () => {
       const templates = await listTemplates();
       templates.forEach((t) => printInfo(`- ${t}`));
+    });
+
+  cmd
+    .command('install <name>')
+    .description('Install a remote template pack')
+    .option('--registry <url>', 'Registry URL override')
+    .option('--dir <dir>', 'Target directory', 'templates')
+    .action(async (name, options) => {
+      try {
+        await installTemplatePack(name, {
+          registryUrl: options.registry,
+          targetDir: path.resolve(options.dir, name),
+        });
+      } catch (error) {
+        printError(chalk.red(`Template install failed: ${error.message}`));
+      }
+    });
+
+  cmd
+    .command('remote')
+    .description('List remote template packs')
+    .option('--registry <url>', 'Registry URL override')
+    .action(async (options) => {
+      const templates = await listRemoteTemplates({ registryUrl: options.registry });
+      if (!templates.length) {
+        printWarning(chalk.yellow('No remote templates found.'));
+        return;
+      }
+      templates.forEach((tpl) =>
+        printInfo(`- ${tpl.name || tpl.id}${tpl.description ? `: ${tpl.description}` : ''}`)
+      );
     });
 
   cmd

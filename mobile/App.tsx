@@ -1,12 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-const actions = [
-  'Run Swarm',
-  'Check Status',
-  'Deploy Build',
-  'View Logs'
-];
+const actions = ['Run Swarm', 'Check Status', 'Deploy Build', 'View Logs'];
 
 export default function App() {
   return (
@@ -46,48 +41,48 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0b0c10',
-    padding: 24
+    padding: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#e5e7eb'
+    color: '#e5e7eb',
   },
   subtitle: {
     marginTop: 8,
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   card: {
     marginTop: 20,
     padding: 16,
     borderRadius: 16,
-    backgroundColor: '#111827'
+    backgroundColor: '#111827',
   },
   sectionTitle: {
     color: '#e5e7eb',
     fontWeight: '600',
-    marginBottom: 10
+    marginBottom: 10,
   },
   body: {
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   button: {
     marginTop: 8,
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#8b5cf6'
+    backgroundColor: '#8b5cf6',
   },
   buttonText: {
     color: '#0b0c10',
-    fontWeight: '600'
+    fontWeight: '600',
   },
   secondaryButton: {
     marginTop: 12,
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#1f2937'
+    backgroundColor: '#1f2937',
   },
   secondaryText: {
-    color: '#e5e7eb'
-  }
+    color: '#e5e7eb',
+  },
 });

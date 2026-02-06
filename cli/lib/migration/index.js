@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * AI Code Migration
  * Framework upgrades, language migrations, dependency updates.
@@ -13,7 +15,11 @@ export async function detectFrameworkUpgrades(rootDir = process.cwd()) {
   const upgrades = [];
 
   if (packageJson.dependencies?.next && packageJson.dependencies.next.startsWith('14')) {
-    upgrades.push({ from: 'Next.js 14', to: 'Next.js 15', action: 'Run codemods and update config' });
+    upgrades.push({
+      from: 'Next.js 14',
+      to: 'Next.js 15',
+      action: 'Run codemods and update config',
+    });
   }
   if (packageJson.dependencies?.react && packageJson.dependencies.react.startsWith('18')) {
     upgrades.push({ from: 'React 18', to: 'React 19', action: 'Review breaking changes' });
@@ -26,7 +32,7 @@ export async function detectLanguageMigration(rootDir = process.cwd()) {
   const jsFiles = await glob('**/*.js', {
     cwd: rootDir,
     nodir: true,
-    ignore: ['**/node_modules/**', '**/.git/**', '**/.ultra-dex/**']
+    ignore: ['**/node_modules/**', '**/.git/**', '**/.ultra-dex/**'],
   });
 
   return jsFiles.length ? `Found ${jsFiles.length} JS files. Suggest JS → TS migration.` : null;
@@ -59,5 +65,5 @@ export default {
   detectFrameworkUpgrades,
   detectLanguageMigration,
   suggestDependencyUpdates,
-  planMigration
+  planMigration,
 };

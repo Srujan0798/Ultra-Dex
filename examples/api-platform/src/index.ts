@@ -21,10 +21,12 @@ const app: Application = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: config.cors.origins,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: config.cors.origins,
+    credentials: true,
+  })
+);
 app.use(compression());
 
 // Body parsing
@@ -56,8 +58,8 @@ app.use((req, res) => {
   res.status(404).json({
     error: {
       code: 'not_found',
-      message: `Cannot ${req.method} ${req.path}`
-    }
+      message: `Cannot ${req.method} ${req.path}`,
+    },
   });
 });
 

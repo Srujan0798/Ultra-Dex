@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Automated Task Execution Pipeline
@@ -15,27 +16,112 @@ import { printError, printInfo, printSuccess, printWarning } from '../utils/outp
 import { AppError, ValidationError } from '../utils/errors.js';
 
 const STEPS_21 = [
-  { id: 1, name: 'UNDERSTAND', description: 'Read and comprehend full requirement', time: '5-10 min' },
+  {
+    id: 1,
+    name: 'UNDERSTAND',
+    description: 'Read and comprehend full requirement',
+    time: '5-10 min',
+  },
   { id: 2, name: 'ASSUMPTIONS', description: 'List all assumptions explicitly', time: '3-5 min' },
-  { id: 3, name: 'ANALYZE', description: 'Map logic flow and data dependencies', time: '10-15 min' },
+  {
+    id: 3,
+    name: 'ANALYZE',
+    description: 'Map logic flow and data dependencies',
+    time: '10-15 min',
+  },
   { id: 4, name: 'DECOMPOSE', description: 'Break into atomic sub-steps', time: '5-10 min' },
-  { id: 5, name: 'PREPARE', description: 'Set up environment, configs, dependencies', time: '10-20 min' },
-  { id: 6, name: 'IMPLEMENT', description: 'Write clean, modular, maintainable code', time: '30-120 min' },
-  { id: 7, name: 'DOCUMENT', description: 'Add inline comments and follow naming conventions', time: '10-15 min' },
-  { id: 8, name: 'UNIT TEST', description: 'Write and run unit tests (Target: 80%+ coverage)', time: '20-30 min' },
+  {
+    id: 5,
+    name: 'PREPARE',
+    description: 'Set up environment, configs, dependencies',
+    time: '10-20 min',
+  },
+  {
+    id: 6,
+    name: 'IMPLEMENT',
+    description: 'Write clean, modular, maintainable code',
+    time: '30-120 min',
+  },
+  {
+    id: 7,
+    name: 'DOCUMENT',
+    description: 'Add inline comments and follow naming conventions',
+    time: '10-15 min',
+  },
+  {
+    id: 8,
+    name: 'UNIT TEST',
+    description: 'Write and run unit tests (Target: 80%+ coverage)',
+    time: '20-30 min',
+  },
   { id: 9, name: 'DEBUG', description: 'Identify and fix all issues', time: '15-45 min' },
-  { id: 10, name: 'INTEGRATE', description: 'Run integration tests with existing systems', time: '15-30 min' },
-  { id: 11, name: 'VALIDATE', description: 'Verify outputs match expected results', time: '10-15 min' },
-  { id: 12, name: 'UX CHECK', description: 'Ensure usability and WCAG 2.1 accessibility', time: '15-20 min' },
-  { id: 13, name: 'OPTIMIZE', description: 'Improve performance (Target: <3s load, <200ms response)', time: '20-40 min' },
-  { id: 14, name: 'SECURE', description: 'Check for security vulnerabilities (OWASP Top 10)', time: '15-25 min' },
-  { id: 15, name: 'REFACTOR', description: 'Improve code quality and maintainability', time: '15-30 min' },
-  { id: 16, name: 'ERROR HANDLE', description: 'Add comprehensive error handling', time: '15-20 min' },
-  { id: 17, name: 'DOCUMENT API', description: 'Document all functions, APIs, interfaces', time: '20-30 min' },
-  { id: 18, name: 'VERSION CONTROL', description: 'Commit with clear, descriptive message', time: '5 min' },
+  {
+    id: 10,
+    name: 'INTEGRATE',
+    description: 'Run integration tests with existing systems',
+    time: '15-30 min',
+  },
+  {
+    id: 11,
+    name: 'VALIDATE',
+    description: 'Verify outputs match expected results',
+    time: '10-15 min',
+  },
+  {
+    id: 12,
+    name: 'UX CHECK',
+    description: 'Ensure usability and WCAG 2.1 accessibility',
+    time: '15-20 min',
+  },
+  {
+    id: 13,
+    name: 'OPTIMIZE',
+    description: 'Improve performance (Target: <3s load, <200ms response)',
+    time: '20-40 min',
+  },
+  {
+    id: 14,
+    name: 'SECURE',
+    description: 'Check for security vulnerabilities (OWASP Top 10)',
+    time: '15-25 min',
+  },
+  {
+    id: 15,
+    name: 'REFACTOR',
+    description: 'Improve code quality and maintainability',
+    time: '15-30 min',
+  },
+  {
+    id: 16,
+    name: 'ERROR HANDLE',
+    description: 'Add comprehensive error handling',
+    time: '15-20 min',
+  },
+  {
+    id: 17,
+    name: 'DOCUMENT API',
+    description: 'Document all functions, APIs, interfaces',
+    time: '20-30 min',
+  },
+  {
+    id: 18,
+    name: 'VERSION CONTROL',
+    description: 'Commit with clear, descriptive message',
+    time: '5 min',
+  },
   { id: 19, name: 'BUILD', description: 'Compile/bundle and validate build', time: '5-15 min' },
-  { id: 20, name: 'DEPLOY READY', description: 'Prepare for deployment or final delivery', time: '10-20 min' },
-  { id: 21, name: 'FINAL VERIFY', description: 'Run complete end-to-end verification', time: '15-30 min' }
+  {
+    id: 20,
+    name: 'DEPLOY READY',
+    description: 'Prepare for deployment or final delivery',
+    time: '10-20 min',
+  },
+  {
+    id: 21,
+    name: 'FINAL VERIFY',
+    description: 'Run complete end-to-end verification',
+    time: '15-30 min',
+  },
 ];
 
 // Automated step executors
@@ -47,7 +133,7 @@ const stepExecutors = {
       taskLength: task.length,
       hasAcceptanceCriteria: task.includes('Acceptance Criteria'),
       hasDependencies: task.includes('Dependencies'),
-      estimatedComplexity: task.length > 5000 ? 'high' : task.length > 2000 ? 'medium' : 'low'
+      estimatedComplexity: task.length > 5000 ? 'high' : task.length > 2000 ? 'medium' : 'low',
     };
     return { passed: true, analysis };
   },
@@ -55,7 +141,7 @@ const stepExecutors = {
   // Step 5: PREPARE - Check dependencies
   async prepare(projectPath) {
     const checks = [];
-    
+
     // Check package.json exists
     try {
       await fs.access(path.join(projectPath, 'package.json'));
@@ -63,7 +149,7 @@ const stepExecutors = {
     } catch {
       checks.push({ name: 'package.json', status: 'fail', message: 'Missing package.json' });
     }
-    
+
     // Check node_modules
     try {
       await fs.access(path.join(projectPath, 'node_modules'));
@@ -71,7 +157,7 @@ const stepExecutors = {
     } catch {
       checks.push({ name: 'node_modules', status: 'warning', message: 'Run npm install' });
     }
-    
+
     // Check .env
     try {
       await fs.access(path.join(projectPath, '.env'));
@@ -79,36 +165,36 @@ const stepExecutors = {
     } catch {
       checks.push({ name: '.env', status: 'warning', message: 'Missing environment variables' });
     }
-    
-    return { 
-      passed: checks.every(c => c.status !== 'fail'),
-      checks
+
+    return {
+      passed: checks.every((c) => c.status !== 'fail'),
+      checks,
     };
   },
 
   // Step 8: UNIT TEST - Run tests
   async unitTest(projectPath) {
     try {
-      const result = execSync('npm test 2>&1', { 
-        cwd: projectPath, 
+      const result = execSync('npm test 2>&1', {
+        cwd: projectPath,
         encoding: 'utf-8',
-        timeout: 120000
+        timeout: 120000,
       });
-      
+
       // Parse coverage
       const coverageMatch = result.match(/(\d+(?:\.\d+)?)%/);
       const coverage = coverageMatch ? parseFloat(coverageMatch[1]) : 0;
-      
+
       return {
         passed: coverage >= 80,
         coverage,
-        output: result.substring(0, 500)
+        output: result.substring(0, 500),
       };
     } catch (error) {
       return {
         passed: false,
         coverage: 0,
-        error: error.message
+        error: error.message,
       };
     }
   },
@@ -116,7 +202,7 @@ const stepExecutors = {
   // Step 14: SECURE - Security checks
   async secure(projectPath) {
     const checks = [];
-    
+
     // Check for hardcoded secrets
     try {
       const envContent = await fs.readFile(path.join(projectPath, '.env'), 'utf-8');
@@ -124,52 +210,62 @@ const stepExecutors = {
       checks.push({
         name: 'Hardcoded Secrets',
         status: hasHardcodedKeys ? 'fail' : 'pass',
-        message: hasHardcodedKeys ? 'Found potential hardcoded API keys' : 'No hardcoded secrets detected'
+        message: hasHardcodedKeys
+          ? 'Found potential hardcoded API keys'
+          : 'No hardcoded secrets detected',
       });
     } catch {
-      checks.push({ name: 'Hardcoded Secrets', status: 'warning', message: 'Could not check .env' });
+      checks.push({
+        name: 'Hardcoded Secrets',
+        status: 'warning',
+        message: 'Could not check .env',
+      });
     }
-    
+
     // Check for input validation
     const srcPath = path.join(projectPath, 'src');
     try {
       const files = await fs.readdir(srcPath, { recursive: true });
-      const hasValidation = files.some(f => f.includes('validation') || f.includes('schema'));
+      const hasValidation = files.some((f) => f.includes('validation') || f.includes('schema'));
       checks.push({
         name: 'Input Validation',
         status: hasValidation ? 'pass' : 'warning',
-        message: hasValidation ? 'Validation layer detected' : 'Consider adding input validation'
+        message: hasValidation ? 'Validation layer detected' : 'Consider adding input validation',
       });
     } catch {
-      checks.push({ name: 'Input Validation', status: 'warning', message: 'Could not check source files' });
+      checks.push({
+        name: 'Input Validation',
+        status: 'warning',
+        message: 'Could not check source files',
+      });
     }
-    
+
     return {
-      passed: checks.every(c => c.status !== 'fail'),
-      checks
+      passed: checks.every((c) => c.status !== 'fail'),
+      checks,
     };
   },
 
   // Step 19: BUILD - Build validation
   async build(projectPath) {
     try {
-      const result = execSync('npm run build 2>&1', { 
-        cwd: projectPath, 
+      const result = execSync('npm run build 2>&1', {
+        cwd: projectPath,
         encoding: 'utf-8',
-        timeout: 300000
+        timeout: 300000,
       });
-      
+
       const hasErrors = result.includes('error') || result.includes('Error');
-      
+
       return {
         passed: !hasErrors,
         output: result.substring(0, 500),
-        errors: hasErrors ? 'Build failed' : null
+        errors: hasErrors ? 'Build failed' : null,
       };
     } catch (error) {
       return {
         passed: false,
-        error: error.message
+        error: error.message,
       };
     }
   },
@@ -177,7 +273,7 @@ const stepExecutors = {
   // Step 21: FINAL VERIFY - End-to-end
   async finalVerify(projectPath) {
     const checks = [];
-    
+
     // Check TypeScript compilation
     try {
       await fs.access(path.join(projectPath, 'tsconfig.json'));
@@ -190,7 +286,7 @@ const stepExecutors = {
     } catch {
       checks.push({ name: 'TypeScript', status: 'skip', message: 'No tsconfig.json' });
     }
-    
+
     // Check linting
     try {
       execSync('npm run lint', { cwd: projectPath, timeout: 60000 });
@@ -198,22 +294,22 @@ const stepExecutors = {
     } catch {
       checks.push({ name: 'Linting', status: 'warning', message: 'Lint errors found' });
     }
-    
+
     return {
-      passed: !checks.some(c => c.status === 'fail'),
-      checks
+      passed: !checks.some((c) => c.status === 'fail'),
+      checks,
     };
-  }
+  },
 };
 
 // Execute a single step
 async function executeStep(stepId, context) {
-  const step = STEPS_21.find(s => s.id === stepId);
+  const step = STEPS_21.find((s) => s.id === stepId);
   if (!step) return { passed: false, error: 'Invalid step' };
-  
+
   // Check if we have an automated executor for this step
   const executor = stepExecutors[step.name.toLowerCase().replace(/\s+/g, '')];
-  
+
   if (executor) {
     try {
       const result = await executor(context.taskPath, context);
@@ -222,7 +318,7 @@ async function executeStep(stepId, context) {
         stepName: step.name,
         passed: result.passed,
         details: result,
-        automated: true
+        automated: true,
       };
     } catch (error) {
       return {
@@ -230,7 +326,7 @@ async function executeStep(stepId, context) {
         stepName: step.name,
         passed: false,
         error: error.message,
-        automated: true
+        automated: true,
       };
     }
   } else {
@@ -242,7 +338,7 @@ async function executeStep(stepId, context) {
       description: step.description,
       estimatedTime: step.time,
       automated: false,
-      guidance: getStepGuidance(stepId)
+      guidance: getStepGuidance(stepId),
     };
   }
 }
@@ -264,9 +360,9 @@ function getStepGuidance(stepId) {
     16: 'Error handling:\n- Add try/catch blocks\n- Validate all inputs\n- Return meaningful errors',
     17: 'API Documentation:\n- Update OpenAPI specs\n- Document error codes\n- Add examples',
     18: 'Version control:\n- git add relevant files\n- Write clear commit message\n- Reference ticket/issue',
-    20: 'Deploy ready:\n- Update environment variables\n- Verify secrets are set\n- Check monitoring'
+    20: 'Deploy ready:\n- Update environment variables\n- Verify secrets are set\n- Check monitoring',
   };
-  
+
   return guidance[stepId] || 'Complete this step according to the 21-step framework.';
 }
 
@@ -288,7 +384,7 @@ export function registerPipelineCommand(program) {
 
         const context = {
           taskPath: options.task,
-          projectPath: path.resolve(options.project)
+          projectPath: path.resolve(options.project),
         };
 
         // Determine step range
@@ -303,7 +399,7 @@ export function registerPipelineCommand(program) {
         let allPassed = true;
 
         for (let stepId = startStep; stepId <= endStep; stepId++) {
-          const step = STEPS_21.find(s => s.id === stepId);
+          const step = STEPS_21.find((s) => s.id === stepId);
           const spinner = ora(`${step.id}. ${step.name}...`).start();
 
           try {
@@ -323,7 +419,14 @@ export function registerPipelineCommand(program) {
               printInfo(chalk.yellow(`   ⏱️  Estimated: ${step.time}`));
               if (result.guidance) {
                 printInfo(chalk.dim('   Guidance:'));
-                printInfo(chalk.dim(result.guidance.split('\n').map(l => `   ${l}`).join('\n')));
+                printInfo(
+                  chalk.dim(
+                    result.guidance
+                      .split('\n')
+                      .map((l) => `   ${l}`)
+                      .join('\n')
+                  )
+                );
               }
             }
           } catch (error) {
@@ -341,14 +444,16 @@ export function registerPipelineCommand(program) {
 
         // Summary
         printInfo(chalk.blue('\n📊 Execution Summary\n'));
-        const automated = results.filter(r => r.automated);
-        const manual = results.filter(r => !r.automated);
-        const passed = automated.filter(r => r.passed).length;
-        const failed = automated.filter(r => !r.passed).length;
+        const automated = results.filter((r) => r.automated);
+        const manual = results.filter((r) => !r.automated);
+        const passed = automated.filter((r) => r.passed).length;
+        const failed = automated.filter((r) => !r.passed).length;
 
         printInfo(`  Automated Steps: ${automated.length} (${passed} passed, ${failed} failed)`);
         printInfo(`  Manual Steps: ${manual.length}`);
-        printInfo(`  Completion: ${Math.round((results.length / (endStep - startStep + 1)) * 100)}%`);
+        printInfo(
+          `  Completion: ${Math.round((results.length / (endStep - startStep + 1)) * 100)}%`
+        );
 
         if (allPassed) {
           printSuccess(chalk.green('\n✅ All automated steps passed!'));
@@ -359,18 +464,25 @@ export function registerPipelineCommand(program) {
         // Generate report if requested
         if (options.report) {
           const reportPath = path.join(context.projectPath, 'pipeline-report.json');
-          await fs.writeFile(reportPath, JSON.stringify({
-            timestamp: new Date().toISOString(),
-            context,
-            results,
-            summary: {
-              total: results.length,
-              automated: automated.length,
-              manual: manual.length,
-              passed,
-              failed
-            }
-          }, null, 2));
+          await fs.writeFile(
+            reportPath,
+            JSON.stringify(
+              {
+                timestamp: new Date().toISOString(),
+                context,
+                results,
+                summary: {
+                  total: results.length,
+                  automated: automated.length,
+                  manual: manual.length,
+                  passed,
+                  failed,
+                },
+              },
+              null,
+              2
+            )
+          );
           printInfo(chalk.blue(`\n📝 Report saved: ${reportPath}`));
         }
       } catch (error) {
@@ -386,12 +498,15 @@ export function registerPipelineCommand(program) {
     .action(() => {
       printInfo(chalk.blue('\n📋 21-Step Verification Framework\n'));
 
-      STEPS_21.forEach(step => {
-        const status = step.id <= 5 || step.id === 8 || step.id === 14 || step.id === 19 || step.id === 21
-          ? chalk.green('[Automated]')
-          : chalk.yellow('[Manual]');
+      STEPS_21.forEach((step) => {
+        const status =
+          step.id <= 5 || step.id === 8 || step.id === 14 || step.id === 19 || step.id === 21
+            ? chalk.green('[Automated]')
+            : chalk.yellow('[Manual]');
 
-        printInfo(`${chalk.cyan(step.id.toString().padStart(2))}. ${chalk.white(step.name.padEnd(15))} ${status}`);
+        printInfo(
+          `${chalk.cyan(step.id.toString().padStart(2))}. ${chalk.white(step.name.padEnd(15))} ${status}`
+        );
         printInfo(`   ${chalk.gray(step.description)} (${step.time})`);
       });
 

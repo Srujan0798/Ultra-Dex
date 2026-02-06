@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 // cli/lib/commands/upgrade.js
 import chalk from 'chalk';
 import ora from 'ora';
@@ -53,7 +55,7 @@ export async function upgradeCommand(options) {
           const changelog = await fetchChangelog(localVersion, latestVersion);
           if (changelog) {
             changelogSpinner.succeed('Changelog retrieved');
-            printInfo(chalk.bold('\n  📋 What\'s New:\n'));
+            printInfo(chalk.bold("\n  📋 What's New:\n"));
             printInfo(chalk.gray(indent(changelog, 4)));
           } else {
             changelogSpinner.info('No changelog available');
@@ -85,7 +87,6 @@ export async function upgradeCommand(options) {
       } else {
         printInfo(chalk.gray('  Check complete. Use --install to update.\n'));
       }
-
     } else if (comparison === 0) {
       // Up to date
       printSuccess(chalk.green.bold('\n  ✅ You are running the latest version!\n'));
@@ -93,7 +94,6 @@ export async function upgradeCommand(options) {
       // Local is newer (dev/beta)
       printInfo(chalk.blue.bold('\n  🔬 You are running a development/pre-release version\n'));
     }
-
   } catch (e) {
     spinner.warn('Could not reach npm registry');
     printInfo(chalk.gray(`  Current version: ${localVersion}`));
@@ -110,8 +110,10 @@ function getLocalVersion() {
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
       return pkg.version;
     }
-  } catch { /* fall through */ }
-  
+  } catch {
+    /* fall through */
+  }
+
   // Fallback to hardcoded version
   return '3.0.0';
 }
@@ -119,11 +121,11 @@ function getLocalVersion() {
 async function getLatestVersion() {
   return new Promise((resolve, reject) => {
     try {
-      const output = execSync('npm view ultra-dex version 2>/dev/null', { 
+      const output = execSync('npm view ultra-dex version 2>/dev/null', {
         encoding: 'utf-8',
-        timeout: 10000
+        timeout: 10000,
       }).trim();
-      
+
       if (output && /^\d+\.\d+\.\d+/.test(output)) {
         resolve(output);
       } else {
@@ -139,7 +141,7 @@ async function getLatestVersion() {
 function compareVersions(v1, v2) {
   const parts1 = v1.split('.').map(Number);
   const parts2 = v2.split('.').map(Number);
-  
+
   for (let i = 0; i < 3; i++) {
     const a = parts1[i] || 0;
     const b = parts2[i] || 0;
@@ -156,30 +158,33 @@ async function fetchChangelog(fromVersion, toVersion) {
       `curl -s "https://api.github.com/repos/Srujan0798/Ultra-Dex/releases" | head -c 5000`,
       { encoding: 'utf-8', timeout: 10000 }
     );
-    
+
     const releases = JSON.parse(output);
     if (!Array.isArray(releases) || releases.length === 0) {
       return null;
     }
-    
+
     // Get release notes between versions
     const changelog = [];
     for (const release of releases.slice(0, 5)) {
       const releaseVersion = release.tag_name?.replace(/^v/, '') || '';
-      if (compareVersions(releaseVersion, fromVersion) > 0 && 
-          compareVersions(releaseVersion, toVersion) <= 0) {
+      if (
+        compareVersions(releaseVersion, fromVersion) > 0 &&
+        compareVersions(releaseVersion, toVersion) <= 0
+      ) {
         changelog.push(`v${releaseVersion}:`);
         // Extract first few bullet points from body
         const body = release.body || '';
-        const lines = body.split('\n')
-          .filter(line => line.trim().startsWith('-') || line.trim().startsWith('*'))
+        const lines = body
+          .split('\n')
+          .filter((line) => line.trim().startsWith('-') || line.trim().startsWith('*'))
           .slice(0, 5)
-          .map(line => '  ' + line.trim());
+          .map((line) => '  ' + line.trim());
         changelog.push(...lines);
         changelog.push('');
       }
     }
-    
+
     return changelog.length > 0 ? changelog.join('\n') : null;
   } catch {
     return null;
@@ -188,7 +193,10 @@ async function fetchChangelog(fromVersion, toVersion) {
 
 function indent(text, spaces) {
   const prefix = ' '.repeat(spaces);
-  return text.split('\n').map(line => prefix + line).join('\n');
+  return text
+    .split('\n')
+    .map((line) => prefix + line)
+    .join('\n');
 }
 
 export function registerUpgradeCommand(program) {

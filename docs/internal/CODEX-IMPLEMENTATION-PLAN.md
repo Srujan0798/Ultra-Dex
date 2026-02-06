@@ -38,16 +38,19 @@ ultra-dex/
 ---
 
 ## PHASE 1: Complete Missing CLI Commands
+
 **STATUS: COMPLETED** (Verified: `swarm.js`, `watch.js`, `diff.js`, `export.js`, `upgrade.js`, `config.js` exist)
 
 ---
 
 ## PHASE 2: Enhance MCP Server
+
 **STATUS: COMPLETED** (Verified: `serve.js`, `cli/lib/mcp/websocket.js` exist)
 
 ---
 
 ## PHASE 3: VS Code Extension
+
 **STATUS: IN PROGRESS**
 
 ### 3.1 Complete Extension Features
@@ -55,6 +58,7 @@ ultra-dex/
 **Directory:** `vscode-extension/`
 
 **Required Features:**
+
 1. **Sidebar Panel**
    - Show all 16 agents with icons
    - Click to copy agent prompt
@@ -79,21 +83,25 @@ ultra-dex/
 ---
 
 ## PHASE 4: CI/CD Integration
+
 **STATUS: COMPLETED** (Verified: `.github/workflows/ultra-dex.yml` exists)
 
 ---
 
 ## PHASE 5: Enhanced Agent System
+
 **STATUS: COMPLETED** (Verified: `agents/0-orchestration/meta-orchestrator.md`, `cli/lib/swarm/protocol.js` exist)
 
 ---
 
 ## PHASE 6: Dashboard Enhancement
+
 **STATUS: PENDING**
 
 ### 6.1 Upgrade `dashboard.js`
 
 **Requirements:**
+
 - Real-time alignment score chart
 - Agent status panel
 - Recent actions timeline
@@ -102,6 +110,7 @@ ultra-dex/
 - Export report button
 
 **Add Dependencies:**
+
 ```json
 {
   "chart.js": "^4.x.x"
@@ -111,11 +120,13 @@ ultra-dex/
 ---
 
 ## PHASE 7: Documentation Updates
+
 **STATUS: PENDING**
 
 ### 7.1 Update README.md
 
 Add sections:
+
 - v3.0 features
 - MCP integration guide
 - VS Code extension usage
@@ -124,6 +135,7 @@ Add sections:
 ### 7.2 Create `docs/MCP-INTEGRATION.md`
 
 Full guide for:
+
 - Claude Desktop setup
 - Cursor integration
 - Custom MCP clients
@@ -132,6 +144,7 @@ Full guide for:
 ### 7.3 Create `docs/CICD-GUIDE.md`
 
 Full guide for:
+
 - GitHub Actions setup
 - Pre-commit hooks
 - Quality gates
@@ -140,6 +153,7 @@ Full guide for:
 ---
 
 ## PHASE 8: Testing
+
 **STATUS: PENDING**
 
 ### 8.1 Add Command Tests
@@ -147,6 +161,7 @@ Full guide for:
 **File:** `cli/test/commands.test.js`
 
 Test each new command:
+
 - swarm (with mocked AI)
 - watch (with file mocks)
 - diff (with sample data)
@@ -159,6 +174,7 @@ Test each new command:
 **File:** `cli/test/mcp.test.js`
 
 Test all endpoints:
+
 - GET endpoints return correct data
 - POST endpoints execute correctly
 - WebSocket connections work
@@ -167,6 +183,7 @@ Test all endpoints:
 ---
 
 ## PHASE 9: Package & Publish
+
 **STATUS: PENDING**
 
 ### 9.1 Update `cli/package.json`
@@ -177,8 +194,16 @@ Test all endpoints:
   "version": "3.0.0",
   "description": "AI Orchestration Meta-Layer for SaaS Development",
   "keywords": [
-    "ai", "orchestration", "saas", "mcp", "langchain",
-    "claude", "openai", "gemini", "agents", "swarm"
+    "ai",
+    "orchestration",
+    "saas",
+    "mcp",
+    "langchain",
+    "claude",
+    "openai",
+    "gemini",
+    "agents",
+    "swarm"
   ]
 }
 ```
@@ -197,14 +222,14 @@ npm publish           # Publish to npm
 
 ## Summary of Remaining Work
 
-| Phase | Tasks | Est. Time |
-|-------|-------|-----------|
-| Phase 3 | VS Code extension | 3-4 hours |
-| Phase 6 | Dashboard | 2-3 hours |
-| Phase 7 | Documentation | 2-3 hours |
-| Phase 8 | Testing | 2-3 hours |
-| Phase 9 | Publish | 1 hour |
-| **TOTAL** | | **10-14 hours** |
+| Phase     | Tasks             | Est. Time       |
+| --------- | ----------------- | --------------- |
+| Phase 3   | VS Code extension | 3-4 hours       |
+| Phase 6   | Dashboard         | 2-3 hours       |
+| Phase 7   | Documentation     | 2-3 hours       |
+| Phase 8   | Testing           | 2-3 hours       |
+| Phase 9   | Publish           | 1 hour          |
+| **TOTAL** |                   | **10-14 hours** |
 
 ---
 
@@ -231,4 +256,4 @@ npx ultra-dex serve                          ✓ (with WebSocket)
 
 ---
 
-*Implementation Plan v3.0 (Remaining Tasks) — January 29, 2026*
+_Implementation Plan v3.0 (Remaining Tasks) — January 29, 2026_

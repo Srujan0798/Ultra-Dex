@@ -21,17 +21,20 @@ Before you write a single line of code or suggest a single change:
 ## 🎯 What You Need to Know (TL;DR)
 
 ### We Are:
+
 - A **Meta-Orchestration Layer** for AI development
 - We give AI tools **memory, structure, and quality standards**
 - We **don't write code** - we make sure AI-generated code doesn't suck
 
 ### We Are NOT:
+
 - A code generator
 - Competing with Cursor/Devin
 - An AI model ourselves
 - For MVPs (we're for production SaaS)
 
 ### Sacred Principles (NEVER Violate):
+
 1. **34-Section Template** - Comprehensive by design
 2. **21-Step Verification** - Production-grade quality
 3. **AI-Agnostic** - Works with any AI tool
@@ -104,7 +107,9 @@ Ultra-Dex/
 ## 🎮 Current State (As of Feb 2, 2026)
 
 ### Production-Ready Commands (7):
+
 These work. Don't break them.
+
 - `init` - Project scaffolding
 - `generate` - AI plan generation
 - `build` - Auto-pilot execution
@@ -114,7 +119,9 @@ These work. Don't break them.
 - `dashboard` - Web UI
 
 ### Beta Commands (8) - NEED POLISH:
+
 These exist but need work for Feb 14:
+
 - `plan` - Project planning with Gantt charts
 - `workflows` - Workflow templates
 - `suggest` - AI suggestions
@@ -125,7 +132,9 @@ These exist but need work for Feb 14:
 - `advanced` - Advanced features
 
 ### Development Commands (18):
+
 These are stubs/placeholders:
+
 - `auto-implement`, `ci-monitor`, `cloud`, `brain`, `github`, `search`, etc.
 
 ---
@@ -135,16 +144,19 @@ These are stubs/placeholders:
 ### When You Join This Project:
 
 **Step 1: Understand the Context**
+
 - Read the 4 core files (15 min)
 - Check [02-FEB-14-FOCUS.md](../02-FEB-14-FOCUS.md) for current priorities
 - Look at what's ALREADY DONE vs what needs work
 
 **Step 2: Ask Before Implementing**
+
 - "Is this change aligned with our sacred principles?"
 - "Is this in the Feb 14 scope?"
 - "Does it make a beta command production-ready?"
 
 **Step 3: Follow the Methodology**
+
 - All tasks must be 4-9 hours (atomic)
 - All code must pass 21-step verification
 - All changes must be git-versioned
@@ -155,6 +167,7 @@ These are stubs/placeholders:
 ## 🚫 Anti-Patterns (NEVER Do These)
 
 ### Code Changes:
+
 - ❌ Simplify 34 sections to "make it easier"
 - ❌ Remove 21-step verification as "overkill"
 - ❌ Build our own AI model
@@ -163,6 +176,7 @@ These are stubs/placeholders:
 - ❌ Break working production commands
 
 ### Agent Behavior:
+
 - ❌ Assume we want to be "simpler"
 - ❌ Suggest removing constraints
 - ❌ Propose competing with our partners
@@ -170,6 +184,7 @@ These are stubs/placeholders:
 - ❌ Think we want to replace AI tools
 
 ### Project Management:
+
 - ❌ Skip reading the manifest
 - ❌ Work on postponed items
 - ❌ Break existing functionality
@@ -180,6 +195,7 @@ These are stubs/placeholders:
 ## ✅ Good Patterns (DO These)
 
 ### Code Changes:
+
 - ✅ Make beta commands production-ready
 - ✅ Add tests for existing functionality
 - ✅ Create the 5 missing examples
@@ -188,6 +204,7 @@ These are stubs/placeholders:
 - ✅ Follow the 21-step verification
 
 ### Agent Behavior:
+
 - ✅ Ask clarifying questions
 - ✅ Verify alignment with principles
 - ✅ Respect the meta-layer position
@@ -195,6 +212,7 @@ These are stubs/placeholders:
 - ✅ Keep context in git-versioned files
 
 ### Project Management:
+
 - ✅ Read all 4 core files first
 - ✅ Focus on Feb 14 priorities
 - ✅ Preserve working functionality
@@ -205,6 +223,7 @@ These are stubs/placeholders:
 ## 🎓 Quick Reference
 
 ### Commands Status:
+
 ```bash
 # Production-Ready (7):
 npx ultra-dex init           # ✓ Works
@@ -232,15 +251,16 @@ npx ultra-dex ci-monitor     # 🚧 Stub
 ```
 
 ### Agent Tiers:
-| Tier | Agents | When to Use |
-|------|--------|-------------|
-| Orchestration | @Meta-Orchestrator, @Orchestrator | Complex multi-repo projects |
-| Leadership | @CTO, @Planner, @Research | Architecture decisions |
-| Development | @Backend, @Frontend, @Database | Core implementation |
-| Security | @Auth, @Security | Authentication & audits |
-| DevOps | @DevOps | Deployment & CI/CD |
-| Quality | @Testing, @Reviewer, @Debugger, @Documentation | QA & review |
-| Specialist | @Performance, @Refactoring | Optimization |
+
+| Tier          | Agents                                         | When to Use                 |
+| ------------- | ---------------------------------------------- | --------------------------- |
+| Orchestration | @Meta-Orchestrator, @Orchestrator              | Complex multi-repo projects |
+| Leadership    | @CTO, @Planner, @Research                      | Architecture decisions      |
+| Development   | @Backend, @Frontend, @Database                 | Core implementation         |
+| Security      | @Auth, @Security                               | Authentication & audits     |
+| DevOps        | @DevOps                                        | Deployment & CI/CD          |
+| Quality       | @Testing, @Reviewer, @Debugger, @Documentation | QA & review                 |
+| Specialist    | @Performance, @Refactoring                     | Optimization                |
 
 ---
 
@@ -273,6 +293,7 @@ You're now part of building the **Kubernetes of AI Coding**.
 Remember: **We don't generate code. We make sure AI-generated code doesn't suck.**
 
 **Start here:**
+
 1. Read the 4 core files (15 min)
 2. Check [FEB-14-FOCUS.md](../FEB-14-FOCUS.md) for current tasks
 3. Pick a beta command to polish
@@ -283,4 +304,4 @@ Remember: **We don't generate code. We make sure AI-generated code doesn't suck.
 
 ---
 
-*"We are the MEMORY for tools with AMNESIA."*
+_"We are the MEMORY for tools with AMNESIA."_

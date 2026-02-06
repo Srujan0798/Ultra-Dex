@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * AI Provider Factory
  * Creates and manages AI providers for the generate command
@@ -35,7 +37,7 @@ const PROVIDERS = {
   router: {
     class: RouterProvider,
     name: 'Semantic Router (Hybrid)',
-  }
+  },
 };
 
 /**
@@ -67,7 +69,7 @@ export function createProvider(providerId, options = {}) {
   if (providerId === 'router') {
     const cloudId = options.cloudProvider || getDefaultProvider() || 'claude';
     const cloudProvider = createProvider(cloudId, options);
-    
+
     let localProvider = null;
     try {
       localProvider = new OllamaProvider(null, options);
@@ -78,30 +80,33 @@ export function createProvider(providerId, options = {}) {
     const routerProvider = new RouterProvider(null, {
       ...options,
       cloudProvider,
-      localProvider
+      localProvider,
     });
     return agent ? wrapProviderWithGovernance(routerProvider, agent) : routerProvider;
   }
 
   const providerConfig = PROVIDERS[providerId];
-  
+
   if (!providerConfig) {
-    throw new Error(`Unknown provider: ${providerId}. Available: ${Object.keys(PROVIDERS).join(', ')}`);
+    throw new Error(
+      `Unknown provider: ${providerId}. Available: ${Object.keys(PROVIDERS).join(', ')}`
+    );
   }
 
   // Get API key from options or environment (Ollama doesn't strictly need one)
-  const apiKey = options.apiKey || (providerConfig.envKey ? process.env[providerConfig.envKey] : null);
-  
+  const apiKey =
+    options.apiKey || (providerConfig.envKey ? process.env[providerConfig.envKey] : null);
+
   if (!apiKey && providerId !== 'ollama') {
     throw new Error(
       `API key not found for ${providerConfig.name}.\n\n` +
-      `To fix this, either:\n` +
-      `  1. Set ${providerConfig.envKey} environment variable:\n` +
-      `     export ${providerConfig.envKey}=your-key-here\n\n` +
-      `  2. Pass the key directly:\n` +
-      `     ultra-dex generate "idea" --key your-key-here\n\n` +
-      `  3. Use Ollama for local AI (no key needed):\n` +
-      `     ultra-dex generate "idea" --provider ollama`
+        `To fix this, either:\n` +
+        `  1. Set ${providerConfig.envKey} environment variable:\n` +
+        `     export ${providerConfig.envKey}=your-key-here\n\n` +
+        `  2. Pass the key directly:\n` +
+        `     ultra-dex generate "idea" --key your-key-here\n\n` +
+        `  3. Use Ollama for local AI (no key needed):\n` +
+        `     ultra-dex generate "idea" --provider ollama`
     );
   }
 
@@ -116,14 +121,22 @@ function wrapProviderWithGovernance(provider, agent) {
 
   if (baseGenerate) {
     provider.generate = async (systemPrompt, userPrompt, opts = {}) => {
-      enforceAgentExecution({ agent, providerId: provider.getName?.() || 'provider', task: 'generate' });
+      enforceAgentExecution({
+        agent,
+        providerId: provider.getName?.() || 'provider',
+        task: 'generate',
+      });
       return baseGenerate(systemPrompt, userPrompt, opts);
     };
   }
 
   if (baseStream) {
     provider.generateStream = async (systemPrompt, userPrompt, onChunk, opts = {}) => {
-      enforceAgentExecution({ agent, providerId: provider.getName?.() || 'provider', task: 'generateStream' });
+      enforceAgentExecution({
+        agent,
+        providerId: provider.getName?.() || 'provider',
+        task: 'generateStream',
+      });
       return baseStream(systemPrompt, userPrompt, onChunk, opts);
     };
   }
@@ -145,7 +158,7 @@ function wrapProviderWithMemex(provider, context = {}) {
         systemPrompt,
         userPrompt,
         output: result?.content || result?.text || JSON.stringify(result),
-        metadata: { model: provider.model, task: opts.task }
+        metadata: { model: provider.model, task: opts.task },
       });
       return result;
     };
@@ -167,7 +180,7 @@ function wrapProviderWithMemex(provider, context = {}) {
         systemPrompt,
         userPrompt,
         output,
-        metadata: { model: provider.model, task: opts.task }
+        metadata: { model: provider.model, task: opts.task },
       });
       return result;
     };
@@ -183,7 +196,7 @@ function wrapProviderWithMemex(provider, context = {}) {
         systemPrompt: '',
         userPrompt: prompt || '',
         output: result?.content || result?.text || result,
-        metadata: { model: provider.model, task: opts.task, vision: true }
+        metadata: { model: provider.model, task: opts.task, vision: true },
       });
       return result;
     };
@@ -192,7 +205,14 @@ function wrapProviderWithMemex(provider, context = {}) {
   return provider;
 }
 
-async function safeMemexIndex({ provider, agent, systemPrompt, userPrompt, output, metadata } = {}) {
+async function safeMemexIndex({
+  provider,
+  agent,
+  systemPrompt,
+  userPrompt,
+  output,
+  metadata,
+} = {}) {
   try {
     await memex.indexInteraction({
       agent: agent?.id || agent?.roleId || agent?.name || 'unknown',
@@ -202,8 +222,8 @@ async function safeMemexIndex({ provider, agent, systemPrompt, userPrompt, outpu
       output: output || '',
       metadata: {
         ...metadata,
-        systemPrompt: systemPrompt ? systemPrompt.slice(0, 2000) : ''
-      }
+        systemPrompt: systemPrompt ? systemPrompt.slice(0, 2000) : '',
+      },
     });
   } catch {
     // Memex indexing must never break execution
@@ -216,12 +236,12 @@ async function safeMemexIndex({ provider, agent, systemPrompt, userPrompt, outpu
  */
 export function getDefaultProvider() {
   if (process.env.ULTRA_DEX_DEFAULT_PROVIDER) return process.env.ULTRA_DEX_DEFAULT_PROVIDER;
-  
+
   // Check environment variables in order of preference
   if (process.env.ANTHROPIC_API_KEY) return 'claude';
   if (process.env.OPENAI_API_KEY) return 'openai';
   if (process.env.GOOGLE_AI_KEY) return 'gemini';
-  
+
   // Final fallback to Ollama (local-first resilience)
   return 'ollama';
 }

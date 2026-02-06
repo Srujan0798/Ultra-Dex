@@ -33,12 +33,14 @@
 
 **What:** Switched from MongoDB to PostgreSQL
 
-**Why:** 
+**Why:**
+
 - Need for relational data integrity
 - Better support for complex queries
 - Team has more PostgreSQL experience
 
-**Impact:** 
+**Impact:**
+
 - All database queries need rewriting
 - Prisma schema needs updating
 - Migration scripts required
@@ -68,11 +70,13 @@
 **What:** Rolled back from LemonSqueezy to Stripe
 
 **Why:** LemonSqueezy integration had issues with:
+
 - Tax calculation errors
 - Missing webhook events
 - EU payment failures
 
-**Impact:** 
+**Impact:**
+
 - Payment code reverted to Stripe implementation
 - Need to migrate any LemonSqueezy customers
 
@@ -84,8 +88,8 @@
 
 ## Decision Log Summary
 
-| Date | Decision | Category | Status |
-|------|----------|----------|--------|
+| Date   | Decision         | Category             | Status            |
+| ------ | ---------------- | -------------------- | ----------------- |
 | [DATE] | [Brief decision] | Tech/Business/Design | Active/Superseded |
 
 ---
@@ -93,6 +97,7 @@
 ## Architecture Decision Records (ADRs)
 
 ### ADR-001: [Decision Title]
+
 - **Status:** Accepted / Superseded / Deprecated
 - **Context:** [Why we needed to make this decision]
 - **Decision:** [What we decided]
@@ -100,4 +105,4 @@
 
 ---
 
-*Add new entries at the TOP of this file*
+_Add new entries at the TOP of this file_

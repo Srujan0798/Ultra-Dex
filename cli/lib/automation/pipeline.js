@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Full automation pipeline for auto-implement
  */
@@ -29,20 +31,39 @@ export class AutomationPipeline {
     const graphSummary = projectGraph.getSummary();
 
     const state = await loadState();
-    const planMarkdown = state ? JSON.stringify(state) : (await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => ''));
+    const planMarkdown = state
+      ? JSON.stringify(state)
+      : await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => '');
     const contextMarkdown = await fs.readFile('CONTEXT.md', 'utf8').catch(() => '');
 
-    const projectContext = { state, plan: planMarkdown, context: contextMarkdown, graph: graphSummary };
+    const projectContext = {
+      state,
+      plan: planMarkdown,
+      context: contextMarkdown,
+      graph: graphSummary,
+    };
 
     // Stage 2: Plan
-    const plan = await runAgentLoop('planner', `Break down this feature into atomic tasks: ${this.feature}.`, this.provider, projectContext);
+    const plan = await runAgentLoop(
+      'planner',
+      `Break down this feature into atomic tasks: ${this.feature}.`,
+      this.provider,
+      projectContext
+    );
     await this.maybeStop('plan', { plan });
 
     // Stage 3: Implement
-    const tasks = plan.split('\n').filter(line => line.match(/^[*-]\s+/) || line.match(/^\d+\.\s+/));
+    const tasks = plan
+      .split('\n')
+      .filter((line) => line.match(/^[*-]\s+/) || line.match(/^\d+\.\s+/));
     const taskList = tasks.length ? tasks : [plan];
     for (const task of taskList) {
-      await runAgentLoop('orchestrator', `Implement this task: ${task}\n\nFeature: ${this.feature}\nPlan:\n${plan}`, this.provider, projectContext);
+      await runAgentLoop(
+        'orchestrator',
+        `Implement this task: ${task}\n\nFeature: ${this.feature}\nPlan:\n${plan}`,
+        this.provider,
+        projectContext
+      );
       await updateStateFile();
     }
     await this.maybeStop('implementation', { tasks: taskList.length });

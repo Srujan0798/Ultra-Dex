@@ -23,6 +23,7 @@
 </div>
 
 ### Ultra-Dex in Action
+
 - **ultra-dex init** with live template selection
 - **ultra-dex swarm** multi-agent orchestration
 - **VS Code Extension** sidebar integration
@@ -32,6 +33,7 @@
 ## 🚀 Getting Started in 60 Seconds
 
 ### **Step 1: Install Ultra-Dex**
+
 ```bash
 # Install globally
 npm install -g ultra-dex
@@ -41,6 +43,7 @@ npx ultra-dex
 ```
 
 ### **Step 2: Initialize a Project**
+
 ```bash
 # Create a new project
 mkdir my-saas && cd my-saas
@@ -51,6 +54,7 @@ ultra-dex generate "A task management SaaS with user authentication"
 ```
 
 ### **Step 3: Run the Swarm**
+
 ```bash
 # Start the interactive dashboard
 ultra-dex
@@ -60,6 +64,7 @@ ultra-dex swarm "Build user authentication system"
 ```
 
 ### **Step 4: VS Code Integration**
+
 ```bash
 # Install the VS Code extension
 code --install-extension ultra-dex-vscode-3.4.5.vsix
@@ -72,18 +77,18 @@ code --install-extension ultra-dex-vscode-3.4.5.vsix
 
 ## 📊 Feature Comparison
 
-| Feature | Ultra-Dex | Cursor | Devin | Bolt.new |
-|---------|-----------|--------|-------|----------|
-| **Multi-Agent Orchestration** | ✅ 18 specialized agents | ❌ Basic | ✅ Single agent | ❌ Limited |
-| **MCP Integration** | ✅ Full support | ✅ Partial | ❌ None | ❌ None |
-| **Implementation Plans** | ✅ 34-section template | ❌ Basic | ❌ None | ❌ None |
-| **Code Verification** | ✅ 21-step framework | ❌ Manual | ✅ Basic | ❌ None |
-| **VS Code Extension** | ✅ Full integration | ✅ Built-in | ❌ None | ❌ None |
-| **Self-Healing Loops** | ✅ Autonomous fixes | ❌ Manual | ❌ None | ❌ None |
-| **Knowledge Graph** | ✅ Persistent memory | ❌ None | ❌ None | ❌ None |
-| **Security Audits** | ✅ Built-in | ❌ Manual | ❌ None | ❌ None |
-| **CI/CD Integration** | ✅ GitHub Actions | ❌ Manual | ❌ None | ❌ None |
-| **Custom Agent Creation** | ✅ Full SDK | ❌ Limited | ❌ None | ❌ None |
+| Feature                       | Ultra-Dex                | Cursor      | Devin           | Bolt.new   |
+| ----------------------------- | ------------------------ | ----------- | --------------- | ---------- |
+| **Multi-Agent Orchestration** | ✅ 18 specialized agents | ❌ Basic    | ✅ Single agent | ❌ Limited |
+| **MCP Integration**           | ✅ Full support          | ✅ Partial  | ❌ None         | ❌ None    |
+| **Implementation Plans**      | ✅ 34-section template   | ❌ Basic    | ❌ None         | ❌ None    |
+| **Code Verification**         | ✅ 21-step framework     | ❌ Manual   | ✅ Basic        | ❌ None    |
+| **VS Code Extension**         | ✅ Full integration      | ✅ Built-in | ❌ None         | ❌ None    |
+| **Self-Healing Loops**        | ✅ Autonomous fixes      | ❌ Manual   | ❌ None         | ❌ None    |
+| **Knowledge Graph**           | ✅ Persistent memory     | ❌ None     | ❌ None         | ❌ None    |
+| **Security Audits**           | ✅ Built-in              | ❌ Manual   | ❌ None         | ❌ None    |
+| **CI/CD Integration**         | ✅ GitHub Actions        | ❌ Manual   | ❌ None         | ❌ None    |
+| **Custom Agent Creation**     | ✅ Full SDK              | ❌ Limited  | ❌ None         | ❌ None    |
 
 ---
 
@@ -121,6 +126,7 @@ npx ultra-dex workspace switch "my-pro-project"
 ## ✨ v3.5.0 Feature Highlights
 
 ### **1. Autonomous Intelligence (Wave 6)**
+
 - **Self-Healing Loop** — Automatically detects build/test failures and triggers @Debugger to fix them.
 - **Code Impact Analysis** — Predict downstream breakages across the Code Property Graph (CPG).
 - **Cognitive Link** — Persistent memory across sessions using Vector Store embeddings.
@@ -129,6 +135,7 @@ npx ultra-dex workspace switch "my-pro-project"
 - **Adaptive Learning** — Continuously improves recommendations based on project outcomes.
 
 ### **2. Professional UI/UX (CLI 4.0)**
+
 - **Conversational Interface** — NLP intent routing allows natural language commands.
 - **Interactive Dashboard** — Real-time project status, alignment scores, and agent activity.
 - **Themed Design System** — Unified professional "Purple Edition" visuals with high-fidelity headers.
@@ -137,6 +144,7 @@ npx ultra-dex workspace switch "my-pro-project"
 - **Customizable Workflows** — Tailor the interface to your team's specific needs.
 
 ### **3. Enterprise Security**
+
 - **Strict Sandbox Enforcement** — Force all agent-run shell commands through isolated Docker containers.
 - **Grade A Audit Framework** — 90% benchmark for documentation, structure, and security.
 - **Identity Profiles** — Manage local and cloud sessions with `ultra-dex auth`.
@@ -145,6 +153,7 @@ npx ultra-dex workspace switch "my-pro-project"
 - **Compliance Reporting** — Generate reports for security audits and compliance requirements.
 
 ### **4. Connectivity & Ecosystem**
+
 - **LangGraph Native** — Export Ultra-Dex swarm pipelines as state-machine graphs.
 - **Agent Marketplace** — Browse and install community-contributed specialist agents.
 - **MCP Portal** — Seamless integration with Cursor, Claude Code, and Windsurf.
@@ -157,6 +166,7 @@ npx ultra-dex workspace switch "my-pro-project"
 ## 🏗️ Architecture & Components
 
 ### **AI Agent Ecosystem**
+
 Ultra-Dex orchestrates 18 specialized AI agents organized in 6 tiers:
 
 **Leadership Tier**: @CTO, @Planner, @Research
@@ -168,6 +178,7 @@ Ultra-Dex orchestrates 18 specialized AI agents organized in 6 tiers:
 **Orchestration Tier**: @Orchestrator
 
 Each agent operates with specific expertise and defined responsibilities:
+
 - **@CTO**: Makes architecture and technology stack decisions, evaluates trade-offs, and ensures scalability
 - **@Planner**: Breaks down complex tasks into atomic units, creates project timelines, and manages dependencies
 - **@Research**: Evaluates and compares technology options, benchmarks solutions, and identifies best practices
@@ -186,6 +197,7 @@ Each agent operates with specific expertise and defined responsibilities:
 - **@Orchestrator**: Coordinates multi-agent workflows, manages task dependencies, and monitors progress
 
 ### **Multi-Agent Swarms**
+
 Coordinate multiple specialized agents for complex tasks:
 
 ```bash
@@ -196,7 +208,9 @@ ultra-dex swarm "Build user authentication system"
 ```
 
 ### **Verification Framework**
+
 Every task follows a 21-step verification framework ensuring production-ready quality:
+
 1. **Atomic Scope Defined** - Task broken into smallest possible unit
 2. **Context Loaded** - Relevant project information retrieved
 3. **Architecture Alignment** - Solution fits within existing architecture
@@ -220,7 +234,9 @@ Every task follows a 21-step verification framework ensuring production-ready qu
 21. **Deployment Readiness** - Deployable state achieved
 
 ### **Knowledge Graph & Memory System**
+
 Ultra-Dex maintains a persistent knowledge graph of:
+
 - **Project Architecture**: Component relationships and dependencies
 - **Code Patterns**: Reusable solutions and best practices
 - **Historical Decisions**: Rationale behind architectural choices
@@ -251,6 +267,7 @@ Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amn
 **Production-Grade**: Not for MVPs - for real, scalable applications
 
 ### **Core Principles**
+
 - **Transparency**: Every decision and change is logged and traceable
 - **Consistency**: Uniform patterns across all project components
 - **Scalability**: Architectures designed for growth from day one
@@ -279,6 +296,7 @@ Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amn
 ## 🛠️ Technology Stack
 
 ### **Core Technologies**
+
 - **Node.js** (v18+) - Runtime environment
 - **TypeScript** - Type-safe JavaScript development
 - **Docker** - Containerization and sandboxing
@@ -289,6 +307,7 @@ Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amn
 - **Docker Compose** - Multi-container orchestration
 
 ### **AI & ML Integration**
+
 - **Anthropic Claude** - Advanced reasoning and analysis
 - **OpenAI GPT** - Natural language processing
 - **Google Gemini** - Multimodal AI capabilities
@@ -298,6 +317,7 @@ Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amn
 - **Embedding Models** - Context understanding and similarity matching
 
 ### **Development Tools**
+
 - **ESLint** - Code linting and style enforcement
 - **Prettier** - Code formatting
 - **Jest** - Testing framework
@@ -312,6 +332,7 @@ Ultra-Dex provides the **backbone** for AI-driven development. It solves "AI Amn
 ## 🚀 Getting Started
 
 ### **Installation**
+
 ```bash
 # Install globally
 npm install -g ultra-dex
@@ -324,6 +345,7 @@ npm install ultra-dex --save-dev
 ```
 
 ### **Quick Setup**
+
 ```bash
 # Initialize a new project
 ultra-dex init
@@ -345,7 +367,9 @@ ultra-dex autonomous --fix --watch
 ```
 
 ### **Configuration**
+
 Create a `.ultra-dexrc` file in your project root:
+
 ```json
 {
   "aiProvider": "anthropic",
@@ -355,13 +379,8 @@ Create a `.ultra-dexrc` file in your project root:
   "debugMode": false,
   "maxTokens": 4096,
   "temperature": 0.2,
-  "plugins": [
-    "ultra-dex-plugin-auth",
-    "ultra-dex-plugin-db"
-  ],
-  "customAgents": [
-    "./custom-agents/payment-agent.js"
-  ]
+  "plugins": ["ultra-dex-plugin-auth", "ultra-dex-plugin-db"],
+  "customAgents": ["./custom-agents/payment-agent.js"]
 }
 ```
 
@@ -370,6 +389,7 @@ Create a `.ultra-dexrc` file in your project root:
 ## 🤔 Is Ultra-Dex Right for You?
 
 **✅ YES if:**
+
 - You are building a production-grade SaaS, not a weekend prototype.
 - You use multiple AI tools (Claude, GPT, Cursor) and need shared context.
 - You want to automate the "Verify" loop (Testing, Linting, Security).
@@ -381,6 +401,7 @@ Create a `.ultra-dexrc` file in your project root:
 - You need to comply with security and governance requirements.
 
 **❌ NO if:**
+
 - You prefer ad-hoc, unstructured prompting.
 - You are building a static website/blog.
 - You are building a simple CRUD app (<3 features).
@@ -395,6 +416,7 @@ Create a `.ultra-dexrc` file in your project root:
 ## 📚 Documentation & Learning Resources
 
 ### **Core Documentation**
+
 - [APIDOC.md](./APIDOC.md) - Complete API reference
 - [USER-GUIDE.md](./docs/USER-GUIDE.md) - Comprehensive user manual
 - [ROADMAP.md](./docs/ROADMAP.md) - Future development plans
@@ -402,6 +424,7 @@ Create a `.ultra-dexrc` file in your project root:
 - [QUICK-START.md](./QUICK-START.md) - Rapid onboarding guide
 
 ### **Advanced Topics**
+
 - [PLUGIN-ARCHITECTURE.md](./docs/PLUGIN-ARCHITECTURE.md) - Extending Ultra-Dex functionality
 - [SECURITY-BEST-PRACTICES.md](./docs/SECURITY-BEST-PRACTICES.md) - Security guidelines
 - [PERFORMANCE-OPTIMIZATION.md](./docs/PERFORMANCE-OPTIMIZATION.md) - Optimization techniques
@@ -409,6 +432,7 @@ Create a `.ultra-dexrc` file in your project root:
 - [AGENT-CUSTOMIZATION.md](./docs/AGENT-CUSTOMIZATION.md) - Creating custom agents
 
 ### **Video Tutorials**
+
 - [Getting Started with Ultra-Dex](https://youtube.com/ultradex-getting-started) - 15-minute walkthrough
 - [Building Your First SaaS with Ultra-Dex](https://youtube.com/ultradex-first-saas) - Complete tutorial
 - [Advanced Agent Orchestration](https://youtube.com/ultradex-advanced) - Deep dive into swarms

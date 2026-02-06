@@ -12,7 +12,7 @@ describe('check command', () => {
   it('should register the check command with correct description', () => {
     registerCheckCommand(program);
 
-    const command = program.commands.find(cmd => cmd.name() === 'check');
+    const command = program.commands.find((cmd) => cmd.name() === 'check');
     expect(command).toBeDefined();
     expect(command.description()).toContain('Repository health and alignment check');
 

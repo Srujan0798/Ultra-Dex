@@ -20,7 +20,7 @@ class UltraDexBenchmarkSuite {
       benchmarks: [],
       timestamp: new Date().toISOString(),
       version: this.getVersion(),
-      environment: this.getEnvironmentInfo()
+      environment: this.getEnvironmentInfo(),
     };
   }
 
@@ -42,28 +42,28 @@ class UltraDexBenchmarkSuite {
       totalMemory: require('os').totalmem(),
       freeMemory: require('os').freemem(),
       loadAverage: require('os').loadavg(),
-      cpuCount: require('os').cpus().length
+      cpuCount: require('os').cpus().length,
     };
   }
 
   async runBenchmark(name, benchmarkFn, iterations = 1) {
     const results = [];
-    
+
     for (let i = 0; i < iterations; i++) {
       const start = performance.now();
       const startMemory = process.memoryUsage().heapUsed;
-      
+
       try {
         await benchmarkFn();
-        
+
         const end = performance.now();
         const endMemory = process.memoryUsage().heapUsed;
-        
+
         results.push({
           iteration: i + 1,
           duration: end - start,
           memoryDelta: endMemory - startMemory,
-          success: true
+          success: true,
         });
       } catch (error) {
         const end = performance.now();
@@ -71,48 +71,47 @@ class UltraDexBenchmarkSuite {
           iteration: i + 1,
           duration: end - start,
           error: error.message,
-          success: false
+          success: false,
         });
       }
     }
-    
+
     const benchmarkResult = {
       name,
       iterations,
       results,
-      stats: this.calculateStats(results)
+      stats: this.calculateStats(results),
     };
-    
+
     this.results.benchmarks.push(benchmarkResult);
     this.printResult(benchmarkResult);
-    
+
     return benchmarkResult;
   }
 
   calculateStats(results) {
-    const successful = results.filter(r => r.success);
-    
+    const successful = results.filter((r) => r.success);
+
     if (successful.length === 0) {
       return {
         avgDuration: 0,
         minDuration: 0,
         maxDuration: 0,
         avgMemoryDelta: 0,
-        errorRate: 100
+        errorRate: 100,
       };
     }
-    
-    const durations = successful.map(r => r.duration);
-    const memoryDeltas = successful.map(r => r.memoryDelta).filter(m => m !== undefined);
-    
+
+    const durations = successful.map((r) => r.duration);
+    const memoryDeltas = successful.map((r) => r.memoryDelta).filter((m) => m !== undefined);
+
     return {
       avgDuration: durations.reduce((a, b) => a + b, 0) / durations.length,
       minDuration: Math.min(...durations),
       maxDuration: Math.max(...durations),
-      avgMemoryDelta: memoryDeltas.length > 0 
-        ? memoryDeltas.reduce((a, b) => a + b, 0) / memoryDeltas.length 
-        : 0,
-      errorRate: ((results.length - successful.length) / results.length) * 100
+      avgMemoryDelta:
+        memoryDeltas.length > 0 ? memoryDeltas.reduce((a, b) => a + b, 0) / memoryDeltas.length : 0,
+      errorRate: ((results.length - successful.length) / results.length) * 100,
     };
   }
 
@@ -122,14 +121,18 @@ class UltraDexBenchmarkSuite {
     console.log(`   Avg Duration: ${benchmark.stats.avgDuration.toFixed(2)}ms`);
     console.log(`   Min Duration: ${benchmark.stats.minDuration.toFixed(2)}ms`);
     console.log(`   Max Duration: ${benchmark.stats.maxDuration.toFixed(2)}ms`);
-    console.log(`   Avg Memory Delta: ${(benchmark.stats.avgMemoryDelta / 1024 / 1024).toFixed(2)} MB`);
+    console.log(
+      `   Avg Memory Delta: ${(benchmark.stats.avgMemoryDelta / 1024 / 1024).toFixed(2)} MB`
+    );
     console.log(`   Error Rate: ${benchmark.stats.errorRate.toFixed(2)}%`);
   }
 
   async runAllBenchmarks() {
     console.log('🚀 Ultra-Dex Performance Benchmark Suite\n');
     console.log(`Version: ${this.results.version}`);
-    console.log(`Environment: ${this.results.environment.platform} ${this.results.environment.arch}`);
+    console.log(
+      `Environment: ${this.results.environment.platform} ${this.results.environment.arch}`
+    );
     console.log(`Node: ${this.results.environment.nodeVersion}\n`);
 
     // Benchmark 1: Command Startup Time
@@ -178,7 +181,7 @@ class UltraDexBenchmarkSuite {
         // Simulate a simple agent execution
         const { runAgentLoop } = await import('./cli/lib/commands/run.js');
         // This would require a proper provider setup, so we'll simulate
-        return new Promise(resolve => setTimeout(resolve, 100)); // Simulated delay
+        return new Promise((resolve) => setTimeout(resolve, 100)); // Simulated delay
       },
       5
     );
@@ -202,7 +205,7 @@ class UltraDexBenchmarkSuite {
       async () => {
         const { validateCommand } = await import('./cli/lib/commands/validate.js');
         // Simulate validation without actually running it
-        return new Promise(resolve => setTimeout(resolve, 50)); // Simulated delay
+        return new Promise((resolve) => setTimeout(resolve, 50)); // Simulated delay
       },
       5
     );
@@ -213,9 +216,9 @@ class UltraDexBenchmarkSuite {
       async () => {
         // Simulate memory-intensive operation
         const largeArray = new Array(1000000).fill(0).map((_, i) => ({ id: i, data: `data-${i}` }));
-        const processed = largeArray.map(item => ({ ...item, processed: true }));
+        const processed = largeArray.map((item) => ({ ...item, processed: true }));
         // Allow garbage collection
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
       },
       5
     );
@@ -227,27 +230,30 @@ class UltraDexBenchmarkSuite {
   printSummary() {
     console.log('\n📈 PERFORMANCE SUMMARY');
     console.log('=====================');
-    
+
     for (const benchmark of this.results.benchmarks) {
       console.log(`${benchmark.name}:`);
       console.log(`  • Avg: ${benchmark.stats.avgDuration.toFixed(2)}ms`);
-      console.log(`  • Range: ${benchmark.stats.minDuration.toFixed(2)}ms - ${benchmark.stats.maxDuration.toFixed(2)}ms`);
+      console.log(
+        `  • Range: ${benchmark.stats.minDuration.toFixed(2)}ms - ${benchmark.stats.maxDuration.toFixed(2)}ms`
+      );
       console.log(`  • Memory: ${(benchmark.stats.avgMemoryDelta / 1024 / 1024).toFixed(2)} MB`);
       console.log(`  • Errors: ${benchmark.stats.errorRate.toFixed(2)}%\n`);
     }
-    
+
     // Performance rating
-    const avgPerformance = this.results.benchmarks
-      .filter(b => b.stats.avgDuration > 0)
-      .reduce((sum, b) => sum + b.stats.avgDuration, 0) / 
-      this.results.benchmarks.filter(b => b.stats.avgDuration > 0).length;
-    
+    const avgPerformance =
+      this.results.benchmarks
+        .filter((b) => b.stats.avgDuration > 0)
+        .reduce((sum, b) => sum + b.stats.avgDuration, 0) /
+      this.results.benchmarks.filter((b) => b.stats.avgDuration > 0).length;
+
     let rating = '';
     if (avgPerformance < 100) rating = '🏆 Excellent';
     else if (avgPerformance < 500) rating = '👍 Good';
     else if (avgPerformance < 1000) rating = '👌 Average';
     else rating = '⚠️ Needs Improvement';
-    
+
     console.log(`Overall Performance Rating: ${rating} (Avg: ${avgPerformance.toFixed(2)}ms)`);
   }
 
@@ -299,7 +305,7 @@ class UltraDexBenchmarkSuite {
           'Validation Performance',
           async () => {
             const { validateCommand } = await import('./cli/lib/commands/validate.js');
-            return new Promise(resolve => setTimeout(resolve, 50));
+            return new Promise((resolve) => setTimeout(resolve, 50));
           },
           5
         );
@@ -314,9 +320,9 @@ class UltraDexBenchmarkSuite {
 // CLI Interface
 async function main() {
   const args = process.argv.slice(2);
-  
+
   const benchmarkSuite = new UltraDexBenchmarkSuite();
-  
+
   if (args.length > 0) {
     // Run specific benchmark
     const benchmarkName = args[0];

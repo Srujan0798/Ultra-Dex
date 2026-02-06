@@ -41,7 +41,7 @@ describe('Security Tests', () => {
     tempDir = path.join(tmpdir(), `ultra-dex-test-${randomBytes(8).toString('hex')}`);
     await fs.mkdir(tempDir, { recursive: true });
     process.chdir(tempDir);
-    
+
     mockServer = new MockServer();
   });
 
@@ -77,16 +77,22 @@ describe('Security Tests', () => {
         '../../../package.json',
         'subdir/../../package.json',
         '..\\package.json',
-        '..\\\\package.json'
+        '..\\\\package.json',
       ];
 
       for (const traversalPath of traversalAttempts) {
         try {
           const result = await readCodeTool.handler({ filePath: traversalPath });
-          assert(result.content[0].text.includes('Access denied'), `Should block path traversal: ${traversalPath}`);
+          assert(
+            result.content[0].text.includes('Access denied'),
+            `Should block path traversal: ${traversalPath}`
+          );
         } catch (error) {
-          assert(error.message.includes('Access denied') || error.message.includes('Path outside project root'), 
-                 `Should block path traversal: ${traversalPath}`);
+          assert(
+            error.message.includes('Access denied') ||
+              error.message.includes('Path outside project root'),
+            `Should block path traversal: ${traversalPath}`
+          );
         }
       }
     });
@@ -97,9 +103,9 @@ describe('Security Tests', () => {
       assert(writeCodeTool, 'write_code tool should be registered');
 
       // Test normal file writing
-      const result1 = await writeCodeTool.handler({ 
-        filePath: 'normal-file.txt', 
-        content: 'normal content' 
+      const result1 = await writeCodeTool.handler({
+        filePath: 'normal-file.txt',
+        content: 'normal content',
       });
       assert(result1.content[0].text.includes('Successfully wrote'), 'Should write normal file');
 
@@ -112,18 +118,24 @@ describe('Security Tests', () => {
         '../forbidden.txt',
         '../../forbidden.txt',
         'subdir/../../../forbidden.txt',
-        '..\\forbidden.txt'
+        '..\\forbidden.txt',
       ];
 
       for (const traversalPath of traversalAttempts) {
         try {
-          const result = await writeCodeTool.handler({ 
-            filePath: traversalPath, 
-            content: 'forbidden content' 
+          const result = await writeCodeTool.handler({
+            filePath: traversalPath,
+            content: 'forbidden content',
           });
-          assert(result.content[0].text.includes('Access denied'), `Should block path traversal: ${traversalPath}`);
+          assert(
+            result.content[0].text.includes('Access denied'),
+            `Should block path traversal: ${traversalPath}`
+          );
         } catch (error) {
-          assert(error.message.includes('Access denied'), `Should block path traversal: ${traversalPath}`);
+          assert(
+            error.message.includes('Access denied'),
+            `Should block path traversal: ${traversalPath}`
+          );
         }
       }
     });
@@ -135,7 +147,10 @@ describe('Security Tests', () => {
 
       // Create a mock agent file
       await fs.mkdir(path.join(tempDir, 'agents'), { recursive: true });
-      await fs.writeFile(path.join(tempDir, 'agents', 'backend.md'), '# Backend Agent\nTest content');
+      await fs.writeFile(
+        path.join(tempDir, 'agents', 'backend.md'),
+        '# Backend Agent\nTest content'
+      );
 
       // Test normal agent retrieval
       let result = await getAgentTool.handler({ agentName: 'backend' });
@@ -148,14 +163,16 @@ describe('Security Tests', () => {
         'backend;rm -rf /',
         'backend`rm -rf /`',
         'backend$(rm -rf /)',
-        '../../../../etc/passwd'
+        '../../../../etc/passwd',
       ];
 
       for (const maliciousName of maliciousNames) {
         result = await getAgentTool.handler({ agentName: maliciousName });
-        assert(result.content[0].text.includes('Invalid agent name format') || 
-               result.content[0].text.includes('Agent \'' + maliciousName + '\' not found'), 
-               `Should handle malicious name: ${maliciousName}`);
+        assert(
+          result.content[0].text.includes('Invalid agent name format') ||
+            result.content[0].text.includes("Agent '" + maliciousName + "' not found"),
+          `Should handle malicious name: ${maliciousName}`
+        );
       }
     });
   });
@@ -166,13 +183,13 @@ describe('Security Tests', () => {
       const sourceDir = path.join(tempDir, 'source');
       const destDir = path.join(tempDir, 'dest');
       const maliciousSourceDir = path.join(tempDir, 'malicious_source');
-      
+
       await fs.mkdir(sourceDir, { recursive: true });
       await fs.mkdir(maliciousSourceDir, { recursive: true });
-      
+
       // Create a sensitive file outside the intended source
       await fs.writeFile(path.join(tempDir, 'sensitive.txt'), 'sensitive data');
-      
+
       // Create a normal file in source
       await fs.writeFile(path.join(sourceDir, 'normal.txt'), 'normal data');
 
@@ -188,7 +205,10 @@ describe('Security Tests', () => {
         await copyDirectory(outsideSource, path.join(tempDir, 'forbidden_dest'));
         assert.fail('Should have thrown an error for outside source path');
       } catch (error) {
-        assert(error.message.includes('outside allowed directory'), 'Should block outside source path');
+        assert(
+          error.message.includes('outside allowed directory'),
+          'Should block outside source path'
+        );
       }
     });
   });
@@ -197,11 +217,11 @@ describe('Security Tests', () => {
     it('should validate file paths in agent execution', async () => {
       // This tests the enhanced runAgentLoop with path validation
       // We'll simulate the regex matching that happens in the function
-      
+
       // Since runAgentLoop requires a provider and other complex setup,
       // we'll test the path validation logic indirectly by checking
       // that the enhanced function properly validates paths
-      
+
       // The enhanced runAgentLoop now includes path validation that should
       // prevent directory traversal in both read and write operations
       assert.ok(true, 'Path validation is implemented in runAgentLoop');
@@ -212,54 +232,98 @@ describe('Security Tests', () => {
     it('should validate parameters in BaseProvider', () => {
       // Test the enhanced BaseProvider parameter validation
       class TestProvider extends BaseProvider {
-        getDefaultModel() { return 'test-model'; }
-        getAvailableModels() { return []; }
-        estimateCost() { return { input: 0, output: 0, total: 0 }; }
-        async generate() { return { content: '', usage: { inputTokens: 0, outputTokens: 0 } }; }
-        async generateStream() { return { content: '', usage: { inputTokens: 0, outputTokens: 0 } }; }
-        async validateApiKey() { return true; }
-        getName() { return 'TestProvider'; }
+        getDefaultModel() {
+          return 'test-model';
+        }
+        getAvailableModels() {
+          return [];
+        }
+        estimateCost() {
+          return { input: 0, output: 0, total: 0 };
+        }
+        async generate() {
+          return { content: '', usage: { inputTokens: 0, outputTokens: 0 } };
+        }
+        async generateStream() {
+          return { content: '', usage: { inputTokens: 0, outputTokens: 0 } };
+        }
+        async validateApiKey() {
+          return true;
+        }
+        getName() {
+          return 'TestProvider';
+        }
       }
 
       // Test parameter validation
       const provider = new TestProvider('fake-key');
-      
+
       // Test validateParams method
       assert.doesNotThrow(() => {
         provider.validateParams({ param1: 'value1' }, ['param1']);
       }, 'Should not throw for valid parameters');
-      
-      assert.throws(() => {
-        provider.validateParams({ param1: 'value1' }, ['param2']);
-      }, /Missing required parameter: param2/, 'Should throw for missing required parameter');
-      
-      assert.throws(() => {
-        provider.validateParams({ param1: '' }, ['param1']);
-      }, /Missing required parameter: param1/, 'Should throw for empty parameter');
-      
-      assert.throws(() => {
-        provider.validateParams({ param1: null }, ['param1']);
-      }, /Missing required parameter: param1/, 'Should throw for null parameter');
-      
-      assert.throws(() => {
-        provider.validateParams({ param1: undefined }, ['param1']);
-      }, /Missing required parameter: param1/, 'Should throw for undefined parameter');
+
+      assert.throws(
+        () => {
+          provider.validateParams({ param1: 'value1' }, ['param2']);
+        },
+        /Missing required parameter: param2/,
+        'Should throw for missing required parameter'
+      );
+
+      assert.throws(
+        () => {
+          provider.validateParams({ param1: '' }, ['param1']);
+        },
+        /Missing required parameter: param1/,
+        'Should throw for empty parameter'
+      );
+
+      assert.throws(
+        () => {
+          provider.validateParams({ param1: null }, ['param1']);
+        },
+        /Missing required parameter: param1/,
+        'Should throw for null parameter'
+      );
+
+      assert.throws(
+        () => {
+          provider.validateParams({ param1: undefined }, ['param1']);
+        },
+        /Missing required parameter: param1/,
+        'Should throw for undefined parameter'
+      );
     });
 
     it('should format errors consistently', () => {
       class TestProvider extends BaseProvider {
-        getDefaultModel() { return 'test-model'; }
-        getAvailableModels() { return []; }
-        estimateCost() { return { input: 0, output: 0, total: 0 }; }
-        async generate() { return { content: '', usage: { inputTokens: 0, outputTokens: 0 } }; }
-        async generateStream() { return { content: '', usage: { inputTokens: 0, outputTokens: 0 } }; }
-        async validateApiKey() { return true; }
-        getName() { return 'TestProvider'; }
+        getDefaultModel() {
+          return 'test-model';
+        }
+        getAvailableModels() {
+          return [];
+        }
+        estimateCost() {
+          return { input: 0, output: 0, total: 0 };
+        }
+        async generate() {
+          return { content: '', usage: { inputTokens: 0, outputTokens: 0 } };
+        }
+        async generateStream() {
+          return { content: '', usage: { inputTokens: 0, outputTokens: 0 } };
+        }
+        async validateApiKey() {
+          return true;
+        }
+        getName() {
+          return 'TestProvider';
+        }
       }
 
       const provider = new TestProvider('fake-key');
       const error = provider.formatError('test error', 'test context');
-      
+
       assert(error instanceof Error, 'Should return an Error instance');
       assert(error.message.includes('[TestProvider]'), 'Should include provider name in error');
       assert(error.message.includes('test context'), 'Should include context in error');
@@ -271,18 +335,18 @@ describe('Security Tests', () => {
 // Helper function to run the tests
 async function runTests() {
   console.log('🧪 Running Security Tests...\n');
-  
+
   const tests = [
     'MCP Tools Security',
-    'Scaffold Security', 
+    'Scaffold Security',
     'Agent Execution Security',
-    'Provider Security'
+    'Provider Security',
   ];
-  
+
   for (const testName of tests) {
     console.log(`✓ ${testName} tests completed`);
   }
-  
+
   console.log('\n✅ All security tests passed!');
 }
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Browser Automation Module (Playwright-based)
  * Enables Research agent to browse the web, take screenshots, and interact with pages
@@ -119,7 +121,7 @@ export class BrowserAutomation {
     const content = await this.page.evaluate(() => {
       // Remove scripts and styles
       const scripts = document.querySelectorAll('script, style, noscript');
-      scripts.forEach(el => el.remove());
+      scripts.forEach((el) => el.remove());
 
       // Get main content areas
       const mainContent = document.querySelector('main, article, .content, #content, .main');
@@ -140,22 +142,22 @@ export class BrowserAutomation {
     const links = await this.page.evaluate(() => {
       return Array.from(document.querySelectorAll('a[href]'))
         .slice(0, 50)
-        .map(a => ({
+        .map((a) => ({
           text: a.innerText?.trim().substring(0, 100),
           href: a.href,
         }))
-        .filter(l => l.text && l.href.startsWith('http'));
+        .filter((l) => l.text && l.href.startsWith('http'));
     });
 
     // Extract headings
     const headings = await this.page.evaluate(() => {
       return Array.from(document.querySelectorAll('h1, h2, h3'))
         .slice(0, 20)
-        .map(h => ({
+        .map((h) => ({
           level: h.tagName.toLowerCase(),
           text: h.innerText?.trim().substring(0, 200),
         }))
-        .filter(h => h.text);
+        .filter((h) => h.text);
     });
 
     return {
@@ -181,10 +183,8 @@ export class BrowserAutomation {
 
     // Generate filename
     const timestamp = Date.now();
-    const filename = customPath || path.join(
-      this.options.screenshotDir,
-      `screenshot-${timestamp}.png`
-    );
+    const filename =
+      customPath || path.join(this.options.screenshotDir, `screenshot-${timestamp}.png`);
 
     await this.page.screenshot({
       path: filename,
@@ -285,17 +285,20 @@ export class BrowserAutomation {
 
     const results = await this.page.evaluate(() => {
       const items = document.querySelectorAll('#search .g');
-      return Array.from(items).slice(0, 10).map(item => {
-        const linkEl = item.querySelector('a');
-        const titleEl = item.querySelector('h3');
-        const snippetEl = item.querySelector('.VwiC3b');
+      return Array.from(items)
+        .slice(0, 10)
+        .map((item) => {
+          const linkEl = item.querySelector('a');
+          const titleEl = item.querySelector('h3');
+          const snippetEl = item.querySelector('.VwiC3b');
 
-        return {
-          title: titleEl?.innerText || '',
-          url: linkEl?.href || '',
-          snippet: snippetEl?.innerText || '',
-        };
-      }).filter(r => r.url && r.title);
+          return {
+            title: titleEl?.innerText || '',
+            url: linkEl?.href || '',
+            snippet: snippetEl?.innerText || '',
+          };
+        })
+        .filter((r) => r.url && r.title);
     });
 
     return { query, results };

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -16,8 +18,8 @@ export function registerBrowseCommand(program) {
     .option('--block <hosts>', 'Comma-separated blocklist hosts')
     .action(async (task, options) => {
       try {
-        const allowlist = options.allow ? options.allow.split(',').map(s => s.trim()) : [];
-        const blocklist = options.block ? options.block.split(',').map(s => s.trim()) : [];
+        const allowlist = options.allow ? options.allow.split(',').map((s) => s.trim()) : [];
+        const blocklist = options.block ? options.block.split(',').map((s) => s.trim()) : [];
         const agent = new BrowserAgent({ allowlist, blocklist });
 
         if (options.replay) {
@@ -43,11 +45,12 @@ export function registerBrowseCommand(program) {
           await agent.recordSession(steps, options.record);
           printSuccess(chalk.green(`\n✅ Recorded session to ${options.record}\n`));
         } else {
-          printWarning(chalk.yellow('No actions performed. Use --record, --replay, or --screenshot.'));
+          printWarning(
+            chalk.yellow('No actions performed. Use --record, --replay, or --screenshot.')
+          );
         }
       } catch (error) {
         printError(chalk.red(`Browse failed: ${error.message}`));
       }
     });
 }
-

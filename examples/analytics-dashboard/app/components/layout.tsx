@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import React from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/app/lib/utils'
-import { Button } from '@/app/components/ui/button'
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/app/lib/utils';
+import { Button } from '@/app/components/ui/button';
 import {
   LayoutDashboard,
   BarChart3,
@@ -15,11 +15,11 @@ import {
   X,
   Bell,
   Search,
-} from 'lucide-react'
+} from 'lucide-react';
 
 interface SidebarProps {
-  isOpen: boolean
-  setIsOpen: (open: boolean) => void
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }
 
 const navigation = [
@@ -27,10 +27,10 @@ const navigation = [
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'Users', href: '/dashboard/users', icon: Users },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-]
+];
 
 export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <>
@@ -71,7 +71,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.name}
@@ -86,7 +86,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                   <item.icon className="h-5 w-5" />
                   {item.name}
                 </Link>
-              )
+              );
             })}
           </nav>
 
@@ -106,7 +106,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         </div>
       </aside>
     </>
-  )
+  );
 }
 
 export function Header({ setSidebarOpen }: { setSidebarOpen: (open: boolean) => void }) {
@@ -148,5 +148,5 @@ export function Header({ setSidebarOpen }: { setSidebarOpen: (open: boolean) => 
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Autonomous Mode (Wave 6: Self-Healing)
@@ -26,7 +27,7 @@ const AUTONOMOUS_CONFIG = {
   autoFix: true,
   autoTest: true,
   autoHeal: true,
-  maxRetries: 3
+  maxRetries: 3,
 };
 
 export class AutonomousEngine {
@@ -46,7 +47,7 @@ export class AutonomousEngine {
       type,
       action,
       confidence,
-      result
+      result,
     });
   }
 
@@ -55,7 +56,7 @@ export class AutonomousEngine {
     const data = JSON.stringify({
       status,
       message,
-      stats: { fixes: this.fixCount }
+      stats: { fixes: this.fixCount },
     });
 
     const req = http.request({
@@ -65,8 +66,8 @@ export class AutonomousEngine {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': data.length
-      }
+        'Content-Length': data.length,
+      },
     });
 
     req.on('error', () => {
@@ -102,7 +103,7 @@ export class AutonomousEngine {
         id,
         timestamp: new Date().toISOString(),
         error: errorOutput,
-        fix: fixDescription
+        fix: fixDescription,
       };
       await fs.writeFile(path.join(this.historyPath, `${id}.json`), JSON.stringify(entry, null, 2));
       this.fixCount++;
@@ -114,18 +115,23 @@ export class AutonomousEngine {
   async createSnapshot() {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const snapshotDir = path.join(this.snapshotsPath, timestamp);
-    
+
     try {
       await fs.mkdir(snapshotDir, { recursive: true });
-      
+
       // Manual copy to filter out heavy directories
       const entries = await fs.readdir(this.projectPath, { withFileTypes: true });
       for (const entry of entries) {
-        if (['node_modules', '.git', '.ultra-dex', '.ultra', 'dist', 'build', 'coverage'].includes(entry.name)) continue;
-        
+        if (
+          ['node_modules', '.git', '.ultra-dex', '.ultra', 'dist', 'build', 'coverage'].includes(
+            entry.name
+          )
+        )
+          continue;
+
         const src = path.join(this.projectPath, entry.name);
         const dest = path.join(snapshotDir, entry.name);
-        
+
         if (entry.isDirectory()) {
           await copyDirectory(src, dest);
         } else {
@@ -155,52 +161,53 @@ export class AutonomousEngine {
   async selfHeal(errorOutput, context = '') {
     printInfo(chalk.magenta('\n🔧 Entering Self-Healing Loop...'));
     this.sendDashboardUpdate('healing', 'Analyzing error patterns...');
-    
+
     // Prepare project context for the agent
     await projectGraph.scan();
     const graphSummary = projectGraph.getSummary();
     const history = await this.loadHistory();
-    const historyContext = history.length > 0 
-      ? `\n\nLESSONS LEARNED (Past Fixes):\n${history.map(h => `- Error: ${h.error.slice(0, 50)}... -> Fix: ${h.fix}`).join('\n')}` 
-      : '';
-    
+    const historyContext =
+      history.length > 0
+        ? `\n\nLESSONS LEARNED (Past Fixes):\n${history.map((h) => `- Error: ${h.error.slice(0, 50)}... -> Fix: ${h.fix}`).join('\n')}`
+        : '';
+
     const projectContext = {
       context: `ERROR DETECTED:\n${errorOutput}\n\nAdditional Context:\n${context}${historyContext}`,
-      graph: graphSummary
+      graph: graphSummary,
     };
 
     this.sendDashboardUpdate('healing', 'Agent devising fix...');
-    
+
     // Confidence scoring logic
     const analysisPrompt = `Analyze this error and provide a confidence score (0-100) on how likely you are to fix it in one attempt. 
     Error: \${errorOutput}
     Output format: [SCORE]: <number>
     [REASONING]: <text>`;
-    
+
     const analysis = await runAgentLoop('debugger', analysisPrompt, this.provider, projectContext);
     const scoreMatch = analysis.match(/\[SCORE\]:\s*(\d+)/);
     const confidence = scoreMatch ? parseInt(scoreMatch[1]) : 50;
 
     printInfo(chalk.gray(`\nConfidence Score: \${confidence}/100`));
-    
+
     if (confidence < 30) {
-        printWarning('⚠️ Low confidence in automated fix. Proceeding with caution...');
+      printWarning('⚠️ Low confidence in automated fix. Proceeding with caution...');
     }
 
     const result = await runAgentLoop(
-      'debugger', 
-      `Identify and fix the root cause of this error. Use READ_CODE and WRITE_CODE to apply fixes. Error output: \${errorOutput}`, 
+      'debugger',
+      `Identify and fix the root cause of this error. Use READ_CODE and WRITE_CODE to apply fixes. Error output: \${errorOutput}`,
       this.provider,
       projectContext
     );
 
     if (result && !result.startsWith('[Error]')) {
-       await this.saveHistory(errorOutput, result.slice(0, 100));
-       this.logDecision('self-heal', 'Applied fix', confidence, 'success');
-       this.sendDashboardUpdate('fixed', 'Fix applied successfully');
+      await this.saveHistory(errorOutput, result.slice(0, 100));
+      this.logDecision('self-heal', 'Applied fix', confidence, 'success');
+      this.sendDashboardUpdate('fixed', 'Fix applied successfully');
     } else {
-       this.logDecision('self-heal', 'Fix failed', confidence, 'failure');
-       this.sendDashboardUpdate('failed', 'Agent failed to fix issue');
+      this.logDecision('self-heal', 'Fix failed', confidence, 'failure');
+      this.sendDashboardUpdate('failed', 'Agent failed to fix issue');
     }
 
     return result;
@@ -212,9 +219,9 @@ export class AutonomousEngine {
       execSync(this.testCommand, { stdio: 'pipe', cwd: this.projectPath });
       return { passed: true };
     } catch (error) {
-      return { 
-        passed: false, 
-        output: error.stdout?.toString() || error.stderr?.toString() || error.message 
+      return {
+        passed: false,
+        output: error.stdout?.toString() || error.stderr?.toString() || error.message,
       };
     }
   }
@@ -234,9 +241,9 @@ export class AutonomousEngine {
       decisions: this.decisions,
       summary: {
         total: this.decisions.length,
-        successful: this.decisions.filter(d => d.result === 'success').length,
-        failed: this.decisions.filter(d => d.result === 'failure').length
-      }
+        successful: this.decisions.filter((d) => d.result === 'success').length,
+        failed: this.decisions.filter((d) => d.result === 'failure').length,
+      },
     };
 
     const reportPath = path.join(this.projectPath, '.ultra-dex', 'autonomous-report.json');
@@ -244,71 +251,77 @@ export class AutonomousEngine {
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
     return reportPath;
   }
-  
+
   startWatchMode() {
     printInfo(chalk.cyan.bold('\n👁️  Starting Watch & Heal Mode...\n'));
     this.sendDashboardUpdate('idle', 'Watch mode active');
-    
-    const watchPaths = ['src', 'lib', 'app', 'test', 'cli'].filter(p => existsSync(path.join(this.projectPath, p)));
+
+    const watchPaths = ['src', 'lib', 'app', 'test', 'cli'].filter((p) =>
+      existsSync(path.join(this.projectPath, p))
+    );
     printInfo(chalk.gray(`Watching for changes in: ${watchPaths.join(', ')}`));
 
     let debounceTimer = null;
     let isHealing = false;
 
-    watchPaths.forEach(watchPath => {
-        try {
-            watch(path.join(this.projectPath, watchPath), { recursive: true }, (eventType, filename) => {
-                if (debounceTimer) clearTimeout(debounceTimer);
-                if (isHealing) return; // Don't trigger if already healing
-                
-                debounceTimer = setTimeout(async () => {
-                    const timestamp = new Date().toLocaleTimeString();
-                    printWarning(`\n[${timestamp}] 📝 Change detected in ${filename}. Running tests...`);
-                    this.sendDashboardUpdate('checking', `Validating changes in ${filename}...`);
-                    
-                    const testResult = await this.runTests();
-                    if (!testResult.passed) {
-                        printError('❌ Tests failed! Triggering self-healing...');
-                        isHealing = true;
-                        
-                        // Snapshot before healing
-                        const snapshotPath = await this.createSnapshot();
-                        if (snapshotPath) printInfo(chalk.gray(`📸 Snapshot: ${snapshotPath}`));
+    watchPaths.forEach((watchPath) => {
+      try {
+        watch(
+          path.join(this.projectPath, watchPath),
+          { recursive: true },
+          (eventType, filename) => {
+            if (debounceTimer) clearTimeout(debounceTimer);
+            if (isHealing) return; // Don't trigger if already healing
 
-                        try {
-                            await this.selfHeal(testResult.output, 'Tests failed during watch mode.');
-                            
-                            // Verify fix
-                            const verifyResult = await this.runTests();
-                            if (verifyResult.passed) {
-                                printSuccess('✅ Fix verified! Tests passed.');
-                                this.sendDashboardUpdate('fixed', 'Self-healing successful');
-                            } else {
-                                printError('❌ Self-healing failed.');
-                                this.sendDashboardUpdate('failed', 'Self-healing failed to resolve issue');
-                                if (snapshotPath) {
-                                    printWarning(`⚠️  You may want to restore from: ${snapshotPath}`);
-                                }
-                            }
-                        } catch (e) {
-                             printError(`Self-healing error: ${e.message}`);
-                             this.sendDashboardUpdate('failed', `Error: ${e.message}`);
-                        } finally {
-                            isHealing = false;
-                            printInfo('\n👁️  Resuming watch mode...');
-                            setTimeout(() => this.sendDashboardUpdate('idle', 'Watch mode active'), 2000);
-                        }
-                    } else {
-                        printSuccess('✅ Tests passed.');
-                        this.sendDashboardUpdate('idle', 'Tests passed. System healthy.');
+            debounceTimer = setTimeout(async () => {
+              const timestamp = new Date().toLocaleTimeString();
+              printWarning(`\n[${timestamp}] 📝 Change detected in ${filename}. Running tests...`);
+              this.sendDashboardUpdate('checking', `Validating changes in ${filename}...`);
+
+              const testResult = await this.runTests();
+              if (!testResult.passed) {
+                printError('❌ Tests failed! Triggering self-healing...');
+                isHealing = true;
+
+                // Snapshot before healing
+                const snapshotPath = await this.createSnapshot();
+                if (snapshotPath) printInfo(chalk.gray(`📸 Snapshot: ${snapshotPath}`));
+
+                try {
+                  await this.selfHeal(testResult.output, 'Tests failed during watch mode.');
+
+                  // Verify fix
+                  const verifyResult = await this.runTests();
+                  if (verifyResult.passed) {
+                    printSuccess('✅ Fix verified! Tests passed.');
+                    this.sendDashboardUpdate('fixed', 'Self-healing successful');
+                  } else {
+                    printError('❌ Self-healing failed.');
+                    this.sendDashboardUpdate('failed', 'Self-healing failed to resolve issue');
+                    if (snapshotPath) {
+                      printWarning(`⚠️  You may want to restore from: ${snapshotPath}`);
                     }
-                }, 1000); // 1s debounce
-            });
-        } catch (e) {
-            printWarning(`⚠️  Cannot watch ${watchPath}: ${e.message}`);
-        }
+                  }
+                } catch (e) {
+                  printError(`Self-healing error: ${e.message}`);
+                  this.sendDashboardUpdate('failed', `Error: ${e.message}`);
+                } finally {
+                  isHealing = false;
+                  printInfo('\n👁️  Resuming watch mode...');
+                  setTimeout(() => this.sendDashboardUpdate('idle', 'Watch mode active'), 2000);
+                }
+              } else {
+                printSuccess('✅ Tests passed.');
+                this.sendDashboardUpdate('idle', 'Tests passed. System healthy.');
+              }
+            }, 1000); // 1s debounce
+          }
+        );
+      } catch (e) {
+        printWarning(`⚠️  Cannot watch ${watchPath}: ${e.message}`);
+      }
     });
-    
+
     // Keep process alive
     process.stdin.resume();
   }
@@ -339,8 +352,8 @@ export function registerAutonomousCommand(program) {
         const engine = new AutonomousEngine(process.cwd(), provider, options.testCmd);
 
         if (options.watch) {
-            engine.startWatchMode();
-            return;
+          engine.startWatchMode();
+          return;
         }
 
         // 1. Linting Phase
@@ -384,9 +397,13 @@ export function registerAutonomousCommand(program) {
           } else {
             testSpinner.fail(chalk.red(`Self-healing failed after ${attempts} attempts.`));
             if (snapshotPath) {
-               printWarning(chalk.yellow(`\n⚠️ Recovery failed. To restore original state:\n   cp -r ${snapshotPath}/* .`));
-               // Optionally auto-restore here if configured
-               // await engine.restoreSnapshot(snapshotPath);
+              printWarning(
+                chalk.yellow(
+                  `\n⚠️ Recovery failed. To restore original state:\n   cp -r ${snapshotPath}/* .`
+                )
+              );
+              // Optionally auto-restore here if configured
+              // await engine.restoreSnapshot(snapshotPath);
             }
           }
         } else if (testResult.passed) {
@@ -398,7 +415,9 @@ export function registerAutonomousCommand(program) {
         // 3. Commit Phase
         if (options.commit && testResult.passed) {
           try {
-            execSync('git add . && git commit -m "chore: autonomous self-healing fix applied"', { stdio: 'ignore' });
+            execSync('git add . && git commit -m "chore: autonomous self-healing fix applied"', {
+              stdio: 'ignore',
+            });
             printSuccess(chalk.green('\n✅ Fixes committed to history.'));
           } catch {
             printInfo(chalk.gray('\nℹ️ Nothing to commit.'));

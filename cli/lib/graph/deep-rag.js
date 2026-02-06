@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Deep Graph RAG
  * FalkorDB / Neo4j-backed impact and semantic search (best-effort fallback to in-memory)
@@ -13,7 +15,7 @@ export class DeepGraphRAG {
     this.useInMemory = options.useInMemory || false;
     this.graph = new GraphRAG({
       dbType: this.dbType,
-      useInMemory: this.useInMemory
+      useInMemory: this.useInMemory,
     });
     this.falkor = null;
   }

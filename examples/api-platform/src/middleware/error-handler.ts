@@ -54,43 +54,47 @@ export const errorHandler = (
   _next: NextFunction
 ): void => {
   const requestId = req.requestId;
-  
+
   if (err instanceof AppError) {
-    logger.warn({
-      requestId,
-      error: err.message,
-      code: err.code,
-      statusCode: err.statusCode,
-      stack: err.stack
-    }, 'Application error');
-    
+    logger.warn(
+      {
+        requestId,
+        error: err.message,
+        code: err.code,
+        statusCode: err.statusCode,
+        stack: err.stack,
+      },
+      'Application error'
+    );
+
     res.status(err.statusCode).json({
       error: {
         code: err.code,
         message: err.message,
         ...(err.details && { details: err.details }),
-        ...(err instanceof RateLimitError && { retry_after: err.retryAfter })
-      }
+        ...(err instanceof RateLimitError && { retry_after: err.retryAfter }),
+      },
     });
     return;
   }
-  
+
   // Log unexpected errors
-  logger.error({
-    requestId,
-    error: err.message,
-    stack: err.stack
-  }, 'Unexpected error');
-  
+  logger.error(
+    {
+      requestId,
+      error: err.message,
+      stack: err.stack,
+    },
+    'Unexpected error'
+  );
+
   // Don't leak error details in production
-  const message = process.env.NODE_ENV === 'production' 
-    ? 'Internal server error' 
-    : err.message;
-  
+  const message = process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
+
   res.status(500).json({
     error: {
       code: 'internal_error',
-      message
-    }
+      message,
+    },
   });
 };

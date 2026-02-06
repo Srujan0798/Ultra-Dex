@@ -15,7 +15,7 @@
 > **Source:** DEPLOYMENT.md (Docker section)
 > **Status:** Full templates exist
 
-```
+````
 ## Task: Create Docker Config Generator
 
 **Files to create:**
@@ -29,7 +29,7 @@
 ```bash
 ultra-dex docker init
 ultra-dex docker compose
-```
+````
 
 2. Generate production-ready Dockerfile:
    - Node.js Alpine base
@@ -44,6 +44,7 @@ ultra-dex docker compose
    - Network configuration
 
 **Commit:** "feat: Add Docker configuration generator"
+
 ```
 
 ---
@@ -54,9 +55,11 @@ ultra-dex docker compose
 > **Status:** Full templates exist
 
 ```
+
 ## Task: Create Kubernetes Manifest Generator
 
 **Files to create:**
+
 - cli/lib/commands/k8s.js (NEW)
 - templates/k8s/deployment.yaml (NEW)
 - templates/k8s/service.yaml (NEW)
@@ -64,6 +67,7 @@ ultra-dex docker compose
 **Requirements:**
 
 1. Command:
+
 ```bash
 ultra-dex k8s init
 ultra-dex k8s deploy --replicas 2
@@ -80,6 +84,7 @@ ultra-dex k8s deploy --replicas 2
    - Port mapping
 
 **Commit:** "feat: Add Kubernetes manifest generator"
+
 ```
 
 ---
@@ -90,9 +95,11 @@ ultra-dex k8s deploy --replicas 2
 > **Status:** Full templates exist
 
 ```
+
 ## Task: Create Environment Config Manager
 
 **Files to create:**
+
 - cli/lib/commands/env.js (NEW)
 - templates/env/.env.production (NEW)
 - templates/env/.env.staging (NEW)
@@ -100,6 +107,7 @@ ultra-dex k8s deploy --replicas 2
 **Requirements:**
 
 1. Commands:
+
 ```bash
 ultra-dex env init
 ultra-dex env switch production
@@ -115,6 +123,7 @@ ultra-dex env validate
 3. Validate all required vars are set
 
 **Commit:** "feat: Add environment config manager"
+
 ```
 
 ---
@@ -125,9 +134,11 @@ ultra-dex env validate
 > **Status:** Full templates exist
 
 ```
+
 ## Task: Create Monitoring Stack Generator
 
 **Files to create:**
+
 - cli/lib/commands/monitor.js (NEW)
 - templates/monitoring/prometheus.yml (NEW)
 - templates/monitoring/grafana-dashboard.json (NEW)
@@ -135,6 +146,7 @@ ultra-dex env validate
 **Requirements:**
 
 1. Commands:
+
 ```bash
 ultra-dex monitor init
 ultra-dex monitor dashboard
@@ -151,6 +163,7 @@ ultra-dex monitor dashboard
    - Agent execution metrics
 
 **Commit:** "feat: Add monitoring stack generator"
+
 ```
 
 ---
@@ -165,15 +178,18 @@ ultra-dex monitor dashboard
 > **Status:** Full guide exists
 
 ```
+
 ## Task: Create Security Audit Command
 
 **Files to create:**
+
 - cli/lib/commands/security.js (NEW)
 - cli/lib/security/validators.js (NEW)
 
 **Requirements:**
 
 1. Commands:
+
 ```bash
 ultra-dex security audit
 ultra-dex security check-secrets
@@ -181,6 +197,7 @@ ultra-dex security validate-paths
 ```
 
 2. Path traversal prevention:
+
 ```javascript
 const validateSafePath = (input) => {
   if (input.includes('..')) return false;
@@ -197,6 +214,7 @@ const validateSafePath = (input) => {
    - Check for exposed secrets
 
 **Commit:** "feat: Add security audit CLI"
+
 ```
 
 ---
@@ -207,15 +225,18 @@ const validateSafePath = (input) => {
 > **Status:** Full guide exists
 
 ```
+
 ## Task: Create Credential Manager
 
 **Files to create:**
+
 - cli/lib/commands/credentials.js (NEW)
 - cli/lib/security/keychain.js (NEW)
 
 **Requirements:**
 
 1. Commands:
+
 ```bash
 ultra-dex creds set ANTHROPIC_API_KEY
 ultra-dex creds list
@@ -231,6 +252,7 @@ ultra-dex creds rotate
    - Warn when >90 days old
 
 **Commit:** "feat: Add credential manager"
+
 ```
 
 ---
@@ -241,15 +263,18 @@ ultra-dex creds rotate
 > **Status:** Full guide exists
 
 ```
+
 ## Task: Create Plugin Security Scanner
 
 **Files to create:**
+
 - cli/lib/commands/plugin-scan.js (NEW)
 - cli/lib/security/plugin-validator.js (NEW)
 
 **Requirements:**
 
 1. Commands:
+
 ```bash
 ultra-dex plugin scan <plugin-name>
 ultra-dex plugin trust <plugin-name>
@@ -264,6 +289,7 @@ ultra-dex plugin trust <plugin-name>
 3. Trust registry for approved plugins
 
 **Commit:** "feat: Add plugin security scanner"
+
 ```
 
 ---
@@ -278,21 +304,25 @@ ultra-dex plugin trust <plugin-name>
 > **Status:** Full guide exists
 
 ```
+
 ## Task: Create Performance Profiler
 
 **Files to create:**
+
 - cli/lib/utils/profiler.js (enhance)
 - cli/lib/commands/profile.js (NEW)
 
 **Requirements:**
 
 1. Commands:
+
 ```bash
 ultra-dex profile <command>
 ultra-dex profile report
 ```
 
 2. Profiling functions:
+
 ```javascript
 export function timeAsync(label, fn) {
   const start = performance.now();
@@ -311,6 +341,7 @@ export function timeAsync(label, fn) {
    | API call | <5s | >15s |
 
 **Commit:** "feat: Add performance profiler"
+
 ```
 
 ---
@@ -321,25 +352,28 @@ export function timeAsync(label, fn) {
 > **Status:** Full guide exists
 
 ```
+
 ## Task: Create Caching System
 
 **Files to create:**
+
 - cli/lib/cache/file-cache.js (NEW)
 - cli/lib/cache/graph-cache.js (NEW)
 
 **Requirements:**
 
 1. File cache with TTL:
+
 ```javascript
 class FileCache {
   constructor(ttl = 30000) {
     this.cache = new Map();
     this.ttl = ttl;
   }
-  
+
   async get(key, fetchFn) {
     const cached = this.cache.get(key);
-    if (cached && (Date.now() - cached.time) < this.ttl) {
+    if (cached && Date.now() - cached.time < this.ttl) {
       return cached.value;
     }
     const value = await fetchFn();
@@ -353,6 +387,7 @@ class FileCache {
 3. API response cache
 
 **Commit:** "feat: Add caching system"
+
 ```
 
 ---
@@ -363,24 +398,28 @@ class FileCache {
 > **Status:** Full guide exists
 
 ```
+
 ## Task: Create Performance Budget Enforcer
 
 **Files to create:**
+
 - cli/lib/commands/budget.js (NEW)
 - cli/lib/perf/budget-checker.js (NEW)
 
 **Requirements:**
 
 1. Define budgets:
+
 ```javascript
 const BUDGETS = {
-  'file-scan': 1000,    // 1s
-  'graph-build': 3000,  // 3s
-  'api-call': 5000,     // 5s
+  'file-scan': 1000, // 1s
+  'graph-build': 3000, // 3s
+  'api-call': 5000, // 5s
 };
 ```
 
 2. Commands:
+
 ```bash
 ultra-dex budget check
 ultra-dex budget set <operation> <ms>
@@ -389,6 +428,7 @@ ultra-dex budget set <operation> <ms>
 3. Warn on budget violations
 
 **Commit:** "feat: Add performance budget enforcer"
+
 ```
 
 ---
@@ -403,14 +443,17 @@ ultra-dex budget set <operation> <ms>
 > **Status:** Full code exists
 
 ```
+
 ## Task: Create Gradient ASCII Banner
 
 **Files to create:**
+
 - cli/lib/commands/banner.js (rewrite)
 
 **Requirements:**
 
 1. Dependencies:
+
 ```json
 {
   "gradient-string": "^2.0.2",
@@ -424,6 +467,7 @@ ultra-dex budget set <operation> <ms>
 3. Boxed banner with rounded corners
 
 **Commit:** "feat: Add gradient ASCII banner"
+
 ```
 
 ---
@@ -434,9 +478,11 @@ ultra-dex budget set <operation> <ms>
 > **Status:** Full code exists
 
 ```
+
 ## Task: Create Styled Table Utility
 
 **Files to create:**
+
 - cli/lib/utils/tables.js (NEW)
 
 **Requirements:**
@@ -444,6 +490,7 @@ ultra-dex budget set <operation> <ms>
 1. Dependency: cli-table3
 
 2. Rounded borders:
+
 ```javascript
 chars: {
   'top-left': '╭', 'top-right': '╮',
@@ -455,6 +502,7 @@ chars: {
 4. Agent status tables
 
 **Commit:** "feat: Add styled table utilities"
+
 ```
 
 ---
@@ -465,18 +513,19 @@ chars: {
 > **Status:** Full code exists
 
 ```
+
 ## Task: Create Progress Bar Utility
 
 **Files to create:**
+
 - cli/lib/utils/progress.js (NEW)
 
 **Requirements:**
 
 1. Progress bar:
+
 ```javascript
-const bar = 
-  chalk.magenta('█'.repeat(filled)) + 
-  chalk.dim('░'.repeat(empty));
+const bar = chalk.magenta('█'.repeat(filled)) + chalk.dim('░'.repeat(empty));
 ```
 
 2. Swarm mode progress:
@@ -487,6 +536,7 @@ const bar =
 3. Real-time updates
 
 **Commit:** "feat: Add progress bar utilities"
+
 ```
 
 ---
@@ -497,9 +547,11 @@ const bar =
 > **Status:** Full code exists
 
 ```
+
 ## Task: Create CLI Theme System
 
 **Files to create:**
+
 - cli/lib/config/theme.js (NEW)
 
 **Requirements:**
@@ -510,11 +562,13 @@ const bar =
    - forest (green)
 
 2. Theme switching:
+
 ```bash
 ultra-dex config --theme ocean
 ```
 
 3. Styled helper function:
+
 ```javascript
 export function styled(type, text) {
   return chalk.hex(currentTheme[type])(text);
@@ -522,6 +576,7 @@ export function styled(type, text) {
 ```
 
 **Commit:** "feat: Add CLI theme system"
+
 ```
 
 ---
@@ -532,9 +587,11 @@ export function styled(type, text) {
 > **Status:** Full code exists
 
 ```
+
 ## Task: Add Update Notifier
 
 **Files to update:**
+
 - cli/bin/ultra-dex.js (enhance)
 
 **Requirements:**
@@ -542,14 +599,16 @@ export function styled(type, text) {
 1. Dependency: update-notifier
 
 2. Check for updates daily:
+
 ```javascript
-const notifier = updateNotifier({ 
-  pkg, 
-  updateCheckInterval: 1000 * 60 * 60 * 24 
+const notifier = updateNotifier({
+  pkg,
+  updateCheckInterval: 1000 * 60 * 60 * 24,
 });
 ```
 
 3. Display update box:
+
 ```
 ╭─────────────────────────────────────────╮
 │ Update available! 3.0.0 → 3.1.0         │
@@ -558,6 +617,7 @@ const notifier = updateNotifier({
 ```
 
 **Commit:** "feat: Add update notifier"
+
 ```
 
 ---
@@ -608,3 +668,4 @@ const notifier = updateNotifier({
 | 11 | #96-110 | DevOps + Visual |
 
 *All prompts copy-paste ready for AI agents!*
+```

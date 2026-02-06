@@ -14,12 +14,12 @@
 
 ## ⚠️ THE JAN 30 SOTA BREACH: WHAT CHANGED?
 
-| Feature | Competitor Update (Jan 29-30) | Impact on Ultra-Dex |
-|---------|------------------------------|---------------------|
-| **Agent Client Protocol (ACP)** | GitHub Copilot CLI added native ACP support | We must become an ACP host to orchestrate them |
-| **Interactive PTY** | Gemini CLI now supports Pseudo-terminals (PTY) for vim/rebase in-context | Ultra-Dex feels "Static" by comparison |
-| **Dependency Tracking** | Claude Code v2.1.21 added a new task system with dependency logic | Our 21-step plan needs to be an active graph |
-| **Session Teleportation** | Claude now allows "Teleporting" sessions between terminal and web | CONTEXT.md is no longer the only way to hold memory |
+| Feature                         | Competitor Update (Jan 29-30)                                            | Impact on Ultra-Dex                                 |
+| ------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
+| **Agent Client Protocol (ACP)** | GitHub Copilot CLI added native ACP support                              | We must become an ACP host to orchestrate them      |
+| **Interactive PTY**             | Gemini CLI now supports Pseudo-terminals (PTY) for vim/rebase in-context | Ultra-Dex feels "Static" by comparison              |
+| **Dependency Tracking**         | Claude Code v2.1.21 added a new task system with dependency logic        | Our 21-step plan needs to be an active graph        |
+| **Session Teleportation**       | Claude now allows "Teleporting" sessions between terminal and web        | CONTEXT.md is no longer the only way to hold memory |
 
 ---
 
@@ -38,48 +38,53 @@ We must move from being a repository for memory to being the orchestrator of com
 
 ## 📊 REVIEW DIMENSIONS (JAN 31 SCORECARD)
 
-| Dimension | Score | Evidence / Justification |
-|-----------|-------|--------------------------|
-| **Active Execution** | 5/10 | Competitors launched "Autopilot" modes on Jan 30; we still rely on "Middleware Humans" |
-| **Meta-Layer Position** | 9/10 | Strategic focus on orchestration remains elite. No one else owns Layer 3 |
-| **2026 Integration** | 6/10 | Need native ACP support to match the new Copilot standard |
-| **Competitive Moat** | 10/10 | The 34-section/21-step rigor is unmatched for production engineering |
-| **Tech Readiness** | 4/10 | Lacks PTY interactivity and "Sketch-to-Code" multimodal support |
-| **TOTAL** | **6.8/10** | Critical Need: Move from "Template" to "Active Engine" |
+| Dimension               | Score      | Evidence / Justification                                                               |
+| ----------------------- | ---------- | -------------------------------------------------------------------------------------- |
+| **Active Execution**    | 5/10       | Competitors launched "Autopilot" modes on Jan 30; we still rely on "Middleware Humans" |
+| **Meta-Layer Position** | 9/10       | Strategic focus on orchestration remains elite. No one else owns Layer 3               |
+| **2026 Integration**    | 6/10       | Need native ACP support to match the new Copilot standard                              |
+| **Competitive Moat**    | 10/10      | The 34-section/21-step rigor is unmatched for production engineering                   |
+| **Tech Readiness**      | 4/10       | Lacks PTY interactivity and "Sketch-to-Code" multimodal support                        |
+| **TOTAL**               | **6.8/10** | Critical Need: Move from "Template" to "Active Engine"                                 |
 
 ---
 
 ## ✅ 2026 REALITY CHECK: PASS/FAIL
 
-| Check | Pass? | Evidence |
-|-------|-------|----------|
-| **ACTIVE not PASSIVE** | ❌ FAIL | Requires human middleware to manually sync CONTEXT.md |
-| **DYNAMIC not STATIC** | ✅ PASS | MCP server logic is state-of-the-art for context retrieval |
+| Check                       | Pass?      | Evidence                                                                      |
+| --------------------------- | ---------- | ----------------------------------------------------------------------------- |
+| **ACTIVE not PASSIVE**      | ❌ FAIL    | Requires human middleware to manually sync CONTEXT.md                         |
+| **DYNAMIC not STATIC**      | ✅ PASS    | MCP server logic is state-of-the-art for context retrieval                    |
 | **EXECUTES not just PLANS** | ⚠️ PARTIAL | Swarm mode is present but disconnected from the 21-step verification protocol |
-| **INTEGRATES not ISOLATES** | ✅ PASS | Tool agnosticism is a major win; works with Claude/Gemini/Copilot |
-| **2026 not 2024** | ❌ FAIL | CLI aesthetics (logging) feel like 2024; needs "Box UI" and "Technical Mono" |
+| **INTEGRATES not ISOLATES** | ✅ PASS    | Tool agnosticism is a major win; works with Claude/Gemini/Copilot             |
+| **2026 not 2024**           | ❌ FAIL    | CLI aesthetics (logging) feel like 2024; needs "Box UI" and "Technical Mono"  |
 
 ---
 
 ## 🔥 TOP 5 CRITICAL GAPS
 
 ### 1. Missing ACP Support (Agent Client Protocol)
+
 **Issue:** GitHub's new standard allows agents to be portable across all IDEs.
 **Action Required:** Ultra-Dex must implement an --acp flag to act as the industry-standard bridge.
 
 ### 2. Stateless Agent Swarms
+
 **Issue:** Our 16 agents are "Prompt Wrappers," not "Stateful Graphs."
 **Action Required:** They need to use LangGraph-style persistence to handle multi-step tasks autonomously.
 
 ### 3. Static Verification Protocol
+
 **Issue:** The 21-step checklist is a file, not a function.
 **Action Required:** SOTA tools now run these as "Quality Gates" (PostToolUse hooks) that block invalid code.
 
 ### 4. No Interactive PTY
+
 **Issue:** Gemini CLI's PTY support allows you to use vim inside the AI context.
 **Action Required:** Ultra-Dex needs a pseudo-terminal bridge so the AI can watch the human edit files.
 
 ### 5. Aesthetic "Dummy" Feel
+
 **Issue:** Standard CLI output is too noisy.
 **Action Required:** We need to adopt the "Box UI" pattern and shimmer thinking animations to convey professional polish.
 
@@ -88,14 +93,17 @@ We must move from being a repository for memory to being the orchestrator of com
 ## 🚀 48-HOUR CRITICAL PATH
 
 ### Hour 0-12: The Aesthetic Reset
+
 - **Implement "Technical Mono" UX:** Use the ink library to wrap agent outputs in Unicode boxes
 - **Shimmer Animation:** Add a subtle pulse indicator during agent reasoning (matching Claude Code's latest update)
 
 ### Hour 12-24: Active Synchronization
+
 - **Auto-Sync Git Hook:** Create a pre-push hook that uses an agent to update CONTEXT.md based on the branch diff
 - **ultra-dex verify --live:** Operationalize the 21-step protocol as a CLI command that runs linters, security scans, and tests automatically
 
 ### Hour 24-48: The Meta-Layer Upgrade
+
 - **ACP Server:** Implement an Agent Client Protocol endpoint so that Cursor 2.0 can call Ultra-Dex as its "Brain"
 - **PTY Interactive Mode:** Integrate node-pty to allow the user to trigger interactive shell commands while keeping the AI in the loop
 

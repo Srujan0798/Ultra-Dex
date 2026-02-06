@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex State Sync Engine
  * Bi-directionally synchronizes IMPLEMENTATION-PLAN.md and .ultra/state.json
@@ -41,7 +43,7 @@ export async function syncState() {
       if (!state) {
         state = {
           project: { name: path.basename(projectRoot), mode: 'ULTRA_MODE' },
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
       }
       state.phases = phases;

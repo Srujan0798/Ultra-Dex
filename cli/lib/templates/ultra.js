@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export const ULTRA_TEMPLATE = `# ULTRA Context: {{PROJECT_NAME}}
 
 > This is the source of truth for all AI agents. It defines boundaries, invariants, and collective memory.

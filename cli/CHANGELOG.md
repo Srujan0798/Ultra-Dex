@@ -5,16 +5,19 @@ All notable changes to Ultra-Dex will be documented in this file.
 ## [3.4.2] - 2026-01-30
 
 ### Fixed
+
 - Console logs now silent by default (only show in debug mode)
 - Version sync across all files
 - 13 ESLint warnings fixed (70 → 57)
 
 ### Changed
+
 - Alignment score improved to 85%
 
 ## [3.4.1] - 2026-01-30
 
 ### Added
+
 - **LangChain Adapter** (`cli/lib/providers/langchain.js`)
   - Chain templates: summarize, codeReview, taskBreakdown
   - RAG support with vector stores
@@ -34,6 +37,7 @@ All notable changes to Ultra-Dex will be documented in this file.
 ## [3.3.0] - 2026-01-30
 
 ### Added
+
 - **sync --brain** - Autonomous CONTEXT.md updates from codebase analysis
 - **Docker sandbox** (`exec` command) - Safe code execution
 - **Semantic search** (`search` command) - Vector embeddings for code search
@@ -44,6 +48,7 @@ All notable changes to Ultra-Dex will be documented in this file.
 - **VS Code Extension** - VSIX packaging
 
 ### Fixed
+
 - MCP server version mismatch
 - All 82 tests passing (100%)
 - LOG_LEVEL=silent for test output
@@ -51,6 +56,7 @@ All notable changes to Ultra-Dex will be documented in this file.
 ## [3.2.0] - 2026-01-29
 
 ### Added
+
 - MCP (Model Context Protocol) integration
 - WebSocket real-time streaming
 - Code Property Graph analysis
@@ -60,6 +66,7 @@ All notable changes to Ultra-Dex will be documented in this file.
 ## [3.1.0] - 2026-01-28
 
 ### Added
+
 - Agent SDK integration
 - Anthropic Agents support
 - Browser automation (Playwright)
@@ -69,6 +76,7 @@ All notable changes to Ultra-Dex will be documented in this file.
 ## [3.0.0] - 2026-01-27
 
 ### Added
+
 - Complete rewrite with modular architecture
 - 17 AI agents across 7 tiers
 - Swarm mode for parallel execution
@@ -79,16 +87,16 @@ All notable changes to Ultra-Dex will be documented in this file.
 
 ## Providers
 
-| Provider | Status | File |
-|----------|--------|------|
-| Claude | ✅ | `providers/claude.js` |
-| OpenAI | ✅ | `providers/openai.js` |
-| Gemini | ✅ | `providers/gemini.js` |
-| Ollama | ✅ | `providers/ollama.js` |
-| LangChain | ✅ NEW | `providers/langchain.js` |
+| Provider          | Status | File                             |
+| ----------------- | ------ | -------------------------------- |
+| Claude            | ✅     | `providers/claude.js`            |
+| OpenAI            | ✅     | `providers/openai.js`            |
+| Gemini            | ✅     | `providers/gemini.js`            |
+| Ollama            | ✅     | `providers/ollama.js`            |
+| LangChain         | ✅ NEW | `providers/langchain.js`         |
 | OpenAI Assistants | ✅ NEW | `providers/openai-assistants.js` |
-| Agent SDK | ✅ | `providers/agent-sdk.js` |
-| Router | ✅ | `providers/router.js` |
+| Agent SDK         | ✅     | `providers/agent-sdk.js`         |
+| Router            | ✅     | `providers/router.js`            |
 
 ## Test Coverage
 

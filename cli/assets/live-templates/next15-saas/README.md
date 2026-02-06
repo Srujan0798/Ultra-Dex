@@ -1,6 +1,7 @@
 # Next.js SaaS Starter
 
 Production-ready SaaS template with:
+
 - **Authentication**: Clerk
 - **Payments**: Stripe (checkout, webhooks, subscriptions)
 - **Database**: Prisma + PostgreSQL

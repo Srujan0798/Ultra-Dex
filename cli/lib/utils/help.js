@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Styled Help Utilities for Ultra-Dex CLI
  * Provides consistent, visually enhanced help sections across all commands
@@ -12,13 +14,13 @@ import { theme } from '../ui/theme.js';
  */
 export function formatUsage(commandName, options = []) {
   const usage = `ultra-dex ${commandName} ${theme.dim('[options]')}`;
-  
+
   return boxen(usage, {
     padding: 1,
     margin: 1,
     borderStyle: 'round',
     borderColor: 'cyan',
-    backgroundColor: '#000'
+    backgroundColor: '#000',
   });
 }
 
@@ -34,14 +36,14 @@ export function formatDescription(description) {
  */
 export function formatOptions(options) {
   if (!options || options.length === 0) return '';
-  
+
   let output = chalk.bold('\nOptions:\n');
-  
-  options.forEach(option => {
+
+  options.forEach((option) => {
     const flags = option.flags.padEnd(25);
     output += `  ${theme.primary(flags)} ${theme.dim(option.description)}\n`;
   });
-  
+
   return output;
 }
 
@@ -50,13 +52,13 @@ export function formatOptions(options) {
  */
 export function formatExamples(examples) {
   if (!examples || examples.length === 0) return '';
-  
+
   let output = chalk.bold('\nExamples:\n');
-  
-  examples.forEach(example => {
+
+  examples.forEach((example) => {
     output += `  ${theme.accent(example.command)} ${theme.dim(example.description)}\n`;
   });
-  
+
   return output;
 }
 
@@ -65,7 +67,7 @@ export function formatExamples(examples) {
  */
 export function formatAliases(aliases) {
   if (!aliases || aliases.length === 0) return '';
-  
+
   return chalk.bold('\nAliases: ') + chalk.gray(aliases.join(', ')) + '\n';
 }
 
@@ -74,18 +76,18 @@ export function formatAliases(aliases) {
  */
 export function formatCommandGroups(groups) {
   if (!groups) return '';
-  
+
   let output = '';
-  
+
   for (const [groupName, commands] of Object.entries(groups)) {
     output += chalk.bold(`\n${groupName}:\n`);
-    
-    commands.forEach(cmd => {
+
+    commands.forEach((cmd) => {
       const name = cmd.name.padEnd(20);
       output += `  ${theme.accent(name)} ${theme.dim(cmd.description)}\n`;
     });
   }
-  
+
   return output;
 }
 
@@ -93,67 +95,50 @@ export function formatCommandGroups(groups) {
  * Format a complete help section with all components
  */
 export function formatHelpSection(title, content, options = {}) {
-  const {
-    padding = 1,
-    margin = 1,
-    borderStyle = 'single',
-    borderColor = 'gray'
-  } = options;
-  
-  return boxen(
-    `${chalk.bold(title)}\n${content}`,
-    {
-      padding,
-      margin,
-      borderStyle,
-      borderColor
-    }
-  );
+  const { padding = 1, margin = 1, borderStyle = 'single', borderColor = 'gray' } = options;
+
+  return boxen(`${chalk.bold(title)}\n${content}`, {
+    padding,
+    margin,
+    borderStyle,
+    borderColor,
+  });
 }
 
 /**
  * Format a warning or caution section
  */
 export function formatWarning(message) {
-  return boxen(
-    `${chalk.yellow.bold('⚠️  WARNING')}\n${chalk.yellow(message)}`,
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'double',
-      borderColor: 'yellow'
-    }
-  );
+  return boxen(`${chalk.yellow.bold('⚠️  WARNING')}\n${chalk.yellow(message)}`, {
+    padding: 1,
+    margin: 1,
+    borderStyle: 'double',
+    borderColor: 'yellow',
+  });
 }
 
 /**
  * Format an info section
  */
 export function formatInfo(message) {
-  return boxen(
-    `${chalk.blue.bold('ℹ️  INFO')}\n${chalk.blue(message)}`,
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'round',
-      borderColor: 'blue'
-    }
-  );
+  return boxen(`${chalk.blue.bold('ℹ️  INFO')}\n${chalk.blue(message)}`, {
+    padding: 1,
+    margin: 1,
+    borderStyle: 'round',
+    borderColor: 'blue',
+  });
 }
 
 /**
  * Format a success section
  */
 export function formatSuccess(message) {
-  return boxen(
-    `${chalk.green.bold('✅ SUCCESS')}\n${chalk.green(message)}`,
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'round',
-      borderColor: 'green'
-    }
-  );
+  return boxen(`${chalk.green.bold('✅ SUCCESS')}\n${chalk.green(message)}`, {
+    padding: 1,
+    margin: 1,
+    borderStyle: 'round',
+    borderColor: 'green',
+  });
 }
 
 /**
@@ -161,13 +146,13 @@ export function formatSuccess(message) {
  */
 export function formatTips(tips) {
   if (!tips || tips.length === 0) return '';
-  
+
   let output = chalk.bold('\n💡 Tips:\n');
-  
+
   tips.forEach((tip, index) => {
     output += `  ${chalk.yellow(`${index + 1}.`)} ${theme.dim(tip)}\n`;
   });
-  
+
   return output;
 }
 
@@ -176,14 +161,14 @@ export function formatTips(tips) {
  */
 export function formatTroubleshooting(troubleshooting) {
   if (!troubleshooting || troubleshooting.length === 0) return '';
-  
+
   let output = chalk.bold('\n🔧 Troubleshooting:\n');
-  
+
   troubleshooting.forEach((item, index) => {
     output += `  ${chalk.red(`${index + 1}.`)} ${theme.dim(item.problem)}\n`;
     output += `     ${chalk.gray('Solution:')} ${theme.dim(item.solution)}\n\n`;
   });
-  
+
   return output;
 }
 
@@ -192,42 +177,42 @@ export function formatTroubleshooting(troubleshooting) {
  */
 export function createEnhancedHelp(command) {
   let output = '';
-  
+
   // Usage
   if (command.usage) {
     output += formatUsage(command.name, command.options) + '\n';
   }
-  
+
   // Description
   if (command.description) {
     output += formatDescription(command.description) + '\n';
   }
-  
+
   // Options
   if (command.options && command.options.length > 0) {
     output += formatOptions(command.options) + '\n';
   }
-  
+
   // Examples
   if (command.examples) {
     output += formatExamples(command.examples) + '\n';
   }
-  
+
   // Aliases
   if (command.aliases) {
     output += formatAliases(command.aliases) + '\n';
   }
-  
+
   // Tips
   if (command.tips) {
     output += formatTips(command.tips) + '\n';
   }
-  
+
   // Troubleshooting
   if (command.troubleshooting) {
     output += formatTroubleshooting(command.troubleshooting) + '\n';
   }
-  
+
   return output;
 }
 
@@ -244,5 +229,5 @@ export default {
   formatSuccess,
   formatTips,
   formatTroubleshooting,
-  createEnhancedHelp
+  createEnhancedHelp,
 };

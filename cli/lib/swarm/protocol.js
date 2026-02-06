@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Agent Communication Protocol v3.0
  * Defines schema for agent handoffs, execution state, and rollback support.
@@ -34,7 +36,7 @@ export class AgentMessage {
     this.metadata = {
       retryCount: 0,
       priority: 'normal',
-      tags: []
+      tags: [],
     };
   }
 
@@ -42,19 +44,14 @@ export class AgentMessage {
    * Create a reply message to this message.
    */
   reply(content, additionalContext = {}) {
-    return new AgentMessage(
-      this.to,
-      this.from,
-      content,
-      { ...this.context, ...additionalContext }
-    );
+    return new AgentMessage(this.to, this.from, content, { ...this.context, ...additionalContext });
   }
 
   /**
    * Forward this message to another agent.
    */
   forward(newTo, additionalContent = '') {
-    const forwardedContent = additionalContent 
+    const forwardedContent = additionalContent
       ? `${additionalContent}\n\n---\nForwarded from ${this.from}:\n${this.content}`
       : this.content;
     return new AgentMessage(this.to, newTo, forwardedContent, this.context);
@@ -71,7 +68,7 @@ export class AgentMessage {
       content: this.content,
       context: this.context,
       timestamp: this.timestamp,
-      metadata: this.metadata
+      metadata: this.metadata,
     };
   }
 
@@ -151,13 +148,13 @@ export class HandoffPayload {
 ${this.summary}
 
 ### Artifacts
-${this.artifacts.map(a => `- ${a.path}${a.description ? `: ${a.description}` : ''}`).join('\n') || 'None'}
+${this.artifacts.map((a) => `- ${a.path}${a.description ? `: ${a.description}` : ''}`).join('\n') || 'None'}
 
 ### Decisions Made
-${this.decisions.map(d => `- ${d}`).join('\n') || 'None'}
+${this.decisions.map((d) => `- ${d}`).join('\n') || 'None'}
 
 ### Constraints
-${this.constraints.map(c => `- ${c}`).join('\n') || 'None'}
+${this.constraints.map((c) => `- ${c}`).join('\n') || 'None'}
 
 ### Your Task
 ${this.nextTask}
@@ -180,7 +177,7 @@ ${this.nextTask}
       constraints: this.constraints,
       nextTask: this.nextTask,
       context: this.context,
-      timestamp: this.timestamp
+      timestamp: this.timestamp,
     };
   }
 
@@ -194,7 +191,7 @@ ${this.nextTask}
       decisions: json.decisions,
       constraints: json.constraints,
       nextTask: json.nextTask,
-      context: json.context
+      context: json.context,
     });
     payload.id = json.id;
     payload.timestamp = json.timestamp;
@@ -224,7 +221,7 @@ export class ExecutionTrace {
     this.metadata = {
       complexity: 'unknown',
       tiersUsed: [],
-      parallelExecutions: 0
+      parallelExecutions: 0,
     };
   }
 
@@ -262,7 +259,7 @@ export class ExecutionTrace {
       dependencies,
       status: 'pending',
       startTime: null,
-      endTime: null
+      endTime: null,
     });
     return this;
   }
@@ -271,7 +268,7 @@ export class ExecutionTrace {
    * Mark a step as started.
    */
   startStep(step) {
-    const pipelineStep = this.pipeline.find(s => s.step === step);
+    const pipelineStep = this.pipeline.find((s) => s.step === step);
     if (pipelineStep) {
       pipelineStep.status = 'executing';
       pipelineStep.startTime = new Date().toISOString();
@@ -288,7 +285,7 @@ export class ExecutionTrace {
       throw new ValidationError('agent is required and must be a string');
     }
 
-    const step = this.pipeline.find(s => s.agent === agent && s.status === 'executing');
+    const step = this.pipeline.find((s) => s.agent === agent && s.status === 'executing');
     if (step) {
       step.status = success ? 'completed' : 'failed';
       step.endTime = new Date().toISOString();
@@ -297,14 +294,14 @@ export class ExecutionTrace {
     this.results[agent] = {
       success,
       output,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (!success) {
       this.errors.push({
         agent,
         error: output,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
     return this;
@@ -322,9 +319,9 @@ export class ExecutionTrace {
     const checkpoint = {
       id: crypto.randomUUID(),
       name,
-      step: this.pipeline.filter(s => s.status === 'completed').length,
+      step: this.pipeline.filter((s) => s.status === 'completed').length,
       state: JSON.parse(JSON.stringify(state)),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
     this.checkpoints.push(checkpoint);
     return checkpoint;
@@ -341,18 +338,18 @@ export class ExecutionTrace {
    * Rollback to a specific checkpoint.
    */
   rollbackTo(checkpointId) {
-    const checkpointIndex = this.checkpoints.findIndex(c => c.id === checkpointId);
+    const checkpointIndex = this.checkpoints.findIndex((c) => c.id === checkpointId);
     if (checkpointIndex === -1) {
       throw new AppError(`Checkpoint ${checkpointId} not found`, { code: 'CHECKPOINT_NOT_FOUND' });
     }
 
     const checkpoint = this.checkpoints[checkpointIndex];
-    
+
     // Record rollback action
     this.rollbackHistory.push({
-      fromStep: this.pipeline.filter(s => s.status === 'completed').length,
+      fromStep: this.pipeline.filter((s) => s.status === 'completed').length,
       toCheckpoint: checkpointId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Reset steps after checkpoint
@@ -366,8 +363,8 @@ export class ExecutionTrace {
     }
 
     // Remove errors after checkpoint
-    this.errors = this.errors.filter(e => {
-      const step = this.pipeline.find(s => s.agent === e.agent);
+    this.errors = this.errors.filter((e) => {
+      const step = this.pipeline.find((s) => s.agent === e.agent);
       return step && step.step <= checkpoint.step;
     });
 
@@ -401,7 +398,7 @@ export class ExecutionTrace {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
+
     if (hours > 0) return `${hours}h ${minutes % 60}m`;
     if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
     return `${seconds}s`;
@@ -424,10 +421,10 @@ export class ExecutionTrace {
    * Get execution summary.
    */
   getSummary() {
-    const completed = this.pipeline.filter(s => s.status === 'completed').length;
-    const failed = this.pipeline.filter(s => s.status === 'failed').length;
-    const pending = this.pipeline.filter(s => s.status === 'pending').length;
-    
+    const completed = this.pipeline.filter((s) => s.status === 'completed').length;
+    const failed = this.pipeline.filter((s) => s.status === 'failed').length;
+    const pending = this.pipeline.filter((s) => s.status === 'pending').length;
+
     return {
       taskId: this.taskId,
       goal: this.goal,
@@ -437,11 +434,11 @@ export class ExecutionTrace {
         completed,
         failed,
         pending,
-        total: this.pipeline.length
+        total: this.pipeline.length,
       },
-      agents: this.pipeline.map(s => s.agent),
+      agents: this.pipeline.map((s) => s.agent),
       errors: this.errors.length,
-      rollbacks: this.rollbackHistory.length
+      rollbacks: this.rollbackHistory.length,
     };
   }
 
@@ -460,7 +457,7 @@ export class ExecutionTrace {
       rollbackHistory: this.rollbackHistory,
       startTime: this.startTime,
       endTime: this.endTime,
-      metadata: this.metadata
+      metadata: this.metadata,
     };
   }
 
@@ -495,36 +492,36 @@ export const AgentSchemas = {
     input: {
       feature: 'string',
       constraints: 'string[]',
-      timeEstimate: 'string?'
+      timeEstimate: 'string?',
     },
     output: {
       tasks: 'Task[]',
       timeline: 'string',
-      risks: 'string[]'
-    }
+      risks: 'string[]',
+    },
   },
   cto: {
     input: {
       decision: 'string',
       options: 'string[]',
-      context: 'string'
+      context: 'string',
     },
     output: {
       recommendation: 'string',
       reasoning: 'string',
-      tradeoffs: 'string[]'
-    }
+      tradeoffs: 'string[]',
+    },
   },
   research: {
     input: {
       topic: 'string',
-      criteria: 'string[]'
+      criteria: 'string[]',
     },
     output: {
       findings: 'Finding[]',
       recommendation: 'string',
-      sources: 'string[]'
-    }
+      sources: 'string[]',
+    },
   },
 
   // Development Tier
@@ -532,60 +529,60 @@ export const AgentSchemas = {
     input: {
       task: 'string',
       requirements: 'string[]',
-      existingCode: 'string?'
+      existingCode: 'string?',
     },
     output: {
       code: 'string',
       files: 'FileChange[]',
-      tests: 'string[]'
-    }
+      tests: 'string[]',
+    },
   },
   frontend: {
     input: {
       component: 'string',
       design: 'string?',
-      requirements: 'string[]'
+      requirements: 'string[]',
     },
     output: {
       code: 'string',
       files: 'FileChange[]',
-      styles: 'string?'
-    }
+      styles: 'string?',
+    },
   },
   database: {
     input: {
       schema: 'string',
-      requirements: 'string[]'
+      requirements: 'string[]',
     },
     output: {
       migration: 'string',
       files: 'FileChange[]',
-      queries: 'string[]'
-    }
+      queries: 'string[]',
+    },
   },
 
   // Security Tier
   auth: {
     input: {
       authType: 'string',
-      requirements: 'string[]'
+      requirements: 'string[]',
     },
     output: {
       implementation: 'string',
       files: 'FileChange[]',
-      config: 'object'
-    }
+      config: 'object',
+    },
   },
   security: {
     input: {
       target: 'string',
-      scope: 'string[]'
+      scope: 'string[]',
     },
     output: {
       vulnerabilities: 'Vulnerability[]',
       recommendations: 'string[]',
-      severity: 'string'
-    }
+      severity: 'string',
+    },
   },
 
   // DevOps Tier
@@ -593,13 +590,13 @@ export const AgentSchemas = {
     input: {
       task: 'string',
       environment: 'string',
-      config: 'object?'
+      config: 'object?',
     },
     output: {
       commands: 'string[]',
       files: 'FileChange[]',
-      status: 'string'
-    }
+      status: 'string',
+    },
   },
 
   // Quality Tier
@@ -607,71 +604,71 @@ export const AgentSchemas = {
     input: {
       target: 'string',
       testType: 'string',
-      coverage: 'number?'
+      coverage: 'number?',
     },
     output: {
       tests: 'Test[]',
       files: 'FileChange[]',
-      coverage: 'number'
-    }
+      coverage: 'number',
+    },
   },
   reviewer: {
     input: {
       code: 'string',
-      context: 'string'
+      context: 'string',
     },
     output: {
       approved: 'boolean',
       comments: 'Comment[]',
-      suggestions: 'string[]'
-    }
+      suggestions: 'string[]',
+    },
   },
   debugger: {
     input: {
       issue: 'string',
       logs: 'string?',
-      reproduction: 'string?'
+      reproduction: 'string?',
     },
     output: {
       rootCause: 'string',
       fix: 'string',
-      files: 'FileChange[]'
-    }
+      files: 'FileChange[]',
+    },
   },
   documentation: {
     input: {
       target: 'string',
-      docType: 'string'
+      docType: 'string',
     },
     output: {
       content: 'string',
-      files: 'FileChange[]'
-    }
+      files: 'FileChange[]',
+    },
   },
 
   // Specialist Tier
   performance: {
     input: {
       target: 'string',
-      metrics: 'string[]?'
+      metrics: 'string[]?',
     },
     output: {
       analysis: 'string',
       optimizations: 'Optimization[]',
-      files: 'FileChange[]'
-    }
+      files: 'FileChange[]',
+    },
   },
   refactoring: {
     input: {
       target: 'string',
-      goals: 'string[]'
+      goals: 'string[]',
     },
     output: {
       changes: 'string',
       files: 'FileChange[]',
-      improvements: 'string[]'
-    }
-  }
+      improvements: 'string[]',
+    },
+  },
 };
 
 // ============================================================================
@@ -688,7 +685,7 @@ export const AgentProtocol = {
     to: 'agent_name',
     content: 'string',
     context: {},
-    timestamp: 'ISO8601'
+    timestamp: 'ISO8601',
   },
   SwarmState: {
     taskId: 'uuid',
@@ -697,14 +694,14 @@ export const AgentProtocol = {
     results: {},
     errors: [],
     startTime: 'ISO8601',
-    endTime: 'ISO8601'
+    endTime: 'ISO8601',
   },
   Handover: {
     previousAgent: 'string',
     nextAgent: 'string',
     artifacts: [],
-    summary: 'string'
-  }
+    summary: 'string',
+  },
 };
 
 /**

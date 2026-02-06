@@ -7,7 +7,7 @@ class ServiceRegistry {
       'users-service': process.env.USERS_SERVICE_URL || 'http://localhost:3002',
       'orders-service': process.env.ORDERS_SERVICE_URL || 'http://localhost:3003',
       'payments-service': process.env.PAYMENTS_SERVICE_URL || 'http://localhost:3004',
-      'notifications-service': process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005'
+      'notifications-service': process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005',
     };
   }
 

@@ -6,7 +6,7 @@ export async function POST(request) {
     const body = await request.json();
     const session = await createCheckoutSession({
       priceId: body.priceId,
-      customerEmail: body.customerEmail
+      customerEmail: body.customerEmail,
     });
 
     return NextResponse.json({ ok: true, sessionId: session.id });

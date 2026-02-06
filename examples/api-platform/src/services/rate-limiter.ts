@@ -22,11 +22,7 @@ export class RateLimiterService {
     }
   }
 
-  async checkLimit(
-    keyId: string,
-    limit: number,
-    windowMs: number
-  ): Promise<RateLimitResult> {
+  async checkLimit(keyId: string, limit: number, windowMs: number): Promise<RateLimitResult> {
     const now = Date.now();
     const windowStart = Math.floor(now / windowMs) * windowMs;
     const resetTime = windowStart + windowMs;
@@ -43,7 +39,7 @@ export class RateLimiterService {
         return {
           allowed: current <= limit,
           remaining: Math.max(0, limit - current),
-          resetTime
+          resetTime,
         };
       }
     } catch (error) {
@@ -59,7 +55,7 @@ export class RateLimiterService {
       return {
         allowed: true,
         remaining: limit - 1,
-        resetTime
+        resetTime,
       };
     }
 
@@ -69,7 +65,7 @@ export class RateLimiterService {
     return {
       allowed: data.count <= limit,
       remaining: Math.max(0, limit - data.count),
-      resetTime
+      resetTime,
     };
   }
 }

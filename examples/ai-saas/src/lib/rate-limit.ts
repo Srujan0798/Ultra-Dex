@@ -1,5 +1,5 @@
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
 const redis = Redis.fromEnv();
 
@@ -8,21 +8,21 @@ export const ratelimit = {
   // Strict limit for AI chat (expensive operation)
   chat: new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(10, "1m"), // 10 requests per minute
+    limiter: Ratelimit.slidingWindow(10, '1m'), // 10 requests per minute
     analytics: true,
   }),
 
   // Moderate limit for general API
   api: new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(100, "1m"), // 100 requests per minute
+    limiter: Ratelimit.slidingWindow(100, '1m'), // 100 requests per minute
     analytics: true,
   }),
 
   // Generous limit for auth (but prevent abuse)
   auth: new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(5, "5m"), // 5 attempts per 5 minutes
+    limiter: Ratelimit.slidingWindow(5, '5m'), // 5 attempts per 5 minutes
     analytics: true,
   }),
 };
@@ -51,7 +51,7 @@ export async function rateLimit(
     const windowMs = windowSeconds * 1000;
 
     const record = inMemoryCache.get(key);
-    
+
     if (!record || now > record.resetTime) {
       inMemoryCache.set(key, { count: 1, resetTime: now + windowMs });
       return {

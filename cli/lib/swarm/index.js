@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Swarm Coordination System v3.0
  * Main entry point for agent orchestration.
@@ -8,13 +10,13 @@ import ora from 'ora';
 import fs from 'fs/promises';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
-import { 
-  AgentMessage, 
-  HandoffPayload, 
+import {
+  AgentMessage,
+  HandoffPayload,
   ExecutionTrace,
   AgentSchemas,
   createMessage,
-  createHandover
+  createHandover,
 } from './protocol.js';
 import {
   TIERS,
@@ -24,7 +26,7 @@ import {
   getAgentsByTier,
   getTier,
   findParallelGroups,
-  validatePipeline
+  validatePipeline,
 } from './tiers.js';
 
 // Re-export from protocol for convenience
@@ -54,7 +56,7 @@ export class SwarmCoordinator {
       saveArtifacts: options.saveArtifacts !== false,
       artifactDir: options.artifactDir || '.ultra-dex/swarm',
       maxRetries: options.maxRetries || 3,
-      enableRollback: options.enableRollback !== false
+      enableRollback: options.enableRollback !== false,
     };
 
     // Register default agents from tiers
@@ -68,7 +70,7 @@ export class SwarmCoordinator {
     for (const [name, config] of Object.entries(AGENTS)) {
       this.agents.set(name, {
         ...config,
-        handler: null // Will be set when agent is loaded
+        handler: null, // Will be set when agent is loaded
       });
     }
   }
@@ -84,11 +86,11 @@ export class SwarmCoordinator {
     if (!name) throw new ValidationError('Agent name is required');
     const normalized = name.toLowerCase().replace('@', '');
     const existing = this.agents.get(normalized) || {};
-    
+
     this.agents.set(normalized, {
       ...existing,
       ...config,
-      name: config.name || existing.name || normalized
+      name: config.name || existing.name || normalized,
     });
 
     if (this.options.verbose) {
@@ -113,7 +115,7 @@ export class SwarmCoordinator {
   listAgents() {
     return Array.from(this.agents.entries()).map(([name, config]) => ({
       name,
-      ...config
+      ...config,
     }));
   }
 
@@ -139,7 +141,9 @@ export class SwarmCoordinator {
    */
   async runPipeline(options) {
     if (this.isRunning) {
-      throw new AppError('A pipeline is already running in this coordinator', { code: 'SWARM_ALREADY_RUNNING' });
+      throw new AppError('A pipeline is already running in this coordinator', {
+        code: 'SWARM_ALREADY_RUNNING',
+      });
     }
 
     if (!options || typeof options !== 'object') {
@@ -157,7 +161,7 @@ export class SwarmCoordinator {
     }
 
     this.isRunning = true;
-    
+
     // Create execution trace
     const trace = new ExecutionTrace(null, goal);
     this.currentTrace = trace;
@@ -172,7 +176,7 @@ export class SwarmCoordinator {
     const validation = validatePipeline(steps);
     if (!validation.valid) {
       logger.error('Pipeline validation failed');
-      validation.errors.forEach(err => {
+      validation.errors.forEach((err) => {
         logger.warn(`   Step ${err.step} (${err.agent}): ${err.error}`);
       });
       trace.status = 'failed';
@@ -196,7 +200,7 @@ export class SwarmCoordinator {
     } catch (error) {
       trace.complete(false);
       spinner.fail(chalk.red(`Pipeline failed: ${error.message}`));
-      
+
       if (this.options.enableRollback) {
         await this._attemptRollback(trace);
       }
@@ -239,11 +243,10 @@ export class SwarmCoordinator {
           const handoff = new HandoffPayload(step.agent, nextStep.agent, {
             summary: `Completed: ${step.task}`,
             artifacts: result.artifacts || [],
-            nextTask: nextStep.task
+            nextTask: nextStep.task,
           });
           this.history.push(handoff.toMessage());
         }
-
       } catch (error) {
         trace.recordResult(step.agent, error.message, false);
         throw error;
@@ -255,7 +258,7 @@ export class SwarmCoordinator {
    * Execute steps in parallel where possible.
    */
   async _executeParallel(steps, trace, spinner) {
-    const agents = steps.map(s => s.agent);
+    const agents = steps.map((s) => s.agent);
     const groups = findParallelGroups(agents);
 
     let groupNum = 0;
@@ -271,7 +274,7 @@ export class SwarmCoordinator {
       }
 
       // Find steps for this group
-      const groupSteps = steps.filter(s => 
+      const groupSteps = steps.filter((s) =>
         group.includes(s.agent.toLowerCase().replace('@', ''))
       );
 
@@ -293,10 +296,12 @@ export class SwarmCoordinator {
       const results = await Promise.all(promises);
 
       // Check for failures
-      const failures = results.filter(r => !r.success);
+      const failures = results.filter((r) => !r.success);
       if (failures.length > 0) {
-        const failedAgents = failures.map(f => f.agent).join(', ');
-        throw new AppError(`Parallel execution failed for: ${failedAgents}`, { code: 'SWARM_PARALLEL_FAIL' });
+        const failedAgents = failures.map((f) => f.agent).join(', ');
+        throw new AppError(`Parallel execution failed for: ${failedAgents}`, {
+          code: 'SWARM_PARALLEL_FAIL',
+        });
       }
 
       // Update previous results
@@ -314,7 +319,8 @@ export class SwarmCoordinator {
   /**
    * Execute a single step with timeout protection.
    */
-  async _executeStepWithTimeout(step, context, trace, timeoutMs = 120000) { // 2 minute default timeout
+  async _executeStepWithTimeout(step, context, trace, timeoutMs = 120000) {
+    // 2 minute default timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -323,7 +329,7 @@ export class SwarmCoordinator {
         this._executeStep(step, context, trace),
         new Promise((_, reject) => {
           setTimeout(() => reject(new Error(`Step timeout after ${timeoutMs}ms`)), timeoutMs);
-        })
+        }),
       ]);
 
       clearTimeout(timeoutId);
@@ -331,7 +337,10 @@ export class SwarmCoordinator {
     } catch (error) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError' || error.message.includes('timeout')) {
-        throw new AppError(`Step execution timed out: ${step.agent} - ${step.task.substring(0, 50)}...`, { code: 'SWARM_STEP_TIMEOUT' });
+        throw new AppError(
+          `Step execution timed out: ${step.agent} - ${step.task.substring(0, 50)}...`,
+          { code: 'SWARM_STEP_TIMEOUT' }
+        );
       }
       throw error;
     }
@@ -361,7 +370,7 @@ export class SwarmCoordinator {
     return {
       output: result.content,
       artifacts: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -383,7 +392,7 @@ If making decisions, explain the reasoning briefly.`;
    */
   _buildUserPrompt(step, context) {
     let prompt = `Task: ${step.task}`;
-    
+
     if (context && typeof context === 'object') {
       const contextStr = Object.entries(context)
         .map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`)
@@ -409,7 +418,7 @@ If making decisions, explain the reasoning briefly.`;
     }
 
     logger.info(`Rolling back to checkpoint: ${checkpoint.name}`);
-    
+
     try {
       const state = trace.rollbackTo(checkpoint.id);
       logger.success(`Rollback successful`);
@@ -466,7 +475,7 @@ If making decisions, explain the reasoning briefly.`;
       await fs.mkdir(this.options.artifactDir, { recursive: true });
       const filename = `${this.options.artifactDir}/trace-${trace.taskId}.json`;
       await fs.writeFile(filename, JSON.stringify(trace.toJSON(), null, 2));
-      
+
       if (this.options.verbose) {
         logger.debug(`Trace saved to ${filename}`);
       }
@@ -483,7 +492,7 @@ If making decisions, explain the reasoning briefly.`;
   async loadTrace(taskId) {
     if (!taskId) throw new ValidationError('taskId is required');
     const filename = `${this.options.artifactDir}/trace-${taskId}.json`;
-    
+
     try {
       const content = await fs.readFile(filename, 'utf-8');
       const data = JSON.parse(content);
@@ -555,7 +564,9 @@ Output STRICT JSON format only:
       try {
         plan = JSON.parse(jsonStr);
       } catch (parseError) {
-        throw new AppError(`Failed to parse planner response as JSON: ${parseError.message}`, { cause: parseError });
+        throw new AppError(`Failed to parse planner response as JSON: ${parseError.message}`, {
+          cause: parseError,
+        });
       }
 
       if (!Array.isArray(plan.tasks)) {
@@ -578,13 +589,13 @@ Output STRICT JSON format only:
     if (!Array.isArray(tasks)) throw new ValidationError('tasks must be an array');
     return this.runPipeline({
       goal: 'Execute planned tasks',
-      steps: tasks.map(t => ({
+      steps: tasks.map((t) => ({
         agent: t.agent,
         task: t.task,
         context: t.context,
-        dependencies: t.dependencies
+        dependencies: t.dependencies,
       })),
-      parallel: false
+      parallel: false,
     });
   }
 
@@ -598,7 +609,7 @@ Output STRICT JSON format only:
       goal: task,
       steps: [{ agent, task, context }],
       parallel: false,
-      ...options
+      ...options,
     });
   }
 
@@ -611,21 +622,171 @@ Output STRICT JSON format only:
     }
 
     const keywords = {
-      backend: ['api', 'endpoint', 'server', 'route', 'controller', 'service', 'rest', 'graphql', 'middleware'],
-      frontend: ['ui', 'component', 'page', 'button', 'form', 'css', 'react', 'vue', 'angular', 'html', 'javascript', 'typescript'],
-      database: ['schema', 'table', 'migration', 'query', 'sql', 'model', 'orm', 'prisma', 'sequelize', 'mongodb'],
-      auth: ['login', 'authentication', 'authorization', 'password', 'session', 'jwt', 'oauth', 'sso', 'permissions'],
-      security: ['vulnerability', 'audit', 'secure', 'encryption', 'xss', 'csrf', 'cors', 'ssl', 'tls', 'penetration'],
-      testing: ['test', 'spec', 'coverage', 'jest', 'mocha', 'cypress', 'playwright', 'e2e', 'unit', 'integration'],
-      devops: ['deploy', 'ci', 'cd', 'docker', 'kubernetes', 'aws', 'pipeline', 'jenkins', 'github actions', 'terraform'],
-      performance: ['slow', 'optimize', 'cache', 'speed', 'latency', 'memory', 'profiling', 'monitoring', 'scalability'],
-      debugger: ['bug', 'fix', 'error', 'crash', 'issue', 'debug', 'stack trace', 'exception', 'logging'],
-      documentation: ['docs', 'readme', 'guide', 'api docs', 'comment', 'tutorial', 'manual', 'specification'],
-      refactoring: ['refactor', 'clean', 'reorganize', 'pattern', 'simplify', 'modularize', 'deprecate', 'upgrade'],
-      planner: ['plan', 'break down', 'tasks', 'sprint', 'estimate', 'timeline', 'milestone', 'roadmap'],
-      cto: ['architecture', 'tech stack', 'design', 'decision', 'strategy', 'infrastructure', 'scaling'],
-      research: ['compare', 'evaluate', 'research', 'options', 'alternatives', 'analysis', 'study', 'investigation'],
-      reviewer: ['review', 'approve', 'check', 'quality', 'code review', 'approval', 'verification', 'validation']
+      backend: [
+        'api',
+        'endpoint',
+        'server',
+        'route',
+        'controller',
+        'service',
+        'rest',
+        'graphql',
+        'middleware',
+      ],
+      frontend: [
+        'ui',
+        'component',
+        'page',
+        'button',
+        'form',
+        'css',
+        'react',
+        'vue',
+        'angular',
+        'html',
+        'javascript',
+        'typescript',
+      ],
+      database: [
+        'schema',
+        'table',
+        'migration',
+        'query',
+        'sql',
+        'model',
+        'orm',
+        'prisma',
+        'sequelize',
+        'mongodb',
+      ],
+      auth: [
+        'login',
+        'authentication',
+        'authorization',
+        'password',
+        'session',
+        'jwt',
+        'oauth',
+        'sso',
+        'permissions',
+      ],
+      security: [
+        'vulnerability',
+        'audit',
+        'secure',
+        'encryption',
+        'xss',
+        'csrf',
+        'cors',
+        'ssl',
+        'tls',
+        'penetration',
+      ],
+      testing: [
+        'test',
+        'spec',
+        'coverage',
+        'jest',
+        'mocha',
+        'cypress',
+        'playwright',
+        'e2e',
+        'unit',
+        'integration',
+      ],
+      devops: [
+        'deploy',
+        'ci',
+        'cd',
+        'docker',
+        'kubernetes',
+        'aws',
+        'pipeline',
+        'jenkins',
+        'github actions',
+        'terraform',
+      ],
+      performance: [
+        'slow',
+        'optimize',
+        'cache',
+        'speed',
+        'latency',
+        'memory',
+        'profiling',
+        'monitoring',
+        'scalability',
+      ],
+      debugger: [
+        'bug',
+        'fix',
+        'error',
+        'crash',
+        'issue',
+        'debug',
+        'stack trace',
+        'exception',
+        'logging',
+      ],
+      documentation: [
+        'docs',
+        'readme',
+        'guide',
+        'api docs',
+        'comment',
+        'tutorial',
+        'manual',
+        'specification',
+      ],
+      refactoring: [
+        'refactor',
+        'clean',
+        'reorganize',
+        'pattern',
+        'simplify',
+        'modularize',
+        'deprecate',
+        'upgrade',
+      ],
+      planner: [
+        'plan',
+        'break down',
+        'tasks',
+        'sprint',
+        'estimate',
+        'timeline',
+        'milestone',
+        'roadmap',
+      ],
+      cto: [
+        'architecture',
+        'tech stack',
+        'design',
+        'decision',
+        'strategy',
+        'infrastructure',
+        'scaling',
+      ],
+      research: [
+        'compare',
+        'evaluate',
+        'research',
+        'options',
+        'alternatives',
+        'analysis',
+        'study',
+        'investigation',
+      ],
+      reviewer: [
+        'review',
+        'approve',
+        'check',
+        'quality',
+        'code review',
+        'approval',
+        'verification',
+        'validation',
+      ],
     };
 
     const lower = taskDescription.toLowerCase();
@@ -647,9 +808,7 @@ Output STRICT JSON format only:
       }
     }
 
-    return matches
-      .sort((a, b) => b.score - a.score)
-      .map(m => m.agent);
+    return matches.sort((a, b) => b.score - a.score).map((m) => m.agent);
   }
 }
 
@@ -677,5 +836,5 @@ export default {
   AgentSchemas,
   TIERS,
   AGENTS,
-  TIER_FLOW
+  TIER_FLOW,
 };

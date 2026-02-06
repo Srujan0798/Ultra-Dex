@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -20,7 +22,7 @@ export async function saveTieredMemory(state) {
 
 export function promoteEntry(state, entryId) {
   const promote = (from, to) => {
-    const idx = state[from].findIndex(e => e.id === entryId);
+    const idx = state[from].findIndex((e) => e.id === entryId);
     if (idx === -1) return false;
     const [entry] = state[from].splice(idx, 1);
     state[to].unshift(entry);
@@ -32,7 +34,7 @@ export function promoteEntry(state, entryId) {
 
 export function demoteEntry(state, entryId) {
   const demote = (from, to) => {
-    const idx = state[from].findIndex(e => e.id === entryId);
+    const idx = state[from].findIndex((e) => e.id === entryId);
     if (idx === -1) return false;
     const [entry] = state[from].splice(idx, 1);
     state[to].unshift(entry);

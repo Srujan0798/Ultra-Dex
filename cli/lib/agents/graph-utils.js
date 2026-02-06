@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Shared helpers for LangChain graph-based agents
  */
@@ -14,7 +16,7 @@ export const GraphState = {
   output: {
     value: (_x, y) => y,
     default: () => '',
-  }
+  },
 };
 
 export function createSimpleGraph({
@@ -23,23 +25,20 @@ export function createSimpleGraph({
   model = 'gpt-4o-mini',
   temperature = 0.2,
   maxTokens,
-  apiKey
+  apiKey,
 } = {}) {
   const llm = new ChatOpenAI({
     modelName: model,
     temperature,
     maxTokens,
-    openAIApiKey: apiKey || process.env.OPENAI_API_KEY
+    openAIApiKey: apiKey || process.env.OPENAI_API_KEY,
   });
 
   const workflow = new StateGraph({ channels: GraphState })
     .addNode(nodeName, async (state) => {
       const last = state.messages[state.messages.length - 1];
       const input = last?.content || '';
-      const response = await llm.invoke([
-        new SystemMessage(systemPrompt),
-        new HumanMessage(input)
-      ]);
+      const response = await llm.invoke([new SystemMessage(systemPrompt), new HumanMessage(input)]);
       return { output: response.content, messages: [response] };
     })
     .addEdge(START, nodeName)

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * API Auth and Rate Limiting
  */
@@ -18,7 +20,7 @@ function parseEnvKeys() {
   const keys = [];
   if (single) keys.push(single.trim());
   if (multiple) {
-    multiple.split(',').forEach(k => {
+    multiple.split(',').forEach((k) => {
       const trimmed = k.trim();
       if (trimmed) keys.push(trimmed);
     });
@@ -42,7 +44,9 @@ export async function loadApiKeys() {
   try {
     const data = await fs.readFile(API_KEYS_PATH, 'utf8');
     const parsed = JSON.parse(data);
-    const keys = Array.isArray(parsed.keys) ? parsed.keys.map(k => k.key || k).filter(Boolean) : [];
+    const keys = Array.isArray(parsed.keys)
+      ? parsed.keys.map((k) => k.key || k).filter(Boolean)
+      : [];
     cachedKeys = keys;
     cachedAt = now;
     return cachedKeys;
@@ -118,5 +122,5 @@ export function createRateLimiter(options = {}) {
 }
 
 export const apiKeyPaths = {
-  config: API_KEYS_PATH
+  config: API_KEYS_PATH,
 };

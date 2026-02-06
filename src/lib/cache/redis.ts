@@ -5,7 +5,12 @@ export const redis = new Redis(redisUrl);
 
 const memoryCache = new Map<string, { value: unknown; expiresAt: number; staleUntil: number }>();
 
-export async function cacheWithSWR<T>(key: string, fetcher: () => Promise<T>, ttlMs = 30000, staleMs = 60000) {
+export async function cacheWithSWR<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  ttlMs = 30000,
+  staleMs = 60000
+) {
   const now = Date.now();
   const cached = memoryCache.get(key);
 
@@ -22,7 +27,12 @@ export async function cacheWithSWR<T>(key: string, fetcher: () => Promise<T>, tt
   return refreshCache(key, fetcher, ttlMs, staleMs);
 }
 
-async function refreshCache<T>(key: string, fetcher: () => Promise<T>, ttlMs: number, staleMs: number) {
+async function refreshCache<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  ttlMs: number,
+  staleMs: number
+) {
   const value = await fetcher();
   memoryCache.set(key, { value, expiresAt: Date.now() + ttlMs, staleUntil: Date.now() + staleMs });
   await redis.set(key, JSON.stringify(value), 'PX', ttlMs + staleMs).catch(() => null);

@@ -22,7 +22,9 @@
 Essential commands for starting and building projects.
 
 ### `init`
+
 Initialize a new Ultra-Dex project.
+
 ```bash
 npx ultra-dex init [name]
 # Options:
@@ -31,7 +33,9 @@ npx ultra-dex init [name]
 ```
 
 ### `generate`
+
 Generate a comprehensive implementation plan from a simple idea.
+
 ```bash
 npx ultra-dex generate "A marketplace for dog sitters"
 # Options:
@@ -40,7 +44,9 @@ npx ultra-dex generate "A marketplace for dog sitters"
 ```
 
 ### `build`
+
 Interactive AI-assisted development mode. Auto-loads project context.
+
 ```bash
 npx ultra-dex build
 # Options:
@@ -49,7 +55,9 @@ npx ultra-dex build
 ```
 
 ### `review`
+
 AI-powered code review and architectural analysis.
+
 ```bash
 npx ultra-dex review
 # Options:
@@ -58,7 +66,9 @@ npx ultra-dex review
 ```
 
 ### `serve`
+
 Start the Unified Active Kernel (MCP Server + Dashboard + Real-time Stream).
+
 ```bash
 npx ultra-dex serve
 # Options:
@@ -72,20 +82,26 @@ npx ultra-dex serve
 Orchestrate AI workers to perform complex tasks.
 
 ### `agents`
+
 List available AI agents and their capabilities.
+
 ```bash
 npx ultra-dex agents
 ```
 
 ### `run`
+
 Execute a specific agent on a task.
+
 ```bash
 npx ultra-dex run <agent> --task "Build login form"
 # Example: npx ultra-dex run backend --task "Create auth API"
 ```
 
 ### `swarm`
+
 Run an autonomous multi-agent pipeline (Planner → CTO → Builders).
+
 ```bash
 npx ultra-dex swarm "Implement Stripe payments"
 # Options:
@@ -94,7 +110,9 @@ npx ultra-dex swarm "Implement Stripe payments"
 ```
 
 ### `autonomous` (New in v3.4.5)
+
 Self-healing mode that detects errors and auto-fixes them.
+
 ```bash
 npx ultra-dex autonomous
 # Options:
@@ -103,7 +121,9 @@ npx ultra-dex autonomous
 ```
 
 ### `suggest`
+
 Get AI context-aware suggestions for your next task.
+
 ```bash
 npx ultra-dex suggest
 ```
@@ -115,7 +135,9 @@ npx ultra-dex suggest
 Manage plans, workflows, and workspaces.
 
 ### `plan`
+
 Visualize and manage your project timeline.
+
 ```bash
 npx ultra-dex plan
 # Options:
@@ -125,7 +147,9 @@ npx ultra-dex plan
 ```
 
 ### `workflow`
+
 Visualize and start predefined implementation workflows.
+
 ```bash
 npx ultra-dex workflow <name>
 # Options:
@@ -134,14 +158,18 @@ npx ultra-dex workflow <name>
 ```
 
 ### `workspace` (New in v3.4.5)
+
 Manage multiple projects from a global registry.
+
 ```bash
 npx ultra-dex workspace list
 npx ultra-dex workspace add .
 ```
 
 ### `status`
+
 Show high-level project status and alignment score.
+
 ```bash
 npx ultra-dex status
 ```
@@ -153,7 +181,9 @@ npx ultra-dex status
 Ensure your code meets production standards.
 
 ### `audit`
+
 Deep project audit for security, quality, and documentation.
+
 ```bash
 npx ultra-dex audit
 # Options:
@@ -161,13 +191,17 @@ npx ultra-dex audit
 ```
 
 ### `verify`
+
 Run the 21-Step Verification Framework.
+
 ```bash
 npx ultra-dex verify
 ```
 
 ### `validate`
+
 Check project structure and file integrity.
+
 ```bash
 npx ultra-dex validate
 # Options:
@@ -175,7 +209,9 @@ npx ultra-dex validate
 ```
 
 ### `exec`
+
 Run code safely in a Docker sandbox.
+
 ```bash
 npx ultra-dex exec script.js
 # Options:
@@ -184,7 +220,9 @@ npx ultra-dex exec script.js
 ```
 
 ### `pre-commit`
+
 Run quality checks before git commit.
+
 ```bash
 npx ultra-dex pre-commit
 ```
@@ -196,7 +234,9 @@ npx ultra-dex pre-commit
 Real-time system observability.
 
 ### `metrics`
+
 Show system performance metrics.
+
 ```bash
 npx ultra-dex metrics
 # Options:
@@ -205,19 +245,25 @@ npx ultra-dex metrics
 ```
 
 ### `dashboard`
+
 Launch the web-based "God Mode" dashboard.
+
 ```bash
 npx ultra-dex dashboard
 ```
 
 ### `doctor`
+
 Diagnose system issues and configuration.
+
 ```bash
 npx ultra-dex doctor
 ```
 
 ### `health`
+
 Check service health status.
+
 ```bash
 npx ultra-dex health
 ```
@@ -229,7 +275,9 @@ npx ultra-dex health
 Configure the Ultra-Dex environment.
 
 ### `config`
+
 Manage CLI configuration.
+
 ```bash
 npx ultra-dex config
 # Options:
@@ -238,20 +286,26 @@ npx ultra-dex config
 ```
 
 ### `plugin`
+
 Manage Ultra-Dex plugins.
+
 ```bash
 npx ultra-dex plugin list
 npx ultra-dex plugin install <path>
 ```
 
 ### `upgrade`
+
 Update Ultra-Dex to the latest version.
+
 ```bash
 npx ultra-dex upgrade
 ```
 
 ### `batch`
+
 Execute a sequence of commands from a file.
+
 ```bash
 npx ultra-dex batch ./commands.txt
 ```
@@ -261,17 +315,21 @@ npx ultra-dex batch ./commands.txt
 ## 🔗 Integrations
 
 ### `github`
+
 GitHub integration for issues and PRs.
+
 ```bash
 npx ultra-dex github
 ```
 
 ### `cloud`
+
 Connect to Ultra-Dex Cloud features.
+
 ```bash
 npx ultra-dex cloud
 ```
 
 ---
 
-*Generated for Ultra-Dex v3.4.5*
+_Generated for Ultra-Dex v3.4.5_

@@ -4,14 +4,14 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 export const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20'
+  apiVersion: '2024-06-20',
 });
 
 export async function createCheckoutSession({
   customerId,
   priceId,
   successUrl,
-  cancelUrl
+  cancelUrl,
 }: {
   customerId?: string;
   priceId: string;
@@ -23,7 +23,7 @@ export async function createCheckoutSession({
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
-    cancel_url: cancelUrl
+    cancel_url: cancelUrl,
   });
 }
 

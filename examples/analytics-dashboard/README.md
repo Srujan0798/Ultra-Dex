@@ -35,34 +35,40 @@ A production-ready analytics dashboard built with Next.js 14, TypeScript, Tailwi
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd analytics-dashboard
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Setup environment variables:
+
 ```bash
 cp .env.example .env.local
 # Edit .env.local with your configuration
 ```
 
 4. Setup the database:
+
 ```bash
 npx prisma migrate dev
 npx prisma generate
 ```
 
 5. Seed the database (optional):
+
 ```bash
 npx prisma db seed
 ```
 
 6. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -70,6 +76,7 @@ npm run dev
 7. Open [http://localhost:3000](http://localhost:3000)
 
 Default credentials:
+
 - Email: `admin@example.com`
 - Password: `admin123`
 
@@ -101,12 +108,14 @@ All API requests (except login) require authentication via Bearer token or sessi
 Ingest a single metric data point.
 
 **Headers:**
+
 ```
 Authorization: Bearer <api-key>
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "type": "page_view",
@@ -124,6 +133,7 @@ Content-Type: application/json
 Ingest multiple metrics at once.
 
 **Request Body:**
+
 ```json
 {
   "metrics": [
@@ -148,12 +158,14 @@ Ingest multiple metrics at once.
 Query metrics with filters.
 
 **Query Parameters:**
+
 - `type`: Metric type (e.g., `page_view`, `purchase`)
 - `start`: Start date (ISO 8601)
 - `end`: End date (ISO 8601)
 - `limit`: Maximum results (default: 1000)
 
 **Response:**
+
 ```json
 {
   "metrics": [
@@ -175,6 +187,7 @@ Query metrics with filters.
 Export metrics as CSV.
 
 **Query Parameters:**
+
 - Same as `/api/metrics`
 - `columns`: Comma-separated column names
 
@@ -183,18 +196,19 @@ Export metrics as CSV.
 Export dashboard as PDF report.
 
 **Query Parameters:**
+
 - `dashboardId`: Dashboard ID to export
 
 ## Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `NEXTAUTH_SECRET` | Secret for JWT signing | Yes |
-| `NEXTAUTH_URL` | Application URL | Yes |
-| `REDIS_URL` | Redis connection (optional) | No |
-| `SMTP_HOST` | Email server host | No |
-| `SMTP_PORT` | Email server port | No |
+| Variable          | Description                  | Required |
+| ----------------- | ---------------------------- | -------- |
+| `DATABASE_URL`    | PostgreSQL connection string | Yes      |
+| `NEXTAUTH_SECRET` | Secret for JWT signing       | Yes      |
+| `NEXTAUTH_URL`    | Application URL              | Yes      |
+| `REDIS_URL`       | Redis connection (optional)  | No       |
+| `SMTP_HOST`       | Email server host            | No       |
+| `SMTP_PORT`       | Email server port            | No       |
 
 See `.env.example` for all available variables.
 

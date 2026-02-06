@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { theme, ultraGradient } from './theme.js';
 import { VERSION } from '../utils/version.js';
 import { banner } from '../commands/banner.js';
@@ -7,7 +9,7 @@ export function showHeader(title = '') {
   const gradientBanner = ultraGradient(banner);
   console.log(gradientBanner);
   console.log('');
-  
+
   if (title) {
     const padding = Math.max(0, 30 - Math.floor(title.length / 2));
     console.log(' '.repeat(padding) + theme.title(title.toUpperCase()));
@@ -19,7 +21,9 @@ export function showHeader(title = '') {
 export function showFooter() {
   console.log('');
   console.log(theme.dim('  ' + '─'.repeat(56)));
-  console.log(`  \${theme.dim('Ultra-Dex v' + VERSION)} \${theme.dim('•')} \${theme.subtitle('Professional AI Orchestration')}`);
+  console.log(
+    `  \${theme.dim('Ultra-Dex v' + VERSION)} \${theme.dim('•')} \${theme.subtitle('Professional AI Orchestration')}`
+  );
   console.log('');
 }
 
@@ -32,5 +36,5 @@ export function showHelpFooter() {
 export default {
   showHeader,
   showFooter,
-  showHelpFooter
+  showHelpFooter,
 };

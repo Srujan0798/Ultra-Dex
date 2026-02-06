@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
@@ -57,9 +59,10 @@ export function registerQualityCommand(program) {
         // Recommendations
         if (options.ai) {
           printInfo(chalk.cyan.bold('\n🤖 AI-Powered Recommendations'));
-          printInfo(chalk.white('Ultra-Dex AI agents can provide specific guidance for improvement.'));
+          printInfo(
+            chalk.white('Ultra-Dex AI agents can provide specific guidance for improvement.')
+          );
         }
-
       } catch (error) {
         printError(chalk.red('Error:'), error.message);
         process.exit(1);
@@ -69,7 +72,7 @@ export function registerQualityCommand(program) {
 
 async function runCheck(options) {
   const spinner = ora('Running enhanced plan completeness check...').start();
-  
+
   try {
     // Simulate running the enhanced check
     const checkResults = {
@@ -78,21 +81,24 @@ async function runCheck(options) {
       partial: 0,
       missing: 0,
       percentage: 89,
-      criticalMissing: []
+      criticalMissing: [],
     };
 
     spinner.succeed(`Enhanced Check: ${checkResults.percentage}% complete`);
-    
+
     // Display summary
-    printInfo(chalk.green(`  ✅ ${checkResults.complete}/${checkResults.totalSections} sections complete`));
+    printInfo(
+      chalk.green(`  ✅ ${checkResults.complete}/${checkResults.totalSections} sections complete`)
+    );
     printInfo(chalk.yellow(`  📊 Overall completeness: ${checkResults.percentage}%`));
 
     if (checkResults.criticalMissing.length > 0) {
-      printError(chalk.red(`  ⚠️ Critical sections missing: ${checkResults.criticalMissing.join(', ')}`));
+      printError(
+        chalk.red(`  ⚠️ Critical sections missing: ${checkResults.criticalMissing.join(', ')}`)
+      );
     } else {
       printSuccess(chalk.green(`  ✅ All critical sections present`));
     }
-
   } catch (error) {
     spinner.fail('Enhanced check failed');
     throw error;
@@ -101,7 +107,7 @@ async function runCheck(options) {
 
 async function runVerification(options) {
   const spinner = ora('Running 21-step verification...').start();
-  
+
   try {
     // Simulate 21-step verification
     const verificationResults = {
@@ -109,11 +115,11 @@ async function runVerification(options) {
       failed: 1,
       skipped: 4,
       score: 76,
-      criticalFailed: ['Type Safety Check']
+      criticalFailed: ['Type Safety Check'],
     };
 
     spinner.succeed(`21-Step Verification: ${verificationResults.score}% complete`);
-    
+
     // Display summary
     printInfo(chalk.green(`  ✅ ${verificationResults.passed}/21 steps passed`));
     printError(chalk.red(`  ❌ ${verificationResults.failed} critical failures`));
@@ -121,9 +127,10 @@ async function runVerification(options) {
     printInfo(chalk.cyan(`  📊 Score: ${verificationResults.score}%`));
 
     if (verificationResults.criticalFailed.length > 0) {
-      printError(chalk.red(`  🔴 Critical failures: ${verificationResults.criticalFailed.join(', ')}`));
+      printError(
+        chalk.red(`  🔴 Critical failures: ${verificationResults.criticalFailed.join(', ')}`)
+      );
     }
-
   } catch (error) {
     spinner.fail('Verification failed');
     throw error;
@@ -132,7 +139,7 @@ async function runVerification(options) {
 
 async function runAudit(options) {
   const spinner = ora('Running comprehensive project audit...').start();
-  
+
   try {
     // Simulate comprehensive audit
     const auditResults = {
@@ -140,18 +147,33 @@ async function runAudit(options) {
       performance: { score: 92, issues: 1 },
       maintainability: { score: 88, issues: 3 },
       scalability: { score: 90, issues: 2 },
-      overall: 89
+      overall: 89,
     };
 
     spinner.succeed(`Comprehensive Audit: ${auditResults.overall}% complete`);
-    
-    // Display summary
-    printInfo(chalk.green(`  🛡️  Security: ${auditResults.security.score}% (${auditResults.security.issues} issues)`));
-    printInfo(chalk.green(`  ⚡ Performance: ${auditResults.performance.score}% (${auditResults.performance.issues} issues)`));
-    printInfo(chalk.green(`  🧩 Maintainability: ${auditResults.maintainability.score}% (${auditResults.maintainability.issues} issues)`));
-    printInfo(chalk.green(`  📈 Scalability: ${auditResults.scalability.score}% (${auditResults.scalability.issues} issues)`));
-    printInfo(chalk.cyan(`  📊 Overall: ${auditResults.overall}%`));
 
+    // Display summary
+    printInfo(
+      chalk.green(
+        `  🛡️  Security: ${auditResults.security.score}% (${auditResults.security.issues} issues)`
+      )
+    );
+    printInfo(
+      chalk.green(
+        `  ⚡ Performance: ${auditResults.performance.score}% (${auditResults.performance.issues} issues)`
+      )
+    );
+    printInfo(
+      chalk.green(
+        `  🧩 Maintainability: ${auditResults.maintainability.score}% (${auditResults.maintainability.issues} issues)`
+      )
+    );
+    printInfo(
+      chalk.green(
+        `  📈 Scalability: ${auditResults.scalability.score}% (${auditResults.scalability.issues} issues)`
+      )
+    );
+    printInfo(chalk.cyan(`  📊 Overall: ${auditResults.overall}%`));
   } catch (error) {
     spinner.fail('Audit failed');
     throw error;
@@ -160,7 +182,7 @@ async function runAudit(options) {
 
 async function generateFinalReport(options) {
   const reportPath = path.resolve(process.cwd(), 'QUALITY-ASSESSMENT.md');
-  
+
   const content = `# 🎯 Ultra-Dex Quality Assessment Report
 
 **Date:** ${new Date().toLocaleString()}

@@ -2,7 +2,7 @@ const stats = [
   { label: 'Active Workspaces', value: '12' },
   { label: 'Agents Running', value: '28' },
   { label: 'Weekly Runs', value: '4,230' },
-  { label: 'Success Rate', value: '94%' }
+  { label: 'Success Rate', value: '94%' },
 ];
 
 export default function DashboardPage() {

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Predictive Architecture Engine
  * Suggests refactors, detects tech debt, and plans upgrades.
@@ -12,7 +14,7 @@ export async function scanTechDebt(rootDir = process.cwd()) {
   const files = await glob('**/*.{js,ts,tsx,jsx}', {
     cwd: rootDir,
     nodir: true,
-    ignore: ['**/node_modules/**', '**/.git/**', '**/.ultra-dex/**']
+    ignore: ['**/node_modules/**', '**/.git/**', '**/.ultra-dex/**'],
   });
 
   const debtSignals = [];
@@ -20,7 +22,8 @@ export async function scanTechDebt(rootDir = process.cwd()) {
     const content = await fs.readFile(path.join(rootDir, file), 'utf8');
     if (content.length > 12000) debtSignals.push({ file, issue: 'Large file size' });
     if (content.includes('TODO')) debtSignals.push({ file, issue: 'TODO markers present' });
-    if ((content.match(/any\b/g) || []).length > 5) debtSignals.push({ file, issue: 'Excessive any usage' });
+    if ((content.match(/any\b/g) || []).length > 5)
+      debtSignals.push({ file, issue: 'Excessive any usage' });
   }
 
   return debtSignals;
@@ -59,7 +62,7 @@ export async function runPredictiveArchitecture(rootDir = process.cwd()) {
   const [debtSignals, refactors, upgrades] = await Promise.all([
     scanTechDebt(rootDir),
     suggestRefactors(rootDir),
-    planUpgrades(rootDir)
+    planUpgrades(rootDir),
   ]);
 
   return { debtSignals, refactors, upgrades };
@@ -69,5 +72,5 @@ export default {
   scanTechDebt,
   suggestRefactors,
   planUpgrades,
-  runPredictiveArchitecture
+  runPredictiveArchitecture,
 };

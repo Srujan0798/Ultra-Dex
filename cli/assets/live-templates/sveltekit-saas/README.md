@@ -1,6 +1,7 @@
 # SvelteKit SaaS Starter
 
 Production-ready SvelteKit SaaS template with:
+
 - **Authentication**: Clerk
 - **Payments**: Stripe
 - **Database**: Prisma + PostgreSQL

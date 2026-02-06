@@ -6,11 +6,11 @@ services:
     image: redis:7-alpine
     container_name: ms-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,15 +21,15 @@ services:
     image: rabbitmq:3-management-alpine
     container_name: ms-rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - '5672:5672'
+      - '15672:15672'
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin123
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,7 +40,7 @@ services:
     image: consul:1.16
     container_name: ms-consul
     ports:
-      - "8500:8500"
+      - '8500:8500'
     command: consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
     volumes:
       - consul_data:/consul/data
@@ -51,11 +51,11 @@ services:
     image: jaegertracing/all-in-one:1.50
     container_name: ms-jaeger
     ports:
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
+      - '16686:16686'
+      - '4317:4317'
+      - '4318:4318'
     environment:
-      COLLECTOR_OTLP_ENABLED: "true"
+      COLLECTOR_OTLP_ENABLED: 'true'
     networks:
       - microservices-network
 
@@ -68,12 +68,12 @@ services:
       POSTGRES_USER: auth_user
       POSTGRES_PASSWORD: auth_pass123
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_auth_data:/var/lib/postgresql/data
       - ./services/auth-service/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      test: ['CMD-SHELL', 'pg_isready -U auth_user -d auth_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -88,12 +88,12 @@ services:
       POSTGRES_USER: users_user
       POSTGRES_PASSWORD: users_pass123
     ports:
-      - "5433:5432"
+      - '5433:5432'
     volumes:
       - postgres_users_data:/var/lib/postgresql/data
       - ./services/users-service/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U users_user -d users_db"]
+      test: ['CMD-SHELL', 'pg_isready -U users_user -d users_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -108,12 +108,12 @@ services:
       POSTGRES_USER: orders_user
       POSTGRES_PASSWORD: orders_pass123
     ports:
-      - "5434:5432"
+      - '5434:5432'
     volumes:
       - postgres_orders_data:/var/lib/postgresql/data
       - ./services/orders-service/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U orders_user -d orders_db"]
+      test: ['CMD-SHELL', 'pg_isready -U orders_user -d orders_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -128,12 +128,12 @@ services:
       POSTGRES_USER: payments_user
       POSTGRES_PASSWORD: payments_pass123
     ports:
-      - "5435:5432"
+      - '5435:5432'
     volumes:
       - postgres_payments_data:/var/lib/postgresql/data
       - ./services/payments-service/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U payments_user -d payments_db"]
+      test: ['CMD-SHELL', 'pg_isready -U payments_user -d payments_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -148,12 +148,12 @@ services:
       POSTGRES_USER: notifications_user
       POSTGRES_PASSWORD: notifications_pass123
     ports:
-      - "5436:5432"
+      - '5436:5432'
     volumes:
       - postgres_notifications_data:/var/lib/postgresql/data
       - ./services/notifications-service/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U notifications_user -d notifications_db"]
+      test: ['CMD-SHELL', 'pg_isready -U notifications_user -d notifications_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -167,7 +167,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-api-gateway
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -195,7 +195,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-auth-service
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -232,7 +232,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-users-service
     ports:
-      - "3002:3002"
+      - '3002:3002'
     environment:
       NODE_ENV: development
       PORT: 3002
@@ -269,7 +269,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-orders-service
     ports:
-      - "3003:3003"
+      - '3003:3003'
     environment:
       NODE_ENV: development
       PORT: 3003
@@ -308,7 +308,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-payments-service
     ports:
-      - "3004:3004"
+      - '3004:3004'
     environment:
       NODE_ENV: development
       PORT: 3004
@@ -348,7 +348,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-notifications-service
     ports:
-      - "3005:3005"
+      - '3005:3005'
     environment:
       NODE_ENV: development
       PORT: 3005

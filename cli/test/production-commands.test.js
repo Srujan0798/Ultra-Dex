@@ -1,11 +1,11 @@
 /**
  * Production Commands Test Suite
  * Tests for the 11 production-ready commands verified in code review
- * 
+ *
  * Coverage targets:
  * - auto-implement: Full pipeline test
  * - ci-monitor: Webhook server test
- * - cloud: API server test  
+ * - cloud: API server test
  * - diff: Enhanced comparison test
  * - validate: Project validation test
  */
@@ -27,23 +27,23 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
 async function createTempProject(files = {}) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-prod-test-'));
-  
+
   for (const [filePath, content] of Object.entries(files)) {
     const fullPath = path.join(tmpDir, filePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, content);
   }
-  
+
   return tmpDir;
 }
 
@@ -60,24 +60,26 @@ describe('auto-implement command', () => {
 
   test('auto-implement shows feature prompt', () => {
     const result = runCli(['auto-implement', 'test feature']);
-    assert.ok(result.output.includes('Ultra-Dex Autonomous Implementation Engine') || 
-              result.output.includes('Target Feature:'));
+    assert.ok(
+      result.output.includes('Ultra-Dex Autonomous Implementation Engine') ||
+        result.output.includes('Target Feature:')
+    );
   });
 
   test('auto-implement --dry-run shows plan without execution', async () => {
     const tmpDir = await createTempProject({
       'CONTEXT.md': '# Test Project\n\nA test project for auto-implement.',
-      'IMPLEMENTATION-PLAN.md': '# Implementation Plan\n\n## Phase 1\n- Task 1\n- Task 2'
+      'IMPLEMENTATION-PLAN.md': '# Implementation Plan\n\n## Phase 1\n- Task 1\n- Task 2',
     });
 
     const result = runCli(['auto-implement', '--dry-run', 'add authentication'], { cwd: tmpDir });
-    
+
     // Should show command executed (actual output varies by environment)
     assert.ok(
       result.output.includes('God Mode') ||
-      result.output.includes('Target Feature:') ||
-      result.output.includes('Initializing') ||
-      result.output.length > 50 // Some output was produced
+        result.output.includes('Target Feature:') ||
+        result.output.includes('Initializing') ||
+        result.output.length > 50 // Some output was produced
     );
   });
 });
@@ -178,27 +180,31 @@ Building core features.
 - REST endpoints
 - GraphQL schema
 `,
-      '.ultra/state.json': JSON.stringify({
-        project: { name: 'TestProject', mode: 'AI-First' },
-        phases: [
-          {
-            id: '1',
-            name: 'Phase 1: Foundation',
-            status: 'in_progress',
-            steps: [
-              { id: '1.1', task: 'Setup auth', status: 'completed' },
-              { id: '1.2', task: 'Database schema', status: 'in_progress' }
-            ]
-          }
-        ],
-        agents: {
-          active: ['backend', 'database'],
-          registry: ['planner', 'backend', 'database', 'frontend']
-        }
-      }, null, 2),
+      '.ultra/state.json': JSON.stringify(
+        {
+          project: { name: 'TestProject', mode: 'AI-First' },
+          phases: [
+            {
+              id: '1',
+              name: 'Phase 1: Foundation',
+              status: 'in_progress',
+              steps: [
+                { id: '1.1', task: 'Setup auth', status: 'completed' },
+                { id: '1.2', task: 'Database schema', status: 'in_progress' },
+              ],
+            },
+          ],
+          agents: {
+            active: ['backend', 'database'],
+            registry: ['planner', 'backend', 'database', 'frontend'],
+          },
+        },
+        null,
+        2
+      ),
       'src/auth/login.ts': `export function login() { return true; }`,
       'src/database/schema.ts': `export const schema = {};`,
-      'src/payments/stripe.ts': `// Stripe integration placeholder`
+      'src/payments/stripe.ts': `// Stripe integration placeholder`,
     });
   });
 
@@ -217,19 +223,18 @@ Building core features.
 
   test('diff shows implementation analysis', { cwd: tmpDir }, async () => {
     const result = runCli(['diff'], { cwd: tmpDir });
-    
+
     // Should show analysis header
     assert.ok(
-      result.output.includes('Implementation Analysis') ||
-      result.output.includes('Alignment Score')
+      result.output.includes('Implementation Analysis') || result.output.includes('Alignment Score')
     );
   });
 
   test('diff --json outputs valid JSON', async () => {
     const result = runCli(['diff', '--json'], { cwd: tmpDir });
-    
+
     assert.equal(result.status, 0);
-    
+
     // Parse JSON output
     let jsonOutput;
     try {
@@ -237,7 +242,7 @@ Building core features.
     } catch (e) {
       assert.fail('Output is not valid JSON');
     }
-    
+
     // Verify structure
     assert.ok(typeof jsonOutput.alignment === 'number');
     assert.ok(typeof jsonOutput.totalSections === 'number');
@@ -246,50 +251,49 @@ Building core features.
 
   test('diff handles missing IMPLEMENTATION-PLAN.md gracefully', async () => {
     const emptyDir = await createTempProject({});
-    
+
     const result = runCli(['diff'], { cwd: emptyDir });
-    
+
     assert.ok(
-      result.output.includes('No IMPLEMENTATION-PLAN.md') ||
-      result.output.includes('error')
+      result.output.includes('No IMPLEMENTATION-PLAN.md') || result.output.includes('error')
     );
-    
+
     await fs.rm(emptyDir, { recursive: true, force: true });
   });
 
   test('diff shows status tiers', async () => {
     const result = runCli(['diff'], { cwd: tmpDir });
-    
+
     // Should show different status levels
-    const hasStatuses = 
+    const hasStatuses =
       result.output.includes('Implemented') ||
       result.output.includes('Done') ||
       result.output.includes('Partial') ||
       result.output.includes('Missing');
-    
+
     assert.ok(hasStatuses, 'Should show status classifications');
   });
 
   test('diff shows confidence indicators', async () => {
     const result = runCli(['diff'], { cwd: tmpDir });
-    
+
     // Should show confidence (●, ◐, ○)
     assert.ok(
-      result.output.includes('●') || 
-      result.output.includes('◐') || 
-      result.output.includes('○') ||
-      result.output.includes('Alignment Score')
+      result.output.includes('●') ||
+        result.output.includes('◐') ||
+        result.output.includes('○') ||
+        result.output.includes('Alignment Score')
     );
   });
 
   test('diff shows recommendations', async () => {
     const result = runCli(['diff'], { cwd: tmpDir });
-    
+
     // Should provide recommendations
     assert.ok(
       result.output.includes('Recommendation') ||
-      result.output.includes('Excellent alignment') ||
-      result.output.includes('Focus on')
+        result.output.includes('Excellent alignment') ||
+        result.output.includes('Focus on')
     );
   });
 });
@@ -325,7 +329,7 @@ Next.js, PostgreSQL, Prisma.
 Detailed implementation steps.
 `,
       'CONTEXT.md': '# Context\n\nProject context.',
-      'docs/CHECKLIST.md': '# Checklist'
+      'docs/CHECKLIST.md': '# Checklist',
     });
   });
 
@@ -343,38 +347,36 @@ Detailed implementation steps.
 
   test('validate passes for valid project', async () => {
     const result = runCli(['validate'], { cwd: tmpDir });
-    
+
     assert.ok(
-      result.output.includes('PASSED') || 
-      result.output.includes('✅') ||
-      result.status === 0
+      result.output.includes('PASSED') || result.output.includes('✅') || result.status === 0
     );
   });
 
   test('validate --scan enables deep code scan', async () => {
     const result = runCli(['validate', '--scan'], { cwd: tmpDir });
-    
+
     assert.ok(
       result.output.includes('Scan') ||
-      result.output.includes('scanning') ||
-      result.output.includes('files')
+        result.output.includes('scanning') ||
+        result.output.includes('files')
     );
   });
 
   test('validate fails for missing required files', async () => {
     const badDir = await createTempProject({
-      'README.md': 'Just a readme'
+      'README.md': 'Just a readme',
     });
-    
+
     const result = runCli(['validate'], { cwd: badDir });
-    
+
     assert.ok(
       result.output.includes('FAILED') ||
-      result.output.includes('INCOMPLETE') ||
-      result.output.includes('❌') ||
-      result.status !== 0
+        result.output.includes('INCOMPLETE') ||
+        result.output.includes('❌') ||
+        result.status !== 0
     );
-    
+
     await fs.rm(badDir, { recursive: true, force: true });
   });
 });
@@ -428,12 +430,10 @@ describe('build command', () => {
             id: '1',
             name: 'Phase 1',
             status: 'in_progress',
-            steps: [
-              { id: '1.1', task: 'Setup auth', status: 'pending' }
-            ]
-          }
-        ]
-      })
+            steps: [{ id: '1.1', task: 'Setup auth', status: 'pending' }],
+          },
+        ],
+      }),
     });
   });
 
@@ -507,11 +507,11 @@ describe('init command', () => {
     const result = runCli(['init', '--live'], { cwd: tmpDir });
     // Should either error about missing stack or show available presets
     assert.ok(
-      result.output.includes('stack') || 
-      result.output.includes('preset') ||
-      result.output.includes('next15') ||
-      result.output.includes('remix') ||
-      result.status !== 0
+      result.output.includes('stack') ||
+        result.output.includes('preset') ||
+        result.output.includes('next15') ||
+        result.output.includes('remix') ||
+        result.status !== 0
     );
   });
 });
@@ -522,24 +522,24 @@ describe('init command', () => {
 describe('swarm command (extended)', () => {
   test('swarm help shows swarm information', () => {
     const result = runCli(['swarm', '--help']);
-    
+
     // Should mention swarm/task/agents in help
     assert.ok(
       result.output.toLowerCase().includes('swarm') ||
-      result.output.toLowerCase().includes('agent') ||
-      result.output.toLowerCase().includes('task') ||
-      result.output.toLowerCase().includes('pipeline'),
+        result.output.toLowerCase().includes('agent') ||
+        result.output.toLowerCase().includes('task') ||
+        result.output.toLowerCase().includes('pipeline'),
       'Should reference swarm concepts'
     );
   });
 
   test('swarm --parallel shows tier execution', () => {
     const result = runCli(['swarm', '--dry-run', '--parallel', 'test']);
-    
+
     assert.ok(
       result.output.includes('parallel') ||
-      result.output.includes('Tier') ||
-      result.output.includes('sequential')
+        result.output.includes('Tier') ||
+        result.output.includes('sequential')
     );
   });
 });
@@ -553,7 +553,7 @@ describe('command integration', () => {
   beforeEach(async () => {
     tmpDir = await createTempProject({
       'CONTEXT.md': '# Test',
-      'IMPLEMENTATION-PLAN.md': '# Plan'
+      'IMPLEMENTATION-PLAN.md': '# Plan',
     });
   });
 
@@ -567,7 +567,7 @@ describe('command integration', () => {
     // Test that multiple commands work together
     const validateResult = runCli(['validate'], { cwd: tmpDir });
     const diffResult = runCli(['diff'], { cwd: tmpDir });
-    
+
     // Both should execute without crashing
     assert.ok(validateResult.status !== null);
     assert.ok(diffResult.status !== null);

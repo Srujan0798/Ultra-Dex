@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Graph RAG Commands
  * CLI commands for Graph RAG operations
@@ -12,9 +14,7 @@ import { printInfo, printSuccess, printWarning, printError } from '../lib/utils/
  * Register RAG commands
  */
 export function registerRagCommands(program) {
-  const rag = program
-    .command('rag')
-    .description('Graph RAG operations for context retrieval');
+  const rag = program.command('rag').description('Graph RAG operations for context retrieval');
 
   // Index command
   rag
@@ -28,15 +28,15 @@ export function registerRagCommands(program) {
 
         const graphRAG = new GraphRAG({
           dbType: options.dbType,
-          useInMemory: options.dbType === 'memory'
+          useInMemory: options.dbType === 'memory',
         });
 
         await graphRAG.initialize();
         const stats = await graphRAG.indexCodebase(options.path);
-        
+
         printSuccess(chalk.green(`\n✅ Indexed ${stats.indexed} files`));
         printInfo(chalk.gray(`   Total files found: ${stats.totalFiles}`));
-        
+
         await graphRAG.close();
       } catch (error) {
         printError(chalk.red('Indexing failed:', error.message));
@@ -56,12 +56,12 @@ export function registerRagCommands(program) {
 
         const graphRAG = new GraphRAG({
           dbType: options.dbType,
-          useInMemory: options.dbType === 'memory'
+          useInMemory: options.dbType === 'memory',
         });
 
         await graphRAG.initialize();
-        const results = await graphRAG.query(query, { 
-          limit: parseInt(options.limit) 
+        const results = await graphRAG.query(query, {
+          limit: parseInt(options.limit),
         });
 
         if (results.length === 0) {
@@ -95,18 +95,19 @@ export function registerRagCommands(program) {
 
         const graphRAG = new GraphRAG({
           dbType: options.dbType,
-          useInMemory: options.dbType === 'memory'
+          useInMemory: options.dbType === 'memory',
         });
 
         await graphRAG.initialize();
-        const analysis = await graphRAG.getImpactAnalysis(
-          file, 
-          parseInt(options.depth)
-        );
+        const analysis = await graphRAG.getImpactAnalysis(file, parseInt(options.depth));
 
-        const riskColor = analysis.riskLevel === 'high' ? 'red' : 
-                         analysis.riskLevel === 'medium' ? 'yellow' : 'green';
-        
+        const riskColor =
+          analysis.riskLevel === 'high'
+            ? 'red'
+            : analysis.riskLevel === 'medium'
+              ? 'yellow'
+              : 'green';
+
         printInfo(chalk.white(`Risk Level: ${chalk[riskColor](analysis.riskLevel.toUpperCase())}`));
         printInfo(chalk.gray(`Impacted Files: ${analysis.impactedCount}\n`));
 
@@ -136,11 +137,11 @@ export function registerRagCommands(program) {
 
         const graphRAG = new GraphRAG({
           dbType: options.dbType,
-          useInMemory: options.dbType === 'memory'
+          useInMemory: options.dbType === 'memory',
         });
 
         await graphRAG.initialize();
-        
+
         // Get stats from the in-memory graph or database
         if (graphRAG.useInMemory) {
           const nodeCount = graphRAG.inMemoryGraph.size;
@@ -151,13 +152,13 @@ export function registerRagCommands(program) {
           const connector = new Neo4jConnector();
           await connector.connect();
           const stats = await connector.getStats();
-          
+
           printInfo(chalk.white('Storage: Neo4j'));
           printInfo(chalk.gray(`Files: ${stats.files}`));
           printInfo(chalk.gray(`Functions: ${stats.functions}`));
           printInfo(chalk.gray(`Classes: ${stats.classes}`));
           printInfo(chalk.gray(`Relationships: ${stats.relationships}`));
-          
+
           await connector.close();
         }
 
@@ -178,13 +179,15 @@ export function registerRagCommands(program) {
       try {
         if (!options.force) {
           const { confirm } = await import('inquirer');
-          const answers = await confirm.prompt([{
-            type: 'confirm',
-            name: 'clear',
-            message: 'Are you sure you want to clear all graph data?',
-            default: false
-          }]);
-          
+          const answers = await confirm.prompt([
+            {
+              type: 'confirm',
+              name: 'clear',
+              message: 'Are you sure you want to clear all graph data?',
+              default: false,
+            },
+          ]);
+
           if (!answers.clear) {
             printInfo(chalk.yellow('Cancelled'));
             return;
@@ -195,9 +198,9 @@ export function registerRagCommands(program) {
 
         const { Neo4jConnector } = await import('../lib/rag/neo4j.js');
         const connector = new Neo4jConnector({
-          dbType: options.dbType
+          dbType: options.dbType,
         });
-        
+
         await connector.connect();
         await connector.clearAll();
         await connector.close();

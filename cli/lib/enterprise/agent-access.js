@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enterprise Agent Access Control
  * Enforces role-based access to agents using team configuration.
@@ -30,9 +32,9 @@ export const DEFAULT_AGENT_ACCESS = {
     'debugger',
     'documentation',
     'performance',
-    'refactoring'
+    'refactoring',
   ],
-  viewer: ['reviewer', 'documentation']
+  viewer: ['reviewer', 'documentation'],
 };
 
 function normalizeAgentName(name) {
@@ -67,7 +69,12 @@ async function resolveUserRole(teamConfig) {
   }
 
   const username = String(user.username).trim().toLowerCase();
-  const member = teamConfig.members.find(m => String(m.email || '').trim().toLowerCase() === username);
+  const member = teamConfig.members.find(
+    (m) =>
+      String(m.email || '')
+        .trim()
+        .toLowerCase() === username
+  );
   return member?.role || fallbackRole;
 }
 
@@ -112,8 +119,8 @@ export async function filterAgentsByAccess(agentNames = []) {
   }
 
   const allowedSet = new Set(allowedList);
-  const allowedAgents = agentNames.filter(name => allowedSet.has(normalizeAgentName(name)));
-  const restrictedAgents = agentNames.filter(name => !allowedSet.has(normalizeAgentName(name)));
+  const allowedAgents = agentNames.filter((name) => allowedSet.has(normalizeAgentName(name)));
+  const restrictedAgents = agentNames.filter((name) => !allowedSet.has(normalizeAgentName(name)));
 
   return { role, allowedAgents, restrictedAgents };
 }
@@ -122,7 +129,7 @@ export async function getAgentAccessConfig() {
   const teamConfig = await loadTeamConfig();
   return {
     teamAccess: teamConfig?.agentAccess || null,
-    defaults: DEFAULT_AGENT_ACCESS
+    defaults: DEFAULT_AGENT_ACCESS,
   };
 }
 

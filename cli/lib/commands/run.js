@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex run command
  * Execute agent tasks automatically (the "swarm" approach)
@@ -10,16 +12,16 @@ import fs from 'fs/promises';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
+import {
+  createProvider,
+  getDefaultProvider,
+  checkConfiguredProviders,
+} from '../providers/index.js';
 import { projectGraph } from '../mcp/graph.js';
 import { errorRecovery } from '../utils/error-recovery.js';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
 import { authorizeOperation } from '../governance/index.js';
-import {
-  verifyLinting,
-  verifyTypeSafety,
-  verifySecurityPatterns
-} from '../quality/automation.js';
+import { verifyLinting, verifyTypeSafety, verifySecurityPatterns } from '../quality/automation.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { getCache } from '../cache/index.js';
@@ -143,7 +145,7 @@ async function readProjectContext() {
     planPromise,
     contextPromise,
     statePromise,
-    graphPromise
+    graphPromise,
   ]);
 
   context.plan = plan;
@@ -169,16 +171,20 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
   }
 
   const spinner = ora(`\${agent.name} is working...`).start();
-  
+
   // Notify Dashboard
   await dashboardNotifier.sendAgentStatus(agentName, 'working', task.substring(0, 50));
 
-  const graphInfo = projectContext.graph 
-    ? `## Codebase Graph\n- Files: ${projectContext.graph.nodeCount}\n- Dependencies: ${projectContext.graph.edgeCount}\n` 
+  const graphInfo = projectContext.graph
+    ? `## Codebase Graph\n- Files: ${projectContext.graph.nodeCount}\n- Dependencies: ${projectContext.graph.edgeCount}\n`
     : '';
 
-  const historySection = projectContext.history ? `## Execution History\n${projectContext.history}\n\n` : '';
-  const contextSection = projectContext.context ? `## Context\n${projectContext.context.slice(0, 3000)}\n\n${graphInfo}${historySection}` : '';
+  const historySection = projectContext.history
+    ? `## Execution History\n${projectContext.history}\n\n`
+    : '';
+  const contextSection = projectContext.context
+    ? `## Context\n${projectContext.context.slice(0, 3000)}\n\n${graphInfo}${historySection}`
+    : '';
   const prompt = `${contextSection}## Task\n${task}\n\nYou can use tools by outputting:
 >> READ_CODE: "filePath"
 >> WRITE_CODE: "filePath" "fullContent"
@@ -201,12 +207,16 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
       return `[Governance]: ${executionDecision.reason}`;
     }
 
-    const result = await errorRecovery.executeWithRecovery('ai-provider', async () => {
+    const result = await errorRecovery.executeWithRecovery(
+      'ai-provider',
+      async () => {
         return await providerInstance.generate(agent.systemPrompt, prompt);
-    }, {
+      },
+      {
         maxRetries: 2,
-        retryDelay: 2000
-    });
+        retryDelay: 2000,
+      }
+    );
 
     try {
       const durationMs = Date.now() - startedAt;
@@ -215,7 +225,7 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         durationMs,
         success: true,
         task,
-        provider: providerInstance?.getName?.() || 'provider'
+        provider: providerInstance?.getName?.() || 'provider',
       });
 
       const inputTokens = result?.usage?.inputTokens ?? estimateTokens(agent.systemPrompt + prompt);
@@ -224,12 +234,12 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         agent: agentId,
         model: result?.model || providerInstance?.model || null,
         inputTokens,
-        outputTokens
+        outputTokens,
       });
     } catch {
       // analytics should not block execution
     }
-    
+
     spinner.succeed(`\${agent.name} completed.`);
     await dashboardNotifier.sendAgentStatus(agentName, 'completed', 'Task finished');
 
@@ -247,7 +257,13 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
       // Sanitize file path to prevent directory traversal
       filePath = path.normalize(filePath);
       if (filePath.includes('../') || filePath.includes('..\\')) {
-        return await runAgentLoop(agentName, `${task}\n\nError reading ${filePath}: Path traversal detected`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError reading ${filePath}: Path traversal detected`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       }
 
       const readDecision = await authorizeOperation({
@@ -257,7 +273,13 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         metadata: { agentTitle: agent.role },
       });
       if (!readDecision.allowed) {
-        return await runAgentLoop(agentName, `${task}\n\nGovernance blocked READ_CODE on ${filePath}: ${readDecision.reason}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nGovernance blocked READ_CODE on ${filePath}: ${readDecision.reason}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       }
 
       printInfo(chalk.cyan(`\n🔍 \${agent.name} is reading \${filePath}...`));
@@ -266,14 +288,32 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         const fullPath = path.resolve(process.cwd(), filePath);
         // Additional check to ensure path is within project directory
         if (!fullPath.startsWith(process.cwd())) {
-          return await runAgentLoop(agentName, `${task}\n\nError reading ${filePath}: Path outside project root`, provider, projectContext, depth + 1);
+          return await runAgentLoop(
+            agentName,
+            `${task}\n\nError reading ${filePath}: Path outside project root`,
+            provider,
+            projectContext,
+            depth + 1
+          );
         }
 
         const fileContent = await fs.readFile(fullPath, 'utf8');
         const nextPrompt = `Output of READ_CODE "${filePath}":\n\`\`\`\n${fileContent}\n\`\`\`\n\nPlease proceed with your task.`;
-        return await runAgentLoop(agentName, `${task}\n\n${nextPrompt}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\n${nextPrompt}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       } catch (e) {
-        return await runAgentLoop(agentName, `${task}\n\nError reading ${filePath}: ${e.message}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError reading ${filePath}: ${e.message}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       }
     }
 
@@ -284,7 +324,13 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
       // Sanitize file path to prevent directory traversal
       filePath = path.normalize(filePath);
       if (filePath.includes('../') || filePath.includes('..\\')) {
-        return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: Path traversal detected`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError writing ${filePath}: Path traversal detected`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       }
 
       const writeDecision = await authorizeOperation({
@@ -295,7 +341,13 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         metadata: { agentTitle: agent.role },
       });
       if (!writeDecision.allowed) {
-        return await runAgentLoop(agentName, `${task}\n\nGovernance blocked WRITE_CODE on ${filePath}: ${writeDecision.reason}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nGovernance blocked WRITE_CODE on ${filePath}: ${writeDecision.reason}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       }
 
       printInfo(chalk.green(`\n💾 \${agent.name} is writing to \${filePath}...`));
@@ -304,14 +356,26 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         const fullPath = path.resolve(process.cwd(), filePath);
         // Additional check to ensure path is within project directory
         if (!fullPath.startsWith(process.cwd())) {
-          return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: Path outside project root`, provider, projectContext, depth + 1);
+          return await runAgentLoop(
+            agentName,
+            `${task}\n\nError writing ${filePath}: Path outside project root`,
+            provider,
+            projectContext,
+            depth + 1
+          );
         }
 
         // Prevent writing to sensitive files
         const forbiddenPaths = ['.git', 'node_modules', '.env', 'package-lock.json'];
         const pathParts = fullPath.split(path.sep);
-        if (pathParts.some(part => forbiddenPaths.includes(part))) {
-          return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: Cannot write to sensitive file`, provider, projectContext, depth + 1);
+        if (pathParts.some((part) => forbiddenPaths.includes(part))) {
+          return await runAgentLoop(
+            agentName,
+            `${task}\n\nError writing ${filePath}: Cannot write to sensitive file`,
+            provider,
+            projectContext,
+            depth + 1
+          );
         }
 
         await fs.mkdir(path.dirname(fullPath), { recursive: true });
@@ -330,21 +394,39 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         if (secRes.status === 'FAIL') failures.push(`Security Check Failed: ${secRes.message}`);
 
         if (failures.length > 0) {
-            printError(`\n❌ Verification Failed!`);
-            failures.forEach(f => printError(`  - ${f}`));
+          printError(`\n❌ Verification Failed!`);
+          failures.forEach((f) => printError(`  - ${f}`));
 
-            // Return failure to agent so it can fix it
-            const errorMsg = `Code written to ${filePath}, BUT verification failed. YOU MUST FIX THIS:\n${failures.join('\n')}`;
-            return await runAgentLoop(agentName, `${task}\n\n${errorMsg}`, provider, projectContext, depth + 1);
+          // Return failure to agent so it can fix it
+          const errorMsg = `Code written to ${filePath}, BUT verification failed. YOU MUST FIX THIS:\n${failures.join('\n')}`;
+          return await runAgentLoop(
+            agentName,
+            `${task}\n\n${errorMsg}`,
+            provider,
+            projectContext,
+            depth + 1
+          );
         }
 
         printSuccess(`\n✅ Verification Passed`);
         // --------------------------------
 
         const nextPrompt = `Successfully wrote ${filePath} and passed verification. Please proceed or delegate verification.`;
-        return await runAgentLoop(agentName, `${task}\n\n${nextPrompt}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\n${nextPrompt}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       } catch (e) {
-        return await runAgentLoop(agentName, `${task}\n\nError writing ${filePath}: ${e.message}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError writing ${filePath}: ${e.message}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       }
     }
 
@@ -358,7 +440,13 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         metadata: { agentTitle: agent.role },
       });
       if (!execDecision.allowed) {
-        return await runAgentLoop(agentName, `${task}\n\nGovernance blocked RUN_SHELL "${command}": ${execDecision.reason}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nGovernance blocked RUN_SHELL "${command}": ${execDecision.reason}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       }
       printInfo(chalk.yellow(`\n⚡ ${agent.name} is executing shell command: ${command}...`));
 
@@ -366,9 +454,21 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         const { stdout, stderr } = await execAsync(command);
         const output = stdout + (stderr ? `\nSTDERR:\n${stderr}` : '');
         const nextPrompt = `Output of RUN_SHELL "${command}":\n\`\`\`\n${output}\n\`\`\`\n\nPlease proceed with your task.`;
-        return await runAgentLoop(agentName, `${task}\n\n${nextPrompt}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\n${nextPrompt}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       } catch (e) {
-        return await runAgentLoop(agentName, `${task}\n\nError executing ${command}: ${e.message}`, provider, projectContext, depth + 1);
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError executing ${command}: ${e.message}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
       }
     }
 
@@ -384,7 +484,13 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         return `${content}\n\n[Governance]: Delegation blocked - ${delegateDecision.reason}`;
       }
       printInfo(chalk.cyan(`\n↪️  ${agent.name} is delegating to @${nextAgent}: "${nextTask}"`));
-      const subResult = await runAgentLoop(nextAgent, nextTask, provider, projectContext, depth + 1);
+      const subResult = await runAgentLoop(
+        nextAgent,
+        nextTask,
+        provider,
+        projectContext,
+        depth + 1
+      );
       return `${content}\n\n---\n\n## Delegated Result from @${nextAgent}\n${subResult}`;
     }
 
@@ -397,13 +503,13 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         durationMs: Date.now() - startedAt,
         success: false,
         task,
-        provider: providerInstance?.getName?.() || 'provider'
+        provider: providerInstance?.getName?.() || 'provider',
       });
       await recordError({
         message: err.message,
         command: 'run',
         stack: err.stack,
-        metadata: { agent: agentId }
+        metadata: { agent: agentId },
       });
     } catch {
       // ignore analytics failures
@@ -435,7 +541,8 @@ function createAgentProviderFactory(providerId, options = {}) {
 }
 
 export function registerRunCommand(program) {
-  program.command('run <agent>')
+  program
+    .command('run <agent>')
     .description('Execute an agent task automatically')
     .option('-t, --task <task>', 'Task to execute')
     .option('-p, --provider <provider>', 'AI provider')
@@ -447,7 +554,7 @@ export function registerRunCommand(program) {
     .action(async (agentName, options) => {
       try {
         const configured = checkConfiguredProviders();
-        const hasProvider = configured.some(p => p.configured) || options.key;
+        const hasProvider = configured.some((p) => p.configured) || options.key;
 
         if (!hasProvider) {
           printWarning('\n⚠️  No AI provider configured.\n');
@@ -462,15 +569,22 @@ export function registerRunCommand(program) {
 
         let task = options.task;
         if (!task) {
-          const { taskInput } = await inquirer.prompt([{
-            type: 'input', name: 'taskInput', message: `Task for ${agentName}?`
-          }]);
+          const { taskInput } = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'taskInput',
+              message: `Task for ${agentName}?`,
+            },
+          ]);
           task = taskInput;
         }
 
         const context = await readProjectContext();
         const providerId = options.provider || getDefaultProvider();
-        const providerFactory = createAgentProviderFactory(providerId, { apiKey: options.key, maxTokens: 8000 });
+        const providerFactory = createAgentProviderFactory(providerId, {
+          apiKey: options.key,
+          maxTokens: 8000,
+        });
 
         const finalOutput = await runAgentLoop(agentName, task, providerFactory, context);
 
@@ -486,7 +600,8 @@ export function registerRunCommand(program) {
 }
 
 export function registerSwarmCommand(program) {
-  program.command('swarm <feature>')
+  program
+    .command('swarm <feature>')
     .description('Run a full agent swarm for a feature')
     .option('-p, --provider <provider>', 'AI provider')
     .option('-k, --key <apiKey>', 'API key')
@@ -495,7 +610,10 @@ export function registerSwarmCommand(program) {
         printInfo(chalk.cyan('\n🐝 Ultra-Dex Agent Swarm\n'));
         const context = await readProjectContext();
         const providerId = options.provider || getDefaultProvider();
-        const providerFactory = createAgentProviderFactory(providerId, { apiKey: options.key, maxTokens: 8000 });
+        const providerFactory = createAgentProviderFactory(providerId, {
+          apiKey: options.key,
+          maxTokens: 8000,
+        });
 
         printInfo(chalk.bold('Step 1: 📋 @Planner breaking down feature...'));
         const plan = await runAgentLoop('planner', feature, providerFactory, context);

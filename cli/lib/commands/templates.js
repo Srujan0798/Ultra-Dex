@@ -1,7 +1,15 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { listInstalledTemplates, searchTemplates, installTemplate, uninstallTemplate, publishTemplate } from '../marketplace/templates.js';
+import {
+  listInstalledTemplates,
+  searchTemplates,
+  installTemplate,
+  uninstallTemplate,
+  publishTemplate,
+} from '../marketplace/templates.js';
 
 export function registerTemplatesCommand(program) {
   const templates = new Command('templates');
@@ -17,7 +25,7 @@ export function registerTemplatesCommand(program) {
         return;
       }
       printInfo(chalk.cyan('\nInstalled templates:\n'));
-      installed.forEach(name => printInfo(`  • ${name}`));
+      installed.forEach((name) => printInfo(`  • ${name}`));
     });
 
   templates
@@ -30,7 +38,7 @@ export function registerTemplatesCommand(program) {
         return;
       }
       printInfo(chalk.cyan('\nTemplate results:\n'));
-      results.forEach(t => {
+      results.forEach((t) => {
         printInfo(chalk.white(`  ${t.name}`));
         printInfo(chalk.gray(`    ${t.description}`));
         if (t.category) printInfo(chalk.gray(`    Category: ${t.category}`));
@@ -72,12 +80,15 @@ export function registerTemplatesCommand(program) {
           return;
         }
 
-        const entry = await publishTemplate({
-          name: options.name,
-          version: options.version,
-          description: options.description,
-          category: options.category
-        }, templatePath);
+        const entry = await publishTemplate(
+          {
+            name: options.name,
+            version: options.version,
+            description: options.description,
+            category: options.category,
+          },
+          templatePath
+        );
 
         printSuccess(chalk.green(`\n✅ Published template ${entry.name}@${entry.version}\n`));
       } catch (error) {
@@ -87,4 +98,3 @@ export function registerTemplatesCommand(program) {
 
   program.addCommand(templates);
 }
-

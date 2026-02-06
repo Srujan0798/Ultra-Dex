@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs/promises';
@@ -10,7 +12,7 @@ const REQUIRED_KEYS = [
   'ANTHROPIC_API_KEY',
   'OPENAI_API_KEY',
   'GOOGLE_AI_KEY',
-  'DATABASE_URL'
+  'DATABASE_URL',
 ];
 
 async function copyEnvFile(name, targetDir) {

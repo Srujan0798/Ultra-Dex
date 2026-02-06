@@ -20,11 +20,11 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
@@ -59,17 +59,26 @@ describe('V3 Feature Commands', () => {
     test('deploy generates configurations', async () => {
       // Create a dummy package.json
       await fs.writeFile(path.join(tmpDir, 'package.json'), JSON.stringify({ name: 'test-app' }));
-      
+
       const result = runCli(['deploy', '--project', tmpDir, '--all'], { cwd: tmpDir });
-      
+
       assert.match(result.output, /Generation Summary/i);
       assert.match(result.output, /✅ All deployment configurations generated/i);
 
       // Verify files
       assert.ok(existsSync(path.join(tmpDir, 'Dockerfile')), 'Dockerfile should exist');
-      assert.ok(existsSync(path.join(tmpDir, 'docker-compose.yml')), 'docker-compose.yml should exist');
-      assert.ok(existsSync(path.join(tmpDir, 'infrastructure/terraform/main.tf')), 'Terraform main.tf should exist');
-      assert.ok(existsSync(path.join(tmpDir, 'k8s/deployment.yaml')), 'K8s deployment.yaml should exist');
+      assert.ok(
+        existsSync(path.join(tmpDir, 'docker-compose.yml')),
+        'docker-compose.yml should exist'
+      );
+      assert.ok(
+        existsSync(path.join(tmpDir, 'infrastructure/terraform/main.tf')),
+        'Terraform main.tf should exist'
+      );
+      assert.ok(
+        existsSync(path.join(tmpDir, 'k8s/deployment.yaml')),
+        'K8s deployment.yaml should exist'
+      );
     });
   });
 
@@ -130,23 +139,29 @@ describe('V3 Feature Commands', () => {
     test('scaffold from plan works', async () => {
       // Setup a plan
       await fs.mkdir(path.join(tmpDir, 'src'), { recursive: true });
-      await fs.writeFile(path.join(tmpDir, 'IMPLEMENTATION-PLAN.md'), `
+      await fs.writeFile(
+        path.join(tmpDir, 'IMPLEMENTATION-PLAN.md'),
+        `
 # Test Project
 ## Section 6: Tech Stack
 Frontend: Next.js
 Database: Prisma
 Auth: Clerk
-`);
+`
+      );
 
       const result = runCli(['scaffold', '--from-plan'], { cwd: tmpDir });
-      
+
       assert.match(result.output, /Scaffolding from Implementation Plan/i);
       assert.match(result.output, /Detected Tech Stack/i);
       assert.match(result.output, /✅ Scaffolding Complete/i);
 
       // Verify some files
       assert.ok(existsSync(path.join(tmpDir, 'package.json')), 'package.json should be created');
-      assert.ok(existsSync(path.join(tmpDir, 'prisma/schema.prisma')), 'Prisma schema should be created');
+      assert.ok(
+        existsSync(path.join(tmpDir, 'prisma/schema.prisma')),
+        'Prisma schema should be created'
+      );
       assert.ok(existsSync(path.join(tmpDir, 'src/lib/db.ts')), 'DB lib should be created');
     });
   });

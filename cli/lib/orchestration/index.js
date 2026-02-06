@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Orchestration Engine
  * Supports agent messaging, task delegation, conflict resolution,
@@ -22,7 +24,7 @@ export class TaskGraph {
     this.tasks.set(task.id, {
       ...task,
       dependencies: task.dependencies || [],
-      status: task.status || 'pending'
+      status: task.status || 'pending',
     });
   }
 
@@ -43,7 +45,7 @@ export class TaskGraph {
     const ready = [];
     for (const task of this.tasks.values()) {
       if (task.status !== 'pending') continue;
-      const depsMet = task.dependencies.every(depId => {
+      const depsMet = task.dependencies.every((depId) => {
         const dep = this.tasks.get(depId);
         return dep && dep.status === 'completed';
       });
@@ -53,7 +55,7 @@ export class TaskGraph {
   }
 
   hasPending() {
-    return Array.from(this.tasks.values()).some(task => task.status === 'pending');
+    return Array.from(this.tasks.values()).some((task) => task.status === 'pending');
   }
 }
 
@@ -99,7 +101,7 @@ export class Orchestrator {
         return acc;
       }, {});
       const winner = Object.entries(votes).sort((a, b) => b[1] - a[1])[0];
-      return conflict.options.find(opt => opt.id === winner[0]);
+      return conflict.options.find((opt) => opt.id === winner[0]);
     }
     return conflict.options[0];
   }
@@ -139,7 +141,7 @@ export class Orchestrator {
 
     return {
       tasks: Array.from(this.tasks.tasks.values()),
-      conflicts: this.conflicts
+      conflicts: this.conflicts,
     };
   }
 }
@@ -147,5 +149,5 @@ export class Orchestrator {
 export default {
   AgentBus,
   TaskGraph,
-  Orchestrator
+  Orchestrator,
 };

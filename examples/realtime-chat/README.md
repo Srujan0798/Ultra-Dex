@@ -7,6 +7,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 **Product:** Modern team chat like Slack but simpler - focused on developer teams.
 
 **Tech Stack:**
+
 - Frontend: Next.js 15 + Tailwind
 - Backend: Node.js + Socket.io
 - Database: PostgreSQL + Redis
@@ -18,6 +19,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 ## Core Features
 
 ### MVP (Must Have)
+
 - Real-time messaging with Socket.io
 - Channel-based conversations
 - Presence indicators (online/away/offline)
@@ -27,6 +29,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 - Message search
 
 ### Phase 2 (Nice to Have)
+
 - Threaded replies
 - Voice messages
 - Screen sharing
@@ -62,6 +65,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 ## Data Model
 
 ### Users
+
 ```sql
 - id: UUID (Clerk)
 - email: String
@@ -72,6 +76,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 ```
 
 ### Workspaces
+
 ```sql
 - id: UUID
 - name: String
@@ -81,6 +86,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 ```
 
 ### Channels
+
 ```sql
 - id: UUID
 - workspace_id: UUID
@@ -90,6 +96,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 ```
 
 ### Messages
+
 ```sql
 - id: UUID
 - channel_id: UUID
@@ -103,6 +110,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 ```
 
 ### Reactions
+
 ```sql
 - id: UUID
 - message_id: UUID
@@ -113,6 +121,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 ## WebSocket Events
 
 ### Client → Server
+
 ```javascript
 // Join channel
 socket.emit('join_channel', { channelId: '...' });
@@ -121,7 +130,7 @@ socket.emit('join_channel', { channelId: '...' });
 socket.emit('send_message', {
   channelId: '...',
   content: 'Hello world!',
-  type: 'text'
+  type: 'text',
 });
 
 // Typing indicator
@@ -132,6 +141,7 @@ socket.emit('presence', { status: 'online' });
 ```
 
 ### Server → Client
+
 ```javascript
 // New message
 socket.on('new_message', (message) => {
@@ -159,6 +169,7 @@ socket.on('user_joined', ({ userId, channelId }) => {
 ### Week 1: Foundation
 
 **Day 1-2: Setup**
+
 - [ ] Next.js project with TypeScript
 - [ ] Clerk authentication setup
 - [ ] Socket.io server setup
@@ -166,6 +177,7 @@ socket.on('user_joined', ({ userId, channelId }) => {
 - [ ] Redis connection
 
 **Day 3-4: Basic Chat**
+
 - [ ] Channel list UI
 - [ ] Message list component
 - [ ] Send message form
@@ -173,6 +185,7 @@ socket.on('user_joined', ({ userId, channelId }) => {
 - [ ] Basic message events
 
 **Day 5: Polish**
+
 - [ ] Message styling (bubbles)
 - [ ] Auto-scroll to bottom
 - [ ] Timestamp formatting
@@ -181,18 +194,21 @@ socket.on('user_joined', ({ userId, channelId }) => {
 ### Week 2: Real-time Features
 
 **Day 1-2: Presence**
+
 - [ ] Online status tracking
 - [ ] Presence indicator component
 - [ ] "User is typing" indicator
 - [ ] Last seen timestamp
 
 **Day 3-4: Files**
+
 - [ ] File upload component
 - [ ] S3 integration (presigned URLs)
 - [ ] Image previews
 - [ ] File download
 
 **Day 5: Reactions**
+
 - [ ] Emoji picker
 - [ ] Add/remove reactions
 - [ ] Reaction count display
@@ -200,18 +216,21 @@ socket.on('user_joined', ({ userId, channelId }) => {
 ### Week 3: Scale & Search
 
 **Day 1-2: Performance**
+
 - [ ] Message pagination (infinite scroll)
 - [ ] Virtual scrolling for large channels
 - [ ] Connection resilience (reconnect)
 - [ ] Message caching
 
 **Day 3-4: Search**
+
 - [ ] Search UI
 - [ ] Full-text search (PostgreSQL)
 - [ ] Filter by user/channel/date
 - [ ] Jump to message
 
 **Day 5: Admin**
+
 - [ ] Workspace settings
 - [ ] Channel management
 - [ ] Member invites
@@ -253,6 +272,7 @@ npm run dev
 ## Key Components
 
 ### ChatMessage
+
 ```typescript
 interface ChatMessageProps {
   id: string;
@@ -266,6 +286,7 @@ interface ChatMessageProps {
 ```
 
 ### useSocket Hook
+
 ```typescript
 function useSocket() {
   const [connected, setConnected] = useState(false);
@@ -273,10 +294,10 @@ function useSocket() {
 
   useEffect(() => {
     socket.current = io(process.env.NEXT_PUBLIC_SOCKET_URL);
-    
+
     socket.current.on('connect', () => setConnected(true));
     socket.current.on('disconnect', () => setConnected(false));
-    
+
     return () => {
       socket.current?.disconnect();
     };
@@ -287,6 +308,7 @@ function useSocket() {
 ```
 
 ### TypingIndicator
+
 ```typescript
 function TypingIndicator({ channelId }: { channelId: string }) {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -338,16 +360,19 @@ npx ultra-dex deploy
 ## Scaling Considerations
 
 **Horizontal Scaling:**
+
 - Use Redis Pub/Sub for cross-server messaging
 - Sticky sessions for WebSocket connections
 - Separate API and WebSocket servers
 
 **Database:**
+
 - Partition messages by channel_id
 - Archive old messages (S3)
 - Read replicas for search
 
 **Caching:**
+
 - Redis for online status
 - CDN for file assets
 - Client-side caching for messages

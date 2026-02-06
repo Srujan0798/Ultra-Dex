@@ -1,6 +1,6 @@
 const keys = [
   { label: 'Production', key: 'udx_live_••••••••••••', status: 'Active' },
-  { label: 'Staging', key: 'udx_test_••••••••••••', status: 'Rotating' }
+  { label: 'Staging', key: 'udx_test_••••••••••••', status: 'Rotating' },
 ];
 
 export default function ApiKeysPage() {

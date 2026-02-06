@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
@@ -78,7 +80,7 @@ export class UltraMemory {
       text,
       tags: Array.isArray(tags) ? tags : [tags],
       source,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
     this.memory.push(entry);
     await this.saveToFile();
@@ -92,13 +94,14 @@ export class UltraMemory {
 
     await this.init();
     const lowerQuery = query.toLowerCase();
-    
+
     // Simple keyword search for now
     // Future: Vector search / Semantic search
     return this.memory
-      .filter(entry => 
-        entry.text.toLowerCase().includes(lowerQuery) || 
-        entry.tags.some(t => t.toLowerCase().includes(lowerQuery))
+      .filter(
+        (entry) =>
+          entry.text.toLowerCase().includes(lowerQuery) ||
+          entry.tags.some((t) => t.toLowerCase().includes(lowerQuery))
       )
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
       .slice(0, limit);
@@ -108,7 +111,7 @@ export class UltraMemory {
     await this.init();
     if (beforeDate) {
       const date = new Date(beforeDate);
-      this.memory = this.memory.filter(entry => new Date(entry.timestamp) >= date);
+      this.memory = this.memory.filter((entry) => new Date(entry.timestamp) >= date);
     } else {
       this.memory = [];
     }
@@ -120,7 +123,7 @@ export class UltraMemory {
     if (!timestamp) return;
     const date = new Date(timestamp);
     if (Number.isNaN(date.getTime())) return;
-    this.memory = this.memory.filter(entry => new Date(entry.timestamp) < date);
+    this.memory = this.memory.filter((entry) => new Date(entry.timestamp) < date);
     await this.saveToFile();
   }
 

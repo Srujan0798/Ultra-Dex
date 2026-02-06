@@ -45,6 +45,7 @@ ultra-dex/
 **Purpose:** Run multiple agents in sequence to complete a task autonomously.
 
 **Requirements:**
+
 - Accept task description as argument
 - Define pipeline: planner → cto → backend → frontend → auth → testing → reviewer
 - Load each agent prompt from `agents/` directory
@@ -55,6 +56,7 @@ ultra-dex/
 - Log progress with ora spinners
 
 **Usage:**
+
 ```bash
 npx ultra-dex swarm "Build user authentication"
 npx ultra-dex swarm "Add payments" --dry-run
@@ -62,6 +64,7 @@ npx ultra-dex swarm "Build feature" --parallel
 ```
 
 **Code Structure:**
+
 ```javascript
 import chalk from 'chalk';
 import ora from 'ora';
@@ -76,7 +79,7 @@ const PIPELINE = [
   { name: 'frontend', tier: '2-development', desc: 'Build UI' },
   { name: 'auth', tier: '3-security', desc: 'Add authentication' },
   { name: 'testing', tier: '5-quality', desc: 'Write tests' },
-  { name: 'reviewer', tier: '5-quality', desc: 'Code review' }
+  { name: 'reviewer', tier: '5-quality', desc: 'Code review' },
 ];
 
 export async function swarmCommand(task, options) {
@@ -93,6 +96,7 @@ export async function swarmCommand(task, options) {
 **Purpose:** Auto-update project state when files change.
 
 **Requirements:**
+
 - Watch CONTEXT.md, IMPLEMENTATION-PLAN.md, src/, app/, lib/
 - Debounce file changes (500ms)
 - Call updateState() on change
@@ -100,6 +104,7 @@ export async function swarmCommand(task, options) {
 - Support `--interval` for custom polling
 
 **Usage:**
+
 ```bash
 npx ultra-dex watch
 npx ultra-dex watch --interval 1000
@@ -114,6 +119,7 @@ npx ultra-dex watch --interval 1000
 **Purpose:** Compare implementation plan against actual code.
 
 **Requirements:**
+
 - Parse IMPLEMENTATION-PLAN.md sections
 - Scan codebase for matching implementations
 - Calculate alignment percentage per section
@@ -121,6 +127,7 @@ npx ultra-dex watch --interval 1000
 - Support `--json` for machine-readable output
 
 **Usage:**
+
 ```bash
 npx ultra-dex diff
 npx ultra-dex diff --json > alignment.json
@@ -135,12 +142,14 @@ npx ultra-dex diff --json > alignment.json
 **Purpose:** Export project context in various formats.
 
 **Requirements:**
+
 - Support formats: json, html, markdown, pdf
 - Include: CONTEXT.md, IMPLEMENTATION-PLAN.md, state.json
 - Generate standalone HTML viewer
 - Support `--include-agents` to bundle agent prompts
 
 **Usage:**
+
 ```bash
 npx ultra-dex export --format json
 npx ultra-dex export --format html --include-agents
@@ -155,12 +164,14 @@ npx ultra-dex export --format html --include-agents
 **Purpose:** Check for and install CLI updates.
 
 **Requirements:**
+
 - Query npm registry for latest version
 - Compare with current version
 - Show changelog diff
 - Support `--install` to auto-upgrade
 
 **Usage:**
+
 ```bash
 npx ultra-dex upgrade --check
 npx ultra-dex upgrade --install
@@ -175,6 +186,7 @@ npx ultra-dex upgrade --install
 **Purpose:** Manage Ultra-Dex configuration.
 
 **Requirements:**
+
 - `--mcp`: Generate Claude Desktop MCP config
 - `--cursor`: Generate Cursor settings
 - `--vscode`: Generate VS Code settings
@@ -182,6 +194,7 @@ npx ultra-dex upgrade --install
 - `--set key=value`: Set config values
 
 **Usage:**
+
 ```bash
 npx ultra-dex config --mcp
 npx ultra-dex config --show
@@ -197,6 +210,7 @@ npx ultra-dex config --set provider=claude
 **File:** `cli/lib/commands/serve.js`
 
 **Add Endpoints:**
+
 ```
 GET  /                    → Server info + version
 GET  /context             → CONTEXT.md + IMPLEMENTATION-PLAN.md
@@ -212,6 +226,7 @@ WS   /stream              → Real-time state updates
 ```
 
 **Requirements:**
+
 - Add WebSocket support for real-time updates
 - Add `/swarm` endpoint for programmatic swarm execution
 - Add CORS headers for browser access
@@ -225,6 +240,7 @@ WS   /stream              → Real-time state updates
 **Purpose:** WebSocket server for real-time updates.
 
 **Requirements:**
+
 - Broadcast state changes to connected clients
 - Support multiple connections
 - Auto-reconnect handling
@@ -239,6 +255,7 @@ WS   /stream              → Real-time state updates
 **Directory:** `vscode-extension/`
 
 **Required Features:**
+
 1. **Sidebar Panel**
    - Show all 16 agents with icons
    - Click to copy agent prompt
@@ -282,24 +299,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install Ultra-Dex
         run: npm install -g ultra-dex
-      
+
       - name: Check Alignment
         run: npx ultra-dex align
-      
+
       - name: Run Validation
         run: npx ultra-dex validate
-      
+
       - name: Generate Report
         run: npx ultra-dex export --format json > ultra-dex-report.json
-      
+
       - name: Upload Report
         uses: actions/upload-artifact@v4
         with:
@@ -347,13 +364,15 @@ exit 0
 **Purpose:** Coordinate all other agents automatically.
 
 **Content:**
+
 ```markdown
 # Meta-Orchestrator Agent
 
-You are the Ultra-Dex Meta-Orchestrator. Your role is to coordinate 
+You are the Ultra-Dex Meta-Orchestrator. Your role is to coordinate
 the 16 specialized agents to complete complex tasks.
 
 ## Capabilities
+
 - Analyze task requirements
 - Select appropriate agents
 - Define execution order
@@ -361,6 +380,7 @@ the 16 specialized agents to complete complex tasks.
 - Aggregate results
 
 ## Agent Registry
+
 - 1-leadership: CTO, Planner, Research
 - 2-development: Backend, Frontend, Database
 - 3-security: Auth, Security
@@ -369,6 +389,7 @@ the 16 specialized agents to complete complex tasks.
 - 6-specialist: Performance, Refactoring
 
 ## Protocol
+
 1. Receive task description
 2. Analyze complexity and requirements
 3. Select minimum necessary agents
@@ -386,6 +407,7 @@ the 16 specialized agents to complete complex tasks.
 **Purpose:** Standard protocol for agent-to-agent communication.
 
 **Requirements:**
+
 - Define input/output schema for each agent
 - Support handoff messages
 - Track execution history
@@ -398,6 +420,7 @@ the 16 specialized agents to complete complex tasks.
 ### 6.1 Upgrade `dashboard.js`
 
 **Requirements:**
+
 - Real-time alignment score chart
 - Agent status panel
 - Recent actions timeline
@@ -406,6 +429,7 @@ the 16 specialized agents to complete complex tasks.
 - Export report button
 
 **Add Dependencies:**
+
 ```json
 {
   "chart.js": "^4.x.x"
@@ -419,6 +443,7 @@ the 16 specialized agents to complete complex tasks.
 ### 7.1 Update README.md
 
 Add sections:
+
 - v3.0 features
 - MCP integration guide
 - VS Code extension usage
@@ -427,6 +452,7 @@ Add sections:
 ### 7.2 Create `docs/MCP-INTEGRATION.md`
 
 Full guide for:
+
 - Claude Desktop setup
 - Cursor integration
 - Custom MCP clients
@@ -435,6 +461,7 @@ Full guide for:
 ### 7.3 Create `docs/CICD-GUIDE.md`
 
 Full guide for:
+
 - GitHub Actions setup
 - Pre-commit hooks
 - Quality gates
@@ -449,6 +476,7 @@ Full guide for:
 **File:** `cli/test/commands.test.js`
 
 Test each new command:
+
 - swarm (with mocked AI)
 - watch (with file mocks)
 - diff (with sample data)
@@ -461,6 +489,7 @@ Test each new command:
 **File:** `cli/test/mcp.test.js`
 
 Test all endpoints:
+
 - GET endpoints return correct data
 - POST endpoints execute correctly
 - WebSocket connections work
@@ -478,8 +507,16 @@ Test all endpoints:
   "version": "3.0.0",
   "description": "AI Orchestration Meta-Layer for SaaS Development",
   "keywords": [
-    "ai", "orchestration", "saas", "mcp", "langchain",
-    "claude", "openai", "gemini", "agents", "swarm"
+    "ai",
+    "orchestration",
+    "saas",
+    "mcp",
+    "langchain",
+    "claude",
+    "openai",
+    "gemini",
+    "agents",
+    "swarm"
   ]
 }
 ```
@@ -556,18 +593,18 @@ program
 
 ## Summary
 
-| Phase | Tasks | Est. Time |
-|-------|-------|-----------|
-| Phase 1 | 6 new commands | 4-6 hours |
-| Phase 2 | MCP server upgrade | 2-3 hours |
-| Phase 3 | VS Code extension | 3-4 hours |
-| Phase 4 | CI/CD integration | 1-2 hours |
-| Phase 5 | Agent system | 2-3 hours |
-| Phase 6 | Dashboard | 2-3 hours |
-| Phase 7 | Documentation | 2-3 hours |
-| Phase 8 | Testing | 2-3 hours |
-| Phase 9 | Publish | 1 hour |
-| **TOTAL** | | **20-28 hours** |
+| Phase     | Tasks              | Est. Time       |
+| --------- | ------------------ | --------------- |
+| Phase 1   | 6 new commands     | 4-6 hours       |
+| Phase 2   | MCP server upgrade | 2-3 hours       |
+| Phase 3   | VS Code extension  | 3-4 hours       |
+| Phase 4   | CI/CD integration  | 1-2 hours       |
+| Phase 5   | Agent system       | 2-3 hours       |
+| Phase 6   | Dashboard          | 2-3 hours       |
+| Phase 7   | Documentation      | 2-3 hours       |
+| Phase 8   | Testing            | 2-3 hours       |
+| Phase 9   | Publish            | 1 hour          |
+| **TOTAL** |                    | **20-28 hours** |
 
 ---
 
@@ -588,4 +625,4 @@ npx ultra-dex serve                          ✓ (with WebSocket)
 
 ---
 
-*Implementation Plan v3.0 — January 28, 2026*
+_Implementation Plan v3.0 — January 28, 2026_

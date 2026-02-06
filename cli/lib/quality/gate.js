@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Quality Gate Runner
  */
@@ -92,24 +94,56 @@ export async function runQualityGates(projectDir = process.cwd()) {
   const results = [];
 
   const p0 = await checkP0Completeness(projectDir);
-  results.push({ id: 'p0-complete', value: p0.status, details: p0.details, rule: rules.gates['p0-complete'] });
+  results.push({
+    id: 'p0-complete',
+    value: p0.status,
+    details: p0.details,
+    rule: rules.gates['p0-complete'],
+  });
 
   const alignment = await checkAlignment(projectDir);
-  results.push({ id: 'alignment', value: alignment.status, details: alignment.details, rule: rules.gates.alignment });
+  results.push({
+    id: 'alignment',
+    value: alignment.status,
+    details: alignment.details,
+    rule: rules.gates.alignment,
+  });
 
   const coverage = await checkCoverage(projectDir);
-  results.push({ id: 'test-coverage', value: coverage.status, details: coverage.details, rule: rules.gates['test-coverage'] });
+  results.push({
+    id: 'test-coverage',
+    value: coverage.status,
+    details: coverage.details,
+    rule: rules.gates['test-coverage'],
+  });
 
   const lint = await checkLint(projectDir);
-  results.push({ id: 'lint-clean', value: lint.status, details: lint.details, rule: rules.gates['lint-clean'] });
+  results.push({
+    id: 'lint-clean',
+    value: lint.status,
+    details: lint.details,
+    rule: rules.gates['lint-clean'],
+  });
 
   const security = await checkSecurity(projectDir);
-  results.push({ id: 'security-critical', value: security.status, details: security.details, rule: rules.gates['security-critical'] });
+  results.push({
+    id: 'security-critical',
+    value: security.status,
+    details: security.details,
+    rule: rules.gates['security-critical'],
+  });
 
-  if (rules.gates?.syntax || rules.gates?.linting || rules.gates?.typecheck || rules.gates?.testing || rules.gates?.architecture) {
+  if (
+    rules.gates?.syntax ||
+    rules.gates?.linting ||
+    rules.gates?.typecheck ||
+    rules.gates?.testing ||
+    rules.gates?.architecture
+  ) {
     const extraResults = await runAllGates(projectDir, rules);
     extraResults.forEach((result) => {
-      const rule = rules.gates[result.id] || rules.gates?.architecture || { threshold: 0, severity: 'warning' };
+      const rule = rules.gates[result.id] ||
+        rules.gates?.architecture || { threshold: 0, severity: 'warning' };
       results.push({ id: result.id, value: result.value, details: result.details, rule });
     });
   }
@@ -118,5 +152,5 @@ export async function runQualityGates(projectDir = process.cwd()) {
 }
 
 export default {
-  runQualityGates
+  runQualityGates,
 };

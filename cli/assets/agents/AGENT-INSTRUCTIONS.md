@@ -192,7 +192,7 @@ MY IDEA:
 ---
 
 INSTRUCTIONS:
-Using the Ultra-Dex Implementation Template above, generate a COMPLETE 
+Using the Ultra-Dex Implementation Template above, generate a COMPLETE
 implementation plan for my idea.
 
 Requirements:
@@ -287,14 +287,14 @@ Provide the fix with explanation.
 
 ## Quick Reference: Agent Selection
 
-| Task | Agent | Prompt # |
-|------|-------|----------|
-| Generate implementation plan | Planner | #1 or #5 |
-| Write code for a task | Coder | #2 or #6 |
-| Write tests | Tester | #3 |
-| Review code | Reviewer | #4 |
-| Fix bugs | Coder | #7 |
-| Full implementation from idea | Planner | #5 |
+| Task                          | Agent    | Prompt # |
+| ----------------------------- | -------- | -------- |
+| Generate implementation plan  | Planner  | #1 or #5 |
+| Write code for a task         | Coder    | #2 or #6 |
+| Write tests                   | Tester   | #3       |
+| Review code                   | Reviewer | #4       |
+| Fix bugs                      | Coder    | #7       |
+| Full implementation from idea | Planner  | #5       |
 
 ---
 
@@ -312,4 +312,4 @@ Provide the fix with explanation.
 
 ---
 
-*Created by the Ultra-Dex Team*
+_Created by the Ultra-Dex Team_

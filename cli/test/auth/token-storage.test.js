@@ -15,7 +15,7 @@ import {
   getAuthToken,
   deleteAuthToken,
   storeAPIKey,
-  getAPIKey
+  getAPIKey,
 } from '../../lib/auth/token-storage.js';
 
 describe('SecureTokenStorage', () => {
@@ -139,7 +139,7 @@ describe('SecureTokenStorage', () => {
       assert.strictEqual(result.success, true);
       assert.strictEqual(result.accounts.length, 3);
 
-      const accountNames = result.accounts.map(a => a.account);
+      const accountNames = result.accounts.map((a) => a.account);
       assert.ok(accountNames.includes('account1'));
       assert.ok(accountNames.includes('account2'));
       assert.ok(accountNames.includes('account3'));
@@ -153,7 +153,7 @@ describe('SecureTokenStorage', () => {
       assert.strictEqual(result.success, true);
 
       // Ensure no account object has a password field
-      result.accounts.forEach(account => {
+      result.accounts.forEach((account) => {
         assert.strictEqual(account.password, undefined);
         assert.strictEqual(account.token, undefined);
       });
@@ -188,7 +188,7 @@ describe('Auth Token Helpers', () => {
   test('storeAuthToken should store tokens for provider', async () => {
     const result = await storeAuthToken('anthropic', {
       accessToken: 'sk-ant-123',
-      refreshToken: 'refresh-456'
+      refreshToken: 'refresh-456',
     });
 
     assert.strictEqual(result.success, true);
@@ -197,7 +197,7 @@ describe('Auth Token Helpers', () => {
   test('getAuthToken should retrieve and parse tokens', async () => {
     await storeAuthToken('openai', {
       accessToken: 'sk-openai-xyz',
-      expiresAt: '2026-12-31'
+      expiresAt: '2026-12-31',
     });
 
     const result = await getAuthToken('openai');

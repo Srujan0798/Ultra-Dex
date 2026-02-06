@@ -30,54 +30,54 @@ class ConfigManager {
           contextWindow: 200000,
           reasoningCapabilities: true,
           codeGenerationQuality: 'high',
-          multimodalSupport: true
-        }
+          multimodalSupport: true,
+        },
       },
       mcp: {
         port: 3001,
         host: 'localhost',
         timeout: 30000,
         connectionRetry: 3,
-        autoConnect: true
+        autoConnect: true,
       },
       performance: {
         cacheEnabled: true,
         cacheTimeout: 30000,
         parallelProcessing: true,
         maxConcurrentTasks: 5,
-        graphScanInterval: 30000
+        graphScanInterval: 30000,
       },
       security: {
         validatePaths: true,
         allowExternalConnections: true,
         sandboxOnly: false,
         maxFileSize: 10485760,
-        allowedFileTypes: ['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.yaml', '.yml']
+        allowedFileTypes: ['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.yaml', '.yml'],
       },
       logging: {
         level: 'info',
         file: '.ultra-dex/logs/ultra-dex.log',
         maxSize: '20m',
         maxFiles: 5,
-        format: 'json'
+        format: 'json',
       },
       ui: {
         theme: 'professional-purple',
         autoRefresh: true,
         refreshInterval: 30000,
-        showAnimations: true
+        showAnimations: true,
       },
       development: {
         debugMode: false,
         verboseLogging: false,
         enableExperimental: false,
-        autoSave: true
+        autoSave: true,
       },
       governance: {
         allowlist: [],
         blocklist: [],
-        strict: false
-      }
+        strict: false,
+      },
     };
     this.configPath = path.resolve(process.cwd(), '.ultra-dex', 'config.json');
     this.globalConfigPath = path.resolve(os.homedir(), '.ultra-dex', 'config.json');
@@ -175,26 +175,32 @@ class ConfigManager {
       errors.push('ai.defaultProvider must be a string');
     }
 
-    if (typeof this.config.ai.temperature !== 'number' ||
-        this.config.ai.temperature < 0 ||
-        this.config.ai.temperature > 1) {
+    if (
+      typeof this.config.ai.temperature !== 'number' ||
+      this.config.ai.temperature < 0 ||
+      this.config.ai.temperature > 1
+    ) {
       errors.push('ai.temperature must be a number between 0 and 1');
     }
 
-    if (typeof this.config.mcp.port !== 'number' ||
-        this.config.mcp.port < 1 ||
-        this.config.mcp.port > 65535) {
+    if (
+      typeof this.config.mcp.port !== 'number' ||
+      this.config.mcp.port < 1 ||
+      this.config.mcp.port > 65535
+    ) {
       errors.push('mcp.port must be a number between 1 and 65535');
     }
 
-    if (typeof this.config.performance.maxConcurrentTasks !== 'number' ||
-        this.config.performance.maxConcurrentTasks < 1) {
+    if (
+      typeof this.config.performance.maxConcurrentTasks !== 'number' ||
+      this.config.performance.maxConcurrentTasks < 1
+    ) {
       errors.push('performance.maxConcurrentTasks must be a positive number');
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -216,54 +222,54 @@ class ConfigManager {
           contextWindow: 200000,
           reasoningCapabilities: true,
           codeGenerationQuality: 'high',
-          multimodalSupport: true
-        }
+          multimodalSupport: true,
+        },
       },
       mcp: {
         port: 3001,
         host: 'localhost',
         timeout: 30000,
         connectionRetry: 3,
-        autoConnect: true
+        autoConnect: true,
       },
       performance: {
         cacheEnabled: true,
         cacheTimeout: 30000,
         parallelProcessing: true,
         maxConcurrentTasks: 5,
-        graphScanInterval: 30000
+        graphScanInterval: 30000,
       },
       security: {
         validatePaths: true,
         allowExternalConnections: true,
         sandboxOnly: false,
         maxFileSize: 10485760,
-        allowedFileTypes: ['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.yaml', '.yml']
+        allowedFileTypes: ['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.yaml', '.yml'],
       },
       logging: {
         level: 'info',
         file: '.ultra-dex/logs/ultra-dex.log',
         maxSize: '20m',
         maxFiles: 5,
-        format: 'json'
+        format: 'json',
       },
       ui: {
         theme: 'professional-purple',
         autoRefresh: true,
         refreshInterval: 30000,
-        showAnimations: true
+        showAnimations: true,
       },
       development: {
         debugMode: false,
         verboseLogging: false,
         enableExperimental: false,
-        autoSave: true
+        autoSave: true,
       },
       governance: {
         allowlist: [],
         blocklist: [],
-        strict: false
-      }
+        strict: false,
+      },
     };
     this.loaded = true;
   }
@@ -283,7 +289,10 @@ class ConfigManager {
   }
 
   async exists(filePath) {
-    return fs.access(filePath).then(() => true).catch(() => false);
+    return fs
+      .access(filePath)
+      .then(() => true)
+      .catch(() => false);
   }
 
   async loadFromFile(filePath) {
@@ -340,7 +349,7 @@ class ConfigManager {
     const output = { ...target };
 
     if (this.isObject(target) && this.isObject(source)) {
-      Object.keys(source).forEach(key => {
+      Object.keys(source).forEach((key) => {
         if (this.isObject(source[key])) {
           if (!(key in target)) {
             Object.assign(output, { [key]: source[key] });
@@ -357,7 +366,7 @@ class ConfigManager {
   }
 
   isObject(item) {
-    return (item && typeof item === 'object' && !Array.isArray(item));
+    return item && typeof item === 'object' && !Array.isArray(item);
   }
 
   export() {
@@ -368,7 +377,7 @@ class ConfigManager {
     return {
       ...this.config,
       exportedAt: new Date().toISOString(),
-      version: this.config.version
+      version: this.config.version,
     };
   }
 
@@ -395,24 +404,28 @@ class ConfigManager {
     }
 
     if (configData.ai && typeof configData.ai === 'object') {
-      if (configData.ai.defaultProvider &&
-          !['claude', 'openai', 'gemini', 'ollama'].includes(configData.ai.defaultProvider)) {
+      if (
+        configData.ai.defaultProvider &&
+        !['claude', 'openai', 'gemini', 'ollama'].includes(configData.ai.defaultProvider)
+      ) {
         errors.push('Invalid AI provider in imported config');
       }
     }
 
     if (configData.mcp && typeof configData.mcp === 'object') {
-      if (configData.mcp.port &&
-          (typeof configData.mcp.port !== 'number' ||
-           configData.mcp.port < 1 ||
-           configData.mcp.port > 65535)) {
+      if (
+        configData.mcp.port &&
+        (typeof configData.mcp.port !== 'number' ||
+          configData.mcp.port < 1 ||
+          configData.mcp.port > 65535)
+      ) {
         errors.push('Invalid MCP port in imported config');
       }
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }
@@ -456,7 +469,7 @@ describe('ConfigManager', () => {
 
     test('should load project configuration', async () => {
       const projectConfig = {
-        ai: { defaultProvider: 'openai', temperature: 0.5 }
+        ai: { defaultProvider: 'openai', temperature: 0.5 },
       };
 
       await fs.mkdir(path.dirname(manager.configPath), { recursive: true });
@@ -470,7 +483,7 @@ describe('ConfigManager', () => {
 
     test('should load global configuration', async () => {
       const globalConfig = {
-        ui: { theme: 'dark-mode' }
+        ui: { theme: 'dark-mode' },
       };
 
       await fs.mkdir(path.dirname(manager.globalConfigPath), { recursive: true });
@@ -528,7 +541,8 @@ describe('ConfigManager', () => {
       const result = await manager.save();
       assert.strictEqual(result, true);
 
-      const dirExists = await fs.stat(path.dirname(manager.configPath))
+      const dirExists = await fs
+        .stat(path.dirname(manager.configPath))
         .then(() => true)
         .catch(() => false);
       assert.strictEqual(dirExists, true);
@@ -627,7 +641,7 @@ describe('ConfigManager', () => {
 
       const result = manager.validate();
       assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('defaultProvider')));
+      assert.ok(result.errors.some((e) => e.includes('defaultProvider')));
     });
 
     test('should detect invalid temperature range', async () => {
@@ -636,7 +650,7 @@ describe('ConfigManager', () => {
 
       const result = manager.validate();
       assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('temperature')));
+      assert.ok(result.errors.some((e) => e.includes('temperature')));
     });
 
     test('should detect invalid MCP port', async () => {
@@ -645,7 +659,7 @@ describe('ConfigManager', () => {
 
       const result = manager.validate();
       assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('port')));
+      assert.ok(result.errors.some((e) => e.includes('port')));
     });
 
     test('should detect invalid concurrent tasks', async () => {
@@ -654,7 +668,7 @@ describe('ConfigManager', () => {
 
       const result = manager.validate();
       assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('maxConcurrentTasks')));
+      assert.ok(result.errors.some((e) => e.includes('maxConcurrentTasks')));
     });
   });
 
@@ -772,7 +786,7 @@ describe('ConfigManager', () => {
 
       manager.update({
         ai: { temperature: 0.6 },
-        mcp: { port: 4000 }
+        mcp: { port: 4000 },
       });
 
       assert.strictEqual(manager.config.ai.temperature, 0.6);
@@ -784,7 +798,7 @@ describe('ConfigManager', () => {
       const originalProvider = manager.config.ai.defaultProvider;
 
       manager.update({
-        ai: { temperature: 0.5 }
+        ai: { temperature: 0.5 },
       });
 
       assert.strictEqual(manager.config.ai.defaultProvider, originalProvider);
@@ -813,7 +827,7 @@ describe('ConfigManager', () => {
       await manager.load();
 
       const importData = {
-        ai: { defaultProvider: 'openai', temperature: 0.4 }
+        ai: { defaultProvider: 'openai', temperature: 0.4 },
       };
 
       manager.import(importData);
@@ -826,7 +840,7 @@ describe('ConfigManager', () => {
       await manager.load();
 
       const invalidData = {
-        ai: { defaultProvider: 'invalid-provider' }
+        ai: { defaultProvider: 'invalid-provider' },
       };
 
       assert.throws(() => {
@@ -857,7 +871,7 @@ describe('ConfigManager', () => {
 
       const validData = {
         ai: { defaultProvider: 'claude', temperature: 0.5 },
-        mcp: { port: 3002 }
+        mcp: { port: 3002 },
       };
 
       const result = manager.validateImport(validData);
@@ -869,24 +883,24 @@ describe('ConfigManager', () => {
       await manager.load();
 
       const invalidData = {
-        ai: { defaultProvider: 'unknown-provider' }
+        ai: { defaultProvider: 'unknown-provider' },
       };
 
       const result = manager.validateImport(invalidData);
       assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('Invalid AI provider')));
+      assert.ok(result.errors.some((e) => e.includes('Invalid AI provider')));
     });
 
     test('should reject invalid MCP port', async () => {
       await manager.load();
 
       const invalidData = {
-        mcp: { port: 99999 }
+        mcp: { port: 99999 },
       };
 
       const result = manager.validateImport(invalidData);
       assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('Invalid MCP port')));
+      assert.ok(result.errors.some((e) => e.includes('Invalid MCP port')));
     });
   });
 
@@ -920,7 +934,7 @@ describe('ConfigManager', () => {
 
     test('should handle config files with null values', async () => {
       const configWithNulls = {
-        ai: { defaultProvider: null }
+        ai: { defaultProvider: null },
       };
 
       await fs.mkdir(path.dirname(manager.configPath), { recursive: true });

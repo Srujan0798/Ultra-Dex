@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
@@ -14,20 +16,20 @@ export function registerOnboardCommand(program) {
           type: 'list',
           name: 'provider',
           message: 'Select AI provider',
-          choices: ['anthropic', 'openai', 'google', 'skip']
+          choices: ['anthropic', 'openai', 'google', 'skip'],
         },
         {
           type: 'confirm',
           name: 'createProject',
           message: 'Create first project now?',
-          default: true
+          default: true,
         },
         {
           type: 'confirm',
           name: 'generatePlan',
           message: 'Generate implementation plan after init?',
-          default: true
-        }
+          default: true,
+        },
       ]);
 
       if (answers.provider !== 'skip') {
@@ -35,7 +37,7 @@ export function registerOnboardCommand(program) {
       }
 
       if (answers.createProject) {
-        printInfo(chalk.gray('Run: ultra-dex init')); 
+        printInfo(chalk.gray('Run: ultra-dex init'));
       }
 
       if (answers.generatePlan) {

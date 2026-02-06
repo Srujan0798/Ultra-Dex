@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -116,10 +118,10 @@ async function installHook(options) {
   const preCommitPath = path.join(hooksDir, 'pre-commit');
   const prePushPath = path.join(hooksDir, 'pre-push');
   let minScore = parseInt(options.minScore, 10);
-  
+
   if (isNaN(minScore) || minScore < 0 || minScore > 100) {
-      printWarning(chalk.yellow('Invalid minimum score. Defaulting to 70.'));
-      minScore = 70;
+    printWarning(chalk.yellow('Invalid minimum score. Defaulting to 70.'));
+    minScore = 70;
   }
 
   // Try to use bundled hook
@@ -211,7 +213,7 @@ async function installPrePushHook(prePushPath, options) {
 async function removeHook() {
   const hooksDir = await getGitHooksDir();
   if (!hooksDir) return;
-  
+
   const preCommitPath = path.join(hooksDir, 'pre-commit');
   const prePushPath = path.join(hooksDir, 'pre-push');
 
@@ -249,7 +251,7 @@ async function checkHookStatus() {
     const content = await fs.readFile(preCommitPath, 'utf-8');
     if (content.includes('ultra-dex') || content.includes('Ultra-Dex')) {
       printSuccess(chalk.green('✅ Ultra-Dex pre-commit hook is installed.\n'));
-      
+
       // Extract min score if present
       const scoreMatch = content.match(/MIN_ALIGNMENT_SCORE=(\d+)/);
       if (scoreMatch) {

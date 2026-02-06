@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export async function connect(config = {}) {
   return { connected: true, provider: 'linear', config };
 }
@@ -16,7 +18,7 @@ const integration = {
   connect,
   disconnect,
   sync: syncTasks,
-  syncTasks
+  syncTasks,
 };
 
 export default integration;

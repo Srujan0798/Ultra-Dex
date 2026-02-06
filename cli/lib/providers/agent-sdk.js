@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Anthropic Agent SDK Integration
  * Enables true autonomous agents with tool use, memory, and reasoning
@@ -358,7 +360,10 @@ export class AutonomousAgent {
     ];
 
     if (this.memory.length > 0) {
-      const memoryContext = this.memory.slice(-5).map(m => `- ${m}`).join('\n');
+      const memoryContext = this.memory
+        .slice(-5)
+        .map((m) => `- ${m}`)
+        .join('\n');
       messages[0].content = `Previous context:\n${memoryContext}\n\n${messages[0].content}`;
     }
 
@@ -376,7 +381,7 @@ export class AutonomousAgent {
         const response = await this.provider.generateWithTools(
           this.systemPrompt,
           messages,
-          Object.values(AGENT_SDK_CONFIG.tools).filter(t => this.tools.includes(t.name)),
+          Object.values(AGENT_SDK_CONFIG.tools).filter((t) => this.tools.includes(t.name)),
           { maxTokens: this.maxTokens }
         );
 
@@ -388,7 +393,9 @@ export class AutonomousAgent {
         if (response.toolUse && response.toolUse.length > 0) {
           for (const tool of response.toolUse) {
             if (verbose) {
-              console.log(chalk.cyan(`    -> ${tool.name}(${JSON.stringify(tool.input).substring(0, 50)}...)`));
+              console.log(
+                chalk.cyan(`    -> ${tool.name}(${JSON.stringify(tool.input).substring(0, 50)}...)`)
+              );
             }
 
             const result = await this.executeTool(tool.name, tool.input);
@@ -419,11 +426,13 @@ export class AutonomousAgent {
 
             messages.push({
               role: 'user',
-              content: [{
-                type: 'tool_result',
-                tool_use_id: tool.id,
-                content: JSON.stringify(result),
-              }],
+              content: [
+                {
+                  type: 'tool_result',
+                  tool_use_id: tool.id,
+                  content: JSON.stringify(result),
+                },
+              ],
             });
           }
         } else {
@@ -480,7 +489,14 @@ Run tests after implementing.`,
       systemPrompt: `You are @Frontend, an expert React/Next.js developer.
 You build accessible, performant UI components.
 Follow the project's existing patterns and component library.`,
-      tools: ['read_file', 'write_file', 'search_code', 'run_command', 'create_checkpoint', 'browse_web'],
+      tools: [
+        'read_file',
+        'write_file',
+        'search_code',
+        'run_command',
+        'create_checkpoint',
+        'browse_web',
+      ],
       maxTokens: AGENT_SDK_CONFIG.maxTokens.coder,
     },
 
@@ -578,7 +594,17 @@ export class AgentOrchestrator {
   async runSwarm(task, options = {}) {
     const { startAgent = 'planner', verbose = false } = options;
 
-    const agentTypes = ['planner', 'backend', 'frontend', 'database', 'testing', 'reviewer', 'research', 'security', 'devops'];
+    const agentTypes = [
+      'planner',
+      'backend',
+      'frontend',
+      'database',
+      'testing',
+      'reviewer',
+      'research',
+      'security',
+      'devops',
+    ];
     for (const type of agentTypes) {
       if (!this.agents.has(type)) {
         this.register(type);
@@ -617,7 +643,7 @@ export class AgentOrchestrator {
     return {
       results,
       history: this.history,
-      artifacts: results.flatMap(r => r.result.artifacts || []),
+      artifacts: results.flatMap((r) => r.result.artifacts || []),
     };
   }
 }

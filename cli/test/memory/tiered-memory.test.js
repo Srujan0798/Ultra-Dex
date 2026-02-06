@@ -31,7 +31,7 @@ describe('Tiered Memory System - Basic Tests', () => {
         name: 'hot',
         maxSize: 100,
         ttl: 5000, // 5 seconds
-        priority: 1
+        priority: 1,
       };
 
       assert.strictEqual(hotTier.name, 'hot');
@@ -43,7 +43,7 @@ describe('Tiered Memory System - Basic Tests', () => {
         name: 'warm',
         maxSize: 500,
         ttl: 60000, // 1 minute
-        priority: 2
+        priority: 2,
       };
 
       assert.strictEqual(warmTier.name, 'warm');
@@ -55,7 +55,7 @@ describe('Tiered Memory System - Basic Tests', () => {
         name: 'cold',
         maxSize: Infinity,
         ttl: Infinity,
-        priority: 3
+        priority: 3,
       };
 
       assert.strictEqual(coldTier.name, 'cold');
@@ -147,7 +147,7 @@ describe('Tiered Memory System - Basic Tests', () => {
       const coldItem = {
         key: 'large-data',
         value: 'x'.repeat(1000),
-        compressed: false
+        compressed: false,
       };
 
       // Simulate compression
@@ -164,7 +164,7 @@ describe('Tiered Memory System - Basic Tests', () => {
         key: 'test',
         value: 'compressed',
         compressed: true,
-        originalValue: 'original-data'
+        originalValue: 'original-data',
       };
 
       // Simulate decompression
@@ -201,7 +201,7 @@ describe('Tiered Memory System - Basic Tests', () => {
       const item = {
         key: 'popular',
         tier: 'cold',
-        accessCount: 0
+        accessCount: 0,
       };
 
       // Simulate frequent accesses
@@ -223,7 +223,7 @@ describe('Tiered Memory System - Basic Tests', () => {
       const stats = {
         hot: { count: 10, bytes: 1024 },
         warm: { count: 50, bytes: 5120 },
-        cold: { count: 200, bytes: 20480 }
+        cold: { count: 200, bytes: 20480 },
       };
 
       const totalCount = stats.hot.count + stats.warm.count + stats.cold.count;
@@ -237,7 +237,7 @@ describe('Tiered Memory System - Basic Tests', () => {
       const metrics = {
         hits: 80,
         misses: 20,
-        total: 100
+        total: 100,
       };
 
       const hitRatio = metrics.hits / metrics.total;
@@ -292,7 +292,7 @@ describe('Tiered Memory System - Basic Tests', () => {
       const tiers = {
         hot: [],
         warm: [],
-        cold: []
+        cold: [],
       };
 
       assert.strictEqual(tiers.hot.length, 0);
@@ -328,7 +328,7 @@ describe('Tiered Memory System - Basic Tests', () => {
       const largeItem = {
         key: 'large',
         value: 'x'.repeat(100000),
-        size: 100000
+        size: 100000,
       };
 
       assert.ok(largeItem.size > 50000);
@@ -353,7 +353,7 @@ describe('Tiered Memory System - Basic Tests', () => {
       const metrics = {
         hotAccessTime: 1,
         warmAccessTime: 10,
-        coldAccessTime: 100
+        coldAccessTime: 100,
       };
 
       assert.ok(metrics.hotAccessTime < metrics.warmAccessTime);

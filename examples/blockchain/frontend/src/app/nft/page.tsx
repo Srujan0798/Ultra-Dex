@@ -81,7 +81,9 @@ export default function NFTPage() {
 
       {!isConnected ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <p className="text-yellow-800">Please connect your wallet to interact with the NFT contract.</p>
+          <p className="text-yellow-800">
+            Please connect your wallet to interact with the NFT contract.
+          </p>
         </div>
       ) : (
         <>
@@ -103,7 +105,9 @@ export default function NFTPage() {
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-sm font-medium text-gray-500 mb-1">Status</h3>
-              <p className={`text-2xl font-bold ${mintingEnabled ? 'text-green-600' : 'text-red-600'}`}>
+              <p
+                className={`text-2xl font-bold ${mintingEnabled ? 'text-green-600' : 'text-red-600'}`}
+              >
                 {mintingEnabled ? 'Active' : 'Paused'}
               </p>
             </div>
@@ -116,9 +120,7 @@ export default function NFTPage() {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Metadata URI
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Metadata URI</label>
                 <input
                   type="text"
                   value={mintUri}
@@ -158,7 +160,9 @@ export default function NFTPage() {
                       <span className="text-4xl font-bold text-white">#{tokenId.toString()}</span>
                     </div>
                     <p className="font-medium text-gray-900">Token #{tokenId.toString()}</p>
-                    <p className="text-sm text-gray-500">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
+                    <p className="text-sm text-gray-500">
+                      {address?.slice(0, 6)}...{address?.slice(-4)}
+                    </p>
                   </div>
                 ))}
               </div>

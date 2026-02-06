@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * ultra-dex setup command
@@ -57,7 +58,7 @@ async function runSetup(options) {
   }
 
   // Full interactive setup
-  printInfo(chalk.blue('Welcome! Let\'s configure Ultra-Dex for your workflow.\n'));
+  printInfo(chalk.blue("Welcome! Let's configure Ultra-Dex for your workflow.\n"));
 
   const answers = await inquirer.prompt([
     {
@@ -68,22 +69,22 @@ async function runSetup(options) {
         { name: 'Anthropic (Claude) - Recommended', value: 'anthropic' },
         { name: 'OpenAI (GPT-4)', value: 'openai' },
         { name: 'Google (Gemini)', value: 'google' },
-        { name: 'Local/Ollama (Free, self-hosted)', value: 'ollama' }
+        { name: 'Local/Ollama (Free, self-hosted)', value: 'ollama' },
       ],
-      default: 'anthropic'
+      default: 'anthropic',
     },
     {
       type: 'input',
       name: 'apiKey',
       message: 'Enter your API key (or leave blank to set later):',
-      when: (answers) => answers.primaryProvider !== 'ollama'
+      when: (answers) => answers.primaryProvider !== 'ollama',
     },
     {
       type: 'input',
       name: 'ollamaUrl',
       message: 'Ollama server URL:',
       default: 'http://localhost:11434',
-      when: (answers) => answers.primaryProvider === 'ollama'
+      when: (answers) => answers.primaryProvider === 'ollama',
     },
     {
       type: 'list',
@@ -92,21 +93,21 @@ async function runSetup(options) {
       choices: [
         { name: 'LITE (12 sections) - Quick MVPs', value: 'lite' },
         { name: 'FULL (34 sections) - Complete projects', value: 'full' },
-        { name: 'ENTERPRISE (50+ sections) - Large scale', value: 'enterprise' }
+        { name: 'ENTERPRISE (50+ sections) - Large scale', value: 'enterprise' },
       ],
-      default: 'lite'
+      default: 'lite',
     },
     {
       type: 'confirm',
       name: 'vscodeAutoStart',
       message: 'Auto-start Ultra-Dex kernel when opening VS Code?',
-      default: false
+      default: false,
     },
     {
       type: 'confirm',
       name: 'enableSandbox',
       message: 'Enable Docker sandbox for code execution?',
-      default: true
+      default: true,
     },
     {
       type: 'input',
@@ -118,7 +119,7 @@ async function runSetup(options) {
         return Number.isInteger(port) && port > 1024 && port < 65535
           ? true
           : 'Port must be between 1025-65534';
-      }
+      },
     },
     {
       type: 'checkbox',
@@ -128,15 +129,15 @@ async function runSetup(options) {
         { name: 'Auto-sync on file save', value: 'autoSync', checked: true },
         { name: 'Slack notifications', value: 'slack' },
         { name: 'GitHub integration', value: 'github' },
-        { name: 'Analytics tracking', value: 'analytics' }
-      ]
+        { name: 'Analytics tracking', value: 'analytics' },
+      ],
     },
     {
       type: 'confirm',
       name: 'installCompletions',
       message: 'Install shell completions (bash/zsh)?',
-      default: true
-    }
+      default: true,
+    },
   ]);
 
   const config = {
@@ -147,9 +148,9 @@ async function runSetup(options) {
     enableSandbox: answers.enableSandbox,
     features: answers.features,
     vscode: {
-      autoStart: answers.vscodeAutoStart
+      autoStart: answers.vscodeAutoStart,
     },
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   if (answers.apiKey) {
@@ -188,9 +189,9 @@ async function quickSetup() {
     enableSandbox: true,
     features: ['autoSync'],
     vscode: {
-      autoStart: false
+      autoStart: false,
     },
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   await saveConfig(config);

@@ -11,15 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install Ultra-Dex
         run: npm install -g ultra-dex
-      
+
       - name: Verify Implementation Plan
         uses: ./.github/actions/verify
         with:
@@ -31,15 +31,15 @@ jobs:
     needs: verify
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install Ultra-Dex
         run: npm install -g ultra-dex
-      
+
       - name: Check Alignment
         uses: ./.github/actions/align
         with:

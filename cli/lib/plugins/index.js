@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Plugin Ecosystem
  * Centralized plugin management and registry
@@ -51,19 +53,19 @@ class PluginRegistry {
   async discoverLocalPlugins() {
     try {
       const entries = await fs.readdir(this.pluginDir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         if (entry.isDirectory()) {
           const pluginPath = path.join(this.pluginDir, entry.name);
           const manifestPath = path.join(pluginPath, 'ultra-dex-plugin.json');
-          
+
           try {
             const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
             this.plugins.set(manifest.name, {
               ...manifest,
               path: pluginPath,
               local: true,
-              installed: true
+              installed: true,
             });
             this.installed.add(manifest.name);
           } catch (error) {
@@ -100,11 +102,11 @@ class PluginRegistry {
     try {
       const indexPath = path.join(plugin.path, plugin.main || 'index.js');
       const pluginModule = await import(`file://${indexPath}`);
-      
+
       if (pluginModule.default && typeof pluginModule.default.activate === 'function') {
         await pluginModule.default.activate(this);
       }
-      
+
       console.log(chalk.green(`✓ Loaded plugin: ${plugin.name}@${plugin.version}`));
     } catch (error) {
       console.error(chalk.red(`Failed to load plugin ${pluginName}: ${error.message}`));
@@ -124,7 +126,7 @@ class PluginRegistry {
         description: 'Automated git hooks for Ultra-Dex workflows',
         author: 'Ultra-Dex Team',
         downloads: 12500,
-        rating: 4.8
+        rating: 4.8,
       },
       {
         name: '@ultra-dex/ai-explain',
@@ -132,7 +134,7 @@ class PluginRegistry {
         description: 'AI-powered code explanation and documentation',
         author: 'AI Team',
         downloads: 8900,
-        rating: 4.9
+        rating: 4.9,
       },
       {
         name: '@ultra-dex/dependency-analyzer',
@@ -140,7 +142,7 @@ class PluginRegistry {
         description: 'Advanced dependency analysis and optimization',
         author: 'Dev Tools',
         downloads: 6700,
-        rating: 4.7
+        rating: 4.7,
       },
       {
         name: '@ultra-dex/performance-profiler',
@@ -148,8 +150,8 @@ class PluginRegistry {
         description: 'Real-time performance profiling and optimization',
         author: 'Performance Team',
         downloads: 5400,
-        rating: 4.6
-      }
+        rating: 4.6,
+      },
     ];
 
     return mockPlugins;
@@ -165,14 +167,20 @@ class PluginRegistry {
     try {
       let pluginName, pluginPath;
 
-      if (pluginSource.startsWith('file://') || pluginSource.startsWith('./') || pluginSource.startsWith('/')) {
+      if (
+        pluginSource.startsWith('file://') ||
+        pluginSource.startsWith('./') ||
+        pluginSource.startsWith('/')
+      ) {
         // Local file installation
-        const sourcePath = pluginSource.startsWith('file://') ? 
-          pluginSource.replace('file://', '') : 
-          path.resolve(pluginSource);
-        
+        const sourcePath = pluginSource.startsWith('file://')
+          ? pluginSource.replace('file://', '')
+          : path.resolve(pluginSource);
+
         pluginPath = await this.installLocalPlugin(sourcePath);
-        const manifest = JSON.parse(await fs.readFile(path.join(pluginPath, 'ultra-dex-plugin.json'), 'utf8'));
+        const manifest = JSON.parse(
+          await fs.readFile(path.join(pluginPath, 'ultra-dex-plugin.json'), 'utf8')
+        );
         pluginName = manifest.name;
       } else if (pluginSource.startsWith('github:')) {
         // GitHub installation
@@ -188,9 +196,9 @@ class PluginRegistry {
         version: '1.0.0', // Would come from actual plugin
         path: pluginPath || path.join(this.pluginDir, pluginName),
         installed: true,
-        local: pluginPath ? true : false
+        local: pluginPath ? true : false,
       });
-      
+
       this.installed.add(pluginName);
 
       // Load the plugin
@@ -209,13 +217,13 @@ class PluginRegistry {
    */
   async installLocalPlugin(sourcePath) {
     const stats = await fs.stat(sourcePath);
-    
+
     if (stats.isDirectory()) {
       // Source is a directory
       const manifestPath = path.join(sourcePath, 'ultra-dex-plugin.json');
       const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
       const targetPath = path.join(this.pluginDir, manifest.name);
-      
+
       // Copy the entire directory
       await this.copyDirectory(sourcePath, targetPath);
       return targetPath;
@@ -223,12 +231,12 @@ class PluginRegistry {
       // Source is a zip file
       const pluginName = path.basename(sourcePath, '.zip');
       const targetPath = path.join(this.pluginDir, pluginName);
-      
+
       // Extract the zip file (simplified - would need proper zip extraction)
       // For now, we'll simulate this
       await fs.mkdir(targetPath, { recursive: true });
       await fs.copyFile(sourcePath, path.join(targetPath, path.basename(sourcePath)));
-      
+
       return targetPath;
     } else {
       throw new Error('Local plugin source must be a directory or zip file');
@@ -241,7 +249,7 @@ class PluginRegistry {
   async installFromGitHub(githubRef) {
     const repo = githubRef.replace('github:', '');
     const [owner, repoName] = repo.split('/');
-    
+
     if (!owner || !repoName) {
       throw new Error('Invalid GitHub reference format. Use: github:owner/repo');
     }
@@ -252,7 +260,7 @@ class PluginRegistry {
     // Clone the repository (simplified - would need proper git handling)
     // For simulation purposes:
     await fs.mkdir(targetPath, { recursive: true });
-    
+
     // Create a basic plugin structure
     const manifest = {
       name: pluginName,
@@ -260,14 +268,14 @@ class PluginRegistry {
       description: `Plugin from GitHub: ${repo}`,
       main: 'index.js',
       author: owner,
-      license: 'MIT'
+      license: 'MIT',
     };
-    
+
     await fs.writeFile(
       path.join(targetPath, 'ultra-dex-plugin.json'),
       JSON.stringify(manifest, null, 2)
     );
-    
+
     await fs.writeFile(
       path.join(targetPath, 'index.js'),
       `// ${pluginName} - Generated from GitHub: ${repo}
@@ -289,9 +297,9 @@ export default {
     // Simulate registry installation
     // In a real implementation, this would download from the registry
     const targetPath = path.join(this.pluginDir, pluginName);
-    
+
     await fs.mkdir(targetPath, { recursive: true });
-    
+
     // Create a basic plugin structure
     const manifest = {
       name: pluginName,
@@ -299,14 +307,14 @@ export default {
       description: `Plugin from Ultra-Dex registry: ${pluginName}`,
       main: 'index.js',
       author: 'Registry',
-      license: 'MIT'
+      license: 'MIT',
     };
-    
+
     await fs.writeFile(
       path.join(targetPath, 'ultra-dex-plugin.json'),
       JSON.stringify(manifest, null, 2)
     );
-    
+
     await fs.writeFile(
       path.join(targetPath, 'index.js'),
       `// ${pluginName} - Downloaded from registry
@@ -337,11 +345,11 @@ export default {
     try {
       // Remove plugin directory
       await fs.rm(plugin.path, { recursive: true, force: true });
-      
+
       // Remove from registry
       this.plugins.delete(pluginName);
       this.installed.delete(pluginName);
-      
+
       console.log(chalk.green(`✓ Uninstalled plugin: ${pluginName}`));
       return { success: true };
     } catch (error) {
@@ -354,7 +362,7 @@ export default {
    * Get list of installed plugins
    */
   getInstalledPlugins() {
-    return Array.from(this.installed).map(name => this.plugins.get(name));
+    return Array.from(this.installed).map((name) => this.plugins.get(name));
   }
 
   /**
@@ -372,7 +380,7 @@ export default {
       this.hooks.set(hookName, {
         name: hookName,
         description,
-        handlers: []
+        handlers: [],
       });
     }
   }
@@ -461,11 +469,7 @@ export default {
 const pluginRegistry = new PluginRegistry();
 
 // Export the registry and related functions
-export { 
-  PluginRegistry, 
-  pluginRegistry as default,
-  pluginRegistry 
-};
+export { PluginRegistry, pluginRegistry as default, pluginRegistry };
 
 // Export individual functions for convenience
 export const {
@@ -478,5 +482,5 @@ export const {
   subscribeToHook,
   executeHook,
   updatePlugin,
-  getPluginInfo
+  getPluginInfo,
 } = pluginRegistry;

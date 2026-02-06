@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -53,7 +55,9 @@ function inferStackFromFiles(fileList) {
     if (fileList.some((file) => file.includes('svelte.config'))) return 'SvelteKit';
     return 'Node.js';
   }
-  if (fileList.some((file) => file.includes('pyproject.toml') || file.includes('requirements.txt'))) {
+  if (
+    fileList.some((file) => file.includes('pyproject.toml') || file.includes('requirements.txt'))
+  ) {
     return 'Python';
   }
   return 'Unknown';

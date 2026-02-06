@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export let isDoomsday = false;
 
 export function setDoomsdayMode(enabled) {

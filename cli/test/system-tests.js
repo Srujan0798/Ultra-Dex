@@ -40,22 +40,22 @@ class MockProvider {
 
   async generate(systemPrompt, userPrompt, options = {}) {
     this.calls.push({ systemPrompt, userPrompt, options });
-    
+
     return {
       content: `Mock response for: ${userPrompt.substring(0, 30)}...`,
       usage: { inputTokens: 100, outputTokens: 200 },
-      model: 'mock-model'
+      model: 'mock-model',
     };
   }
 
   async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
     this.calls.push({ systemPrompt, userPrompt, options, streamed: true });
-    
+
     onChunk('Mock stream chunk');
     return {
       content: `Streamed response for: ${userPrompt.substring(0, 30)}...`,
       usage: { inputTokens: 100, outputTokens: 200 },
-      model: 'mock-model'
+      model: 'mock-model',
     };
   }
 
@@ -98,28 +98,28 @@ describe('Comprehensive System Integration Tests', () => {
       await fs.writeFile(
         path.join(tempDir, 'src', 'main.js'),
         `import { helper } from './helper';\n\n` +
-        `export const main = () => {\n` +
-        `  const result = helper();\n` +
-        `  return result;\n` +
-        `};`
+          `export const main = () => {\n` +
+          `  const result = helper();\n` +
+          `  return result;\n` +
+          `};`
       );
 
       await fs.writeFile(
         path.join(tempDir, 'api', 'users.js'),
         `export async function GET(request) {\n` +
-        `  console.log('Processing request'); // Should be flagged\n` +
-        `  return new Response('OK');\n` +
-        `}`
+          `  console.log('Processing request'); // Should be flagged\n` +
+          `  return new Response('OK');\n` +
+          `}`
       );
 
       await fs.writeFile(
         path.join(tempDir, 'components', 'Card.js'),
-        `/** @type {any} */\n` +  // Should be flagged for 'any' type
-        `export const Card = ({ data }) => {\n` +
-        `  /** @type {any} */\n` +  // Another 'any' type\n` +
-        `  const processed = data;\n` +
-        `  return <div>{processed}</div>;\n` +
-        `};`
+        `/** @type {any} */\n` + // Should be flagged for 'any' type
+          `export const Card = ({ data }) => {\n` +
+          `  /** @type {any} */\n` + // Another 'any' type\n` +
+          `  const processed = data;\n` +
+          `  return <div>{processed}</div>;\n` +
+          `};`
       );
 
       // Build the graph
@@ -135,8 +135,8 @@ describe('Comprehensive System Integration Tests', () => {
       assert(Array.isArray(scanResults.details), 'Should have details array');
 
       // Verify that the scanner found the expected issues
-      const consoleLogIssues = scanResults.details.filter(d => d.ruleId === 'console-log-in-api');
-      const anyTypeIssues = scanResults.details.filter(d => d.ruleId === 'no-explicit-any');
+      const consoleLogIssues = scanResults.details.filter((d) => d.ruleId === 'console-log-in-api');
+      const anyTypeIssues = scanResults.details.filter((d) => d.ruleId === 'no-explicit-any');
 
       console.log(`\\n📊 Integration Test Results:`);
       console.log(`   Graph nodes: ${graph.nodes.length}`);
@@ -157,16 +157,14 @@ describe('Comprehensive System Integration Tests', () => {
       await fs.writeFile(
         path.join(tempDir, 'test-project', 'index.js'),
         `import { api } from './api';\n\n` +
-        `export const app = () => {\n` +
-        `  return api();\n` +
-        `};`
+          `export const app = () => {\n` +
+          `  return api();\n` +
+          `};`
       );
 
       await fs.writeFile(
         path.join(tempDir, 'test-project', 'api.js'),
-        `export const api = () => {\n` +
-        `  return 'API response';\n` +
-        `};`
+        `export const api = () => {\n` + `  return 'API response';\n` + `};`
       );
 
       // Change to the test project directory
@@ -184,21 +182,21 @@ describe('Comprehensive System Integration Tests', () => {
         const coordinator = new SwarmCoordinator(mockProvider, {
           verbose: false,
           saveArtifacts: false,
-          enableRollback: true
+          enableRollback: true,
         });
 
         // Test that the coordinator can access the graph information
         // (This simulates how the system would use graph data in real scenarios)
         const plan = [
           { agent: 'planner', task: 'Analyze project structure' },
-          { agent: 'cto', task: 'Review architecture based on graph' }
+          { agent: 'cto', task: 'Review architecture based on graph' },
         ];
 
         // Execute a simple pipeline to test integration
         const trace = await coordinator.runPipeline({
           goal: 'Test graph integration',
           steps: plan,
-          parallel: false
+          parallel: false,
         });
 
         assert(trace, 'Should execute pipeline successfully');
@@ -212,7 +210,7 @@ describe('Comprehensive System Integration Tests', () => {
     it('should integrate security measures across components', async () => {
       // Test the integration of security measures across different components
       const mockServer = new MockServer();
-      
+
       // Register tools with security enhancements
       registerTools(mockServer);
 
@@ -236,25 +234,30 @@ describe('Comprehensive System Integration Tests', () => {
       const traversalAttempts = [
         '../package.json',
         'agents/../../etc/passwd',
-        'test-agent/../malicious'
+        'test-agent/../malicious',
       ];
 
       for (const traversalPath of traversalAttempts) {
         try {
           if (traversalPath.startsWith('agents/')) {
             const result = await getAgentTool.handler({ agentName: traversalPath });
-            assert(result.content[0].text.includes('Invalid agent name') || 
-                   result.content[0].text.includes('not found'), 
-                   `Should block traversal: ${traversalPath}`);
+            assert(
+              result.content[0].text.includes('Invalid agent name') ||
+                result.content[0].text.includes('not found'),
+              `Should block traversal: ${traversalPath}`
+            );
           } else {
             const result = await readCodeTool.handler({ filePath: traversalPath });
-            assert(result.content[0].text.includes('Access denied'), 
-                   `Should block traversal: ${traversalPath}`);
+            assert(
+              result.content[0].text.includes('Access denied'),
+              `Should block traversal: ${traversalPath}`
+            );
           }
         } catch (error) {
-          assert(error.message.includes('Access denied') || 
-                 error.message.includes('Invalid agent name'), 
-                 `Should block traversal: ${traversalPath}`);
+          assert(
+            error.message.includes('Access denied') || error.message.includes('Invalid agent name'),
+            `Should block traversal: ${traversalPath}`
+          );
         }
       }
 
@@ -269,23 +272,21 @@ describe('Comprehensive System Integration Tests', () => {
     it('should maintain performance with many files', async () => {
       // Create a larger project to test performance
       await fs.mkdir(path.join(tempDir, 'large-project'), { recursive: true });
-      
+
       // Create many directories and files
       for (let dir = 0; dir < 5; dir++) {
         const dirPath = path.join(tempDir, 'large-project', `dir${dir}`);
         await fs.mkdir(dirPath, { recursive: true });
-        
+
         for (let file = 0; file < 20; file++) {
-          const content = `// File ${dir}-${file}\\n` +
-                         `import { util } from '../utils';\\n\\n` +
-                         `export const fn${file} = () => {\\n` +
-                         `  return util('${dir}-${file}');\\n` +
-                         `};`;
-          
-          await fs.writeFile(
-            path.join(dirPath, `file${file}.js`),
-            content
-          );
+          const content =
+            `// File ${dir}-${file}\\n` +
+            `import { util } from '../utils';\\n\\n` +
+            `export const fn${file} = () => {\\n` +
+            `  return util('${dir}-${file}');\\n` +
+            `};`;
+
+          await fs.writeFile(path.join(dirPath, `file${file}.js`), content);
         }
       }
 
@@ -335,7 +336,7 @@ describe('Comprehensive System Integration Tests', () => {
     it('should handle concurrent operations safely', async () => {
       // Create test files
       await fs.mkdir(path.join(tempDir, 'concurrent-test'), { recursive: true });
-      
+
       for (let i = 0; i < 10; i++) {
         await fs.writeFile(
           path.join(tempDir, 'concurrent-test', `file${i}.js`),
@@ -353,7 +354,7 @@ describe('Comprehensive System Integration Tests', () => {
           buildGraph(),
           runQualityScan('.'),
           buildGraph(), // Run twice to test caching
-          runQualityScan('.') // Run twice
+          runQualityScan('.'), // Run twice
         ];
 
         const results = await Promise.all(promises);
@@ -365,8 +366,14 @@ describe('Comprehensive System Integration Tests', () => {
         assert(results[3], 'Second quality scan should succeed');
 
         // Results should be consistent
-        assert(results[0].nodes.length === results[2].nodes.length, 'Graph builds should be consistent');
-        assert(results[1].filesScanned === results[3].filesScanned, 'Quality scans should be consistent');
+        assert(
+          results[0].nodes.length === results[2].nodes.length,
+          'Graph builds should be consistent'
+        );
+        assert(
+          results[1].filesScanned === results[3].filesScanned,
+          'Quality scans should be consistent'
+        );
 
         console.log('\\nConcurrency Test:');
         console.log('   ✓ Multiple operations ran safely');
@@ -381,13 +388,13 @@ describe('Comprehensive System Integration Tests', () => {
     it('should recover from partial failures', async () => {
       // Create a mixed project with some problematic files
       await fs.mkdir(path.join(tempDir, 'mixed-project'), { recursive: true });
-      
+
       // Good files
       await fs.writeFile(
         path.join(tempDir, 'mixed-project', 'good1.js'),
         `export const good1 = () => 'good';`
       );
-      
+
       await fs.writeFile(
         path.join(tempDir, 'mixed-project', 'good2.js'),
         `export const good2 = () => 'also good';`
@@ -425,16 +432,30 @@ describe('Comprehensive System Integration Tests', () => {
 
     it('should validate inputs across all components', async () => {
       // Test input validation across different system components
-      
+
       // Test BaseProvider validation
       class TestProvider extends BaseProvider {
-        getDefaultModel() { return 'test'; }
-        getAvailableModels() { return []; }
-        estimateCost() { return { input: 0, output: 0, total: 0 }; }
-        async generate() { return { content: '', usage: {} }; }
-        async generateStream() { return { content: '', usage: {} }; }
-        async validateApiKey() { return true; }
-        getName() { return 'Test'; }
+        getDefaultModel() {
+          return 'test';
+        }
+        getAvailableModels() {
+          return [];
+        }
+        estimateCost() {
+          return { input: 0, output: 0, total: 0 };
+        }
+        async generate() {
+          return { content: '', usage: {} };
+        }
+        async generateStream() {
+          return { content: '', usage: {} };
+        }
+        async validateApiKey() {
+          return true;
+        }
+        getName() {
+          return 'Test';
+        }
       }
 
       const provider = new TestProvider('test-key');
@@ -444,9 +465,13 @@ describe('Comprehensive System Integration Tests', () => {
         provider.validateParams({ valid: 'param' }, ['valid']);
       }, 'Should accept valid parameters');
 
-      assert.throws(() => {
-        provider.validateParams({ invalid: 'param' }, ['missing']);
-      }, /Missing required parameter/, 'Should reject missing parameters');
+      assert.throws(
+        () => {
+          provider.validateParams({ invalid: 'param' }, ['missing']);
+        },
+        /Missing required parameter/,
+        'Should reject missing parameters'
+      );
 
       // Test error formatting
       const error = provider.formatError('original error', 'test context');
@@ -464,31 +489,16 @@ describe('Comprehensive System Integration Tests', () => {
     it('should handle a realistic development workflow', async () => {
       // Simulate a realistic project structure
       const projectStructure = {
-        'src/': [
-          'index.js',
-          'App.js',
-          'utils/helpers.js'
-        ],
-        'src/components/': [
-          'Header.js',
-          'Footer.js',
-          'Sidebar.js'
-        ],
-        'src/api/': [
-          'users.js',
-          'posts.js',
-          'auth.js'
-        ],
-        'tests/': [
-          'index.test.js',
-          'api.test.js'
-        ]
+        'src/': ['index.js', 'App.js', 'utils/helpers.js'],
+        'src/components/': ['Header.js', 'Footer.js', 'Sidebar.js'],
+        'src/api/': ['users.js', 'posts.js', 'auth.js'],
+        'tests/': ['index.test.js', 'api.test.js'],
       };
 
       // Create the project structure
       for (const [dir, files] of Object.entries(projectStructure)) {
         await fs.mkdir(path.join(tempDir, 'real-project', dir), { recursive: true });
-        
+
         for (const file of files) {
           const fullPath = path.join(tempDir, 'real-project', dir, file);
           let content = '';
@@ -514,11 +524,13 @@ describe('Comprehensive System Integration Tests', () => {
       try {
         // Simulate a realistic workflow
         console.log('\\n🏭 Real-world Workflow Simulation:');
-        
+
         // 1. Build project graph
         console.log('   1. Building code property graph...');
         const graph = await buildGraph();
-        console.log(`      ✓ Built graph with ${graph.nodes.length} nodes, ${graph.edges.length} edges`);
+        console.log(
+          `      ✓ Built graph with ${graph.nodes.length} nodes, ${graph.edges.length} edges`
+        );
 
         // 2. Run quality scan
         console.log('   2. Running quality scan...');
@@ -532,13 +544,15 @@ describe('Comprehensive System Integration Tests', () => {
         const coordinator = new SwarmCoordinator(mockProvider, {
           verbose: false,
           saveArtifacts: false,
-          enableRollback: true
+          enableRollback: true,
         });
         console.log('      ✓ Swarm coordinator ready');
 
         // 4. Simulate a planning operation
         console.log('   4. Simulating planning operation...');
-        const suggestions = coordinator.suggestAgents('I need to fix performance issues in the API');
+        const suggestions = coordinator.suggestAgents(
+          'I need to fix performance issues in the API'
+        );
         console.log(`      ✓ Agent suggestions: ${suggestions.slice(0, 3).join(', ')}`);
 
         // 5. Validate the project structure
@@ -546,9 +560,9 @@ describe('Comprehensive System Integration Tests', () => {
         const mockPipeline = [
           { agent: 'planner', task: 'Review project structure' },
           { agent: 'performance', task: 'Analyze performance bottlenecks' },
-          { agent: 'reviewer', task: 'Check code quality' }
+          { agent: 'reviewer', task: 'Check code quality' },
         ];
-        
+
         const validation = coordinator.validatePipeline(mockPipeline);
         console.log(`      ✓ Pipeline validation: ${validation.valid ? 'PASSED' : 'FAILED'}`);
 
@@ -569,18 +583,18 @@ describe('Comprehensive System Integration Tests', () => {
 // Helper function to run the tests
 async function runSystemTests() {
   console.log('🏗️  Running Comprehensive System Integration Tests...\n');
-  
+
   const tests = [
     'System Integration',
     'Performance Under Load',
     'Error Recovery and Resilience',
-    'Real-world Scenario Simulation'
+    'Real-world Scenario Simulation',
   ];
-  
+
   for (const testName of tests) {
     console.log(`✓ ${testName} tests completed`);
   }
-  
+
   console.log('\n✅ All comprehensive system tests passed!');
 }
 

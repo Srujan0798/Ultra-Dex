@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ollama AI Provider (Local)
  * Provides local intelligence for Ultra-Dex
@@ -64,7 +66,7 @@ export class OllamaProvider extends BaseProvider {
     }
 
     const data = await response.json();
-    
+
     return {
       content: data.response || '',
       usage: {
@@ -97,7 +99,7 @@ export class OllamaProvider extends BaseProvider {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullContent = '';
-    
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -119,9 +121,9 @@ export class OllamaProvider extends BaseProvider {
       }
     }
 
-    return { 
-      content: fullContent, 
-      usage: { inputTokens: 0, outputTokens: 0 } // Ollama streaming usage is complex to track line by line
+    return {
+      content: fullContent,
+      usage: { inputTokens: 0, outputTokens: 0 }, // Ollama streaming usage is complex to track line by line
     };
   }
 
@@ -149,19 +151,19 @@ export class OllamaProvider extends BaseProvider {
         // Fallback to the main model if embedding model fails (might not be pulled)
         model = this.model;
         const retryResponse = await fetch(`${this.baseUrl}/embeddings`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: model,
-              prompt: text,
-            }),
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: model,
+            prompt: text,
+          }),
         });
 
         if (!retryResponse.ok) {
-             const error = await retryResponse.text().catch(() => retryResponse.statusText);
-             throw new Error(`Ollama Embeddings API error: ${error}`);
+          const error = await retryResponse.text().catch(() => retryResponse.statusText);
+          throw new Error(`Ollama Embeddings API error: ${error}`);
         }
 
         const data = await retryResponse.json();
@@ -170,10 +172,9 @@ export class OllamaProvider extends BaseProvider {
 
       const data = await response.json();
       return data.embedding;
-
     } catch (error) {
-       console.warn(`Ollama embedding failed for model ${model}: ${error.message}`);
-       throw error;
+      console.warn(`Ollama embedding failed for model ${model}: ${error.message}`);
+      throw error;
     }
   }
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { EventEmitter } from 'node:events';
 import fs from 'fs/promises';
 import path from 'path';
