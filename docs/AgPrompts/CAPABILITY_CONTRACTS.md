@@ -47,6 +47,6 @@ export function validateCapabilities(toolName, context) {
 ---
 
 ## SUCCESS CRITERIA
-- [ ] Capability schema created
-- [ ] Tools have capability manifests
-- [ ] Router validates before execution
+- [x] Capability schema created
+- [x] Tools have capability manifests
+- [x] Router validates before execution

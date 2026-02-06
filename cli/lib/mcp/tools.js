@@ -15,10 +15,40 @@ import { capabilitiesRouter } from './router.js';
 import { auditGovernance } from '../governance/governor.js';
 import { saveADR } from '../governance/schema.js';
 
+const DEFAULT_TOOL_CAPABILITY = {
+  sideEffects: ['none'],
+  riskScore: 'low',
+  rateLimit: { max: 60, window: '1m' },
+};
+
+const TOOL_CAPABILITIES = {
+  remember: { sideEffects: ['memory:write'], riskScore: 'low', rateLimit: { max: 120, window: '1m' } },
+  recall: { sideEffects: ['memory:read'], riskScore: 'low', rateLimit: { max: 120, window: '1m' } },
+  clear_memory: { sideEffects: ['memory:write'], riskScore: 'medium', requiresApproval: true },
+  update_task_status: { sideEffects: ['state:write'], riskScore: 'medium' },
+  query_codebase: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+  verify_task: { sideEffects: ['analysis'], riskScore: 'low' },
+  read_code: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+  write_code: { sideEffects: ['filesystem:write'], riskScore: 'high', requiresApproval: true },
+  search_code: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+  analyze_impact: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+  get_agent: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+  start_swarm: { sideEffects: ['execute'], riskScore: 'medium', requiresApproval: true },
+  deep_impact_analysis: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+  find_circular_deps: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+  get_coupling_metrics: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+  graph_rag_query: { sideEffects: ['database:read'], riskScore: 'low' },
+  store_decision: { sideEffects: ['memory:write'], riskScore: 'medium' },
+  search_symbols: { sideEffects: ['filesystem:read'], riskScore: 'low' },
+};
+
 export function registerTools(server) {
   const baseTool = server.tool.bind(server);
-  server.tool = (name, description, schema, handler) =>
-    baseTool(name, description, schema, capabilitiesRouter.wrapTool(name, handler));
+  server.tool = (name, description, schema, handler, capability) => {
+    const resolved = capability || TOOL_CAPABILITIES[name] || DEFAULT_TOOL_CAPABILITY;
+    capabilitiesRouter.registerToolCapability(name, resolved);
+    return baseTool(name, description, schema, capabilitiesRouter.wrapTool(name, handler));
+  };
 
   // Tool: Remember Fact
   server.tool(

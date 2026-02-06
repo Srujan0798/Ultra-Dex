@@ -79,6 +79,11 @@ class CapabilitiesRouter {
     return this.toolCapabilities.get(toolName) || null;
   }
 
+  registerToolCapability(toolName, capability) {
+    if (!toolName || !capability) return;
+    this.toolCapabilities.set(toolName, { ...capability });
+  }
+
   async enforceRateLimit(toolName, rateLimit) {
     if (!rateLimit?.max) return;
     const windowMs = parseWindow(rateLimit.window || '1m');

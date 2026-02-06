@@ -125,11 +125,11 @@ git push origin v4.0.0
 
 ## SUCCESS CRITERIA
 
-- [ ] `cli/lib/governance/capability-schema.js` created
-- [ ] `cli/lib/governance/adr-schema.js` created
-- [ ] `cli/lib/mcp/capability-router.js` created
-- [ ] `agents/5-quality/governor.md` created
-- [ ] `verify_task` updated with governance check
+- [x] `cli/lib/governance/capability-schema.js` created
+- [x] `cli/lib/governance/adr-schema.js` created
+- [x] `cli/lib/mcp/capability-router.js` created
+- [x] `agents/5-quality/governor.md` created
+- [x] `verify_task` updated with governance check
 - [ ] All tests passing
 - [ ] v4.0.0 pushed with tag
 
