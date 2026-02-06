@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Plugin Management Command
  * Allows users to extend Ultra-Dex with custom logic and hooks
@@ -8,24 +10,40 @@ import fs from 'fs/promises';
 import path from 'path';
 import { PluginManager, PLUGIN_MANIFEST_EXAMPLE, PLUGIN_EXAMPLE } from '../utils/plugin-system.js';
 import { pluginRegistry } from '../plugins/index.js'; // Import the new plugin registry
-import { installPlugin as marketplaceInstallPlugin, uninstallPlugin as marketplaceUninstallPlugin } from '../marketplace/index.js';
+import {
+  installPlugin as marketplaceInstallPlugin,
+  uninstallPlugin as marketplaceUninstallPlugin,
+} from '../marketplace/index.js';
 
 /**
  * Create a plugin from a template
  */
 async function createPluginFromTemplate(name, template, pluginPath) {
   const templates = {
-    'basic': {
-      'ultra-dex-plugin.json': JSON.stringify({
-        name: name,
-        version: '1.0.0',
-        description: 'A basic Ultra-Dex plugin',
-        main: 'index.js',
-        ultraDex: {
-          version: '>=3.0.0',
-          commands: []
-        }
-      }, null, 2),
+    basic: {
+      'ultra-dex-plugin.json': JSON.stringify(
+        {
+          name: name,
+          version: '1.0.0',
+          description: 'A basic Ultra-Dex plugin',
+          main: 'index.js',
+          ultraDex: {
+            version: '>=3.0.0',
+            commands: [],
+          },
+        },
+        null,
+        2
+      ),
+      'capability_manifest.json': JSON.stringify(
+        {
+          name: name,
+          version: '1.0.0',
+          tools: [],
+        },
+        null,
+        2
+      ),
       'index.js': `/**
  * ${name} - Ultra-Dex Plugin
  */
@@ -44,19 +62,32 @@ export default {
   registerCommands
 };
 `,
-      'README.md': `# ${name} Plugin\n\nA custom Ultra-Dex plugin.`
+      'README.md': `# ${name} Plugin\n\nA custom Ultra-Dex plugin.`,
     },
-    'command': {
-      'ultra-dex-plugin.json': JSON.stringify({
-        name: name,
-        version: '1.0.0',
-        description: 'A command plugin for Ultra-Dex',
-        main: 'index.js',
-        ultraDex: {
-          version: '>=3.0.0',
-          commands: [name]
-        }
-      }, null, 2),
+    command: {
+      'ultra-dex-plugin.json': JSON.stringify(
+        {
+          name: name,
+          version: '1.0.0',
+          description: 'A command plugin for Ultra-Dex',
+          main: 'index.js',
+          ultraDex: {
+            version: '>=3.0.0',
+            commands: [name],
+          },
+        },
+        null,
+        2
+      ),
+      'capability_manifest.json': JSON.stringify(
+        {
+          name: name,
+          version: '1.0.0',
+          tools: [],
+        },
+        null,
+        2
+      ),
       'index.js': `/**
  * ${name} Command Plugin
  */
@@ -76,8 +107,8 @@ export default {
   registerCommands
 };
 `,
-      'README.md': `# ${name} Command Plugin\n\nA command plugin for Ultra-Dex.`
-    }
+      'README.md': `# ${name} Command Plugin\n\nA command plugin for Ultra-Dex.`,
+    },
   };
 
   const templateData = templates[template] || templates.basic;
@@ -130,16 +161,16 @@ export function registerPluginCommand(program) {
       printInfo(chalk.bold.cyan('\n🔌 Installed Plugins\n'));
       const table = new Table({
         head: ['Name', 'Version', 'Author', 'Description', 'Status'],
-        style: { head: ['cyan'] }
+        style: { head: ['cyan'] },
       });
 
-      plugins.forEach(p => {
+      plugins.forEach((p) => {
         table.push([
           chalk.green(p.name),
           p.version || 'N/A',
           p.author || '-',
           p.description || '-',
-          p.installed ? chalk.green('✓ Active') : chalk.yellow('○ Inactive')
+          p.installed ? chalk.green('✓ Active') : chalk.yellow('○ Inactive'),
         ]);
       });
 
@@ -163,9 +194,10 @@ export function registerPluginCommand(program) {
         // Filter if search query is provided
         let filteredPlugins = availablePlugins;
         if (options.search) {
-          filteredPlugins = availablePlugins.filter(p =>
-            p.name.toLowerCase().includes(options.search.toLowerCase()) ||
-            p.description.toLowerCase().includes(options.search.toLowerCase())
+          filteredPlugins = availablePlugins.filter(
+            (p) =>
+              p.name.toLowerCase().includes(options.search.toLowerCase()) ||
+              p.description.toLowerCase().includes(options.search.toLowerCase())
           );
         }
 
@@ -174,28 +206,31 @@ export function registerPluginCommand(program) {
           filteredPlugins.sort((a, b) => a.name.localeCompare(b.name));
         } else if (options.sort === 'rating') {
           filteredPlugins.sort((a, b) => b.rating - a.rating);
-        } else { // default to downloads
+        } else {
+          // default to downloads
           filteredPlugins.sort((a, b) => b.downloads - a.downloads);
         }
 
         const table = new Table({
           head: ['Plugin', 'Description', 'Downloads', 'Rating', 'Author'],
-          colWidths: [15, 35, 12, 8, 15]
+          colWidths: [15, 35, 12, 8, 15],
         });
 
-        filteredPlugins.forEach(p => {
+        filteredPlugins.forEach((p) => {
           table.push([
             chalk.cyan(p.name),
             chalk.white(p.description.substring(0, 32) + (p.description.length > 32 ? '...' : '')),
             chalk.blue(p.downloads.toLocaleString()),
             chalk.yellow('★ ' + p.rating),
-            chalk.gray(p.author)
+            chalk.gray(p.author),
           ]);
         });
 
         printInfo(table.toString());
         printInfo(chalk.gray('\nTo install: ultra-dex plugin install <name>'));
-        printInfo(chalk.dim('Submit your plugin: https://github.com/Srujan0798/Ultra-Dex/plugins\n'));
+        printInfo(
+          chalk.dim('Submit your plugin: https://github.com/Srujan0798/Ultra-Dex/plugins\n')
+        );
       } catch (error) {
         printError(chalk.red(`\n❌ Failed to fetch marketplace: ${error.message}`));
       }
@@ -220,10 +255,7 @@ export function registerPluginCommand(program) {
             JSON.stringify(manifest, null, 2)
           );
 
-          await fs.writeFile(
-            path.join(pluginPath, 'index.js'),
-            PLUGIN_EXAMPLE
-          );
+          await fs.writeFile(path.join(pluginPath, 'index.js'), PLUGIN_EXAMPLE);
         }
 
         printSuccess(chalk.green(`\n✅ Plugin "${name}" created successfully!`));
@@ -270,8 +302,8 @@ export function registerPluginCommand(program) {
             type: 'confirm',
             name: 'confirm',
             message: `Are you sure you want to uninstall plugin "${name}"?`,
-            default: false
-          }
+            default: false,
+          },
         ]);
 
         if (!confirm) {
@@ -307,16 +339,18 @@ export function registerPluginCommand(program) {
       printInfo(`${chalk.bold('License:')}     ${plugin.license || 'N/A'}`);
       printInfo(`${chalk.bold('Path:')}        ${plugin.path || 'N/A'}`);
       printInfo(`${chalk.bold('Description:')} ${plugin.description || 'No description'}`);
-      printInfo(`${chalk.bold('Status:')}      ${plugin.installed ? chalk.green('✓ Active') : chalk.yellow('○ Inactive')}`);
+      printInfo(
+        `${chalk.bold('Status:')}      ${plugin.installed ? chalk.green('✓ Active') : chalk.yellow('○ Inactive')}`
+      );
 
       if (plugin.hooks && plugin.hooks.length > 0) {
         printInfo(`\n${chalk.bold('Registered Hooks:')}`);
-        plugin.hooks.forEach(h => printInfo(`  - ${h}`));
+        plugin.hooks.forEach((h) => printInfo(`  - ${h}`));
       }
 
       if (plugin.commands && plugin.commands.length > 0) {
         printInfo(`\n${chalk.bold('Custom Commands:')}`);
-        plugin.commands.forEach(c => printInfo(`  - ${c.name}: ${c.description}`));
+        plugin.commands.forEach((c) => printInfo(`  - ${c.name}: ${c.description}`));
       }
       printInfo('');
     });
@@ -331,7 +365,8 @@ export function registerPluginCommand(program) {
         printInfo(chalk.blue(`\nUpdating all plugins...\n`));
 
         for (const plugin of plugins) {
-          if (!plugin.local) { // Skip local plugins
+          if (!plugin.local) {
+            // Skip local plugins
             try {
               await pluginRegistry.updatePlugin(plugin.name);
               printSuccess(chalk.green(`✓ Updated: ${plugin.name}`));
@@ -362,9 +397,10 @@ export function registerPluginCommand(program) {
 
       try {
         const availablePlugins = await pluginRegistry.getAvailablePlugins();
-        const matchedPlugins = availablePlugins.filter(p =>
-          p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.description.toLowerCase().includes(query.toLowerCase())
+        const matchedPlugins = availablePlugins.filter(
+          (p) =>
+            p.name.toLowerCase().includes(query.toLowerCase()) ||
+            p.description.toLowerCase().includes(query.toLowerCase())
         );
 
         if (matchedPlugins.length === 0) {
@@ -374,15 +410,15 @@ export function registerPluginCommand(program) {
 
         const table = new Table({
           head: ['Plugin', 'Description', 'Downloads', 'Rating'],
-          colWidths: [20, 40, 12, 8]
+          colWidths: [20, 40, 12, 8],
         });
 
-        matchedPlugins.forEach(p => {
+        matchedPlugins.forEach((p) => {
           table.push([
             chalk.cyan(p.name),
             chalk.white(p.description.substring(0, 37) + (p.description.length > 37 ? '...' : '')),
             chalk.blue(p.downloads.toLocaleString()),
-            chalk.yellow('★ ' + p.rating)
+            chalk.yellow('★ ' + p.rating),
           ]);
         });
 
