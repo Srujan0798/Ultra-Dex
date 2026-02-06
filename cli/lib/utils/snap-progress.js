@@ -1,30 +1,27 @@
-import chalk from 'chalk';
+// Copyright (c) 2026 Ultra-Dex
 
-const STONES = [
-  { name: 'Power', color: '#a855f7' },
-  { name: 'Space', color: '#3b82f6' },
-  { name: 'Reality', color: '#ef4444' },
-  { name: 'Soul', color: '#f59e0b' },
-  { name: 'Time', color: '#22c55e' },
-  { name: 'Mind', color: '#eab308' }
+import chalk from 'chalk';
+import { infinityStones, doomsdayMessages } from '../../assets/art/doomsday.js';
+
+const stones = [
+  infinityStones.space,
+  infinityStones.mind,
+  infinityStones.reality,
+  infinityStones.power,
+  infinityStones.time,
+  infinityStones.soul,
 ];
 
-export function renderSnapProgress(completed = 0) {
-  const total = STONES.length;
-  const stones = STONES.map((stone, index) => {
-    const filled = index < completed;
-    return filled
-      ? chalk.hex(stone.color)('◆')
-      : chalk.gray('◇');
-  }).join(' ');
-
-  const message = completed >= total
-    ? chalk.green('Perfectly balanced, as all code should be.')
-    : chalk.gray(`Stones awakened: ${completed}/${total}`);
-
-  return `${stones}\n${message}`;
+export async function snapProgress(steps = 6, delay = 120) {
+  for (let i = 0; i < steps; i++) {
+    const filled = stones.slice(0, i + 1).join(' ');
+    const empty = '○'
+      .repeat(Math.max(0, steps - i - 1))
+      .split('')
+      .join(' ');
+    process.stdout.write(`\r${chalk.magenta('🫰')} ${filled} ${chalk.dim(empty)}`);
+    await new Promise((r) => setTimeout(r, delay));
+  }
+  process.stdout.write('\n');
+  process.stdout.write(chalk.yellow(`${doomsdayMessages.success}\n`));
 }
-
-export default {
-  renderSnapProgress
-};
