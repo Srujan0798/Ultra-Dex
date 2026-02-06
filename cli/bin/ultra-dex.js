@@ -10,6 +10,7 @@ import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
 import { formatInfo, formatWarning, formatSuccess } from '../lib/utils/status.js';
 import { recordUsageEventSync } from '../lib/enterprise/usage.js';
+import { isTelemetryEnabledSync } from '../lib/utils/telemetry.js';
 
 // Initialize monitoring and configuration systems
 import { monitoring } from '../lib/utils/monitoring.js';
@@ -26,7 +27,7 @@ try {
     configManager.load(),
     pluginManager.initialize(),
     governance.init(),
-    installHistoryTracking()
+    installHistoryTracking(),
   ]);
 } catch (error) {
   console.error(chalk.red('Failed to initialize systems:'), error.message);
@@ -37,7 +38,7 @@ monitoring.info('Ultra-Dex CLI starting', {
   version: VERSION,
   pid: process.pid,
   nodeVersion: process.version,
-  platform: process.platform
+  platform: process.platform,
 });
 
 // Check for doomsday flag early
@@ -55,25 +56,25 @@ if (process.argv.includes('--help') && process.argv.includes('--doomsday')) {
 // Check for ACP (Agent Client Protocol) mode - GitHub's agent portability standard
 const isAcpMode = process.argv.includes('--acp');
 if (isAcpMode) {
-  const acpPort = process.argv.find(arg => arg.startsWith('--acp-port='))?.split('=')[1];
+  const acpPort = process.argv.find((arg) => arg.startsWith('--acp-port='))?.split('=')[1];
   const acpHttp = process.argv.includes('--acp-http');
-  
+
   (async () => {
     try {
       const { startACPHost } = await import('../lib/acp/host.js');
       await startACPHost({
         stdio: !acpHttp,
         http: acpHttp,
-        port: acpPort ? parseInt(acpPort, 10) : 3002
+        port: acpPort ? parseInt(acpPort, 10) : 3002,
       });
     } catch (error) {
       console.error(chalk.red('\n✕ Failed to start ACP Host:'), error.message);
       process.exit(1);
     }
   })();
-  
+
   // ACP mode takes over completely - don't process other commands
-  await new Promise(() => {});
+  await new Promise(() => { });
 }
 
 // Check for updates
@@ -81,13 +82,15 @@ const pkg = { name: PACKAGE_NAME, version: VERSION };
 const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 });
 
 if (notifier.update) {
-  console.log(formatWarning(
-    `Update available! ${notifier.update.current} → ${notifier.update.latest}\n` +
-    `Run ${chalk.cyan('npm install -g ultra-dex')} to update`
-  ));
+  console.log(
+    formatWarning(
+      `Update available! ${notifier.update.current} → ${notifier.update.latest}\n` +
+      `Run ${chalk.cyan('npm install -g ultra-dex')} to update`
+    )
+  );
 }
 
-import { banner } from '../lib/commands/banner.js';
+import { banner, registerBannerCommand } from '../lib/commands/banner.js';
 import { registerInitCommand } from '../lib/commands/init.js';
 import { registerAuditCommand } from '../lib/commands/audit.js';
 import { registerExamplesCommand } from '../lib/commands/examples.js';
@@ -98,8 +101,15 @@ import { registerReviewCommand } from '../lib/commands/review.js';
 import { registerRunCommand } from '../lib/commands/run.js';
 import { registerAutoImplementCommand } from '../lib/commands/auto-implement.js';
 import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
-import { registerAlignCommand, registerStatusCommand, registerPreCommitCommand, registerStateCommand } from '../lib/commands/state.js';
+import {
+  registerAlignCommand,
+  registerPreCommitCommand,
+  registerStateCommand,
+} from '../lib/commands/state.js';
+import { registerStatusCommand } from '../lib/commands/status.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
+
+
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
 import { registerCheckCommand } from '../lib/commands/check.js';
 import { registerBatchCommand, registerPipelineCommand } from '../lib/commands/advanced.js';
@@ -114,14 +124,21 @@ import { registerForgeCommand } from '../lib/commands/forge.js';
 import { registerHelpCommand } from '../lib/commands/help.js';
 import { registerCostEstimatorCommand } from '../lib/ops/cost-estimator.js';
 import { registerDataGovernanceCommand } from '../lib/governance/data-policy.js';
+import { registerRiskCommand } from '../lib/commands/risk.js';
+import { registerRollbackCommand } from '../lib/commands/rollback.js';
+import { registerTelemetryCommand } from '../lib/commands/telemetry.js';
+import { registerCleanCommand } from '../lib/commands/clean.js';
+import { registerBenchmarkCommand } from '../lib/commands/benchmark.js';
+import { registerTestCommand } from '../lib/commands/test.js';
+import { registerVersionCheckCommand } from '../lib/commands/version-check.js';
 
 // v3.0 Commands
-import { swarmCommand } from '../lib/commands/swarm.js';
-import { watchCommand } from '../lib/commands/watch.js';
-import { diffCommand } from '../lib/commands/diff.js';
-import { exportCommand, EXPORT_EXAMPLES } from '../lib/commands/export.js';
-import { upgradeCommand } from '../lib/commands/upgrade.js';
-import { configCommand, CONFIG_EXAMPLES } from '../lib/commands/config.js';
+import { registerSwarmCommand } from '../lib/commands/swarm.js';
+import { registerWatchCommand } from '../lib/commands/watch.js';
+import { registerDiffCommand } from '../lib/commands/diff.js';
+import { registerExportCommand } from '../lib/commands/export.js';
+import { registerUpgradeCommand } from '../lib/commands/upgrade.js';
+import { registerConfigCommand } from '../lib/commands/config.js';
 
 import { registerRalphCommand } from '../lib/commands/ralph.js';
 import { registerWorkflowCommand } from '../lib/commands/workflows.js';
@@ -171,7 +188,11 @@ import { registerDockerCommand } from '../lib/commands/docker.js';
 import { registerK8sCommand } from '../lib/commands/k8s.js';
 import { registerEnvCommand } from '../lib/commands/env.js';
 import { registerMonitorCommand } from '../lib/commands/monitor.js';
+import { registerInstallCompletionCommand } from '../lib/commands/install-completion.js';
 import { registerProfileCommand } from '../lib/commands/profile.js';
+import { registerDrCheckCommand } from '../lib/commands/dr-check.js';
+import { registerSnapCommand } from '../lib/commands/snap.js';
+import { registerChallengeCommand } from '../lib/commands/challenge.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 import { registerScaffoldPlanCommand } from '../lib/commands/scaffold-plan.js';
 import { registerTemplatesCommand } from '../lib/commands/templates.js';
@@ -181,12 +202,23 @@ import { registerUsageCommands } from '../lib/commerce/usage.js';
 import { registerAlertCommands } from '../lib/commerce/alerts.js';
 import { registerRemoteClientCommand } from '../lib/mcp/remote/client.js';
 import { registerSandboxCommand } from '../lib/sandbox/docker.js';
-import { registerSystemConfigCommand, registerMetricsCommand, registerHealthCommand, registerDebugCommand } from '../lib/commands/monitoring.js';
+import {
+  registerSystemConfigCommand,
+  registerMetricsCommand,
+  registerHealthCommand,
+  registerDebugCommand,
+} from '../lib/commands/monitoring.js';
 import { registerBrainCommand } from '../lib/commands/brain.js';
 import { registerEstimateCommand } from '../lib/commands/estimate.js';
 import { registerUndoCommand } from '../lib/commands/undo.js';
 import { startACPHost } from '../lib/acp/host.js';
-import { createEnhancedHelp, formatHelpSection, formatUsage, formatDescription, formatOptions } from '../lib/utils/help.js';
+import {
+  createEnhancedHelp,
+  formatHelpSection,
+  formatUsage,
+  formatDescription,
+  formatOptions,
+} from '../lib/utils/help.js';
 
 // v3.4.3 Commands - 2026 Competitive Features
 import { registerBrowserCommand } from '../lib/commands/browser.js';
@@ -214,26 +246,30 @@ program.hook('preAction', (thisCommand, actionCommand) => {
   } catch {
     user = null;
   }
-  recordUsageEventSync({
-    stage: 'start',
-    command: actionCommand?.name?.(),
-    args: process.argv.slice(2),
-    user: user?.username || null,
-    role: user?.role || null,
-    cwd: process.cwd(),
-    pid: process.pid
-  });
+  if (isTelemetryEnabledSync()) {
+    recordUsageEventSync({
+      stage: 'start',
+      command: actionCommand?.name?.(),
+      args: process.argv.slice(2),
+      user: null,
+      role: null,
+      cwd: process.cwd(),
+      pid: process.pid,
+    });
+  }
 });
 
 program.hook('postAction', (thisCommand, actionCommand) => {
   const durationMs = commandStart ? Date.now() - commandStart : null;
-  recordUsageEventSync({
-    stage: 'end',
-    command: actionCommand?.name?.(),
-    durationMs,
-    success: true,
-    cwd: process.cwd()
-  });
+  if (isTelemetryEnabledSync()) {
+    recordUsageEventSync({
+      stage: 'end',
+      command: actionCommand?.name?.(),
+      durationMs,
+      success: true,
+      cwd: process.cwd(),
+    });
+  }
   commandStart = null;
 });
 
@@ -248,7 +284,7 @@ program.configureHelp({
         options: cmd.options,
         examples: cmd._examples || [],
         tips: cmd._tips || [],
-        troubleshooting: cmd._troubleshooting || []
+        troubleshooting: cmd._troubleshooting || [],
       };
 
       return createEnhancedHelp(commandData);
@@ -266,9 +302,12 @@ program.configureHelp({
     output += `  ${theme.title('COMMANDS')}\n`;
 
     // Sort and format commands
-    const commands = cmd.commands.map(c => {
+    const commands = cmd.commands
+      .map((c) => {
         return `    ${theme.accent(c.name().padEnd(20))} ${theme.dim(c.description())}`;
-    }).sort().join('\n');
+      })
+      .sort()
+      .join('\n');
 
     output += commands + '\n\n';
 
@@ -281,7 +320,7 @@ program.configureHelp({
     output += `  ${theme.subtitle('Run ultra-dex without arguments to launch the Interactive Dashboard')}\n\n`;
 
     return output;
-  }
+  },
 });
 
 program
@@ -299,62 +338,11 @@ registerReviewCommand(program);
 registerRunCommand(program);
 
 // v3.0 Commands
-program
-  .command('swarm <task>')
-  .description('Run autonomous agent pipeline')
-  .option('--dry-run', 'Show pipeline without executing')
-  .option('--parallel', 'Run implementation tier agents in parallel')
-  .action(swarmCommand);
-
-const watchCmd = program
-  .command('watch')
-  .description('Auto-update state on file changes')
-  .option('--interval <ms>', 'Debounce interval in milliseconds (deprecated, use --debounce)', '500')
-  .option('--debounce <ms>', 'Debounce interval in milliseconds', '500')
-  .option('--ignore <globs>', 'Comma-separated glob patterns to ignore')
-  .option('--sync', 'Auto-sync CONTEXT.md with brain', false)
-  .action(watchCommand);
-
-watchCmd._examples = [
-  { command: 'ultra-dex watch', description: 'Watch project and update state on changes' },
-  { command: 'ultra-dex watch --interval 1000', description: 'Use a 1s debounce interval' },
-  { command: 'ultra-dex watch --sync', description: 'Auto-sync CONTEXT.md on code changes' },
-];
-
-program
-  .command('diff')
-  .description('Compare plan vs implemented code')
-  .option('--drift', 'Show detailed drift analysis between plan and implementation')
-  .option('--analyze-drift', 'Alias for --drift')
-  .option('--sections <list>', 'Limit analysis to specific section numbers')
-  .option('--json', 'Output as JSON')
-  .option('--with-example <name>', 'Compare with example project')
-  .option('--report <path>', 'Write delta report to a file (json or md)')
-  .option('--output <path>', 'Alias for --report')
-  .action(diffCommand);
-
-const exportCmd = program
-  .command('export')
-  .description('Export project context')
-  .option('--format <type>', 'Output format: json, html, markdown, pdf, yaml, notion', 'json')
-  .option('--pdf', 'Shortcut for --format pdf')
-  .option('--output <path>', 'Output file path')
-  .option('--sections <list>', 'Only include specific sections (e.g., 1,2,3)')
-  .option('--exclude <list>', 'Exclude specific sections (e.g., 15,16)')
-  .option('--p0', 'Only include critical P0 sections')
-  .option('--include-agents', 'Bundle all agent prompts')
-  .option('--toc', 'Include auto-generated table of contents')
-  .option('--template <file>', 'Use custom template file or built-in template (executive|technical|handoff)')
-  .action(exportCommand);
-
-exportCmd._examples = EXPORT_EXAMPLES;
-
-program
-  .command('upgrade')
-  .description('Check for CLI updates')
-  .option('--check', 'Check only, do not show install instructions')
-  .option('--install', 'Automatically install latest version')
-  .action(upgradeCommand);
+registerSwarmCommand(program);
+registerWatchCommand(program);
+registerDiffCommand(program);
+registerExportCommand(program);
+registerUpgradeCommand(program);
 
 program
   .command('repl')
@@ -364,18 +352,7 @@ program
     await startREPL({ continue: options.continue });
   });
 
-const configCmd = program
-  .command('config')
-  .description('Show or generate configuration')
-  .option('--mcp', 'Generate MCP config for Claude Desktop')
-  .option('--cursor', 'Generate Cursor IDE rules')
-  .option('--vscode', 'Generate VS Code settings.json')
-  .option('--show', 'Display current Ultra-Dex config')
-  .option('--set <key=value>', 'Set a config value')
-  .option('--get <key>', 'Get a specific config value')
-  .action(configCommand);
-
-configCmd._examples = CONFIG_EXAMPLES;
+registerConfigCommand(program);
 
 registerAutoImplementCommand(program);
 registerCiMonitorCommand(program);
@@ -436,7 +413,11 @@ registerDockerCommand(program);
 registerK8sCommand(program);
 registerEnvCommand(program);
 registerMonitorCommand(program);
+registerInstallCompletionCommand(program);
 registerProfileCommand(program);
+registerDrCheckCommand(program);
+registerSnapCommand(program);
+registerChallengeCommand(program);
 registerScaffoldCommand(program);
 registerScaffoldPlanCommand(program);
 registerTemplatesCommand(program);
@@ -454,12 +435,39 @@ registerForgeCommand(program);
 registerHelpCommand(program);
 registerCostEstimatorCommand(program);
 registerDataGovernanceCommand(program);
+registerRiskCommand(program);
+registerRollbackCommand(program);
+registerTelemetryCommand(program);
+registerCleanCommand(program);
+registerBenchmarkCommand(program);
+registerTestCommand(program);
+registerVersionCheckCommand(program);
 
 // Monitoring commands (v3.4.3) - note: status uses state.js, sys-config uses monitoring.js
 registerSystemConfigCommand(program);
 registerMetricsCommand(program);
 registerHealthCommand(program);
 registerDebugCommand(program);
+registerBannerCommand(program);
+
+import { registerVibeCommand } from '../lib/commands/vibe.js';
+import { registerChromeAgentCommand } from '../lib/commands/chrome-agent.js';
+import { registerExamplesCommand } from '../lib/commands/examples.js';
+import { registerChatCommand, chatWithPersona } from '../lib/commands/chat.js';
+
+// ... (existing imports)
+
+registerVibeCommand(program);
+registerChromeAgentCommand(program);
+registerExamplesCommand(program);
+registerChatCommand(program);
+
+// Advisor Aliases (Redirect to Chat)
+program.command('architect [query]').description('AI Architect Advisor').action((query) => chatWithPersona('architect', query));
+program.command('db-advisor [query]').description('AI Database Advisor').action((query) => chatWithPersona('db-advisor', query));
+program.command('ai-advisor [query]').description('AI Integration Advisor').action((query) => chatWithPersona('ai-advisor', query));
+program.command('plugin-scan [query]').description('AI Plugin Security Scanner').action((query) => chatWithPersona('plugin-scan', query));
+program.command('route [query]').description('AI Request Router').action((query) => chatWithPersona('route', query));
 
 // v3.4.3 Commands - 2026 Competitive Features
 registerExecCommand(program);
@@ -495,7 +503,7 @@ program
     await startACPHost({
       stdio: !options.http,
       http: options.http,
-      port: parseInt(options.port, 10)
+      port: parseInt(options.port, 10),
     });
   });
 
@@ -531,26 +539,26 @@ if (isReplOnly) {
   // Add 'Did you mean?' logic for typos
   program.on('command:*', () => {
     const commandName = program.args[0];
-    const availableCommands = program.commands.map(cmd => cmd.name());
-    
+    const availableCommands = program.commands.map((cmd) => cmd.name());
+
     // Simple Levenshtein-like distance check
-    const suggestions = availableCommands.filter(cmd => {
-        let distance = 0;
-        const longer = commandName.length > cmd.length ? commandName : cmd;
-        const shorter = commandName.length > cmd.length ? cmd : commandName;
-        
-        for (let i = 0; i < shorter.length; i++) {
-            if (commandName[i] !== cmd[i]) distance++;
-        }
-        distance += Math.abs(commandName.length - cmd.length);
-        return distance <= 2;
+    const suggestions = availableCommands.filter((cmd) => {
+      let distance = 0;
+      const longer = commandName.length > cmd.length ? commandName : cmd;
+      const shorter = commandName.length > cmd.length ? cmd : commandName;
+
+      for (let i = 0; i < shorter.length; i++) {
+        if (commandName[i] !== cmd[i]) distance++;
+      }
+      distance += Math.abs(commandName.length - cmd.length);
+      return distance <= 2;
     });
 
     console.error(chalk.red(`\n✕ Unknown command: ${commandName}`));
     if (suggestions.length > 0) {
-        console.log(chalk.yellow(`  Did you mean: ${suggestions.join(', ')}?\n`));
+      console.log(chalk.yellow(`  Did you mean: ${suggestions.join(', ')}?\n`));
     } else {
-        console.log(chalk.gray(`  Run 'ultra-dex --help' for a list of available commands.\n`));
+      console.log(chalk.gray(`  Run 'ultra-dex --help' for a list of available commands.\n`));
     }
     process.exit(1);
   });
