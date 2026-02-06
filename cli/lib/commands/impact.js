@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Impact Analysis Command
  */
@@ -11,7 +13,7 @@ import { printInfo, printSuccess, printWarning, printError } from '../utils/outp
 async function runImpactAnalysis(target, options) {
   const graphRAG = new GraphRAG({
     dbType: options.dbType,
-    useInMemory: options.dbType === 'memory'
+    useInMemory: options.dbType === 'memory',
   });
 
   await graphRAG.initialize();
@@ -38,10 +40,16 @@ export function registerImpactCommand(program) {
         const handleResult = async () => {
           const { analysis, graph } = await runImpactAnalysis(target, options);
 
-          const riskColor = analysis.riskLevel === 'high' ? 'red' :
-            analysis.riskLevel === 'medium' ? 'yellow' : 'green';
+          const riskColor =
+            analysis.riskLevel === 'high'
+              ? 'red'
+              : analysis.riskLevel === 'medium'
+                ? 'yellow'
+                : 'green';
 
-          printInfo(chalk.white(`Risk Level: ${chalk[riskColor](analysis.riskLevel.toUpperCase())}`));
+          printInfo(
+            chalk.white(`Risk Level: ${chalk[riskColor](analysis.riskLevel.toUpperCase())}`)
+          );
           printInfo(chalk.gray(`Impacted Files: ${analysis.impactedCount}\n`));
 
           if (analysis.impactedFiles.length > 0) {

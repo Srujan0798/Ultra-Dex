@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Quality Validation Automation
@@ -20,7 +21,7 @@ function runCommandStreaming(command, args, cwd) {
     const child = spawn(command, args, {
       cwd,
       stdio: 'inherit', // Stream directly to console
-      shell: true
+      shell: true,
     });
 
     child.on('close', (code) => {
@@ -36,23 +37,23 @@ function runCommandStreaming(command, args, cwd) {
 const QUALITY_GATES = {
   coverage: {
     min: 80,
-    critical: 60
+    critical: 60,
   },
   performance: {
     maxLoadTime: 3000, // 3 seconds
     maxResponseTime: 200, // 200ms
-    maxBundleSize: 500 * 1024 // 500KB
+    maxBundleSize: 500 * 1024, // 500KB
   },
   security: {
     maxCriticalVulns: 0,
     maxHighVulns: 5,
-    maxMediumVulns: 10
+    maxMediumVulns: 10,
   },
   codeQuality: {
     maxComplexity: 10,
     maxDuplication: 5, // percentage
-    maxLintErrors: 0
-  }
+    maxLintErrors: 0,
+  },
 };
 
 // Test runner
@@ -62,7 +63,7 @@ async function runTests(projectPath) {
   return new Promise((resolve) => {
     const child = spawn('npm', ['test'], {
       cwd: projectPath,
-      stdio: ['pipe', 'pipe', 'pipe'] // Capture output
+      stdio: ['pipe', 'pipe', 'pipe'], // Capture output
     });
 
     let output = '';
@@ -96,14 +97,14 @@ async function runTests(projectPath) {
         resolve({
           passed,
           coverage,
-          output: output.substring(0, 1000)
+          output: output.substring(0, 1000),
         });
       } catch (error) {
         spinner.fail(chalk.red('Tests failed'));
         resolve({
           passed: false,
           coverage: 0,
-          error: error.message
+          error: error.message,
         });
       }
     });
@@ -113,7 +114,7 @@ async function runTests(projectPath) {
       resolve({
         passed: false,
         coverage: 0,
-        error: error.message
+        error: error.message,
       });
     });
   });
@@ -122,75 +123,75 @@ async function runTests(projectPath) {
 // Security scan
 async function runSecurityScan(projectPath) {
   const spinner = ora('Running security scan...').start();
-  
+
   const findings = [];
-  
+
   try {
     // Check for hardcoded secrets
     const files = await getAllFiles(projectPath, ['.js', '.ts', '.jsx', '.tsx', '.env']);
-    
-    for (const file of files.slice(0, 50)) { // Limit to 50 files for performance
+
+    for (const file of files.slice(0, 50)) {
+      // Limit to 50 files for performance
       try {
         const content = await fs.readFile(file, 'utf-8');
-        
+
         // Check for API keys
         if (/api[_-]?key\s*[:=]\s*["'][a-zA-Z0-9]{20,}["']/i.test(content)) {
           findings.push({
             type: 'secret',
             severity: 'critical',
             file: path.relative(projectPath, file),
-            message: 'Potential hardcoded API key detected'
+            message: 'Potential hardcoded API key detected',
           });
         }
-        
+
         // Check for password patterns
         if (/password\s*[:=]\s*["'][^"']{8,}["']/i.test(content)) {
           findings.push({
             type: 'secret',
             severity: 'high',
             file: path.relative(projectPath, file),
-            message: 'Potential hardcoded password detected'
+            message: 'Potential hardcoded password detected',
           });
         }
-        
+
         // Check for SQL injection patterns
         if (/query\s*\(.*\+.*\)/.test(content) || /exec\s*\(.*\+.*\)/.test(content)) {
           findings.push({
             type: 'injection',
             severity: 'high',
             file: path.relative(projectPath, file),
-            message: 'Potential SQL injection vulnerability'
+            message: 'Potential SQL injection vulnerability',
           });
         }
-        
       } catch {
         // Skip files that can't be read
       }
     }
-    
+
     // Count by severity
-    const critical = findings.filter(f => f.severity === 'critical').length;
-    const high = findings.filter(f => f.severity === 'high').length;
-    const medium = findings.filter(f => f.severity === 'medium').length;
-    
+    const critical = findings.filter((f) => f.severity === 'critical').length;
+    const high = findings.filter((f) => f.severity === 'high').length;
+    const medium = findings.filter((f) => f.severity === 'medium').length;
+
     const passed = critical === 0 && high <= QUALITY_GATES.security.maxHighVulns;
-    
+
     if (passed) {
       spinner.succeed(chalk.green(`Security scan passed (${findings.length} findings)`));
     } else {
       spinner.fail(chalk.red(`Security scan failed (${critical} critical, ${high} high)`));
     }
-    
+
     return {
       passed,
       findings,
-      summary: { critical, high, medium }
+      summary: { critical, high, medium },
     };
   } catch (error) {
     spinner.fail(chalk.red(`Security scan error: ${error.message}`));
     return {
       passed: false,
-      error: error.message
+      error: error.message,
     };
   }
 }
@@ -198,83 +199,82 @@ async function runSecurityScan(projectPath) {
 // Performance check
 async function checkPerformance(projectPath) {
   const spinner = ora('Checking performance...').start();
-  
+
   try {
     const checks = [];
-    
+
     // Check bundle size
     try {
       const buildDir = path.join(projectPath, '.next', 'static');
       const jsFiles = await getAllFiles(buildDir, ['.js']);
       let totalSize = 0;
-      
+
       for (const file of jsFiles) {
         const stats = await fs.stat(file);
         totalSize += stats.size;
       }
-      
+
       const bundleOk = totalSize < QUALITY_GATES.performance.maxBundleSize;
       checks.push({
         name: 'Bundle Size',
         passed: bundleOk,
         value: `${(totalSize / 1024).toFixed(2)}KB`,
-        limit: `${(QUALITY_GATES.performance.maxBundleSize / 1024).toFixed(0)}KB`
+        limit: `${(QUALITY_GATES.performance.maxBundleSize / 1024).toFixed(0)}KB`,
       });
     } catch {
       checks.push({
         name: 'Bundle Size',
         passed: null,
-        message: 'Build not found'
+        message: 'Build not found',
       });
     }
-    
+
     // Check for performance anti-patterns
     const srcFiles = await getAllFiles(path.join(projectPath, 'src'), ['.tsx', '.jsx']);
     let issues = 0;
-    
+
     for (const file of srcFiles.slice(0, 30)) {
       try {
         const content = await fs.readFile(file, 'utf-8');
-        
+
         // Check for useEffect without deps
         if (/useEffect\([^,]+\)/.test(content)) {
           issues++;
         }
-        
+
         // Check for inline function definitions in render
         if (/onClick=\{\(\)\s*=>/.test(content)) {
           issues++;
         }
-        
       } catch {
         // Skip
       }
     }
-    
+
     checks.push({
       name: 'Performance Anti-patterns',
       passed: issues < 10,
       value: issues,
-      limit: 10
+      limit: 10,
     });
-    
-    const passed = checks.every(c => c.passed !== false);
-    
+
+    const passed = checks.every((c) => c.passed !== false);
+
     if (passed) {
       spinner.succeed(chalk.green('Performance checks passed'));
     } else {
       spinner.fail(chalk.red('Performance issues found'));
     }
-    
+
     return {
       passed,
-      checks
+      checks,
     };
   } catch (error) {
     spinner.fail(chalk.red(`Performance check error: ${error.message}`));
     return {
       passed: false,
-      error: error.message
+      error: error.message,
     };
   }
 }
@@ -282,13 +282,17 @@ async function checkPerformance(projectPath) {
 // Code quality check
 async function checkCodeQuality(projectPath) {
   const spinner = ora('Checking code quality...').start();
-  
+
   try {
     const checks = [];
-    
+
     // Run ESLint
     try {
-      await runCommandStreaming('npx', ['eslint', '.', '--format', 'json', '--output-file', 'eslint-report.json'], projectPath);
+      await runCommandStreaming(
+        'npx',
+        ['eslint', '.', '--format', 'json', '--output-file', 'eslint-report.json'],
+        projectPath
+      );
 
       const report = await fs.readFile(path.join(projectPath, 'eslint-report.json'), 'utf-8');
       const errors = JSON.parse(report);
@@ -298,13 +302,13 @@ async function checkCodeQuality(projectPath) {
         name: 'ESLint Errors',
         passed: errorCount === 0,
         value: errorCount,
-        limit: 0
+        limit: 0,
       });
     } catch {
       checks.push({
         name: 'ESLint',
         passed: null,
-        message: 'Could not run ESLint'
+        message: 'Could not run ESLint',
       });
     }
 
@@ -317,30 +321,30 @@ async function checkCodeQuality(projectPath) {
         name: 'TypeScript',
         passed: true,
         value: 'No errors',
-        limit: '0 errors'
+        limit: '0 errors',
       });
     } catch {
       checks.push({
         name: 'TypeScript',
         passed: false,
         value: 'Errors found',
-        limit: '0 errors'
+        limit: '0 errors',
       });
     }
-    
+
     // Check code complexity (basic)
     const srcFiles = await getAllFiles(path.join(projectPath, 'src'), ['.ts', '.tsx']);
     let highComplexityFiles = 0;
-    
+
     for (const file of srcFiles.slice(0, 30)) {
       try {
         const content = await fs.readFile(file, 'utf-8');
         const lines = content.split('\n');
-        
+
         // Simple complexity check: count nested ifs
         let maxDepth = 0;
         let currentDepth = 0;
-        
+
         for (const line of lines) {
           if (/if\s*\(|else\s*if/.test(line)) {
             currentDepth++;
@@ -349,7 +353,7 @@ async function checkCodeQuality(projectPath) {
             currentDepth = Math.max(0, currentDepth - 1);
           }
         }
-        
+
         if (maxDepth > 4) {
           highComplexityFiles++;
         }
@@ -357,31 +361,31 @@ async function checkCodeQuality(projectPath) {
         // Skip
       }
     }
-    
+
     checks.push({
       name: 'Code Complexity',
       passed: highComplexityFiles < 5,
       value: `${highComplexityFiles} files`,
-      limit: '< 5 files'
+      limit: '< 5 files',
     });
-    
-    const passed = checks.every(c => c.passed !== false);
-    
+
+    const passed = checks.every((c) => c.passed !== false);
+
     if (passed) {
       spinner.succeed(chalk.green('Code quality checks passed'));
     } else {
       spinner.fail(chalk.red('Code quality issues found'));
     }
-    
+
     return {
       passed,
-      checks
+      checks,
     };
   } catch (error) {
     spinner.fail(chalk.red(`Code quality check error: ${error.message}`));
     return {
       passed: false,
-      error: error.message
+      error: error.message,
     };
   }
 }
@@ -389,23 +393,23 @@ async function checkCodeQuality(projectPath) {
 // Helper to get all files recursively
 async function getAllFiles(dir, extensions) {
   const files = [];
-  
+
   try {
     const entries = await fs.readdir(dir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      
+
       if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
-        files.push(...await getAllFiles(fullPath, extensions));
-      } else if (entry.isFile() && extensions.some(ext => entry.name.endsWith(ext))) {
+        files.push(...(await getAllFiles(fullPath, extensions)));
+      } else if (entry.isFile() && extensions.some((ext) => entry.name.endsWith(ext))) {
         files.push(fullPath);
       }
     }
   } catch {
     // Directory doesn't exist or can't be read
   }
-  
+
   return files;
 }
 
@@ -457,10 +461,10 @@ export function registerQualityCommand(program) {
         printInfo(chalk.blue('\n📊 Quality Report\n'));
 
         const categories = Object.keys(results);
-        const passed = categories.filter(c => results[c].passed).length;
+        const passed = categories.filter((c) => results[c].passed).length;
         const total = categories.length;
 
-        categories.forEach(category => {
+        categories.forEach((category) => {
           const result = results[category];
           const icon = result.passed ? chalk.green('✓') : chalk.red('✗');
           const color = result.passed ? chalk.green : chalk.red;
@@ -471,12 +475,21 @@ export function registerQualityCommand(program) {
             printInfo(`   Coverage: ${result.coverage}%`);
           }
           if (result.summary) {
-            printInfo(`   Findings: ${result.summary.critical} critical, ${result.summary.high} high, ${result.summary.medium} medium`);
+            printInfo(
+              `   Findings: ${result.summary.critical} critical, ${result.summary.high} high, ${result.summary.medium} medium`
+            );
           }
           if (result.checks) {
-            result.checks.forEach(check => {
-              const status = check.passed === null ? chalk.yellow('⚠') : check.passed ? chalk.green('✓') : chalk.red('✗');
-              printInfo(`   ${status} ${check.name}: ${check.value || check.message} ${check.limit ? `(limit: ${check.limit})` : ''}`);
+            result.checks.forEach((check) => {
+              const status =
+                check.passed === null
+                  ? chalk.yellow('⚠')
+                  : check.passed
+                    ? chalk.green('✓')
+                    : chalk.red('✗');
+              printInfo(
+                `   ${status} ${check.name}: ${check.value || check.message} ${check.limit ? `(limit: ${check.limit})` : ''}`
+              );
             });
           }
         });
@@ -493,15 +506,22 @@ export function registerQualityCommand(program) {
         // Generate report
         if (options.report) {
           const reportPath = path.join(projectPath, 'quality-report.json');
-          await fs.writeFile(reportPath, JSON.stringify({
-            timestamp: new Date().toISOString(),
-            results,
-            summary: {
-              total: categories.length,
-              passed,
-              failed: total - passed
-            }
-          }, null, 2));
+          await fs.writeFile(
+            reportPath,
+            JSON.stringify(
+              {
+                timestamp: new Date().toISOString(),
+                results,
+                summary: {
+                  total: categories.length,
+                  passed,
+                  failed: total - passed,
+                },
+              },
+              null,
+              2
+            )
+          );
           printInfo(chalk.blue(`\n📝 Report saved: ${reportPath}`));
         }
       } catch (error) {

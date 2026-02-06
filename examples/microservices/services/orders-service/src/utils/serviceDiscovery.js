@@ -5,7 +5,7 @@ const CONSUL_PORT = process.env.CONSUL_PORT || 8500;
 
 const registerService = async (serviceName, port) => {
   const serviceId = `${serviceName}-${process.env.HOSTNAME || 'local'}`;
-  
+
   const registration = {
     ID: serviceId,
     Name: serviceName,
@@ -14,15 +14,15 @@ const registerService = async (serviceName, port) => {
     Check: {
       HTTP: `http://localhost:${port}/health`,
       Interval: '10s',
-      Timeout: '5s'
-    }
+      Timeout: '5s',
+    },
   };
 
   try {
     const response = await fetch(`http://${CONSUL_HOST}:${CONSUL_PORT}/v1/agent/service/register`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(registration)
+      body: JSON.stringify(registration),
     });
 
     if (response.ok) {

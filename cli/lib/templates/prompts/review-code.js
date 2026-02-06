@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Prompt templates for ultra-dex review command
  * Reviews code against the implementation plan
@@ -44,8 +46,7 @@ export const USER_PROMPT_TEMPLATE = `Review this codebase against the implementa
 Analyze alignment and return the JSON report.`;
 
 export function generateReviewPrompt(plan, structure, files) {
-  return USER_PROMPT_TEMPLATE
-    .replace('{{PLAN}}', plan)
+  return USER_PROMPT_TEMPLATE.replace('{{PLAN}}', plan)
     .replace('{{STRUCTURE}}', structure)
     .replace('{{FILES}}', files);
 }

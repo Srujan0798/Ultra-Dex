@@ -26,12 +26,14 @@ Are you building a SaaS with structured data (users, products, orders)?
 ### PostgreSQL ⭐⭐⭐⭐⭐ (Recommended for Most SaaS)
 
 **When to Use:**
+
 - You have structured data with relationships (users → posts → comments)
 - You need ACID transactions (payments, inventory)
 - You want JSON flexibility + relational power
 - You're building a B2B SaaS, marketplace, or e-commerce platform
 
 **Pros:**
+
 - ✅ Best of both worlds: Relational + JSON support
 - ✅ Rock-solid reliability (ACID compliant)
 - ✅ Advanced features (full-text search, GIS, arrays)
@@ -40,16 +42,19 @@ Are you building a SaaS with structured data (users, products, orders)?
 - ✅ Easy to scale vertically (most SaaS don't need horizontal scaling)
 
 **Cons:**
+
 - ⚠️ Harder to scale horizontally (but 99% of SaaS won't hit this limit)
 - ⚠️ Slightly steeper learning curve than MySQL
 
 **Best Hosting:**
+
 - **Neon** (Serverless, free tier, auto-scaling) - Best for MVPs
 - **Supabase** (PostgreSQL + Auth + Storage) - All-in-one
 - **Railway** (Simple, affordable) - Good for production
 - **AWS RDS** (Enterprise-grade) - For scale
 
 **Example Schema (Prisma):**
+
 ```prisma
 model User {
   id        String   @id @default(uuid())
@@ -70,6 +75,7 @@ model Post {
 ```
 
 **When PostgreSQL Wins:**
+
 - E-commerce (orders, inventory, payments)
 - SaaS with multiple entities (users, teams, projects, tasks)
 - B2B platforms (complex permissions, multi-tenancy)
@@ -80,12 +86,14 @@ model Post {
 ### MongoDB ⭐⭐⭐ (Good for Specific Use Cases)
 
 **When to Use:**
+
 - You have highly variable/nested data structures
 - You're building a CMS, catalog, or product database
 - You need to iterate fast with changing schemas
 - You're storing logs, events, or analytics data
 
 **Pros:**
+
 - ✅ Schema flexibility (add fields without migrations)
 - ✅ Great for nested/hierarchical data
 - ✅ Fast reads for document-based queries
@@ -93,6 +101,7 @@ model Post {
 - ✅ Good for prototyping (no strict schema)
 
 **Cons:**
+
 - ❌ No ACID transactions across documents (until v4.0, but limited)
 - ❌ No foreign keys (you manage relationships in code)
 - ❌ Easy to create data inconsistencies
@@ -100,10 +109,12 @@ model Post {
 - ❌ Not ideal for financial/inventory systems
 
 **Best Hosting:**
+
 - **MongoDB Atlas** (Official, free tier)
 - **Railway** (Simplified deployment)
 
 **Example Schema (Mongoose):**
+
 ```typescript
 const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -113,14 +124,15 @@ const UserSchema = new mongoose.Schema({
     // Nested objects work naturally
     settings: {
       notifications: Boolean,
-      theme: String
-    }
+      theme: String,
+    },
   },
-  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }]
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
 });
 ```
 
 **When MongoDB Wins:**
+
 - Content management systems (CMS)
 - Product catalogs with varying attributes
 - Logging and analytics
@@ -131,22 +143,26 @@ const UserSchema = new mongoose.Schema({
 ### MySQL ⭐⭐⭐ (Solid Alternative to PostgreSQL)
 
 **When to Use:**
+
 - You're familiar with MySQL from previous projects
 - You need wide hosting support (shared hosting)
 - You're building a WordPress plugin or similar
 
 **Pros:**
+
 - ✅ Widely supported (every host has it)
 - ✅ Mature ecosystem
 - ✅ Good performance for read-heavy workloads
 - ✅ Easy to find developers familiar with it
 
 **Cons:**
+
 - ⚠️ Less advanced features than PostgreSQL
 - ⚠️ No native JSON support (added later, not as good)
 - ⚠️ Licensing concerns (Oracle ownership)
 
 **Best Hosting:**
+
 - **PlanetScale** (Serverless MySQL, great free tier)
 - **Railway** (Simple deployment)
 - **AWS RDS** (Production-grade)
@@ -157,17 +173,17 @@ const UserSchema = new mongoose.Schema({
 
 ## 2. Comparison Matrix
 
-| Feature | PostgreSQL | MongoDB | MySQL |
-|---------|-----------|---------|-------|
-| **Data Model** | Relational + JSON | Document (JSON) | Relational |
-| **Schema** | Strict (migrations) | Flexible | Strict (migrations) |
-| **Relationships** | Foreign keys, joins | Manual (refs) | Foreign keys, joins |
-| **Transactions** | Full ACID | Limited ACID | Full ACID |
-| **JSON Support** | Excellent | Native | Limited |
-| **Scaling** | Vertical (easy), Horizontal (hard) | Horizontal (easy) | Vertical (easy) |
-| **Use Case** | General SaaS | CMS, catalogs | General SaaS |
-| **Learning Curve** | Medium | Easy | Easy |
-| **Best For** | E-commerce, B2B SaaS | Content platforms | Legacy projects |
+| Feature            | PostgreSQL                         | MongoDB           | MySQL               |
+| ------------------ | ---------------------------------- | ----------------- | ------------------- |
+| **Data Model**     | Relational + JSON                  | Document (JSON)   | Relational          |
+| **Schema**         | Strict (migrations)                | Flexible          | Strict (migrations) |
+| **Relationships**  | Foreign keys, joins                | Manual (refs)     | Foreign keys, joins |
+| **Transactions**   | Full ACID                          | Limited ACID      | Full ACID           |
+| **JSON Support**   | Excellent                          | Native            | Limited             |
+| **Scaling**        | Vertical (easy), Horizontal (hard) | Horizontal (easy) | Vertical (easy)     |
+| **Use Case**       | General SaaS                       | CMS, catalogs     | General SaaS        |
+| **Learning Curve** | Medium                             | Easy              | Easy                |
+| **Best For**       | E-commerce, B2B SaaS               | Content platforms | Legacy projects     |
 
 ---
 
@@ -176,6 +192,7 @@ const UserSchema = new mongoose.Schema({
 ### Redis (In-Memory Cache)
 
 **When to Use:**
+
 - Session storage
 - Caching API responses
 - Real-time leaderboards
@@ -185,10 +202,12 @@ const UserSchema = new mongoose.Schema({
 **NOT a primary database** - Use with PostgreSQL/MongoDB
 
 **Best Hosting:**
+
 - **Upstash** (Serverless Redis, free tier)
 - **Redis Cloud** (Official)
 
 **Example Use:**
+
 ```typescript
 // Cache expensive queries
 const cachedUser = await redis.get(`user:${userId}`);
@@ -203,6 +222,7 @@ await redis.set(`user:${userId}`, JSON.stringify(user), 'EX', 3600); // 1 hour
 ### SQLite (Embedded Database)
 
 **When to Use:**
+
 - Prototyping locally
 - Desktop apps
 - Edge deployments (Cloudflare Workers)
@@ -218,11 +238,13 @@ await redis.set(`user:${userId}`, JSON.stringify(user), 'EX', 3600); // 1 hour
 ### Example 1: E-Commerce Store
 
 **Requirements:**
+
 - Products, orders, inventory
 - Payments (need transactions)
 - User accounts, shopping cart
 
 **Decision:** **PostgreSQL** ⭐
+
 - Need ACID transactions for payments
 - Relational data (products ← orders ← users)
 - Inventory requires consistency
@@ -234,11 +256,13 @@ await redis.set(`user:${userId}`, JSON.stringify(user), 'EX', 3600); // 1 hour
 ### Example 2: Content Management System
 
 **Requirements:**
+
 - Articles with varying fields (some have videos, some don't)
 - Fast iterations on content structure
 - No complex relationships
 
 **Decision:** **MongoDB** ⭐
+
 - Flexible schema for varying content types
 - Nested data (article → comments → replies)
 - No financial transactions
@@ -250,11 +274,13 @@ await redis.set(`user:${userId}`, JSON.stringify(user), 'EX', 3600); // 1 hour
 ### Example 3: SaaS Project Management Tool
 
 **Requirements:**
+
 - Users, teams, projects, tasks
 - Role-based permissions
 - Activity logs
 
 **Decision:** **PostgreSQL** ⭐
+
 - Multiple related entities (users ← teams ← projects ← tasks)
 - Need permissions (row-level security)
 - ACID compliance for consistency
@@ -266,11 +292,13 @@ await redis.set(`user:${userId}`, JSON.stringify(user), 'EX', 3600); // 1 hour
 ### Example 4: Analytics Dashboard
 
 **Requirements:**
+
 - Time-series data
 - Aggregate queries
 - Fast reads, infrequent writes
 
 **Decision:** **PostgreSQL + TimescaleDB** ⭐
+
 - Or ClickHouse for very large scale
 - Optimized for time-series queries
 
@@ -283,10 +311,12 @@ await redis.set(`user:${userId}`, JSON.stringify(user), 'EX', 3600); // 1 hour
 ### Starting with SQLite → PostgreSQL
 
 **Good for:**
+
 - Rapid prototyping
 - Local development
 
 **Migration:**
+
 ```bash
 # 1. Develop locally with SQLite
 DATABASE_URL="file:./dev.db"
@@ -305,12 +335,14 @@ npx prisma migrate deploy
 **Common scenario:** Started with MongoDB for flexibility, now need transactions.
 
 **Migration:**
+
 1. Design relational schema in PostgreSQL
 2. Write migration script to transform documents → rows
 3. Run both databases in parallel during transition
 4. Switch over when data is synced
 
 **Tools:**
+
 - Custom Node.js migration script
 - **Airbyte** (data sync tool)
 
@@ -325,6 +357,7 @@ npx prisma migrate deploy
 **File Storage:** **S3-compatible** (Cloudflare R2, AWS S3)
 
 **Why:**
+
 - PostgreSQL handles 99% of use cases
 - Scales to millions of users without issues
 - Great free tier options (Neon)
@@ -358,28 +391,29 @@ const prisma = new PrismaClient();
 
 ### Free Tiers (Perfect for MVPs)
 
-| Provider | Database | Storage | Limits | Best For |
-|----------|----------|---------|--------|----------|
-| **Neon** | PostgreSQL | 3 GB | Serverless, auto-pause | MVPs, side projects |
-| **Supabase** | PostgreSQL | 500 MB | Includes auth + storage | Full-stack apps |
-| **MongoDB Atlas** | MongoDB | 512 MB | Shared cluster | CMS, prototypes |
-| **PlanetScale** | MySQL | 5 GB | 1 billion reads/month | High-read apps |
-| **Upstash** | Redis | 10k commands/day | Serverless | Caching |
+| Provider          | Database   | Storage          | Limits                  | Best For            |
+| ----------------- | ---------- | ---------------- | ----------------------- | ------------------- |
+| **Neon**          | PostgreSQL | 3 GB             | Serverless, auto-pause  | MVPs, side projects |
+| **Supabase**      | PostgreSQL | 500 MB           | Includes auth + storage | Full-stack apps     |
+| **MongoDB Atlas** | MongoDB    | 512 MB           | Shared cluster          | CMS, prototypes     |
+| **PlanetScale**   | MySQL      | 5 GB             | 1 billion reads/month   | High-read apps      |
+| **Upstash**       | Redis      | 10k commands/day | Serverless              | Caching             |
 
 ### Paid Tiers (Production)
 
-| Provider | Cost | What You Get |
-|----------|------|--------------|
-| **Neon Scale** | $19/mo | 10 GB storage, branch deploys |
-| **Supabase Pro** | $25/mo | 8 GB storage + auth + edge functions |
-| **Railway** | ~$5-20/mo | Pay for usage, simple pricing |
-| **AWS RDS** | $15-100+/mo | Enterprise features |
+| Provider         | Cost        | What You Get                         |
+| ---------------- | ----------- | ------------------------------------ |
+| **Neon Scale**   | $19/mo      | 10 GB storage, branch deploys        |
+| **Supabase Pro** | $25/mo      | 8 GB storage + auth + edge functions |
+| **Railway**      | ~$5-20/mo   | Pay for usage, simple pricing        |
+| **AWS RDS**      | $15-100+/mo | Enterprise features                  |
 
 ---
 
 ## 8. Common Mistakes to Avoid
 
 ### ❌ Using MongoDB for Everything
+
 **Problem:** MongoDB is not a replacement for PostgreSQL. Lack of transactions causes data inconsistencies.
 
 **Solution:** Use PostgreSQL unless you have a specific reason for MongoDB (CMS, catalogs).
@@ -387,9 +421,11 @@ const prisma = new PrismaClient();
 ---
 
 ### ❌ Not Using Indexes
+
 **Problem:** Slow queries as data grows.
 
 **Solution:** Add indexes on frequently queried fields.
+
 ```prisma
 model User {
   email String @unique  // Automatic index
@@ -402,6 +438,7 @@ model User {
 ---
 
 ### ❌ Premature Horizontal Scaling
+
 **Problem:** Worrying about scaling before you have users.
 
 **Solution:** PostgreSQL on a good server handles millions of rows easily. Scale vertically first.
@@ -409,6 +446,7 @@ model User {
 ---
 
 ### ❌ Storing Files in Database
+
 **Problem:** Database bloat, slow queries.
 
 **Solution:** Use S3-compatible storage (Cloudflare R2, AWS S3). Store file URLs in database.
@@ -452,18 +490,24 @@ model Post {
 ```typescript
 import mongoose from 'mongoose';
 
-const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  name: String,
-  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }]
-}, { timestamps: true });
+const UserSchema = new mongoose.Schema(
+  {
+    email: { type: String, required: true, unique: true },
+    name: String,
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+  },
+  { timestamps: true }
+);
 
-const PostSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  content: String,
-  published: { type: Boolean, default: false },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-}, { timestamps: true });
+const PostSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    content: String,
+    published: { type: Boolean, default: false },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  },
+  { timestamps: true }
+);
 ```
 
 ---
@@ -473,6 +517,7 @@ const PostSchema = new mongoose.Schema({
 **If you're unsure, choose PostgreSQL.**
 
 **Reasons:**
+
 1. Handles 90% of SaaS use cases
 2. Great free tier (Neon, Supabase)
 3. Best tooling (Prisma, Drizzle ORM)
@@ -480,6 +525,7 @@ const PostSchema = new mongoose.Schema({
 5. Can always add MongoDB later if needed
 
 **Start simple:**
+
 ```bash
 # 1. Sign up for Neon.tech (free)
 # 2. Get connection string
@@ -497,6 +543,7 @@ npx prisma init
 ## Need Help Deciding?
 
 **Ask yourself:**
+
 1. Do I need transactions? → PostgreSQL
 2. Do I have varying schemas? → MongoDB
 3. Is this an MVP? → PostgreSQL (Neon free tier)
@@ -509,13 +556,15 @@ npx prisma init
 ## Related Guides
 
 **Architecture & Planning:**
+
 - [Architecture Patterns](./ARCHITECTURE-PATTERNS.md) - Choose the right architecture for your team size
 - [Project Orchestration](./PROJECT-ORCHESTRATION.md) - Multi-agent workflows for building features
 
 **Advanced Topics:**
+
 - [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Real-world examples (Stripe, emails, migrations)
 - [AI Model Selection](./AI-MODEL-SELECTION.md) - Choose the right AI for each task
 
 ---
 
-*Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer*
+_Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer_

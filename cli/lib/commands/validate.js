@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -87,7 +89,7 @@ export function registerValidateCommand(program) {
         const sections = ['idea', 'problem', 'feature', 'tech stack', 'tasks'];
         let sectionsFound = 0;
 
-        sections.forEach(section => {
+        sections.forEach((section) => {
           if (quickStart.toLowerCase().includes(section)) {
             sectionsFound++;
           }
@@ -95,24 +97,35 @@ export function registerValidateCommand(program) {
 
         if (sectionsFound >= 4) {
           passed++;
-          printSuccess(chalk.green(`  ✅ QUICK-START.md has ${sectionsFound}/${sections.length} key sections`));
+          printSuccess(
+            chalk.green(`  ✅ QUICK-START.md has ${sectionsFound}/${sections.length} key sections`)
+          );
         } else {
           failed++;
-          printError(chalk.red(`  ❌ QUICK-START.md missing key sections (${sectionsFound}/${sections.length})`));
+          printError(
+            chalk.red(
+              `  ❌ QUICK-START.md missing key sections (${sectionsFound}/${sections.length})`
+            )
+          );
         }
       } catch {
         printInfo(chalk.gray('  ⊘  Could not validate QUICK-START.md content'));
       }
 
       try {
-        const implPlan = await fs.readFile(path.join(projectDir, 'IMPLEMENTATION-PLAN.md'), 'utf-8');
+        const implPlan = await fs.readFile(
+          path.join(projectDir, 'IMPLEMENTATION-PLAN.md'),
+          'utf-8'
+        );
 
         if (implPlan.length > 500) {
           passed++;
           printSuccess(chalk.green('  ✅ IMPLEMENTATION-PLAN.md has substantial content'));
         } else {
           warnings.push('IMPLEMENTATION-PLAN.md needs more detail');
-          printWarning(chalk.yellow(`  ⚠️  IMPLEMENTATION-PLAN.md is sparse (${implPlan.length} chars)`));
+          printWarning(
+            chalk.yellow(`  ⚠️  IMPLEMENTATION-PLAN.md is sparse (${implPlan.length} chars)`)
+          );
         }
       } catch {
         printInfo(chalk.gray('  ⊘  Could not validate IMPLEMENTATION-PLAN.md content'));
@@ -125,10 +138,14 @@ export function registerValidateCommand(program) {
 
         if (scanResults.failed > 0) {
           failed += scanResults.failed;
-          printError(chalk.red(`  ❌ Code Scan Failed: ${scanResults.failed} critical issues found.`));
+          printError(
+            chalk.red(`  ❌ Code Scan Failed: ${scanResults.failed} critical issues found.`)
+          );
         } else {
           passed++;
-          printSuccess(chalk.green(`  ✅ Code Scan Passed (${scanResults.filesScanned} files scanned).`));
+          printSuccess(
+            chalk.green(`  ✅ Code Scan Passed (${scanResults.filesScanned} files scanned).`)
+          );
         }
 
         if (scanResults.warnings > 0) {
@@ -137,7 +154,7 @@ export function registerValidateCommand(program) {
 
         if (scanResults.details.length > 0) {
           printInfo(chalk.gray('\n  Scan Details:'));
-          scanResults.details.forEach(issue => {
+          scanResults.details.forEach((issue) => {
             const icon = issue.severity === 'error' || issue.severity === 'critical' ? '❌' : '⚠️';
             printInfo(`    ${icon} [${issue.ruleName}] ${issue.file}: ${issue.message}`);
           });
@@ -159,14 +176,14 @@ export function registerValidateCommand(program) {
         printWarning(chalk.bold.yellow('\n⚠️  VALIDATION INCOMPLETE\n'));
         printInfo(chalk.gray('Fix required files to meet Ultra-Dex standards.'));
         if (options.scan && failed > 0) {
-           printError(chalk.red('Code quality gates failed. Commit rejected (if in pre-commit).'));
+          printError(chalk.red('Code quality gates failed. Commit rejected (if in pre-commit).'));
         }
         process.exit(1);
       }
 
       if (warnings.length > 0) {
         printInfo(chalk.bold('\n💡 Recommendations:\n'));
-        warnings.slice(0, 3).forEach(w => {
+        warnings.slice(0, 3).forEach((w) => {
           printInfo(chalk.cyan(`  → Consider adding ${w}`));
         });
       }

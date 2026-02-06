@@ -1,72 +1,67 @@
-import Stripe from "stripe";
+import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16",
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
   typescript: true,
 });
 
 export const PLANS = [
   {
-    id: "free",
-    name: "Free",
-    description: "Perfect for trying out",
+    id: 'free',
+    name: 'Free',
+    description: 'Perfect for trying out',
     price: 0,
     credits: 50,
-    features: [
-      "50 AI credits/month",
-      "GPT-3.5 access",
-      "Basic chat history",
-      "Email support",
-    ],
+    features: ['50 AI credits/month', 'GPT-3.5 access', 'Basic chat history', 'Email support'],
     stripePriceId: null,
     popular: false,
   },
   {
-    id: "basic",
-    name: "Basic",
-    description: "For individuals and small projects",
+    id: 'basic',
+    name: 'Basic',
+    description: 'For individuals and small projects',
     price: 9,
     credits: 500,
     features: [
-      "500 AI credits/month",
-      "GPT-3.5 & GPT-4 access",
-      "Unlimited chat history",
-      "Priority support",
-      "Export conversations",
+      '500 AI credits/month',
+      'GPT-3.5 & GPT-4 access',
+      'Unlimited chat history',
+      'Priority support',
+      'Export conversations',
     ],
     stripePriceId: process.env.STRIPE_PRICE_ID_BASIC,
     popular: true,
   },
   {
-    id: "pro",
-    name: "Pro",
-    description: "For power users and teams",
+    id: 'pro',
+    name: 'Pro',
+    description: 'For power users and teams',
     price: 29,
     credits: 2000,
     features: [
-      "2,000 AI credits/month",
-      "All AI models included",
-      "Team collaboration",
-      "API access",
-      "Advanced analytics",
-      "24/7 priority support",
+      '2,000 AI credits/month',
+      'All AI models included',
+      'Team collaboration',
+      'API access',
+      'Advanced analytics',
+      '24/7 priority support',
     ],
     stripePriceId: process.env.STRIPE_PRICE_ID_PRO,
     popular: false,
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    description: "Custom solutions for organizations",
+    id: 'enterprise',
+    name: 'Enterprise',
+    description: 'Custom solutions for organizations',
     price: null,
     credits: null,
     features: [
-      "Unlimited credits",
-      "Custom AI models",
-      "Dedicated support",
-      "SSO & advanced security",
-      "Custom integrations",
-      "SLA guarantee",
+      'Unlimited credits',
+      'Custom AI models',
+      'Dedicated support',
+      'SSO & advanced security',
+      'Custom integrations',
+      'SLA guarantee',
     ],
     stripePriceId: process.env.STRIPE_PRICE_ID_ENTERPRISE,
     popular: false,
@@ -76,9 +71,9 @@ export const PLANS = [
 export type Plan = (typeof PLANS)[number];
 
 export const CREDIT_PACKAGES = [
-  { id: "credits-100", credits: 100, price: 5, stripePriceId: "" },
-  { id: "credits-500", credits: 500, price: 20, stripePriceId: "" },
-  { id: "credits-2000", credits: 2000, price: 60, stripePriceId: "" },
+  { id: 'credits-100', credits: 100, price: 5, stripePriceId: '' },
+  { id: 'credits-500', credits: 500, price: 20, stripePriceId: '' },
+  { id: 'credits-2000', credits: 2000, price: 60, stripePriceId: '' },
 ];
 
 export async function createCheckoutSession(
@@ -89,8 +84,8 @@ export async function createCheckoutSession(
 ) {
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
-    mode: "subscription",
-    payment_method_types: ["card"],
+    mode: 'subscription',
+    payment_method_types: ['card'],
     line_items: [
       {
         price: priceId,
@@ -107,10 +102,7 @@ export async function createCheckoutSession(
   return session;
 }
 
-export async function createCustomerPortalSession(
-  customerId: string,
-  returnUrl: string
-) {
+export async function createCustomerPortalSession(customerId: string, returnUrl: string) {
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -119,10 +111,7 @@ export async function createCustomerPortalSession(
   return session;
 }
 
-export async function createOrRetrieveCustomer(
-  email: string,
-  userId: string
-) {
+export async function createOrRetrieveCustomer(email: string, userId: string) {
   const existingCustomers = await stripe.customers.list({
     email,
     limit: 1,

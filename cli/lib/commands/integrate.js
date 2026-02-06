@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Integration Automation
@@ -38,8 +39,8 @@ export const getStripeSession = async (priceId: string, domainUrl: string) => {
     cancel_url: \`\${domainUrl}/cancel\`,
   });
 };
-`
-      }
+`,
+      },
     ],
     webhooks: [
       {
@@ -72,11 +73,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Webhook error' }, { status: 400 });
   }
 }
-`
-      }
-    ]
+`,
+      },
+    ],
   },
-  
+
   clerk: {
     name: 'Clerk Auth',
     packages: ['@clerk/nextjs'],
@@ -91,7 +92,7 @@ export default clerkMiddleware();
 export const config = {
   matcher: ['/((?!.+\\.[\\\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };
-`
+`,
       },
       {
         path: 'app/layout.tsx',
@@ -104,11 +105,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </ClerkProvider>
   );
 }
-`
-      }
-    ]
+`,
+      },
+    ],
   },
-  
+
   prisma: {
     name: 'Prisma ORM',
     packages: ['prisma', '@prisma/client'],
@@ -118,7 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       'db:generate': 'prisma generate',
       'db:migrate': 'prisma migrate dev',
       'db:deploy': 'prisma migrate deploy',
-      'db:studio': 'prisma studio'
+      'db:studio': 'prisma studio',
     },
     files: [
       {
@@ -139,7 +140,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-`
+`,
       },
       {
         path: 'lib/prisma.ts',
@@ -152,11 +153,11 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
-`
-      }
-    ]
+`,
+      },
+    ],
   },
-  
+
   resend: {
     name: 'Resend Email',
     packages: ['resend'],
@@ -176,11 +177,11 @@ export async function sendEmail(to: string, subject: string, html: string) {
     html,
   });
 }
-`
-      }
-    ]
+`,
+      },
+    ],
   },
-  
+
   uploadthing: {
     name: 'UploadThing',
     packages: ['uploadthing', '@uploadthing/react'],
@@ -200,7 +201,7 @@ export const ourFileRouter = {
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
-`
+`,
       },
       {
         path: 'app/api/uploadthing/route.ts',
@@ -210,11 +211,11 @@ import { ourFileRouter } from '@/lib/uploadthing';
 export const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
 });
-`
-      }
-    ]
+`,
+      },
+    ],
   },
-  
+
   posthog: {
     name: 'PostHog Analytics',
     packages: ['posthog-js'],
@@ -237,11 +238,11 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
 
   return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
 }
-`
-      }
-    ]
+`,
+      },
+    ],
   },
-  
+
   openai: {
     name: 'OpenAI',
     packages: ['openai'],
@@ -263,16 +264,18 @@ export async function generateCompletion(prompt: string) {
   
   return completion.choices[0].message.content;
 }
-`
-      }
-    ]
-  }
+`,
+      },
+    ],
+  },
 };
 
 // Install packages
 async function installPackages(packages, dev = false) {
-  const spinner = ora(dev ? 'Installing dev dependencies...' : 'Installing dependencies...').start();
-  
+  const spinner = ora(
+    dev ? 'Installing dev dependencies...' : 'Installing dependencies...'
+  ).start();
+
   try {
     const cmd = `npm install ${dev ? '--save-dev' : '--save'} ${packages.join(' ')}`;
     execSync(cmd, { stdio: 'pipe' });
@@ -297,9 +300,9 @@ async function createFiles(projectPath, files) {
 async function updateScripts(projectPath, scripts) {
   const pkgPath = path.join(projectPath, 'package.json');
   const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
-  
+
   pkg.scripts = { ...pkg.scripts, ...scripts };
-  
+
   await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 }
 
@@ -307,21 +310,21 @@ async function updateScripts(projectPath, scripts) {
 async function updateEnvExample(projectPath, envVars) {
   const envPath = path.join(projectPath, '.env.example');
   let content = '';
-  
+
   try {
     content = await fs.readFile(envPath, 'utf-8');
     content += '\n';
   } catch {
     // File doesn't exist yet
   }
-  
+
   content += `# Added by ultra-dex integrate\n`;
   for (const envVar of envVars) {
     if (!content.includes(envVar)) {
       content += `${envVar}=\n`;
     }
   }
-  
+
   await fs.writeFile(envPath, content);
 }
 
@@ -373,7 +376,7 @@ async function integrateService(serviceKey, projectPath) {
   printWarning(chalk.yellow('\n⚠️  Next Steps:'));
   printInfo(chalk.gray('  1. Add environment variables to .env'));
   if (integration.envVars) {
-    integration.envVars.forEach(env => {
+    integration.envVars.forEach((env) => {
       printInfo(chalk.gray(`     - ${env}`));
     });
   }
@@ -406,8 +409,12 @@ export function registerIntegrateCommand(program) {
 
           Object.entries(INTEGRATIONS).forEach(([key, integration]) => {
             process.stdout.write(`  ${chalk.cyan(key.padEnd(15))} ${integration.name}\n`);
-            process.stdout.write(`     ${chalk.gray('Packages:')} ${integration.packages.join(', ')}\n`);
-            process.stdout.write(`     ${chalk.gray('Env vars:')} ${integration.envVars.join(', ')}\n`);
+            process.stdout.write(
+              `     ${chalk.gray('Packages:')} ${integration.packages.join(', ')}\n`
+            );
+            process.stdout.write(
+              `     ${chalk.gray('Env vars:')} ${integration.envVars.join(', ')}\n`
+            );
             process.stdout.write('\n');
           });
 
@@ -422,7 +429,11 @@ export function registerIntegrateCommand(program) {
 
         if (!INTEGRATIONS[service]) {
           printError(chalk.red(`\n❌ Unknown integration: ${service}`));
-          printInfo(chalk.blue(`\nRun ${chalk.cyan('npx ultra-dex integrate --list')} to see available integrations`));
+          printInfo(
+            chalk.blue(
+              `\nRun ${chalk.cyan('npx ultra-dex integrate --list')} to see available integrations`
+            )
+          );
           process.exitCode = 1;
           process.exit(process.exitCode);
         }

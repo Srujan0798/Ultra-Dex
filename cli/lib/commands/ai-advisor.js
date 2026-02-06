@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { MODEL_COSTS } from '../advisor/model-costs.js';
@@ -13,8 +15,8 @@ export function registerAiAdvisorCommand(program) {
           type: 'list',
           name: 'budget',
           message: 'What is your budget preference?',
-          choices: ['highest quality', 'balanced', 'budget']
-        }
+          choices: ['highest quality', 'balanced', 'budget'],
+        },
       ]);
 
       let recommendation = MODEL_COSTS[0];
@@ -25,7 +27,9 @@ export function registerAiAdvisorCommand(program) {
       printInfo(chalk.gray(`Best for: ${recommendation.bestFor}`));
       printInfo(chalk.cyan('\nCost comparison:'));
       MODEL_COSTS.forEach((model) => {
-        printInfo(`- ${model.name}: $${model.input}/MTok in, $${model.output}/MTok out (${model.bestFor})`);
+        printInfo(
+          `- ${model.name}: $${model.input}/MTok in, $${model.output}/MTok out (${model.bestFor})`
+        );
       });
     });
 }

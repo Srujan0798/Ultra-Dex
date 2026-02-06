@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 // cli/lib/commands/watch.js
 import chalk from 'chalk';
 import chokidar from 'chokidar';
@@ -18,32 +20,36 @@ async function calculateAlignmentScore() {
  * Register the watch command with Commander
  */
 export function registerWatchCommand(program) {
-    const watchCmd = program
-      .command('watch')
-      .description('Auto-update state on file changes')
-      .option('--interval <ms>', 'Debounce interval in milliseconds (deprecated, use --debounce)', '500')
-      .option('--debounce <ms>', 'Debounce interval in milliseconds', '500')
-      .option('--ignore <globs>', 'Comma-separated glob patterns to ignore')
-      .option('--sync', 'Auto-sync CONTEXT.md with brain', false)
-      .action(async (options) => {
-          try {
-              await watchCommand(options);
-          } catch (error) {
-              await handleError(error, { command: 'watch', options });
-              process.exit(error.exitCode || 1);
-          }
-      });
+  const watchCmd = program
+    .command('watch')
+    .description('Auto-update state on file changes')
+    .option(
+      '--interval <ms>',
+      'Debounce interval in milliseconds (deprecated, use --debounce)',
+      '500'
+    )
+    .option('--debounce <ms>', 'Debounce interval in milliseconds', '500')
+    .option('--ignore <globs>', 'Comma-separated glob patterns to ignore')
+    .option('--sync', 'Auto-sync CONTEXT.md with brain', false)
+    .action(async (options) => {
+      try {
+        await watchCommand(options);
+      } catch (error) {
+        await handleError(error, { command: 'watch', options });
+        process.exit(error.exitCode || 1);
+      }
+    });
 
-    watchCmd._examples = [
-      { command: 'ultra-dex watch', description: 'Watch project and update state on changes' },
-      { command: 'ultra-dex watch --interval 1000', description: 'Use a 1s debounce interval' },
-      { command: 'ultra-dex watch --sync', description: 'Auto-sync CONTEXT.md on code changes' },
-    ];
+  watchCmd._examples = [
+    { command: 'ultra-dex watch', description: 'Watch project and update state on changes' },
+    { command: 'ultra-dex watch --interval 1000', description: 'Use a 1s debounce interval' },
+    { command: 'ultra-dex watch --sync', description: 'Auto-sync CONTEXT.md on code changes' },
+  ];
 }
 
 export async function watchCommand(options) {
   printInfo(chalk.cyan.bold('\n👁️  Ultra-Dex Watch Mode v3.1 (Auto-Sync Edition)\n'));
-  
+
   const debounce = options.debounce ?? options.interval ?? '500';
   const interval = parseInt(debounce, 10);
   if (Number.isNaN(interval) || interval < 50) {
@@ -57,7 +63,7 @@ export async function watchCommand(options) {
   }
 
   const watchPaths = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', 'src', 'app', 'lib'];
-  const validPaths = watchPaths.filter(p => existsSync(join(process.cwd(), p)));
+  const validPaths = watchPaths.filter((p) => existsSync(join(process.cwd(), p)));
 
   if (validPaths.length === 0) {
     printWarning('No watchable paths found. Ensure CONTEXT.md or src/app/lib exists.');
@@ -73,10 +79,13 @@ export async function watchCommand(options) {
     '**/build/**',
     '**/.ultra-dex/**',
     '**/.next/**',
-    '**/coverage/**'
+    '**/coverage/**',
   ];
   const extraIgnores = options.ignore
-    ? options.ignore.split(',').map(p => p.trim()).filter(Boolean)
+    ? options.ignore
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean)
     : [];
   const ignorePatterns = [...defaultIgnores, ...extraIgnores];
 
@@ -88,7 +97,7 @@ export async function watchCommand(options) {
     const watcher = chokidar.watch(validPaths, {
       ignored: ignorePatterns,
       ignoreInitial: true,
-      persistent: true
+      persistent: true,
     });
 
     const handleChange = async (filePath) => {
@@ -104,7 +113,11 @@ export async function watchCommand(options) {
           const syncResult = await syncContextWithDiff(process.cwd(), relativePath);
           printSuccess('   ✅ CONTEXT.md synced');
           if (syncResult?.summary) {
-            printInfo(chalk.gray(`   📊 Files: ${syncResult.summary.fileCount} | App: ${syncResult.summary.appCount} | API: ${syncResult.summary.apiCount}`));
+            printInfo(
+              chalk.gray(
+                `   📊 Files: ${syncResult.summary.fileCount} | App: ${syncResult.summary.appCount} | API: ${syncResult.summary.apiCount}`
+              )
+            );
           }
         } catch (e) {
           printWarning('   ⚠️  Auto-sync skipped or failed');
@@ -113,7 +126,12 @@ export async function watchCommand(options) {
 
       const newScore = await calculateAlignmentScore();
       const scoreDiff = newScore - lastScore;
-      const diffIndicator = scoreDiff > 0 ? chalk.green(`↑ +${scoreDiff}`) : scoreDiff < 0 ? chalk.red(`↓ ${scoreDiff}`) : chalk.gray('→ 0');
+      const diffIndicator =
+        scoreDiff > 0
+          ? chalk.green(`↑ +${scoreDiff}`)
+          : scoreDiff < 0
+            ? chalk.red(`↓ ${scoreDiff}`)
+            : chalk.gray('→ 0');
 
       lastScore = newScore;
       const scoreColor = newScore >= 80 ? chalk.green : newScore >= 50 ? chalk.yellow : chalk.red;

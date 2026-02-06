@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { renderGradient } from '../ui/gradients.js';
@@ -7,7 +9,7 @@ export const doomsdayTheme = {
   primary: '#dc2626',
   secondary: '#7c3aed',
   accent: '#f59e0b',
-  message: 'The Multiverse of Code has a new defender.'
+  message: 'The Multiverse of Code has a new defender.',
 };
 
 export function renderDoomsdayBanner() {
@@ -41,7 +43,7 @@ export function showHelp() {
     '  serve    Open the Multiverse Portal',
     '  cloud    Deploy via provider wrappers',
     '',
-    chalk.gray(doomsdayTheme.message)
+    chalk.gray(doomsdayTheme.message),
   ].join('\n');
 
   console.log(
@@ -49,7 +51,7 @@ export function showHelp() {
       padding: 1,
       margin: 1,
       borderStyle: 'double',
-      borderColor: 'red'
+      borderColor: 'red',
     })
   );
 }
@@ -69,5 +71,5 @@ export default {
   doomsdayTheme,
   renderDoomsdayBanner,
   showHelp,
-  showSwarmAssemble
+  showSwarmAssemble,
 };

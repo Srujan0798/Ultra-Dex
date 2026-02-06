@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { getStatistics } from '../utils/profiler.js';
@@ -5,7 +7,7 @@ import { getStatistics } from '../utils/profiler.js';
 const DEFAULT_BUDGETS = {
   'file-scan': 1000,
   'graph-build': 3000,
-  'api-call': 5000
+  'api-call': 5000,
 };
 
 const BUDGET_PATH = path.join(process.cwd(), '.ultra-dex', 'perf-budgets.json');

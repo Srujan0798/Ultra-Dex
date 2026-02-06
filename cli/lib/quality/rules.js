@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Quality gate rules
  */
@@ -11,9 +13,9 @@ const DEFAULT_RULES = {
     alignment: { threshold: 80, severity: 'error' },
     'test-coverage': { threshold: 70, severity: 'warning' },
     'lint-clean': { threshold: 0, severity: 'error' },
-    'security-critical': { threshold: 0, severity: 'error' }
+    'security-critical': { threshold: 0, severity: 'error' },
   },
-  ignore: ['docs/**', '*.test.js']
+  ignore: ['docs/**', '*.test.js'],
 };
 
 export async function loadQualityRules(projectDir = process.cwd()) {
@@ -28,5 +30,5 @@ export async function loadQualityRules(projectDir = process.cwd()) {
 
 export default {
   loadQualityRules,
-  DEFAULT_RULES
+  DEFAULT_RULES,
 };

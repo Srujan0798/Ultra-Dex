@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,7 +14,7 @@ const DOMAIN_CONFIG = {
     businessLogic: ['Ensure PHI is encrypted', 'Track consent', 'Restrict access by role'],
     constraints: ['No PHI in logs', 'Minimum necessary access'],
     edgeCases: ['Emergency access flows', 'Consent revocation'],
-    codePatterns: ['Use field-level encryption', 'Redact sensitive fields']
+    codePatterns: ['Use field-level encryption', 'Redact sensitive fields'],
   },
   fintech: {
     agentName: '@PaymentLogic',
@@ -20,7 +22,7 @@ const DOMAIN_CONFIG = {
     businessLogic: ['Idempotent transactions', 'Risk scoring'],
     constraints: ['PCI-DSS compliance', 'Immutable audit trail'],
     edgeCases: ['Chargebacks', 'Partial refunds'],
-    codePatterns: ['Use idempotency keys', 'Double-entry ledger']
+    codePatterns: ['Use idempotency keys', 'Double-entry ledger'],
   },
   ecommerce: {
     agentName: '@CatalogManager',
@@ -28,7 +30,7 @@ const DOMAIN_CONFIG = {
     businessLogic: ['Stock reservation', 'Discount stacking rules'],
     constraints: ['Prevent overselling', 'Enforce minimum price'],
     edgeCases: ['Backorders', 'Flash sale throttling'],
-    codePatterns: ['Inventory locking', 'Price rule engine']
+    codePatterns: ['Inventory locking', 'Price rule engine'],
   },
   booking: {
     agentName: '@BookingEngine',
@@ -36,7 +38,7 @@ const DOMAIN_CONFIG = {
     businessLogic: ['Hold slots', 'Buffer times'],
     constraints: ['24h notice', '2h max duration'],
     edgeCases: ['Overlapping bookings', 'Reschedules'],
-    codePatterns: ['Transactional booking', 'Optimistic concurrency']
+    codePatterns: ['Transactional booking', 'Optimistic concurrency'],
   },
   legal: {
     agentName: '@LegalCompliance',
@@ -44,18 +46,18 @@ const DOMAIN_CONFIG = {
     businessLogic: ['Approval workflow', 'Versioned clauses'],
     constraints: ['No unapproved templates', 'Immutable history'],
     edgeCases: ['Amendments', 'Jurisdiction differences'],
-    codePatterns: ['Template registry', 'Clause diffing']
-  }
+    codePatterns: ['Template registry', 'Clause diffing'],
+  },
 };
 
 function fillTemplate(template, data) {
   return template
     .replace('{{AGENT_NAME}}', data.agentName)
-    .replace('{{RESPONSIBILITIES}}', data.responsibilities.map(r => `- ${r}`).join('\n'))
-    .replace('{{BUSINESS_LOGIC}}', data.businessLogic.map(r => `- ${r}`).join('\n'))
-    .replace('{{CONSTRAINTS}}', data.constraints.map(r => `- ${r}`).join('\n'))
-    .replace('{{EDGE_CASES}}', data.edgeCases.map(r => `- ${r}`).join('\n'))
-    .replace('{{CODE_PATTERNS}}', data.codePatterns.map(r => `- ${r}`).join('\n'));
+    .replace('{{RESPONSIBILITIES}}', data.responsibilities.map((r) => `- ${r}`).join('\n'))
+    .replace('{{BUSINESS_LOGIC}}', data.businessLogic.map((r) => `- ${r}`).join('\n'))
+    .replace('{{CONSTRAINTS}}', data.constraints.map((r) => `- ${r}`).join('\n'))
+    .replace('{{EDGE_CASES}}', data.edgeCases.map((r) => `- ${r}`).join('\n'))
+    .replace('{{CODE_PATTERNS}}', data.codePatterns.map((r) => `- ${r}`).join('\n'));
 }
 
 export async function generateDomainAgent(domain) {

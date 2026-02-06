@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * MCP Host Mode
  * Connects to external MCP servers and exposes a unified tool registry.
@@ -14,7 +16,10 @@ const DEFAULT_HOST_CONFIG = '.ultra-dex/mcp-host.json';
 async function loadHostConfig() {
   const envServers = process.env.ULTRA_DEX_MCP_SERVERS;
   if (envServers) {
-    return envServers.split(',').map(s => s.trim()).filter(Boolean);
+    return envServers
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
 
   try {
@@ -64,28 +69,29 @@ export async function initializeMcpHost(options = {}) {
 }
 
 export function registerHostTools(server) {
-  server.tool(
-    'mcp_list_servers',
-    'List available MCP servers and their status',
-    {},
-    async () => {
-      return {
-        content: [{
+  server.tool('mcp_list_servers', 'List available MCP servers and their status', {}, async () => {
+    return {
+      content: [
+        {
           type: 'text',
-          text: JSON.stringify({
-            available: listAvailableServers(),
-            connected: mcpHub.getStatus()
-          }, null, 2)
-        }]
-      };
-    }
-  );
+          text: JSON.stringify(
+            {
+              available: listAvailableServers(),
+              connected: mcpHub.getStatus(),
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  });
 
   server.tool(
     'mcp_connect',
     'Connect to an MCP server by name',
     {
-      server: z.string().describe('Server name (e.g., github, filesystem)')
+      server: z.string().describe('Server name (e.g., github, filesystem)'),
     },
     async ({ server: serverName }) => {
       try {
@@ -102,7 +108,7 @@ export function registerHostTools(server) {
     'mcp_disconnect',
     'Disconnect from an MCP server',
     {
-      server: z.string().describe('Server name to disconnect')
+      server: z.string().describe('Server name to disconnect'),
     },
     async ({ server: serverName }) => {
       await mcpHub.disconnect(serverName);
@@ -111,17 +117,12 @@ export function registerHostTools(server) {
     }
   );
 
-  server.tool(
-    'mcp_list_tools',
-    'List all tools across connected MCP servers',
-    {},
-    async () => {
-      const tools = mcpHub.listAllTools();
-      return {
-        content: [{ type: 'text', text: JSON.stringify(tools, null, 2) }]
-      };
-    }
-  );
+  server.tool('mcp_list_tools', 'List all tools across connected MCP servers', {}, async () => {
+    const tools = mcpHub.listAllTools();
+    return {
+      content: [{ type: 'text', text: JSON.stringify(tools, null, 2) }],
+    };
+  });
 
   server.tool(
     'mcp_call_tool',
@@ -129,13 +130,13 @@ export function registerHostTools(server) {
     {
       server: z.string().describe('Server name'),
       tool: z.string().describe('Tool name'),
-      arguments: z.record(z.any()).optional().describe('Tool arguments')
+      arguments: z.record(z.any()).optional().describe('Tool arguments'),
     },
     async ({ server: serverName, tool, arguments: args }) => {
       try {
         const result = await mcpHub.callTool(serverName, tool, args || {});
         return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
         };
       } catch (error) {
         return { content: [{ type: 'text', text: `Tool call failed: ${error.message}` }] };
@@ -150,7 +151,7 @@ export function registerHostTools(server) {
     async () => {
       const resources = mcpHub.listAllResources();
       return {
-        content: [{ type: 'text', text: JSON.stringify(resources, null, 2) }]
+        content: [{ type: 'text', text: JSON.stringify(resources, null, 2) }],
       };
     }
   );
@@ -160,13 +161,13 @@ export function registerHostTools(server) {
     'Read a resource from a connected MCP server',
     {
       server: z.string().describe('Server name'),
-      uri: z.string().describe('Resource URI')
+      uri: z.string().describe('Resource URI'),
     },
     async ({ server: serverName, uri }) => {
       try {
         const result = await mcpHub.readResource(serverName, uri);
         return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
         };
       } catch (error) {
         return { content: [{ type: 'text', text: `Resource read failed: ${error.message}` }] };
@@ -176,4 +177,3 @@ export function registerHostTools(server) {
 }
 
 export { mcpHub };
-

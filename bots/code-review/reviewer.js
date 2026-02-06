@@ -6,7 +6,7 @@ export async function reviewPullRequest({ provider, payload }) {
   const metadata = {
     provider,
     repo: payload.repository?.full_name || payload.project?.path_with_namespace || 'unknown',
-    pr: payload.pull_request?.number || payload.object_attributes?.iid || 'n/a'
+    pr: payload.pull_request?.number || payload.object_attributes?.iid || 'n/a',
   };
 
   const diffText = payload.pull_request?.body || payload.object_attributes?.description || '';

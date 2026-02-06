@@ -44,7 +44,7 @@ describe('Streaming Providers - getStreamingProviders', () => {
   test('should only return string provider names', () => {
     const providers = getStreamingProviders();
 
-    providers.forEach(provider => {
+    providers.forEach((provider) => {
       assert.strictEqual(typeof provider, 'string');
       assert.ok(provider.length > 0);
     });
@@ -62,7 +62,7 @@ describe('Streaming Providers - Provider Configuration', () => {
   test('supported providers should have lowercase names', () => {
     const providers = getStreamingProviders();
 
-    providers.forEach(provider => {
+    providers.forEach((provider) => {
       assert.strictEqual(provider, provider.toLowerCase());
     });
   });

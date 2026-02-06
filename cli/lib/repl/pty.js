@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Interactive PTY Bridge for Shell Operations
  * Enables vim, git rebase, and other interactive shell tools within the AI orchestration
@@ -18,7 +20,7 @@ class PTYBridge extends EventEmitter {
       rows: options.rows || 30,
       cwd: options.cwd || process.cwd(),
       env: { ...process.env, ...options.env },
-      shell: options.shell || (os.platform() === 'win32' ? 'powershell.exe' : 'bash')
+      shell: options.shell || (os.platform() === 'win32' ? 'powershell.exe' : 'bash'),
     };
     this.terminal = null;
     this.isActive = false;
@@ -36,12 +38,12 @@ class PTYBridge extends EventEmitter {
         cols: this.options.cols,
         rows: this.options.rows,
         cwd: this.options.cwd,
-        env: this.options.env
+        env: this.options.env,
       });
 
       this.setupEventHandlers();
       this.isActive = true;
-      
+
       printSuccess('PTY Terminal initialized successfully');
       return true;
     } catch (error) {
@@ -96,7 +98,7 @@ class PTYBridge extends EventEmitter {
       let output = '';
       const dataHandler = (data) => {
         output += data;
-        
+
         // Check for command completion indicators
         if (this.isCommandComplete(output, command)) {
           clearTimeout(timeoutId);
@@ -129,7 +131,7 @@ class PTYBridge extends EventEmitter {
     }
 
     printInfo(`Starting interactive session: ${command}`);
-    
+
     // Emit event to notify AI agents about the interactive session
     this.emit('interactive-session-start', { command, context: aiContext });
 
@@ -146,30 +148,31 @@ class PTYBridge extends EventEmitter {
    */
   setupAIFeedback(context) {
     let sessionOutput = '';
-    
+
     const dataHandler = (data) => {
       sessionOutput += data;
-      
+
       // Periodically send updates to AI
-      if (sessionOutput.length % 100 === 0) { // Every 100 characters
+      if (sessionOutput.length % 100 === 0) {
+        // Every 100 characters
         this.aiCallback({
           type: 'interactive-update',
           command: context.command,
           output: sessionOutput,
-          context
+          context,
         });
       }
     };
 
     this.terminal.on('data', dataHandler);
-    
+
     // Clean up when session ends
     this.terminal.once('exit', () => {
       this.terminal.off('data', dataHandler);
       this.emit('interactive-session-end', {
         command: context.command,
         output: sessionOutput,
-        context
+        context,
       });
     });
   }
@@ -207,7 +210,7 @@ class PTYBridge extends EventEmitter {
       rows: this.options.rows,
       cwd: this.options.cwd,
       shell: this.options.shell,
-      commandHistory: this.commandHistory.slice(-10) // Last 10 commands
+      commandHistory: this.commandHistory.slice(-10), // Last 10 commands
     };
   }
 
@@ -255,7 +258,7 @@ export async function createPTYBridge(options = {}) {
  */
 export async function executeInteractiveCommand(command, aiContext = {}, aiCallback = null) {
   const bridge = await createPTYBridge();
-  
+
   if (aiCallback) {
     bridge.setAICallback(aiCallback);
   }
@@ -263,14 +266,14 @@ export async function executeInteractiveCommand(command, aiContext = {}, aiCallb
   try {
     if (isInteractiveCommand(command)) {
       await bridge.startInteractiveSession(command, aiContext);
-      
+
       // Wait for the session to complete
       return await new Promise((resolve) => {
         const exitHandler = () => {
           bridge.off('interactive-session-end', exitHandler);
           resolve(bridge.getInfo());
         };
-        
+
         bridge.on('interactive-session-end', exitHandler);
       });
     } else {
@@ -286,12 +289,27 @@ export async function executeInteractiveCommand(command, aiContext = {}, aiCallb
  */
 function isInteractiveCommand(command) {
   const interactiveCommands = [
-    'vim', 'nvim', 'nano', 'emacs', 'less', 'more', 'man',
-    'git rebase', 'git commit', 'git merge', 'git add -p',
-    'ssh', 'telnet', 'ftp', 'top', 'htop', 'mc', 'dialog'
+    'vim',
+    'nvim',
+    'nano',
+    'emacs',
+    'less',
+    'more',
+    'man',
+    'git rebase',
+    'git commit',
+    'git merge',
+    'git add -p',
+    'ssh',
+    'telnet',
+    'ftp',
+    'top',
+    'htop',
+    'mc',
+    'dialog',
   ];
-  
-  return interactiveCommands.some(cmd => command.includes(cmd));
+
+  return interactiveCommands.some((cmd) => command.includes(cmd));
 }
 
 export default PTYBridge;

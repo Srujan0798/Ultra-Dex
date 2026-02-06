@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Model benchmark registry
  */
@@ -26,7 +28,7 @@ export async function recordBenchmark(record) {
 }
 
 export function selectBestModel(records, taskType) {
-  const filtered = records.filter(r => r.taskType === taskType);
+  const filtered = records.filter((r) => r.taskType === taskType);
   if (!filtered.length) return null;
   filtered.sort((a, b) => (b.qualityScore || 0) - (a.qualityScore || 0));
   return filtered[0];
@@ -35,5 +37,5 @@ export function selectBestModel(records, taskType) {
 export default {
   loadBenchmarks,
   recordBenchmark,
-  selectBestModel
+  selectBestModel,
 };

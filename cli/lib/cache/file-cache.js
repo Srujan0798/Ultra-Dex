@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export class FileCache {
   constructor(ttl = 30000) {
     this.cache = new Map();
@@ -6,7 +8,7 @@ export class FileCache {
 
   async get(key, fetchFn) {
     const cached = this.cache.get(key);
-    if (cached && (Date.now() - cached.time) < this.ttl) {
+    if (cached && Date.now() - cached.time < this.ttl) {
       return cached.value;
     }
     const value = await fetchFn();

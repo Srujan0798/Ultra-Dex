@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { AutonomousPipeline } from './pipeline.js';
 
 export class AutonomousAgent {

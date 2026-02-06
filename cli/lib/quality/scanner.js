@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -15,7 +17,7 @@ const RULES = [
       if (!isApi) return true;
       return /import.*zod|require\(['"]zod['"]\)/.test(content);
     },
-    message: 'API files must import "zod" for validation.'
+    message: 'API files must import "zod" for validation.',
   },
   {
     id: 'no-explicit-any',
@@ -26,7 +28,7 @@ const RULES = [
     check: (content) => {
       return !/:\s*any\b|<\s*any\s*>/.test(content);
     },
-    message: 'Found explicit "any" type. Use unknown or a specific type.'
+    message: 'Found explicit "any" type. Use unknown or a specific type.',
   },
   {
     id: 'console-log-in-api',
@@ -37,7 +39,7 @@ const RULES = [
     check: (content) => {
       return !/console\.log\(/.test(content);
     },
-    message: 'Found console.log in API. Use a proper logger or console.error/warn.'
+    message: 'Found console.log in API. Use a proper logger or console.error/warn.',
   },
   {
     id: 'secret-leak',
@@ -53,7 +55,7 @@ const RULES = [
       const pattern = new RegExp(`${p1}|${p2}|${p3}|${p4}`);
       return !pattern.test(content);
     },
-    message: 'Potential secret key detected!'
+    message: 'Potential secret key detected!',
   },
 
   // --- NEW RULES (BETA POLISH) ---
@@ -66,7 +68,7 @@ const RULES = [
     severity: 'critical',
     pattern: /\.gitignore$/,
     check: (content) => /\.env/.test(content),
-    message: '.gitignore must exclude .env files'
+    message: '.gitignore must exclude .env files',
   },
   {
     id: 'gitignore-modules',
@@ -75,7 +77,7 @@ const RULES = [
     severity: 'critical',
     pattern: /\.gitignore$/,
     check: (content) => /node_modules/.test(content),
-    message: '.gitignore must exclude node_modules'
+    message: '.gitignore must exclude node_modules',
   },
 
   // 2. Package.json Metadata
@@ -86,7 +88,7 @@ const RULES = [
     severity: 'warning',
     pattern: /package\.json$/,
     check: (content) => /"description":\s*".+"/.test(content),
-    message: 'package.json missing description'
+    message: 'package.json missing description',
   },
   {
     id: 'pkg-license',
@@ -95,7 +97,7 @@ const RULES = [
     severity: 'warning',
     pattern: /package\.json$/,
     check: (content) => /"license":\s*".+"/.test(content),
-    message: 'package.json missing license'
+    message: 'package.json missing license',
   },
 
   // 3. Code Hygiene
@@ -106,7 +108,7 @@ const RULES = [
     severity: 'info',
     pattern: /\.(js|ts|tsx|jsx|py|rs|go)$/,
     check: (content) => !/\/\/\s*TODO:/.test(content),
-    message: 'Found TODO comment'
+    message: 'Found TODO comment',
   },
   {
     id: 'fixme-comments',
@@ -115,7 +117,7 @@ const RULES = [
     severity: 'warning',
     pattern: /\.(js|ts|tsx|jsx|py|rs|go)$/,
     check: (content) => !/\/\/\s*FIXME:/.test(content),
-    message: 'Found FIXME comment'
+    message: 'Found FIXME comment',
   },
   {
     id: 'empty-catch',
@@ -124,7 +126,7 @@ const RULES = [
     severity: 'warning',
     pattern: /\.(js|ts|tsx|jsx)$/,
     check: (content) => !/catch\s*\(\w*\)\s*\{\s*\}/.test(content),
-    message: 'Empty catch block found'
+    message: 'Empty catch block found',
   },
 
   // 4. Security & Dangerous Patterns
@@ -135,10 +137,10 @@ const RULES = [
     severity: 'critical',
     pattern: /\.(js|ts|tsx|jsx)$/,
     check: (content) => {
-        const pattern = String.fromCharCode(101, 118, 97, 108, 40); // eval(
-        return !content.includes(pattern);
+      const pattern = String.fromCharCode(101, 118, 97, 108, 40); // eval(
+      return !content.includes(pattern);
     },
-    message: 'Dangerous eval() usage detected'
+    message: 'Dangerous eval() usage detected',
   },
   {
     id: 'hardcoded-ip',
@@ -147,7 +149,7 @@ const RULES = [
     severity: 'warning',
     pattern: /\.(js|ts|tsx|jsx|json|yaml)$/,
     check: (content) => !/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/.test(content),
-    message: 'Potential hardcoded IP address found'
+    message: 'Potential hardcoded IP address found',
   },
 
   // 5. Frontend / React
@@ -158,7 +160,7 @@ const RULES = [
     severity: 'error',
     pattern: /\.(tsx|jsx)$/,
     check: (content) => !/class="[^"]+"/.test(content), // Simple check, might have false positives in string literals
-    message: 'Found "class" attribute in JSX. Use "className".'
+    message: 'Found "class" attribute in JSX. Use "className".',
   },
   {
     id: 'react-danger-html',
@@ -167,7 +169,7 @@ const RULES = [
     severity: 'warning',
     pattern: /\.(tsx|jsx)$/,
     check: (content) => !/dangerouslySetInnerHTML/.test(content),
-    message: 'Usage of dangerouslySetInnerHTML detected'
+    message: 'Usage of dangerouslySetInnerHTML detected',
   },
   {
     id: 'frontend-alert',
@@ -176,10 +178,10 @@ const RULES = [
     severity: 'warning',
     pattern: /\.(tsx|jsx|js|ts)$/,
     check: (content) => {
-        const pattern = String.fromCharCode(97, 108, 101, 114, 116, 40); // alert(
-        return !content.includes(pattern);
+      const pattern = String.fromCharCode(97, 108, 101, 114, 116, 40); // alert(
+      return !content.includes(pattern);
     },
-    message: 'Found alert(). Use a proper UI notification.'
+    message: 'Found alert(). Use a proper UI notification.',
   },
   {
     id: 'img-alt-text',
@@ -188,7 +190,7 @@ const RULES = [
     severity: 'warning',
     pattern: /\.(tsx|jsx)$/,
     check: (content) => !/<img(?!.*alt=).*>/.test(content),
-    message: 'Image tag missing alt attribute'
+    message: 'Image tag missing alt attribute',
   },
 
   // 6. Backend / Database
@@ -199,12 +201,12 @@ const RULES = [
     severity: 'critical',
     pattern: /\.(ts|js)$/,
     check: (content) => {
-        const p1 = 'qu' + 'ery(';
-        const p2 = '`' + '.*?' + '\\${';
-        const regex = new RegExp(p1 + p2, 'g');
-        return !regex.test(content);
+      const p1 = 'qu' + 'ery(';
+      const p2 = '`' + '.*?' + '\\${';
+      const regex = new RegExp(p1 + p2, 'g');
+      return !regex.test(content);
     },
-    message: 'Potential SQL injection risk (template literal in query)'
+    message: 'Potential SQL injection risk (template literal in query)',
   },
   {
     id: 'process-exit',
@@ -213,7 +215,7 @@ const RULES = [
     severity: 'warning',
     pattern: /src\/.*\.(ts|js)$/, // Only check source code, not scripts
     check: (content) => !/process\.exit\(/.test(content),
-    message: 'Found process.exit(). Throw error instead.'
+    message: 'Found process.exit(). Throw error instead.',
   },
 
   // 7. Advanced Standards
@@ -224,7 +226,7 @@ const RULES = [
     severity: 'info',
     pattern: /\.(ts|js|tsx|jsx)$/,
     check: (content) => content.split('\n').length < 1000,
-    message: 'File is too large (>1000 lines). Consider refactoring.'
+    message: 'File is too large (>1000 lines). Consider refactoring.',
   },
   {
     id: 'hardcoded-port',
@@ -233,7 +235,7 @@ const RULES = [
     severity: 'warning',
     pattern: /\.(ts|js|json)$/,
     check: (content) => !/port[:\s]+(3000|8080|8000|5432|6379)\b/.test(content),
-    message: 'Potential hardcoded port detected.'
+    message: 'Potential hardcoded port detected.',
   },
   {
     id: 'weak-crypto',
@@ -242,12 +244,12 @@ const RULES = [
     severity: 'error',
     pattern: /\.(ts|js)$/,
     check: (content) => {
-        const p1 = String.fromCharCode(109, 100, 53); // md5
-        const p2 = String.fromCharCode(115, 104, 97, 49); // sha1
-        const regex = new RegExp(`\\b(\${p1}|\${p2})\\b`, 'i');
-        return !regex.test(content);
+      const p1 = String.fromCharCode(109, 100, 53); // md5
+      const p2 = String.fromCharCode(115, 104, 97, 49); // sha1
+      const regex = new RegExp(`\\b(\${p1}|\${p2})\\b`, 'i');
+      return !regex.test(content);
     },
-    message: 'Weak cryptographic algorithm detected.'
+    message: 'Weak cryptographic algorithm detected.',
   },
   {
     id: 'no-try-catch-await',
@@ -256,11 +258,11 @@ const RULES = [
     severity: 'info',
     pattern: /\.(ts|js|tsx|jsx)$/,
     check: (content) => {
-        // Very basic check: if await exists, look for try
-        if (!/await\s+/.test(content)) return true;
-        return /try\s*\{/.test(content);
+      // Very basic check: if await exists, look for try
+      if (!/await\s+/.test(content)) return true;
+      return /try\s*\{/.test(content);
     },
-    message: 'Found await without surrounding try-catch block.'
+    message: 'Found await without surrounding try-catch block.',
   },
   {
     id: 'env-node-env',
@@ -269,14 +271,17 @@ const RULES = [
     severity: 'info',
     pattern: /\.(ts|js|tsx|jsx)$/,
     check: (content) => {
-        const pattern = /if\s*\(.*['"](development|production)['"].*\)/i;
-        return !pattern.test(content) || content.includes('process.env.NODE_ENV');
+      const pattern = /if\s*\(.*['"](development|production)['"].*\)/i;
+      return !pattern.test(content) || content.includes('process.env.NODE_ENV');
     },
-    message: 'Use process.env.NODE_ENV instead of hardcoded environment strings.'
-  }
+    message: 'Use process.env.NODE_ENV instead of hardcoded environment strings.',
+  },
 ];
 
-async function getFiles(dir, ignoreList = ['node_modules', '.git', '.next', 'dist', 'build', 'coverage', 'examples']) {
+async function getFiles(
+  dir,
+  ignoreList = ['node_modules', '.git', '.next', 'dist', 'build', 'coverage', 'examples']
+) {
   try {
     const dirents = await fs.readdir(dir, { withFileTypes: true });
     const filePromises = dirents.map(async (dirent) => {
@@ -306,7 +311,7 @@ export function scanContent(content) {
           ruleId: rule.id,
           ruleName: rule.name,
           severity: rule.severity,
-          message: rule.message
+          message: rule.message,
         });
       }
     } catch (err) {
@@ -322,7 +327,7 @@ export async function runQualityScan(dir) {
     failed: 0,
     warnings: 0,
     filesScanned: 0,
-    details: []
+    details: [],
   };
 
   const projectRoot = path.resolve(dir);
@@ -345,7 +350,8 @@ export async function runQualityScan(dir) {
 
     const fileResults = [];
     for (const rule of RULES) {
-      if (rule.pattern.test(relativePath) || rule.pattern.test(filePath)) { // Match against both just in case
+      if (rule.pattern.test(relativePath) || rule.pattern.test(filePath)) {
+        // Match against both just in case
         try {
           const passed = rule.check(content);
           if (!passed) {
@@ -354,7 +360,7 @@ export async function runQualityScan(dir) {
               ruleName: rule.name,
               file: relativePath,
               severity: rule.severity,
-              message: rule.message
+              message: rule.message,
             };
             fileResults.push(issue);
           }

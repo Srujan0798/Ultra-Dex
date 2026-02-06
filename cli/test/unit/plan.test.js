@@ -12,11 +12,11 @@ describe('plan command', () => {
   it('should register the plan command with correct options', () => {
     registerPlanCommand(program);
 
-    const command = program.commands.find(cmd => cmd.name() === 'plan');
+    const command = program.commands.find((cmd) => cmd.name() === 'plan');
     expect(command).toBeDefined();
     expect(command.description()).toContain('Manage project plan');
 
-    const options = command.options.map(opt => opt.flags);
+    const options = command.options.map((opt) => opt.flags);
     expect(options).toContain('--gantt');
     expect(options).toContain('--timeline');
     expect(options).toContain('--milestones');

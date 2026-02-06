@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import React from 'react'
+import React from 'react';
 import {
   AreaChart,
   Area,
@@ -10,23 +10,23 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card'
+} from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 
 interface AreaChartComponentProps {
-  title: string
+  title: string;
   data: Array<{
-    name: string
-    value: number
-    [key: string]: number | string
-  }>
+    name: string;
+    value: number;
+    [key: string]: number | string;
+  }>;
   areas?: Array<{
-    dataKey: string
-    color: string
-    name: string
-  }>
-  height?: number
-  stacked?: boolean
+    dataKey: string;
+    color: string;
+    name: string;
+  }>;
+  height?: number;
+  stacked?: boolean;
 }
 
 export function AreaChartComponent({
@@ -36,7 +36,7 @@ export function AreaChartComponent({
   height = 300,
   stacked = false,
 }: AreaChartComponentProps) {
-  const chartAreas = areas || [{ dataKey: 'value', color: '#3b82f6', name: 'Value' }]
+  const chartAreas = areas || [{ dataKey: 'value', color: '#3b82f6', name: 'Value' }];
 
   return (
     <Card>
@@ -49,8 +49,8 @@ export function AreaChartComponent({
             <defs>
               {chartAreas.map((area, index) => (
                 <linearGradient key={index} id={`color${index}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={area.color} stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor={area.color} stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor={area.color} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={area.color} stopOpacity={0.1} />
                 </linearGradient>
               ))}
             </defs>
@@ -60,10 +60,7 @@ export function AreaChartComponent({
               tick={{ fill: 'currentColor' }}
               tickLine={{ stroke: 'currentColor' }}
             />
-            <YAxis
-              tick={{ fill: 'currentColor' }}
-              tickLine={{ stroke: 'currentColor' }}
-            />
+            <YAxis tick={{ fill: 'currentColor' }} tickLine={{ stroke: 'currentColor' }} />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'hsl(var(--card))',
@@ -87,5 +84,5 @@ export function AreaChartComponent({
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

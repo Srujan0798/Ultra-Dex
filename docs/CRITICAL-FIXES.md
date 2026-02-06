@@ -21,11 +21,11 @@ const execFileAsync = promisify(execFile);
 
 async function createIssue(title, body, options = {}) {
   const args = ['issue', 'create', '--title', title, '--body', body];
-  
+
   if (options.labels?.length) {
     args.push('--label', options.labels.join(','));
   }
-  
+
   // Directly executes the binary, arguments are not parsed by shell
   const { stdout } = await execFileAsync('gh', args);
   return stdout.trim();
@@ -50,9 +50,9 @@ import { marked } from 'marked'; // OR verify structure using standard Markdown 
 function parseSections(markdown) {
   const sections = {};
   let currentHeader = null;
-  
+
   const tokens = marked.lexer(markdown);
-  
+
   for (const token of tokens) {
     if (token.type === 'heading' && token.depth === 2) {
       // Normalize header: "## SECTION 1: TECH STACK" -> "TECH_STACK"
@@ -66,7 +66,7 @@ function parseSections(markdown) {
 '; // Preserve code blocks
     }
   }
-  
+
   return sections;
 }
 ```
@@ -88,16 +88,18 @@ import path from 'path';
 
 async function atomicWrite(filePath, data) {
   const tempPath = `${filePath}.tmp.${Date.now()}`;
-  
+
   try {
     // 1. Write to temp file
     await fs.writeFile(tempPath, JSON.stringify(data, null, 2));
-    
+
     // 2. Rename (atomic on POSIX) replaces the old file instantly
     await fs.rename(tempPath, filePath);
   } catch (error) {
     // Cleanup temp file if rename fails
-    try { await fs.unlink(tempPath); } catch {}
+    try {
+      await fs.unlink(tempPath);
+    } catch {}
     throw error;
   }
 }
@@ -108,7 +110,7 @@ async function atomicWrite(filePath, data) {
 ### 4. Fix Webhook Timeouts in `ci-monitor.js`
 
 **Severity:** Medium
-**Issue:** Awaiting long-running agent tasks *before* sending HTTP 200 causes GitHub to timeout and retry/fail.
+**Issue:** Awaiting long-running agent tasks _before_ sending HTTP 200 causes GitHub to timeout and retry/fail.
 **Fix:** Send 200 OK immediately, then process the logic asynchronously.
 
 ```javascript
@@ -125,7 +127,7 @@ if (payload.conclusion === 'failure') {
   res.end('Processing build failure...');
 
   // 2. Process in background (fire & forget)
-  handleBuildFailure(payload, options, notifyEvents).catch(err => {
+  handleBuildFailure(payload, options, notifyEvents).catch((err) => {
     console.error('Background task failed:', err);
   });
   return;
@@ -149,10 +151,10 @@ import { spawn } from 'child_process';
 
 function runCommandStreaming(command, args, cwd) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { 
-      cwd, 
+    const child = spawn(command, args, {
+      cwd,
       stdio: 'inherit', // Stream directly to console
-      shell: true 
+      shell: true,
     });
 
     child.on('close', (code) => {

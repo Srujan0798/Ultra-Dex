@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Claude Sonnet 5 "Fennec" Integration
  * Adds support for Claude Sonnet 5 model with new capabilities
@@ -14,16 +16,16 @@ export const CLAUDE_SONNET_5 = 'claude-sonnet-5-20260201';
 
 // Model aliases
 const MODEL_ALIASES = {
-  'sonnet5': CLAUDE_SONNET_5,
-  'fennec': CLAUDE_SONNET_5,
+  sonnet5: CLAUDE_SONNET_5,
+  fennec: CLAUDE_SONNET_5,
   'claude-sonnet-5': CLAUDE_SONNET_5,
-  'claude-sonnet-5-20260201': CLAUDE_SONNET_5
+  'claude-sonnet-5-20260201': CLAUDE_SONNET_5,
 };
 
 // Pricing for Claude Sonnet 5 (per 1M tokens)
 const SONNET_5_PRICING = {
-  input: 3.00,  // $3.00 per 1M input tokens
-  output: 15.00 // $15.00 per 1M output tokens
+  input: 3.0, // $3.00 per 1M input tokens
+  output: 15.0, // $15.00 per 1M output tokens
 };
 
 /**
@@ -31,19 +33,21 @@ const SONNET_5_PRICING = {
  */
 export async function checkSonnet5Availability(apiKey) {
   const anthropic = new Anthropic({ apiKey });
-  
+
   try {
     // Try to make a simple call with the Sonnet 5 model
     const message = await anthropic.messages.create({
       model: CLAUDE_SONNET_5,
       max_tokens: 10,
-      messages: [{ role: 'user', content: 'Test' }]
+      messages: [{ role: 'user', content: 'Test' }],
     });
-    
+
     return {
       available: true,
       model: CLAUDE_SONNET_5,
-      capabilities: message.usage ? ['high-context', 'improved-reasoning', 'better-code-generation'] : []
+      capabilities: message.usage
+        ? ['high-context', 'improved-reasoning', 'better-code-generation']
+        : [],
     };
   } catch (error) {
     // If it's an authentication or model access error, the model isn't available
@@ -51,10 +55,10 @@ export async function checkSonnet5Availability(apiKey) {
       return {
         available: false,
         model: CLAUDE_SONNET_5,
-        error: error.message
+        error: error.message,
       };
     }
-    
+
     // For other errors, re-throw
     throw error;
   }
@@ -66,12 +70,12 @@ export async function checkSonnet5Availability(apiKey) {
 export function getClaudeModel(modelName, apiKey) {
   // Resolve alias if provided
   const resolvedModel = MODEL_ALIASES[modelName] || modelName;
-  
+
   // If requesting Sonnet 5 specifically, check availability
   if (resolvedModel === CLAUDE_SONNET_5) {
     printInfo(chalk.blue(`🔍 Checking Claude Sonnet 5 (${CLAUDE_SONNET_5}) availability...`));
   }
-  
+
   return new Anthropic({ apiKey, model: resolvedModel });
 }
 
@@ -80,16 +84,16 @@ export function getClaudeModel(modelName, apiKey) {
  */
 export function getModelPricing(modelName) {
   const resolvedModel = MODEL_ALIASES[modelName] || modelName;
-  
+
   if (resolvedModel === CLAUDE_SONNET_5) {
     return SONNET_5_PRICING;
   }
-  
+
   // For other Claude models, return their respective pricing
   if (resolvedModel.includes('sonnet')) {
-    return { input: 3.00, output: 15.00 }; // Sonnet family
+    return { input: 3.0, output: 15.0 }; // Sonnet family
   } else if (resolvedModel.includes('opus')) {
-    return { input: 15.00, output: 75.00 }; // Opus family
+    return { input: 15.0, output: 75.0 }; // Opus family
   } else {
     return { input: 0.25, output: 1.25 }; // Haiku family
   }
@@ -100,37 +104,39 @@ export function getModelPricing(modelName) {
  */
 export async function detectBestClaudeModel(apiKey) {
   const anthropic = new Anthropic({ apiKey });
-  
+
   // Check Sonnet 5 first
   try {
     await anthropic.messages.create({
       model: CLAUDE_SONNET_5,
       max_tokens: 5,
-      messages: [{ role: 'user', content: 'Test' }]
+      messages: [{ role: 'user', content: 'Test' }],
     });
-    
+
     printSuccess(chalk.green(`✅ Claude Sonnet 5 (${CLAUDE_SONNET_5}) is available`));
     return CLAUDE_SONNET_5;
   } catch (error) {
     if (error.status === 401 || error.status === 403 || error.status === 404) {
       printWarning(chalk.yellow(`⚠️  Claude Sonnet 5 not available, falling back to default`));
-      
+
       // Try Sonnet 3.5 next
       try {
         await anthropic.messages.create({
           model: 'claude-3-5-sonnet-20241022',
           max_tokens: 5,
-          messages: [{ role: 'user', content: 'Test' }]
+          messages: [{ role: 'user', content: 'Test' }],
         });
-        
+
         printInfo(chalk.blue(`✅ Defaulting to claude-3-5-sonnet-20241022`));
         return 'claude-3-5-sonnet-20241022';
       } catch {
         printError(chalk.red(`❌ No Claude models available`));
-        throw new AppError('No Claude models available with provided API key', { code: 'MODEL_ACCESS_DENIED' });
+        throw new AppError('No Claude models available with provided API key', {
+          code: 'MODEL_ACCESS_DENIED',
+        });
       }
     }
-    
+
     throw error;
   }
 }
@@ -144,11 +150,13 @@ export class ClaudeSonnet5Provider {
     this.model = options.model || process.env.ULTRA_DEX_CLAUDE_MODEL || CLAUDE_SONNET_5;
     this.maxTokens = options.maxTokens || 4096;
     this.temperature = options.temperature || 0.3;
-    
+
     if (!this.apiKey) {
-      throw new AppError('ANTHROPIC_API_KEY is required for Claude provider', { code: 'MISSING_API_KEY' });
+      throw new AppError('ANTHROPIC_API_KEY is required for Claude provider', {
+        code: 'MISSING_API_KEY',
+      });
     }
-    
+
     this.client = new Anthropic({ apiKey: this.apiKey });
   }
 
@@ -162,14 +170,14 @@ export class ClaudeSonnet5Provider {
 
   async generate(systemPrompt, userPrompt, options = {}) {
     const resolvedModel = MODEL_ALIASES[this.model] || this.model;
-    
+
     try {
       const message = await this.client.messages.create({
         model: resolvedModel,
         max_tokens: options.maxTokens || this.maxTokens,
         temperature: options.temperature || this.temperature,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
+        messages: [{ role: 'user', content: userPrompt }],
       });
 
       return {
@@ -178,10 +186,10 @@ export class ClaudeSonnet5Provider {
           inputTokens: message.usage?.input_tokens || 0,
           outputTokens: message.usage?.output_tokens || 0,
           cacheCreationInputTokens: message.usage?.cache_creation_input_tokens || 0,
-          cacheReadInputTokens: message.usage?.cache_read_input_tokens || 0
+          cacheReadInputTokens: message.usage?.cache_read_input_tokens || 0,
         },
         model: message.model,
-        finishReason: message.stop_reason
+        finishReason: message.stop_reason,
       };
     } catch (error) {
       if (error.status === 401) {
@@ -206,7 +214,7 @@ export class ClaudeSonnet5Provider {
         max_tokens: options.maxTokens || this.maxTokens,
         temperature: options.temperature || this.temperature,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
+        messages: [{ role: 'user', content: userPrompt }],
       });
 
       for await (const chunk of stream) {
@@ -220,7 +228,7 @@ export class ClaudeSonnet5Provider {
           if (chunk.message?.usage) {
             usage = {
               inputTokens: chunk.message.usage.input_tokens || 0,
-              outputTokens: chunk.message.usage.output_tokens || 0
+              outputTokens: chunk.message.usage.output_tokens || 0,
             };
           }
         }
@@ -229,7 +237,7 @@ export class ClaudeSonnet5Provider {
       return {
         content: fullResponse,
         usage,
-        model: resolvedModel
+        model: resolvedModel,
       };
     } catch (error) {
       if (error.status === 401) {
@@ -250,7 +258,7 @@ export class ClaudeSonnet5Provider {
 export function registerClaudeSonnet5Config(configManager) {
   // Add Claude Sonnet 5 as default if available
   const defaultModel = process.env.ULTRA_DEX_CLAUDE_MODEL || CLAUDE_SONNET_5;
-  
+
   configManager.define('ai.claude.model', {
     type: 'string',
     default: defaultModel,
@@ -260,13 +268,13 @@ export function registerClaudeSonnet5Config(configManager) {
       const validModels = [
         CLAUDE_SONNET_5,
         'claude-3-opus-20240229',
-        'claude-3-sonnet-20240229', 
+        'claude-3-sonnet-20240229',
         'claude-3-5-sonnet-20240620',
         'claude-3-5-sonnet-20241022',
-        'claude-3-haiku-20240307'
+        'claude-3-haiku-20240307',
       ];
       return validModels.includes(resolvedModel);
-    }
+    },
   });
 }
 
@@ -279,5 +287,5 @@ export default {
   getModelPricing,
   detectBestClaudeModel,
   ClaudeSonnet5Provider,
-  registerClaudeSonnet5Config
+  registerClaudeSonnet5Config,
 };

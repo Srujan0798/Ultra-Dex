@@ -20,9 +20,9 @@ test('Graph: complex impact chains', async () => {
     { from: 'leaf.js', to: 'middle.js', type: 'depends_on' },
     { from: 'middle.js', to: 'root.js', type: 'depends_on' },
     { from: 'another-leaf.js', to: 'middle.js', type: 'depends_on' },
-    { from: 'unrelated.js', to: 'other.js', type: 'depends_on' }
+    { from: 'unrelated.js', to: 'other.js', type: 'depends_on' },
   ];
-  
+
   const impact = projectGraph.getImpact('root.js');
   // root.js <- middle.js <- leaf.js
   // root.js <- middle.js <- another-leaf.js
@@ -38,9 +38,9 @@ test('Graph: circular dependency impact', async () => {
   projectGraph.edges = [
     { from: 'A.js', to: 'B.js', type: 'depends_on' },
     { from: 'B.js', to: 'A.js', type: 'depends_on' },
-    { from: 'C.js', to: 'A.js', type: 'depends_on' }
+    { from: 'C.js', to: 'A.js', type: 'depends_on' },
   ];
-  
+
   const impact = projectGraph.getImpact('A.js');
   assert.ok(impact.includes('B.js'));
   assert.ok(impact.includes('C.js'));

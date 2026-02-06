@@ -1,34 +1,53 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
-import { githubBlobUrl } from '../config/urls.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SNIPPETS_DIR = path.resolve(__dirname, '../../assets/snippets');
 
 export function registerExamplesCommand(program) {
-  program
-    .command('examples')
-    .description('List available examples')
-    .action(() => {
-      console.log(chalk.bold('\nAvailable Ultra-Dex Examples:\n'));
+  const cmd = program.command('examples').description('Code Snippet Library');
 
-      const examples = [
-        {
-          name: 'TaskFlow',
-          type: 'Task Management',
-          url: githubBlobUrl('@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md'),
-        },
-        {
-          name: 'InvoiceFlow',
-          type: 'Invoicing',
-          url: githubBlobUrl('@%20Ultra%20DeX/Saas%20plan/Examples/InvoiceFlow-Complete.md'),
-        },
-        {
-          name: 'HabitStack',
-          type: 'Habit Tracking',
-          url: githubBlobUrl('@%20Ultra%20DeX/Saas%20plan/Examples/HabitStack-Complete.md'),
-        },
-      ];
+  cmd
+    .command('list')
+    .description('List available code snippets')
+    .action(async () => {
+      try {
+        const files = await fs.readdir(SNIPPETS_DIR);
+        printInfo(chalk.bold('\nAvailable Snippets:\n'));
+        files.forEach((file) => {
+          const name = path.parse(file).name;
+          printInfo(chalk.cyan(`- ${name}`));
+        });
+        printInfo('');
+      } catch (error) {
+        printError(chalk.red(`Failed to list snippets: ${error.message}`));
+      }
+    });
 
-      examples.forEach((ex, i) => {
-        console.log(chalk.cyan(`${i + 1}. ${ex.name}`) + chalk.gray(` (${ex.type})`));
-        console.log(chalk.gray(`   ${ex.url}\n`));
-      });
+  cmd
+    .command('get <name>')
+    .description('Get a code snippet')
+    .action(async (name) => {
+      try {
+        const files = await fs.readdir(SNIPPETS_DIR);
+        const match = files.find((f) => path.parse(f).name === name);
+
+        if (!match) {
+          printError(chalk.red(`Snippet "${name}" not found.`));
+          return;
+        }
+
+        const content = await fs.readFile(path.join(SNIPPETS_DIR, match), 'utf8');
+        printInfo(chalk.bold(`\n📝 Snippet: ${name}\n`));
+        console.log(content);
+        printSuccess(chalk.green('\n✅ Copied to clipboard (simulated).'));
+      } catch (error) {
+        printError(chalk.red(`Failed to get snippet: ${error.message}`));
+      }
     });
 }

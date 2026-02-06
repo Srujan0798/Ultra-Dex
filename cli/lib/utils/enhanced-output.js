@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enhanced output utilities using status.js and help.js
  * Provides consistent, styled output across all commands
@@ -63,5 +65,5 @@ export default {
   printInfo,
   printLoading,
   printStatusCard,
-  printHelpSection
+  printHelpSection,
 };

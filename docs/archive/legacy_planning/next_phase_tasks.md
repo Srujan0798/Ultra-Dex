@@ -7,6 +7,7 @@
 ## 📋 Task Queue (Priority Order)
 
 ### Task 1: Increase Test Coverage to 70%
+
 **Priority:** P0 | **Time:** 4-6 hrs
 
 ```
@@ -30,6 +31,7 @@ Commit with message: "test: Increase coverage to 70%+"
 ---
 
 ### Task 2: Package VS Code Extension
+
 **Priority:** P0 | **Time:** 1 hr
 
 ```
@@ -48,6 +50,7 @@ Output: .vsix file ready for publish
 ---
 
 ### Task 3: Update README with Demo
+
 **Priority:** P1 | **Time:** 2 hrs
 
 ```
@@ -70,6 +73,7 @@ Commit: "docs: Enhance README with demo and features"
 ---
 
 ### Task 4: Write Community Launch Posts
+
 **Priority:** P1 | **Time:** 1 hr
 
 ```
@@ -93,6 +97,7 @@ Save to docs/LAUNCH-POSTS.md
 ---
 
 ### Task 5: Create Documentation Site
+
 **Priority:** P2 | **Time:** 4 hrs
 
 ```
@@ -115,6 +120,7 @@ Commit: "docs: Add documentation site"
 ---
 
 ### Task 6: Create Example Projects
+
 **Priority:** P2 | **Time:** 3 hrs
 
 ```
@@ -134,7 +140,8 @@ Commit: "examples: Add reference projects"
 
 ---
 
-### Task 7: Add CI/CD Pipeline  
+### Task 7: Add CI/CD Pipeline
+
 **Priority:** P2 | **Time:** 2 hrs
 
 ```
@@ -156,15 +163,15 @@ Commit: "ci: Add GitHub Actions workflows"
 
 ## 🔢 Execution Order
 
-| Order | Task | Dependencies |
-|-------|------|--------------|
-| 1 | Test Coverage 70% | None |
-| 2 | Package VS Code Extension | None |
-| 3 | Update README | None |
-| 4 | Write Launch Posts | README done |
-| 5 | Create Docs Site | README done |
-| 6 | Example Projects | Docs done |
-| 7 | CI/CD Pipeline | Tests done |
+| Order | Task                      | Dependencies |
+| ----- | ------------------------- | ------------ |
+| 1     | Test Coverage 70%         | None         |
+| 2     | Package VS Code Extension | None         |
+| 3     | Update README             | None         |
+| 4     | Write Launch Posts        | README done  |
+| 5     | Create Docs Site          | README done  |
+| 6     | Example Projects          | Docs done    |
+| 7     | CI/CD Pipeline            | Tests done   |
 
 ---
 

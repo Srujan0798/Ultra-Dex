@@ -26,7 +26,7 @@ describe('FalkorDBClient - Initialization', () => {
 
   test('should use custom URL', () => {
     const client = new FalkorDBClient({
-      url: 'redis://custom:1234'
+      url: 'redis://custom:1234',
     });
 
     assert.strictEqual(client.url, 'redis://custom:1234');
@@ -40,7 +40,7 @@ describe('FalkorDBClient - Initialization', () => {
 
   test('should use custom graph name', () => {
     const client = new FalkorDBClient({
-      graph: 'custom_graph'
+      graph: 'custom_graph',
     });
 
     assert.strictEqual(client.graph, 'custom_graph');
@@ -176,7 +176,7 @@ describe('FalkorDBClient - Parameter Interpolation', () => {
         const interpolated = args[2];
         assert.ok(interpolated.includes('"test"'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, params).catch(() => {});
@@ -193,7 +193,7 @@ describe('FalkorDBClient - Parameter Interpolation', () => {
         // Should have escaped quotes
         assert.ok(interpolated.includes('\\"quoted\\"'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, params).catch(() => {});
@@ -210,7 +210,7 @@ describe('FalkorDBClient - Parameter Interpolation', () => {
         assert.ok(interpolated.includes('"Alice"'));
         assert.ok(interpolated.includes('"30"'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, params).catch(() => {});
@@ -226,7 +226,7 @@ describe('FalkorDBClient - Parameter Interpolation', () => {
         assert.strictEqual(args[1], 'ultra_dex');
         assert.strictEqual(args[2], 'MATCH (n) RETURN n');
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, {}).catch(() => {});
@@ -251,7 +251,7 @@ describe('FalkorDBClient - Command Format', () => {
         assert.strictEqual(args[2], query);
         assert.strictEqual(args[3], '--compact');
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query).catch(() => {});
@@ -266,7 +266,7 @@ describe('FalkorDBClient - Command Format', () => {
       sendCommand: async (args) => {
         assert.strictEqual(args[1], 'custom');
         throw new Error('Test error');
-      }
+      },
     };
 
     customClient.run(query).catch(() => {});
@@ -278,7 +278,7 @@ describe('FalkorDBClient - Command Format', () => {
       sendCommand: async (args) => {
         assert.ok(args.includes('--compact'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run('MATCH (n) RETURN n').catch(() => {});
@@ -307,7 +307,7 @@ describe('FalkorDBClient - Close', () => {
     const client = new FalkorDBClient();
     client.available = true;
     client.client = {
-      quit: async () => {}
+      quit: async () => {},
     };
 
     await client.close();
@@ -322,7 +322,7 @@ describe('FalkorDBClient - Close', () => {
     client.client = {
       quit: async () => {
         quitCalled = true;
-      }
+      },
     };
 
     await client.close();
@@ -343,7 +343,7 @@ describe('FalkorDBClient - Edge Cases', () => {
         const interpolated = args[2];
         assert.ok(interpolated.includes('special'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, params).catch(() => {});
@@ -360,7 +360,7 @@ describe('FalkorDBClient - Edge Cases', () => {
         const interpolated = args[2];
         assert.ok(interpolated.includes('"42"'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, params).catch(() => {});
@@ -377,7 +377,7 @@ describe('FalkorDBClient - Edge Cases', () => {
         const interpolated = args[2];
         assert.ok(interpolated.includes('"true"'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, params).catch(() => {});
@@ -418,7 +418,7 @@ describe('FalkorDBClient - Edge Cases', () => {
       sendCommand: async (args) => {
         assert.strictEqual(args[2], '');
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run('').catch(() => {});
@@ -426,14 +426,15 @@ describe('FalkorDBClient - Edge Cases', () => {
 
   test('should handle very long queries', () => {
     const client = new FalkorDBClient();
-    const longQuery = 'MATCH (n) WHERE n.name IN [' + Array(1000).fill('"test"').join(',') + '] RETURN n';
+    const longQuery =
+      'MATCH (n) WHERE n.name IN [' + Array(1000).fill('"test"').join(',') + '] RETURN n';
 
     client.available = true;
     client.client = {
       sendCommand: async (args) => {
         assert.ok(args[2].length > 10000);
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(longQuery).catch(() => {});
@@ -476,7 +477,7 @@ describe('FalkorDBClient - Query Patterns', () => {
       sendCommand: async (args) => {
         assert.ok(args[2].includes('CREATE'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, { name: 'Alice' }).catch(() => {});
@@ -491,7 +492,7 @@ describe('FalkorDBClient - Query Patterns', () => {
       sendCommand: async (args) => {
         assert.ok(args[2].includes('MATCH'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query).catch(() => {});
@@ -506,7 +507,7 @@ describe('FalkorDBClient - Query Patterns', () => {
       sendCommand: async (args) => {
         assert.ok(args[2].includes('SET'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query, { name: 'Alice', age: 30 }).catch(() => {});
@@ -521,7 +522,7 @@ describe('FalkorDBClient - Query Patterns', () => {
       sendCommand: async (args) => {
         assert.ok(args[2].includes('DELETE'));
         throw new Error('Test error');
-      }
+      },
     };
 
     client.run(query).catch(() => {});

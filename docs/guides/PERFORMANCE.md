@@ -23,20 +23,22 @@ Edit your `~/.ultra-dex/config.json` or project `.ultra/config.json`:
 }
 ```
 
-| Setting | Default | Recommendation for Large Projects |
-|---------|---------|-----------------------------------|
-| `cacheEnabled` | `true` | Keep `true`. Crucial for graph scans. |
-| `maxConcurrentTasks` | `5` | Increase to `10-20` if you have high bandwidth/CPU. |
-| `graphScanInterval` | `30000` | Increase to `300000` (5 mins) to reduce I/O. |
+| Setting              | Default | Recommendation for Large Projects                   |
+| -------------------- | ------- | --------------------------------------------------- |
+| `cacheEnabled`       | `true`  | Keep `true`. Crucial for graph scans.               |
+| `maxConcurrentTasks` | `5`     | Increase to `10-20` if you have high bandwidth/CPU. |
+| `graphScanInterval`  | `30000` | Increase to `300000` (5 mins) to reduce I/O.        |
 
 ## 🧠 Code Graph Optimization
 
 The Code Property Graph (CPG) scans your project to understand dependencies.
 
 ### Ignoring Files
+
 Ensure you are ignoring build artifacts and heavy directories in `.gitignore`. Ultra-Dex respects `.gitignore` automatically.
 
 **Recommended `.gitignore`:**
+
 ```text
 node_modules/
 dist/
@@ -47,11 +49,13 @@ coverage/
 ```
 
 ### Selective Scanning
+
 Use `ultra-dex search --index --force` only when structure changes significantly. Routine operations use the cache.
 
 ## 🤖 Agent Performance
 
 ### Parallel Swarms
+
 Use the `--parallel` flag when tasks are independent:
 
 ```bash
@@ -61,13 +65,16 @@ npx ultra-dex swarm "Build auth and payment endpoints" --parallel
 This runs `@Backend` (Auth) and `@Backend` (Payments) simultaneously if the planner determines they don't overlap.
 
 ### Context Window Management
+
 Large context windows ($$$) slow down responses.
+
 - **Use `CONTEXT.md` effectively:** Keep it high-level. Don't dump entire files unless necessary.
 - **Use `read_file` sparsely:** Agents should read only what they need.
 
 ## 🐳 Docker Sandbox
 
 The Docker sandbox adds overhead (~1-2s startup).
+
 - **Reuse Containers:** (Coming in v3.5)
 - **Native Mode:** Use `--no-sandbox` if you trust the agents and need raw speed (use with caution).
 
@@ -80,4 +87,4 @@ Use `ultra-dex metrics --watch` to identify bottlenecks.
 
 ---
 
-*Found a performance bug? Report it on GitHub.*
+_Found a performance bug? Report it on GitHub._

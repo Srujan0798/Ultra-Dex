@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enterprise Usage Analytics
  * Tracks command usage and builds lightweight summaries for dashboards.
@@ -54,16 +56,12 @@ export async function recordUsageEvent(event = {}) {
 export async function loadUsageEvents({ since, limit } = {}) {
   try {
     const data = await fsPromises.readFile(USAGE_LOG, 'utf8');
-    let events = data
-      .split('\n')
-      .filter(Boolean)
-      .map(safeJsonParse)
-      .filter(Boolean);
+    let events = data.split('\n').filter(Boolean).map(safeJsonParse).filter(Boolean);
 
     if (since) {
       const sinceTs = new Date(since).getTime();
       if (!Number.isNaN(sinceTs)) {
-        events = events.filter(event => new Date(event.timestamp).getTime() >= sinceTs);
+        events = events.filter((event) => new Date(event.timestamp).getTime() >= sinceTs);
       }
     }
 
@@ -119,7 +117,9 @@ export function summarizeUsage(events = []) {
 
   summary.uniqueCommands = Object.keys(summary.byCommand).length;
   if (durationValues.length > 0) {
-    summary.avgDurationMs = Math.round(durationValues.reduce((a, b) => a + b, 0) / durationValues.length);
+    summary.avgDurationMs = Math.round(
+      durationValues.reduce((a, b) => a + b, 0) / durationValues.length
+    );
   }
 
   summary.topCommands = Object.entries(summary.byCommand)
@@ -131,7 +131,9 @@ export function summarizeUsage(events = []) {
 }
 
 export async function getUsageSummary({ windowDays = 7, limit = 2000 } = {}) {
-  const since = windowDays ? new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString() : null;
+  const since = windowDays
+    ? new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString()
+    : null;
   const events = await loadUsageEvents({ since, limit });
   return summarizeUsage(events);
 }

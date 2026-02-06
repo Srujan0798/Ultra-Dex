@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
 
@@ -40,7 +42,7 @@ export class DaemonScheduler extends EventEmitter {
     return Array.from(this.tasks.values()).map((task) => ({
       id: task.id,
       name: task.name,
-      intervalMs: task.intervalMs
+      intervalMs: task.intervalMs,
     }));
   }
 }

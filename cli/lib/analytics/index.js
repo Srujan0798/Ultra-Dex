@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Analytics subsystem
  * Tracks command usage, agent performance, tokens, errors, and team activity.
@@ -14,20 +16,33 @@ const TOKEN_LOG = path.join(ANALYTICS_DIR, 'tokens.jsonl');
 const ERROR_LOG = path.join(ANALYTICS_DIR, 'errors.jsonl');
 const TEAM_ACTIVITY_LOG = path.resolve(process.cwd(), '.ultra-dex', 'team', 'activity.log');
 
-export async function recordAgentPerformance({ agent, durationMs, success = true, task, provider } = {}) {
+export async function recordAgentPerformance({
+  agent,
+  durationMs,
+  success = true,
+  task,
+  provider,
+} = {}) {
   const payload = {
     timestamp: new Date().toISOString(),
     agent,
     durationMs,
     success,
     task,
-    provider
+    provider,
   };
   await appendJsonl(AGENT_LOG, payload);
   return payload;
 }
 
-export async function recordTokenUsage({ agent, model, inputTokens = 0, outputTokens = 0, totalTokens, cost } = {}) {
+export async function recordTokenUsage({
+  agent,
+  model,
+  inputTokens = 0,
+  outputTokens = 0,
+  totalTokens,
+  cost,
+} = {}) {
   const payload = {
     timestamp: new Date().toISOString(),
     agent,
@@ -35,7 +50,7 @@ export async function recordTokenUsage({ agent, model, inputTokens = 0, outputTo
     inputTokens,
     outputTokens,
     totalTokens: totalTokens ?? inputTokens + outputTokens,
-    cost: cost ?? null
+    cost: cost ?? null,
   };
   await appendJsonl(TOKEN_LOG, payload);
   return payload;
@@ -47,7 +62,7 @@ export async function recordError({ message, command, stack, metadata } = {}) {
     message,
     command,
     stack,
-    metadata
+    metadata,
   };
   await appendJsonl(ERROR_LOG, payload);
   return payload;
@@ -77,9 +92,11 @@ export async function getAgentMetrics({ since } = {}) {
     if (event.success) successCount += 1;
   }
 
-  Object.values(byAgent).forEach(agent => {
+  Object.values(byAgent).forEach((agent) => {
     if (agent.durations.length) {
-      agent.avgDurationMs = Math.round(agent.durations.reduce((a, b) => a + b, 0) / agent.durations.length);
+      agent.avgDurationMs = Math.round(
+        agent.durations.reduce((a, b) => a + b, 0) / agent.durations.length
+      );
     }
     delete agent.durations;
   });
@@ -88,7 +105,7 @@ export async function getAgentMetrics({ since } = {}) {
     totalRuns: events.length,
     successRate: events.length ? Math.round((successCount / events.length) * 100) : 0,
     avgDurationMs: events.length ? Math.round(totalDuration / events.length) : 0,
-    byAgent
+    byAgent,
   };
 }
 
@@ -111,7 +128,7 @@ export async function getTokenMetrics({ since } = {}) {
 
   return {
     totals,
-    byModel
+    byModel,
   };
 }
 
@@ -123,20 +140,24 @@ export async function getErrorMetrics({ since } = {}) {
   return {
     totalErrors: errors.length,
     errorRate,
-    recent: errors.slice(-10)
+    recent: errors.slice(-10),
   };
 }
 
 export async function getTeamActivity({ limit = 50 } = {}) {
   try {
     const data = await fs.readFile(TEAM_ACTIVITY_LOG, 'utf8');
-    const entries = data.split('\n').filter(Boolean).map(line => {
-      try {
-        return JSON.parse(line);
-      } catch {
-        return null;
-      }
-    }).filter(Boolean);
+    const entries = data
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
 
     return entries.slice(-limit);
   } catch (error) {
@@ -151,7 +172,7 @@ export async function getAnalyticsSnapshot(options = {}) {
     getAgentMetrics(options.agents || {}),
     getTokenMetrics(options.tokens || {}),
     getErrorMetrics(options.errors || {}),
-    getTeamActivity(options.team || {})
+    getTeamActivity(options.team || {}),
   ]);
 
   return { usage, agents, tokens, errors, team };
@@ -161,5 +182,5 @@ export const analyticsPaths = {
   directory: ANALYTICS_DIR,
   agentLog: AGENT_LOG,
   tokenLog: TOKEN_LOG,
-  errorLog: ERROR_LOG
+  errorLog: ERROR_LOG,
 };

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { setCredential, listCredentials, deleteCredential } from '../security/keychain.js';
 import { printInfo, printSuccess, printError } from '../utils/output.js';
@@ -45,7 +47,9 @@ export function registerCredentialsCommand(program) {
     .action(async (name) => {
       try {
         await deleteCredential(name);
-        printSuccess(chalk.green(`✅ Removed ${name}. Re-run creds set ${name} to store new value.`));
+        printSuccess(
+          chalk.green(`✅ Removed ${name}. Re-run creds set ${name} to store new value.`)
+        );
       } catch (error) {
         printError(chalk.red(`Failed to rotate credential: ${error.message}`));
       }

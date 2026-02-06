@@ -30,23 +30,31 @@ function mockExecFile(command, args, callback) {
       return callback(null, 'Logged in to github.com', '');
     }
     if (args[0] === 'repo' && args[1] === 'view') {
-      return callback(null, JSON.stringify({
-        owner: { login: 'testuser' },
-        name: 'testrepo',
-        url: 'https://github.com/testuser/testrepo'
-      }), '');
+      return callback(
+        null,
+        JSON.stringify({
+          owner: { login: 'testuser' },
+          name: 'testrepo',
+          url: 'https://github.com/testuser/testrepo',
+        }),
+        ''
+      );
     }
     if (args[0] === 'issue' && args[1] === 'list') {
-      return callback(null, JSON.stringify([
-        {
-          number: 1,
-          title: 'Sample Issue',
-          labels: [{ name: 'bug' }],
-          body: 'This is a sample issue',
-          assignees: [],
-          createdAt: '2023-01-01T00:00:00Z'
-        }
-      ]), '');
+      return callback(
+        null,
+        JSON.stringify([
+          {
+            number: 1,
+            title: 'Sample Issue',
+            labels: [{ name: 'bug' }],
+            body: 'This is a sample issue',
+            assignees: [],
+            createdAt: '2023-01-01T00:00:00Z',
+          },
+        ]),
+        ''
+      );
     }
   }
   if (command === 'git') {
@@ -65,23 +73,23 @@ describe('GitHub Command Integration Tests', () => {
 
     // Test that it can register with a mock program
     const mockProgram = {
-      command: function(name) {
+      command: function (name) {
         this.commandName = name;
         return this;
       },
-      description: function(desc) {
+      description: function (desc) {
         this.commandDescription = desc;
         return this;
       },
-      option: function(flags, description, defaultValue) {
+      option: function (flags, description, defaultValue) {
         if (!this.options) this.options = [];
         this.options.push({ flags, description, defaultValue });
         return this;
       },
-      action: function(fn) {
+      action: function (fn) {
         this.actionFn = fn;
         return this;
-      }
+      },
     };
 
     registerGitHubCommand(mockProgram);
@@ -98,10 +106,10 @@ describe('GitHub Command Integration Tests', () => {
       '--create-pr',
       '--status',
       '--labels',
-      '--draft'
+      '--draft',
     ];
 
-    const actualFlags = mockProgram.options.map(opt => opt.flags.split(' ')[0]);
+    const actualFlags = mockProgram.options.map((opt) => opt.flags.split(' ')[0]);
     for (const expectedFlag of expectedOptions) {
       assert.ok(actualFlags.includes(expectedFlag), `Should have option ${expectedFlag}`);
     }
@@ -184,15 +192,19 @@ describe('GitHub Command Integration Tests', () => {
 
       // Create a mock state file to avoid CLI dependencies
       await fs.mkdir(path.join(tmpDir, '.ultra-dex'), { recursive: true });
-      await fs.writeFile(path.join(tmpDir, '.ultra-dex', 'github-sync.json'), JSON.stringify({
-        syncedIssues: {},
-        lastSync: null
-      }));
+      await fs.writeFile(
+        path.join(tmpDir, '.ultra-dex', 'github-sync.json'),
+        JSON.stringify({
+          syncedIssues: {},
+          lastSync: null,
+        })
+      );
 
       // Since syncIssuesToTasks depends on GitHub CLI, we'll just verify the function exists
       // and test the file creation part
       const stateFilePath = path.join(tmpDir, '.ultra-dex/github-sync.json');
-      const stateExists = await fs.access(stateFilePath)
+      const stateExists = await fs
+        .access(stateFilePath)
         .then(() => true)
         .catch(() => false);
 
@@ -217,8 +229,8 @@ describe('GitHub Command Integration Tests', () => {
       issue: {
         number: 1,
         title: 'New issue',
-        labels: [{ name: 'bug' }]
-      }
+        labels: [{ name: 'bug' }],
+      },
     };
 
     const parsedIssue = parseWebhook(issueOpenedEvent);
@@ -231,8 +243,8 @@ describe('GitHub Command Integration Tests', () => {
       action: 'completed',
       workflow_run: {
         id: 123,
-        conclusion: 'success'
-      }
+        conclusion: 'success',
+      },
     };
 
     const parsedWorkflow = parseWebhook(workflowCompletedEvent);
@@ -243,7 +255,7 @@ describe('GitHub Command Integration Tests', () => {
     const prReviewEvent = {
       action: 'submitted',
       review: { state: 'approved' },
-      pull_request: { number: 1 }
+      pull_request: { number: 1 },
     };
 
     const parsedPR = parseWebhook(prReviewEvent);
@@ -253,7 +265,7 @@ describe('GitHub Command Integration Tests', () => {
     // Test unknown event
     const unknownEvent = {
       action: 'unknown_action',
-      some_data: 'test'
+      some_data: 'test',
     };
 
     const parsedUnknown = parseWebhook(unknownEvent);

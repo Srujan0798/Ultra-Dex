@@ -109,36 +109,34 @@ export const projectRouter = router({
     }),
 
   // Get single project
-  get: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const project = await prisma.project.findUnique({
-        where: { id: input.id },
-        include: {
-          owner: true,
-          tasks: { orderBy: { createdAt: 'desc' } },
-          organization: true,
-        },
-      });
+  get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const project = await prisma.project.findUnique({
+      where: { id: input.id },
+      include: {
+        owner: true,
+        tasks: { orderBy: { createdAt: 'desc' } },
+        organization: true,
+      },
+    });
 
-      if (!project) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
+    if (!project) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+    }
 
-      // Verify access
-      const membership = await prisma.organizationMember.findFirst({
-        where: {
-          organizationId: project.organizationId,
-          user: { clerkId: ctx.userId },
-        },
-      });
+    // Verify access
+    const membership = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId: project.organizationId,
+        user: { clerkId: ctx.userId },
+      },
+    });
 
-      if (!membership) {
-        throw new TRPCError({ code: 'FORBIDDEN' });
-      }
+    if (!membership) {
+      throw new TRPCError({ code: 'FORBIDDEN' });
+    }
 
-      return project;
-    }),
+    return project;
+  }),
 
   // Create project
   create: protectedProcedure

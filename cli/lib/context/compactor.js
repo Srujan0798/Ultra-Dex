@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { encode, decode } from 'gpt-tokenizer';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -33,11 +35,11 @@ class ContextCompactor {
     if (typeof context === 'string') {
       return context;
     }
-    
+
     if (Array.isArray(context)) {
-      return context.map(item => JSON.stringify(item)).join('\n');
+      return context.map((item) => JSON.stringify(item)).join('\n');
     }
-    
+
     return JSON.stringify(context, null, 2);
   }
 
@@ -56,7 +58,7 @@ class ContextCompactor {
   extractSacredDNA(context) {
     // Preserve the first N sections (Sacred DNA) that are critical
     const preserved = [];
-    
+
     if (Array.isArray(context)) {
       // Look for sacred sections in the context array
       for (let i = 0; i < Math.min(this.sacredDNASections, context.length); i++) {
@@ -65,7 +67,7 @@ class ContextCompactor {
             index: i,
             content: context[i],
             id: uuidv4(),
-            preservedAt: Date.now()
+            preservedAt: Date.now(),
           });
         }
       }
@@ -77,12 +79,12 @@ class ContextCompactor {
             key,
             content: value,
             id: uuidv4(),
-            preservedAt: Date.now()
+            preservedAt: Date.now(),
           });
         }
       }
     }
-    
+
     this.preservedContext = [...this.preservedContext, ...preserved];
     return preserved;
   }
@@ -129,14 +131,12 @@ class ContextCompactor {
       'AUDIT_LOGS',
       'COMPLIANCE_REQUIREMENTS',
       'ACCESS_CONTROLS',
-      'VALIDATION_RULES'
+      'VALIDATION_RULES',
     ];
 
     const text = typeof section === 'string' ? section : JSON.stringify(section);
 
-    return sacredIndicators.some(indicator =>
-      text.toUpperCase().includes(indicator)
-    );
+    return sacredIndicators.some((indicator) => text.toUpperCase().includes(indicator));
   }
 
   /**
@@ -151,7 +151,7 @@ class ContextCompactor {
       originalLength: Array.isArray(conversation) ? conversation.length : 1,
       summary: '',
       compressionRatio: 0,
-      preservedSections: 0
+      preservedSections: 0,
     };
 
     if (Array.isArray(conversation) && conversation.length > 0) {
@@ -162,16 +162,17 @@ class ContextCompactor {
       const keyPoints = this.extractKeyPoints(messages);
 
       // Count preserved sections
-      const preservedSections = messages.filter(msg => this.isSacredSection(msg)).length;
+      const preservedSections = messages.filter((msg) => this.isSacredSection(msg)).length;
       summaryData.preservedSections = preservedSections;
 
       // Generate summary
       summaryData.summary = this.generateSummary(keyPoints, messages);
       summaryData.compressionRatio = keyPoints.length / messages.length;
     } else {
-      summaryData.summary = typeof conversation === 'string' ?
-        this.simpleSummarize(conversation) :
-        this.simpleSummarize(JSON.stringify(conversation));
+      summaryData.summary =
+        typeof conversation === 'string'
+          ? this.simpleSummarize(conversation)
+          : this.simpleSummarize(JSON.stringify(conversation));
     }
 
     this.summaryHistory.push(summaryData);
@@ -184,10 +185,10 @@ class ContextCompactor {
   extractKeyPoints(messages) {
     const keyPoints = [];
     const processedContent = new Set();
-    
+
     for (const message of messages) {
       let content = '';
-      
+
       if (typeof message === 'string') {
         content = message;
       } else if (typeof message === 'object' && message.content) {
@@ -195,10 +196,10 @@ class ContextCompactor {
       } else {
         content = JSON.stringify(message);
       }
-      
+
       // Extract important segments
       const segments = this.splitIntoSegments(content);
-      
+
       for (const segment of segments) {
         if (!processedContent.has(segment) && this.isKeyPoint(segment)) {
           keyPoints.push(segment);
@@ -206,7 +207,7 @@ class ContextCompactor {
         }
       }
     }
-    
+
     return keyPoints;
   }
 
@@ -216,24 +217,24 @@ class ContextCompactor {
   splitIntoSegments(content) {
     // Split by paragraphs, sentences, or other logical boundaries
     if (typeof content !== 'string') return [JSON.stringify(content)];
-    
+
     // Split by double newlines (paragraphs)
     const paragraphs = content.split(/\n\s*\n/);
-    
+
     // Further split long paragraphs by sentences
     const segments = [];
     for (const paragraph of paragraphs) {
       if (paragraph.length > 500) {
         // Split long paragraphs into sentences
         const sentences = paragraph.match(/[^\.!?]+[\.!?]+/g) || [paragraph];
-        segments.push(...sentences.map(s => s.trim()).filter(s => s.length > 0));
+        segments.push(...sentences.map((s) => s.trim()).filter((s) => s.length > 0));
       } else {
         if (paragraph.trim().length > 0) {
           segments.push(paragraph.trim());
         }
       }
     }
-    
+
     return segments;
   }
 
@@ -242,7 +243,7 @@ class ContextCompactor {
    */
   isKeyPoint(segment) {
     if (typeof segment !== 'string') return false;
-    
+
     // Key points typically contain important information
     const keyPointPatterns = [
       /(?:requirement|specification|constraint|limitation)/i,
@@ -252,11 +253,10 @@ class ContextCompactor {
       /(?:decision|agreement|conclusion)/i,
       /(?:design|architecture|structure)/i,
       /(?:template|format|schema|model)/i,
-      /^\s*[A-Z][A-Z ]+[A-Z]\s*$/ // All caps headers
+      /^\s*[A-Z][A-Z ]+[A-Z]\s*$/, // All caps headers
     ];
-    
-    return keyPointPatterns.some(pattern => pattern.test(segment)) || 
-           segment.length > 20; // Longer segments are more likely to contain useful info
+
+    return keyPointPatterns.some((pattern) => pattern.test(segment)) || segment.length > 20; // Longer segments are more likely to contain useful info
   }
 
   /**
@@ -266,9 +266,9 @@ class ContextCompactor {
     const summaryParts = [
       `Conversation Summary (${keyPoints.length} key points extracted):`,
       '',
-      ...keyPoints.map((point, index) => `${index + 1}. ${point}`)
+      ...keyPoints.map((point, index) => `${index + 1}. ${point}`),
     ];
-    
+
     return summaryParts.join('\n');
   }
 
@@ -279,13 +279,13 @@ class ContextCompactor {
     if (typeof text !== 'string') {
       text = JSON.stringify(text);
     }
-    
+
     // Return first and last parts of the text as a simple summary
     if (text.length < 500) return text;
-    
+
     const firstPart = text.substring(0, 200);
     const lastPart = text.substring(text.length - 200);
-    
+
     return `${firstPart}\n...\n[Content condensed]\n...\n${lastPart}`;
   }
 
@@ -304,7 +304,7 @@ class ContextCompactor {
         compressionRatio: 1,
         preservedSections: [],
         summary: null,
-        tokensSaved: 0
+        tokensSaved: 0,
       };
     }
 
@@ -338,10 +338,10 @@ class ContextCompactor {
       if (Array.isArray(context)) {
         compressedContext = {
           summary: summary.summary,
-          preservedSections: preservedSections.map(p => p.content),
+          preservedSections: preservedSections.map((p) => p.content),
           type: 'compressed_context',
           originalTokens: tokensBefore,
-          compressedTokens: tokensAfter
+          compressedTokens: tokensAfter,
         };
         tokensAfter = this.calculateTokens(compressedContext);
       }
@@ -357,7 +357,7 @@ class ContextCompactor {
       tokensSaved: tokensBefore - tokensAfter,
       preservedSections,
       summary,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     return result;
@@ -371,9 +371,7 @@ class ContextCompactor {
     const compressed = [...context];
 
     // Remove elements that were preserved separately
-    const preservedIndices = preservedSections
-      .map(p => p.index)
-      .filter(i => i !== undefined);
+    const preservedIndices = preservedSections.map((p) => p.index).filter((i) => i !== undefined);
 
     // Filter out preserved elements from the main context
     // (they will be added back in a structured way)
@@ -386,9 +384,9 @@ class ContextCompactor {
     // Only add preserved sections if they don't increase token count too much
     if (preservedSections.length > 0) {
       return {
-        preservedSections: preservedSections.map(p => p.content),
+        preservedSections: preservedSections.map((p) => p.content),
         compressedContent: reducedContext,
-        summary: this.summaryHistory[this.summaryHistory.length - 1]?.summary || ''
+        summary: this.summaryHistory[this.summaryHistory.length - 1]?.summary || '',
       };
     } else {
       return reducedContext;
@@ -415,7 +413,7 @@ class ContextCompactor {
     return {
       preservedSections,
       compressedContent: reducedObject,
-      summary: this.summaryHistory[this.summaryHistory.length - 1]?.summary || ''
+      summary: this.summaryHistory[this.summaryHistory.length - 1]?.summary || '',
     };
   }
 
@@ -427,7 +425,7 @@ class ContextCompactor {
     return {
       original: context,
       summary: summary.summary,
-      compressed: true
+      compressed: true,
     };
   }
 
@@ -438,10 +436,10 @@ class ContextCompactor {
     if (array.length <= 10) return array; // Don't compress small arrays
 
     // Identify and preserve Sacred DNA sections
-    const sacredItems = array.filter(item => this.isSacredSection(item));
+    const sacredItems = array.filter((item) => this.isSacredSection(item));
 
     // Get non-sacred items for reduction
-    const nonSacredItems = array.filter(item => !this.isSacredSection(item));
+    const nonSacredItems = array.filter((item) => !this.isSacredSection(item));
 
     if (nonSacredItems.length <= 10) {
       // If there aren't many non-sacred items, return original with sacred items
@@ -486,9 +484,11 @@ class ContextCompactor {
    */
   getStats() {
     const totalTokensSaved = this.summaryHistory.reduce((sum, s) => s.tokensSaved || 0, 0);
-    const avgCompressionRatio = this.summaryHistory.length > 0
-      ? this.summaryHistory.reduce((sum, s) => sum + s.compressionRatio, 0) / this.summaryHistory.length
-      : 0;
+    const avgCompressionRatio =
+      this.summaryHistory.length > 0
+        ? this.summaryHistory.reduce((sum, s) => sum + s.compressionRatio, 0) /
+          this.summaryHistory.length
+        : 0;
 
     return {
       totalCompactions: this.summaryHistory.length,
@@ -497,9 +497,11 @@ class ContextCompactor {
       currentTokenThreshold: this.tokenThreshold,
       maxTokenWindow: this.maxTokens,
       totalTokensSaved: totalTokensSaved,
-      efficiencyRate: this.summaryHistory.length > 0
-        ? totalTokensSaved / (this.summaryHistory.reduce((sum, s) => sum.tokensBefore || 0, 0) || 1)
-        : 0
+      efficiencyRate:
+        this.summaryHistory.length > 0
+          ? totalTokensSaved /
+            (this.summaryHistory.reduce((sum, s) => sum.tokensBefore || 0, 0) || 1)
+          : 0,
     };
   }
 
@@ -511,7 +513,7 @@ class ContextCompactor {
     const threshold = this.maxTokens * this.tokenThreshold;
     const buffer = this.maxTokens * 0.02; // 2% buffer to avoid getting too close to limit
 
-    return currentTokens > (threshold - buffer);
+    return currentTokens > threshold - buffer;
   }
 
   /**
@@ -522,7 +524,7 @@ class ContextCompactor {
       return {
         originalContext: context,
         compressed: false,
-        reason: 'Below compaction threshold'
+        reason: 'Below compaction threshold',
       };
     }
 
@@ -557,10 +559,10 @@ class ContextCompactor {
       compressedContext = {
         type: 'aggressively_compressed',
         summary: summary.summary,
-        preservedSections: preservedSections.map(p => p.content),
+        preservedSections: preservedSections.map((p) => p.content),
         recentItems: recentItems,
         originalLength: context.length,
-        compressedLength: recentCount + preservedSections.length
+        compressedLength: recentCount + preservedSections.length,
       };
     } else {
       compressedContext = await this.compact(context);
@@ -580,7 +582,7 @@ class ContextCompactor {
       preservedSections,
       summary,
       strategy: 'aggressive',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 }

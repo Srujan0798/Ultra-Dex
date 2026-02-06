@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { recommendDatabase } from '../advisor/database-tree.js';
@@ -13,8 +15,8 @@ export function registerDbAdvisorCommand(program) {
           type: 'list',
           name: 'useCase',
           message: 'What is your primary use case?',
-          choices: ['ecommerce', 'cms', 'saas', 'analytics']
-        }
+          choices: ['ecommerce', 'cms', 'saas', 'analytics'],
+        },
       ]);
 
       const rec = recommendDatabase(answers.useCase);

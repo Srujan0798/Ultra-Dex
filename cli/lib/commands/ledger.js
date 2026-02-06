@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import { ledger } from '../ledger/index.js';
@@ -5,9 +7,7 @@ import { addDecision } from '../ledger/decisions.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
 export function registerLedgerCommand(program) {
-  const command = program
-    .command('ledger')
-    .description('Immutable audit trail for AI decisions');
+  const command = program.command('ledger').description('Immutable audit trail for AI decisions');
 
   command
     .command('add <decision>')
@@ -16,12 +16,12 @@ export function registerLedgerCommand(program) {
     .option('--rationale <text>', 'Decision rationale')
     .option('--files <list>', 'Comma-separated affected files')
     .action(async (decision, options) => {
-      const files = options.files ? options.files.split(',').map(f => f.trim()) : [];
+      const files = options.files ? options.files.split(',').map((f) => f.trim()) : [];
       const entry = await addDecision({
         agent: options.agent,
         decision,
         rationale: options.rationale,
-        affected_files: files
+        affected_files: files,
       });
       printSuccess(chalk.green(`\n✅ Decision recorded at ${entry.timestamp}\n`));
     });
@@ -36,7 +36,7 @@ export function registerLedgerCommand(program) {
         return;
       }
       printInfo(chalk.cyan('\nLedger results:\n'));
-      results.forEach(entry => {
+      results.forEach((entry) => {
         printInfo(chalk.white(`- ${entry.timestamp} ${entry.agent} ${entry.action}`));
         if (entry.rationale) printInfo(chalk.gray(`  ${entry.rationale}`));
       });
@@ -50,7 +50,7 @@ export function registerLedgerCommand(program) {
     .action(async (options) => {
       const results = await ledger.rangeLedger(options.from, options.to);
       printInfo(chalk.cyan(`\nLedger entries: ${results.length}\n`));
-      results.forEach(entry => {
+      results.forEach((entry) => {
         printInfo(chalk.white(`- ${entry.timestamp} ${entry.agent} ${entry.action}`));
       });
     });
@@ -61,7 +61,7 @@ export function registerLedgerCommand(program) {
     .action(async (name) => {
       const results = await ledger.agentLedger(name);
       printInfo(chalk.cyan(`\nLedger entries for ${name}: ${results.length}\n`));
-      results.forEach(entry => {
+      results.forEach((entry) => {
         printInfo(chalk.white(`- ${entry.timestamp} ${entry.action}`));
       });
     });

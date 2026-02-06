@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Status and Monitoring Command
  * Provides system status, metrics, and configuration management
@@ -47,6 +49,10 @@ export function registerStatusCommand(program) {
     .option('-h, --health', 'Show health status')
     .option('-c, --config', 'Show configuration')
     .option('-a, --all', 'Show all information')
+    .addHelpText(
+      'after',
+      '\nExamples:\n  ultra-dex status\n  ultra-dex status --metrics\n  ultra-dex status --all\n'
+    )
     .action(statusCommand);
 }
 
@@ -63,7 +69,7 @@ export async function configCommand(options) {
     } else if (options.get) {
       const value = configManager.get(options.get);
       if (value === undefined) {
-          throw new ValidationError(`Configuration key not found: ${options.get}`);
+        throw new ValidationError(`Configuration key not found: ${options.get}`);
       }
       console.log(`${chalk.bold(options.get)}: ${JSON.stringify(value, null, 2)}`);
     } else if (options.set) {
@@ -71,17 +77,17 @@ export async function configCommand(options) {
       if (!key || value === undefined) {
         throw new ValidationError('Invalid format. Use: --set key=value');
       }
-      
+
       let parsedValue = value;
       try {
         parsedValue = JSON.parse(value);
       } catch (e) {
         // Keep as string if not valid JSON
       }
-      
+
       configManager.set(key, parsedValue);
       const saved = await configManager.save();
-      
+
       if (saved) {
         printSuccess(`✅ Configuration ${key} set to ${JSON.stringify(parsedValue)}`);
       } else {
@@ -113,13 +119,18 @@ export function registerSystemConfigCommand(program) {
 
 export async function metricsCommand(options) {
   try {
+    const allowedFormats = new Set(['json', 'csv']);
+    if (options.format && !allowedFormats.has(options.format)) {
+      throw new ValidationError(`Unsupported format: ${options.format}. Use json or csv.`);
+    }
+
     if (options.watch) {
       return runMetricsWatcher();
     }
 
     printInfo(chalk.bold('\n📈 Ultra-Dex Metrics\n'));
     interactiveMode.showMetrics();
-    
+
     if (options.export) {
       const format = options.format || 'json';
       const metrics = await monitoring.exportMetrics(format);
@@ -132,33 +143,37 @@ export async function metricsCommand(options) {
 }
 
 function runMetricsWatcher() {
+  console.clear();
+  printInfo(chalk.bold('\n📈 Ultra-Dex Real-Time Metrics (Press Ctrl+C to stop)\n'));
+
+  const interval = setInterval(() => {
     console.clear();
     printInfo(chalk.bold('\n📈 Ultra-Dex Real-Time Metrics (Press Ctrl+C to stop)\n'));
-    
-    const interval = setInterval(() => {
-      console.clear();
-      printInfo(chalk.bold('\n📈 Ultra-Dex Real-Time Metrics (Press Ctrl+C to stop)\n'));
-      interactiveMode.showMetrics();
-      
-      const metrics = monitoring.getMetrics();
-      if (metrics.system) {
-          const usedMemPercent = ((metrics.system.totalMemory - metrics.system.freeMemory) / metrics.system.totalMemory) * 100;
-          if (usedMemPercent > 90) {
-              console.log(chalk.bgRed.white.bold('\n⚠️  ALERT: High Memory Usage (>90%) '));
-          }
-          if (metrics.errors > 10) {
-              console.log(chalk.bgRed.white.bold(`\n⚠️  ALERT: High Error Rate (${metrics.errors} errors) `));
-          }
-      }
-      console.log(chalk.gray(`\nLast updated: ${new Date().toLocaleTimeString()}`));
-    }, 2000);
-    
-    process.on('SIGINT', () => {
-        clearInterval(interval);
-        process.exit(0);
-    });
+    interactiveMode.showMetrics();
 
-    process.stdin.resume();
+    const metrics = monitoring.getMetrics();
+    if (metrics.system) {
+      const usedMemPercent =
+        ((metrics.system.totalMemory - metrics.system.freeMemory) / metrics.system.totalMemory) *
+        100;
+      if (usedMemPercent > 90) {
+        console.log(chalk.bgRed.white.bold('\n⚠️  ALERT: High Memory Usage (>90%) '));
+      }
+      if (metrics.errors > 10) {
+        console.log(
+          chalk.bgRed.white.bold(`\n⚠️  ALERT: High Error Rate (${metrics.errors} errors) `)
+        );
+      }
+    }
+    console.log(chalk.gray(`\nLast updated: ${new Date().toLocaleTimeString()}`));
+  }, 2000);
+
+  process.on('SIGINT', () => {
+    clearInterval(interval);
+    process.exit(0);
+  });
+
+  process.stdin.resume();
 }
 
 export function registerMetricsCommand(program) {
@@ -168,6 +183,10 @@ export function registerMetricsCommand(program) {
     .option('-e, --export', 'Export metrics')
     .option('-f, --format <format>', 'Export format (json, csv)', 'json')
     .option('-w, --watch', 'Watch metrics in real-time')
+    .addHelpText(
+      'after',
+      '\nExamples:\n  ultra-dex metrics\n  ultra-dex metrics --export --format csv\n  ultra-dex metrics --watch\n'
+    )
     .action(metricsCommand);
 }
 
@@ -179,7 +198,7 @@ export async function healthCommand(options) {
   try {
     printInfo(chalk.bold('\n🏥 Ultra-Dex Health Status\n'));
     interactiveMode.showHealthStatus();
-    
+
     if (options.check) {
       printInfo(chalk.bold('\n🔍 Detailed Health Check Results:\n'));
       // In a real implementation, these would perform actual pings/checks
@@ -187,12 +206,14 @@ export async function healthCommand(options) {
         { name: 'MCP Server', status: 'PASS', message: 'Running on port 3001' },
         { name: 'AI Provider', status: 'PASS', message: 'API key validated' },
         { name: 'File System', status: 'PASS', message: 'Read/write access OK' },
-        { name: 'Graph Engine', status: 'PASS', message: 'Code Property Graph active' }
+        { name: 'Graph Engine', status: 'PASS', message: 'Code Property Graph active' },
       ];
 
-      checks.forEach(check => {
-          const icon = check.status === 'PASS' ? chalk.green('✅') : chalk.red('❌');
-          console.log(`  ${icon} ${chalk.white(check.name.padEnd(20))} [${check.status}] ${chalk.gray(check.message)}`);
+      checks.forEach((check) => {
+        const icon = check.status === 'PASS' ? chalk.green('✅') : chalk.red('❌');
+        console.log(
+          `  ${icon} ${chalk.white(check.name.padEnd(20))} [${check.status}] ${chalk.gray(check.message)}`
+        );
       });
     }
   } catch (error) {
@@ -215,7 +236,7 @@ export function registerHealthCommand(program) {
 export async function debugCommand(options) {
   try {
     printInfo(chalk.bold('\n🐞 Ultra-Dex Debug Information\n'));
-    
+
     const metrics = monitoring.getMetrics();
     printInfo(chalk.bold('System Summary:'));
     console.log(`  Version: ${metrics.version}`);
@@ -223,7 +244,7 @@ export async function debugCommand(options) {
     console.log(`  Uptime: ${interactiveMode.formatDuration(metrics.uptime)}`);
     console.log(`  Total Requests: ${metrics.requests}`);
     console.log(`  Total Errors: ${metrics.errors}`);
-    
+
     if (options.logs) {
       printInfo(chalk.bold('\nRecent Logs:'));
       const logs = await monitoring.exportLogs();
@@ -249,5 +270,5 @@ export default {
   registerSystemConfigCommand,
   registerMetricsCommand,
   registerHealthCommand,
-  registerDebugCommand
+  registerDebugCommand,
 };

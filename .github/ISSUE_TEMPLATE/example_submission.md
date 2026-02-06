@@ -23,14 +23,14 @@ Describe it in one sentence.
 
 ## Tech Stack Used
 
-| Layer | Choice |
-|-------|--------|
-| Frontend | |
-| Backend | |
-| Database | |
-| Auth | |
-| Payments | |
-| Hosting | |
+| Layer    | Choice |
+| -------- | ------ |
+| Frontend |        |
+| Backend  |        |
+| Database |        |
+| Auth     |        |
+| Payments |        |
+| Hosting  |        |
 
 ## Example File
 

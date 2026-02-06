@@ -1,25 +1,25 @@
-import OpenAI from "openai";
+import OpenAI from 'openai';
 
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 export const AI_MODELS = {
-  GPT4: "gpt-4",
-  GPT4_TURBO: "gpt-4-turbo-preview",
-  GPT35_TURBO: "gpt-3.5-turbo",
-  GPT35_TURBO_16K: "gpt-3.5-turbo-16k",
+  GPT4: 'gpt-4',
+  GPT4_TURBO: 'gpt-4-turbo-preview',
+  GPT35_TURBO: 'gpt-3.5-turbo',
+  GPT35_TURBO_16K: 'gpt-3.5-turbo-16k',
 } as const;
 
 export type AIModel = (typeof AI_MODELS)[keyof typeof AI_MODELS];
 
 export interface ChatMessage {
-  role: "system" | "user" | "assistant";
+  role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
 export const DEFAULT_SYSTEM_PROMPT =
-  "You are a helpful AI assistant. Be concise and clear in your responses.";
+  'You are a helpful AI assistant. Be concise and clear in your responses.';
 
 export async function* streamChatCompletion(
   messages: ChatMessage[],
@@ -43,15 +43,9 @@ export async function* streamChatCompletion(
   }
 }
 
-export async function calculateTokenCost(
-  messages: ChatMessage[],
-  model: AIModel
-): Promise<number> {
+export async function calculateTokenCost(messages: ChatMessage[], model: AIModel): Promise<number> {
   // Approximate token counting (1 token ≈ 4 characters)
-  const totalChars = messages.reduce(
-    (acc, msg) => acc + msg.content.length,
-    0
-  );
+  const totalChars = messages.reduce((acc, msg) => acc + msg.content.length, 0);
   const estimatedTokens = Math.ceil(totalChars / 4);
 
   // Cost per 1K tokens (approximate)

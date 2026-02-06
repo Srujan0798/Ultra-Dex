@@ -1,6 +1,16 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
-import { launchBrowser, navigate, clickSelector, typeSelector, scrollBy, extractDom, screenshotPage } from './playwright.js';
+import {
+  launchBrowser,
+  navigate,
+  clickSelector,
+  typeSelector,
+  scrollBy,
+  extractDom,
+  screenshotPage,
+} from './playwright.js';
 import { analyzeScreenshot } from './vision.js';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -74,7 +84,10 @@ export class BrowserAgent {
 
   async recordSession(steps, outputPath) {
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
-    await fs.writeFile(outputPath, JSON.stringify({ steps, createdAt: new Date().toISOString() }, null, 2));
+    await fs.writeFile(
+      outputPath,
+      JSON.stringify({ steps, createdAt: new Date().toISOString() }, null, 2)
+    );
     return outputPath;
   }
 

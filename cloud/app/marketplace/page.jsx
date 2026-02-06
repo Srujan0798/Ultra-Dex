@@ -4,7 +4,7 @@ const agents = [
   { name: 'Security Sentinel', rating: 4.9, price: '$29/mo', category: 'Security' },
   { name: 'UI Architect', rating: 4.7, price: 'Free', category: 'Frontend' },
   { name: 'API Guardian', rating: 4.8, price: '$19/mo', category: 'Backend' },
-  { name: 'Deploy Pilot', rating: 4.6, price: '$15/mo', category: 'DevOps' }
+  { name: 'Deploy Pilot', rating: 4.6, price: '$15/mo', category: 'DevOps' },
 ];
 
 export default function MarketplacePage() {

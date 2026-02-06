@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Version utility - Single source of truth
  * All files should import VERSION from here

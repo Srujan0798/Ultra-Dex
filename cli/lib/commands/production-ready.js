@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -6,7 +8,10 @@ import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 async function loadCoverage(projectDir) {
   try {
-    const raw = await fs.readFile(path.join(projectDir, 'coverage', 'coverage-summary.json'), 'utf8');
+    const raw = await fs.readFile(
+      path.join(projectDir, 'coverage', 'coverage-summary.json'),
+      'utf8'
+    );
     const summary = JSON.parse(raw);
     return summary.total?.lines?.pct ?? 0;
   } catch {
@@ -24,7 +29,8 @@ export function registerProductionReadyCommand(program) {
 
       const automated = await runAutomatedGates(projectDir);
       const failed = Object.entries(automated).filter(([_, status]) => status === 'FAIL');
-      if (failed.length) blockers.push(`Failed verification gates: ${failed.map(([n]) => n).join(', ')}`);
+      if (failed.length)
+        blockers.push(`Failed verification gates: ${failed.map(([n]) => n).join(', ')}`);
 
       const coverage = await loadCoverage(projectDir);
       if (coverage < 80) blockers.push(`Coverage below 80% (${coverage}%)`);

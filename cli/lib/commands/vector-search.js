@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex vector-search command
  * Vector search using LangChain community vector stores
@@ -15,15 +17,32 @@ import { validateSafePath } from '../utils/validation.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const DEFAULT_INCLUDE = [
-  '**/*.js', '**/*.ts', '**/*.tsx', '**/*.jsx',
-  '**/*.py', '**/*.go', '**/*.rs', '**/*.rb',
-  '**/*.md', '**/*.json', '**/*.yaml', '**/*.yml',
+  '**/*.js',
+  '**/*.ts',
+  '**/*.tsx',
+  '**/*.jsx',
+  '**/*.py',
+  '**/*.go',
+  '**/*.rs',
+  '**/*.rb',
+  '**/*.md',
+  '**/*.json',
+  '**/*.yaml',
+  '**/*.yml',
 ];
 
 const DEFAULT_EXCLUDE_DIRS = [
-  'node_modules', '.git', 'dist', 'build', '.next',
-  'coverage', '__pycache__', '.venv', 'vendor',
-  '.ultra-dex', '.ultra',
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  '.next',
+  'coverage',
+  '__pycache__',
+  '.venv',
+  'vendor',
+  '.ultra-dex',
+  '.ultra',
 ];
 
 function chunkText(text, size = 1000, overlap = 200) {
@@ -40,13 +59,13 @@ function chunkText(text, size = 1000, overlap = 200) {
 
 async function collectFiles(rootDir, includePatterns, excludeDirs) {
   const patterns = includePatterns && includePatterns.length ? includePatterns : DEFAULT_INCLUDE;
-  const ignore = excludeDirs.map(dir => `**/${dir}/**`);
+  const ignore = excludeDirs.map((dir) => `**/${dir}/**`);
   const files = await glob(patterns, {
     cwd: rootDir,
     ignore,
     nodir: true,
   });
-  return files.map(file => path.join(rootDir, file));
+  return files.map((file) => path.join(rootDir, file));
 }
 
 export function registerVectorSearchCommand(program) {
@@ -74,8 +93,10 @@ export function registerVectorSearchCommand(program) {
         }
 
         const rootDir = path.resolve(process.cwd(), options.dir);
-        const include = options.include && options.include.length > 0 ? options.include : DEFAULT_INCLUDE;
-        const exclude = options.exclude && options.exclude.length > 0 ? options.exclude : DEFAULT_EXCLUDE_DIRS;
+        const include =
+          options.include && options.include.length > 0 ? options.include : DEFAULT_INCLUDE;
+        const exclude =
+          options.exclude && options.exclude.length > 0 ? options.exclude : DEFAULT_EXCLUDE_DIRS;
 
         const spinner = ora('Building vector index...').start();
         const files = await collectFiles(rootDir, include, exclude);
@@ -92,10 +113,12 @@ export function registerVectorSearchCommand(program) {
           const content = await fs.readFile(filePath, 'utf8');
           const chunks = chunkText(content, chunkSize, chunkOverlap);
           chunks.forEach((chunk, index) => {
-            documents.push(new Document({
-              pageContent: chunk,
-              metadata: { path: path.relative(process.cwd(), filePath), chunk: index }
-            }));
+            documents.push(
+              new Document({
+                pageContent: chunk,
+                metadata: { path: path.relative(process.cwd(), filePath), chunk: index },
+              })
+            );
           });
         }
 

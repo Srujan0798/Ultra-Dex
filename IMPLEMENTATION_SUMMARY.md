@@ -14,18 +14,18 @@ Ultra-Dex is a **CLI meta-layer** for AI coding orchestration. It provides persi
 
 ### 1. Core CLI (60+ Commands)
 
-| Command | Description | Lines |
-|---------|-------------|-------|
-| `init` | Project initialization with templates | 500+ |
-| `generate` | AI-powered code generation | 300+ |
-| `align` | CONTEXT.md synchronization | 200+ |
-| `check` | Project validation | 150+ |
-| `serve` | MCP server (port 3001) | 400+ |
-| `swarm` | Multi-agent orchestration | 300+ |
-| `watch` | File monitoring | 150+ |
-| `export` | Export to multiple formats | 200+ |
-| `diff` | Compare plan vs implementation | 150+ |
-| `review` | AI code review | 200+ |
+| Command    | Description                           | Lines |
+| ---------- | ------------------------------------- | ----- |
+| `init`     | Project initialization with templates | 500+  |
+| `generate` | AI-powered code generation            | 300+  |
+| `align`    | CONTEXT.md synchronization            | 200+  |
+| `check`    | Project validation                    | 150+  |
+| `serve`    | MCP server (port 3001)                | 400+  |
+| `swarm`    | Multi-agent orchestration             | 300+  |
+| `watch`    | File monitoring                       | 150+  |
+| `export`   | Export to multiple formats            | 200+  |
+| `diff`     | Compare plan vs implementation        | 150+  |
+| `review`   | AI code review                        | 200+  |
 
 **Total:** 60+ commands, 3000+ lines
 
@@ -33,14 +33,14 @@ Ultra-Dex is a **CLI meta-layer** for AI coding orchestration. It provides persi
 
 ### 2. SaaS Templates (6 Starters)
 
-| Template | Stack | Files |
-|----------|-------|-------|
-| `next15-saas` | Next.js 15 + Clerk + Stripe + Prisma | 25 |
-| `remix-saas` | Remix + Clerk + Stripe + Prisma | 10 |
-| `sveltekit-saas` | SvelteKit + Clerk + Stripe + Prisma | 10 |
-| `fastapi-api` | FastAPI + SQLAlchemy | 8 |
-| `ecommerce-next` | Next.js E-commerce | 12 |
-| `ai-saas` | AI SaaS Starter | 15 |
+| Template         | Stack                                | Files |
+| ---------------- | ------------------------------------ | ----- |
+| `next15-saas`    | Next.js 15 + Clerk + Stripe + Prisma | 25    |
+| `remix-saas`     | Remix + Clerk + Stripe + Prisma      | 10    |
+| `sveltekit-saas` | SvelteKit + Clerk + Stripe + Prisma  | 10    |
+| `fastapi-api`    | FastAPI + SQLAlchemy                 | 8     |
+| `ecommerce-next` | Next.js E-commerce                   | 12    |
+| `ai-saas`        | AI SaaS Starter                      | 15    |
 
 **Total:** 45+ template files
 
@@ -48,14 +48,15 @@ Ultra-Dex is a **CLI meta-layer** for AI coding orchestration. It provides persi
 
 ### 3. MCP Integration
 
-| Component | Purpose | Lines |
-|-----------|---------|-------|
-| `mcp/index.js` | MCP server core | 102 |
-| `mcp/resources.js` | Resource handlers | 196 |
-| `mcp/tools.js` | Tool definitions | 769 |
-| `mcp/prompts.js` | Prompt templates | 150 |
+| Component          | Purpose           | Lines |
+| ------------------ | ----------------- | ----- |
+| `mcp/index.js`     | MCP server core   | 102   |
+| `mcp/resources.js` | Resource handlers | 196   |
+| `mcp/tools.js`     | Tool definitions  | 769   |
+| `mcp/prompts.js`   | Prompt templates  | 150   |
 
 **Features:**
+
 - ✅ stdio and HTTP transport
 - ✅ 15+ tools exposed
 - ✅ Live context injection
@@ -65,13 +66,13 @@ Ultra-Dex is a **CLI meta-layer** for AI coding orchestration. It provides persi
 
 ### 4. VS Code Extension
 
-| Feature | Status |
-|---------|--------|
-| Dashboard panel | ✅ Implemented |
-| Context injection | ✅ Implemented |
+| Feature                   | Status         |
+| ------------------------- | -------------- |
+| Dashboard panel           | ✅ Implemented |
+| Context injection         | ✅ Implemented |
 | 21-step verification view | ✅ Implemented |
-| Agent picker sidebar | ✅ Implemented |
-| Status bar indicators | ✅ Implemented |
+| Agent picker sidebar      | ✅ Implemented |
+| Status bar indicators     | ✅ Implemented |
 
 **Total:** 1000+ lines, compiled and ready
 
@@ -79,44 +80,44 @@ Ultra-Dex is a **CLI meta-layer** for AI coding orchestration. It provides persi
 
 ### 5. Specialized Agents (17 Types)
 
-| Tier | Agents |
-|------|--------|
-| Strategic | Product Manager, Architect |
-| Core | Backend, Frontend, Database |
-| Operations | DevOps, Cloud, SRE |
-| Quality | Tester, QA, Debugger |
-| Security | Auditor, Legal Bot |
-| Support | Documentation, Memory Agent |
-| AI | Vision Agent |
+| Tier       | Agents                      |
+| ---------- | --------------------------- |
+| Strategic  | Product Manager, Architect  |
+| Core       | Backend, Frontend, Database |
+| Operations | DevOps, Cloud, SRE          |
+| Quality    | Tester, QA, Debugger        |
+| Security   | Auditor, Legal Bot          |
+| Support    | Documentation, Memory Agent |
+| AI         | Vision Agent                |
 
 ---
 
 ### 6. Advanced Features
 
-| Feature | Description | Lines |
-|---------|-------------|-------|
-| Semantic NLP Routing | Natural language command routing | 261 |
-| Voice Input (Whisper) | Voice-to-command using Whisper API | 220 |
-| MCP Config Wizard | Guided MCP setup | 280 |
-| Token Budget Forecasting | Cost estimation before execution | 150 |
-| WebSocket Updates | Real-time dashboard updates | 200 |
-| LangChain Graphs | 5 core agent graphs | 500+ |
-| Vector Search | Semantic code search | 300 |
-| Graph RAG | Semantic context layer | 400 |
+| Feature                  | Description                        | Lines |
+| ------------------------ | ---------------------------------- | ----- |
+| Semantic NLP Routing     | Natural language command routing   | 261   |
+| Voice Input (Whisper)    | Voice-to-command using Whisper API | 220   |
+| MCP Config Wizard        | Guided MCP setup                   | 280   |
+| Token Budget Forecasting | Cost estimation before execution   | 150   |
+| WebSocket Updates        | Real-time dashboard updates        | 200   |
+| LangChain Graphs         | 5 core agent graphs                | 500+  |
+| Vector Search            | Semantic code search               | 300   |
+| Graph RAG                | Semantic context layer             | 400   |
 
 ---
 
 ## 📊 Statistics
 
-| Metric | Count |
-|--------|-------|
-| Total Files Added | 100+ |
+| Metric              | Count |
+| ------------------- | ----- |
+| Total Files Added   | 100+  |
 | Total Lines Written | 7000+ |
-| CLI Commands | 60+ |
-| Templates | 6 |
-| Agents | 17 |
-| MCP Tools | 15+ |
-| Tests Passing | 95/95 |
+| CLI Commands        | 60+   |
+| Templates           | 6     |
+| Agents              | 17    |
+| MCP Tools           | 15+   |
+| Tests Passing       | 95/95 |
 
 ---
 
@@ -142,13 +143,13 @@ Ultra-Dex/
 
 ## 🔧 Key Files
 
-| File | Purpose |
-|------|---------|
-| `cli/bin/ultra-dex.js` | CLI entry point |
+| File                       | Purpose             |
+| -------------------------- | ------------------- |
+| `cli/bin/ultra-dex.js`     | CLI entry point     |
 | `cli/lib/commands/init.js` | Project scaffolding |
-| `cli/lib/mcp/index.js` | MCP server |
-| `cli/lib/agents/index.js` | Agent orchestration |
-| `vscode/src/extension.ts` | VS Code extension |
+| `cli/lib/mcp/index.js`     | MCP server          |
+| `cli/lib/agents/index.js`  | Agent orchestration |
+| `vscode/src/extension.ts`  | VS Code extension   |
 
 ---
 
@@ -175,15 +176,15 @@ npx ultra-dex serve
 
 ## 🚀 Ready for Production
 
-| Item | Status |
-|------|--------|
-| Core CLI | ✅ Complete |
-| MCP Server | ✅ Complete |
-| Templates | ✅ Complete |
-| VS Code Ext | ✅ Complete |
-| Documentation | ✅ Complete |
-| Tests | ✅ 95/95 Passing |
-| npm Package | ⏳ Ready to publish |
+| Item          | Status              |
+| ------------- | ------------------- |
+| Core CLI      | ✅ Complete         |
+| MCP Server    | ✅ Complete         |
+| Templates     | ✅ Complete         |
+| VS Code Ext   | ✅ Complete         |
+| Documentation | ✅ Complete         |
+| Tests         | ✅ 95/95 Passing    |
+| npm Package   | ⏳ Ready to publish |
 
 ---
 
@@ -195,4 +196,4 @@ npx ultra-dex serve
 
 ---
 
-*Generated: Feb 5, 2026*
+_Generated: Feb 5, 2026_

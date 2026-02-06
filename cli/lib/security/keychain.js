@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -23,7 +25,9 @@ async function getKeytar() {
     const mod = await import('keytar');
     return mod.default || mod;
   } catch (error) {
-    throw new Error('keytar is not installed. Add it as an optional dependency to use credential storage.');
+    throw new Error(
+      'keytar is not installed. Add it as an optional dependency to use credential storage.'
+    );
   }
 }
 

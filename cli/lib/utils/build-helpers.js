@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Build Command Utilities
  * Helpers for the AI-assisted build workflow
@@ -12,12 +14,7 @@ import path from 'path';
  * @returns {Promise<{content: string, path: string}|null>}
  */
 export async function loadImplementationPlan(dir = '.') {
-  const possibleNames = [
-    'IMPLEMENTATION-PLAN.md',
-    'implementation-plan.md',
-    'PLAN.md',
-    'plan.md',
-  ];
+  const possibleNames = ['IMPLEMENTATION-PLAN.md', 'implementation-plan.md', 'PLAN.md', 'plan.md'];
 
   for (const name of possibleNames) {
     const filePath = path.join(dir, name);
@@ -38,7 +35,7 @@ export async function loadImplementationPlan(dir = '.') {
  */
 export async function loadContext(dir = '.') {
   const possibleNames = ['CONTEXT.md', 'context.md'];
-  
+
   for (const name of possibleNames) {
     try {
       return await fs.readFile(path.join(dir, name), 'utf-8');
@@ -56,19 +53,19 @@ export async function loadContext(dir = '.') {
  */
 export function extractTasks(planContent) {
   const tasks = [];
-  
+
   let currentSection = 0;
-  
+
   // Track current section
   const lines = planContent.split('\n');
   let lineIndex = 0;
-  
+
   for (const line of lines) {
     const sectionMatch = line.match(/## SECTION (\d+):/i);
     if (sectionMatch) {
       currentSection = parseInt(sectionMatch[1], 10);
     }
-    
+
     const taskMatch = line.match(/- \[([ x])\]\s*(.+)/i);
     if (taskMatch) {
       tasks.push({
@@ -81,7 +78,7 @@ export function extractTasks(planContent) {
     }
     lineIndex++;
   }
-  
+
   return tasks;
 }
 
@@ -92,13 +89,13 @@ export function extractTasks(planContent) {
  */
 export function extractAtomicTasks(planContent) {
   const tasks = [];
-  
+
   // Find Section 16 content
   const section16Match = planContent.match(/## SECTION 16:.*?(?=## SECTION 17:|$)/is);
   if (!section16Match) return tasks;
-  
+
   const section16 = section16Match[0];
-  
+
   // Match task patterns with estimates
   // e.g., "1. Setup project structure (4h)" or "- [ ] Configure database (6-8h)"
   const taskPatterns = [
@@ -106,7 +103,7 @@ export function extractAtomicTasks(planContent) {
     /- \[[ x]\]\s*(.+?)\s*\((\d+(?:-\d+)?h?)\)/gi,
     /\|\s*(.+?)\s*\|\s*(\d+(?:-\d+)?\s*h(?:ours?)?)\s*\|/gi,
   ];
-  
+
   for (const pattern of taskPatterns) {
     let match;
     while ((match = pattern.exec(section16)) !== null) {
@@ -118,7 +115,7 @@ export function extractAtomicTasks(planContent) {
       });
     }
   }
-  
+
   return tasks;
 }
 
@@ -128,7 +125,7 @@ export function extractAtomicTasks(planContent) {
  * @returns {Array} Pending tasks
  */
 export function getPendingTasks(tasks) {
-  return tasks.filter(t => t.status === 'pending');
+  return tasks.filter((t) => t.status === 'pending');
 }
 
 /**
@@ -138,14 +135,14 @@ export function getPendingTasks(tasks) {
  */
 export function groupTasksBySection(tasks) {
   const grouped = new Map();
-  
+
   for (const task of tasks) {
     if (!grouped.has(task.section)) {
       grouped.set(task.section, []);
     }
     grouped.get(task.section).push(task);
   }
-  
+
   return grouped;
 }
 
@@ -156,11 +153,11 @@ export function groupTasksBySection(tasks) {
  */
 export function formatAgentContext({ plan, context, task, section }) {
   let formatted = `# Project Context\n\n`;
-  
+
   if (context) {
     formatted += `## Overview\n\n${context}\n\n`;
   }
-  
+
   if (task) {
     formatted += `## Current Task\n\n**${task.title}**\n`;
     if (task.estimate) {
@@ -171,20 +168,20 @@ export function formatAgentContext({ plan, context, task, section }) {
     }
     formatted += '\n';
   }
-  
+
   if (section && plan) {
     const sectionContent = extractSection(plan, section);
     if (sectionContent) {
       formatted += `## Relevant Section\n\n${sectionContent}\n\n`;
     }
   }
-  
+
   formatted += `## Instructions\n\n`;
   formatted += `1. Focus on completing the current task\n`;
   formatted += `2. Follow the implementation plan specifications\n`;
   formatted += `3. Write production-ready code with tests\n`;
   formatted += `4. Document any deviations from the plan\n`;
-  
+
   return formatted;
 }
 

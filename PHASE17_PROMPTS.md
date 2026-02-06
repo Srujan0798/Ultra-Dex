@@ -11,6 +11,7 @@
 ---
 
 ### PROMPT 186: The 21-Step Verifier
+
 > **Source:** 07-Rule-Book-21.md
 > **Status:** Core Protocol
 
@@ -32,6 +33,7 @@
 ---
 
 ### PROMPT 187: Risk Register Module
+
 > **Source:** 07-Rule-Book-21.md
 > **Status:** Quality
 
@@ -53,6 +55,7 @@
 ---
 
 ### PROMPT 188: Rollback Plan Generator
+
 > **Source:** 07-Rule-Book-21.md
 > **Status:** DevOps
 
@@ -74,6 +77,7 @@
 ---
 
 ### PROMPT 189: Accessibility Enforcer
+
 > **Source:** 07-Rule-Book-21.md
 > **Status:** Quality
 
@@ -95,6 +99,7 @@
 ---
 
 ### PROMPT 190: Decision Ledger
+
 > **Source:** Copilot.md
 > **Status:** Intelligence
 
@@ -120,6 +125,7 @@
 ---
 
 ### PROMPT 191: Persistent Project Mind
+
 > **Source:** Copilot.md
 > **Status:** AI Core
 
@@ -142,6 +148,7 @@
 ---
 
 ### PROMPT 192: Model Router
+
 > **Source:** Copilot.md
 > **Status:** AI Core
 
@@ -164,6 +171,7 @@
 ---
 
 ### PROMPT 193: Cross-Tool Context Bus
+
 > **Source:** Copilot.md
 > **Status:** Integration
 
@@ -185,6 +193,7 @@
 ---
 
 ### PROMPT 194: Traceability Engine
+
 > **Source:** Copilot.md
 > **Status:** Intelligence
 
@@ -205,6 +214,7 @@
 ---
 
 ### PROMPT 195: Repo Knowledge Graph
+
 > **Source:** Copilot.md
 > **Status:** Advanced AI
 
@@ -230,6 +240,7 @@
 ---
 
 ### PROMPT 196: The Omni-Box
+
 > **Source:** PLAN-CLI-4.0.md
 > **Status:** UX
 
@@ -251,6 +262,7 @@
 ---
 
 ### PROMPT 197: NLP Intent Router
+
 > **Source:** PLAN-CLI-4.0.md
 > **Status:** UX
 
@@ -271,6 +283,7 @@
 ---
 
 ### PROMPT 198: Smart Error Handling
+
 > **Source:** PLAN-CLI-4.0.md
 > **Status:** DX
 
@@ -292,6 +305,7 @@
 ---
 
 ### PROMPT 199: Agent Persona Engine
+
 > **Source:** PLAN-CLI-4.0.md
 > **Status:** UX
 
@@ -314,6 +328,7 @@
 ---
 
 ### PROMPT 200: Interactive Docs TUI
+
 > **Source:** PLAN-CLI-4.0.md
 > **Status:** Documentation
 

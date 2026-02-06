@@ -3,6 +3,7 @@
 React Native companion app with voice commands, notifications, and project status.
 
 ## Run
+
 ```bash
 cd mobile
 npm install

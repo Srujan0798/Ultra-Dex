@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { runStructuralGates } from './structural.js';
 import { runFunctionalGates } from './functional.js';
 import { runArchitecturalGates } from './architectural.js';

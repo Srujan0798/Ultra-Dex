@@ -7,12 +7,14 @@
 ## What Ultra-Dex Is
 
 **Ultra-Dex is NOT:**
+
 - A competitor to Cursor, Windsurf, or any IDE
 - A competitor to Devin, OpenHands, or any AI agent
 - A competitor to Bolt.new, Lovable, or any code generator
 - A planning template that humans fill out manually
 
 **Ultra-Dex IS:**
+
 - An **AI Orchestration Layer** that sits above all AI tools
 - A **Meta Layer** filling the gap between human ideas and AI execution
 - A **Context Provider** that keeps AI agents aligned with the original vision
@@ -27,6 +29,7 @@ Human Idea → [GAP] → AI Agents → [DEVIATION] → Wrong Product
 ```
 
 When users go directly to AI agents (Cursor, Devin, Bolt):
+
 1. AI starts building immediately without full context
 2. Each prompt adds new ideas, causing scope creep
 3. Original vision gets lost in implementation details
@@ -70,12 +73,12 @@ Human Idea → Ultra-Dex → AI-Generated Plan → AI Agents → Correct Product
 
 Ultra-Dex doesn't replace any tool. It **enhances** every tool.
 
-| Tool | Without Ultra-Dex | With Ultra-Dex |
-|------|-------------------|----------------|
-| Cursor | Generates code from prompts | Generates code aligned with full plan |
-| Devin | Builds features ad-hoc | Builds features per specification |
-| Bolt.new | Creates scaffolds | Creates scaffolds matching architecture |
-| Any AI | Works in isolation | Works with shared context |
+| Tool     | Without Ultra-Dex           | With Ultra-Dex                          |
+| -------- | --------------------------- | --------------------------------------- |
+| Cursor   | Generates code from prompts | Generates code aligned with full plan   |
+| Devin    | Builds features ad-hoc      | Builds features per specification       |
+| Bolt.new | Creates scaffolds           | Creates scaffolds matching architecture |
+| Any AI   | Works in isolation          | Works with shared context               |
 
 ---
 
@@ -134,6 +137,7 @@ ultra-dex align
 **Ultra-Dex asks:** "What product do you want?"
 
 Then it:
+
 1. Generates the complete specification
 2. Provides context to any AI agent
 3. Keeps everything aligned with your vision
@@ -153,6 +157,7 @@ Then it:
 ## Roadmap
 
 ### Phase 1: Foundation (Current - v1.x)
+
 - [x] 34-section template
 - [x] 3 complete examples
 - [x] 13 Cursor rules
@@ -160,16 +165,19 @@ Then it:
 - [x] Documentation
 
 ### Phase 2: AI Generation (v2.0)
+
 - [ ] `ultra-dex generate` - AI fills all sections from idea
 - [ ] Multiple AI provider support (Claude, GPT, Gemini)
 - [ ] Intelligent section prioritization
 
 ### Phase 3: Orchestration (v2.x)
+
 - [ ] `ultra-dex build` - Orchestrate AI agents with context
 - [ ] `ultra-dex review` - Continuous alignment checking
 - [ ] Agent-specific context formatting
 
 ### Phase 4: Integration (v3.x)
+
 - [ ] IDE extensions (VS Code, Cursor)
 - [ ] CI/CD integration
 - [ ] Team collaboration features
@@ -184,4 +192,4 @@ Human provides the idea. AI does the rest. Ultra-Dex ensures it's right.
 
 ---
 
-*Ultra-Dex v2 - The AI Orchestration Meta Layer*
+_Ultra-Dex v2 - The AI Orchestration Meta Layer_

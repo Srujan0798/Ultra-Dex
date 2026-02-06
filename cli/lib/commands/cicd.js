@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import fsSync from 'fs';
@@ -52,14 +54,27 @@ export function registerCicdCommand(program) {
 
           if (options.prReview) {
             const prSource = path.join(TEMPLATE_ROOT, 'pr-review.yml');
-            const prTarget = path.resolve(process.cwd(), '.github', 'workflows', 'ultra-dex-pr-review.yml');
+            const prTarget = path.resolve(
+              process.cwd(),
+              '.github',
+              'workflows',
+              'ultra-dex-pr-review.yml'
+            );
             await copyTemplate(prSource, prTarget);
             printSuccess(chalk.green('✅ PR review workflow added.'));
           }
 
           if (options.nightly) {
-            const nightlyTarget = path.resolve(process.cwd(), '.github', 'workflows', 'ultra-dex-nightly.yml');
-            await fs.writeFile(nightlyTarget, `name: Ultra-Dex Nightly\n\non:\n  schedule:\n    - cron: '0 3 * * *'\n\njobs:\n  nightly:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm test\n`);
+            const nightlyTarget = path.resolve(
+              process.cwd(),
+              '.github',
+              'workflows',
+              'ultra-dex-nightly.yml'
+            );
+            await fs.writeFile(
+              nightlyTarget,
+              `name: Ultra-Dex Nightly\n\non:\n  schedule:\n    - cron: '0 3 * * *'\n\njobs:\n  nightly:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm test\n`
+            );
             printSuccess(chalk.green('✅ Nightly schedule added.'));
           }
 

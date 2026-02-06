@@ -68,12 +68,14 @@ export async function createUser(
       data: validated.data,
     });
 
-    console.log(JSON.stringify({
-      level: 'info',
-      event: 'user_created',
-      userId: user.id,
-      createdBy: userId,
-    }));
+    console.log(
+      JSON.stringify({
+        level: 'info',
+        event: 'user_created',
+        userId: user.id,
+        createdBy: userId,
+      })
+    );
 
     revalidatePath('/users');
     return { success: true, data: { id: user.id } };
@@ -139,12 +141,14 @@ export async function deleteUser(id: string): Promise<ActionResponse> {
       where: { id },
     });
 
-    console.log(JSON.stringify({
-      level: 'info',
-      event: 'user_deleted',
-      deletedUserId: id,
-      deletedBy: userId,
-    }));
+    console.log(
+      JSON.stringify({
+        level: 'info',
+        event: 'user_deleted',
+        deletedUserId: id,
+        deletedBy: userId,
+      })
+    );
 
     revalidatePath('/users');
     return { success: true, data: undefined };

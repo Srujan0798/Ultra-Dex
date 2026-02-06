@@ -1,6 +1,6 @@
 # Ultra-Dex Phase 8 - Extracted from Archives
 
-> **Source:** _old/archived_docs/excessive_documentation/, FUTURE-TASKS.md, ADVANCED-WORKFLOWS.md
+> **Source:** \_old/archived_docs/excessive_documentation/, FUTURE-TASKS.md, ADVANCED-WORKFLOWS.md
 > **Total:** 15 New Prompts (Not in Phase 5-7)
 > **Date:** Feb 5, 2026
 
@@ -15,7 +15,7 @@
 > **Source:** 01-persistent-memory.md
 > **Status:** Draft spec exists, needs full implementation
 
-```
+````
 ## Task: Implement 3-Tier Memory System
 
 **Files to create:**
@@ -55,7 +55,7 @@ interface MemoryEntry {
   embedding?: number[];
   relations: string[];
 }
-```
+````
 
 5. Commands:
    - `ultra-dex memory add "Always use Zod"` - Manual remember
@@ -64,6 +64,7 @@ interface MemoryEntry {
    - `ultra-dex memory tier hot` - Show hot memory
 
 **Commit:** "feat: Implement 3-tier persistent memory (PPM)"
+
 ```
 
 ---
@@ -74,9 +75,11 @@ interface MemoryEntry {
 > **Status:** Draft spec exists, needs implementation
 
 ```
+
 ## Task: Intelligent Model Selection with Quality Gates
 
 **Files to create:**
+
 - cli/lib/router/classifier.js (NEW)
 - cli/lib/router/router.js (NEW)
 - cli/lib/router/evaluator.js (NEW)
@@ -102,6 +105,7 @@ interface MemoryEntry {
    - Log all routing decisions
 
 4. Configuration (router.json):
+
 ```json
 {
   "strategies": {
@@ -109,9 +113,7 @@ interface MemoryEntry {
     "performance": { "default": "claude-3-5-sonnet" },
     "privacy": { "default": "ollama:llama3" }
   },
-  "overrides": [
-    { "keyword": "security", "model": "gpt-4o" }
-  ]
+  "overrides": [{ "keyword": "security", "model": "gpt-4o" }]
 }
 ```
 
@@ -120,6 +122,7 @@ interface MemoryEntry {
    - `ultra-dex route --strategy cost_optimized`
 
 **Commit:** "feat: Add intelligent model router with evaluation loops"
+
 ```
 
 ---
@@ -130,9 +133,11 @@ interface MemoryEntry {
 > **Status:** Draft spec exists, needs implementation
 
 ```
+
 ## Task: Implement Quality Gate System
 
 **Files to create:**
+
 - cli/lib/gates/index.js (NEW)
 - cli/lib/gates/structural.js (NEW)
 - cli/lib/gates/functional.js (NEW)
@@ -156,6 +161,7 @@ interface MemoryEntry {
    - Security scan (no hardcoded secrets)
 
 4. Configuration (quality-gate.json):
+
 ```json
 {
   "strict_mode": true,
@@ -182,6 +188,7 @@ interface MemoryEntry {
    - Agent Loop: Reviewer uses this config
 
 **Commit:** "feat: Add quality gate system with 3 gate types"
+
 ```
 
 ---
@@ -192,9 +199,11 @@ interface MemoryEntry {
 > **Status:** Draft spec exists, needs implementation
 
 ```
+
 ## Task: Implement Immutable Decision Audit Trail
 
 **Files to create:**
+
 - cli/lib/ledger/index.js (NEW)
 - cli/lib/ledger/storage.js (NEW)
 - cli/lib/ledger/query.js (NEW)
@@ -202,6 +211,7 @@ interface MemoryEntry {
 **Requirements:**
 
 1. Ledger Entry Schema:
+
 ```json
 {
   "block_id": "blk_8a7b9c...",
@@ -214,9 +224,7 @@ interface MemoryEntry {
     "rejected_options": ["Session IDs", "OAuth only"],
     "reasoning": "Statelessness for serverless"
   },
-  "constraints_checked": [
-    { "rule": "No stateful sessions", "status": "PASS" }
-  ],
+  "constraints_checked": [{ "rule": "No stateful sessions", "status": "PASS" }],
   "artifacts": ["docs/auth-architecture.md"]
 }
 ```
@@ -232,6 +240,7 @@ interface MemoryEntry {
    - `ultra-dex commit` - Auto-append decision to commit
 
 **Commit:** "feat: Add decision ledger with audit trail"
+
 ```
 
 ---
@@ -242,12 +251,15 @@ interface MemoryEntry {
 > **Status:** Draft spec exists, needs enhancement
 
 ```
+
 ## Task: Implement Cross-Tool Context Sharing
 
 **Files to modify:**
+
 - cli/lib/mcp/server.js (enhance)
 
 **Files to create:**
+
 - cli/lib/mcp/context-bus.js (NEW)
 - cli/lib/mcp/adapters/cursor.js (NEW)
 - cli/lib/mcp/adapters/claude.js (NEW)
@@ -277,6 +289,7 @@ interface MemoryEntry {
    - Graph updated → All tools get new context via MCP
 
 **Commit:** "feat: Add MCP context bus for cross-tool sync"
+
 ```
 
 ---
@@ -291,9 +304,11 @@ interface MemoryEntry {
 > **Effort:** 4 weeks
 
 ```
+
 ## Task: Create Ultra-Dex SDK for AI Agents
 
 **Files to create:**
+
 - sdk/index.ts (NEW)
 - sdk/agent.ts (NEW)
 - sdk/providers/ (NEW directory)
@@ -302,6 +317,7 @@ interface MemoryEntry {
 **Requirements:**
 
 1. Create UltraAgent class:
+
 ```typescript
 import { UltraAgent } from 'ultra-dex';
 
@@ -311,7 +327,7 @@ const agent = new UltraAgent({
   mode: 'planner',
 });
 
-await agent.fill({ idea: "AI recipe generator", sections: [1,2,3] });
+await agent.fill({ idea: 'AI recipe generator', sections: [1, 2, 3] });
 const tasks = await agent.generateTasks({ from: 'Section 16' });
 await agent.execute(tasks[0], { verify: true, autoCommit: true });
 ```
@@ -331,6 +347,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
    - TypeScript definitions
 
 **Commit:** "feat: Add Ultra-Dex SDK for AI agents"
+
 ```
 
 ---
@@ -341,9 +358,11 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Effort:** 2 days
 
 ```
+
 ## Task: Implement Token Estimation and Budget Tracking
 
 **Files to create:**
+
 - cli/lib/commands/estimate.js (NEW)
 - cli/lib/budget/tracker.js (NEW)
 - cli/lib/budget/calculator.js (NEW)
@@ -374,6 +393,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
    - `ultra-dex budget set --monthly 50`
 
 **Commit:** "feat: Add token cost estimator and budget manager"
+
 ```
 
 ---
@@ -384,9 +404,11 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Effort:** 2 weeks
 
 ```
+
 ## Task: Create Cursor Rules Marketplace
 
 **Files to create:**
+
 - cli/lib/marketplace/rules.js (NEW)
 - cursor-rules/community/ (NEW directory)
 - cursor-rules/enterprise/ (NEW directory)
@@ -394,6 +416,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 **Requirements:**
 
 1. Directory structure:
+
    ```
    cursor-rules/
    ├── official/ (31 core rules)
@@ -418,6 +441,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
    - Versioning and ratings
 
 **Commit:** "feat: Add cursor rules marketplace"
+
 ```
 
 ---
@@ -432,9 +456,11 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Effort:** 3 months
 
 ```
+
 ## Task: Design Ultra-Dex Cloud Platform
 
 **Files to create:**
+
 - cloud/architecture.md (NEW)
 - cloud/services/ (NEW directory)
 - cloud/api/ (NEW directory)
@@ -442,6 +468,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 **Requirements:**
 
 1. Architecture:
+
    ```
    ┌─────────────────────────────────────────┐
    │         ULTRA-DEX CLOUD                 │
@@ -469,6 +496,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
    | Enterprise | Custom | SSO, SLA |
 
 **Commit:** "feat: Design Ultra-Dex Cloud platform architecture"
+
 ```
 
 ---
@@ -479,9 +507,11 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Effort:** 3 months
 
 ```
+
 ## Task: Create Certification Program
 
 **Files to create:**
+
 - docs/certification/README.md (NEW)
 - docs/certification/levels/ (NEW)
 - docs/certification/exams/ (NEW)
@@ -506,6 +536,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
    - Job board access
 
 **Commit:** "feat: Add certification program framework"
+
 ```
 
 ---
@@ -516,9 +547,11 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Effort:** 6 months
 
 ```
+
 ## Task: Create Online Learning Platform
 
 **Files to create:**
+
 - university/README.md (NEW)
 - university/courses/ (NEW)
 - university/workshops/ (NEW)
@@ -543,6 +576,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
    - Community forum
 
 **Commit:** "feat: Add Ultra-Dex University framework"
+
 ```
 
 ---
@@ -553,9 +587,11 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Effort:** 6 months
 
 ```
+
 ## Task: Create Fully Autonomous Development Agent
 
 **Files to create:**
+
 - cli/lib/autonomous/agent.js (NEW)
 - cli/lib/autonomous/pipeline.js (NEW)
 - cli/lib/autonomous/gates.js (NEW)
@@ -581,6 +617,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
    - `ultra-dex auto --approve checkpoint-3`
 
 **Commit:** "feat: Add fully autonomous development agent"
+
 ```
 
 ---
@@ -591,9 +628,11 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Effort:** 1 year
 
 ```
+
 ## Task: Design Ultra-Dex Operating System
 
 **Files to create:**
+
 - os-concept/README.md (NEW)
 - os-concept/architecture.md (NEW)
 - os-concept/components/ (NEW)
@@ -601,6 +640,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 **Requirements:**
 
 1. Core Components:
+
    ```
    ultra-dex-os/
    ├── Workspaces (Project containers)
@@ -617,6 +657,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
    - Cross-project learning
 
 **Commit:** "feat: Design Ultra-Dex OS concept"
+
 ```
 
 ---
@@ -630,14 +671,17 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Source:** ADVANCED-WORKFLOWS.md Example 1
 
 ```
+
 ## Task: Document Complete Stripe Integration Workflow
 
 **Files to create:**
+
 - examples/stripe-payments/README.md (NEW)
 - examples/stripe-payments/schema.prisma (NEW)
 - examples/stripe-payments/api/ (NEW)
 
 **Full workflow documented:**
+
 1. @Planner: Task breakdown
 2. @Research: Provider comparison
 3. @CTO: Architecture approval
@@ -648,6 +692,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 8. @DevOps: Environment setup
 
 **Commit:** "docs: Add complete Stripe integration example"
+
 ```
 
 ---
@@ -657,14 +702,17 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 > **Source:** ADVANCED-WORKFLOWS.md Example 2
 
 ```
+
 ## Task: Document Complete Email System Workflow
 
 **Files to create:**
+
 - examples/email-notifications/README.md (NEW)
 - examples/email-notifications/templates/ (NEW)
 - examples/email-notifications/queue/ (NEW)
 
 **Full workflow documented:**
+
 1. @Research: Resend vs SendGrid vs AWS SES
 2. @CTO: Async processing with BullMQ
 3. @Database: EmailLog schema
@@ -672,6 +720,7 @@ await agent.execute(tasks[0], { verify: true, autoCommit: true });
 5. @Testing: Test email sending
 
 **Commit:** "docs: Add complete email notification example"
+
 ```
 
 ---
@@ -714,3 +763,4 @@ These archived files have been fully extracted:
 **Total Prompts Now: 65 (Phase 5: 15 + Phase 6: 20 + Phase 7: 15 + Phase 8: 15)**
 
 *All prompts are copy-paste ready for Codex/Claude/Gemini/Qwen!*
+```

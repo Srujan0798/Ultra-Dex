@@ -1,8 +1,10 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { runQualityGates } from '../quality/gate.js';
 
 export async function runPreCommitHook() {
   const { results } = await runQualityGates(process.cwd());
-  const failed = results.filter(r => r.status === 'fail');
+  const failed = results.filter((r) => r.status === 'fail');
   if (failed.length) {
     throw new Error(`Pre-commit blocked: ${failed.length} gate(s) failed.`);
   }

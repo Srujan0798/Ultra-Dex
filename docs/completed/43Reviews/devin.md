@@ -8,26 +8,26 @@ Ultra-Dex is **genuinely 2026-grade orchestration infrastructure**, not 2024 mar
 
 ## 2. Score Table
 
-| Dimension | Score | Evidence |
-|-----------|-------|----------|
-| **Active Execution** | **8/10** | CLI commands actually DO things: `serve.js` runs HTTP+WebSocket+MCP server [0-cite-0](#0-cite-0) , `swarm.js` executes AI agents with parallel processing [0-cite-1](#0-cite-1) , `generate.js` calls real AI APIs with streaming [0-cite-2](#0-cite-2) . **Deduction**: live scaffolds are basic (just Next.js starter) [0-cite-3](#0-cite-3)  |
-| **Meta-Layer Position** | **9/10** | Crystal clear positioning: "AI-Agnostic orchestration" [0-cite-4](#0-cite-4) , multi-provider abstraction [0-cite-5](#0-cite-5) , MCP server for IDE integration [0-cite-6](#0-cite-6) . Doesn't compete with AI tools, enhances them. **Deduction**: messaging could be stronger in competitive docs |
-| **2026 Integration** | **7/10** | ✅ MCP server functional [0-cite-7](#0-cite-7) , ✅ WebSocket real-time updates [0-cite-8](#0-cite-8) , ✅ GitHub integration with PR creation [0-cite-9](#0-cite-9) , ✅ Claude Desktop config [0-cite-10](#0-cite-10) . ⚠️ LangChain is optional adapter, not core [0-cite-11](#0-cite-11) , ⚠️ No vector store integration yet |
-| **Competitive Moat** | **9/10** | 34-section template exists, 21-step verification, 17 production agents [0-cite-12](#0-cite-12) , 31 cursor rules [0-cite-13](#0-cite-13) , multi-tool orchestration guide. Agent quality is excellent (detailed prompts with code examples) [0-cite-14](#0-cite-14) . **Unique moat confirmed** |
-| **Tech Readiness** | **6/10** | ✅ Provider abstraction supports 4 APIs [0-cite-15](#0-cite-15) , ✅ Code graph scanning [0-cite-16](#0-cite-16) , ✅ 281 tests (41% coverage) [0-cite-17](#0-cite-17) . ❌ LangGraph mentioned but no integration, ❌ Vector search is placeholder, ❌ Voice input is NLP keyword matching only [0-cite-18](#0-cite-18)  |
-| **TOTAL** | **7.8/10** | **Strong foundation, needs execution polish** |
+| Dimension               | Score      | Evidence                                                                                                                                                                                                                                                                                                                                       |
+| ----------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Active Execution**    | **8/10**   | CLI commands actually DO things: `serve.js` runs HTTP+WebSocket+MCP server [0-cite-0](#0-cite-0) , `swarm.js` executes AI agents with parallel processing [0-cite-1](#0-cite-1) , `generate.js` calls real AI APIs with streaming [0-cite-2](#0-cite-2) . **Deduction**: live scaffolds are basic (just Next.js starter) [0-cite-3](#0-cite-3) |
+| **Meta-Layer Position** | **9/10**   | Crystal clear positioning: "AI-Agnostic orchestration" [0-cite-4](#0-cite-4) , multi-provider abstraction [0-cite-5](#0-cite-5) , MCP server for IDE integration [0-cite-6](#0-cite-6) . Doesn't compete with AI tools, enhances them. **Deduction**: messaging could be stronger in competitive docs                                          |
+| **2026 Integration**    | **7/10**   | ✅ MCP server functional [0-cite-7](#0-cite-7) , ✅ WebSocket real-time updates [0-cite-8](#0-cite-8) , ✅ GitHub integration with PR creation [0-cite-9](#0-cite-9) , ✅ Claude Desktop config [0-cite-10](#0-cite-10) . ⚠️ LangChain is optional adapter, not core [0-cite-11](#0-cite-11) , ⚠️ No vector store integration yet              |
+| **Competitive Moat**    | **9/10**   | 34-section template exists, 21-step verification, 17 production agents [0-cite-12](#0-cite-12) , 31 cursor rules [0-cite-13](#0-cite-13) , multi-tool orchestration guide. Agent quality is excellent (detailed prompts with code examples) [0-cite-14](#0-cite-14) . **Unique moat confirmed**                                                |
+| **Tech Readiness**      | **6/10**   | ✅ Provider abstraction supports 4 APIs [0-cite-15](#0-cite-15) , ✅ Code graph scanning [0-cite-16](#0-cite-16) , ✅ 281 tests (41% coverage) [0-cite-17](#0-cite-17) . ❌ LangGraph mentioned but no integration, ❌ Vector search is placeholder, ❌ Voice input is NLP keyword matching only [0-cite-18](#0-cite-18)                       |
+| **TOTAL**               | **7.8/10** | **Strong foundation, needs execution polish**                                                                                                                                                                                                                                                                                                  |
 
 ---
 
 ## 3. 2026 Reality Check
 
-| Check | Pass? | Evidence |
-|-------|-------|----------|
-| **ACTIVE not PASSIVE** | ✅ **PASS** | Commands execute: `serve` runs servers [0-cite-0](#0-cite-0) , `swarm` runs agents [0-cite-1](#0-cite-1) , `init --live` generates scaffolds [0-cite-19](#0-cite-19) . Not just markdown. |
-| **DYNAMIC not STATIC** | ✅ **PASS** | File watcher auto-updates state [0-cite-20](#0-cite-20) , WebSocket broadcasts changes [0-cite-21](#0-cite-21) , state file locking for concurrent writes [0-cite-22](#0-cite-22)  |
-| **EXECUTES not just PLANS** | ⚠️ **PARTIAL** | ✅ Generates AI plans via real APIs [0-cite-2](#0-cite-2) , ✅ Runs agent swarms [0-cite-23](#0-cite-23) . ❌ But scaffolds are basic starters, not production code [0-cite-3](#0-cite-3)  |
-| **INTEGRATES not ISOLATES** | ✅ **PASS** | MCP SDK integration [0-cite-24](#0-cite-24) , GitHub CLI wrapper [0-cite-25](#0-cite-25) , Cloud team server [0-cite-26](#0-cite-26) , Interactive TUI [0-cite-27](#0-cite-27)  |
-| **2026 not 2024** | ✅ **PASS** | Uses MCP protocol standard, WebSocket streaming, Docker exec sandbox, provider abstraction. Not copy-paste prompts. |
+| Check                       | Pass?          | Evidence                                                                                                                                                                                  |
+| --------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ACTIVE not PASSIVE**      | ✅ **PASS**    | Commands execute: `serve` runs servers [0-cite-0](#0-cite-0) , `swarm` runs agents [0-cite-1](#0-cite-1) , `init --live` generates scaffolds [0-cite-19](#0-cite-19) . Not just markdown. |
+| **DYNAMIC not STATIC**      | ✅ **PASS**    | File watcher auto-updates state [0-cite-20](#0-cite-20) , WebSocket broadcasts changes [0-cite-21](#0-cite-21) , state file locking for concurrent writes [0-cite-22](#0-cite-22)         |
+| **EXECUTES not just PLANS** | ⚠️ **PARTIAL** | ✅ Generates AI plans via real APIs [0-cite-2](#0-cite-2) , ✅ Runs agent swarms [0-cite-23](#0-cite-23) . ❌ But scaffolds are basic starters, not production code [0-cite-3](#0-cite-3) |
+| **INTEGRATES not ISOLATES** | ✅ **PASS**    | MCP SDK integration [0-cite-24](#0-cite-24) , GitHub CLI wrapper [0-cite-25](#0-cite-25) , Cloud team server [0-cite-26](#0-cite-26) , Interactive TUI [0-cite-27](#0-cite-27)            |
+| **2026 not 2024**           | ✅ **PASS**    | Uses MCP protocol standard, WebSocket streaming, Docker exec sandbox, provider abstraction. Not copy-paste prompts.                                                                       |
 
 **Verdict: 4/5 PASS** — Core is 2026-grade, but scaffold quality holds it back from "full production" tier.
 
@@ -35,35 +35,36 @@ Ultra-Dex is **genuinely 2026-grade orchestration infrastructure**, not 2024 mar
 
 ## 4. Top 5 Strengths
 
-1. **Legitimately Active CLI** — Not vaporware. The `serve` command runs an actual HTTP server (port 3001) + WebSocket server (port 3002) + MCP server + dashboard with file watching and state broadcasting. [0-cite-0](#0-cite-0) 
+1. **Legitimately Active CLI** — Not vaporware. The `serve` command runs an actual HTTP server (port 3001) + WebSocket server (port 3002) + MCP server + dashboard with file watching and state broadcasting. [0-cite-0](#0-cite-0)
 
-2. **Production-Grade Agent Prompts** — 17 agents with detailed instructions, code examples in multiple languages (TypeScript, Python), handoff protocols, and quality checklists. Not toy prompts. [0-cite-14](#0-cite-14) 
+2. **Production-Grade Agent Prompts** — 17 agents with detailed instructions, code examples in multiple languages (TypeScript, Python), handoff protocols, and quality checklists. Not toy prompts. [0-cite-14](#0-cite-14)
 
-3. **Real Multi-Provider Abstraction** — Not just "supports Claude." Actual provider classes for Claude, OpenAI, Gemini, Ollama with streaming, cost estimation, and error handling. Router provider for hybrid local+cloud. [0-cite-28](#0-cite-28) 
+3. **Real Multi-Provider Abstraction** — Not just "supports Claude." Actual provider classes for Claude, OpenAI, Gemini, Ollama with streaming, cost estimation, and error handling. Router provider for hybrid local+cloud. [0-cite-28](#0-cite-28)
 
-4. **MCP Integration is Production-Ready** — Uses official `@modelcontextprotocol/sdk`, registers resources and tools, works with Claude Desktop via stdio transport. Not a mock. [0-cite-29](#0-cite-29) 
+4. **MCP Integration is Production-Ready** — Uses official `@modelcontextprotocol/sdk`, registers resources and tools, works with Claude Desktop via stdio transport. Not a mock. [0-cite-29](#0-cite-29)
 
-5. **GitHub Integration Actually Works** — Not just documentation. Commands use `gh` CLI to list issues, create PRs, sync to tasks, with label-to-agent mapping and webhook parsing. [0-cite-30](#0-cite-30) 
+5. **GitHub Integration Actually Works** — Not just documentation. Commands use `gh` CLI to list issues, create PRs, sync to tasks, with label-to-agent mapping and webhook parsing. [0-cite-30](#0-cite-30)
 
 ---
 
 ## 5. Top 5 Critical Gaps (with file:line)
 
-1. **Live Scaffolds Are Too Basic** — `init --live` generates bare-bones Next.js with a hello world page. Not the "production SaaS in 60 seconds" promised. Needs auth flows, payment integration, admin dashboard. [0-cite-3](#0-cite-3) 
+1. **Live Scaffolds Are Too Basic** — `init --live` generates bare-bones Next.js with a hello world page. Not the "production SaaS in 60 seconds" promised. Needs auth flows, payment integration, admin dashboard. [0-cite-3](#0-cite-3)
 
-2. **Test Coverage is 41%, Not 70%+** — Commands, providers, and MCP modules lack sufficient test coverage. Critical for enterprise adoption. [0-cite-31](#0-cite-31) 
+2. **Test Coverage is 41%, Not 70%+** — Commands, providers, and MCP modules lack sufficient test coverage. Critical for enterprise adoption. [0-cite-31](#0-cite-31)
 
-3. **LangChain is Optional Adapter, Not Core** — The LangChainAdapter uses dynamic imports and throws errors if not installed. Should be first-class integration with chains/agents pre-configured. [0-cite-11](#0-cite-11) 
+3. **LangChain is Optional Adapter, Not Core** — The LangChainAdapter uses dynamic imports and throws errors if not installed. Should be first-class integration with chains/agents pre-configured. [0-cite-11](#0-cite-11)
 
-4. **Voice/NLP is Keyword Matching, Not Real NLU** — The `routeIntent` function is basic string matching, not semantic understanding. No actual voice input integration. [0-cite-18](#0-cite-18) 
+4. **Voice/NLP is Keyword Matching, Not Real NLU** — The `routeIntent` function is basic string matching, not semantic understanding. No actual voice input integration. [0-cite-18](#0-cite-18)
 
-5. **VS Code Extension is Incomplete** — Sidebar is mentioned but extension lacks core features. Should have agent picker, live dashboard, and context injection. [0-cite-32](#0-cite-32) 
+5. **VS Code Extension is Incomplete** — Sidebar is mentioned but extension lacks core features. Should have agent picker, live dashboard, and context injection. [0-cite-32](#0-cite-32)
 
 ---
 
 ## 6. 48-Hour Critical Path
 
 ### Day 1 (24 hours): Live Scaffold Overhaul
+
 **Goal:** Make `init --live` generate ACTUAL production SaaS, not hello world.
 
 - **Hours 0-8:** Add to Next.js scaffold: Clerk auth with protected routes, Stripe payment integration (checkout + webhooks), Prisma with 5-table schema (User, Subscription, Invoice, Feature, Usage)
@@ -73,6 +74,7 @@ Ultra-Dex is **genuinely 2026-grade orchestration infrastructure**, not 2024 mar
 **Deliverable:** `npx ultra-dex init --live --stack next15-saas` creates a working SaaS with login, payment, dashboard.
 
 ### Day 2 (24 hours): Test Coverage + LangChain Production
+
 **Goal:** Hit 70% test coverage and make LangChain first-class.
 
 - **Hours 0-12:** Write integration tests for all commands (init, generate, serve, swarm, github, cloud). Mock AI providers. Achieve 70% coverage.
@@ -87,11 +89,12 @@ Ultra-Dex is **genuinely 2026-grade orchestration infrastructure**, not 2024 mar
 
 ### 🎯 THE CALL: **Make Live Scaffolds Production-Grade or Die**
 
-**Why:** The #1 competitive threat is Devin/Bolt/Replit generating full apps in 60 seconds. Ultra-Dex's moat is "AI-agnostic orchestration with memory," but if users can't bootstrap a REAL app (with auth, payments, database) instantly, they'll churn to tools that do. 
+**Why:** The #1 competitive threat is Devin/Bolt/Replit generating full apps in 60 seconds. Ultra-Dex's moat is "AI-agnostic orchestration with memory," but if users can't bootstrap a REAL app (with auth, payments, database) instantly, they'll churn to tools that do.
 
-The current scaffolds are embarrassingly basic [0-cite-3](#0-cite-3)  — a hello world page doesn't prove Ultra-Dex can "orchestrate production apps." 
+The current scaffolds are embarrassingly basic [0-cite-3](#0-cite-3) — a hello world page doesn't prove Ultra-Dex can "orchestrate production apps."
 
 **Execution:**
+
 1. Partner with 3 SaaS founders to extract their actual starter repos (with all the auth/payment/email plumbing)
 2. Fork these into `cli/assets/live-templates/` with Ultra-Dex context files pre-generated
 3. Demo video: "From idea to deployed SaaS in 10 minutes using Ultra-Dex + Claude + Cursor"
@@ -107,11 +110,13 @@ The current scaffolds are embarrassingly basic [0-cite-3](#0-cite-3)  — a hell
 ### Answer: **YES, but in 2027, not 2026**
 
 **Why YES:**
-- **Unique Position Secured:** Nobody else owns "AI-agnostic memory and orchestration." Cursor/Devin/Claude are vertical tools. Ultra-Dex is horizontal infrastructure. [0-cite-4](#0-cite-4) 
-- **Technical Foundation is Solid:** MCP integration is real [0-cite-6](#0-cite-6) , multi-provider abstraction works [0-cite-33](#0-cite-33) , agent swarms execute [0-cite-1](#0-cite-1) 
+
+- **Unique Position Secured:** Nobody else owns "AI-agnostic memory and orchestration." Cursor/Devin/Claude are vertical tools. Ultra-Dex is horizontal infrastructure. [0-cite-4](#0-cite-4)
+- **Technical Foundation is Solid:** MCP integration is real [0-cite-6](#0-cite-6) , multi-provider abstraction works [0-cite-33](#0-cite-33) , agent swarms execute [0-cite-1](#0-cite-1)
 - **Network Effects Possible:** If teams standardize on Ultra-Dex context format (CONTEXT.md, IMPLEMENTATION-PLAN.md), AI tools must support it — creating lock-in
 
 **Why Not 2026:**
+
 - **Adoption Chicken-Egg:** Kubernetes succeeded because Docker needed orchestration. What creates the "must orchestrate AI tools" pain so severe that teams adopt Ultra-Dex? Currently it's voluntary.
 - **Live Scaffold Gap:** Can't be infrastructure if the entry point is weak. Kubernetes had `kubectl run` — Ultra-Dex needs production-grade `init --live`.
 - **Ecosystem Integrations Incomplete:** LangChain is adapter, not core. No Vercel AI SDK integration. No Replicate/Hugging Face support.
@@ -124,6 +129,7 @@ The current scaffolds are embarrassingly basic [0-cite-3](#0-cite-3)  — a hell
 4. **Open Standard:** Publish "Ultra-Dex Context Format v1.0" as an open spec, get other tools to support reading/writing it
 
 ### Timeline:
+
 - **Feb-Jun 2026:** Fix gaps (scaffolds, tests, integrations) — reach production readiness
 - **Jul-Dec 2026:** Acquire 1,000 teams, iterate on workflows, build ecosystem
 - **2027:** Become the standard — "All AI coding tools read Ultra-Dex format"
@@ -133,11 +139,13 @@ The current scaffolds are embarrassingly basic [0-cite-3](#0-cite-3)  — a hell
 ## Notes
 
 **What Ultra-Dex Gets RIGHT:**
+
 - The core insight is **profound and correct**: AI tools lose context across sessions, and nobody else is solving persistent memory at the orchestration layer
 - The architecture is **genuinely 2026-modern**: MCP protocol, WebSocket streaming, provider abstraction, agent orchestration
 - The positioning is **defensible**: Not competing with AI tools, enabling them
 
 **What Needs Immediate Fix:**
+
 - Live scaffolds must be production-grade SaaS templates, not hello world
 - Test coverage must hit 70%+ for enterprise trust
 - LangChain/ecosystem integrations should be core, not optional
@@ -150,10 +158,11 @@ If Ultra-Dex ships production scaffolds in the next 48 hours and gets 100 teams 
 ### Citations
 
 **File:** cli/lib/commands/serve.js (L58-225)
+
 ```javascript
 async function startUnifiedKernel(portStr) {
   const port = Number.parseInt(portStr, 10);
-      
+
   console.log(chalk.bold.hex('#7c3aed')('\n🚀 Opening Multiverse Portal (Infinity Kernel)...\n'));
   console.log(chalk.italic(chalk.gray(`"${getRandomMessage('loading')}"`)));
 
@@ -193,12 +202,18 @@ async function startUnifiedKernel(portStr) {
       // Endpoint: /api/info
       if (pathname === '/api/info') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          name: 'Ultra-Dex Multiverse Kernel',
-          version: VERSION,
-          status: 'online',
-          endpoints: ['/api/state', '/api/plan', '/api/context', '/api/graph', '/api/swarm']
-        }, null, 2));
+        res.end(
+          JSON.stringify(
+            {
+              name: 'Ultra-Dex Multiverse Kernel',
+              version: VERSION,
+              status: 'online',
+              endpoints: ['/api/state', '/api/plan', '/api/context', '/api/graph', '/api/swarm'],
+            },
+            null,
+            2
+          )
+        );
         return;
       }
 
@@ -221,22 +236,22 @@ async function startUnifiedKernel(portStr) {
       // Endpoint: /api/swarm (Execute Swarm)
       if ((pathname === '/api/swarm' || pathname === '/swarm') && req.method === 'POST') {
         let body = '';
-        req.on('data', chunk => body += chunk);
+        req.on('data', (chunk) => (body += chunk));
         req.on('end', async () => {
-           try {
-             const { task, feature, parallel } = JSON.parse(body);
-             const objective = task || feature;
-             if (!objective) throw new Error('Task/Feature objective is required');
-             
-             // Run swarm
-             swarmCommand(objective, { parallel, dryRun: false }).catch(err => console.error(err));
-             
-             res.writeHead(202, { 'Content-Type': 'application/json' });
-             res.end(JSON.stringify({ status: 'accepted', message: 'Swarm initiated' }));
-           } catch (e) {
-             res.writeHead(400, { 'Content-Type': 'application/json' });
-             res.end(JSON.stringify({ error: e.message }));
-           }
+          try {
+            const { task, feature, parallel } = JSON.parse(body);
+            const objective = task || feature;
+            if (!objective) throw new Error('Task/Feature objective is required');
+
+            // Run swarm
+            swarmCommand(objective, { parallel, dryRun: false }).catch((err) => console.error(err));
+
+            res.writeHead(202, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'accepted', message: 'Swarm initiated' }));
+          } catch (e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+          }
         });
         return;
       }
@@ -252,25 +267,26 @@ async function startUnifiedKernel(portStr) {
 
       // SSE Events for Dashboard
       if (pathname === '/events') {
-          res.writeHead(200, {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive'
-          });
-          res.write(`data: ${JSON.stringify({ type: 'log', message: 'Connected to Multiverse Kernel' })}\n\n`);
-          // We'd need to manage clients here if we wanted to push updates
-          return;
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        });
+        res.write(
+          `data: ${JSON.stringify({ type: 'log', message: 'Connected to Multiverse Kernel' })}\n\n`
+        );
+        // We'd need to manage clients here if we wanted to push updates
+        return;
       }
 
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Not found in this timeline' }));
-
     } catch (error) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: error.message }));
     }
   });
-  
+
   // Use the singleton instance instead of creating new one
   const wss = webSocketServer;
   await wss.start({ port: 3002 });
@@ -291,16 +307,22 @@ async function startUnifiedKernel(portStr) {
 
     // Auto-Pilot with proper cleanup
     fileWatcher = fs.watch(process.cwd(), { recursive: true }, async (eventType, filename) => {
-      if (!filename || filename.includes('node_modules') || filename.includes('.git') || filename.includes('IMPLEMENTATION-PLAN.md')) return;
+      if (
+        !filename ||
+        filename.includes('node_modules') ||
+        filename.includes('.git') ||
+        filename.includes('IMPLEMENTATION-PLAN.md')
+      )
+        return;
 
       console.log(chalk.gray(`\n🔄 Timeline Shift detected in ${filename}. Synchronizing...`));
       try {
         const state = await loadState();
         if (state) {
-            const markdown = generateMarkdown(state);
-            await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), markdown);
-            // Broadcast state update to all connected clients
-            wss.broadcast({ type: 'state_update', data: state, timestamp: new Date().toISOString() });
+          const markdown = generateMarkdown(state);
+          await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), markdown);
+          // Broadcast state update to all connected clients
+          wss.broadcast({ type: 'state_update', data: state, timestamp: new Date().toISOString() });
         }
       } catch (e) {}
     });
@@ -322,15 +344,16 @@ async function startUnifiedKernel(portStr) {
 ```
 
 **File:** cli/lib/commands/swarm.js (L26-42)
+
 ```javascript
 async function withStateLock(callback) {
   const lockFile = join(process.cwd(), '.ultra-dex', 'state.lock');
   let retries = 0;
   while (existsSync(lockFile) && retries < 50) {
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
     retries++;
   }
-  
+
   try {
     await writeFile(lockFile, String(Date.now()));
     return await callback();
@@ -343,6 +366,7 @@ async function withStateLock(callback) {
 ```
 
 **File:** cli/lib/commands/swarm.js (L118-277)
+
 ```javascript
 export async function swarmCommand(task, options) {
   renderer.clearScreen();
@@ -367,10 +391,10 @@ export async function swarmCommand(task, options) {
           '',
           '📦 Tier: 4-Quality (sequential)',
           '  7. @testing - Write tests',
-          '  8. @reviewer - Code review'
+          '  8. @reviewer - Code review',
         ].join('\n')
       : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
-    
+
     renderer.box(
       pipelineInfo,
       options.parallel ? 'Dry Run Pipeline (Parallel Mode)' : 'Dry Run Pipeline',
@@ -382,10 +406,10 @@ export async function swarmCommand(task, options) {
   // Load context & Graph
   const contextPath = join(process.cwd(), 'CONTEXT.md');
   const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
-  
+
   let context = '';
   if (existsSync(contextPath)) context += await readFile(contextPath, 'utf-8');
-  if (existsSync(planPath)) context += '\n\n' + await readFile(planPath, 'utf-8');
+  if (existsSync(planPath)) context += '\n\n' + (await readFile(planPath, 'utf-8'));
 
   // Inject Code Graph
   renderer.startSpinner('Scanning Codebase Graph...');
@@ -412,7 +436,10 @@ export async function swarmCommand(task, options) {
   const logDir = await ensureLogDirectory();
 
   await withStateLock(async () => {
-    const state = await loadState() || { project: { mode: 'ULTRA_MODE' }, agents: { active: [] } };
+    const state = (await loadState()) || {
+      project: { mode: 'ULTRA_MODE' },
+      agents: { active: [] },
+    };
     state.agents = state.agents || { active: [] };
     state.updatedAt = new Date().toISOString();
     await saveState(state);
@@ -421,19 +448,35 @@ export async function swarmCommand(task, options) {
   let previousOutput = '';
   const agentResults = [];
   const agentTimings = {};
-  
-  const executionTiers = options.parallel 
+
+  const executionTiers = options.parallel
     ? [
-        { name: '1-Planning', agents: AGENT_PIPELINE.filter(a => a.tier === '1-planning'), parallel: false },
-        { name: '2-Implementation', agents: AGENT_PIPELINE.filter(a => a.tier === '2-implementation'), parallel: true },
-        { name: '3-Security', agents: AGENT_PIPELINE.filter(a => a.tier === '3-security'), parallel: false },
-        { name: '4-Quality', agents: AGENT_PIPELINE.filter(a => a.tier === '4-quality'), parallel: false }
+        {
+          name: '1-Planning',
+          agents: AGENT_PIPELINE.filter((a) => a.tier === '1-planning'),
+          parallel: false,
+        },
+        {
+          name: '2-Implementation',
+          agents: AGENT_PIPELINE.filter((a) => a.tier === '2-implementation'),
+          parallel: true,
+        },
+        {
+          name: '3-Security',
+          agents: AGENT_PIPELINE.filter((a) => a.tier === '3-security'),
+          parallel: false,
+        },
+        {
+          name: '4-Quality',
+          agents: AGENT_PIPELINE.filter((a) => a.tier === '4-quality'),
+          parallel: false,
+        },
       ]
     : [{ name: 'All', agents: AGENT_PIPELINE, parallel: false }];
 
   for (const tier of executionTiers) {
     if (tier.agents.length === 0) continue;
-    
+
     console.log(theme.dim(`\n📦 Tier: ${tier.name}`));
 
     if (tier.parallel) {
@@ -442,7 +485,7 @@ export async function swarmCommand(task, options) {
         const agentStart = Date.now();
         // Use a generic spinner since parallel spinners are messy in terminal
         console.log(theme.accent(`  ⟳ Running @${agent.name}...`));
-        
+
         try {
           const result = await runAgent(agent, task, context, previousOutput, provider);
           const duration = Date.now() - agentStart;
@@ -457,8 +500,12 @@ export async function swarmCommand(task, options) {
 
       const results = await Promise.all(promises);
       agentResults.push(...results);
-      previousOutput += '\n\n' + results.filter(r => r.success).map(r => r.result).join('\n\n');
-      
+      previousOutput +=
+        '\n\n' +
+        results
+          .filter((r) => r.success)
+          .map((r) => r.result)
+          .join('\n\n');
     } else {
       // Serial Execution
       for (const agent of tier.agents) {
@@ -471,13 +518,12 @@ export async function swarmCommand(task, options) {
           agentTimings[agent.name] = duration;
           previousOutput = result;
           renderer.succeed(`@${agent.name} complete (${duration}ms)`);
-          
+
           // Stream a preview of the output
           const preview = result.slice(0, 150).replace(/\n/g, ' ') + '...';
           console.log(theme.dim(`    › ${preview}`));
-          
-          agentResults.push({ agent: agent.name, result, success: true });
 
+          agentResults.push({ agent: agent.name, result, success: true });
         } catch (error) {
           renderer.fail(`@${agent.name} failed: ${error.message}`);
           agentResults.push({ agent: agent.name, error: error.message, success: false });
@@ -488,12 +534,18 @@ export async function swarmCommand(task, options) {
   }
 
   const totalDuration = Date.now() - startTime;
-  const successCount = agentResults.filter(r => r.success).length;
-  const failCount = agentResults.filter(r => !r.success).length;
+  const successCount = agentResults.filter((r) => r.success).length;
+  const failCount = agentResults.filter((r) => !r.success).length;
 
   await updateStateFile();
 
-  const stats = { totalDuration, agentTimings, successCount, failCount, parallel: options.parallel || false };
+  const stats = {
+    totalDuration,
+    agentTimings,
+    successCount,
+    failCount,
+    parallel: options.parallel || false,
+  };
   const logPath = await writeSwarmLog(logDir, task, agentResults, stats);
 
   renderer.divider();
@@ -507,6 +559,7 @@ export async function swarmCommand(task, options) {
 ```
 
 **File:** cli/lib/commands/generate.js (L94-117)
+
 ```javascript
       try {
         let result;
@@ -535,6 +588,7 @@ export async function swarmCommand(task, options) {
 ```
 
 **File:** cli/assets/live-templates/next15-prisma-clerk/app/page.tsx (L1-8)
+
 ```typescript
 export default function HomePage() {
   return (
@@ -547,35 +601,36 @@ export default function HomePage() {
 ```
 
 **File:** README.md (L22-32)
+
 ```markdown
 ## 🧠 Core Philosophy: "Your Skeleton, Not Your Cage"
 
 Ultra-Dex is a **meta-orchestration layer** - it doesn't write code for you, it makes your AI assistants dramatically smarter by giving them structure, memory, and architectural context.
 
-| Principle | What It Means |
-|-----------|---------------|
-| ✅ **AI-Agnostic** | Works with Claude, GPT, Gemini, Cursor, Copilot |
-| ✅ **Comprehensive by Design** | 34 sections prevent "forgot to plan X" syndrome |
-| ✅ **100% Flexible** | Add, remove, modify any section to fit your needs |
-| ✅ **Production-Grade** | Not for MVPs - for real, scalable applications |
-
+| Principle                      | What It Means                                     |
+| ------------------------------ | ------------------------------------------------- |
+| ✅ **AI-Agnostic**             | Works with Claude, GPT, Gemini, Cursor, Copilot   |
+| ✅ **Comprehensive by Design** | 34 sections prevent "forgot to plan X" syndrome   |
+| ✅ **100% Flexible**           | Add, remove, modify any section to fit your needs |
+| ✅ **Production-Grade**        | Not for MVPs - for real, scalable applications    |
 ```
 
 **File:** README.md (L169-180)
-```markdown
 
+````markdown
 ```bash
 cd vscode-extension
 npm install
 npm run compile
 ```
+````
 
 - Press `F5` to launch the Extension Development Host.
 - Run **Ultra-Dex: Select Agent** from the command palette.
 
 Local-only extension (not published). More: **[vscode-extension/README.md](./vscode-extension/README.md)**.
 
-```
+````
 
 **File:** cli/lib/providers/index.js (L12-145)
 ```javascript
@@ -630,7 +685,7 @@ export function createProvider(providerId, options = {}) {
   if (providerId === 'router') {
     const cloudId = options.cloudProvider || getDefaultProvider() || 'claude';
     const cloudProvider = createProvider(cloudId, options);
-    
+
     let localProvider = null;
     try {
       localProvider = new OllamaProvider(null, options);
@@ -646,14 +701,14 @@ export function createProvider(providerId, options = {}) {
   }
 
   const providerConfig = PROVIDERS[providerId];
-  
+
   if (!providerConfig) {
     throw new Error(`Unknown provider: ${providerId}. Available: ${Object.keys(PROVIDERS).join(', ')}`);
   }
 
   // Get API key from options or environment (Ollama doesn't strictly need one)
   const apiKey = options.apiKey || (providerConfig.envKey ? process.env[providerConfig.envKey] : null);
-  
+
   if (!apiKey && providerId !== 'ollama') {
     throw new Error(
       `API key not found for ${providerConfig.name}.\n\n` +
@@ -676,7 +731,7 @@ export function createProvider(providerId, options = {}) {
  */
 export function getDefaultProvider() {
   if (process.env.ULTRA_DEX_DEFAULT_PROVIDER) return process.env.ULTRA_DEX_DEFAULT_PROVIDER;
-  
+
   // Check environment variables in order of preference
   if (process.env.ANTHROPIC_API_KEY) return 'claude';
   if (process.env.OPENAI_API_KEY) return 'openai';
@@ -713,34 +768,37 @@ export function getProvider() {
 
 // Core providers
 export { ClaudeProvider, OpenAIProvider, GeminiProvider, OllamaProvider, RouterProvider };
-```
+````
 
 **File:** cli/lib/mcp/server.js (L1-53)
+
 ```javascript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { registerResources } from "./resources.js";
-import { registerTools } from "./tools.js";
-import { projectGraph } from "./graph.js";
-import { webSocketServer } from "./websocket.js";
-import { VERSION } from "../utils/version.js";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { registerResources } from './resources.js';
+import { registerTools } from './tools.js';
+import { projectGraph } from './graph.js';
+import { webSocketServer } from './websocket.js';
+import { VERSION } from '../utils/version.js';
 
 export async function startMcpServer(options = {}) {
   const port = options.port || 3001;
 
   // Initialize Graph
-  console.error("Initializing Ultra-Dex Active Kernel...");
+  console.error('Initializing Ultra-Dex Active Kernel...');
   try {
     await projectGraph.scan();
-    console.error(`Graph loaded: ${projectGraph.nodes.size} nodes, ${projectGraph.edges.length} edges.`);
+    console.error(
+      `Graph loaded: ${projectGraph.nodes.size} nodes, ${projectGraph.edges.length} edges.`
+    );
   } catch (e) {
-    console.error("Graph initialization warning:", e.message);
+    console.error('Graph initialization warning:', e.message);
   }
 
   // Create server instance
   const server = new McpServer({
-    name: "Ultra-Dex Active Kernel",
-    version: VERSION
+    name: 'Ultra-Dex Active Kernel',
+    version: VERSION,
   });
 
   // Register features
@@ -750,9 +808,9 @@ export async function startMcpServer(options = {}) {
   // Start WebSocket server for real-time updates
   try {
     await webSocketServer.start({ port: 3002 });
-    console.error("WebSocket server started on port 3002");
+    console.error('WebSocket server started on port 3002');
   } catch (error) {
-    console.error("Failed to start WebSocket server:", error.message);
+    console.error('Failed to start WebSocket server:', error.message);
   }
 
   // Connect transport
@@ -763,17 +821,18 @@ export async function startMcpServer(options = {}) {
   } else {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error("Ultra-Dex MCP Server running on Stdio...");
+    console.error('Ultra-Dex MCP Server running on Stdio...');
   }
 
   // Note: Stdio transport takes over stdin/stdout, so no logging to console.log here!
   // Any logging must go to stderr
-  console.error("Ultra-Dex Active Kernel initialized with MCP + WebSocket...");
+  console.error('Ultra-Dex Active Kernel initialized with MCP + WebSocket...');
 }
 ```
 
 **File:** docs/MCP-INTEGRATION.md (L1-100)
-```markdown
+
+````markdown
 # Ultra-Dex MCP Integration Guide
 
 > **Model Context Protocol (MCP)** is the open standard that connects AI assistants to your systems. Ultra-Dex provides a native MCP server ("Active Kernel") that allows tools like **Claude Desktop** and **Cursor** to read your project context, execute agents, and monitor state directly.
@@ -785,13 +844,18 @@ export async function startMcpServer(options = {}) {
 Claude Desktop can connect directly to your local Ultra-Dex project, giving it "God Mode" access to your plans, code graph, and CLI agents.
 
 ### Automatic Setup (Recommended)
+
 Run this command in your project root:
+
 ```bash
 npx ultra-dex config --mcp
 ```
+````
+
 This will generate the configuration and output the path to your Claude Desktop config file.
 
 ### Manual Setup
+
 Add this to your `claude_desktop_config.json`:
 
 ```json
@@ -807,9 +871,10 @@ Add this to your `claude_desktop_config.json`:
 ```
 
 ### Verification
+
 1. Restart Claude Desktop.
 2. Look for the 🔌 icon (Project Connection).
-3. Ask Claude: *"What is the current status of the project plan?"*
+3. Ask Claude: _"What is the current status of the project plan?"_
 
 ---
 
@@ -818,15 +883,20 @@ Add this to your `claude_desktop_config.json`:
 Cursor can use the Ultra-Dex "Active Kernel" via MCP or by consuming the generated context files.
 
 ### Option A: Direct Context (Simple)
+
 Ultra-Dex maintains `CONTEXT.md` and `IMPLEMENTATION-PLAN.md` as the single source of truth.
+
 1. Run `npx ultra-dex watch` in a terminal.
 2. In Cursor, type `@CONTEXT.md` to reference the project state.
 
 ### Option B: Rule Integration
+
 Generate AI-optimized rules for Cursor:
+
 ```bash
 npx ultra-dex config --cursor
 ```
+
 This creates `.cursor/rules/ultra-dex.mdc` which teaches Cursor how to follow your implementation plan.
 
 ---
@@ -840,13 +910,17 @@ You can build your own tools that connect to the Ultra-Dex Kernel.
 ### Message Types
 
 #### `connected`
+
 Sent immediately upon connection.
+
 ```json
 { "type": "connected", "timestamp": 1709238492000 }
 ```
 
 #### `state_update`
+
 Broadcast when file watcher detects changes.
+
 ```json
 {
   "type": "state_update",
@@ -858,13 +932,17 @@ Broadcast when file watcher detects changes.
 ```
 
 #### `log`
+
 Real-time system logs from the CLI.
+
 ```json
 { "type": "log", "message": "Build started", "level": "info" }
 ```
 
 #### `agent_status`
+
 Live updates on agent activity.
+
 ```json
 {
   "type": "agent_status",
@@ -874,7 +952,7 @@ Live updates on agent activity.
 }
 ```
 
-```
+````
 
 **File:** cli/lib/commands/github.js (L61-85)
 ```javascript
@@ -903,9 +981,10 @@ async function getRepoInfo() {
     return null;
   }
 }
-```
+````
 
 **File:** cli/lib/commands/github.js (L237-270)
+
 ```javascript
 /**
  * Create PR from swarm output
@@ -944,6 +1023,7 @@ async function createPRFromSwarm(swarmResult, options = {}) {
 ```
 
 **File:** cli/lib/commands/github.js (L311-464)
+
 ```javascript
 export function registerGitHubCommand(program) {
   program
@@ -1007,7 +1087,7 @@ export function registerGitHubCommand(program) {
           }
 
           for (const issue of issues) {
-            const labels = (issue.labels || []).map(l => chalk.cyan(`[${l.name}]`)).join(' ');
+            const labels = (issue.labels || []).map((l) => chalk.cyan(`[${l.name}]`)).join(' ');
             console.log(`#${chalk.bold(issue.number)} ${issue.title} ${labels}`);
           }
           return;
@@ -1020,7 +1100,9 @@ export function registerGitHubCommand(program) {
           spinner.succeed(`Found ${prs.length} open PRs\n`);
 
           for (const pr of prs) {
-            console.log(`#${chalk.bold(pr.number)} ${pr.title} ${chalk.gray(`(${pr.headRefName})`)}`);
+            console.log(
+              `#${chalk.bold(pr.number)} ${pr.title} ${chalk.gray(`(${pr.headRefName})`)}`
+            );
           }
           return;
         }
@@ -1042,11 +1124,13 @@ export function registerGitHubCommand(program) {
 
         if (options.createIssue) {
           // Create issue
-          const { body } = await inquirer.prompt([{
-            type: 'editor',
-            name: 'body',
-            message: 'Issue description:',
-          }]);
+          const { body } = await inquirer.prompt([
+            {
+              type: 'editor',
+              name: 'body',
+              message: 'Issue description:',
+            },
+          ]);
 
           spinner.start('Creating issue...');
           const url = await createIssue(options.createIssue, body);
@@ -1074,26 +1158,27 @@ export function registerGitHubCommand(program) {
         }
 
         // Default: show menu
-        const { action } = await inquirer.prompt([{
-          type: 'list',
-          name: 'action',
-          message: 'What would you like to do?',
-          choices: [
-            { name: '📋 List open issues', value: 'issues' },
-            { name: '🔀 List open PRs', value: 'prs' },
-            { name: '🔄 Sync issues to tasks', value: 'sync' },
-            { name: '➕ Create new issue', value: 'create-issue' },
-            { name: '🚀 Create PR from changes', value: 'create-pr' },
-            { name: '❌ Cancel', value: 'cancel' },
-          ],
-        }]);
+        const { action } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'action',
+            message: 'What would you like to do?',
+            choices: [
+              { name: '📋 List open issues', value: 'issues' },
+              { name: '🔀 List open PRs', value: 'prs' },
+              { name: '🔄 Sync issues to tasks', value: 'sync' },
+              { name: '➕ Create new issue', value: 'create-issue' },
+              { name: '🚀 Create PR from changes', value: 'create-pr' },
+              { name: '❌ Cancel', value: 'cancel' },
+            ],
+          },
+        ]);
 
         // Recurse with selected action
         if (action !== 'cancel') {
           const newOptions = { ...options, [action.replace('-', '')]: true };
           await registerGitHubCommand(program).action(newOptions);
         }
-
       } catch (err) {
         spinner.fail(`Failed: ${err.message}`);
       }
@@ -1102,6 +1187,7 @@ export function registerGitHubCommand(program) {
 ```
 
 **File:** cli/lib/providers/langchain.js (L59-86)
+
 ```javascript
   async initialize() {
     if (this.langchain) return;
@@ -1134,6 +1220,7 @@ export function registerGitHubCommand(program) {
 ```
 
 **File:** agents/00-AGENT_INDEX.md (L1-166)
+
 ```markdown
 # Ultra-Dex Agent Index
 
@@ -1143,97 +1230,103 @@ Quick reference for all 17 production agents organized by tier.
 
 ## 0. Meta Orchestration
 
-| Agent | Role | When to Use | File |
-|-------|------|-------------|------|
-| **@Meta-Orchestrator** | High-level system coordination & strategy | Complex multi-repo or multi-phase projects | [meta-orchestrator.md](./0-orchestration/meta-orchestrator.md) |
-| **@Orchestrator** | Coordinate all agents for complete features | Building features that span multiple tiers | [orchestrator.md](./0-orchestration/orchestrator.md) |
+| Agent                  | Role                                        | When to Use                                | File                                                           |
+| ---------------------- | ------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------- |
+| **@Meta-Orchestrator** | High-level system coordination & strategy   | Complex multi-repo or multi-phase projects | [meta-orchestrator.md](./0-orchestration/meta-orchestrator.md) |
+| **@Orchestrator**      | Coordinate all agents for complete features | Building features that span multiple tiers | [orchestrator.md](./0-orchestration/orchestrator.md)           |
 
 ---
 
 ## 1. Leadership Tier
+
 Strategic planning and technology decisions.
 
-| Agent | Role | When to Use | File |
-|-------|------|-------------|------|
-| **@CTO** | Architecture & tech stack decisions | Major features, system design, stack choices | [cto.md](./1-leadership/cto.md) |
-| **@Planner** | Task breakdown & sprint planning | Starting any feature, breaking down work | [planner.md](./1-leadership/planner.md) |
-| **@Research** | Technology evaluation & comparison | Choosing frameworks, libraries, approaches | [research.md](./1-leadership/research.md) |
+| Agent         | Role                                | When to Use                                  | File                                      |
+| ------------- | ----------------------------------- | -------------------------------------------- | ----------------------------------------- |
+| **@CTO**      | Architecture & tech stack decisions | Major features, system design, stack choices | [cto.md](./1-leadership/cto.md)           |
+| **@Planner**  | Task breakdown & sprint planning    | Starting any feature, breaking down work     | [planner.md](./1-leadership/planner.md)   |
+| **@Research** | Technology evaluation & comparison  | Choosing frameworks, libraries, approaches   | [research.md](./1-leadership/research.md) |
 
 ---
 
 ## 2. Development Tier
+
 Core implementation of features.
 
-| Agent | Role | When to Use | File |
-|-------|------|-------------|------|
-| **@Backend** | API & server implementation | Building endpoints, business logic | [backend.md](./2-development/backend.md) |
-| **@Database** | Schema design & query optimization | Database changes, migrations | [database.md](./2-development/database.md) |
-| **@Frontend** | UI & component implementation | Building pages, components, user flows | [frontend.md](./2-development/frontend.md) |
+| Agent         | Role                               | When to Use                            | File                                       |
+| ------------- | ---------------------------------- | -------------------------------------- | ------------------------------------------ |
+| **@Backend**  | API & server implementation        | Building endpoints, business logic     | [backend.md](./2-development/backend.md)   |
+| **@Database** | Schema design & query optimization | Database changes, migrations           | [database.md](./2-development/database.md) |
+| **@Frontend** | UI & component implementation      | Building pages, components, user flows | [frontend.md](./2-development/frontend.md) |
 
 ---
 
 ## 3. Security Tier
+
 Authentication, authorization, and security audits.
 
-| Agent | Role | When to Use | File |
-|-------|------|-------------|------|
-| **@Auth** | Authentication & authorization | Login, permissions, user management | [auth.md](./3-security/auth.md) |
+| Agent         | Role                                  | When to Use                         | File                                    |
+| ------------- | ------------------------------------- | ----------------------------------- | --------------------------------------- |
+| **@Auth**     | Authentication & authorization        | Login, permissions, user management | [auth.md](./3-security/auth.md)         |
 | **@Security** | Security audits & vulnerability fixes | Before deployment, security reviews | [security.md](./3-security/security.md) |
 
 ---
 
 ## 4. DevOps Tier
+
 Deployment and infrastructure management.
 
-| Agent | Role | When to Use | File |
-|-------|------|-------------|------|
+| Agent       | Role                        | When to Use                   | File                              |
+| ----------- | --------------------------- | ----------------------------- | --------------------------------- |
 | **@DevOps** | Deployment & infrastructure | Shipping to production, CI/CD | [devops.md](./4-devops/devops.md) |
 
 ---
 
 ## 5. Quality Tier
+
 Testing, debugging, and code review.
 
-| Agent | Role | When to Use | File |
-|-------|------|-------------|------|
-| **@Debugger** | Bug investigation & fixes | When something breaks, troubleshooting | [debugger.md](./5-quality/debugger.md) |
+| Agent              | Role                                 | When to Use                              | File                                             |
+| ------------------ | ------------------------------------ | ---------------------------------------- | ------------------------------------------------ |
+| **@Debugger**      | Bug investigation & fixes            | When something breaks, troubleshooting   | [debugger.md](./5-quality/debugger.md)           |
 | **@Documentation** | Technical writing & docs maintenance | Updating docs, API documentation, guides | [documentation.md](./5-quality/documentation.md) |
-| **@Reviewer** | Code review & quality checks | Before merging, final approval | [reviewer.md](./5-quality/reviewer.md) |
-| **@Testing** | QA & test automation | Writing tests, ensuring coverage | [testing.md](./5-quality/testing.md) |
+| **@Reviewer**      | Code review & quality checks         | Before merging, final approval           | [reviewer.md](./5-quality/reviewer.md)           |
+| **@Testing**       | QA & test automation                 | Writing tests, ensuring coverage         | [testing.md](./5-quality/testing.md)             |
 
 ---
 
 ## 6. Specialist Tier
+
 Advanced optimization and code improvement.
 
-| Agent | Role | When to Use | File |
-|-------|------|-------------|------|
-| **@Performance** | Performance optimization | Slow pages/APIs, optimization needed | [performance.md](./6-specialist/performance.md) |
+| Agent            | Role                           | When to Use                           | File                                            |
+| ---------------- | ------------------------------ | ------------------------------------- | ----------------------------------------------- |
+| **@Performance** | Performance optimization       | Slow pages/APIs, optimization needed  | [performance.md](./6-specialist/performance.md) |
 | **@Refactoring** | Code quality & design patterns | Cleaning up code, reducing complexity | [refactoring.md](./6-specialist/refactoring.md) |
 
 ---
 
 ## Agent → Template Section Map
 
-| Agent | Primary Template Sections | Supporting Sections |
-|-------|---------------------------|---------------------|
-| **@Planner** | 1, 2, 16, 18 | 17, 23 |
-| **@CTO** | 12, 15, 19 | 21, 22 |
-| **@Research** | 15, 29, 30 | 25, 26 |
-| **@Backend** | 11, 13 | 9, 27 |
-| **@Database** | 10 | 11, 21 |
-| **@Frontend** | 6, 7, 9 | 8, 14 |
-| **@Auth** | 11 | 21, 27 |
-| **@Security** | 21, 28 | 27, 22 |
-| **@DevOps** | 19, 20 | 18, 24 |
-| **@Testing** | 20 | 16, 27 |
-| **@Reviewer** | 20, 21 | 17, 27 |
-| **@Debugger** | 27 | 13, 20 |
-| **@Documentation** | 24 | 18, 22 |
-| **@Performance** | 21, 22 | 27, 32 |
-| **@Refactoring** | 16, 17 | 13, 22 |
-| **@Orchestrator** | 16, 18 | 12, 24 |
-| **@Meta-Orchestrator** | 1, 2, 26, 34 | 12, 20, 24 |
+| Agent                  | Primary Template Sections | Supporting Sections |
+| ---------------------- | ------------------------- | ------------------- |
+| **@Planner**           | 1, 2, 16, 18              | 17, 23              |
+| **@CTO**               | 12, 15, 19                | 21, 22              |
+| **@Research**          | 15, 29, 30                | 25, 26              |
+| **@Backend**           | 11, 13                    | 9, 27               |
+| **@Database**          | 10                        | 11, 21              |
+| **@Frontend**          | 6, 7, 9                   | 8, 14               |
+| **@Auth**              | 11                        | 21, 27              |
+| **@Security**          | 21, 28                    | 27, 22              |
+| **@DevOps**            | 19, 20                    | 18, 24              |
+| **@Testing**           | 20                        | 16, 27              |
+| **@Reviewer**          | 20, 21                    | 17, 27              |
+| **@Debugger**          | 27                        | 13, 20              |
+| **@Documentation**     | 24                        | 18, 22              |
+| **@Performance**       | 21, 22                    | 27, 32              |
+| **@Refactoring**       | 16, 17                    | 13, 22              |
+| **@Orchestrator**      | 16, 18                    | 12, 24              |
+| **@Meta-Orchestrator** | 1, 2, 26, 34              | 12, 20, 24          |
 
 ---
 
@@ -1279,37 +1372,43 @@ Advanced optimization and code improvement.
 For complete multi-agent workflows and coordination patterns, see:
 
 **Production Guides:**
+
 - [Project Orchestration Guide](../guides/PROJECT-ORCHESTRATION.md) - Step-by-step multi-agent workflows
 - [Advanced Workflows](../guides/ADVANCED-WORKFLOWS.md) - Stripe, emails, migrations, real-time features
 - [Multi-Tool Workflow](../guides/MULTI-TOOL-WORKFLOW.md) - Coordinate Claude + Cursor + Copilot + ChatGPT
 - [Custom Agents Guide](../guides/CUSTOM-AGENTS-GUIDE.md) - Create domain-specific agents for your SaaS
 
 **Orchestration Examples:**
+
 - [Orchestration Examples](../Orchestration/EXAMPLES.md) - Real-world multi-agent workflow examples
 - [Orchestration README](../Orchestration/README.md) - Orchestration pattern overview
 
 **Templates:**
+
 - [Phase Tracker Template](../templates/PHASE-TRACKER-TEMPLATE.md) - Track progress by phase
 - [Order Tracker Template](../templates/ORDER-TRACKER-TEMPLATE.md) - Step-by-step execution with copy-paste prompts
 - [Master Plan Template](../templates/MASTER-PLAN-TEMPLATE.md) - Single-file project overview
 
 **Decision Frameworks:**
+
 - [Database Selection Guide](../guides/DATABASE-DECISION-FRAMEWORK.md) - PostgreSQL vs MongoDB vs MySQL
 - [Architecture Patterns](../guides/ARCHITECTURE-PATTERNS.md) - Monolith to Microservices
 - [AI Model Selection](../guides/AI-MODEL-SELECTION.md) - Choose the right AI for each task
 
 ---
 
-*Ultra-Dex v3.4.3 - Professional AI Orchestration Meta Layer*
+_Ultra-Dex v3.4.3 - Professional AI Orchestration Meta Layer_
 ```
 
 **File:** cursor-rules/00-ultra-dex-core.mdc (L1-1)
+
 ```text
 # Ultra-Dex Core Rules
 ```
 
 **File:** agents/2-development/backend.md (L1-516)
-```markdown
+
+````markdown
 # Backend Developer Agent
 
 You are a senior backend developer working on this project. You build APIs, implement server logic, handle database operations, and integrate external services.
@@ -1317,6 +1416,7 @@ You are a senior backend developer working on this project. You build APIs, impl
 ## Your Context
 
 Before responding, read these files to understand the project:
+
 - `IMPLEMENTATION-PLAN.md` - Full project specification (focus on Sections 5-8, 12, 15)
 - `CONTEXT.md` - Project background
 - `.cursor/rules/` - Coding patterns and standards (if available)
@@ -1324,24 +1424,28 @@ Before responding, read these files to understand the project:
 ## Your Responsibilities
 
 ### API Development
+
 - Build RESTful API endpoints per Section 6 of the plan
 - Implement request validation and error handling
 - Follow API naming conventions and versioning
 - Document endpoints with clear request/response examples
 
 ### Database Operations
+
 - Write efficient database queries
 - Implement data access patterns per Section 5
 - Handle transactions and data integrity
 - Optimize query performance
 
 ### Business Logic
+
 - Implement core business rules
 - Handle edge cases and validation
 - Write reusable service functions
 - Keep controllers thin, services thick
 
 ### Integrations
+
 - Connect to external APIs (payments, email, etc.)
 - Implement webhooks and callbacks
 - Handle API rate limits and retries
@@ -1410,10 +1514,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Failed to fetch users:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
 }
 
@@ -1437,15 +1538,14 @@ export async function POST(request: NextRequest) {
       );
     }
     console.error('Failed to create user:', error);
-    return NextResponse.json(
-      { error: 'Failed to create user' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
   }
 }
 ```
+````
 
 ### Express.js API Endpoint (Task Creation)
+
 ```typescript
 // src/routes/tasks.ts
 import { Router, Request, Response } from 'express';
@@ -1479,6 +1579,7 @@ export default router;
 ```
 
 ### Prisma Query with Relations
+
 ```typescript
 const userWithTasks = await prisma.user.findUnique({
   where: { id: userId },
@@ -1655,25 +1756,16 @@ export function handleApiError(error: unknown) {
   // Prisma errors
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'Resource already exists' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: 'Resource already exists' }, { status: 409 });
     }
     if (error.code === 'P2025') {
-      return NextResponse.json(
-        { error: 'Resource not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Resource not found' }, { status: 404 });
     }
   }
 
   // Unknown errors
   console.error('Unhandled error:', error);
-  return NextResponse.json(
-    { error: 'Internal server error' },
-    { status: 500 }
-  );
+  return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 }
 ```
 
@@ -1720,10 +1812,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Webhook handler error:', error);
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }
 
@@ -1764,16 +1853,19 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 ## Works With
 
 ### Request Review From
+
 - **@CTO** - Architecture decisions, tech approach
 - **@Auth** - Security review for sensitive endpoints
 - **@Database** - Schema changes, query optimization
 
 ### Hand Off To
+
 - **@Frontend** - When API is ready for integration
 - **@Reviewer** - For code review before merging
 - **@DevOps** - For deployment and environment setup
 
 ### Coordinate With
+
 - **@Database** - On data models and queries
 - **@Auth** - On authentication/authorization logic
 
@@ -1801,11 +1893,13 @@ When handing off API implementation to other agents, document in this format:
 ### Handoff from @Backend to @[NextAgent]
 
 **Status:**
+
 - ✅ Complete: [API endpoints implemented and tested]
 - 🔄 In Progress: [Endpoints being refined]
 - ⏳ Remaining: [Future API features]
 
 **Deliverables:**
+
 - API endpoints with routes and methods
 - Request/response schemas
 - Error handling implementation
@@ -1814,6 +1908,7 @@ When handing off API implementation to other agents, document in this format:
 - Integration/unit tests passing
 
 **Context for Next Agent:**
+
 - API base URL and authentication method
 - Rate limiting rules
 - CORS configuration
@@ -1825,8 +1920,9 @@ When handing off API implementation to other agents, document in this format:
 
 ---
 
-*Ultra-Dex Backend Agent - Building robust server-side logic*
-```
+_Ultra-Dex Backend Agent - Building robust server-side logic_
+
+````
 
 **File:** cli/lib/providers/claude.js (L23-51)
 ```javascript
@@ -1859,112 +1955,119 @@ export class ClaudeProvider extends BaseProvider {
       total: inputCost + outputCost,
     };
   }
-```
+````
 
 **File:** cli/test/README.md (L30-40)
+
 ```markdown
 ## Coverage Report
 
 **Current Coverage: 41.27%** (target: 70%)
 
-| Metric | Current | Target |
-|--------|---------|--------|
-| Statements | 41.27% | 70% |
-| Branches | 78.7% | 70% |
-| Functions | 26.34% | 70% |
-| Lines | 41.27% | 70% |
-
+| Metric     | Current | Target |
+| ---------- | ------- | ------ |
+| Statements | 41.27%  | 70%    |
+| Branches   | 78.7%   | 70%    |
+| Functions  | 26.34%  | 70%    |
+| Lines      | 41.27%  | 70%    |
 ```
 
 **File:** cli/lib/nlp/router.js (L7-42)
+
 ```javascript
 export function routeIntent(input) {
-    if (!input) return null;
-    
-    const text = input.toLowerCase().trim();
-    
-    // Command Mapping Table
-    const mappings = [
-        { intent: 'init', keywords: ['init', 'new project', 'create project', 'start project', 'setup'] },
-        { intent: 'generate', keywords: ['generate', 'plan', 'idea', 'blueprint', 'design'] },
-        { intent: 'build', keywords: ['build', 'develop', 'implement', 'code', 'make'] },
-        { intent: 'agents', keywords: ['agent', 'specialist', 'who', 'list agents', 'browse'] },
-        { intent: 'swarm', keywords: ['swarm', 'pipeline', 'autonomous', 'workflow', 'auto'] },
-        { intent: 'status', keywords: ['status', 'how is', 'progress', 'score', 'alignment'] },
-        { intent: 'dashboard', keywords: ['dashboard', 'gui', 'web', 'monitor', 'visualize'] },
-        { intent: 'doctor', keywords: ['doctor', 'health', 'fix system', 'check system', 'diagnose'] },
-        { intent: 'help', keywords: ['help', 'what can', 'how to', 'commands', 'usage'] },
-        { intent: 'audit', keywords: ['audit', 'security', 'review', 'check code'] },
-        { intent: 'serve', keywords: ['serve', 'mcp', 'server', 'connect'] },
-        { intent: 'exit', keywords: ['exit', 'quit', 'bye', 'stop', 'close'] }
-    ];
+  if (!input) return null;
 
-    for (const mapping of mappings) {
-        if (mapping.keywords.some(kw => text.includes(kw))) {
-            return mapping.intent;
-        }
+  const text = input.toLowerCase().trim();
+
+  // Command Mapping Table
+  const mappings = [
+    {
+      intent: 'init',
+      keywords: ['init', 'new project', 'create project', 'start project', 'setup'],
+    },
+    { intent: 'generate', keywords: ['generate', 'plan', 'idea', 'blueprint', 'design'] },
+    { intent: 'build', keywords: ['build', 'develop', 'implement', 'code', 'make'] },
+    { intent: 'agents', keywords: ['agent', 'specialist', 'who', 'list agents', 'browse'] },
+    { intent: 'swarm', keywords: ['swarm', 'pipeline', 'autonomous', 'workflow', 'auto'] },
+    { intent: 'status', keywords: ['status', 'how is', 'progress', 'score', 'alignment'] },
+    { intent: 'dashboard', keywords: ['dashboard', 'gui', 'web', 'monitor', 'visualize'] },
+    { intent: 'doctor', keywords: ['doctor', 'health', 'fix system', 'check system', 'diagnose'] },
+    { intent: 'help', keywords: ['help', 'what can', 'how to', 'commands', 'usage'] },
+    { intent: 'audit', keywords: ['audit', 'security', 'review', 'check code'] },
+    { intent: 'serve', keywords: ['serve', 'mcp', 'server', 'connect'] },
+    { intent: 'exit', keywords: ['exit', 'quit', 'bye', 'stop', 'close'] },
+  ];
+
+  for (const mapping of mappings) {
+    if (mapping.keywords.some((kw) => text.includes(kw))) {
+      return mapping.intent;
     }
+  }
 
-    // Default: check for direct command names
-    const directCommands = mappings.map(m => m.intent);
-    const firstWord = text.split(' ')[0];
-    if (directCommands.includes(firstWord)) {
-        return firstWord;
-    }
+  // Default: check for direct command names
+  const directCommands = mappings.map((m) => m.intent);
+  const firstWord = text.split(' ')[0];
+  if (directCommands.includes(firstWord)) {
+    return firstWord;
+  }
 
-    return null;
+  return null;
 }
 ```
 
 **File:** cli/lib/commands/init.js (L52-93)
+
 ```javascript
-      if (options.live) {
-        const preset = options.stack || 'next15-prisma-clerk';
-        if (!LIVE_STACKS[preset]) {
-          console.log(chalk.red(`Unknown preset: ${preset}`));
-          console.log(chalk.gray(`Available presets: ${Object.keys(LIVE_STACKS).join(', ')}`));
-          process.exit(1);
-        }
+if (options.live) {
+  const preset = options.stack || 'next15-prisma-clerk';
+  if (!LIVE_STACKS[preset]) {
+    console.log(chalk.red(`Unknown preset: ${preset}`));
+    console.log(chalk.gray(`Available presets: ${Object.keys(LIVE_STACKS).join(', ')}`));
+    process.exit(1);
+  }
 
-        const outputDir = path.resolve(options.dir);
-        if (await pathExists(outputDir, 'dir')) {
-          const existing = await fs.readdir(outputDir);
-          if (existing.length > 0) {
-            console.log(chalk.red('Target directory is not empty. Execution halted to prevent data loss.'));
-            process.exit(1);
-          }
-        }
+  const outputDir = path.resolve(options.dir);
+  if (await pathExists(outputDir, 'dir')) {
+    const existing = await fs.readdir(outputDir);
+    if (existing.length > 0) {
+      console.log(
+        chalk.red('Target directory is not empty. Execution halted to prevent data loss.')
+      );
+      process.exit(1);
+    }
+  }
 
-        const liveSourcePath = path.join(LIVE_TEMPLATES_ROOT, preset);
-        const fallbackLivePath = path.join(ROOT_FALLBACK, 'cli', 'assets', 'live-templates', preset);
-        let sourcePath = liveSourcePath;
-        try {
-          await fs.access(liveSourcePath);
-        } catch {
-          sourcePath = fallbackLivePath;
-        }
+  const liveSourcePath = path.join(LIVE_TEMPLATES_ROOT, preset);
+  const fallbackLivePath = path.join(ROOT_FALLBACK, 'cli', 'assets', 'live-templates', preset);
+  let sourcePath = liveSourcePath;
+  try {
+    await fs.access(liveSourcePath);
+  } catch {
+    sourcePath = fallbackLivePath;
+  }
 
-        const spinner = ora(`Generating ${LIVE_STACKS[preset]} scaffold...`).start();
-        try {
-          await copyDirectory(sourcePath, outputDir);
-          spinner.succeed(chalk.green('Project scaffold generated successfully!'));
-          console.log(chalk.gray(`\nPreset: ${preset}`));
-          console.log(chalk.gray(`Next steps:`));
-          console.log(chalk.cyan(`  1. cd ${outputDir}`));
-          console.log(chalk.cyan('  2. npm install'));
-          console.log(chalk.cyan('  3. npm run dev\n'));
-        } catch (error) {
-          spinner.fail(chalk.red('Failed to generate project scaffold'));
-          console.error(`[init] ${error?.message ?? error}`);
-          process.exit(1);
-        }
-        return;
-      }
+  const spinner = ora(`Generating ${LIVE_STACKS[preset]} scaffold...`).start();
+  try {
+    await copyDirectory(sourcePath, outputDir);
+    spinner.succeed(chalk.green('Project scaffold generated successfully!'));
+    console.log(chalk.gray(`\nPreset: ${preset}`));
+    console.log(chalk.gray(`Next steps:`));
+    console.log(chalk.cyan(`  1. cd ${outputDir}`));
+    console.log(chalk.cyan('  2. npm install'));
+    console.log(chalk.cyan('  3. npm run dev\n'));
+  } catch (error) {
+    spinner.fail(chalk.red('Failed to generate project scaffold'));
+    console.error(`[init] ${error?.message ?? error}`);
+    process.exit(1);
+  }
+  return;
+}
 ```
 
 **File:** cli/lib/commands/cloud.js (L714-771)
-```javascript
 
+```javascript
 export function registerCloudCommand(program) {
   program
     .command('cloud')
@@ -2016,7 +2119,6 @@ export function registerCloudCommand(program) {
           await sessionManager.save();
           process.exit(0);
         });
-
       } catch (err) {
         spinner.fail(`Failed to start: ${err.message}`);
       }
@@ -2025,78 +2127,80 @@ export function registerCloudCommand(program) {
 ```
 
 **File:** cli/lib/ui/interactive.js (L16-88)
+
 ```javascript
 export async function startInteractiveMode() {
-    renderer.clearScreen();
-    
-    // 1. Intelligence Phase: Scan the Environment
-    await renderer.thinking('Initializing Neural Link', [
-        'Scanning file system...',
-        'Analyzing dependency graph...',
-        'Checking git status...'
+  renderer.clearScreen();
+
+  // 1. Intelligence Phase: Scan the Environment
+  await renderer.thinking('Initializing Neural Link', [
+    'Scanning file system...',
+    'Analyzing dependency graph...',
+    'Checking git status...',
+  ]);
+
+  const ctx = await context.scan(); // Real scan
+
+  // 2. Pro-level greeting with Context Awareness
+  const stackInfo =
+    ctx.stack !== 'unknown' ? `I see we are working on a **${ctx.stack}** project.` : '';
+  const gitInfo = ctx.git.branch ? `Active branch: \`${ctx.git.branch}\`` : '';
+
+  await renderer.text(`**Welcome, User.**\n${stackInfo} ${gitInfo}`);
+  console.log(theme.dim('  (Type a command, ask a question, or use the menu below)'));
+  console.log('');
+
+  const choices = [
+    { name: `${theme.primary('🚀')}  Start New Project`, value: 'init' },
+    { name: `${theme.primary('🧠')}  Generate Implementation Plan`, value: 'generate' },
+    { name: `${theme.primary('🔨')}  Start Build Swarm`, value: 'swarm' },
+    { name: `${theme.primary('📊')}  Project Status Dashboard`, value: 'status' },
+    { name: `${theme.primary('🔍')}  Browse Agents`, value: 'agents' },
+    { name: `${theme.primary('🚑')}  System Doctor`, value: 'doctor' },
+    { name: `${theme.primary('📖')}  Read Documentation`, value: 'docs' },
+    new inquirer.Separator(),
+    { name: `${theme.error('✖')}  Exit`, value: 'exit' },
+  ];
+
+  while (true) {
+    const { action } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'action',
+        message: theme.primary('❯'),
+        prefix: '',
+        suffix: chalk.gray(' [Type or use ↓]'),
+      },
     ]);
 
-    const ctx = await context.scan(); // Real scan
+    if (!action.trim()) {
+      const { selection } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'selection',
+          message: 'Select an action:',
+          choices,
+          prefix: '',
+        },
+      ]);
 
-    // 2. Pro-level greeting with Context Awareness
-    const stackInfo = ctx.stack !== 'unknown' ? `I see we are working on a **${ctx.stack}** project.` : '';
-    const gitInfo = ctx.git.branch ? `Active branch: \`${ctx.git.branch}\`` : '';
-
-    await renderer.text(`**Welcome, User.**\n${stackInfo} ${gitInfo}`);
-    console.log(theme.dim('  (Type a command, ask a question, or use the menu below)'));
-    console.log('');
-
-    const choices = [
-        { name: `${theme.primary('🚀')}  Start New Project`, value: 'init' },
-        { name: `${theme.primary('🧠')}  Generate Implementation Plan`, value: 'generate' },
-        { name: `${theme.primary('🔨')}  Start Build Swarm`, value: 'swarm' },
-        { name: `${theme.primary('📊')}  Project Status Dashboard`, value: 'status' },
-        { name: `${theme.primary('🔍')}  Browse Agents`, value: 'agents' },
-        { name: `${theme.primary('🚑')}  System Doctor`, value: 'doctor' },
-        { name: `${theme.primary('📖')}  Read Documentation`, value: 'docs' },
-        new inquirer.Separator(),
-        { name: `${theme.error('✖')}  Exit`, value: 'exit' }
-    ];
-
-    while (true) {
-        const { action } = await inquirer.prompt([
-            {
-                type: 'input',
-                name: 'action',
-                message: theme.primary('❯'),
-                prefix: '',
-                suffix: chalk.gray(' [Type or use ↓]')
-            }
-        ]);
-
-        if (!action.trim()) {
-            const { selection } = await inquirer.prompt([
-                {
-                    type: 'list',
-                    name: 'selection',
-                    message: 'Select an action:',
-                    choices,
-                    prefix: ''
-                }
-            ]);
-            
-            if (selection === 'exit') break;
-            await executeCommand(selection);
+      if (selection === 'exit') break;
+      await executeCommand(selection);
+    } else {
+      const intent = routeIntent(action);
+      if (intent) {
+        if (intent === 'help') {
+          executeCommand('help');
         } else {
-            const intent = routeIntent(action);
-            if (intent) {
-                if (intent === 'help') {
-                    executeCommand('help');
-                } else {
-                    await executeCommand(intent, action);
-                }
-            } else {
-                renderer.fail(`I didn't quite catch that. Try "init", "build", or "help".`);
-                console.log(theme.dim(`  Your input: "${action}"\n`));
-            }
+          await executeCommand(intent, action);
         }
+      } else {
+        renderer.fail(`I didn't quite catch that. Try "init", "build", or "help".`);
+        console.log(theme.dim(`  Your input: "${action}"\n`));
+      }
     }
+  }
 
-    await renderer.text(`**Goodbye.**\nSystems remaining in standby.`);
+  await renderer.text(`**Goodbye.**\nSystems remaining in standby.`);
 }
 ```

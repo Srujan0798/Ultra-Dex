@@ -1,4 +1,5 @@
 # 🎯 [YOUR PROJECT NAME] - MASTER PLAN
+
 ## The Complete Guide - Everything You Need in One Place
 
 > **Last Updated:** [Date]
@@ -19,14 +20,17 @@
 ## 🎯 THE VISION
 
 ### One-Line Pitch
+
 > "[Your product in one sentence - what it does and why it matters]"
 
 **Example:**
+
 > "Notion for developers - where code documentation writes itself"
 
 ### The Problem You're Solving
 
 **Current Pain Points:**
+
 - [Pain point 1]
 - [Pain point 2]
 - [Pain point 3]
@@ -36,11 +40,11 @@
 
 ### Target Users
 
-| User Segment | Description | Status |
-|--------------|-------------|--------|
-| [Segment 1] | [Who they are, what they need] | ⏳ Planned |
-| [Segment 2] | [Who they are, what they need] | 🔄 Building |
-| [Segment 3] | [Who they are, what they need] | ✅ Live |
+| User Segment | Description                    | Status      |
+| ------------ | ------------------------------ | ----------- |
+| [Segment 1]  | [Who they are, what they need] | ⏳ Planned  |
+| [Segment 2]  | [Who they are, what they need] | 🔄 Building |
+| [Segment 3]  | [Who they are, what they need] | ✅ Live     |
 
 ---
 
@@ -48,23 +52,23 @@
 
 ### Core Stack
 
-| Layer | Technology | Rationale |
-|-------|-----------|-----------|
-| **Frontend** | [Next.js / React / Vue / etc] | [Why you chose this] |
-| **Backend** | [Node.js / Python / Go / etc] | [Why you chose this] |
+| Layer        | Technology                     | Rationale            |
+| ------------ | ------------------------------ | -------------------- |
+| **Frontend** | [Next.js / React / Vue / etc]  | [Why you chose this] |
+| **Backend**  | [Node.js / Python / Go / etc]  | [Why you chose this] |
 | **Database** | [PostgreSQL / MongoDB / MySQL] | [Why you chose this] |
-| **Cache** | [Redis / Memcached / etc] | [Why you chose this] |
-| **Hosting** | [Vercel / AWS / Railway / etc] | [Why you chose this] |
+| **Cache**    | [Redis / Memcached / etc]      | [Why you chose this] |
+| **Hosting**  | [Vercel / AWS / Railway / etc] | [Why you chose this] |
 
 ### Advanced Stack
 
-| Feature | Technology | Status |
-|---------|-----------|--------|
-| **Authentication** | [NextAuth / Auth0 / Clerk] | ✅ Done |
-| **Payments** | [Stripe / PayPal / etc] | ⏳ Planned |
-| **Email** | [SendGrid / Resend / etc] | 🔄 Building |
-| **Storage** | [S3 / Cloudinary / etc] | ⏳ Planned |
-| **Analytics** | [PostHog / Mixpanel / etc] | ⏳ Planned |
+| Feature            | Technology                 | Status      |
+| ------------------ | -------------------------- | ----------- |
+| **Authentication** | [NextAuth / Auth0 / Clerk] | ✅ Done     |
+| **Payments**       | [Stripe / PayPal / etc]    | ⏳ Planned  |
+| **Email**          | [SendGrid / Resend / etc]  | 🔄 Building |
+| **Storage**        | [S3 / Cloudinary / etc]    | ⏳ Planned  |
+| **Analytics**      | [PostHog / Mixpanel / etc] | ⏳ Planned  |
 
 ### Tech Stack Decision Log
 
@@ -91,6 +95,7 @@
 ### Phase 1: Database Setup
 
 #### Option A: PostgreSQL (Neon / Supabase)
+
 ```bash
 # Create database
 # Get connection string
@@ -98,6 +103,7 @@ DATABASE_URL=postgresql://[user]:[password]@[host]/[database]?sslmode=require
 ```
 
 #### Option B: MongoDB (MongoDB Atlas)
+
 ```bash
 # Create cluster
 # Get connection string
@@ -109,10 +115,12 @@ MONGODB_URI=mongodb+srv://[user]:[password]@[cluster].mongodb.net/[database]
 ### Phase 2: Backend Deployment
 
 #### Option A: Node.js on Railway/Render
+
 **Build Command:** `npm install && npm run build`
 **Start Command:** `npm start`
 
 **Environment Variables:**
+
 ```bash
 NODE_ENV=production
 DATABASE_URL=[your-database-url]
@@ -121,10 +129,12 @@ PORT=10000
 ```
 
 #### Option B: Serverless (Vercel Functions)
+
 **Build Command:** Auto-detected
 **Start Command:** Auto-detected
 
 **Environment Variables:**
+
 ```bash
 DATABASE_URL=[your-database-url]
 JWT_SECRET=[generate-random-string]
@@ -135,16 +145,19 @@ JWT_SECRET=[generate-random-string]
 ### Phase 3: Frontend Deployment
 
 #### Vercel (Recommended for Next.js)
+
 **Framework:** Auto-detected
 **Root Directory:** `frontend` or `/`
 
 **Environment Variables:**
+
 ```bash
 NEXT_PUBLIC_API_URL=[your-backend-url]
 NEXT_PUBLIC_APP_URL=[your-frontend-url]
 ```
 
 #### Netlify (Alternative)
+
 **Build Command:** `npm run build`
 **Publish Directory:** `dist` or `.next`
 
@@ -152,12 +165,12 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 
 ### Deployment Status
 
-| Service | Platform | Status | URL |
-|---------|----------|--------|-----|
-| Frontend | [Vercel/Netlify] | ⏳ TODO | - |
-| Backend | [Railway/Render] | ⏳ TODO | - |
-| Database | [Provider] | ⏳ TODO | - |
-| Cache | [Provider] | ⏳ TODO | - |
+| Service  | Platform         | Status  | URL |
+| -------- | ---------------- | ------- | --- |
+| Frontend | [Vercel/Netlify] | ⏳ TODO | -   |
+| Backend  | [Railway/Render] | ⏳ TODO | -   |
+| Database | [Provider]       | ⏳ TODO | -   |
+| Cache    | [Provider]       | ⏳ TODO | -   |
 
 ---
 
@@ -166,6 +179,7 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 ### What's Done ✅
 
 **Core Platform ([X]%)**
+
 - [ ] Frontend framework setup
 - [ ] Backend API structure
 - [ ] Database schema designed
@@ -175,11 +189,13 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 - [ ] Loading states
 
 **Feature 1: [Feature Name] ([X]%)**
+
 - [ ] [Sub-feature 1]
 - [ ] [Sub-feature 2]
 - [ ] [Sub-feature 3]
 
 **Feature 2: [Feature Name] ([X]%)**
+
 - [ ] [Sub-feature 1]
 - [ ] [Sub-feature 2]
 - [ ] [Sub-feature 3]
@@ -187,26 +203,31 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 ### What's In Progress ⚠️
 
 **Current Sprint (Week of [Date]):**
+
 - ⚠️ [Task 1] - 60% complete
 - ⚠️ [Task 2] - 30% complete
 - ⚠️ [Task 3] - Just started
 
 **Blockers:**
+
 - [Blocker 1] - Waiting for [dependency/decision]
 - [Blocker 2] - Need to research [topic]
 
 ### What's Planned ⏳
 
 **Next Sprint:**
+
 - ⏳ [Feature/Task 1]
 - ⏳ [Feature/Task 2]
 - ⏳ [Feature/Task 3]
 
 **Q2 2026:**
+
 - ⏳ [Major feature 1]
 - ⏳ [Major feature 2]
 
 **Backlog:**
+
 - ⏳ [Nice-to-have feature 1]
 - ⏳ [Nice-to-have feature 2]
 
@@ -215,6 +236,7 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 ## 🎯 ROADMAP
 
 ### Q1 2026 (Current) - Foundation
+
 - [ ] MVP feature complete
 - [ ] First 10 test users
 - [ ] Core workflows tested
@@ -223,6 +245,7 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 - **Target:** Launch publicly
 
 ### Q2 2026 - Growth
+
 - [ ] [Major feature 1]
 - [ ] [Major feature 2]
 - [ ] Payment integration
@@ -231,6 +254,7 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 - **Target:** Product-market fit
 
 ### Q3 2026 - Scale
+
 - [ ] [Advanced feature 1]
 - [ ] [Advanced feature 2]
 - [ ] Mobile app (optional)
@@ -239,6 +263,7 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 - **Target:** Sustainable growth
 
 ### Q4 2026 - Expansion
+
 - [ ] [New market/feature]
 - [ ] [Partnership/integration]
 - [ ] API for partners
@@ -252,34 +277,34 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 
 ### B2C (Direct Users)
 
-| Tier | Price | Features | Status |
-|------|-------|----------|--------|
-| Free | $0/month | [Feature 1, 2, 3] | ✅ Live |
-| Pro | $[X]/month | [Feature 1, 2, 3, 4, 5] | ⏳ Q2 |
-| Enterprise | Custom | [All features + support] | ⏳ Q3 |
+| Tier       | Price      | Features                 | Status  |
+| ---------- | ---------- | ------------------------ | ------- |
+| Free       | $0/month   | [Feature 1, 2, 3]        | ✅ Live |
+| Pro        | $[X]/month | [Feature 1, 2, 3, 4, 5]  | ⏳ Q2   |
+| Enterprise | Custom     | [All features + support] | ⏳ Q3   |
 
 ### One-Time Products (Optional)
 
-| Product | Price | Status |
-|---------|-------|--------|
-| [Product 1] | $[X] | ⏳ Planned |
-| [Product 2] | $[X] | ⏳ Planned |
+| Product     | Price | Status     |
+| ----------- | ----- | ---------- |
+| [Product 1] | $[X]  | ⏳ Planned |
+| [Product 2] | $[X]  | ⏳ Planned |
 
 ### B2B (Business Customers - Optional)
 
-| Product | Price | Status |
-|---------|-------|--------|
-| Team Plan | $[X]/user/month | ⏳ Q2 |
-| Enterprise | Custom | ⏳ Q3 |
-| API Access | $[X]/month | ⏳ Q4 |
+| Product    | Price           | Status |
+| ---------- | --------------- | ------ |
+| Team Plan  | $[X]/user/month | ⏳ Q2  |
+| Enterprise | Custom          | ⏳ Q3  |
+| API Access | $[X]/month      | ⏳ Q4  |
 
 ### Revenue Projections
 
-| Milestone | Users | Conversion | MRR | ARR |
-|-----------|-------|------------|-----|-----|
-| Month 3 | 100 | 10% | $[X] | $[X] |
-| Month 6 | 500 | 15% | $[X] | $[X] |
-| Month 12 | 2,000 | 20% | $[X] | $[X] |
+| Milestone | Users | Conversion | MRR  | ARR  |
+| --------- | ----- | ---------- | ---- | ---- |
+| Month 3   | 100   | 10%        | $[X] | $[X] |
+| Month 6   | 500   | 15%        | $[X] | $[X] |
+| Month 12  | 2,000 | 20%        | $[X] | $[X] |
 
 ---
 
@@ -328,6 +353,7 @@ your-project/
 3. [ ] [Task 3] - @[Agent] - [Expected completion date]
 
 **Daily Standup:**
+
 - **Today:** [What you're working on today]
 - **Blockers:** [Any blockers]
 - **Tomorrow:** [What's next]
@@ -350,24 +376,28 @@ your-project/
 ## 🎉 SUCCESS METRICS
 
 ### Month 3 Targets
+
 - Users: [X]
 - Active users: [X]
 - Revenue: $[X]
 - Key metric: [X]
 
 ### Month 6 Targets
+
 - Users: [X]
 - Active users: [X]
 - Revenue: $[X]
 - Key metric: [X]
 
 ### Month 12 Targets
+
 - Users: [X]
 - Active users: [X]
 - Monthly revenue: $[X]
 - Key metric: [X]
 
 ### North Star Metric
+
 **[Your primary success metric]:** [Current value] → [Target value]
 
 **Why this metric?** [Explanation of why this matters most]
@@ -377,12 +407,14 @@ your-project/
 ## ✅ WHAT'S WORKING RIGHT NOW
 
 ### Local Development
+
 - [ ] Frontend: http://localhost:3000
 - [ ] Backend: http://localhost:[PORT]
 - [ ] Database: Connected
 - [ ] Tests: Passing
 
 ### Production
+
 - [ ] Frontend: [URL]
 - [ ] Backend: [URL]
 - [ ] Database: Connected
@@ -442,31 +474,31 @@ npm run deploy:production
 
 ### Core Team
 
-| Role | Name | Responsibilities |
-|------|------|-----------------|
-| Founder/CEO | [Your name] | Vision, strategy, fundraising |
-| Developer | [Name or "You"] | Full-stack development |
-| Designer | [Name or TBD] | UI/UX design |
+| Role        | Name            | Responsibilities              |
+| ----------- | --------------- | ----------------------------- |
+| Founder/CEO | [Your name]     | Vision, strategy, fundraising |
+| Developer   | [Name or "You"] | Full-stack development        |
+| Designer    | [Name or TBD]   | UI/UX design                  |
 
 ### External Resources
 
-| Resource | Purpose | Cost |
-|----------|---------|------|
-| [Tool 1] | [Purpose] | $[X]/month |
-| [Tool 2] | [Purpose] | $[X]/month |
-| **Total Monthly Cost** | | **$[X]/month** |
+| Resource               | Purpose   | Cost           |
+| ---------------------- | --------- | -------------- |
+| [Tool 1]               | [Purpose] | $[X]/month     |
+| [Tool 2]               | [Purpose] | $[X]/month     |
+| **Total Monthly Cost** |           | **$[X]/month** |
 
 ---
 
 ## 📚 KEY DOCUMENTATION
 
-| Document | Purpose | Link |
-|----------|---------|------|
-| Implementation Plan | 34-section full specification | `IMPLEMENTATION-PLAN.md` |
-| Context Document | Project background & decisions | `CONTEXT.md` |
-| API Documentation | API endpoints & usage | `docs/API.md` |
-| Agent Index | AI agent directory | `agents/00-AGENT_INDEX.md` |
-| Phase Tracker | Task-by-task progress | `PHASE-TRACKER.md` |
+| Document            | Purpose                        | Link                       |
+| ------------------- | ------------------------------ | -------------------------- |
+| Implementation Plan | 34-section full specification  | `IMPLEMENTATION-PLAN.md`   |
+| Context Document    | Project background & decisions | `CONTEXT.md`               |
+| API Documentation   | API endpoints & usage          | `docs/API.md`              |
+| Agent Index         | AI agent directory             | `agents/00-AGENT_INDEX.md` |
+| Phase Tracker       | Task-by-task progress          | `PHASE-TRACKER.md`         |
 
 ---
 
@@ -475,6 +507,7 @@ npm run deploy:production
 ### Important Decisions Made
 
 **[Date]** - [Decision Title]
+
 - **Context:** [Why this decision was needed]
 - **Options Considered:** [What alternatives were evaluated]
 - **Decision:** [What was chosen]
@@ -482,6 +515,7 @@ npm run deploy:production
 - **Owner:** [Who made the decision]
 
 **[Date]** - [Next Decision]
+
 - **Context:** [Background]
 - **Decision:** [What was chosen]
 - **Rationale:** [Reasoning]
@@ -491,17 +525,21 @@ npm run deploy:production
 ## 🐛 KNOWN ISSUES
 
 ### Critical (Blocking)
+
 - [ ] [Issue 1] - [Description] - [Assigned to]
 
 ### High Priority
+
 - [ ] [Issue 1] - [Description] - [Assigned to]
 - [ ] [Issue 2] - [Description] - [Assigned to]
 
 ### Medium Priority
+
 - [ ] [Issue 1] - [Description]
 - [ ] [Issue 2] - [Description]
 
 ### Wishlist (Low Priority)
+
 - [ ] [Nice-to-have 1]
 - [ ] [Nice-to-have 2]
 
@@ -510,11 +548,13 @@ npm run deploy:production
 ## 💡 IDEAS & BACKLOG
 
 ### Future Features (Not Committed)
+
 - [Idea 1] - [Brief description]
 - [Idea 2] - [Brief description]
 - [Idea 3] - [Brief description]
 
 ### Research Needed
+
 - [Topic 1] - [What needs investigation]
 - [Topic 2] - [What needs investigation]
 
@@ -523,20 +563,26 @@ npm run deploy:production
 ## 🔄 CHANGELOG
 
 ### [Current Version] - [Date]
+
 **Added:**
+
 - [Feature 1]
 - [Feature 2]
 
 **Changed:**
+
 - [Change 1]
 - [Change 2]
 
 **Fixed:**
+
 - [Bug fix 1]
 - [Bug fix 2]
 
 ### [Previous Version] - [Date]
+
 **Added:**
+
 - [Feature 1]
 
 ---
@@ -546,19 +592,23 @@ npm run deploy:production
 ### Week of [Date]
 
 **Completed:**
+
 - ✅ [Task 1]
 - ✅ [Task 2]
 - ✅ [Task 3]
 
 **In Progress:**
+
 - 🔄 [Task 1] - 70% done
 - 🔄 [Task 2] - 30% done
 
 **Next Week:**
+
 - ⏳ [Task 1]
 - ⏳ [Task 2]
 
 **Learnings:**
+
 - [Something learned this week]
 - [Insight or discovery]
 
@@ -567,14 +617,17 @@ npm run deploy:production
 ## 🎓 LESSONS LEARNED
 
 **Technical:**
+
 - [Lesson 1] - [What you learned and would do differently]
 - [Lesson 2] - [Insight from building this feature]
 
 **Product:**
+
 - [Lesson 1] - [User feedback or market insight]
 - [Lesson 2] - [What worked/didn't work]
 
 **Process:**
+
 - [Lesson 1] - [Workflow improvement discovered]
 - [Lesson 2] - [Communication or planning insight]
 
@@ -583,16 +636,19 @@ npm run deploy:production
 ## 🔗 USEFUL LINKS
 
 **Production:**
+
 - Frontend: [URL]
 - Backend API: [URL]
 - Admin Panel: [URL]
 
 **Development:**
+
 - Staging: [URL]
 - API Docs: [URL]
 - Design Files: [Figma/etc URL]
 
 **Tools:**
+
 - GitHub: [URL]
 - Project Board: [URL]
 - Analytics: [URL]
@@ -603,11 +659,11 @@ npm run deploy:production
 
 **For specific topics, check:**
 
-| Topic | Document |
-|-------|----------|
-| Full technical plan | `IMPLEMENTATION-PLAN.md` |
-| Task tracking | `PHASE-TRACKER.md` |
-| Agent usage | `agents/00-AGENT_INDEX.md` |
+| Topic               | Document                          |
+| ------------------- | --------------------------------- |
+| Full technical plan | `IMPLEMENTATION-PLAN.md`          |
+| Task tracking       | `PHASE-TRACKER.md`                |
+| Agent usage         | `agents/00-AGENT_INDEX.md`        |
 | Orchestration guide | `guides/PROJECT-ORCHESTRATION.md` |
 
 ---

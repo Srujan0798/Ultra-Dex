@@ -12,11 +12,11 @@ describe('validate command', () => {
   it('should register the validate command with correct options', () => {
     registerValidateCommand(program);
 
-    const command = program.commands.find(cmd => cmd.name() === 'validate');
+    const command = program.commands.find((cmd) => cmd.name() === 'validate');
     expect(command).toBeDefined();
     expect(command.description()).toContain('Validate project structure');
 
-    const options = command.options.map(opt => opt.flags);
+    const options = command.options.map((opt) => opt.flags);
     expect(options).toContain('-d, --dir <directory>');
     expect(options).toContain('--scan');
   });

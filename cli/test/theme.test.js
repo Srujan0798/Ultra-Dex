@@ -4,7 +4,17 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { theme, box, divider, header, status, statusLine, progressBar, themeColors, ultraGradient } from '../lib/ui/theme.js';
+import {
+  theme,
+  box,
+  divider,
+  header,
+  status,
+  statusLine,
+  progressBar,
+  themeColors,
+  ultraGradient,
+} from '../lib/ui/theme.js';
 
 describe('theme utilities', () => {
   describe('themeColors', () => {
@@ -187,24 +197,28 @@ describe('theme utilities', () => {
       // Mock console.log to capture output
       const originalLog = console.log;
       let output = '';
-      console.log = (msg) => { output += msg + '\n'; };
-      
+      console.log = (msg) => {
+        output += msg + '\n';
+      };
+
       statusLine(status.success, 'Task completed');
-      
+
       console.log = originalLog;
-      
+
       assert.ok(output.includes('Task completed'), 'Should contain status text');
     });
 
     test('includes detail when provided', () => {
       const originalLog = console.log;
       let output = '';
-      console.log = (msg) => { output += msg + '\n'; };
-      
+      console.log = (msg) => {
+        output += msg + '\n';
+      };
+
       statusLine(status.success, 'Task completed', '2s');
-      
+
       console.log = originalLog;
-      
+
       assert.ok(output.includes('Task completed'), 'Should contain status text');
       assert.ok(output.includes('2s'), 'Should contain detail');
     });

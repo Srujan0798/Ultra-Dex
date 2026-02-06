@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Prompt Builder Utility
  * Assembles prompts for the AI providers
@@ -6,7 +8,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { USER_PROMPT_TEMPLATE, QUICK_START_PROMPT, CONTEXT_PROMPT } from '../templates/prompts/section-prompts.js';
+import {
+  USER_PROMPT_TEMPLATE,
+  QUICK_START_PROMPT,
+  CONTEXT_PROMPT,
+} from '../templates/prompts/section-prompts.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,12 +76,12 @@ export function estimateTokens(text) {
 export function estimateGenerationCost(provider, idea) {
   // Estimate input: system prompt (~600 tokens) + user prompt (~2000 tokens) + idea
   const inputTokens = 2600 + estimateTokens(idea);
-  
+
   // Estimate output: ~40,000 tokens for full 34-section plan
   const outputTokens = 40000;
-  
+
   const cost = provider.estimateCost(inputTokens, outputTokens);
-  
+
   return {
     inputTokens,
     outputTokens,

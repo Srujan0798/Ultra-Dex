@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Usage Tracking System
  * Tracks agent usage, token consumption, and API costs
@@ -23,22 +25,22 @@ const DEFAULT_USAGE_CONFIG = {
     enabled: true,
     providerRates: {
       anthropic: {
-        'claude-3-5-sonnet-20241022': { input: 3.00, output: 15.00 }, // $3/$15 per 1M tokens
-        'claude-3-opus-20240229': { input: 15.00, output: 75.00 },
-        'claude-3-sonnet-20240229': { input: 3.00, output: 15.00 },
-        'claude-3-haiku-20240307': { input: 0.25, output: 1.25 }
+        'claude-3-5-sonnet-20241022': { input: 3.0, output: 15.0 }, // $3/$15 per 1M tokens
+        'claude-3-opus-20240229': { input: 15.0, output: 75.0 },
+        'claude-3-sonnet-20240229': { input: 3.0, output: 15.0 },
+        'claude-3-haiku-20240307': { input: 0.25, output: 1.25 },
       },
       openai: {
-        'gpt-4o': { input: 5.00, output: 15.00 }, // $5/$15 per 1M tokens
-        'gpt-4o-mini': { input: 0.15, output: 0.60 }, // $0.15/$0.60 per 1M tokens
-        'gpt-4-turbo': { input: 10.00, output: 30.00 }
+        'gpt-4o': { input: 5.0, output: 15.0 }, // $5/$15 per 1M tokens
+        'gpt-4o-mini': { input: 0.15, output: 0.6 }, // $0.15/$0.60 per 1M tokens
+        'gpt-4-turbo': { input: 10.0, output: 30.0 },
       },
       google: {
-        'gemini-1.5-pro': { input: 3.50, output: 10.50 }, // $3.50/$10.50 per 1M tokens
-        'gemini-1.5-flash': { input: 0.35, output: 1.05 } // $0.35/$1.05 per 1M tokens
-      }
-    }
-  }
+        'gemini-1.5-pro': { input: 3.5, output: 10.5 }, // $3.50/$10.50 per 1M tokens
+        'gemini-1.5-flash': { input: 0.35, output: 1.05 }, // $0.35/$1.05 per 1M tokens
+      },
+    },
+  },
 };
 
 /**
@@ -53,7 +55,7 @@ export class UsageTracker {
       totalOutput: 0,
       byProvider: {},
       byAgent: {},
-      byDate: {}
+      byDate: {},
     };
     this.initialized = false;
   }
@@ -63,14 +65,14 @@ export class UsageTracker {
    */
   async initialize() {
     if (this.initialized) return;
-    
+
     try {
       // Create usage data directory
       await fs.mkdir(USAGE_DATA_DIR, { recursive: true });
-      
+
       // Load existing usage data
       await this.loadUsageData();
-      
+
       this.initialized = true;
       printSuccess(chalk.green('✅ Usage tracker initialized'));
     } catch (error) {
@@ -93,7 +95,7 @@ export class UsageTracker {
       }
       this.usageLog = []; // Start with empty log if file doesn't exist
     }
-    
+
     // Load token usage
     try {
       const tokenData = await fs.readFile(TOKEN_USAGE_FILE, 'utf8');
@@ -108,7 +110,7 @@ export class UsageTracker {
         totalOutput: 0,
         byProvider: {},
         byAgent: {},
-        byDate: {}
+        byDate: {},
       };
     }
   }
@@ -124,7 +126,7 @@ export class UsageTracker {
       printError(chalk.red(`❌ Failed to save usage log: ${error.message}`));
       throw error;
     }
-    
+
     // Save token usage
     try {
       await fs.writeFile(TOKEN_USAGE_FILE, JSON.stringify(this.tokenUsage, null, 2));
@@ -144,7 +146,7 @@ export class UsageTracker {
 
     const timestamp = new Date().toISOString();
     const dateKey = timestamp.split('T')[0]; // YYYY-MM-DD
-    
+
     // Calculate cost if cost calculation is enabled
     let cost = 0;
     if (this.config.costCalculation.enabled) {
@@ -168,10 +170,10 @@ export class UsageTracker {
         inputTokens: usage.inputTokens || 0,
         outputTokens: usage.outputTokens || 0,
         cacheCreationInputTokens: usage.cacheCreationInputTokens || 0,
-        cacheReadInputTokens: usage.cacheReadInputTokens || 0
+        cacheReadInputTokens: usage.cacheReadInputTokens || 0,
       },
       cost,
-      metadata
+      metadata,
     };
 
     // Add to usage log
@@ -212,7 +214,11 @@ export class UsageTracker {
 
     // Log detailed information if enabled
     if (this.config.enableDetailedLogging) {
-      printInfo(chalk.gray(`📊 Usage logged: ${agentName} (${provider}/${model}) - ${usage.inputTokens || 0} input, ${usage.outputTokens || 0} output, $${cost.toFixed(6)}`));
+      printInfo(
+        chalk.gray(
+          `📊 Usage logged: ${agentName} (${provider}/${model}) - ${usage.inputTokens || 0} input, ${usage.outputTokens || 0} output, $${cost.toFixed(6)}`
+        )
+      );
     }
 
     return usageRecord;
@@ -223,35 +229,43 @@ export class UsageTracker {
    */
   getUsageStats(options = {}) {
     if (!this.initialized) {
-      throw new AppError('Usage tracker not initialized', { code: 'USAGE_TRACKER_NOT_INITIALIZED' });
+      throw new AppError('Usage tracker not initialized', {
+        code: 'USAGE_TRACKER_NOT_INITIALIZED',
+      });
     }
 
     const { startDate, endDate, agent, provider } = options;
-    
+
     let filteredUsage = this.usageLog;
-    
+
     if (startDate) {
       const start = new Date(startDate);
-      filteredUsage = filteredUsage.filter(record => new Date(record.timestamp) >= start);
+      filteredUsage = filteredUsage.filter((record) => new Date(record.timestamp) >= start);
     }
-    
+
     if (endDate) {
       const end = new Date(endDate);
-      filteredUsage = filteredUsage.filter(record => new Date(record.timestamp) <= end);
+      filteredUsage = filteredUsage.filter((record) => new Date(record.timestamp) <= end);
     }
-    
+
     if (agent) {
-      filteredUsage = filteredUsage.filter(record => record.agent === agent);
+      filteredUsage = filteredUsage.filter((record) => record.agent === agent);
     }
-    
+
     if (provider) {
-      filteredUsage = filteredUsage.filter(record => record.provider === provider);
+      filteredUsage = filteredUsage.filter((record) => record.provider === provider);
     }
 
     // Calculate totals
     const totalCalls = filteredUsage.length;
-    const totalInputTokens = filteredUsage.reduce((sum, record) => sum + (record.usage.inputTokens || 0), 0);
-    const totalOutputTokens = filteredUsage.reduce((sum, record) => sum + (record.usage.outputTokens || 0), 0);
+    const totalInputTokens = filteredUsage.reduce(
+      (sum, record) => sum + (record.usage.inputTokens || 0),
+      0
+    );
+    const totalOutputTokens = filteredUsage.reduce(
+      (sum, record) => sum + (record.usage.outputTokens || 0),
+      0
+    );
     const totalCost = filteredUsage.reduce((sum, record) => sum + record.cost, 0);
 
     // Group by agent
@@ -263,10 +277,10 @@ export class UsageTracker {
           calls: 0,
           inputTokens: 0,
           outputTokens: 0,
-          cost: 0
+          cost: 0,
         };
       }
-      
+
       byAgent[agentName].calls++;
       byAgent[agentName].inputTokens += record.usage.inputTokens || 0;
       byAgent[agentName].outputTokens += record.usage.outputTokens || 0;
@@ -282,10 +296,10 @@ export class UsageTracker {
           calls: 0,
           inputTokens: 0,
           outputTokens: 0,
-          cost: 0
+          cost: 0,
         };
       }
-      
+
       byProvider[prov].calls++;
       byProvider[prov].inputTokens += record.usage.inputTokens || 0;
       byProvider[prov].outputTokens += record.usage.outputTokens || 0;
@@ -294,19 +308,23 @@ export class UsageTracker {
 
     return {
       period: {
-        start: startDate || new Date(Math.min(...this.usageLog.map(r => new Date(r.timestamp)))).toISOString(),
-        end: endDate || new Date(Math.max(...this.usageLog.map(r => new Date(r.timestamp)))).toISOString()
+        start:
+          startDate ||
+          new Date(Math.min(...this.usageLog.map((r) => new Date(r.timestamp)))).toISOString(),
+        end:
+          endDate ||
+          new Date(Math.max(...this.usageLog.map((r) => new Date(r.timestamp)))).toISOString(),
       },
       totals: {
         calls: totalCalls,
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
         totalTokens: totalInputTokens + totalOutputTokens,
-        cost: totalCost
+        cost: totalCost,
       },
       byAgent,
       byProvider,
-      records: filteredUsage
+      records: filteredUsage,
     };
   }
 
@@ -315,11 +333,13 @@ export class UsageTracker {
    */
   getAgentUsage(agentName) {
     if (!this.initialized) {
-      throw new AppError('Usage tracker not initialized', { code: 'USAGE_TRACKER_NOT_INITIALIZED' });
+      throw new AppError('Usage tracker not initialized', {
+        code: 'USAGE_TRACKER_NOT_INITIALIZED',
+      });
     }
 
-    const agentRecords = this.usageLog.filter(record => record.agent === agentName);
-    
+    const agentRecords = this.usageLog.filter((record) => record.agent === agentName);
+
     return this.getUsageStats({ agent: agentName });
   }
 
@@ -328,7 +348,9 @@ export class UsageTracker {
    */
   getProviderUsage(provider) {
     if (!this.initialized) {
-      throw new AppError('Usage tracker not initialized', { code: 'USAGE_TRACKER_NOT_INITIALIZED' });
+      throw new AppError('Usage tracker not initialized', {
+        code: 'USAGE_TRACKER_NOT_INITIALIZED',
+      });
     }
 
     return this.getUsageStats({ provider });
@@ -344,16 +366,16 @@ export class UsageTracker {
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionDays);
-    
+
     const oldCount = this.usageLog.length;
-    this.usageLog = this.usageLog.filter(record => new Date(record.timestamp) >= cutoffDate);
+    this.usageLog = this.usageLog.filter((record) => new Date(record.timestamp) >= cutoffDate);
     const removedCount = oldCount - this.usageLog.length;
-    
+
     if (removedCount > 0) {
       await this.saveUsageData();
       printInfo(chalk.gray(`🧹 Cleaned up ${removedCount} old usage records`));
     }
-    
+
     return { removed: removedCount, remaining: this.usageLog.length };
   }
 
@@ -366,10 +388,10 @@ export class UsageTracker {
     }
 
     const stats = this.getUsageStats(options);
-    
+
     let content;
     let extension;
-    
+
     switch (format.toLowerCase()) {
       case 'json':
         content = JSON.stringify(stats, null, 2);
@@ -386,19 +408,19 @@ export class UsageTracker {
       default:
         throw new AppError(`Unsupported format: ${format}`, { code: 'UNSUPPORTED_FORMAT' });
     }
-    
+
     const filename = options.filename || `ultra-dex-usage-${Date.now()}${extension}`;
     const filepath = path.join(process.cwd(), filename);
-    
+
     await fs.writeFile(filepath, content);
-    
+
     printSuccess(chalk.green(`✅ Usage report exported to: ${filepath}`));
-    
+
     return {
       path: filepath,
       format,
       size: Buffer.byteLength(content),
-      records: stats.totals.calls
+      records: stats.totals.calls,
     };
   }
 
@@ -406,10 +428,8 @@ export class UsageTracker {
    * Convert usage stats to CSV format
    */
   convertToCSV(stats) {
-    const lines = [
-      'Timestamp,Agent,Provider,Model,InputTokens,OutputTokens,Cost,Metadata'
-    ];
-    
+    const lines = ['Timestamp,Agent,Provider,Model,InputTokens,OutputTokens,Cost,Metadata'];
+
     for (const record of stats.records) {
       const line = [
         record.timestamp,
@@ -419,12 +439,14 @@ export class UsageTracker {
         record.usage.inputTokens || 0,
         record.usage.outputTokens || 0,
         record.cost.toFixed(6),
-        JSON.stringify(record.metadata).replace(/"/g, '""')
-      ].map(field => `"${field}"`).join(',');
-      
+        JSON.stringify(record.metadata).replace(/"/g, '""'),
+      ]
+        .map((field) => `"${field}"`)
+        .join(',');
+
       lines.push(line);
     }
-    
+
     return lines.join('\n');
   }
 
@@ -435,25 +457,25 @@ export class UsageTracker {
     let text = `Ultra-Dex Usage Report\n`;
     text += `Generated: ${new Date().toISOString()}\n`;
     text += `Period: ${stats.period.start} to ${stats.period.end}\n\n`;
-    
+
     text += `Total Calls: ${stats.totals.calls}\n`;
     text += `Total Input Tokens: ${stats.totals.inputTokens}\n`;
     text += `Total Output Tokens: ${stats.totals.outputTokens}\n`;
     text += `Total Tokens: ${stats.totals.totalTokens}\n`;
     text += `Total Cost: $${stats.totals.cost.toFixed(6)}\n\n`;
-    
+
     text += `Usage by Agent:\n`;
     text += `---------------\n`;
     for (const [agent, data] of Object.entries(stats.byAgent)) {
       text += `${agent}: ${data.calls} calls, ${data.inputTokens} input, ${data.outputTokens} output, $${data.cost.toFixed(6)}\n`;
     }
-    
+
     text += `\nUsage by Provider:\n`;
     text += `------------------\n`;
     for (const [provider, data] of Object.entries(stats.byProvider)) {
       text += `${provider}: ${data.calls} calls, ${data.inputTokens} input, ${data.outputTokens} output, $${data.cost.toFixed(6)}\n`;
     }
-    
+
     return text;
   }
 
@@ -462,19 +484,21 @@ export class UsageTracker {
    */
   getTokenUsageSummary() {
     if (!this.initialized) {
-      throw new AppError('Usage tracker not initialized', { code: 'USAGE_TRACKER_NOT_INITIALIZED' });
+      throw new AppError('Usage tracker not initialized', {
+        code: 'USAGE_TRACKER_NOT_INITIALIZED',
+      });
     }
 
     return {
       total: {
         input: this.tokenUsage.totalInput,
         output: this.tokenUsage.totalOutput,
-        combined: this.tokenUsage.totalInput + this.tokenUsage.totalOutput
+        combined: this.tokenUsage.totalInput + this.tokenUsage.totalOutput,
       },
       byProvider: this.tokenUsage.byProvider,
       byAgent: this.tokenUsage.byAgent,
       byDate: this.tokenUsage.byDate,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -492,11 +516,11 @@ export class UsageTracker {
       totalOutput: 0,
       byProvider: {},
       byAgent: {},
-      byDate: {}
+      byDate: {},
     };
-    
+
     await this.saveUsageData();
-    
+
     printSuccess(chalk.green('✅ Usage tracking reset'));
   }
 }
@@ -530,19 +554,19 @@ export function registerUsageCommands(program) {
     .action(async (options) => {
       try {
         printInfo(chalk.cyan('\n📊 Ultra-Dex Usage Tracking\n'));
-        
+
         const usageTracker = await createUsageTracker();
-        
+
         if (options.stats) {
           const filterOptions = {
             startDate: options.startDate,
             endDate: options.endDate,
             agent: options.agent,
-            provider: options.provider
+            provider: options.provider,
           };
-          
+
           const stats = usageTracker.getUsageStats(filterOptions);
-          
+
           printInfo(chalk.bold('📈 Usage Statistics:\n'));
           printInfo(`Period: ${stats.period.start} to ${stats.period.end}`);
           printInfo(`Total Calls: ${stats.totals.calls}`);
@@ -550,12 +574,12 @@ export function registerUsageCommands(program) {
           printInfo(`Output Tokens: ${stats.totals.outputTokens.toLocaleString()}`);
           printInfo(`Combined Tokens: ${stats.totals.totalTokens.toLocaleString()}`);
           printInfo(`Total Cost: $${stats.totals.cost.toFixed(6)}\n`);
-          
+
           printInfo(chalk.bold('By Agent:\n'));
           for (const [agent, data] of Object.entries(stats.byAgent)) {
             printInfo(`  ${agent}: ${data.calls} calls, $${data.cost.toFixed(6)}`);
           }
-          
+
           printInfo(chalk.bold('\nBy Provider:\n'));
           for (const [provider, data] of Object.entries(stats.byProvider)) {
             printInfo(`  ${provider}: ${data.calls} calls, $${data.cost.toFixed(6)}`);
@@ -567,11 +591,11 @@ export function registerUsageCommands(program) {
             startDate: options.startDate,
             endDate: options.endDate,
             agent: options.agent,
-            provider: options.provider
+            provider: options.provider,
           };
-          
+
           const result = await usageTracker.exportUsageData(options.export, exportOptions);
-          
+
           printSuccess(chalk.green(`✅ Exported to: ${result.path}`));
           printInfo(chalk.gray(`   Format: ${result.format}`));
           printInfo(chalk.gray(`   Size: ${result.size} bytes`));
@@ -580,32 +604,36 @@ export function registerUsageCommands(program) {
           await usageTracker.resetUsage();
         } else if (options.clean) {
           const result = await usageTracker.cleanOldData();
-          printSuccess(chalk.green(`✅ Cleaned ${result.removed} old records, ${result.remaining} remaining`));
+          printSuccess(
+            chalk.green(`✅ Cleaned ${result.removed} old records, ${result.remaining} remaining`)
+          );
         } else if (options.agent) {
           const agentStats = usageTracker.getAgentUsage(options.agent);
-          
+
           printInfo(chalk.bold(`📈 Usage for agent: ${options.agent}\n`));
           printInfo(`Total Calls: ${agentStats.totals.calls}`);
           printInfo(`Input Tokens: ${agentStats.totals.inputTokens.toLocaleString()}`);
           printInfo(`Output Tokens: ${agentStats.totals.outputTokens.toLocaleString()}`);
           printInfo(`Total Cost: $${agentStats.totals.cost.toFixed(6)}\n`);
-          
+
           if (options.detailed && agentStats.records.length > 0) {
             printInfo(chalk.bold('Recent Usage:\n'));
             const recentRecords = agentStats.records.slice(-5); // Last 5 records
             for (const record of recentRecords) {
-              printInfo(`  ${record.timestamp}: ${record.provider}/${record.model} - $${record.cost.toFixed(6)}`);
+              printInfo(
+                `  ${record.timestamp}: ${record.provider}/${record.model} - $${record.cost.toFixed(6)}`
+              );
             }
           }
         } else {
           // Default: show overall stats
           const stats = usageTracker.getUsageStats();
-          
+
           printInfo(chalk.bold('📊 Current Usage Summary:\n'));
           printInfo(`Total Calls: ${stats.totals.calls}`);
           printInfo(`Total Tokens: ${stats.totals.totalTokens.toLocaleString()}`);
           printInfo(`Total Cost: $${stats.totals.cost.toFixed(6)}\n`);
-          
+
           printInfo(chalk.gray('Use --stats, --export, --agent, or --help for more options'));
         }
       } catch (error) {
@@ -619,5 +647,5 @@ export function registerUsageCommands(program) {
 export default {
   UsageTracker,
   createUsageTracker,
-  registerUsageCommands
+  registerUsageCommands,
 };

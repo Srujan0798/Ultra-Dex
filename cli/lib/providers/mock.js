@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Mock AI Providers for testing
  * Predictable, deterministic responses without external APIs
@@ -21,9 +23,7 @@ class MockProviderBase extends BaseProvider {
   }
 
   getAvailableModels() {
-    return [
-      { id: 'mock-1', name: 'Mock Model', maxTokens: 8192 }
-    ];
+    return [{ id: 'mock-1', name: 'Mock Model', maxTokens: 8192 }];
   }
 
   estimateCost(_inputTokens, _outputTokens) {
@@ -40,7 +40,7 @@ class MockProviderBase extends BaseProvider {
     const user = (userPrompt || '').trim();
     const summary = [
       system ? `system:${system.slice(0, 60)}` : 'system:<empty>',
-      user ? `user:${user.slice(0, 60)}` : 'user:<empty>'
+      user ? `user:${user.slice(0, 60)}` : 'user:<empty>',
     ].join(' | ');
     return `[${this.providerName}] ${summary}`;
   }
@@ -50,7 +50,7 @@ class MockProviderBase extends BaseProvider {
     return {
       content,
       usage: { inputTokens: 0, outputTokens: content.length },
-      model: this.model
+      model: this.model,
     };
   }
 
@@ -63,7 +63,7 @@ class MockProviderBase extends BaseProvider {
     return {
       content,
       usage: { inputTokens: 0, outputTokens: content.length },
-      model: this.model
+      model: this.model,
     };
   }
 }
@@ -89,5 +89,5 @@ export class MockGoogle extends MockProviderBase {
 export default {
   MockOpenAI,
   MockAnthropic,
-  MockGoogle
+  MockGoogle,
 };

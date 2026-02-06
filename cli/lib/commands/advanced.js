@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex advanced commands: diff, export, upgrade, batch, pipeline, check
  */
@@ -41,7 +43,7 @@ export function registerDiffCommand(program) {
         const spinner = ora('Analyzing project alignment...').start();
         const plan = await readFileSafe(path.join(options.dir, 'IMPLEMENTATION-PLAN.md'));
         if (!plan) {
-            throw new ValidationError('No IMPLEMENTATION-PLAN.md found in the target directory.');
+          throw new ValidationError('No IMPLEMENTATION-PLAN.md found in the target directory.');
         }
 
         // Mock analysis for brevity in this refactor
@@ -49,14 +51,14 @@ export function registerDiffCommand(program) {
         spinner.succeed('Analysis complete');
 
         if (options.json) {
-            printInfo(JSON.stringify({ score: alignmentScore }, null, 2));
-            return;
+          printInfo(JSON.stringify({ score: alignmentScore }, null, 2));
+          return;
         }
 
         printInfo(chalk.bold('📊 Alignment Analysis:'));
-        const scoreColor = alignmentScore >= 80 ? chalk.green : alignmentScore >= 50 ? chalk.yellow : chalk.red;
+        const scoreColor =
+          alignmentScore >= 80 ? chalk.green : alignmentScore >= 50 ? chalk.yellow : chalk.red;
         printInfo(`  Code-to-Plan Alignment: ${scoreColor(alignmentScore + '%')}`);
-
       } catch (error) {
         await handleError(error, { command: 'diff', options });
         process.exitCode = error.exitCode || 1;
@@ -80,13 +82,15 @@ export function registerExportCommand(program) {
         printInfo('\n📦 Ultra-Dex Export\n');
         const spinner = ora('Gathering project data...').start();
 
-        const data = { exportedAt: new Date().toISOString(), project: path.basename(process.cwd()) };
+        const data = {
+          exportedAt: new Date().toISOString(),
+          project: path.basename(process.cwd()),
+        };
         spinner.succeed('Data gathered');
 
         const filename = options.output || `ultra-dex-export.${options.format}`;
         await fs.writeFile(filename, JSON.stringify(data, null, 2));
         printSuccess(`✅ Exported to: ${filename}`);
-
       } catch (error) {
         await handleError(error, { command: 'export', options });
         process.exitCode = error.exitCode || 1;
@@ -108,12 +112,12 @@ export function registerCheckCommand(program) {
         printInfo('\n🩺 Ultra-Dex Repository Check\n');
 
         const checks = [
-            { name: 'Graph Scanner', status: '✅' },
-            { name: 'Project State', status: '✅' },
-            { name: 'Documentation', status: '✅' }
+          { name: 'Graph Scanner', status: '✅' },
+          { name: 'Project State', status: '✅' },
+          { name: 'Documentation', status: '✅' },
         ];
 
-        checks.forEach(c => printInfo(`  ${c.status} ${c.name}`));
+        checks.forEach((c) => printInfo(`  ${c.status} ${c.name}`));
         printInfo('\n💡 Run "ultra-dex audit" for a detailed scoring report.\n');
       } catch (error) {
         await handleError(error, { command: 'check' });
@@ -131,7 +135,7 @@ export function registerUpgradeCommand(program) {
   program
     .command('upgrade')
     .description('Check for and install Ultra-Dex updates')
-    .option('--check', 'Only check for updates, don\'t install')
+    .option('--check', "Only check for updates, don't install")
     .action(async (options) => {
       try {
         printInfo('\n🔄 Ultra-Dex Upgrade\n');
@@ -143,7 +147,7 @@ export function registerUpgradeCommand(program) {
         spinner.succeed('Version check complete');
 
         if (currentVersion === latestVersion) {
-          printSuccess('\n✅ You\'re on the latest version!\n');
+          printSuccess("\n✅ You're on the latest version!\n");
           return;
         }
 
@@ -174,7 +178,10 @@ export function registerBatchCommand(program) {
         }
         printInfo(`\n🔄 Executing Batch: ${file}\n`);
         const content = await fs.readFile(path.resolve(file), 'utf8');
-        const commands = content.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+        const commands = content
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l && !l.startsWith('#'));
 
         if (commands.length === 0) {
           printWarning('No commands found in batch file.');
@@ -182,7 +189,7 @@ export function registerBatchCommand(program) {
         }
 
         for (const [i, cmd] of commands.entries()) {
-          printInfo(`[${i+1}/${commands.length}] Running: ultra-dex ${cmd}`);
+          printInfo(`[${i + 1}/${commands.length}] Running: ultra-dex ${cmd}`);
           try {
             execSync(`npx ultra-dex ${cmd}`, { stdio: 'inherit' });
           } catch (e) {
@@ -227,7 +234,7 @@ export function registerPipelineCommand(program) {
         const steps = pipeline.steps || [];
 
         for (const [i, step] of steps.entries()) {
-          printInfo(`[${i+1}/${steps.length}] ${step.name || 'Step'}`);
+          printInfo(`[${i + 1}/${steps.length}] ${step.name || 'Step'}`);
           if (options.dryRun) {
             printInfo(chalk.gray(`  (Dry run - skipping ${step.type})`));
             continue;
@@ -243,4 +250,11 @@ export function registerPipelineCommand(program) {
     });
 }
 
-export default { registerDiffCommand, registerExportCommand, registerUpgradeCommand, registerBatchCommand, registerPipelineCommand, registerCheckCommand };
+export default {
+  registerDiffCommand,
+  registerExportCommand,
+  registerUpgradeCommand,
+  registerBatchCommand,
+  registerPipelineCommand,
+  registerCheckCommand,
+};

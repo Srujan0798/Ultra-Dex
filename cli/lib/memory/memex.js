@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Memex - Persistent Memory System
  * Manages long-term memory storage and retrieval

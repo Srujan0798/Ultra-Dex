@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Universal Undo Command
  * Roll back recent file operations and prune agent memory.
@@ -65,7 +67,7 @@ export function registerUndoCommand(program) {
 
         const table = new Table({
           head: ['Index', 'Type', 'File', 'Timestamp', 'Actor'],
-          style: { head: ['cyan'] }
+          style: { head: ['cyan'] },
         });
 
         list.forEach((entry, index) => {
@@ -74,7 +76,7 @@ export function registerUndoCommand(program) {
             entry.type,
             entry.filePath,
             new Date(entry.timestamp).toLocaleString(),
-            entry.actor || '-'
+            entry.actor || '-',
           ]);
         });
 
@@ -97,7 +99,7 @@ export function registerUndoCommand(program) {
         const result = await historyManager.undoTo({
           id: options.id,
           timestamp: options.timestamp,
-          index: Number.isNaN(index) ? undefined : index
+          index: Number.isNaN(index) ? undefined : index,
         });
 
         if (options.json) {

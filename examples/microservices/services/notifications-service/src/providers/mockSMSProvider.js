@@ -7,13 +7,13 @@ class MockSMSProvider {
 
   async send({ to, message }) {
     // Simulate SMS sending delay
-    await new Promise(resolve => setTimeout(resolve, 30));
+    await new Promise((resolve) => setTimeout(resolve, 30));
 
     const sms = {
       to,
       message,
       sentAt: new Date().toISOString(),
-      id: `sms-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      id: `sms-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
 
     this.sentSMS.push(sms);
@@ -21,12 +21,12 @@ class MockSMSProvider {
     logger.info({
       message: 'SMS sent (mock)',
       to,
-      smsId: sms.id
+      smsId: sms.id,
     });
 
     return {
       success: true,
-      messageId: sms.id
+      messageId: sms.id,
     };
   }
 

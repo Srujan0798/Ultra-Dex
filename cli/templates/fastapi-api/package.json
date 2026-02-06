@@ -1,15 +1,15 @@
 {
-    "name": "fastapi-api",
-    "version": "0.1.0",
-    "private": true,
-    "scripts": {
-        "dev": "uvicorn main:app --reload --port 8000",
-        "start": "uvicorn main:app --host 0.0.0.0 --port 8000",
-        "test": "pytest",
-        "lint": "ruff check .",
-        "format": "black ."
-    },
-    "engines": {
-        "python": ">=3.11"
-    }
+  "name": "fastapi-api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "uvicorn main:app --reload --port 8000",
+    "start": "uvicorn main:app --host 0.0.0.0 --port 8000",
+    "test": "pytest",
+    "lint": "ruff check .",
+    "format": "black ."
+  },
+  "engines": {
+    "python": ">=3.11"
+  }
 }

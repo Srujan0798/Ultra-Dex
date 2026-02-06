@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Governance rules and role definitions
  * Constitutional AI enforcement layer for agent operations
@@ -104,7 +106,29 @@ export const FILE_TYPE_DEFINITIONS = [
     extensions: [],
     patterns: [/__tests__/, /\/tests?\//, /\.test\./i, /\.spec\./i],
   },
-  { id: 'code', extensions: ['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.java', '.rb', '.php', '.cs', '.cpp', '.c', '.h', '.swift', '.kt'] },
+  {
+    id: 'code',
+    extensions: [
+      '.js',
+      '.ts',
+      '.jsx',
+      '.tsx',
+      '.mjs',
+      '.cjs',
+      '.py',
+      '.go',
+      '.rs',
+      '.java',
+      '.rb',
+      '.php',
+      '.cs',
+      '.cpp',
+      '.c',
+      '.h',
+      '.swift',
+      '.kt',
+    ],
+  },
   { id: 'config', extensions: ['.json', '.yaml', '.yml', '.toml', '.ini', '.conf', '.config'] },
   { id: 'scripts', extensions: ['.sh', '.bash', '.zsh', '.ps1', '.bat'] },
   { id: 'data', extensions: ['.csv', '.tsv', '.ndjson'] },

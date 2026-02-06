@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export function calculateInvoice(items, discountPercent = 0) {
   const safeDiscount = Math.max(0, Number(discountPercent) || 0);
   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
@@ -5,7 +7,7 @@ export function calculateInvoice(items, discountPercent = 0) {
   const taxableAmount = subtotal - discount;
   const tax = items.reduce((sum, item) => {
     const itemTotal = item.quantity * item.unitPrice;
-    return sum + Math.round((itemTotal * (1 - safeDiscount / 100)) * item.taxRate);
+    return sum + Math.round(itemTotal * (1 - safeDiscount / 100) * item.taxRate);
   }, 0);
   return { subtotal, discount, tax, total: taxableAmount + tax };
 }

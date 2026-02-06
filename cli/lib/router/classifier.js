@@ -1,9 +1,11 @@
+// Copyright (c) 2026 Ultra-Dex
+
 const TASK_KEYWORDS = {
   Architect: ['architecture', 'system design', 'scalability', 'diagram', 'tradeoff'],
   CodeGen: ['implement', 'build', 'create', 'generate', 'scaffold'],
   Refactor: ['refactor', 'cleanup', 'optimize', 'restructure'],
   Docs: ['docs', 'documentation', 'readme', 'guide', 'write'],
-  Analysis: ['analyze', 'investigate', 'debug', 'review', 'audit']
+  Analysis: ['analyze', 'investigate', 'debug', 'review', 'audit'],
 };
 
 export function classifyTask(prompt = '') {
@@ -23,7 +25,7 @@ export function classifyTask(prompt = '') {
   return {
     type: topScore > 0 ? topType : 'CodeGen',
     scores,
-    confidence
+    confidence,
   };
 }
 

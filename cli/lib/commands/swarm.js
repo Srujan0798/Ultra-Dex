@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 // cli/lib/commands/swarm.js
 import { getProvider } from '../providers/index.js';
 import fs from 'fs/promises';
@@ -28,7 +30,7 @@ export const AGENT_PIPELINE = [
   { name: 'backend', description: 'Implement API', tier: '2-implementation' },
   { name: 'frontend', description: 'Build UI', tier: '2-implementation' },
   { name: 'testing', description: 'Write tests', tier: '4-quality' },
-  { name: 'reviewer', description: 'Code review', tier: '4-quality' }
+  { name: 'reviewer', description: 'Code review', tier: '4-quality' },
 ];
 
 /**
@@ -62,9 +64,9 @@ async function atomicWrite(filePath, data) {
 async function withStateLock(callback) {
   const lockFile = join(process.cwd(), '.ultra-dex', 'state.lock');
   const ultraDir = join(process.cwd(), '.ultra-dex');
-  
+
   if (!existsSync(ultraDir)) {
-      await fs.mkdir(ultraDir, { recursive: true });
+    await fs.mkdir(ultraDir, { recursive: true });
   }
 
   let fileHandle = null;
@@ -79,7 +81,7 @@ async function withStateLock(callback) {
     } catch (error) {
       if (error.code === 'EEXIST') {
         // Lock exists, wait and retry
-        await new Promise(r => setTimeout(r, retryDelay));
+        await new Promise((r) => setTimeout(r, retryDelay));
         retries++;
       } else {
         throw error; // Unexpected error
@@ -88,14 +90,16 @@ async function withStateLock(callback) {
   }
 
   if (!fileHandle) {
-    throw new AppError('Could not acquire state lock. Is another process running?', { code: 'LOCK_TIMEOUT' });
+    throw new AppError('Could not acquire state lock. Is another process running?', {
+      code: 'LOCK_TIMEOUT',
+    });
   }
 
   try {
     // Write timestamp for debugging purposes
     await fileHandle.write(String(Date.now()));
     await fileHandle.close(); // Close handle but keep file as lock
-    
+
     return await callback();
   } finally {
     // Always release lock
@@ -116,9 +120,9 @@ async function saveCheckpoint(task, agentResults, previousOutput, completedAgent
     previousOutput,
     completedAgents,
     options,
-    version: '1.0'
+    version: '1.0',
   };
-  
+
   try {
     await atomicWrite(CHECKPOINT_FILE, JSON.stringify(checkpoint, null, 2));
   } catch (error) {
@@ -152,65 +156,65 @@ async function clearCheckpoint() {
  * Register swarm command with Commander
  */
 export function registerSwarmCommand(program) {
-    const swarm = program
-      .command('swarm <task>')
-      .description('Deploy an autonomous agent swarm for a task')
-      .option('-p, --parallel <workers>', 'Execute with parallel workers (default: 4)', '4')
-      .option('--dry-run', 'Preview the swarm pipeline', false)
-      .option('--resume', 'Resume from last checkpoint after a failure', false)
-      .option('--clean', 'Clear checkpoint and start fresh', false)
-      .option('--checkpoint <id>', 'Resume from specific checkpoint ID')
-      .option('--cost-tracking', 'Enable detailed cost tracking', false)
-      .option('--save-checkpoints', 'Save checkpoints for resume capability', true)
-      .action(async (task, options) => {
-          try {
-              if (options.clean) {
-                await clearCheckpoint();
-                printSuccess('Checkpoint cleared. Starting fresh.');
-              }
-              await swarmCommand(task, options);
-          } catch (error) {
-              await handleError(error, { command: 'swarm', task, options });
-              process.exit(error.exitCode || 1);
-          }
-      });
-
-    // Add swarm subcommands for advanced features
-    swarm
-      .command('status [swarmId]')
-      .description('Show swarm status and checkpoints')
-      .action(async (swarmId) => {
-        try {
-          const { showSwarmStatus } = await import('./swarm-advanced.js');
-          await showSwarmStatus(swarmId);
-        } catch (error) {
-          await handleError(error, { command: 'swarm:status' });
+  const swarm = program
+    .command('swarm <task>')
+    .description('Deploy an autonomous agent swarm for a task')
+    .option('-p, --parallel <workers>', 'Execute with parallel workers (default: 4)', '4')
+    .option('--dry-run', 'Preview the swarm pipeline', false)
+    .option('--resume', 'Resume from last checkpoint after a failure', false)
+    .option('--clean', 'Clear checkpoint and start fresh', false)
+    .option('--checkpoint <id>', 'Resume from specific checkpoint ID')
+    .option('--cost-tracking', 'Enable detailed cost tracking', false)
+    .option('--save-checkpoints', 'Save checkpoints for resume capability', true)
+    .action(async (task, options) => {
+      try {
+        if (options.clean) {
+          await clearCheckpoint();
+          printSuccess('Checkpoint cleared. Starting fresh.');
         }
-      });
+        await swarmCommand(task, options);
+      } catch (error) {
+        await handleError(error, { command: 'swarm', task, options });
+        process.exit(error.exitCode || 1);
+      }
+    });
 
-    swarm
-      .command('resume <checkpointId>')
-      .description('Resume swarm from a specific checkpoint')
-      .action(async (checkpointId) => {
-        try {
-          const { resumeSwarm } = await import('./swarm-advanced.js');
-          await resumeSwarm(checkpointId);
-        } catch (error) {
-          await handleError(error, { command: 'swarm:resume', checkpointId });
-        }
-      });
+  // Add swarm subcommands for advanced features
+  swarm
+    .command('status [swarmId]')
+    .description('Show swarm status and checkpoints')
+    .action(async (swarmId) => {
+      try {
+        const { showSwarmStatus } = await import('./swarm-advanced.js');
+        await showSwarmStatus(swarmId);
+      } catch (error) {
+        await handleError(error, { command: 'swarm:status' });
+      }
+    });
 
-    swarm
-      .command('checkpoints')
-      .description('List all saved checkpoints')
-      .action(async () => {
-        try {
-          const { listCheckpoints } = await import('./swarm-advanced.js');
-          await listCheckpoints();
-        } catch (error) {
-          await handleError(error, { command: 'swarm:checkpoints' });
-        }
-      });
+  swarm
+    .command('resume <checkpointId>')
+    .description('Resume swarm from a specific checkpoint')
+    .action(async (checkpointId) => {
+      try {
+        const { resumeSwarm } = await import('./swarm-advanced.js');
+        await resumeSwarm(checkpointId);
+      } catch (error) {
+        await handleError(error, { command: 'swarm:resume', checkpointId });
+      }
+    });
+
+  swarm
+    .command('checkpoints')
+    .description('List all saved checkpoints')
+    .action(async () => {
+      try {
+        const { listCheckpoints } = await import('./swarm-advanced.js');
+        await listCheckpoints();
+      } catch (error) {
+        await handleError(error, { command: 'swarm:checkpoints' });
+      }
+    });
 }
 
 export function showSwarmAssemble(activeAgents) {
@@ -279,61 +283,69 @@ Provide your output for the next agent in the pipeline.
         const truncatedContext = contextBytes.subarray(0, availableForContext);
         const truncatedContextString = new TextDecoder().decode(truncatedContext);
 
-        prompt = prefix + '## Context\n' + truncatedContextString +
-                 `\n\n[Context was truncated due to size limits.]\n` + suffix;
+        prompt =
+          prefix +
+          '## Context\n' +
+          truncatedContextString +
+          `\n\n[Context was truncated due to size limits.]\n` +
+          suffix;
       } else {
         // If there's not enough room even for minimal context, truncate the whole prompt
         const promptBytes = Buffer.from(fullPrompt, 'utf-8');
         const truncatedPrompt = promptBytes.subarray(0, MAX_CONTEXT_SIZE - 1000);
-        prompt = new TextDecoder().decode(truncatedPrompt) +
-                 `\n\n[Prompt was truncated due to size limits.]`;
+        prompt =
+          new TextDecoder().decode(truncatedPrompt) +
+          `\n\n[Prompt was truncated due to size limits.]`;
       }
     } else {
       // If we can't find the expected structure, just truncate the full prompt
       const promptBytes = Buffer.from(fullPrompt, 'utf-8');
       const truncatedPrompt = promptBytes.subarray(0, MAX_CONTEXT_SIZE - 1000);
-      prompt = new TextDecoder().decode(truncatedPrompt) +
-               `\n\n[Prompt was truncated due to size limits.]`;
+      prompt =
+        new TextDecoder().decode(truncatedPrompt) +
+        `\n\n[Prompt was truncated due to size limits.]`;
     }
   }
 
   let lastError;
   for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        let response;
-        if (provider.complete) {
-          response = await provider.complete(prompt);
-        } else if (provider.generate) {
-          response = await provider.generate('', prompt);
-        } else {
-          throw new AppError('Provider does not support complete or generate methods', { code: 'PROVIDER_INCOMPATIBLE' });
-        }
-
-        if (!response) {
-          throw new NetworkError('Received empty response from provider');
-        }
-
-        return typeof response === 'string'
-          ? response
-          : (response.content || response.text || JSON.stringify(response));
-      } catch (error) {
-        lastError = error;
-        if (attempt < 3) {
-            const delay = attempt * 2000;
-            printWarning(`  ⚠️ @${agent.name} attempt ${attempt} failed, retrying in ${delay}ms...`);
-            await new Promise(r => setTimeout(r, delay));
-        }
+    try {
+      let response;
+      if (provider.complete) {
+        response = await provider.complete(prompt);
+      } else if (provider.generate) {
+        response = await provider.generate('', prompt);
+      } else {
+        throw new AppError('Provider does not support complete or generate methods', {
+          code: 'PROVIDER_INCOMPATIBLE',
+        });
       }
+
+      if (!response) {
+        throw new NetworkError('Received empty response from provider');
+      }
+
+      return typeof response === 'string'
+        ? response
+        : response.content || response.text || JSON.stringify(response);
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) {
+        const delay = attempt * 2000;
+        printWarning(`  ⚠️ @${agent.name} attempt ${attempt} failed, retrying in ${delay}ms...`);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
   }
 
   throw new AppError(`Agent @${agent.name} failed after 3 attempts`, {
-      cause: lastError,
-      code: 'AGENT_MAX_RETRIES',
-      suggestions: [
-          'Check your internet connection',
-          'Verify your API key has sufficient quota',
-          'Try a different model or provider'
-      ]
+    cause: lastError,
+    code: 'AGENT_MAX_RETRIES',
+    suggestions: [
+      'Check your internet connection',
+      'Verify your API key has sufficient quota',
+      'Try a different model or provider',
+    ],
   });
 }
 
@@ -346,8 +358,8 @@ async function ensureLogDirectory() {
 async function cleanupOldSwarmLogs(logDir, maxLogs = 50) {
   try {
     const files = await readdir(logDir);
-    const logFiles = files.filter(f => f.startsWith('swarm-') && f.endsWith('.json'));
-    
+    const logFiles = files.filter((f) => f.startsWith('swarm-') && f.endsWith('.json'));
+
     if (logFiles.length >= maxLogs) {
       // Sort by modification time (oldest first)
       const sortedFiles = await Promise.all(
@@ -357,9 +369,9 @@ async function cleanupOldSwarmLogs(logDir, maxLogs = 50) {
           return { filename, filepath, mtime: stat.mtime };
         })
       );
-      
+
       sortedFiles.sort((a, b) => a.mtime - b.mtime);
-      
+
       // Delete oldest files to keep only maxLogs - 1 (to make room for new log)
       const filesToDelete = sortedFiles.slice(0, sortedFiles.length - maxLogs + 1);
       for (const file of filesToDelete) {
@@ -375,7 +387,7 @@ async function cleanupOldSwarmLogs(logDir, maxLogs = 50) {
 async function writeSwarmLog(logDir, task, results, stats) {
   // Cleanup old logs before writing new one to prevent memory leak
   await cleanupOldSwarmLogs(logDir, 50);
-  
+
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const logPath = join(logDir, `swarm-${timestamp}.json`);
   const logData = { task, timestamp: new Date().toISOString(), stats, results };
@@ -388,11 +400,15 @@ async function writeSwarmLog(logDir, task, results, stats) {
 
     // Truncate results array to reduce size
     const truncatedResults = [...results];
-    while (truncatedResults.length > 0 && Buffer.byteLength(JSON.stringify({...logData, results: truncatedResults}), 'utf-8') > MAX_CONTEXT_SIZE) {
+    while (
+      truncatedResults.length > 0 &&
+      Buffer.byteLength(JSON.stringify({ ...logData, results: truncatedResults }), 'utf-8') >
+        MAX_CONTEXT_SIZE
+    ) {
       truncatedResults.pop(); // Remove the last result
     }
 
-    logContent = JSON.stringify({...logData, results: truncatedResults}, null, 2);
+    logContent = JSON.stringify({ ...logData, results: truncatedResults }, null, 2);
 
     // If still too big, truncate individual results
     if (Buffer.byteLength(logContent, 'utf-8') > MAX_CONTEXT_SIZE) {
@@ -401,7 +417,7 @@ async function writeSwarmLog(logDir, task, results, stats) {
           const originalResult = truncatedResults[i].result;
           truncatedResults[i].result = originalResult.substring(0, originalResult.length / 2);
 
-          logContent = JSON.stringify({...logData, results: truncatedResults}, null, 2);
+          logContent = JSON.stringify({ ...logData, results: truncatedResults }, null, 2);
           if (Buffer.byteLength(logContent, 'utf-8') <= MAX_CONTEXT_SIZE) {
             break;
           }
@@ -432,11 +448,13 @@ Task: "${task}"`);
   // Check for checkpoint if resuming
   let checkpoint = null;
   let completedAgents = new Set();
-  
+
   if (options.resume) {
     checkpoint = await loadCheckpoint();
     if (checkpoint && checkpoint.task === task) {
-      printInfo(`📋 Resuming from checkpoint (last updated: ${new Date(checkpoint.timestamp).toLocaleString()})`);
+      printInfo(
+        `📋 Resuming from checkpoint (last updated: ${new Date(checkpoint.timestamp).toLocaleString()})`
+      );
       printInfo(`✓ Already completed: ${checkpoint.completedAgents.join(', ')}`);
       completedAgents = new Set(checkpoint.completedAgents);
     } else if (checkpoint) {
@@ -454,16 +472,19 @@ Task: "${task}"`);
   const provider = getProvider();
   if (!provider) {
     throw new ValidationError('No AI provider configured.', [
-        'export ANTHROPIC_API_KEY=sk-ant-...',
-        'export OPENAI_API_KEY=sk-...',
-        'npx ultra-dex setup'
+      'export ANTHROPIC_API_KEY=sk-ant-...',
+      'export OPENAI_API_KEY=sk-...',
+      'npx ultra-dex setup',
     ]);
   }
 
   const logDir = await ensureLogDirectory();
 
   await withStateLock(async () => {
-    const state = await loadState() || { project: { mode: 'ULTRA_MODE' }, agents: { active: [] } };
+    const state = (await loadState()) || {
+      project: { mode: 'ULTRA_MODE' },
+      agents: { active: [] },
+    };
     state.agents = state.agents || { active: [] };
     state.updatedAt = new Date().toISOString();
     await saveState(state);
@@ -473,21 +494,25 @@ Task: "${task}"`);
   let previousOutput = checkpoint ? checkpoint.previousOutput : '';
   const agentResults = checkpoint ? [...checkpoint.agentResults] : [];
   const agentTimings = {};
-  
+
   const { role, allowedAgents, restrictedAgents } = await filterAgentsByAccess(
-    AGENT_PIPELINE.map(agent => agent.name)
+    AGENT_PIPELINE.map((agent) => agent.name)
   );
 
-  const allowedSet = new Set(allowedAgents.map(name => name.toLowerCase()));
-  const allowedPipeline = AGENT_PIPELINE.filter(agent => allowedSet.has(agent.name.toLowerCase()));
+  const allowedSet = new Set(allowedAgents.map((name) => name.toLowerCase()));
+  const allowedPipeline = AGENT_PIPELINE.filter((agent) =>
+    allowedSet.has(agent.name.toLowerCase())
+  );
 
   if (restrictedAgents.length > 0) {
-    printWarning(`🔒 Role-based access (${role}) skipped ${restrictedAgents.length} agent(s) in swarm pipeline.`);
+    printWarning(
+      `🔒 Role-based access (${role}) skipped ${restrictedAgents.length} agent(s) in swarm pipeline.`
+    );
   }
 
   // Filter out already completed agents from pipeline
-  const remainingPipeline = allowedPipeline.filter(a => !completedAgents.has(a.name));
-  
+  const remainingPipeline = allowedPipeline.filter((a) => !completedAgents.has(a.name));
+
   if (remainingPipeline.length === 0) {
     printSuccess('✓ All agents already completed!');
     await clearCheckpoint();
@@ -496,10 +521,26 @@ Task: "${task}"`);
 
   const executionTiers = options.parallel
     ? [
-        { name: '1-Planning', agents: remainingPipeline.filter(a => a.tier === '1-planning'), parallel: false },
-        { name: '2-Implementation', agents: remainingPipeline.filter(a => a.tier === '2-implementation'), parallel: true },
-        { name: '3-Security', agents: remainingPipeline.filter(a => a.tier === '3-security'), parallel: false },
-        { name: '4-Quality', agents: remainingPipeline.filter(a => a.tier === '4-quality'), parallel: false }
+        {
+          name: '1-Planning',
+          agents: remainingPipeline.filter((a) => a.tier === '1-planning'),
+          parallel: false,
+        },
+        {
+          name: '2-Implementation',
+          agents: remainingPipeline.filter((a) => a.tier === '2-implementation'),
+          parallel: true,
+        },
+        {
+          name: '3-Security',
+          agents: remainingPipeline.filter((a) => a.tier === '3-security'),
+          parallel: false,
+        },
+        {
+          name: '4-Quality',
+          agents: remainingPipeline.filter((a) => a.tier === '4-quality'),
+          parallel: false,
+        },
       ]
     : [{ name: 'All', agents: remainingPipeline, parallel: false }];
 
@@ -544,8 +585,12 @@ Task: "${task}"`);
 
       const results = await Promise.all(promises);
       agentResults.push(...results);
-      previousOutput += '\n\n' + results.filter(r => r.success).map(r => r.result).join('\n\n');
-
+      previousOutput +=
+        '\n\n' +
+        results
+          .filter((r) => r.success)
+          .map((r) => r.result)
+          .join('\n\n');
     } else {
       // Serial Execution
       for (const agent of tier.agents) {
@@ -564,16 +609,27 @@ Task: "${task}"`);
 
           agentResults.push({ agent: agent.name, result, success: true });
           completedAgents.add(agent.name);
-          
-          // Save checkpoint after each successful agent
-          await saveCheckpoint(task, agentResults, previousOutput, Array.from(completedAgents), options);
 
+          // Save checkpoint after each successful agent
+          await saveCheckpoint(
+            task,
+            agentResults,
+            previousOutput,
+            Array.from(completedAgents),
+            options
+          );
         } catch (error) {
           renderer.fail(`@${agent.name} failed: ${error.message}`);
           agentResults.push({ agent: agent.name, error: error.message, success: false });
-          
+
           // Save checkpoint before throwing so user can resume
-          await saveCheckpoint(task, agentResults, previousOutput, Array.from(completedAgents), options);
+          await saveCheckpoint(
+            task,
+            agentResults,
+            previousOutput,
+            Array.from(completedAgents),
+            options
+          );
           printWarning(`💾 Checkpoint saved. Resume with: ultra-dex swarm "${task}" --resume`);
           try {
             stateMachine.setState('failed', { agent: agent.name, error: error.message });
@@ -581,10 +637,13 @@ Task: "${task}"`);
           } catch {
             // ignore
           }
-          
+
           // Stop sequential pipeline if a critical planning agent fails
           if (agent.tier === '1-planning') {
-              throw new AppError(`Critical failure in planning tier: @${agent.name}. Checkpoint saved. Resume with --resume flag.`, { cause: error });
+            throw new AppError(
+              `Critical failure in planning tier: @${agent.name}. Checkpoint saved. Resume with --resume flag.`,
+              { cause: error }
+            );
           }
           break;
         }
@@ -593,12 +652,18 @@ Task: "${task}"`);
   }
 
   const totalDuration = Date.now() - startTime;
-  const successCount = agentResults.filter(r => r.success).length;
-  const failCount = agentResults.filter(r => !r.success).length;
+  const successCount = agentResults.filter((r) => r.success).length;
+  const failCount = agentResults.filter((r) => !r.success).length;
 
   await updateStateFile();
 
-  const stats = { totalDuration, agentTimings, successCount, failCount, parallel: options.parallel || false };
+  const stats = {
+    totalDuration,
+    agentTimings,
+    successCount,
+    failCount,
+    parallel: options.parallel || false,
+  };
   const logPath = await writeSwarmLog(logDir, task, agentResults, stats);
 
   renderer.divider();
@@ -609,7 +674,7 @@ Total time: ${totalDuration}ms`);
     'Stats',
     failCount > 0 ? 'error' : 'success'
   );
-  
+
   // Clear checkpoint on successful completion
   if (failCount === 0) {
     await clearCheckpoint();
@@ -632,66 +697,68 @@ Total time: ${totalDuration}ms`);
 }
 
 function handleDryRun(options) {
-    const pipelineInfo = options.parallel
-      ? [
-          '📦 Tier: 1-Planning (sequential)',
-          '  1. @planner - Break down task into steps',
-          '  2. @cto - Define architecture',
-          '',
-          '📦 Tier: 2-Implementation (PARALLEL)',
-          '  3. @database - Design schema',
-          '  4. @backend - Implement API',
-          '  5. @frontend - Build UI',
-          '',
-          '📦 Tier: 3-Security (sequential)',
-          '  6. @auth - Security & authentication review',
-          '',
-          '📦 Tier: 4-Quality (sequential)',
-          '  7. @testing - Write tests',
-          '  8. @reviewer - Code review'
-        ].join('\n')
-      : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
+  const pipelineInfo = options.parallel
+    ? [
+        '📦 Tier: 1-Planning (sequential)',
+        '  1. @planner - Break down task into steps',
+        '  2. @cto - Define architecture',
+        '',
+        '📦 Tier: 2-Implementation (PARALLEL)',
+        '  3. @database - Design schema',
+        '  4. @backend - Implement API',
+        '  5. @frontend - Build UI',
+        '',
+        '📦 Tier: 3-Security (sequential)',
+        '  6. @auth - Security & authentication review',
+        '',
+        '📦 Tier: 4-Quality (sequential)',
+        '  7. @testing - Write tests',
+        '  8. @reviewer - Code review',
+      ].join('\n')
+    : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
 
-    renderer.box(
-      pipelineInfo,
-      options.parallel ? 'Dry Run Pipeline (Parallel Mode)' : 'Dry Run Pipeline',
-      'info'
-    );
+  renderer.box(
+    pipelineInfo,
+    options.parallel ? 'Dry Run Pipeline (Parallel Mode)' : 'Dry Run Pipeline',
+    'info'
+  );
 }
 
 async function gatherSwarmContext() {
-    const contextPath = join(process.cwd(), 'CONTEXT.md');
-    const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
+  const contextPath = join(process.cwd(), 'CONTEXT.md');
+  const planPath = join(process.cwd(), 'IMPLEMENTATION-PLAN.md');
 
-    let context = '';
-    if (existsSync(contextPath)) context += await fs.readFile(contextPath, 'utf-8');
-    if (existsSync(planPath)) context += '\n\n' + await fs.readFile(planPath, 'utf-8');
+  let context = '';
+  if (existsSync(contextPath)) context += await fs.readFile(contextPath, 'utf-8');
+  if (existsSync(planPath)) context += '\n\n' + (await fs.readFile(planPath, 'utf-8'));
 
-    renderer.startSpinner('Scanning Codebase Graph...');
-    try {
-      const graphSummary = await projectGraph.scan();
-      context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n`;
-      renderer.succeed(`Codebase mapped: ${graphSummary.nodeCount} nodes`);
-    } catch (e) {
-      renderer.fail('Graph scan failed, using limited context.');
-    }
+  renderer.startSpinner('Scanning Codebase Graph...');
+  try {
+    const graphSummary = await projectGraph.scan();
+    context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n`;
+    renderer.succeed(`Codebase mapped: ${graphSummary.nodeCount} nodes`);
+  } catch (e) {
+    renderer.fail('Graph scan failed, using limited context.');
+  }
 
-    // Enforce context size limit
-    if (Buffer.byteLength(context, 'utf-8') > MAX_CONTEXT_SIZE) {
-      printWarning(`Context size exceeds limit (${MAX_CONTEXT_SIZE / 1024}KB), truncating...`);
+  // Enforce context size limit
+  if (Buffer.byteLength(context, 'utf-8') > MAX_CONTEXT_SIZE) {
+    printWarning(`Context size exceeds limit (${MAX_CONTEXT_SIZE / 1024}KB), truncating...`);
 
-      // Truncate context while preserving important information
-      const contextBytes = Buffer.from(context, 'utf-8');
-      const truncatedContext = contextBytes.subarray(0, MAX_CONTEXT_SIZE - 1000); // Leave 1KB for summary
+    // Truncate context while preserving important information
+    const contextBytes = Buffer.from(context, 'utf-8');
+    const truncatedContext = contextBytes.subarray(0, MAX_CONTEXT_SIZE - 1000); // Leave 1KB for summary
 
-      // Add a summary of what was removed
-      const truncatedString = new TextDecoder().decode(truncatedContext);
-      const remainingChars = context.length - truncatedString.length;
+    // Add a summary of what was removed
+    const truncatedString = new TextDecoder().decode(truncatedContext);
+    const remainingChars = context.length - truncatedString.length;
 
-      context = truncatedString + `\n\n[Context was truncated due to size limits. ${remainingChars} characters removed.]`;
-    }
+    context =
+      truncatedString +
+      `\n\n[Context was truncated due to size limits. ${remainingChars} characters removed.]`;
+  }
 
-    return context;
+  return context;
 }
 
 let agentPathsCache = null;

@@ -20,11 +20,11 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
@@ -78,7 +78,7 @@ describe('examples command', () => {
   test('examples init creates project structure', async () => {
     const projectName = 'my-test-project';
     const result = runCli(['examples', 'init', 'taskflow', '--name', projectName], { cwd: tmpDir });
-    
+
     assert.equal(result.status, 0);
     assert.match(result.output, /Initialized/i);
     assert.match(result.output, /Next steps/i);
@@ -88,7 +88,7 @@ describe('examples command', () => {
     assert.ok(existsSync(path.join(projectDir, 'package.json')), 'package.json should exist');
     assert.ok(existsSync(path.join(projectDir, 'CONTEXT.md')), 'CONTEXT.md should exist');
     assert.ok(existsSync(path.join(projectDir, 'src')), 'src directory should exist');
-    
+
     // Verify content
     const contextContent = await fs.readFile(path.join(projectDir, 'CONTEXT.md'), 'utf-8');
     assert.match(contextContent, /TaskFlow/i);

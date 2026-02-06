@@ -11,7 +11,7 @@ import { summarizeMemory, compressEntries } from '../../lib/memory/compression.j
 describe('summarizeMemory - Basic Functionality', () => {
   test('should summarize single entry', () => {
     const entries = [
-      { content: 'This is a test. It has multiple sentences. Here is another one.' }
+      { content: 'This is a test. It has multiple sentences. Here is another one.' },
     ];
 
     const summary = summarizeMemory(entries);
@@ -23,8 +23,9 @@ describe('summarizeMemory - Basic Functionality', () => {
   test('should limit summary to 5 sentences', () => {
     const entries = [
       {
-        content: 'Sentence 1. Sentence 2. Sentence 3. Sentence 4. Sentence 5. Sentence 6. Sentence 7.'
-      }
+        content:
+          'Sentence 1. Sentence 2. Sentence 3. Sentence 4. Sentence 5. Sentence 6. Sentence 7.',
+      },
     ];
 
     const summary = summarizeMemory(entries);
@@ -39,7 +40,7 @@ describe('summarizeMemory - Basic Functionality', () => {
     const entries = [
       { content: 'First entry content.' },
       { content: 'Second entry content.' },
-      { text: 'Third entry text field.' }
+      { text: 'Third entry text field.' },
     ];
 
     const summary = summarizeMemory(entries);
@@ -50,9 +51,7 @@ describe('summarizeMemory - Basic Functionality', () => {
   });
 
   test('should use text field if content is missing', () => {
-    const entries = [
-      { text: 'Using text field instead.' }
-    ];
+    const entries = [{ text: 'Using text field instead.' }];
 
     const summary = summarizeMemory(entries);
 
@@ -60,9 +59,7 @@ describe('summarizeMemory - Basic Functionality', () => {
   });
 
   test('should handle newlines as sentence separators', () => {
-    const entries = [
-      { content: 'Line one\nLine two\nLine three' }
-    ];
+    const entries = [{ content: 'Line one\nLine two\nLine three' }];
 
     const summary = summarizeMemory(entries);
 
@@ -86,18 +83,11 @@ describe('summarizeMemory - Edge Cases', () => {
   });
 
   test('should throw error for null input', () => {
-    assert.throws(
-      () => summarizeMemory(null),
-      TypeError,
-      'Should throw TypeError when given null'
-    );
+    assert.throws(() => summarizeMemory(null), TypeError, 'Should throw TypeError when given null');
   });
 
   test('should handle entries with no content or text field', () => {
-    const entries = [
-      { id: '123' },
-      { timestamp: Date.now() }
-    ];
+    const entries = [{ id: '123' }, { timestamp: Date.now() }];
 
     const summary = summarizeMemory(entries);
 
@@ -105,10 +95,7 @@ describe('summarizeMemory - Edge Cases', () => {
   });
 
   test('should handle empty strings', () => {
-    const entries = [
-      { content: '' },
-      { text: '' }
-    ];
+    const entries = [{ content: '' }, { text: '' }];
 
     const summary = summarizeMemory(entries);
 
@@ -116,9 +103,7 @@ describe('summarizeMemory - Edge Cases', () => {
   });
 
   test('should handle whitespace-only content', () => {
-    const entries = [
-      { content: '   \n\t   ' }
-    ];
+    const entries = [{ content: '   \n\t   ' }];
 
     const summary = summarizeMemory(entries);
 
@@ -126,9 +111,7 @@ describe('summarizeMemory - Edge Cases', () => {
   });
 
   test('should trim whitespace from sentences', () => {
-    const entries = [
-      { content: '  First sentence  .  Second sentence  .' }
-    ];
+    const entries = [{ content: '  First sentence  .  Second sentence  .' }];
 
     const summary = summarizeMemory(entries);
 
@@ -136,9 +119,7 @@ describe('summarizeMemory - Edge Cases', () => {
   });
 
   test('should handle single sentence without ellipsis', () => {
-    const entries = [
-      { content: 'Just one sentence.' }
-    ];
+    const entries = [{ content: 'Just one sentence.' }];
 
     const summary = summarizeMemory(entries);
 
@@ -147,9 +128,7 @@ describe('summarizeMemory - Edge Cases', () => {
   });
 
   test('should handle exactly 5 sentences without ellipsis', () => {
-    const entries = [
-      { content: 'One. Two. Three. Four. Five.' }
-    ];
+    const entries = [{ content: 'One. Two. Three. Four. Five.' }];
 
     const summary = summarizeMemory(entries);
 
@@ -159,9 +138,7 @@ describe('summarizeMemory - Edge Cases', () => {
 
   test('should handle very long sentences', () => {
     const longSentence = 'word '.repeat(1000) + '.';
-    const entries = [
-      { content: longSentence }
-    ];
+    const entries = [{ content: longSentence }];
 
     const summary = summarizeMemory(entries);
 
@@ -169,9 +146,7 @@ describe('summarizeMemory - Edge Cases', () => {
   });
 
   test('should handle special characters', () => {
-    const entries = [
-      { content: 'Special chars: @#$%^&*(). More text here.' }
-    ];
+    const entries = [{ content: 'Special chars: @#$%^&*(). More text here.' }];
 
     const summary = summarizeMemory(entries);
 
@@ -179,9 +154,7 @@ describe('summarizeMemory - Edge Cases', () => {
   });
 
   test('should handle unicode characters', () => {
-    const entries = [
-      { content: 'Unicode: café résumé naïve 日本語. More text.' }
-    ];
+    const entries = [{ content: 'Unicode: café résumé naïve 日本語. More text.' }];
 
     const summary = summarizeMemory(entries);
 
@@ -196,13 +169,13 @@ describe('compressEntries - Basic Functionality', () => {
         id: 'entry-1',
         content: 'First entry content. More details.',
         createdAt: '2026-01-01T00:00:00Z',
-        extraField: 'should be removed'
+        extraField: 'should be removed',
       },
       {
         id: 'entry-2',
         content: 'Second entry content. Additional info.',
-        createdAt: '2026-01-02T00:00:00Z'
-      }
+        createdAt: '2026-01-02T00:00:00Z',
+      },
     ];
 
     const compressed = compressEntries(entries);
@@ -220,8 +193,8 @@ describe('compressEntries - Basic Functionality', () => {
         createdAt: '2026-01-01',
         type: 'decision',
         source: 'user',
-        metadata: { key: 'value' }
-      }
+        metadata: { key: 'value' },
+      },
     ];
 
     const compressed = compressEntries(entries);
@@ -241,8 +214,8 @@ describe('compressEntries - Basic Functionality', () => {
       {
         id: 'entry-1',
         content: 'First entry. Has content.',
-        createdAt: '2026-01-01'
-      }
+        createdAt: '2026-01-01',
+      },
     ];
 
     const compressed = compressEntries(entries);
@@ -255,7 +228,7 @@ describe('compressEntries - Basic Functionality', () => {
     const entries = [
       { id: 'first', content: 'First.', createdAt: '2026-01-01' },
       { id: 'second', content: 'Second.', createdAt: '2026-01-02' },
-      { id: 'third', content: 'Third.', createdAt: '2026-01-03' }
+      { id: 'third', content: 'Third.', createdAt: '2026-01-03' },
     ];
 
     const compressed = compressEntries(entries);
@@ -280,18 +253,11 @@ describe('compressEntries - Edge Cases', () => {
   });
 
   test('should throw error for null input', () => {
-    assert.throws(
-      () => compressEntries(null),
-      TypeError,
-      'Should throw TypeError when given null'
-    );
+    assert.throws(() => compressEntries(null), TypeError, 'Should throw TypeError when given null');
   });
 
   test('should handle entries with missing fields', () => {
-    const entries = [
-      { id: 'test-1' },
-      { id: 'test-2', content: 'Has content.' }
-    ];
+    const entries = [{ id: 'test-1' }, { id: 'test-2', content: 'Has content.' }];
 
     const compressed = compressEntries(entries);
 
@@ -301,9 +267,7 @@ describe('compressEntries - Edge Cases', () => {
   });
 
   test('should handle entries without createdAt', () => {
-    const entries = [
-      { id: 'test', content: 'Content without timestamp.' }
-    ];
+    const entries = [{ id: 'test', content: 'Content without timestamp.' }];
 
     const compressed = compressEntries(entries);
 
@@ -317,7 +281,7 @@ describe('compressEntries - Edge Cases', () => {
       entries.push({
         id: `entry-${i}`,
         content: `Content ${i}.`,
-        createdAt: `2026-01-${String(i % 30 + 1).padStart(2, '0')}`
+        createdAt: `2026-01-${String((i % 30) + 1).padStart(2, '0')}`,
       });
     }
 
@@ -333,8 +297,8 @@ describe('compressEntries - Edge Cases', () => {
       {
         id: 'long',
         content: 'Sentence. '.repeat(100),
-        createdAt: '2026-01-01'
-      }
+        createdAt: '2026-01-01',
+      },
     ];
 
     const compressed = compressEntries(entries);
@@ -350,8 +314,8 @@ describe('compressEntries - Edge Cases', () => {
       {
         id: 'test-id_123.456@special',
         content: 'Content.',
-        createdAt: '2026-01-01'
-      }
+        createdAt: '2026-01-01',
+      },
     ];
 
     const compressed = compressEntries(entries);
@@ -360,9 +324,7 @@ describe('compressEntries - Edge Cases', () => {
   });
 
   test('should handle entries with empty content', () => {
-    const entries = [
-      { id: 'empty', content: '', createdAt: '2026-01-01' }
-    ];
+    const entries = [{ id: 'empty', content: '', createdAt: '2026-01-01' }];
 
     const compressed = compressEntries(entries);
 
@@ -377,18 +339,19 @@ describe('compression - Integration', () => {
       {
         id: 'decision-1',
         type: 'decision',
-        content: 'Decided to use React for the frontend. This provides better component reusability. Team has React experience.',
+        content:
+          'Decided to use React for the frontend. This provides better component reusability. Team has React experience.',
         createdAt: '2026-01-15T10:30:00Z',
         source: 'architect',
-        metadata: { priority: 'high' }
+        metadata: { priority: 'high' },
       },
       {
         id: 'constraint-1',
         type: 'constraint',
         content: 'Must support IE11. Budget is limited to $50k. Deadline is Q2 2026.',
         createdAt: '2026-01-16T14:20:00Z',
-        source: 'product-manager'
-      }
+        source: 'product-manager',
+      },
     ];
 
     const compressed = compressEntries(entries);
@@ -422,8 +385,8 @@ describe('compression - Integration', () => {
         metadata: { tags: ['tag1', 'tag2', 'tag3'], data: { nested: { deep: 'value' } } },
         relations: ['rel-1', 'rel-2'],
         timestamp: Date.now(),
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     ];
 
     const compressed = compressEntries(entries);

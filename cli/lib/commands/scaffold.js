@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
@@ -77,7 +79,11 @@ function paginate(items, page, limit) {
 
 function printPaginationSummary(pageData) {
   if (pageData.totalPages <= 1) return;
-  printInfo(chalk.gray(`Showing ${pageData.start}-${pageData.end} of ${pageData.total} (page ${pageData.page}/${pageData.totalPages}).`));
+  printInfo(
+    chalk.gray(
+      `Showing ${pageData.start}-${pageData.end} of ${pageData.total} (page ${pageData.page}/${pageData.totalPages}).`
+    )
+  );
 }
 
 async function copyDirectory(src, dest) {
@@ -217,7 +223,7 @@ export async function scaffoldCommand(templateName, options) {
     printInfo(chalk.cyan('  npm run dev'));
 
     printInfo(chalk.bold('\n📚 Stack:\n'));
-    template.stack.forEach(tech => {
+    template.stack.forEach((tech) => {
       printInfo(chalk.gray(`  • ${tech}`));
     });
 
@@ -225,7 +231,6 @@ export async function scaffoldCommand(templateName, options) {
     printInfo(chalk.gray('  • Run "ultra-dex init" to add Ultra-Dex planning docs'));
     printInfo(chalk.gray('  • Run "ultra-dex generate" to create implementation plan'));
     printInfo(chalk.gray('  • Run "ultra-dex agents" to see available AI agents\n'));
-
   } catch (error) {
     spinner.fail('Failed to scaffold');
     printError(chalk.red(error.message));
@@ -253,19 +258,25 @@ export function registerScaffoldCommand(program) {
           key,
           name: val.name,
           description: val.description,
-          stack: val.stack
+          stack: val.stack,
         }));
         const page = parsePositiveInt(options.page, 1);
         const limit = parsePositiveInt(options.limit, DEFAULT_PAGE_SIZE);
         const pageData = paginate(items, page, limit);
 
         if (options.json) {
-          process.stdout.write(JSON.stringify({
-            total: pageData.total,
-            page: pageData.page,
-            totalPages: pageData.totalPages,
-            templates: pageData.items
-          }, null, 2) + '\n');
+          process.stdout.write(
+            JSON.stringify(
+              {
+                total: pageData.total,
+                page: pageData.page,
+                totalPages: pageData.totalPages,
+                templates: pageData.items,
+              },
+              null,
+              2
+            ) + '\n'
+          );
           return;
         }
 
@@ -282,10 +293,25 @@ export function registerScaffoldCommand(program) {
     });
 
   scaffoldCmd._examples = [
-    { command: 'ultra-dex scaffold next15-prisma-clerk', description: 'Scaffold a Next.js + Prisma + Clerk project' },
-    { command: 'ultra-dex scaffold --from-plan', description: 'Select template based on implementation plan' },
-    { command: 'ultra-dex scaffold --from-plan --dry-run', description: 'Preview plan-based scaffolding without changes' },
-    { command: 'ultra-dex scaffold --from-plan --prisma-only', description: 'Generate only Prisma schema from plan' },
-    { command: 'ultra-dex scaffold --list --page 1 --limit 5', description: 'List available templates with pagination' },
+    {
+      command: 'ultra-dex scaffold next15-prisma-clerk',
+      description: 'Scaffold a Next.js + Prisma + Clerk project',
+    },
+    {
+      command: 'ultra-dex scaffold --from-plan',
+      description: 'Select template based on implementation plan',
+    },
+    {
+      command: 'ultra-dex scaffold --from-plan --dry-run',
+      description: 'Preview plan-based scaffolding without changes',
+    },
+    {
+      command: 'ultra-dex scaffold --from-plan --prisma-only',
+      description: 'Generate only Prisma schema from plan',
+    },
+    {
+      command: 'ultra-dex scaffold --list --page 1 --limit 5',
+      description: 'List available templates with pagination',
+    },
   ];
 }

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { randomUUID } from 'node:crypto';
 
 export function generatePullRequest(ticket) {
@@ -11,6 +13,6 @@ export function generatePullRequest(ticket) {
     title,
     branch,
     body,
-    reviewers: ticket?.reviewers || []
+    reviewers: ticket?.reviewers || [],
   };
 }

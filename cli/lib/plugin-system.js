@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Plugin System
  * Provides a modular architecture for extending Ultra-Dex functionality
@@ -60,7 +62,7 @@ export class PluginManager {
     try {
       const pluginModule = await import(pluginPath);
       const plugin = pluginModule.default || pluginModule;
-      
+
       if (!plugin.name || !plugin.version) {
         console.warn(`Plugin at ${pluginPath} missing required fields (name, version)`);
         return;
@@ -75,7 +77,7 @@ export class PluginManager {
       this.plugins.set(plugin.name, {
         ...plugin,
         path: pluginPath,
-        loaded: true
+        loaded: true,
       });
 
       this.installedPlugins.add(plugin.name);
@@ -101,7 +103,7 @@ export class PluginManager {
     if (!this.hooks.has(hookName)) {
       this.hooks.set(hookName, []);
     }
-    
+
     const hook = this.hooks.get(hookName);
     hook.push({ pluginName, callback });
   }
@@ -142,7 +144,7 @@ export class PluginManager {
   async installPlugin(pluginSource, options = {}) {
     try {
       let pluginPath;
-      
+
       if (pluginSource.startsWith('.') || pluginSource.startsWith('/')) {
         // Local file
         pluginPath = path.resolve(pluginSource);
@@ -150,27 +152,27 @@ export class PluginManager {
         // NPM package installation coming in v3.6.0
         throw new Error(
           `NPM plugin installation coming in v3.6.0 (March 2026).\n\n` +
-          `For now, install plugins from local files:\n` +
-          `  ultra-dex plugin install ./path/to/plugin.js\n\n` +
-          `Or clone from GitHub:\n` +
-          `  git clone https://github.com/user/ultra-dex-plugin-name\n` +
-          `  ultra-dex plugin install ./ultra-dex-plugin-name/index.js\n\n` +
-          `Community plugins: https://github.com/topics/ultra-dex-plugin`
+            `For now, install plugins from local files:\n` +
+            `  ultra-dex plugin install ./path/to/plugin.js\n\n` +
+            `Or clone from GitHub:\n` +
+            `  git clone https://github.com/user/ultra-dex-plugin-name\n` +
+            `  ultra-dex plugin install ./ultra-dex-plugin-name/index.js\n\n` +
+            `Community plugins: https://github.com/topics/ultra-dex-plugin`
         );
       }
 
       // Validate plugin file exists
       await fs.access(pluginPath);
-      
+
       // Copy plugin to local directory
       const fileName = path.basename(pluginPath);
       const targetPath = path.join(this.pluginDir, fileName);
-      
+
       await fs.copyFile(pluginPath, targetPath);
-      
+
       // Load the newly installed plugin
       await this.loadPlugin(targetPath);
-      
+
       console.log(`Plugin installed: ${fileName}`);
       return { success: true, path: targetPath };
     } catch (error) {
@@ -207,12 +209,12 @@ export class PluginManager {
    * Get list of installed plugins
    */
   getInstalledPlugins() {
-    return Array.from(this.plugins.values()).map(plugin => ({
+    return Array.from(this.plugins.values()).map((plugin) => ({
       name: plugin.name,
       version: plugin.version,
       description: plugin.description || '',
       author: plugin.author || '',
-      loaded: plugin.loaded
+      loaded: plugin.loaded,
     }));
   }
 

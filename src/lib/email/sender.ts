@@ -15,19 +15,15 @@ export async function queueEmail(payload: {
 }) {
   return emailQueue.add('send-email', payload, {
     attempts: 3,
-    backoff: { type: 'exponential', delay: 5000 }
+    backoff: { type: 'exponential', delay: 5000 },
   });
 }
 
-export async function sendEmail(payload: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
+export async function sendEmail(payload: { to: string; subject: string; html: string }) {
   return resend.emails.send({
     from: 'Ultra-Dex <no-reply@ultra-dex.dev>',
     to: payload.to,
     subject: payload.subject,
-    html: payload.html
+    html: payload.html,
   });
 }

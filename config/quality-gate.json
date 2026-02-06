@@ -1,0 +1,45 @@
+{
+  "version": "3.4.5",
+  "gates": {
+    "syntax": {
+      "enabled": true,
+      "fail_on_error": true
+    },
+    "linting": {
+      "enabled": true,
+      "fail_on_error": true,
+      "engine": "eslint"
+    },
+    "testing": {
+      "enabled": true,
+      "min_coverage": 80,
+      "fail_on_error": true
+    },
+    "security": {
+      "enabled": true,
+      "scan_secrets": true,
+      "fail_on_critical": true
+    },
+    "architectural": {
+      "enabled": true,
+      "enforce_dry": true,
+      "enforce_atomic_tasks": true
+    }
+  },
+  "forbidden_patterns": [
+    {
+      "pattern": "console.log",
+      "severity": "error",
+      "message": "Production code must not contain console.log statements. Use logger instead."
+    },
+    {
+      "pattern": "TODO:",
+      "severity": "warning",
+      "message": "Unresolved TODO found. Please address or track in issue manager."
+    }
+  ],
+  "retry_logic": {
+    "retry_attempts": 2,
+    "backoff_ms": 1000
+  }
+}

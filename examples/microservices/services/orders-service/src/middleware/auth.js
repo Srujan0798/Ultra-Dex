@@ -17,11 +17,11 @@ const authenticateToken = (req, res, next) => {
     next();
   } catch (error) {
     logger.warn('Token verification failed:', error.message);
-    
+
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Token expired' });
     }
-    
+
     return res.status(403).json({ error: 'Invalid token' });
   }
 };

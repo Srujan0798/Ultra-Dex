@@ -49,14 +49,14 @@ console.log(`Operation took ${duration}ms`);
 
 ## Performance Targets
 
-| Operation | Target | Critical Threshold |
-|-----------|--------|-------------------|
-| Command startup | < 100ms | > 500ms |
-| File scan | < 1s | > 5s |
-| Graph build | < 3s | > 10s |
-| Agent pipeline | < 30s | > 60s |
-| API call | < 5s | > 15s |
-| Context sync | < 2s | > 5s |
+| Operation       | Target  | Critical Threshold |
+| --------------- | ------- | ------------------ |
+| Command startup | < 100ms | > 500ms            |
+| File scan       | < 1s    | > 5s               |
+| Graph build     | < 3s    | > 10s              |
+| Agent pipeline  | < 30s   | > 60s              |
+| API call        | < 5s    | > 15s              |
+| Context sync    | < 2s    | > 5s               |
 
 ## Common Bottlenecks & Solutions
 
@@ -65,6 +65,7 @@ console.log(`Operation took ${duration}ms`);
 **Problem**: Excessive file reads/writes
 
 **Solutions**:
+
 - Use `Promise.all()` for parallel operations
 - Implement file caching
 - Batch file operations
@@ -77,13 +78,13 @@ for (const file of files) {
 }
 
 // ✅ Fast: Parallel reads
-await Promise.all(files.map(f => fs.readFile(f)));
+await Promise.all(files.map((f) => fs.readFile(f)));
 
 // ✅ Fast: Batched reads
 const BATCH_SIZE = 50;
 for (let i = 0; i < files.length; i += BATCH_SIZE) {
   const batch = files.slice(i, i + BATCH_SIZE);
-  await Promise.all(batch.map(f => fs.readFile(f)));
+  await Promise.all(batch.map((f) => fs.readFile(f)));
 }
 ```
 
@@ -92,6 +93,7 @@ for (let i = 0; i < files.length; i += BATCH_SIZE) {
 **Problem**: Full project scan is slow on large projects
 
 **Solutions**:
+
 - Use caching with 30s TTL (already implemented)
 - Exclude directories: `node_modules`, `.git`, `dist`, `build`
 - Implement incremental scanning
@@ -115,6 +117,7 @@ async scan(useCache = true) {
 **Problem**: Slow AI provider responses
 
 **Solutions**:
+
 - Implement request timeouts (default: 30s)
 - Use streaming for large responses
 - Cache API responses when appropriate
@@ -127,7 +130,7 @@ const timeoutId = setTimeout(() => controller.abort(), 30000);
 
 try {
   const response = await fetch(url, {
-    signal: controller.signal
+    signal: controller.signal,
   });
 } finally {
   clearTimeout(timeoutId);
@@ -139,6 +142,7 @@ try {
 **Problem**: Race conditions in state updates
 
 **Solutions**:
+
 - Use file locking (already implemented)
 - Batch state updates
 - Use atomic writes
@@ -156,6 +160,7 @@ async function withStateLock(callback) {
 **Problem**: High memory consumption with large projects
 
 **Solutions**:
+
 - Stream file contents instead of loading all at once
 - Use generators for lazy evaluation
 - Clear references when done
@@ -163,9 +168,7 @@ async function withStateLock(callback) {
 
 ```javascript
 // ❌ High memory: Loading all files
-const contents = await Promise.all(
-  files.map(f => fs.readFile(f, 'utf8'))
-);
+const contents = await Promise.all(files.map((f) => fs.readFile(f, 'utf8')));
 
 // ✅ Low memory: Streaming/chunking
 for (const file of files) {
@@ -190,10 +193,10 @@ class FileCache {
 
   async get(key, fetchFn) {
     const cached = this.cache.get(key);
-    if (cached && (Date.now() - cached.time) < this.ttl) {
+    if (cached && Date.now() - cached.time < this.ttl) {
       return cached.value;
     }
-    
+
     const value = await timeAsync(`fetch-${key}`, fetchFn);
     this.cache.set(key, { value, time: Date.now() });
     return value;
@@ -232,7 +235,7 @@ class ApiClient {
   async request(url, options) {
     return fetch(url, {
       ...options,
-      agent: this.agent
+      agent: this.agent,
     });
   }
 }
@@ -241,21 +244,25 @@ class ApiClient {
 ## Command-Specific Optimizations
 
 ### `init` Command
+
 - Cache template files
 - Parallel file creation
 - Lazy dependency installation
 
 ### `brain` Command
+
 - Incremental context updates
 - Cache graph data
 - Batch file analysis
 
 ### `swarm` Command
+
 - Parallel agent execution (already implemented)
 - Stream results
 - Cache agent prompts
 
 ### `agents` Command
+
 - Cache agent index
 - Lazy load agent details
 - Optimize search with indexing
@@ -284,19 +291,19 @@ import { timeAsync, showReport, clearMetrics } from './lib/utils/profiler.js';
 
 async function benchmark() {
   clearMetrics();
-  
+
   // Warm up
   await timeAsync('warmup', async () => {
     await fs.readdir('.');
   });
-  
+
   // Actual benchmark
   for (let i = 0; i < 10; i++) {
     await timeAsync('operation', async () => {
       // Operation to benchmark
     });
   }
-  
+
   showReport();
 }
 
@@ -311,15 +318,17 @@ Set budgets for critical paths:
 
 ```javascript
 const BUDGETS = {
-  'file-scan': 1000,    // 1 second
-  'graph-build': 3000,  // 3 seconds
-  'api-call': 5000,     // 5 seconds
+  'file-scan': 1000, // 1 second
+  'graph-build': 3000, // 3 seconds
+  'api-call': 5000, // 5 seconds
 };
 
 function checkBudget(operation, duration) {
   const budget = BUDGETS[operation];
   if (budget && duration > budget) {
-    console.warn(`⚠️  Performance budget exceeded: ${operation} took ${duration}ms (budget: ${budget}ms)`);
+    console.warn(
+      `⚠️  Performance budget exceeded: ${operation} took ${duration}ms (budget: ${budget}ms)`
+    );
   }
 }
 ```
@@ -331,10 +340,12 @@ import { getStatistics } from './lib/utils/profiler.js';
 
 // Export metrics for monitoring
 const stats = getStatistics();
-console.log(JSON.stringify({
-  timestamp: new Date().toISOString(),
-  performance: stats
-}));
+console.log(
+  JSON.stringify({
+    timestamp: new Date().toISOString(),
+    performance: stats,
+  })
+);
 ```
 
 ## Best Practices
@@ -368,4 +379,4 @@ If you encounter performance issues:
 
 ---
 
-*Last updated: February 2026*
+_Last updated: February 2026_

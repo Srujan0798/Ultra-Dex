@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { requireConfig, createSyncResult, normalizeWebhookEvent } from './utils.js';
@@ -29,11 +31,14 @@ export async function exportPlan({ planPath = 'IMPLEMENTATION-PLAN.md' } = {}, c
   return {
     ok: true,
     databaseId: config.databaseId,
-    content
+    content,
   };
 }
 
-export async function importPlan({ outputPath = 'IMPLEMENTATION-PLAN.md', content } = {}, config = {}) {
+export async function importPlan(
+  { outputPath = 'IMPLEMENTATION-PLAN.md', content } = {},
+  config = {}
+) {
   requireConfig(config, ['apiToken', 'databaseId'], 'Notion');
   const resolved = path.resolve(process.cwd(), outputPath);
   await fs.writeFile(resolved, content || '# Imported from Notion\n');
@@ -52,7 +57,7 @@ export const integration = {
   sync,
   exportPlan,
   importPlan,
-  handleWebhook
+  handleWebhook,
 };
 
 export default integration;

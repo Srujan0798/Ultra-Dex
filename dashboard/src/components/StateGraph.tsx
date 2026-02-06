@@ -26,12 +26,12 @@ export function StateGraph({ states, edges }: StateGraphProps) {
                 state.status === 'current'
                   ? '#22c55e'
                   : state.status === 'failed'
-                  ? '#ef4444'
-                  : state.status === 'complete'
-                  ? '#38bdf8'
-                  : '#334155',
+                    ? '#ef4444'
+                    : state.status === 'complete'
+                      ? '#38bdf8'
+                      : '#334155',
               color: '#0f172a',
-              fontWeight: 600
+              fontWeight: 600,
             }}
           >
             {state.label}

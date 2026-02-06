@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,9 +7,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Check, Sparkles } from "lucide-react";
-import { PLANS } from "@/lib/stripe";
+} from '@/components/ui/card';
+import { Check, Sparkles } from 'lucide-react';
+import { PLANS } from '@/lib/stripe';
 
 export default function PricingPage() {
   return (
@@ -40,10 +40,7 @@ export default function PricingPage() {
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {PLANS.map((plan) => (
-            <Card
-              key={plan.id}
-              className={`flex flex-col ${plan.popular ? "border-primary" : ""}`}
-            >
+            <Card key={plan.id} className={`flex flex-col ${plan.popular ? 'border-primary' : ''}`}>
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
@@ -58,11 +55,9 @@ export default function PricingPage() {
               <CardContent className="flex-1">
                 <div className="mb-4">
                   <span className="text-4xl font-bold">
-                    {plan.price === null ? "Custom" : `$${plan.price}`}
+                    {plan.price === null ? 'Custom' : `$${plan.price}`}
                   </span>
-                  {plan.price !== null && (
-                    <span className="text-muted-foreground">/month</span>
-                  )}
+                  {plan.price !== null && <span className="text-muted-foreground">/month</span>}
                 </div>
                 {plan.credits && (
                   <p className="text-sm text-muted-foreground mb-4">
@@ -79,19 +74,15 @@ export default function PricingPage() {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button
-                  className="w-full"
-                  variant={plan.popular ? "default" : "outline"}
-                  asChild
-                >
+                <Button className="w-full" variant={plan.popular ? 'default' : 'outline'} asChild>
                   <Link
                     href={
-                      plan.id === "enterprise"
-                        ? "mailto:sales@example.com"
+                      plan.id === 'enterprise'
+                        ? 'mailto:sales@example.com'
                         : `/auth/register?plan=${plan.id}`
                     }
                   >
-                    {plan.id === "enterprise" ? "Contact Sales" : "Get Started"}
+                    {plan.id === 'enterprise' ? 'Contact Sales' : 'Get Started'}
                   </Link>
                 </Button>
               </CardFooter>
@@ -101,29 +92,27 @@ export default function PricingPage() {
 
         {/* FAQ */}
         <div className="mt-24 max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">
-            Frequently Asked Questions
-          </h2>
+          <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
           <div className="space-y-6">
             <div>
               <h3 className="font-semibold mb-2">What are credits?</h3>
               <p className="text-muted-foreground">
-                Credits are used when interacting with AI models. Each API call
-                consumes credits based on the complexity and length of the request.
+                Credits are used when interacting with AI models. Each API call consumes credits
+                based on the complexity and length of the request.
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Can I upgrade or downgrade?</h3>
               <p className="text-muted-foreground">
-                Yes, you can change your plan at any time. Changes take effect
-                immediately, and we&apos;ll prorate any differences.
+                Yes, you can change your plan at any time. Changes take effect immediately, and
+                we&apos;ll prorate any differences.
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">What happens if I run out of credits?</h3>
               <p className="text-muted-foreground">
-                You can purchase additional credit packs or upgrade to a higher
-                plan. Your service won&apos;t be interrupted.
+                You can purchase additional credit packs or upgrade to a higher plan. Your service
+                won&apos;t be interrupted.
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({
@@ -9,9 +9,9 @@ export async function middleware(request: NextRequest) {
   });
 
   const isAuthenticated = !!token;
-  const isAuthPage = request.nextUrl.pathname.startsWith("/auth");
-  const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");
-  const isApiAuthPage = request.nextUrl.pathname.startsWith("/api/auth");
+  const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
+  const isDashboardPage = request.nextUrl.pathname.startsWith('/dashboard');
+  const isApiAuthPage = request.nextUrl.pathname.startsWith('/api/auth');
 
   // Allow API auth routes
   if (isApiAuthPage) {
@@ -20,13 +20,13 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (isAuthPage && isAuthenticated) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // Redirect unauthenticated users to login
   if (isDashboardPage && !isAuthenticated) {
-    const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+    const loginUrl = new URL('/auth/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -34,5 +34,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth/:path*", "/api/auth/:path*"],
+  matcher: ['/dashboard/:path*', '/auth/:path*', '/api/auth/:path*'],
 };

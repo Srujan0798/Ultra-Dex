@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -5,7 +7,12 @@ import { scanProject } from '../security/auditor.js';
 import { formatSecurityReport } from '../security/report.js';
 import { issueCertificate } from '../security/certifier.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { validateSafePath, hasForbiddenPath, scanForSecrets, listForbiddenPaths } from '../security/validators.js';
+import {
+  validateSafePath,
+  hasForbiddenPath,
+  scanForSecrets,
+  listForbiddenPaths,
+} from '../security/validators.js';
 
 export function registerSecurityCommand(program) {
   const cmd = program.command('security').description('Security audit and certification');
@@ -72,18 +79,16 @@ export function registerSecurityCommand(program) {
       }
     });
 
-  cmd
-    .command('certify')
-    .action(async () => {
-      try {
-        const findings = await scanProject(process.cwd());
-        const cert = await issueCertificate(findings);
-        printSuccess(chalk.green(`Security score: ${cert.score}`));
-        printInfo(chalk.gray(`Certificate: ${path.relative(process.cwd(), cert.mdPath)}`));
-      } catch (error) {
-        printError(chalk.red(`Certification failed: ${error.message}`));
-      }
-    });
+  cmd.command('certify').action(async () => {
+    try {
+      const findings = await scanProject(process.cwd());
+      const cert = await issueCertificate(findings);
+      printSuccess(chalk.green(`Security score: ${cert.score}`));
+      printInfo(chalk.gray(`Certificate: ${path.relative(process.cwd(), cert.mdPath)}`));
+    } catch (error) {
+      printError(chalk.red(`Certification failed: ${error.message}`));
+    }
+  });
 
   cmd
     .command('report')

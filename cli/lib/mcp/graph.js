@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
@@ -96,11 +98,14 @@ export class GraphRAG {
 
     const session = this.driver.session();
     try {
-      await session.run(`
+      await session.run(
+        `
         MATCH (n)
         WHERE n.project = $projectId
         DETACH DELETE n
-      `, { projectId: this.projectId });
+      `,
+        { projectId: this.projectId }
+      );
       logger.info(`[GraphRAG] Cleared project: ${this.projectId}`);
     } finally {
       await session.close();
@@ -127,7 +132,8 @@ export class GraphRAG {
 
       for (let i = 0; i < files.length; i += BATCH_SIZE) {
         const batch = files.slice(i, i + BATCH_SIZE);
-        await session.run(`
+        await session.run(
+          `
           UNWIND $files as file
           MERGE (f:File {path: file.path, project: $projectId})
           SET f.size = file.size,
@@ -136,17 +142,19 @@ export class GraphRAG {
               f.isComponent = file.isComponent,
               f.symbols = file.symbols,
               f.lastUpdated = datetime()
-        `, { 
-          files: batch.map(([path, node]) => ({
-            path,
-            size: node.size,
-            type: node.type,
-            mtime: node.mtime,
-            isComponent: node.isComponent,
-            symbols: node.symbols || []
-          })),
-          projectId: this.projectId
-        });
+        `,
+          {
+            files: batch.map(([path, node]) => ({
+              path,
+              size: node.size,
+              type: node.type,
+              mtime: node.mtime,
+              isComponent: node.isComponent,
+              symbols: node.symbols || [],
+            })),
+            projectId: this.projectId,
+          }
+        );
       }
 
       // Batch insert functions from symbols
@@ -154,17 +162,20 @@ export class GraphRAG {
         const batch = files.slice(i, i + BATCH_SIZE);
         for (const [filePath, node] of batch) {
           if (node.symbols && node.symbols.length > 0) {
-            await session.run(`
+            await session.run(
+              `
               UNWIND $symbols as symbol
               MATCH (f:File {path: $filePath, project: $projectId})
               MERGE (fn:Function {name: symbol, file: $filePath, project: $projectId})
               SET fn.lastUpdated = datetime()
               MERGE (f)-[:CONTAINS]->(fn)
-            `, { 
-              symbols: node.symbols,
-              filePath,
-              projectId: this.projectId
-            });
+            `,
+              {
+                symbols: node.symbols,
+                filePath,
+                projectId: this.projectId,
+              }
+            );
           }
         }
       }
@@ -172,19 +183,24 @@ export class GraphRAG {
       // Batch insert edges
       for (let i = 0; i < summary.dependencies.length; i += BATCH_SIZE) {
         const batch = summary.dependencies.slice(i, i + BATCH_SIZE);
-        await session.run(`
+        await session.run(
+          `
           UNWIND $edges as edge
           MATCH (from:File {path: edge.from, project: $projectId})
           MATCH (to:File {path: edge.to, project: $projectId})
           MERGE (from)-[r:DEPENDS_ON {type: edge.type}]->(to)
           SET r.lastUpdated = datetime()
-        `, { 
-          edges: batch,
-          projectId: this.projectId
-        });
+        `,
+          {
+            edges: batch,
+            projectId: this.projectId,
+          }
+        );
       }
 
-      logger.info(`[GraphRAG] Synced ${files.length} files and ${summary.dependencies.length} dependencies`);
+      logger.info(
+        `[GraphRAG] Synced ${files.length} files and ${summary.dependencies.length} dependencies`
+      );
       return true;
     } finally {
       await session.close();
@@ -206,46 +222,55 @@ export class GraphRAG {
       const includeFunctions = options.includeFunctions || false;
 
       // Get transitive dependents
-      const result = await session.run(`
+      const result = await session.run(
+        `
         MATCH path = (dependent:File)-[:DEPENDS_ON*1..${maxDepth}]->(target:File {path: $filePath, project: $projectId})
         WHERE dependent.project = $projectId
         WITH dependent, length(path) as depth
         RETURN DISTINCT dependent.path as file, depth
         ORDER BY depth ASC
-      `, { filePath, projectId: this.projectId });
+      `,
+        { filePath, projectId: this.projectId }
+      );
 
-      const impactedFiles = result.records.map(record => ({
+      const impactedFiles = result.records.map((record) => ({
         file: record.get('file'),
-        depth: record.get('depth').toNumber()
+        depth: record.get('depth').toNumber(),
       }));
 
       // Also get functions that might be affected
       let impactedFunctions = [];
       if (includeFunctions) {
-        const funcResult = await session.run(`
+        const funcResult = await session.run(
+          `
           MATCH (target:File {path: $filePath, project: $projectId})-[:CONTAINS]->(fn:Function)
           WITH collect(fn.name) as targetFunctions
           MATCH (dependent:File)-[:CONTAINS]->(caller:Function)
           WHERE dependent.project = $projectId
           AND any(fnName IN targetFunctions WHERE caller.name CONTAINS fnName OR caller.calls CONTAINS fnName)
           RETURN DISTINCT caller.name as function, dependent.path as file
-        `, { filePath, projectId: this.projectId });
+        `,
+          { filePath, projectId: this.projectId }
+        );
 
-        impactedFunctions = funcResult.records.map(record => ({
+        impactedFunctions = funcResult.records.map((record) => ({
           function: record.get('function'),
-          file: record.get('file')
+          file: record.get('file'),
         }));
       }
 
       // Get architectural decisions that might be related
-      const decisionsResult = await session.run(`
+      const decisionsResult = await session.run(
+        `
         MATCH (d:Decision)-[:AFFECTS]->(f:File {path: $filePath, project: $projectId})
         RETURN d.title as decision, d.description as description
-      `, { filePath, projectId: this.projectId });
+      `,
+        { filePath, projectId: this.projectId }
+      );
 
-      const relatedDecisions = decisionsResult.records.map(record => ({
+      const relatedDecisions = decisionsResult.records.map((record) => ({
         title: record.get('decision'),
-        description: record.get('description')
+        description: record.get('description'),
       }));
 
       return {
@@ -254,7 +279,7 @@ export class GraphRAG {
         impactedFiles,
         impactedFunctions,
         relatedDecisions,
-        riskLevel: impactedFiles.length > 10 ? 'high' : impactedFiles.length > 5 ? 'medium' : 'low'
+        riskLevel: impactedFiles.length > 10 ? 'high' : impactedFiles.length > 5 ? 'medium' : 'low',
       };
     } finally {
       await session.close();
@@ -271,15 +296,18 @@ export class GraphRAG {
 
     const session = this.driver.session();
     try {
-      const result = await session.run(`
+      const result = await session.run(
+        `
         MATCH path = (f:File)-[:DEPENDS_ON*2..10]->(f)
         WHERE f.project = $projectId
         WITH path, [node in nodes(path) | node.path] as files
         RETURN DISTINCT files
         LIMIT 20
-      `, { projectId: this.projectId });
+      `,
+        { projectId: this.projectId }
+      );
 
-      return result.records.map(record => record.get('files'));
+      return result.records.map((record) => record.get('files'));
     } finally {
       await session.close();
     }
@@ -295,14 +323,17 @@ export class GraphRAG {
 
     const session = this.driver.session();
     try {
-      const result = await session.run(`
+      const result = await session.run(
+        `
         MATCH path = (f:File {path: $filePath, project: $projectId})-[:DEPENDS_ON*0..${depth}]-(connected:File)
         WHERE connected.project = $projectId
         WITH f, connected, relationships(path) as rels
         RETURN collect(DISTINCT {id: f.path, type: f.type, size: f.size}) + 
                collect(DISTINCT {id: connected.path, type: connected.type, size: connected.size}) as nodes,
                collect(DISTINCT {from: startNode(r).path, to: endNode(r).path, type: type(r)}) as edges
-      `, { filePath, projectId: this.projectId });
+      `,
+        { filePath, projectId: this.projectId }
+      );
 
       if (result.records.length === 0) {
         return { nodes: [], edges: [] };
@@ -310,7 +341,7 @@ export class GraphRAG {
 
       return {
         nodes: result.records[0].get('nodes'),
-        edges: result.records[0].get('edges')
+        edges: result.records[0].get('edges'),
       };
     } finally {
       await session.close();
@@ -328,20 +359,23 @@ export class GraphRAG {
     const session = this.driver.session();
     try {
       const limit = options.limit || 20;
-      
-      const result = await session.run(`
+
+      const result = await session.run(
+        `
         MATCH (fn:Function)
         WHERE fn.project = $projectId
         AND fn.name CONTAINS $query
         MATCH (f:File {path: fn.file, project: $projectId})
         RETURN fn.name as name, fn.file as file, f.type as type
         LIMIT $limit
-      `, { query, projectId: this.projectId, limit: parseInt(limit) });
+      `,
+        { query, projectId: this.projectId, limit: parseInt(limit) }
+      );
 
-      return result.records.map(record => ({
+      return result.records.map((record) => ({
         name: record.get('name'),
         file: record.get('file'),
-        type: record.get('type')
+        type: record.get('type'),
       }));
     } finally {
       await session.close();
@@ -358,7 +392,8 @@ export class GraphRAG {
 
     const session = this.driver.session();
     try {
-      const result = await session.run(`
+      const result = await session.run(
+        `
         MATCH (f:File {project: $projectId})
         OPTIONAL MATCH (f)-[out:DEPENDS_ON]->()
         OPTIONAL MATCH ()-[in:DEPENDS_ON]->(f)
@@ -366,13 +401,15 @@ export class GraphRAG {
         RETURN avg(outDegree + inDegree) as avgCoupling,
                max(outDegree + inDegree) as maxCoupling,
                collect(CASE WHEN outDegree + inDegree > 10 THEN {file: f.path, coupling: outDegree + inDegree} END) as highlyCoupled
-      `, { projectId: this.projectId });
+      `,
+        { projectId: this.projectId }
+      );
 
       const record = result.records[0];
       return {
         averageCoupling: record.get('avgCoupling'),
         maxCoupling: record.get('maxCoupling'),
-        highlyCoupledFiles: record.get('highlyCoupled').filter(Boolean)
+        highlyCoupledFiles: record.get('highlyCoupled').filter(Boolean),
       };
     } finally {
       await session.close();
@@ -387,7 +424,8 @@ export class GraphRAG {
 
     const session = this.driver.session();
     try {
-      await session.run(`
+      await session.run(
+        `
         MERGE (d:Decision {id: $id, project: $projectId})
         SET d.title = $title,
             d.description = $description,
@@ -397,14 +435,16 @@ export class GraphRAG {
         UNWIND $affectedFiles as filePath
         MATCH (f:File {path: filePath, project: $projectId})
         MERGE (d)-[:AFFECTS]->(f)
-      `, {
-        id: decision.id || `${Date.now()}`,
-        title: decision.title,
-        description: decision.description,
-        status: decision.status || 'active',
-        affectedFiles: decision.affectedFiles || [],
-        projectId: this.projectId
-      });
+      `,
+        {
+          id: decision.id || `${Date.now()}`,
+          title: decision.title,
+          description: decision.description,
+          status: decision.status || 'active',
+          affectedFiles: decision.affectedFiles || [],
+          projectId: this.projectId,
+        }
+      );
       return true;
     } finally {
       await session.close();
@@ -425,64 +465,76 @@ export class GraphRAG {
       const limit = options.limit || 10;
 
       // Search for matching files
-      const filesResult = await session.run(`
+      const filesResult = await session.run(
+        `
         MATCH (f:File)
         WHERE f.project = $projectId
         AND (f.path CONTAINS $query OR any(symbol IN f.symbols WHERE symbol CONTAINS $query))
         RETURN f.path as path, f.symbols as symbols, f.type as type
         LIMIT $limit
-      `, { query, projectId: this.projectId, limit: parseInt(limit) });
+      `,
+        { query, projectId: this.projectId, limit: parseInt(limit) }
+      );
 
       // Search for matching functions
-      const funcResult = await session.run(`
+      const funcResult = await session.run(
+        `
         MATCH (fn:Function)
         WHERE fn.project = $projectId
         AND fn.name CONTAINS $query
         RETURN fn.name as name, fn.file as file
         LIMIT $limit
-      `, { query, projectId: this.projectId, limit: parseInt(limit) });
+      `,
+        { query, projectId: this.projectId, limit: parseInt(limit) }
+      );
 
       // Get related decisions
-      const decisionResult = await session.run(`
+      const decisionResult = await session.run(
+        `
         MATCH (d:Decision)
         WHERE d.project = $projectId
         AND (d.title CONTAINS $query OR d.description CONTAINS $query)
         RETURN d.title as title, d.description as description
         LIMIT $limit
-      `, { query, projectId: this.projectId, limit: parseInt(limit) });
+      `,
+        { query, projectId: this.projectId, limit: parseInt(limit) }
+      );
 
       // Get dependency chains for matched files
-      const matchedFiles = filesResult.records.map(r => r.get('path'));
+      const matchedFiles = filesResult.records.map((r) => r.get('path'));
       let dependencies = [];
       if (matchedFiles.length > 0) {
-        const depResult = await session.run(`
+        const depResult = await session.run(
+          `
           UNWIND $files as filePath
           MATCH (f:File {path: filePath, project: $projectId})-[:DEPENDS_ON|DEPENDED_ON_BY*1..2]-(related:File)
           WHERE related.project = $projectId
           RETURN DISTINCT related.path as path, related.type as type
           LIMIT $limit
-        `, { files: matchedFiles, projectId: this.projectId, limit: parseInt(limit) });
-        dependencies = depResult.records.map(r => ({
+        `,
+          { files: matchedFiles, projectId: this.projectId, limit: parseInt(limit) }
+        );
+        dependencies = depResult.records.map((r) => ({
           path: r.get('path'),
-          type: r.get('type')
+          type: r.get('type'),
         }));
       }
 
       return {
-        files: filesResult.records.map(r => ({
+        files: filesResult.records.map((r) => ({
           path: r.get('path'),
           symbols: r.get('symbols'),
-          type: r.get('type')
+          type: r.get('type'),
         })),
-        functions: funcResult.records.map(r => ({
+        functions: funcResult.records.map((r) => ({
           name: r.get('name'),
-          file: r.get('file')
+          file: r.get('file'),
         })),
-        decisions: decisionResult.records.map(r => ({
+        decisions: decisionResult.records.map((r) => ({
           title: r.get('title'),
-          description: r.get('description')
+          description: r.get('description'),
         })),
-        dependencies
+        dependencies,
       };
     } finally {
       await session.close();
@@ -503,7 +555,7 @@ export class CodeGraph {
     this.fileHashes = new Map(); // Track file changes for selective updates
     this.cacheDir = path.resolve(process.cwd(), '.ultra-dex');
     this.cacheFile = path.resolve(this.cacheDir, 'graph.json');
-    
+
     // GraphRAG integration
     this.graphRAG = options.graphRAG || null;
     this.useGraphDB = options.useGraphDB !== false; // Default to true
@@ -535,7 +587,7 @@ export class CodeGraph {
       const json = {
         nodes: Array.from(this.nodes.entries()),
         edges: this.edges,
-        lastScanTime: Date.now()
+        lastScanTime: Date.now(),
       };
       await fs.writeFile(this.cacheFile, JSON.stringify(json, null, 2));
     } catch (e) {
@@ -551,11 +603,11 @@ export class CodeGraph {
       try {
         this.graphRAG = new GraphRAG({ projectId: path.basename(process.cwd()) });
         const connected = await this.graphRAG.connect();
-        
+
         if (connected) {
           logger.info('[CodeGraph] GraphRAG initialized and connected');
         }
-        
+
         return connected;
       } catch (err) {
         this.initializingRAG = null;
@@ -583,7 +635,7 @@ export class CodeGraph {
       }
 
       // Check if we can use cached results
-      if (useCache && this.nodes.size > 0 && (now - this.lastScanTime) < this.cacheTimeout) {
+      if (useCache && this.nodes.size > 0 && now - this.lastScanTime < this.cacheTimeout) {
         return this.getSummary();
       }
 
@@ -600,7 +652,7 @@ export class CodeGraph {
         ignore: ['**/node_modules/**', '.git/**', 'dist/**', 'build/**', '.next/**'],
         absolute: false,
         cwd: process.cwd(),
-        nodir: true
+        nodir: true,
       });
 
       const currentFiles = new Set(files);
@@ -625,14 +677,14 @@ export class CodeGraph {
       for (const [file] of this.nodes) {
         if (!currentFiles.has(file)) {
           this.nodes.delete(file);
-          this.edges = this.edges.filter(e => e.from !== file);
+          this.edges = this.edges.filter((e) => e.from !== file);
         }
       }
 
       // Remove old edges from files being re-analyzed
       if (filesToAnalyze.length > 0) {
-        const filesToUpdateSet = new Set(filesToAnalyze.map(f => f.file));
-        this.edges = this.edges.filter(e => !filesToUpdateSet.has(e.from));
+        const filesToUpdateSet = new Set(filesToAnalyze.map((f) => f.file));
+        this.edges = this.edges.filter((e) => !filesToUpdateSet.has(e.from));
 
         // Process files in chunks
         const CONCURRENCY_LIMIT = 50; // Reduced concurrency for stability
@@ -662,7 +714,9 @@ export class CodeGraph {
       this.lastScanTime = now;
 
       const scanDuration = performance.now() - scanStart;
-      logger.debug(`[Performance] Graph scan completed in ${scanDuration.toFixed(2)}ms for ${files.length} files`);
+      logger.debug(
+        `[Performance] Graph scan completed in ${scanDuration.toFixed(2)}ms for ${files.length} files`
+      );
 
       // Sync to GraphRAG if connected
       if (this.graphRAG && this.graphRAG.isConnected) {
@@ -670,7 +724,7 @@ export class CodeGraph {
       }
 
       // Save cache asynchronously
-      this.saveCache().catch(e => logger.debug(`Background cache save failed: ${e.message}`));
+      this.saveCache().catch((e) => logger.debug(`Background cache save failed: ${e.message}`));
 
       return this.getSummary();
     } finally {
@@ -702,7 +756,7 @@ export class CodeGraph {
             ecmaVersion: 'latest',
             sourceType: 'module',
             allowImportExportEverywhere: true,
-            allowReturnOutsideFunction: true
+            allowReturnOutsideFunction: true,
           });
 
           walk.simple(ast, {
@@ -715,7 +769,7 @@ export class CodeGraph {
                 functions.push({
                   name: node.id.name,
                   line: node.loc?.start?.line || 0,
-                  params: node.params.map(p => p.name || p.value || 'param')
+                  params: node.params.map((p) => p.name || p.value || 'param'),
                 });
               }
             },
@@ -725,7 +779,7 @@ export class CodeGraph {
                 dataTypes.push({
                   name: node.id.name,
                   kind: 'class',
-                  line: node.loc?.start?.line || 0
+                  line: node.loc?.start?.line || 0,
                 });
               }
             },
@@ -744,19 +798,20 @@ export class CodeGraph {
               if (node.declaration) {
                 if (node.declaration.id) symbols.push(node.declaration.id.name);
                 if (node.declaration.declarations) {
-                  node.declaration.declarations.forEach(d => {
+                  node.declaration.declarations.forEach((d) => {
                     if (d.id.type === 'Identifier') symbols.push(d.id.name);
                   });
                 }
               }
-            }
+            },
           });
         } else {
           throw new Error('Not a JS/JSX file, using regex fallback');
         }
       } catch (e) {
         // Fallback to Regex
-        const symbolRegex = /(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z0-9_]+)/g;
+        const symbolRegex =
+          /(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z0-9_]+)/g;
         let symMatch;
         while ((symMatch = symbolRegex.exec(content)) !== null) {
           if (!['default', 'if', 'for', 'while', 'switch'].includes(symMatch[1])) {
@@ -785,14 +840,16 @@ export class CodeGraph {
         size: content.length,
         type: path.extname(filePath).substring(1),
         mtime: mtime,
-        isComponent: /^[A-Z]/.test(path.basename(filePath)) || content.includes('React') || content.includes('Component'),
+        isComponent:
+          /^[A-Z]/.test(path.basename(filePath)) ||
+          content.includes('React') ||
+          content.includes('Component'),
         symbols: [...new Set(symbols)],
         functions,
-        dataTypes
+        dataTypes,
       });
 
       return { edges: newEdges };
-
     } catch (e) {
       if (process.env.DEBUG) {
         logger.error(`Failed to analyze ${filePath}`, e);
@@ -809,13 +866,13 @@ export class CodeGraph {
       dependencies: this.edges,
       lastScanTime: this.lastScanTime,
       cacheHit: this.nodes.size > 0,
-      graphDBConnected: this.graphRAG?.isConnected || false
+      graphDBConnected: this.graphRAG?.isConnected || false,
     };
   }
 
   findReferences(fileName) {
     if (!fileName) return [];
-    return this.edges.filter(e => e.to.includes(fileName));
+    return this.edges.filter((e) => e.to.includes(fileName));
   }
 
   findSymbol(name) {
@@ -824,7 +881,9 @@ export class CodeGraph {
     const lowerName = name.toLowerCase();
     for (const [file, node] of this.nodes) {
       if (node.symbols) {
-        const match = node.symbols.find(s => s.toLowerCase() === lowerName || s.toLowerCase().includes(lowerName));
+        const match = node.symbols.find(
+          (s) => s.toLowerCase() === lowerName || s.toLowerCase().includes(lowerName)
+        );
         if (match) {
           results.push({ file, symbol: match, type: 'definition' });
         }
@@ -843,12 +902,12 @@ export class CodeGraph {
     // Fallback to in-memory traversal
     const impact = new Set();
     const visited = new Set();
-    
+
     const findDependents = (currentPath) => {
       if (visited.has(currentPath)) return;
       visited.add(currentPath);
-      
-      const dependents = this.edges.filter(e => e.to === currentPath);
+
+      const dependents = this.edges.filter((e) => e.to === currentPath);
       for (const edge of dependents) {
         if (edge.from !== filePath) {
           impact.add(edge.from);
@@ -856,7 +915,7 @@ export class CodeGraph {
         findDependents(edge.from);
       }
     };
-    
+
     findDependents(filePath);
     return Array.from(impact);
   }
@@ -875,7 +934,9 @@ export class CodeGraph {
     }
 
     const updateDuration = performance.now() - updateStart;
-    logger.debug(`[Performance] Updated ${changedFiles.length} changed files in ${updateDuration.toFixed(2)}ms`);
+    logger.debug(
+      `[Performance] Updated ${changedFiles.length} changed files in ${updateDuration.toFixed(2)}ms`
+    );
   }
 
   clearCache() {

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { appendEntry, readLedger, verifyLedger, ledgerPath } from './storage.js';
 import { searchLedger, rangeLedger, agentLedger, exportLedger } from './query.js';
 
@@ -9,7 +11,7 @@ export const ledger = {
   rangeLedger,
   agentLedger,
   exportLedger,
-  path: ledgerPath
+  path: ledgerPath,
 };
 
 export default ledger;

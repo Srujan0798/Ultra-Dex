@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import HotTier from './hot-tier.js';
 import WarmTier from './warm-tier.js';
 import ColdTier from './cold-tier.js';
@@ -27,7 +29,7 @@ export class MemoryManager {
       type: entry.type,
       timestamp: entry.timestamp,
       source: entry.source,
-      relations: entry.relations || []
+      relations: entry.relations || [],
     };
 
     const hotRecord = await this.hot.add(record);

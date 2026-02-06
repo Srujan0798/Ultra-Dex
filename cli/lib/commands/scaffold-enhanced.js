@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
@@ -16,19 +18,19 @@ const TEMPLATES = {
     name: 'Next.js 15 + Prisma + Clerk',
     description: 'Full-stack SaaS with App Router, Prisma ORM, and Clerk auth',
     stack: ['Next.js 15', 'Prisma', 'Clerk', 'PostgreSQL', 'Tailwind CSS'],
-    features: ['auth', 'database', 'api', 'frontend', 'testing']
+    features: ['auth', 'database', 'api', 'frontend', 'testing'],
   },
   'remix-supabase': {
     name: 'Remix + Supabase',
     description: 'Full-stack app with Remix and Supabase backend',
     stack: ['Remix', 'Supabase', 'PostgreSQL', 'Tailwind CSS'],
-    features: ['auth', 'database', 'api', 'frontend']
+    features: ['auth', 'database', 'api', 'frontend'],
   },
   'sveltekit-drizzle': {
     name: 'SvelteKit + Drizzle',
     description: 'SvelteKit app with Drizzle ORM',
     stack: ['SvelteKit', 'Drizzle', 'PostgreSQL', 'Tailwind CSS'],
-    features: ['database', 'api', 'frontend']
+    features: ['database', 'api', 'frontend'],
   },
 };
 
@@ -83,7 +85,7 @@ async function scaffoldFromPlan(options) {
   // Extract tech stack from Section 12 or Context
   const techStack = extractTechStack(planContent, sections);
   printInfo(chalk.cyan('Detected Tech Stack:'));
-  techStack.forEach(tech => printInfo(chalk.white(`  • ${tech}`)));
+  techStack.forEach((tech) => printInfo(chalk.white(`  • ${tech}`)));
   printInfo('');
 
   // Generate folder structure based on stack
@@ -191,29 +193,29 @@ export const AI_CONFIG = {
   capabilities: ['streaming', 'tool-use', 'vision']
 };
 
-export async function callAI(prompt: string, options: { model?: string; temperature?: number } = {}) {
-  // ...
-`;
+export async function callAI(prompt, options = {}) {
+  // Placeholder for future AI enhancement hooks
+  return { prompt, options, response: null };
 }
 
-export async function getProjectContext() {
+export async function getProjectContext({ stack = [], sections = [] } = {}) {
   // Returns structured context for AI agents
   return {
     project: {
       name: 'Task Management SaaS',
-      techStack: ['${stack.join(', ')}'],
+      techStack: stack,
       features: [
         'User authentication',
         'Task management',
         'AI-powered suggestions',
         'Real-time collaboration',
-        'Analytics dashboard'
-      ]
+        'Analytics dashboard',
+      ],
     },
     plan: {
       // Auto-generated from IMPLEMENTATION-PLAN.md
-      sections: ${JSON.stringify(sections.map(s => ({ number: s.number, title: s.title })), null, 2)}
-    }
+      sections: sections.map((section) => ({ number: section.number, title: section.title })),
+    },
   };
 }
 
@@ -418,8 +420,8 @@ export default function AiAssistant() {
 // Keep existing functions but enhance them
 function generatePackageJson(stack, advanced = false) {
   const deps = {
-    'next': '^15.0.0',
-    'react': '^19.0.0',
+    next: '^15.0.0',
+    react: '^19.0.0',
     'react-dom': '^19.0.0',
   };
 
@@ -439,29 +441,33 @@ function generatePackageJson(stack, advanced = false) {
     deps['tailwindcss'] = '^3.4.0';
   }
 
-  return JSON.stringify({
-    name: 'task-management-saas',
-    version: '0.1.0',
-    private: true,
-    scripts: {
-      dev: 'next dev',
-      build: 'next build',
-      start: 'next start',
-      lint: 'next lint',
-      db: 'prisma',
-      'ai-test': 'ts-node src/lib/ai.test.ts'
+  return JSON.stringify(
+    {
+      name: 'task-management-saas',
+      version: '0.1.0',
+      private: true,
+      scripts: {
+        dev: 'next dev',
+        build: 'next build',
+        start: 'next start',
+        lint: 'next lint',
+        db: 'prisma',
+        'ai-test': 'ts-node src/lib/ai.test.ts',
+      },
+      dependencies: deps,
+      devDependencies: {
+        typescript: '^5.0.0',
+        '@types/node': '^20.0.0',
+        '@types/react': '^19.0.0',
+        tailwindcss: '^3.4.0',
+        eslint: '^8.0.0',
+        'eslint-config-next': '^15.0.0',
+        ...(advanced ? { jest: '^29.0.0', '@testing-library/react': '^14.0.0' } : {}),
+      },
     },
-    dependencies: deps,
-    devDependencies: {
-      'typescript': '^5.0.0',
-      '@types/node': '^20.0.0',
-      '@types/react': '^19.0.0',
-      'tailwindcss': '^3.4.0',
-      'eslint': '^8.0.0',
-      'eslint-config-next': '^15.0.0',
-      ...(advanced ? { 'jest': '^29.0.0', '@testing-library/react': '^14.0.0' } : {})
-    }
-  }, null, 2);
+    null,
+    2
+  );
 }
 
 function generateReadme(sections, advanced = false) {
@@ -514,13 +520,17 @@ npx ultra-dex dashboard
 \`\`\`
 
 ## 📂 Project Structure
-${advanced ? `
+${
+  advanced
+    ? `
 ### AI-Ready Files:
 - \`src/lib/ai.ts\` - AI helper functions for agent integration
 - \`src/lib/context.ts\` - Project context for AI agents
 - \`src/app/api/ai/route.ts\` - AI-powered API endpoint
 - \`src/components/AiAssistant.tsx\` - AI assistant component
-` : ''}
+`
+    : ''
+}
 
 ## 🔧 Ultra-Dex Commands
 
@@ -654,7 +664,7 @@ function parsePlanSections(content) {
       currentSection = {
         number: parseInt(match[1]),
         title: match[2],
-        content: ''
+        content: '',
       };
     } else if (currentSection) {
       currentSection.content += line + '\n';
@@ -673,7 +683,8 @@ function extractTechStack(content, sections) {
   if (lowerContent.includes('clerk')) stack.push('Clerk');
   if (lowerContent.includes('supabase')) stack.push('Supabase');
   if (lowerContent.includes('tailwind')) stack.push('Tailwind CSS');
-  if (lowerContent.includes('postgresql') || lowerContent.includes('postgres')) stack.push('PostgreSQL');
+  if (lowerContent.includes('postgresql') || lowerContent.includes('postgres'))
+    stack.push('PostgreSQL');
   if (lowerContent.includes('typescript')) stack.push('TypeScript');
 
   // Fallback if nothing found
@@ -690,7 +701,7 @@ function generateStructure(techStack, sections) {
     'src/hooks',
     'src/styles',
     'public',
-    'docs'
+    'docs',
   ];
 
   if (techStack.includes('Prisma')) structure.push('prisma');
@@ -701,13 +712,13 @@ function generateStructure(techStack, sections) {
 
 function displayStructure(structure) {
   printInfo(chalk.bold('Directories:'));
-  structure.forEach(dir => printInfo(chalk.gray(`  📁 \${dir}`)));
+  structure.forEach((dir) => printInfo(chalk.gray(`  📁 \${dir}`)));
   printInfo('');
 }
 
 function displayFiles(files) {
   printInfo(chalk.bold('Files:'));
-  Object.keys(files).forEach(file => printInfo(chalk.gray(`  📄 \${file}`)));
+  Object.keys(files).forEach((file) => printInfo(chalk.gray(`  📄 \${file}`)));
   printInfo('');
 }
 
@@ -715,10 +726,12 @@ function generateEnvExample(stack) {
   let content = '# Environment Variables\n\n';
   content += 'DATABASE_URL="postgresql://user:password@localhost:5432/dbname"\n';
   if (stack.includes('Clerk')) {
-    content += 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="{{CLERK_PUBLISHABLE_KEY}}"\nCLERK_SECRET_KEY="{{CLERK_SECRET_KEY}}"\n';
+    content +=
+      'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="{{CLERK_PUBLISHABLE_KEY}}"\nCLERK_SECRET_KEY="{{CLERK_SECRET_KEY}}"\n';
   }
   if (stack.includes('Supabase')) {
-    content += 'NEXT_PUBLIC_SUPABASE_URL="{{SUPABASE_URL}}"\nNEXT_PUBLIC_SUPABASE_ANON_KEY="{{SUPABASE_ANON_KEY}}"\n';
+    content +=
+      'NEXT_PUBLIC_SUPABASE_URL="{{SUPABASE_URL}}"\nNEXT_PUBLIC_SUPABASE_ANON_KEY="{{SUPABASE_ANON_KEY}}"\n';
   }
   return content;
 }
@@ -807,21 +820,21 @@ async function scaffoldFromTemplate(options) {
         type: 'list',
         name: 'template',
         message: 'Select a template to scaffold from:',
-        choices: Object.keys(TEMPLATES).map(key => ({
-          name: \`\${TEMPLATES[key].name} - \${TEMPLATES[key].description}\`,
-          value: key
-        }))
-      }
+        choices: Object.keys(TEMPLATES).map((key) => ({
+          name: `${TEMPLATES[key].name} - ${TEMPLATES[key].description}`,
+          value: key,
+        })),
+      },
     ]);
     return scaffoldFromTemplate({ ...options, template: answers.template });
   }
 
   const template = TEMPLATES[templateName];
   if (!template) {
-    throw new Error(\`Template '\${templateName}' not found\`);
+    throw new Error(`Template '${templateName}' not found`);
   }
 
-  printInfo(chalk.cyan.bold(\`\\n🏗️  Scaffolding from template: \${template.name}\\n\`));
+  printInfo(chalk.cyan.bold(`\n🏗️  Scaffolding from template: ${template.name}\n`));
   // Template implementation logic would go here...
 }
 

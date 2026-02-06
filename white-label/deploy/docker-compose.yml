@@ -1,9 +1,9 @@
-version: "3.9"
+version: '3.9'
 services:
   ultra-dex-cloud:
     image: ultra-dex/cloud:latest
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - ULTRA_DEX_BRANDING=/config/branding.json
       - ULTRA_DEX_MARKETPLACE=/config/marketplace.json

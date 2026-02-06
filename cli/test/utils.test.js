@@ -52,7 +52,7 @@ describe('agents utility', () => {
     for (const agent of specialistAgents) {
       assert.ok(agents[agent], `Should have ${agent} agent`);
     }
-    
+
     // Verify tier counts
     assert.strictEqual(leadershipAgents.length, 3, 'Should have 3 leadership agents');
     assert.strictEqual(devAgents.length, 3, 'Should have 3 development agents');
@@ -96,7 +96,7 @@ describe('theme-state utility', () => {
   test('setDoomsdayMode(false) disables doomsday mode', () => {
     setDoomsdayMode(true);
     assert.strictEqual(isDoomsdayMode(), true);
-    
+
     setDoomsdayMode(false);
     assert.strictEqual(isDoomsdayMode(), false, 'Should be false after disabling');
   });
@@ -104,13 +104,13 @@ describe('theme-state utility', () => {
   test('multiple toggles work correctly', () => {
     setDoomsdayMode(false);
     assert.strictEqual(isDoomsdayMode(), false);
-    
+
     setDoomsdayMode(true);
     assert.strictEqual(isDoomsdayMode(), true);
-    
+
     setDoomsdayMode(true);
     assert.strictEqual(isDoomsdayMode(), true);
-    
+
     setDoomsdayMode(false);
     assert.strictEqual(isDoomsdayMode(), false);
   });
@@ -123,7 +123,7 @@ describe('version utility', () => {
   test('VERSION is exported and is valid semver', () => {
     assert.ok(VERSION, 'VERSION should be exported');
     assert.strictEqual(typeof VERSION, 'string', 'VERSION should be string');
-    
+
     // Basic semver regex: major.minor.patch
     const semverRegex = /^\d+\.\d+\.\d+$/;
     assert.ok(semverRegex.test(VERSION), `VERSION "${VERSION}" should be valid semver`);
@@ -162,8 +162,8 @@ describe('providers/index', () => {
 
   test('includes expected providers', () => {
     const providers = getAvailableProviders();
-    const providerIds = providers.map(p => p.id);
-    
+    const providerIds = providers.map((p) => p.id);
+
     assert.ok(providerIds.includes('claude'), 'Should include claude');
     assert.ok(providerIds.includes('openai'), 'Should include openai');
     assert.ok(providerIds.includes('gemini'), 'Should include gemini');
@@ -176,12 +176,12 @@ describe('providers/index', () => {
     const originalAnthropic = process.env.ANTHROPIC_API_KEY;
     const originalOpenAI = process.env.OPENAI_API_KEY;
     const originalGemini = process.env.GOOGLE_AI_KEY;
-    
+
     // Clear API keys
     delete process.env.ANTHROPIC_API_KEY;
     delete process.env.OPENAI_API_KEY;
     delete process.env.GOOGLE_AI_KEY;
-    
+
     try {
       const provider = getProvider();
       // Should return null when no API keys are set
@@ -195,9 +195,13 @@ describe('providers/index', () => {
   });
 
   test('createProvider throws for invalid provider', () => {
-    assert.throws(() => {
-      createProvider('invalid-provider');
-    }, /Unknown provider|invalid-provider/i, 'Should throw for unknown provider');
+    assert.throws(
+      () => {
+        createProvider('invalid-provider');
+      },
+      /Unknown provider|invalid-provider/i,
+      'Should throw for unknown provider'
+    );
   });
 
   test('provider objects have envKey or are router', () => {

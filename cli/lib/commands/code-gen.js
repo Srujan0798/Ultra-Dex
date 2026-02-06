@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Code Generator Command
@@ -16,14 +17,14 @@ import { marked } from 'marked';
 async function parseImplementationPlan(planPath) {
   const content = await fs.readFile(planPath, 'utf-8');
   const tokens = marked.lexer(content);
-  
+
   const sections = {
     techStack: {},
     dataModel: [],
     apiBlueprint: [],
     components: [],
     auth: {},
-    payments: {}
+    payments: {},
   };
 
   let currentSection = null;
@@ -33,7 +34,8 @@ async function parseImplementationPlan(planPath) {
       const title = token.text.toUpperCase();
       if (title.includes('TECH') && title.includes('STACK')) currentSection = 'techStack';
       else if (title.includes('DATA') && title.includes('MODEL')) currentSection = 'dataModel';
-      else if (title.includes('API') && title.includes('BLUEPRINT')) currentSection = 'apiBlueprint';
+      else if (title.includes('API') && title.includes('BLUEPRINT'))
+        currentSection = 'apiBlueprint';
       else currentSection = null;
       continue;
     }
@@ -55,31 +57,33 @@ async function parseImplementationPlan(planPath) {
     }
 
     if (currentSection === 'dataModel' && token.type === 'text') {
-        const entityMatch = token.text.match(/\*\*([^*]+) Entity:\*\*/i);
-        if (entityMatch) {
-            // The next token might be the code block
-            const nextTokenIdx = tokens.indexOf(token) + 1;
-            const nextToken = tokens[nextTokenIdx];
-            if (nextToken && nextToken.type === 'code' && nextToken.lang === 'json') {
-                try {
-                    sections.dataModel.push({
-                        name: entityMatch[1].trim(),
-                        schema: JSON.parse(nextToken.text)
-                    });
-                } catch (e) { /* ignore invalid json */ }
-            }
+      const entityMatch = token.text.match(/\*\*([^*]+) Entity:\*\*/i);
+      if (entityMatch) {
+        // The next token might be the code block
+        const nextTokenIdx = tokens.indexOf(token) + 1;
+        const nextToken = tokens[nextTokenIdx];
+        if (nextToken && nextToken.type === 'code' && nextToken.lang === 'json') {
+          try {
+            sections.dataModel.push({
+              name: entityMatch[1].trim(),
+              schema: JSON.parse(nextToken.text),
+            });
+          } catch (e) {
+            /* ignore invalid json */
+          }
         }
+      }
     }
 
     if (currentSection === 'apiBlueprint' && token.type === 'text') {
-        const endpointMatch = token.text.match(/(GET|POST|PUT|DELETE|PATCH)\s+(`[^`]+`|\/[^\s]+)/i);
-        if (endpointMatch) {
-            sections.apiBlueprint.push({
-                method: endpointMatch[1].toUpperCase(),
-                path: endpointMatch[2].replace(/`/g, ''),
-                description: token.text.split('\n')[1]?.substring(0, 100) || ''
-            });
-        }
+      const endpointMatch = token.text.match(/(GET|POST|PUT|DELETE|PATCH)\s+(`[^`]+`|\/[^\s]+)/i);
+      if (endpointMatch) {
+        sections.apiBlueprint.push({
+          method: endpointMatch[1].toUpperCase(),
+          path: endpointMatch[2].replace(/`/g, ''),
+          description: token.text.split('\n')[1]?.substring(0, 100) || '',
+        });
+      }
     }
   }
 
@@ -89,7 +93,6 @@ async function parseImplementationPlan(planPath) {
 
   return sections;
 }
-
 
 // Generate Prisma schema
 async function generatePrismaSchema(dataModel, outputPath) {
@@ -108,26 +111,26 @@ datasource db {
     schema += `model ${entity.name} {
   id        String   @id @default(uuid())
 `;
-    
+
     for (const [field, type] of Object.entries(entity.schema)) {
       if (field === 'id') continue;
-      
+
       let prismaType = 'String';
       let optional = '';
       let constraints = '';
-      
+
       if (type.includes('uuid')) prismaType = 'String';
       else if (type.includes('boolean')) prismaType = 'Boolean';
       else if (type.includes('timestamp')) prismaType = 'DateTime';
       else if (type.includes('int')) prismaType = 'Int';
       else if (type.includes('float') || type.includes('decimal')) prismaType = 'Float';
-      
+
       if (type.includes('nullable')) optional = '?';
       if (type.includes('unique')) constraints = ' @unique';
-      
+
       schema += `  ${field} ${prismaType}${optional}${constraints}\n`;
     }
-    
+
     schema += `  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -142,20 +145,20 @@ datasource db {
 // Generate API routes
 async function generateAPIRoutes(apiBlueprint, techStack, outputPath) {
   const isNextJS = techStack.frontend?.toLowerCase().includes('next');
-  
+
   if (isNextJS) {
     // Generate Next.js App Router API routes
     await fs.mkdir(path.join(outputPath, 'app', 'api'), { recursive: true });
-    
+
     for (const endpoint of apiBlueprint) {
       const routePath = endpoint.path.replace(/^\/api/, '');
       const segments = routePath.split('/').filter(Boolean);
-      
+
       if (segments.length === 0) continue;
-      
+
       const routeDir = path.join(outputPath, 'app', 'api', ...segments);
       await fs.mkdir(routeDir, { recursive: true });
-      
+
       const routeCode = `import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -179,7 +182,7 @@ export async function ${endpoint.method.toLowerCase()}(request: NextRequest) {
   }
 }
 `;
-      
+
       await fs.writeFile(path.join(routeDir, 'route.ts'), routeCode);
     }
   } else {
@@ -212,7 +215,7 @@ router.${endpoint.method.toLowerCase()}('${endpoint.path}', async (req, res) => 
     }
 
     routesCode += `export default router;\n`;
-    
+
     await fs.mkdir(path.join(outputPath, 'routes'), { recursive: true });
     await fs.writeFile(path.join(outputPath, 'routes', 'api.ts'), routesCode);
   }
@@ -222,9 +225,9 @@ router.${endpoint.method.toLowerCase()}('${endpoint.path}', async (req, res) => 
 async function generateComponents(components, techStack, outputPath) {
   const isNextJS = techStack.frontend?.toLowerCase().includes('next');
   const componentsDir = path.join(outputPath, isNextJS ? 'app/components' : 'src/components');
-  
+
   await fs.mkdir(componentsDir, { recursive: true });
-  
+
   // Generate base components
   const baseComponents = [
     {
@@ -266,7 +269,7 @@ export function Button({
     </button>
   );
 }
-`
+`,
     },
     {
       name: 'Input',
@@ -311,7 +314,7 @@ export function Input({
     </div>
   );
 }
-`
+`,
     },
     {
       name: 'Card',
@@ -333,19 +336,17 @@ export function Card({ children, title, className = '' }: CardProps) {
     </div>
   );
 }
-`
-    }
+`,
+    },
   ];
 
   for (const component of baseComponents) {
-    await fs.writeFile(
-      path.join(componentsDir, `${component.name}.tsx`),
-      component.code
-    );
+    await fs.writeFile(path.join(componentsDir, `${component.name}.tsx`), component.code);
   }
-  
+
   // Generate index.ts
-  const indexCode = baseComponents.map(c => `export { ${c.name} } from './${c.name}';`).join('\n') + '\n';
+  const indexCode =
+    baseComponents.map((c) => `export { ${c.name} } from './${c.name}';`).join('\n') + '\n';
   await fs.writeFile(path.join(componentsDir, 'index.ts'), indexCode);
 }
 
@@ -354,7 +355,7 @@ async function generateAuthSystem(authProvider, techStack, outputPath) {
   const isNextJS = techStack.frontend?.toLowerCase().includes('next');
   const isClerk = authProvider.toLowerCase().includes('clerk');
   const isNextAuth = authProvider.toLowerCase().includes('nextauth');
-  
+
   if (isNextJS && isClerk) {
     // Generate Clerk setup
     const clerkMiddleware = `import { clerkMiddleware } from '@clerk/nextjs/server';
@@ -368,7 +369,7 @@ export const config = {
   ],
 };
 `;
-    
+
     const authLayout = `import { ClerkProvider } from '@clerk/nextjs';
 
 export default function RootLayout({
@@ -383,24 +384,24 @@ export default function RootLayout({
   );
 }
 `;
-    
+
     const signInPage = `import { SignIn } from '@clerk/nextjs';
 
 export default function Page() {
   return <SignIn />;
 }
 `;
-    
+
     await fs.writeFile(path.join(outputPath, 'middleware.ts'), clerkMiddleware);
-    
+
     const authDir = path.join(outputPath, 'app', '(auth)');
     await fs.mkdir(authDir, { recursive: true });
     await fs.writeFile(path.join(authDir, 'layout.tsx'), authLayout);
-    
+
     const signInDir = path.join(authDir, 'sign-in', '[[...sign-in]]');
     await fs.mkdir(signInDir, { recursive: true });
     await fs.writeFile(path.join(signInDir, 'page.tsx'), signInPage);
-    
+
     const signUpDir = path.join(authDir, 'sign-up', '[[...sign-up]]');
     await fs.mkdir(signUpDir, { recursive: true });
     await fs.writeFile(path.join(signUpDir, 'page.tsx'), signInPage.replace('SignIn', 'SignUp'));
@@ -434,15 +435,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 });
 `;
-    
+
     const authRoute = `import { handlers } from '@/lib/auth';
 
 export const { GET, POST } = handlers;
 `;
-    
+
     await fs.mkdir(path.join(outputPath, 'lib'), { recursive: true });
     await fs.writeFile(path.join(outputPath, 'lib', 'auth.ts'), authConfig);
-    
+
     const authRouteDir = path.join(outputPath, 'app', 'api', 'auth', '[...nextauth]');
     await fs.mkdir(authRouteDir, { recursive: true });
     await fs.writeFile(path.join(authRouteDir, 'route.ts'), authRoute);
@@ -452,7 +453,7 @@ export const { GET, POST } = handlers;
 // Generate payment integration
 async function generatePayments(paymentProvider, techStack, outputPath) {
   const isStripe = paymentProvider.toLowerCase().includes('stripe');
-  
+
   if (isStripe) {
     const stripeConfig = `import Stripe from 'stripe';
 
@@ -489,7 +490,7 @@ export const getStripeSession = async ({
   return session;
 };
 `;
-    
+
     const checkoutAPI = `import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 
@@ -520,7 +521,7 @@ export async function POST(request: NextRequest) {
   }
 }
 `;
-    
+
     const webhookAPI = `import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
@@ -556,14 +557,14 @@ export async function POST(request: NextRequest) {
   }
 }
 `;
-    
+
     await fs.mkdir(path.join(outputPath, 'lib'), { recursive: true });
     await fs.writeFile(path.join(outputPath, 'lib', 'stripe.ts'), stripeConfig);
-    
+
     const checkoutDir = path.join(outputPath, 'app', 'api', 'checkout');
     await fs.mkdir(checkoutDir, { recursive: true });
     await fs.writeFile(path.join(checkoutDir, 'route.ts'), checkoutAPI);
-    
+
     const webhookDir = path.join(outputPath, 'app', 'api', 'webhooks', 'stripe');
     await fs.mkdir(webhookDir, { recursive: true });
     await fs.writeFile(path.join(webhookDir, 'route.ts'), webhookAPI);
@@ -585,24 +586,26 @@ export function registerCodeGenCommand(program) {
     .option('--preview', 'Preview what will be generated without creating files')
     .action(async (options) => {
       const spinner = ora('Reading implementation plan...').start();
-      
+
       try {
         const planPath = path.resolve(options.plan);
         const outputPath = path.resolve(options.output);
-        
+
         // Check if plan exists
         try {
           await fs.access(planPath);
         } catch {
           spinner.fail(chalk.red(`Implementation plan not found: ${planPath}`));
-          console.log(chalk.yellow('Run "npx ultra-dex init" first to create an implementation plan.'));
+          console.log(
+            chalk.yellow('Run "npx ultra-dex init" first to create an implementation plan.')
+          );
           process.exit(1);
         }
-        
+
         // Parse plan
         const sections = await parseImplementationPlan(planPath);
         spinner.succeed('Parsed implementation plan');
-        
+
         if (options.preview) {
           console.log(chalk.blue('\n📊 Implementation Plan Analysis:'));
           console.log(chalk.gray(`\nTech Stack:`));
@@ -610,79 +613,112 @@ export function registerCodeGenCommand(program) {
           console.log(`  Database: ${sections.techStack.database || 'Not specified'}`);
           console.log(`  Auth: ${sections.techStack.auth || 'Not specified'}`);
           console.log(`  Payments: ${sections.techStack.payments || 'Not specified'}`);
-          
+
           console.log(chalk.gray(`\nData Models: ${sections.dataModel.length}`));
-          sections.dataModel.forEach(entity => {
+          sections.dataModel.forEach((entity) => {
             console.log(`  - ${entity.name}`);
           });
-          
+
           console.log(chalk.gray(`\nAPI Endpoints: ${sections.apiBlueprint.length}`));
-          sections.apiBlueprint.slice(0, 5).forEach(api => {
+          sections.apiBlueprint.slice(0, 5).forEach((api) => {
             console.log(`  - ${api.method} ${api.path}`);
           });
           if (sections.apiBlueprint.length > 5) {
             console.log(`  ... and ${sections.apiBlueprint.length - 5} more`);
           }
-          
+
           console.log(chalk.yellow('\n✨ Run without --preview to create these files'));
           return;
         }
-        
+
         // Generate based on options
         const generationSpinner = ora('Generating code...').start();
-        
-        if (!options.apiOnly && !options.componentsOnly && !options.authOnly && !options.paymentsOnly) {
+
+        if (
+          !options.apiOnly &&
+          !options.componentsOnly &&
+          !options.authOnly &&
+          !options.paymentsOnly
+        ) {
           // Generate database schema
           const schemaPath = path.join(outputPath, 'prisma', 'schema.prisma');
           await fs.mkdir(path.dirname(schemaPath), { recursive: true });
           await generatePrismaSchema(sections.dataModel, schemaPath);
         }
-        
-        if (!options.dbOnly && !options.componentsOnly && !options.authOnly && !options.paymentsOnly) {
+
+        if (
+          !options.dbOnly &&
+          !options.componentsOnly &&
+          !options.authOnly &&
+          !options.paymentsOnly
+        ) {
           // Generate API routes
           await generateAPIRoutes(sections.apiBlueprint, sections.techStack, outputPath);
         }
-        
+
         if (!options.dbOnly && !options.apiOnly && !options.authOnly && !options.paymentsOnly) {
           // Generate components
           await generateComponents(sections.components, sections.techStack, outputPath);
         }
-        
-        if (!options.dbOnly && !options.apiOnly && !options.componentsOnly && !options.paymentsOnly) {
+
+        if (
+          !options.dbOnly &&
+          !options.apiOnly &&
+          !options.componentsOnly &&
+          !options.paymentsOnly
+        ) {
           // Generate auth system
           await generateAuthSystem(sections.techStack.auth, sections.techStack, outputPath);
         }
-        
+
         if (!options.dbOnly && !options.apiOnly && !options.componentsOnly && !options.authOnly) {
           // Generate payments
           await generatePayments(sections.techStack.payments, sections.techStack, outputPath);
         }
-        
+
         generationSpinner.succeed(chalk.green('Code generated successfully!'));
-        
+
         console.log(chalk.blue('\n📁 Generated Files:'));
-        if (!options.apiOnly && !options.componentsOnly && !options.authOnly && !options.paymentsOnly) {
+        if (
+          !options.apiOnly &&
+          !options.componentsOnly &&
+          !options.authOnly &&
+          !options.paymentsOnly
+        ) {
           console.log(chalk.gray('  - prisma/schema.prisma'));
         }
-        if (!options.dbOnly && !options.componentsOnly && !options.authOnly && !options.paymentsOnly) {
+        if (
+          !options.dbOnly &&
+          !options.componentsOnly &&
+          !options.authOnly &&
+          !options.paymentsOnly
+        ) {
           console.log(chalk.gray('  - app/api/*/route.ts'));
         }
         if (!options.dbOnly && !options.apiOnly && !options.authOnly && !options.paymentsOnly) {
           console.log(chalk.gray('  - app/components/*.tsx'));
         }
-        if (!options.dbOnly && !options.apiOnly && !options.componentsOnly && !options.paymentsOnly) {
+        if (
+          !options.dbOnly &&
+          !options.apiOnly &&
+          !options.componentsOnly &&
+          !options.paymentsOnly
+        ) {
           console.log(chalk.gray('  - middleware.ts (auth)'));
         }
         if (!options.dbOnly && !options.apiOnly && !options.componentsOnly && !options.authOnly) {
           console.log(chalk.gray('  - lib/stripe.ts'));
         }
-        
+
         console.log(chalk.yellow('\n⚠️  Next Steps:'));
-        console.log(chalk.gray('  1. Install dependencies: npm install @prisma/client next-auth @clerk/nextjs stripe'));
+        console.log(
+          chalk.gray(
+            '  1. Install dependencies: npm install @prisma/client next-auth @clerk/nextjs stripe'
+          )
+        );
         console.log(chalk.gray('  2. Set up environment variables in .env'));
         console.log(chalk.gray('  3. Run migrations: npx prisma migrate dev'));
         console.log(chalk.gray('  4. Review and customize the generated code'));
-        
       } catch (error) {
         spinner.fail(chalk.red(`Error: ${error.message}`));
         process.exit(1);

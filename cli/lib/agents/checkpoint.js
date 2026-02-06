@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Checkpoint System for Agent Sessions
  * Handles saving and restoring agent session states
@@ -31,7 +33,7 @@ export class CheckpointSystem {
    */
   async initialize() {
     if (this.initialized) return;
-    
+
     try {
       await fs.mkdir(this.checkpointDir, { recursive: true });
       this.initialized = true;
@@ -53,7 +55,7 @@ export class CheckpointSystem {
 
     const checkpointId = uuidv4();
     const checkpointPath = path.join(this.checkpointDir, `${sessionId}-${checkpointId}.json`);
-    
+
     const checkpointData = {
       id: checkpointId,
       sessionId,
@@ -64,30 +66,30 @@ export class CheckpointSystem {
         version: '3.7.2',
         agent: sessionState.agent || 'unknown',
         task: sessionState.currentTask || 'unknown',
-        ...options.metadata
-      }
+        ...options.metadata,
+      },
     };
 
     try {
       // Save checkpoint data
       await fs.writeFile(checkpointPath, JSON.stringify(checkpointData, null, 2));
-      
+
       // Clean up old checkpoints for this session
       await this.cleanupOldCheckpoints(sessionId);
-      
+
       printSuccess(chalk.green(`📍 Checkpoint created: ${checkpointId} for session ${sessionId}`));
-      
+
       return {
         id: checkpointId,
         path: checkpointPath,
         step: checkpointData.step,
-        timestamp: checkpointData.timestamp
+        timestamp: checkpointData.timestamp,
       };
     } catch (error) {
       printError(chalk.red(`❌ Failed to create checkpoint: ${error.message}`));
-      throw new AppError(`Failed to create checkpoint: ${error.message}`, { 
+      throw new AppError(`Failed to create checkpoint: ${error.message}`, {
         code: 'CHECKPOINT_CREATION_FAILED',
-        checkpointId 
+        checkpointId,
       });
     }
   }
@@ -101,7 +103,7 @@ export class CheckpointSystem {
     }
 
     let checkpointPath;
-    
+
     if (checkpointId) {
       // Use specific checkpoint
       checkpointPath = path.join(this.checkpointDir, `${sessionId}-${checkpointId}.json`);
@@ -109,39 +111,41 @@ export class CheckpointSystem {
       // Use latest checkpoint
       const checkpoints = await this.getSessionCheckpoints(sessionId);
       if (checkpoints.length === 0) {
-        throw new AppError(`No checkpoints found for session: ${sessionId}`, { 
-          code: 'NO_CHECKPOINTS_FOUND' 
+        throw new AppError(`No checkpoints found for session: ${sessionId}`, {
+          code: 'NO_CHECKPOINTS_FOUND',
         });
       }
-      
-      const latestCheckpoint = checkpoints.reduce((latest, current) => 
+
+      const latestCheckpoint = checkpoints.reduce((latest, current) =>
         new Date(current.timestamp) > new Date(latest.timestamp) ? current : latest
       );
-      
+
       checkpointPath = latestCheckpoint.path;
     }
 
     try {
       const checkpointContent = await fs.readFile(checkpointPath, 'utf8');
       const checkpoint = JSON.parse(checkpointContent);
-      
-      printSuccess(chalk.green(`✅ Restored session ${sessionId} from checkpoint ${checkpoint.id}`));
-      
+
+      printSuccess(
+        chalk.green(`✅ Restored session ${sessionId} from checkpoint ${checkpoint.id}`)
+      );
+
       return {
         state: checkpoint.state,
         checkpointId: checkpoint.id,
         step: checkpoint.step,
-        timestamp: checkpoint.timestamp
+        timestamp: checkpoint.timestamp,
       };
     } catch (error) {
       if (error.code === 'ENOENT') {
-        throw new AppError(`Checkpoint file not found: ${checkpointPath}`, { 
-          code: 'CHECKPOINT_FILE_NOT_FOUND' 
+        throw new AppError(`Checkpoint file not found: ${checkpointPath}`, {
+          code: 'CHECKPOINT_FILE_NOT_FOUND',
         });
       }
       printError(chalk.red(`❌ Failed to restore checkpoint: ${error.message}`));
-      throw new AppError(`Failed to restore checkpoint: ${error.message}`, { 
-        code: 'CHECKPOINT_RESTORE_FAILED' 
+      throw new AppError(`Failed to restore checkpoint: ${error.message}`, {
+        code: 'CHECKPOINT_RESTORE_FAILED',
       });
     }
   }
@@ -157,22 +161,22 @@ export class CheckpointSystem {
     try {
       const files = await fs.readdir(this.checkpointDir);
       const sessionCheckpoints = files
-        .filter(file => file.startsWith(`${sessionId}-`) && file.endsWith('.json'))
-        .map(file => {
+        .filter((file) => file.startsWith(`${sessionId}-`) && file.endsWith('.json'))
+        .map((file) => {
           const checkpointId = file.replace(`${sessionId}-`, '').replace('.json', '');
           return {
             id: checkpointId,
             path: path.join(this.checkpointDir, file),
-            timestamp: this.extractTimestampFromFilename(file)
+            timestamp: this.extractTimestampFromFilename(file),
           };
         })
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort by newest first
-      
+
       return sessionCheckpoints;
     } catch (error) {
       printError(chalk.red(`❌ Failed to get checkpoints: ${error.message}`));
-      throw new AppError(`Failed to get checkpoints: ${error.message}`, { 
-        code: 'CHECKPOINTS_FETCH_FAILED' 
+      throw new AppError(`Failed to get checkpoints: ${error.message}`, {
+        code: 'CHECKPOINTS_FETCH_FAILED',
       });
     }
   }
@@ -202,24 +206,24 @@ export class CheckpointSystem {
     try {
       const files = await fs.readdir(this.checkpointDir);
       const checkpoints = files
-        .filter(file => file.endsWith('.json'))
-        .map(file => {
+        .filter((file) => file.endsWith('.json'))
+        .map((file) => {
           const [sessionId, checkpointIdWithExt] = file.split('-');
           const checkpointId = checkpointIdWithExt.replace('.json', '');
           return {
             id: checkpointId,
             sessionId,
             path: path.join(this.checkpointDir, file),
-            timestamp: this.extractTimestampFromFilename(file)
+            timestamp: this.extractTimestampFromFilename(file),
           };
         })
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      
+
       return checkpoints;
     } catch (error) {
       printError(chalk.red(`❌ Failed to list checkpoints: ${error.message}`));
-      throw new AppError(`Failed to list checkpoints: ${error.message}`, { 
-        code: 'CHECKPOINTS_LIST_FAILED' 
+      throw new AppError(`Failed to list checkpoints: ${error.message}`, {
+        code: 'CHECKPOINTS_LIST_FAILED',
       });
     }
   }
@@ -233,7 +237,7 @@ export class CheckpointSystem {
     }
 
     const checkpointPath = path.join(this.checkpointDir, `${sessionId}-${checkpointId}.json`);
-    
+
     try {
       await fs.unlink(checkpointPath);
       printSuccess(chalk.green(`🗑️  Deleted checkpoint: ${checkpointId}`));
@@ -244,8 +248,8 @@ export class CheckpointSystem {
         return false;
       }
       printError(chalk.red(`❌ Failed to delete checkpoint: ${error.message}`));
-      throw new AppError(`Failed to delete checkpoint: ${error.message}`, { 
-        code: 'CHECKPOINT_DELETE_FAILED' 
+      throw new AppError(`Failed to delete checkpoint: ${error.message}`, {
+        code: 'CHECKPOINT_DELETE_FAILED',
       });
     }
   }
@@ -255,10 +259,10 @@ export class CheckpointSystem {
    */
   async cleanupOldCheckpoints(sessionId) {
     const checkpoints = await this.getSessionCheckpoints(sessionId);
-    
+
     // Keep only the most recent full checkpoints
     const checkpointsToDelete = checkpoints.slice(MAX_FULL_CHECKPOINTS);
-    
+
     for (const checkpoint of checkpointsToDelete) {
       await this.deleteCheckpoint(sessionId, checkpoint.id);
     }
@@ -274,27 +278,27 @@ export class CheckpointSystem {
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
-    
+
     try {
       const files = await fs.readdir(this.checkpointDir);
-      const oldFiles = files.filter(file => {
+      const oldFiles = files.filter((file) => {
         const filePath = path.join(this.checkpointDir, file);
         // In a real implementation, we'd check the actual file modification time
         // For now, we'll just use the timestamp in the filename if available
         return true; // Placeholder - implement proper date checking
       });
-      
+
       for (const file of oldFiles) {
         const filePath = path.join(this.checkpointDir, file);
         await fs.unlink(filePath);
         printInfo(chalk.gray(`🧹 Cleaned up old checkpoint: ${file}`));
       }
-      
+
       return oldFiles.length;
     } catch (error) {
       printError(chalk.red(`❌ Failed to cleanup old checkpoints: ${error.message}`));
-      throw new AppError(`Failed to cleanup checkpoints: ${error.message}`, { 
-        code: 'CHECKPOINT_CLEANUP_FAILED' 
+      throw new AppError(`Failed to cleanup checkpoints: ${error.message}`, {
+        code: 'CHECKPOINT_CLEANUP_FAILED',
       });
     }
   }
@@ -309,8 +313,8 @@ export class CheckpointSystem {
 
     try {
       const files = await fs.readdir(this.checkpointDir);
-      const checkpoints = files.filter(file => file.endsWith('.json'));
-      
+      const checkpoints = files.filter((file) => file.endsWith('.json'));
+
       // Group by session ID
       const sessionMap = new Map();
       for (const file of checkpoints) {
@@ -320,19 +324,19 @@ export class CheckpointSystem {
         }
         sessionMap.get(sessionId).push(file);
       }
-      
+
       return {
         totalCheckpoints: checkpoints.length,
         totalSessions: sessionMap.size,
         sessions: Array.from(sessionMap.entries()).map(([sessionId, files]) => ({
           sessionId,
-          checkpointCount: files.length
-        }))
+          checkpointCount: files.length,
+        })),
       };
     } catch (error) {
       printError(chalk.red(`❌ Failed to get checkpoint stats: ${error.message}`));
-      throw new AppError(`Failed to get checkpoint stats: ${error.message}`, { 
-        code: 'CHECKPOINT_STATS_FAILED' 
+      throw new AppError(`Failed to get checkpoint stats: ${error.message}`, {
+        code: 'CHECKPOINT_STATS_FAILED',
       });
     }
   }
@@ -346,40 +350,40 @@ export class CheckpointSystem {
     }
 
     const checkpointPath = path.join(this.checkpointDir, `${sessionId}-${checkpointId}.json`);
-    
+
     try {
       const content = await fs.readFile(checkpointPath, 'utf8');
       const checkpoint = JSON.parse(content);
-      
+
       // Validate required fields
       const requiredFields = ['id', 'sessionId', 'timestamp', 'state'];
-      const missingFields = requiredFields.filter(field => checkpoint[field] === undefined);
-      
+      const missingFields = requiredFields.filter((field) => checkpoint[field] === undefined);
+
       if (missingFields.length > 0) {
         return {
           valid: false,
-          error: `Missing required fields: ${missingFields.join(', ')}`
+          error: `Missing required fields: ${missingFields.join(', ')}`,
         };
       }
-      
+
       // Validate session ID matches filename
       if (checkpoint.sessionId !== sessionId) {
         return {
           valid: false,
-          error: `Session ID mismatch: ${checkpoint.sessionId} vs ${sessionId}`
+          error: `Session ID mismatch: ${checkpoint.sessionId} vs ${sessionId}`,
         };
       }
-      
+
       return {
         valid: true,
         checkpointId: checkpoint.id,
         step: checkpoint.step,
-        timestamp: checkpoint.timestamp
+        timestamp: checkpoint.timestamp,
       };
     } catch (error) {
       return {
         valid: false,
-        error: `Invalid checkpoint file: ${error.message}`
+        error: `Invalid checkpoint file: ${error.message}`,
       };
     }
   }

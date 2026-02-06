@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { ledger } from './index.js';
 
 export async function addDecision({ agent, action, decision, rationale, affected_files = [] }) {
@@ -7,7 +9,7 @@ export async function addDecision({ agent, action, decision, rationale, affected
     action: action || 'decision',
     decision,
     rationale,
-    affected_files
+    affected_files,
   };
 
   await ledger.appendEntry(entry);

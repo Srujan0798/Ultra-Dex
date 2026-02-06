@@ -16,6 +16,7 @@
 "You've got a brilliant SaaS idea. But every time you start building..."
 
 **Show:**
+
 - ❌ Documentation scattered across Notion, Google Docs, and mental notes
 - ❌ AI assistants lose context between sessions
 - ❌ No clear roadmap - just hacking features randomly
@@ -33,6 +34,7 @@
 "Ultra-Dex is the meta-orchestration layer for AI development. It's not just documentation - it's your AI co-pilot with memory, structure, and a complete 34-section framework."
 
 **Show:**
+
 ```bash
 # Install globally
 npm install -g ultra-dex
@@ -55,11 +57,13 @@ npx ultra-dex --help
 "Let's build a task management SaaS. First, we'll initialize with a live template."
 
 **Show:**
+
 ```bash
 npx ultra-dex init taskflow --live --stack next15-prisma-clerk
 ```
 
 **Output:**
+
 - ✅ Project scaffold generated
 - ✅ QUICK-START.md created
 - ✅ CONTEXT.md created
@@ -81,12 +85,14 @@ npx ultra-dex init taskflow --live --stack next15-prisma-clerk
 "Now let's generate a complete 34-section implementation plan using AI."
 
 **Show:**
+
 ```bash
 cd taskflow
 npx ultra-dex generate "A task management SaaS with teams, projects, and real-time collaboration"
 ```
 
 **Output:**
+
 - 📝 Streaming AI output
 - 📊 Sections generated: Vision, Tech Stack, Database, API, Frontend, Testing, Security, Deployment...
 
@@ -104,11 +110,13 @@ npx ultra-dex generate "A task management SaaS with teams, projects, and real-ti
 "Now for the magic. We'll run an agent swarm to build user authentication."
 
 **Show (Terminal):**
+
 ```bash
 npx ultra-dex swarm "Build complete user authentication with email, OAuth, and team invites"
 ```
 
 **Output:**
+
 ```
 🐝 Ultra-Dex Swarm Mode
 Task: "Build complete user authentication..."
@@ -131,6 +139,7 @@ Task: "Build complete user authentication..."
 ```
 
 **Show (Browser):**
+
 - Open localhost:3001/dashboard
 - Show agents working in real-time
 - Show code being generated
@@ -147,12 +156,14 @@ Task: "Build complete user authentication..."
 "As we build, Ultra-Dex keeps context synchronized."
 
 **Show:**
+
 ```bash
 # Sync context with codebase
 npx ultra-dex brain
 ```
 
 **Output:**
+
 ```
 🧠 Ultra-Dex Brain Sync
 Synchronizing project context with codebase...
@@ -166,12 +177,14 @@ Synchronizing project context with codebase...
 ```
 
 **Then:**
+
 ```bash
 # Check plan vs reality
 npx ultra-dex diff
 ```
 
 **Output:**
+
 ```
 📋 Implementation Analysis:
 Codebase: 45 files, 128 dependencies
@@ -203,6 +216,7 @@ Tasks: 12/34 completed
 "The VS Code extension brings Ultra-Dex directly into your editor."
 
 **Show:**
+
 1. Click Ultra-Dex icon in Activity Bar
 2. Browse 16 agents in Agent Explorer
 3. Click @backend agent - show prompt
@@ -221,11 +235,13 @@ Tasks: 12/34 completed
 "Before we deploy, let's validate everything."
 
 **Show:**
+
 ```bash
 npx ultra-dex validate --scan
 ```
 
 **Output:**
+
 ```
 ✅ Ultra-Dex Structure Validator
 
@@ -267,6 +283,7 @@ Validation Summary:
 "Let's deploy to Vercel."
 
 **Show:**
+
 ```bash
 # Build the project
 npx ultra-dex build
@@ -276,10 +293,12 @@ vercel --prod
 ```
 
 **Output:**
+
 - Build successful
 - Production URL: https://taskflow-demo.vercel.app
 
 **Show:** Open the live app in browser
+
 - Login page
 - Dashboard
 - Task creation
@@ -294,6 +313,7 @@ vercel --prod
 **Visual:** Quick recap with key stats
 
 **Show:**
+
 ```
 ✨ What Ultra-Dex Delivered:
 
@@ -322,6 +342,7 @@ Star us on GitHub: github.com/Srujan0798/Ultra-Dex"
 ## 🎥 Production Notes
 
 ### Tools Needed
+
 - **Screen recording**: OBS Studio or ScreenFlow
 - **Terminal**: Hyper or iTerm2 with custom theme
 - **Editor**: VS Code with Ultra-Dex extension installed
@@ -329,6 +350,7 @@ Star us on GitHub: github.com/Srujan0798/Ultra-Dex"
 - **Audio**: Clear microphone, no background noise
 
 ### Visual Style
+
 - **Font**: JetBrains Mono or Fira Code (14pt)
 - **Theme**: Dark mode, purple/indigo accent colors
 - **Speed**: Fast typing with actual commands
@@ -336,6 +358,7 @@ Star us on GitHub: github.com/Srujan0798/Ultra-Dex"
 - **Transitions**: Quick cuts, no slow fades
 
 ### Editing Tips
+
 - Remove all waiting time (use jump cuts)
 - Add text overlays for key stats
 - Zoom in on important terminal output
@@ -343,6 +366,7 @@ Star us on GitHub: github.com/Srujan0798/Ultra-Dex"
 - Keep under 5 minutes - attention span drops after 3:00
 
 ### Thumbnail
+
 - Text: "Idea → Production in 5 min"
 - Visual: Split screen showing before/after
 - Colors: Purple gradient (#6366f1 to #8b5cf6)
@@ -352,12 +376,14 @@ Star us on GitHub: github.com/Srujan0798/Ultra-Dex"
 ## 📊 Success Metrics
 
 **Target:**
+
 - Views: 10,000+ in first week
 - Likes: 500+
 - Comments: 100+
 - Conversions: 500+ npm installs
 
 **Key Messages:**
+
 1. 5 minutes from idea to production
 2. AI agents work in parallel
 3. Never lose context again
@@ -365,6 +391,6 @@ Star us on GitHub: github.com/Srujan0798/Ultra-Dex"
 
 ---
 
-*Script Version: 1.0*  
-*Last Updated: February 2026*  
-*For Ultra-Dex v3.4.5*
+_Script Version: 1.0_  
+_Last Updated: February 2026_  
+_For Ultra-Dex v3.4.5_

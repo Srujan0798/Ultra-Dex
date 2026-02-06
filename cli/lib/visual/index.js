@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Visual Programming Mode
  * Drag-drop flow nodes and export to code.
@@ -7,7 +9,7 @@ const DEFAULT_NODES = [
   { id: 'start', type: 'start', label: 'Start' },
   { id: 'logic', type: 'logic', label: 'Logic Block' },
   { id: 'ui', type: 'ui', label: 'UI Component' },
-  { id: 'end', type: 'end', label: 'End' }
+  { id: 'end', type: 'end', label: 'End' },
 ];
 
 export function createFlow(nodes = DEFAULT_NODES, edges = []) {
@@ -16,7 +18,7 @@ export function createFlow(nodes = DEFAULT_NODES, edges = []) {
 
 export function flowToCode(flow) {
   const lines = ['// Generated from visual flow'];
-  flow.nodes.forEach(node => {
+  flow.nodes.forEach((node) => {
     lines.push(`// ${node.type}: ${node.label}`);
   });
   lines.push('export function runFlow() {');
@@ -32,5 +34,5 @@ export function addNode(flow, node) {
 export default {
   createFlow,
   flowToCode,
-  addNode
+  addNode,
 };

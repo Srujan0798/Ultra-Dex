@@ -58,7 +58,13 @@ export const readTestFile = async (filepath) => {
 };
 
 export const cleanupTestProject = async (projectDir) => {
-  if (projectDir && await fs.stat(projectDir).then(() => true).catch(() => false)) {
+  if (
+    projectDir &&
+    (await fs
+      .stat(projectDir)
+      .then(() => true)
+      .catch(() => false))
+  ) {
     await fs.rm(projectDir, { recursive: true, force: true });
   }
 };

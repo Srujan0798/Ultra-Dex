@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { ChromeAgentsClient } from './chrome-agents.js';
 
 export class BrowserOrchestrator {

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Role-Based Access Control (RBAC) System
  * Enforces permissions across Team and Enterprise features
@@ -7,7 +9,7 @@ export const ROLES = {
   ADMIN: 'admin',
   MAINTAINER: 'maintainer',
   MEMBER: 'member',
-  VIEWER: 'viewer'
+  VIEWER: 'viewer',
 };
 
 export const PERMISSIONS = {
@@ -15,21 +17,21 @@ export const PERMISSIONS = {
   MANAGE_TEAM: 'manage_team',
   CONFIGURE_SSO: 'configure_sso',
   MANAGE_BILLING: 'manage_billing',
-  
+
   // Maintainer + Admin
   PUBLISH_AGENTS: 'publish_agents',
   MANAGE_ENV: 'manage_env',
   APPROVE_PR: 'approve_pr',
-  
+
   // Member + Above
   USE_AGENTS: 'use_agents',
   CREATE_AGENTS: 'create_agents',
   READ_CODE: 'read_code',
   WRITE_CODE: 'write_code',
-  
+
   // Viewer + Above
   VIEW_AGENTS: 'view_agents',
-  VIEW_METRICS: 'view_metrics'
+  VIEW_METRICS: 'view_metrics',
 };
 
 const ROLE_PERMISSIONS = {
@@ -43,7 +45,7 @@ const ROLE_PERMISSIONS = {
     PERMISSIONS.READ_CODE,
     PERMISSIONS.WRITE_CODE,
     PERMISSIONS.VIEW_AGENTS,
-    PERMISSIONS.VIEW_METRICS
+    PERMISSIONS.VIEW_METRICS,
   ],
   [ROLES.MEMBER]: [
     PERMISSIONS.USE_AGENTS,
@@ -51,12 +53,9 @@ const ROLE_PERMISSIONS = {
     PERMISSIONS.READ_CODE,
     PERMISSIONS.WRITE_CODE,
     PERMISSIONS.VIEW_AGENTS,
-    PERMISSIONS.VIEW_METRICS
+    PERMISSIONS.VIEW_METRICS,
   ],
-  [ROLES.VIEWER]: [
-    PERMISSIONS.VIEW_AGENTS,
-    PERMISSIONS.VIEW_METRICS
-  ]
+  [ROLES.VIEWER]: [PERMISSIONS.VIEW_AGENTS, PERMISSIONS.VIEW_METRICS],
 };
 
 /**
@@ -77,7 +76,7 @@ export function hasPermission(role, permission) {
 export function getRoleDefinition(role) {
   return {
     name: role,
-    permissions: ROLE_PERMISSIONS[role.toLowerCase()] || []
+    permissions: ROLE_PERMISSIONS[role.toLowerCase()] || [],
   };
 }
 
@@ -85,5 +84,5 @@ export default {
   ROLES,
   PERMISSIONS,
   hasPermission,
-  getRoleDefinition
+  getRoleDefinition,
 };

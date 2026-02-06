@@ -46,7 +46,7 @@ describe('check command', () => {
   test('check --json returns structured output', async () => {
     const tmpDir = await createTempProject({
       'CONTEXT.md': 'Project context\nMore details here to ensure non-empty.\n',
-      'package.json': JSON.stringify({ dependencies: { 'next': '^14.0.0' } }),
+      'package.json': JSON.stringify({ dependencies: { next: '^14.0.0' } }),
       'IMPLEMENTATION-PLAN.md': [
         '## SECTION 1: Overview',
         '- Feature summary',
@@ -54,7 +54,7 @@ describe('check command', () => {
         '- Next.js',
         '## SECTION 4: Architecture',
         '- Decisions',
-      ].join('\n')
+      ].join('\n'),
     });
 
     const output = await runCheckCommand(['--json'], tmpDir);
@@ -79,13 +79,13 @@ describe('check command', () => {
         '## SECTION 15: Tech',
         '## SECTION 16: Plan',
         '## SECTION 20: Testing',
-      ].join('\n')
+      ].join('\n'),
     });
 
     const output = await runCheckCommand(['--p0-only', '--json'], tmpDir);
     const parsed = JSON.parse(output);
     const sectionNumbers = parsed.sections.map((s) => s.number);
-    
+
     // Should have 11 sections
     assert.strictEqual(parsed.total, 11);
     assert.ok(sectionNumbers.includes(1));
@@ -95,15 +95,18 @@ describe('check command', () => {
   test('check validates tech stack against package.json', async () => {
     const tmpDir = await createTempProject({
       'CONTEXT.md': 'Project context\n',
-      'package.json': JSON.stringify({ dependencies: { 'prisma': '^5.0.0' } }),
+      'package.json': JSON.stringify({ dependencies: { prisma: '^5.0.0' } }),
       'IMPLEMENTATION-PLAN.md': [
         '## SECTION 15: Tech Stack',
         'We are using SQLite for now.', // Missing Prisma mention
-      ].join('\n')
+      ].join('\n'),
     });
 
     const output = await runCheckCommand(['--sections', '15'], tmpDir);
-    assert.ok(output.includes('Issues with tech stack choices') || output.includes('Prisma found in package.json but not mentioned'));
+    assert.ok(
+      output.includes('Issues with tech stack choices') ||
+        output.includes('Prisma found in package.json but not mentioned')
+    );
   });
 
   test('check identifies missing acceptance criteria', async () => {
@@ -112,7 +115,7 @@ describe('check command', () => {
       'IMPLEMENTATION-PLAN.md': [
         '## SECTION 16: Implementation Plan',
         '- Step 1: Just do it.',
-      ].join('\n')
+      ].join('\n'),
     });
 
     const output = await runCheckCommand(['--sections', '16'], tmpDir);
@@ -128,7 +131,7 @@ describe('check command', () => {
         '### Task Breakdown',
         '- [ ] Task 1: Big task (20 hours)',
         'Acceptance Criteria: Done.',
-      ].join('\n')
+      ].join('\n'),
     });
 
     const output = await runCheckCommand(['--sections', '16'], tmpDir);

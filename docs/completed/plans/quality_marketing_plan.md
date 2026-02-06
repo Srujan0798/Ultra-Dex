@@ -9,6 +9,7 @@
 **Agent Prompts (after cleanup completes):**
 
 #### OpenCode 1 - Core Commands (15 files):
+
 ```
 Review these core commands for quality:
 cli/lib/commands/init.js, serve.js, swarm.js, build.js, audit.js,
@@ -20,6 +21,7 @@ Create list of issues found.
 ```
 
 #### OpenCode 2 - Utility Commands (15 files):
+
 ```
 Review utility commands:
 cli/lib/commands/batch.js, diff.js, export.js, fetch.js, fix.js,
@@ -30,6 +32,7 @@ Check: error handling, input validation, proper logging.
 ```
 
 #### Gemini - Advanced Commands (15 files):
+
 ```
 Review advanced commands:
 cli/lib/commands/advanced.js, autonomous.js, auto-implement.js,
@@ -41,6 +44,7 @@ Check: error handling, async/await patterns, edge cases.
 ```
 
 #### Qwen - Remaining Commands (16 files):
+
 ```
 Review remaining commands in cli/lib/commands/:
 auth.js, banner.js, brain.js, check-enhanced.js, check-enhanced-v2.js,
@@ -57,6 +61,7 @@ Check for consistency with other commands.
 ### 1. Reddit Posts
 
 **r/programming:**
+
 ```
 Title: Ultra-Dex v3.5 - AI Orchestration Layer That Gives LLMs Memory (Free, 61 Commands)
 
@@ -78,6 +83,7 @@ GitHub: https://github.com/Srujan0798/Ultra-Dex
 ```
 
 **r/SideProject:**
+
 ```
 Title: I built an AI orchestration framework because LLMs kept forgetting my entire codebase
 
@@ -129,7 +135,7 @@ https://github.com/Srujan0798/Ultra-Dex
 
 It gives Claude, Cursor, Copilot actual memory.
 
-3/ How? 
+3/ How?
 - 34-section template (your project's brain)
 - 17 specialized agents (CTO, Backend, Security...)
 - Context persists in Git
@@ -167,10 +173,10 @@ Title: How We Built an "Operating System" for AI Coding Tools
 
 ## 📅 Timeline
 
-| Day | Track A (Quality) | Track B (Marketing) |
-|-----|-------------------|---------------------|
-| 1 | Core commands review | Reddit posts ready |
-| 2 | Utility commands | HN post |
-| 3 | Advanced commands | Twitter thread |
-| 4 | Finish + fixes | Dev.to article |
-| 5 | Testing | Launch all |
+| Day | Track A (Quality)    | Track B (Marketing) |
+| --- | -------------------- | ------------------- |
+| 1   | Core commands review | Reddit posts ready  |
+| 2   | Utility commands     | HN post             |
+| 3   | Advanced commands    | Twitter thread      |
+| 4   | Finish + fixes       | Dev.to article      |
+| 5   | Testing              | Launch all          |

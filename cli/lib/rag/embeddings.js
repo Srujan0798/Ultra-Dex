@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Graph RAG Embeddings Module
  * Generates and manages embeddings for semantic search
@@ -84,17 +86,17 @@ export class EmbeddingsManager {
    */
   cosineSimilarity(a, b) {
     if (!a || !b || a.length !== b.length) return 0;
-    
+
     let dotProduct = 0;
     let normA = 0;
     let normB = 0;
-    
+
     for (let i = 0; i < a.length; i++) {
       dotProduct += a[i] * b[i];
       normA += a[i] * a[i];
       normB += b[i] * b[i];
     }
-    
+
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
@@ -103,16 +105,14 @@ export class EmbeddingsManager {
    */
   async search(query, candidates, topK = 5) {
     const queryEmbedding = await this.embed(query);
-    
-    const similarities = candidates.map(candidate => ({
+
+    const similarities = candidates.map((candidate) => ({
       text: candidate.text || candidate,
       metadata: candidate.metadata || {},
-      similarity: this.cosineSimilarity(queryEmbedding, candidate.embedding || candidate)
+      similarity: this.cosineSimilarity(queryEmbedding, candidate.embedding || candidate),
     }));
 
-    return similarities
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, topK);
+    return similarities.sort((a, b) => b.similarity - a.similarity).slice(0, topK);
   }
 
   /**
@@ -122,7 +122,7 @@ export class EmbeddingsManager {
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
       const char = text.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return hash.toString();
@@ -143,14 +143,14 @@ export class EmbeddingsManager {
 export async function generateCodebaseEmbeddings(rootDir = process.cwd()) {
   const manager = new EmbeddingsManager();
   const initialized = await manager.initialize();
-  
+
   if (!initialized) {
     console.log(chalk.red('Failed to initialize embeddings model'));
     return null;
   }
 
   console.log(chalk.blue('[Embeddings] Generating codebase embeddings...'));
-  
+
   // This would scan the codebase and generate embeddings
   // For now, return the manager instance
   return manager;

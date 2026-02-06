@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex search command
  * Semantic code search using vector embeddings
@@ -23,17 +25,36 @@ import { printError, printInfo, printSuccess, printWarning } from '../utils/outp
 const EMBEDDINGS_CONFIG = {
   // File patterns to index
   includePatterns: [
-    '**/*.js', '**/*.ts', '**/*.tsx', '**/*.jsx',
-    '**/*.py', '**/*.go', '**/*.rs', '**/*.rb',
-    '**/*.md', '**/*.json', '**/*.yaml', '**/*.yml',
-    '**/*.prisma', '**/*.sql', '**/*.graphql',
+    '**/*.js',
+    '**/*.ts',
+    '**/*.tsx',
+    '**/*.jsx',
+    '**/*.py',
+    '**/*.go',
+    '**/*.rs',
+    '**/*.rb',
+    '**/*.md',
+    '**/*.json',
+    '**/*.yaml',
+    '**/*.yml',
+    '**/*.prisma',
+    '**/*.sql',
+    '**/*.graphql',
   ],
 
   // Directories to exclude
   excludeDirs: [
-    'node_modules', '.git', 'dist', 'build', '.next',
-    'coverage', '__pycache__', '.venv', 'vendor',
-    '.ultra-dex', '.ultra',
+    'node_modules',
+    '.git',
+    'dist',
+    'build',
+    '.next',
+    'coverage',
+    '__pycache__',
+    '.venv',
+    'vendor',
+    '.ultra-dex',
+    '.ultra',
   ],
 
   // Chunk settings
@@ -64,40 +85,40 @@ class UltraDexVectorStore {
    */
   async getEmbeddingsModel() {
     const provider = getProvider();
-    
+
     if (provider && provider.getName() === 'LangChain' && provider.llm) {
-        // If it's LangChain provider, it might have embeddings configured
-        // For now, default to OpenAIEmbeddings if API key is present
-        if (process.env.OPENAI_API_KEY) {
-            return new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY });
-        }
+      // If it's LangChain provider, it might have embeddings configured
+      // For now, default to OpenAIEmbeddings if API key is present
+      if (process.env.OPENAI_API_KEY) {
+        return new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY });
+      }
     }
-    
+
     // Return a dummy embeddings model for local fallback if no provider
     // This mimics the "dumb" local embedding but in LangChain interface
     return {
       embedQuery: async (text) => this.generateLocalEmbedding(text),
-      embedDocuments: async (documents) => documents.map(doc => this.generateLocalEmbedding(doc)),
+      embedDocuments: async (documents) => documents.map((doc) => this.generateLocalEmbedding(doc)),
     };
   }
-  
+
   generateLocalEmbedding(text, dimensions = 1536) {
-      // Simple hash-based embedding for fallback
-      const embedding = new Array(dimensions).fill(0);
-      let hash = 0;
-      for (let i = 0; i < text.length; i++) {
-          hash = ((hash << 5) - hash) + text.charCodeAt(i);
-          hash |= 0;
-      }
-      // Seed predictable psuedo-randomness
-      const rng = (seed) => {
-          var x = Math.sin(seed++) * 10000;
-          return x - Math.floor(x);
-      }
-      for(let i=0; i<dimensions; i++) {
-          embedding[i] = rng(hash + i);
-      }
-      return embedding;
+    // Simple hash-based embedding for fallback
+    const embedding = new Array(dimensions).fill(0);
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      hash = (hash << 5) - hash + text.charCodeAt(i);
+      hash |= 0;
+    }
+    // Seed predictable psuedo-randomness
+    const rng = (seed) => {
+      var x = Math.sin(seed++) * 10000;
+      return x - Math.floor(x);
+    };
+    for (let i = 0; i < dimensions; i++) {
+      embedding[i] = rng(hash + i);
+    }
+    return embedding;
   }
 
   /**
@@ -133,16 +154,23 @@ class UltraDexVectorStore {
    */
   async save(filepath) {
     await fs.mkdir(path.dirname(filepath), { recursive: true });
-    
+
     // Extract vectors from memory store (internal access)
     // Note: MemoryVectorStore stores in `memoryVectors` array
     // This is internal API usage, so we wrap in try-catch or check existence
     const vectors = this.store.memoryVectors || [];
-    
-    await fs.writeFile(filepath, JSON.stringify({
-      metadata: this.metadata,
-      vectors: vectors,
-    }, null, 2));
+
+    await fs.writeFile(
+      filepath,
+      JSON.stringify(
+        {
+          metadata: this.metadata,
+          vectors: vectors,
+        },
+        null,
+        2
+      )
+    );
   }
 
   /**
@@ -152,15 +180,15 @@ class UltraDexVectorStore {
     try {
       const content = await fs.readFile(filepath, 'utf8');
       const data = JSON.parse(content);
-      
+
       this.metadata = data.metadata;
-      
+
       const embeddings = await this.getEmbeddingsModel();
       this.store = new MemoryVectorStore(embeddings);
-      
+
       // Restore vectors
       this.store.memoryVectors = data.vectors || [];
-      
+
       return true;
     } catch (e) {
       return false;
@@ -197,10 +225,12 @@ async function chunkText(text, filepath) {
 
   // If text is small enough, use as single chunk
   if (text.length <= chunkSize) {
-    return [new Document({
-      pageContent: text,
-      metadata: { source: filepath, chunk: 0, total: 1 }
-    })];
+    return [
+      new Document({
+        pageContent: text,
+        metadata: { source: filepath, chunk: 0, total: 1 },
+      }),
+    ];
   }
 
   let start = 0;
@@ -211,14 +241,16 @@ async function chunkText(text, filepath) {
     const end = Math.min(start + chunkSize, text.length);
     const chunk = text.slice(start, end);
 
-    chunks.push(new Document({
-      pageContent: chunk,
-      metadata: { 
-        source: filepath, 
-        chunk: chunkIndex, 
-        total: totalChunks 
-      }
-    }));
+    chunks.push(
+      new Document({
+        pageContent: chunk,
+        metadata: {
+          source: filepath,
+          chunk: chunkIndex,
+          total: totalChunks,
+        },
+      })
+    );
 
     start += chunkSize - chunkOverlap;
     chunkIndex++;
@@ -261,7 +293,7 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
   vectorStore.metadata.createdAt = new Date().toISOString();
 
   // Find all files to index
-  const excludePattern = EMBEDDINGS_CONFIG.excludeDirs.map(d => `**/${d}/**`);
+  const excludePattern = EMBEDDINGS_CONFIG.excludeDirs.map((d) => `**/${d}/**`);
   const files = await glob(EMBEDDINGS_CONFIG.includePatterns, {
     cwd: workdir,
     ignore: excludePattern,
@@ -295,17 +327,16 @@ export async function indexCodebase(workdir = process.cwd(), options = {}) {
       const chunks = await chunkText(content, file);
       allDocs.push(...chunks);
       chunkCount += chunks.length;
-
     } catch (err) {
       if (verbose) {
         printWarning(chalk.yellow(`Failed to index ${file}: ${err.message}`));
       }
     }
   }
-  
+
   // Add all documents to store
   if (allDocs.length > 0) {
-      await vectorStore.addDocuments(allDocs);
+    await vectorStore.addDocuments(allDocs);
   }
 
   // Save index
@@ -336,7 +367,7 @@ export async function searchCodebase(query, options = {}) {
   // Search
   const results = await vectorStore.search(query, topK);
 
-  return results.map(r => ({
+  return results.map((r) => ({
     path: r.metadata.source,
     chunk: r.metadata.chunk,
     score: 1.0, // LangChain memory store might not return score directly in similaritySearch, use similaritySearchWithScore if needed
@@ -365,59 +396,59 @@ export function registerSearchCommand(program) {
         printInfo(chalk.cyan('\n🔍 Ultra-Dex Search (LangChain Powered)\n'));
 
         if (options.symbol) {
-            if (!query) {
-                printError(chalk.red('Query required for symbol search.'));
-                return;
-            }
-            const spinner = ora('Scanning code graph...').start();
-            try {
-                await projectGraph.scan();
-                const results = projectGraph.findSymbol(query);
-                spinner.succeed(`Graph scan complete. Found ${results.length} symbol matches.`);
+          if (!query) {
+            printError(chalk.red('Query required for symbol search.'));
+            return;
+          }
+          const spinner = ora('Scanning code graph...').start();
+          try {
+            await projectGraph.scan();
+            const results = projectGraph.findSymbol(query);
+            spinner.succeed(`Graph scan complete. Found ${results.length} symbol matches.`);
 
-                if (results.length === 0) {
-                    printWarning(chalk.yellow(`No symbols found matching "${query}"`));
-                    return;
-                }
-
-                printInfo(chalk.bold('\nDefinitions found:'));
-                results.forEach(r => {
-                    printInfo(`  ${chalk.green(r.symbol)} in ${chalk.gray(r.file)}`);
-                });
-                return;
-            } catch (e) {
-                spinner.fail(`Symbol search failed: ${e.message}`);
-                return;
+            if (results.length === 0) {
+              printWarning(chalk.yellow(`No symbols found matching "${query}"`));
+              return;
             }
+
+            printInfo(chalk.bold('\nDefinitions found:'));
+            results.forEach((r) => {
+              printInfo(`  ${chalk.green(r.symbol)} in ${chalk.gray(r.file)}`);
+            });
+            return;
+          } catch (e) {
+            spinner.fail(`Symbol search failed: ${e.message}`);
+            return;
+          }
         }
 
         if (options.impact) {
-            const fileToCheck = options.impact;
-            if (!fileToCheck) {
-                printError(chalk.red('File path required for impact analysis.'));
-                return;
-            }
-            
-            const spinner = ora('Analyzing impact in code graph...').start();
-            try {
-                await projectGraph.scan();
-                const impact = projectGraph.getImpact(fileToCheck);
-                spinner.succeed(`Impact analysis complete.`);
+          const fileToCheck = options.impact;
+          if (!fileToCheck) {
+            printError(chalk.red('File path required for impact analysis.'));
+            return;
+          }
 
-                printInfo(chalk.bold(`\nFiles that depend on ${chalk.cyan(fileToCheck)}:\n`));
-                if (impact.length === 0) {
-                    printSuccess('  ✓ No direct or indirect dependents found. Change is likely safe.');
-                } else {
-                    impact.forEach(file => {
-                        printInfo(`  ${chalk.yellow('⚠')} ${file}`);
-                    });
-                    printInfo(chalk.gray(`\nTotal affected: ${impact.length} files`));
-                }
-                return;
-            } catch (e) {
-                spinner.fail(`Impact analysis failed: ${e.message}`);
-                return;
+          const spinner = ora('Analyzing impact in code graph...').start();
+          try {
+            await projectGraph.scan();
+            const impact = projectGraph.getImpact(fileToCheck);
+            spinner.succeed(`Impact analysis complete.`);
+
+            printInfo(chalk.bold(`\nFiles that depend on ${chalk.cyan(fileToCheck)}:\n`));
+            if (impact.length === 0) {
+              printSuccess('  ✓ No direct or indirect dependents found. Change is likely safe.');
+            } else {
+              impact.forEach((file) => {
+                printInfo(`  ${chalk.yellow('⚠')} ${file}`);
+              });
+              printInfo(chalk.gray(`\nTotal affected: ${impact.length} files`));
             }
+            return;
+          } catch (e) {
+            spinner.fail(`Impact analysis failed: ${e.message}`);
+            return;
+          }
         }
 
         const workdir = process.cwd();
@@ -450,7 +481,9 @@ export function registerSearchCommand(program) {
             });
 
             if (result.cached) {
-              spinner.succeed(`Using cached index (${result.files} files, ${result.chunks} chunks)`);
+              spinner.succeed(
+                `Using cached index (${result.files} files, ${result.chunks} chunks)`
+              );
             } else {
               spinner.succeed(`Indexed ${result.files} files into ${result.chunks} chunks`);
             }
@@ -477,7 +510,9 @@ export function registerSearchCommand(program) {
           spinner.succeed(`Found ${results.length} results\n`);
 
           if (results.length === 0) {
-            printWarning(chalk.yellow('No matches found. Try different keywords or rebuild the index.'));
+            printWarning(
+              chalk.yellow('No matches found. Try different keywords or rebuild the index.')
+            );
             return;
           }
 
@@ -485,15 +520,16 @@ export function registerSearchCommand(program) {
           for (let i = 0; i < results.length; i++) {
             const r = results[i];
             const score = r.score || 0; // fallback if undefined
-            
+
             printInfo(chalk.bold(`${i + 1}. ${r.path}`) + chalk.gray(` (chunk ${r.chunk})`));
             printInfo(chalk.gray(`   ${r.preview.replace(/\n/g, ' ')}`));
             printInfo('');
           }
 
           // Hint
-          printInfo(chalk.gray('Tip: Use --index --force to rebuild embeddings if results seem stale.'));
-
+          printInfo(
+            chalk.gray('Tip: Use --index --force to rebuild embeddings if results seem stale.')
+          );
         } catch (err) {
           spinner.fail(`Search failed: ${err.message}`);
         }

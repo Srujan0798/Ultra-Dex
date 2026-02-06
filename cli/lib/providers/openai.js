@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * OpenAI Provider
  * GPT models for Ultra-Dex generate command
@@ -7,10 +9,10 @@ import { BaseProvider } from './base.js';
 
 // Model pricing per 1M tokens (as of Jan 2026)
 const PRICING = {
-  'gpt-4o': { input: 2.50, output: 10.00 },
-  'gpt-4o-mini': { input: 0.15, output: 0.60 },
-  'gpt-4-turbo': { input: 10.00, output: 30.00 },
-  'gpt-4': { input: 30.00, output: 60.00 },
+  'gpt-4o': { input: 2.5, output: 10.0 },
+  'gpt-4o-mini': { input: 0.15, output: 0.6 },
+  'gpt-4-turbo': { input: 10.0, output: 30.0 },
+  'gpt-4': { input: 30.0, output: 60.0 },
   'text-embedding-3-small': { input: 0.02, output: 0 }, // For reference
 };
 
@@ -65,7 +67,7 @@ export class OpenAIProvider extends BaseProvider {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`,
+            Authorization: `Bearer ${this.apiKey}`,
           },
           body: JSON.stringify({
             model: this.model,
@@ -76,7 +78,7 @@ export class OpenAIProvider extends BaseProvider {
               { role: 'user', content: userPrompt },
             ],
           }),
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
@@ -90,7 +92,7 @@ export class OpenAIProvider extends BaseProvider {
             const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
 
             if (attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, delay));
+              await new Promise((resolve) => setTimeout(resolve, delay));
               continue; // Retry
             }
           }
@@ -113,7 +115,7 @@ export class OpenAIProvider extends BaseProvider {
         if (attempt < maxRetries) {
           // Exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
           continue; // Retry
         }
 
@@ -139,7 +141,7 @@ export class OpenAIProvider extends BaseProvider {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`,
+            Authorization: `Bearer ${this.apiKey}`,
           },
           body: JSON.stringify({
             model: this.model,
@@ -152,7 +154,7 @@ export class OpenAIProvider extends BaseProvider {
               { role: 'user', content: userPrompt },
             ],
           }),
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
@@ -166,7 +168,7 @@ export class OpenAIProvider extends BaseProvider {
             const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
 
             if (attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, delay));
+              await new Promise((resolve) => setTimeout(resolve, delay));
               continue; // Retry
             }
           }
@@ -218,7 +220,7 @@ export class OpenAIProvider extends BaseProvider {
         if (attempt < maxRetries) {
           // Exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
           continue; // Retry
         }
 
@@ -239,7 +241,7 @@ export class OpenAIProvider extends BaseProvider {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
         model: this.embeddingModel,
@@ -249,7 +251,9 @@ export class OpenAIProvider extends BaseProvider {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(`OpenAI Embeddings API error: ${error.error?.message || response.statusText}`);
+      throw new Error(
+        `OpenAI Embeddings API error: ${error.error?.message || response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -260,7 +264,7 @@ export class OpenAIProvider extends BaseProvider {
     try {
       const response = await fetch(`${this.baseUrl}/models`, {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
         },
       });
       return response.ok;

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
@@ -15,29 +17,123 @@ import { printError, printInfo, printWarning } from '../utils/output.js';
 import { registerAgentGenerator } from './agent-gen.js';
 
 export const AGENTS = [
-  { name: 'architect', description: 'Manifest reality from a raw idea', file: '0-orchestration/architect.md', tier: 'Orchestration' },
-  { name: 'meta-orchestrator', description: 'High-level system coordination & strategy', file: '0-orchestration/meta-orchestrator.md', tier: 'Orchestration' },
-  { name: 'orchestrator', description: 'Multi-agent coordination', file: '0-orchestration/orchestrator.md', tier: 'Orchestration' },
-  { name: 'cto', description: 'Architecture & tech decisions', file: '1-leadership/cto.md', tier: 'Leadership' },
-  { name: 'planner', description: 'Task breakdown & planning', file: '1-leadership/planner.md', tier: 'Leadership' },
-  { name: 'research', description: 'Technology evaluation & comparison', file: '1-leadership/research.md', tier: 'Leadership' },
-  { name: 'backend', description: 'API & server logic', file: '2-development/backend.md', tier: 'Development' },
-  { name: 'database', description: 'Schema design & queries', file: '2-development/database.md', tier: 'Development' },
-  { name: 'frontend', description: 'UI & components', file: '2-development/frontend.md', tier: 'Development' },
-  { name: 'auth', description: 'Authentication & authorization', file: '3-security/auth.md', tier: 'Security' },
-  { name: 'security', description: 'Security audits & vulnerability fixes', file: '3-security/security.md', tier: 'Security' },
-  { name: 'devops', description: 'Deployment & infrastructure', file: '4-devops/devops.md', tier: 'DevOps' },
-  { name: 'debugger', description: 'Bug fixing & troubleshooting', file: '5-quality/debugger.md', tier: 'Quality' },
-  { name: 'documentation', description: 'Technical writing & docs maintenance', file: '5-quality/documentation.md', tier: 'Quality' },
-  { name: 'reviewer', description: 'Code review & quality check', file: '5-quality/reviewer.md', tier: 'Quality' },
-  { name: 'testing', description: 'QA & test automation', file: '5-quality/testing.md', tier: 'Quality' },
-  { name: 'performance', description: 'Performance optimization', file: '6-specialist/performance.md', tier: 'Specialist' },
-  { name: 'refactoring', description: 'Code quality & design patterns', file: '6-specialist/refactoring.md', tier: 'Specialist' },
+  {
+    name: 'architect',
+    description: 'Manifest reality from a raw idea',
+    file: '0-orchestration/architect.md',
+    tier: 'Orchestration',
+  },
+  {
+    name: 'meta-orchestrator',
+    description: 'High-level system coordination & strategy',
+    file: '0-orchestration/meta-orchestrator.md',
+    tier: 'Orchestration',
+  },
+  {
+    name: 'orchestrator',
+    description: 'Multi-agent coordination',
+    file: '0-orchestration/orchestrator.md',
+    tier: 'Orchestration',
+  },
+  {
+    name: 'cto',
+    description: 'Architecture & tech decisions',
+    file: '1-leadership/cto.md',
+    tier: 'Leadership',
+  },
+  {
+    name: 'planner',
+    description: 'Task breakdown & planning',
+    file: '1-leadership/planner.md',
+    tier: 'Leadership',
+  },
+  {
+    name: 'research',
+    description: 'Technology evaluation & comparison',
+    file: '1-leadership/research.md',
+    tier: 'Leadership',
+  },
+  {
+    name: 'backend',
+    description: 'API & server logic',
+    file: '2-development/backend.md',
+    tier: 'Development',
+  },
+  {
+    name: 'database',
+    description: 'Schema design & queries',
+    file: '2-development/database.md',
+    tier: 'Development',
+  },
+  {
+    name: 'frontend',
+    description: 'UI & components',
+    file: '2-development/frontend.md',
+    tier: 'Development',
+  },
+  {
+    name: 'auth',
+    description: 'Authentication & authorization',
+    file: '3-security/auth.md',
+    tier: 'Security',
+  },
+  {
+    name: 'security',
+    description: 'Security audits & vulnerability fixes',
+    file: '3-security/security.md',
+    tier: 'Security',
+  },
+  {
+    name: 'devops',
+    description: 'Deployment & infrastructure',
+    file: '4-devops/devops.md',
+    tier: 'DevOps',
+  },
+  {
+    name: 'debugger',
+    description: 'Bug fixing & troubleshooting',
+    file: '5-quality/debugger.md',
+    tier: 'Quality',
+  },
+  {
+    name: 'documentation',
+    description: 'Technical writing & docs maintenance',
+    file: '5-quality/documentation.md',
+    tier: 'Quality',
+  },
+  {
+    name: 'reviewer',
+    description: 'Code review & quality check',
+    file: '5-quality/reviewer.md',
+    tier: 'Quality',
+  },
+  {
+    name: 'testing',
+    description: 'QA & test automation',
+    file: '5-quality/testing.md',
+    tier: 'Quality',
+  },
+  {
+    name: 'performance',
+    description: 'Performance optimization',
+    file: '6-specialist/performance.md',
+    tier: 'Specialist',
+  },
+  {
+    name: 'refactoring',
+    description: 'Code quality & design patterns',
+    file: '6-specialist/refactoring.md',
+    tier: 'Specialist',
+  },
 ];
 
 // Pre-compute searchable agents for performance optimization
 const SEARCHABLE_AGENTS = [
-  ...AGENTS.map(a => ({ ...a, source: 'builtin', searchStr: `${a.name} ${a.description}`.toLowerCase() })),
+  ...AGENTS.map((a) => ({
+    ...a,
+    source: 'builtin',
+    searchStr: `${a.name} ${a.description}`.toLowerCase(),
+  })),
 ];
 
 const CUSTOM_AGENTS_DIR = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
@@ -82,19 +178,23 @@ function paginate(items, page, limit) {
 
 function printPaginationSummary({ total, totalPages, page, start, end }) {
   if (totalPages <= 1) return;
-  printInfo(chalk.gray(`Showing ${start}-${end} of ${total} (page ${page}/${totalPages}). Use --page/--limit to navigate.`));
+  printInfo(
+    chalk.gray(
+      `Showing ${start}-${end} of ${total} (page ${page}/${totalPages}). Use --page/--limit to navigate.`
+    )
+  );
 }
 
 export function findBuiltInAgent(name) {
-  return AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
+  return AGENTS.find((a) => a.name.toLowerCase() === name.toLowerCase());
 }
 
 export async function listCustomAgents() {
   try {
     const entries = await fs.readdir(CUSTOM_AGENTS_DIR, { withFileTypes: true });
     return entries
-      .filter(entry => entry.isFile() && entry.name.endsWith('.md'))
-      .map(entry => entry.name.replace(/\.md$/, ''));
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+      .map((entry) => entry.name.replace(/\.md$/, ''));
   } catch {
     return [];
   }
@@ -108,7 +208,7 @@ export async function getCustomAgentPath(name) {
   }
 
   const filePath = path.join(CUSTOM_AGENTS_DIR, `${name.toLowerCase()}.md`);
-  
+
   // Final safety check: ensure the resulting path is still inside CUSTOM_AGENTS_DIR
   if (!filePath.startsWith(CUSTOM_AGENTS_DIR)) {
     return null;
@@ -136,10 +236,10 @@ export async function readAgentPrompt(agent) {
 
   const agentPath = path.join(ASSETS_ROOT, 'agents', agent.file);
   const fallbackPath = path.join(ROOT_FALLBACK, 'agents', agent.file);
-  
+
   // Double-check paths are still within bounds
   if (!agentPath.startsWith(ASSETS_ROOT) && !agentPath.startsWith(ROOT_FALLBACK)) {
-      throw new Error(`Access denied: Agent prompt path out of bounds for @${agent.name}`);
+    throw new Error(`Access denied: Agent prompt path out of bounds for @${agent.name}`);
   }
 
   return readWithFallback(agentPath, fallbackPath, 'utf-8');
@@ -156,15 +256,19 @@ function extractAgentMetadata(content) {
   const description = roleMatch ? roleMatch[1].trim().replace(/\\n+/g, ' ') : null;
   const version = versionMatch ? versionMatch[1].trim().split(/\\s+/)[0] : null;
   const prompt = promptMatch ? promptMatch[1].trim() : null;
-  const tags = expertiseMatch ? expertiseMatch[1].split(/[,\\n]/).map(tag => tag.trim()).filter(Boolean) : [];
+  const tags = expertiseMatch
+    ? expertiseMatch[1]
+        .split(/[,\\n]/)
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+    : [];
 
   return { name, description, version, prompt, tags };
 }
 
-
 export async function checkAgentsHealth() {
   const healthResults = [];
-  
+
   for (const agent of AGENTS) {
     try {
       const prompt = await readAgentPrompt(agent);
@@ -172,17 +276,17 @@ export async function checkAgentsHealth() {
       healthResults.push({
         agent: agent.name,
         status: isHealthy ? 'healthy' : 'malformed',
-        error: isHealthy ? null : 'Prompt content too short or empty'
+        error: isHealthy ? null : 'Prompt content too short or empty',
       });
     } catch (err) {
       healthResults.push({
         agent: agent.name,
         status: 'error',
-        error: err.message
+        error: err.message,
       });
     }
   }
-  
+
   return healthResults;
 }
 
@@ -199,7 +303,10 @@ export function registerAgentsCommand(program) {
     { command: 'ultra-dex agents', description: 'List all built-in and custom agents' },
     { command: 'ultra-dex agents list --page 2 --limit 10', description: 'Paginate agents list' },
     { command: 'ultra-dex agents show frontend', description: 'Show a specific agent prompt' },
-    { command: 'ultra-dex agent generate --domain fintech', description: 'Generate a domain agent template' },
+    {
+      command: 'ultra-dex agent generate --domain fintech',
+      description: 'Generate a domain agent template',
+    },
   ];
 
   // Default action: list agents
@@ -222,13 +329,15 @@ export function registerAgentsCommand(program) {
       const spinner = ora('Checking agent health...').start();
       try {
         const results = await checkAgentsHealth();
-        
-        const errors = results.filter(r => r.status !== 'healthy');
+
+        const errors = results.filter((r) => r.status !== 'healthy');
         if (errors.length === 0) {
-          spinner.succeed(chalk.green(`All ${results.length} built-in agents are healthy and readable.`));
+          spinner.succeed(
+            chalk.green(`All ${results.length} built-in agents are healthy and readable.`)
+          );
         } else {
           spinner.fail(chalk.red(`${errors.length} agents have issues:`));
-          errors.forEach(e => {
+          errors.forEach((e) => {
             console.log(`  ${chalk.yellow('@' + e.agent)}: ${chalk.gray(e.error)}`);
           });
         }
@@ -238,7 +347,6 @@ export function registerAgentsCommand(program) {
       }
     });
 
-
   // agents list
   agentsCmd
     .command('list')
@@ -246,8 +354,14 @@ export function registerAgentsCommand(program) {
     .description('List all available agents')
     .option('--marketplace', 'Show marketplace agents')
     .option('--builtin', 'Show built-in agents only')
-    .option('--tier <tier>', 'Filter by tier (Orchestration, Leadership, Development, Security, DevOps, Quality, Specialist)')
-    .option('--category <category>', 'Filter by category (orchestration, leadership, development, security, devops, quality, specialist)')
+    .option(
+      '--tier <tier>',
+      'Filter by tier (Orchestration, Leadership, Development, Security, DevOps, Quality, Specialist)'
+    )
+    .option(
+      '--category <category>',
+      'Filter by category (orchestration, leadership, development, security, devops, quality, specialist)'
+    )
     .option('--page <number>', 'Page number', String(1))
     .option('--limit <number>', 'Items per page', String(DEFAULT_PAGE_SIZE))
     .option('--json', 'Output list as JSON')
@@ -258,9 +372,23 @@ export function registerAgentsCommand(program) {
         if (options.marketplace) {
           await showMarketplace({ page, limit, json: !!options.json });
         } else if (options.builtin) {
-          await listAgents({ builtinOnly: true, page, limit, json: !!options.json, tier: options.tier, category: options.category });
+          await listAgents({
+            builtinOnly: true,
+            page,
+            limit,
+            json: !!options.json,
+            tier: options.tier,
+            category: options.category,
+          });
         } else {
-          await listAgents({ builtinOnly: false, page, limit, json: !!options.json, tier: options.tier, category: options.category });
+          await listAgents({
+            builtinOnly: false,
+            page,
+            limit,
+            json: !!options.json,
+            tier: options.tier,
+            category: options.category,
+          });
         }
       } catch (error) {
         printError(chalk.red(`Failed to list agents: ${error.message}`));
@@ -308,9 +436,7 @@ export function registerAgentsCommand(program) {
         console.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
 
         const lowerQuery = query.toLowerCase();
-        const builtinResults = SEARCHABLE_AGENTS.filter(a =>
-          a.searchStr.includes(lowerQuery)
-        );
+        const builtinResults = SEARCHABLE_AGENTS.filter((a) => a.searchStr.includes(lowerQuery));
 
         let marketplaceResults = [];
         try {
@@ -320,8 +446,8 @@ export function registerAgentsCommand(program) {
         }
 
         const results = [
-          ...builtinResults.map(result => ({ ...result, source: 'builtin' })),
-          ...marketplaceResults.map(result => ({ ...result, source: 'marketplace' }))
+          ...builtinResults.map((result) => ({ ...result, source: 'builtin' })),
+          ...marketplaceResults.map((result) => ({ ...result, source: 'marketplace' })),
         ];
 
         const page = parsePositiveInt(options.page, 1);
@@ -329,13 +455,19 @@ export function registerAgentsCommand(program) {
         const pageData = paginate(results, page, limit);
 
         if (options.json) {
-          process.stdout.write(JSON.stringify({
-            query,
-            total: pageData.total,
-            page: pageData.page,
-            totalPages: pageData.totalPages,
-            results: pageData.items
-          }, null, 2) + '\n');
+          process.stdout.write(
+            JSON.stringify(
+              {
+                query,
+                total: pageData.total,
+                page: pageData.page,
+                totalPages: pageData.totalPages,
+                results: pageData.items,
+              },
+              null,
+              2
+            ) + '\n'
+          );
           return;
         }
 
@@ -343,8 +475,9 @@ export function registerAgentsCommand(program) {
           console.log(chalk.yellow('No agents found matching your query.'));
         } else {
           console.log(chalk.bold(`Found ${results.length} agent(s):\n`));
-          pageData.items.forEach(a => {
-            const badge = a.source === 'builtin' ? chalk.blue('[built-in]') : chalk.yellow('[marketplace]');
+          pageData.items.forEach((a) => {
+            const badge =
+              a.source === 'builtin' ? chalk.blue('[built-in]') : chalk.yellow('[marketplace]');
             const name = a.name.startsWith('@') ? a.name : `@${a.name}`;
             console.log(`  ${chalk.green(name)} ${badge}`);
             if (a.version) console.log(`    ${chalk.gray(`v${a.version}`)}`);
@@ -381,42 +514,42 @@ export function registerAgentsCommand(program) {
 
         let answers;
         if (options.description || options.tier || options.expertise || options.prompt) {
-            // Non-interactive mode
-            answers = {
-                role: options.description || 'Custom AI Agent',
-                tier: options.tier || 'Specialist',
-                expertise: options.expertise || 'General',
-                prompt: options.prompt || `You are @${name}, an AI assistant.`
-            };
+          // Non-interactive mode
+          answers = {
+            role: options.description || 'Custom AI Agent',
+            tier: options.tier || 'Specialist',
+            expertise: options.expertise || 'General',
+            prompt: options.prompt || `You are @${name}, an AI assistant.`,
+          };
         } else {
-            // Interactive mode
-            answers = await inquirer.prompt([
-              {
-                type: 'input',
-                name: 'role',
-                message: 'Role description (1 sentence):',
-                validate: input => input.trim().length > 0 || 'Role description is required',
-              },
-              {
-                type: 'list',
-                name: 'tier',
-                message: 'Select tier:',
-                choices: TIERS,
-              },
-              {
-                type: 'input',
-                name: 'expertise',
-                message: 'Expertise areas (comma-separated):',
-                validate: input => input.trim().length > 0 || 'Expertise is required',
-              },
-              {
-                type: 'editor',
-                name: 'prompt',
-                message: 'Base system prompt:',
-                default: `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent\n\nYou are an expert in...`,
-                validate: input => input.trim().length > 0 || 'System prompt is required',
-              },
-            ]);
+          // Interactive mode
+          answers = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'role',
+              message: 'Role description (1 sentence):',
+              validate: (input) => input.trim().length > 0 || 'Role description is required',
+            },
+            {
+              type: 'list',
+              name: 'tier',
+              message: 'Select tier:',
+              choices: TIERS,
+            },
+            {
+              type: 'input',
+              name: 'expertise',
+              message: 'Expertise areas (comma-separated):',
+              validate: (input) => input.trim().length > 0 || 'Expertise is required',
+            },
+            {
+              type: 'editor',
+              name: 'prompt',
+              message: 'Base system prompt:',
+              default: `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent\n\nYou are an expert in...`,
+              validate: (input) => input.trim().length > 0 || 'System prompt is required',
+            },
+          ]);
         }
 
         const agentContent = `# @${name.charAt(0).toUpperCase() + name.slice(1)} Agent
@@ -439,11 +572,11 @@ ${answers.prompt}
 - >> SEARCH_CODE: "query"
 - >> DELEGATE: @AgentName "Task"
 `;
-        
+
         await fs.mkdir(CUSTOM_AGENTS_DIR, { recursive: true });
         const outputPath = path.join(CUSTOM_AGENTS_DIR, `${name.toLowerCase()}.md`);
         await fs.writeFile(outputPath, agentContent);
-        
+
         console.log(chalk.green(`\n✅ Custom agent created: ${name.toLowerCase()}\n`));
       } catch (error) {
         printError(chalk.red(`Failed to create agent: ${error.message}`));
@@ -487,7 +620,7 @@ ${answers.prompt}
     .action(async (name) => {
       const agentsDir = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents');
       const agentFile = path.join(agentsDir, `${name.toLowerCase()}.json`);
-      
+
       try {
         await fs.unlink(agentFile);
         console.log(chalk.green(`\n✅ Uninstalled agent: ${name}\n`));
@@ -544,7 +677,9 @@ ${answers.prompt}
         const agent = await marketplaceClient.getAgent(name.toLowerCase());
         if (!agent) {
           spinner.fail(`Agent "${name}" not found in marketplace`);
-          console.log(chalk.gray('\nUse `ultra-dex agents list --marketplace` to see available agents'));
+          console.log(
+            chalk.gray('\nUse `ultra-dex agents list --marketplace` to see available agents')
+          );
           return;
         }
         const agentsDir = path.join(process.cwd(), '.ultra-dex', 'marketplace-agents');
@@ -558,7 +693,10 @@ ${answers.prompt}
           installedAt: new Date().toISOString(),
           systemPrompt: agent.systemPrompt || `You are ${agent.name}, ${agent.description}`,
         };
-        await fs.writeFile(path.join(agentsDir, `${name.toLowerCase()}.json`), JSON.stringify(agentConfig, null, 2));
+        await fs.writeFile(
+          path.join(agentsDir, `${name.toLowerCase()}.json`),
+          JSON.stringify(agentConfig, null, 2)
+        );
         spinner.succeed(`Installed ${chalk.green(agent.name)} v${agent.version}`);
       } catch (error) {
         spinner.fail(`Install failed: ${error.message}`);
@@ -577,12 +715,18 @@ async function showMarketplace({ page = 1, limit = DEFAULT_PAGE_SIZE, json = fal
     const pageData = paginate(agents, page, limit);
 
     if (json) {
-      process.stdout.write(JSON.stringify({
-        total: pageData.total,
-        page: pageData.page,
-        totalPages: pageData.totalPages,
-        agents: pageData.items
-      }, null, 2) + '\n');
+      process.stdout.write(
+        JSON.stringify(
+          {
+            total: pageData.total,
+            page: pageData.page,
+            totalPages: pageData.totalPages,
+            agents: pageData.items,
+          },
+          null,
+          2
+        ) + '\n'
+      );
       return;
     }
 
@@ -608,22 +752,26 @@ function mapTierToCategory(tier) {
     Security: 'security',
     DevOps: 'devops',
     Quality: 'quality',
-    Specialist: 'specialist'
+    Specialist: 'specialist',
   };
   return map[tier] || 'general';
 }
 
-async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_SIZE, json = false, tier, category } = {}) {
+async function listAgents({
+  builtinOnly = false,
+  page = 1,
+  limit = DEFAULT_PAGE_SIZE,
+  json = false,
+  tier,
+  category,
+} = {}) {
   try {
     const customAgents = builtinOnly ? [] : await listCustomAgents();
     const totalAgents = AGENTS.length + customAgents.length;
     const header = builtinOnly ? 'Built-in Agents' : `Ultra-Dex AI Agents (${totalAgents} Total)`;
     console.log(chalk.bold(`\n🤖 ${header}\n`));
 
-    const candidateNames = [
-      ...AGENTS.map(agent => agent.name),
-      ...customAgents
-    ];
+    const candidateNames = [...AGENTS.map((agent) => agent.name), ...customAgents];
 
     let role = 'default';
     let allowedAgents = candidateNames;
@@ -637,30 +785,29 @@ async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_
       printWarning(chalk.yellow('Role-based access checks failed. Showing all agents.'));
     }
 
-    const allowedSet = new Set(allowedAgents.map(name => name.toLowerCase()));
+    const allowedSet = new Set(allowedAgents.map((name) => name.toLowerCase()));
 
-    const agentsForTable = AGENTS
-      .filter(agent => allowedSet.has(agent.name.toLowerCase()))
-      .map(agent => ({
+    const agentsForTable = AGENTS.filter((agent) => allowedSet.has(agent.name.toLowerCase()))
+      .map((agent) => ({
         tier: agent.tier,
         name: agent.name,
         status: 'ready',
         category: mapTierToCategory(agent.tier),
-        file: agent.file
+        file: agent.file,
       }))
-      .filter(agent => !tier || agent.tier.toLowerCase() === tier.toLowerCase())
-      .filter(agent => !category || agent.category.toLowerCase() === category.toLowerCase());
+      .filter((agent) => !tier || agent.tier.toLowerCase() === tier.toLowerCase())
+      .filter((agent) => !category || agent.category.toLowerCase() === category.toLowerCase());
 
     if (customAgents.length > 0) {
       customAgents
-        .filter(name => allowedSet.has(name.toLowerCase()))
-        .forEach(name => {
+        .filter((name) => allowedSet.has(name.toLowerCase()))
+        .forEach((name) => {
           agentsForTable.push({
             tier: 'Custom',
             name: name,
             status: 'ready',
             category: 'custom',
-            file: `custom-agents/${name}.md`
+            file: `custom-agents/${name}.md`,
           });
         });
     }
@@ -668,13 +815,19 @@ async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_
     const pageData = paginate(agentsForTable, page, limit);
 
     if (json) {
-      process.stdout.write(JSON.stringify({
-        total: pageData.total,
-        page: pageData.page,
-        totalPages: pageData.totalPages,
-        restrictedAgents,
-        agents: pageData.items
-      }, null, 2) + '\n');
+      process.stdout.write(
+        JSON.stringify(
+          {
+            total: pageData.total,
+            page: pageData.page,
+            totalPages: pageData.totalPages,
+            restrictedAgents,
+            agents: pageData.items,
+          },
+          null,
+          2
+        ) + '\n'
+      );
       return;
     }
 
@@ -683,20 +836,24 @@ async function listAgents({ builtinOnly = false, page = 1, limit = DEFAULT_PAGE_
       return;
     }
 
-    showAgentsTable(pageData.items.map(item => ({
-      tier: item.tier,
-      name: item.name,
-      status: item.status,
-      capabilities: item.category
-    })));
+    showAgentsTable(
+      pageData.items.map((item) => ({
+        tier: item.tier,
+        name: item.name,
+        status: item.status,
+        capabilities: item.category,
+      }))
+    );
     printPaginationSummary(pageData);
 
     if (restrictedAgents.length > 0) {
-      console.log(chalk.yellow(`\n🔒 Role-based access (${role}) hides ${restrictedAgents.length} agent(s).`));
+      console.log(
+        chalk.yellow(`\n🔒 Role-based access (${role}) hides ${restrictedAgents.length} agent(s).`)
+      );
     }
 
     console.log(chalk.gray('\nAgent paths:'));
-    pageData.items.forEach(item => {
+    pageData.items.forEach((item) => {
       const filePath = item.file ? `agents/${item.file}` : 'custom';
       console.log(chalk.gray(`  @${item.name}: ${filePath}`));
     });
@@ -718,7 +875,7 @@ async function showAgent(name) {
     return;
   }
 
-  const agent = AGENTS.find(a => a.name.toLowerCase() === name.toLowerCase());
+  const agent = AGENTS.find((a) => a.name.toLowerCase() === name.toLowerCase());
   if (!agent) {
     const custom = await getCustomAgentPath(name);
     if (custom) {
@@ -733,7 +890,7 @@ async function showAgent(name) {
 
   try {
     const prompt = await readAgentPrompt(agent);
-    console.log(chalk.bold(`\n🤖 Agent: ${agent.name} (${agent.tier})\n`));
+    console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent (${agent.tier})\n`));
     console.log(chalk.gray(agent.description) + '\n');
     console.log(chalk.gray('─'.repeat(60)));
     console.log(prompt);
@@ -766,22 +923,22 @@ async function copyToClipboard(text) {
 
   return new Promise((resolve, reject) => {
     const child = spawn(command, args);
-    
+
     child.on('error', (err) => {
       // Fallback for xclip if not installed
       if (platform !== 'darwin' && platform !== 'win32') {
-          const fallback = spawn('xsel', ['--clipboard', '--input']);
-          fallback.stdin.write(text);
-          fallback.stdin.end();
-          fallback.on('close', (code) => code === 0 ? resolve() : reject(err));
-          return;
+        const fallback = spawn('xsel', ['--clipboard', '--input']);
+        fallback.stdin.write(text);
+        fallback.stdin.end();
+        fallback.on('close', (code) => (code === 0 ? resolve() : reject(err)));
+        return;
       }
       reject(err);
     });
 
     if (platform !== 'win32') {
-        child.stdin.write(text);
-        child.stdin.end();
+      child.stdin.write(text);
+      child.stdin.end();
     }
 
     child.on('close', (code) => {
@@ -797,7 +954,7 @@ export function registerPackCommand(program) {
     .description('Package project context + agent prompt for any AI tool')
     .option('-c, --clipboard', 'Copy to clipboard (requires pbcopy/xclip)')
     .action(async (agentName, options) => {
-      const agent = AGENTS.find(a => a.name.toLowerCase() === agentName.toLowerCase());
+      const agent = AGENTS.find((a) => a.name.toLowerCase() === agentName.toLowerCase());
       if (!agent) {
         console.log(chalk.red(`\n❌ Agent "${agentName}" not found.\n`));
         return;
@@ -835,7 +992,11 @@ export function registerPackCommand(program) {
           await copyToClipboard(output);
           console.log(chalk.green('\n✅ Copied to clipboard!\n'));
         } catch (err) {
-          console.log(chalk.yellow('\n⚠️  Could not copy to clipboard. Ensure pbcopy, xclip, or xsel is installed.'));
+          console.log(
+            chalk.yellow(
+              '\n⚠️  Could not copy to clipboard. Ensure pbcopy, xclip, or xsel is installed.'
+            )
+          );
         }
       }
     });

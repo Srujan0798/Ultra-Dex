@@ -16,15 +16,15 @@
 
 ## Cost Comparison (Processing 1M tokens)
 
-| Provider | Model | Input | Output | Total | Best For |
-|----------|-------|-------|--------|-------|----------|
-| **Anthropic** | Opus 4.5 | $5 | $25 | **$30** | Complex reasoning, architecture |
-| **Anthropic** | Sonnet 4.5 | $3 | $15 | **$18** | Balanced quality + cost |
-| **Anthropic** | Haiku 4.5 | $1 | $5 | **$6** | Fast responses, simple tasks |
-| **OpenAI** | GPT-5.2 | $1.75 | $14 | **$15.75** | Code generation, general tasks |
-| **OpenAI** | GPT-5 mini | $0.25 | $2 | **$2.25** | Simple tasks, high volume |
-| **Google** | Gemini Pro | Free tier | Free tier | **Free** | Budget-conscious projects |
-| **Open Source** | Llama 3.1 | $0 | $0 | **GPU cost** | Privacy-critical, self-hosted |
+| Provider        | Model      | Input     | Output    | Total        | Best For                        |
+| --------------- | ---------- | --------- | --------- | ------------ | ------------------------------- |
+| **Anthropic**   | Opus 4.5   | $5        | $25       | **$30**      | Complex reasoning, architecture |
+| **Anthropic**   | Sonnet 4.5 | $3        | $15       | **$18**      | Balanced quality + cost         |
+| **Anthropic**   | Haiku 4.5  | $1        | $5        | **$6**       | Fast responses, simple tasks    |
+| **OpenAI**      | GPT-5.2    | $1.75     | $14       | **$15.75**   | Code generation, general tasks  |
+| **OpenAI**      | GPT-5 mini | $0.25     | $2        | **$2.25**    | Simple tasks, high volume       |
+| **Google**      | Gemini Pro | Free tier | Free tier | **Free**     | Budget-conscious projects       |
+| **Open Source** | Llama 3.1  | $0        | $0        | **GPU cost** | Privacy-critical, self-hosted   |
 
 **Note:** Costs are for processing 1 million tokens (input + output combined). Most features use 10K-50K tokens.
 
@@ -112,31 +112,37 @@
 Use different models for different tasks to optimize cost and quality:
 
 ### Phase 1: Planning & Research
+
 **Tool:** ChatGPT Free
 **Tasks:** Research, initial planning, task breakdown
 **Cost:** $0
 
 ### Phase 2: Architecture Design
+
 **Tool:** Claude Opus 4.5
 **Tasks:** System architecture, database schema design, API contract definition
 **Cost:** ~$5-10 per major feature
 
 ### Phase 3: Implementation
+
 **Tool:** GPT-5.2 or Cursor (built-in)
 **Tasks:** Writing code, API endpoints, UI components
 **Cost:** ~$2-4 per feature
 
 ### Phase 4: Quick Fixes
+
 **Tool:** Claude Haiku or GPT-5 mini
 **Tasks:** Bug fixes, small tweaks, simple features
 **Cost:** <$1 per fix
 
 ### Phase 5: Review & QA
+
 **Tool:** Claude Sonnet 4.5
 **Tasks:** Code review, refactoring, quality checks
 **Cost:** ~$3-6 per review
 
 ### Phase 6: Security Audit
+
 **Tool:** Claude Opus 4.5 or ChatGPT Free
 **Tasks:** Security review, penetration testing guidance
 **Cost:** ~$5-10 per audit (or free)
@@ -147,17 +153,17 @@ Use different models for different tasks to optimize cost and quality:
 
 ## Real Example: Building User Authentication
 
-| Task | Agent | AI Model | Cost |
-|------|-------|----------|------|
-| Task breakdown | @Planner | ChatGPT Free | $0 |
-| Architecture design | @CTO | Claude Opus 4.5 | ~$8 |
-| Database schema | @Database | Cursor (GPT-5.2) | ~$1 |
-| API implementation | @Backend | GPT-5.2 | ~$3 |
-| UI components | @Frontend | Copilot (GPT-4) | ~$2 |
-| Test writing | @Testing | Claude Haiku | ~$1 |
-| Security audit | @Security | Claude Opus 4.5 | ~$5 |
-| Code review | @Reviewer | Claude Sonnet 4.5 | ~$4 |
-| **TOTAL** | | | **~$24** |
+| Task                | Agent     | AI Model          | Cost     |
+| ------------------- | --------- | ----------------- | -------- |
+| Task breakdown      | @Planner  | ChatGPT Free      | $0       |
+| Architecture design | @CTO      | Claude Opus 4.5   | ~$8      |
+| Database schema     | @Database | Cursor (GPT-5.2)  | ~$1      |
+| API implementation  | @Backend  | GPT-5.2           | ~$3      |
+| UI components       | @Frontend | Copilot (GPT-4)   | ~$2      |
+| Test writing        | @Testing  | Claude Haiku      | ~$1      |
+| Security audit      | @Security | Claude Opus 4.5   | ~$5      |
+| Code review         | @Reviewer | Claude Sonnet 4.5 | ~$4      |
+| **TOTAL**           |           |                   | **~$24** |
 
 **Compare to:** Using only Claude Opus 4.5 for everything = **~$60-80**
 **Savings:** 60%+ with hybrid approach, no quality loss
@@ -166,21 +172,22 @@ Use different models for different tasks to optimize cost and quality:
 
 ## Model Capabilities Comparison
 
-| Capability | Claude Opus | Claude Sonnet | GPT-5.2 | GPT-5 mini | ChatGPT Free | Llama 3.1 |
-|------------|-------------|---------------|---------|------------|--------------|-----------|
-| **Reasoning** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
-| **Code Quality** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-| **Speed** | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
-| **Cost** | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **Context Window** | 200K | 200K | 128K | 128K | 128K | 128K |
-| **Web Search** | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| **Privacy** | Moderate | Moderate | Moderate | Moderate | Low | High |
+| Capability         | Claude Opus | Claude Sonnet | GPT-5.2    | GPT-5 mini | ChatGPT Free | Llama 3.1 |
+| ------------------ | ----------- | ------------- | ---------- | ---------- | ------------ | --------- |
+| **Reasoning**      | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐      | ⭐⭐⭐⭐   | ⭐⭐⭐     | ⭐⭐⭐       | ⭐⭐⭐    |
+| **Code Quality**   | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐    | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐   | ⭐⭐⭐⭐     | ⭐⭐⭐    |
+| **Speed**          | ⭐⭐⭐      | ⭐⭐⭐⭐      | ⭐⭐⭐⭐   | ⭐⭐⭐⭐⭐ | ⭐⭐⭐       | ⭐⭐⭐    |
+| **Cost**           | ⭐          | ⭐⭐⭐        | ⭐⭐⭐     | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐   | ⭐⭐⭐⭐  |
+| **Context Window** | 200K        | 200K          | 128K       | 128K       | 128K         | 128K      |
+| **Web Search**     | ❌          | ❌            | ❌         | ❌         | ✅           | ❌        |
+| **Privacy**        | Moderate    | Moderate      | Moderate   | Moderate   | Low          | High      |
 
 ---
 
 ## When to Self-Host (Llama 3.1)
 
 **Consider self-hosting if:**
+
 - Handling sensitive data (health, finance, legal)
 - Processing millions of requests/month (>$1000/mo in API costs)
 - Need 100% data privacy
@@ -188,15 +195,18 @@ Use different models for different tasks to optimize cost and quality:
 - Have ML engineering expertise
 
 **Hardware Requirements:**
+
 - **Llama 3.1 8B:** 16GB GPU RAM (RTX 4090, A4000)
 - **Llama 3.1 70B:** 80GB GPU RAM (A100, 2x A6000)
 
 **Cost Comparison:**
+
 - **Cloud (GPT-5.2):** $15.75 per 1M tokens
 - **Self-hosted:** $0.50-2.00 per 1M tokens (after hardware amortization)
 - **Break-even point:** ~$1000-2000/month in API costs
 
 **Trade-offs:**
+
 - ✅ Cost-effective at scale
 - ✅ Full data privacy
 - ✅ No vendor lock-in
@@ -209,8 +219,10 @@ Use different models for different tasks to optimize cost and quality:
 ## Free Options
 
 ### ChatGPT Free
+
 **Best For:** Research, planning, simple coding
 **Limitations:**
+
 - Slower response times
 - Rate limits (message cap per hour)
 - May be unavailable during peak times
@@ -220,8 +232,10 @@ Use different models for different tasks to optimize cost and quality:
 **Bad Use Case:** Real-time chatbot for production app ❌
 
 ### Gemini Free Tier
+
 **Best For:** Prototyping, learning, low-volume projects
 **Limitations:**
+
 - Rate limits (60 requests/minute)
 - Smaller context window
 - Less capable than paid models
@@ -234,6 +248,7 @@ Use different models for different tasks to optimize cost and quality:
 ## Cost Optimization Tips
 
 ### 1. Prompt Caching
+
 Use Anthropic's prompt caching to reduce costs by 90% for repeated prompts:
 
 ```
@@ -245,6 +260,7 @@ User: "Now implement the login endpoint"
 ```
 
 ### 2. Shorter Prompts
+
 Be concise. Instead of:
 
 ```
@@ -261,6 +277,7 @@ Use:
 ```
 
 ### 3. Batch Operations
+
 Group similar tasks:
 
 ```
@@ -333,17 +350,21 @@ Ask yourself:
 ## Related Guides
 
 **Multi-Tool Coordination:**
+
 - [Multi-Tool Workflow](./MULTI-TOOL-WORKFLOW.md) - Coordinate multiple AI tools together
 - [Project Orchestration](./PROJECT-ORCHESTRATION.md) - Multi-agent workflows for building features
 
 **Tech Stack Decisions:**
+
 - [Database Selection](./DATABASE-DECISION-FRAMEWORK.md) - Choose the right database
 - [Architecture Patterns](./ARCHITECTURE-PATTERNS.md) - Choose the right architecture
 
 **Real Examples:**
+
 - [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Stripe, emails, migrations, real-time features
 
 **Agent Reference:**
+
 - [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 17 agents
 
 ---

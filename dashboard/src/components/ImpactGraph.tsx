@@ -34,7 +34,7 @@ export function ImpactGraph({ nodes, links }: ImpactGraphProps) {
       const angle = angleStep * idx;
       positions[node.id] = {
         x: centerX + Math.cos(angle) * radius,
-        y: centerY + Math.sin(angle) * radius
+        y: centerY + Math.sin(angle) * radius,
       };
     }
   });

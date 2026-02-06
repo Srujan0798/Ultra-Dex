@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Memory Retriever
  */
@@ -16,7 +18,7 @@ export async function indexProject(rootDir = process.cwd()) {
   const files = await glob('**/*.{md,js,ts,tsx,jsx,json}', {
     cwd: rootDir,
     nodir: true,
-    ignore: DEFAULT_IGNORE
+    ignore: DEFAULT_IGNORE,
   });
 
   for (const file of files) {
@@ -54,5 +56,5 @@ function chunkText(text, size = 800) {
 
 export default {
   indexProject,
-  queryMemory
+  queryMemory,
 };

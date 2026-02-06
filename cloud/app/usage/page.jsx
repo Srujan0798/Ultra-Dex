@@ -1,7 +1,7 @@
 const metrics = [
   { label: 'Tokens This Month', value: '12.4M' },
   { label: 'Avg Latency', value: '1.8s' },
-  { label: 'Cost Allocation', value: '$4,920' }
+  { label: 'Cost Allocation', value: '$4,920' },
 ];
 
 export default function UsagePage() {

@@ -21,5 +21,5 @@ export function parseUDCFFile(filePath) {
 
 export default {
   parseUDCF,
-  parseUDCFFile
+  parseUDCFFile,
 };

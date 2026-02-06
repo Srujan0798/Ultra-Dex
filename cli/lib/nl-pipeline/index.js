@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Natural Language to Code Pipeline
  * Parses requests, generates plan, executes agents, runs tests, and prepares deploy.
@@ -78,7 +80,7 @@ export async function runPipeline(input) {
     parsed,
     plan,
     tests,
-    deployment
+    deployment,
   };
 }
 
@@ -88,5 +90,5 @@ export default {
   executePlanWithAgents,
   runTests,
   deploy,
-  runPipeline
+  runPipeline,
 };

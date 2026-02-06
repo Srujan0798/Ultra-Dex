@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex doctor & config commands
  * Diagnose setup issues and manage configuration
@@ -33,23 +35,27 @@ async function loadConfig() {
   try {
     const content = await fs.readFile(path.resolve(process.cwd(), '.ultra-dex.json'), 'utf8');
     return { ...DEFAULT_CONFIG, ...JSON.parse(content), source: 'project' };
-  } catch { /* no project config */ }
+  } catch {
+    /* no project config */
+  }
 
   // Check home directory config
   try {
     const homePath = path.join(process.env.HOME || process.env.USERPROFILE, '.ultra-dex.json');
     const content = await fs.readFile(homePath, 'utf8');
     return { ...DEFAULT_CONFIG, ...JSON.parse(content), source: 'global' };
-  } catch { /* no global config */ }
+  } catch {
+    /* no global config */
+  }
 
   return { ...DEFAULT_CONFIG, source: 'default' };
 }
 
 async function saveConfig(config, global = false) {
-  const configPath = global 
+  const configPath = global
     ? path.join(process.env.HOME || process.env.USERPROFILE, '.ultra-dex.json')
     : path.resolve(process.cwd(), '.ultra-dex.json');
-  
+
   const { source: _source, ...configData } = config;
   await fs.writeFile(configPath, JSON.stringify(configData, null, 2));
   return configPath;
@@ -60,10 +66,13 @@ export function registerDoctorCommand(program) {
     .command('doctor')
     .description('System Diagnostics - Check System Health')
     .option('--fix', 'Attempt to fix issues automatically')
+    .addHelpText('after', '\nExamples:\n  ultra-dex doctor\n  ultra-dex doctor --fix\n')
     .action(async (options) => {
       try {
         if (options.fix) {
-          printWarning(chalk.yellow('Auto-fix mode is limited in this release. Running diagnostics only.\n'));
+          printWarning(
+            chalk.yellow('Auto-fix mode is limited in this release. Running diagnostics only.\n')
+          );
         }
         header('System Health Diagnostics');
         printInfo(chalk.gray('  Analyzing system components...\n'));
@@ -82,7 +91,11 @@ export function registerDoctorCommand(program) {
             checks.push({ name: 'Node.js', status: 'ok', detail: nodeVersion });
           } else {
             nodeSpinner.warn(`Node.js ${nodeVersion} (recommend >= 18)`);
-            checks.push({ name: 'Node.js', status: 'warn', detail: `${nodeVersion} - upgrade recommended` });
+            checks.push({
+              name: 'Node.js',
+              status: 'warn',
+              detail: `${nodeVersion} - upgrade recommended`,
+            });
           }
         } catch (e) {
           nodeSpinner.fail('Node.js check failed');
@@ -103,18 +116,50 @@ export function registerDoctorCommand(program) {
           hasErrors = true;
         }
 
+        // Check 2b: npm / package.json
+        const npmSpinner = createSpinner('Checking npm + package.json...');
+        npmSpinner.start();
+        try {
+          const npmVersion = execSync('npm --version', { encoding: 'utf8' }).trim();
+          const pkgPath = path.resolve(process.cwd(), 'package.json');
+          await fs.access(pkgPath);
+          npmSpinner.succeed(`npm ${npmVersion} ✓`);
+          checks.push({
+            name: 'npm',
+            status: 'ok',
+            detail: `npm ${npmVersion} + package.json found`,
+          });
+        } catch (e) {
+          npmSpinner.warn('npm or package.json missing');
+          checks.push({
+            name: 'npm',
+            status: 'warn',
+            detail: 'Install npm and ensure package.json exists',
+          });
+        }
+
         // Check 3: AI Providers
         const providerSpinner = createSpinner('Locating AI Providers...');
         providerSpinner.start();
         const providers = checkConfiguredProviders();
-        const configuredProviders = providers.filter(p => p.configured);
+        const configuredProviders = providers.filter((p) => p.configured);
 
         if (configuredProviders.length > 0) {
-          providerSpinner.succeed(`Providers found: ${configuredProviders.map(p => p.name).join(', ')} ✓`);
-          checks.push({ name: 'AI Providers', status: 'ok', detail: configuredProviders.map(p => p.name).join(', ') });
+          providerSpinner.succeed(
+            `Providers found: ${configuredProviders.map((p) => p.name).join(', ')} ✓`
+          );
+          checks.push({
+            name: 'AI Providers',
+            status: 'ok',
+            detail: configuredProviders.map((p) => p.name).join(', '),
+          });
         } else {
           providerSpinner.warn('No AI Providers found');
-          checks.push({ name: 'AI Providers', status: 'warn', detail: 'Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY' });
+          checks.push({
+            name: 'AI Providers',
+            status: 'warn',
+            detail: 'Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY',
+          });
         }
 
         // Check 4: Project structure
@@ -129,25 +174,45 @@ export function registerDoctorCommand(program) {
           try {
             await fs.access(path.resolve(process.cwd(), file));
             foundRequired.push(file);
-          } catch { /* not found */ }
+          } catch {
+            /* not found */
+          }
         }
 
         for (const file of optionalFiles) {
           try {
             await fs.access(path.resolve(process.cwd(), file));
             foundOptional.push(file);
-          } catch { /* not found */ }
+          } catch {
+            /* not found */
+          }
         }
 
         if (foundRequired.length === requiredFiles.length) {
-          structureSpinner.succeed(`Structure valid: ${foundRequired.length}/${requiredFiles.length} required artifacts ✓`);
-          checks.push({ name: 'Project Structure', status: 'ok', detail: `${foundRequired.join(', ')}` });
+          structureSpinner.succeed(
+            `Structure valid: ${foundRequired.length}/${requiredFiles.length} required artifacts ✓`
+          );
+          checks.push({
+            name: 'Project Structure',
+            status: 'ok',
+            detail: `${foundRequired.join(', ')}`,
+          });
         } else if (foundRequired.length > 0) {
-          structureSpinner.warn(`Structure incomplete: ${foundRequired.length}/${requiredFiles.length} required artifacts`);
-          checks.push({ name: 'Project Structure', status: 'warn', detail: `Missing: ${requiredFiles.filter(f => !foundRequired.includes(f)).join(', ')}` });
+          structureSpinner.warn(
+            `Structure incomplete: ${foundRequired.length}/${requiredFiles.length} required artifacts`
+          );
+          checks.push({
+            name: 'Project Structure',
+            status: 'warn',
+            detail: `Missing: ${requiredFiles.filter((f) => !foundRequired.includes(f)).join(', ')}`,
+          });
         } else {
           structureSpinner.info('No Ultra-Dex project found');
-          checks.push({ name: 'Project Structure', status: 'info', detail: 'Run `ultra-dex init` to create a new project' });
+          checks.push({
+            name: 'Project Structure',
+            status: 'info',
+            detail: 'Run `ultra-dex init` to create a new project',
+          });
         }
 
         // Check 5: Git hooks
@@ -165,7 +230,11 @@ export function registerDoctorCommand(program) {
           }
         } catch {
           hooksSpinner.info('No pre-commit hook');
-          checks.push({ name: 'Git Hooks', status: 'info', detail: 'Run `ultra-dex pre-commit --install`' });
+          checks.push({
+            name: 'Git Hooks',
+            status: 'info',
+            detail: 'Run `ultra-dex pre-commit --install`',
+          });
         }
 
         // Check 6: Configuration
@@ -193,17 +262,21 @@ export function registerDoctorCommand(program) {
           checks.push({ name: 'MCP Port', status: 'ok', detail: `Port ${config.mcpPort} free` });
         } catch {
           portSpinner.warn(`Portal ${config.mcpPort} blocked`);
-          checks.push({ name: 'MCP Port', status: 'warn', detail: `Port ${config.mcpPort} busy - change with config` });
+          checks.push({
+            name: 'MCP Port',
+            status: 'warn',
+            detail: `Port ${config.mcpPort} busy - change with config`,
+          });
         }
 
         // Summary
         header('Diagnostics Report');
 
-        const okCount = checks.filter(c => c.status === 'ok').length;
-        const warnCount = checks.filter(c => c.status === 'warn').length;
-        const errorCount = checks.filter(c => c.status === 'error').length;
+        const okCount = checks.filter((c) => c.status === 'ok').length;
+        const warnCount = checks.filter((c) => c.status === 'warn').length;
+        const errorCount = checks.filter((c) => c.status === 'error').length;
 
-        checks.forEach(check => {
+        checks.forEach((check) => {
           let icon;
           if (check.status === 'ok') icon = icons.success;
           else if (check.status === 'warn') icon = icons.warning;
@@ -214,7 +287,9 @@ export function registerDoctorCommand(program) {
         });
 
         process.stdout.write(chalk.gray('  ' + '─'.repeat(50)) + '\n');
-        process.stdout.write(`  ${chalk.green(okCount + ' passed')}  ${chalk.yellow(warnCount + ' warnings')}  ${chalk.red(errorCount + ' errors')}\n`);
+        process.stdout.write(
+          `  ${chalk.green(okCount + ' passed')}  ${chalk.yellow(warnCount + ' warnings')}  ${chalk.red(errorCount + ' errors')}\n`
+        );
 
         if (hasErrors) {
           printError(chalk.red('\n❌ System check failed. Fix issues above.\n'));
@@ -270,11 +345,11 @@ export function registerConfigCommand(program) {
           printInfo(chalk.cyan('\n🔌 MCP Configuration for Claude Desktop\n'));
 
           const mcpConfig = {
-            "ultra-dex": {
-              "command": "npx",
-              "args": ["ultra-dex", "serve", "--port", String(config.mcpPort)],
-              "env": {}
-            }
+            'ultra-dex': {
+              command: 'npx',
+              args: ['ultra-dex', 'serve', '--port', String(config.mcpPort)],
+              env: {},
+            },
           };
 
           printInfo(chalk.white('Add this to your Claude Desktop config:\n'));
@@ -283,7 +358,9 @@ export function registerConfigCommand(program) {
           process.stdout.write(chalk.gray('─'.repeat(50)) + '\n');
 
           printInfo(chalk.cyan('\n📍 Config file locations:'));
-          printInfo(chalk.gray('   macOS: ~/Library/Application Support/Claude/claude_desktop_config.json'));
+          printInfo(
+            chalk.gray('   macOS: ~/Library/Application Support/Claude/claude_desktop_config.json')
+          );
           printInfo(chalk.gray('   Windows: %APPDATA%\Claude\claude_desktop_config.json'));
           printInfo(chalk.gray('   Linux: ~/.config/Claude/claude_desktop_config.json\n'));
           return;
@@ -312,7 +389,9 @@ export function registerConfigCommand(program) {
         if (options.get) {
           const value = config[options.get];
           if (value !== undefined) {
-            process.stdout.write(typeof value === 'object' ? JSON.stringify(value, null, 2) + '\n' : value + '\n');
+            process.stdout.write(
+              typeof value === 'object' ? JSON.stringify(value, null, 2) + '\n' : value + '\n'
+            );
           } else {
             printWarning(chalk.yellow(`Key not found: ${options.get}`));
           }
@@ -352,8 +431,8 @@ export function registerConfigCommand(program) {
               { name: 'Set MCP server port', value: 'mcpPort' },
               { name: 'Generate MCP config for Claude', value: 'mcp' },
               { name: 'Create new config file', value: 'init' },
-            ]
-          }
+            ],
+          },
         ]);
 
         switch (action) {
@@ -368,8 +447,8 @@ export function registerConfigCommand(program) {
                 name: 'provider',
                 message: 'Select default AI provider:',
                 choices: ['claude', 'openai', 'gemini'],
-                default: config.provider
-              }
+                default: config.provider,
+              },
             ]);
             config.provider = provider;
             await saveConfig(config, options.global);
@@ -383,8 +462,8 @@ export function registerConfigCommand(program) {
                 name: 'minScore',
                 message: 'Minimum alignment score (0-100):',
                 default: config.minScore,
-                validate: n => n >= 0 && n <= 100 || 'Must be 0-100'
-              }
+                validate: (n) => (n >= 0 && n <= 100) || 'Must be 0-100',
+              },
             ]);
             config.minScore = minScore;
             await saveConfig(config, options.global);
@@ -398,8 +477,8 @@ export function registerConfigCommand(program) {
                 name: 'mcpPort',
                 message: 'MCP server port:',
                 default: config.mcpPort,
-                validate: n => n > 0 && n < 65536 || 'Invalid port'
-              }
+                validate: (n) => (n > 0 && n < 65536) || 'Invalid port',
+              },
             ]);
             config.mcpPort = mcpPort;
             await saveConfig(config, options.global);
@@ -409,7 +488,7 @@ export function registerConfigCommand(program) {
           case 'mcp':
             // Call the MCP generation
             options.mcp = true;
-            await program.commands.find(c => c.name() === 'config').action(options);
+            await program.commands.find((c) => c.name() === 'config').action(options);
             break;
 
           case 'init':
@@ -421,8 +500,8 @@ export function registerConfigCommand(program) {
                 choices: [
                   { name: 'This project (.ultra-dex.json)', value: 'project' },
                   { name: 'Global (~/.ultra-dex.json)', value: 'global' },
-                ]
-              }
+                ],
+              },
             ]);
             const configPath = await saveConfig(DEFAULT_CONFIG, scope === 'global');
             printSuccess(chalk.green(`\n✅ Config created: ${configPath}\n`));

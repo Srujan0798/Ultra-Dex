@@ -17,13 +17,13 @@ class OrderController {
       const message = JSON.stringify({
         event: eventType,
         data,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       this.channel.publish('orders', eventType, Buffer.from(message), {
         persistent: true,
         messageId: data.id || data.orderId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       logger.info({ message: `Published event: ${eventType}`, data });
@@ -75,8 +75,8 @@ class OrderController {
         orders,
         pagination: {
           page: parseInt(page),
-          limit: parseInt(limit)
-        }
+          limit: parseInt(limit),
+        },
       });
     } catch (error) {
       logger.error('List orders error:', error);
@@ -88,10 +88,7 @@ class OrderController {
     const { id } = req.params;
 
     try {
-      const orderResult = await this.pool.query(
-        'SELECT * FROM orders WHERE id = $1',
-        [id]
-      );
+      const orderResult = await this.pool.query('SELECT * FROM orders WHERE id = $1', [id]);
 
       if (orderResult.rows.length === 0) {
         return res.status(404).json({ error: 'Order not found' });
@@ -100,10 +97,9 @@ class OrderController {
       const order = orderResult.rows[0];
 
       // Get items
-      const itemsResult = await this.pool.query(
-        'SELECT * FROM order_items WHERE order_id = $1',
-        [id]
-      );
+      const itemsResult = await this.pool.query('SELECT * FROM order_items WHERE order_id = $1', [
+        id,
+      ]);
 
       // Get status history
       const historyResult = await this.pool.query(
@@ -115,8 +111,8 @@ class OrderController {
         order: {
           ...order,
           items: itemsResult.rows,
-          statusHistory: historyResult.rows
-        }
+          statusHistory: historyResult.rows,
+        },
       });
     } catch (error) {
       logger.error('Get order error:', error);
@@ -142,14 +138,21 @@ class OrderController {
       await client.query('BEGIN');
 
       // Calculate totals
-      const totalAmount = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+      const totalAmount = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
 
       // Create order
       const orderResult = await client.query(
         `INSERT INTO orders (user_id, total_amount, currency, shipping_address, billing_address, metadata) 
          VALUES ($1, $2, $3, $4, $5, $6) 
          RETURNING *`,
-        [userId, totalAmount, currency, JSON.stringify(shippingAddress), JSON.stringify(billingAddress), JSON.stringify(metadata)]
+        [
+          userId,
+          totalAmount,
+          currency,
+          JSON.stringify(shippingAddress),
+          JSON.stringify(billingAddress),
+          JSON.stringify(metadata),
+        ]
       );
 
       const order = orderResult.rows[0];
@@ -167,7 +170,7 @@ class OrderController {
             item.productName,
             item.quantity,
             item.unitPrice,
-            item.quantity * item.unitPrice
+            item.quantity * item.unitPrice,
           ]
         );
         orderItems.push(itemResult.rows[0]);
@@ -187,7 +190,7 @@ class OrderController {
         userId,
         totalAmount,
         currency,
-        items: orderItems
+        items: orderItems,
       });
 
       logger.info({ message: 'Order created', orderId: order.id, userId });
@@ -195,8 +198,8 @@ class OrderController {
       res.status(201).json({
         order: {
           ...order,
-          items: orderItems
-        }
+          items: orderItems,
+        },
       });
     } catch (error) {
       await client.query('ROLLBACK');
@@ -224,7 +227,7 @@ class OrderController {
           shippingAddress ? JSON.stringify(shippingAddress) : null,
           billingAddress ? JSON.stringify(billingAddress) : null,
           metadata ? JSON.stringify(metadata) : null,
-          id
+          id,
         ]
       );
 
@@ -250,7 +253,14 @@ class OrderController {
     const { id } = req.params;
     const { status, notes } = req.body;
 
-    const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    const validStatuses = [
+      'pending',
+      'confirmed',
+      'processing',
+      'shipped',
+      'delivered',
+      'cancelled',
+    ];
 
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
@@ -286,7 +296,7 @@ class OrderController {
       await this.publishEvent('order.status_changed', {
         orderId: id,
         status,
-        notes
+        notes,
       });
 
       logger.info({ message: 'Order status updated', orderId: id, status });
@@ -311,10 +321,7 @@ class OrderController {
       await client.query('BEGIN');
 
       // Check if order can be cancelled
-      const orderResult = await client.query(
-        'SELECT status FROM orders WHERE id = $1',
-        [id]
-      );
+      const orderResult = await client.query('SELECT status FROM orders WHERE id = $1', [id]);
 
       if (orderResult.rows.length === 0) {
         await client.query('ROLLBACK');
@@ -344,7 +351,7 @@ class OrderController {
       // Publish event
       await this.publishEvent('order.cancelled', {
         orderId: id,
-        reason
+        reason,
       });
 
       logger.info({ message: 'Order cancelled', orderId: id });
@@ -374,8 +381,8 @@ class OrderController {
         orders: result.rows,
         pagination: {
           page: parseInt(page),
-          limit: parseInt(limit)
-        }
+          limit: parseInt(limit),
+        },
       });
     } catch (error) {
       logger.error('Get user orders error:', error);

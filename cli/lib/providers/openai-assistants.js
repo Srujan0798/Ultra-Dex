@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * OpenAI Assistants API Integration for Ultra-Dex
  * Enables persistent threads and assistant management
@@ -59,7 +61,7 @@ export class OpenAIAssistantsProvider extends BaseProvider {
   async _request(endpoint, method = 'GET', body = null) {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
-      'Authorization': `Bearer ${this.apiKey}`,
+      Authorization: `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json',
       'OpenAI-Beta': 'assistants=v2',
     };
@@ -91,7 +93,7 @@ export class OpenAIAssistantsProvider extends BaseProvider {
       model: config.model || this.model,
       name: config.name || 'Ultra-Dex Agent',
       instructions: config.instructions || 'You are a helpful coding assistant.',
-      tools: config.tools || this.tools.map(t => ({ type: t })),
+      tools: config.tools || this.tools.map((t) => ({ type: t })),
       metadata: {
         source: 'ultra-dex',
         version: (await import('../utils/version.js')).getVersion(),
@@ -237,7 +239,7 @@ export class OpenAIAssistantsProvider extends BaseProvider {
       }
 
       // Wait 1 second before polling again
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     throw new Error('Run timed out');
@@ -301,13 +303,13 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 - Mode: ${state.project?.mode || 'Standard'}
 
 ## Current Phase
-${state.phases?.find(p => p.status === 'in_progress')?.name || 'None'}
+${state.phases?.find((p) => p.status === 'in_progress')?.name || 'None'}
 
 ## Active Agents
 ${state.agents?.active?.join(', ') || 'None'}
 
 ## Pending Tasks
-${state.phases?.flatMap(p => p.steps?.filter(s => s.status === 'pending')?.map(s => `- ${s.task}`)).join('\n') || 'None'}
+${state.phases?.flatMap((p) => p.steps?.filter((s) => s.status === 'pending')?.map((s) => `- ${s.task}`)).join('\n') || 'None'}
     `.trim();
 
     await this.addMessage(this.threadId, `[System Context Update]\n\n${context}`);
@@ -323,13 +325,15 @@ ${state.phases?.flatMap(p => p.steps?.filter(s => s.status === 'pending')?.map(s
 
     const messages = await this.listMessages(this.threadId, 100);
 
-    return messages.data?.reverse().map((msg) => ({
-      id: msg.id,
-      role: msg.role,
-      content: msg.content?.[0]?.text?.value || '',
-      timestamp: new Date(msg.created_at * 1000).toISOString(),
-      provider: 'openai-assistants',
-    })) || [];
+    return (
+      messages.data?.reverse().map((msg) => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content?.[0]?.text?.value || '',
+        timestamp: new Date(msg.created_at * 1000).toISOString(),
+        provider: 'openai-assistants',
+      })) || []
+    );
   }
 
   /**
@@ -418,7 +422,7 @@ Cover unit tests, integration tests, and edge cases.`,
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -447,7 +451,7 @@ Cover unit tests, integration tests, and edge cases.`,
       if (done) break;
 
       const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+      const lines = chunk.split('\n').filter((line) => line.startsWith('data: '));
 
       for (const line of lines) {
         const data = line.slice(6);

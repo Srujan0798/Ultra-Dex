@@ -459,22 +459,22 @@ npx ultra-dex swarm resume --checkpoint abc123
 
 ## 📊 SUMMARY TABLE
 
-| # | Prompt | Hours | Priority | Best Agent |
-|---|--------|-------|----------|------------|
-| 1 | Enhanced Check | 4h | 🔴 High | Claude/Gemini |
-| 2 | Scaffold Plan | 6h | 🔴 High | Claude/Qwen |
-| 3 | Export Enhance | 3h | 🔴 High | Any |
-| 4 | Smart Diff | 2h | 🔴 High | Gemini |
-| 5 | REPL Mode | 4h | 🟡 Medium | Claude |
-| 6 | Streaming | 4h | 🟡 Medium | Qwen |
-| 7 | Docker Sandbox | 4h | 🟢 Low | Claude |
-| 8 | Auto-Sync | 3h | 🟢 Low | Any |
-| 9 | Shell Complete | 1h | 🟢 Low | Any |
-| 10 | WebSocket | 2h | 🟢 Low | Qwen |
-| 11 | Graph RAG | 3w | 🔵 Future | Team |
-| 12 | Enterprise Auth | 3w | 🔵 Future | Team |
-| 13 | VS Code v2 | 2w | 🔵 Future | Team |
-| 14 | Swarm Mode | 2w | 🔵 Future | Team |
+| #   | Prompt          | Hours | Priority  | Best Agent    |
+| --- | --------------- | ----- | --------- | ------------- |
+| 1   | Enhanced Check  | 4h    | 🔴 High   | Claude/Gemini |
+| 2   | Scaffold Plan   | 6h    | 🔴 High   | Claude/Qwen   |
+| 3   | Export Enhance  | 3h    | 🔴 High   | Any           |
+| 4   | Smart Diff      | 2h    | 🔴 High   | Gemini        |
+| 5   | REPL Mode       | 4h    | 🟡 Medium | Claude        |
+| 6   | Streaming       | 4h    | 🟡 Medium | Qwen          |
+| 7   | Docker Sandbox  | 4h    | 🟢 Low    | Claude        |
+| 8   | Auto-Sync       | 3h    | 🟢 Low    | Any           |
+| 9   | Shell Complete  | 1h    | 🟢 Low    | Any           |
+| 10  | WebSocket       | 2h    | 🟢 Low    | Qwen          |
+| 11  | Graph RAG       | 3w    | 🔵 Future | Team          |
+| 12  | Enterprise Auth | 3w    | 🔵 Future | Team          |
+| 13  | VS Code v2      | 2w    | 🔵 Future | Team          |
+| 14  | Swarm Mode      | 2w    | 🔵 Future | Team          |
 
 ---
 
@@ -482,15 +482,15 @@ npx ultra-dex swarm resume --checkpoint abc123
 
 **For immediate impact, run prompts 1-4 in parallel:**
 
-| Agent | Prompt | Time |
-|-------|--------|------|
-| Gemini | Prompt 1 (Check) | 4h |
-| Claude | Prompt 2 (Scaffold) | 6h |
-| Qwen | Prompt 3 (Export) | 3h |
-| Any | Prompt 4 (Diff) | 2h |
+| Agent  | Prompt              | Time |
+| ------ | ------------------- | ---- |
+| Gemini | Prompt 1 (Check)    | 4h   |
+| Claude | Prompt 2 (Scaffold) | 6h   |
+| Qwen   | Prompt 3 (Export)   | 3h   |
+| Any    | Prompt 4 (Diff)     | 2h   |
 
 **Total: 15 hours → 4 new features**
 
 ---
 
-*Generated: Feb 5, 2026*
+_Generated: Feb 5, 2026_

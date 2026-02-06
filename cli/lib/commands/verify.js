@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex verify command
  * Executable 21-step verification framework
@@ -16,117 +18,147 @@ import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { buildDiffSummary, applyDiffSummary } from './brain.js';
 import { VERIFICATION_STEPS, summarizeSteps } from '../verify/21-steps.js';
-import { 
-    verifyArchitectureAlignment, 
-    verifyErrorHandlingStrategy, 
-    verifyApiDocumentation, 
-    verifyDatabaseSchema, 
-    verifyEnvironmentVariables,
-    verifyTypeSafety,
-    verifyUnitTests,
-    verifyLinting,
-    verifySecurityPatterns,
-    verifyConsoleLogs,
-    verifyContextLoaded,
-    verifyAccessibility,
-    verifyPerformance,
-    verifyDeploymentReadiness,
-    verifyMigrationScripts
+import { runProtocol21 } from '../quality/protocol-21.js';
+import {
+  verifyArchitectureAlignment,
+  verifyErrorHandlingStrategy,
+  verifyApiDocumentation,
+  verifyDatabaseSchema,
+  verifyEnvironmentVariables,
+  verifyTypeSafety,
+  verifyUnitTests,
+  verifyLinting,
+  verifySecurityPatterns,
+  verifyConsoleLogs,
+  verifyContextLoaded,
+  verifyAccessibility,
+  verifyPerformance,
+  verifyDeploymentReadiness,
+  verifyMigrationScripts,
 } from '../quality/automation.js';
 
 const CHECKLIST = [
-  "Atomic Scope Defined", "Context Loaded", "Architecture Alignment", 
-  "Security Patterns Applied", "Type Safety Check", "Error Handling Strategy",
-  "API Documentation Updated", "Database Schema Verified", "Environment Variables Set",
-  "Implementation Complete", "Console Logs Removed", "Edge Cases Handled",
-  "Performance Check", "Accessibility (A11y) Check", "Cross-browser Check",
-  "Unit Tests Passed", "Integration Tests Passed", "Linting & Formatting",
-  "Code Review Approved", "Migration Scripts Ready", "Deployment Readiness"
+  'Atomic Scope Defined',
+  'Context Loaded',
+  'Architecture Alignment',
+  'Security Patterns Applied',
+  'Type Safety Check',
+  'Error Handling Strategy',
+  'API Documentation Updated',
+  'Database Schema Verified',
+  'Environment Variables Set',
+  'Implementation Complete',
+  'Console Logs Removed',
+  'Edge Cases Handled',
+  'Performance Check',
+  'Accessibility (A11y) Check',
+  'Cross-browser Check',
+  'Unit Tests Passed',
+  'Integration Tests Passed',
+  'Linting & Formatting',
+  'Code Review Approved',
+  'Migration Scripts Ready',
+  'Deployment Readiness',
 ];
 
 /**
  * Register the verify command with Commander
  */
 export function registerVerifyCommand(program) {
-    program
-      .command('verify [task]')
-      .description('Run executable 21-step verification on a task or project')
-      .option('-p, --provider <provider>', 'AI provider')
-      .option('--json', 'Output results as JSON')
-      .option('--template <path>', 'Template file path (optional)')
-      .option('--live', 'Run active verification (automated gates only)')
-      .option('--pre-push', 'Run pre-push checks (update CONTEXT.md + live gates)')
-      .option('--full', 'Run full 21-step verification')
-      .action(async (task, options) => {
-          try {
-              if (options.prePush) {
-                  await runPrePushChecks();
-              } else if (options.live) {
-                  await verifyLive(process.cwd());
-              } else if (options.full) {
-                  await verifyCommand(task, options);
-              } else {
-                  await verifyCommand(task, options);
-              }
-          } catch (error) {
-              await handleError(error, { command: 'verify', task, options });
-              process.exit(error.exitCode || 1);
+  program
+    .command('verify [task]')
+    .description('Run executable 21-step verification on a task or project')
+    .option('-p, --provider <provider>', 'AI provider')
+    .option('--json', 'Output results as JSON')
+    .option('--task <id>', 'Task identifier for Protocol 21 logs')
+    .option('--skip-protocol', 'Skip interactive Protocol 21 checklist')
+    .option('--template <path>', 'Template file path (optional)')
+    .option('--live', 'Run active verification (automated gates only)')
+    .option('--pre-push', 'Run pre-push checks (update CONTEXT.md + live gates)')
+    .option('--full', 'Run full 21-step verification')
+    .action(async (task, options) => {
+      try {
+        const taskId = options.task || task;
+        if (taskId && !options.skipProtocol) {
+          const summary = await runProtocol21({ taskId });
+          if (summary.status !== 'PASS') {
+            const error = new AppError('Protocol 21 incomplete', {
+              code: 'PROTOCOL_21_INCOMPLETE',
+            });
+            error.exitCode = 1;
+            throw error;
           }
-      });
+        }
+        if (options.prePush) {
+          await runPrePushChecks();
+        } else if (options.live) {
+          await verifyLive(process.cwd());
+        } else if (options.full) {
+          await verifyCommand(task, options);
+        } else {
+          await verifyCommand(task, options);
+        }
+      } catch (error) {
+        await handleError(error, { command: 'verify', task, options });
+        process.exit(error.exitCode || 1);
+      }
+    });
 }
 
 /**
  * Live verification mode (Automated Gates Only)
  */
 export async function verifyLive(projectDir) {
-    printInfo('\n⚡ Ultra-Dex Active Verification (Live Mode)\n');
-    const results = await runAutomatedGates(projectDir);
-    
-    const failures = Object.entries(results).filter(([_, status]) => status === 'FAIL');
+  printInfo('\n⚡ Ultra-Dex Active Verification (Live Mode)\n');
+  const results = await runAutomatedGates(projectDir);
 
-    if (failures.length > 0) {
-        printError(`\n❌ Verification Failed: ${failures.length} checks failed.`);
-        failures.forEach(([name]) => printError(`  - ${name}`));
-        const error = new Error('Live verification failed');
-        error.exitCode = 1;
-        throw error;
-    }
-    
-    printSuccess('\n✅ Active Verification Passed');
+  const failures = Object.entries(results).filter(([_, status]) => status === 'FAIL');
+
+  if (failures.length > 0) {
+    printError(`\n❌ Verification Failed: ${failures.length} checks failed.`);
+    failures.forEach(([name]) => printError(`  - ${name}`));
+    const error = new Error('Live verification failed');
+    error.exitCode = 1;
+    throw error;
+  }
+
+  printSuccess('\n✅ Active Verification Passed');
 }
 
 async function runPrePushChecks() {
-    printInfo('\n🔒 Ultra-Dex Pre-Push Verification\n');
+  printInfo('\n🔒 Ultra-Dex Pre-Push Verification\n');
 
-    const contextUpdated = await updateContextWithDiff();
-    if (contextUpdated) {
-        printWarning('CONTEXT.md updated from git diff. Please commit the changes before pushing.');
-        const err = new AppError('CONTEXT.md updated - commit required', { code: 'CONTEXT_UPDATE_REQUIRED' });
-        err.exitCode = 1;
-        throw err;
-    }
+  const contextUpdated = await updateContextWithDiff();
+  if (contextUpdated) {
+    printWarning('CONTEXT.md updated from git diff. Please commit the changes before pushing.');
+    const err = new AppError('CONTEXT.md updated - commit required', {
+      code: 'CONTEXT_UPDATE_REQUIRED',
+    });
+    err.exitCode = 1;
+    throw err;
+  }
 
-    await verifyLive(process.cwd());
+  await verifyLive(process.cwd());
 }
 
 async function updateContextWithDiff() {
-    const contextPath = path.resolve(process.cwd(), 'CONTEXT.md');
-    let contextContent = '';
-    try {
-        contextContent = await fs.readFile(contextPath, 'utf8');
-    } catch {
-        contextContent = '# Project Context\n';
-    }
+  const contextPath = path.resolve(process.cwd(), 'CONTEXT.md');
+  let contextContent = '';
+  try {
+    contextContent = await fs.readFile(contextPath, 'utf8');
+  } catch {
+    contextContent = '# Project Context\n';
+  }
 
-    const diffSummary = await buildDiffSummary();
-    const updated = await applyDiffSummary(contextContent, diffSummary);
+  const diffSummary = await buildDiffSummary();
+  const updated = await applyDiffSummary(contextContent, diffSummary);
 
-    if (updated !== contextContent) {
-        await fs.writeFile(contextPath, updated);
-        return true;
-    }
+  if (updated !== contextContent) {
+    await fs.writeFile(contextPath, updated);
+    return true;
+  }
 
-    return false;
+  return false;
 }
 
 /**
@@ -135,10 +167,19 @@ async function updateContextWithDiff() {
 export async function verifyCommand(taskName, options) {
   if (options.json) {
     try {
-      const templatePath = path.resolve(process.cwd(), options.template || 'IMPLEMENTATION-PLAN.md');
+      const templatePath = path.resolve(
+        process.cwd(),
+        options.template || 'IMPLEMENTATION-PLAN.md'
+      );
       const contextPath = path.resolve(process.cwd(), 'CONTEXT.md');
-      const planExists = await fs.stat(templatePath).then(() => true).catch(() => false);
-      const contextExists = await fs.stat(contextPath).then(() => true).catch(() => false);
+      const planExists = await fs
+        .stat(templatePath)
+        .then(() => true)
+        .catch(() => false);
+      const contextExists = await fs
+        .stat(contextPath)
+        .then(() => true)
+        .catch(() => false);
 
       let p0SectionsComplete = false;
       if (planExists) {
@@ -154,8 +195,8 @@ export async function verifyCommand(taskName, options) {
         p0SectionsComplete,
         files: {
           plan: Boolean(planExists),
-          context: Boolean(contextExists)
-        }
+          context: Boolean(contextExists),
+        },
       };
 
       console.log(JSON.stringify(result, null, 2));
@@ -167,7 +208,7 @@ export async function verifyCommand(taskName, options) {
   }
 
   printInfo('\n⚖️  Ultra-Dex 21-Step Verification\n');
-  
+
   const providerId = options.provider || getDefaultProvider();
   const provider = createProvider(providerId);
   const state = await loadState();
@@ -198,7 +239,7 @@ export function listVerificationSteps() {
   const phases = summarizeSteps();
   Object.entries(phases).forEach(([phase, steps]) => {
     printInfo(chalk.bold(`\n${phase}`));
-    steps.forEach(step => printInfo(`  ${step.id}. ${step.name}`));
+    steps.forEach((step) => printInfo(`  ${step.id}. ${step.name}`));
   });
   return VERIFICATION_STEPS;
 }
@@ -223,18 +264,25 @@ export async function runAutomatedGates(projectDir) {
     { name: 'Performance Check', fn: verifyPerformance },
     { name: 'Unit Tests Passed', fn: verifyUnitTests },
     { name: 'Linting & Formatting', fn: verifyLinting },
-    { name: 'Deployment Readiness', fn: verifyDeploymentReadiness }
+    { name: 'Deployment Readiness', fn: verifyDeploymentReadiness },
   ];
 
   for (const gate of gates) {
     try {
-        const res = await gate.fn(projectDir);
-        automatedResults[gate.name] = res.status;
-        const icon = res.status === 'PASS' ? chalk.green('✅') : res.status === 'SKIP' ? chalk.gray('⚪') : chalk.red('❌');
-        printInfo(`  ${icon} ${chalk.white(gate.name.padEnd(30))} [${res.status}] ${chalk.gray(`(${res.message})`)}`);
+      const res = await gate.fn(projectDir);
+      automatedResults[gate.name] = res.status;
+      const icon =
+        res.status === 'PASS'
+          ? chalk.green('✅')
+          : res.status === 'SKIP'
+            ? chalk.gray('⚪')
+            : chalk.red('❌');
+      printInfo(
+        `  ${icon} ${chalk.white(gate.name.padEnd(30))} [${res.status}] ${chalk.gray(`(${res.message})`)}`
+      );
     } catch (e) {
-        automatedResults[gate.name] = 'FAIL';
-        printError(`  ❌ ${gate.name} failed to execute: ${e.message}`);
+      automatedResults[gate.name] = 'FAIL';
+      printError(`  ❌ ${gate.name} failed to execute: ${e.message}`);
     }
   }
   return automatedResults;
@@ -251,9 +299,9 @@ async function runAiReview(taskName, provider, state, automatedResults) {
     const graphSummary = projectGraph.getSummary();
 
     const projectContext = {
-        state,
-        graph: graphSummary,
-        context: `Task to verify: ${taskName || 'All completed tasks'}\n\nAutomated Results:\n${JSON.stringify(automatedResults, null, 2)}`
+      state,
+      graph: graphSummary,
+      context: `Task to verify: ${taskName || 'All completed tasks'}\n\nAutomated Results:\n${JSON.stringify(automatedResults, null, 2)}`,
     };
 
     const prompt = `
@@ -261,7 +309,7 @@ Verify the following task against the 21-Step Verification Framework:
 "${taskName || 'Full Project Readiness'}"
 
 The framework consists of:
-${CHECKLIST.map((s, i) => `${i+1}. ${s}`).join('\n')}
+${CHECKLIST.map((s, i) => `${i + 1}. ${s}`).join('\n')}
 
 Automated checks have already determined:
 ${JSON.stringify(automatedResults, null, 2)}
@@ -294,13 +342,15 @@ Final Verdict: [APPROVED/REJECTED]
  * Handle the final verdict from the verification report
  */
 function displayFinalVerdict(report) {
-    if (report.includes('REJECTED')) {
-        printError('\n❌ Task failed verification. Please address the issues above.');
-        // We don't exit here, but return failure so the command action can handle it
-        const err = new AppError('Verification rejected by AI reviewer', { code: 'VERIFICATION_REJECTED' });
-        err.exitCode = 1;
-        throw err;
-    } else {
-        printSuccess('\n✅ Task passed verification! Deployment recommended.');
-    }
+  if (report.includes('REJECTED')) {
+    printError('\n❌ Task failed verification. Please address the issues above.');
+    // We don't exit here, but return failure so the command action can handle it
+    const err = new AppError('Verification rejected by AI reviewer', {
+      code: 'VERIFICATION_REJECTED',
+    });
+    err.exitCode = 1;
+    throw err;
+  } else {
+    printSuccess('\n✅ Task passed verification! Deployment recommended.');
+  }
 }

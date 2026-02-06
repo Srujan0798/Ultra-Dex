@@ -19,7 +19,7 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5433,
   database: process.env.DB_NAME || 'users_db',
   user: process.env.DB_USER || 'users_user',
-  password: process.env.DB_PASSWORD || 'users_pass123'
+  password: process.env.DB_PASSWORD || 'users_pass123',
 });
 
 // Redis connection
@@ -41,7 +41,7 @@ app.use((req, res, next) => {
     method: req.method,
     url: req.url,
     ip: req.ip,
-    userAgent: req.get('user-agent')
+    userAgent: req.get('user-agent'),
   });
   next();
 });
@@ -54,14 +54,14 @@ app.get('/health', async (req, res) => {
     res.json({
       status: 'ok',
       service: 'users-service',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Health check failed:', error);
     res.status(503).json({
       status: 'error',
       service: 'users-service',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -75,7 +75,7 @@ app.use(errorHandler);
 // Start server
 app.listen(PORT, async () => {
   logger.info(`Users service running on port ${PORT}`);
-  
+
   try {
     await registerService('users-service', PORT);
   } catch (error) {

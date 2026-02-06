@@ -32,7 +32,7 @@ describe('production command registration', () => {
 
     program.command('swarm <task>').action(swarmCommand);
 
-    const names = program.commands.map(cmd => cmd.name());
+    const names = program.commands.map((cmd) => cmd.name());
     const expected = [
       'init',
       'generate',
@@ -44,10 +44,10 @@ describe('production command registration', () => {
       'ci-monitor',
       'cloud',
       'brain',
-      'swarm'
+      'swarm',
     ];
 
-    expected.forEach(name => {
+    expected.forEach((name) => {
       assert.ok(names.includes(name), `Expected ${name} command to be registered`);
     });
   });

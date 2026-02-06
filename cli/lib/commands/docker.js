@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs/promises';
@@ -55,7 +57,10 @@ export function registerDockerCommand(program) {
         const targetDir = path.resolve(options.dir);
         await copyTemplate('Dockerfile', targetDir);
         await copyTemplate('docker-compose.yml', targetDir);
-        await fs.copyFile(path.join(TEMPLATE_ROOT, 'nginx.conf'), path.join(targetDir, 'nginx.conf'));
+        await fs.copyFile(
+          path.join(TEMPLATE_ROOT, 'nginx.conf'),
+          path.join(targetDir, 'nginx.conf')
+        );
         printSuccess(chalk.green('✅ Docker config generated.'));
       } catch (error) {
         printError(chalk.red(`Failed to generate Docker config: ${error.message}`));

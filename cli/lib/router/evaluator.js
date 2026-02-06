@@ -1,6 +1,12 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { runQualityGates } from '../quality/gate.js';
 
-export async function evaluateOutput({ output = '', projectDir = process.cwd(), requireQuality = false } = {}) {
+export async function evaluateOutput({
+  output = '',
+  projectDir = process.cwd(),
+  requireQuality = false,
+} = {}) {
   if (!requireQuality) {
     return { passed: Boolean(output), reason: output ? 'Output present' : 'Empty output' };
   }
@@ -16,6 +22,6 @@ export async function evaluateOutput({ output = '', projectDir = process.cwd(), 
   return {
     passed: failed.length === 0,
     reason: failed.length ? `${failed.length} quality gates failed` : 'Quality gates passed',
-    failed
+    failed,
   };
 }

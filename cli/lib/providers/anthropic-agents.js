@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Anthropic Agent SDK Integration for Ultra-Dex
  * Enables TRUE autonomous agents using Claude's Agent SDK
@@ -282,7 +284,8 @@ async function executeTool(toolName, input, context = {}) {
         });
 
         const results = [];
-        for (const file of files.slice(0, 50)) { // Limit search
+        for (const file of files.slice(0, 50)) {
+          // Limit search
           try {
             const content = await fs.readFile(path.join(workdir, file), 'utf8');
             const lines = content.split('\n');
@@ -323,7 +326,9 @@ async function executeTool(toolName, input, context = {}) {
     case 'create_checkpoint': {
       try {
         await execAsync('git add -A', { cwd: workdir });
-        await execAsync(`git commit -m "checkpoint: ${input.message}" --allow-empty`, { cwd: workdir });
+        await execAsync(`git commit -m "checkpoint: ${input.message}" --allow-empty`, {
+          cwd: workdir,
+        });
         return { success: true, message: `Checkpoint created: ${input.message}` };
       } catch (err) {
         return { success: false, error: `Checkpoint failed: ${err.message}` };
@@ -363,8 +368,8 @@ export class AutonomousAgent {
     this.verbose = options.verbose || false;
 
     // System prompt for this agent type
-    this.systemPrompt = AGENT_SDK_CONFIG.agentPrompts[agentType] ||
-      AGENT_SDK_CONFIG.agentPrompts.orchestrator;
+    this.systemPrompt =
+      AGENT_SDK_CONFIG.agentPrompts[agentType] || AGENT_SDK_CONFIG.agentPrompts.orchestrator;
 
     // Available tools
     this.tools = Object.values(AGENT_SDK_CONFIG.tools);
@@ -385,9 +390,7 @@ export class AutonomousAgent {
       console.log(chalk.gray(`Task: ${task}\n`));
     }
 
-    const messages = [
-      { role: 'user', content: task },
-    ];
+    const messages = [{ role: 'user', content: task }];
 
     let turn = 0;
     let finalResult = null;
@@ -400,11 +403,7 @@ export class AutonomousAgent {
       }
 
       // Call the model
-      const response = await provider.generateWithTools(
-        this.systemPrompt,
-        messages,
-        this.tools
-      );
+      const response = await provider.generateWithTools(this.systemPrompt, messages, this.tools);
 
       // Check for tool calls
       if (response.toolCalls && response.toolCalls.length > 0) {
@@ -413,7 +412,11 @@ export class AutonomousAgent {
 
         for (const toolCall of response.toolCalls) {
           if (this.verbose) {
-            console.log(chalk.yellow(`  🔧 ${toolCall.name}(${JSON.stringify(toolCall.input).slice(0, 50)}...)`));
+            console.log(
+              chalk.yellow(
+                `  🔧 ${toolCall.name}(${JSON.stringify(toolCall.input).slice(0, 50)}...)`
+              )
+            );
           }
 
           const result = await executeTool(toolCall.name, toolCall.input, { workdir });
@@ -442,9 +445,12 @@ export class AutonomousAgent {
         }
 
         // Add assistant message and tool results to history
-        messages.push({ role: 'assistant', content: response.content, tool_calls: response.toolCalls });
+        messages.push({
+          role: 'assistant',
+          content: response.content,
+          tool_calls: response.toolCalls,
+        });
         messages.push(...toolMessages);
-
       } else {
         // No tool calls - agent is done
         finalResult = response.content;
@@ -478,7 +484,7 @@ export class AutonomousAgent {
   getSummary() {
     return {
       agent: this.type,
-      toolsUsed: this.toolResults.map(t => t.tool),
+      toolsUsed: this.toolResults.map((t) => t.tool),
       historyLength: this.history.length,
     };
   }
@@ -528,9 +534,7 @@ export function extendProviderWithTools(provider) {
   provider.generateWithTools = async function (systemPrompt, messages, tools) {
     // For providers that don't natively support tools,
     // we simulate tool use through the prompt
-    const toolDescriptions = tools.map(t =>
-      `- ${t.name}: ${t.description}`
-    ).join('\n');
+    const toolDescriptions = tools.map((t) => `- ${t.name}: ${t.description}`).join('\n');
 
     const enhancedSystem = `${systemPrompt}
 
@@ -550,11 +554,13 @@ After receiving tool results, continue your work or provide your final answer.`;
     if (toolCallMatch) {
       return {
         content: result.content,
-        toolCalls: [{
-          id: `tool_${Date.now()}`,
-          name: toolCallMatch[1],
-          input: JSON.parse(toolCallMatch[2]),
-        }],
+        toolCalls: [
+          {
+            id: `tool_${Date.now()}`,
+            name: toolCallMatch[1],
+            input: JSON.parse(toolCallMatch[2]),
+          },
+        ],
       };
     }
 

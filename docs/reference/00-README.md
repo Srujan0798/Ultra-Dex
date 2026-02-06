@@ -17,13 +17,13 @@ A complete system for planning and building production-ready SaaS applications. 
 
 ## Start Here
 
-| Your Goal | Start With |
-|-----------|------------|
-| **Just starting?** | [01-QUICK-START.md](./01-QUICK-START.md) (5 minutes) |
-| **How to use this correctly?** | [02-HOW-TO-USE.md](./02-HOW-TO-USE.md) (10 minutes) |
-| **Understand the system?** | [03-METHODOLOGY.md](./03-METHODOLOGY.md) (10 minutes) |
-| **See a real example?** | [TaskFlow-Complete.md](./Examples/TaskFlow-Complete.md) |
-| **Ready for full planning?** | [04-Imp-Template.md](./04-Imp-Template.md) |
+| Your Goal                      | Start With                                              |
+| ------------------------------ | ------------------------------------------------------- |
+| **Just starting?**             | [01-QUICK-START.md](./01-QUICK-START.md) (5 minutes)    |
+| **How to use this correctly?** | [02-HOW-TO-USE.md](./02-HOW-TO-USE.md) (10 minutes)     |
+| **Understand the system?**     | [03-METHODOLOGY.md](./03-METHODOLOGY.md) (10 minutes)   |
+| **See a real example?**        | [TaskFlow-Complete.md](./Examples/TaskFlow-Complete.md) |
+| **Ready for full planning?**   | [04-Imp-Template.md](./04-Imp-Template.md)              |
 
 ---
 
@@ -57,13 +57,13 @@ docs/reference/
 
 ## The Ultra-Dex Difference
 
-| Other Templates | Ultra-Dex |
-|-----------------|-----------|
-| Product definition only | Product → Code → Deploy |
-| Vague task lists | 4-9 hour atomic tasks with acceptance criteria |
-| No verification | 21-step checklist for every task |
-| Optimistic estimates | Overhead calculation formula |
-| "Done when shipped" | Production-ready definition |
+| Other Templates         | Ultra-Dex                                      |
+| ----------------------- | ---------------------------------------------- |
+| Product definition only | Product → Code → Deploy                        |
+| Vague task lists        | 4-9 hour atomic tasks with acceptance criteria |
+| No verification         | 21-step checklist for every task               |
+| Optimistic estimates    | Overhead calculation formula                   |
+| "Done when shipped"     | Production-ready definition                    |
 
 ---
 

@@ -38,6 +38,7 @@
 ### 1.1 Prerequisites
 
 Before installing Ultra-Dex, ensure you have:
+
 - **Node.js 18+** - [Download here](https://nodejs.org)
 - **Git** - [Download here](https://git-scm.com)
 - **API Keys** (at least one):
@@ -66,6 +67,7 @@ ultra-dex config --wizard
 ```
 
 This will guide you through:
+
 1. **AI Provider Selection** - Choose your preferred AI (Claude, GPT, Gemini, Ollama)
 2. **API Key Setup** - Securely save your API key
 3. **Port Configuration** - Set dashboard ports (default: 3001/3002)
@@ -74,6 +76,7 @@ This will guide you through:
 6. **GitHub Integration** - Connect your GitHub account
 
 **Example Configuration:**
+
 ```json
 {
   "provider": {
@@ -100,6 +103,7 @@ ultra-dex doctor
 ```
 
 This runs 17 diagnostic checks including:
+
 - Node.js version
 - Git installation
 - AI provider configuration
@@ -128,6 +132,7 @@ ultra-dex init
 ```
 
 **What happens:**
+
 1. Creates project structure
 2. Generates QUICK-START.md
 3. Creates CONTEXT.md template
@@ -166,6 +171,7 @@ ultra-dex init --live --stack next15-prisma-clerk
 ```
 
 This creates:
+
 - ✅ Complete Next.js 15 project
 - ✅ Prisma schema
 - ✅ Clerk authentication
@@ -216,14 +222,17 @@ my-project/
 # MyProject - Context
 
 ## Project Overview
+
 **Name:** MyProject
 **Started:** 2026-02-01
 **Status:** Planning
 
 ## Quick Summary
+
 A SaaS for task management with team collaboration.
 
 ## Key Decisions
+
 - Frontend: Next.js 15 with App Router
 - Database: PostgreSQL via Prisma
 - Auth: Clerk for authentication
@@ -231,19 +240,23 @@ A SaaS for task management with team collaboration.
 - Hosting: Vercel
 
 ## Current Focus
+
 Setting up the implementation plan.
 
 ## Current State
+
 - Files Analyzed: 0
 - Dependencies: 0
 - Project Phases: 0 active
 - Last Sync: 2026-02-01T00:00:00.000Z
 
 ## Resources
+
 - [Ultra-Dex Template](https://github.com/Srujan0798/Ultra-Dex)
 ```
 
 **Keep this updated!** Use:
+
 ```bash
 ultra-dex brain  # Auto-sync context
 ```
@@ -256,32 +269,34 @@ ultra-dex brain  # Auto-sync context
 
 Ultra-Dex provides 17 specialized AI agents:
 
-| Agent | Role | Best For |
-|-------|------|----------|
-| **@orchestrator** | Meta coordination | Complex multi-agent tasks |
-| **@cto** | Architecture decisions | Tech stack, system design |
-| **@planner** | Task breakdown | Sprint planning, roadmaps |
-| **@backend** | API development | Server logic, endpoints |
-| **@frontend** | UI development | Components, styling |
-| **@database** | Data design | Schemas, migrations |
-| **@auth** | Security | Authentication, authorization |
-| **@devops** | Infrastructure | Deployment, CI/CD |
-| **@testing** | QA | Test cases, automation |
-| **@reviewer** | Code review | Quality checks, best practices |
-| **@debugger** | Bug fixing | Troubleshooting, fixes |
-| **@documentation** | Docs | Technical writing |
-| **@performance** | Optimization | Speed, efficiency |
-| **@security** | Security audit | Vulnerability scanning |
+| Agent              | Role                   | Best For                       |
+| ------------------ | ---------------------- | ------------------------------ |
+| **@orchestrator**  | Meta coordination      | Complex multi-agent tasks      |
+| **@cto**           | Architecture decisions | Tech stack, system design      |
+| **@planner**       | Task breakdown         | Sprint planning, roadmaps      |
+| **@backend**       | API development        | Server logic, endpoints        |
+| **@frontend**      | UI development         | Components, styling            |
+| **@database**      | Data design            | Schemas, migrations            |
+| **@auth**          | Security               | Authentication, authorization  |
+| **@devops**        | Infrastructure         | Deployment, CI/CD              |
+| **@testing**       | QA                     | Test cases, automation         |
+| **@reviewer**      | Code review            | Quality checks, best practices |
+| **@debugger**      | Bug fixing             | Troubleshooting, fixes         |
+| **@documentation** | Docs                   | Technical writing              |
+| **@performance**   | Optimization           | Speed, efficiency              |
+| **@security**      | Security audit         | Vulnerability scanning         |
 
 ### 4.2 Using an Agent
 
 **Method 1: Direct CLI**
+
 ```bash
 # Ask an agent to help with a specific task
 ultra-dex run backend "Create REST API for user authentication"
 ```
 
 **Method 2: VS Code Extension**
+
 1. Open VS Code
 2. Click Ultra-Dex icon in sidebar
 3. Browse agents by tier
@@ -289,6 +304,7 @@ ultra-dex run backend "Create REST API for user authentication"
 5. Paste into your AI chat
 
 **Method 3: Copy Prompt Manually**
+
 ```bash
 # View agent prompt
 ultra-dex agents show backend
@@ -304,6 +320,7 @@ ultra-dex agents copy backend
 2. **Provide Context**: Reference your CONTEXT.md
 
 3. **Use Agents in Sequence**:
+
    ```
    @planner: Break down "build authentication"
    @auth: Design security model
@@ -327,27 +344,26 @@ ultra-dex generate "A task management SaaS with team collaboration"
 ```
 
 **What you get:**
+
 1. **Phase 1: Foundation**
    - Project setup
    - Authentication
    - Database schema
-   
 2. **Phase 2: Core Features**
    - Task management
    - Team collaboration
    - Real-time updates
-   
 3. **Phase 3: Advanced**
    - File attachments
    - Notifications
    - API integrations
-   
 4. **Phase 4: Polish**
    - Testing
    - Performance
    - Deployment
 
 **The plan includes:**
+
 - ✅ Detailed requirements
 - ✅ Acceptance criteria
 - ✅ Tech stack recommendations
@@ -360,6 +376,7 @@ ultra-dex generate "A task management SaaS with team collaboration"
 ### 5.2 Customize the Plan
 
 Edit IMPLEMENTATION-PLAN.md to:
+
 - Remove sections you don't need
 - Add custom requirements
 - Adjust timelines
@@ -374,6 +391,7 @@ ultra-dex validate
 ```
 
 This checks:
+
 - ✅ Required sections present
 - ✅ Content quality
 - ✅ Alignment with best practices
@@ -388,6 +406,7 @@ This checks:
 A **swarm** is multiple AI agents working in parallel on your task.
 
 **Example:**
+
 ```
 Input: "Build user authentication"
 
@@ -408,6 +427,7 @@ ultra-dex swarm "Build complete user authentication system"
 ```
 
 **Options:**
+
 ```bash
 # Parallel execution (faster)
 ultra-dex swarm --parallel "Build auth system"
@@ -425,6 +445,7 @@ ultra-dex swarm --context "Use JWT tokens, support OAuth" "Build auth"
 ### 6.3 Monitoring Swarms
 
 **Terminal Output:**
+
 ```
 🐝 Ultra-Dex Swarm Mode
 Task: "Build complete user authentication system"
@@ -452,6 +473,7 @@ Task: "Build complete user authentication system"
 ```
 
 **Dashboard:**
+
 ```bash
 # Open real-time dashboard
 ultra-dex serve
@@ -471,6 +493,7 @@ ultra-dex diff
 ```
 
 **Output:**
+
 ```
 📋 Implementation Analysis:
 Codebase: 45 files, 128 dependencies
@@ -554,6 +577,7 @@ ultra-dex build
 ```
 
 This:
+
 1. Validates project structure
 2. Runs tests
 3. Checks alignment (must be >70%)
@@ -565,24 +589,28 @@ This:
 Ultra-Dex supports multiple platforms:
 
 **Vercel:**
+
 ```bash
 npm i -g vercel
 vercel --prod
 ```
 
 **Netlify:**
+
 ```bash
 npm i -g netlify-cli
 netlify deploy --prod
 ```
 
 **Railway:**
+
 ```bash
 npm i -g @railway/cli
 railway up
 ```
 
 **Docker:**
+
 ```bash
 docker build -t myapp .
 docker run -p 3000:3000 myapp
@@ -670,6 +698,7 @@ ultra-dex cloud
 ### 10.1 Common Issues
 
 **"No AI provider configured"**
+
 ```bash
 # Solution: Run config wizard
 ultra-dex config --wizard
@@ -679,6 +708,7 @@ export ANTHROPIC_API_KEY=your-key
 ```
 
 **"Port 3001 already in use"**
+
 ```bash
 # Solution: Use different port
 ultra-dex serve --port 3003
@@ -688,6 +718,7 @@ lsof -ti:3001 | xargs kill -9
 ```
 
 **"Command not found"**
+
 ```bash
 # Solution: Reinstall globally
 npm install -g ultra-dex
@@ -697,6 +728,7 @@ which ultra-dex
 ```
 
 **"Validation failed"**
+
 ```bash
 # Check what's missing
 ultra-dex validate --scan
@@ -731,6 +763,7 @@ DEBUG=1 ultra-dex <command>
 ## 🎓 Tutorial Summary
 
 **What you learned:**
+
 1. ✅ Installed and configured Ultra-Dex
 2. ✅ Created your first project
 3. ✅ Generated an AI implementation plan
@@ -740,12 +773,14 @@ DEBUG=1 ultra-dex <command>
 7. ✅ Explored advanced features
 
 **Next Steps:**
+
 - Explore all 22 production commands
 - Read the [Advanced Workflows Guide](./ADVANCED-WORKFLOWS.md)
 - Check out [Example Projects](../examples/)
 - Join the community discussions
 
 **Quick Reference Card:**
+
 ```bash
 # Essential commands
 ultra-dex init                    # Initialize project
@@ -766,4 +801,4 @@ ultra-dex <command> --help
 
 **Congratulations!** You're now ready to build production-ready applications with Ultra-Dex. 🚀
 
-*Happy building!*
+_Happy building!_

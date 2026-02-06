@@ -28,9 +28,9 @@ test('Graph: getImpact', async () => {
   projectGraph.edges = [
     { from: 'A.js', to: 'B.js', type: 'depends_on' },
     { from: 'B.js', to: 'C.js', type: 'depends_on' },
-    { from: 'D.js', to: 'B.js', type: 'depends_on' }
+    { from: 'D.js', to: 'B.js', type: 'depends_on' },
   ];
-  
+
   const impact = projectGraph.getImpact('C.js');
   // C.js <- B.js <- A.js
   // C.js <- B.js <- D.js

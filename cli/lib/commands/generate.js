@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex generate command
  * Generates a full 34-section implementation plan from an idea using AI
@@ -8,9 +10,14 @@ import ora from 'ora';
 import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
-import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
+import { fileURLToPath } from 'url';
+import {
+  createProvider,
+  getDefaultProvider,
+  checkConfiguredProviders,
+} from '../providers/index.js';
 import { streamWithProvider, getStreamingProviders } from '../providers/streaming.js';
-import { captureVoiceInput } from '../input/voice.js';
+import { recordAndTranscribe } from '../input/voice.js';
 import { SYSTEM_PROMPT, generateUserPrompt } from '../templates/prompts/generate-plan.js';
 import { validateSafePath } from '../utils/validation.js';
 import { githubTreeUrl, githubWebUrl } from '../config/urls.js';
@@ -47,12 +54,12 @@ export function registerGenerateCommand(program) {
 
         // Check configured providers
         const configured = checkConfiguredProviders();
-        const hasProvider = configured.some(p => p.configured) || options.key;
+        const hasProvider = configured.some((p) => p.configured) || options.key;
 
         if (!hasProvider) {
           printWarning(chalk.yellow('⚠️  No Infinity Stones (AI Keys) configured.\n'));
           printInfo(chalk.white('Set one of these environment variables:'));
-          configured.forEach(p => {
+          configured.forEach((p) => {
             process.stdout.write(chalk.gray(`  export ${p.envKey}=your-key-here\n`));
           });
           printInfo(chalk.white('\nOr use --key option:'));
@@ -63,19 +70,20 @@ export function registerGenerateCommand(program) {
         // Get idea if not provided
         if (!idea) {
           if (options.voice) {
-            printInfo(chalk.blue('🎤 Voice input enabled. Press ENTER to stop recording.\n'));
-            idea = await captureVoiceInput();
+            printInfo(chalk.blue('🎤 Voice input enabled. Recording for 15 seconds...\n'));
+            idea = await recordAndTranscribe({ duration: 15 });
             printInfo(chalk.gray(`Transcribed: ${idea}`));
           } else {
-          const answers = await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'idea',
-              message: 'Describe the reality you wish to create:',
-              validate: input => input.trim().length > 10 || 'Please provide a more detailed description',
-            },
-          ]);
-          idea = answers.idea;
+            const answers = await inquirer.prompt([
+              {
+                type: 'input',
+                name: 'idea',
+                message: 'Describe the reality you wish to create:',
+                validate: (input) =>
+                  input.trim().length > 10 || 'Please provide a more detailed description',
+              },
+            ]);
+            idea = answers.idea;
           }
         }
 
@@ -85,6 +93,10 @@ export function registerGenerateCommand(program) {
           printError(chalk.red('No provider available. Set an API key.'));
           return;
         }
+
+        const basePrompt = generateUserPrompt(idea);
+        const featureContext = await buildFeatureContext(idea);
+        const finalPrompt = featureContext ? `${basePrompt}\n\n${featureContext}` : basePrompt;
 
         printInfo(chalk.gray(`Using provider: ${providerId}`));
         printInfo(chalk.gray(`Idea: "${idea}"\n`));
@@ -114,8 +126,9 @@ export function registerGenerateCommand(program) {
           let cachedResult = null;
           if (options.cache) {
             const cache = getCache();
-            const model = options.model || (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
-            cachedResult = await cache.get(providerId, model, SYSTEM_PROMPT, generateUserPrompt(idea));
+            const model =
+              options.model || (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
+            cachedResult = await cache.get(providerId, model, SYSTEM_PROMPT, finalPrompt);
           }
 
           if (options.cache && cachedResult) {
@@ -126,7 +139,11 @@ export function registerGenerateCommand(program) {
 
             // Show cache metrics
             const stats = cache.getStats();
-            printInfo(chalk.gray(`  📊 Cache Hit Rate: ${(stats.hitRate * 100).toFixed(1)}% | Estimated Savings: $${stats.estimatedSavings.toFixed(2)}`));
+            printInfo(
+              chalk.gray(
+                `  📊 Cache Hit Rate: ${(stats.hitRate * 100).toFixed(1)}% | Estimated Savings: $${stats.estimatedSavings.toFixed(2)}`
+              )
+            );
           } else {
             if (options.stream) {
               spinner.stop();
@@ -140,30 +157,26 @@ export function registerGenerateCommand(program) {
                   model: options.model,
                   apiKey: options.key,
                   systemPrompt: SYSTEM_PROMPT,
-                  prompt: generateUserPrompt(idea),
+                  prompt: finalPrompt,
                   onToken: (chunk) => {
                     process.stdout.write(chunk);
                     planContent += chunk;
-                  }
+                  },
                 });
                 result = {
                   content: streamed.text,
-                  usage: streamed.usage || { inputTokens: 0, outputTokens: 0 }
+                  usage: streamed.usage || { inputTokens: 0, outputTokens: 0 },
                 };
               } else {
-                result = await provider.generateStream(
-                  SYSTEM_PROMPT,
-                  generateUserPrompt(idea),
-                  (chunk) => {
-                    process.stdout.write(chunk);
-                    planContent += chunk;
-                  }
-                );
+                result = await provider.generateStream(SYSTEM_PROMPT, finalPrompt, (chunk) => {
+                  process.stdout.write(chunk);
+                  planContent += chunk;
+                });
               }
 
               process.stdout.write(chalk.gray('\n' + '─'.repeat(60)) + '\n');
             } else {
-              result = await provider.generate(SYSTEM_PROMPT, generateUserPrompt(idea));
+              result = await provider.generate(SYSTEM_PROMPT, finalPrompt);
               planContent = result.content;
               spinner.succeed('Plan generated!');
             }
@@ -171,12 +184,18 @@ export function registerGenerateCommand(program) {
             // Cache the result if caching is enabled
             if (options.cache) {
               const cache = getCache();
-              const model = options.model || (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
-              await cache.set(providerId, model, SYSTEM_PROMPT, generateUserPrompt(idea), result);
+              const model =
+                options.model ||
+                (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
+              await cache.set(providerId, model, SYSTEM_PROMPT, finalPrompt, result);
 
               // Show cache metrics
               const stats = cache.getStats();
-              printInfo(chalk.gray(`  💾 Cached for future use. Estimated Savings: $${stats.estimatedSavings.toFixed(2)}`));
+              printInfo(
+                chalk.gray(
+                  `  💾 Cached for future use. Estimated Savings: $${stats.estimatedSavings.toFixed(2)}`
+                )
+              );
             }
           }
 
@@ -205,14 +224,19 @@ export function registerGenerateCommand(program) {
           await fs.writeFile(planPath, planContent);
 
           // --- NEW: Generate state.json (ACTIVE SCALFOLDING) ---
-          const projectName = idea.split(' ').slice(0, 3).join('-').toLowerCase().replace(/[^a-z0-9-]/g, '');
+          const projectName = idea
+            .split(' ')
+            .slice(0, 3)
+            .join('-')
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, '');
 
           const state = {
             project: {
               name: projectName,
               version: '0.1.0',
               mode: 'AI-First',
-              idea: idea
+              idea: idea,
             },
             phases: [
               {
@@ -222,8 +246,8 @@ export function registerGenerateCommand(program) {
                 steps: [
                   { id: '1.1', task: 'Setup project boilerplate', status: 'pending' },
                   { id: '1.2', task: 'Database schema design', status: 'pending' },
-                  { id: '1.3', task: 'Authentication implementation', status: 'pending' }
-                ]
+                  { id: '1.3', task: 'Authentication implementation', status: 'pending' },
+                ],
               },
               {
                 id: '2',
@@ -231,14 +255,22 @@ export function registerGenerateCommand(program) {
                 status: 'pending',
                 steps: [
                   { id: '2.1', task: 'Implement primary feature loop', status: 'pending' },
-                  { id: '2.2', task: 'API endpoint development', status: 'pending' }
-                ]
-              }
+                  { id: '2.2', task: 'API endpoint development', status: 'pending' },
+                ],
+              },
             ],
             agents: {
               active: ['planner', 'cto'],
-              registry: ['planner', 'cto', 'backend', 'frontend', 'database', 'testing', 'reviewer']
-            }
+              registry: [
+                'planner',
+                'cto',
+                'backend',
+                'frontend',
+                'database',
+                'testing',
+                'reviewer',
+              ],
+            },
           };
 
           await saveState(state);
@@ -312,4 +344,59 @@ ${idea}
         process.exit(process.exitCode);
       }
     });
+}
+
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+async function buildFeatureContext(idea) {
+  if (!idea) return '';
+  const text = idea.toLowerCase();
+  const snippets = [];
+
+  if (/(revenue|billing|stripe|subscription|payment)/.test(text)) {
+    snippets.push(await readTemplateSnippet('stripe-billing.ts', 'Stripe Billing'));
+  }
+
+  if (/(analytics|posthog|event tracking|metrics)/.test(text)) {
+    snippets.push(await readTemplateSnippet('analytics-posthog.ts', 'PostHog Analytics'));
+  }
+
+  if (/(email|resend|notification)/.test(text)) {
+    snippets.push(await readTemplateSnippet('email-resend.ts', 'Resend Email'));
+  }
+
+  if (/(feature flag|feature flags|rollout)/.test(text)) {
+    snippets.push(await readTemplateSnippet('flags.ts', 'Feature Flags'));
+  }
+
+  if (/(rate limit|rate-limiting|throttle|ddos)/.test(text)) {
+    snippets.push(await readTemplateSnippet('rate-limit.ts', 'Rate Limiting Middleware'));
+  }
+
+  const cleaned = snippets.filter(Boolean);
+  if (!cleaned.length) return '';
+
+  return ['Reference feature snippets (for implementation guidance):', ...cleaned].join('\n\n');
+}
+
+async function readTemplateSnippet(fileName, title) {
+  const candidatePaths = [
+    path.resolve(process.cwd(), 'templates', 'features', fileName),
+    path.resolve(process.cwd(), 'templates', 'middleware', fileName),
+    path.resolve(process.cwd(), 'cli', 'assets', 'templates', 'features', fileName),
+    path.resolve(process.cwd(), 'cli', 'assets', 'features', fileName),
+    path.resolve(MODULE_DIR, '..', '..', 'assets', 'templates', 'features', fileName),
+    path.resolve(MODULE_DIR, '..', '..', 'assets', 'features', fileName),
+  ];
+
+  for (const candidate of candidatePaths) {
+    try {
+      const content = await fs.readFile(candidate, 'utf8');
+      return `### ${title}\n\`\`\`\n${content.trim()}\n\`\`\``;
+    } catch {
+      // continue
+    }
+  }
+
+  return '';
 }

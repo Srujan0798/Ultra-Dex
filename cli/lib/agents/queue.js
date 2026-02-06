@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Agent Task Queue System
  * Manages prioritized task queues for agent execution
@@ -17,10 +19,10 @@ const QUEUE_DIR = path.join(os.homedir(), '.ultra-dex', 'queues');
 
 // Priority levels
 const PRIORITY_LEVELS = {
-  'p0': 100, // Critical
-  'p1': 75,  // High
-  'p2': 50,  // Normal
-  'p3': 25   // Low
+  p0: 100, // Critical
+  p1: 75, // High
+  p2: 50, // Normal
+  p3: 25, // Low
 };
 
 export class AgentTaskQueue {
@@ -37,19 +39,19 @@ export class AgentTaskQueue {
    */
   async initialize() {
     if (this.initialized) return;
-    
+
     try {
       await fs.mkdir(QUEUE_DIR, { recursive: true });
       this.initialized = true;
-      
+
       printInfo(chalk.cyan('🔄 Initializing Agent Task Queue System...'));
-      
+
       // Load existing queues from disk
       await this.loadQueues();
-      
+
       // Start processor
       this.startProcessor();
-      
+
       printSuccess(chalk.green('✅ Agent Task Queue System Initialized'));
     } catch (error) {
       printError(chalk.red(`❌ Failed to initialize queue system: ${error.message}`));
@@ -63,17 +65,17 @@ export class AgentTaskQueue {
   async loadQueues() {
     try {
       const queueFiles = await fs.readdir(QUEUE_DIR);
-      
+
       for (const file of queueFiles) {
         if (file.endsWith('.json')) {
           const queuePath = path.join(QUEUE_DIR, file);
           const queueName = path.basename(file, '.json');
-          
+
           const content = await fs.readFile(queuePath, 'utf8');
           const queueData = JSON.parse(content);
-          
+
           this.queues.set(queueName, queueData);
-          
+
           printInfo(chalk.gray(`📋 Loaded queue: ${queueName} (${queueData.tasks.length} tasks)`));
         }
       }
@@ -108,14 +110,14 @@ export class AgentTaskQueue {
         maxConcurrency: options.maxConcurrency || 3,
         retryAttempts: options.retryAttempts || 3,
         timeout: options.timeout || 300000, // 5 minutes
-        ...options
+        ...options,
       },
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     this.queues.set(name, queue);
-    this.saveQueue(name).catch(error => {
+    this.saveQueue(name).catch((error) => {
       printWarning(chalk.yellow(`⚠️  Could not save queue: ${error.message}`));
     });
 
@@ -152,7 +154,7 @@ export class AgentTaskQueue {
       error: null,
       retryCount: 0,
       agent: options.agent || 'default',
-      context: options.context || {}
+      context: options.context || {},
     };
 
     const queue = this.queues.get(queueName);
@@ -160,11 +162,11 @@ export class AgentTaskQueue {
     queue.updatedAt = new Date().toISOString();
 
     await this.saveQueue(queueName);
-    
+
     printInfo(chalk.blue(`📋 Added task to queue ${queueName}: ${taskId}`));
-    
+
     this.events.emit('task:added', { queueName, taskId, task });
-    
+
     return queueTask;
   }
 
@@ -176,9 +178,8 @@ export class AgentTaskQueue {
     if (!queue) return null;
 
     // Filter pending tasks
-    const pendingTasks = queue.tasks.filter(task => 
-      task.status === 'pending' && 
-      this.areDependenciesMet(queue.tasks, task.dependencies)
+    const pendingTasks = queue.tasks.filter(
+      (task) => task.status === 'pending' && this.areDependenciesMet(queue.tasks, task.dependencies)
     );
 
     if (pendingTasks.length === 0) return null;
@@ -200,7 +201,7 @@ export class AgentTaskQueue {
     if (!dependencies || dependencies.length === 0) return true;
 
     for (const depId of dependencies) {
-      const depTask = allTasks.find(t => t.id === depId);
+      const depTask = allTasks.find((t) => t.id === depId);
       if (!depTask || depTask.status !== 'completed') {
         return false;
       }
@@ -228,9 +229,10 @@ export class AgentTaskQueue {
 
     for (const [queueName, queue] of this.queues) {
       // Check if we can start more tasks based on concurrency limit
-      const activeCount = Array.from(this.activeTasks.values())
-        .filter(task => task.queueName === queueName).length;
-      
+      const activeCount = Array.from(this.activeTasks.values()).filter(
+        (task) => task.queueName === queueName
+      ).length;
+
       if (activeCount >= queue.options.maxConcurrency) {
         continue; // Reached concurrency limit
       }
@@ -251,7 +253,7 @@ export class AgentTaskQueue {
       throw new AppError(`Queue not found: ${queueName}`, { code: 'QUEUE_NOT_FOUND' });
     }
 
-    const task = queue.tasks.find(t => t.id === taskId);
+    const task = queue.tasks.find((t) => t.id === taskId);
     if (!task) {
       throw new AppError(`Task not found: ${taskId}`, { code: 'TASK_NOT_FOUND' });
     }
@@ -269,44 +271,48 @@ export class AgentTaskQueue {
     this.activeTasks.set(taskId, {
       queueName,
       task,
-      startedAt: task.startedAt
+      startedAt: task.startedAt,
     });
 
     try {
       // Simulate task execution (in a real implementation, this would call the agent)
       await this.executeTask(task);
-      
+
       // Mark as completed
       task.status = 'completed';
       task.completedAt = new Date().toISOString();
-      
+
       printSuccess(chalk.green(`✅ Completed task: ${taskId}`));
       this.events.emit('task:completed', { queueName, taskId, task });
     } catch (error) {
       // Handle task failure
       task.error = error.message;
       task.retryCount++;
-      
+
       if (task.retryCount < queue.options.retryAttempts) {
         // Retry task
         task.status = 'pending';
         task.startedAt = null;
         task.completedAt = null;
-        
-        printWarning(chalk.yellow(`⚠️  Retrying task ${taskId} (${task.retryCount}/${queue.options.retryAttempts})`));
+
+        printWarning(
+          chalk.yellow(
+            `⚠️  Retrying task ${taskId} (${task.retryCount}/${queue.options.retryAttempts})`
+          )
+        );
         this.events.emit('task:retry', { queueName, taskId, task, error });
       } else {
         // Mark as failed after max retries
         task.status = 'failed';
         task.completedAt = new Date().toISOString();
-        
+
         printError(chalk.red(`❌ Failed task ${taskId}: ${error.message}`));
         this.events.emit('task:failed', { queueName, taskId, task, error });
       }
     } finally {
       // Remove from active tasks
       this.activeTasks.delete(taskId);
-      
+
       // Update queue
       queue.updatedAt = new Date().toISOString();
       await this.saveQueue(queueName);
@@ -319,16 +325,19 @@ export class AgentTaskQueue {
   async executeTask(task) {
     // In a real implementation, this would call the appropriate agent
     // For now, we'll simulate execution with a timeout
-    
+
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        // Simulate successful completion
-        resolve({ success: true, result: `Task ${task.id} completed successfully` });
-      }, Math.random() * 5000 + 1000); // Random delay between 1-6 seconds
-      
+      const timeout = setTimeout(
+        () => {
+          // Simulate successful completion
+          resolve({ success: true, result: `Task ${task.id} completed successfully` });
+        },
+        Math.random() * 5000 + 1000
+      ); // Random delay between 1-6 seconds
+
       // In a real implementation, we'd call the agent here
       // const result = await callAgent(task.agent, task.task, task.context);
-      
+
       // Clear timeout on completion
       // clearTimeout(timeout);
       // resolve(result);
@@ -348,10 +357,10 @@ export class AgentTaskQueue {
       return { name: queueName, exists: false };
     }
 
-    const pendingTasks = queue.tasks.filter(t => t.status === 'pending').length;
-    const startedTasks = queue.tasks.filter(t => t.status === 'started').length;
-    const completedTasks = queue.tasks.filter(t => t.status === 'completed').length;
-    const failedTasks = queue.tasks.filter(t => t.status === 'failed').length;
+    const pendingTasks = queue.tasks.filter((t) => t.status === 'pending').length;
+    const startedTasks = queue.tasks.filter((t) => t.status === 'started').length;
+    const completedTasks = queue.tasks.filter((t) => t.status === 'completed').length;
+    const failedTasks = queue.tasks.filter((t) => t.status === 'failed').length;
 
     return {
       name: queue.name,
@@ -362,10 +371,10 @@ export class AgentTaskQueue {
         pending: pendingTasks,
         started: startedTasks,
         completed: completedTasks,
-        failed: failedTasks
+        failed: failedTasks,
       },
       activeTasks: startedTasks,
-      maxConcurrency: queue.options.maxConcurrency
+      maxConcurrency: queue.options.maxConcurrency,
     };
   }
 
@@ -378,11 +387,11 @@ export class AgentTaskQueue {
     }
 
     const statuses = [];
-    
+
     for (const [queueName] of this.queues) {
       statuses.push(this.getQueueStatus(queueName));
     }
-    
+
     return statuses;
   }
 
@@ -400,9 +409,9 @@ export class AgentTaskQueue {
     }
 
     if (status) {
-      return queue.tasks.filter(task => task.status === status);
+      return queue.tasks.filter((task) => task.status === status);
     }
-    
+
     return [...queue.tasks];
   }
 
@@ -421,9 +430,9 @@ export class AgentTaskQueue {
 
     queue.paused = true;
     queue.updatedAt = new Date().toISOString();
-    
+
     printInfo(chalk.yellow(`⏸️  Paused queue: ${queueName}`));
-    
+
     return queue;
   }
 
@@ -442,9 +451,9 @@ export class AgentTaskQueue {
 
     queue.paused = false;
     queue.updatedAt = new Date().toISOString();
-    
+
     printSuccess(chalk.green(`▶️  Resumed queue: ${queueName}`));
-    
+
     return queue;
   }
 
@@ -471,11 +480,11 @@ export class AgentTaskQueue {
     // Clear tasks
     queue.tasks = [];
     queue.updatedAt = new Date().toISOString();
-    
+
     await this.saveQueue(queueName);
-    
+
     printSuccess(chalk.green(`🗑️  Cleared queue: ${queueName}`));
-    
+
     return queue;
   }
 
@@ -493,20 +502,20 @@ export class AgentTaskQueue {
     }
 
     const originalCount = queue.tasks.length;
-    queue.tasks = queue.tasks.filter(task => task.status !== 'completed');
+    queue.tasks = queue.tasks.filter((task) => task.status !== 'completed');
     const removedCount = originalCount - queue.tasks.length;
-    
+
     queue.updatedAt = new Date().toISOString();
-    
+
     await this.saveQueue(queueName);
-    
+
     printInfo(chalk.blue(`🧹 Cleaned up ${removedCount} completed tasks from queue: ${queueName}`));
-    
+
     return {
       queueName,
       originalCount,
       removedCount,
-      remainingCount: queue.tasks.length
+      remainingCount: queue.tasks.length,
     };
   }
 
@@ -518,7 +527,7 @@ export class AgentTaskQueue {
       clearInterval(this.processorInterval);
       this.processorInterval = null;
     }
-    
+
     printInfo(chalk.blue('🛑 Queue system shut down'));
   }
 
@@ -542,7 +551,7 @@ export const agentTaskQueue = new AgentTaskQueue();
 
 // Handle process exit
 process.on('exit', () => {
-  agentTaskQueue.shutdown().catch(error => {
+  agentTaskQueue.shutdown().catch((error) => {
     printError(chalk.red(`❌ Error shutting down queue: ${error.message}`));
   });
 });

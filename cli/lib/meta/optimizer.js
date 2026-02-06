@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { evaluatePerformance } from './evaluator.js';
 
 export async function suggestOptimization() {

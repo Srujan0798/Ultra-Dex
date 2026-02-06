@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Vercel AI SDK Streaming Provider
  * Adds real-time token streaming capabilities to Ultra-Dex
@@ -20,7 +22,7 @@ export async function streamWithVercelAI(options = {}) {
     apiKey,
     onToken,
     onComplete,
-    onError
+    onError,
   } = options;
 
   return streamTextWithDisplay({
@@ -31,7 +33,7 @@ export async function streamWithVercelAI(options = {}) {
     apiKey,
     onToken,
     onComplete,
-    onError
+    onError,
   });
 }
 
@@ -47,15 +49,17 @@ export async function enhancedStream(options = {}) {
     apiKey,
     stream = true,
     maxRetries = 3,
-    retryDelay = 1000
+    retryDelay = 1000,
   } = options;
 
   let lastError;
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     if (attempt > 0) {
-      printWarning(chalk.yellow(`⚠️  Retry ${attempt}/${maxRetries} after error: ${lastError?.message}`));
-      await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
+      printWarning(
+        chalk.yellow(`⚠️  Retry ${attempt}/${maxRetries} after error: ${lastError?.message}`)
+      );
+      await new Promise((resolve) => setTimeout(resolve, retryDelay * attempt));
     }
 
     try {
@@ -70,7 +74,7 @@ export async function enhancedStream(options = {}) {
           retryDelay,
           onRetry: (retry) => {
             printWarning(chalk.yellow(`⚠️  Retry ${retry} after stream error.`));
-          }
+          },
         });
       }
 
@@ -79,7 +83,7 @@ export async function enhancedStream(options = {}) {
       return await providerInstance.generate(systemPrompt, userPrompt, { model });
     } catch (error) {
       lastError = error;
-      
+
       // If this was the last attempt, re-throw the error
       if (attempt === maxRetries) {
         printError(chalk.red(`\n❌ All retries failed. Last error: ${error.message}`));
@@ -101,7 +105,7 @@ export async function streamWithCallback(options = {}) {
     apiKey,
     onStream,
     onComplete,
-    onError
+    onError,
   } = options;
 
   try {
@@ -125,7 +129,7 @@ export async function streamWithCallback(options = {}) {
         if (onError) {
           onError(error);
         }
-      }
+      },
     });
 
     return result;
@@ -147,12 +151,12 @@ export async function streamWithProgress(options = {}) {
     systemPrompt = '',
     userPrompt = '',
     apiKey,
-    onProgress
+    onProgress,
   } = options;
 
   const spinner = ora({
     text: chalk.blue('Initializing stream...'),
-    spinner: 'clock'
+    spinner: 'clock',
   }).start();
 
   let tokenCount = 0;
@@ -168,15 +172,19 @@ export async function streamWithProgress(options = {}) {
       onToken: (token) => {
         response += token;
         tokenCount++;
-        
-        if (tokenCount % 10 === 0) { // Update every 10 tokens
+
+        if (tokenCount % 10 === 0) {
+          // Update every 10 tokens
           spinner.text = chalk.blue(`Processing... ${tokenCount} tokens received`);
-          
+
           if (onProgress) {
             onProgress({
               tokensReceived: tokenCount,
               responseLength: response.length,
-              estimatedCompletion: Math.min(100, Math.round((response.length / Math.max(response.length + 1000, 1000)) * 100))
+              estimatedCompletion: Math.min(
+                100,
+                Math.round((response.length / Math.max(response.length + 1000, 1000)) * 100)
+              ),
             });
           }
         }
@@ -186,7 +194,7 @@ export async function streamWithProgress(options = {}) {
       },
       onError: (error) => {
         spinner.fail(chalk.red(`Error: ${error.message}`));
-      }
+      },
     });
 
     return result;
@@ -200,5 +208,5 @@ export default {
   streamWithVercelAI,
   enhancedStream,
   streamWithCallback,
-  streamWithProgress
+  streamWithProgress,
 };

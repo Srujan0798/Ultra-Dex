@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enhanced diff command with drift analysis
  * Compares IMPLEMENTATION-PLAN.md vs actual implementation
@@ -10,8 +12,28 @@ import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError } from '../utils/errors.js';
 
-const DEFAULT_IGNORED_DIRS = new Set(['node_modules', '.git', '.ultra', '.vscode', 'dist', 'build']);
-const SOURCE_EXTENSIONS = new Set(['.js', '.ts', '.jsx', '.tsx', '.py', '.go', '.rb', '.java', '.md', '.json', '.yaml', '.yml']);
+const DEFAULT_IGNORED_DIRS = new Set([
+  'node_modules',
+  '.git',
+  '.ultra',
+  '.vscode',
+  'dist',
+  'build',
+]);
+const SOURCE_EXTENSIONS = new Set([
+  '.js',
+  '.ts',
+  '.jsx',
+  '.tsx',
+  '.py',
+  '.go',
+  '.rb',
+  '.java',
+  '.md',
+  '.json',
+  '.yaml',
+  '.yml',
+]);
 
 /**
  * Parse IMPLEMENTATION-PLAN.md for expected tasks
@@ -33,7 +55,9 @@ async function parseImplementationPlan(sectionFilter = null) {
       const sectionMatch = line.match(/^##\s+(?:SECTION\s+)?(\d+)[:.]?\s*(.*)/i);
       if (sectionMatch) {
         currentSectionNumber = parseInt(sectionMatch[1], 10);
-        currentSection = sectionMatch[2] ? sectionMatch[2].trim() : `Section ${currentSectionNumber}`;
+        currentSection = sectionMatch[2]
+          ? sectionMatch[2].trim()
+          : `Section ${currentSectionNumber}`;
         continue;
       }
 
@@ -43,7 +67,11 @@ async function parseImplementationPlan(sectionFilter = null) {
         const isCompleted = taskMatch[1] === 'x';
         const taskDesc = taskMatch[2] || taskMatch[3];
 
-        if (sectionFilter && currentSectionNumber && !sectionFilter.includes(currentSectionNumber)) {
+        if (
+          sectionFilter &&
+          currentSectionNumber &&
+          !sectionFilter.includes(currentSectionNumber)
+        ) {
           continue;
         }
 
@@ -53,7 +81,7 @@ async function parseImplementationPlan(sectionFilter = null) {
           description: taskDesc.trim(),
           completed: isCompleted,
           line: line.trim(),
-          lineNumber: index + 1
+          lineNumber: index + 1,
         });
       }
     }
@@ -61,7 +89,9 @@ async function parseImplementationPlan(sectionFilter = null) {
     return tasks;
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw new AppError('IMPLEMENTATION-PLAN.md not found in current directory', { code: 'PLAN_NOT_FOUND' });
+      throw new AppError('IMPLEMENTATION-PLAN.md not found in current directory', {
+        code: 'PLAN_NOT_FOUND',
+      });
     }
     throw error;
   }
@@ -108,7 +138,7 @@ async function scanImplementation() {
     files.push({
       path: path.relative(process.cwd(), filePath),
       content,
-      size: content.length
+      size: content.length,
     });
   }
 
@@ -131,7 +161,7 @@ async function comparePlanVsImplementation(options = {}) {
     fileMatches: [],
     driftAnalysis: [],
     implementationFilesCount: implementationFiles.length,
-    sectionStats: {}
+    sectionStats: {},
   };
 
   // Count completed vs pending tasks from plan
@@ -151,7 +181,7 @@ async function comparePlanVsImplementation(options = {}) {
         results.fileMatches.push({
           task: task.description,
           file: file.path,
-          section: task.section
+          section: task.section,
         });
         break;
       }
@@ -163,7 +193,7 @@ async function comparePlanVsImplementation(options = {}) {
         section: task.section,
         sectionNumber: task.sectionNumber,
         line: task.line,
-        lineNumber: task.lineNumber
+        lineNumber: task.lineNumber,
       });
     }
   }
@@ -176,7 +206,7 @@ async function comparePlanVsImplementation(options = {}) {
     for (const match of todoMatches) {
       results.extraImplementations.push({
         todo: match,
-        file: file.path
+        file: file.path,
       });
     }
   }
@@ -191,7 +221,7 @@ async function comparePlanVsImplementation(options = {}) {
         sectionNumber: task.sectionNumber,
         total: 0,
         completed: 0,
-        missing: 0
+        missing: 0,
       };
     }
     sectionStats[key].total += 1;
@@ -229,7 +259,9 @@ function generateDriftReport(results) {
       const total = entry.total || 0;
       const missing = entry.missing || 0;
       const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-      report.push(`  • [${entry.sectionNumber ?? 'N/A'}] ${entry.section || 'Uncategorized'}: ${percentage}% (${completed}/${total}) missing ${missing}`);
+      report.push(
+        `  • [${entry.sectionNumber ?? 'N/A'}] ${entry.section || 'Uncategorized'}: ${percentage}% (${completed}/${total}) missing ${missing}`
+      );
     });
     report.push('');
   }
@@ -238,7 +270,9 @@ function generateDriftReport(results) {
     report.push(chalk.bold.red('❌ MISSING IMPLEMENTATIONS\n'));
     for (const missing of results.missingImplementations.slice(0, 10)) {
       report.push(`  • [${missing.section}] ${missing.task}`);
-      const location = missing.lineNumber ? `IMPLEMENTATION-PLAN.md:${missing.lineNumber}` : 'IMPLEMENTATION-PLAN.md';
+      const location = missing.lineNumber
+        ? `IMPLEMENTATION-PLAN.md:${missing.lineNumber}`
+        : 'IMPLEMENTATION-PLAN.md';
       report.push(`    Location: ${location}\n`);
     }
 
@@ -277,9 +311,8 @@ function generateDriftReport(results) {
 
 function buildDeltaReportData(results, exampleComparison) {
   const totalTasks = results.completedTasks + results.pendingTasks;
-  const completionPercentage = totalTasks > 0
-    ? Math.round((results.completedTasks / totalTasks) * 100)
-    : 0;
+  const completionPercentage =
+    totalTasks > 0 ? Math.round((results.completedTasks / totalTasks) * 100) : 0;
 
   return {
     generatedAt: new Date().toISOString(),
@@ -291,13 +324,13 @@ function buildDeltaReportData(results, exampleComparison) {
       missingImplementations: results.missingImplementations.length,
       extraImplementations: results.extraImplementations.length,
       implementedPending: results.fileMatches.length,
-      implementationFilesCount: results.implementationFilesCount
+      implementationFilesCount: results.implementationFilesCount,
     },
     missingImplementations: results.missingImplementations,
     extraImplementations: results.extraImplementations,
     implementedPending: results.fileMatches,
     sectionStats: results.sectionStats,
-    exampleComparison
+    exampleComparison,
   };
 }
 
@@ -326,7 +359,9 @@ function renderDeltaReportMarkdown(data) {
       const completed = entry.completed || 0;
       const missing = entry.missing || 0;
       const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-      lines.push(`- [${entry.sectionNumber ?? 'N/A'}] ${entry.section || 'Uncategorized'}: ${percentage}% (${completed}/${total}) missing ${missing}`);
+      lines.push(
+        `- [${entry.sectionNumber ?? 'N/A'}] ${entry.section || 'Uncategorized'}: ${percentage}% (${completed}/${total}) missing ${missing}`
+      );
     });
     lines.push('');
   }
@@ -368,9 +403,15 @@ function renderDeltaReportMarkdown(data) {
     lines.push(`- Unique to current: ${data.exampleComparison.uniqueToCurrent || 0}`);
     if (data.exampleComparison.samples) {
       lines.push('');
-      lines.push(`Sample common files: ${data.exampleComparison.samples.common.join(', ') || 'None'}`);
-      lines.push(`Sample unique to example: ${data.exampleComparison.samples.uniqueToExample.join(', ') || 'None'}`);
-      lines.push(`Sample unique to current: ${data.exampleComparison.samples.uniqueToCurrent.join(', ') || 'None'}`);
+      lines.push(
+        `Sample common files: ${data.exampleComparison.samples.common.join(', ') || 'None'}`
+      );
+      lines.push(
+        `Sample unique to example: ${data.exampleComparison.samples.uniqueToExample.join(', ') || 'None'}`
+      );
+      lines.push(
+        `Sample unique to current: ${data.exampleComparison.samples.uniqueToCurrent.join(', ') || 'None'}`
+      );
     }
     lines.push('');
   }
@@ -406,16 +447,19 @@ async function writeDeltaReport(reportPath, data) {
   const resolvedPath = path.resolve(process.cwd(), reportPath);
   const cwd = process.cwd();
   if (!resolvedPath.startsWith(cwd)) {
-    throw new AppError('Invalid report path. Path traversal detected.', { code: 'REPORT_PATH_INVALID' });
+    throw new AppError('Invalid report path. Path traversal detected.', {
+      code: 'REPORT_PATH_INVALID',
+    });
   }
 
   const extension = path.extname(resolvedPath).toLowerCase();
   const format = extension === '.json' ? 'json' : extension === '.html' ? 'html' : 'md';
-  const content = format === 'json'
-    ? JSON.stringify(data, null, 2)
-    : format === 'html'
-      ? renderDeltaReportHtml(data)
-      : renderDeltaReportMarkdown(data);
+  const content =
+    format === 'json'
+      ? JSON.stringify(data, null, 2)
+      : format === 'html'
+        ? renderDeltaReportHtml(data)
+        : renderDeltaReportMarkdown(data);
 
   await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
   await fs.writeFile(resolvedPath, content, 'utf8');
@@ -424,20 +468,22 @@ async function writeDeltaReport(reportPath, data) {
 }
 
 function renderDeltaReportHtml(data) {
-  const rows = Object.values(data.sectionStats || {}).map((entry) => {
-    const total = entry.total || 0;
-    const completed = entry.completed || 0;
-    const missing = entry.missing || 0;
-    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-    const status = percentage >= 80 ? 'good' : percentage >= 50 ? 'warn' : 'bad';
-    return `<tr class="${status}">
+  const rows = Object.values(data.sectionStats || {})
+    .map((entry) => {
+      const total = entry.total || 0;
+      const completed = entry.completed || 0;
+      const missing = entry.missing || 0;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      const status = percentage >= 80 ? 'good' : percentage >= 50 ? 'warn' : 'bad';
+      return `<tr class="${status}">
       <td>${entry.sectionNumber ?? 'N/A'}</td>
       <td>${entry.section || 'Uncategorized'}</td>
       <td>${percentage}%</td>
       <td>${completed}/${total}</td>
       <td>${missing}</td>
     </tr>`;
-  }).join('');
+    })
+    .join('');
 
   return `<!doctype html>
 <html>
@@ -484,20 +530,24 @@ async function compareWithExample(exampleName) {
     const entries = await fs.readdir(examplesDir, { withFileTypes: true });
     const exampleDirs = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
 
-    const matchingExample = exampleDirs.find((dir) => dir.toLowerCase() === exampleName.toLowerCase());
+    const matchingExample = exampleDirs.find(
+      (dir) => dir.toLowerCase() === exampleName.toLowerCase()
+    );
     if (!matchingExample) {
       return {
         error: `Example project not found: ${exampleName}`,
-        available: exampleDirs
+        available: exampleDirs,
       };
     }
 
     const examplePath = path.join(examplesDir, matchingExample);
-    const exampleFiles = (await listFilesRecursive(examplePath))
-      .map((file) => path.relative(examplePath, file));
+    const exampleFiles = (await listFilesRecursive(examplePath)).map((file) =>
+      path.relative(examplePath, file)
+    );
 
-    const currentFiles = (await listFilesRecursive(process.cwd()))
-      .map((file) => path.relative(process.cwd(), file));
+    const currentFiles = (await listFilesRecursive(process.cwd())).map((file) =>
+      path.relative(process.cwd(), file)
+    );
 
     const commonFiles = exampleFiles.filter((f) => currentFiles.includes(f));
     const uniqueToExample = exampleFiles.filter((f) => !currentFiles.includes(f));
@@ -511,8 +561,8 @@ async function compareWithExample(exampleName) {
       samples: {
         common: commonFiles.slice(0, 5),
         uniqueToExample: uniqueToExample.slice(0, 5),
-        uniqueToCurrent: uniqueToCurrent.slice(0, 5)
-      }
+        uniqueToCurrent: uniqueToCurrent.slice(0, 5),
+      },
     };
   } catch (error) {
     return { error: error.message };
@@ -535,12 +585,16 @@ export async function diffCommand(options = {}) {
     if (options.sections) {
       const parsed = parseSectionRanges(options.sections);
       if (!parsed || parsed.length === 0) {
-        throw new AppError('Invalid --sections list. Use comma-separated numbers or ranges.', { code: 'SECTIONS_INVALID' });
+        throw new AppError('Invalid --sections list. Use comma-separated numbers or ranges.', {
+          code: 'SECTIONS_INVALID',
+        });
       }
     }
 
     const results = await comparePlanVsImplementation(options);
-    const exampleComparison = options.withExample ? await compareWithExample(options.withExample) : null;
+    const exampleComparison = options.withExample
+      ? await compareWithExample(options.withExample)
+      : null;
     const reportData = buildDeltaReportData(results, exampleComparison);
 
     let reportInfo = null;
@@ -550,10 +604,16 @@ export async function diffCommand(options = {}) {
     }
 
     if (options.json) {
-      process.stdout.write(JSON.stringify({
-        ...reportData,
-        report: reportInfo
-      }, null, 2) + '\n');
+      process.stdout.write(
+        JSON.stringify(
+          {
+            ...reportData,
+            report: reportInfo,
+          },
+          null,
+          2
+        ) + '\n'
+      );
       return;
     }
 
@@ -566,9 +626,15 @@ export async function diffCommand(options = {}) {
       const completionPercentage = reportData.summary.completionPercentage;
 
       printSuccess(chalk.green(`\n✅ Found ${totalTasks} tasks in plan`));
-      printSuccess(chalk.green(`✅ Found ${reportData.summary.implementationFilesCount} implementation files`));
+      printSuccess(
+        chalk.green(`✅ Found ${reportData.summary.implementationFilesCount} implementation files`)
+      );
 
-      printInfo(chalk.blue(`\n📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`));
+      printInfo(
+        chalk.blue(
+          `\n📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`
+        )
+      );
 
       // Show color-coded status
       if (completionPercentage >= 80) {
@@ -621,9 +687,15 @@ export async function diffCommand(options = {}) {
       const completionPercentage = reportData.summary.completionPercentage;
 
       printSuccess(chalk.green(`\n✅ Found ${totalTasks} tasks in plan`));
-      printSuccess(chalk.green(`✅ Found ${reportData.summary.implementationFilesCount} implementation files`));
+      printSuccess(
+        chalk.green(`✅ Found ${reportData.summary.implementationFilesCount} implementation files`)
+      );
 
-      printInfo(chalk.blue(`\n📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`));
+      printInfo(
+        chalk.blue(
+          `\n📈 Overall Completion: ${completionPercentage}% (${completedTasks}/${totalTasks})`
+        )
+      );
 
       if (completionPercentage >= 80) {
         printSuccess(chalk.green('🎉 Project is highly aligned with plan'));
@@ -634,7 +706,9 @@ export async function diffCommand(options = {}) {
       }
 
       if (reportData.missingImplementations.length > 0) {
-        printWarning(chalk.red(`\n❌ Missing Implementations (${reportData.missingImplementations.length})`));
+        printWarning(
+          chalk.red(`\n❌ Missing Implementations (${reportData.missingImplementations.length})`)
+        );
         reportData.missingImplementations.slice(0, 10).forEach((missing) => {
           const location = missing.lineNumber ? ` (${missing.lineNumber})` : '';
           printWarning(chalk.red(`  • [${missing.section}] ${missing.task}${location}`));

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Interactive REPL for Ultra-Dex
  * Provides a readline-based REPL with session persistence and slash commands
@@ -40,11 +42,13 @@ async function loadLatestSession(sessionDir) {
     const sessionFiles = files.filter((f) => f.endsWith('.json'));
     if (sessionFiles.length === 0) return null;
 
-    const sessionStats = await Promise.all(sessionFiles.map(async (file) => {
-      const fullPath = path.join(sessionDir, file);
-      const stat = await fs.stat(fullPath);
-      return { file, fullPath, mtime: stat.mtimeMs };
-    }));
+    const sessionStats = await Promise.all(
+      sessionFiles.map(async (file) => {
+        const fullPath = path.join(sessionDir, file);
+        const stat = await fs.stat(fullPath);
+        return { file, fullPath, mtime: stat.mtimeMs };
+      })
+    );
 
     sessionStats.sort((a, b) => b.mtime - a.mtime);
     const latest = sessionStats[0];
@@ -85,10 +89,10 @@ export async function startREPL(options = {}) {
     context: {
       project: null,
       lastResult: null,
-      variables: new Map()
+      variables: new Map(),
     },
     sessionDir: sessionManager.sessionsDir,
-    sessionManager
+    sessionManager,
   };
 
   const replCommands = new REPLCommands(replContext);
@@ -116,7 +120,7 @@ export async function startREPL(options = {}) {
     input: process.stdin,
     output: process.stdout,
     prompt: chalk.blue('ultra-dex> '),
-    completer: createCompleter(commandList)
+    completer: createCompleter(commandList),
   });
 
   if (replContext.history.length > 0) {
@@ -134,7 +138,9 @@ export async function startREPL(options = {}) {
 
     const handler = replCommands.commands.get(commandName);
     if (!handler) {
-      printError(chalk.red(`❌ Unknown command: /${commandName}. Use /help for available commands.`));
+      printError(
+        chalk.red(`❌ Unknown command: /${commandName}. Use /help for available commands.`)
+      );
       return;
     }
 

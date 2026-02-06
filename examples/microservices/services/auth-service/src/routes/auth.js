@@ -16,7 +16,9 @@ module.exports = (pool, redis) => {
   // Protected routes
   router.post('/logout', authenticateToken, (req, res) => authController.logout(req, res));
   router.get('/me', authenticateToken, (req, res) => authController.me(req, res));
-  router.post('/change-password', authenticateToken, (req, res) => authController.changePassword(req, res));
+  router.post('/change-password', authenticateToken, (req, res) =>
+    authController.changePassword(req, res)
+  );
 
   return router;
 };

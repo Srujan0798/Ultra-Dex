@@ -2,9 +2,9 @@
 
 ## CURRENT STATE: THE UNCOMFORTABLE TRUTH
 
-Ultra-Dex is currently a **glorified markdown generator**. [0-cite-0](#0-cite-0) 
+Ultra-Dex is currently a **glorified markdown generator**. [0-cite-0](#0-cite-0)
 
-Your CLI creates static files. Your templates are documentation. Your "agent instructions" are copy-paste text prompts. [0-cite-1](#0-cite-1) 
+Your CLI creates static files. Your templates are documentation. Your "agent instructions" are copy-paste text prompts. [0-cite-1](#0-cite-1)
 
 **There is ZERO runtime orchestration. ZERO memory persistence. ZERO actual AI integration.**
 
@@ -17,6 +17,7 @@ The gap between your vision (AI Orchestration Layer) and reality (static templat
 ### 1. **PERSISTENT PROJECT MEMORY ENGINE** (Critical, High Effort)
 
 **What it does:**
+
 - Maintains living project context across ALL AI sessions, tools, and agents
 - Tracks every decision, every code change, every conversation
 - Auto-indexes codebase + documentation into queryable vector store
@@ -26,6 +27,7 @@ The gap between your vision (AI Orchestration Layer) and reality (static templat
 Current AI tools have **amnesia**. Every session starts from zero. Developers waste 40%+ of time re-explaining context. This is the #1 pain point nobody solves properly.
 
 **Technical approach:**
+
 ```
 Architecture:
 ├── Background daemon (runs in system tray)
@@ -50,15 +52,17 @@ Flow:
 ### 2. **INTELLIGENT TASK ROUTING & ORCHESTRATION** (Critical, High Effort)
 
 **What it does:**
+
 - Analyzes task type and routes to optimal LLM automatically
 - Example: Planning → Claude Sonnet, Coding → GPT-4, Review → Claude Opus
 - Runs multiple specialized agents in parallel (planner + coder + tester)
-- Enforces your 21-step framework [0-cite-2](#0-cite-2)  at runtime (not just documentation)
+- Enforces your 21-step framework [0-cite-2](#0-cite-2) at runtime (not just documentation)
 
 **Why it matters:**
 Single-model systems (Cursor, Copilot) are suboptimal. Different models excel at different tasks. Routing + orchestration is 2-3x better than any single model.
 
 **Technical approach:**
+
 ```
 Components:
 ├── Task classifier (determines task type: code/plan/review/test)
@@ -81,7 +85,8 @@ Tech Stack:
 ### 3. **REAL-TIME CODE VERIFICATION ENGINE** (Critical, Medium Effort)
 
 **What it does:**
-- Runs your 21-step verification [0-cite-3](#0-cite-3)  automatically as code is written
+
+- Runs your 21-step verification [0-cite-3](#0-cite-3) automatically as code is written
 - Integrated IDE plugin (VS Code extension)
 - Blocks commits/PRs that fail verification steps
 - Provides inline warnings: "Missing error handling (Step 7)", "No tests (Step 10)"
@@ -90,6 +95,7 @@ Tech Stack:
 Your 21-step framework is currently **passive documentation**. Nobody follows checklists manually. Make it **active enforcement** at the IDE level.
 
 **Technical approach:**
+
 ```
 VS Code Extension:
 ├── LSP integration (Language Server Protocol)
@@ -114,6 +120,7 @@ Auto-checks:
 ### 4. **MCP SERVER + UNIVERSAL TOOL INTEGRATION** (Critical, Medium Effort)
 
 **What it does:**
+
 - Implements Model Context Protocol (Anthropic's MCP standard)
 - Exposes Ultra-Dex memory/routing/verification as MCP tools
 - Works with ANY MCP-compatible client (Claude Desktop, Cursor, future tools)
@@ -123,6 +130,7 @@ Auto-checks:
 MCP is becoming the **HTTP of AI tools**. If you're not MCP-native by 2025, you're irrelevant. This makes Ultra-Dex work with EVERY tool, not just specific ones.
 
 **Technical approach:**
+
 ```
 MCP Server Implementation:
 ├── Protocol: MCP (JSON-RPC 2.0 over stdio/HTTP)
@@ -153,6 +161,7 @@ Cursor → uses context → better answer
 ### 5. **HYBRID LOCAL + CLOUD LLM ORCHESTRATION** (Important, High Effort)
 
 **What it does:**
+
 - Supports local models (Ollama, LM Studio) alongside cloud APIs
 - Privacy-first routing: sensitive code → local, general tasks → cloud
 - Cost optimization: small tasks → local, complex → GPT-4
@@ -162,6 +171,7 @@ Cursor → uses context → better answer
 2025-2027 trend: Hybrid is king. Enterprises need privacy. Individuals want cost control. Pure cloud-only solutions will lose market share.
 
 **Technical approach:**
+
 ```
 Hybrid Router:
 ├── Model registry (tracks available local + cloud models)
@@ -192,12 +202,14 @@ else: use best_cloud_model
 ### 1. **MCP (Model Context Protocol)** - CRITICAL
 
 **Why prioritize:**
+
 - Anthropic's protocol becoming industry standard (like OAuth for AI)
 - Claude Desktop native support
 - Cursor/VSCode extensions adopting it
 - If not MCP-native by Q2 2025, you're obsolete
 
 **Implementation approach:**
+
 - Build MCP server first (weeks 1-4)
 - Expose Ultra-Dex memory as MCP resources
 - Create MCP tools for verification/routing
@@ -210,12 +222,14 @@ else: use best_cloud_model
 ### 2. **LangGraph + Multi-Agent Orchestration** - HIGH PRIORITY
 
 **Why prioritize:**
+
 - Single-agent systems plateau at ~70% task success
 - Multi-agent (specialized roles) achieves ~85-90%
 - LangGraph provides stateful agent graphs (missing in LangChain)
-- Allows your Planner/Coder/Tester agents [0-cite-4](#0-cite-4)  to become REAL autonomous agents, not just prompts
+- Allows your Planner/Coder/Tester agents [0-cite-4](#0-cite-4) to become REAL autonomous agents, not just prompts
 
 **Implementation approach:**
+
 ```
 LangGraph Agent System:
 ├── Define agent nodes (Planner, Coder, Tester, Reviewer)
@@ -245,12 +259,14 @@ Example Graph:
 ### 3. **GraphRAG + Advanced Memory Systems** - MEDIUM PRIORITY
 
 **Why prioritize:**
+
 - Basic RAG (vector search) is table stakes—everyone does it
 - GraphRAG (Microsoft Research) captures relationships between code/decisions
 - Enables "why was X decided?" queries across project history
 - Better context retrieval than pure vector search
 
 **Implementation approach:**
+
 ```
 Memory Architecture:
 ├── Vector DB (embeddings for semantic search)
@@ -282,54 +298,54 @@ graph TB
         A3[Claude Desktop MCP]
         A4[Cursor IDE]
     end
-    
+
     subgraph "Ultra-Dex Core Orchestration Layer"
         B1[MCP Server]
         B2[Task Router]
         B3[Multi-Agent Engine LangGraph]
         B4[Verification Engine 21 Steps]
     end
-    
+
     subgraph "Memory & State Layer"
         C1[Vector DB Qdrant]
         C2[Graph DB Neo4j]
         C3[Project State Store]
         C4[Session Manager]
     end
-    
+
     subgraph "LLM Integration Layer"
         D1[GPT-4 API]
         D2[Claude API]
         D3[Gemini API]
         D4[Local Ollama]
     end
-    
+
     subgraph "Infrastructure Layer"
         E1[File Watcher]
         E2[AST Parser]
         E3[Git Integration]
         E4[CI/CD Hooks]
     end
-    
+
     A1 --> B1
     A2 --> B1
     A3 --> B1
     A4 --> B1
-    
+
     B1 --> B2
     B1 --> B3
     B1 --> B4
-    
+
     B2 --> C1
     B2 --> C2
     B3 --> C3
     B4 --> C4
-    
+
     B2 --> D1
     B2 --> D2
     B2 --> D3
     B2 --> D4
-    
+
     E1 --> C1
     E2 --> B4
     E3 --> C3
@@ -363,6 +379,7 @@ graph TB
    - Memory export/import
 
 **Data Flow Example:**
+
 ```
 Developer writes code in VS Code
   ↓
@@ -393,25 +410,27 @@ A persistent, intelligent memory system that follows your project across EVERY t
 **Why it's revolutionary:**
 
 Current AI tools have **session amnesia**:
+
 - Use Cursor for 2 hours → close it → reopen → it forgot everything
 - Switch to Claude Desktop → explain project again from scratch
 - Ask GPT-4 API → provide context manually every time
 - Use GitHub Copilot → no awareness of past decisions
 
 **Ultra-Dex's Killer Feature:**
+
 ```
 Example Flow:
 
 Monday 9 AM - Cursor:
 You: "Let's build a payment system"
 Cursor: [works with you for 2 hours]
-Ultra-Dex: [Silently stores: chose Stripe, webhook pattern, 
+Ultra-Dex: [Silently stores: chose Stripe, webhook pattern,
              3 files created, 5 decisions made]
 
 Monday 2 PM - Claude Desktop:
 You: "Review the payment code"
 Claude: [WITHOUT you explaining anything]
-        "I see you chose Stripe with webhooks on Monday. 
+        "I see you chose Stripe with webhooks on Monday.
          Looking at payment-handler.ts..."
 Ultra-Dex: [Auto-injected context from morning session]
 
@@ -430,6 +449,7 @@ $ ultra-dex ask "why did we choose Stripe?"
 ```
 
 **Technical Implementation:**
+
 ```
 Components:
 1. Event Capture:
@@ -457,6 +477,7 @@ Components:
 ```
 
 **Why nobody else does this:**
+
 - Cursor: Session-only memory (forgets after restart)
 - Copilot: No cross-file project understanding
 - Claude: Separate conversations, no persistence
@@ -466,6 +487,7 @@ Components:
 Developers currently waste **30-40% of time** re-explaining context to AI tools. This feature eliminates that waste completely. Once you experience continuous memory, going back to session-based AI feels like using dial-up after broadband.
 
 **Business Impact:**
+
 - Individual developers: 2-3x productivity boost
 - Teams: Shared project memory (onboarding in minutes, not days)
 - Enterprises: Auditable AI decision trail
@@ -475,30 +497,35 @@ Developers currently waste **30-40% of time** re-explaining context to AI tools.
 ## REAL GAP ANALYSIS (Where Competitors FAIL)
 
 ### **Cursor IDE Gaps:**
+
 1. **Zero cross-session memory** - Close Cursor → context lost
 2. **Single model** - GPT-4 only, no routing to specialized models
 3. **No verification enforcement** - Suggests code with no quality gates
 4. **Session isolation** - Can't share context with other tools
 
 ### **GitHub Copilot Gaps:**
+
 1. **Line-level only** - No project-level understanding
 2. **No memory** - Every suggestion is stateless
 3. **No orchestration** - Single autocomplete model, no planning/review
 4. **No customization** - Can't enforce your team's standards
 
 ### **Claude/ChatGPT Gaps:**
+
 1. **Not IDE-integrated** - Copy-paste workflow (friction)
 2. **Conversation-based** - No automatic codebase monitoring
 3. **No persistence** - Conversations don't link across sessions
 4. **No verification** - No enforcement of quality standards
 
 ### **Windsurf/Aider Gaps:**
+
 1. **Terminal-focused** - IDE integration weak/missing
 2. **No multi-model** - Single LLM, no routing
 3. **No verification framework** - Generate code without checks
 4. **Limited memory** - Basic context window, no long-term persistence
 
 **Developer Pain Points (Unsolved):**
+
 - "I explained my architecture 5 times today to different AI tools"
 - "AI generated code that breaks our coding standards every time"
 - "No way to verify AI code follows security best practices"
@@ -513,34 +540,44 @@ You're building the **missing infrastructure layer**—the "operating system" fo
 ## WHAT NOT TO BUILD (EXPLICIT AVOIDS)
 
 ### 1. **DON'T: Build Another Chat Interface**
-Your CLI currently has basic prompts. [0-cite-5](#0-cite-5) 
+
+Your CLI currently has basic prompts. [0-cite-5](#0-cite-5)
 DON'T spend time on fancy chat UIs. Focus on infrastructure. Let existing tools (Cursor, Claude) be the UI.
 
 ### 2. **DON'T: Compete with LLMs**
+
 Don't build your own code generation model. You ORCHESTRATE models, not replace them.
 
 ### 3. **DON'T: Build a Template Marketplace**
-Don't become "Awesome Ultra-Dex Templates". That's not differentiated. Your templates [0-cite-6](#0-cite-6)  should be inputs to the orchestration system, not the product itself.
+
+Don't become "Awesome Ultra-Dex Templates". That's not differentiated. Your templates [0-cite-6](#0-cite-6) should be inputs to the orchestration system, not the product itself.
 
 ### 4. **DON'T: Build Generic Project Management**
+
 Don't become Jira. Stay focused on AI-assisted development specifically. No sprint planning, no team chat, no time tracking.
 
 ### 5. **DON'T: Lock to Single AI Provider**
-Your current agent instructions are provider-agnostic. [0-cite-7](#0-cite-7)  Keep it that way. Provider lock-in kills you when models change.
+
+Your current agent instructions are provider-agnostic. [0-cite-7](#0-cite-7) Keep it that way. Provider lock-in kills you when models change.
 
 ### 6. **DON'T: Over-Engineer CLI Interactions**
+
 Your CLI currently does basic prompting. Don't add fancy TUIs or complex menu systems. CLI should be automation-focused, not interactive.
 
 ### 7. **DON'T: Build Custom Code Editors**
+
 Don't compete with VS Code. Build extensions FOR existing editors, not new editors.
 
 ### 8. **DON'T: Ignore Standards**
+
 Don't invent proprietary protocols when MCP exists. Use standards.
 
 ### 9. **DON'T: Add Social/Community Features**
+
 No user profiles, no following, no likes. Stay infrastructure-focused.
 
 ### 10. **DON'T: Premature Monetization**
+
 Don't add paywalls before proving product-market fit. Open core model later.
 
 ---
@@ -548,19 +585,23 @@ Don't add paywalls before proving product-market fit. Open core model later.
 ## MONETIZATION & GROWTH STRATEGY
 
 ### **Phase 1: Open Source Foundation (Months 0-12)**
+
 - Core orchestration engine: Open source (MIT)
 - MCP server: Open source
 - Basic verification: Open source
 - **Goal:** Adoption, not revenue
 
 ### **Phase 2: Freemium Model (Months 12-24)**
+
 **Free Tier:**
+
 - Local-only memory (SQLite)
 - Single developer
 - Community support
 - Basic LLM routing
 
 **Pro Tier ($20-40/month):**
+
 - Cloud-synced memory (across devices)
 - Team shared memory (5-10 developers)
 - Advanced routing (cost optimization)
@@ -568,6 +609,7 @@ Don't add paywalls before proving product-market fit. Open core model later.
 - Enterprise LLM integrations
 
 **Enterprise Tier (Custom pricing):**
+
 - Self-hosted deployment
 - SSO/SAML
 - Audit logging
@@ -599,6 +641,7 @@ Don't add paywalls before proving product-market fit. Open core model later.
    - Featured by Microsoft (if quality is high)
 
 **Comp Examples:**
+
 - Cursor: $20/month, grew to $1M ARR in 6 months (word of mouth)
 - Linear: $8/user/month, grew to $10M ARR (best-in-class UX)
 - Raycast: $8/month, grew to millions of users (productivity boost)
@@ -608,6 +651,7 @@ Don't add paywalls before proving product-market fit. Open core model later.
 ## IMPLEMENTATION ROADMAP (BRUTAL PRIORITIES)
 
 ### **Q1 2025: Foundation (Weeks 1-12)**
+
 **Goal:** Ship MCP server + basic memory
 
 1. Week 1-2: Architecture design doc
@@ -622,6 +666,7 @@ Don't add paywalls before proving product-market fit. Open core model later.
 ---
 
 ### **Q2 2025: Orchestration (Weeks 13-24)**
+
 **Goal:** Multi-agent + task routing
 
 1. Week 13-14: LangGraph integration
@@ -636,6 +681,7 @@ Don't add paywalls before proving product-market fit. Open core model later.
 ---
 
 ### **Q3 2025: Verification (Weeks 25-36)**
+
 **Goal:** Real-time 21-step enforcement
 
 1. Week 25-26: AST parser integration
@@ -650,6 +696,7 @@ Don't add paywalls before proving product-market fit. Open core model later.
 ---
 
 ### **Q4 2025: Scale (Weeks 37-48)**
+
 **Goal:** Team features + monetization
 
 1. Week 37-38: Cloud-synced memory
@@ -666,12 +713,14 @@ Don't add paywalls before proving product-market fit. Open core model later.
 ## NOTES
 
 **Critical Success Factors:**
+
 1. **MCP adoption** - If MCP doesn't become standard, pivot to LSP or alternative
 2. **Memory quality** - Retrieval accuracy must be >90% or developers lose trust
 3. **Performance** - Verification must be <200ms or it disrupts flow
 4. **Multi-tool support** - Must work with Cursor, Claude, VS Code from day 1
 
 **Risks:**
+
 - Anthropic could abandon MCP (mitigation: support multiple protocols)
 - LangGraph ecosystem churn (mitigation: abstract agent framework)
 - Vector DB costs at scale (mitigation: local-first architecture)
@@ -679,13 +728,14 @@ Don't add paywalls before proving product-market fit. Open core model later.
 **Why This Wins:**
 You're solving the **context continuity problem** that EVERY AI tool ignores. The first team to solve persistent, cross-tool memory wins the AI development tooling market.
 
-**Your current templates and methodology** [0-cite-8](#0-cite-8)  are excellent CONTENT for the system, but they need to become **runtime enforcement**, not static docs.
+**Your current templates and methodology** [0-cite-8](#0-cite-8) are excellent CONTENT for the system, but they need to become **runtime enforcement**, not static docs.
 
 The difference between success and failure is simple: **Stop being a template, become infrastructure.**
 
 ### Citations
 
 **File:** cli/bin/ultra-dex.js (L1-318)
+
 ```javascript
 #!/usr/bin/env node
 
@@ -807,14 +857,14 @@ program
   .option('-d, --dir <directory>', 'Output directory', '.')
   .action(async (options) => {
     console.log(chalk.cyan(banner));
-    console.log(chalk.bold('\nWelcome to Ultra-Dex! Let\'s plan your SaaS.\n'));
+    console.log(chalk.bold("\nWelcome to Ultra-Dex! Let's plan your SaaS.\n"));
 
     // Gather project info
     const answers = await inquirer.prompt([
       {
         type: 'input',
         name: 'projectName',
-        message: 'What\'s your project name?',
+        message: "What's your project name?",
         default: options.name || 'my-saas',
         validate: (input) => input.length > 0 || 'Project name is required',
       },
@@ -833,19 +883,19 @@ program
       {
         type: 'input',
         name: 'problem1',
-        message: 'Problem #1 you\'re solving:',
+        message: "Problem #1 you're solving:",
         default: '',
       },
       {
         type: 'input',
         name: 'problem2',
-        message: 'Problem #2 you\'re solving:',
+        message: "Problem #2 you're solving:",
         default: '',
       },
       {
         type: 'input',
         name: 'problem3',
-        message: 'Problem #3 you\'re solving:',
+        message: "Problem #3 you're solving:",
         default: '',
       },
       {
@@ -966,7 +1016,6 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 
       console.log('\n' + chalk.gray('Need the full template? Visit:'));
       console.log(chalk.blue('  https://github.com/Srujan0798/Ultra-Dex'));
-
     } catch (error) {
       spinner.fail(chalk.red('Failed to create project'));
       console.error(error);
@@ -1008,6 +1057,7 @@ program.parse();
 ```
 
 **File:** AGENT-INSTRUCTIONS.md (L1-310)
+
 ```markdown
 # 🤖 ULTRA-DEX AGENT INSTRUCTIONS
 
@@ -1026,11 +1076,12 @@ Copy the relevant prompt below and use it with your AI agent (Claude, GPT-4, Gem
 > For generating the complete implementation plan from an idea
 
 ### System Prompt:
-
 ```
+
 You are an Ultra-Dex Planner Agent. Your role is to take a raw idea and generate a complete, production-ready implementation plan.
 
 RULES:
+
 1. Use the Ultra-Dex Implementation Template as your structure
 2. Fill in ALL 24 sections completely - do not skip any
 3. Be specific and actionable - no vagueness
@@ -1041,18 +1092,21 @@ RULES:
 8. Include security, performance, and accessibility requirements
 
 OUTPUT FORMAT:
+
 - Follow the exact section numbering (1.1, 1.2, etc.)
 - Use markdown tables where appropriate
 - Include code examples for API requests/responses
 - Provide ASCII diagrams for architecture and flows
 
 QUALITY STANDARDS:
+
 - Every task must be verifiable with the 21-step framework
 - Estimates must be realistic (4-9 hours per task)
 - Dependencies must be clearly mapped
 - Critical path must be identified
 
 When given an idea, generate the COMPLETE implementation plan.
+
 ```
 
 ---
@@ -1064,9 +1118,11 @@ When given an idea, generate the COMPLETE implementation plan.
 ### System Prompt:
 
 ```
+
 You are an Ultra-Dex Coder Agent. Your role is to implement tasks from the implementation plan with production-quality code.
 
 RULES:
+
 1. Write clean, modular, maintainable code
 2. Follow the project's coding standards (see Section 17.5)
 3. Include error handling for all edge cases
@@ -1076,6 +1132,7 @@ RULES:
 7. No placeholder code - everything must work
 
 CODE QUALITY:
+
 - Functions should be single-purpose (<30 lines)
 - No hardcoded values (use config/env)
 - No commented-out code
@@ -1083,6 +1140,7 @@ CODE QUALITY:
 - Proper TypeScript types (no 'any')
 
 BEFORE SUBMITTING:
+
 - [ ] Code follows style guide
 - [ ] All edge cases handled
 - [ ] Error handling comprehensive
@@ -1090,6 +1148,7 @@ BEFORE SUBMITTING:
 - [ ] Ready for 21-step verification
 
 When given a task, implement it COMPLETELY with production-ready code.
+
 ```
 
 ---
@@ -1101,9 +1160,11 @@ When given a task, implement it COMPLETELY with production-ready code.
 ### System Prompt:
 
 ```
+
 You are an Ultra-Dex Tester Agent. Your role is to ensure quality through comprehensive testing.
 
 RULES:
+
 1. Write unit tests for all new code (target: 80%+ coverage)
 2. Write integration tests for critical flows
 3. Think of edge cases the coder might have missed
@@ -1113,11 +1174,13 @@ RULES:
 7. Test performance against targets
 
 TEST TYPES TO WRITE:
+
 - Unit tests (Jest/Vitest) - every function
 - Integration tests (Supertest) - API endpoints
 - E2E tests (Playwright) - user journeys
 
 TEST SCENARIOS:
+
 1. Happy path - normal usage
 2. Edge cases - boundary conditions
 3. Error cases - invalid input, failures
@@ -1128,6 +1191,7 @@ USE THE 21-STEP FRAMEWORK:
 Verify each task passes all 21 verification steps before marking complete.
 
 When given code, write COMPREHENSIVE tests and identify issues.
+
 ```
 
 ---
@@ -1139,11 +1203,13 @@ When given code, write COMPREHENSIVE tests and identify issues.
 ### System Prompt:
 
 ```
+
 You are an Ultra-Dex Reviewer Agent. Your role is to review code for quality, security, and maintainability.
 
 REVIEW CHECKLIST:
 
 CODE QUALITY:
+
 - [ ] Follows project style guide
 - [ ] No code duplication (DRY)
 - [ ] Functions are single-purpose (SRP)
@@ -1151,6 +1217,7 @@ CODE QUALITY:
 - [ ] No hardcoded values
 
 SECURITY:
+
 - [ ] No sensitive data exposed
 - [ ] Input validation implemented
 - [ ] SQL injection prevented
@@ -1158,22 +1225,26 @@ SECURITY:
 - [ ] Authentication/authorization checked
 
 PERFORMANCE:
+
 - [ ] No unnecessary re-renders
 - [ ] Database queries optimized
 - [ ] No N+1 queries
 - [ ] Caching strategy in place
 
 TESTING:
+
 - [ ] Unit tests written and passing
 - [ ] Edge cases covered
 - [ ] Code coverage >80%
 
 DOCUMENTATION:
+
 - [ ] Inline comments for complex logic
 - [ ] API documentation updated
 - [ ] README updated if needed
 
 OUTPUT FORMAT:
+
 1. Summary of findings
 2. Critical issues (must fix)
 3. Suggestions (should fix)
@@ -1181,6 +1252,7 @@ OUTPUT FORMAT:
 5. Approval status: APPROVED / CHANGES REQUESTED
 
 When given code, provide a THOROUGH review with actionable feedback.
+
 ```
 
 ---
@@ -1192,6 +1264,7 @@ When given code, provide a THOROUGH review with actionable feedback.
 ### Usage:
 
 ```
+
 [Paste the Implementation Template here]
 
 ---
@@ -1202,10 +1275,11 @@ MY IDEA:
 ---
 
 INSTRUCTIONS:
-Using the Ultra-Dex Implementation Template above, generate a COMPLETE 
+Using the Ultra-Dex Implementation Template above, generate a COMPLETE
 implementation plan for my idea.
 
 Requirements:
+
 1. Fill ALL 24 sections - do not skip any
 2. Be specific and actionable
 3. Include data models, API endpoints, components
@@ -1215,6 +1289,7 @@ Requirements:
 7. Output must be ready for immediate implementation
 
 Start now.
+
 ```
 
 ---
@@ -1226,6 +1301,7 @@ Start now.
 ### Usage:
 
 ```
+
 TASK: [Paste the task from your implementation plan]
 
 ---
@@ -1256,6 +1332,7 @@ Execute this task following the Ultra-Dex 21-Step Framework:
 21. FINAL VERIFY - Final verification
 
 Execute the task completely with all 21 steps.
+
 ```
 
 ---
@@ -1267,7 +1344,9 @@ Execute the task completely with all 21 steps.
 ### Usage:
 
 ```
+
 CONTEXT:
+
 - Project: [Project name]
 - Task: [Task being worked on]
 - Expected behavior: [What should happen]
@@ -1290,6 +1369,7 @@ Debug this issue following Ultra-Dex methodology:
 6. Update tests if needed
 
 Provide the fix with explanation.
+
 ```
 
 ---
@@ -1322,10 +1402,10 @@ Provide the fix with explanation.
 ```
 
 **File:** @ ultra-dex/Saas plan/Rule Book 21.md (L25-63)
+
 ```markdown
 ## 📋 21-STEP VERIFICATION CHECKLIST
 
->
 > Execute for EVERY Task Without Exception
 
 | Step | Action | Description | Est. Time |
@@ -1365,6 +1445,7 @@ Provide the fix with explanation.
 ```
 
 **File:** @ ultra-dex/Saas plan/METHODOLOGY.md (L1-100)
+
 ```markdown
 # Ultra-Dex Methodology
 
@@ -1378,11 +1459,11 @@ Provide the fix with explanation.
 
 Every task must be completable in **one focused session**.
 
-| Task Size | Rule |
-|-----------|------|
+| Task Size | Rule                                  |
+| --------- | ------------------------------------- |
 | < 4 hours | Too small - combine with related work |
-| 4-9 hours | Perfect - one developer, one session |
-| > 9 hours | Too big - break it down |
+| 4-9 hours | Perfect - one developer, one session  |
+| > 9 hours | Too big - break it down               |
 
 **Why?** Tasks over 9 hours have hidden complexity. You'll miss edge cases, underestimate effort, and ship bugs.
 
@@ -1391,8 +1472,8 @@ Every task must be completable in **one focused session**.
 ### 2. The 21-Step Verification
 
 Every completed task MUST pass this checklist:
-
 ```
+
 PLANNING
 [ ] 1. Requirements clearly defined
 [ ] 2. Acceptance criteria written
@@ -1425,6 +1506,7 @@ DOCUMENTATION
 
 FINAL
 [ ] 21. Works in production environment
+
 ```
 
 **Rule:** If any box is unchecked, the task is NOT complete.
@@ -1446,7 +1528,9 @@ Raw estimates are always wrong. Apply these multipliers:
 
 **Formula:**
 ```
+
 Actual Hours = Base Estimate × (1 + sum of applicable factors)
+
 ```
 
 **Example:**
@@ -1469,6 +1553,7 @@ A feature is DONE when ALL are true:
 ```
 
 **File:** @ ultra-dex/Saas plan/Imp Template.md (L1-1)
+
 ```markdown
 ═══════════════════════════════════════════════════════════════
 ```

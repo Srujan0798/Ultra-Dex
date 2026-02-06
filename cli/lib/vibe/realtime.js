@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export function streamText(text, options = {}) {
   const delay = options.delay ?? 6;
   return new Promise((resolve) => {

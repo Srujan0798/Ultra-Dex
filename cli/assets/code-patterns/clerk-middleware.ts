@@ -20,10 +20,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 // Admin routes - require admin role
-const isAdminRoute = createRouteMatcher([
-  '/admin(.*)',
-  '/api/admin(.*)',
-]);
+const isAdminRoute = createRouteMatcher(['/admin(.*)', '/api/admin(.*)']);
 
 // API routes that need special handling
 const isApiRoute = createRouteMatcher(['/api(.*)']);

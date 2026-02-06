@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -8,7 +10,9 @@ export async function listRules(type = 'community') {
   const dir = type === 'enterprise' ? ENTERPRISE_DIR : COMMUNITY_DIR;
   try {
     const files = await fs.readdir(dir);
-    return files.filter((file) => file.endsWith('.mdc')).map((file) => ({ name: file.replace('.mdc', ''), file }));
+    return files
+      .filter((file) => file.endsWith('.mdc'))
+      .map((file) => ({ name: file.replace('.mdc', ''), file }));
   } catch {
     return [];
   }

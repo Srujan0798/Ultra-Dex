@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Planner graph - breaks down goals into atomic tasks
  */
@@ -12,7 +14,7 @@ export function createPlannerGraph(options = {}) {
   return createSimpleGraph({
     ...options,
     nodeName: 'planner',
-    systemPrompt: SYSTEM_PROMPT
+    systemPrompt: SYSTEM_PROMPT,
   });
 }
 

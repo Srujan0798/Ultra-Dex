@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 
@@ -14,7 +16,7 @@ export async function analyzeScreenshot(imagePath, options = {}) {
     return {
       provider: providerId,
       elements: [],
-      message: 'Vision provider not configured'
+      message: 'Vision provider not configured',
     };
   }
 
@@ -25,7 +27,7 @@ export async function analyzeScreenshot(imagePath, options = {}) {
     return {
       provider: providerId,
       elements: [],
-      message: 'Vision analysis failed'
+      message: 'Vision analysis failed',
     };
   }
 }

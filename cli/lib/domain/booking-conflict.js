@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export function hasConflict(bookings, candidate) {
   const start = new Date(candidate.startTime).getTime();
   const end = new Date(candidate.endTime).getTime();

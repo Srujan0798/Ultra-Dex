@@ -20,23 +20,23 @@ function runCli(args, options = {}) {
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
     timeout: options.timeout ?? 30000,
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
 async function createTempProject(files = {}) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-audit-test-'));
-  
+
   for (const [filePath, content] of Object.entries(files)) {
     const fullPath = path.join(tmpDir, filePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, content);
   }
-  
+
   return tmpDir;
 }
 
@@ -58,9 +58,9 @@ describe('audit command', () => {
 
   test('audit detects missing files', async () => {
     tmpDir = await createTempProject({}); // Empty project
-    
+
     const result = runCli(['audit', '--dir', tmpDir]);
-    
+
     assert.match(result.output, /STRUCTURE/i);
     assert.match(result.output, /package\.json.*Missing/i);
     assert.match(result.output, /README\.md.*Missing/i);
@@ -73,11 +73,11 @@ describe('audit command', () => {
       'README.md': '# Test',
       'IMPLEMENTATION-PLAN.md': '# Plan',
       'CONTEXT.md': '# Context',
-      'src/index.js': 'console.log("hi")'
+      'src/index.js': 'console.log("hi")',
     });
-    
+
     const result = runCli(['audit', '--dir', tmpDir]);
-    
+
     assert.match(result.output, /✅.*package\.json/i);
     assert.match(result.output, /✅.*src\//i);
   });
@@ -85,24 +85,24 @@ describe('audit command', () => {
   test('audit checks for security issues', async () => {
     tmpDir = await createTempProject({
       'package.json': '{}',
-      '.env.example': 'KEY=value'
+      '.env.example': 'KEY=value',
     });
-    
+
     const result = runCli(['audit', '--dir', tmpDir]);
-    
+
     assert.match(result.output, /SECURITY/i);
     assert.match(result.output, /✅.*\.env\.example/i);
   });
 
   test('audit --fix attempts to create missing files', async () => {
     tmpDir = await createTempProject({
-      'package.json': '{}'
+      'package.json': '{}',
     });
-    
+
     const result = runCli(['audit', '--dir', tmpDir, '--fix']);
-    
+
     assert.match(result.output, /Running auto-fixes/i);
-    
+
     // Check if IMPLEMENTATION-PLAN.md was created
     const planExists = existsSync(path.join(tmpDir, 'IMPLEMENTATION-PLAN.md'));
     assert.ok(planExists, 'Should create IMPLEMENTATION-PLAN.md');

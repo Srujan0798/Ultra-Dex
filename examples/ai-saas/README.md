@@ -24,7 +24,7 @@ A modern, production-ready AI SaaS template built with Next.js 14, TypeScript, T
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database (local or cloud)
 - OpenAI API key
 - Stripe account (for payments)
@@ -106,6 +106,7 @@ Open [http://localhost:3000](http://localhost:3000) to see your app.
 ### Authentication
 
 Configure NextAuth.js in `src/lib/auth.ts`:
+
 - Email/password authentication (default)
 - Google OAuth
 - GitHub OAuth
@@ -113,6 +114,7 @@ Configure NextAuth.js in `src/lib/auth.ts`:
 ### AI Integration
 
 Set up OpenAI in `src/lib/openai.ts`:
+
 - GPT-4 / GPT-3.5-turbo
 - Customizable model parameters
 - Streaming responses
@@ -121,6 +123,7 @@ Set up OpenAI in `src/lib/openai.ts`:
 ### Payments
 
 Configure Stripe in `src/lib/stripe.ts`:
+
 - Subscription plans
 - Credit-based billing
 - Webhook handling
@@ -128,6 +131,7 @@ Configure Stripe in `src/lib/stripe.ts`:
 ### Database
 
 Update schema in `prisma/schema.prisma`:
+
 - User management
 - Credit tracking
 - Conversation history
@@ -182,6 +186,7 @@ vercel
 ```
 
 Don't forget to:
+
 1. Add environment variables in Vercel dashboard
 2. Set up production database
 3. Configure Stripe webhooks for production URL
@@ -189,6 +194,7 @@ Don't forget to:
 ### Other Platforms
 
 The app can be deployed to any platform supporting Next.js:
+
 - Railway
 - Render
 - AWS
@@ -197,21 +203,25 @@ The app can be deployed to any platform supporting Next.js:
 ## API Routes
 
 ### Authentication
+
 - `POST /api/auth/signin` - Sign in
 - `POST /api/auth/signout` - Sign out
 - `POST /api/auth/register` - Register new user
 
 ### AI
+
 - `POST /api/chat` - Send message to AI (streaming)
 - `GET /api/conversations` - Get conversation history
 - `DELETE /api/conversations/:id` - Delete conversation
 
 ### Billing
+
 - `POST /api/stripe/checkout` - Create checkout session
 - `POST /api/stripe/portal` - Create customer portal
 - `POST /api/stripe/webhook` - Handle Stripe webhooks
 
 ### User
+
 - `GET /api/user/credits` - Get credit balance
 - `GET /api/user/usage` - Get usage statistics
 - `PATCH /api/user/profile` - Update profile
@@ -219,31 +229,38 @@ The app can be deployed to any platform supporting Next.js:
 ## Database Schema
 
 ### User
+
 - id, email, name, image
 - credits balance
 - subscription status
 - created/updated timestamps
 
 ### Account (NextAuth)
+
 - OAuth provider accounts
 
 ### Session (NextAuth)
+
 - User sessions
 
 ### Conversation
+
 - Chat sessions
 - Associated messages
 
 ### Message
+
 - Individual chat messages
 - Role (user/assistant)
 - Token usage
 
 ### CreditTransaction
+
 - Credit purchases and usage
 - Transaction history
 
 ### Subscription (Stripe)
+
 - Stripe subscription details
 - Payment status
 
@@ -289,6 +306,7 @@ npm run test:e2e         # Run E2E tests
 ## Troubleshooting
 
 ### Database Connection Issues
+
 ```bash
 # Verify database URL format
 postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public
@@ -298,12 +316,14 @@ npx prisma db execute --stdin <<< "SELECT 1"
 ```
 
 ### Stripe Webhook Issues
+
 ```bash
 # Use Stripe CLI for local testing
 stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
 ### Build Errors
+
 ```bash
 # Clear cache
 rm -rf .next

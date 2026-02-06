@@ -1,13 +1,7 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Check, Sparkles, Zap, Shield } from "lucide-react";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Check, Sparkles, Zap, Shield } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -42,9 +36,8 @@ export default function HomePage() {
             <span className="text-primary"> Faster</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            A modern AI SaaS starter template with Next.js 14, TypeScript,
-            Tailwind CSS, Prisma, and Stripe. Everything you need to launch
-            your AI-powered application.
+            A modern AI SaaS starter template with Next.js 14, TypeScript, Tailwind CSS, Prisma, and
+            Stripe. Everything you need to launch your AI-powered application.
           </p>
           <div className="mt-10 flex gap-4">
             <Link href="/auth/register">
@@ -127,9 +120,7 @@ export default function HomePage() {
             <CardHeader>
               <Zap className="h-8 w-8 text-primary mb-2" />
               <CardTitle>Payments</CardTitle>
-              <CardDescription>
-                Stripe integration with subscription billing
-              </CardDescription>
+              <CardDescription>Stripe integration with subscription billing</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
@@ -162,15 +153,15 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap justify-center gap-4">
             {[
-              "Next.js 14",
-              "TypeScript",
-              "Tailwind CSS",
-              "Prisma",
-              "PostgreSQL",
-              "NextAuth.js",
-              "Stripe",
-              "OpenAI",
-              "shadcn/ui",
+              'Next.js 14',
+              'TypeScript',
+              'Tailwind CSS',
+              'Prisma',
+              'PostgreSQL',
+              'NextAuth.js',
+              'Stripe',
+              'OpenAI',
+              'shadcn/ui',
             ].map((tech) => (
               <div
                 key={tech}
@@ -186,12 +177,10 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="container py-24">
         <div className="rounded-2xl bg-primary px-6 py-16 text-center text-primary-foreground">
-          <h2 className="text-3xl font-bold mb-4">
-            Ready to Build Your AI App?
-          </h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to Build Your AI App?</h2>
           <p className="mx-auto max-w-xl mb-8 text-primary-foreground/90">
-            Get started in minutes with our production-ready template.
-            Deploy to Vercel with one click.
+            Get started in minutes with our production-ready template. Deploy to Vercel with one
+            click.
           </p>
           <Link href="/auth/register">
             <Button size="lg" variant="secondary">

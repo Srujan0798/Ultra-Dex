@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { requireConfig, createSyncResult, normalizeWebhookEvent } from './utils.js';
@@ -14,7 +16,7 @@ async function parsePlanForJira(planPath) {
     if (sectionMatch) {
       currentEpic = {
         key: `P${sectionMatch[1]}`,
-        title: sectionMatch[2] || `Section ${sectionMatch[1]}`
+        title: sectionMatch[2] || `Section ${sectionMatch[1]}`,
       };
       epics.push(currentEpic);
       continue;
@@ -25,7 +27,7 @@ async function parsePlanForJira(planPath) {
       stories.push({
         title: taskMatch[2],
         epic: currentEpic?.title || 'General',
-        status: taskMatch[1] === 'x' ? 'done' : 'todo'
+        status: taskMatch[1] === 'x' ? 'done' : 'todo',
       });
     }
   }
@@ -39,7 +41,7 @@ export async function connect(config = {}) {
     ok: true,
     connected: true,
     account: config.email,
-    baseUrl: config.baseUrl
+    baseUrl: config.baseUrl,
   };
 }
 
@@ -54,7 +56,10 @@ export async function sync({ direction = 'both', state = {} } = {}, config = {})
   return createSyncResult({ direction, pulled, pushed });
 }
 
-export async function syncPlan({ projectKey, planPath = 'IMPLEMENTATION-PLAN.md' } = {}, config = {}) {
+export async function syncPlan(
+  { projectKey, planPath = 'IMPLEMENTATION-PLAN.md' } = {},
+  config = {}
+) {
   requireConfig(config, ['baseUrl', 'apiToken'], 'Jira');
   const resolvedPlan = path.resolve(process.cwd(), planPath);
   const { epics, stories } = await parsePlanForJira(resolvedPlan);
@@ -63,7 +68,7 @@ export async function syncPlan({ projectKey, planPath = 'IMPLEMENTATION-PLAN.md'
     projectKey,
     epics,
     stories,
-    summary: { epics: epics.length, stories: stories.length }
+    summary: { epics: epics.length, stories: stories.length },
   };
 }
 
@@ -78,7 +83,7 @@ export const integration = {
   disconnect,
   sync,
   syncPlan,
-  handleWebhook
+  handleWebhook,
 };
 
 export default integration;

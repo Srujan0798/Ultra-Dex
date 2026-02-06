@@ -27,28 +27,33 @@ A production-ready API Platform template demonstrating modern API-first product 
 ### Installation
 
 1. **Clone and navigate to the project**
+
 ```bash
 cd examples/api-platform
 ```
 
 2. **Install dependencies**
+
 ```bash
 npm install
 ```
 
 3. **Set up environment variables**
+
 ```bash
 cp .env.example .env
 # Edit .env with your database and Redis credentials
 ```
 
 4. **Set up the database**
+
 ```bash
 npx prisma migrate dev
 npx prisma generate
 ```
 
 5. **Start the development server**
+
 ```bash
 npm run dev
 ```
@@ -66,12 +71,14 @@ Once the server is running, you can access:
 ## Developer Portal
 
 The developer portal provides a user-friendly interface for:
+
 - Managing API keys
 - Viewing usage analytics
 - Testing webhooks
 - Browsing API documentation
 
 To start the developer portal:
+
 ```bash
 cd developer-portal
 npm install
@@ -160,14 +167,8 @@ Verify the signature using the webhook secret:
 const crypto = require('crypto');
 
 const verifyWebhook = (payload, signature, secret) => {
-  const expected = crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expected)
-  );
+  const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 };
 ```
 
@@ -184,10 +185,10 @@ Specify version in the `Accept-Version` header as an alternative.
 
 Rate limits are applied per API key:
 
-| Tier | Limit | Window |
-|------|-------|--------|
-| Free | 100 | 1 hour |
-| Pro | 1,000 | 1 hour |
+| Tier       | Limit  | Window |
+| ---------- | ------ | ------ |
+| Free       | 100    | 1 hour |
+| Pro        | 1,000  | 1 hour |
 | Enterprise | 10,000 | 1 hour |
 
 Rate limit headers are included in responses:
@@ -200,16 +201,16 @@ X-RateLimit-Reset: 1640995200
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment (development/production) | `development` |
-| `PORT` | Server port | `3000` |
-| `DATABASE_URL` | PostgreSQL connection string | Required |
-| `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
-| `JWT_SECRET` | Secret for signing tokens | Required |
-| `WEBHOOK_SECRET` | Secret for webhook signatures | Required |
-| `LOG_LEVEL` | Logging level (debug/info/warn/error) | `info` |
-| `RATE_LIMIT_ENABLED` | Enable rate limiting | `true` |
+| Variable             | Description                           | Default                  |
+| -------------------- | ------------------------------------- | ------------------------ |
+| `NODE_ENV`           | Environment (development/production)  | `development`            |
+| `PORT`               | Server port                           | `3000`                   |
+| `DATABASE_URL`       | PostgreSQL connection string          | Required                 |
+| `REDIS_URL`          | Redis connection string               | `redis://localhost:6379` |
+| `JWT_SECRET`         | Secret for signing tokens             | Required                 |
+| `WEBHOOK_SECRET`     | Secret for webhook signatures         | Required                 |
+| `LOG_LEVEL`          | Logging level (debug/info/warn/error) | `info`                   |
+| `RATE_LIMIT_ENABLED` | Enable rate limiting                  | `true`                   |
 
 ## Testing
 
@@ -308,6 +309,7 @@ MIT License - see LICENSE file for details
 ## Support
 
 For questions or issues:
+
 - Open an issue on GitHub
 - Check the [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed build steps
 - Review [CONTEXT.md](./CONTEXT.md) for architecture overview

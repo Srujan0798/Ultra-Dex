@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -6,9 +8,7 @@ import { formatGateTable, summarizeGateResults, renderGateReportHtml } from '../
 import { printInfo, printSuccess, printError } from '../utils/output.js';
 
 export function registerGateCommand(program) {
-  const gate = program
-    .command('gate')
-    .description('Quality gate checks for CI/CD');
+  const gate = program.command('gate').description('Quality gate checks for CI/CD');
 
   gate
     .command('check')
@@ -40,7 +40,9 @@ export function registerGateCommand(program) {
       const { results } = await runQualityGates(process.cwd());
       const summary = summarizeGateResults(results);
       printInfo(chalk.cyan('\n🚦 Quality Gate Status\n'));
-      printInfo(`Passed: ${summary.passed} | Failed: ${summary.failed} | Warnings: ${summary.warnings}`);
+      printInfo(
+        `Passed: ${summary.passed} | Failed: ${summary.failed} | Warnings: ${summary.warnings}`
+      );
     });
 
   gate
@@ -60,4 +62,3 @@ export function registerGateCommand(program) {
       printSuccess(chalk.green(`\n✅ Report written to ${outputPath}\n`));
     });
 }
-

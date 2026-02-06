@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
@@ -11,10 +13,14 @@ export const DEFAULT_RETENTION_DAYS = {
   logs: 30,
   analytics: 90,
   pii: 365,
-  backups: 30
+  backups: 30,
 };
 
-export function classifyData({ containsPII = false, containsSecrets = false, exposure = 'internal' } = {}) {
+export function classifyData({
+  containsPII = false,
+  containsSecrets = false,
+  exposure = 'internal',
+} = {}) {
   if (containsSecrets) return 'restricted';
   if (containsPII) return 'confidential';
   if (exposure === 'public') return 'public';
@@ -32,7 +38,7 @@ export async function recordAccess({ actor, resource, classification, reason }) 
     actor,
     resource,
     classification,
-    reason
+    reason,
   };
   await fs.appendFile(AUDIT_LOG, JSON.stringify(entry) + '\n');
   return entry;
@@ -46,12 +52,14 @@ export async function purgeExpiredData({ datasets = [] } = {}) {
   for (const dataset of datasets) {
     const retentionDays = getRetentionPolicy(dataset.type);
     const cutoff = now - retentionDays * 24 * 60 * 60 * 1000;
-    const expired = (dataset.records || []).filter((record) => new Date(record.timestamp).getTime() < cutoff);
+    const expired = (dataset.records || []).filter(
+      (record) => new Date(record.timestamp).getTime() < cutoff
+    );
     results.push({
       name: dataset.name,
       type: dataset.type,
       retentionDays,
-      expiredCount: expired.length
+      expiredCount: expired.length,
     });
   }
 
@@ -72,7 +80,7 @@ export function registerDataGovernanceCommand(program) {
         const classification = classifyData({
           containsPII: options.containsPii,
           containsSecrets: options.containsSecrets,
-          exposure: options.exposure
+          exposure: options.exposure,
         });
         printInfo(`Classification: ${classification}`);
         printInfo(`Retention: ${getRetentionPolicy(options.type || 'logs')} days`);
@@ -87,5 +95,5 @@ export default {
   getRetentionPolicy,
   purgeExpiredData,
   recordAccess,
-  registerDataGovernanceCommand
+  registerDataGovernanceCommand,
 };

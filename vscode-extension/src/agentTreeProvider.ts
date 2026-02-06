@@ -71,7 +71,7 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     return agents.map((agent) => {
       const status = this.agentStatuses.get(agent.name);
       const label = status ? `${agent.name} (${status})` : agent.name;
-      
+
       const item = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
       item.description = agent.description;
       item.command = {
@@ -80,7 +80,7 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
         arguments: [agent],
       };
       item.contextValue = 'agent';
-      
+
       // Set icon based on status
       if (status === 'working') {
         item.iconPath = new vscode.ThemeIcon('sync~spin');
@@ -91,7 +91,7 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
       } else {
         item.iconPath = this.workspaceRoot ? getTierIcon(this.workspaceRoot, tierKey) : undefined;
       }
-      
+
       return item;
     });
   }
@@ -113,22 +113,36 @@ export async function loadAgentIndex(workspaceRoot?: string): Promise<AgentItem[
   }
 
   const rows = content.split('\n').filter((line) => line.trim().startsWith('| **@'));
-  return rows.map((row) => {
-    const parts = row.split('|').map((part) => part.trim()).filter(Boolean);
-    const name = parts[0]?.replace('**', '').replace('**', '') ?? '';
-    const description = parts[1] ?? '';
-    const file = parts[3]?.replace('[', '').split('](')[1]?.replace(')', '') ?? '';
-    const tier = file.split('/')[1] ?? 'unknown';
-    return {
-      name,
-      description,
-      tier,
-      filePath: file,
-    };
-  }).filter((agent) => agent.name && agent.filePath);
+  return rows
+    .map((row) => {
+      const parts = row
+        .split('|')
+        .map((part) => part.trim())
+        .filter(Boolean);
+      const name = parts[0]?.replace('**', '').replace('**', '') ?? '';
+      const description = parts[1] ?? '';
+      const file = parts[3]?.replace('[', '').split('](')[1]?.replace(')', '') ?? '';
+      const tier = file.split('/')[1] ?? 'unknown';
+      return {
+        name,
+        description,
+        tier,
+        filePath: file,
+      };
+    })
+    .filter((agent) => agent.name && agent.filePath);
 }
 
-function getTierIcon(workspaceRoot: string, tierKey: string): { light: vscode.Uri; dark: vscode.Uri } {
-  const iconPath = path.join(workspaceRoot, 'vscode-extension', 'resources', 'icons', `${tierKey}.svg`);
+function getTierIcon(
+  workspaceRoot: string,
+  tierKey: string
+): { light: vscode.Uri; dark: vscode.Uri } {
+  const iconPath = path.join(
+    workspaceRoot,
+    'vscode-extension',
+    'resources',
+    'icons',
+    `${tierKey}.svg`
+  );
   return { light: vscode.Uri.file(iconPath), dark: vscode.Uri.file(iconPath) };
 }

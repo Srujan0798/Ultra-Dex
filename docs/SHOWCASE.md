@@ -13,18 +13,21 @@
 **What it is:** A comprehensive real estate platform that combines property listings with Vastu analysis, climate risk assessment, and personalized recommendations.
 
 **Tech Stack:**
+
 - **Frontend:** Next.js 14, React, Tailwind CSS
 - **Backend:** Node.js, Express, PostgreSQL
 - **AI/ML:** Custom Vastu analysis engine, climate risk scoring
 - **Infrastructure:** Vercel, Railway, Neon
 
 **Ultra-Dex Usage:**
+
 - Used 28 specialized agents (extended from base 15)
 - Created domain-specific agents: VastuEngine, ClimateRisk, JyotishMatcher
 - Followed phase-based development with order tracking
 - Multi-tool orchestration: Claude Code + Cursor + Gemini
 
 **Key Features:**
+
 - Property listing with advanced filters
 - AI-powered Vastu compliance scoring
 - Climate risk analysis per property
@@ -32,6 +35,7 @@
 - Multi-tenant architecture
 
 **Lessons Learned:**
+
 - Domain agents (VastuEngine, ClimateRisk) significantly improved AI focus
 - Order-based tracking was essential for complex feature coordination
 - Multi-tool approach reduced costs by 60%
@@ -60,26 +64,30 @@ Built something with Ultra-Dex? Add it here!
 
 ## Projects
 
-| Project | Description | Stack | Builder |
-|---------|-------------|-------|---------|
-| **REST-iN-U** | Real estate platform with Vastu & climate intelligence | Next.js, PostgreSQL, AI | Ultra-Dex Team |
-| *Your project here* | *Description* | *Stack* | *You* |
+| Project             | Description                                            | Stack                   | Builder        |
+| ------------------- | ------------------------------------------------------ | ----------------------- | -------------- |
+| **REST-iN-U**       | Real estate platform with Vastu & climate intelligence | Next.js, PostgreSQL, AI | Ultra-Dex Team |
+| _Your project here_ | _Description_                                          | _Stack_                 | _You_          |
 
 ---
 
 ## Categories
 
 ### SaaS Applications
-*Coming soon...*
+
+_Coming soon..._
 
 ### Developer Tools
-*Coming soon...*
+
+_Coming soon..._
 
 ### E-commerce
-*Coming soon...*
+
+_Coming soon..._
 
 ### Productivity
-*Coming soon...*
+
+_Coming soon..._
 
 ---
 
@@ -92,4 +100,4 @@ Built something with Ultra-Dex? Add it here!
 
 ---
 
-*Created by the Ultra-Dex Team*
+_Created by the Ultra-Dex Team_

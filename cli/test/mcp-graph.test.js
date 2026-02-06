@@ -39,10 +39,10 @@ describe('MCP Graph Module', () => {
 
     try {
       await projectGraph.scan();
-      
+
       // Should have created nodes
       assert.ok(projectGraph.nodes.size > 0, 'Should have created nodes');
-      
+
       // Check that JS files were detected
       let jsFilesFound = 0;
       for (const [filePath, node] of projectGraph.nodes) {
@@ -51,7 +51,7 @@ describe('MCP Graph Module', () => {
           assert.ok(node, 'Node should have data');
         }
       }
-      
+
       assert.ok(jsFilesFound >= 2, `Should have found at least 2 JS files, found ${jsFilesFound}`);
     } finally {
       process.chdir(originalCwd);
@@ -66,7 +66,7 @@ describe('MCP Graph Module', () => {
     try {
       await projectGraph.scan();
       const summary = projectGraph.getSummary();
-      
+
       assert.ok(typeof summary === 'object', 'Summary should be an object');
       assert.ok(typeof summary.nodeCount === 'number', 'Should have nodeCount');
       assert.ok(typeof summary.edgeCount === 'number', 'Should have edgeCount');
@@ -85,7 +85,7 @@ describe('MCP Graph Module', () => {
     try {
       // Scan empty directory (or one with no JS/TS files)
       await projectGraph.scan();
-      
+
       const summary = projectGraph.getSummary();
       // Should have valid structure even if empty
       assert.ok(typeof summary.nodeCount === 'number', 'Should have numeric nodeCount');
@@ -103,7 +103,7 @@ describe('MCP Graph Module', () => {
     const nodeModulesDir = path.join(tmpDir, 'node_modules');
     await fs.mkdir(nodeModulesDir, { recursive: true });
     await fs.writeFile(path.join(nodeModulesDir, 'test.js'), 'module.exports = {};');
-    
+
     // Create regular file
     await fs.writeFile(path.join(tmpDir, 'app.js'), 'const x = 1;');
 
@@ -112,10 +112,13 @@ describe('MCP Graph Module', () => {
 
     try {
       await projectGraph.scan();
-      
+
       // Check that node_modules files are not included
       for (const filePath of projectGraph.nodes.keys()) {
-        assert.ok(!filePath.includes('node_modules'), `Should not include node_modules files: ${filePath}`);
+        assert.ok(
+          !filePath.includes('node_modules'),
+          `Should not include node_modules files: ${filePath}`
+        );
       }
     } finally {
       process.chdir(originalCwd);
@@ -151,7 +154,11 @@ describe('MCP Graph Module', () => {
 
       // Second scan with cache should return cached results
       const secondSummary = await projectGraph.scan(true);
-      assert.strictEqual(secondSummary.nodeCount, firstSummary.nodeCount, 'Cached scan should return same node count');
+      assert.strictEqual(
+        secondSummary.nodeCount,
+        firstSummary.nodeCount,
+        'Cached scan should return same node count'
+      );
 
       // Force fresh scan - just verify it completes successfully
       await projectGraph.scan(false);

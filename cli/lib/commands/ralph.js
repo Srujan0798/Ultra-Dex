@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
@@ -70,7 +72,7 @@ class Ralph {
         task: currentTask,
         solution,
         error: executionResult.error,
-        stderr: executionResult.stderr || ''
+        stderr: executionResult.stderr || '',
       });
 
       // Compact context if history gets too long
@@ -103,7 +105,9 @@ Please fix the code and try again. Focus on resolving the error. Pay special att
 
     try {
       printInfo(`  🧪 Running verification: ${this.options.testCommand}`);
-      const { stdout, stderr } = await execAsync(this.options.testCommand, { cwd: this.projectPath });
+      const { stdout, stderr } = await execAsync(this.options.testCommand, {
+        cwd: this.projectPath,
+      });
 
       if (stdout) {
         printInfo(chalk.dim(stdout));
@@ -121,14 +125,15 @@ Please fix the code and try again. Focus on resolving the error. Pay special att
     } catch (error) {
       return {
         success: false,
-        error: error.stdout || error.stderr || error.message
+        error: error.stdout || error.stderr || error.message,
       };
     }
   }
 
   async generate(prompt) {
-    const systemPrompt = 'You are Ralph, an autonomous developer agent.\n' +
-      'Your goal is to solve the user\'s task by writing code and verifying it.\n' +
+    const systemPrompt =
+      'You are Ralph, an autonomous developer agent.\n' +
+      "Your goal is to solve the user's task by writing code and verifying it.\n" +
       'You MUST output your solution in a format that can be executed or applied.\n' +
       'If you need to run shell commands, wrap them in ```bash``` blocks.\n' +
       'If you need to write code, wrap it in ```javascript``` (or appropriate language) blocks with a file path comment like // File: path/to/file.ext.\n' +
@@ -137,7 +142,7 @@ Please fix the code and try again. Focus on resolving the error. Pay special att
     const fullPrompt = `${this.contextSummary}
 
 Task: ${prompt}`;
-    
+
     // Use the provider to generate content
     // Assuming provider.generate(system, user) signature
     const response = await this.provider.generate(systemPrompt, fullPrompt);
@@ -162,9 +167,9 @@ Task: ${prompt}`;
     const shellRegex = /```bash\n([\s\S]*?)```/g;
     const shellMatches = [...solution.matchAll(shellRegex)];
     if (shellMatches.length === 0 && fileMatches.length === 0) {
-        // If no code or commands, assume it's just text/reasoning and treat as "success" for now,
-        // but warn that nothing was executed.
-        return { success: true, output: 'No executable code found.' };
+      // If no code or commands, assume it's just text/reasoning and treat as "success" for now,
+      // but warn that nothing was executed.
+      return { success: true, output: 'No executable code found.' };
     }
 
     let failureError = null;
@@ -197,25 +202,27 @@ Task: ${prompt}`;
 
     // If explicit test command was provided in options, run it
     if (!failureError && this.options.testCommand) {
-        printInfo(`  🧪 Running verification: ${this.options.testCommand}`);
-        try {
-            const { stdout, stderr } = await execAsync(this.options.testCommand, { cwd: this.projectPath });
+      printInfo(`  🧪 Running verification: ${this.options.testCommand}`);
+      try {
+        const { stdout, stderr } = await execAsync(this.options.testCommand, {
+          cwd: this.projectPath,
+        });
 
-            // Check if test command produced stderr (which could indicate issues even if exit code is 0)
-            if (stderr && stderr.trim() !== '') {
-              stderrOutput += stderr;
-              // For test commands, stderr often indicates problems
-              if (this.containsErrorIndicators(stderr)) {
-                failureError = `Test command produced error output: ${stderr}`;
-              }
-            }
-
-            if (stdout) {
-              printInfo(chalk.dim(stdout));
-            }
-        } catch (error) {
-            failureError = error.stdout || error.stderr || error.message;
+        // Check if test command produced stderr (which could indicate issues even if exit code is 0)
+        if (stderr && stderr.trim() !== '') {
+          stderrOutput += stderr;
+          // For test commands, stderr often indicates problems
+          if (this.containsErrorIndicators(stderr)) {
+            failureError = `Test command produced error output: ${stderr}`;
+          }
         }
+
+        if (stdout) {
+          printInfo(chalk.dim(stdout));
+        }
+      } catch (error) {
+        failureError = error.stdout || error.stderr || error.message;
+      }
     }
 
     // Even if the command succeeded, check if stderr contains error indicators
@@ -245,10 +252,10 @@ Task: ${prompt}`;
       /not found/i,
       /permission denied/i,
       /connection refused/i,
-      /timeout/i
+      /timeout/i,
     ];
 
-    return errorPatterns.some(pattern => pattern.test(text));
+    return errorPatterns.some((pattern) => pattern.test(text));
   }
 
   async compactContext() {
@@ -288,14 +295,14 @@ export function registerRalphCommand(program) {
       try {
         const providerId = options.provider || getDefaultProvider();
         if (!providerId) {
-            printError('No AI provider configured.');
-            process.exit(1);
+          printError('No AI provider configured.');
+          process.exit(1);
         }
         const provider = createProvider(providerId);
 
         const ralph = new Ralph(process.cwd(), provider, task, {
-            testCommand: options.test,
-            maxRetries: options.retries
+          testCommand: options.test,
+          maxRetries: options.retries,
         });
 
         const success = await ralph.run();

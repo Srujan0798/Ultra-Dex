@@ -1,7 +1,7 @@
 const teams = [
   { name: 'Core Engineering', members: 12, role: 'Admin' },
   { name: 'Platform Ops', members: 8, role: 'Maintainer' },
-  { name: 'Security Guild', members: 5, role: 'Viewer' }
+  { name: 'Security Guild', members: 5, role: 'Viewer' },
 ];
 
 export default function TeamsPage() {

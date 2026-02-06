@@ -2,29 +2,31 @@ Based on my analysis of the Ultra-Dex repository, here are the critical technica
 
 ## 1. **No Automated Code Generation Infrastructure**
 
-The CLI tool only generates markdown documentation files, not actual application code. [3-cite-0](#3-cite-0) 
+The CLI tool only generates markdown documentation files, not actual application code. [3-cite-0](#3-cite-0)
 
-The system creates QUICK-START.md, CONTEXT.md, and IMPLEMENTATION-PLAN.md, but these are planning documents with links to templates - not functional code. [3-cite-1](#3-cite-1) 
+The system creates QUICK-START.md, CONTEXT.md, and IMPLEMENTATION-PLAN.md, but these are planning documents with links to templates - not functional code. [3-cite-1](#3-cite-1)
 
 ## 2. **Missing Code Scaffolding System**
 
 There is no code generation capability for:
-- **Database schemas**: Section 10 provides JSON schema examples but no automated ORM/Prisma schema generation [3-cite-2](#3-cite-2) 
-- **API endpoints**: Section 11 defines API blueprints in markdown but doesn't generate Express/Next.js route handlers [3-cite-3](#3-cite-3) 
+
+- **Database schemas**: Section 10 provides JSON schema examples but no automated ORM/Prisma schema generation [3-cite-2](#3-cite-2)
+- **API endpoints**: Section 11 defines API blueprints in markdown but doesn't generate Express/Next.js route handlers [3-cite-3](#3-cite-3)
 - **Frontend components**: No automated React/Vue/Svelte component generation
 - **Authentication systems**: No automated implementation of auth flows
 - **Payment integrations**: No automated Stripe/payment provider setup
 
 ## 3. **No AI Agent Orchestration System**
 
-The AGENT-INSTRUCTIONS.md provides manual prompts for humans to copy-paste to AI tools, not an automated multi-agent system. [3-cite-4](#3-cite-4) 
+The AGENT-INSTRUCTIONS.md provides manual prompts for humans to copy-paste to AI tools, not an automated multi-agent system. [3-cite-4](#3-cite-4)
 
-The system requires manual execution: users must copy prompts, paste them into Claude/GPT, and manually transfer outputs. [3-cite-5](#3-cite-5) 
+The system requires manual execution: users must copy prompts, paste them into Claude/GPT, and manually transfer outputs. [3-cite-5](#3-cite-5)
 
 ## 4. **No Automated Task Execution Pipeline**
 
 While the 21-step verification framework exists as a checklist, there's no automated system to:
-- Execute the 21 steps programmatically [3-cite-6](#3-cite-6) 
+
+- Execute the 21 steps programmatically [3-cite-6](#3-cite-6)
 - Validate completion of each step automatically
 - Integrate with CI/CD pipelines
 - Auto-generate tests based on acceptance criteria
@@ -33,8 +35,9 @@ While the 21-step verification framework exists as a checklist, there's no autom
 ## 5. **Missing Automated Quality Validation**
 
 The framework defines quality targets but lacks automation for:
-- Code coverage enforcement (>80% target) [3-cite-7](#3-cite-7) 
-- Performance benchmarking automation [3-cite-8](#3-cite-8) 
+
+- Code coverage enforcement (>80% target) [3-cite-7](#3-cite-7)
+- Performance benchmarking automation [3-cite-8](#3-cite-8)
 - Security scanning integration
 - Accessibility testing automation
 - Automated code review
@@ -42,23 +45,25 @@ The framework defines quality targets but lacks automation for:
 ## 6. **No Template-to-Code Translation Layer**
 
 The 34-section template is comprehensive for planning but there's no system to:
+
 - Parse the filled template
 - Extract data models, API specs, and component definitions
 - Generate actual implementation files
 - Create folder structures with source code
 - Set up build configurations
 
-The template mentions this is a "5,500 line" planning document, not executable specifications. [3-cite-9](#3-cite-9) 
+The template mentions this is a "5,500 line" planning document, not executable specifications. [3-cite-9](#3-cite-9)
 
 ## 7. **Empty Examples Directory**
 
-The documentation references complete examples (TaskFlow-Complete.md, InvoiceFlow-Complete.md, HabitStack-Complete.md) that don't exist in the repository. [3-cite-10](#3-cite-10) 
+The documentation references complete examples (TaskFlow-Complete.md, InvoiceFlow-Complete.md, HabitStack-Complete.md) that don't exist in the repository. [3-cite-10](#3-cite-10)
 
 Without working examples, there's no reference implementation to guide code generation patterns.
 
 ## 8. **No Deployment Automation**
 
 While Section 19 of the template covers deployment planning, there's no automated:
+
 - Infrastructure-as-code generation (Terraform, CloudFormation)
 - CI/CD pipeline setup
 - Environment configuration
@@ -68,6 +73,7 @@ While Section 19 of the template covers deployment planning, there's no automate
 ## 9. **Missing Integration Automation**
 
 The INTEGRATIONS-TEMPLATE.md describes how to document integrations but doesn't provide:
+
 - Automated SDK installation
 - Automated configuration file generation
 - Automated webhook endpoint creation
@@ -76,6 +82,7 @@ The INTEGRATIONS-TEMPLATE.md describes how to document integrations but doesn't 
 ## 10. **No Progressive Code Generation**
 
 The methodology describes "just-in-time planning" but lacks:
+
 - Incremental code generation tied to sprint/phase progression
 - Automated refactoring as requirements evolve
 - Version control integration for generated code
@@ -84,7 +91,8 @@ The methodology describes "just-in-time planning" but lacks:
 ## 11. **Manual Human-in-the-Loop Required**
 
 The system explicitly requires human developers to:
-- Execute tasks one at a time [3-cite-11](#3-cite-11) 
+
+- Execute tasks one at a time [3-cite-11](#3-cite-11)
 - Write actual code based on specifications
 - Conduct code reviews
 - Make architectural decisions
@@ -93,6 +101,7 @@ The system explicitly requires human developers to:
 ## 12. **No AI Model Integration**
 
 There's no integration with:
+
 - LLM APIs (OpenAI, Anthropic, Google) for automated code generation
 - Vector databases for RAG-based code retrieval
 - Fine-tuned models for domain-specific generation
@@ -101,12 +110,14 @@ There's no integration with:
 ## Summary
 
 **Ultra-Dex is fundamentally a planning and methodology framework, not an automated code generation system.** It provides:
+
 - ✅ Comprehensive documentation templates
 - ✅ Task breakdown methodology
 - ✅ Quality verification checklists
 - ✅ AI agent prompts for manual use
 
 **What's missing for full automation:**
+
 - ❌ Code generation engine
 - ❌ Multi-agent orchestration system
 - ❌ Template-to-code compiler
@@ -120,18 +131,19 @@ To automatically generate production-ready applications, Ultra-Dex would need to
 
 ## Notes
 
-The current Ultra-Dex system is designed as a **human-guided framework** where developers use AI agents as assistants while following the 34-section template and 21-step methodology. The principle "Do it right the first time, verify it the 21st time" [3-cite-12](#3-cite-12)  assumes human developers are executing and verifying each step, not automated agents.
+The current Ultra-Dex system is designed as a **human-guided framework** where developers use AI agents as assistants while following the 34-section template and 21-step methodology. The principle "Do it right the first time, verify it the 21st time" [3-cite-12](#3-cite-12) assumes human developers are executing and verifying each step, not automated agents.
 
 ### Citations
 
 **File:** cli/bin/ultra-dex.js (L234-263)
-```javascript
-      // Write files
-      await fs.writeFile(path.join(outputDir, 'QUICK-START.md'), quickStart);
-      await fs.writeFile(path.join(outputDir, 'CONTEXT.md'), context);
 
-      // Create empty implementation plan
-      const planContent = `# ${answers.projectName} - Implementation Plan
+```javascript
+// Write files
+await fs.writeFile(path.join(outputDir, 'QUICK-START.md'), quickStart);
+await fs.writeFile(path.join(outputDir, 'CONTEXT.md'), context);
+
+// Create empty implementation plan
+const planContent = `# ${answers.projectName} - Implementation Plan
 
 > Generated with Ultra-Dex CLI
 
@@ -155,36 +167,38 @@ ${answers.ideaWhat} for ${answers.ideaFor}.
 - [Methodology](https://github.com/Srujan0798/Ultra-Dex/blob/main/%40%20Ultra%20DeX/Saas%20plan/METHODOLOGY.md)
 `;
 
-      await fs.writeFile(path.join(outputDir, 'IMPLEMENTATION-PLAN.md'), planContent);
+await fs.writeFile(path.join(outputDir, 'IMPLEMENTATION-PLAN.md'), planContent);
 ```
 
 **File:** cli/README.md (L23-31)
-```markdown
 
+```markdown
 This will:
+
 1. Ask you about your SaaS idea
 2. Gather tech stack preferences
 3. Create starter files:
    - `QUICK-START.md` - Pre-filled with your answers
    - `CONTEXT.md` - Project context for AI agents
    - `IMPLEMENTATION-PLAN.md` - Links to full resources
-
 ```
 
 **File:** @ Ultra DeX/Saas plan/Imp Template.md (L420-480)
+
 ```markdown
 ## SECTION 10: DATA MODEL
 
-------------------------------------------------------------------
+---
 
 ### 10.1 Entity Relationship Overview
+```
 
-```
 User ──< owns >── Project ──< contains >── Task
-  │                                          │
-  │                                          │
-  └< has >─ Profile            └< belongs to >─ Category
-```
+│ │
+│ │
+└< has >─ Profile └< belongs to >─ Category
+
+````
 
 ### 10.2 Data Entities (JSON Schema)
 
@@ -204,7 +218,7 @@ User ──< owns >── Project ──< contains >── Task
   "lastLoginAt": "timestamp nullable",
   "profileId": "uuid (foreign key)"
 }
-```
+````
 
 **[Entity 2]:**
 
@@ -234,7 +248,7 @@ CREATE INDEX idx_task_project ON tasks(project_id);
 **Password:** Min 8 chars, must include uppercase, lowercase, number
 [Continue for all fields]
 
-```
+````
 
 **File:** @ Ultra DeX/Saas plan/Imp Template.md (L483-500)
 ```markdown
@@ -256,9 +270,10 @@ CREATE INDEX idx_task_project ON tasks(project_id);
 **Authentication:** None
 
 Request Body:
-```
+````
 
 **File:** AGENT-INSTRUCTIONS.md (L1-15)
+
 ```markdown
 # 🤖 ULTRA-DEX AGENT INSTRUCTIONS
 
@@ -278,14 +293,15 @@ Copy the relevant prompt below and use it with your AI agent (Claude, GPT-4, Gem
 ```
 
 **File:** AGENT-INSTRUCTIONS.md (L177-207)
+
 ```markdown
 ## 5. FULL IMPLEMENTATION PROMPT
 
 > One-shot prompt to generate complete implementation from idea
 
 ### Usage:
-
 ```
+
 [Paste the Implementation Template here]
 
 ---
@@ -296,10 +312,11 @@ MY IDEA:
 ---
 
 INSTRUCTIONS:
-Using the Ultra-Dex Implementation Template above, generate a COMPLETE 
+Using the Ultra-Dex Implementation Template above, generate a COMPLETE
 implementation plan for my idea.
 
 Requirements:
+
 1. Fill ALL 24 sections - do not skip any
 2. Be specific and actionable
 3. Include data models, API endpoints, components
@@ -309,14 +326,16 @@ Requirements:
 7. Output must be ready for immediate implementation
 
 Start now.
+
 ```
+
 ```
 
 **File:** @ Ultra DeX/Saas plan/Rule Book 21.md (L25-66)
+
 ```markdown
 ## 📋 21-STEP VERIFICATION CHECKLIST
 
->
 > Execute for EVERY Task Without Exception
 
 | Step | Action | Description | Est. Time |
@@ -355,10 +374,10 @@ Start now.
 | □ 21 | FINAL VERIFY | Run complete end-to-end verification | 15-30 min |
 
 **Total Estimated Time per Task:** 4-9 hours (varies by complexity)
-
 ```
 
 **File:** @ Ultra DeX/Saas plan/Rule Book 21.md (L69-89)
+
 ```markdown
 ## 🚫 NON-NEGOTIABLE RULES
 
@@ -380,10 +399,10 @@ Start now.
 | CI/CD INTEGRATION | Automated tests must pass before deployment |
 
 | ROLLBACK PLAN | Document rollback procedure for every deployment |
-
 ```
 
 **File:** @ Ultra DeX/Saas plan/Rule Book 21.md (L140-163)
+
 ```markdown
 ## 📊 QUALITY TARGETS & BENCHMARKS
 
@@ -408,10 +427,10 @@ Start now.
 | Build Time | Fast compilation | <5 minutes |
 
 | Bundle Size | Optimized assets | <500KB initial load |
-
 ```
 
 **File:** @ Ultra DeX/Saas plan/Rule Book 21.md (L587-609)
+
 ```markdown
 ## 🎯 PERFORMANCE BENCHMARKS
 
@@ -435,12 +454,11 @@ Start now.
 | Database Query Time (p95) | <50ms | DB Profiler |
 
 ### Optimization Checklist
-
 ```
 
 **File:** @ Ultra DeX/Saas plan/README.md (L57-65)
-```markdown
 
+```markdown
 ## Template Sections (34 Total)
 
 **Core (1-10):** Product, Tech Stack, Database, API, Auth, Frontend, Real-time, Payments, UI/UX, Testing
@@ -448,10 +466,10 @@ Start now.
 **Operations (11-20):** Deployment, Errors, Logging, Performance, Security, Tasks, Timeline, Risks, Maintenance, Launch
 
 **Advanced (21-34):** Docs, Roadmap, Accessibility, Cost, Analytics, Error Strategy, Legal, SEO, i18n, Feature Flags, Real-time Architecture, Support, AI/ML
-
 ```
 
 **File:** README.md (L131-135)
+
 ```markdown
 ## Get Started
 
@@ -461,6 +479,7 @@ Start now.
 ```
 
 **File:** README.md (L139-139)
+
 ```markdown
 > **Principle:** "Do it right the first time, verify it the 21st time."
 ```

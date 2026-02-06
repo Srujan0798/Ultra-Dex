@@ -1,10 +1,12 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import http from 'http';
 import fs from 'fs/promises';
 import { loadState, generateMarkdown } from './plan.js';
 import { createMcpServer, startStdioServer } from '../mcp/server.js';
 import { initializeMcpHost } from '../mcp/host.js';
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { projectGraph } from '../mcp/graph.js';
 import { webSocketServer } from '../mcp/websocket.js';
 import { swarmCommand } from './swarm.js';
@@ -26,7 +28,10 @@ export function registerServeCommand(program) {
     .option('-p, --port <port>', 'Port to listen on', '3001')
     .option('--stdio', 'Run in Stdio mode (MCP Standard Only)', false)
     .option('--host', 'Enable MCP Host mode (aggregate external MCP servers)', false)
-    .option('--mcp-servers <list>', 'Comma-separated MCP servers to connect (e.g., github,filesystem)')
+    .option(
+      '--mcp-servers <list>',
+      'Comma-separated MCP servers to connect (e.g., github,filesystem)'
+    )
     .action(async (options) => {
       try {
         if (options.stdio) {
@@ -49,7 +54,12 @@ async function handleStdioServer(options = {}) {
     printInfo('Starting MCP Stdio server...');
     await startStdioServer({
       hostMode: options.host,
-      servers: options.mcpServers ? options.mcpServers.split(',').map(s => s.trim()).filter(Boolean) : []
+      servers: options.mcpServers
+        ? options.mcpServers
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
     });
   } catch (error) {
     throw new AppError('Failed to start MCP Stdio Server', { cause: error });
@@ -62,9 +72,11 @@ async function handleStdioServer(options = {}) {
 async function getGitInfo() {
   try {
     const branch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
-    const lastCommit = execSync('git log -1 --format="%h %s" 2>/dev/null', { encoding: 'utf8' }).trim();
+    const lastCommit = execSync('git log -1 --format="%h %s" 2>/dev/null', {
+      encoding: 'utf8',
+    }).trim();
     const status = execSync('git status --porcelain 2>/dev/null', { encoding: 'utf8' });
-    const changedFiles = status.split('\n').filter(l => l.trim()).length;
+    const changedFiles = status.split('\n').filter((l) => l.trim()).length;
     return { branch, lastCommit, changedFiles };
   } catch {
     return { branch: 'unknown', lastCommit: 'N/A', changedFiles: 0 };
@@ -80,19 +92,22 @@ async function getDashboardHTML() {
   const gitInfo = await getGitInfo();
   await projectGraph.scan();
   const summary = projectGraph.getSummary();
-  return generateDashboardHTML(state, gitInfo, { nodes: summary.nodeCount, edges: summary.edgeCount });
+  return generateDashboardHTML(state, gitInfo, {
+    nodes: summary.nodeCount,
+    edges: summary.edgeCount,
+  });
 }
 
 /**
  * Start the full unified kernel (HTTP + WebSocket + Dashboard + MCP SSE)
  * @param {string} portStr Port to listen on
  */
-async function startUnifiedKernel(portStr, options = {}) {
+export async function startUnifiedKernel(portStr, options = {}) {
   const port = Number.parseInt(portStr, 10);
   if (isNaN(port) || port < 1 || port > 65535) {
     throw new ValidationError(`Invalid port: ${portStr}. Port must be between 1 and 65535.`);
   }
-      
+
   printInfo('\n🚀 Opening Multiverse Portal (Infinity Kernel)...\n');
   printInfo(chalk.italic(chalk.gray(`"${getRandomMessage('loading')}"`)));
 
@@ -108,11 +123,16 @@ async function startUnifiedKernel(portStr, options = {}) {
   // Initialize MCP Host connections if requested
   if (options.host) {
     const servers = options.mcpServers
-      ? options.mcpServers.split(',').map(s => s.trim()).filter(Boolean)
+      ? options.mcpServers
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
       : [];
     const hostResult = await initializeMcpHost({ servers });
     if (hostResult.failures?.length) {
-      printWarning(`⚠️ MCP Host connection failures: ${hostResult.failures.map(f => f.server).join(', ')}`);
+      printWarning(
+        `⚠️ MCP Host connection failures: ${hostResult.failures.map((f) => f.server).join(', ')}`
+      );
     }
   }
 
@@ -140,15 +160,15 @@ async function startUnifiedKernel(portStr, options = {}) {
 
       // 1. GET /sse -> Start Session
       if (pathname === '/sse') {
-        const transport = new SSEServerTransport("/messages", res);
+        const transport = new SSEServerTransport('/messages', res);
         await mcpServer.connect(transport);
 
         if (transport.sessionId) {
-            transports.set(transport.sessionId, transport);
+          transports.set(transport.sessionId, transport);
         }
 
         res.on('close', () => {
-             if (transport.sessionId) transports.delete(transport.sessionId);
+          if (transport.sessionId) transports.delete(transport.sessionId);
         });
         return;
       }
@@ -157,16 +177,16 @@ async function startUnifiedKernel(portStr, options = {}) {
       if (pathname === '/messages') {
         const sessionId = url.searchParams.get('sessionId');
         if (!sessionId) {
-            res.writeHead(400);
-            res.end(JSON.stringify({ error: "Missing sessionId" }));
-            return;
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'Missing sessionId' }));
+          return;
         }
 
         const transport = transports.get(sessionId);
         if (!transport) {
-            res.writeHead(404);
-            res.end(JSON.stringify({ error: "Session not found" }));
-            return;
+          res.writeHead(404);
+          res.end(JSON.stringify({ error: 'Session not found' }));
+          return;
         }
 
         await transport.handlePostMessage(req, res);
@@ -188,16 +208,15 @@ async function startUnifiedKernel(portStr, options = {}) {
 
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Not found in this timeline' }));
-
     } catch (error) {
       printError(error);
       if (!res.headersSent) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: error.message }));
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
       }
     }
   });
-  
+
   // Use the singleton instance
   const wss = webSocketServer;
   try {
@@ -213,7 +232,9 @@ async function startUnifiedKernel(portStr, options = {}) {
         });
 
         ws.on('error', (error) => {
-          printError(`WebSocket error for client ${request.socket.remoteAddress}: ${error.message}`);
+          printError(
+            `WebSocket error for client ${request.socket.remoteAddress}: ${error.message}`
+          );
         });
       });
     }
@@ -229,9 +250,10 @@ async function startUnifiedKernel(portStr, options = {}) {
   server.on('error', (e) => {
     if (e.code === 'EADDRINUSE') {
       handleError(new AppError(`Port ${port} is already in use`, { code: 'EADDRINUSE' }));
-      process.exit(1);
+      if (!options.testMode) process.exit(1);
     } else {
       handleError(e);
+      if (!options.testMode) process.exit(1);
     }
   });
 
@@ -247,18 +269,30 @@ async function startUnifiedKernel(portStr, options = {}) {
     printInfo(`     Run "ultra-dex config --mcp" to register.`);
 
     // Auto-Pilot with proper cleanup
-    fileWatcher = fs.watch(process.cwd(), { recursive: true }, async (eventType, filename) => {
-      if (!filename || filename.includes('node_modules') || filename.includes('.git') || filename.includes('IMPLEMENTATION-PLAN.md')) return;
+    if (!options.disableWatch && !options.testMode) {
+      fileWatcher = fs.watch(process.cwd(), { recursive: true }, async (eventType, filename) => {
+        if (
+          !filename ||
+          filename.includes('node_modules') ||
+          filename.includes('.git') ||
+          filename.includes('IMPLEMENTATION-PLAN.md')
+        )
+          return;
 
-      try {
-        const state = await loadState();
-        if (state) {
-            wss.broadcast({ type: 'state_update', data: state, timestamp: new Date().toISOString() });
+        try {
+          const state = await loadState();
+          if (state) {
+            wss.broadcast({
+              type: 'state_update',
+              data: state,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } catch {
+          // Silent watch failure to avoid spamming console
         }
-      } catch (e) {
-        // Silent watch failure to avoid spamming console
-      }
-    });
+      });
+    }
   });
 
   // Cleanup on process exit
@@ -270,119 +304,138 @@ async function startUnifiedKernel(portStr, options = {}) {
     }
     wss.stop();
     server.close();
-    process.exit(0);
+    if (!options.testMode) {
+      process.exit(0);
+    }
   };
 
-  process.on('SIGINT', cleanup);
-  process.on('SIGTERM', cleanup);
+  if (!options.testMode) {
+    process.on('SIGINT', cleanup);
+    process.on('SIGTERM', cleanup);
+  }
+
+  return { server, wss, close: cleanup };
 }
 
 /**
  * Handle API routes separately for cleaner code
  */
 function handleApiRoutes(req, res, pathname, url) {
-    // Endpoint: /api/info
-    if (pathname === '/api/info') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        name: 'Ultra-Dex Multiverse Kernel',
-        version: VERSION,
-        status: 'online',
-        mcp: 'enabled',
-        endpoints: ['/sse', '/messages', '/api/state', '/api/graph']
-      }, null, 2));
-      return true;
-    }
+  // Endpoint: /api/info
+  if (pathname === '/api/info') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(
+      JSON.stringify(
+        {
+          name: 'Ultra-Dex Multiverse Kernel',
+          version: VERSION,
+          status: 'online',
+          mcp: 'enabled',
+          endpoints: ['/sse', '/messages', '/api/state', '/api/graph'],
+        },
+        null,
+        2
+      )
+    );
+    return true;
+  }
 
-    // Endpoint: /api/graph
-    if (pathname === '/api/graph' || pathname === '/graph') {
-      const summary = projectGraph.getSummary();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(summary, null, 2));
-      return true;
-    }
+  // Endpoint: /api/graph
+  if (pathname === '/api/graph' || pathname === '/graph') {
+    const summary = projectGraph.getSummary();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(summary, null, 2));
+    return true;
+  }
 
-    // Endpoint: /api/state
-    if (pathname === '/api/state' || pathname === '/state') {
-      loadState().then(state => {
+  // Endpoint: /api/state
+  if (pathname === '/api/state' || pathname === '/state') {
+    loadState()
+      .then((state) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(state, null, 2));
-      }).catch(e => {
+      })
+      .catch((e) => {
         res.writeHead(500);
         res.end(JSON.stringify({ error: e.message }));
       });
-      return true;
-    }
+    return true;
+  }
 
-    // Endpoint: /api/swarm (Execute Swarm)
-    if ((pathname === '/api/swarm' || pathname === '/swarm') && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
-      req.on('end', async () => {
-         try {
-           const { task, feature, parallel } = JSON.parse(body);
-           const objective = task || feature;
-           if (!objective) throw new Error('Task/Feature objective is required');
+  // Endpoint: /api/swarm (Execute Swarm)
+  if ((pathname === '/api/swarm' || pathname === '/swarm') && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', async () => {
+      try {
+        const { task, feature, parallel } = JSON.parse(body);
+        const objective = task || feature;
+        if (!objective) throw new Error('Task/Feature objective is required');
 
-           swarmCommand(objective, { parallel, dryRun: false }).catch(err => printError(err));
+        swarmCommand(objective, { parallel, dryRun: false }).catch((err) => printError(err));
 
-           res.writeHead(202, { 'Content-Type': 'application/json' });
-           res.end(JSON.stringify({ status: 'accepted', message: 'Swarm initiated' }));
-         } catch (e) {
-           res.writeHead(400, { 'Content-Type': 'application/json' });
-           res.end(JSON.stringify({ error: e.message }));
-         }
-      });
-      return true;
-    }
+        res.writeHead(202, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'accepted', message: 'Swarm initiated' }));
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return true;
+  }
 
-    // Endpoint: /api/plan
-    if (pathname === '/api/plan' || pathname === '/plan') {
-      loadState().then(state => {
-        const markdown = generateMarkdown(state);
-        res.writeHead(200, { 'Content-Type': 'text/markdown' });
-        res.end(markdown);
-      });
-      return true;
-    }
+  // Endpoint: /api/plan
+  if (pathname === '/api/plan' || pathname === '/plan') {
+    loadState().then((state) => {
+      const markdown = generateMarkdown(state);
+      res.writeHead(200, { 'Content-Type': 'text/markdown' });
+      res.end(markdown);
+    });
+    return true;
+  }
 
-    // Dashboard SSE & Monitoring
-    if (pathname === '/events') {
-        res.writeHead(200, {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive'
+  // Dashboard SSE & Monitoring
+  if (pathname === '/events') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+    res.write(
+      `data: ${JSON.stringify({ type: 'log', message: 'Connected to Multiverse Kernel' })}\n\n`
+    );
+    return true;
+  }
+
+  // Broadcast relay endpoints
+  if (
+    ['/api/autonomous/status', '/api/log', '/api/agent/status'].includes(pathname) &&
+    req.method === 'POST'
+  ) {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const typeMap = {
+          '/api/autonomous/status': 'autonomous_update',
+          '/api/log': 'log',
+          '/api/agent/status': 'agent_status',
+        };
+        webSocketServer.broadcast({
+          type: typeMap[pathname],
+          ...data,
+          timestamp: new Date().toISOString(),
         });
-        res.write(`data: ${JSON.stringify({ type: 'log', message: 'Connected to Multiverse Kernel' })}\n\n`);
-        return true;
-    }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok' }));
+      } catch (e) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      }
+    });
+    return true;
+  }
 
-    // Broadcast relay endpoints
-    if (['/api/autonomous/status', '/api/log', '/api/agent/status'].includes(pathname) && req.method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', () => {
-            try {
-                const data = JSON.parse(body);
-                const typeMap = {
-                    '/api/autonomous/status': 'autonomous_update',
-                    '/api/log': 'log',
-                    '/api/agent/status': 'agent_status'
-                };
-                webSocketServer.broadcast({
-                    type: typeMap[pathname],
-                    ...data,
-                    timestamp: new Date().toISOString()
-                });
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ status: 'ok' }));
-            } catch (e) {
-                res.writeHead(400);
-                res.end(JSON.stringify({ error: 'Invalid JSON' }));
-            }
-        });
-        return true;
-    }
-
-    return false;
+  return false;
 }

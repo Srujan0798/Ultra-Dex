@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import path from 'path';
 import { TeamContext } from './collaboration.js';
 
@@ -15,7 +17,7 @@ export class TeamWorkspaceManager {
     const workspace = {
       name,
       path: path.resolve(dir),
-      addedAt: new Date().toISOString()
+      addedAt: new Date().toISOString(),
     };
     config.workspaces = config.workspaces || [];
     config.workspaces.push(workspace);

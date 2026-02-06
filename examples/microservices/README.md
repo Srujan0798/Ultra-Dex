@@ -44,14 +44,14 @@ A complete microservices architecture template demonstrating modern patterns and
 
 ## Services
 
-| Service | Port | Description | Database |
-|---------|------|-------------|----------|
-| API Gateway | 3000 | Request routing, auth validation, rate limiting | Redis |
-| Auth Service | 3001 | JWT authentication, user credentials | PostgreSQL |
-| Users Service | 3002 | User profiles, preferences | PostgreSQL |
-| Orders Service | 3003 | Order management, status tracking | PostgreSQL |
-| Payments Service | 3004 | Payment processing, refunds | PostgreSQL |
-| Notifications Service | 3005 | Email, SMS, push notifications | PostgreSQL |
+| Service               | Port | Description                                     | Database   |
+| --------------------- | ---- | ----------------------------------------------- | ---------- |
+| API Gateway           | 3000 | Request routing, auth validation, rate limiting | Redis      |
+| Auth Service          | 3001 | JWT authentication, user credentials            | PostgreSQL |
+| Users Service         | 3002 | User profiles, preferences                      | PostgreSQL |
+| Orders Service        | 3003 | Order management, status tracking               | PostgreSQL |
+| Payments Service      | 3004 | Payment processing, refunds                     | PostgreSQL |
+| Notifications Service | 3005 | Email, SMS, push notifications                  | PostgreSQL |
 
 ## Infrastructure
 
@@ -100,12 +100,12 @@ docker-compose logs -f api-gateway
 
 ### Access Points
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| API Gateway | http://localhost:3000 | - |
+| Service             | URL                    | Credentials    |
+| ------------------- | ---------------------- | -------------- |
+| API Gateway         | http://localhost:3000  | -              |
 | RabbitMQ Management | http://localhost:15672 | admin/admin123 |
-| Consul UI | http://localhost:8500 | - |
-| Jaeger UI | http://localhost:16686 | - |
+| Consul UI           | http://localhost:8500  | -              |
+| Jaeger UI           | http://localhost:16686 | -              |
 
 ## API Usage Examples
 
@@ -132,6 +132,7 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 ```
 
 Response:
+
 ```json
 {
   "user": { "id": "...", "email": "user@example.com", "role": "user" },
@@ -237,10 +238,12 @@ microservices/
 ## Communication Patterns
 
 ### Synchronous (REST API)
+
 - API Gateway → All Services
 - Service-to-Service (via Service Discovery)
 
 ### Asynchronous (Message Queue)
+
 - Orders Service → RabbitMQ → Payments Service
 - Orders Service → RabbitMQ → Notifications Service
 - Payments Service → RabbitMQ → Notifications Service
@@ -278,6 +281,7 @@ npm test
 See `.env.example` for all available environment variables.
 
 Key variables:
+
 - `JWT_SECRET`: Secret key for JWT signing
 - `NODE_ENV`: Environment (development/production)
 - `DB_*`: Database connection settings
@@ -379,6 +383,7 @@ MIT
 ## Support
 
 For issues and questions:
+
 - Create an issue in the repository
 - Check existing documentation
 - Review logs with `docker-compose logs`

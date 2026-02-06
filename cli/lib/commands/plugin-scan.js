@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import path from 'path';
 import { scanPlugin } from '../security/plugin-validator.js';

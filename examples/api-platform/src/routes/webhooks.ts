@@ -10,9 +10,9 @@ const webhookService = new WebhookService();
 router.get('/', async (req, res, next) => {
   try {
     const endpoints = await webhookService.listEndpoints(req.apiKey.userId);
-    
+
     res.json({
-      data: endpoints
+      data: endpoints,
     });
   } catch (error) {
     next(error);
@@ -23,22 +23,22 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const validation = createWebhookSchema.safeParse(req.body);
-    
+
     if (!validation.success) {
       throw new ValidationError(
         'Invalid request data',
-        validation.error.errors.map(err => ({
+        validation.error.errors.map((err) => ({
           field: err.path.join('.'),
-          message: err.message
+          message: err.message,
         }))
       );
     }
-    
+
     const endpoint = await webhookService.createEndpoint({
       userId: req.apiKey.userId,
-      ...validation.data
+      ...validation.data,
     });
-    
+
     res.status(201).json(endpoint);
   } catch (error) {
     next(error);
@@ -49,11 +49,11 @@ router.post('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const endpoint = await webhookService.getEndpoint(req.params.id, req.apiKey.userId);
-    
+
     if (!endpoint) {
       throw new NotFoundError('Webhook endpoint not found');
     }
-    
+
     res.json(endpoint);
   } catch (error) {
     next(error);
@@ -64,11 +64,11 @@ router.get('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const success = await webhookService.deleteEndpoint(req.params.id, req.apiKey.userId);
-    
+
     if (!success) {
       throw new NotFoundError('Webhook endpoint not found');
     }
-    
+
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -79,11 +79,11 @@ router.delete('/:id', async (req, res, next) => {
 router.post('/:id/test', async (req, res, next) => {
   try {
     const delivery = await webhookService.testEndpoint(req.params.id, req.apiKey.userId);
-    
+
     if (!delivery) {
       throw new NotFoundError('Webhook endpoint not found');
     }
-    
+
     res.json(delivery);
   } catch (error) {
     next(error);
@@ -96,16 +96,16 @@ router.get('/deliveries', async (req, res, next) => {
     const limit = parseInt(req.query.limit as string) || 20;
     const endpointId = req.query.endpoint_id as string | undefined;
     const status = req.query.status as string | undefined;
-    
+
     const deliveries = await webhookService.listDeliveries({
       userId: req.apiKey.userId,
       endpointId,
       status,
-      limit
+      limit,
     });
-    
+
     res.json({
-      data: deliveries
+      data: deliveries,
     });
   } catch (error) {
     next(error);

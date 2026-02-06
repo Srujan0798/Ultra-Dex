@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Agent Session Manager
  * Handles persistent agent sessions with checkpoint/resume capabilities
@@ -38,17 +40,17 @@ export class SessionManager {
   async initialize() {
     // Create session directory if it doesn't exist
     await fs.mkdir(SESSION_DIR, { recursive: true });
-    
+
     // Initialize database file if it doesn't exist
-    if (!await this.fileExists(SESSION_DB)) {
+    if (!(await this.fileExists(SESSION_DB))) {
       await this.initializeDatabase();
     }
-    
+
     printInfo(chalk.cyan('🔄 Initializing Agent Session Manager...'));
-    
+
     // Load existing sessions
     await this.loadSessions();
-    
+
     printSuccess(chalk.green('✅ Agent Session Manager Initialized'));
   }
 
@@ -60,9 +62,9 @@ export class SessionManager {
     const dbStructure = {
       sessions: [],
       checkpoints: [],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
-    
+
     await fs.writeFile(SESSION_DB, JSON.stringify(dbStructure, null, 2));
   }
 
@@ -85,13 +87,13 @@ export class SessionManager {
     try {
       const dbContent = await fs.readFile(SESSION_DB, 'utf8');
       const db = JSON.parse(dbContent);
-      
+
       for (const sessionData of db.sessions) {
         if (sessionData.status === 'running' || sessionData.status === 'paused') {
           this.sessions.set(sessionData.id, sessionData);
         }
       }
-      
+
       printInfo(chalk.blue(`📋 Loaded ${this.sessions.size} active sessions`));
     } catch (error) {
       printWarning(chalk.yellow(`⚠️  Could not load sessions: ${error.message}`));
@@ -122,21 +124,21 @@ export class SessionManager {
       state: {
         context: options.context || {},
         history: [],
-        currentTask: task
-      }
+        currentTask: task,
+      },
     };
 
     // Save to database
     await this.saveSession(session);
-    
+
     // Add to active sessions
     this.sessions.set(sessionId, session);
-    
+
     // Start checkpoint timer
     this.startCheckpointTimer(sessionId);
-    
+
     printSuccess(chalk.green(`✅ Created session: ${session.name} (${sessionId})`));
-    
+
     return session;
   }
 
@@ -154,7 +156,7 @@ export class SessionManager {
       }
 
       // Update or add session
-      const existingIndex = db.sessions.findIndex(s => s.id === session.id);
+      const existingIndex = db.sessions.findIndex((s) => s.id === session.id);
       if (existingIndex !== -1) {
         db.sessions[existingIndex] = session;
       } else {
@@ -200,7 +202,7 @@ export class SessionManager {
       sessionId,
       step: session.currentStep,
       state: JSON.parse(JSON.stringify(session.state)), // Deep clone
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     // Save checkpoint to database
@@ -217,18 +219,19 @@ export class SessionManager {
       db.checkpoints.push(checkpoint);
 
       // Keep only the last MAX_FULL_CHECKPOINTS full checkpoints, plus differential from the rest
-      if (db.checkpoints.length > MAX_FULL_CHECKPOINTS * 2) { // Keep some buffer
+      if (db.checkpoints.length > MAX_FULL_CHECKPOINTS * 2) {
+        // Keep some buffer
         // For now, just keep the last MAX_FULL_CHECKPOINTS
         db.checkpoints = db.checkpoints.slice(-MAX_FULL_CHECKPOINTS);
       }
 
       await fs.writeFile(SESSION_DB, JSON.stringify(db, null, 2));
-      
+
       // Update session checkpoint count
       session.checkpointCount++;
       session.updatedAt = new Date().toISOString();
       await this.saveSession(session);
-      
+
       printInfo(chalk.blue(`📍 Checkpoint created for ${sessionId} (Step ${session.currentStep})`));
     } catch (error) {
       printError(chalk.red(`❌ Failed to create checkpoint: ${error.message}`));
@@ -249,11 +252,11 @@ export class SessionManager {
     try {
       const dbContent = await fs.readFile(SESSION_DB, 'utf8');
       const db = JSON.parse(dbContent);
-      
+
       const checkpoints = db.checkpoints
-        .filter(cp => cp.sessionId === sessionId)
+        .filter((cp) => cp.sessionId === sessionId)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      
+
       if (checkpoints.length > 0) {
         const latestCheckpoint = checkpoints[0];
         session.state = latestCheckpoint.state;
@@ -265,11 +268,11 @@ export class SessionManager {
 
     session.status = 'running';
     session.updatedAt = new Date().toISOString();
-    
+
     await this.saveSession(session);
-    
+
     printSuccess(chalk.green(`✅ Resumed session: ${sessionId}`));
-    
+
     return session;
   }
 
@@ -284,17 +287,17 @@ export class SessionManager {
 
     session.status = 'paused';
     session.updatedAt = new Date().toISOString();
-    
+
     await this.saveSession(session);
-    
+
     // Clear checkpoint timer
     if (this.checkpointTimers.has(sessionId)) {
       clearInterval(this.checkpointTimers.get(sessionId));
       this.checkpointTimers.delete(sessionId);
     }
-    
+
     printSuccess(chalk.yellow(`⏸️  Paused session: ${sessionId}`));
-    
+
     return session;
   }
 
@@ -310,20 +313,20 @@ export class SessionManager {
     session.status = 'stopped';
     session.completedAt = new Date().toISOString();
     session.updatedAt = new Date().toISOString();
-    
+
     await this.saveSession(session);
-    
+
     // Clear checkpoint timer
     if (this.checkpointTimers.has(sessionId)) {
       clearInterval(this.checkpointTimers.get(sessionId));
       this.checkpointTimers.delete(sessionId);
     }
-    
+
     // Remove from active sessions
     this.sessions.delete(sessionId);
-    
+
     printSuccess(chalk.red(`⏹️  Stopped session: ${sessionId}`));
-    
+
     return session;
   }
 
@@ -340,20 +343,20 @@ export class SessionManager {
     session.completedAt = new Date().toISOString();
     session.updatedAt = new Date().toISOString();
     session.result = result;
-    
+
     await this.saveSession(session);
-    
+
     // Clear checkpoint timer
     if (this.checkpointTimers.has(sessionId)) {
       clearInterval(this.checkpointTimers.get(sessionId));
       this.checkpointTimers.delete(sessionId);
     }
-    
+
     // Remove from active sessions
     this.sessions.delete(sessionId);
-    
+
     printSuccess(chalk.green(`✅ Completed session: ${sessionId}`));
-    
+
     return session;
   }
 
@@ -370,20 +373,20 @@ export class SessionManager {
     session.completedAt = new Date().toISOString();
     session.updatedAt = new Date().toISOString();
     session.error = error.message || error;
-    
+
     await this.saveSession(session);
-    
+
     // Clear checkpoint timer
     if (this.checkpointTimers.has(sessionId)) {
       clearInterval(this.checkpointTimers.get(sessionId));
       this.checkpointTimers.delete(sessionId);
     }
-    
+
     // Remove from active sessions
     this.sessions.delete(sessionId);
-    
+
     printError(chalk.red(`❌ Failed session: ${sessionId} - ${error.message || error}`));
-    
+
     return session;
   }
 
@@ -405,7 +408,7 @@ export class SessionManager {
    * Get sessions by status
    */
   getSessionsByStatus(status) {
-    return this.getSessions().filter(session => session.status === status);
+    return this.getSessions().filter((session) => session.status === status);
   }
 
   /**
@@ -420,13 +423,13 @@ export class SessionManager {
     session.progress = progress;
     session.currentStep = stepInfo?.step || session.currentStep + 1;
     session.updatedAt = new Date().toISOString();
-    
+
     if (stepInfo) {
       session.state.history.push(stepInfo);
     }
-    
+
     await this.saveSession(session);
-    
+
     return session;
   }
 
@@ -441,9 +444,9 @@ export class SessionManager {
 
     session.state = { ...session.state, ...newState };
     session.updatedAt = new Date().toISOString();
-    
+
     await this.saveSession(session);
-    
+
     return session;
   }
 
@@ -452,33 +455,37 @@ export class SessionManager {
    */
   async listSessions() {
     const sessions = this.getSessions();
-    
+
     if (sessions.length === 0) {
       printInfo(chalk.gray('No active sessions'));
       return [];
     }
 
     printInfo(chalk.cyan.bold('\n📋 Active Sessions:\n'));
-    
+
     for (const session of sessions) {
       const statusColors = {
-        'running': chalk.green,
-        'paused': chalk.yellow,
-        'completed': chalk.blue,
-        'failed': chalk.red,
-        'stopped': chalk.gray
+        running: chalk.green,
+        paused: chalk.yellow,
+        completed: chalk.blue,
+        failed: chalk.red,
+        stopped: chalk.gray,
       };
-      
+
       const color = statusColors[session.status] || chalk.white;
-      
+
       printInfo(`${color(`● ${session.name}`)} (${session.id})`);
       printInfo(chalk.gray(`  Status: ${session.status}`));
       printInfo(chalk.gray(`  Agent: ${session.agent}`));
-      printInfo(chalk.gray(`  Progress: ${session.progress}% (${session.currentStep}/${session.totalSteps})`));
+      printInfo(
+        chalk.gray(
+          `  Progress: ${session.progress}% (${session.currentStep}/${session.totalSteps})`
+        )
+      );
       printInfo(chalk.gray(`  Started: ${new Date(session.startedAt).toLocaleTimeString()}`));
       printInfo(''); // Empty line
     }
-    
+
     return sessions;
   }
 
@@ -503,7 +510,7 @@ export class SessionManager {
       clearInterval(timer);
     }
     this.checkpointTimers.clear();
-    
+
     // Stop all daemon processes
     for (const [sessionId, process] of this.daemonProcesses) {
       if (process.kill) {
@@ -518,7 +525,7 @@ export class SessionManager {
 export const sessionManager = new SessionManager();
 
 // Initialize on module load
-sessionManager.initialize().catch(error => {
+sessionManager.initialize().catch((error) => {
   printError(chalk.red(`❌ Failed to initialize session manager: ${error.message}`));
 });
 

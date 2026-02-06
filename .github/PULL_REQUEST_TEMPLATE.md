@@ -12,8 +12,7 @@ Brief description of what this PR does.
 
 ## Files Changed
 
-List the main files modified:
--
+## List the main files modified:
 
 ## Checklist
 

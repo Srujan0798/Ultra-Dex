@@ -48,20 +48,20 @@
 
 ## When to Use
 
-| Task Type | Checklist | Why |
-|-----------|-----------|-----|
+| Task Type                   | Checklist    | Why                         |
+| --------------------------- | ------------ | --------------------------- |
 | **New feature** (4-9 hours) | Full 21-step | Production quality required |
-| **Bug fix** (<2 hours) | 5-step mini | Full version is overkill |
-| **Refactor** | Full 21-step | Quality gates matter |
-| **Docs update** | Skip | Not code |
+| **Bug fix** (<2 hours)      | 5-step mini  | Full version is overkill    |
+| **Refactor**                | Full 21-step | Quality gates matter        |
+| **Docs update**             | Skip         | Not code                    |
 
 ## Adaptive Time Estimates
 
-| Task Size | Planning | Implementation | Validation | Delivery |
-|-----------|----------|----------------|------------|----------|
-| 1 hour (small fix) | 5 min | 30 min | 10 min | 5 min |
-| 3 hours (medium) | 10 min | 2 hrs | 20 min | 10 min |
-| 6 hours (large feature) | 20 min | 4 hrs | 30 min | 20 min |
+| Task Size               | Planning | Implementation | Validation | Delivery |
+| ----------------------- | -------- | -------------- | ---------- | -------- |
+| 1 hour (small fix)      | 5 min    | 30 min         | 10 min     | 5 min    |
+| 3 hours (medium)        | 10 min   | 2 hrs          | 20 min     | 10 min   |
+| 6 hours (large feature) | 20 min   | 4 hrs          | 30 min     | 20 min   |
 
 **For tasks <2 hours:** Use the 5-step mini-checklist in [02-HOW-TO-USE.md](../@%20Ultra%20DeX/Saas%20plan/02-HOW-TO-USE.md)
 
@@ -70,15 +70,19 @@
 ## How to Use in Git Workflow
 
 ### Option 1: GitHub PR Template (Recommended)
+
 ```bash
 cp CHECKLIST-21-STEP.md .github/PULL_REQUEST_TEMPLATE.md
 ```
+
 Every PR automatically includes the checklist.
 
 ### Option 2: Copy into PR Description
+
 Copy the checklist above into your PR description.
 
 ### Option 3: Issue Tracker
+
 Copy into Jira/Linear/GitHub Issues to track per task.
 
 ---

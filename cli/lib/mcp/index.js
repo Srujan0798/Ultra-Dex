@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * MCP Module Index
  */
@@ -8,4 +10,3 @@ export { registerResources } from './resources.js';
 export { registerTools } from './tools.js';
 export { projectGraph } from './graph.js';
 export { ultraMemory } from './memory.js';
-

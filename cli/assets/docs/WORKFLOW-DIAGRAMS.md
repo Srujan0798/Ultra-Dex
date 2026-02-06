@@ -41,6 +41,7 @@ graph TD
 ```
 
 **Legend:**
+
 - 🟡 Yellow: Leadership Tier
 - 🔵 Blue: Development Tier
 - 🔴 Pink: Security Tier
@@ -377,6 +378,7 @@ graph TD
 ```
 
 **Duration:**
+
 - MVP: 2-4 weeks with AI agents
 - Full SaaS: 8-12 weeks with AI agents
 
@@ -385,15 +387,18 @@ graph TD
 ## 🔗 Workflow Resources
 
 **Detailed Workflows:**
+
 - [Project Orchestration Guide](./guides/PROJECT-ORCHESTRATION.md) - Complete auth workflow
 - [Advanced Workflows](./guides/ADVANCED-WORKFLOWS.md) - Stripe, emails, migrations
 - [Multi-Tool Workflow](./guides/MULTI-TOOL-WORKFLOW.md) - Coordinate multiple AIs
 
 **Agent Reference:**
+
 - [Agent Index](./agents/00-AGENT_INDEX.md) - All 17 agents with "when to use"
 - [Agents README](./agents/README.md) - Tier-based organization
 
 **Decision Guides:**
+
 - [Database Selection](./guides/DATABASE-DECISION-FRAMEWORK.md) - PostgreSQL vs MongoDB
 - [Architecture Patterns](./guides/ARCHITECTURE-PATTERNS.md) - Team size to architecture
 - [AI Model Selection](./guides/AI-MODEL-SELECTION.md) - Cost optimization
@@ -403,14 +408,17 @@ graph TD
 ## 💡 Using These Diagrams
 
 **In Documentation:**
+
 - Embed Mermaid diagrams in markdown files
 - GitHub/GitLab render Mermaid natively
 
 **In Presentations:**
+
 - Export diagrams as SVG/PNG
 - Use in pitch decks, team meetings
 
 **In Planning:**
+
 - Map your feature to standard workflow
 - Identify which agents you need
 - Estimate time and cost
@@ -419,14 +427,14 @@ graph TD
 
 ## 🎓 Diagram Legend
 
-| Color | Tier | Agents |
-|-------|------|--------|
-| 🟡 Yellow | Leadership | CTO, Planner, Research |
-| 🔵 Blue | Development | Backend, Frontend, Database |
-| 🔴 Pink | Security | Auth, Security |
-| 🟢 Teal | DevOps | DevOps |
-| 🟣 Purple | Quality | Testing, Documentation, Reviewer, Debugger |
-| 🟠 Orange | Specialist | Performance, Refactoring |
+| Color     | Tier        | Agents                                     |
+| --------- | ----------- | ------------------------------------------ |
+| 🟡 Yellow | Leadership  | CTO, Planner, Research                     |
+| 🔵 Blue   | Development | Backend, Frontend, Database                |
+| 🔴 Pink   | Security    | Auth, Security                             |
+| 🟢 Teal   | DevOps      | DevOps                                     |
+| 🟣 Purple | Quality     | Testing, Documentation, Reviewer, Debugger |
+| 🟠 Orange | Specialist  | Performance, Refactoring                   |
 
 **Decision Nodes:** Diamond shape
 **Processes:** Rectangle shape
@@ -437,27 +445,30 @@ graph TD
 ## 📝 Creating Custom Diagrams
 
 **Mermaid Syntax:**
+
 ```markdown
 \`\`\`mermaid
 graph TD
-    A[@YourAgent] --> B[@NextAgent]
-    B --> C{Decision?}
-    C -->|Yes| D[@Agent3]
-    C -->|No| E[@Agent4]
+A[@YourAgent] --> B[@NextAgent]
+B --> C{Decision?}
+C -->|Yes| D[@Agent3]
+C -->|No| E[@Agent4]
 \`\`\`
 ```
 
 **Tools:**
+
 - [Mermaid Live Editor](https://mermaid.live/) - Online editor
 - VSCode Mermaid extension - Edit in IDE
 - GitHub Markdown - Renders automatically
 
 **Learn More:**
+
 - [Mermaid Documentation](https://mermaid.js.org/)
 - [Mermaid GitHub](https://github.com/mermaid-js/mermaid)
 
 ---
 
-*Ultra-Dex v1.7.0 - Visual workflows for AI-driven development*
+_Ultra-Dex v1.7.0 - Visual workflows for AI-driven development_
 
 **These diagrams are living documentation - update them as your workflow evolves!**

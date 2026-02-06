@@ -1,8 +1,10 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 
-const LEDGER_PATH = path.resolve(process.cwd(), '.ultra-dex', 'ledger.jsonl');
+const LEDGER_PATH = path.resolve(process.cwd(), '.ultra', 'ledger.jsonl');
 
 export function computeChecksum(entry) {
   const payload = JSON.stringify({ ...entry, checksum: undefined });
@@ -24,7 +26,7 @@ export async function appendEntry(entry) {
     constraints_checked: entry.constraints_checked || entry.constraintsChecked || [],
     artifacts: entry.artifacts || [],
     affected_files: entry.affected_files || [],
-    metadata: entry.metadata || {}
+    metadata: entry.metadata || {},
   };
   record.checksum = computeChecksum(record);
 
@@ -39,7 +41,7 @@ export async function readLedger() {
     return content
       .split('\n')
       .filter(Boolean)
-      .map(line => JSON.parse(line));
+      .map((line) => JSON.parse(line));
   } catch {
     return [];
   }

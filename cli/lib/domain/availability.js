@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export function calculateAvailableSlots({ workingHours = [], bookings = [], bufferMinutes = 15 }) {
   const slots = [];
   const bufferMs = bufferMinutes * 60 * 1000;
@@ -13,7 +15,10 @@ export function calculateAvailableSlots({ workingHours = [], bookings = [], buff
 
     for (const booking of sortedBookings) {
       if (booking.start > cursor) {
-        slots.push({ start: new Date(cursor).toISOString(), end: new Date(booking.start - bufferMs).toISOString() });
+        slots.push({
+          start: new Date(cursor).toISOString(),
+          end: new Date(booking.start - bufferMs).toISOString(),
+        });
       }
       cursor = Math.max(cursor, booking.end + bufferMs);
     }

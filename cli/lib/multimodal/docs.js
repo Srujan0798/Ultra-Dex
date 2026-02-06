@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -17,7 +19,11 @@ export async function generateDocsFromFiles(files) {
 
 export async function writeDocsReport(docs, outputPath) {
   const resolved = path.resolve(outputPath);
-  const body = ['# Auto-Generated Documentation', '', ...docs.map((doc) => `## ${doc.file}\n\n${doc.summary}\n`)].join('\n');
+  const body = [
+    '# Auto-Generated Documentation',
+    '',
+    ...docs.map((doc) => `## ${doc.file}\n\n${doc.summary}\n`),
+  ].join('\n');
   await fs.mkdir(path.dirname(resolved), { recursive: true });
   await fs.writeFile(resolved, body, 'utf8');
   return resolved;

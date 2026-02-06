@@ -84,24 +84,28 @@ taskflow-saas/
 ## 🎨 Features Implemented
 
 ### Phase 1: Foundation ✅
+
 - [x] User authentication (email + OAuth)
 - [x] Database schema (Prisma + PostgreSQL)
 - [x] Basic UI layout and navigation
 - [x] Project structure setup
 
 ### Phase 2: Core Features 🚧
+
 - [ ] Task creation and management
 - [ ] Project organization
 - [ ] Team collaboration
 - [ ] Real-time updates (WebSocket)
 
 ### Phase 3: Advanced Features ⏳
+
 - [ ] File attachments
 - [ ] Comments and activity feed
 - [ ] Email notifications
 - [ ] API for integrations
 
 ### Phase 4: Polish & Deploy ⏳
+
 - [ ] Performance optimization
 - [ ] Testing (unit + integration)
 - [ ] Documentation
@@ -110,30 +114,35 @@ taskflow-saas/
 ## 🤖 How Agents Were Used
 
 ### @Planner (Nick Fury)
+
 **Task**: Break down "Build task management system"
 
 ```markdown
 ## Phase Breakdown
 
 ### Phase 1: Foundation (Week 1)
+
 1. Setup Next.js 15 + Prisma + Clerk
 2. Design database schema
 3. Implement authentication
 4. Create basic UI shell
 
 ### Phase 2: Core (Week 2-3)
+
 1. Task CRUD operations
 2. Project management
 3. Team invites
 4. Real-time sync
 
 ### Phase 3: Advanced (Week 4)
+
 1. File uploads
 2. Comments system
 3. Notifications
 4. API documentation
 
 ### Phase 4: Polish (Week 5)
+
 1. Testing
 2. Performance
 3. Documentation
@@ -141,22 +150,26 @@ taskflow-saas/
 ```
 
 ### @CTO (Iron Man)
+
 **Task**: Define architecture decisions
 
 ```markdown
 ## Architecture Decisions
 
 ### Frontend
+
 - **Framework**: Next.js 15 (App Router)
 - **Styling**: Tailwind CSS + shadcn/ui
 - **State**: React Server Components + Zustand
 
 ### Backend
+
 - **API**: Next.js API routes + tRPC
 - **Database**: PostgreSQL via Prisma
 - **Auth**: Clerk (handles OAuth, sessions, teams)
 
 ### Infrastructure
+
 - **Hosting**: Vercel (serverless)
 - **Database**: Supabase PostgreSQL
 - **Storage**: Supabase Storage (files)
@@ -164,6 +177,7 @@ taskflow-saas/
 ```
 
 ### @Backend (Thor)
+
 **Task**: Implement API endpoints
 
 ```typescript
@@ -177,13 +191,10 @@ export async function GET(req: NextRequest) {
   if (!userId) return new Response('Unauthorized', { status: 401 });
 
   const tasks = await prisma.task.findMany({
-    where: { 
-      OR: [
-        { assigneeId: userId },
-        { project: { members: { some: { userId } } } }
-      ]
+    where: {
+      OR: [{ assigneeId: userId }, { project: { members: { some: { userId } } } }],
     },
-    include: { project: true, assignee: true }
+    include: { project: true, assignee: true },
   });
 
   return Response.json(tasks);
@@ -194,12 +205,12 @@ export async function POST(req: NextRequest) {
   if (!userId) return new Response('Unauthorized', { status: 401 });
 
   const data = await req.json();
-  
+
   const task = await prisma.task.create({
     data: {
       ...data,
       creatorId: userId,
-    }
+    },
   });
 
   return Response.json(task);
@@ -207,6 +218,7 @@ export async function POST(req: NextRequest) {
 ```
 
 ### @Frontend (Spider-Man)
+
 **Task**: Build UI components
 
 ```tsx
@@ -230,9 +242,7 @@ export function TaskCard({ task, onUpdate }: TaskCardProps) {
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg">{task.title}</CardTitle>
-        <Badge variant={task.status === 'done' ? 'default' : 'secondary'}>
-          {task.status}
-        </Badge>
+        <Badge variant={task.status === 'done' ? 'default' : 'secondary'}>{task.status}</Badge>
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground">{task.description}</p>
@@ -248,6 +258,7 @@ export function TaskCard({ task, onUpdate }: TaskCardProps) {
 ```
 
 ### @Database (Data)
+
 **Task**: Design schema
 
 ```prisma
@@ -267,7 +278,7 @@ model User {
   email     String   @unique
   name      String?
   createdAt DateTime @default(now())
-  
+
   tasks      Task[]      @relation("Assignee")
   createdTasks Task[]    @relation("Creator")
   projects   ProjectMember[]
@@ -279,7 +290,7 @@ model Project {
   name        String
   description String?
   createdAt   DateTime @default(now())
-  
+
   tasks      Task[]
   members    ProjectMember[]
 }
@@ -289,7 +300,7 @@ model ProjectMember {
   role      String // owner, admin, member
   projectId String
   userId    String
-  
+
   project Project @relation(fields: [projectId], references: [id])
   user    User    @relation(fields: [userId], references: [id])
 }
@@ -303,11 +314,11 @@ model Task {
   dueDate     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   projectId   String
   assigneeId  String?
   creatorId   String
-  
+
   project     Project   @relation(fields: [projectId], references: [id])
   assignee    User?     @relation("Assignee", fields: [assigneeId], references: [id])
   creator     User      @relation("Creator", fields: [creatorId], references: [id])
@@ -318,16 +329,17 @@ model Comment {
   id        String   @id @default(cuid())
   content   String
   createdAt DateTime @default(now())
-  
+
   taskId    String
   authorId  String
-  
+
   task      Task     @relation(fields: [taskId], references: [id])
   author    User     @relation(fields: [authorId], references: [id])
 }
 ```
 
 ### @Testing (Ant-Man)
+
 **Task**: Write tests
 
 ```typescript
@@ -345,7 +357,7 @@ describe('Task Management', () => {
     const task = await createTask({
       title: 'Test Task',
       description: 'Test Description',
-      projectId: 'proj-123'
+      projectId: 'proj-123',
     });
 
     expect(task.title).toBe('Test Task');
@@ -357,36 +369,41 @@ describe('Task Management', () => {
     await createTask({ title: 'Task 2', projectId: 'proj-123' });
 
     const tasks = await getTasks({ userId: 'user-123' });
-    
+
     expect(tasks).toHaveLength(2);
   });
 });
 ```
 
 ### @Reviewer (Captain America)
+
 **Task**: Code review
 
 ```markdown
 ## Code Review: Task Management API
 
 ### ✅ Strengths
+
 - Proper TypeScript types throughout
 - Good use of Prisma relations
 - Authentication middleware in place
 - RESTful endpoint structure
 
 ### ⚠️ Improvements Needed
+
 1. **Add input validation** - Use Zod for request body validation
 2. **Add error handling** - Wrap database calls in try-catch
 3. **Add pagination** - Tasks could grow large
 4. **Add rate limiting** - Protect against abuse
 
 ### 🔒 Security
+
 - ✅ Authentication check present
 - ⚠️ Need authorization (check user belongs to project)
 - ⚠️ Validate file uploads (if adding attachments)
 
 ### 📊 Performance
+
 - ✅ Efficient queries with includes
 - ⚠️ Add database indexes on frequently queried fields
 ```
@@ -411,7 +428,7 @@ Tasks: 12/34 completed
    Project Organization ◐ ⋯
 
 📝 Planned (10):
-   Real-time Updates ○ 
+   Real-time Updates ○
    File Attachments ○
 
 🎯 Alignment Score: 72%
@@ -420,6 +437,7 @@ Tasks: 12/34 completed
 ## 🎓 What We Learned
 
 ### Ultra-Dex Benefits
+
 1. **Structured Planning** - 34-section template prevented "forgot X" syndrome
 2. **AI Coordination** - Agents worked together without conflicting
 3. **Context Persistence** - CONTEXT.md kept AI memory across sessions
@@ -427,6 +445,7 @@ Tasks: 12/34 completed
 5. **Real-time Monitoring** - Dashboard showed exactly what was happening
 
 ### Challenges Overcome
+
 1. **Complex Authentication** - @Auth agent designed secure multi-tenant system
 2. **Database Relations** - @Database agent optimized Prisma schema
 3. **UI Consistency** - @Frontend agent maintained design system
@@ -466,4 +485,4 @@ npx ultra-dex build
 **Alignment**: 72%  
 **Next Milestone**: Complete task management
 
-*Generated with Ultra-Dex v3.4.5*
+_Generated with Ultra-Dex v3.4.5_

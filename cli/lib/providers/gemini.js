@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Google Gemini Provider
  * Gemini models for Ultra-Dex generate command
@@ -7,9 +9,9 @@ import { BaseProvider } from './base.js';
 
 // Model pricing per 1M tokens (as of Jan 2026)
 const PRICING = {
-  'gemini-1.5-pro': { input: 1.25, output: 5.00 },
-  'gemini-1.5-flash': { input: 0.075, output: 0.30 },
-  'gemini-2.0-flash-exp': { input: 0.10, output: 0.40 },
+  'gemini-1.5-pro': { input: 1.25, output: 5.0 },
+  'gemini-1.5-flash': { input: 0.075, output: 0.3 },
+  'gemini-2.0-flash-exp': { input: 0.1, output: 0.4 },
 };
 
 const MODELS = [
@@ -78,7 +80,7 @@ export class GeminiProvider extends BaseProvider {
               maxOutputTokens: options.maxTokens || this.maxTokens,
             },
           }),
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
@@ -92,7 +94,7 @@ export class GeminiProvider extends BaseProvider {
             const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
 
             if (attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, delay));
+              await new Promise((resolve) => setTimeout(resolve, delay));
               continue; // Retry
             }
           }
@@ -116,7 +118,7 @@ export class GeminiProvider extends BaseProvider {
         if (attempt < maxRetries) {
           // Exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
           continue; // Retry
         }
 
@@ -159,7 +161,7 @@ export class GeminiProvider extends BaseProvider {
               maxOutputTokens: options.maxTokens || this.maxTokens,
             },
           }),
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
@@ -173,7 +175,7 @@ export class GeminiProvider extends BaseProvider {
             const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
 
             if (attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, delay));
+              await new Promise((resolve) => setTimeout(resolve, delay));
               continue; // Retry
             }
           }
@@ -224,7 +226,7 @@ export class GeminiProvider extends BaseProvider {
         if (attempt < maxRetries) {
           // Exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
           continue; // Retry
         }
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * LangGraph Native Integration for Ultra-Dex
  * Provides a state-machine based graph executor for complex agent swarms
@@ -42,14 +44,14 @@ export class LangGraphExecutor {
    */
   async execute(input, maxIterations = 10) {
     await this.adapter.initialize();
-    
+
     let currentNode = 'start';
     this.state.input = input;
     let iterations = 0;
 
     while (currentNode !== 'end' && iterations < maxIterations) {
       iterations++;
-      
+
       const nodeAction = this.nodes.get(currentNode);
       if (!nodeAction) {
         throw new Error(`Node "${currentNode}" not found in graph.`);
@@ -58,12 +60,12 @@ export class LangGraphExecutor {
       // Execute node
       console.log(`[LangGraph] Executing node: ${currentNode}`);
       const result = await this.runNode(currentNode, nodeAction);
-      
+
       // Update state
       this.state = { ...this.state, ...result };
 
       // Find next node (simplified logic for prototype)
-      const edge = this.edges.find(e => e.from === currentNode);
+      const edge = this.edges.find((e) => e.from === currentNode);
       if (edge) {
         currentNode = edge.to;
       } else {
@@ -78,7 +80,7 @@ export class LangGraphExecutor {
     if (typeof action === 'function') {
       return await action(this.state);
     }
-    
+
     // If action is an agent name, run via adapter
     return await this.adapter.runAgent(name, this.state.input);
   }
@@ -90,7 +92,7 @@ export class LangGraphExecutor {
     return {
       nodes: Array.from(this.nodes.keys()),
       edges: this.edges,
-      initialState: this.state
+      initialState: this.state,
     };
   }
 }

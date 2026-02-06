@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { ValidationError } from '../utils/errors.js';
 
 // ============================================================================
@@ -13,44 +15,44 @@ export const TIERS = {
     id: 0,
     name: 'Meta Orchestration',
     description: 'Coordinates all other agents',
-    agents: ['meta-orchestrator', 'orchestrator']
+    agents: ['meta-orchestrator', 'orchestrator'],
   },
   LEADERSHIP: {
     id: 1,
     name: 'Leadership',
     description: 'Strategic planning and technology decisions',
-    agents: ['cto', 'planner', 'research']
+    agents: ['cto', 'planner', 'research'],
   },
   DEVELOPMENT: {
     id: 2,
     name: 'Development',
     description: 'Core implementation of features',
-    agents: ['backend', 'frontend', 'database']
+    agents: ['backend', 'frontend', 'database'],
   },
   SECURITY: {
     id: 3,
     name: 'Security',
     description: 'Authentication, authorization, and security audits',
-    agents: ['auth', 'security']
+    agents: ['auth', 'security'],
   },
   DEVOPS: {
     id: 4,
     name: 'DevOps',
     description: 'Deployment and infrastructure management',
-    agents: ['devops']
+    agents: ['devops'],
   },
   QUALITY: {
     id: 5,
     name: 'Quality',
     description: 'Testing, debugging, and code review',
-    agents: ['testing', 'reviewer', 'debugger', 'documentation']
+    agents: ['testing', 'reviewer', 'debugger', 'documentation'],
   },
   SPECIALIST: {
     id: 6,
     name: 'Specialist',
     description: 'Advanced optimization and code improvement',
-    agents: ['performance', 'refactoring']
-  }
+    agents: ['performance', 'refactoring'],
+  },
 };
 
 // ============================================================================
@@ -69,8 +71,13 @@ export const AGENTS = {
     role: 'High-level system coordination & strategy',
     invocation: '@meta-orchestrator',
     file: '0-orchestration/meta-orchestrator.md',
-    capabilities: ['multi_repo_coordination', 'strategic_planning', 'system_orchestration', 'phase_management'],
-    canInvoke: ['all']
+    capabilities: [
+      'multi_repo_coordination',
+      'strategic_planning',
+      'system_orchestration',
+      'phase_management',
+    ],
+    canInvoke: ['all'],
   },
   orchestrator: {
     name: 'Orchestrator',
@@ -79,8 +86,13 @@ export const AGENTS = {
     role: 'Coordinate all agents for complete features',
     invocation: '@orchestrator',
     file: '0-orchestration/orchestrator.md',
-    capabilities: ['task_decomposition', 'agent_selection', 'pipeline_execution', 'result_synthesis'],
-    canInvoke: ['all']
+    capabilities: [
+      'task_decomposition',
+      'agent_selection',
+      'pipeline_execution',
+      'result_synthesis',
+    ],
+    canInvoke: ['all'],
   },
 
   // Tier 1: Leadership
@@ -95,7 +107,7 @@ export const AGENTS = {
     emoji: '🦾',
     catchphrase: 'I am the architecture.',
     capabilities: ['architecture_design', 'tech_selection', 'system_design'],
-    canInvoke: ['research']
+    canInvoke: ['research'],
   },
   planner: {
     name: 'Planner',
@@ -108,7 +120,7 @@ export const AGENTS = {
     emoji: '🕶️',
     catchphrase: 'I have a plan.',
     capabilities: ['task_breakdown', 'estimation', 'prioritization'],
-    canInvoke: []
+    canInvoke: [],
   },
   research: {
     name: 'Research',
@@ -118,7 +130,7 @@ export const AGENTS = {
     invocation: '@research',
     file: '1-leadership/research.md',
     capabilities: ['technology_evaluation', 'comparison', 'recommendations'],
-    canInvoke: []
+    canInvoke: [],
   },
 
   // Tier 2: Development
@@ -133,7 +145,7 @@ export const AGENTS = {
     emoji: '⚡',
     catchphrase: 'Bring me the API!',
     capabilities: ['api_development', 'business_logic', 'integrations'],
-    canInvoke: ['database']
+    canInvoke: ['database'],
   },
   frontend: {
     name: 'Frontend',
@@ -146,7 +158,7 @@ export const AGENTS = {
     emoji: '🕸️',
     catchphrase: 'Your friendly neighborhood UI.',
     capabilities: ['ui_development', 'components', 'state_management'],
-    canInvoke: []
+    canInvoke: [],
   },
   database: {
     name: 'Database',
@@ -156,7 +168,7 @@ export const AGENTS = {
     invocation: '@database',
     file: '2-development/database.md',
     capabilities: ['schema_design', 'migrations', 'query_optimization'],
-    canInvoke: []
+    canInvoke: [],
   },
 
   // Tier 3: Security
@@ -168,7 +180,7 @@ export const AGENTS = {
     invocation: '@auth',
     file: '3-security/auth.md',
     capabilities: ['authentication', 'authorization', 'session_management'],
-    canInvoke: ['backend', 'database']
+    canInvoke: ['backend', 'database'],
   },
   security: {
     name: 'Security',
@@ -181,7 +193,7 @@ export const AGENTS = {
     emoji: '🛡️',
     catchphrase: 'I can do this all day.',
     capabilities: ['security_audit', 'vulnerability_detection', 'hardening'],
-    canInvoke: []
+    canInvoke: [],
   },
 
   // Tier 4: DevOps
@@ -193,7 +205,7 @@ export const AGENTS = {
     invocation: '@devops',
     file: '4-devops/devops.md',
     capabilities: ['deployment', 'ci_cd', 'infrastructure', 'monitoring'],
-    canInvoke: []
+    canInvoke: [],
   },
 
   // Tier 5: Quality
@@ -205,7 +217,7 @@ export const AGENTS = {
     invocation: '@testing',
     file: '5-quality/testing.md',
     capabilities: ['unit_testing', 'integration_testing', 'e2e_testing'],
-    canInvoke: []
+    canInvoke: [],
   },
   reviewer: {
     name: 'Reviewer',
@@ -215,7 +227,7 @@ export const AGENTS = {
     invocation: '@reviewer',
     file: '5-quality/reviewer.md',
     capabilities: ['code_review', 'best_practices', 'quality_gates'],
-    canInvoke: []
+    canInvoke: [],
   },
   debugger: {
     name: 'Debugger',
@@ -225,7 +237,7 @@ export const AGENTS = {
     invocation: '@debugger',
     file: '5-quality/debugger.md',
     capabilities: ['debugging', 'root_cause_analysis', 'bug_fixing'],
-    canInvoke: ['backend', 'frontend', 'database']
+    canInvoke: ['backend', 'frontend', 'database'],
   },
   documentation: {
     name: 'Documentation',
@@ -235,7 +247,7 @@ export const AGENTS = {
     invocation: '@documentation',
     file: '5-quality/documentation.md',
     capabilities: ['technical_writing', 'api_docs', 'user_guides'],
-    canInvoke: []
+    canInvoke: [],
   },
 
   // Tier 6: Specialist
@@ -247,7 +259,7 @@ export const AGENTS = {
     invocation: '@performance',
     file: '6-specialist/performance.md',
     capabilities: ['profiling', 'optimization', 'caching', 'load_testing'],
-    canInvoke: ['backend', 'frontend', 'database']
+    canInvoke: ['backend', 'frontend', 'database'],
   },
   refactoring: {
     name: 'Refactoring',
@@ -257,8 +269,8 @@ export const AGENTS = {
     invocation: '@refactoring',
     file: '6-specialist/refactoring.md',
     capabilities: ['code_cleanup', 'design_patterns', 'architecture_improvement'],
-    canInvoke: ['backend', 'frontend']
-  }
+    canInvoke: ['backend', 'frontend'],
+  },
 };
 
 // ============================================================================
@@ -276,18 +288,18 @@ export const TIER_FLOW = {
     { tier: 3, phase: 'Security', required: false },
     { tier: 5, phase: 'Quality', required: true },
     { tier: 4, phase: 'Deployment', required: false },
-    { tier: 6, phase: 'Optimization', required: false }
+    { tier: 6, phase: 'Optimization', required: false },
   ],
   hotfix: [
     { tier: 5, phase: 'Debug', agents: ['debugger'], required: true },
     { tier: 5, phase: 'Test', agents: ['testing'], required: true },
-    { tier: 4, phase: 'Deploy', agents: ['devops'], required: true }
+    { tier: 4, phase: 'Deploy', agents: ['devops'], required: true },
   ],
   optimization: [
     { tier: 6, phase: 'Optimize', required: true },
     { tier: 5, phase: 'Test', agents: ['testing'], required: true },
-    { tier: 5, phase: 'Review', agents: ['reviewer'], required: true }
-  ]
+    { tier: 5, phase: 'Review', agents: ['reviewer'], required: true },
+  ],
 };
 
 /**
@@ -315,7 +327,7 @@ export const AGENT_DEPENDENCIES = {
   // Quality depends on implementation
   testing: ['backend', 'frontend'],
   reviewer: ['backend', 'frontend', 'testing'],
-  debugger: [],  // Can be invoked anytime
+  debugger: [], // Can be invoked anytime
   documentation: ['backend', 'frontend'],
 
   // DevOps depends on quality approval
@@ -323,7 +335,7 @@ export const AGENT_DEPENDENCIES = {
 
   // Specialist can run after implementation
   performance: ['backend', 'frontend'],
-  refactoring: ['backend', 'frontend']
+  refactoring: ['backend', 'frontend'],
 };
 
 // ============================================================================
@@ -345,14 +357,14 @@ export function getAgent(name) {
  * Get all agents in a tier.
  */
 export function getAgentsByTier(tierId) {
-  return Object.values(AGENTS).filter(agent => agent.tier === tierId);
+  return Object.values(AGENTS).filter((agent) => agent.tier === tierId);
 }
 
 /**
  * Get tier by ID.
  */
 export function getTier(tierId) {
-  return Object.values(TIERS).find(tier => tier.id === tierId) || null;
+  return Object.values(TIERS).find((tier) => tier.id === tierId) || null;
 }
 
 /**
@@ -389,7 +401,7 @@ export function getExecutionOrder(agentNames) {
     throw new ValidationError('agentNames must be an array');
   }
 
-  const normalized = agentNames.map(n => {
+  const normalized = agentNames.map((n) => {
     if (!n || typeof n !== 'string') {
       throw new ValidationError('Each agent name must be a non-empty string');
     }
@@ -429,21 +441,21 @@ export function findParallelGroups(agentNames) {
 
   while (scheduled.size < order.length) {
     const group = [];
-    
+
     for (const agent of order) {
       if (scheduled.has(agent)) continue;
-      
+
       const deps = AGENT_DEPENDENCIES[agent] || [];
-      const depsInList = deps.filter(d => order.includes(d));
-      const depsMet = depsInList.every(d => scheduled.has(d));
-      
+      const depsInList = deps.filter((d) => order.includes(d));
+      const depsMet = depsInList.every((d) => scheduled.has(d));
+
       if (depsMet) {
         group.push(agent);
       }
     }
 
     if (group.length === 0) break; // Prevent infinite loop
-    
+
     for (const agent of group) {
       scheduled.add(agent);
     }
@@ -457,12 +469,12 @@ export function findParallelGroups(agentNames) {
  * Generate a tier summary for display.
  */
 export function getTierSummary() {
-  return Object.values(TIERS).map(tier => ({
+  return Object.values(TIERS).map((tier) => ({
     id: tier.id,
     name: tier.name,
     description: tier.description,
     agentCount: tier.agents.length,
-    agents: tier.agents.map(a => AGENTS[a]?.name || a)
+    agents: tier.agents.map((a) => AGENTS[a]?.name || a),
   }));
 }
 
@@ -484,7 +496,7 @@ export function validatePipeline(pipeline) {
       errors.push({
         step: i + 1,
         agent: 'unknown',
-        error: 'Step must be an object'
+        error: 'Step must be an object',
       });
       continue;
     }
@@ -493,7 +505,7 @@ export function validatePipeline(pipeline) {
       errors.push({
         step: i + 1,
         agent: 'unknown',
-        error: 'Step must have a valid agent property'
+        error: 'Step must have a valid agent property',
       });
       continue;
     }
@@ -503,15 +515,13 @@ export function validatePipeline(pipeline) {
 
     for (const dep of deps) {
       // Check if dependency is in pipeline and comes before
-      const depIndex = pipeline.findIndex(s =>
-        s.agent?.toLowerCase().replace('@', '') === dep
-      );
+      const depIndex = pipeline.findIndex((s) => s.agent?.toLowerCase().replace('@', '') === dep);
 
       if (depIndex > i) {
         errors.push({
           step: i + 1,
           agent,
-          error: `Depends on ${dep} which is scheduled after (step ${depIndex + 1})`
+          error: `Depends on ${dep} which is scheduled after (step ${depIndex + 1})`,
         });
       }
     }
@@ -519,7 +529,7 @@ export function validatePipeline(pipeline) {
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -541,5 +551,5 @@ export default {
   getExecutionOrder,
   findParallelGroups,
   getTierSummary,
-  validatePipeline
+  validatePipeline,
 };

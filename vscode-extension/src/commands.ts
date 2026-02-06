@@ -24,7 +24,9 @@ export function registerCommands(context: vscode.ExtensionContext, workspaceRoot
       vscode.window.showInformationMessage(`Alignment score: ${score}`);
     }),
     vscode.commands.registerCommand('ultra-dex.generatePlan', async () => {
-      vscode.window.showInformationMessage('Generate plan: Use @Planner with the Implementation Template.');
+      vscode.window.showInformationMessage(
+        'Generate plan: Use @Planner with the Implementation Template.'
+      );
     }),
     vscode.commands.registerCommand('ultra-dex.askAgent', async () => {
       const editor = vscode.window.activeTextEditor;
@@ -45,7 +47,10 @@ export async function refreshAlignmentStatus(workspaceRoot?: string): Promise<vo
   updateAlignmentStatusBar(score);
 }
 
-async function readAgentPrompt(workspaceRoot: string, relativePath: string): Promise<string | null> {
+async function readAgentPrompt(
+  workspaceRoot: string,
+  relativePath: string
+): Promise<string | null> {
   const fullPath = path.join(workspaceRoot, 'agents', relativePath);
   try {
     const data = await vscode.workspace.fs.readFile(vscode.Uri.file(fullPath));

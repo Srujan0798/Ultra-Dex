@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
@@ -10,18 +12,37 @@ const DEFAULT_GLOBS = [
   '**/*.py',
   '**/*.rb',
   '**/*.go',
-  '**/*.java'
+  '**/*.java',
 ];
 
-const IGNORE = ['**/node_modules/**', '**/.git/**', '**/.ultra-dex/**', '**/.ultra/**', '**/dist/**', '**/build/**'];
+const IGNORE = [
+  '**/node_modules/**',
+  '**/.git/**',
+  '**/.ultra-dex/**',
+  '**/.ultra/**',
+  '**/dist/**',
+  '**/build/**',
+];
 
 const RULES = [
   { regex: /eval\(/, severity: 'warning', message: 'Use of eval detected' },
-  { regex: /child_process\.exec\(/, severity: 'warning', message: 'Shell execution via child_process.exec' },
+  {
+    regex: /child_process\.exec\(/,
+    severity: 'warning',
+    message: 'Shell execution via child_process.exec',
+  },
   { regex: /innerHTML\s*=/, severity: 'info', message: 'Direct innerHTML assignment' },
-  { regex: /dangerouslySetInnerHTML/, severity: 'info', message: 'React dangerouslySetInnerHTML usage' },
+  {
+    regex: /dangerouslySetInnerHTML/,
+    severity: 'info',
+    message: 'React dangerouslySetInnerHTML usage',
+  },
   { regex: /SELECT \* FROM/i, severity: 'info', message: 'Wildcard SQL query' },
-  { regex: /(api[_-]?key|secret|token)\s*[:=]/i, severity: 'warning', message: 'Possible hardcoded secret' }
+  {
+    regex: /(api[_-]?key|secret|token)\s*[:=]/i,
+    severity: 'warning',
+    message: 'Possible hardcoded secret',
+  },
 ];
 
 export async function scanProject(root = process.cwd()) {
@@ -46,7 +67,7 @@ export async function scanProject(root = process.cwd()) {
             message: rule.message,
             file,
             line: index + 1,
-            snippet: line.trim().slice(0, 160)
+            snippet: line.trim().slice(0, 160),
           });
         }
       });

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Cloud API Gateway
  * Express server with REST endpoints for agent execution and planning.
@@ -77,7 +79,12 @@ export async function startApiGateway({ port = 3000, requireAuth = true } = {}) 
 
     try {
       const providerId = getDefaultProvider() || 'claude';
-      const plan = await runAgent(providerId, 'planner', `Generate a step-by-step plan for: ${objective}`, context);
+      const plan = await runAgent(
+        providerId,
+        'planner',
+        `Generate a step-by-step plan for: ${objective}`,
+        context
+      );
       res.json({ ok: true, plan });
     } catch (error) {
       res.status(500).json({ ok: false, error: error.message });
@@ -88,10 +95,15 @@ export async function startApiGateway({ port = 3000, requireAuth = true } = {}) 
   const { broadcast, wss } = startWebSocketServer(server);
 
   server.on('request', (req, _res) => {
-    broadcast({ type: 'request', path: req.url, method: req.method, timestamp: new Date().toISOString() });
+    broadcast({
+      type: 'request',
+      path: req.url,
+      method: req.method,
+      timestamp: new Date().toISOString(),
+    });
   });
 
-  await new Promise(resolve => server.listen(port, resolve));
+  await new Promise((resolve) => server.listen(port, resolve));
 
   return { app, server, broadcast, wss };
 }

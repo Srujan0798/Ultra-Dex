@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { startRemoteServer } from '../mcp/remote/server.js';
 import { RemoteMCPClient } from '../mcp/remote/client.js';
@@ -6,9 +8,7 @@ import { printInfo, printSuccess, printWarning, printError } from '../utils/outp
 import { configManager } from '../utils/config-manager.js';
 
 export function registerMcpRemoteCommand(program) {
-  const remote = program
-    .command('mcp-remote')
-    .description('Remote MCP server and sync');
+  const remote = program.command('mcp-remote').description('Remote MCP server and sync');
 
   remote
     .command('start')
@@ -43,7 +43,7 @@ export function registerMcpRemoteCommand(program) {
         const client = new RemoteMCPClient({ url, apiKey });
         await client.connect();
         await client.pushContext();
-        const config = await configManager.loadGlobal() || {};
+        const config = (await configManager.loadGlobal()) || {};
         config.remote = { url, apiKey };
         await configManager.saveGlobal(config);
         printSuccess(chalk.green('✅ Connected and synced context.'));
@@ -92,4 +92,3 @@ export function registerMcpRemoteCommand(program) {
       printSuccess(chalk.green('✅ Context synced.'));
     });
 }
-

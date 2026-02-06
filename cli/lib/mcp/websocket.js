@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { WebSocketServer, WebSocket } from 'ws';
 import chalk from 'chalk';
 import http from 'http';
@@ -38,7 +40,7 @@ class UltraDexWebSocketServer {
       // Create WebSocket server
       this.wss = new WebSocketServer({
         server: this.server,
-        path: '/ws'
+        path: '/ws',
       });
 
       this.wss.on('connection', (ws) => {
@@ -48,21 +50,23 @@ class UltraDexWebSocketServer {
         this.clientMetadata.set(ws, {
           connectedAt: Date.now(),
           lastPing: Date.now(),
-          messageCount: 0
+          messageCount: 0,
         });
 
         logger.debug(`[WebSocket] Client connected. Total: ${this.clients.size}`);
 
         // Send welcome message with heartbeat config
-        ws.send(JSON.stringify({
-          type: 'connected',
-          timestamp: new Date().toISOString(),
-          message: 'Connected to Ultra-dex WebSocket Server',
-          config: {
-            heartbeatInterval: this.heartbeatIntervalMs,
-            timeout: this.connectionTimeout
-          }
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'connected',
+            timestamp: new Date().toISOString(),
+            message: 'Connected to Ultra-dex WebSocket Server',
+            config: {
+              heartbeatInterval: this.heartbeatIntervalMs,
+              timeout: this.connectionTimeout,
+            },
+          })
+        );
 
         ws.on('message', (message) => {
           try {
@@ -81,11 +85,13 @@ class UltraDexWebSocketServer {
                 if (metadata) {
                   metadata.lastPing = Date.now();
                 }
-                ws.send(JSON.stringify({
-                  type: 'pong',
-                  timestamp: Date.now(),
-                  serverTime: new Date().toISOString()
-                }));
+                ws.send(
+                  JSON.stringify({
+                    type: 'pong',
+                    timestamp: Date.now(),
+                    serverTime: new Date().toISOString(),
+                  })
+                );
                 break;
 
               case 'request_state':
@@ -107,7 +113,9 @@ class UltraDexWebSocketServer {
         ws.on('close', (code, _reason) => {
           this.clients.delete(ws);
           this.clientMetadata.delete(ws);
-          logger.debug(`[WebSocket] Client disconnected (code: ${code}). Total: ${this.clients.size}`);
+          logger.debug(
+            `[WebSocket] Client disconnected (code: ${code}). Total: ${this.clients.size}`
+          );
         });
 
         ws.on('error', (error) => {
@@ -125,7 +133,8 @@ class UltraDexWebSocketServer {
 
         // Set a timeout for initial connection
         ws._connectionTimeout = setTimeout(() => {
-          if (ws.readyState !== 1) { // 1 = OPEN
+          if (ws.readyState !== 1) {
+            // 1 = OPEN
             logger.debug('[WebSocket] Connection timeout, terminating');
             this.clients.delete(ws);
             this.clientMetadata.delete(ws);
@@ -145,7 +154,9 @@ class UltraDexWebSocketServer {
 
         this.server.listen(port, () => {
           this.started = true;
-          logger.info(`[WebSocket] Ultra-Dex WebSocket server running on ws://localhost:${port}/ws`);
+          logger.info(
+            `[WebSocket] Ultra-Dex WebSocket server running on ws://localhost:${port}/ws`
+          );
 
           // Start broadcasting updates
           this.startBroadcasting();
@@ -171,7 +182,7 @@ class UltraDexWebSocketServer {
         const metadata = this.clientMetadata.get(client);
 
         // Check if connection is dead (no ping for timeout duration)
-        const isDead = metadata && (now - metadata.lastPing) > this.connectionTimeout;
+        const isDead = metadata && now - metadata.lastPing > this.connectionTimeout;
 
         // Check if connection is not actually open
         const isNotOpen = client.readyState !== WebSocket.OPEN;
@@ -183,7 +194,10 @@ class UltraDexWebSocketServer {
 
           // Force close dead connections
           try {
-            if (client.readyState === WebSocket.OPEN || client.readyState === WebSocket.CONNECTING) {
+            if (
+              client.readyState === WebSocket.OPEN ||
+              client.readyState === WebSocket.CONNECTING
+            ) {
               client.terminate();
             }
           } catch (e) {
@@ -193,7 +207,9 @@ class UltraDexWebSocketServer {
       }
 
       if (removedCount > 0) {
-        logger.debug(`[WebSocket] Cleanup: Removed ${removedCount} dead connections. Total: ${this.clients.size}`);
+        logger.debug(
+          `[WebSocket] Cleanup: Removed ${removedCount} dead connections. Total: ${this.clients.size}`
+        );
       }
     }, this.cleanupIntervalMs);
   }
@@ -207,7 +223,10 @@ class UltraDexWebSocketServer {
         this.broadcastErrorCount = 0; // Reset on success
       } catch (error) {
         this.broadcastErrorCount++;
-        logger.error(`[WebSocket] Broadcast error (${this.broadcastErrorCount}/${this.maxBroadcastErrors})`, error);
+        logger.error(
+          `[WebSocket] Broadcast error (${this.broadcastErrorCount}/${this.maxBroadcastErrors})`,
+          error
+        );
 
         // Stop broadcasting after too many consecutive errors
         if (this.broadcastErrorCount >= this.maxBroadcastErrors) {
@@ -229,39 +248,43 @@ class UltraDexWebSocketServer {
         state: {
           status: 'running',
           progress: 100,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
         },
         graph: {
           nodes: 0,
           edges: 0,
-          files: 0
+          files: 0,
         },
         metrics: {
           requests: 0,
           errors: 0,
-          uptime: 0
+          uptime: 0,
         },
-        clients: this.clients.size
-      }
+        clients: this.clients.size,
+      },
     };
   }
 
   sendStateUpdate(ws) {
     // Placeholder for state update logic
-    ws.send(JSON.stringify({
-      type: 'state_update',
-      data: { status: 'ready', timestamp: new Date().toISOString() },
-      timestamp: new Date().toISOString()
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'state_update',
+        data: { status: 'ready', timestamp: new Date().toISOString() },
+        timestamp: new Date().toISOString(),
+      })
+    );
   }
 
   sendGraphUpdate(ws) {
     // Placeholder for graph update logic
-    ws.send(JSON.stringify({
-      type: 'graph_update',
-      data: { nodes: [], edges: [] },
-      timestamp: new Date().toISOString()
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'graph_update',
+        data: { nodes: [], edges: [] },
+        timestamp: new Date().toISOString(),
+      })
+    );
   }
 
   broadcast(data) {

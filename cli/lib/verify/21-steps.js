@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export const VERIFICATION_STEPS = [
   { id: 1, phase: 'Planning', name: 'Atomic Scope Defined' },
   { id: 2, phase: 'Planning', name: 'Context Loaded' },
@@ -19,12 +21,12 @@ export const VERIFICATION_STEPS = [
   { id: 18, phase: 'Documentation', name: 'Linting & Formatting' },
   { id: 19, phase: 'Documentation', name: 'Code Review Approved' },
   { id: 20, phase: 'Documentation', name: 'Migration Scripts Ready' },
-  { id: 21, phase: 'Final', name: 'Deployment Readiness' }
+  { id: 21, phase: 'Final', name: 'Deployment Readiness' },
 ];
 
 export function summarizeSteps() {
   const phases = {};
-  VERIFICATION_STEPS.forEach(step => {
+  VERIFICATION_STEPS.forEach((step) => {
     phases[step.phase] = phases[step.phase] || [];
     phases[step.phase].push(step);
   });

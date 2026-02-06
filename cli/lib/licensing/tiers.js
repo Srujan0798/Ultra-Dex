@@ -1,16 +1,18 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export const TIERS = {
   free: {
     name: 'Free',
-    features: ['cli', 'templates']
+    features: ['cli', 'templates'],
   },
   pro: {
     name: 'Pro',
-    features: ['cloud', 'agents']
+    features: ['cloud', 'agents'],
   },
   team: {
     name: 'Team',
-    features: ['collaboration', 'shared-context']
-  }
+    features: ['collaboration', 'shared-context'],
+  },
 };
 
 export function canUse(tier, feature) {

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * PostToolUse Quality Hooks
  * Executes verification checklist after tool operations.
@@ -8,7 +10,7 @@ import { logger } from '../ui/logger.js';
 import { runVerificationChecklist } from './checklist.js';
 
 function formatFailures(failures) {
-  return failures.map(f => `- [${f.step}] ${f.message}`).join('\n');
+  return failures.map((f) => `- [${f.step}] ${f.message}`).join('\n');
 }
 
 export async function runPostToolUseHooks({
@@ -17,11 +19,11 @@ export async function runPostToolUseHooks({
   mutates = false,
   blockOnFailure = false,
   fast = true,
-  context = {}
+  context = {},
 } = {}) {
   const results = await runVerificationChecklist(projectDir, {
     fast,
-    context: { ...context, tool }
+    context: { ...context, tool },
   });
 
   if (results.failures.length > 0) {
@@ -31,7 +33,7 @@ export async function runPostToolUseHooks({
     if (blockOnFailure) {
       throw new AppError('Quality gates failed after tool execution', {
         code: 'QUALITY_GATE_FAILED',
-        details: results.failures
+        details: results.failures,
       });
     }
   } else {

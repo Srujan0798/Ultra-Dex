@@ -4,12 +4,15 @@
 > **Source:** Orchestration/Copilot.md (Strategic Requirement #2)
 
 ## 1. Overview
+
 The Model Router acts as a traffic controller, directing tasks to the most appropriate AI model based on complexity, cost, and latency requirements. It prevents "using a bazooka to kill a fly."
 
 ## 2. Routing Logic
 
 ### 2.1. Task Classification
+
 Input prompt is analyzed to determine `TaskType`:
+
 - **Code Generation**: Writing new complex logic (High complexity)
 - **Refactoring**: Modifying existing code (Medium complexity)
 - **Docs/Text**: Writing documentation (Low complexity)
@@ -17,13 +20,13 @@ Input prompt is analyzed to determine `TaskType`:
 
 ### 2.2. Routing Table (Default Policy)
 
-| Task Type | Preferred Model | Fallback | Rationale |
-|-----------|-----------------|----------|-----------|
-| **Architect** | Claude 3.5 Sonnet | GPT-4o | Best reasoning capabilities |
-| **CodeGen** | Claude 3.5 Sonnet | GPT-4o / DeepSeek | High accuracy code generation |
-| **Refactor** | GPT-4o | Claude 3 Haiku | Good instruction following, faster |
-| **Simple Fix** | GPT-4o Mini | Llama 3 (Local) | Low cost/latency |
-| **Docs** | Gemini 1.5 Pro | GPT-3.5 | Large context window for reading repo |
+| Task Type      | Preferred Model   | Fallback          | Rationale                             |
+| -------------- | ----------------- | ----------------- | ------------------------------------- |
+| **Architect**  | Claude 3.5 Sonnet | GPT-4o            | Best reasoning capabilities           |
+| **CodeGen**    | Claude 3.5 Sonnet | GPT-4o / DeepSeek | High accuracy code generation         |
+| **Refactor**   | GPT-4o            | Claude 3 Haiku    | Good instruction following, faster    |
+| **Simple Fix** | GPT-4o Mini       | Llama 3 (Local)   | Low cost/latency                      |
+| **Docs**       | Gemini 1.5 Pro    | GPT-3.5           | Large context window for reading repo |
 
 ## 3. Evaluation Loops (Self-Healing)
 

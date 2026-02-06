@@ -147,7 +147,7 @@ describe('SmartModelRouter - Select Model', () => {
   test('should return model for each tier', () => {
     const tiers = ['simple', 'medium', 'complex'];
 
-    tiers.forEach(tier => {
+    tiers.forEach((tier) => {
       const model = router.selectModel('openai', tier);
       assert.ok(model);
       assert.ok(model.length > 0);
@@ -189,10 +189,10 @@ describe('SmartModelRouter - Forecast Usage', () => {
       'claude-sonnet-4-20250514',
       'claude-haiku-20240307',
       'gpt-4',
-      'gemini-1.5-pro'
+      'gemini-1.5-pro',
     ];
 
-    models.forEach(model => {
+    models.forEach((model) => {
       const forecast = router.forecastUsage(task, model);
       assert.ok(forecast);
     });
@@ -214,12 +214,12 @@ describe('Task Classification - Complexity Keywords', () => {
       'Update docs with new examples',
       'Rename variable to follow convention',
       'Format code with prettier',
-      'Add comment explaining logic'
+      'Add comment explaining logic',
     ];
 
     // We can't directly test the private classifyTask function,
     // but we can verify behavior through routeTask if needed
-    simpleTasks.forEach(task => {
+    simpleTasks.forEach((task) => {
       assert.ok(task.length > 0);
     });
   });
@@ -230,16 +230,16 @@ describe('Task Classification - Complexity Keywords', () => {
       'Create API endpoint for orders',
       'integrate with Stripe',
       'optimize database queries',
-      'Build authentication module'
+      'Build authentication module',
     ];
 
-    mediumTasks.forEach(task => {
+    mediumTasks.forEach((task) => {
       assert.ok(
         task.toLowerCase().includes('feature') ||
-        task.toLowerCase().includes('endpoint') ||
-        task.toLowerCase().includes('integrate') ||
-        task.toLowerCase().includes('optimize') ||
-        task.toLowerCase().includes('module')
+          task.toLowerCase().includes('endpoint') ||
+          task.toLowerCase().includes('integrate') ||
+          task.toLowerCase().includes('optimize') ||
+          task.toLowerCase().includes('module')
       );
     });
   });
@@ -250,17 +250,17 @@ describe('Task Classification - Complexity Keywords', () => {
       'migration to microservices',
       'design distributed system',
       'performance audit across codebase',
-      'security audit of infrastructure'
+      'security audit of infrastructure',
     ];
 
-    complexTasks.forEach(task => {
+    complexTasks.forEach((task) => {
       assert.ok(
         task.includes('architecture') ||
-        task.includes('refactor') ||
-        task.includes('migration') ||
-        task.includes('distributed') ||
-        task.includes('performance') ||
-        task.includes('security audit')
+          task.includes('refactor') ||
+          task.includes('migration') ||
+          task.includes('distributed') ||
+          task.includes('performance') ||
+          task.includes('security audit')
       );
     });
   });
@@ -325,7 +325,7 @@ describe('SmartModelRouter - Provider Health', () => {
     originalEnv = {
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-      GOOGLE_AI_KEY: process.env.GOOGLE_AI_KEY
+      GOOGLE_AI_KEY: process.env.GOOGLE_AI_KEY,
     };
   });
 

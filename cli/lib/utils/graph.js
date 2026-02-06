@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Graph Utility (CPG Implementation)
  * Manages the Code Property Graph (CPG) for architectural memory
@@ -20,19 +22,19 @@ export async function buildGraph(useCache = true) {
   const now = Date.now();
 
   // Return cached result if available and not expired
-  if (useCache && cachedGraph && (now - lastCacheTime) < CACHE_DURATION) {
+  if (useCache && cachedGraph && now - lastCacheTime < CACHE_DURATION) {
     return cachedGraph;
   }
 
   const files = await glob('**/*.{js,ts,jsx,tsx}', {
     ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'],
-    nodir: true
+    nodir: true,
   });
 
   const graph = {
     nodes: [],
     edges: [],
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   };
 
   // Process files in parallel for better performance
@@ -44,7 +46,7 @@ export async function buildGraph(useCache = true) {
         type: 'file',
         path: file,
         exports: [],
-        imports: []
+        imports: [],
       };
 
       // Naive parsing using Regex (Phase 2.1)
@@ -58,7 +60,7 @@ export async function buildGraph(useCache = true) {
         graph.edges.push({
           source: file,
           target: match[1],
-          type: 'depends_on'
+          type: 'depends_on',
         });
       }
 
@@ -71,12 +73,12 @@ export async function buildGraph(useCache = true) {
           id: funcId,
           type: 'function',
           name: funcName,
-          parent: file
+          parent: file,
         });
         graph.edges.push({
           source: funcId,
           target: file,
-          type: 'contained_in'
+          type: 'contained_in',
         });
         fileNode.exports.push(funcName);
       }
@@ -103,9 +105,9 @@ export async function buildGraph(useCache = true) {
  */
 export function getImpactAnalysis(graph, filePath) {
   const impactedBy = graph.edges
-    .filter(edge => edge.target === filePath || filePath.endsWith(edge.target))
-    .map(edge => edge.source);
-  
+    .filter((edge) => edge.target === filePath || filePath.endsWith(edge.target))
+    .map((edge) => edge.source);
+
   return [...new Set(impactedBy)];
 }
 
@@ -115,13 +117,13 @@ export function getImpactAnalysis(graph, filePath) {
  * @param {string} query - Symbol name
  */
 export function queryGraph(graph, query) {
-  return graph.nodes.filter(node => 
-    node.id.includes(query) || (node.name && node.name === query)
+  return graph.nodes.filter(
+    (node) => node.id.includes(query) || (node.name && node.name === query)
   );
 }
 
 export default {
   buildGraph,
   getImpactAnalysis,
-  queryGraph
+  queryGraph,
 };

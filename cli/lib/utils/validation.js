@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 const PROJECT_NAME_REGEX = /^[a-z0-9-]+$/i;
 
 export function validateProjectName(name) {
@@ -20,9 +22,9 @@ export function validateSafePath(input, label = 'Path') {
   if (!input || !input.trim()) {
     return `${label} is required`;
   }
-  
+
   const trimmed = input.trim();
-  
+
   // 1. Null byte check (prevents common C-style string termination attacks)
   if (trimmed.includes('\0')) {
     return `${label} cannot include null bytes`;
@@ -30,7 +32,7 @@ export function validateSafePath(input, label = 'Path') {
 
   // 2. Basic metacharacter check
   if (trimmed.includes('..')) {
-    return `${label} cannot include ".."`; 
+    return `${label} cannot include ".."`;
   }
 
   // 3. Normalize and check for absolute paths
@@ -46,8 +48,6 @@ export function validateSafePath(input, label = 'Path') {
 
   return true;
 }
-
-
 
 export function assertValidPath(input, label) {
   const result = validateSafePath(input, label);

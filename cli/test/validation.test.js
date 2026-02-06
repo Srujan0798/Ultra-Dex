@@ -61,7 +61,10 @@ describe('validation utilities', () => {
 
     test('trims whitespace before validation', () => {
       assert.strictEqual(validateProjectName('  my-project  '), true);
-      assert.strictEqual(validateProjectName('  my_project  '), 'Project name must use only letters, numbers, and dashes');
+      assert.strictEqual(
+        validateProjectName('  my_project  '),
+        'Project name must use only letters, numbers, and dashes'
+      );
     });
   });
 
@@ -82,25 +85,13 @@ describe('validation utilities', () => {
     });
 
     test('rejects paths with parent directory traversal', () => {
-      assert.strictEqual(
-        validateSafePath('../etc/passwd'),
-        'Path cannot include ".."'
-      );
-      assert.strictEqual(
-        validateSafePath('my/../secret'),
-        'Path cannot include ".."'
-      );
-      assert.strictEqual(
-        validateSafePath('..'),
-        'Path cannot include ".."'
-      );
+      assert.strictEqual(validateSafePath('../etc/passwd'), 'Path cannot include ".."');
+      assert.strictEqual(validateSafePath('my/../secret'), 'Path cannot include ".."');
+      assert.strictEqual(validateSafePath('..'), 'Path cannot include ".."');
     });
 
     test('uses custom label in error messages', () => {
-      assert.strictEqual(
-        validateSafePath('', 'Agent name'),
-        'Agent name is required'
-      );
+      assert.strictEqual(validateSafePath('', 'Agent name'), 'Agent name is required');
       assert.strictEqual(
         validateSafePath('../secret', 'File path'),
         'File path cannot include ".."'

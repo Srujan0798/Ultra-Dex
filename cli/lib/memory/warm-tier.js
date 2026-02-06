@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import path from 'path';
 import fs from 'fs/promises';
 import crypto from 'node:crypto';
@@ -5,7 +7,8 @@ import VectorStore from './vector-store.js';
 
 export class WarmTier {
   constructor(options = {}) {
-    this.storagePath = options.storagePath || path.resolve(process.cwd(), '.ultra-dex', 'memory', 'warm.db');
+    this.storagePath =
+      options.storagePath || path.resolve(process.cwd(), '.ultra-dex', 'memory', 'warm.db');
     this.vectorStore = new VectorStore({ storagePath: this.storagePath });
     this.initialized = false;
   }
@@ -24,7 +27,7 @@ export class WarmTier {
       type: entry.type || 'note',
       timestamp: entry.timestamp || new Date().toISOString(),
       source: entry.source || { agent: 'system' },
-      relations: entry.relations || []
+      relations: entry.relations || [],
     };
     await this.vectorStore.add(record.id, record.content, record);
     return record;
@@ -37,7 +40,7 @@ export class WarmTier {
       id: row.id,
       content: row.text,
       score: row.score,
-      ...row.metadata
+      ...row.metadata,
     }));
   }
 
@@ -47,7 +50,7 @@ export class WarmTier {
     return rows.map((row) => ({
       id: row.id,
       content: row.text,
-      ...row.metadata
+      ...row.metadata,
     }));
   }
 
@@ -61,7 +64,7 @@ export class WarmTier {
           id: `doc-${doc}`,
           content,
           type: 'document',
-          source: { agent: 'system', file: doc }
+          source: { agent: 'system', file: doc },
         });
       } catch {
         // ignore missing docs

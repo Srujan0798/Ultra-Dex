@@ -29,6 +29,7 @@ We use a **sliding window counter** algorithm:
 4. Return remaining requests in headers
 
 Advantages:
+
 - Simple to implement
 - Memory efficient
 - No clock synchronization issues
@@ -62,6 +63,7 @@ Advantages:
 ## Database Schema
 
 ### API Keys Table
+
 - `id`: UUID primary key
 - `user_id`: Foreign key to users
 - `name`: Human-readable name
@@ -72,6 +74,7 @@ Advantages:
 - `last_used_at`: Timestamp for analytics
 
 ### Resources Table
+
 - `id`: UUID primary key
 - `user_id`: Foreign key
 - `name`: Resource name
@@ -80,6 +83,7 @@ Advantages:
 - `metadata`: JSONB for flexible data
 
 ### Webhook Endpoints Table
+
 - `id`: UUID primary key
 - `user_id`: Foreign key
 - `url`: HTTPS URL only
@@ -88,6 +92,7 @@ Advantages:
 - `status`: active/disabled
 
 ### Webhook Deliveries Table
+
 - `id`: UUID primary key
 - `endpoint_id`: Foreign key
 - `event_id`: Reference to event
@@ -98,12 +103,14 @@ Advantages:
 ## Security Considerations
 
 ### API Keys
+
 - Never store full keys in database (only hashes)
 - Use constant-time comparison for validation
 - Support key rotation without changing ID
 - Automatic revocation on suspicious activity
 
 ### Webhooks
+
 - Sign payloads with HMAC-SHA256
 - Use HTTPS only
 - Verify TLS certificates
@@ -111,6 +118,7 @@ Advantages:
 - Idempotency via event IDs
 
 ### Rate Limiting
+
 - Per-key limits prevent abuse
 - Different tiers for different customers
 - Redis-backed for distributed systems
@@ -128,6 +136,7 @@ Advantages:
 ## Monitoring & Observability
 
 ### Metrics to Track
+
 - Request rate (per endpoint, per API key)
 - Error rate (4xx, 5xx)
 - Latency (p50, p95, p99)
@@ -135,12 +144,14 @@ Advantages:
 - Rate limit hits
 
 ### Logging
+
 - Structured JSON logs
 - Correlation IDs across services
 - Sensitive data redaction
 - Log levels: ERROR, WARN, INFO, DEBUG
 
 ### Alerts
+
 - Error rate > 1%
 - P99 latency > 500ms
 - Webhook delivery failure rate > 5%

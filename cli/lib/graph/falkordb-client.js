@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * FalkorDB Client (best-effort)
  * Uses Redis protocol via optional "redis" package when available.

@@ -30,15 +30,13 @@ export class UltraAgent extends EventEmitter {
       template: this.options.template,
       idea: payload.idea,
       sections: payload.sections,
-      status: 'filled'
+      status: 'filled',
     };
   }
 
   async generateTasks({ from }: { from: string }) {
     this.emit('status', { step: 'generateTasks', from });
-    return [
-      { id: 'task-1', title: `Generated task from ${from}`, status: 'pending' }
-    ];
+    return [{ id: 'task-1', title: `Generated task from ${from}`, status: 'pending' }];
   }
 
   async execute(task: { id: string; title: string }, options: ExecuteOptions = {}) {
@@ -47,7 +45,7 @@ export class UltraAgent extends EventEmitter {
       taskId: task.id,
       status: 'completed',
       verified: Boolean(options.verify),
-      autoCommit: Boolean(options.autoCommit)
+      autoCommit: Boolean(options.autoCommit),
     };
   }
 }

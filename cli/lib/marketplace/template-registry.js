@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Template Registry (JSON-based)
  */
@@ -14,7 +16,7 @@ const DEFAULT_REGISTRY = {
       category: 'saas',
       stack: ['next15', 'prisma', 'stripe', 'clerk'],
       source: 'local',
-      path: 'cli/assets/live-templates/next15-saas'
+      path: 'cli/assets/live-templates/next15-saas',
     },
     {
       name: 'remix-saas',
@@ -23,7 +25,7 @@ const DEFAULT_REGISTRY = {
       category: 'saas',
       stack: ['remix', 'prisma', 'stripe', 'clerk'],
       source: 'local',
-      path: 'cli/assets/live-templates/remix-saas'
+      path: 'cli/assets/live-templates/remix-saas',
     },
     {
       name: 'sveltekit-saas',
@@ -32,9 +34,9 @@ const DEFAULT_REGISTRY = {
       category: 'saas',
       stack: ['sveltekit', 'prisma', 'stripe', 'clerk'],
       source: 'local',
-      path: 'cli/assets/live-templates/sveltekit-saas'
-    }
-  ]
+      path: 'cli/assets/live-templates/sveltekit-saas',
+    },
+  ],
 };
 
 const REGISTRY_PATH = path.resolve(process.cwd(), '.ultra-dex', 'template-registry.json');

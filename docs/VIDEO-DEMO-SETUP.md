@@ -3,6 +3,7 @@
 ## Prerequisites Checklist
 
 ### System Requirements
+
 - [ ] Terminal: iTerm2 or Hyper with custom theme
 - [ ] VS Code: With Ultra-Dex extension installed
 - [ ] Browser: Chrome with Ultra-Dex dashboard
@@ -34,6 +35,7 @@ npx ultra-dex --help > /dev/null
 ### Terminal Configuration
 
 **Theme Settings:**
+
 ```json
 // ~/.hyper.js or iTerm2 profile
 {
@@ -47,6 +49,7 @@ npx ultra-dex --help > /dev/null
 ```
 
 **Prompt:**
+
 ```bash
 # Use a clean, minimal prompt
 export PS1="\[\033[36m\]demo\[\033[0m\]:\[\033[33m\]\W\[\033[0m\]$ "
@@ -55,11 +58,13 @@ export PS1="\[\033[36m\]demo\[\033[0m\]:\[\033[33m\]\W\[\033[0m\]$ "
 ### VS Code Setup
 
 **Extensions Installed:**
+
 - Ultra-Dex VS Code extension
 - One Dark Pro theme (or similar dark theme)
 - JetBrains Mono font
 
 **Settings:**
+
 ```json
 {
   "workbench.colorTheme": "One Dark Pro",
@@ -72,6 +77,7 @@ export PS1="\[\033[36m\]demo\[\033[0m\]:\[\033[33m\]\W\[\033[0m\]$ "
 ### Browser Setup
 
 **Chrome:**
+
 - Open localhost:3001 (dashboard)
 - Zoom: 110%
 - DevTools: Closed
@@ -80,6 +86,7 @@ export PS1="\[\033[36m\]demo\[\033[0m\]:\[\033[33m\]\W\[\033[0m\]$ "
 ### Recording Setup
 
 **OBS Studio Configuration:**
+
 ```
 Resolution: 1920x1080
 Frame Rate: 30fps
@@ -89,6 +96,7 @@ Video: H.264, 6000kbps
 ```
 
 **Scene Layout:**
+
 - Scene 1: Full terminal
 - Scene 2: Split (VS Code + Browser)
 - Scene 3: Full browser (dashboard)
@@ -98,6 +106,7 @@ Video: H.264, 6000kbps
 ## Pre-Demo Checklist
 
 ### 5 Minutes Before
+
 - [ ] Terminal: Clear screen, check prompt
 - [ ] VS Code: Open to empty folder
 - [ ] Browser: Dashboard tab ready
@@ -108,42 +117,52 @@ Video: H.264, 6000kbps
 ### Demo Scenes Ready
 
 **Scene 1: The Problem** (0:00-0:30)
+
 - Visual: Split screen showing scattered docs
 - Script: "You've got a brilliant SaaS idea..."
 
 **Scene 2: Meet Ultra-Dex** (0:30-1:00)
+
 - Command: `npx ultra-dex --help`
 - Show: 45 commands available
 
 **Scene 3: Initialize** (1:00-1:30)
+
 - Command: `npx ultra-dex init taskflow --live --stack next15-prisma-clerk`
 - Show: Project scaffold generated
 
 **Scene 4: AI Plan** (1:30-2:00)
+
 - Command: `npx ultra-dex generate "Task management SaaS"`
 - Show: Streaming AI output
 
 **Scene 5: Agent Swarm** (2:00-2:45)
+
 - Command: `npx ultra-dex swarm "Build authentication"`
 - Show: Terminal + Browser dashboard
 
 **Scene 6: Context Sync** (2:45-3:15)
+
 - Command: `npx ultra-dex brain && npx ultra-dex diff`
 - Show: Alignment score
 
 **Scene 7: VS Code** (3:15-3:45)
+
 - Show: Extension sidebars
 - Click: @backend agent
 
 **Scene 8: Validation** (3:45-4:15)
+
 - Command: `npx ultra-dex validate --scan`
 - Show: 15 checks passed
 
 **Scene 9: Deploy** (4:15-4:45)
+
 - Command: `npx ultra-dex build`
 - Show: Live app
 
 **Scene 10: Summary** (4:45-5:00)
+
 - Visual: Stats overlay
 - CTA: npm install command
 
@@ -152,6 +171,7 @@ Video: H.264, 6000kbps
 ## Post-Recording
 
 ### Editing Checklist
+
 - [ ] Remove all waiting time (jump cuts)
 - [ ] Add text overlays for key stats
 - [ ] Zoom in on terminal output
@@ -159,6 +179,7 @@ Video: H.264, 6000kbps
 - [ ] Export: 1080p, 30fps, H.264
 
 ### Upload Checklist
+
 - [ ] Thumbnail: 1280x720, text "Idea → Production 5 min"
 - [ ] Title: "Ultra-Dex: From Idea to Production SaaS in 5 Minutes"
 - [ ] Description: Include install command, GitHub link
@@ -166,6 +187,7 @@ Video: H.264, 6000kbps
 - [ ] End screen: Subscribe + GitHub link
 
 ### Promotion Checklist
+
 - [ ] Tweet with video link
 - [ ] Post to Hacker News
 - [ ] Share in developer Discord/Slack groups
@@ -176,15 +198,19 @@ Video: H.264, 6000kbps
 ## Troubleshooting
 
 ### If AI generation is slow
+
 **Fix:** Use `--provider openai --model gpt-4o-mini` for faster generation
 
 ### If commands fail
+
 **Fix:** Pre-run all commands once to warm caches
 
 ### If dashboard doesn't load
+
 **Fix:** Ensure port 3001 is free: `lsof -ti:3001 | xargs kill -9`
 
 ### If recording is choppy
+
 **Fix:** Lower OBS settings: 720p, 2500kbps
 
 ---
@@ -192,16 +218,18 @@ Video: H.264, 6000kbps
 ## Success Metrics
 
 **Target:**
+
 - Views: 10,000+ in first week
 - Likes: 500+
 - Comments: 100+
 - Conversions: 500+ npm installs
 
 **Track:**
+
 - YouTube analytics
 - npm download stats
 - GitHub stars increase
 
 ---
 
-*Ready to record! 🎬*
+_Ready to record! 🎬_

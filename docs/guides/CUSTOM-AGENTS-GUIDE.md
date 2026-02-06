@@ -8,15 +8,15 @@
 
 Ultra-Dex provides 16 production agents for general SaaS development. But YOUR product has unique domain logic that generic agents can't handle:
 
-| SaaS Type | Domain Logic | Custom Agent Needed |
-|-----------|--------------|---------------------|
-| Healthcare | HIPAA compliance, patient data | @HealthCompliance |
-| Fintech | Payment processing, fraud detection | @PaymentLogic |
-| Real Estate | Property listings, valuations | @PropertyEngine |
-| E-commerce | Inventory, pricing rules | @CatalogManager |
-| Booking/Scheduling | Availability, conflicts | @BookingEngine |
-| Analytics | Data pipelines, metrics | @AnalyticsEngine |
-| Legal | Contract generation, compliance | @LegalCompliance |
+| SaaS Type          | Domain Logic                        | Custom Agent Needed |
+| ------------------ | ----------------------------------- | ------------------- |
+| Healthcare         | HIPAA compliance, patient data      | @HealthCompliance   |
+| Fintech            | Payment processing, fraud detection | @PaymentLogic       |
+| Real Estate        | Property listings, valuations       | @PropertyEngine     |
+| E-commerce         | Inventory, pricing rules            | @CatalogManager     |
+| Booking/Scheduling | Availability, conflicts             | @BookingEngine      |
+| Analytics          | Data pipelines, metrics             | @AnalyticsEngine    |
+| Legal              | Contract generation, compliance     | @LegalCompliance    |
 
 **Custom agents capture domain expertise that AI needs to build YOUR specific product.**
 
@@ -26,7 +26,7 @@ Ultra-Dex provides 16 production agents for general SaaS development. But YOUR p
 
 Use this template to create any custom domain agent:
 
-```markdown
+````markdown
 # [Agent Name] Agent
 
 You are a [domain] specialist for this project. You handle [specific responsibilities].
@@ -34,6 +34,7 @@ You are a [domain] specialist for this project. You handle [specific responsibil
 ## Your Context
 
 Before responding, read these files to understand the project:
+
 - `IMPLEMENTATION-PLAN.md` - Full project specification
 - `CONTEXT.md` - Project background
 - [Domain-specific files]
@@ -41,11 +42,13 @@ Before responding, read these files to understand the project:
 ## Your Responsibilities
 
 ### [Responsibility Area 1]
+
 - Specific task
 - Specific task
 - Specific task
 
 ### [Responsibility Area 2]
+
 - Specific task
 - Specific task
 
@@ -54,15 +57,18 @@ Before responding, read these files to understand the project:
 ## Domain Rules
 
 ### Business Logic
+
 - Rule 1: [Explain the rule]
 - Rule 2: [Explain the rule]
 - Rule 3: [Explain the rule]
 
 ### Constraints
+
 - Constraint 1: [What cannot be violated]
 - Constraint 2: [What cannot be violated]
 
 ### Edge Cases
+
 - Edge case 1: [How to handle]
 - Edge case 2: [How to handle]
 
@@ -71,11 +77,14 @@ Before responding, read these files to understand the project:
 ## Code Patterns
 
 ### [Pattern Name]
+
 ```[language]
 // Example code showing how to implement this pattern
 ```
+````
 
 ### [Pattern Name]
+
 ```[language]
 // Example code showing how to implement this pattern
 ```
@@ -85,14 +94,17 @@ Before responding, read these files to understand the project:
 ## Works With
 
 ### Request Input From
+
 - **@CTO** - Architecture decisions affecting domain
 - **@Database** - Schema for domain entities
 
 ### Hand Off To
+
 - **@Backend** - After domain logic is defined
 - **@Testing** - For domain-specific test cases
 
 ### Coordinate With
+
 - **@Security** - On domain-specific security requirements
 
 ---
@@ -109,8 +121,9 @@ Before handing off domain work, verify:
 
 ---
 
-*Ultra-Dex Custom Agent - [Your Domain]*
-```
+_Ultra-Dex Custom Agent - [Your Domain]_
+
+````
 
 ---
 
@@ -208,9 +221,10 @@ function calculateInvoice(items: InvoiceLineItem[], discountPercent = 0) {
     total: taxableAmount + tax,
   };
 }
-```
+````
 
 ### Invoice Status Machine
+
 ```typescript
 type InvoiceStatus = 'draft' | 'sent' | 'viewed' | 'paid' | 'overdue' | 'void';
 
@@ -218,9 +232,9 @@ const validTransitions: Record<InvoiceStatus, InvoiceStatus[]> = {
   draft: ['sent', 'void'],
   sent: ['viewed', 'paid', 'overdue', 'void'],
   viewed: ['paid', 'overdue', 'void'],
-  paid: [],  // Terminal state
+  paid: [], // Terminal state
   overdue: ['paid', 'void'],
-  void: [],  // Terminal state
+  void: [], // Terminal state
 };
 
 function canTransition(from: InvoiceStatus, to: InvoiceStatus): boolean {
@@ -229,6 +243,7 @@ function canTransition(from: InvoiceStatus, to: InvoiceStatus): boolean {
 ```
 
 ### Recurring Invoice Generation
+
 ```typescript
 async function generateRecurringInvoices() {
   const today = new Date();
@@ -274,15 +289,18 @@ async function generateRecurringInvoices() {
 ## Works With
 
 ### Request Input From
+
 - **@CTO** - Billing architecture decisions
 - **@Database** - Invoice, Payment, Customer schemas
 
 ### Hand Off To
+
 - **@Backend** - API endpoints for invoicing
 - **@Frontend** - Invoice UI components
 - **@Testing** - Billing flow tests
 
 ### Coordinate With
+
 - **@Security** - PCI compliance for payment data
 - **@Auth** - Customer portal access
 
@@ -303,8 +321,9 @@ Before handing off invoice work, verify:
 
 ---
 
-*Ultra-Dex Custom Agent - Invoice Engine*
-```
+_Ultra-Dex Custom Agent - Invoice Engine_
+
+````
 
 ---
 
@@ -425,9 +444,10 @@ async function getAvailableSlots(
 
   return slots;
 }
-```
+````
 
 ### Double-Booking Prevention
+
 ```typescript
 async function createBooking(data: BookingInput): Promise<Booking> {
   return await prisma.$transaction(async (tx) => {
@@ -456,8 +476,9 @@ async function createBooking(data: BookingInput): Promise<Booking> {
 
 ---
 
-*Ultra-Dex Custom Agent - Booking Engine*
-```
+_Ultra-Dex Custom Agent - Booking Engine_
+
+````
 
 ---
 
@@ -472,11 +493,12 @@ touch agents/7-domain/your-agent.md
 # Or in a project-specific folder
 mkdir -p .claude/agents
 touch .claude/agents/your-agent.md
-```
+````
 
 ### Step 2: Use the Template
 
 Copy the template above and fill in:
+
 - Agent name and role
 - Specific responsibilities
 - Domain rules and constraints
@@ -491,6 +513,7 @@ Add to your `IMPLEMENTATION-PLAN.md`:
 ## Custom Agents
 
 ### @InvoiceEngine
+
 - Location: `agents/7-domain/invoice-engine.md`
 - Purpose: Billing logic, tax calculations, payment terms
 - Used in: Sections 8 (Payments), 15 (Billing)
@@ -519,6 +542,7 @@ Requirements:
 ## Domain Rules
 
 ### Business Logic
+
 - Rule 1: [Specific, testable rule]
 - Rule 2: [Specific, testable rule]
 ```
@@ -533,6 +557,7 @@ Don't just describe - show. Include TypeScript/Python examples that AI can refer
 
 ```markdown
 ### Edge Cases
+
 - What happens when X is zero?
 - What happens when Y is null?
 - What happens at midnight UTC?
@@ -544,6 +569,7 @@ Your domain agent should integrate with the standard Ultra-Dex agents:
 
 ```markdown
 ## Works With
+
 - @CTO for architecture decisions
 - @Backend for API implementation
 - @Testing for domain test cases
@@ -561,14 +587,14 @@ One agent = one domain. Don't create a "DoEverything" agent. If your domain has 
 
 ## Common Domain Agent Patterns
 
-| Pattern | Use When | Example |
-|---------|----------|---------|
-| **Calculator** | Complex business math | Tax calculator, pricing engine |
-| **State Machine** | Entity lifecycle | Order status, booking status |
-| **Rules Engine** | Configurable logic | Discount rules, eligibility |
-| **Validator** | Domain constraints | Compliance checker, data validator |
-| **Generator** | Document creation | Invoice PDF, contract generator |
-| **Scheduler** | Time-based logic | Booking engine, task scheduler |
+| Pattern           | Use When              | Example                            |
+| ----------------- | --------------------- | ---------------------------------- |
+| **Calculator**    | Complex business math | Tax calculator, pricing engine     |
+| **State Machine** | Entity lifecycle      | Order status, booking status       |
+| **Rules Engine**  | Configurable logic    | Discount rules, eligibility        |
+| **Validator**     | Domain constraints    | Compliance checker, data validator |
+| **Generator**     | Document creation     | Invoice PDF, contract generator    |
+| **Scheduler**     | Time-based logic      | Booking engine, task scheduler     |
 
 ---
 
@@ -580,4 +606,4 @@ One agent = one domain. Don't create a "DoEverything" agent. If your domain has 
 
 ---
 
-*Ultra-Dex v1.7.0 - Build domain agents for YOUR SaaS*
+_Ultra-Dex v1.7.0 - Build domain agents for YOUR SaaS_

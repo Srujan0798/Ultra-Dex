@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Multi-Repo Orchestration
  * Monorepo support, cross-repo context, shared agents, unified dashboard.
@@ -11,9 +13,9 @@ export async function discoverRepos(rootDir = process.cwd()) {
   const repoPaths = await glob('**/.git', {
     cwd: rootDir,
     nodir: false,
-    ignore: ['**/node_modules/**', '**/.ultra-dex/**']
+    ignore: ['**/node_modules/**', '**/.ultra-dex/**'],
   });
-  return repoPaths.map(repo => path.dirname(path.join(rootDir, repo)));
+  return repoPaths.map((repo) => path.dirname(path.join(rootDir, repo)));
 }
 
 export async function buildCrossRepoContext(repos) {
@@ -38,9 +40,9 @@ export async function buildUnifiedDashboard(repos) {
   const contexts = await buildCrossRepoContext(repos);
   return {
     repos: repos.length,
-    contextsLoaded: contexts.filter(c => c.context).length,
+    contextsLoaded: contexts.filter((c) => c.context).length,
     agents: sharedAgents(),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 }
 
@@ -48,5 +50,5 @@ export default {
   discoverRepos,
   buildCrossRepoContext,
   sharedAgents,
-  buildUnifiedDashboard
+  buildUnifiedDashboard,
 };

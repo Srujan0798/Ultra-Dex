@@ -12,16 +12,10 @@ import os from 'node:os';
 describe('Serve Command Integration Tests', () => {
   test('should handle API endpoints correctly', async () => {
     // Test that endpoints are properly configured
-    const endpoints = [
-      '/api/state',
-      '/api/plan',
-      '/api/context',
-      '/api/graph',
-      '/api/swarm'
-    ];
+    const endpoints = ['/api/state', '/api/plan', '/api/context', '/api/graph', '/api/swarm'];
 
     assert.strictEqual(endpoints.length, 5);
-    endpoints.forEach(endpoint => {
+    endpoints.forEach((endpoint) => {
       assert.match(endpoint, /^\/api\//);
     });
   });
@@ -48,7 +42,7 @@ describe('Serve Command Integration Tests', () => {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     };
 
     assert.ok(corsHeaders['Access-Control-Allow-Origin']);
@@ -60,7 +54,7 @@ describe('Serve Command Integration Tests', () => {
     // Test error handling configuration
     const errorResponse = {
       error: 'Resource not found',
-      statusCode: 404
+      statusCode: 404,
     };
 
     assert.strictEqual(errorResponse.statusCode, 404);
@@ -74,8 +68,8 @@ describe('Serve Command Integration Tests', () => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      }
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
     };
 
     assert.strictEqual(optionsResponse.statusCode, 204);
@@ -86,7 +80,7 @@ describe('Serve Command Integration Tests', () => {
     // Test 404 response format
     const notFoundResponse = {
       error: 'Not Found',
-      path: '/nonexistent'
+      path: '/nonexistent',
     };
 
     assert.strictEqual(notFoundResponse.error, 'Not Found');
@@ -97,7 +91,7 @@ describe('Serve Command Integration Tests', () => {
     // Test 500 response format
     const serverErrorResponse = {
       error: 'Internal Server Error',
-      message: 'Something went wrong'
+      message: 'Something went wrong',
     };
 
     assert.strictEqual(serverErrorResponse.error, 'Internal Server Error');
@@ -110,13 +104,7 @@ describe('Serve Command Integration Tests', () => {
       name: 'Ultra-Dex Multiverse Kernel',
       version: '3.7.2',
       status: 'online',
-      endpoints: [
-        '/api/state',
-        '/api/plan',
-        '/api/context',
-        '/api/graph',
-        '/api/swarm'
-      ]
+      endpoints: ['/api/state', '/api/plan', '/api/context', '/api/graph', '/api/swarm'],
     };
 
     assert.strictEqual(serverInfo.name, 'Ultra-Dex Multiverse Kernel');

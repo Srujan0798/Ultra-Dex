@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Streaming Utilities for Ultra-Dex
  * Provides utilities for handling real-time streaming of AI responses
@@ -19,18 +21,18 @@ function getProvider(providerName, apiKey) {
     case 'openai':
       return createOpenAI({
         apiKey,
-        baseURL: process.env.OPENAI_BASE_URL
+        baseURL: process.env.OPENAI_BASE_URL,
       });
     case 'anthropic':
       return createAnthropic({
         apiKey,
-        baseURL: process.env.ANTHROPIC_BASE_URL
+        baseURL: process.env.ANTHROPIC_BASE_URL,
       });
     case 'google':
     case 'gemini':
       return createGoogleGenerativeAI({
         apiKey,
-        baseURL: process.env.GOOGLE_BASE_URL
+        baseURL: process.env.GOOGLE_BASE_URL,
       });
     default:
       throw new Error(`Unsupported provider: ${providerName}`);
@@ -46,11 +48,14 @@ export async function streamTextWithDisplay(options = {}) {
     model = 'claude-3-5-sonnet-20241022',
     systemPrompt = '',
     userPrompt = '',
-    apiKey = process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY,
+    apiKey = process.env.ANTHROPIC_API_KEY ||
+      process.env.OPENAI_API_KEY ||
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+      process.env.GOOGLE_API_KEY,
     onToken,
     onComplete,
     onError,
-    display = true
+    display = true,
   } = options;
 
   if (!apiKey) {
@@ -65,7 +70,7 @@ export async function streamTextWithDisplay(options = {}) {
     const result = await streamText({
       model: selectedProvider(model),
       system: systemPrompt,
-      prompt: userPrompt
+      prompt: userPrompt,
     });
 
     let fullResponse = '';
@@ -73,7 +78,7 @@ export async function streamTextWithDisplay(options = {}) {
     if (display) {
       displaySpinner = ora({
         text: chalk.blue('Streaming response...'),
-        spinner: 'clock'
+        spinner: 'clock',
       }).start();
     }
 
@@ -81,12 +86,12 @@ export async function streamTextWithDisplay(options = {}) {
     for await (const token of result.textStream) {
       fullResponse += token;
       tokenCount++;
-      
+
       // Call the onToken callback if provided
       if (onToken) {
         await onToken(token, fullResponse, tokenCount);
       }
-      
+
       // Update spinner periodically
       if (display && tokenCount % 10 === 0) {
         displaySpinner.text = chalk.blue(`Streaming... (${tokenCount} tokens)`);
@@ -96,12 +101,12 @@ export async function streamTextWithDisplay(options = {}) {
     if (displaySpinner) {
       displaySpinner.succeed(chalk.green('Response complete!'));
     }
-    
+
     const finalResult = {
       text: fullResponse,
       usage: result.usage,
       response: result.response,
-      finishReason: result.finishReason
+      finishReason: result.finishReason,
     };
 
     if (onComplete) {
@@ -113,11 +118,11 @@ export async function streamTextWithDisplay(options = {}) {
     if (displaySpinner) {
       displaySpinner.fail(chalk.red('Stream failed'));
     }
-    
+
     if (onError) {
       await onError(error);
     }
-    
+
     throw error;
   }
 }
@@ -133,14 +138,14 @@ export async function streamWithProgressTracking(options = {}) {
     userPrompt = '',
     apiKey,
     onProgress,
-    onComplete
+    onComplete,
   } = options;
 
   let progressTracker = {
     tokensReceived: 0,
     charactersReceived: 0,
     startTime: Date.now(),
-    estimatedTotalTokens: null
+    estimatedTotalTokens: null,
   };
 
   const result = await streamTextWithDisplay({
@@ -153,32 +158,33 @@ export async function streamWithProgressTracking(options = {}) {
     onToken: async (token, fullResponse, tokenCount) => {
       progressTracker.tokensReceived = tokenCount;
       progressTracker.charactersReceived = fullResponse.length;
-      
+
       // Calculate elapsed time
       const elapsedTime = Date.now() - progressTracker.startTime;
       const tokensPerSecond = elapsedTime > 0 ? (tokenCount / (elapsedTime / 1000)).toFixed(2) : 0;
-      
+
       if (onProgress) {
         await onProgress({
           ...progressTracker,
           tokensPerSecond: parseFloat(tokensPerSecond),
-          elapsedTime
+          elapsedTime,
         });
       }
     },
     onComplete: async (finalResult) => {
       const totalTime = Date.now() - progressTracker.startTime;
-      const tokensPerSecond = totalTime > 0 ? (progressTracker.tokensReceived / (totalTime / 1000)).toFixed(2) : 0;
-      
+      const tokensPerSecond =
+        totalTime > 0 ? (progressTracker.tokensReceived / (totalTime / 1000)).toFixed(2) : 0;
+
       if (onComplete) {
         await onComplete({
           ...finalResult,
           totalTime,
           tokensPerSecond: parseFloat(tokensPerSecond),
-          ...progressTracker
+          ...progressTracker,
         });
       }
-    }
+    },
   });
 
   return result;
@@ -196,20 +202,22 @@ export async function streamWithRetry(options = {}) {
     apiKey,
     maxRetries = 3,
     retryDelay = 1000,
-    onRetry
+    onRetry,
   } = options;
 
   let lastError;
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     if (attempt > 0) {
       if (onRetry) {
         await onRetry(attempt, maxRetries, lastError);
       } else {
-        printWarning(chalk.yellow(`⚠️  Retry ${attempt}/${maxRetries} after error: ${lastError?.message}`));
+        printWarning(
+          chalk.yellow(`⚠️  Retry ${attempt}/${maxRetries} after error: ${lastError?.message}`)
+        );
       }
-      
-      await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
+
+      await new Promise((resolve) => setTimeout(resolve, retryDelay * attempt));
     }
 
     try {
@@ -218,11 +226,11 @@ export async function streamWithRetry(options = {}) {
         model,
         systemPrompt,
         userPrompt,
-        apiKey
+        apiKey,
       });
     } catch (error) {
       lastError = error;
-      
+
       // If this was the last attempt, re-throw the error
       if (attempt === maxRetries) {
         printError(chalk.red(`\n❌ All retries failed. Last error: ${error.message}`));
@@ -250,7 +258,7 @@ export class InterruptibleStream {
       apiKey,
       onToken,
       onComplete,
-      onError
+      onError,
     } = options;
 
     // Set up interrupt handler
@@ -258,7 +266,7 @@ export class InterruptibleStream {
     const interruptHandler = () => {
       this.interrupt();
     };
-    
+
     process.prependListener('SIGINT', interruptHandler);
 
     try {
@@ -268,7 +276,7 @@ export class InterruptibleStream {
         model: selectedProvider(model),
         system: systemPrompt,
         prompt: userPrompt,
-        abortSignal: this.abortController.signal
+        abortSignal: this.abortController.signal,
       });
 
       let fullResponse = '';
@@ -276,7 +284,7 @@ export class InterruptibleStream {
 
       const spinner = ora({
         text: chalk.blue('Streaming response... (Press Ctrl+C to interrupt)'),
-        spinner: 'clock'
+        spinner: 'clock',
       }).start();
 
       for await (const token of result.textStream) {
@@ -293,7 +301,9 @@ export class InterruptibleStream {
         }
 
         if (tokenCount % 10 === 0) {
-          spinner.text = chalk.blue(`Streaming... (${tokenCount} tokens) - Press Ctrl+C to interrupt`);
+          spinner.text = chalk.blue(
+            `Streaming... (${tokenCount} tokens) - Press Ctrl+C to interrupt`
+          );
         }
       }
 
@@ -305,7 +315,7 @@ export class InterruptibleStream {
         text: fullResponse,
         usage: result.usage,
         response: result.response,
-        finishReason: result.finishReason
+        finishReason: result.finishReason,
       };
 
       if (onComplete) {
@@ -366,5 +376,5 @@ export default {
   streamWithProgressTracking,
   streamWithRetry,
   InterruptibleStream,
-  formatStreamOutput
+  formatStreamOutput,
 };

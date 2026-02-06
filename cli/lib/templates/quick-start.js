@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 export const QUICK_START_TEMPLATE = `# {{PROJECT_NAME}} - Quick Start
 
 ## 1. Your Idea (2 sentences max)

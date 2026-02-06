@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Agent handshake and registration
  */
@@ -9,26 +11,26 @@ export function registerAgent({ id, name, capabilities = [], status = 'idle' }) 
     id,
     name,
     capabilities,
-    status
+    status,
   });
 }
 
 export function updateAvailability({ id, status = 'idle' }) {
   return createMessage('agent.status', {
     id,
-    status
+    status,
   });
 }
 
 export function advertiseCapabilities({ id, capabilities = [] }) {
   return createMessage('agent.capabilities', {
     id,
-    capabilities
+    capabilities,
   });
 }
 
 export default {
   registerAgent,
   updateAvailability,
-  advertiseCapabilities
+  advertiseCapabilities,
 };

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex estimate - Token and cost estimator for AI operations
  *
@@ -13,23 +15,23 @@ import { handleError } from '../utils/error-handler.js';
 // Token pricing per 1K tokens (as of Feb 2026)
 const PRICING = {
   openai: {
-    'gpt-4o': { input: 2.50, output: 10.00 },
-    'gpt-4o-mini': { input: 0.15, output: 0.60 },
-    'gpt-4-turbo': { input: 10.00, output: 30.00 },
-    'gpt-3.5-turbo': { input: 0.50, output: 1.50 },
+    'gpt-4o': { input: 2.5, output: 10.0 },
+    'gpt-4o-mini': { input: 0.15, output: 0.6 },
+    'gpt-4-turbo': { input: 10.0, output: 30.0 },
+    'gpt-3.5-turbo': { input: 0.5, output: 1.5 },
   },
   anthropic: {
-    'claude-3-5-sonnet': { input: 3.00, output: 15.00 },
-    'claude-3-opus': { input: 15.00, output: 75.00 },
+    'claude-3-5-sonnet': { input: 3.0, output: 15.0 },
+    'claude-3-opus': { input: 15.0, output: 75.0 },
     'claude-3-haiku': { input: 0.25, output: 1.25 },
   },
   google: {
-    'gemini-pro': { input: 0.50, output: 1.50 },
-    'gemini-ultra': { input: 7.00, output: 21.00 },
+    'gemini-pro': { input: 0.5, output: 1.5 },
+    'gemini-ultra': { input: 7.0, output: 21.0 },
   },
   local: {
-    'ollama': { input: 0.00, output: 0.00, note: 'Local - pay for electricity only' },
-    'lm-studio': { input: 0.00, output: 0.00, note: 'Local - pay for electricity only' },
+    ollama: { input: 0.0, output: 0.0, note: 'Local - pay for electricity only' },
+    'lm-studio': { input: 0.0, output: 0.0, note: 'Local - pay for electricity only' },
   },
 };
 
@@ -47,11 +49,18 @@ export function registerEstimateCommand(program) {
   program
     .command('estimate')
     .description('Estimate token usage and costs for AI operations')
-    .argument('[task]', 'Task description or type (simple-task, feature-impl, plan-generation, complex-refactor, agent-swarm, context-sync)')
+    .argument(
+      '[task]',
+      'Task description or type (simple-task, feature-impl, plan-generation, complex-refactor, agent-swarm, context-sync)'
+    )
     .option('-t, --tokens <tokens>', 'Total token count (input+output)', parseInt)
     .option('-i, --input-tokens <tokens>', 'Input token count', parseInt)
     .option('-o, --output-tokens <tokens>', 'Output token count', parseInt)
-    .option('-p, --provider <provider>', 'Specific provider (openai, anthropic, google, local)', 'all')
+    .option(
+      '-p, --provider <provider>',
+      'Specific provider (openai, anthropic, google, local)',
+      'all'
+    )
     .option('-m, --model <model>', 'Specific model name')
     .option('--compare', 'Compare all providers', false)
     .option('--monthly <tasks>', 'Estimate monthly cost (number of tasks per month)', parseInt)
@@ -69,11 +78,11 @@ export function registerEstimateCommand(program) {
           const base = Number(options.hours);
           const factors = [];
           factors.push({ name: 'Testing', value: 0.25 });
-          factors.push({ name: 'Code Review', value: 0.10 });
+          factors.push({ name: 'Code Review', value: 0.1 });
           if ((options.tasks || 1) > 2) factors.push({ name: 'Context Switching', value: 0.15 });
-          if (options.newTech) factors.push({ name: 'New Technology', value: 0.30 });
-          if (options.integration) factors.push({ name: 'Integration', value: 0.20 });
-          if (options.uncertainty) factors.push({ name: 'Uncertainty', value: 0.20 });
+          if (options.newTech) factors.push({ name: 'New Technology', value: 0.3 });
+          if (options.integration) factors.push({ name: 'Integration', value: 0.2 });
+          if (options.uncertainty) factors.push({ name: 'Uncertainty', value: 0.2 });
 
           const totalFactor = factors.reduce((sum, f) => sum + f.value, 0);
           const actualHours = base * (1 + totalFactor);
@@ -81,7 +90,7 @@ export function registerEstimateCommand(program) {
 
           printInfo(chalk.white.bold('🧮 Overhead Estimate:'));
           printInfo(`   Base: ${base}h`);
-          factors.forEach(f => printInfo(`   + ${Math.round(f.value * 100)}% ${f.name}`));
+          factors.forEach((f) => printInfo(`   + ${Math.round(f.value * 100)}% ${f.name}`));
           printInfo(`   Total: ${actualHours.toFixed(2)}h`);
           if (needsSplit) {
             printWarning(chalk.yellow('⚠️  Consider splitting into smaller tasks (<9h each).'));
@@ -95,12 +104,18 @@ export function registerEstimateCommand(program) {
           process.exitCode = 1;
           process.exit(process.exitCode);
         }
-        if (options.inputTokens !== undefined && (isNaN(options.inputTokens) || options.inputTokens < 0)) {
+        if (
+          options.inputTokens !== undefined &&
+          (isNaN(options.inputTokens) || options.inputTokens < 0)
+        ) {
           printError(chalk.red('❌ Error: --input-tokens must be a non-negative number'));
           process.exitCode = 1;
           process.exit(process.exitCode);
         }
-        if (options.outputTokens !== undefined && (isNaN(options.outputTokens) || options.outputTokens < 0)) {
+        if (
+          options.outputTokens !== undefined &&
+          (isNaN(options.outputTokens) || options.outputTokens < 0)
+        ) {
           printError(chalk.red('❌ Error: --output-tokens must be a non-negative number'));
           process.exitCode = 1;
           process.exit(process.exitCode);
@@ -136,7 +151,9 @@ export function registerEstimateCommand(program) {
           const wordCount = task.split(/\s+/).length;
           inputTokens = Math.max(500, wordCount * 2);
           outputTokens = Math.floor(inputTokens * 0.8);
-          printInfo(chalk.blue(`📝 Task: "${task.substring(0, 60)}${task.length > 60 ? '...' : ''}"\n`));
+          printInfo(
+            chalk.blue(`📝 Task: "${task.substring(0, 60)}${task.length > 60 ? '...' : ''}"\n`)
+          );
           printInfo(chalk.gray(`   Estimated from ${wordCount} words\n`));
         } else {
           // Default estimate
@@ -190,14 +207,20 @@ export function registerEstimateCommand(program) {
         });
 
         if (options.json) {
-          process.stdout.write(JSON.stringify({
-            task: task || 'default',
-            inputTokens,
-            outputTokens,
-            totalTokens,
-            monthlyTasks: options.monthly || null,
-            estimates,
-          }, null, 2) + '\n');
+          process.stdout.write(
+            JSON.stringify(
+              {
+                task: task || 'default',
+                inputTokens,
+                outputTokens,
+                totalTokens,
+                monthlyTasks: options.monthly || null,
+                estimates,
+              },
+              null,
+              2
+            ) + '\n'
+          );
           return;
         }
 
@@ -222,41 +245,63 @@ export function registerEstimateCommand(program) {
           ];
 
           if (options.monthly) {
-            row.push(est.monthlyCost === 0
-              ? chalk.green('FREE')
-              : chalk.yellow(`$${est.monthlyCost.toFixed(2)}`)
+            row.push(
+              est.monthlyCost === 0
+                ? chalk.green('FREE')
+                : chalk.yellow(`$${est.monthlyCost.toFixed(2)}`)
             );
           }
 
           table.push(row);
 
           if (est.note) {
-            table.push([{ colSpan: options.monthly ? 6 : 5, content: chalk.gray(`   ${est.note}`) }]);
+            table.push([
+              { colSpan: options.monthly ? 6 : 5, content: chalk.gray(`   ${est.note}`) },
+            ]);
           }
         }
 
         process.stdout.write(table.toString() + '\n');
 
         // Show cheapest option
-        const cheapest = estimates.find(e => e.totalCost > 0) || estimates[0];
-        printSuccess(chalk.green(`\n✅ Cheapest paid option: ${cheapest.provider} ${cheapest.model} at $${cheapest.totalCost.toFixed(4)}`));
+        const cheapest = estimates.find((e) => e.totalCost > 0) || estimates[0];
+        printSuccess(
+          chalk.green(
+            `\n✅ Cheapest paid option: ${cheapest.provider} ${cheapest.model} at $${cheapest.totalCost.toFixed(4)}`
+          )
+        );
 
         if (options.monthly) {
-          printSuccess(chalk.green(`📅 Monthly estimate (${options.monthly} tasks): $${cheapest.monthlyCost.toFixed(2)}`));
+          printSuccess(
+            chalk.green(
+              `📅 Monthly estimate (${options.monthly} tasks): $${cheapest.monthlyCost.toFixed(2)}`
+            )
+          );
         }
 
         // Budget warnings
         if (options.monthly && cheapest.monthlyCost > 100) {
-          printWarning(chalk.yellow(`\n⚠️  Warning: Monthly cost exceeds $100. Consider using local models (Ollama) for testing.`));
+          printWarning(
+            chalk.yellow(
+              `\n⚠️  Warning: Monthly cost exceeds $100. Consider using local models (Ollama) for testing.`
+            )
+          );
         }
 
         if (totalTokens > 10000) {
-          printWarning(chalk.yellow(`\n⚠️  Warning: Large token count (${totalTokens.toLocaleString()}). Consider breaking into smaller tasks.`));
+          printWarning(
+            chalk.yellow(
+              `\n⚠️  Warning: Large token count (${totalTokens.toLocaleString()}). Consider breaking into smaller tasks.`
+            )
+          );
         }
 
-        printInfo(chalk.gray(`\n💡 Tip: Use --json for programmatic output or --compare to see all providers`));
+        printInfo(
+          chalk.gray(
+            `\n💡 Tip: Use --json for programmatic output or --compare to see all providers`
+          )
+        );
         printInfo(chalk.gray(`   Prices as of February 2026. Actual costs may vary.`));
-
       } catch (error) {
         await handleError(error, { command: 'estimate', task, options });
         process.exitCode = error.exitCode || 1;
@@ -287,7 +332,11 @@ export function registerEstimateCommand(program) {
         }
 
         process.stdout.write(table.toString() + '\n');
-        printInfo(chalk.gray(`\n💡 Usage: ultra-dex estimate <task-type> (e.g., ultra-dex estimate feature-impl)`));
+        printInfo(
+          chalk.gray(
+            `\n💡 Usage: ultra-dex estimate <task-type> (e.g., ultra-dex estimate feature-impl)`
+          )
+        );
       } catch (error) {
         await handleError(error, { command: 'estimate-task-types', options });
         process.exitCode = error.exitCode || 1;

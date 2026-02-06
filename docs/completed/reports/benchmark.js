@@ -8,40 +8,40 @@
 import { performance } from 'perf_hooks';
 import { execSync } from 'child_process';
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
 
 const benchmarks = {
-  async 'Graph Analysis': async () => {
+  'Graph Analysis': async () => {
     const start = performance.now();
     // Simulate graph analysis performance
-    const { projectGraph } = await import('./cli/lib/mcp/graph.js');
+    const { projectGraph } = await import('../../cli/lib/mcp/graph.js');
     await projectGraph.scan(false); // Disable cache for measurement
     return performance.now() - start;
   },
 
-  async 'Command Startup': async () => {
+  'Command Startup': async () => {
     const start = performance.now();
     try {
       execSync('node cli/bin/ultra-dex.js --version', { stdio: 'pipe' });
-    } catch (e) {
+    } catch {
       // Ignore errors, just measuring startup time
     }
     return performance.now() - start;
   },
 
-  async 'Plugin Loading': async () => {
+  'Plugin Loading': async () => {
     const start = performance.now();
-    const { pluginManager } = await import('./cli/lib/plugin-system.js');
+    const { pluginManager } = await import('../../cli/lib/plugin-system.js');
     await pluginManager.initialize();
     return performance.now() - start;
-  }
+  },
 };
 
 async function runBenchmark() {
   console.log('🚀 Ultra-Dex Performance Benchmark Suite\n');
-  
+
   const results = {};
-  
+
   for (const [name, test] of Object.entries(benchmarks)) {
     try {
       console.log(`⏱️  Running ${name}...`);
@@ -53,10 +53,10 @@ async function runBenchmark() {
       results[name] = 'ERROR';
     }
   }
-  
+
   console.log('📊 Performance Results:');
   console.table(results);
-  
+
   // Save results to file
   const timestamp = new Date().toISOString();
   const resultsData = {
@@ -66,23 +66,24 @@ async function runBenchmark() {
     improvements: {
       'Graph Analysis': 'Optimized with caching and concurrency',
       'Command Startup': 'Reduced initialization time',
-      'Plugin Loading': 'Efficient plugin management system'
-    }
+      'Plugin Loading': 'Efficient plugin management system',
+    },
   };
-  
-  fs.writeFileSync(`benchmark-results-${timestamp.split('T')[0]}.json`, 
-    JSON.stringify(resultsData, null, 2));
-  
+
+  fs.writeFileSync(
+    `benchmark-results-${timestamp.split('T')[0]}.json`,
+    JSON.stringify(resultsData, null, 2)
+  );
+
   console.log(`\n💾 Results saved to benchmark-results-${timestamp.split('T')[0]}.json`);
-  
+
   return results;
 }
 
 // Run benchmark if this file is executed directly
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  import('url').then(({ fileURLToPath }) => {
-    runBenchmark().catch(console.error);
-  });
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
+  runBenchmark().catch(console.error);
 }
 
 export { runBenchmark, benchmarks };

@@ -28,18 +28,18 @@ After reviewing 42 review documents spanning 382KB of analysis, this document co
 
 The following items identified in early reviews have been **COMPLETED** and verified in FINAL-CHECKLIST-COMPLETE.md:
 
-| Feature | Status | Evidence |
-|---------|--------|----------|
-| 46+ CLI commands | ✅ Done | FINAL-CHECKLIST-COMPLETE.md |
-| MCP server (port 3001) | ✅ Done | cli/lib/mcp/server.js |
-| WebSocket real-time updates | ✅ Done | cli/lib/mcp/websocket.js |
-| 17 specialized agents | ✅ Done | agents/00-AGENT_INDEX.md |
-| 34 cursor rules | ✅ Done | cursor-rules/*.mdc |
-| VS Code extension sidebar | ✅ Done | vscode-extension/*.vsix |
-| Session persistence | ✅ Done | sqlite implementation |
-| CI/CD GitHub Actions | ✅ Done | 3 actions implemented |
-| 95/95 tests passing | ✅ Done | Test suite verification |
-| NPM package published | ✅ Done | ultra-dex@3.5.0 |
+| Feature                     | Status  | Evidence                    |
+| --------------------------- | ------- | --------------------------- |
+| 46+ CLI commands            | ✅ Done | FINAL-CHECKLIST-COMPLETE.md |
+| MCP server (port 3001)      | ✅ Done | cli/lib/mcp/server.js       |
+| WebSocket real-time updates | ✅ Done | cli/lib/mcp/websocket.js    |
+| 17 specialized agents       | ✅ Done | agents/00-AGENT_INDEX.md    |
+| 34 cursor rules             | ✅ Done | cursor-rules/\*.mdc         |
+| VS Code extension sidebar   | ✅ Done | vscode-extension/\*.vsix    |
+| Session persistence         | ✅ Done | sqlite implementation       |
+| CI/CD GitHub Actions        | ✅ Done | 3 actions implemented       |
+| 95/95 tests passing         | ✅ Done | Test suite verification     |
+| NPM package published       | ✅ Done | ultra-dex@3.5.0             |
 
 **Recommendation:** Source folders can be archived as these items are verified complete.
 
@@ -53,12 +53,14 @@ The following items identified in early reviews have been **COMPLETED** and veri
 **Status:** Partially implemented, needs completion
 
 **Action Required:**
+
 - Complete speech-to-text integration using OpenAI Whisper
 - Add interactive and one-shot modes
 - Support multiple template outputs (LITE/FULL/ENTERPRISE)
 - Cross-platform audio recording
 
 **Implementation:**
+
 ```bash
 ultra-dex voice "Build a SaaS with auth"
 ultra-dex voice --template LITE
@@ -73,12 +75,14 @@ ultra-dex voice --template LITE
 **Gap:** Context is currently markdown-based; needs graph-based RAG
 
 **Action Required:**
+
 - Integrate FalkorDB or Neo4j for graph storage
 - Build relationship mapping between functions, data types, architectural decisions
 - Create impact analysis queries ("What breaks if I change X?")
 - Migrate from file-based to graph-based context storage
 
 **Files to Modify:**
+
 - `cli/lib/mcp/graph.js` - Enhance with graph DB backend
 - `cli/lib/mcp/context-engine.js` - Add graph queries
 
@@ -91,12 +95,14 @@ ultra-dex voice --template LITE
 **Gap:** LangChain is optional dependency with dynamic imports
 
 **Action Required:**
+
 - Remove dynamic imports from LangChain adapter
 - Bundle LangChain as core dependency
 - Pre-configure 5 chains: summarize, code-review, task-breakdown, RAG, memory
 - Add vector search command using @langchain/community
 
 **Files to Modify:**
+
 - `cli/lib/providers/langchain.js`
 - `cli/package.json` - Move to dependencies
 
@@ -109,12 +115,14 @@ ultra-dex voice --template LITE
 **Gap:** `agents list --marketplace` has no remote registry
 
 **Action Required:**
+
 - Build registry.ultra-dex.dev or partner with existing registry
 - Create API for agent submission and retrieval
 - Implement agent versioning and ratings
 - Add discovery/search functionality
 
 **Files to Create:**
+
 - `cli/lib/marketplace/client.js`
 - Backend API endpoints
 
@@ -127,12 +135,14 @@ ultra-dex voice --template LITE
 **Gap:** Connection cleanup on disconnect not fully verified
 
 **Action Required:**
+
 - Add explicit cleanup handlers for WebSocket connections
 - Implement connection limits
 - Add heartbeat mechanism verification
 - Test with multiple concurrent clients
 
 **Files to Modify:**
+
 - `cli/lib/mcp/websocket.js`
 
 ---
@@ -144,12 +154,14 @@ ultra-dex voice --template LITE
 **Gap:** Not all providers handle API errors gracefully
 
 **Action Required:**
+
 - Add retry logic with exponential backoff across all providers
 - Implement circuit breaker patterns
 - Add rate limit handling
 - Standardize error responses
 
 **Files to Modify:**
+
 - `cli/lib/providers/*.js` (all provider files)
 
 ---
@@ -161,12 +173,14 @@ ultra-dex voice --template LITE
 **Gap:** Graph scanning performance degrades on large codebases
 
 **Action Required:**
+
 - Add pagination for large codebases
 - Implement lazy loading for graph nodes
 - Add caching layer for frequently accessed files
 - Optimize file watcher for large projects
 
 **Files to Modify:**
+
 - `cli/lib/mcp/graph.js`
 - `cli/lib/commands/watch.js`
 
@@ -179,12 +193,14 @@ ultra-dex voice --template LITE
 **Gap:** Missing agent picker, live dashboard, context injection
 
 **Action Required:**
+
 - Add agent picker UI in sidebar
 - Implement live dashboard view
 - Add context injection functionality
 - Enhance tree view with more details
 
 **Files to Modify:**
+
 - `vscode-extension/src/extension.ts`
 - `vscode-extension/src/agentTreeProvider.ts`
 
@@ -197,6 +213,7 @@ ultra-dex voice --template LITE
 **Target:** 70%+ coverage
 
 **Action Required:**
+
 - Add remaining MCP tools tests (~30 tests)
 - Add error recovery utilities tests (~20 tests)
 - Add interactive mode tests (~15 tests)
@@ -214,12 +231,14 @@ ultra-dex voice --template LITE
 **Gap:** Not all commands support streaming
 
 **Action Required:**
+
 - Implement Vercel AI SDK across all AI-powered commands
 - Add streaming to generate command
 - Add streaming to REPL mode
 - Ensure all providers support streaming
 
 **Files to Modify:**
+
 - `cli/lib/commands/generate.js`
 - `cli/lib/repl/index.js`
 - `cli/lib/providers/streaming.js`
@@ -266,14 +285,15 @@ ultra-dex voice --template LITE
 
 ## 🧭 Categorized View (Counts)
 
-| Category | Count |
-| --- | --- |
-| UX | 7 |
-| Execution | 12 |
-| Integrations | 7 |
-| Governance | 7 |
+| Category     | Count |
+| ------------ | ----- |
+| UX           | 7     |
+| Execution    | 12    |
+| Integrations | 7     |
+| Governance   | 7     |
 
 **UX (7)**
+
 - React Ink / Box‑UI TUI with streaming markdown, shimmer animations, arrow‑key menus, and human‑in‑loop confirmations. Source: `WTF Reviews/Gemini-1-Review.md`, `WTF Reviews/Gemini-2-Review.md`.
 - Agentic vs non‑agentic mode toggle (fast chat vs full agent). Source: `WTF Reviews/Gemini-2-Review.md`.
 - PTY interactive mode (node-pty) to keep AI in the loop during live shell edits. Source: `WTF Reviews/Gemini-1-Review.md`.
@@ -283,6 +303,7 @@ ultra-dex voice --template LITE
 - Documentation fragmentation cleanup + edge‑case troubleshooting. Source: `43Reviews.md/gemini2.md`.
 
 **Execution (12)**
+
 - Production-grade `init --live` scaffolds (auth, payments, admin dashboard, email, file upload), plus Remix/SvelteKit equivalents and a “deploy in 5 minutes” guide. Source: `43Reviews.md/devin.md`, `43Reviews.md/gemini1.md`.
 - Ship 10+ vertical SaaS starter templates and incorporate real founder starter repos into `cli/assets/live-templates/`. Source: `43Reviews.md/devin.md`.
 - Implement true code execution for `exec` via Docker sandbox with filesystem permissions. Source: `WTF Reviews/Kimi-2.1-Review.md`, `WTF Reviews/Kimi-2.2-48H-Critical-Path.md`, `WTF Reviews/Kimi-2.3-Review.md`.
@@ -297,6 +318,7 @@ ultra-dex voice --template LITE
 - Optimize or disable decentralized audit‑layer latency (cryptographic signing overhead). Source: `43Reviews.md/gemini2.md`.
 
 **Integrations (7)**
+
 - Implement ACP support (`--acp` / ACP host). Source: `WTF Reviews/Gemini-1-Review.md`.
 - Add MCP host/aggregator mode with config to spawn MCP servers and a global tool registry. Source: `WTF Reviews/Gemini-2-Review.md`.
 - Publish open Ultra‑Dex context format / `ULTRA.md` standard. Source: `43Reviews.md/devin.md`, `WTF Reviews/Gemini-2-Review.md`.
@@ -306,6 +328,7 @@ ultra-dex voice --template LITE
 - Zero‑config MCP wizard / one‑click MCP server deployment marketplace. Source: `43Reviews.md/gemini2.md`.
 
 **Governance (7)**
+
 - Router‑level agent governance (block sensitive files like `.env`). Source: `WTF Reviews/Gemini-2-Review.md`.
 - Make the 21‑step checklist executable as a quality gate (`verify --live`, post‑tool hooks). Source: `WTF Reviews/Gemini-1-Review.md`, `WTF Reviews/Devin-CEO-Review.md`.
 - Enterprise audit logs/compliance beyond SSO. Source: `WTF Reviews/Kimi-Review.md`.
@@ -336,6 +359,7 @@ ultra-dex voice --template LITE
    - No longer needed for active development
 
 ### Rationale:
+
 - **42 files** totaling **382KB** of reviews
 - **95% of gaps** identified have been addressed in v3.5.0
 - Remaining items **already captured** in this actionable summary
@@ -345,36 +369,39 @@ ultra-dex voice --template LITE
 
 ## 📊 Priority Matrix
 
-| Priority | Item | Effort | Impact | Status |
-|----------|------|--------|--------|--------|
-| HIGH | Voice-to-Plan | Medium | High | Partial |
-| HIGH | Deep Graph RAG | High | Very High | Not Started |
-| MEDIUM | LangGraph Integration | Medium | High | Partial |
-| MEDIUM | Agent Marketplace | High | Medium | Not Started |
-| MEDIUM | WebSocket Memory Leaks | Low | Medium | Partial |
-| MEDIUM | Provider Error Handling | Low | Medium | Partial |
-| LOW | Large Codebase Perf | Medium | Low | Not Started |
-| LOW | VS Code Extension | Medium | Low | Partial |
-| ONGOING | Test Coverage | Ongoing | High | 55% → 70% |
-| ONGOING | Streaming Responses | Ongoing | High | Partial |
+| Priority | Item                    | Effort  | Impact    | Status      |
+| -------- | ----------------------- | ------- | --------- | ----------- |
+| HIGH     | Voice-to-Plan           | Medium  | High      | Partial     |
+| HIGH     | Deep Graph RAG          | High    | Very High | Not Started |
+| MEDIUM   | LangGraph Integration   | Medium  | High      | Partial     |
+| MEDIUM   | Agent Marketplace       | High    | Medium    | Not Started |
+| MEDIUM   | WebSocket Memory Leaks  | Low     | Medium    | Partial     |
+| MEDIUM   | Provider Error Handling | Low     | Medium    | Partial     |
+| LOW      | Large Codebase Perf     | Medium  | Low       | Not Started |
+| LOW      | VS Code Extension       | Medium  | Low       | Partial     |
+| ONGOING  | Test Coverage           | Ongoing | High      | 55% → 70%   |
+| ONGOING  | Streaming Responses     | Ongoing | High      | Partial     |
 
 ---
 
 ## 🎯 NEXT STEPS FOR v3.6.0
 
 ### Immediate (Next 30 Days):
+
 1. Complete Voice-to-Plan feature
 2. Fix WebSocket memory leaks
 3. Add provider error handling with retry logic
 4. Improve test coverage to 70%
 
 ### Medium-term (60-90 Days):
+
 1. Implement Deep Graph RAG with FalkorDB
 2. Complete LangGraph native integration
 3. Build Agent Marketplace backend
 4. Optimize for large codebases
 
 ### Long-term (Q2 2026):
+
 1. Enterprise Auth (SSO/SAML)
 2. AI Agent Protocol SDK
 3. IDE Plugins (JetBrains, Neovim)
@@ -384,12 +411,15 @@ ultra-dex voice --template LITE
 ## 📝 NOTES
 
 ### Contradictions in Reviews:
+
 - **Devin CEO Review (3.8/10):** "Only 2 commands exist, no MCP server"
 - **Self-Assessment (8.6/10):** "46 commands verified, MCP server fully implemented"
 - **Resolution:** v3.5.0 launch verified the 8.6/10 assessment is accurate
 
 ### Why These Items Remain:
+
 The items listed above are the **only** recommendations that:
+
 1. Were NOT completed in v3.5.0 launch
 2. Appear in multiple independent reviews
 3. Represent genuine technical gaps (not documentation issues)
@@ -405,8 +435,8 @@ The items listed above are the **only** recommendations that:
 
 ---
 
-*Generated by OpenCode Agent 2*  
-*Date: February 4, 2026*
+_Generated by OpenCode Agent 2_  
+_Date: February 4, 2026_
 
 ---
 
@@ -422,6 +452,7 @@ The following items were identified during detailed line-by-line comparison with
 GitHub's new standard for agent portability across IDEs. Ultra-Dex must implement an `--acp` flag to act as the industry-standard bridge, enabling agents to be portable across all IDEs.
 
 **Action Required:**
+
 - Implement ACP host endpoint
 - Add `--acp` flag for industry-standard bridge
 - Enable Cursor 2.0 to call Ultra-Dex as its "Brain"
@@ -436,6 +467,7 @@ GitHub's new standard for agent portability across IDEs. Ultra-Dex must implemen
 Gemini CLI supports PTY for vim/rebase in-context. Ultra-Dex needs a pseudo-terminal bridge so the AI can watch the human edit files and trigger interactive shell commands while keeping the AI in the loop.
 
 **Action Required:**
+
 - Integrate node-pty library
 - Add PTY interactive mode
 - Allow vim/rebase operations within AI context
@@ -450,6 +482,7 @@ Gemini CLI supports PTY for vim/rebase in-context. Ultra-Dex needs a pseudo-term
 The 21-step checklist is currently a markdown file, not an automated function. Modern tools run these as "Quality Gates" (PostToolUse hooks) that block invalid code.
 
 **Action Required:**
+
 - Convert 21-step checklist to automated Quality Gates
 - Implement PostToolUse hooks that block invalid code
 - Create `ultra-dex verify --live` command
@@ -465,6 +498,7 @@ The 21-step checklist is currently a markdown file, not an automated function. M
 CLI aesthetics feel like 2024; needs professional "Box UI" pattern with shimmer animations. React Ink provides component-based TUI with spinning loaders, collapsible diff views, and persistent status bar.
 
 **Action Required:**
+
 - Migrate to React Ink for component-based UI
 - Add Unicode box patterns for professional polish
 - Implement shimmer/thinking animations
@@ -481,6 +515,7 @@ CLI aesthetics feel like 2024; needs professional "Box UI" pattern with shimmer 
 Current `init --live` generates bare-bones Next.js starter (hello world only). Needs production-ready SaaS templates to compete with Bolt.new and Devin.
 
 **Action Required:**
+
 - Add Clerk auth with protected routes
 - Integrate Stripe payments (checkout + webhooks)
 - Add Prisma with 5-table schema (User, Subscription, Invoice, Feature, Usage)
@@ -501,6 +536,7 @@ Current `init --live` generates bare-bones Next.js starter (hello world only). N
 Background planning burns tokens invisibly, leading to bill shock. No visibility into token consumption per task.
 
 **Action Required:**
+
 - Implement "Token Budget" widget in UI
 - Forecast cost of requested task before execution
 - Show token usage and cost in persistent status bar
@@ -517,6 +553,7 @@ Background planning burns tokens invisibly, leading to bill shock. No visibility
 Playwright is listed as optional dependency but completely unused. Competitors like Claude Computer Use and Devin can control browsers.
 
 **Action Required:**
+
 - Implement `ultra-dex browser` command
 - Add Playwright integration for browser automation
 - Support screenshot-to-code generation
@@ -534,6 +571,7 @@ Playwright is listed as optional dependency but completely unused. Competitors l
 GitHub Copilot CLI automatically compresses history at 95% token usage. Ultra-Dex needs aggressive context management to maintain "virtual immortality" for sessions.
 
 **Action Required:**
+
 - Implement auto-compaction at 95% token threshold
 - Summarize conversation history intelligently
 - "Forget" irrelevant intermediate steps
@@ -550,6 +588,7 @@ GitHub Copilot CLI automatically compresses history at 95% token usage. Ultra-De
 The "Ralph" pattern enables autonomous self-correction: generate → execute → verify → retry. This shifts verification burden from human to agent.
 
 **Action Required:**
+
 - Implement `while(!done)` autonomous loop
 - Generate code → Execute shell command → Read stderr
 - Self-correct and retry on error detection
@@ -567,6 +606,7 @@ The "Ralph" pattern enables autonomous self-correction: generate → execute →
 Ultra-Dex should enforce "Constitutional AI" principles at the router level, blocking sub-agents from editing sensitive files regardless of their internal safety filters.
 
 **Action Required:**
+
 - Implement agent governance layer
 - Block edits to sensitive files (.env, credentials)
 - Add file-level permission controls
@@ -578,34 +618,35 @@ Ultra-Dex should enforce "Constitutional AI" principles at the router level, blo
 
 ## 📊 UPDATED Priority Matrix
 
-| Priority | Item | Effort | Impact | Status |
-|----------|------|--------|--------|--------|
-| HIGH | Voice-to-Plan | Medium | High | Partial |
-| HIGH | Deep Graph RAG | High | Very High | Not Started |
-| HIGH | ACP Support | Medium | High | Not Started |
-| HIGH | Interactive PTY | Medium | High | Not Started |
-| HIGH | Active Verification (21-step) | Medium | High | Not Started |
-| HIGH | Live Boilerplate Enhancement | High | Very High | Not Started |
-| HIGH | Ralph Loop Implementation | Medium | High | Not Started |
-| MEDIUM | LangGraph Integration | Medium | High | Partial |
-| MEDIUM | Agent Marketplace | High | Medium | Not Started |
-| MEDIUM | WebSocket Memory Leaks | Low | Medium | Partial |
-| MEDIUM | Provider Error Handling | Low | Medium | Partial |
-| MEDIUM | React Ink / Box UI | Medium | Medium | Not Started |
-| MEDIUM | Token Cost Widget | Low | Medium | Not Started |
-| MEDIUM | Browser Automation | Medium | Medium | Not Started |
-| MEDIUM | Context Compaction | Medium | Medium | Not Started |
-| MEDIUM | Agent Governance | Low | Medium | Not Started |
-| LOW | Large Codebase Perf | Medium | Low | Not Started |
-| LOW | VS Code Extension | Medium | Low | Partial |
-| ONGOING | Test Coverage | Ongoing | High | 55% → 70% |
-| ONGOING | Streaming Responses | Ongoing | High | Partial |
+| Priority | Item                          | Effort  | Impact    | Status      |
+| -------- | ----------------------------- | ------- | --------- | ----------- |
+| HIGH     | Voice-to-Plan                 | Medium  | High      | Partial     |
+| HIGH     | Deep Graph RAG                | High    | Very High | Not Started |
+| HIGH     | ACP Support                   | Medium  | High      | Not Started |
+| HIGH     | Interactive PTY               | Medium  | High      | Not Started |
+| HIGH     | Active Verification (21-step) | Medium  | High      | Not Started |
+| HIGH     | Live Boilerplate Enhancement  | High    | Very High | Not Started |
+| HIGH     | Ralph Loop Implementation     | Medium  | High      | Not Started |
+| MEDIUM   | LangGraph Integration         | Medium  | High      | Partial     |
+| MEDIUM   | Agent Marketplace             | High    | Medium    | Not Started |
+| MEDIUM   | WebSocket Memory Leaks        | Low     | Medium    | Partial     |
+| MEDIUM   | Provider Error Handling       | Low     | Medium    | Partial     |
+| MEDIUM   | React Ink / Box UI            | Medium  | Medium    | Not Started |
+| MEDIUM   | Token Cost Widget             | Low     | Medium    | Not Started |
+| MEDIUM   | Browser Automation            | Medium  | Medium    | Not Started |
+| MEDIUM   | Context Compaction            | Medium  | Medium    | Not Started |
+| MEDIUM   | Agent Governance              | Low     | Medium    | Not Started |
+| LOW      | Large Codebase Perf           | Medium  | Low       | Not Started |
+| LOW      | VS Code Extension             | Medium  | Low       | Partial     |
+| ONGOING  | Test Coverage                 | Ongoing | High      | 55% → 70%   |
+| ONGOING  | Streaming Responses           | Ongoing | High      | Partial     |
 
 ---
 
 ## 🎯 UPDATED NEXT STEPS FOR v3.6.0
 
 ### Immediate (Next 30 Days):
+
 1. Complete Voice-to-Plan feature
 2. Fix WebSocket memory leaks
 3. Add provider error handling with retry logic
@@ -615,6 +656,7 @@ Ultra-Dex should enforce "Constitutional AI" principles at the router level, blo
 7. **NEW:** Begin React Ink migration
 
 ### Medium-term (60-90 Days):
+
 1. Implement Deep Graph RAG with FalkorDB
 2. Complete LangGraph native integration
 3. Build Agent Marketplace backend
@@ -624,6 +666,7 @@ Ultra-Dex should enforce "Constitutional AI" principles at the router level, blo
 7. **NEW:** Implement Ralph Loop
 
 ### Long-term (Q2 2026):
+
 1. Enterprise Auth (SSO/SAML)
 2. AI Agent Protocol SDK
 3. IDE Plugins (JetBrains, Neovim)
@@ -642,6 +685,6 @@ Ultra-Dex should enforce "Constitutional AI" principles at the router level, blo
 
 ---
 
-*Generated by OpenCode Agent 2*  
-*Date: February 4, 2026*  
-*Last Updated: February 4, 2026 (Post-Verification)*
+_Generated by OpenCode Agent 2_  
+_Date: February 4, 2026_  
+_Last Updated: February 4, 2026 (Post-Verification)_

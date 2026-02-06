@@ -25,7 +25,7 @@ describe('SemanticKnowledgeGraph - Initialization', () => {
   test('should initialize with custom backend', () => {
     const neo4jGraph = new SemanticKnowledgeGraph({
       backend: 'neo4j',
-      connectionString: 'bolt://localhost:7687'
+      connectionString: 'bolt://localhost:7687',
     });
 
     assert.strictEqual(neo4jGraph.backend, 'neo4j');
@@ -50,7 +50,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Node', () => {
       type: 'file',
       name: 'test.js',
       path: '/src/test.js',
-      content: 'function test() {}'
+      content: 'function test() {}',
     });
 
     assert.strictEqual(node.id, 'test-1');
@@ -62,7 +62,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Node', () => {
   test('should extract concepts from content', () => {
     const node = graph.addSemanticNode('auth-1', {
       name: 'auth.js',
-      content: 'function login(username, password) { const token = generateJWT(); }'
+      content: 'function login(username, password) { const token = generateJWT(); }',
     });
 
     assert.ok(node.concepts.includes('auth'));
@@ -71,14 +71,14 @@ describe('SemanticKnowledgeGraph - Add Semantic Node', () => {
   test('should infer domain from path', () => {
     const frontendNode = graph.addSemanticNode('comp-1', {
       name: 'Button.jsx',
-      path: '/src/components/Button.jsx'
+      path: '/src/components/Button.jsx',
     });
 
     assert.strictEqual(frontendNode.domain, 'frontend');
 
     const backendNode = graph.addSemanticNode('api-1', {
       name: 'users.js',
-      path: '/api/users.js'
+      path: '/api/users.js',
     });
 
     assert.strictEqual(backendNode.domain, 'backend');
@@ -89,7 +89,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Node', () => {
       name: 'util.js',
       loc: 50,
       imports: ['lodash'],
-      exports: ['helper']
+      exports: ['helper'],
     });
 
     assert.ok(simpleNode.complexity >= 1);
@@ -99,7 +99,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Node', () => {
       name: 'service.js',
       loc: 500,
       imports: Array(15).fill('dep'),
-      exports: Array(5).fill('func')
+      exports: Array(5).fill('func'),
     });
 
     assert.ok(complexNode.complexity >= 4);
@@ -109,7 +109,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Node', () => {
     const longContent = 'x'.repeat(2000);
     const node = graph.addSemanticNode('long', {
       name: 'big.js',
-      content: longContent
+      content: longContent,
     });
 
     assert.ok(node.content.length <= 1000);
@@ -118,7 +118,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Node', () => {
   test('should handle node without content', () => {
     const node = graph.addSemanticNode('empty', {
       name: 'empty.js',
-      path: '/src/empty.js'
+      path: '/src/empty.js',
     });
 
     assert.ok(node);
@@ -295,7 +295,7 @@ describe('SemanticKnowledgeGraph - Calculate Complexity', () => {
     const node = {
       loc: 1000,
       imports: Array(50).fill('dep'),
-      exports: Array(50).fill('func')
+      exports: Array(50).fill('func'),
     };
     const complexity = graph.calculateComplexity(node);
 
@@ -321,7 +321,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Edge', () => {
     const edge = graph.addSemanticEdge({
       source: 'node-1',
       target: 'node-2',
-      type: 'imports'
+      type: 'imports',
     });
 
     assert.strictEqual(edge.source, 'node-1');
@@ -332,7 +332,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Edge', () => {
   test('should default to depends_on type', () => {
     const edge = graph.addSemanticEdge({
       source: 'a',
-      target: 'b'
+      target: 'b',
     });
 
     assert.strictEqual(edge.type, 'depends_on');
@@ -341,7 +341,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Edge', () => {
   test('should default weight to 1', () => {
     const edge = graph.addSemanticEdge({
       source: 'a',
-      target: 'b'
+      target: 'b',
     });
 
     assert.strictEqual(edge.weight, 1);
@@ -351,7 +351,7 @@ describe('SemanticKnowledgeGraph - Add Semantic Edge', () => {
     const edge = graph.addSemanticEdge({
       source: 'a',
       target: 'b',
-      weight: 5
+      weight: 5,
     });
 
     assert.strictEqual(edge.weight, 5);
@@ -385,7 +385,7 @@ describe('SemanticKnowledgeGraph - Query by Concepts', () => {
     const results = graph.queryByConcepts(['auth']);
 
     assert.ok(results.length >= 1);
-    assert.ok(results.some(r => r.id === 'auth-1'));
+    assert.ok(results.some((r) => r.id === 'auth-1'));
   });
 
   test('should find nodes by multiple concepts', () => {
@@ -393,7 +393,7 @@ describe('SemanticKnowledgeGraph - Query by Concepts', () => {
 
     assert.ok(results.length >= 1);
     // Mixed node should have high score
-    assert.ok(results.some(r => r.id === 'mixed-1'));
+    assert.ok(results.some((r) => r.id === 'mixed-1'));
   });
 
   test('should return empty array when no matches', () => {
@@ -405,7 +405,7 @@ describe('SemanticKnowledgeGraph - Query by Concepts', () => {
   test('should include score for each result', () => {
     const results = graph.queryByConcepts(['auth']);
 
-    results.forEach(result => {
+    results.forEach((result) => {
       assert.ok(result.score !== undefined);
       assert.ok(result.score > 0);
       assert.ok(result.score <= 1);
@@ -454,8 +454,8 @@ describe('SemanticKnowledgeGraph - Query by Domain', () => {
     const frontendNodes = graph.queryByDomain('frontend');
 
     assert.strictEqual(frontendNodes.length, 2);
-    assert.ok(frontendNodes.some(n => n.id === 'fe-1'));
-    assert.ok(frontendNodes.some(n => n.id === 'fe-2'));
+    assert.ok(frontendNodes.some((n) => n.id === 'fe-1'));
+    assert.ok(frontendNodes.some((n) => n.id === 'fe-2'));
   });
 
   test('should return empty array when no matches', () => {
@@ -499,28 +499,28 @@ describe('SemanticKnowledgeGraph - Find Related Nodes', () => {
   test('should find directly connected nodes', () => {
     const related = graph.findRelated('a', { depth: 1 });
 
-    assert.ok(related.some(n => n.id === 'b'));
+    assert.ok(related.some((n) => n.id === 'b'));
   });
 
   test('should find nodes at depth 2', () => {
     const related = graph.findRelated('a', { depth: 2 });
 
-    assert.ok(related.some(n => n.id === 'b'));
-    assert.ok(related.some(n => n.id === 'c'));
+    assert.ok(related.some((n) => n.id === 'b'));
+    assert.ok(related.some((n) => n.id === 'c'));
   });
 
   test('should include relationship type', () => {
     const related = graph.findRelated('a');
 
-    const bNode = related.find(n => n.id === 'b');
+    const bNode = related.find((n) => n.id === 'b');
     assert.strictEqual(bNode.relationship, 'imports');
   });
 
   test('should include distance', () => {
     const related = graph.findRelated('a', { depth: 3 });
 
-    const bNode = related.find(n => n.id === 'b');
-    const cNode = related.find(n => n.id === 'c');
+    const bNode = related.find((n) => n.id === 'b');
+    const cNode = related.find((n) => n.id === 'c');
 
     assert.ok(bNode.distance < cNode.distance);
   });
@@ -608,7 +608,7 @@ describe('SemanticKnowledgeGraph - Get Architecture Overview', () => {
     const overview = graph.getArchitectureOverview();
 
     assert.ok(overview.complexNodes.length >= 1);
-    assert.ok(overview.complexNodes.some(n => n.id === 'complex'));
+    assert.ok(overview.complexNodes.some((n) => n.id === 'complex'));
   });
 
   test('should identify core abstractions', () => {
@@ -618,7 +618,7 @@ describe('SemanticKnowledgeGraph - Get Architecture Overview', () => {
     graph.addSemanticNode('c', { name: 'c.js' });
 
     // Make util highly connected
-    ['a', 'b', 'c'].forEach(id => {
+    ['a', 'b', 'c'].forEach((id) => {
       graph.addSemanticEdge({ source: id, target: 'util' });
       graph.addSemanticEdge({ source: 'util', target: id });
     });
@@ -626,7 +626,7 @@ describe('SemanticKnowledgeGraph - Get Architecture Overview', () => {
     const overview = graph.getArchitectureOverview();
 
     assert.ok(overview.coreAbstractions.length >= 1);
-    assert.ok(overview.coreAbstractions.some(n => n.id === 'util'));
+    assert.ok(overview.coreAbstractions.some((n) => n.id === 'util'));
   });
 });
 
@@ -642,7 +642,7 @@ describe('SemanticKnowledgeGraph - Cypher Export', () => {
       name: 'test.js',
       type: 'file',
       path: '/test.js',
-      loc: 100
+      loc: 100,
     });
 
     const cypher = graph.toCypher();

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { recommendPattern } from '../architect/decision-tree.js';
@@ -13,14 +15,14 @@ export function registerArchitectCommand(program) {
           type: 'list',
           name: 'teamSize',
           message: 'What is your team size?',
-          choices: ['1-3', '3-10', '10-50', '50+']
+          choices: ['1-3', '3-10', '10-50', '50+'],
         },
         {
           type: 'list',
           name: 'traffic',
           message: 'What is your traffic profile?',
-          choices: ['steady', 'spiky', 'unknown']
-        }
+          choices: ['steady', 'spiky', 'unknown'],
+        },
       ]);
 
       const recommendation = recommendPattern(answers);

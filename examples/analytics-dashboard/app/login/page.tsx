@@ -1,29 +1,35 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { signIn } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
-import { Button } from '@/app/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
-import { Input } from '@/app/components/ui/input'
-import { Label } from '@/app/components/ui/label'
-import { AlertCircle } from 'lucide-react'
+import React from 'react';
+import { signIn } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
+import { Button } from '@/app/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/app/components/ui/card';
+import { Input } from '@/app/components/ui/input';
+import { Label } from '@/app/components/ui/label';
+import { AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
-  const error = searchParams.get('error')
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const error = searchParams.get('error');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
     await signIn('credentials', {
       email: formData.get('email'),
       password: formData.get('password'),
       callbackUrl,
-    })
-  }
+    });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -78,7 +84,7 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 // Icon component for login page
@@ -101,5 +107,5 @@ function BarChart3(props: React.SVGProps<SVGSVGElement>) {
       <path d="M13 17V5" />
       <path d="M8 17v-3" />
     </svg>
-  )
+  );
 }

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
@@ -6,7 +8,11 @@ import path from 'path';
 import os from 'os';
 import { spawn } from 'child_process';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
-import { getSystemPrompt, generateUserPrompt, normalizeTemplate } from '../templates/prompts/generate-plan.js';
+import {
+  getSystemPrompt,
+  generateUserPrompt,
+  normalizeTemplate,
+} from '../templates/prompts/generate-plan.js';
 import { validateSafePath } from '../utils/validation.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';
@@ -56,7 +62,9 @@ export function registerVoiceCommand(program) {
 
         const sttProvider = options.provider?.toLowerCase();
         if (sttProvider && sttProvider !== 'whisper') {
-          printError(`Unsupported STT provider "${options.provider}". Only "whisper" is supported.`);
+          printError(
+            `Unsupported STT provider "${options.provider}". Only "whisper" is supported.`
+          );
           return;
         }
 
@@ -78,8 +86,9 @@ export function registerVoiceCommand(program) {
                 type: 'input',
                 name: 'idea',
                 message: 'Describe what you want to build:',
-                validate: input => input.trim().length > 5 || 'Please provide a clearer description',
-              }
+                validate: (input) =>
+                  input.trim().length > 5 || 'Please provide a clearer description',
+              },
             ]);
             transcribedText = answers.idea;
           } else {
@@ -108,7 +117,7 @@ export function registerVoiceCommand(program) {
                   name: 'confirm',
                   message: 'Use this transcription?',
                   default: true,
-                }
+                },
               ]);
 
               if (!confirm) {
@@ -118,8 +127,9 @@ export function registerVoiceCommand(program) {
                     name: 'edited',
                     message: 'Edit your idea:',
                     default: transcribedText,
-                    validate: input => input.trim().length > 5 || 'Please provide a clearer description',
-                  }
+                    validate: (input) =>
+                      input.trim().length > 5 || 'Please provide a clearer description',
+                  },
                 ]);
                 transcribedText = edited;
               }
@@ -134,69 +144,71 @@ export function registerVoiceCommand(program) {
         }
 
         if (!transcribedText) {
-            printError('No input detected.');
-            return;
+          printError('No input detected.');
+          return;
         }
 
         // 2. Planning Phase
         if (options.plan !== false) {
-            const aiProviderId = options.aiProvider || getDefaultProvider();
-            if (!aiProviderId) {
-                printWarning('No AI provider configured for plan generation.');
-                printInfo('   Skipping plan generation. Here is your transcription:');
-                printInfo(`   ${transcribedText}`);
-                return;
-            }
+          const aiProviderId = options.aiProvider || getDefaultProvider();
+          if (!aiProviderId) {
+            printWarning('No AI provider configured for plan generation.');
+            printInfo('   Skipping plan generation. Here is your transcription:');
+            printInfo(`   ${transcribedText}`);
+            return;
+          }
 
-            let template = templateSelection || 'full';
-            if (mode === 'interactive' && !templateSelection) {
-              const answer = await inquirer.prompt([
-                {
-                  type: 'list',
-                  name: 'template',
-                  message: 'Choose plan template:',
-                  choices: [
-                    { name: TEMPLATE_LABELS.lite, value: 'lite' },
-                    { name: TEMPLATE_LABELS.full, value: 'full' },
-                    { name: TEMPLATE_LABELS.enterprise, value: 'enterprise' },
-                  ],
-                  default: 'full',
-                }
-              ]);
-              template = answer.template;
-            }
+          let template = templateSelection || 'full';
+          if (mode === 'interactive' && !templateSelection) {
+            const answer = await inquirer.prompt([
+              {
+                type: 'list',
+                name: 'template',
+                message: 'Choose plan template:',
+                choices: [
+                  { name: TEMPLATE_LABELS.lite, value: 'lite' },
+                  { name: TEMPLATE_LABELS.full, value: 'full' },
+                  { name: TEMPLATE_LABELS.enterprise, value: 'enterprise' },
+                ],
+                default: 'full',
+              },
+            ]);
+            template = answer.template;
+          }
 
-            const outputValidation = validateSafePath(options.output, 'Output file');
-            if (outputValidation !== true) {
-              printError(outputValidation);
-              return;
-            }
+          const outputValidation = validateSafePath(options.output, 'Output file');
+          if (outputValidation !== true) {
+            printError(outputValidation);
+            return;
+          }
 
-            const spinner = ora('Manifesting reality (Generating Plan)...').start();
-            try {
-                const provider = createProvider(aiProviderId, {
-                  maxTokens: TEMPLATE_TOKEN_HINTS[template] || 16000,
-                });
-                const result = await provider.generate(
-                  getSystemPrompt(template),
-                  generateUserPrompt(transcribedText, template)
-                );
-                const planContent = result.content;
+          const spinner = ora('Manifesting reality (Generating Plan)...').start();
+          try {
+            const provider = createProvider(aiProviderId, {
+              maxTokens: TEMPLATE_TOKEN_HINTS[template] || 16000,
+            });
+            const result = await provider.generate(
+              getSystemPrompt(template),
+              generateUserPrompt(transcribedText, template)
+            );
+            const planContent = result.content;
 
-                const outputPath = path.resolve(options.output);
-                await fs.mkdir(path.dirname(outputPath), { recursive: true });
-                await fs.writeFile(outputPath, planContent);
+            const outputPath = path.resolve(options.output);
+            await fs.mkdir(path.dirname(outputPath), { recursive: true });
+            await fs.writeFile(outputPath, planContent);
 
-                spinner.succeed(
-                  chalk.green(`Plan successfully generated (${TEMPLATE_LABELS[template]}) and saved to ${options.output}!`)
-                );
-            } catch (error) {
-                spinner.fail('Plan generation failed');
-                printError(error.message);
-            }
+            spinner.succeed(
+              chalk.green(
+                `Plan successfully generated (${TEMPLATE_LABELS[template]}) and saved to ${options.output}!`
+              )
+            );
+          } catch (error) {
+            spinner.fail('Plan generation failed');
+            printError(error.message);
+          }
         } else {
-            printSuccess('Transcription ready:');
-            printInfo(`${transcribedText}`);
+          printSuccess('Transcription ready:');
+          printInfo(`${transcribedText}`);
         }
 
         printInfo(chalk.bold('\nNext steps:'));
@@ -207,7 +219,6 @@ export function registerVoiceCommand(program) {
           printInfo('  1. Use your transcription to refine the idea');
           printInfo(`  2. Generate a plan: ultra-dex voice "${transcribedText}"`);
         }
-
       } catch (error) {
         printError('\n❌ Error:', error.message);
         process.exit(1);
@@ -231,47 +242,47 @@ function normalizeModeInput(input) {
 }
 
 async function recordAudio(options) {
-    const tempDir = os.tmpdir();
-    const outputFile = path.join(tempDir, `ultra-dex-voice-${Date.now()}.wav`);
-    
-    return new Promise((resolve, reject) => {
-        let recorder;
-        if (process.platform === 'darwin') {
-            recorder = spawn('afrecord', ['-q', '-f', 'WAVE', '-d', outputFile]);
-        } else if (process.platform === 'linux') {
-            recorder = spawn('arecord', ['-f', 'cd', '-t', 'wav', outputFile]);
-        } else {
-            console.log(chalk.yellow('⚠️ Recording not supported on this OS. Please use text input.'));
-            return resolve(null);
-        }
+  const tempDir = os.tmpdir();
+  const outputFile = path.join(tempDir, `ultra-dex-voice-${Date.now()}.wav`);
 
-        console.log(chalk.red('🔴 Recording... (Press ENTER to stop)'));
+  return new Promise((resolve, reject) => {
+    let recorder;
+    if (process.platform === 'darwin') {
+      recorder = spawn('afrecord', ['-q', '-f', 'WAVE', '-d', outputFile]);
+    } else if (process.platform === 'linux') {
+      recorder = spawn('arecord', ['-f', 'cd', '-t', 'wav', outputFile]);
+    } else {
+      console.log(chalk.yellow('⚠️ Recording not supported on this OS. Please use text input.'));
+      return resolve(null);
+    }
 
-        process.stdin.once('data', () => {
-            recorder.kill('SIGTERM');
-        });
+    console.log(chalk.red('🔴 Recording... (Press ENTER to stop)'));
 
-        recorder.on('close', (code) => {
-            if (code === 0 || code === null) resolve({ path: outputFile });
-            else reject(new Error(`Recording failed (code ${code})`));
-        });
+    process.stdin.once('data', () => {
+      recorder.kill('SIGTERM');
     });
+
+    recorder.on('close', (code) => {
+      if (code === 0 || code === null) resolve({ path: outputFile });
+      else reject(new Error(`Recording failed (code ${code})`));
+    });
+  });
 }
 
 async function transcribeAudio(audioPath, apiKey, language) {
-    const audioData = await fs.readFile(audioPath);
-    const formData = new FormData();
-    formData.append('file', new Blob([audioData], { type: 'audio/wav' }), 'audio.wav');
-    formData.append('model', 'whisper-1');
-    formData.append('language', language);
-    
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${apiKey}` },
-        body: formData,
-    });
+  const audioData = await fs.readFile(audioPath);
+  const formData = new FormData();
+  formData.append('file', new Blob([audioData], { type: 'audio/wav' }), 'audio.wav');
+  formData.append('model', 'whisper-1');
+  formData.append('language', language);
 
-    if (!response.ok) throw new Error(`Whisper API error: ${await response.text()}`);
-    const data = await response.json();
-    return data.text;
+  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: formData,
+  });
+
+  if (!response.ok) throw new Error(`Whisper API error: ${await response.text()}`);
+  const data = await response.json();
+  return data.text;
 }

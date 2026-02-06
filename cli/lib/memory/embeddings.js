@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Lightweight Embeddings (local fallback)
  */
@@ -20,9 +22,9 @@ export function embedText(text = '', dims = 128) {
   }
 
   const norm = Math.sqrt(vector.reduce((sum, v) => sum + v * v, 0)) || 1;
-  return vector.map(v => v / norm);
+  return vector.map((v) => v / norm);
 }
 
 export default {
-  embedText
+  embedText,
 };

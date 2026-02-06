@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Advanced Error Recovery System
  * Provides comprehensive error handling, recovery, and circuit breaker patterns
@@ -7,9 +9,9 @@ import { monitoring } from './monitoring.js';
 
 // Circuit breaker states
 const CIRCUIT_STATES = {
-  CLOSED: 'closed',      // Normal operation
-  OPEN: 'open',          // Tripped, requests blocked
-  HALF_OPEN: 'half-open' // Testing if service recovered
+  CLOSED: 'closed', // Normal operation
+  OPEN: 'open', // Tripped, requests blocked
+  HALF_OPEN: 'half-open', // Testing if service recovered
 };
 
 // Error recovery strategies
@@ -18,7 +20,7 @@ const RECOVERY_STRATEGIES = {
   FALLBACK: 'fallback',
   CIRCUIT_BREAKER: 'circuit-breaker',
   TIMEOUT: 'timeout',
-  DEGRADED_MODE: 'degraded-mode'
+  DEGRADED_MODE: 'degraded-mode',
 };
 
 class CircuitBreaker {
@@ -39,12 +41,12 @@ class CircuitBreaker {
         this.state = CIRCUIT_STATES.HALF_OPEN;
         monitoring.info(`Circuit breaker ${this.name} entering half-open state`, {
           circuit: this.name,
-          state: this.state
+          state: this.state,
         });
       } else {
         monitoring.warn(`Circuit breaker ${this.name} is open, rejecting request`, {
           circuit: this.name,
-          state: this.state
+          state: this.state,
         });
         throw new Error(`Circuit breaker ${this.name} is open`);
       }
@@ -52,15 +54,15 @@ class CircuitBreaker {
 
     try {
       const result = await fn(...args);
-      
+
       if (this.state === CIRCUIT_STATES.HALF_OPEN) {
         this.close(); // Success in half-open state closes the circuit
         monitoring.info(`Circuit breaker ${this.name} closed after successful call`, {
           circuit: this.name,
-          state: this.state
+          state: this.state,
         });
       }
-      
+
       return result;
     } catch (error) {
       this.onFailure(error);
@@ -78,7 +80,7 @@ class CircuitBreaker {
         circuit: this.name,
         state: this.state,
         failureCount: this.failureCount,
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -109,7 +111,7 @@ class CircuitBreaker {
       threshold: this.failureThreshold,
       lastFailureTime: this.lastFailureTime,
       nextAttemptTime: this.nextAttemptTime,
-      canTry: this.state === CIRCUIT_STATES.CLOSED || Date.now() >= this.nextAttemptTime
+      canTry: this.state === CIRCUIT_STATES.CLOSED || Date.now() >= this.nextAttemptTime,
     };
   }
 }
@@ -130,7 +132,7 @@ class ErrorRecoveryManager {
   registerCircuitBreaker(name, options = {}) {
     const circuitBreaker = new CircuitBreaker({
       name,
-      ...options
+      ...options,
     });
     this.circuitBreakers.set(name, circuitBreaker);
     return circuitBreaker;
@@ -163,7 +165,7 @@ class ErrorRecoveryManager {
       fallback: options.fallback,
       timeout: options.timeout || 30000,
       circuitBreaker: options.circuitBreaker !== false,
-      ...options
+      ...options,
     };
 
     let lastError = null;
@@ -175,7 +177,7 @@ class ErrorRecoveryManager {
       if (circuitBreaker && circuitBreaker.getStatus().state === CIRCUIT_STATES.OPEN) {
         monitoring.warn(`Operation blocked by open circuit breaker: ${serviceName}`, {
           service: serviceName,
-          strategy: recoveryOptions.strategy
+          strategy: recoveryOptions.strategy,
         });
 
         // Try fallback if available
@@ -185,7 +187,7 @@ class ErrorRecoveryManager {
             const result = await fallback();
             monitoring.info(`Fallback executed for ${serviceName}`, {
               service: serviceName,
-              strategy: 'fallback'
+              strategy: 'fallback',
             });
             return result;
           } catch (fallbackError) {
@@ -216,12 +218,12 @@ class ErrorRecoveryManager {
 
         // Record success
         this.recordOperation(serviceName, 'success', Date.now() - startTime);
-        
+
         return result;
       } catch (error) {
         lastError = error;
         retryCount++;
-        
+
         // Record failure
         this.recordOperation(serviceName, 'failure', Date.now() - startTime, error);
 
@@ -233,16 +235,19 @@ class ErrorRecoveryManager {
 
         // Check if we should continue retrying
         if (retryCount <= recoveryOptions.maxRetries) {
-          const delay = recoveryOptions.exponentialBackoff 
+          const delay = recoveryOptions.exponentialBackoff
             ? recoveryOptions.retryDelay * Math.pow(2, retryCount - 1)
             : recoveryOptions.retryDelay;
 
-          monitoring.warn(`Operation failed, retrying (${retryCount}/${recoveryOptions.maxRetries}): ${serviceName}`, {
-            service: serviceName,
-            retryCount,
-            error: error.message,
-            delay
-          });
+          monitoring.warn(
+            `Operation failed, retrying (${retryCount}/${recoveryOptions.maxRetries}): ${serviceName}`,
+            {
+              service: serviceName,
+              retryCount,
+              error: error.message,
+              delay,
+            }
+          );
 
           await this.sleep(delay);
         }
@@ -256,14 +261,14 @@ class ErrorRecoveryManager {
         const result = await fallback();
         monitoring.info(`Fallback executed after retries failed: ${serviceName}`, {
           service: serviceName,
-          retries: retryCount - 1
+          retries: retryCount - 1,
         });
         return result;
       } catch (fallbackError) {
         monitoring.error(`Both operation and fallback failed: ${serviceName}`, {
           service: serviceName,
           originalError: lastError.message,
-          fallbackError: fallbackError.message
+          fallbackError: fallbackError.message,
         });
       }
     }
@@ -279,12 +284,12 @@ class ErrorRecoveryManager {
       return await this.executeWithRecovery(serviceName, operation, {
         strategy: RECOVERY_STRATEGIES.DEGRADED_MODE,
         maxRetries: 1,
-        fallback: degradedOperation
+        fallback: degradedOperation,
       });
     } catch (error) {
       monitoring.error(`Degraded mode operation failed: ${serviceName}`, {
         service: serviceName,
-        error: error.message
+        error: error.message,
       });
       throw error;
     }
@@ -316,7 +321,7 @@ class ErrorRecoveryManager {
     if (circuitBreaker) {
       circuitBreaker.reset();
       monitoring.info(`Circuit breaker reset: ${serviceName}`, {
-        service: serviceName
+        service: serviceName,
       });
     }
   }
@@ -328,12 +333,12 @@ class ErrorRecoveryManager {
     if (degraded) {
       this.degradedServices.add(serviceName);
       monitoring.warn(`Service set to degraded mode: ${serviceName}`, {
-        service: serviceName
+        service: serviceName,
       });
     } else {
       this.degradedServices.delete(serviceName);
       monitoring.info(`Service restored from degraded mode: ${serviceName}`, {
-        service: serviceName
+        service: serviceName,
       });
     }
   }
@@ -354,11 +359,11 @@ class ErrorRecoveryManager {
       status,
       duration,
       timestamp: new Date().toISOString(),
-      error: error ? error.message : null
+      error: error ? error.message : null,
     };
 
     this.errorHistory.push(record);
-    
+
     // Keep only recent history
     if (this.errorHistory.length > this.maxErrorHistory) {
       this.errorHistory = this.errorHistory.slice(-this.maxErrorHistory);
@@ -368,7 +373,7 @@ class ErrorRecoveryManager {
     if (status === 'failure') {
       monitoring.incrementCounter('errors');
     }
-    
+
     monitoring.recordPerformance(`service.${serviceName}`, duration, { status });
   }
 
@@ -377,7 +382,7 @@ class ErrorRecoveryManager {
    */
   getErrorHistory(serviceName = null) {
     if (serviceName) {
-      return this.errorHistory.filter(record => record.serviceName === serviceName);
+      return this.errorHistory.filter((record) => record.serviceName === serviceName);
     }
     return [...this.errorHistory];
   }
@@ -386,25 +391,23 @@ class ErrorRecoveryManager {
    * Get error statistics
    */
   getErrorStatistics(serviceName = null) {
-    const history = serviceName ? 
-      this.getErrorHistory(serviceName) : 
-      this.errorHistory;
+    const history = serviceName ? this.getErrorHistory(serviceName) : this.errorHistory;
 
     const total = history.length;
-    const failures = history.filter(r => r.status === 'failure').length;
+    const failures = history.filter((r) => r.status === 'failure').length;
     const successRate = total > 0 ? ((total - failures) / total) * 100 : 100;
 
     // Calculate average duration
-    const durations = history.map(r => r.duration);
-    const avgDuration = durations.length > 0 ? 
-      durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+    const durations = history.map((r) => r.duration);
+    const avgDuration =
+      durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
 
     return {
       total,
       failures,
       successRate: successRate.toFixed(2) + '%',
       averageDuration: avgDuration,
-      errorRate: total > 0 ? ((failures / total) * 100).toFixed(2) + '%' : '0.00%'
+      errorRate: total > 0 ? ((failures / total) * 100).toFixed(2) + '%' : '0.00%',
     };
   }
 
@@ -412,7 +415,7 @@ class ErrorRecoveryManager {
    * Sleep utility
    */
   sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -427,9 +430,9 @@ class ErrorRecoveryManager {
     return {
       circuitBreakers: circuitStatus,
       degradedServices: Array.from(this.degradedServices),
-      totalErrors: this.errorHistory.filter(r => r.status === 'failure').length,
+      totalErrors: this.errorHistory.filter((r) => r.status === 'failure').length,
       totalOperations: this.errorHistory.length,
-      errorHistoryCount: this.errorHistory.length
+      errorHistoryCount: this.errorHistory.length,
     };
   }
 
@@ -440,7 +443,7 @@ class ErrorRecoveryManager {
     for (const [, circuit] of this.circuitBreakers) {
       circuit.reset();
     }
-    
+
     this.degradedServices.clear();
     monitoring.warn('Emergency reset performed - all circuits reset and degraded mode cleared');
   }
@@ -453,19 +456,19 @@ export const errorRecovery = new ErrorRecoveryManager();
 errorRecovery.registerCircuitBreaker('mcp-server', {
   failureThreshold: 3,
   timeout: 60000,
-  resetTimeout: 30000
+  resetTimeout: 30000,
 });
 
 errorRecovery.registerCircuitBreaker('ai-provider', {
   failureThreshold: 5,
   timeout: 120000,
-  resetTimeout: 60000
+  resetTimeout: 60000,
 });
 
 errorRecovery.registerCircuitBreaker('file-operations', {
   failureThreshold: 10,
   timeout: 30000,
-  resetTimeout: 15000
+  resetTimeout: 15000,
 });
 
 // Export for use in other modules

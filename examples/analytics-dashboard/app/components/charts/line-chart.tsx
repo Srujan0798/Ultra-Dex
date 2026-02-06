@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import React from 'react'
+import React from 'react';
 import {
   LineChart,
   Line,
@@ -10,23 +10,23 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card'
+} from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 
 interface LineChartComponentProps {
-  title: string
+  title: string;
   data: Array<{
-    name: string
-    value: number
-    [key: string]: number | string
-  }>
-  dataKey?: string
+    name: string;
+    value: number;
+    [key: string]: number | string;
+  }>;
+  dataKey?: string;
   lines?: Array<{
-    dataKey: string
-    color: string
-    name: string
-  }>
-  height?: number
+    dataKey: string;
+    color: string;
+    name: string;
+  }>;
+  height?: number;
 }
 
 export function LineChartComponent({
@@ -36,7 +36,7 @@ export function LineChartComponent({
   lines,
   height = 300,
 }: LineChartComponentProps) {
-  const chartLines = lines || [{ dataKey, color: '#3b82f6', name: 'Value' }]
+  const chartLines = lines || [{ dataKey, color: '#3b82f6', name: 'Value' }];
 
   return (
     <Card>
@@ -52,10 +52,7 @@ export function LineChartComponent({
               tick={{ fill: 'currentColor' }}
               tickLine={{ stroke: 'currentColor' }}
             />
-            <YAxis
-              tick={{ fill: 'currentColor' }}
-              tickLine={{ stroke: 'currentColor' }}
-            />
+            <YAxis tick={{ fill: 'currentColor' }} tickLine={{ stroke: 'currentColor' }} />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'hsl(var(--card))',
@@ -80,5 +77,5 @@ export function LineChartComponent({
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

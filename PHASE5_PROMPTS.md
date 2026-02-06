@@ -119,7 +119,7 @@ npx ultra-dex serve
 
 ### PROMPT 3: Persistent Agent Sessions - Multi-Day Agents (4 days)
 
-```
+````
 ## Task: Implement Persistent Agent Sessions
 
 **Files to create:**
@@ -194,18 +194,21 @@ CREATE TABLE checkpoints (
   created_at DATETIME,
   FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
-```
+````
 
 **Usage:**
 npx ultra-dex session start "Build complete auth system with OAuth"
+
 # Returns: Session abc123 started. Running in background.
 
 npx ultra-dex session status
+
 # Shows: abc123 | running | 45% | Step 23/50
 
 npx ultra-dex session resume abc123
 
 **Commit:** "feat: Add persistent agent sessions with checkpoint/resume"
+
 ```
 
 ---
@@ -213,9 +216,11 @@ npx ultra-dex session resume abc123
 ### PROMPT 4: LangGraph State Visualization (2 days)
 
 ```
+
 ## Task: Add LangGraph State Graph Visualization
 
 **Files to create:**
+
 - cli/lib/graph/visualizer.js (NEW)
 - cli/lib/graph/state-machine.js (NEW)
 - dashboard/src/components/StateGraph.tsx (NEW)
@@ -253,6 +258,7 @@ npx ultra-dex session resume abc123
    - `ultra-dex graph --live` - Real-time terminal view
 
 **State Graph Example:**
+
 ```mermaid
 stateDiagram-v2
     [*] --> Init
@@ -267,6 +273,7 @@ stateDiagram-v2
 ```
 
 **Commit:** "feat: Add LangGraph state visualization with dashboard"
+
 ```
 
 ---
@@ -274,9 +281,11 @@ stateDiagram-v2
 ### PROMPT 5: Remote MCP Server (3 days)
 
 ```
+
 ## Task: Implement Remote MCP Server Support
 
 **Files to create:**
+
 - cli/lib/mcp/remote/server.js (NEW)
 - cli/lib/mcp/remote/client.js (NEW)
 - cli/lib/mcp/remote/auth.js (NEW)
@@ -323,16 +332,21 @@ stateDiagram-v2
    - ULTRA_DEX_REMOTE_AUTO_SYNC (true/false)
 
 **Usage:**
+
 # Start your own remote server
+
 npx ultra-dex mcp:remote start --port 4000
 
 # Connect team members
+
 npx ultra-dex mcp:remote connect wss://mcp.ultra-dex.io
-# Enter API key: ****
+
+# Enter API key: \*\*\*\*
 
 # Now context syncs across all team members
 
 **Commit:** "feat: Add remote MCP server with team sync"
+
 ```
 
 ---
@@ -344,9 +358,11 @@ npx ultra-dex mcp:remote connect wss://mcp.ultra-dex.io
 ### PROMPT 6: Agent Marketplace (1 week)
 
 ```
+
 ## Task: Create Agent Marketplace
 
 **Files to create:**
+
 - cli/lib/marketplace/registry.js (enhance)
 - cli/lib/marketplace/publish.js (NEW)
 - cli/lib/marketplace/search.js (NEW)
@@ -374,6 +390,7 @@ npx ultra-dex mcp:remote connect wss://mcp.ultra-dex.io
    - Dependency resolution
 
 4. Create agent manifest (manifest.json):
+
 ```json
 {
   "name": "@srujan/auth-agent",
@@ -399,6 +416,7 @@ npx ultra-dex mcp:remote connect wss://mcp.ultra-dex.io
    - `ultra-dex market info <name>` - Show details
 
 **Commit:** "feat: Add agent marketplace with publish/install"
+
 ```
 
 ---
@@ -406,9 +424,11 @@ npx ultra-dex mcp:remote connect wss://mcp.ultra-dex.io
 ### PROMPT 7: AI Code Review Bot (1 week)
 
 ```
+
 ## Task: Create GitHub/GitLab Code Review Bot
 
 **Files to create:**
+
 - cli/lib/bots/code-review/index.js (NEW)
 - cli/lib/bots/code-review/github.js (NEW)
 - cli/lib/bots/code-review/gitlab.js (NEW)
@@ -455,29 +475,36 @@ npx ultra-dex mcp:remote connect wss://mcp.ultra-dex.io
    - `ultra-dex bot status` - Show bot status
 
 **Environment Variables:**
+
 - ULTRA_DEX_GITHUB_TOKEN
 - ULTRA_DEX_GITHUB_WEBHOOK_SECRET
 - ULTRA_DEX_GITLAB_TOKEN
 
 **Example Review Comment:**
-```markdown
+
+````markdown
 ## 🤖 Ultra-Dex Code Review
 
 ### Summary: 8.5/10
 
 ### 🔴 Critical (1)
+
 - **Line 45**: SQL injection vulnerability in user query
   ```diff
   - db.query(`SELECT * FROM users WHERE id = ${userId}`)
   + db.query('SELECT * FROM users WHERE id = ?', [userId])
   ```
+````
 
 ### 🟡 Warnings (2)
+
 - **Line 23**: Missing error handling for async operation
 - **Line 67**: Unused import 'lodash'
 
 ### 🟢 Suggestions (1)
+
 - Consider adding JSDoc comments to exported functions
+
 ```
 
 **Commit:** "feat: Add AI code review bot for GitHub/GitLab"
@@ -548,7 +575,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 
 ### PROMPT 9: Agent Commerce & Billing (1 week)
 
-```
+````
 ## Task: Implement Agent Commerce System
 
 **Files to create:**
@@ -605,9 +632,10 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
     }
   }
 }
-```
+````
 
 **Commit:** "feat: Add agent commerce with budget management"
+
 ```
 
 ---
@@ -615,9 +643,11 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 ### PROMPT 10: Enterprise SSO Integration (1 week)
 
 ```
+
 ## Task: Implement Enterprise SSO
 
 **Files to create:**
+
 - cli/lib/auth/sso/index.js (NEW)
 - cli/lib/auth/sso/saml.js (NEW)
 - cli/lib/auth/sso/oidc.js (NEW)
@@ -658,6 +688,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
    - `ultra-dex auth sso status` - Check session
 
 **Config (ultra-dex.config.json):**
+
 ```json
 {
   "sso": {
@@ -670,6 +701,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 ```
 
 **Commit:** "feat: Add enterprise SSO with SAML/OIDC"
+
 ```
 
 ---
@@ -681,9 +713,11 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 ### PROMPT 11: Cloud IDE (Browser-based) (3 weeks)
 
 ```
+
 ## Task: Create Browser-based Cloud IDE
 
 **Files to create:**
+
 - cloud/ide/ (NEW directory - Vite + React project)
 - cloud/ide/src/components/Editor.tsx
 - cloud/ide/src/components/Terminal.tsx
@@ -725,6 +759,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
    - File system operations
 
 **Tech Stack:**
+
 - Frontend: Vite + React + TypeScript
 - Editor: Monaco Editor
 - Terminal: xterm.js
@@ -732,6 +767,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 - State: Zustand
 
 **Commit:** "feat: Add browser-based Cloud IDE"
+
 ```
 
 ---
@@ -739,9 +775,11 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 ### PROMPT 12: Mobile App (React Native) (2 weeks)
 
 ```
+
 ## Task: Create Ultra-Dex Mobile App
 
 **Files to create:**
+
 - mobile/ (NEW directory - Expo project)
 - mobile/src/screens/Dashboard.tsx
 - mobile/src/screens/Projects.tsx
@@ -779,6 +817,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
    - Android
 
 **Commit:** "feat: Add React Native mobile app"
+
 ```
 
 ---
@@ -786,9 +825,11 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 ### PROMPT 13: Agent Training Studio (3 weeks)
 
 ```
+
 ## Task: Create Agent Training Interface
 
 **Files to create:**
+
 - cli/lib/training/studio.js (NEW)
 - cli/lib/training/dataset.js (NEW)
 - cli/lib/training/fine-tune.js (NEW)
@@ -822,6 +863,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
    - Deployment controls
 
 **CLI commands:**
+
 - `ultra-dex train record` - Start recording
 - `ultra-dex train export` - Export dataset
 - `ultra-dex train start` - Start training
@@ -829,6 +871,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 - `ultra-dex train deploy` - Deploy model
 
 **Commit:** "feat: Add agent training studio"
+
 ```
 
 ---
@@ -836,9 +879,11 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 ### PROMPT 14: White-Label Solution (2 weeks)
 
 ```
+
 ## Task: Create White-Label Configuration
 
 **Files to create:**
+
 - cli/lib/whitelabel/config.js (NEW)
 - cli/lib/whitelabel/theme.js (NEW)
 - cli/lib/whitelabel/branding.js (NEW)
@@ -872,6 +917,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
    - Custom domain
 
 **Config (whitelabel.json):**
+
 ```json
 {
   "name": "MyCompany Dev",
@@ -886,6 +932,7 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 ```
 
 **Commit:** "feat: Add white-label solution"
+
 ```
 
 ---
@@ -893,9 +940,11 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 ### PROMPT 15: Context7 Documentation Integration
 
 ```
+
 ## Task: Integrate Context7 for Live Documentation
 
 **Files to create:**
+
 - cli/lib/docs/context7.js (NEW)
 - cli/lib/mcp/servers/context7.js (NEW)
 
@@ -926,9 +975,11 @@ npx ultra-dex exec "cargo test" --sandbox --runtime rust
 
 **Usage:**
 npx ultra-dex docs next
+
 # Fetches Next.js 15.2 docs based on your package.json
 
 **Commit:** "feat: Add Context7 live documentation integration"
+
 ```
 
 ---
@@ -958,3 +1009,4 @@ npx ultra-dex docs next
 **Total: ~10 weeks of work across all agents**
 
 *Copy any prompt above and paste to your agent!*
+```

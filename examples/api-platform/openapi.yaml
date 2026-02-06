@@ -3,35 +3,35 @@ info:
   title: API Platform
   description: |
     A production-ready API Platform template demonstrating modern API-first product development.
-    
+
     ## Authentication
-    
+
     This API uses API Key authentication. Include your API key in the `X-API-Key` header:
-    
+
     ```
     X-API-Key: pk_live_xxxxxxxxxxxx
     ```
-    
+
     ## Rate Limiting
-    
+
     API requests are rate limited based on your plan:
     - **Free**: 100 requests/hour
     - **Pro**: 1,000 requests/hour
     - **Enterprise**: 10,000 requests/hour
-    
+
     Rate limit headers are included in all responses:
     - `X-RateLimit-Limit`: Maximum requests allowed
     - `X-RateLimit-Remaining`: Requests remaining in current window
     - `X-RateLimit-Reset`: Unix timestamp when the window resets
-    
+
     ## Versioning
-    
+
     The API is versioned via URL path. Current versions:
     - `v1`: Stable version
     - `v2`: Latest version (may have breaking changes)
-    
+
     ## Webhooks
-    
+
     Register webhook endpoints to receive event notifications. Events include:
     - `resource.created`
     - `resource.updated`
@@ -131,7 +131,7 @@ paths:
                     $ref: '#/components/schemas/Pagination'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-    
+
     post:
       summary: Create API key
       description: Generate a new API key
@@ -183,7 +183,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-    
+
     delete:
       summary: Revoke API key
       description: Permanently revoke an API key
@@ -267,7 +267,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '429':
           $ref: '#/components/responses/RateLimitError'
-    
+
     post:
       summary: Create resource
       description: Create a new resource
@@ -321,7 +321,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-    
+
     patch:
       summary: Update resource
       description: Update an existing resource
@@ -352,7 +352,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-    
+
     delete:
       summary: Delete resource
       description: Permanently delete a resource
@@ -392,7 +392,7 @@ paths:
                       $ref: '#/components/schemas/WebhookEndpoint'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-    
+
     post:
       summary: Create webhook endpoint
       description: Register a new webhook endpoint
@@ -445,7 +445,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-    
+
     delete:
       summary: Delete webhook endpoint
       description: Remove a webhook endpoint
@@ -712,7 +712,14 @@ components:
           type: array
           items:
             type: string
-            enum: [resource.created, resource.updated, resource.deleted, api_key.created, api_key.deleted]
+            enum:
+              [
+                resource.created,
+                resource.updated,
+                resource.deleted,
+                api_key.created,
+                api_key.deleted,
+              ]
         secret:
           type: string
           description: Optional secret for webhook signature verification
@@ -838,7 +845,7 @@ components:
             error:
               code: unauthorized
               message: API key is missing or invalid
-    
+
     NotFoundError:
       description: Resource not found
       content:
@@ -849,7 +856,7 @@ components:
             error:
               code: not_found
               message: The requested resource was not found
-    
+
     ValidationError:
       description: Invalid request data
       content:
@@ -863,7 +870,7 @@ components:
               details:
                 - field: name
                   message: Name is required
-    
+
     RateLimitError:
       description: Rate limit exceeded
       headers:

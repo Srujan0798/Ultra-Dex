@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { orchestrate } from '../swarm/meta-orchestrator.js';
 
 export async function runGodMode(agent, task, options = {}) {

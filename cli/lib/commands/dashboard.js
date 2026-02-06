@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex dashboard command
  * Local web dashboard for monitoring Ultra-Dex projects (GOD MODE)
@@ -25,7 +27,7 @@ function addAction(type, message, agent = null) {
     timestamp: new Date().toISOString(),
     type,
     message,
-    agent
+    agent,
   });
   if (actionHistory.length > MAX_HISTORY) actionHistory.pop();
   sendToClients({ type: 'action', action: actionHistory[0] });
@@ -35,16 +37,18 @@ function sendToClients(data) {
   const payload = `data: ${JSON.stringify(data)}
 
 `;
-  clients.forEach(client => client.res.write(payload));
+  clients.forEach((client) => client.res.write(payload));
   broadcastWebSocketEvent(data.type || 'log', data);
 }
 
 async function getGitInfo() {
   try {
     const branch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
-    const lastCommit = execSync('git log -1 --format="%h %s" 2>/dev/null', { encoding: 'utf8' }).trim();
+    const lastCommit = execSync('git log -1 --format="%h %s" 2>/dev/null', {
+      encoding: 'utf8',
+    }).trim();
     const status = execSync('git status --porcelain 2>/dev/null', { encoding: 'utf8' });
-    const changedFiles = status.split('\n').filter(l => l.trim()).length;
+    const changedFiles = status.split('\n').filter((l) => l.trim()).length;
     return { branch, lastCommit, changedFiles };
   } catch {
     return { branch: 'unknown', lastCommit: 'N/A', changedFiles: 0 };
@@ -59,7 +63,7 @@ export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary
     last7d: 0,
     errorCount: 0,
     avgDurationMs: 0,
-    topCommands: []
+    topCommands: [],
   };
   const topCommand = usage.topCommands[0]?.name || 'n/a';
 
@@ -73,11 +77,13 @@ export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary
         <div style="color: #666">> avg runtime: ${usage.avgDurationMs}ms</div>
       </div>
   `;
-  const phasesHTML = state.phases.map(phase => {
-    const statusClass = phase.status;
-    const progress = (phase.steps.filter(s => s.status === 'completed').length / phase.steps.length) * 100;
-    
-    return `
+  const phasesHTML = state.phases
+    .map((phase) => {
+      const statusClass = phase.status;
+      const progress =
+        (phase.steps.filter((s) => s.status === 'completed').length / phase.steps.length) * 100;
+
+      return `
       <div class="card phase-card ${statusClass}">
         <div class="phase-header">
             <h3>${phase.name}</h3>
@@ -85,18 +91,25 @@ export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary
         </div>
         <div class="progress-mini"><div class="fill" style="width: ${progress}%"></div></div>
         <ul class="steps">
-          ${phase.steps.map(step => `
+          ${phase.steps
+            .map(
+              (step) => `
             <li class="${step.status}">
               <span class="dot"></span>
               ${step.task}
             </li>
-          `).join('')}
+          `
+            )
+            .join('')}
         </ul>
       </div>
     `;
-  }).join('');
+    })
+    .join('');
 
-  const agentsHTML = state.agents.registry.map(agent => `
+  const agentsHTML = state.agents.registry
+    .map(
+      (agent) => `
     <div class="agent-card" id="agent-${agent}">
       <div class="agent-header">
         <span class="agent-name">@${agent}</span>
@@ -109,12 +122,22 @@ export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary
         <button class="agent-btn logs" onclick="viewAgentLogs('${agent}')" title="View logs">📄 Logs</button>
       </div>
     </div>
-  `).join('');
+  `
+    )
+    .join('');
 
   const totalSteps = state.phases.reduce((sum, p) => sum + p.steps.length, 0);
-  const completedSteps = state.phases.reduce((sum, p) => sum + p.steps.filter(s => s.status === 'completed').length, 0);
+  const completedSteps = state.phases.reduce(
+    (sum, p) => sum + p.steps.filter((s) => s.status === 'completed').length,
+    0
+  );
   const alignmentScore = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
-  const scoreColor = alignmentScore >= 80 ? 'var(--success)' : alignmentScore >= 50 ? 'var(--warning)' : 'var(--danger)';
+  const scoreColor =
+    alignmentScore >= 80
+      ? 'var(--success)'
+      : alignmentScore >= 50
+        ? 'var(--warning)'
+        : 'var(--danger)';
 
   // Using string concatenation for client-side JS to avoid backtick hell
   return `<!DOCTYPE html>
@@ -125,16 +148,17 @@ export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* CSS Styles (omitted for brevity, same as before) */
-    :root { --bg: #09090b; --card: #18181b; --accent: #06b6d4; --text: #fafafa;
-      --text-dim: #a1a1aa; --success: #22c55e; --warning: #eab308;
-      --pending: #3f3f46; --danger: #ef4444; }
-    .light-theme { --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --text-dim: #64748b; --pending: #e2e8f0; }
+    :root { --bg: #05060a; --card: rgba(15, 23, 42, 0.6); --accent: #38bdf8; --accent-2: #a855f7;
+      --text: #e2e8f0; --text-dim: #94a3b8; --success: #22c55e; --warning: #f59e0b;
+      --pending: #334155; --danger: #f43f5e; }
+    .light-theme { --bg: #05060a; --card: rgba(15, 23, 42, 0.6); --text: #e2e8f0; --text-dim: #94a3b8; --pending: #334155; }
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui; padding: 2rem; }
+    body { background: radial-gradient(circle at top, rgba(56,189,248,0.15), transparent 45%), var(--bg);
+      color: var(--text); font-family: 'Inter', system-ui; padding: 2rem; }
     .header { margin-bottom: 2rem; border-left: 4px solid var(--accent); padding-left: 1.5rem; display: flex; justify-content: space-between; align-items: end; }
     .header h1 { font-size: 2.5rem; letter-spacing: -0.05em; text-transform: uppercase; }
     .dashboard-grid { display: grid; grid-template-columns: 350px 1fr 300px; gap: 1.5rem; }
-    .card { background: var(--card); border: 1px solid #27272a; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem; }
+    .card { background: var(--card); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem; backdrop-filter: blur(14px); }
     .phase-card.completed { border-color: var(--success); }
     .phase-card.in_progress { border-color: var(--accent); }
     .status-badge { font-size: 0.65rem; background: #27272a; padding: 2px 8px; border-radius: 4px; }
@@ -502,234 +526,269 @@ export function registerDashboardCommand(program) {
         try {
           const graph = await buildGraph();
           graphSummary = { nodes: graph.nodes.length, edges: graph.edges.length };
-          printSuccess(chalk.green(`✅ Neural Link Established: ${graph.nodes.length} nodes mapped.`));
+          printSuccess(
+            chalk.green(`✅ Neural Link Established: ${graph.nodes.length} nodes mapped.`)
+          );
         } catch (e) {
           printWarning(chalk.yellow('⚠️ Neural Link Warning: ' + e.message));
         }
 
-      const server = http.createServer(async (req, res) => {
-        // Handle SSE
-        if (req.url === '/events') {
-          res.writeHead(200, {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive'
-          });
-          const client = { res };
-          clients.add(client);
-          res.write(`data: ${JSON.stringify({ type: 'log', message: 'Connected to Ultra-Dex Kernel' })}\n\n`);
-          req.on('close', () => clients.delete(client));
-          return;
-        }
-
-        // Swarm Trigger
-        if (req.url === '/api/swarm' && req.method === 'POST') {
-          let body = '';
-          req.on('data', chunk => body += chunk.toString());
-          req.on('end', async () => {
-            try {
-              const { feature } = JSON.parse(body);
-              printInfo(chalk.magenta(`\n⚡ Dashboard Trigger: Starting Swarm for "${feature}"...`));
-
-              addAction('swarm', `Swarm started: ${feature}`, 'planner');
-              sendToClients({ type: 'log', message: `Swarm triggered: ${feature}`, level: 'info' });
-
-              const child = spawn('npx', ['ultra-dex', 'auto-implement', feature], {
-                stdio: 'inherit',
-                shell: true,
-                detached: true 
-              });
-              child.unref(); 
-
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true, message: 'Swarm initiated' }));
-            } catch (e) {
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: false, error: e.message }));
-            }
-          });
-          return;
-        }
-
-        // Autonomous Status Update
-        if (req.url === '/api/autonomous/status' && req.method === 'POST') {
-          let body = '';
-          req.on('data', chunk => body += chunk.toString());
-          req.on('end', () => {
-            try {
-              const statusData = JSON.parse(body);
-              sendToClients({ type: 'autonomous_update', data: statusData });
-              // Also log significant events
-              if (statusData.status === 'healing') {
-                addAction('healing_start', `Self-healing started: ${statusData.message}`, 'debugger');
-              } else if (statusData.status === 'fixed') {
-                addAction('healing_success', `Self-healing fixed issue`, 'debugger');
-              }
-              
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true }));
-            } catch (e) {
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: false, error: e.message }));
-            }
-          });
-          return;
-        }
-
-        // Log Endpoint
-        if (req.url === '/api/log' && req.method === 'POST') {
-          let body = '';
-          req.on('data', chunk => body += chunk.toString());
-          req.on('end', () => {
-            try {
-              const logData = JSON.parse(body);
-              sendToClients({ type: 'log', ...logData });
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true }));
-            } catch (e) {
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: false, error: e.message }));
-            }
-          });
-          return;
-        }
-
-        // Quick Actions
-        if (req.url.startsWith('/api/action/') && req.method === 'POST') {
-          const action = req.url.replace('/api/action/', '');
-          try {
-            const actionCommands = {
-              generate: ['npx', ['ultra-dex', 'generate']],
-              build: ['npx', ['ultra-dex', 'build']],
-              review: ['npx', ['ultra-dex', 'review']],
-              validate: ['npx', ['ultra-dex', 'validate']],
-              diff: ['npx', ['ultra-dex', 'diff', '--json']]
-            };
-            
-            if (!actionCommands[action]) throw new Error('Unknown action');
-            
-            addAction(action, `Started ${action}`, null);
-            sendToClients({ type: 'log', message: `Running ${action}...`, level: 'info' });
-            
-            const [cmd, args] = actionCommands[action];
-            const result = execSync(`${cmd} ${args.join(' ')}`, {
-              encoding: 'utf-8',
-              timeout: 60000,
-              maxBuffer: 1024 * 1024
-            });
-            
-            sendToClients({ type: 'log', message: `${action} completed`, level: 'success' });
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: true, output: result.slice(0, 1000) }));
-          } catch (e) {
-            sendToClients({ type: 'log', message: `${action} failed: ${e.message}`, level: 'error' });
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: e.message }));
-          }
-          return;
-        }
-
-        // Agent Control
-        if (req.url === '/api/agent/run' && req.method === 'POST') {
-          let body = '';
-          req.on('data', chunk => body += chunk.toString());
-          req.on('end', () => {
-            try {
-              const { agent, task } = JSON.parse(body);
-              printInfo(chalk.cyan(`▶️ Dashboard: Running agent @${agent}`));
-              addAction('agent_start', `Agent @${agent} started`, agent);
-              sendToClients({ type: 'agent_status', agent, status: 'working', activity: task || 'Processing...' });
-              
-              const agentProcess = spawn('npx', ['ultra-dex', 'run', agent, task || ''], {
-                stdio: 'pipe',
-                shell: true,
-                detached: true
-              });
-              
-              agentProcess.stdout?.on('data', (data) => {
-                sendToClients({ type: 'agent_log', agent, message: data.toString().slice(0, 200) });
-              });
-              
-              agentProcess.on('close', (code) => {
-                const status = code === 0 ? 'completed' : 'error';
-                sendToClients({ type: 'agent_status', agent, status, activity: code === 0 ? 'Completed' : 'Failed' });
-                addAction(status === 'completed' ? 'agent_complete' : 'agent_error', 
-                  `Agent @${agent} ${status}`, agent);
-              });
-              
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true, message: `Agent @${agent} started` }));
-            } catch (e) {
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: false, error: e.message }));
-            }
-          });
-          return;
-        }
-
-        if (req.url === '/api/agent/stop' && req.method === 'POST') {
-          let body = '';
-          req.on('data', chunk => body += chunk.toString());
-          req.on('end', () => {
-            try {
-              const { agent } = JSON.parse(body);
-              printInfo(chalk.yellow(`⏹ Dashboard: Stopping agent @${agent}`));
-              addAction('agent_stop', `Agent @${agent} stopped by user`, agent);
-              sendToClients({ type: 'agent_status', agent, status: 'idle', activity: 'Stopped' });
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true, message: `Agent @${agent} stopped` }));
-            } catch (e) {
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: false, error: e.message }));
-            }
-          });
-          return;
-        }
-
-        // Export Report
-        if (req.url === '/api/export') {
-          try {
-            const state = await loadState();
-            const gitInfo = await getGitInfo();
-            const usageSummary = await getUsageSummary({ windowDays: 7 });
-            const html = generateDashboardHTML(state, gitInfo, graphSummary, usageSummary);
+        const server = http.createServer(async (req, res) => {
+          // Handle SSE
+          if (req.url === '/events') {
             res.writeHead(200, {
-              'Content-Type': 'text/html',
-              'Content-Disposition': 'attachment; filename="ultra-dex-report.html"'
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              Connection: 'keep-alive',
             });
-            res.end(html);
-          } catch (e) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: e.message }));
+            const client = { res };
+            clients.add(client);
+            res.write(
+              `data: ${JSON.stringify({ type: 'log', message: 'Connected to Ultra-Dex Kernel' })}\n\n`
+            );
+            req.on('close', () => clients.delete(client));
+            return;
           }
-          return;
-        }
 
-        const state = await loadState();
-        const gitInfo = await getGitInfo();
-        const usageSummary = await getUsageSummary({ windowDays: 7 });
-        const html = generateDashboardHTML(state, gitInfo, graphSummary, usageSummary);
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(html);
-      });
+          // Swarm Trigger
+          if (req.url === '/api/swarm' && req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk.toString()));
+            req.on('end', async () => {
+              try {
+                const { feature } = JSON.parse(body);
+                printInfo(
+                  chalk.magenta(`\n⚡ Dashboard Trigger: Starting Swarm for "${feature}"...`)
+                );
 
-      startWebSocketServer({ server });
+                addAction('swarm', `Swarm started: ${feature}`, 'planner');
+                sendToClients({
+                  type: 'log',
+                  message: `Swarm triggered: ${feature}`,
+                  level: 'info',
+                });
 
-      server.listen(port, () => {
-        printSuccess(chalk.green(`✅ Dashboard active at http://localhost:${port}`));
-        printInfo(chalk.gray(`🔌 WebSocket active at ws://localhost:${port}`));
-      });
+                const child = spawn('npx', ['ultra-dex', 'auto-implement', feature], {
+                  stdio: 'inherit',
+                  shell: true,
+                  detached: true,
+                });
+                child.unref();
 
-      // Handle server errors
-      server.on('error', (err) => {
-        printError(chalk.red(`❌ Server error: ${err.message}`));
-        process.exitCode = 1;
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, message: 'Swarm initiated' }));
+              } catch (e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, error: e.message }));
+              }
+            });
+            return;
+          }
+
+          // Autonomous Status Update
+          if (req.url === '/api/autonomous/status' && req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk.toString()));
+            req.on('end', () => {
+              try {
+                const statusData = JSON.parse(body);
+                sendToClients({ type: 'autonomous_update', data: statusData });
+                // Also log significant events
+                if (statusData.status === 'healing') {
+                  addAction(
+                    'healing_start',
+                    `Self-healing started: ${statusData.message}`,
+                    'debugger'
+                  );
+                } else if (statusData.status === 'fixed') {
+                  addAction('healing_success', `Self-healing fixed issue`, 'debugger');
+                }
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+              } catch (e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, error: e.message }));
+              }
+            });
+            return;
+          }
+
+          // Log Endpoint
+          if (req.url === '/api/log' && req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk.toString()));
+            req.on('end', () => {
+              try {
+                const logData = JSON.parse(body);
+                sendToClients({ type: 'log', ...logData });
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+              } catch (e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, error: e.message }));
+              }
+            });
+            return;
+          }
+
+          // Quick Actions
+          if (req.url.startsWith('/api/action/') && req.method === 'POST') {
+            const action = req.url.replace('/api/action/', '');
+            try {
+              const actionCommands = {
+                generate: ['npx', ['ultra-dex', 'generate']],
+                build: ['npx', ['ultra-dex', 'build']],
+                review: ['npx', ['ultra-dex', 'review']],
+                validate: ['npx', ['ultra-dex', 'validate']],
+                diff: ['npx', ['ultra-dex', 'diff', '--json']],
+              };
+
+              if (!actionCommands[action]) throw new Error('Unknown action');
+
+              addAction(action, `Started ${action}`, null);
+              sendToClients({ type: 'log', message: `Running ${action}...`, level: 'info' });
+
+              const [cmd, args] = actionCommands[action];
+              const result = execSync(`${cmd} ${args.join(' ')}`, {
+                encoding: 'utf-8',
+                timeout: 60000,
+                maxBuffer: 1024 * 1024,
+              });
+
+              sendToClients({ type: 'log', message: `${action} completed`, level: 'success' });
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true, output: result.slice(0, 1000) }));
+            } catch (e) {
+              sendToClients({
+                type: 'log',
+                message: `${action} failed: ${e.message}`,
+                level: 'error',
+              });
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: false, error: e.message }));
+            }
+            return;
+          }
+
+          // Agent Control
+          if (req.url === '/api/agent/run' && req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk.toString()));
+            req.on('end', () => {
+              try {
+                const { agent, task } = JSON.parse(body);
+                printInfo(chalk.cyan(`▶️ Dashboard: Running agent @${agent}`));
+                addAction('agent_start', `Agent @${agent} started`, agent);
+                sendToClients({
+                  type: 'agent_status',
+                  agent,
+                  status: 'working',
+                  activity: task || 'Processing...',
+                });
+
+                const agentProcess = spawn('npx', ['ultra-dex', 'run', agent, task || ''], {
+                  stdio: 'pipe',
+                  shell: true,
+                  detached: true,
+                });
+
+                agentProcess.stdout?.on('data', (data) => {
+                  sendToClients({
+                    type: 'agent_log',
+                    agent,
+                    message: data.toString().slice(0, 200),
+                  });
+                });
+
+                agentProcess.on('close', (code) => {
+                  const status = code === 0 ? 'completed' : 'error';
+                  sendToClients({
+                    type: 'agent_status',
+                    agent,
+                    status,
+                    activity: code === 0 ? 'Completed' : 'Failed',
+                  });
+                  addAction(
+                    status === 'completed' ? 'agent_complete' : 'agent_error',
+                    `Agent @${agent} ${status}`,
+                    agent
+                  );
+                });
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, message: `Agent @${agent} started` }));
+              } catch (e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, error: e.message }));
+              }
+            });
+            return;
+          }
+
+          if (req.url === '/api/agent/stop' && req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk.toString()));
+            req.on('end', () => {
+              try {
+                const { agent } = JSON.parse(body);
+                printInfo(chalk.yellow(`⏹ Dashboard: Stopping agent @${agent}`));
+                addAction('agent_stop', `Agent @${agent} stopped by user`, agent);
+                sendToClients({ type: 'agent_status', agent, status: 'idle', activity: 'Stopped' });
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, message: `Agent @${agent} stopped` }));
+              } catch (e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, error: e.message }));
+              }
+            });
+            return;
+          }
+
+          // Export Report
+          if (req.url === '/api/export') {
+            try {
+              const state = await loadState();
+              const gitInfo = await getGitInfo();
+              const usageSummary = await getUsageSummary({ windowDays: 7 });
+              const html = generateDashboardHTML(state, gitInfo, graphSummary, usageSummary);
+              res.writeHead(200, {
+                'Content-Type': 'text/html',
+                'Content-Disposition': 'attachment; filename="ultra-dex-report.html"',
+              });
+              res.end(html);
+            } catch (e) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: e.message }));
+            }
+            return;
+          }
+
+          const state = await loadState();
+          const gitInfo = await getGitInfo();
+          const usageSummary = await getUsageSummary({ windowDays: 7 });
+          const html = generateDashboardHTML(state, gitInfo, graphSummary, usageSummary);
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          res.end(html);
+        });
+
+        startWebSocketServer({ server });
+
+        server.listen(port, () => {
+          printSuccess(chalk.green(`✅ Dashboard active at http://localhost:${port}`));
+          printInfo(chalk.gray(`🔌 WebSocket active at ws://localhost:${port}`));
+        });
+
+        // Handle server errors
+        server.on('error', (err) => {
+          printError(chalk.red(`❌ Server error: ${err.message}`));
+          process.exitCode = 1;
+          process.exit(process.exitCode);
+        });
+      } catch (error) {
+        await handleError(error, { command: 'dashboard', options });
+        process.exitCode = error.exitCode || 1;
         process.exit(process.exitCode);
-      });
-    } catch (error) {
-      await handleError(error, { command: 'dashboard', options });
-      process.exitCode = error.exitCode || 1;
-      process.exit(process.exitCode);
-    }
+      }
     });
 }

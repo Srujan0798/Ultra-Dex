@@ -12,7 +12,11 @@ type CanvasProps = {
   summary?: string;
 };
 
-export function Canvas({ users = [], status = 'Idle', summary = 'No active collaboration.' }: CanvasProps) {
+export function Canvas({
+  users = [],
+  status = 'Idle',
+  summary = 'No active collaboration.',
+}: CanvasProps) {
   return (
     <div style={{ background: '#0f172a', padding: 16, borderRadius: 12 }}>
       <h3 style={{ color: '#38bdf8' }}>Collaborative Canvas</h3>
@@ -33,7 +37,7 @@ export function Canvas({ users = [], status = 'Idle', summary = 'No active colla
                 color: '#0f172a',
                 padding: '4px 8px',
                 borderRadius: 6,
-                fontWeight: 600
+                fontWeight: 600,
               }}
             >
               {user.name}

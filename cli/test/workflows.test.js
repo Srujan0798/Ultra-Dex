@@ -56,7 +56,9 @@ describe('Workflows Command', () => {
     test('has payment integration workflow', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
       assert.ok(WORKFLOWS.payments, 'Should have payments workflow');
-      assert.ok(WORKFLOWS.payments.name.includes('Payment') || WORKFLOWS.payments.name.includes('Stripe'));
+      assert.ok(
+        WORKFLOWS.payments.name.includes('Payment') || WORKFLOWS.payments.name.includes('Stripe')
+      );
     });
 
     test('has deployment workflow', async () => {
@@ -95,7 +97,7 @@ describe('Workflows Command', () => {
   describe('Workflow Structure', () => {
     test('each workflow has name', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
-      
+
       for (const [key, workflow] of Object.entries(WORKFLOWS)) {
         assert.ok(workflow.name, `Workflow ${key} should have name`);
         assert.strictEqual(typeof workflow.name, 'string');
@@ -104,7 +106,7 @@ describe('Workflows Command', () => {
 
     test('each workflow has agents array', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
-      
+
       for (const [key, workflow] of Object.entries(WORKFLOWS)) {
         assert.ok(workflow.agents, `Workflow ${key} should have agents`);
         assert.ok(Array.isArray(workflow.agents), `Workflow ${key} agents should be array`);
@@ -114,7 +116,7 @@ describe('Workflows Command', () => {
 
     test('each workflow has description', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
-      
+
       for (const [key, workflow] of Object.entries(WORKFLOWS)) {
         assert.ok(workflow.description, `Workflow ${key} should have description`);
       }
@@ -122,12 +124,24 @@ describe('Workflows Command', () => {
 
     test('workflows reference valid agents', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
-      const validAgents = ['@Planner', '@Research', '@CTO', '@Database', '@Backend', '@Frontend', '@Security', '@DevOps', '@Testing'];
-      
+      const validAgents = [
+        '@Planner',
+        '@Research',
+        '@CTO',
+        '@Database',
+        '@Backend',
+        '@Frontend',
+        '@Security',
+        '@DevOps',
+        '@Testing',
+      ];
+
       for (const [key, workflow] of Object.entries(WORKFLOWS)) {
         for (const agent of workflow.agents) {
-          assert.ok(validAgents.includes(agent) || agent.startsWith('@'), 
-            `Workflow ${key} has valid agent ${agent}`);
+          assert.ok(
+            validAgents.includes(agent) || agent.startsWith('@'),
+            `Workflow ${key} has valid agent ${agent}`
+          );
         }
       }
     });
@@ -136,12 +150,12 @@ describe('Workflows Command', () => {
   describe('Workflow Steps', () => {
     test('workflows with steps have detailed instructions', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
-      
+
       for (const [key, workflow] of Object.entries(WORKFLOWS)) {
         if (workflow.steps) {
           assert.ok(Array.isArray(workflow.steps), `Workflow ${key} steps should be array`);
           assert.ok(workflow.steps.length >= 3, `Workflow ${key} should have at least 3 steps`);
-          
+
           for (const step of workflow.steps) {
             assert.ok(typeof step === 'string', `Step should be string`);
             assert.ok(step.length > 10, `Step should be descriptive`);
@@ -152,7 +166,7 @@ describe('Workflows Command', () => {
 
     test('steps are numbered', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
-      
+
       const supabase = WORKFLOWS.supabase;
       if (supabase.steps) {
         assert.ok(supabase.steps[0].match(/^1\./), 'First step should be numbered 1');
@@ -163,19 +177,21 @@ describe('Workflows Command', () => {
   describe('Workflow Examples', () => {
     test('some workflows have examples', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
-      
+
       // Check that at least some workflows have examples
-      const withExamples = Object.values(WORKFLOWS).filter(w => w.example);
+      const withExamples = Object.values(WORKFLOWS).filter((w) => w.example);
       assert.ok(withExamples.length >= 2, 'At least 2 workflows should have examples');
     });
 
     test('examples are valid workflow keys', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
-      
+
       for (const [key, workflow] of Object.entries(WORKFLOWS)) {
         if (workflow.example) {
-          assert.ok(WORKFLOWS[workflow.example], 
-            `Workflow ${key} example ${workflow.example} should exist`);
+          assert.ok(
+            WORKFLOWS[workflow.example],
+            `Workflow ${key} example ${workflow.example} should exist`
+          );
         }
       }
     });
@@ -185,14 +201,14 @@ describe('Workflows Command', () => {
     test('can list all workflows', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
       const workflowNames = Object.keys(WORKFLOWS);
-      
+
       assert.ok(workflowNames.length >= 8, 'Should have at least 8 workflows');
     });
 
     test('can get workflow by name', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
       const auth = WORKFLOWS.auth;
-      
+
       assert.ok(auth);
       assert.strictEqual(auth.name, 'Authentication');
     });
@@ -200,11 +216,11 @@ describe('Workflows Command', () => {
     test('workflow agents are ordered logically', async () => {
       const { WORKFLOWS } = await import('../lib/commands/workflows.js');
       const auth = WORKFLOWS.auth;
-      
+
       // Planner should come before implementation
       const plannerIndex = auth.agents.indexOf('@Planner');
       const backendIndex = auth.agents.indexOf('@Backend');
-      
+
       if (plannerIndex !== -1 && backendIndex !== -1) {
         assert.ok(plannerIndex < backendIndex, 'Planner should come before Backend');
       }

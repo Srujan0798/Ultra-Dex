@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Hybrid RAG System
  * Combines vector search, graph analysis, and keyword search for comprehensive codebase understanding
@@ -19,13 +21,14 @@ class VectorSearch {
   // Simple embedding using TF-IDF approach (without external dependencies)
   async createEmbedding(text) {
     // Create a simple numerical representation of text
-    const words = text.toLowerCase()
+    const words = text
+      .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(word => word.length > 2);
-    
+      .filter((word) => word.length > 2);
+
     const wordFreq = {};
-    words.forEach(word => {
+    words.forEach((word) => {
       wordFreq[word] = (wordFreq[word] || 0) + 1;
     });
 
@@ -55,13 +58,11 @@ class VectorSearch {
         id,
         similarity,
         content: this.documents.get(id)?.content,
-        metadata: this.documents.get(id)?.metadata
+        metadata: this.documents.get(id)?.metadata,
       });
     }
 
-    return similarities
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, topK);
+    return similarities.sort((a, b) => b.similarity - a.similarity).slice(0, topK);
   }
 
   cosineSimilarity(vecA, vecB) {
@@ -91,33 +92,37 @@ class GraphSearch {
   async search(query) {
     // Search in the code property graph
     await this.graph.scan(); // Ensure graph is up to date
-    
+
     const results = [];
     const lowerQuery = query.toLowerCase();
-    
+
     // Search in nodes (files)
     for (const [filePath, node] of this.graph.nodes) {
-      if (filePath.toLowerCase().includes(lowerQuery) || 
-          node.content?.toLowerCase().includes(lowerQuery)) {
+      if (
+        filePath.toLowerCase().includes(lowerQuery) ||
+        node.content?.toLowerCase().includes(lowerQuery)
+      ) {
         results.push({
           type: 'file',
           path: filePath,
           content: node.content?.substring(0, 200) + '...',
-          score: 1.0
+          score: 1.0,
         });
       }
     }
 
     // Search in edges (dependencies)
     for (const edge of this.graph.edges) {
-      if (edge.from.toLowerCase().includes(lowerQuery) || 
-          edge.to.toLowerCase().includes(lowerQuery)) {
+      if (
+        edge.from.toLowerCase().includes(lowerQuery) ||
+        edge.to.toLowerCase().includes(lowerQuery)
+      ) {
         results.push({
           type: 'dependency',
           from: edge.from,
           to: edge.to,
           relationship: edge.type,
-          score: 0.9
+          score: 0.9,
         });
       }
     }
@@ -128,11 +133,11 @@ class GraphSearch {
   async findRelatedFiles(filePath) {
     // Find files that depend on or are depended by the given file
     await this.graph.scan();
-    
+
     const related = {
       dependencies: [], // Files this file depends on
-      dependents: [],   // Files that depend on this file
-      siblings: []      // Files in the same directory
+      dependents: [], // Files that depend on this file
+      siblings: [], // Files in the same directory
     };
 
     // Find dependencies
@@ -169,32 +174,72 @@ class KeywordSearch {
       keywords,
       content,
       path: filePath,
-      size: content.length
+      size: content.length,
     });
   }
 
   extractKeywords(text) {
     // Extract meaningful keywords from text
-    const words = text.toLowerCase()
+    const words = text
+      .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(word => word.length > 3 && !this.isStopWord(word));
-    
+      .filter((word) => word.length > 3 && !this.isStopWord(word));
+
     // Count word frequencies
     const freq = {};
-    words.forEach(word => {
+    words.forEach((word) => {
       freq[word] = (freq[word] || 0) + 1;
     });
-    
+
     return freq;
   }
 
   isStopWord(word) {
     const stopWords = new Set([
-      'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
-      'this', 'that', 'these', 'those', 'i', 'you', 'we', 'they', 'he', 'she', 'it',
-      'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should',
-      'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being'
+      'the',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+      'this',
+      'that',
+      'these',
+      'those',
+      'i',
+      'you',
+      'we',
+      'they',
+      'he',
+      'she',
+      'it',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'the',
+      'a',
+      'an',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
     ]);
     return stopWords.has(word);
   }
@@ -205,16 +250,18 @@ class KeywordSearch {
 
     for (const [filePath, fileData] of this.index) {
       let score = 0;
-      
+
       // Exact match in path
       if (filePath.toLowerCase().includes(lowerQuery)) {
         score += 2;
       }
-      
+
       // Matches in content
-      const contentMatches = (fileData.content.toLowerCase().match(new RegExp(lowerQuery, 'g')) || []).length;
+      const contentMatches = (
+        fileData.content.toLowerCase().match(new RegExp(lowerQuery, 'g')) || []
+      ).length;
       score += contentMatches * 0.5;
-      
+
       // Matches in keywords
       for (const [keyword, freq] of Object.entries(fileData.keywords)) {
         if (keyword.includes(lowerQuery)) {
@@ -227,14 +274,12 @@ class KeywordSearch {
           path: filePath,
           score,
           preview: fileData.content.substring(0, 200) + '...',
-          size: fileData.size
+          size: fileData.size,
         });
       }
     }
 
-    return results
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topK);
+    return results.sort((a, b) => b.score - a.score).slice(0, topK);
   }
 }
 
@@ -254,25 +299,25 @@ class HybridRAG {
 
     // Index all project files
     await this.indexProject();
-    
+
     this.indexed = true;
     monitoring.info('Hybrid RAG system initialized', {
       filesIndexed: this.vectorSearch.documents.size,
-      projectRoot: this.projectRoot
+      projectRoot: this.projectRoot,
     });
   }
 
   async indexProject() {
     const files = await glob('**/*.{js,ts,jsx,tsx,md,json,html,css}', {
       ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**', '.next/**'],
-      cwd: this.projectRoot
+      cwd: this.projectRoot,
     });
 
     for (const file of files) {
       try {
         const fullPath = path.join(this.projectRoot, file);
         const content = await fs.readFile(fullPath, 'utf8');
-        
+
         // Index in all search systems
         await this.vectorSearch.indexDocument(file, content, { path: file });
         await this.keywordSearch.indexFile(file, content);
@@ -284,12 +329,7 @@ class HybridRAG {
   }
 
   async search(query, options = {}) {
-    const { 
-      vectorWeight = 0.4, 
-      graphWeight = 0.3, 
-      keywordWeight = 0.3,
-      topK = 10
-    } = options;
+    const { vectorWeight = 0.4, graphWeight = 0.3, keywordWeight = 0.3, topK = 10 } = options;
 
     await this.initialize();
 
@@ -300,8 +340,8 @@ class HybridRAG {
 
     // Combine and rank results
     const combinedResults = this.combineSearchResults(
-      vectorResults, 
-      graphResults, 
+      vectorResults,
+      graphResults,
       keywordResults,
       vectorWeight,
       graphWeight,
@@ -323,7 +363,7 @@ class HybridRAG {
           path: result.path || id,
           content: result.content,
           score: 0,
-          sources: []
+          sources: [],
         });
       }
       allResults.get(id).score += result.similarity * vectorWeight;
@@ -339,7 +379,7 @@ class HybridRAG {
           path: result.path || result.from,
           content: result.content,
           score: 0,
-          sources: []
+          sources: [],
         });
       }
       allResults.get(id).score += result.score * graphWeight;
@@ -355,7 +395,7 @@ class HybridRAG {
           path: result.path,
           content: result.preview,
           score: 0,
-          sources: []
+          sources: [],
         });
       }
       allResults.get(id).score += result.score * keywordWeight;
@@ -363,17 +403,16 @@ class HybridRAG {
     }
 
     // Convert to array and sort by score
-    return Array.from(allResults.values())
-      .sort((a, b) => b.score - a.score);
+    return Array.from(allResults.values()).sort((a, b) => b.score - a.score);
   }
 
   async searchCode(query) {
     // Specialized search for code-related queries
     const results = await this.search(query);
-    
+
     // Filter for code files and enrich with graph information
     const codeResults = [];
-    
+
     for (const result of results) {
       if (/\.(js|ts|jsx|tsx|py|java|cpp|go|rs)$/.test(result.path)) {
         // Add graph context
@@ -381,65 +420,74 @@ class HybridRAG {
         codeResults.push({
           ...result,
           relatedFiles: related,
-          isCode: true
+          isCode: true,
         });
       }
     }
-    
+
     return codeResults;
   }
 
   async searchArchitecture(query) {
     // Specialized search for architecture-related queries
     const results = await this.search(query);
-    
+
     // Look for architecture-related files
-    const archResults = results.filter(result => 
-      result.path.includes('config') || 
-      result.path.includes('arch') || 
-      result.path.includes('structure') ||
-      result.path.includes('schema') ||
-      result.path.includes('model') ||
-      result.path.includes('api')
+    const archResults = results.filter(
+      (result) =>
+        result.path.includes('config') ||
+        result.path.includes('arch') ||
+        result.path.includes('structure') ||
+        result.path.includes('schema') ||
+        result.path.includes('model') ||
+        result.path.includes('api')
     );
-    
+
     return archResults;
   }
 
   async getProjectOverview() {
     await this.initialize();
-    
+
     const stats = {
       totalFiles: this.vectorSearch.documents.size,
       vectorDocuments: this.vectorSearch.documents.size,
       keywordIndexed: this.keywordSearch.index.size,
       graphNodes: projectGraph.nodes.size,
-      graphEdges: projectGraph.edges.length
+      graphEdges: projectGraph.edges.length,
     };
-    
+
     // Get most important files based on various heuristics
     const importantFiles = [];
-    
+
     // Look for key files
     const keyPatterns = [
-      'package.json', 'README.md', 'CONTEXT.md', 'IMPLEMENTATION-PLAN.md',
-      'api/', 'auth/', 'database/', 'config/', 'lib/', 'src/'
+      'package.json',
+      'README.md',
+      'CONTEXT.md',
+      'IMPLEMENTATION-PLAN.md',
+      'api/',
+      'auth/',
+      'database/',
+      'config/',
+      'lib/',
+      'src/',
     ];
-    
+
     for (const [path, doc] of this.vectorSearch.documents) {
-      if (keyPatterns.some(pattern => path.includes(pattern))) {
+      if (keyPatterns.some((pattern) => path.includes(pattern))) {
         importantFiles.push({
           path,
           size: doc.content.length,
-          type: this.getFileType(path)
+          type: this.getFileType(path),
         });
       }
     }
-    
+
     return {
       stats,
       importantFiles: importantFiles.slice(0, 20),
-      projectStructure: this.getProjectStructure()
+      projectStructure: this.getProjectStructure(),
     };
   }
 
@@ -455,11 +503,11 @@ class HybridRAG {
 
   getProjectStructure() {
     const structure = {};
-    
+
     for (const [path] of this.vectorSearch.documents) {
       const parts = path.split('/');
       let current = structure;
-      
+
       for (let i = 0; i < parts.length - 1; i++) {
         const part = parts[i];
         if (!current[part]) {
@@ -467,7 +515,7 @@ class HybridRAG {
         }
         current = current[part]._dirs;
       }
-      
+
       const fileName = parts[parts.length - 1];
       if (!current[fileName]) {
         current[fileName] = { _files: [path], _dirs: {} };
@@ -475,7 +523,7 @@ class HybridRAG {
         current[fileName]._files.push(path);
       }
     }
-    
+
     return structure;
   }
 
@@ -484,10 +532,10 @@ class HybridRAG {
     this.indexed = false;
     await this.indexProject();
     this.indexed = true;
-    
+
     monitoring.info('Project index updated', {
       filesIndexed: this.vectorSearch.documents.size,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }

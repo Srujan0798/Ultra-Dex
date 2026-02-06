@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Neo4j Connector for Graph RAG
  * Manages connection and operations with Neo4j database
@@ -54,9 +56,9 @@ export class Neo4jConnector {
     const session = this.driver.session();
     try {
       const result = await session.run(cypher, params);
-      return result.records.map(record => {
+      return result.records.map((record) => {
         const obj = {};
-        record.keys.forEach(key => {
+        record.keys.forEach((key) => {
           obj[key] = record.get(key);
         });
         return obj;
@@ -73,7 +75,7 @@ export class Neo4jConnector {
     const constraints = [
       'CREATE CONSTRAINT file_path IF NOT EXISTS FOR (f:File) REQUIRE f.path IS UNIQUE',
       'CREATE CONSTRAINT function_id IF NOT EXISTS FOR (fn:Function) REQUIRE fn.id IS UNIQUE',
-      'CREATE CONSTRAINT class_id IF NOT EXISTS FOR (c:Class) REQUIRE c.id IS UNIQUE'
+      'CREATE CONSTRAINT class_id IF NOT EXISTS FOR (c:Class) REQUIRE c.id IS UNIQUE',
     ];
 
     for (const constraint of constraints) {
@@ -92,7 +94,7 @@ export class Neo4jConnector {
     const indexes = [
       'CREATE INDEX file_type IF NOT EXISTS FOR (f:File) ON (f.type)',
       'CREATE INDEX function_name IF NOT EXISTS FOR (fn:Function) ON (fn.name)',
-      'CREATE INDEX class_name IF NOT EXISTS FOR (c:Class) ON (c.name)'
+      'CREATE INDEX class_name IF NOT EXISTS FOR (c:Class) ON (c.name)',
     ];
 
     for (const index of indexes) {
@@ -127,7 +129,7 @@ export class Neo4jConnector {
         files: fileCount[0]?.count?.toNumber() || 0,
         functions: functionCount[0]?.count?.toNumber() || 0,
         classes: classCount[0]?.count?.toNumber() || 0,
-        relationships: relationshipCount[0]?.count?.toNumber() || 0
+        relationships: relationshipCount[0]?.count?.toNumber() || 0,
       };
     } catch (error) {
       console.log(chalk.yellow('[Neo4j] Stats error:', error.message));

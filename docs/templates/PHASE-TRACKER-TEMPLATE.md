@@ -26,11 +26,13 @@
 **Elevator Pitch:** [Your product in one sentence]
 
 **Core Features:**
+
 1. [Feature 1]
 2. [Feature 2]
 3. [Feature 3]
 
 **Tech Stack:**
+
 - Frontend: [Next.js / React / Vue]
 - Backend: [Node.js / Python / Go]
 - Database: [PostgreSQL / MongoDB / MySQL]
@@ -40,13 +42,13 @@
 
 ## Progress Summary
 
-| Phase | Tasks | Complete | Status |
-|-------|-------|----------|--------|
-| Phase 1: MVP Foundation | 1-10 | 0/10 | ⏳ NOT STARTED |
-| Phase 2: Authentication | 11-18 | 0/8 | ⏳ PENDING |
-| Phase 3: Core Feature | 19-28 | 0/10 | ⏳ PENDING |
-| Phase 4: Polish & Test | 29-35 | 0/7 | ⏳ PENDING |
-| Phase 5: Launch | 36-40 | 0/5 | ⏳ PENDING |
+| Phase                   | Tasks | Complete | Status         |
+| ----------------------- | ----- | -------- | -------------- |
+| Phase 1: MVP Foundation | 1-10  | 0/10     | ⏳ NOT STARTED |
+| Phase 2: Authentication | 11-18 | 0/8      | ⏳ PENDING     |
+| Phase 3: Core Feature   | 19-28 | 0/10     | ⏳ PENDING     |
+| Phase 4: Polish & Test  | 29-35 | 0/7      | ⏳ PENDING     |
+| Phase 5: Launch         | 36-40 | 0/5      | ⏳ PENDING     |
 
 **Total Progress:** 0/40 tasks (0%)
 
@@ -61,22 +63,23 @@
 **Duration:** 1-2 days
 
 **Definition of Done:**
+
 - [ ] Database schema deployed
 - [ ] Core API endpoints working
 - [ ] Basic UI renders
 - [ ] Can create/read/update/delete main entity
 - [ ] Deployed to staging
 
-| # | Agent | Task | Status | Notes |
-|---|-------|------|--------|-------|
-| 1 | @Planner | Define MVP scope | ⏳ PENDING | |
-| 2 | @CTO | Architecture review | ⏳ PENDING | |
-| 3 | @Database | Schema design | ⏳ PENDING | |
-| 4 | @Backend | Core API endpoints | ⏳ PENDING | |
-| 5 | @Frontend | Basic UI | ⏳ PENDING | |
-| 6 | @Testing | Write tests | ⏳ PENDING | |
-| 7 | @Reviewer | Code review | ⏳ PENDING | |
-| 8 | @DevOps | Deploy to staging | ⏳ PENDING | |
+| #   | Agent     | Task                | Status     | Notes |
+| --- | --------- | ------------------- | ---------- | ----- |
+| 1   | @Planner  | Define MVP scope    | ⏳ PENDING |       |
+| 2   | @CTO      | Architecture review | ⏳ PENDING |       |
+| 3   | @Database | Schema design       | ⏳ PENDING |       |
+| 4   | @Backend  | Core API endpoints  | ⏳ PENDING |       |
+| 5   | @Frontend | Basic UI            | ⏳ PENDING |       |
+| 6   | @Testing  | Write tests         | ⏳ PENDING |       |
+| 7   | @Reviewer | Code review         | ⏳ PENDING |       |
+| 8   | @DevOps   | Deploy to staging   | ⏳ PENDING |       |
 
 ---
 
@@ -107,6 +110,7 @@ Next Agent: @CTO (architecture review)
 ```
 
 **Result:**
+
 ```
 [Paste @Planner output here after completion]
 ```
@@ -145,6 +149,7 @@ Next Agent: @Database (schema design)
 ```
 
 **Result:**
+
 ```
 [Paste @CTO output here after completion]
 ```
@@ -182,6 +187,7 @@ Next Agent: @Backend (API implementation)
 ```
 
 **Result:**
+
 ```
 [Paste schema code here]
 
@@ -230,6 +236,7 @@ Next Agent: @Frontend (UI implementation)
 ```
 
 **Result:**
+
 ```
 [Paste API code location]
 
@@ -279,6 +286,7 @@ Next Agent: @Testing (write tests)
 ```
 
 **Result:**
+
 ```
 [Paste component locations]
 
@@ -326,6 +334,7 @@ Next Agent: @Reviewer (code review)
 ```
 
 **Result:**
+
 ```
 Tests written: [count]
 Tests passing: [count]
@@ -371,6 +380,7 @@ Next Agent: @DevOps (if approved) or back to developer agents (if changes needed
 ```
 
 **Result:**
+
 ```
 Review status: ⏳ PENDING / ✅ APPROVED / ❌ CHANGES NEEDED
 
@@ -417,6 +427,7 @@ Next Phase: Phase 2 (Authentication)
 ```
 
 **Result:**
+
 ```
 Frontend: [URL]
 Backend: [URL]
@@ -438,6 +449,7 @@ Phase 1 Complete: [Date]
 **Duration:** 1 day
 
 **Definition of Done:**
+
 - [ ] User table in database
 - [ ] Signup/login/logout working
 - [ ] JWT or session-based auth
@@ -445,17 +457,17 @@ Phase 1 Complete: [Date]
 - [ ] Tests passing
 - [ ] Deployed
 
-| # | Agent | Task | Status | Notes |
-|---|-------|------|--------|-------|
-| 9 | @Planner | Plan auth flow | ⏳ PENDING | |
-| 10 | @CTO | Approve auth approach | ⏳ PENDING | |
-| 11 | @Database | User table | ⏳ PENDING | |
-| 12 | @Auth | Auth endpoints | ⏳ PENDING | |
-| 13 | @Frontend | Login/signup UI | ⏳ PENDING | |
-| 14 | @Testing | Auth tests | ⏳ PENDING | |
-| 15 | @Security | Security audit | ⏳ PENDING | |
-| 16 | @Reviewer | Code review | ⏳ PENDING | |
-| 17 | @DevOps | Deploy | ⏳ PENDING | |
+| #   | Agent     | Task                  | Status     | Notes |
+| --- | --------- | --------------------- | ---------- | ----- |
+| 9   | @Planner  | Plan auth flow        | ⏳ PENDING |       |
+| 10  | @CTO      | Approve auth approach | ⏳ PENDING |       |
+| 11  | @Database | User table            | ⏳ PENDING |       |
+| 12  | @Auth     | Auth endpoints        | ⏳ PENDING |       |
+| 13  | @Frontend | Login/signup UI       | ⏳ PENDING |       |
+| 14  | @Testing  | Auth tests            | ⏳ PENDING |       |
+| 15  | @Security | Security audit        | ⏳ PENDING |       |
+| 16  | @Reviewer | Code review           | ⏳ PENDING |       |
+| 17  | @DevOps   | Deploy                | ⏳ PENDING |       |
 
 ---
 
@@ -472,6 +484,7 @@ Phase 1 Complete: [Date]
 **Duration:** [Estimate]
 
 **Definition of Done:**
+
 - [ ] [Specific criteria for this feature]
 
 [Define tasks 18-28 using the same template]
@@ -485,6 +498,7 @@ Phase 1 Complete: [Date]
 **Duration:** [Estimate]
 
 **Definition of Done:**
+
 - [ ] UI polished and responsive
 - [ ] Error handling comprehensive
 - [ ] Performance optimized
@@ -502,6 +516,7 @@ Phase 1 Complete: [Date]
 **Duration:** [Estimate]
 
 **Definition of Done:**
+
 - [ ] Production environment configured
 - [ ] Domain configured
 - [ ] Monitoring setup
@@ -515,12 +530,14 @@ Phase 1 Complete: [Date]
 ## Weekly Progress Report
 
 ### Week 1: [Date Range]
+
 **Progress:** [X]% complete
 **Tasks Completed:** [count]
 **Blockers:** [list any blockers]
 **Next Week Goals:** [what you'll tackle]
 
 ### Week 2: [Date Range]
+
 [Same format]
 
 ---
@@ -528,14 +545,17 @@ Phase 1 Complete: [Date]
 ## Notes & Decisions
 
 ### Technical Decisions
+
 - [Date] Decided to use PostgreSQL instead of MongoDB because [reason]
 - [Date] Switched from REST to tRPC because [reason]
 
 ### Changes to Plan
+
 - [Date] Added Task 41: [new task] because [reason]
 - [Date] Removed Task 15 because [no longer needed]
 
 ### Learnings
+
 - [Date] Discovered that [insight]
 - [Date] Agent @Backend works best when [tip]
 
@@ -544,13 +564,16 @@ Phase 1 Complete: [Date]
 ## Resources
 
 **Agent Files:**
+
 - All agents: [agents/00-AGENT_INDEX.md](../agents/00-AGENT_INDEX.md)
 - Orchestration guide: [guides/PROJECT-ORCHESTRATION.md](../docs/guides/PROJECT-ORCHESTRATION.md)
 
 **Templates:**
+
 - Master Plan: [templates/MASTER-PLAN-TEMPLATE.md](../templates/MASTER-PLAN-TEMPLATE.md)
 
 **Examples:**
+
 - Workflow examples: [Orchestration/EXAMPLES.md](../Orchestration/EXAMPLES.md)
 
 ---
@@ -558,20 +581,23 @@ Phase 1 Complete: [Date]
 ## Maintenance Checklist
 
 **Daily:**
+
 - [ ] Update task statuses (⏳ → 🔄 → ✅)
 - [ ] Note any blockers
 - [ ] Update progress summary
 
 **Weekly:**
+
 - [ ] Review completed tasks
 - [ ] Plan next week's focus
 - [ ] Update launch timeline if needed
 
 **Monthly:**
+
 - [ ] Archive completed phases
 - [ ] Review technical decisions
 - [ ] Update learnings section
 
 ---
 
-*Template from Ultra-Dex v3.4.5 - Professional AI Orchestration Meta Layer*
+_Template from Ultra-Dex v3.4.5 - Professional AI Orchestration Meta Layer_

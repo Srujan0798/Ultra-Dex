@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex fix command
  * Self-Healing: Scans code and applies AI fixes automatically
@@ -7,7 +9,11 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { runQualityScan } from '../quality/scanner.js';
-import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
+import {
+  createProvider,
+  getDefaultProvider,
+  checkConfiguredProviders,
+} from '../providers/index.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
@@ -24,7 +30,7 @@ export function registerFixCommand(program) {
 
         // Check for API key
         const configured = checkConfiguredProviders();
-        const hasProvider = configured.some(p => p.configured) || options.key;
+        const hasProvider = configured.some((p) => p.configured) || options.key;
 
         if (!hasProvider) {
           printWarning(chalk.yellow('⚠️  No AI provider configured.'));
@@ -41,7 +47,7 @@ export function registerFixCommand(program) {
         }
 
         printInfo(chalk.yellow(`Found ${results.failed} errors and ${results.warnings} warnings.`));
-        
+
         const providerId = options.provider || getDefaultProvider();
         let provider;
         try {
@@ -53,14 +59,14 @@ export function registerFixCommand(program) {
 
         // Group by file
         const issuesByFile = {};
-        results.details.forEach(issue => {
+        results.details.forEach((issue) => {
           if (!issuesByFile[issue.file]) issuesByFile[issue.file] = [];
           issuesByFile[issue.file].push(issue);
         });
 
         for (const [file, issues] of Object.entries(issuesByFile)) {
           printInfo(chalk.bold(`\nFixing ${file}...`));
-          
+
           try {
             const filePath = path.resolve(process.cwd(), file);
             const content = await fs.readFile(filePath, 'utf8');
@@ -68,7 +74,7 @@ export function registerFixCommand(program) {
             const prompt = `You are an expert code fixer. Fix the following issues in the code file.
             
 ISSUES TO FIX:
-${issues.map(i => `- [${i.severity}] ${i.message}`).join('\n')}
+${issues.map((i) => `- [${i.severity}] ${i.message}`).join('\n')}
 
 FILE CONTENT:
 \`\`\`
@@ -82,9 +88,12 @@ Return ONLY the full corrected file content. Do not include markdown code blocks
               continue;
             }
 
-            const result = await provider.generate('You are a code fixing bot. Output only code.', prompt);
+            const result = await provider.generate(
+              'You are a code fixing bot. Output only code.',
+              prompt
+            );
             let fixedCode = result.content.trim();
-            
+
             // clean up markdown code blocks if AI added them
             if (fixedCode.startsWith('```')) {
               fixedCode = fixedCode.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '');
@@ -92,7 +101,6 @@ Return ONLY the full corrected file content. Do not include markdown code blocks
 
             await fs.writeFile(filePath, fixedCode);
             printSuccess(chalk.green(`✓ Fixed ${issues.length} issues in ${file}`));
-
           } catch (err) {
             printError(chalk.red(`✗ Failed to fix ${file}: ${err.message}`));
           }

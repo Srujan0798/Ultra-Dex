@@ -1,7 +1,17 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Prompt templates for ultra-dex generate command
  * Generates implementation plans from an idea (LITE/FULL/ENTERPRISE)
  */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const repoRoot = path.resolve(__dirname, '../../../../');
 
 const SYSTEM_PROMPT_BASE = `You are an expert SaaS architect and product strategist. Your job is to take a simple product idea and generate a complete, production-ready implementation plan.
 
@@ -282,12 +292,58 @@ export function getSystemPrompt(template = 'full') {
 
 export function generateUserPrompt(idea, template = 'full') {
   const normalized = normalizeTemplate(template);
-  const promptTemplate = normalized === 'lite'
-    ? LITE_USER_PROMPT_TEMPLATE
-    : normalized === 'enterprise'
-      ? ENTERPRISE_USER_PROMPT_TEMPLATE
-      : USER_PROMPT_TEMPLATE;
-  return promptTemplate.replace('{{IDEA}}', idea);
+  const promptTemplate =
+    normalized === 'lite'
+      ? LITE_USER_PROMPT_TEMPLATE
+      : normalized === 'enterprise'
+        ? ENTERPRISE_USER_PROMPT_TEMPLATE
+        : USER_PROMPT_TEMPLATE;
+  const basePrompt = promptTemplate.replace('{{IDEA}}', idea);
+  const featureSnippets = getFeatureSnippets(idea);
+  return basePrompt + featureSnippets;
+}
+
+function getFeatureSnippets(idea) {
+  if (!idea) return '';
+  const lower = idea.toLowerCase();
+  const snippets = [];
+
+  if (/(revenue|billing|subscription|stripe)/.test(lower)) {
+    const stripeTemplate = loadTemplateSnippet('templates/features/stripe-billing.ts');
+    if (stripeTemplate) {
+      snippets.push(`### Stripe Billing Reference\n\`\`\`ts\n${stripeTemplate.trim()}\n\`\`\`\n`);
+    }
+  }
+
+  if (/(analytics|tracking|posthog|metrics)/.test(lower)) {
+    const analyticsTemplate = loadTemplateSnippet('templates/features/analytics-posthog.ts');
+    if (analyticsTemplate) {
+      snippets.push(
+        `### Analytics Reference (PostHog)\n\`\`\`ts\n${analyticsTemplate.trim()}\n\`\`\`\n`
+      );
+    }
+  }
+
+  if (!snippets.length) return '';
+
+  return `\n\n## FEATURE TEMPLATES (REFERENCE)\n${snippets.join('\n')}`;
+}
+
+function loadTemplateSnippet(relativePath) {
+  const candidates = [
+    path.resolve(process.cwd(), relativePath),
+    path.resolve(repoRoot, relativePath),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      return fs.readFileSync(candidate, 'utf8');
+    } catch {
+      continue;
+    }
+  }
+
+  return '';
 }
 
 export default {

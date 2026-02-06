@@ -1,17 +1,12 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { printInfo, printWarning, printSuccess } from '../utils/output.js';
 
 const STATES = ['PLAN', 'ACT', 'VERIFY', 'RECOVER', 'COMMIT'];
 
 export async function runRalphLoop(options = {}) {
-  const {
-    plan,
-    act,
-    verify,
-    recover,
-    commit,
-    maxRetries = 3
-  } = options;
+  const { plan, act, verify, recover, commit, maxRetries = 3 } = options;
 
   let state = 'PLAN';
   let retries = 0;
@@ -48,7 +43,9 @@ export async function runRalphLoop(options = {}) {
         printWarning(chalk.yellow(`Ralph: Recovering (attempt ${retries}/${maxRetries})`));
         if (recover) context = await recover(context);
         if (retries >= maxRetries) {
-          throw new Error(`Ralph loop failed after ${maxRetries} retries: ${context.lastError || 'Unknown error'}`);
+          throw new Error(
+            `Ralph loop failed after ${maxRetries} retries: ${context.lastError || 'Unknown error'}`
+          );
         }
         state = 'ACT';
         break;

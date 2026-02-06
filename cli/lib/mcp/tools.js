@@ -12,6 +12,8 @@ import { logger } from '../ui/logger.js';
 import { runPostToolUseHooks } from '../quality/hooks.js';
 import { AppError } from '../utils/errors.js';
 import { capabilitiesRouter } from './router.js';
+import { auditGovernance } from '../governance/governor.js';
+import { saveADR } from '../governance/schema.js';
 
 export function registerTools(server) {
   const baseTool = server.tool.bind(server);
@@ -268,11 +270,17 @@ export function registerTools(server) {
 
         const fullReport = report + checklist.map((step) => `[ ] ${step}`).join('\n');
 
+        // v4.1: Active Governance Audit
+        const govResult = await auditGovernance(process.cwd());
+        const govReport = govResult.ok 
+          ? "\n\n🛡️  Governance: COMPLIANT"
+          : `\n\n🛡️  Governance: VIOLATIONS DETECTED\n${govResult.violations.map(v => `  - [${v.adrId}] ${v.title} (${v.file})`).join('\n')}`;
+
         return {
           content: [
             {
               type: 'text',
-              text: fullReport,
+              text: fullReport + govReport,
             },
           ],
         };
@@ -794,18 +802,35 @@ export function registerTools(server) {
       description: z.string().describe('Description of the decision'),
       affectedFiles: z.array(z.string()).describe('List of files affected by this decision'),
       status: z
-        .enum(['active', 'deprecated', 'superseded'])
+        .enum(['proposed', 'active', 'deprecated', 'superseded'])
         .optional()
         .default('active')
         .describe('Decision status'),
+      patterns: z.array(z.string()).optional().describe('Regex patterns to enforce for this ADR'),
+      enforcement: z.enum(['strict', 'warning', 'info']).optional().default('strict').describe('Enforcement level'),
     },
-    async ({ title, description, affectedFiles, status }) => {
+    async ({ title, description, affectedFiles, status, patterns, enforcement }) => {
       try {
+        const adrId = `ADR-${Date.now()}`;
+        
+        // Save to ADR Index if patterns are provided
+        if (patterns && patterns.length > 0) {
+          await saveADR({
+            id: adrId,
+            title,
+            status: status || 'active',
+            patterns,
+            enforcement: enforcement || 'strict',
+            rationale: description,
+            date: new Date().toISOString()
+          });
+        }
+
         const { projectGraph } = await import('./graph.js');
         await projectGraph.scan();
 
         const success = await projectGraph.storeDecision({
-          id: `${Date.now()}`,
+          id: adrId,
           title,
           description,
           affectedFiles,

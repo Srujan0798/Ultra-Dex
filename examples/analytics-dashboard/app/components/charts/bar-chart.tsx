@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import React from 'react'
+import React from 'react';
 import {
   BarChart,
   Bar,
@@ -10,31 +10,26 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card'
+} from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 
 interface BarChartComponentProps {
-  title: string
+  title: string;
   data: Array<{
-    name: string
-    value: number
-    [key: string]: number | string
-  }>
+    name: string;
+    value: number;
+    [key: string]: number | string;
+  }>;
   bars?: Array<{
-    dataKey: string
-    color: string
-    name: string
-  }>
-  height?: number
+    dataKey: string;
+    color: string;
+    name: string;
+  }>;
+  height?: number;
 }
 
-export function BarChartComponent({
-  title,
-  data,
-  bars,
-  height = 300,
-}: BarChartComponentProps) {
-  const chartBars = bars || [{ dataKey: 'value', color: '#3b82f6', name: 'Value' }]
+export function BarChartComponent({ title, data, bars, height = 300 }: BarChartComponentProps) {
+  const chartBars = bars || [{ dataKey: 'value', color: '#3b82f6', name: 'Value' }];
 
   return (
     <Card>
@@ -50,10 +45,7 @@ export function BarChartComponent({
               tick={{ fill: 'currentColor' }}
               tickLine={{ stroke: 'currentColor' }}
             />
-            <YAxis
-              tick={{ fill: 'currentColor' }}
-              tickLine={{ stroke: 'currentColor' }}
-            />
+            <YAxis tick={{ fill: 'currentColor' }} tickLine={{ stroke: 'currentColor' }} />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'hsl(var(--card))',
@@ -75,5 +67,5 @@ export function BarChartComponent({
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

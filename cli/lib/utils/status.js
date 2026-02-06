@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Status Icons and Indicators for Ultra-Dex CLI
  * Provides consistent visual status indicators across all commands
@@ -15,7 +17,7 @@ export const icons = {
   pending: chalk.hex('#6b7280')(figures.circle),
   running: chalk.hex('#d946ef')(figures.play),
   pointer: chalk.hex('#8b5cf6')(figures.pointer),
-  bullet: chalk.dim(figures.bullet)
+  bullet: chalk.dim(figures.bullet),
 };
 
 export function showInfinityStatus() {
@@ -125,7 +127,7 @@ const STATUS_ICONS = {
   subscriptThree: figures.subscriptThree,
   blank: figures.space,
   space: figures.space,
-  dotSmall: figures.dotSmall
+  dotSmall: figures.dotSmall,
 };
 
 // Status colors mapping
@@ -136,7 +138,7 @@ const STATUS_COLORS = {
   info: 'blue',
   loading: 'cyan',
   neutral: 'white',
-  muted: 'gray'
+  muted: 'gray',
 };
 
 /**
@@ -223,12 +225,7 @@ export function formatProgress(current, total, message = '') {
  * Format a status badge
  */
 export function formatBadge(text, type = 'info', options = {}) {
-  const {
-    padding = 1,
-    margin = 0,
-    borderStyle = 'round',
-    uppercase = false
-  } = options;
+  const { padding = 1, margin = 0, borderStyle = 'round', uppercase = false } = options;
 
   const displayText = uppercase ? text.toUpperCase() : text;
   const color = getStatusColor(type);
@@ -243,11 +240,7 @@ export function formatStatusCard(title, message, type = 'info') {
   const icon = getStatusIcon(type);
   const color = getStatusColor(type);
 
-  const card = [
-    chalk.bold[color](`${icon} ${title}`),
-    chalk[color](message),
-    ''
-  ].join('\n');
+  const card = [chalk.bold[color](`${icon} ${title}`), chalk[color](message), ''].join('\n');
 
   return card;
 }
@@ -266,7 +259,7 @@ export function formatStatusRow(icon, label, value, type = 'info') {
 export function formatStatusSummary(items) {
   let output = '';
 
-  items.forEach(item => {
+  items.forEach((item) => {
     const icon = getStatusIcon(item.type || 'info');
     const color = getStatusColor(item.type || 'info');
     output += `${chalk[color](icon)} ${item.label}: ${chalk.bold[item.type || 'white'](item.value)}\n`;
@@ -296,12 +289,7 @@ export function formatTimeline(events) {
  * Format a status meter/bar
  */
 export function formatMeter(current, max, options = {}) {
-  const {
-    width = 20,
-    filledChar = '█',
-    emptyChar = '░',
-    showPercentage = true
-  } = options;
+  const { width = 20, filledChar = '█', emptyChar = '░', showPercentage = true } = options;
 
   const percentage = max > 0 ? Math.round((current / max) * 100) : 0;
   const filled = Math.floor((current / max) * width);
@@ -317,7 +305,7 @@ export function formatMeter(current, max, options = {}) {
  * Format a status indicator with multiple states
  */
 export function formatMultiStatus(statuses) {
-  const statusStrings = statuses.map(status => {
+  const statusStrings = statuses.map((status) => {
     const icon = getStatusIcon(status.type);
     const color = getStatusColor(status.type);
     return chalk[color](`${icon} ${status.label}`);
@@ -348,5 +336,5 @@ export default {
   formatStatusSummary,
   formatTimeline,
   formatMeter,
-  formatMultiStatus
+  formatMultiStatus,
 };

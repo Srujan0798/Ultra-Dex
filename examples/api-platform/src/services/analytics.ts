@@ -9,11 +9,14 @@ interface UsageAnalytics {
 }
 
 // Mock analytics data
-const analyticsStore: Map<string, Array<{
-  timestamp: string;
-  endpoint: string;
-  status: number;
-}>> = new Map();
+const analyticsStore: Map<
+  string,
+  Array<{
+    timestamp: string;
+    endpoint: string;
+    status: number;
+  }>
+> = new Map();
 
 export class AnalyticsService {
   async getUsageAnalytics(options: {
@@ -26,30 +29,29 @@ export class AnalyticsService {
     // In production, query from database or analytics service
     const mockData = analyticsStore.get(userId) || [];
 
-    const filtered = mockData.filter(
-      r => {
-        const ts = new Date(r.timestamp);
-        return ts >= startDate && ts <= endDate;
-      }
-    );
+    const filtered = mockData.filter((r) => {
+      const ts = new Date(r.timestamp);
+      return ts >= startDate && ts <= endDate;
+    });
 
     const totalRequests = filtered.length;
-    const successfulRequests = filtered.filter(r => r.status < 400).length;
+    const successfulRequests = filtered.filter((r) => r.status < 400).length;
     const failedRequests = totalRequests - successfulRequests;
 
     // Group by endpoint
     const endpointCounts = new Map<string, number>();
-    filtered.forEach(r => {
+    filtered.forEach((r) => {
       endpointCounts.set(r.endpoint, (endpointCounts.get(r.endpoint) || 0) + 1);
     });
 
-    const requestsByEndpoint = Array.from(endpointCounts.entries()).map(
-      ([endpoint, count]) => ({ endpoint, count })
-    );
+    const requestsByEndpoint = Array.from(endpointCounts.entries()).map(([endpoint, count]) => ({
+      endpoint,
+      count,
+    }));
 
     // Group by date
     const dateCounts = new Map<string, number>();
-    filtered.forEach(r => {
+    filtered.forEach((r) => {
       const date = r.timestamp.split('T')[0];
       dateCounts.set(date, (dateCounts.get(date) || 0) + 1);
     });
@@ -63,7 +65,7 @@ export class AnalyticsService {
       successfulRequests,
       failedRequests,
       requestsByEndpoint,
-      requestsOverTime
+      requestsOverTime,
     };
   }
 
@@ -76,7 +78,7 @@ export class AnalyticsService {
     analyticsStore.get(userId)!.push({
       timestamp: new Date().toISOString(),
       endpoint,
-      status
+      status,
     });
 
     // In production, send to analytics database or service

@@ -15,7 +15,7 @@ describe('Plugin System', () => {
   test('PluginManager should register and execute hooks', async () => {
     const manager = new PluginManager('/tmp/test-project');
     let hookCalled = false;
-    
+
     manager.registerHook('test-hook', async (context) => {
       hookCalled = true;
       assert.strictEqual(context.foo, 'bar');

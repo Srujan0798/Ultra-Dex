@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Performance profiling utility for Ultra-Dex CLI
  * Helps identify slow operations and optimize command performance
@@ -29,16 +31,16 @@ export function endTimer(label) {
     console.warn(chalk.yellow(`⚠️  No timer found for: ${label}`));
     return 0;
   }
-  
+
   const duration = performance.now() - startTime;
   activeTimers.delete(label);
-  
+
   // Store metric
   if (!metrics.has(label)) {
     metrics.set(label, []);
   }
   metrics.get(label).push(duration);
-  
+
   return duration;
 }
 
@@ -101,13 +103,13 @@ function formatDuration(ms) {
  */
 export function getStatistics() {
   const stats = {};
-  
+
   for (const [label, durations] of metrics) {
     if (durations.length === 0) continue;
-    
+
     const sorted = [...durations].sort((a, b) => a - b);
     const sum = sorted.reduce((a, b) => a + b, 0);
-    
+
     stats[label] = {
       count: durations.length,
       total: sum,
@@ -118,7 +120,7 @@ export function getStatistics() {
       p95: sorted[Math.floor(sorted.length * 0.95)] || sorted[sorted.length - 1],
     };
   }
-  
+
   return stats;
 }
 
@@ -128,15 +130,15 @@ export function getStatistics() {
 export function showReport() {
   const stats = getStatistics();
   const labels = Object.keys(stats).sort((a, b) => stats[b].total - stats[a].total);
-  
+
   if (labels.length === 0) {
     console.log(chalk.yellow('\n⚠️  No performance data collected\n'));
     return;
   }
-  
+
   console.log(chalk.bold('\n📊 Performance Report\n'));
   console.log(chalk.dim('─'.repeat(80)));
-  
+
   // Header
   console.log(
     chalk.bold('Operation').padEnd(30),
@@ -147,7 +149,7 @@ export function showReport() {
     chalk.bold('Max').padStart(10)
   );
   console.log(chalk.dim('─'.repeat(80)));
-  
+
   // Data rows
   for (const label of labels) {
     const s = stats[label];
@@ -160,9 +162,9 @@ export function showReport() {
       formatDuration(s.max).padStart(10)
     );
   }
-  
+
   console.log(chalk.dim('─'.repeat(80)));
-  
+
   // Summary
   const grandTotal = Object.values(stats).reduce((sum, s) => sum + s.total, 0);
   console.log(chalk.bold(`\nTotal time: ${formatDuration(grandTotal)}`));
@@ -184,18 +186,18 @@ export function clearMetrics() {
  */
 export async function profileCommand(commandName, commandFn) {
   console.log(chalk.bold(`\n🔍 Profiling: ${commandName}\n`));
-  
+
   const startTime = performance.now();
-  
+
   try {
     await commandFn();
   } finally {
     const totalTime = performance.now() - startTime;
     console.log(chalk.bold(`\n✅ Command completed in ${formatDuration(totalTime)}`));
-    
+
     // Show detailed report
     showReport();
-    
+
     // Provide optimization suggestions
     provideSuggestions();
   }
@@ -207,7 +209,7 @@ export async function profileCommand(commandName, commandFn) {
 function provideSuggestions() {
   const stats = getStatistics();
   const suggestions = [];
-  
+
   for (const [label, data] of Object.entries(stats)) {
     // Suggest optimizations for slow operations
     if (data.average > 1000) {
@@ -215,22 +217,24 @@ function provideSuggestions() {
         suggestions.push(`• ${label}: Consider caching file reads or using async batching`);
       }
       if (label.includes('scan') || label.includes('glob')) {
-        suggestions.push(`• ${label}: Consider excluding directories or using incremental scanning`);
+        suggestions.push(
+          `• ${label}: Consider excluding directories or using incremental scanning`
+        );
       }
       if (label.includes('fetch') || label.includes('api')) {
         suggestions.push(`• ${label}: Consider implementing request caching or parallelization`);
       }
     }
-    
+
     // Suggest for high-frequency operations
     if (data.count > 10 && data.average > 100) {
       suggestions.push(`• ${label}: Called ${data.count} times, consider batching or memoization`);
     }
   }
-  
+
   if (suggestions.length > 0) {
     console.log(chalk.cyan('\n💡 Optimization Suggestions:\n'));
-    suggestions.forEach(s => console.log(s));
+    suggestions.forEach((s) => console.log(s));
     console.log();
   }
 }

@@ -6,12 +6,15 @@ import path from 'node:path';
 import os from 'node:os';
 import { createRequire } from 'node:module';
 
+import { fileURLToPath } from 'node:url';
+
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 const EXPECTED_VERSION = pkg.version;
 
 // Use import.meta.url to get correct path regardless of cwd
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const cliPath = path.resolve(__dirname, '..', 'bin', 'ultra-dex.js');
 
 function runCli(args, options = {}) {
@@ -19,11 +22,11 @@ function runCli(args, options = {}) {
     cwd: options.cwd ?? process.cwd(),
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
-    input: options.input ?? ''
+    input: options.input ?? '',
   });
   return {
     ...result,
-    output: `${result.stdout ?? ''}${result.stderr ?? ''}`
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
   };
 }
 
@@ -32,7 +35,11 @@ test('--version returns valid semver', () => {
   assert.equal(result.status, 0);
   const version = result.output.trim();
   assert.match(version, /^\d+\.\d+\.\d+$/);
-  assert.equal(version, EXPECTED_VERSION, `Version should match package.json (${EXPECTED_VERSION})`);
+  assert.equal(
+    version,
+    EXPECTED_VERSION,
+    `Version should match package.json (${EXPECTED_VERSION})`
+  );
 });
 
 test('--help shows all 16 commands', () => {
@@ -54,9 +61,9 @@ test('--help shows all 16 commands', () => {
     'validate',
     'hooks',
     'fetch',
-    'sync'
+    'sync',
   ];
-  commands.forEach(cmd => {
+  commands.forEach((cmd) => {
     assert.match(result.output, new RegExp(`\\b${cmd}\\b`));
   });
 });
@@ -80,9 +87,9 @@ test('agents lists all agents', () => {
     'reviewer',
     'testing',
     'performance',
-    'refactoring'
+    'refactoring',
   ];
-  agents.forEach(agent => {
+  agents.forEach((agent) => {
     assert.match(output, new RegExp(`\\b${agent}\\b`));
   });
 });
@@ -104,7 +111,7 @@ test('init --preview shows planned files', async () => {
 test('init --live creates scaffold', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-live-'));
   const result = runCli(['init', '--live', '--stack', 'next15-prisma-clerk', '--dir', tmpDir]);
-  
+
   if (result.status !== 0) {
     console.log('Live init failed:', result.output);
   }
@@ -113,7 +120,7 @@ test('init --live creates scaffold', async () => {
   // Verify key files exist
   const files = await fs.readdir(tmpDir);
   assert.ok(files.length > 0, 'Directory should not be empty');
-  
+
   // Clean up
   await fs.rm(tmpDir, { recursive: true, force: true });
 });
@@ -121,7 +128,7 @@ test('init --live creates scaffold', async () => {
 test('sync updates context', async () => {
   // First create a project
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-sync-'));
-  
+
   // We need a basic CONTEXT.md and some files to sync
   await fs.writeFile(path.join(tmpDir, 'CONTEXT.md'), '# Context\n');
   await fs.writeFile(path.join(tmpDir, 'package.json'), '{}');
@@ -129,13 +136,13 @@ test('sync updates context', async () => {
   await fs.writeFile(path.join(tmpDir, 'src', 'app.ts'), 'console.log("hello");');
 
   const result = runCli(['sync', '--dir', tmpDir]);
-  
+
   if (result.status !== 0) {
     console.log('Sync failed:', result.output);
   }
   assert.equal(result.status, 0);
   assert.match(result.output, /Files scanned/);
-  
+
   // Clean up
   await fs.rm(tmpDir, { recursive: true, force: true });
 });

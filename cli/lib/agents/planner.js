@@ -1,8 +1,10 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { printWarning } from '../utils/output.js';
 
 export function enforceAtomicTasks(tasks = []) {
   const violations = [];
-  tasks.forEach(task => {
+  tasks.forEach((task) => {
     if (task.estimateHours && task.estimateHours > 9) {
       violations.push({ task, reason: 'Estimate exceeds 9 hours' });
     }
@@ -13,7 +15,7 @@ export function enforceAtomicTasks(tasks = []) {
 
   if (violations.length) {
     printWarning('⚠️ Atomic task enforcement violations detected:');
-    violations.forEach(v => printWarning(`- ${v.reason}`));
+    violations.forEach((v) => printWarning(`- ${v.reason}`));
   }
 
   return { ok: violations.length === 0, violations };

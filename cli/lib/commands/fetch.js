@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
@@ -77,7 +79,10 @@ export function registerFetchCommand(program) {
           }
         }
 
-        await downloadFile(`${GITHUB_RAW_BASE}/cursor-rules/load.sh`, path.join(rulesDir, 'load.sh'));
+        await downloadFile(
+          `${GITHUB_RAW_BASE}/cursor-rules/load.sh`,
+          path.join(rulesDir, 'load.sh')
+        );
         try {
           await fs.chmod(path.join(rulesDir, 'load.sh'), '755');
         } catch {}

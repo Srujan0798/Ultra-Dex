@@ -1,6 +1,7 @@
 # FastAPI SaaS API
 
 Production-ready API template with:
+
 - **Auth**: JWT tokens with HTTPBearer
 - **Database**: SQLAlchemy + PostgreSQL
 - **Payments**: Stripe integration

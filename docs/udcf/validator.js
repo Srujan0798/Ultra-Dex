@@ -39,5 +39,5 @@ export function validateUDCFFile(filePath) {
 
 export default {
   validateUDCF,
-  validateUDCFFile
+  validateUDCFFile,
 };

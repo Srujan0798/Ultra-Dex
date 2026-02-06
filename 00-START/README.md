@@ -22,6 +22,7 @@
 ## 🗂️ Why This Folder?
 
 This folder (`00-START/`) sorts to the top of your file browser so you can **immediately find the important docs** without scrolling through:
+
 - Hidden folders (`.claude`, `.cursor`, etc.)
 - Regular folders (`agents`, `cli`, `docs`, etc.)
 - Miscellaneous root files
@@ -37,4 +38,4 @@ This folder (`00-START/`) sorts to the top of your file browser so you can **imm
 
 ---
 
-*"Read these 6 files first, then you'll understand everything."*
+_"Read these 6 files first, then you'll understand everything."_

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex review command
  * Reviews code against the implementation plan using AI
@@ -8,7 +10,11 @@ import ora from 'ora';
 // import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
-import { createProvider, getDefaultProvider, checkConfiguredProviders } from '../providers/index.js';
+import {
+  createProvider,
+  getDefaultProvider,
+  checkConfiguredProviders,
+} from '../providers/index.js';
 import { SYSTEM_PROMPT, generateReviewPrompt } from '../templates/prompts/review-code.js';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
@@ -137,19 +143,22 @@ export function registerReviewCommand(program) {
         const spinner = ora('Scanning codebase & Building Graph...').start();
         const structure = await getDirectoryStructure(reviewDir);
         const keyFiles = await findKeyFiles(reviewDir);
-        
+
         // GOD MODE: Build CPG
-        let graphSummary = "Graph Not Available";
+        let graphSummary = 'Graph Not Available';
         try {
           const graph = await buildGraph();
           graphSummary = `
 Code Property Graph Stats:
-- Files: ${graph.nodes.filter(n => n.type === 'file').length}
-- Functions: ${graph.nodes.filter(n => n.type === 'function').length}
+- Files: ${graph.nodes.filter((n) => n.type === 'file').length}
+- Functions: ${graph.nodes.filter((n) => n.type === 'function').length}
 - Dependencies (Edges): ${graph.edges.length}
 
 Top Dependencies:
-${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
+${graph.edges
+  .slice(0, 10)
+  .map((e) => `- ${e.source} -> ${e.target}`)
+  .join('\n')}
         `;
         } catch (e) {
           // Fallback if graph fails
@@ -185,7 +194,7 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
 
         // Full AI review
         const configured = checkConfiguredProviders();
-        const hasProvider = configured.some(p => p.configured) || options.key;
+        const hasProvider = configured.some((p) => p.configured) || options.key;
 
         if (!hasProvider) {
           printWarning(chalk.yellow('\n⚠️  No AI provider configured for full review.\n'));
@@ -211,8 +220,10 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
         }
 
         // Build file summary
-        const filesSummary = keyFiles.map(f => `### ${f.path}\n\`\`\`\n${f.content}\n\`\`\``).join('\n\n');
-        
+        const filesSummary = keyFiles
+          .map((f) => `### ${f.path}\n\`\`\`\n${f.content}\n\`\`\``)
+          .join('\n\n');
+
         // Inject Graph Summary into context
         const contextWithGraph = `${structure}\n\n## ARCHITECTURAL GRAPH (TRUTH)\n${graphSummary}`;
 
@@ -265,11 +276,13 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
           if (report.sections) {
             printInfo(chalk.white('  Section Scores:\n'));
             for (const [section, data] of Object.entries(report.sections)) {
-              const icon = data.status === 'aligned' ? '✅' :
-                           data.status === 'deviated' ? '⚠️' : '❌';
-              const scoreColor = data.score >= 80 ? chalk.green :
-                                data.score >= 60 ? chalk.yellow : chalk.red;
-              printInfo(`    ${icon} ${section.padEnd(12)} ${scoreColor(`${data.score}%`)} - ${data.notes || ''}`);
+              const icon =
+                data.status === 'aligned' ? '✅' : data.status === 'deviated' ? '⚠️' : '❌';
+              const scoreColor =
+                data.score >= 80 ? chalk.green : data.score >= 60 ? chalk.yellow : chalk.red;
+              printInfo(
+                `    ${icon} ${section.padEnd(12)} ${scoreColor(`${data.score}%`)} - ${data.notes || ''}`
+              );
             }
             printInfo('');
           }
@@ -308,9 +321,12 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
 
           // Cost info
           const cost = provider.estimateCost(result.usage.inputTokens, result.usage.outputTokens);
-          printInfo(chalk.gray(`  Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`));
+          printInfo(
+            chalk.gray(
+              `  Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`
+            )
+          );
           printInfo(chalk.gray(`  Cost: ~$${cost.total.toFixed(4)}\n`));
-
         } catch (err) {
           spinner.fail('Review failed');
           printError(chalk.red(`\nError: ${err.message}`));
@@ -324,7 +340,10 @@ ${graph.edges.slice(0, 10).map(e => `- ${e.source} -> ${e.target}`).join('\n')}
   reviewCmd._examples = [
     { command: 'ultra-dex review', description: 'Run full AI review using default provider' },
     { command: 'ultra-dex review --quick', description: 'Quick structural review without AI' },
-    { command: 'ultra-dex review --dir ./apps/web --json', description: 'Review a specific directory and emit JSON' },
+    {
+      command: 'ultra-dex review --dir ./apps/web --json',
+      description: 'Review a specific directory and emit JSON',
+    },
   ];
 }
 

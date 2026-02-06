@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Scaffold from Plan Command
  * Generates project structure from IMPLEMENTATION-PLAN.md
@@ -18,7 +20,7 @@ async function parsePlanStructure() {
   try {
     const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
     const planContent = await fs.readFile(planPath, 'utf8');
-    
+
     // Extract sections that contain file/directory information
     const sections = planContent.split(/^##\s+/m);
     const structure = {
@@ -26,21 +28,24 @@ async function parsePlanStructure() {
       files: [],
       configFiles: [],
       apiRoutes: [],
-      dataModels: []
+      dataModels: [],
     };
 
     // Look for common patterns indicating file structure
     for (const section of sections) {
       const lines = section.split('\n');
-      
+
       // Find directory structures
       for (const line of lines) {
         // Match directory patterns like "src/", "components/", etc.
         if (line.trim().endsWith('/') && !line.includes('http')) {
-          const dirPath = line.trim().replace(/[^\w\-_./]/g, '').replace(/\/$/, '');
+          const dirPath = line
+            .trim()
+            .replace(/[^\w\-_./]/g, '')
+            .replace(/\/$/, '');
           if (dirPath) {
             structure.directories.add(dirPath);
-            
+
             // Add parent directories
             let currentPath = '';
             const parts = dirPath.split('/');
@@ -52,7 +57,7 @@ async function parsePlanStructure() {
             }
           }
         }
-        
+
         // Match file patterns like "*.js", "*.ts", etc.
         if (line.match(/\*\.[\w]+|[\w\-_.]+\.(js|ts|jsx|tsx|json|md|css|scss|html)$/)) {
           const filePath = line.trim().replace(/[^\w\-_./]/g, '');
@@ -60,7 +65,7 @@ async function parsePlanStructure() {
             structure.files.push(filePath);
           }
         }
-        
+
         // Look for API route patterns
         if (line.includes('API') || line.includes('Route') || line.includes('Endpoint')) {
           const apiMatch = line.match(/(GET|POST|PUT|DELETE|PATCH)\s+\/[\w\-_/]+/gi);
@@ -71,18 +76,20 @@ async function parsePlanStructure() {
             }
           }
         }
-        
+
         // Look for data model patterns
         if (line.includes('model') || line.includes('schema') || line.includes('table')) {
           structure.dataModels.push(line.trim());
         }
       }
     }
-    
+
     return structure;
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw new AppError('IMPLEMENTATION-PLAN.md not found in current directory', { code: 'PLAN_NOT_FOUND' });
+      throw new AppError('IMPLEMENTATION-PLAN.md not found in current directory', {
+        code: 'PLAN_NOT_FOUND',
+      });
     }
     throw error;
   }
@@ -93,7 +100,7 @@ async function parsePlanStructure() {
  */
 async function createDirectories(directories) {
   const createdDirs = [];
-  
+
   for (const dir of directories) {
     const dirPath = path.resolve(process.cwd(), dir);
     try {
@@ -103,7 +110,7 @@ async function createDirectories(directories) {
       printWarning(chalk.yellow(`⚠️  Could not create directory: ${dir} (${error.message})`));
     }
   }
-  
+
   return createdDirs;
 }
 
@@ -113,10 +120,10 @@ async function createDirectories(directories) {
 async function createFiles(files, options = {}) {
   const createdFiles = [];
   const force = Boolean(options.force);
-  
+
   for (const filePath of files) {
     const fullPath = path.resolve(process.cwd(), filePath);
-    
+
     // Skip if file already exists
     try {
       await fs.access(fullPath);
@@ -127,16 +134,16 @@ async function createFiles(files, options = {}) {
     } catch {
       // File doesn't exist, proceed to create
     }
-    
+
     try {
       // Create directory if it doesn't exist
       const dirPath = path.dirname(fullPath);
       await fs.mkdir(dirPath, { recursive: true });
-      
+
       // Create file with TODO comment
       const ext = path.extname(filePath).toLowerCase();
       let content = '';
-      
+
       if (ext === '.js' || ext === '.ts' || ext === '.jsx' || ext === '.tsx') {
         content = `// TODO: Implement ${path.basename(filePath, ext)}
 // Generated from IMPLEMENTATION-PLAN.md
@@ -153,14 +160,14 @@ async function createFiles(files, options = {}) {
       } else {
         content = '# TODO: Implement this file\n# Generated from IMPLEMENTATION-PLAN.md\n\n';
       }
-      
+
       await fs.writeFile(fullPath, content);
       createdFiles.push(filePath);
     } catch (error) {
       printWarning(chalk.yellow(`⚠️  Could not create file: ${filePath} (${error.message})`));
     }
   }
-  
+
   return createdFiles;
 }
 
@@ -217,16 +224,16 @@ build
 .env
 *.log
 .DS_Store
-`
+`,
   };
-  
+
   const createdConfigs = [];
-  
+
   const force = Boolean(options.force);
 
   for (const [filename, content] of Object.entries(configs)) {
     const filePath = path.resolve(process.cwd(), filename);
-    
+
     try {
       await fs.access(filePath);
       if (!force) {
@@ -240,7 +247,7 @@ build
     await fs.writeFile(filePath, content);
     createdConfigs.push(filename);
   }
-  
+
   return createdConfigs;
 }
 
@@ -249,10 +256,10 @@ build
  */
 async function generatePrismaSchema(dataModels, options = {}) {
   if (dataModels.length === 0) return null;
-  
+
   const schemaPath = path.resolve(process.cwd(), 'prisma', 'schema.prisma');
   const force = Boolean(options.force);
-  
+
   try {
     await fs.access(schemaPath);
     if (!force) {
@@ -262,10 +269,10 @@ async function generatePrismaSchema(dataModels, options = {}) {
   } catch {
     // Schema doesn't exist, proceed to create
   }
-  
+
   // Create prisma directory
   await fs.mkdir(path.dirname(schemaPath), { recursive: true });
-  
+
   let schemaContent = `// Generated from IMPLEMENTATION-PLAN.md data models
 // Prisma schema
 
@@ -279,16 +286,20 @@ datasource db {
 }
 
 `;
-  
+
   // Generate basic models from data models
   for (const model of dataModels) {
     const modelName = model
       .replace(/[^a-zA-Z0-9_]/g, ' ')
       .split(' ')
-      .filter(word => word.length > 0)
-      .map((word, index) => index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word.charAt(0).toUpperCase() + word.slice(1))
+      .filter((word) => word.length > 0)
+      .map((word, index) =>
+        index === 0
+          ? word.charAt(0).toUpperCase() + word.slice(1)
+          : word.charAt(0).toUpperCase() + word.slice(1)
+      )
       .join('');
-    
+
     if (modelName) {
       schemaContent += `model ${modelName} {
   id        String   @id @default(cuid())
@@ -300,7 +311,7 @@ datasource db {
 `;
     }
   }
-  
+
   await fs.writeFile(schemaPath, schemaContent);
   return schemaPath;
 }
@@ -310,13 +321,13 @@ datasource db {
  */
 async function createApiRoutes(apiRoutes, options = {}) {
   if (apiRoutes.length === 0) return [];
-  
+
   const routesDir = path.resolve(process.cwd(), 'src', 'routes');
   await fs.mkdir(routesDir, { recursive: true });
-  
+
   const createdRoutes = [];
   const force = Boolean(options.force);
-  
+
   for (const { method, route } of apiRoutes) {
     const cleanRoute = route
       .replace(/[{}]/g, '')
@@ -324,10 +335,10 @@ async function createApiRoutes(apiRoutes, options = {}) {
       .replace(/\//g, '_')
       .replace(/[^a-zA-Z0-9_]/g, '_')
       .toLowerCase();
-    
+
     const fileName = `${cleanRoute}.js`;
     const filePath = path.join(routesDir, fileName);
-    
+
     try {
       await fs.access(filePath);
       if (!force) {
@@ -337,7 +348,7 @@ async function createApiRoutes(apiRoutes, options = {}) {
     } catch {
       // File doesn't exist, proceed to create
     }
-    
+
     const content = `// API Route: ${method} ${route}
 // Generated from IMPLEMENTATION-PLAN.md
 
@@ -361,11 +372,11 @@ export default async function handler(req, res) {
   }
 }
 `;
-    
+
     await fs.writeFile(filePath, content);
     createdRoutes.push(fileName);
   }
-  
+
   return createdRoutes;
 }
 
@@ -375,15 +386,15 @@ export default async function handler(req, res) {
 export async function scaffoldFromPlan(options = {}) {
   try {
     printInfo(chalk.cyan('\n🏗️  Ultra-Dex Plan-Based Scaffolding\n'));
-    
+
     if (options.dryRun) {
       printInfo(chalk.yellow('📝 DRY RUN MODE - No files will be created\n'));
     }
-    
+
     // Parse the plan structure
     printInfo(chalk.blue('🔍 Parsing IMPLEMENTATION-PLAN.md...'));
     const structure = await parsePlanStructure();
-    
+
     if (options.dryRun) {
       printInfo(chalk.green(`✅ Would create ${structure.directories.size} directories`));
       printInfo(chalk.green(`✅ Would create ${structure.files.length} files`));
@@ -408,22 +419,22 @@ export async function scaffoldFromPlan(options = {}) {
       printSuccess(chalk.green(`✅ Created ${createdRoutes.length} API route files\n`));
       return;
     }
-    
+
     // Create directories
     printInfo(chalk.blue('📁 Creating directory structure...'));
     const createdDirs = await createDirectories(structure.directories);
     printSuccess(chalk.green(`✅ Created ${createdDirs.length} directories\n`));
-    
+
     // Create files
     printInfo(chalk.blue('📄 Creating files with TODO comments...'));
     const createdFiles = await createFiles(structure.files, options);
     printSuccess(chalk.green(`✅ Created ${createdFiles.length} files\n`));
-    
+
     // Create config files
     printInfo(chalk.blue('⚙️  Creating configuration files...'));
     const createdConfigs = await createConfigFiles(options);
     printSuccess(chalk.green(`✅ Created ${createdConfigs.length} config files\n`));
-    
+
     // Generate Prisma schema
     if (structure.dataModels.length > 0) {
       printInfo(chalk.blue('🗄️  Generating Prisma schema...'));
@@ -434,20 +445,19 @@ export async function scaffoldFromPlan(options = {}) {
         printInfo(chalk.gray('ℹ️  Skipped Prisma schema generation\n'));
       }
     }
-    
+
     // Create API routes
     if (structure.apiRoutes.length > 0) {
       printInfo(chalk.blue('🌐 Creating API route placeholders...'));
       const createdRoutes = await createApiRoutes(structure.apiRoutes, options);
       printSuccess(chalk.green(`✅ Created ${createdRoutes.length} API route files\n`));
     }
-    
+
     printSuccess(chalk.bold.green('🎉 Scaffolding completed successfully!\n'));
     printInfo(chalk.gray('Next steps:'));
     printInfo(chalk.gray('  1. Review generated files and implement TODOs'));
     printInfo(chalk.gray('  2. Update configuration files with your values'));
     printInfo(chalk.gray('  3. Run your project to verify structure'));
-    
   } catch (error) {
     await handleError(error, { command: 'scaffold', options });
     process.exit(error.exitCode || 1);

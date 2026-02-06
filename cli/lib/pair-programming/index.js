@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * AI Pair Programming Mode
  * Real-time suggestions, voice command hooks, context-aware completions, agent handoff.

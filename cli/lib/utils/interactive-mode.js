@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Developer Experience Enhancements
  * Interactive mode, progress indicators, and improved CLI feedback
@@ -32,7 +34,7 @@ class InteractiveMode {
    */
   async run() {
     const answers = {};
-    
+
     for (const [name, question] of this.questions) {
       try {
         const answer = await inquirer.prompt([question]);
@@ -43,7 +45,7 @@ class InteractiveMode {
         throw error;
       }
     }
-    
+
     return answers;
   }
 
@@ -53,7 +55,7 @@ class InteractiveMode {
   createSpinner(text = 'Processing...') {
     this.spinner = ora({
       text: chalk.blue(text),
-      spinner: 'clock'
+      spinner: 'clock',
     });
     return this.spinner;
   }
@@ -102,14 +104,16 @@ class InteractiveMode {
         progressBar.current += increment;
         const percent = Math.round((progressBar.current / total) * 100);
         const bar = '█'.repeat(Math.round(percent / 2)) + '░'.repeat(50 - Math.round(percent / 2));
-        process.stdout.write(`\r${message}: [${bar}] ${percent}% (${progressBar.current}/${total})`);
+        process.stdout.write(
+          `\r${message}: [${bar}] ${percent}% (${progressBar.current}/${total})`
+        );
       },
       finish: () => {
         process.stdout.write('\n');
         this.showSuccess(`${message} completed!`);
-      }
+      },
     };
-    
+
     return progressBar;
   }
 
@@ -118,29 +122,29 @@ class InteractiveMode {
    */
   createTable(head, options = {}) {
     return new Table({
-      head: head.map(h => chalk.bold(h)),
+      head: head.map((h) => chalk.bold(h)),
       chars: {
-        'top': '═',
+        top: '═',
         'top-mid': '╤',
         'top-left': '╔',
         'top-right': '╗',
-        'bottom': '═',
+        bottom: '═',
         'bottom-mid': '╧',
         'bottom-left': '╚',
         'bottom-right': '╝',
-        'left': '║',
+        left: '║',
         'left-mid': '╟',
-        'mid': '─',
+        mid: '─',
         'mid-mid': '┼',
-        'right': '║',
+        right: '║',
         'right-mid': '╢',
-        'middle': '│'
+        middle: '│',
       },
       style: {
         head: ['blue', 'bold'],
-        border: ['grey']
+        border: ['grey'],
       },
-      ...options
+      ...options,
     });
   }
 
@@ -149,14 +153,14 @@ class InteractiveMode {
    */
   showStatus(statusData) {
     const table = this.createTable(['Property', 'Value']);
-    
+
     for (const [key, value] of Object.entries(statusData)) {
       table.push([
         chalk.bold(key.charAt(0).toUpperCase() + key.slice(1)),
-        typeof value === 'object' ? JSON.stringify(value) : String(value)
+        typeof value === 'object' ? JSON.stringify(value) : String(value),
       ]);
     }
-    
+
     console.log(table.toString());
   }
 
@@ -166,9 +170,9 @@ class InteractiveMode {
   showMetrics() {
     try {
       const metrics = monitoring.getMetrics();
-      
+
       const table = this.createTable(['Metric', 'Value']);
-      
+
       table.push(
         ['Requests', metrics.requests],
         ['Errors', metrics.errors],
@@ -177,24 +181,24 @@ class InteractiveMode {
         ['CPU Cores', metrics.system.cpuCount],
         ['Platform', metrics.system.platform]
       );
-      
+
       console.log(chalk.bold('\n📊 System Metrics\n'));
       console.log(table.toString());
-      
+
       // Show recent performance
       if (metrics.performance.length > 0) {
         console.log(chalk.bold('\n⏱️  Recent Performance\n'));
         const perfTable = this.createTable(['Operation', 'Duration (ms)', 'Timestamp']);
-        
+
         const recentPerf = metrics.performance.slice(-5).reverse();
         for (const perf of recentPerf) {
           perfTable.push([
             perf.operation,
             perf.duration.toFixed(2),
-            new Date(perf.timestamp).toLocaleTimeString()
+            new Date(perf.timestamp).toLocaleTimeString(),
           ]);
         }
-        
+
         console.log(perfTable.toString());
       }
     } catch (error) {
@@ -208,36 +212,42 @@ class InteractiveMode {
   showHealthStatus() {
     try {
       const health = errorRecovery.getStatus();
-      
+
       console.log(chalk.bold('\n🏥 Health Status\n'));
-      
+
       // Overall status
-      const overallStatus = health.circuitBreakers && 
-        Object.values(health.circuitBreakers).every(cb => cb.state === 'closed') ?
-        chalk.green('✅ Healthy') : chalk.red('⚠️  Degraded');
-      
+      const overallStatus =
+        health.circuitBreakers &&
+        Object.values(health.circuitBreakers).every((cb) => cb.state === 'closed')
+          ? chalk.green('✅ Healthy')
+          : chalk.red('⚠️  Degraded');
+
       console.log(`Overall Status: ${overallStatus}`);
-      
+
       // Circuit breaker status
       if (health.circuitBreakers && Object.keys(health.circuitBreakers).length > 0) {
         console.log(chalk.bold('\n🔌 Circuit Breakers\n'));
         const cbTable = this.createTable(['Service', 'State', 'Failures', 'Can Try']);
-        
+
         for (const [name, status] of Object.entries(health.circuitBreakers)) {
-          const stateColor = status.state === 'closed' ? chalk.green : 
-                           status.state === 'open' ? chalk.red : chalk.yellow;
-          
+          const stateColor =
+            status.state === 'closed'
+              ? chalk.green
+              : status.state === 'open'
+                ? chalk.red
+                : chalk.yellow;
+
           cbTable.push([
             name,
             stateColor(status.state),
             status.failureCount,
-            status.canTry ? chalk.green('Yes') : chalk.red('No')
+            status.canTry ? chalk.green('Yes') : chalk.red('No'),
           ]);
         }
-        
+
         console.log(cbTable.toString());
       }
-      
+
       // Degraded services
       if (health.degradedServices.length > 0) {
         console.log(chalk.bold('\n⚠️  Degraded Services\n'));
@@ -266,11 +276,11 @@ class InteractiveMode {
   showConfiguration() {
     try {
       const config = configManager.getConfig();
-      
+
       console.log(chalk.bold('\n⚙️  Configuration\n'));
-      
+
       const configTable = this.createTable(['Section', 'Setting', 'Value']);
-      
+
       // Show key configuration values
       configTable.push(
         ['AI Provider', 'Default', config.ai.defaultProvider],
@@ -280,7 +290,7 @@ class InteractiveMode {
         ['Security', 'Validate Paths', config.security.validatePaths],
         ['Logging', 'Level', config.logging.level]
       );
-      
+
       console.log(configTable.toString());
     } catch (error) {
       this.showError(`Failed to show configuration: ${error.message}`);
@@ -297,7 +307,7 @@ class InteractiveMode {
         name: 'aiProvider',
         message: 'Select default AI provider:',
         choices: ['claude', 'openai', 'gemini', 'ollama'],
-        default: configManager.get('ai.defaultProvider')
+        default: configManager.get('ai.defaultProvider'),
       },
       {
         type: 'number',
@@ -305,8 +315,8 @@ class InteractiveMode {
         message: 'Set AI temperature (0-1):',
         default: configManager.get('ai.temperature'),
         validate: (value) => {
-          return value >= 0 && value <= 1 || 'Temperature must be between 0 and 1';
-        }
+          return (value >= 0 && value <= 1) || 'Temperature must be between 0 and 1';
+        },
       },
       {
         type: 'number',
@@ -314,35 +324,35 @@ class InteractiveMode {
         message: 'Set MCP server port:',
         default: configManager.get('mcp.port'),
         validate: (value) => {
-          return value >= 1 && value <= 65535 || 'Port must be between 1 and 65535';
-        }
+          return (value >= 1 && value <= 65535) || 'Port must be between 1 and 65535';
+        },
       },
       {
         type: 'confirm',
         name: 'enableCaching',
         message: 'Enable performance caching?',
-        default: configManager.get('performance.cacheEnabled')
-      }
+        default: configManager.get('performance.cacheEnabled'),
+      },
     ];
 
     const answers = await inquirer.prompt(questions);
-    
+
     // Update configuration
     configManager.set('ai.defaultProvider', answers.aiProvider);
     configManager.set('ai.temperature', answers.temperature);
     configManager.set('mcp.port', answers.mcpPort);
     configManager.set('performance.cacheEnabled', answers.enableCaching);
-    
+
     // Save configuration
     const saved = await configManager.save();
-    
+
     if (saved) {
       this.showSuccess('Configuration updated successfully!');
       this.showConfiguration();
     } else {
       this.showError('Failed to save configuration');
     }
-    
+
     return answers;
   }
 
@@ -351,9 +361,9 @@ class InteractiveMode {
    */
   showHelp() {
     console.log(chalk.bold('\n📖 Ultra-Dex Help\n'));
-    
+
     const helpTable = this.createTable(['Command', 'Description', 'Example']);
-    
+
     helpTable.push(
       ['ultra-dex init', 'Initialize new project', 'ultra-dex init'],
       ['ultra-dex generate', 'Generate implementation plan', 'ultra-dex generate "Todo app"'],
@@ -366,9 +376,9 @@ class InteractiveMode {
       ['ultra-dex config', 'Manage configuration', 'ultra-dex config --wizard'],
       ['ultra-dex status', 'Show system status', 'ultra-dex status']
     );
-    
+
     console.log(helpTable.toString());
-    
+
     console.log(chalk.bold('\n💡 Tips:\n'));
     console.log(`• Use ${chalk.cyan('--help')} with any command for detailed options`);
     console.log(`• Configuration can be managed with ${chalk.cyan('ultra-dex config')}`);
@@ -381,10 +391,10 @@ class InteractiveMode {
    */
   showSystemStatus() {
     console.log(chalk.bold.blue('\n🚀 Ultra-Dex System Status\n'));
-    
+
     // Show basic status
     const statusTable = this.createTable(['Component', 'Status', 'Details']);
-    
+
     statusTable.push(
       ['Configuration', chalk.green('Loaded'), 'Using project config'],
       ['Monitoring', chalk.green('Active'), 'Metrics collection enabled'],
@@ -392,20 +402,20 @@ class InteractiveMode {
       ['MCP Server', chalk.yellow('Unknown'), 'Check with ultra-dex serve'],
       ['AI Providers', chalk.green('Configured'), 'Ready for use']
     );
-    
+
     console.log(statusTable.toString());
-    
+
     // Show recent activity
     const recentMetrics = monitoring.getMetrics();
     console.log(chalk.bold('\n📊 Recent Activity\n'));
-    
+
     const activityTable = this.createTable(['Metric', 'Count']);
     activityTable.push(
       ['Total Requests', recentMetrics.requests],
       ['Errors Encountered', recentMetrics.errors],
       ['Performance Samples', recentMetrics.performance.length]
     );
-    
+
     console.log(activityTable.toString());
   }
 }

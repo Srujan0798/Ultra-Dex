@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Executor graph - converts tasks into actionable steps
  */
@@ -12,7 +14,7 @@ export function createExecutorGraph(options = {}) {
   return createSimpleGraph({
     ...options,
     nodeName: 'executor',
-    systemPrompt: SYSTEM_PROMPT
+    systemPrompt: SYSTEM_PROMPT,
   });
 }
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -5,7 +7,8 @@ const CHROME_AGENT_PATH = path.resolve(process.cwd(), '.ultra-dex', 'chrome-agen
 
 export class ChromeAgentsClient {
   constructor(options = {}) {
-    this.endpoint = options.endpoint || process.env.CHROME_AGENTS_URL || 'https://api.chrome-agents.local';
+    this.endpoint =
+      options.endpoint || process.env.CHROME_AGENTS_URL || 'https://api.chrome-agents.local';
     this.apiKey = options.apiKey || process.env.CHROME_AGENTS_KEY || '';
   }
 
@@ -13,7 +16,7 @@ export class ChromeAgentsClient {
     const payload = {
       task,
       type: options.type || 'general',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
     await this.saveTask(payload);
     return { ok: true, id: `ca-${Date.now()}`, payload };

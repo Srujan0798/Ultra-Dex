@@ -37,7 +37,7 @@ describe('APIKeyManager', () => {
 
     test('should apply custom permissions', () => {
       const key = manager.generateKey('admin-key', {
-        permissions: ['read', 'write', 'delete']
+        permissions: ['read', 'write', 'delete'],
       });
 
       const keyData = manager.getKey(key.id);
@@ -46,7 +46,7 @@ describe('APIKeyManager', () => {
 
     test('should apply custom rate limit', () => {
       const key = manager.generateKey('limited-key', {
-        rateLimit: 50
+        rateLimit: 50,
       });
 
       const keyData = manager.getKey(key.id);
@@ -70,7 +70,7 @@ describe('APIKeyManager', () => {
 
     test('should store createdBy field', () => {
       const key = manager.generateKey('user-key', {
-        createdBy: 'admin@example.com'
+        createdBy: 'admin@example.com',
       });
 
       const keyData = manager.getKey(key.id);
@@ -183,7 +183,7 @@ describe('APIKeyManager', () => {
 
     test('should return permissions on successful validation', () => {
       const { key } = manager.generateKey('perm-key', {
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       });
 
       const validation = manager.validateKey(key);
@@ -252,11 +252,11 @@ describe('APIKeyManager', () => {
     test('should include metadata', () => {
       const { id } = manager.generateKey('meta-key', {
         permissions: ['read', 'write'],
-        rateLimit: 200
+        rateLimit: 200,
       });
 
       const keys = manager.listKeys();
-      const key = keys.find(k => k.id === id);
+      const key = keys.find((k) => k.id === id);
 
       assert.ok(key);
       assert.strictEqual(key.name, 'meta-key');
@@ -329,7 +329,7 @@ describe('APIKeyManager', () => {
         'key@example.com',
         'key-with-dashes',
         'key_with_underscores',
-        'key with spaces'
+        'key with spaces',
       ];
 
       for (const name of specialNames) {

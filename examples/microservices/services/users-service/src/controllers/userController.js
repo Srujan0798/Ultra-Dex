@@ -26,11 +26,7 @@ class UserController {
 
   async setUserCache(userId, userData) {
     try {
-      await this.redis.setex(
-        this.getCacheKey(userId),
-        CACHE_TTL,
-        JSON.stringify(userData)
-      );
+      await this.redis.setex(this.getCacheKey(userId), CACHE_TTL, JSON.stringify(userData));
     } catch (error) {
       logger.warn('Cache write error:', error.message);
     }
@@ -59,12 +55,16 @@ class UserController {
         params = [`%${search}%`];
       }
 
-      query += ' ORDER BY created_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
+      query +=
+        ' ORDER BY created_at DESC LIMIT $' +
+        (params.length + 1) +
+        ' OFFSET $' +
+        (params.length + 2);
       params.push(parseInt(limit), parseInt(offset));
 
       const [usersResult, countResult] = await Promise.all([
         this.pool.query(query, params),
-        this.pool.query(countQuery, search ? [`%${search}%`] : [])
+        this.pool.query(countQuery, search ? [`%${search}%`] : []),
       ]);
 
       const total = parseInt(countResult.rows[0].count);
@@ -75,8 +75,8 @@ class UserController {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          totalPages: Math.ceil(total / limit)
-        }
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (error) {
       logger.error('List users error:', error);
@@ -94,17 +94,14 @@ class UserController {
         return res.json({ user: cached });
       }
 
-      const result = await this.pool.query(
-        'SELECT * FROM user_profiles WHERE id = $1',
-        [id]
-      );
+      const result = await this.pool.query('SELECT * FROM user_profiles WHERE id = $1', [id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'User not found' });
       }
 
       const user = result.rows[0];
-      
+
       // Cache the user
       await this.setUserCache(id, user);
 
@@ -125,17 +122,16 @@ class UserController {
         return res.json({ user: cached });
       }
 
-      const result = await this.pool.query(
-        'SELECT * FROM user_profiles WHERE user_id = $1',
-        [userId]
-      );
+      const result = await this.pool.query('SELECT * FROM user_profiles WHERE user_id = $1', [
+        userId,
+      ]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'User not found' });
       }
 
       const user = result.rows[0];
-      
+
       // Cache the user
       await this.setUserCache(userId, user);
 
@@ -155,10 +151,9 @@ class UserController {
 
     try {
       // Check if profile already exists
-      const existing = await this.pool.query(
-        'SELECT id FROM user_profiles WHERE user_id = $1',
-        [userId]
-      );
+      const existing = await this.pool.query('SELECT id FROM user_profiles WHERE user_id = $1', [
+        userId,
+      ]);
 
       if (existing.rows.length > 0) {
         return res.status(409).json({ error: 'User profile already exists' });
@@ -172,13 +167,10 @@ class UserController {
       );
 
       // Create default settings
-      await this.pool.query(
-        'INSERT INTO user_settings (user_id) VALUES ($1)',
-        [userId]
-      );
+      await this.pool.query('INSERT INTO user_settings (user_id) VALUES ($1)', [userId]);
 
       const user = result.rows[0];
-      
+
       // Cache the new user
       await this.setUserCache(userId, user);
 
@@ -197,10 +189,9 @@ class UserController {
 
     try {
       // Check if user exists
-      const existing = await this.pool.query(
-        'SELECT user_id FROM user_profiles WHERE id = $1',
-        [id]
-      );
+      const existing = await this.pool.query('SELECT user_id FROM user_profiles WHERE id = $1', [
+        id,
+      ]);
 
       if (existing.rows.length === 0) {
         return res.status(404).json({ error: 'User not found' });
@@ -218,12 +209,18 @@ class UserController {
              updated_at = NOW()
          WHERE id = $6
          RETURNING *`,
-        [firstName, lastName, phone, address ? JSON.stringify(address) : null, 
-         preferences ? JSON.stringify(preferences) : null, id]
+        [
+          firstName,
+          lastName,
+          phone,
+          address ? JSON.stringify(address) : null,
+          preferences ? JSON.stringify(preferences) : null,
+          id,
+        ]
       );
 
       const user = result.rows[0];
-      
+
       // Invalidate and update cache
       await this.invalidateUserCache(userId);
       await this.setUserCache(userId, user);
@@ -251,7 +248,7 @@ class UserController {
       }
 
       const userId = result.rows[0].user_id;
-      
+
       // Invalidate cache
       await this.invalidateUserCache(userId);
 
@@ -268,10 +265,9 @@ class UserController {
     const { userId } = req.params;
 
     try {
-      const result = await this.pool.query(
-        'SELECT * FROM user_settings WHERE user_id = $1',
-        [userId]
-      );
+      const result = await this.pool.query('SELECT * FROM user_settings WHERE user_id = $1', [
+        userId,
+      ]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Settings not found' });

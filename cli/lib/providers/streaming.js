@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { streamText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
@@ -6,24 +8,24 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 const PROVIDER_MAP = {
   openai: {
     create: (apiKey) => openai({ apiKey }),
-    defaultModel: 'gpt-4o-mini'
+    defaultModel: 'gpt-4o-mini',
   },
   claude: {
     create: (apiKey) => anthropic({ apiKey }),
-    defaultModel: 'claude-3-5-sonnet-20240620'
+    defaultModel: 'claude-3-5-sonnet-20240620',
   },
   anthropic: {
     create: (apiKey) => anthropic({ apiKey }),
-    defaultModel: 'claude-3-5-sonnet-20240620'
+    defaultModel: 'claude-3-5-sonnet-20240620',
   },
   google: {
     create: (apiKey) => createGoogleGenerativeAI({ apiKey }),
-    defaultModel: 'gemini-1.5-pro'
+    defaultModel: 'gemini-1.5-pro',
   },
   gemini: {
     create: (apiKey) => createGoogleGenerativeAI({ apiKey }),
-    defaultModel: 'gemini-1.5-pro'
-  }
+    defaultModel: 'gemini-1.5-pro',
+  },
 };
 
 function resolveProvider(providerId) {
@@ -47,7 +49,7 @@ export async function streamWithProvider({
   systemPrompt,
   prompt,
   apiKey,
-  onToken
+  onToken,
 } = {}) {
   const provider = resolveProvider(providerId);
   if (!provider) {
@@ -60,15 +62,16 @@ export async function streamWithProvider({
   }
 
   const modelName = model || provider.defaultModel;
-  const resolvedModelName = (providerId === 'claude' || providerId === 'anthropic')
-    ? normalizeClaudeModel(modelName)
-    : modelName;
+  const resolvedModelName =
+    providerId === 'claude' || providerId === 'anthropic'
+      ? normalizeClaudeModel(modelName)
+      : modelName;
   const modelClient = provider.create(resolvedKey)(resolvedModelName);
 
   const response = await streamText({
     model: modelClient,
     system: systemPrompt,
-    prompt
+    prompt,
   });
 
   let output = '';

@@ -10,21 +10,27 @@
 ### ✨ Major Features
 
 #### 🎯 VS Code Extension Sidebar
+
 Full IDE integration with 4 sidebar views:
+
 ```bash
 # Install from VSIX or marketplace
 # Access: Agent Explorer, Swarm Status, Context Preview, Quick Actions
 ```
 
 #### ⚡ Real-Time WebSocket Dashboard
+
 Instant updates, no polling:
+
 ```bash
 npx ultra-dex dashboard  # or: npx ultra-dex d
 # Live agent status, auto-reconnect, connection indicators
 ```
 
 #### 🧠 Session Persistence & Memory
+
 Never lose context:
+
 ```bash
 npx ultra-dex memory sessions     # List all sessions
 npx ultra-dex memory query "auth" # Search past decisions
@@ -59,7 +65,7 @@ npx ultra-dex setup --quick      # Fast defaults
 ```bash
 # Quick Aliases
 npx ultra-dex s "task"      # swarm
-npx ultra-dex d             # dashboard  
+npx ultra-dex d             # dashboard
 npx ultra-dex v             # verify
 npx ultra-dex b             # build
 npx ultra-dex g "idea"      # generate
@@ -95,6 +101,7 @@ npx ultra-dex watch --sync  # Auto-runs sync --brain
 ### 📚 Example Repositories
 
 Complete starter templates:
+
 - **E-commerce** (Next.js + Stripe + PostgreSQL)
 - **SaaS Analytics** (ClickHouse + Redis + Real-time)
 - **Real-time Chat** (Socket.io + WebSocket)
@@ -139,6 +146,7 @@ npx ultra-dex dashboard
 ## 📖 Core Commands
 
 ### Project Management
+
 ```bash
 npx ultra-dex init                    # Initialize new project
 npx ultra-dex generate "idea"         # AI-generated implementation plan
@@ -149,6 +157,7 @@ npx ultra-dex verify                  # Verify implementation completeness
 ```
 
 ### Development
+
 ```bash
 npx ultra-dex build                   # Build project
 npx ultra-dex validate                # Validate against standards
@@ -158,6 +167,7 @@ npx ultra-dex exec "code"             # Execute in sandbox
 ```
 
 ### Monitoring & Control
+
 ```bash
 npx ultra-dex dashboard               # Open God Mode dashboard
 npx ultra-dex serve                   # Start MCP server
@@ -168,6 +178,7 @@ npx ultra-dex metrics                 # Show metrics
 ```
 
 ### Advanced
+
 ```bash
 npx ultra-dex sync --brain            # Auto-sync CONTEXT.md
 npx ultra-dex cloud                   # Cloud collaboration
@@ -183,7 +194,9 @@ npx ultra-dex history                 # Command history
 ## 🎯 Key Features
 
 ### 1. 21-Step Verification Framework
+
 Every task follows production-ready standards:
+
 1. Understand requirement
 2. List assumptions
 3. Analyze logic flow
@@ -207,7 +220,9 @@ Every task follows production-ready standards:
 21. Final verify
 
 ### 2. 34 Cursor Rules
+
 Production-grade coding standards:
+
 - Core principles, TypeScript, React patterns
 - Authentication, database, testing
 - Security, performance, accessibility
@@ -216,7 +231,9 @@ Production-grade coding standards:
 [View Rules](./cli/assets/cursor-rules/)
 
 ### 3. Agent Ecosystem
+
 **17 Specialized Agents:**
+
 - **Leadership:** @cto, @planner, @research
 - **Development:** @backend, @frontend, @database
 - **Security:** @auth, @security
@@ -226,7 +243,9 @@ Production-grade coding standards:
 - **Meta:** @orchestrator
 
 ### 4. Template System
+
 **3 Template Variants:**
+
 - **LITE** (12 sections) - Quick MVPs
 - **FULL** (34 sections) - Complete projects
 - **ENTERPRISE** (50+ sections) - Large-scale
@@ -236,16 +255,19 @@ Production-grade coding standards:
 ## 🛠️ Installation & Setup
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - Git
 - (Optional) Docker for sandbox execution
 
 ### Install
+
 ```bash
 npm install -g ultra-dex
 ```
 
 ### First-Time Setup
+
 ```bash
 npx ultra-dex setup
 # Interactive wizard configures:
@@ -256,12 +278,13 @@ npx ultra-dex setup
 ```
 
 ### Shell Completions
+
 ```bash
 # Bash
 source <(ultra-dex completions bash)
 # Add to ~/.bashrc for persistence
 
-# Zsh  
+# Zsh
 source <(ultra-dex completions zsh)
 # Add to ~/.zshrc for persistence
 ```
@@ -282,6 +305,7 @@ source <(ultra-dex completions zsh)
 ## 🎓 Learning Path
 
 ### Beginner (Day 1)
+
 ```bash
 npx ultra-dex init                    # Create project
 npx ultra-dex generate "Todo app"     # Generate plan
@@ -289,6 +313,7 @@ npx ultra-dex align                   # Check alignment
 ```
 
 ### Intermediate (Week 1)
+
 ```bash
 npx ultra-dex swarm "Feature X"       # Run agents
 npx ultra-dex dashboard               # Monitor progress
@@ -296,6 +321,7 @@ npx ultra-dex verify                  # Verify completion
 ```
 
 ### Advanced (Month 1)
+
 ```bash
 npx ultra-dex voice "Complex system"  # Voice input
 npx ultra-dex sync --brain            # Auto-sync
@@ -353,24 +379,28 @@ my-project/
 ### Common Issues
 
 **Command not found:**
+
 ```bash
 npm install -g ultra-dex
 # Or use: npx ultra-dex
 ```
 
 **API key errors:**
+
 ```bash
 npx ultra-dex setup              # Configure keys
 # Or set env var: export ANTHROPIC_API_KEY=...
 ```
 
 **Port already in use:**
+
 ```bash
 npx ultra-dex serve --port 3003  # Use different port
 lsof -ti:3001 | xargs kill -9   # Kill process
 ```
 
 **Need help:**
+
 ```bash
 npx ultra-dex doctor             # Diagnostics
 npx ultra-dex <command> --help   # Command help
@@ -381,6 +411,7 @@ npx ultra-dex <command> --help   # Command help
 ## 🌟 Why Ultra-Dex?
 
 ### Before Ultra-Dex
+
 - ❌ AI agents forget context between sessions
 - ❌ No standard for AI-assisted development
 - ❌ Manual coordination between tools
@@ -388,6 +419,7 @@ npx ultra-dex <command> --help   # Command help
 - ❌ No verification framework
 
 ### With Ultra-Dex
+
 - ✅ Persistent memory across sessions
 - ✅ 21-step production-ready framework
 - ✅ Coordinated agent swarms
@@ -399,11 +431,13 @@ npx ultra-dex <command> --help   # Command help
 ## 📈 Roadmap
 
 ### v3.6.0 (March 2026)
+
 - Deep Graph RAG (FalkorDB/Neo4j)
 - Enterprise Auth (SSO/SAML)
 - LangGraph Integration
 
 ### v4.0.0 (Q2 2026)
+
 - AI Agent Protocol SDK
 - JetBrains/Neovim plugins
 - Agent Marketplace
@@ -415,6 +449,7 @@ npx ultra-dex <command> --help   # Command help
 We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ### Ways to Contribute
+
 - Report bugs
 - Suggest features
 - Add cursor rules
@@ -437,7 +472,7 @@ MIT License - see [LICENSE](./LICENSE)
 
 ---
 
-**Ultra-Dex v3.5.0** - *The most complete AI orchestration platform for developers.*
+**Ultra-Dex v3.5.0** - _The most complete AI orchestration platform for developers._
 
 🚀 **Ready for production. Ready for you.** 🚀
 

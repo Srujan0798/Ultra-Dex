@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 const STATES = ['draft', 'sent', 'viewed', 'paid', 'overdue', 'void'];
 
 const TRANSITIONS = {
@@ -6,7 +8,7 @@ const TRANSITIONS = {
   viewed: ['paid', 'overdue', 'void'],
   overdue: ['paid', 'void'],
   paid: [],
-  void: []
+  void: [],
 };
 
 export function canTransition(from, to) {
@@ -35,12 +37,12 @@ export function generateRecurringInvoice(template) {
     id: `inv_${Date.now()}`,
     status: 'draft',
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
 }
 
 export default {
   transitionInvoiceStatus,
   shouldGenerateRecurring,
-  generateRecurringInvoice
+  generateRecurringInvoice,
 };

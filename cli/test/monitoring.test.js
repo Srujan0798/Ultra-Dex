@@ -38,56 +38,67 @@ describe('Monitoring & System Commands', () => {
 
     test('registers status command with program', async () => {
       const { registerStatusCommand } = await import('../lib/commands/monitoring.js');
-      
+
       const mockProgram = {
-        command: function(name) {
+        command: function (name) {
           this.commandName = name;
           return this;
         },
-        description: function(desc) {
+        description: function (desc) {
           this.commandDescription = desc;
           return this;
         },
-        option: function(flags, description) {
+        option: function (flags, description) {
           if (!this.options) this.options = [];
           this.options.push({ flags, description });
           return this;
         },
-        action: function(fn) {
+        action: function (fn) {
           this.actionFn = fn;
           return this;
-        }
+        },
       };
 
       registerStatusCommand(mockProgram);
-      
+
       assert.strictEqual(mockProgram.commandName, 'status');
-      assert.ok(mockProgram.commandDescription.includes('status') || mockProgram.commandDescription.includes('health'));
+      assert.ok(
+        mockProgram.commandDescription.includes('status') ||
+          mockProgram.commandDescription.includes('health')
+      );
       assert.ok(mockProgram.options.length >= 4);
       assert.strictEqual(typeof mockProgram.actionFn, 'function');
     });
 
     test('registers all status options', async () => {
       const { registerStatusCommand } = await import('../lib/commands/monitoring.js');
-      
+
       const mockProgram = {
         command: () => mockProgram,
         description: () => mockProgram,
         options: [],
-        option: function(flags, description) {
+        option: function (flags, description) {
           this.options.push({ flags, description });
           return this;
         },
-        action: () => mockProgram
+        action: () => mockProgram,
       };
 
       registerStatusCommand(mockProgram);
-      
-      const metricsOption = mockProgram.options.find(o => o.flags.includes('--metrics') || o.flags.includes('-m'));
-      const healthOption = mockProgram.options.find(o => o.flags.includes('--health') || o.flags.includes('-h'));
-      const configOption = mockProgram.options.find(o => o.flags.includes('--config') || o.flags.includes('-c'));
-      const allOption = mockProgram.options.find(o => o.flags.includes('--all') || o.flags.includes('-a'));
-      
+
+      const metricsOption = mockProgram.options.find(
+        (o) => o.flags.includes('--metrics') || o.flags.includes('-m')
+      );
+      const healthOption = mockProgram.options.find(
+        (o) => o.flags.includes('--health') || o.flags.includes('-h')
+      );
+      const configOption = mockProgram.options.find(
+        (o) => o.flags.includes('--config') || o.flags.includes('-c')
+      );
+      const allOption = mockProgram.options.find(
+        (o) => o.flags.includes('--all') || o.flags.includes('-a')
+      );
+
       assert.ok(metricsOption, 'Should have --metrics option');
       assert.ok(healthOption, 'Should have --health option');
       assert.ok(configOption, 'Should have --config option');
@@ -152,61 +163,72 @@ describe('Monitoring & System Commands', () => {
 
     test('registers sys-config command with alias', async () => {
       const { registerSystemConfigCommand } = await import('../lib/commands/monitoring.js');
-      
+
       const mockProgram = {
-        command: function(name) {
+        command: function (name) {
           this.commandName = name;
           return this;
         },
-        alias: function(alias) {
+        alias: function (alias) {
           this.commandAlias = alias;
           return this;
         },
-        description: function(desc) {
+        description: function (desc) {
           this.commandDescription = desc;
           return this;
         },
-        option: function(flags, description) {
+        option: function (flags, description) {
           if (!this.options) this.options = [];
           this.options.push({ flags, description });
           return this;
         },
-        action: function(fn) {
+        action: function (fn) {
           this.actionFn = fn;
           return this;
-        }
+        },
       };
 
       registerSystemConfigCommand(mockProgram);
-      
+
       assert.strictEqual(mockProgram.commandName, 'sys-config');
       assert.strictEqual(mockProgram.commandAlias, 'sconfig');
-      assert.ok(mockProgram.commandDescription.includes('configuration') || mockProgram.commandDescription.includes('config'));
+      assert.ok(
+        mockProgram.commandDescription.includes('configuration') ||
+          mockProgram.commandDescription.includes('config')
+      );
       assert.ok(mockProgram.options.length >= 4);
     });
 
     test('registers all config options', async () => {
       const { registerSystemConfigCommand } = await import('../lib/commands/monitoring.js');
-      
+
       const mockProgram = {
         command: () => mockProgram,
         alias: () => mockProgram,
         description: () => mockProgram,
         options: [],
-        option: function(flags, description) {
+        option: function (flags, description) {
           this.options.push({ flags, description });
           return this;
         },
-        action: () => mockProgram
+        action: () => mockProgram,
       };
 
       registerSystemConfigCommand(mockProgram);
-      
-      const wizardOption = mockProgram.options.find(o => o.flags.includes('--wizard') || o.flags.includes('-w'));
-      const listOption = mockProgram.options.find(o => o.flags.includes('--list') || o.flags.includes('-l'));
-      const getOption = mockProgram.options.find(o => o.flags.includes('--get') || o.flags.includes('-g'));
-      const setOption = mockProgram.options.find(o => o.flags.includes('--set') || o.flags.includes('-s'));
-      
+
+      const wizardOption = mockProgram.options.find(
+        (o) => o.flags.includes('--wizard') || o.flags.includes('-w')
+      );
+      const listOption = mockProgram.options.find(
+        (o) => o.flags.includes('--list') || o.flags.includes('-l')
+      );
+      const getOption = mockProgram.options.find(
+        (o) => o.flags.includes('--get') || o.flags.includes('-g')
+      );
+      const setOption = mockProgram.options.find(
+        (o) => o.flags.includes('--set') || o.flags.includes('-s')
+      );
+
       assert.ok(wizardOption, 'Should have --wizard option');
       assert.ok(listOption, 'Should have --list option');
       assert.ok(getOption, 'Should have --get option');
@@ -278,29 +300,29 @@ describe('Monitoring & System Commands', () => {
 
     test('registers metrics command', async () => {
       const { registerMetricsCommand } = await import('../lib/commands/monitoring.js');
-      
+
       const mockProgram = {
-        command: function(name) {
+        command: function (name) {
           this.commandName = name;
           return this;
         },
-        description: function(desc) {
+        description: function (desc) {
           this.commandDescription = desc;
           return this;
         },
-        option: function(flags, description) {
+        option: function (flags, description) {
           if (!this.options) this.options = [];
           this.options.push({ flags, description });
           return this;
         },
-        action: function(fn) {
+        action: function (fn) {
           this.actionFn = fn;
           return this;
-        }
+        },
       };
 
       registerMetricsCommand(mockProgram);
-      
+
       assert.strictEqual(mockProgram.commandName, 'metrics');
       assert.ok(mockProgram.commandDescription.includes('metrics'));
       assert.strictEqual(typeof mockProgram.actionFn, 'function');
@@ -341,29 +363,29 @@ describe('Monitoring & System Commands', () => {
 
     test('registers health command', async () => {
       const { registerHealthCommand } = await import('../lib/commands/monitoring.js');
-      
+
       const mockProgram = {
-        command: function(name) {
+        command: function (name) {
           this.commandName = name;
           return this;
         },
-        description: function(desc) {
+        description: function (desc) {
           this.commandDescription = desc;
           return this;
         },
-        option: function(flags, description) {
+        option: function (flags, description) {
           if (!this.options) this.options = [];
           this.options.push({ flags, description });
           return this;
         },
-        action: function(fn) {
+        action: function (fn) {
           this.actionFn = fn;
           return this;
-        }
+        },
       };
 
       registerHealthCommand(mockProgram);
-      
+
       assert.strictEqual(mockProgram.commandName, 'health');
       assert.ok(mockProgram.commandDescription.includes('health'));
       assert.strictEqual(typeof mockProgram.actionFn, 'function');
@@ -393,8 +415,9 @@ describe('Monitoring & System Commands', () => {
 
   describe('Integration Tests', () => {
     test('commands work in combination', async () => {
-      const { statusCommand, configCommand, metricsCommand, healthCommand } = await import('../lib/commands/monitoring.js');
-      
+      const { statusCommand, configCommand, metricsCommand, healthCommand } =
+        await import('../lib/commands/monitoring.js');
+
       // All commands should be importable and callable
       await assert.doesNotReject(async () => {
         await statusCommand({});
@@ -405,19 +428,29 @@ describe('Monitoring & System Commands', () => {
     });
 
     test('all register functions work', async () => {
-      const { 
-        registerStatusCommand, 
-        registerSystemConfigCommand, 
-        registerMetricsCommand, 
-        registerHealthCommand 
+      const {
+        registerStatusCommand,
+        registerSystemConfigCommand,
+        registerMetricsCommand,
+        registerHealthCommand,
       } = await import('../lib/commands/monitoring.js');
-      
+
       const mockProgram = {
-        command: function() { return this; },
-        alias: function() { return this; },
-        description: function() { return this; },
-        option: function() { return this; },
-        action: function() { return this; }
+        command: function () {
+          return this;
+        },
+        alias: function () {
+          return this;
+        },
+        description: function () {
+          return this;
+        },
+        option: function () {
+          return this;
+        },
+        action: function () {
+          return this;
+        },
       };
 
       // All should register without error

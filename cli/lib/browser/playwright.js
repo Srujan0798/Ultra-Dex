@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -15,7 +17,8 @@ export async function launchBrowser(options = {}) {
 }
 
 export async function screenshotPage(page, outputPath = null) {
-  const filePath = outputPath || path.resolve(process.cwd(), '.ultra-dex', 'browser', `shot-${Date.now()}.png`);
+  const filePath =
+    outputPath || path.resolve(process.cwd(), '.ultra-dex', 'browser', `shot-${Date.now()}.png`);
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await page.screenshot({ path: filePath, fullPage: true });
   return filePath;

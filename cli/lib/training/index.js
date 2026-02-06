@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Custom Agent Training
  * Persists project-specific conventions and user corrections for agents.
@@ -39,7 +41,7 @@ async function scanConventions(rootDir = process.cwd()) {
   const files = await glob(patterns, {
     cwd: rootDir,
     nodir: true,
-    ignore: ['**/node_modules/**', '**/.git/**', '**/.ultra-dex/**', '**/dist/**', '**/build/**']
+    ignore: ['**/node_modules/**', '**/.git/**', '**/.ultra-dex/**', '**/dist/**', '**/build/**'],
   });
 
   const sample = files.slice(0, 30);
@@ -82,9 +84,10 @@ async function scanConventions(rootDir = process.cwd()) {
   }
 
   const indentStyle = tabIndents > spaceIndents ? 'tab' : 'space';
-  const indentSize = Object.entries(indentSizes)
-    .sort((a, b) => b[1] - a[1])
-    .map(([size]) => Number(size))[0] || 2;
+  const indentSize =
+    Object.entries(indentSizes)
+      .sort((a, b) => b[1] - a[1])
+      .map(([size]) => Number(size))[0] || 2;
   const lineEndings = crlf > lf ? 'crlf' : 'lf';
   const quoteStyle = singleQuotes >= doubleQuotes ? 'single' : 'double';
 
@@ -94,7 +97,7 @@ async function scanConventions(rootDir = process.cwd()) {
     lineEndings,
     quoteStyle,
     filesScanned: sample.length,
-    sampleSize: files.length
+    sampleSize: files.length,
   };
 }
 
@@ -107,7 +110,7 @@ export async function trainAgent(agentName, options = {}) {
     name: agentName,
     trainedAt: new Date().toISOString(),
     conventions,
-    corrections: state.agents[agentName]?.corrections || []
+    corrections: state.agents[agentName]?.corrections || [],
   };
 
   state.conventions = conventions;
@@ -119,7 +122,7 @@ export async function recordCorrection(agentName, correction) {
   const entry = {
     agent: agentName,
     correction,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   await fs.appendFile(CORRECTIONS_LOG, JSON.stringify(entry) + '\n', 'utf8');
@@ -156,11 +159,11 @@ export async function getTrainingSummary() {
   return {
     agents: Object.keys(state.agents || {}).length,
     conventions: state.conventions || {},
-    updatedAt: state.updatedAt
+    updatedAt: state.updatedAt,
   };
 }
 
 export const trainingPaths = {
   model: MODEL_PATH,
-  corrections: CORRECTIONS_LOG
+  corrections: CORRECTIONS_LOG,
 };

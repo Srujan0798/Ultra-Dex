@@ -1,27 +1,20 @@
-'use client'
+'use client';
 
-import React from 'react'
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card'
+import React from 'react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 
 interface PieChartComponentProps {
-  title: string
+  title: string;
   data: Array<{
-    name: string
-    value: number
-  }>
-  colors?: string[]
-  height?: number
+    name: string;
+    value: number;
+  }>;
+  colors?: string[];
+  height?: number;
 }
 
-const DEFAULT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+const DEFAULT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export function PieChartComponent({
   title,
@@ -63,5 +56,5 @@ export function PieChartComponent({
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

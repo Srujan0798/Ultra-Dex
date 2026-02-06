@@ -7,6 +7,7 @@
 ## The Problem
 
 You have multiple AI tools installed:
+
 - Claude Code (best reasoning)
 - Cursor (fast coding)
 - GitHub Copilot (autocomplete)
@@ -14,6 +15,7 @@ You have multiple AI tools installed:
 - Gemini (free alternative)
 
 But when you switch between them:
+
 - **Context gets lost** - each tool starts fresh
 - **Work gets duplicated** - you re-explain the same thing
 - **No coordination** - tools don't know what others did
@@ -40,6 +42,7 @@ Ultra-Dex provides the **coordination layer** that makes ANY AI tool work togeth
 ```
 
 **How it works:**
+
 1. **Shared State** - All tools read/write to IMPLEMENTATION-PLAN.md, CONTEXT.md
 2. **Agent Roles** - Each tool acts as a specific agent (@Backend, @Frontend, etc.)
 3. **Handoff Protocol** - Agents document what they built for the next agent
@@ -56,6 +59,7 @@ npx ultra-dex init
 ```
 
 This creates:
+
 - `IMPLEMENTATION-PLAN.md` - Shared project state
 - `CONTEXT.md` - Project background
 - `.agents/` - Agent prompt files
@@ -87,6 +91,7 @@ and break down 'Add user authentication' into implementable tasks."
 ```
 
 ChatGPT breaks it down:
+
 - Task 1: Database schema (User table)
 - Task 2: Auth API endpoints (signup, login, logout)
 - Task 3: Login/signup UI components
@@ -104,6 +109,7 @@ Review the authentication architecture and make tech stack decisions."
 ```
 
 Claude decides:
+
 - JWT tokens (stateless)
 - httpOnly cookies (XSS protection)
 - bcrypt password hashing
@@ -121,6 +127,7 @@ Create the User schema with Prisma."
 ```
 
 Cursor generates:
+
 ```prisma
 model User {
   id        String   @id @default(uuid())
@@ -145,6 +152,7 @@ Implement authentication API endpoints."
 ```
 
 Claude implements:
+
 - `POST /api/auth/signup` - Create user, hash password
 - `POST /api/auth/login` - Verify credentials, return JWT
 - `POST /api/auth/logout` - Clear session
@@ -162,6 +170,7 @@ Create login and signup form components."
 ```
 
 Copilot creates:
+
 - `LoginForm.tsx` - Email/password form, calls `/api/auth/login`
 - `SignupForm.tsx` - Registration form
 - `AuthContext.tsx` - React context for auth state
@@ -179,6 +188,7 @@ for security vulnerabilities."
 ```
 
 ChatGPT checks:
+
 - ✅ Passwords hashed with bcrypt
 - ✅ JWT secret from environment variable
 - ✅ httpOnly cookies (prevents XSS)
@@ -196,6 +206,7 @@ You: "Act as @Reviewer from .agents/reviewer.md. Review all authentication code.
 ```
 
 Claude reviews:
+
 - Code quality: ✅ Good
 - Tests: ⚠️ Missing (writes tests)
 - Documentation: ⚠️ Missing (adds API docs)
@@ -212,6 +223,7 @@ You: "Act as @DevOps from .agents/devops.md. Deploy authentication to staging."
 ```
 
 Cursor:
+
 - Sets `JWT_SECRET` in environment
 - Deploys to Vercel/Railway
 - Runs smoke tests
@@ -237,27 +249,32 @@ This ensures **context preservation** across tools.
 
 Each agent documents what they built:
 
-```markdown
+````markdown
 ## Handoff from @Backend to @Frontend
 
 ### What I Built
+
 - POST /api/auth/signup - Creates user
 - POST /api/auth/login - Returns JWT token
 - GET /api/auth/me - Returns current user
 
 ### API Contract
+
 ```typescript
 // Login endpoint
 POST /api/auth/login
 Body: { email: string, password: string }
 Response: { token: string, user: { id, email } }
 ```
+````
 
 ### Next Steps for @Frontend
+
 - Create login form that calls POST /api/auth/login
 - Store token in httpOnly cookie
 - Implement protected routes
-```
+
+````
 
 This ensures **seamless handoff** between agents.
 
@@ -320,7 +337,8 @@ Use each AI for what it does best:
    ## Current Status
    - ✅ Basic endpoint working
    - ⚠️ Need help with rate limiting logic
-   ```
+````
+
 4. Switch to Claude Code: "Act as @Backend. Read IMPLEMENTATION-PLAN.md. Help with rate limiting."
 5. Claude solves it, documents solution
 6. Switch back to Cursor to implement
@@ -332,6 +350,7 @@ Use each AI for what it does best:
 ### Issue: AI doesn't remember context
 
 **Solution:** Always start with:
+
 ```
 Act as @[AgentName] from .agents/[agent].md.
 Read IMPLEMENTATION-PLAN.md to understand the project.
@@ -340,15 +359,19 @@ Read IMPLEMENTATION-PLAN.md to understand the project.
 ### Issue: Work gets duplicated
 
 **Solution:** Update IMPLEMENTATION-PLAN.md after each agent:
+
 ```markdown
 ## Completed
+
 - ✅ Database schema (by @Database)
 - ✅ Auth API (by @Backend)
 
 ## In Progress
+
 - 🔄 Login UI (by @Frontend)
 
 ## TODO
+
 - ⏳ Security review
 - ⏳ Deployment
 ```
@@ -356,6 +379,7 @@ Read IMPLEMENTATION-PLAN.md to understand the project.
 ### Issue: AI suggests wrong tech stack
 
 **Solution:** Make sure CONTEXT.md has clear decisions:
+
 ```markdown
 ## Tech Stack Decisions
 
@@ -416,15 +440,18 @@ Read IMPLEMENTATION-PLAN.md.
 ## Related Guides
 
 **Get Started:**
+
 - [Project Orchestration](./PROJECT-ORCHESTRATION.md) - Step-by-step guide to build features with agents
 - [Advanced Workflows](./ADVANCED-WORKFLOWS.md) - Real-world examples (Stripe, emails, migrations)
 
 **Decision Frameworks:**
+
 - [AI Model Selection](./AI-MODEL-SELECTION.md) - Choose the right AI for each task
 - [Database Selection](./DATABASE-DECISION-FRAMEWORK.md) - Choose the right database
 - [Architecture Patterns](./ARCHITECTURE-PATTERNS.md) - Choose the right architecture
 
 **Agent Reference:**
+
 - [Agent Index](../agents/00-AGENT_INDEX.md) - Quick reference for all 17 agents
 
 ---

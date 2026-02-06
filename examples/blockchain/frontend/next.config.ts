@@ -1,4 +1,4 @@
-import type { NextConfig } from 'next'
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -7,9 +7,9 @@ const nextConfig: NextConfig = {
       fs: false,
       net: false,
       tls: false,
-    }
-    return config
+    };
+    return config;
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;

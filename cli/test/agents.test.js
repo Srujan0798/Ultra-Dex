@@ -4,13 +4,13 @@
  */
 import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { 
-  AGENTS, 
-  findBuiltInAgent, 
-  listCustomAgents, 
-  getCustomAgentPath, 
+import {
+  AGENTS,
+  findBuiltInAgent,
+  listCustomAgents,
+  getCustomAgentPath,
   readCustomAgent,
-  readAgentPrompt
+  readAgentPrompt,
 } from '../lib/commands/agents.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -53,7 +53,7 @@ describe('agents command utilities', () => {
     });
 
     test('covers all expected tiers', () => {
-      const tiers = new Set(AGENTS.map(a => a.tier));
+      const tiers = new Set(AGENTS.map((a) => a.tier));
       assert.ok(tiers.has('Orchestration'), 'Should have Orchestration tier');
       assert.ok(tiers.has('Leadership'), 'Should have Leadership tier');
       assert.ok(tiers.has('Development'), 'Should have Development tier');
@@ -64,7 +64,7 @@ describe('agents command utilities', () => {
     });
 
     test('includes specific expected agents', () => {
-      const agentNames = AGENTS.map(a => a.name);
+      const agentNames = AGENTS.map((a) => a.name);
       assert.ok(agentNames.includes('cto'), 'Should include cto agent');
       assert.ok(agentNames.includes('backend'), 'Should include backend agent');
       assert.ok(agentNames.includes('frontend'), 'Should include frontend agent');
@@ -85,7 +85,7 @@ describe('agents command utilities', () => {
       const agent1 = findBuiltInAgent('CTO');
       const agent2 = findBuiltInAgent('Cto');
       const agent3 = findBuiltInAgent('cTo');
-      
+
       assert.ok(agent1, 'Should find CTO (uppercase)');
       assert.ok(agent2, 'Should find Cto (mixed case)');
       assert.ok(agent3, 'Should find cTo (mixed case)');
@@ -118,7 +118,7 @@ describe('agents command utilities', () => {
     test('returns empty array when directory exists but is empty', async () => {
       const customAgentsDir = path.join(tmpDir, '.ultra-dex', 'custom-agents');
       await fs.mkdir(customAgentsDir, { recursive: true });
-      
+
       const agents = await listCustomAgents();
       assert.ok(Array.isArray(agents));
       assert.strictEqual(agents.length, 0);
@@ -127,10 +127,10 @@ describe('agents command utilities', () => {
     test('lists custom agent markdown files (when directory exists)', async () => {
       const customAgentsDir = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
       await fs.mkdir(customAgentsDir, { recursive: true });
-      
+
       await fs.writeFile(path.join(customAgentsDir, 'custom-agent-1.md'), '# Agent 1');
       await fs.writeFile(path.join(customAgentsDir, 'custom-agent-2.md'), '# Agent 2');
-      
+
       const agents = await listCustomAgents();
       // Should return array (may be empty if path resolution differs)
       assert.ok(Array.isArray(agents));
@@ -143,11 +143,11 @@ describe('agents command utilities', () => {
     test('ignores non-markdown files', async () => {
       const customAgentsDir = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
       await fs.mkdir(customAgentsDir, { recursive: true });
-      
+
       await fs.writeFile(path.join(customAgentsDir, 'agent.md'), '# Agent');
       await fs.writeFile(path.join(customAgentsDir, 'not-agent.txt'), 'Not an agent');
       await fs.writeFile(path.join(customAgentsDir, 'also-not.json'), '{}');
-      
+
       const agents = await listCustomAgents();
       // Should not include txt or json files
       assert.ok(!agents.includes('not-agent'));
@@ -159,7 +159,7 @@ describe('agents command utilities', () => {
       await fs.mkdir(customAgentsDir, { recursive: true });
       await fs.mkdir(path.join(customAgentsDir, 'subdir'));
       await fs.writeFile(path.join(customAgentsDir, 'agent.md'), '# Agent');
-      
+
       const agents = await listCustomAgents();
       // Should not include subdirectories
       assert.ok(!agents.includes('subdir'));
@@ -176,13 +176,14 @@ describe('agents command utilities', () => {
       const customAgentsDir = path.join(process.cwd(), '.ultra-dex', 'custom-agents');
       await fs.mkdir(customAgentsDir, { recursive: true });
       await fs.writeFile(path.join(customAgentsDir, 'my-agent.md'), '# My Agent');
-      
+
       // Verify file was created
-      const fileExists = await fs.access(path.join(customAgentsDir, 'my-agent.md'))
+      const fileExists = await fs
+        .access(path.join(customAgentsDir, 'my-agent.md'))
         .then(() => true)
         .catch(() => false);
       assert.strictEqual(fileExists, true, 'File should exist');
-      
+
       const agentPath = await getCustomAgentPath('my-agent');
       // May return null depending on pathExists implementation
       // Just verify the function doesn't throw
@@ -198,12 +199,9 @@ describe('agents command utilities', () => {
 
   describe('readCustomAgent', () => {
     test('throws error for non-existent agent', async () => {
-      await assert.rejects(
-        async () => await readCustomAgent('non-existent'),
-        /not found/
-      );
+      await assert.rejects(async () => await readCustomAgent('non-existent'), /not found/);
     });
-    
+
     test('handles existing agent gracefully', async () => {
       // This test verifies the function doesn't throw unexpected errors
       // Actual file reading depends on pathExists implementation
@@ -219,9 +217,9 @@ describe('agents command utilities', () => {
 
   describe('readAgentPrompt', () => {
     test('attempts to read built-in agent prompt', async () => {
-      const ctoAgent = AGENTS.find(a => a.name === 'cto');
+      const ctoAgent = AGENTS.find((a) => a.name === 'cto');
       assert.ok(ctoAgent, 'Should find cto agent');
-      
+
       // This may or may not succeed depending on file system
       // Just verify it doesn't throw and returns a string or rejects gracefully
       try {
@@ -233,5 +231,4 @@ describe('agents command utilities', () => {
       }
     });
   });
-
 });

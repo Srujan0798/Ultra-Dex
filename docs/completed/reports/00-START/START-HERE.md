@@ -9,6 +9,7 @@
 Don't read alphabetically - read in this order:
 
 ### **Phase 1: Understanding (15 minutes)**
+
 Read these 4 files in order:
 
 1. **[00-PROJECT-MANIFEST.md](./00-PROJECT-MANIFEST.md)** - 6 pages
@@ -16,7 +17,7 @@ Read these 4 files in order:
    - Sacred principles (34 sections, 21-step, AI-agnostic)
    - Current state & Feb 14 roadmap
 
-2. **[01-WHAT-WE-ARE.md](./01-WHAT-WE-ARE.md)** - 6 pages  
+2. **[01-WHAT-WE-ARE.md](./01-WHAT-WE-ARE.md)** - 6 pages
    - Full philosophy & "Glass Box" engineering
    - Meta-layer positioning (Layer 3)
    - "Skeleton, not cage" concept
@@ -31,6 +32,7 @@ Read these 4 files in order:
    - Essential links & metrics
 
 ### **Phase 2: Agent Onboarding (For AI Agents)**
+
 5. **[04-AI-ONBOARDING.md](./04-AI-ONBOARDING.md)** - 10 pages
    - What agents need to know
    - Anti-patterns to avoid
@@ -76,9 +78,11 @@ The numbered files (00-, 01-, 02-, 03-, 04-) will sort together but may appear a
 ## 🚨 Remember
 
 **Ultra-Dex in one sentence:**
+
 > "We don't write code. We make sure AI-generated code doesn't suck. We're the MEMORY for tools with AMNESIA."
 
 **Never compromise:**
+
 - 34-section template stays comprehensive
 - 21-step verification stays mandatory
 - We orchestrate AI tools, not compete with them

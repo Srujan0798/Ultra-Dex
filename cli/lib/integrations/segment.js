@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { requireConfig, createSyncResult, normalizeWebhookEvent } from './utils.js';
 
 export async function connect(config = {}) {
@@ -26,7 +28,7 @@ export const integration = {
   connect,
   disconnect,
   sync,
-  handleWebhook
+  handleWebhook,
 };
 
 export default integration;

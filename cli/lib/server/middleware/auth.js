@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Enterprise Authentication Middleware
  * Express middleware for auth, RBAC, rate limiting, and audit logging
@@ -16,11 +18,12 @@ export function authMiddleware(options = {}) {
   return async (req, res, next) => {
     try {
       // Check for API key
-      const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
-      
+      const apiKey =
+        req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
+
       if (apiKey) {
         const validation = apiKeyManager.validateKey(apiKey);
-        
+
         if (validation.valid) {
           // Check rate limit
           const rateCheck = apiKeyManager.checkRateLimit(validation.keyId);
@@ -33,9 +36,9 @@ export function authMiddleware(options = {}) {
             id: validation.keyId,
             name: validation.name,
             type: 'api_key',
-            permissions: validation.permissions
+            permissions: validation.permissions,
           };
-          
+
           next();
           return;
         }
@@ -43,7 +46,7 @@ export function authMiddleware(options = {}) {
 
       // Check for JWT token
       const token = req.headers['authorization']?.replace('Bearer ', '');
-      
+
       if (!token && !options.optional) {
         res.status(401).json({ error: 'Authentication required' });
         return;
@@ -55,7 +58,7 @@ export function authMiddleware(options = {}) {
         req.user = {
           id: 'user_id',
           role: 'member',
-          type: 'jwt'
+          type: 'jwt',
         };
       }
 
@@ -78,11 +81,11 @@ export function requirePermission(permission) {
     }
 
     const userRole = req.user.role || 'viewer';
-    
+
     if (!hasPermission(userRole, permission)) {
-      res.status(403).json({ 
+      res.status(403).json({
         error: 'Forbidden',
-        message: `Required permission: ${permission}`
+        message: `Required permission: ${permission}`,
       });
       return;
     }
@@ -103,11 +106,11 @@ export function requireRole(...roles) {
     }
 
     const userRole = req.user.role || 'viewer';
-    
+
     if (!roles.includes(userRole)) {
-      res.status(403).json({ 
+      res.status(403).json({
         error: 'Forbidden',
-        message: `Required role: ${roles.join(' or ')}`
+        message: `Required role: ${roles.join(' or ')}`,
       });
       return;
     }
@@ -126,21 +129,21 @@ export function enterpriseMiddleware(options = {}) {
     permission = null,
     rateLimit = true,
     audit = true,
-    rateLimitOptions = {}
+    rateLimitOptions = {},
   } = options;
 
   return [
     // Authentication
     ...(requireAuth ? [authMiddleware({ optional: !requireAuth })] : []),
-    
+
     // Rate limiting
     ...(rateLimit ? [createRateLimitMiddleware(rateLimitOptions)] : []),
-    
+
     // Authorization
     ...(permission ? [requirePermission(permission)] : []),
-    
+
     // Audit logging
-    ...(audit ? [createAuditMiddleware()] : [])
+    ...(audit ? [createAuditMiddleware()] : []),
   ];
 }
 
@@ -158,7 +161,7 @@ function createRateLimitMiddleware(options) {
     if (!result.allowed) {
       res.status(429).json({
         error: 'Too Many Requests',
-        retryAfter: result.retryAfter
+        retryAfter: result.retryAfter,
       });
       return;
     }
@@ -175,7 +178,7 @@ function createAuditMiddleware() {
     const startTime = Date.now();
     const originalEnd = res.end;
 
-    res.end = function(...args) {
+    res.end = function (...args) {
       const duration = Date.now() - startTime;
 
       auditLogger.log({
@@ -191,9 +194,9 @@ function createAuditMiddleware() {
         details: {
           statusCode: res.statusCode,
           params: req.params,
-          query: req.query
+          query: req.query,
         },
-        duration
+        duration,
       });
 
       originalEnd.apply(this, args);
@@ -207,5 +210,5 @@ export default {
   authMiddleware,
   requirePermission,
   requireRole,
-  enterpriseMiddleware
+  enterpriseMiddleware,
 };

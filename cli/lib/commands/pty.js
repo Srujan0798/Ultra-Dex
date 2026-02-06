@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * PTY Command Registration
  * Adds PTY-enabled commands to the CLI (ultra-dex pty vim, ultra-dex pty shell)
@@ -69,21 +71,21 @@ export function registerPTYCommands(program) {
  */
 async function handleVimCommand(file, options) {
   printInfo(chalk.cyan('\n🔧 Starting Vim with AI Assistance\n'));
-  
+
   // Load project context
   const state = await loadState();
   const context = {
     project: state?.project || { name: 'Unknown Project' },
     file: file || 'unnamed',
     command: 'vim',
-    mode: 'edit'
+    mode: 'edit',
   };
 
   const vimCommand = buildVimCommand(file, options);
-  
+
   try {
     const bridge = await createPTYBridge();
-    
+
     // Set up AI callback to keep AI in the loop during editing
     bridge.setAICallback((feedback) => {
       handleAIFeedback(feedback, context);
@@ -91,9 +93,9 @@ async function handleVimCommand(file, options) {
 
     printInfo(`Opening ${file ? file : 'new file'} in vim...`);
     printInfo(chalk.gray('(Press :q to quit vim when done)'));
-    
+
     await bridge.startInteractiveSession(vimCommand, context);
-    
+
     // Wait for vim to exit
     await new Promise((resolve) => {
       const exitHandler = () => {
@@ -101,10 +103,10 @@ async function handleVimCommand(file, options) {
         printSuccess('\n✅ Vim session completed');
         resolve();
       };
-      
+
       bridge.on('exit', exitHandler);
     });
-    
+
     bridge.kill();
   } catch (error) {
     printError(`Vim session failed: ${error.message}`);
@@ -117,19 +119,19 @@ async function handleVimCommand(file, options) {
  */
 function buildVimCommand(file, options) {
   let cmd = 'vim';
-  
+
   if (options.line) {
     cmd += ` +${options.line}`;
   }
-  
+
   if (options.command) {
     cmd += ` -c "${options.command}"`;
   }
-  
+
   if (file) {
     cmd += ` "${file}"`;
   }
-  
+
   return cmd;
 }
 
@@ -138,18 +140,18 @@ function buildVimCommand(file, options) {
  */
 async function handleShellCommand(options) {
   printInfo(chalk.cyan('\n쉘 Starting Interactive Shell with AI Assistance\n'));
-  
+
   // Load project context
   const state = await loadState();
   const context = {
     project: state?.project || { name: 'Unknown Project' },
     command: 'shell',
-    mode: 'interactive'
+    mode: 'interactive',
   };
 
   try {
     const bridge = await createPTYBridge({ shell: options.shell });
-    
+
     // Set up AI callback
     bridge.setAICallback((feedback) => {
       handleAIFeedback(feedback, context);
@@ -166,11 +168,11 @@ async function handleShellCommand(options) {
       // Start interactive shell
       printInfo(`Starting ${options.shell} shell...`);
       printInfo(chalk.gray('(Type "exit" to quit the shell)'));
-      
+
       // Write a welcome message to the shell
       bridge.sendData(`echo "${chalk.green('Welcome to Ultra-Dex AI-Assisted Shell')}"\n`);
       bridge.sendData(`echo "${chalk.gray('AI is monitoring this session for assistance')}"\n`);
-      
+
       // Keep the process alive
       await new Promise((resolve) => {
         const exitHandler = () => {
@@ -178,10 +180,10 @@ async function handleShellCommand(options) {
           printSuccess('\n✅ Shell session completed');
           resolve();
         };
-        
+
         bridge.on('exit', exitHandler);
       });
-      
+
       bridge.kill();
     }
   } catch (error) {
@@ -195,24 +197,22 @@ async function handleShellCommand(options) {
  */
 async function handleExecCommand(command, options) {
   printInfo(chalk.cyan(`\n🔧 Executing: ${command}\n`));
-  
+
   // Load project context
   const state = await loadState();
   const context = {
     project: state?.project || { name: 'Unknown Project' },
     command,
-    mode: 'execution'
+    mode: 'execution',
   };
 
   try {
     const timeout = parseInt(options.timeout) * 1000; // Convert to milliseconds
-    
-    const result = await executeInteractiveCommand(
-      command, 
-      context,
-      (feedback) => handleAIFeedback(feedback, context)
+
+    const result = await executeInteractiveCommand(command, context, (feedback) =>
+      handleAIFeedback(feedback, context)
     );
-    
+
     if (typeof result === 'string') {
       printInfo(result);
     } else {
@@ -231,15 +231,16 @@ function handleAIFeedback(feedback, context) {
   switch (feedback.type) {
     case 'interactive-update':
       // Log ongoing activity without being too verbose
-      if (feedback.output.length % 500 === 0) { // Every 500 chars
+      if (feedback.output.length % 500 === 0) {
+        // Every 500 chars
         printInfo(chalk.yellow(`📝 AI monitoring ${feedback.command}...`));
       }
       break;
-      
+
     case 'interactive-session-end':
       printSuccess(chalk.green(`✅ ${feedback.command} completed`));
       break;
-      
+
     default:
       // Handle other feedback types as needed
       break;
@@ -247,5 +248,5 @@ function handleAIFeedback(feedback, context) {
 }
 
 export default {
-  registerPTYCommands
+  registerPTYCommands,
 };

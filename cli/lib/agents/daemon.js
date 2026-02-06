@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Agent Daemon System
  * Runs agents in the background with persistent state
@@ -29,17 +31,17 @@ export class AgentDaemon {
    */
   async initialize() {
     if (this.initialized) return;
-    
+
     try {
       await fs.mkdir(DAEMON_DIR, { recursive: true });
       await fs.mkdir(DAEMON_LOG_DIR, { recursive: true });
-      
+
       this.initialized = true;
       printInfo(chalk.cyan('🔄 Initializing Agent Daemon System...'));
-      
+
       // Start heartbeat monitor
       this.startHeartbeatMonitor();
-      
+
       printSuccess(chalk.green('✅ Agent Daemon System Initialized'));
     } catch (error) {
       printError(chalk.red(`❌ Failed to initialize daemon system: ${error.message}`));
@@ -63,24 +65,28 @@ export class AgentDaemon {
 
     try {
       // Create daemon process
-      const daemonProcess = spawn(process.execPath, [
-        path.join(process.cwd(), 'bin', 'ultra-dex.js'),
-        'run',
-        task,
-        '--session-id',
-        sessionId,
-        ...(options.parallel ? ['--parallel'] : []),
-        ...(options.verbose ? ['--verbose'] : [])
-      ], {
-        detached: true,
-        stdio: ['ignore', 'pipe', 'pipe'],
-        env: { ...process.env, ULTRA_DEX_DAEMON: 'true' }
-      });
+      const daemonProcess = spawn(
+        process.execPath,
+        [
+          path.join(process.cwd(), 'bin', 'ultra-dex.js'),
+          'run',
+          task,
+          '--session-id',
+          sessionId,
+          ...(options.parallel ? ['--parallel'] : []),
+          ...(options.verbose ? ['--verbose'] : []),
+        ],
+        {
+          detached: true,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          env: { ...process.env, ULTRA_DEX_DAEMON: 'true' },
+        }
+      );
 
       // Set up logging
       const logPath = path.join(DAEMON_LOG_DIR, `${sessionId}.log`);
       const logStream = fs.createWriteStream(logPath, { flags: 'a' });
-      
+
       daemonProcess.stdout.pipe(logStream, { end: false });
       daemonProcess.stderr.pipe(logStream, { end: false });
 
@@ -94,7 +100,7 @@ export class AgentDaemon {
         task,
         options,
         lastHeartbeat: new Date().toISOString(),
-        pid: daemonProcess.pid
+        pid: daemonProcess.pid,
       };
 
       // Store daemon
@@ -106,9 +112,9 @@ export class AgentDaemon {
         daemonInfo.stoppedAt = new Date().toISOString();
         daemonInfo.exitCode = code;
         daemonInfo.exitSignal = signal;
-        
+
         printInfo(chalk.gray(`⏹️  Daemon ${sessionId} exited (code: ${code}, signal: ${signal})`));
-        
+
         // Emit event
         this.events.emit('daemon:exit', { sessionId, code, signal });
       });
@@ -120,12 +126,12 @@ export class AgentDaemon {
       });
 
       printSuccess(chalk.green(`🚀 Started daemon for session: ${sessionId}`));
-      
+
       return daemonInfo;
     } catch (error) {
       printError(chalk.red(`❌ Failed to start daemon: ${error.message}`));
-      throw new AppError(`Failed to start daemon: ${error.message}`, { 
-        code: 'DAEMON_START_FAILED' 
+      throw new AppError(`Failed to start daemon: ${error.message}`, {
+        code: 'DAEMON_START_FAILED',
       });
     }
   }
@@ -146,30 +152,30 @@ export class AgentDaemon {
     try {
       // Kill the process
       process.kill(daemon.pid, 'SIGTERM');
-      
+
       // Wait a bit for graceful shutdown
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Force kill if still running
       try {
         process.kill(daemon.pid, 'SIGKILL');
       } catch (error) {
         // Process already terminated
       }
-      
+
       daemon.status = 'stopped';
       daemon.stoppedAt = new Date().toISOString();
-      
+
       printSuccess(chalk.red(`⏹️  Stopped daemon: ${sessionId}`));
-      
+
       // Remove from active daemons
       this.daemons.delete(sessionId);
-      
+
       return daemon;
     } catch (error) {
       printError(chalk.red(`❌ Failed to stop daemon: ${error.message}`));
-      throw new AppError(`Failed to stop daemon: ${error.message}`, { 
-        code: 'DAEMON_STOP_FAILED' 
+      throw new AppError(`Failed to stop daemon: ${error.message}`, {
+        code: 'DAEMON_STOP_FAILED',
       });
     }
   }
@@ -179,7 +185,9 @@ export class AgentDaemon {
    */
   getDaemonStatus(sessionId) {
     if (!this.initialized) {
-      throw new AppError('Daemon system not initialized', { code: 'DAEMON_SYSTEM_NOT_INITIALIZED' });
+      throw new AppError('Daemon system not initialized', {
+        code: 'DAEMON_SYSTEM_NOT_INITIALIZED',
+      });
     }
 
     const daemon = this.daemons.get(sessionId);
@@ -201,7 +209,7 @@ export class AgentDaemon {
       pid: daemon.pid,
       startedAt: daemon.startedAt,
       task: daemon.task,
-      lastHeartbeat: daemon.lastHeartbeat
+      lastHeartbeat: daemon.lastHeartbeat,
     };
   }
 
@@ -210,15 +218,17 @@ export class AgentDaemon {
    */
   getAllDaemonStatuses() {
     if (!this.initialized) {
-      throw new AppError('Daemon system not initialized', { code: 'DAEMON_SYSTEM_NOT_INITIALIZED' });
+      throw new AppError('Daemon system not initialized', {
+        code: 'DAEMON_SYSTEM_NOT_INITIALIZED',
+      });
     }
 
     const statuses = [];
-    
+
     for (const [sessionId, daemon] of this.daemons) {
       statuses.push(this.getDaemonStatus(sessionId));
     }
-    
+
     return statuses;
   }
 
@@ -241,7 +251,7 @@ export class AgentDaemon {
           daemon.status = 'stopped';
           printWarning(chalk.yellow(`⚠️  Daemon ${sessionId} died unexpectedly`));
           this.events.emit('daemon:died', { sessionId, error });
-          
+
           // Remove from active daemons
           this.daemons.delete(sessionId);
         }
@@ -264,10 +274,10 @@ export class AgentDaemon {
 
     // Stop current daemon
     await this.stopDaemon(sessionId);
-    
+
     // Wait a bit before restarting
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // Start new daemon with same parameters
     return await this.startDaemon(sessionId, daemon.task, daemon.options);
   }
@@ -277,11 +287,13 @@ export class AgentDaemon {
    */
   listDaemons() {
     if (!this.initialized) {
-      throw new AppError('Daemon system not initialized', { code: 'DAEMON_SYSTEM_NOT_INITIALIZED' });
+      throw new AppError('Daemon system not initialized', {
+        code: 'DAEMON_SYSTEM_NOT_INITIALIZED',
+      });
     }
 
     const daemonList = [];
-    
+
     for (const [sessionId, daemon] of this.daemons) {
       daemonList.push({
         id: sessionId,
@@ -289,10 +301,10 @@ export class AgentDaemon {
         pid: daemon.pid,
         task: daemon.task,
         startedAt: daemon.startedAt,
-        lastHeartbeat: daemon.lastHeartbeat
+        lastHeartbeat: daemon.lastHeartbeat,
       });
     }
-    
+
     return daemonList;
   }
 
@@ -312,19 +324,19 @@ export class AgentDaemon {
     try {
       const logContent = await fs.readFile(daemon.logPath, 'utf8');
       const logLines = logContent.split('\n');
-      
+
       // Return last N lines
       const recentLines = logLines.slice(-lines);
-      
+
       return recentLines.join('\n');
     } catch (error) {
       if (error.code === 'ENOENT') {
-        throw new AppError(`Log file not found: ${daemon.logPath}`, { 
-          code: 'LOG_FILE_NOT_FOUND' 
+        throw new AppError(`Log file not found: ${daemon.logPath}`, {
+          code: 'LOG_FILE_NOT_FOUND',
         });
       }
-      throw new AppError(`Failed to read logs: ${error.message}`, { 
-        code: 'LOG_READ_FAILED' 
+      throw new AppError(`Failed to read logs: ${error.message}`, {
+        code: 'LOG_READ_FAILED',
       });
     }
   }
@@ -341,13 +353,13 @@ export class AgentDaemon {
         printWarning(chalk.yellow(`⚠️  Failed to stop daemon ${sessionId}: ${error.message}`));
       }
     }
-    
+
     // Clear heartbeat interval
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     }
-    
+
     printInfo(chalk.blue('🧹 Daemon system cleaned up'));
   }
 
@@ -371,7 +383,7 @@ export const agentDaemon = new AgentDaemon();
 
 // Handle process exit to clean up daemons
 process.on('exit', () => {
-  agentDaemon.cleanup().catch(error => {
+  agentDaemon.cleanup().catch((error) => {
     printError(chalk.red(`❌ Error cleaning up daemons: ${error.message}`));
   });
 });

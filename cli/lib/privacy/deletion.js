@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -12,16 +14,13 @@ export async function logPrivacyEvent(event) {
   await ensureDir();
   const payload = {
     ...event,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
   await fs.appendFile(AUDIT_LOG, JSON.stringify(payload) + '\n', 'utf8');
 }
 
 export async function deleteAllData(root = process.cwd()) {
-  const targets = [
-    path.join(root, '.ultra-dex'),
-    path.join(root, '.ultra')
-  ];
+  const targets = [path.join(root, '.ultra-dex'), path.join(root, '.ultra')];
   for (const target of targets) {
     await fs.rm(target, { recursive: true, force: true }).catch(() => {});
   }

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 // cli/lib/commands/export.js
 import chalk from 'chalk';
 import ora from 'ora';
@@ -28,21 +30,37 @@ const BUILTIN_TEMPLATES = {
 - What was built
 - How to run locally
 - Known gaps
-- Next tasks`
+- Next tasks`,
 };
 
 export const EXPORT_EXAMPLES = [
-  { command: 'ultra-dex export --format json --output export.json', description: 'Export context as JSON' },
-  { command: 'ultra-dex export --format html --include-agents', description: 'Export as HTML with agent prompts' },
-  { command: 'ultra-dex export --sections 1,2,3 --format markdown', description: 'Export only selected sections' },
-  { command: 'ultra-dex export --pdf --output ultra-dex-export.pdf', description: 'Export as PDF using Puppeteer' },
-  { command: 'ultra-dex export --format notion --sections 1-5', description: 'Export Notion-compatible markdown' },
+  {
+    command: 'ultra-dex export --format json --output export.json',
+    description: 'Export context as JSON',
+  },
+  {
+    command: 'ultra-dex export --format html --include-agents',
+    description: 'Export as HTML with agent prompts',
+  },
+  {
+    command: 'ultra-dex export --sections 1,2,3 --format markdown',
+    description: 'Export only selected sections',
+  },
+  {
+    command: 'ultra-dex export --pdf --output ultra-dex-export.pdf',
+    description: 'Export as PDF using Puppeteer',
+  },
+  {
+    command: 'ultra-dex export --format notion --sections 1-5',
+    description: 'Export Notion-compatible markdown',
+  },
 ];
 
 export async function exportCommand(options) {
-  const format = options.pdf ? 'pdf' : (options.format || 'json');
+  const format = options.pdf ? 'pdf' : options.format || 'json';
   const normalizedFormat = format === 'markdown' ? 'md' : format;
-  const outputExt = normalizedFormat === 'md' || normalizedFormat === 'notion' ? 'md' : normalizedFormat;
+  const outputExt =
+    normalizedFormat === 'md' || normalizedFormat === 'notion' ? 'md' : normalizedFormat;
   const outputPath = options.output || `ultra-dex-export.${outputExt}`;
 
   // Parse sections - support both comma-separated and range formats (e.g., "1-5" or "1,2,3")
@@ -50,7 +68,11 @@ export async function exportCommand(options) {
   if (options.sections) {
     sectionFilter = parseSectionRanges(options.sections);
     if (!sectionFilter || sectionFilter.length === 0) {
-      printError(chalk.red('❌ Error: Invalid --sections list. Use comma-separated numbers or ranges, e.g. 1,2,3 or 1-5.'));
+      printError(
+        chalk.red(
+          '❌ Error: Invalid --sections list. Use comma-separated numbers or ranges, e.g. 1,2,3 or 1-5.'
+        )
+      );
       process.exitCode = 1;
       process.exit(process.exitCode);
     }
@@ -62,7 +84,11 @@ export async function exportCommand(options) {
   if (options.exclude) {
     excludeFilter = parseSectionRanges(options.exclude);
     if (!excludeFilter || excludeFilter.length === 0) {
-      printError(chalk.red('❌ Error: Invalid --exclude list. Use comma-separated numbers or ranges, e.g. 15,16 or 1-5.'));
+      printError(
+        chalk.red(
+          '❌ Error: Invalid --exclude list. Use comma-separated numbers or ranges, e.g. 15,16 or 1-5.'
+        )
+      );
       process.exitCode = 1;
       process.exit(process.exitCode);
     }
@@ -71,7 +97,9 @@ export async function exportCommand(options) {
   // Validate format
   if (!VALID_FORMATS.includes(format)) {
     printError(chalk.red(`❌ Error: Unknown format: ${format}`));
-    printError(chalk.yellow('   Supported formats: json, html, markdown (md), pdf, yaml (yml), notion'));
+    printError(
+      chalk.yellow('   Supported formats: json, html, markdown (md), pdf, yaml (yml), notion')
+    );
     process.exitCode = 1;
     process.exit(process.exitCode);
   }
@@ -94,7 +122,11 @@ export async function exportCommand(options) {
 
     // Filter sections if specified
     if ((sectionFilter || excludeFilter) && context.files['IMPLEMENTATION-PLAN.md']) {
-      context.files['IMPLEMENTATION-PLAN.md'] = filterSections(context.files['IMPLEMENTATION-PLAN.md'], sectionFilter, excludeFilter);
+      context.files['IMPLEMENTATION-PLAN.md'] = filterSections(
+        context.files['IMPLEMENTATION-PLAN.md'],
+        sectionFilter,
+        excludeFilter
+      );
     }
 
     spinner.succeed(`Collected ${Object.keys(context.files).length} files`);
@@ -138,7 +170,7 @@ export async function exportCommand(options) {
             path: resolvedOutputPath,
             format: 'A4',
             margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
-            printBackground: true
+            printBackground: true,
           });
 
           await browser.close();
@@ -197,46 +229,48 @@ function loadContext(includeAgents = false) {
     project: basename(process.cwd()),
     files: {},
     state: null,
-    agents: []
+    agents: [],
   };
-  
+
   // Load core documentation files
-  coreFiles.forEach(file => {
+  coreFiles.forEach((file) => {
     const filePath = join(process.cwd(), file);
     if (fs.existsSync(filePath)) {
       context.files[file] = fs.readFileSync(filePath, 'utf-8');
     }
   });
-  
+
   // Load state.json if exists
   const statePath = join(process.cwd(), '.ultra', 'state.json');
   if (fs.existsSync(statePath)) {
     try {
       context.state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
-    } catch { /* invalid state */ }
+    } catch {
+      /* invalid state */
+    }
   }
-  
+
   // Load agent prompts if requested
   if (includeAgents) {
     context.agents = loadAgentPrompts();
   }
-  
+
   return context;
 }
 
 function loadAgentPrompts() {
   const agents = [];
   const agentsDir = join(process.cwd(), 'agents');
-  
+
   if (!fs.existsSync(agentsDir)) return agents;
-  
+
   const walkDir = (dir, category = '') => {
     try {
       const items = fs.readdirSync(dir);
       for (const item of items) {
         const itemPath = join(dir, item);
         const stat = fs.statSync(itemPath);
-        
+
         if (stat.isDirectory()) {
           walkDir(itemPath, item);
         } else if (item.endsWith('.md') && !item.startsWith('README') && !item.startsWith('00-')) {
@@ -246,14 +280,18 @@ function loadAgentPrompts() {
               name: basename(item, '.md'),
               category: category || 'root',
               path: itemPath.replace(process.cwd(), '.'),
-              content
+              content,
             });
-          } catch { /* skip unreadable */ }
+          } catch {
+            /* skip unreadable */
+          }
         }
       }
-    } catch { /* skip inaccessible dirs */ }
+    } catch {
+      /* skip inaccessible dirs */
+    }
   };
-  
+
   walkDir(agentsDir);
   return agents;
 }
@@ -298,7 +336,7 @@ function generateYAML(context) {
     project: context.project,
     files: context.files,
     state: context.state,
-    agentCount: context.agents?.length || 0
+    agentCount: context.agents?.length || 0,
   };
 
   return yaml.dump(yamlContext, { lineWidth: -1 });
@@ -378,7 +416,7 @@ function generateMarkdown(context, options = {}) {
     `> **Project:** ${context.project}`,
     `> **Exported:** ${new Date(context.exportedAt).toLocaleString()}`,
     `> **Version:** ${context.version}`,
-    ``
+    ``,
   ];
 
   if (context.template) {
@@ -422,10 +460,12 @@ function generateMarkdown(context, options = {}) {
   if (context.agents.length > 0) {
     lines.push(`## Agents`, ``);
     lines.push(`Bundled ${context.agents.length} agent prompts:`, ``);
-    context.agents.forEach(agent => {
+    context.agents.forEach((agent) => {
       lines.push(`### @${agent.name} (${agent.category})`, ``);
       lines.push('```markdown');
-      lines.push(agent.content.substring(0, 500) + (agent.content.length > 500 ? '\n...(truncated)' : ''));
+      lines.push(
+        agent.content.substring(0, 500) + (agent.content.length > 500 ? '\n...(truncated)' : '')
+      );
       lines.push('```', ``);
     });
   }
@@ -577,10 +617,8 @@ function generateHTML(context, options = {}) {
     }
   `;
 
-  const escapeHtml = (str) => str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  const escapeHtml = (str) =>
+    str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // Generate table of contents if requested
   const fileEntries = Object.entries(context.files);
@@ -607,14 +645,19 @@ function generateHTML(context, options = {}) {
     `;
   }
 
-  const fileSections = fileEntries.map(([file, content]) => `
+  const fileSections = fileEntries
+    .map(
+      ([file, content]) => `
     <section id="${file.replace(/\./g, '-')}">
       <h2>📄 ${file}</h2>
       <div class="content">${escapeHtml(content)}</div>
     </section>
-  `).join('');
+  `
+    )
+    .join('');
 
-  const stateSection = context.state ? `
+  const stateSection = context.state
+    ? `
     <section id="project-state">
       <h2>📊 Project State</h2>
       <div class="state-summary">
@@ -632,21 +675,29 @@ function generateHTML(context, options = {}) {
         </div>
       </div>
     </section>
-  ` : '';
+  `
+    : '';
 
-  const agentsSection = context.agents.length > 0 ? `
+  const agentsSection =
+    context.agents.length > 0
+      ? `
     <section id="agents">
       <h2>🤖 Bundled Agents (${context.agents.length})</h2>
       <div class="agents-grid">
-        ${context.agents.map(agent => `
+        ${context.agents
+          .map(
+            (agent) => `
           <div class="agent-card">
             <h4>@${agent.name} <span style="color: var(--text-secondary); font-weight: normal;">(${agent.category})</span></h4>
             <div class="preview">${escapeHtml(agent.content.substring(0, 300))}...</div>
           </div>
-        `).join('')}
+        `
+          )
+          .join('')}
       </div>
     </section>
-  ` : '';
+  `
+      : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -690,7 +741,10 @@ export function registerExportCommand(program) {
     .option('--pdf', 'Shortcut for --format pdf')
     .option('-o, --output <file>', 'Output file path')
     .option('--include-agents', 'Include agent prompts in export')
-    .option('--sections <ranges>', 'Export specific sections only (comma-separated numbers or ranges, e.g. 1,2,3 or 1-5)')
+    .option(
+      '--sections <ranges>',
+      'Export specific sections only (comma-separated numbers or ranges, e.g. 1,2,3 or 1-5)'
+    )
     .option('--toc', 'Include auto-generated table of contents')
     .option('--template <file>', 'Use custom template file for export')
     .action(async (options) => {

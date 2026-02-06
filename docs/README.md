@@ -6,14 +6,14 @@
 
 ## Quick Start
 
-| Goal | Document |
-|------|----------|
-| **First feature** | [BUILD-AUTH-30M.md](./BUILD-AUTH-30M.md) |
-| **CI/CD setup** | [CICD-GUIDE.md](./CICD-GUIDE.md) |
+| Goal                | Document                                   |
+| ------------------- | ------------------------------------------ |
+| **First feature**   | [BUILD-AUTH-30M.md](./BUILD-AUTH-30M.md)   |
+| **CI/CD setup**     | [CICD-GUIDE.md](./CICD-GUIDE.md)           |
 | **MCP integration** | [MCP-INTEGRATION.md](./MCP-INTEGRATION.md) |
-| **Project roadmap** | [ROADMAP.md](./ROADMAP.md) |
-| **Future tasks** | [FUTURE-TASKS.md](./FUTURE-TASKS.md) |
-| **Product vision** | [VISION-V2.md](./VISION-V2.md) |
+| **Project roadmap** | [ROADMAP.md](./ROADMAP.md)                 |
+| **Future tasks**    | [FUTURE-TASKS.md](./FUTURE-TASKS.md)       |
+| **Product vision**  | [VISION-V2.md](./VISION-V2.md)             |
 
 ---
 
@@ -42,25 +42,25 @@ docs/
 
 ## Related Documentation
 
-| Location | Contents |
-|----------|----------|
-| [/agents](../agents/) | 17 AI agent prompts |
-| [/cursor-rules](../cursor-rules/) | 31 Cursor IDE rules |
-| [/templates](../templates/) | Project templates |
+| Location                          | Contents                    |
+| --------------------------------- | --------------------------- |
+| [/agents](../agents/)             | 17 AI agent prompts         |
+| [/cursor-rules](../cursor-rules/) | 31 Cursor IDE rules         |
+| [/templates](../templates/)       | Project templates           |
 | [/@ ultra-dex](../@%20ultra-dex/) | Core methodology & examples |
 
 ---
 
 ## Quick Navigation
 
-| Topic | File |
-|-------|------|
-| Getting started | [BUILD-AUTH-30M.md](./BUILD-AUTH-30M.md) |
-| CLI commands | [../cli/README.md](../cli/README.md) |
-| Multi-agent workflows | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md) |
-| Database selection | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
-| Architecture patterns | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md) |
+| Topic                 | File                                                                             |
+| --------------------- | -------------------------------------------------------------------------------- |
+| Getting started       | [BUILD-AUTH-30M.md](./BUILD-AUTH-30M.md)                                         |
+| CLI commands          | [../cli/README.md](../cli/README.md)                                             |
+| Multi-agent workflows | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md)             |
+| Database selection    | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
+| Architecture patterns | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md)             |
 
 ---
 
-*Ultra-Dex v3.4.5 - AI Orchestration Meta-Layer*
+_Ultra-Dex v3.4.5 - AI Orchestration Meta-Layer_

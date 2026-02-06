@@ -21,7 +21,7 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5436,
   database: process.env.DB_NAME || 'notifications_db',
   user: process.env.DB_USER || 'notifications_user',
-  password: process.env.DB_PASSWORD || 'notifications_pass123'
+  password: process.env.DB_PASSWORD || 'notifications_pass123',
 });
 
 // Redis connection
@@ -35,11 +35,11 @@ const connectRabbitMQ = async () => {
   try {
     connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
     channel = await connection.createChannel();
-    
+
     // Declare exchanges
     await channel.assertExchange('orders', 'topic', { durable: true });
     await channel.assertExchange('payments', 'topic', { durable: true });
-    
+
     logger.info('Connected to RabbitMQ');
     return { connection, channel };
   } catch (error) {
@@ -64,7 +64,7 @@ app.use((req, res, next) => {
     method: req.method,
     url: req.url,
     ip: req.ip,
-    userAgent: req.get('user-agent')
+    userAgent: req.get('user-agent'),
   });
   next();
 });
@@ -77,14 +77,14 @@ app.get('/health', async (req, res) => {
     res.json({
       status: 'ok',
       service: 'notifications-service',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Health check failed:', error);
     res.status(503).json({
       status: 'error',
       service: 'notifications-service',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -108,7 +108,7 @@ const startServer = async () => {
     // Start server
     app.listen(PORT, async () => {
       logger.info(`Notifications service running on port ${PORT}`);
-      
+
       try {
         await registerService('notifications-service', PORT);
       } catch (error) {

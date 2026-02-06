@@ -19,18 +19,21 @@
 **File:** `cli/bin/ultra-dex.js`
 
 **Current (Broken):**
+
 ```javascript
 import { registerCloudCommand } from '../lib/commands/cloud.js';
 // cloud.js exports cloudCommand, not registerCloudCommand
 ```
 
 **Fix:**
+
 ```javascript
 import { cloudCommand } from '../lib/commands/cloud.js';
 // Then use: program.command('cloud').action(cloudCommand);
 ```
 
 **Checklist:**
+
 - [ ] Audit all imports in ultra-dex.js
 - [ ] Verify each command file exports correctly
 - [ ] Fix mismatched import/export pairs
@@ -42,6 +45,7 @@ import { cloudCommand } from '../lib/commands/cloud.js';
 **File:** `cli/package.json`
 
 **Current (Optional - Wrong):**
+
 ```json
 "optionalDependencies": {
   "@anthropic-ai/sdk": "^0.30.0",
@@ -51,6 +55,7 @@ import { cloudCommand } from '../lib/commands/cloud.js';
 ```
 
 **Fix (Required):**
+
 ```json
 "dependencies": {
   "@anthropic-ai/sdk": "^0.30.0",
@@ -63,6 +68,7 @@ import { cloudCommand } from '../lib/commands/cloud.js';
 ```
 
 **Checklist:**
+
 - [ ] Move AI SDKs from optional to required
 - [ ] Add Vercel AI SDK for streaming
 - [ ] Run npm install to verify
@@ -74,16 +80,19 @@ import { cloudCommand } from '../lib/commands/cloud.js';
 **Files:** `cli/test/*.test.js`
 
 **Current (Broken in cli.test.js):**
+
 ```javascript
 import { something } from '../../lib/commands/init.js';
 ```
 
 **Fix:**
+
 ```javascript
 import { something } from '../lib/commands/init.js';
 ```
 
 **Checklist:**
+
 - [ ] Fix all relative paths in tests
 - [ ] Run npm test to verify
 - [ ] Ensure 13 new tests pass
@@ -106,9 +115,9 @@ export function registerHealthCommand(program) {
         { name: 'Config file', check: () => fs.existsSync('.ultra-dex.json') },
         { name: 'MCP server', check: checkMCPConnection },
       ];
-      
+
       for (const { name, check } of checks) {
-        const status = await check() ? '✅' : '❌';
+        const status = (await check()) ? '✅' : '❌';
         console.log(`${status} ${name}`);
       }
     });
@@ -116,6 +125,7 @@ export function registerHealthCommand(program) {
 ```
 
 **Checklist:**
+
 - [ ] Create health.js
 - [ ] Add to ultra-dex.js imports
 - [ ] Test with `ultra-dex doctor`
@@ -136,24 +146,22 @@ import { executeSlashCommand } from './commands.js';
 import { streamAIResponse } from '../providers/streaming.js';
 
 export async function startREPL(options = {}) {
-  const session = options.continue 
-    ? await getSession('latest')
-    : await createSession();
-    
+  const session = options.continue ? await getSession('latest') : await createSession();
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     prompt: chalk.cyan('ultra-dex> '),
   });
-  
+
   console.log(chalk.green('🚀 Ultra-Dex Interactive Mode'));
   console.log(chalk.dim('Type /help for commands, /exit to quit\n'));
-  
+
   rl.prompt();
-  
+
   rl.on('line', async (input) => {
     const trimmed = input.trim();
-    
+
     if (trimmed.startsWith('/')) {
       await executeSlashCommand(trimmed, session);
     } else if (trimmed) {
@@ -162,7 +170,7 @@ export async function startREPL(options = {}) {
       });
       console.log('\n');
     }
-    
+
     await saveSession(session);
     rl.prompt();
   });
@@ -170,6 +178,7 @@ export async function startREPL(options = {}) {
 ```
 
 **Checklist:**
+
 - [ ] Create repl/ directory
 - [ ] Implement session management
 - [ ] Add readline interface
@@ -220,8 +229,8 @@ export async function listSessions() {
   const files = await fs.readdir(SESSION_DIR);
   const sessions = await Promise.all(
     files
-      .filter(f => f.endsWith('.json'))
-      .map(async f => {
+      .filter((f) => f.endsWith('.json'))
+      .map(async (f) => {
         const data = await fs.readFile(path.join(SESSION_DIR, f), 'utf8');
         return JSON.parse(data);
       })
@@ -235,6 +244,7 @@ function generateSessionId() {
 ```
 
 **Checklist:**
+
 - [ ] Create session directory structure
 - [ ] Implement CRUD operations
 - [ ] Add session listing
@@ -282,13 +292,13 @@ const commands = {
 export async function executeSlashCommand(input, session) {
   const [cmd, ...args] = input.split(' ');
   const command = commands[cmd];
-  
+
   if (!command) {
     console.log(chalk.red(`Unknown command: ${cmd}`));
     console.log(chalk.dim('Type /help for available commands'));
     return;
   }
-  
+
   await command.handler(args, session);
 }
 
@@ -321,6 +331,7 @@ async function exitREPL() {
 ```
 
 **Checklist:**
+
 - [ ] Implement all slash commands
 - [ ] Add command help
 - [ ] Test each command
@@ -360,6 +371,7 @@ if (program.opts().resume) {
 ```
 
 **Checklist:**
+
 - [ ] Add REPL import
 - [ ] Add --continue flag
 - [ ] Add --resume flag
@@ -372,6 +384,7 @@ if (program.opts().resume) {
 ### Task 3.1: Add Vercel AI SDK (30 min)
 
 **Command:**
+
 ```bash
 cd cli && npm install ai @ai-sdk/anthropic @ai-sdk/openai
 ```
@@ -395,7 +408,7 @@ const providers = {
 export async function streamAIResponse(prompt, session, onToken) {
   const provider = providers[getProvider(session)];
   const model = getModel(session);
-  
+
   const { textStream } = await streamText({
     model: provider(model),
     messages: [
@@ -404,17 +417,17 @@ export async function streamAIResponse(prompt, session, onToken) {
       { role: 'user', content: prompt },
     ],
   });
-  
+
   let fullResponse = '';
   for await (const token of textStream) {
     fullResponse += token;
     onToken(token);
   }
-  
+
   // Save to session
   session.messages.push({ role: 'user', content: prompt });
   session.messages.push({ role: 'assistant', content: fullResponse });
-  
+
   return fullResponse;
 }
 
@@ -434,6 +447,7 @@ Follow the 34-section template and 21-step verification.`;
 ```
 
 **Checklist:**
+
 - [ ] Install AI SDK
 - [ ] Create streaming provider
 - [ ] Add multi-provider support
@@ -458,15 +472,15 @@ export function registerGenerateCommand(program) {
       if (options.stream) {
         const spinner = ora('Generating plan...').start();
         spinner.stop();
-        
+
         console.log(chalk.bold('\n🤖 Generating Plan:\n'));
-        
+
         await streamAIResponse(
           `Generate an implementation plan for: ${idea}`,
           { messages: [], config: { provider: 'anthropic' } },
           (token) => process.stdout.write(token)
         );
-        
+
         console.log('\n');
       } else {
         // Existing non-streaming implementation
@@ -476,6 +490,7 @@ export function registerGenerateCommand(program) {
 ```
 
 **Checklist:**
+
 - [ ] Add --stream flag
 - [ ] Implement streaming output
 - [ ] Add progress indicator
@@ -493,6 +508,7 @@ export function registerGenerateCommand(program) {
 ```
 
 **Checklist:**
+
 - [ ] Verify REPL uses streaming
 - [ ] Test with long responses
 - [ ] Ensure tokens appear in real-time
@@ -515,7 +531,7 @@ const SANDBOX_IMAGE = 'ultra-dex-sandbox:latest';
 
 export async function createSandbox() {
   const sandboxDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-'));
-  
+
   // Create Dockerfile if not exists
   const dockerfile = `
 FROM node:20-alpine
@@ -525,9 +541,9 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 `;
-  
+
   await fs.writeFile(path.join(sandboxDir, 'Dockerfile'), dockerfile);
-  
+
   return {
     dir: sandboxDir,
     async build() {
@@ -537,16 +553,21 @@ COPY . .
       const args = [
         'run',
         '--rm',
-        '-v', `${sandboxDir}:/workspace`,
-        '-w', '/workspace',
-        '--network', options.network ? 'host' : 'none',
-        '--memory', options.memory || '512m',
-        '--cpus', options.cpus || '1',
+        '-v',
+        `${sandboxDir}:/workspace`,
+        '-w',
+        '/workspace',
+        '--network',
+        options.network ? 'host' : 'none',
+        '--memory',
+        options.memory || '512m',
+        '--cpus',
+        options.cpus || '1',
         SANDBOX_IMAGE,
         ...command.split(' '),
       ];
-      
-      return execa('docker', args, { 
+
+      return execa('docker', args, {
         timeout: options.timeout || 60000,
         cwd: sandboxDir,
       });
@@ -559,6 +580,7 @@ COPY . .
 ```
 
 **Checklist:**
+
 - [ ] Create Docker sandbox
 - [ ] Add resource limits
 - [ ] Add timeout handling
@@ -584,36 +606,38 @@ export function registerExecCommand(program) {
     .option('--unsafe', 'Run without sandbox (DANGEROUS)')
     .action(async (task, options) => {
       console.log(chalk.bold(`🚀 Executing: ${task}\n`));
-      
+
       // Step 1: Generate plan
       console.log(chalk.dim('Step 1: Generating execution plan...'));
       const plan = await generateExecutionPlan(task);
-      
+
       if (options.dryRun) {
         console.log(chalk.yellow('\n📋 Execution Plan (Dry Run):'));
         console.log(plan);
         return;
       }
-      
+
       // Step 2: Confirm with user
       console.log(chalk.yellow('\n📋 Execution Plan:'));
       console.log(plan);
-      
-      const { confirm } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'confirm',
-        message: 'Execute this plan?',
-        default: false,
-      }]);
-      
+
+      const { confirm } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'confirm',
+          message: 'Execute this plan?',
+          default: false,
+        },
+      ]);
+
       if (!confirm) {
         console.log(chalk.dim('Execution cancelled'));
         return;
       }
-      
+
       // Step 3: Execute
       console.log(chalk.dim('\nStep 2: Executing...'));
-      
+
       if (options.sandbox && !options.unsafe) {
         const sandbox = await createSandbox();
         try {
@@ -632,7 +656,7 @@ export function registerExecCommand(program) {
         console.log(chalk.red('⚠️  Running without sandbox!'));
         // Direct execution (dangerous)
       }
-      
+
       console.log(chalk.green('\n✅ Execution complete!'));
     });
 }
@@ -641,11 +665,11 @@ async function generateExecutionPlan(task) {
   // Use AI to generate execution steps
   const response = await streamAIResponse(
     `Generate an execution plan for: ${task}\n` +
-    `Return as JSON with steps array: [{"command": "...", "description": "...", "timeout": 60000}]`,
+      `Return as JSON with steps array: [{"command": "...", "description": "...", "timeout": 60000}]`,
     { messages: [], config: { provider: 'anthropic' } },
     () => {} // Don't stream, collect full response
   );
-  
+
   try {
     return JSON.parse(response);
   } catch {
@@ -655,6 +679,7 @@ async function generateExecutionPlan(task) {
 ```
 
 **Checklist:**
+
 - [ ] Rewrite exec command
 - [ ] Add sandbox integration
 - [ ] Add dry-run mode
@@ -687,24 +712,21 @@ const BLOCKED_COMMANDS = [
 
 export function validatePath(filePath) {
   const resolved = path.resolve(filePath);
-  return ALLOWED_PATHS.some(allowed => resolved.startsWith(allowed));
+  return ALLOWED_PATHS.some((allowed) => resolved.startsWith(allowed));
 }
 
 export function validateCommand(command) {
-  return !BLOCKED_COMMANDS.some(blocked => 
-    command.includes(blocked)
-  );
+  return !BLOCKED_COMMANDS.some((blocked) => command.includes(blocked));
 }
 
 export function sanitizeCommand(command) {
   // Remove dangerous characters
-  return command
-    .replace(/[;&|`$]/g, '')
-    .trim();
+  return command.replace(/[;&|`$]/g, '').trim();
 }
 ```
 
 **Checklist:**
+
 - [ ] Create permission system
 - [ ] Add path validation
 - [ ] Add command blocklist
@@ -715,6 +737,7 @@ export function sanitizeCommand(command) {
 ### Task 4.4: Test End-to-End (30 min)
 
 **Test Script:**
+
 ```bash
 # Test the complete flow
 cd /tmp
@@ -739,6 +762,7 @@ ultra-dex exec "Install Express"
 ```
 
 **Checklist:**
+
 - [ ] Test REPL mode
 - [ ] Test streaming
 - [ ] Test execution
@@ -749,24 +773,28 @@ ultra-dex exec "Install Express"
 ## 📋 Verification Checklist
 
 ### Hour 8 Checkpoints
+
 - [ ] All imports fixed
 - [ ] Dependencies correct
 - [ ] Tests passing
 - [ ] `ultra-dex doctor` works
 
 ### Hour 24 Checkpoints
+
 - [ ] REPL starts with `ultra-dex`
 - [ ] Slash commands work
 - [ ] Sessions persist
 - [ ] `--continue` flag works
 
 ### Hour 36 Checkpoints
+
 - [ ] Streaming shows tokens in real-time
 - [ ] `--stream` flag works
 - [ ] Multiple providers supported
 - [ ] REPL uses streaming
 
 ### Hour 48 Checkpoints
+
 - [ ] `ultra-dex exec` runs code
 - [ ] Docker sandbox works
 - [ ] Permissions enforced
@@ -776,28 +804,31 @@ ultra-dex exec "Install Express"
 
 ## 🎯 Success Metrics
 
-| Metric | Before | After | Target |
-|--------|--------|-------|--------|
-| **Overall Score** | 6.2/10 | ? | 8.5/10 |
-| **Active Execution** | 6/10 | ? | 9/10 |
-| **2026 Integration** | 5/10 | ? | 8/10 |
-| **Tech Readiness** | 5/10 | ? | 8/10 |
+| Metric               | Before | After | Target |
+| -------------------- | ------ | ----- | ------ |
+| **Overall Score**    | 6.2/10 | ?     | 8.5/10 |
+| **Active Execution** | 6/10   | ?     | 9/10   |
+| **2026 Integration** | 5/10   | ?     | 8/10   |
+| **Tech Readiness**   | 5/10   | ?     | 8/10   |
 
 ---
 
 ## 🚀 Post-48H Roadmap
 
 ### Week 2: Polish
+
 - Voice input (`--voice` flag)
 - Browser automation (`ultra-dex browser`)
 - Plugin system
 
 ### Week 3: Scale
+
 - LangGraph integration
 - Vector search
 - Team collaboration features
 
 ### Week 4: Launch
+
 - v4.0.0 release
 - Marketing push
 - Community onboarding

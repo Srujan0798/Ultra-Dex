@@ -13,7 +13,7 @@ try {
   const rows = [
     ['Project Alpha', 'Web App', 'Active'],
     ['Project Beta', 'Mobile App', 'Pending'],
-    ['Project Gamma', 'API Service', 'Completed']
+    ['Project Gamma', 'API Service', 'Completed'],
   ];
   console.log(createTable(headers, rows));
   console.log('✅ Tables module working\n');
@@ -50,10 +50,10 @@ try {
   const menuItems = [
     { emoji: '🚀', label: 'Deploy Application', value: 'deploy' },
     { emoji: '🔍', label: 'Run Tests', value: 'test' },
-    { emoji: '⚙️', label: 'Configure Settings', value: 'config' }
+    { emoji: '⚙️', label: 'Configure Settings', value: 'config' },
   ];
   console.log('Sample menu structure created successfully');
-  console.log('Menu items:', menuItems.map(m => `${m.emoji} ${m.label}`).join(', '));
+  console.log('Menu items:', menuItems.map((m) => `${m.emoji} ${m.label}`).join(', '));
   console.log('✅ Menu module working\n');
 } catch (error) {
   console.log('❌ Menu module error:', error.message);

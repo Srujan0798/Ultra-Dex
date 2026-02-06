@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Base AI Provider Interface
  * All providers (Claude, OpenAI, Gemini) must implement this interface

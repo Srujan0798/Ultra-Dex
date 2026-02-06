@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Auto Context Engine
  * Scans project, builds knowledge graph, infers conventions, and writes CONTEXT.md.
@@ -22,7 +24,7 @@ const STACK_RULES = [
   { id: 'prisma', match: ['prisma', '@prisma/client'] },
   { id: 'supabase', match: ['@supabase', 'supabase'] },
   { id: 'stripe', match: ['stripe'] },
-  { id: 'typescript', match: ['typescript'] }
+  { id: 'typescript', match: ['typescript'] },
 ];
 
 const AGENT_RECOMMENDATIONS = {
@@ -36,7 +38,7 @@ const AGENT_RECOMMENDATIONS = {
   prisma: ['database'],
   supabase: ['database', 'backend'],
   stripe: ['backend', 'security'],
-  typescript: ['refactoring', 'testing']
+  typescript: ['refactoring', 'testing'],
 };
 
 async function safeReadJson(filePath) {
@@ -53,7 +55,7 @@ function detectStack(dependencies = {}) {
   const detected = [];
 
   for (const rule of STACK_RULES) {
-    const matched = rule.match.some(token => depKeys.some(dep => dep.includes(token)));
+    const matched = rule.match.some((token) => depKeys.some((dep) => dep.includes(token)));
     if (matched) detected.push(rule.id);
   }
 
@@ -98,7 +100,7 @@ async function inferConventions(files, rootDir) {
     }
   }
 
-  files.forEach(file => {
+  files.forEach((file) => {
     if (file.includes('-')) kebab += 1;
     if (file.includes('_')) snake += 1;
   });
@@ -113,9 +115,9 @@ async function inferConventions(files, rootDir) {
 
 function suggestAgents(stack = []) {
   const recommendations = new Set();
-  stack.forEach(item => {
+  stack.forEach((item) => {
     const agents = AGENT_RECOMMENDATIONS[item] || [];
-    agents.forEach(agent => recommendations.add(agent));
+    agents.forEach((agent) => recommendations.add(agent));
   });
   if (recommendations.size === 0) {
     recommendations.add('planner');
@@ -126,7 +128,8 @@ function suggestAgents(stack = []) {
 }
 
 function formatContext({ projectName, stack, conventions, graphSummary, agents, fileStats }) {
-  return `# Project Context\n\n` +
+  return (
+    `# Project Context\n\n` +
     `## Snapshot\n` +
     `- Project: ${projectName || 'Unknown'}\n` +
     `- Stack: ${stack.length ? stack.join(', ') : 'Unidentified'}\n` +
@@ -143,12 +146,13 @@ function formatContext({ projectName, stack, conventions, graphSummary, agents, 
       .map(([ext, count]) => `- ${ext || 'no-ext'}: ${count}`)
       .join('\n')}\n\n` +
     `## Suggested Agents\n` +
-    `${agents.map(agent => `- @${agent}`).join('\n')}\n`;
+    `${agents.map((agent) => `- @${agent}`).join('\n')}\n`
+  );
 }
 
 async function buildFileStats(files) {
   const stats = {};
-  files.forEach(file => {
+  files.forEach((file) => {
     const ext = path.extname(file) || 'no-ext';
     stats[ext] = (stats[ext] || 0) + 1;
   });
@@ -159,13 +163,20 @@ export async function scanProject(rootDir = process.cwd()) {
   const files = await glob('**/*.*', {
     cwd: rootDir,
     nodir: true,
-    ignore: ['**/node_modules/**', '**/.git/**', '**/.ultra-dex/**', '**/dist/**', '**/build/**', '**/.next/**']
+    ignore: [
+      '**/node_modules/**',
+      '**/.git/**',
+      '**/.ultra-dex/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/.next/**',
+    ],
   });
 
   const packageJson = await safeReadJson(path.join(rootDir, 'package.json'));
   const dependencies = {
     ...(packageJson?.dependencies || {}),
-    ...(packageJson?.devDependencies || {})
+    ...(packageJson?.devDependencies || {}),
   };
 
   const stack = detectStack(dependencies);
@@ -184,7 +195,10 @@ export async function buildKnowledgeGraph(rootDir = process.cwd()) {
   }
 }
 
-export async function generateContext({ rootDir = process.cwd(), outputPath = DEFAULT_CONTEXT_PATH } = {}) {
+export async function generateContext({
+  rootDir = process.cwd(),
+  outputPath = DEFAULT_CONTEXT_PATH,
+} = {}) {
   const scan = await scanProject(rootDir);
   const graphSummary = await buildKnowledgeGraph(rootDir);
   const agents = suggestAgents(scan.stack);
@@ -194,9 +208,11 @@ export async function generateContext({ rootDir = process.cwd(), outputPath = DE
     projectName,
     stack: scan.stack,
     conventions: scan.conventions,
-    graphSummary: graphSummary ? { nodeCount: graphSummary.nodeCount, edgeCount: graphSummary.edgeCount } : null,
+    graphSummary: graphSummary
+      ? { nodeCount: graphSummary.nodeCount, edgeCount: graphSummary.edgeCount }
+      : null,
     agents,
-    fileStats: scan.fileStats
+    fileStats: scan.fileStats,
   });
 
   await fs.writeFile(path.join(rootDir, outputPath), context, 'utf8');
@@ -206,7 +222,7 @@ export async function generateContext({ rootDir = process.cwd(), outputPath = DE
     stack: scan.stack,
     conventions: scan.conventions,
     agents,
-    graphSummary
+    graphSummary,
   };
 }
 
@@ -218,5 +234,5 @@ export default {
   scanProject,
   buildKnowledgeGraph,
   generateContext,
-  runAutoContext
+  runAutoContext,
 };

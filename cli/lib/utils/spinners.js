@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import ora from 'ora';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
@@ -10,16 +12,16 @@ const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
 export const SPINNERS = {
   quantum: {
     interval: 80,
-    frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'].map(f => ultraGradient(f))
+    frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'].map((f) => ultraGradient(f)),
   },
   cyber: {
     interval: 100,
-    frames: ['|', '/', '-', '\\'].map(f => ultraGradient(f))
+    frames: ['|', '/', '-', '\\'].map((f) => ultraGradient(f)),
   },
   pulse: {
     interval: 200,
-    frames: ['⊙', '⊚', '⊛', '⊜', '⊝'].map(f => ultraGradient(f))
-  }
+    frames: ['⊙', '⊚', '⊛', '⊜', '⊝'].map((f) => ultraGradient(f)),
+  },
 };
 
 /**
@@ -30,7 +32,7 @@ export const SPINNERS = {
 export function createSpinner(text, type = 'quantum') {
   return ora({
     text,
-    spinner: SPINNERS[type] || SPINNERS.quantum
+    spinner: SPINNERS[type] || SPINNERS.quantum,
   });
 }
 
@@ -45,5 +47,5 @@ export function startSpinner(text, type = 'quantum') {
 export default {
   SPINNERS,
   createSpinner,
-  startSpinner
+  startSpinner,
 };

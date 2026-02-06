@@ -8,24 +8,24 @@
 
 ### Current State (January 28, 2026)
 
-| Metric | Value |
-|--------|-------|
-| **Version** | v2.4.0 |
-| **npm** | `npx ultra-dex` |
-| **Commands** | 28+ |
-| **Agents** | 16 specialized |
-| **Cursor Rules** | 13 .mdc files |
-| **GitHub** | github.com/Srujan0798/Ultra-Dex |
+| Metric           | Value                           |
+| ---------------- | ------------------------------- |
+| **Version**      | v2.4.0                          |
+| **npm**          | `npx ultra-dex`                 |
+| **Commands**     | 28+                             |
+| **Agents**       | 16 specialized                  |
+| **Cursor Rules** | 13 .mdc files                   |
+| **GitHub**       | github.com/Srujan0798/Ultra-Dex |
 
 ### Core DNA (SACRED — Never Deviate)
 
-| Principle | Why It's Sacred |
-|-----------|-----------------|
-| **34-Section Template** | Production bulletproof — covers EVERYTHING |
-| **21-Step Verification** | Prevents "forgot X" disasters |
-| **AI-Agnostic** | Works with Claude/GPT/Gemini/Devin/Cursor |
-| **"Skeleton, Not Cage"** | User owns implementation, we provide structure |
-| **Git-Versioned Context** | CONTEXT.md survives session amnesia |
+| Principle                 | Why It's Sacred                                |
+| ------------------------- | ---------------------------------------------- |
+| **34-Section Template**   | Production bulletproof — covers EVERYTHING     |
+| **21-Step Verification**  | Prevents "forgot X" disasters                  |
+| **AI-Agnostic**           | Works with Claude/GPT/Gemini/Devin/Cursor      |
+| **"Skeleton, Not Cage"**  | User owns implementation, we provide structure |
+| **Git-Versioned Context** | CONTEXT.md survives session amnesia            |
 
 ---
 
@@ -75,22 +75,27 @@ WITH ULTRA-DEX:
 ## ⚡ 2026 REALITY CHECK (Is It Modern?)
 
 ### 1. Is it ACTIVE or PASSIVE?
+
 - ❌ BAD: Static markdown files users manually copy-paste
 - ✅ GOOD: CLI commands that execute, generate, serve, sync
 
 ### 2. Is it DYNAMIC or STATIC?
+
 - ❌ BAD: CONTEXT.md that users must update manually
 - ✅ GOOD: Auto-sync with codebase, live MCP server
 
 ### 3. Does it EXECUTE or just PLAN?
+
 - ❌ BAD: "Here's your plan, now go code it yourself"
 - ✅ GOOD: `ultra-dex init --live` generates actual runnable code
 
 ### 4. Does it INTEGRATE or ISOLATE?
+
 - ❌ BAD: "Copy this prompt into your AI tool"
 - ✅ GOOD: MCP server, API integration, IDE extensions
 
 ### 5. Is it 2024 or 2026?
+
 - ❌ 2024: Markdown templates, manual checklists, copy-paste workflows
 - ✅ 2026: MCP, AI providers, live scaffolds, git hooks, auto-verification
 
@@ -100,38 +105,39 @@ WITH ULTRA-DEX:
 
 ## ⚔️ KILLERS WE MUST BEAT
 
-| Tool | Their Strength | Our Gap | Our Counter |
-|------|----------------|---------|-------------|
-| **Devin AI** | End-to-end app in 60min | No live boilerplate | CLI `--live` mode |
-| **Cursor 2.0** | Perfect Next.js patterns | Missing .mdc rules | Add 25+ rules |
-| **Replit Agent** | Voice→code→deploy | CLI too static | Voice input |
-| **Antigravity** | Full IDE agent | Passive approach | MCP + swarm |
-| **LangGraph** | Agent orchestration | Manual coord | Swarm mode |
-| **Bolt.new** | 30s app prototypes | Phase1→code gap | Boilerplate gen |
-| **Claude Code** | Full codebase understanding | Session amnesia | CONTEXT.md |
-| **Cody** | Context-aware | Single-tool only | Multi-tool |
+| Tool             | Their Strength              | Our Gap             | Our Counter       |
+| ---------------- | --------------------------- | ------------------- | ----------------- |
+| **Devin AI**     | End-to-end app in 60min     | No live boilerplate | CLI `--live` mode |
+| **Cursor 2.0**   | Perfect Next.js patterns    | Missing .mdc rules  | Add 25+ rules     |
+| **Replit Agent** | Voice→code→deploy           | CLI too static      | Voice input       |
+| **Antigravity**  | Full IDE agent              | Passive approach    | MCP + swarm       |
+| **LangGraph**    | Agent orchestration         | Manual coord        | Swarm mode        |
+| **Bolt.new**     | 30s app prototypes          | Phase1→code gap     | Boilerplate gen   |
+| **Claude Code**  | Full codebase understanding | Session amnesia     | CONTEXT.md        |
+| **Cody**         | Context-aware               | Single-tool only    | Multi-tool        |
 
 ---
 
 ## 🔗 2026 TECHNOLOGY STACK (Must Integrate)
 
-| Technology | What It Is | Ultra-Dex Integration |
-|------------|------------|----------------------|
-| **MCP (Model Context Protocol)** | Anthropic's standard for AI-tool communication | `ultra-dex serve` = MCP server |
-| **LangChain** | LLM orchestration framework | Compatible agent architecture |
-| **LangGraph** | Stateful agent graphs | Swarm mode uses similar patterns |
-| **OpenAI Assistants API** | Persistent AI threads | CONTEXT.md = permanent thread |
-| **Claude Computer Use** | AI browser/desktop control | Provide structured context |
-| **Ollama / LMStudio** | Local LLMs | Provider abstraction supports |
-| **Vercel AI SDK** | Streaming AI responses | CLI should use streaming |
-| **FalkorDB / Neo4j** | Graph databases for RAG | Future: Graph-based context |
-| **Pinecone / Weaviate** | Vector stores | Future: Semantic search |
+| Technology                       | What It Is                                     | Ultra-Dex Integration            |
+| -------------------------------- | ---------------------------------------------- | -------------------------------- |
+| **MCP (Model Context Protocol)** | Anthropic's standard for AI-tool communication | `ultra-dex serve` = MCP server   |
+| **LangChain**                    | LLM orchestration framework                    | Compatible agent architecture    |
+| **LangGraph**                    | Stateful agent graphs                          | Swarm mode uses similar patterns |
+| **OpenAI Assistants API**        | Persistent AI threads                          | CONTEXT.md = permanent thread    |
+| **Claude Computer Use**          | AI browser/desktop control                     | Provide structured context       |
+| **Ollama / LMStudio**            | Local LLMs                                     | Provider abstraction supports    |
+| **Vercel AI SDK**                | Streaming AI responses                         | CLI should use streaming         |
+| **FalkorDB / Neo4j**             | Graph databases for RAG                        | Future: Graph-based context      |
+| **Pinecone / Weaviate**          | Vector stores                                  | Future: Semantic search          |
 
 ### API Layer Requirements
+
 ```
 MUST HAVE:
 ├── MCP Server (port 3001) ✅ Implemented
-├── REST API for context retrieval ✅ Implemented  
+├── REST API for context retrieval ✅ Implemented
 ├── WebSocket for real-time updates ⚠️ Needed
 └── Claude Desktop MCP config ✅ Implemented
 
@@ -145,13 +151,13 @@ SHOULD HAVE:
 
 ## 📊 REVIEW DIMENSIONS (Score 1-10)
 
-| Dimension | Weight | What to Check |
-|-----------|--------|---------------|
-| **Active Execution** | 25% | Does CLI DO things, not just document? |
-| **Meta-Layer Position** | 25% | Is it clear we orchestrate, not compete? |
-| **2026 Integration** | 20% | MCP, Cursor, VS Code, Git, CI/CD |
-| **Competitive Moat** | 15% | 34-sections, 21-step, multi-tool |
-| **Tech Readiness** | 15% | LangGraph, Graph RAG, Local LLMs |
+| Dimension               | Weight | What to Check                            |
+| ----------------------- | ------ | ---------------------------------------- |
+| **Active Execution**    | 25%    | Does CLI DO things, not just document?   |
+| **Meta-Layer Position** | 25%    | Is it clear we orchestrate, not compete? |
+| **2026 Integration**    | 20%    | MCP, Cursor, VS Code, Git, CI/CD         |
+| **Competitive Moat**    | 15%    | 34-sections, 21-step, multi-tool         |
+| **Tech Readiness**      | 15%    | LangGraph, Graph RAG, Local LLMs         |
 
 ---
 
@@ -201,14 +207,14 @@ SHOULD HAVE:
 
 ## 🚨 ANTI-PATTERNS (DO NOT RECOMMEND)
 
-| Bad Advice | Why It's Wrong |
-|------------|----------------|
-| "Reduce to 7 sections" | 34 sections IS the value |
-| "21-step is overkill" | Production apps NEED rigorous QA |
+| Bad Advice               | Why It's Wrong                         |
+| ------------------------ | -------------------------------------- |
+| "Reduce to 7 sections"   | 34 sections IS the value               |
+| "21-step is overkill"    | Production apps NEED rigorous QA       |
 | "Just use Devin instead" | Devin = tool. We = orchestration layer |
-| "Build an AI yourself" | We ORCHESTRATE, don't compete |
-| "Simplify for beginners" | Comprehensive = Feature, not Bug |
-| "VS Code extension only" | We're IDE-agnostic |
+| "Build an AI yourself"   | We ORCHESTRATE, don't compete          |
+| "Simplify for beginners" | Comprehensive = Feature, not Bug       |
+| "VS Code extension only" | We're IDE-agnostic                     |
 
 ---
 
@@ -217,23 +223,25 @@ SHOULD HAVE:
 ### 1. Summary (1 paragraph)
 
 ### 2. Score Table
-| Dimension | Score | Evidence |
-|-----------|-------|----------|
-| Active Execution | /10 | |
-| Meta-Layer Position | /10 | |
-| 2026 Integration | /10 | |
-| Competitive Moat | /10 | |
-| Tech Readiness | /10 | |
-| **TOTAL** | **/10** | |
+
+| Dimension           | Score   | Evidence |
+| ------------------- | ------- | -------- |
+| Active Execution    | /10     |          |
+| Meta-Layer Position | /10     |          |
+| 2026 Integration    | /10     |          |
+| Competitive Moat    | /10     |          |
+| Tech Readiness      | /10     |          |
+| **TOTAL**           | **/10** |          |
 
 ### 3. 2026 Reality Check
-| Check | Pass? | Evidence |
-|-------|-------|----------|
-| ACTIVE not PASSIVE | | |
-| DYNAMIC not STATIC | | |
-| EXECUTES not just PLANS | | |
-| INTEGRATES not ISOLATES | | |
-| 2026 not 2024 | | |
+
+| Check                   | Pass? | Evidence |
+| ----------------------- | ----- | -------- |
+| ACTIVE not PASSIVE      |       |          |
+| DYNAMIC not STATIC      |       |          |
+| EXECUTES not just PLANS |       |          |
+| INTEGRATES not ISOLATES |       |          |
+| 2026 not 2024           |       |          |
 
 ### 4. Top 5 Strengths
 
@@ -298,7 +306,8 @@ Priority 4 (Integration):
 
 ---
 
-*Updated: January 28, 2026 | v2.4.0 | Target: Layer 3 Dominance*
+_Updated: January 28, 2026 | v2.4.0 | Target: Layer 3 Dominance_
+
 # 🪐 ULTRA-DEX META-LAYER BRUTAL REVIEW — 2026 ULTIMATE EDITION
 
 > **"We don't compete with Cursor/Devin. We are the META-LAYER that makes them UNSTOPPABLE."**
@@ -309,27 +318,27 @@ Priority 4 (Integration):
 
 ### Current State (February 2, 2026)
 
-| Metric | Value |
-|--------|-------|
-| **Version** | v3.4.5 |
-| **npm** | `npx ultra-dex` |
-| **Commands** | 46+ (7 production-ready, 15 beta, 18 dev) |
-| **Agents** | 17 specialized (6 tiers) |
-| **Cursor Rules** | 31 .mdc files |
-| **Tests** | 281 passing |
-| **GitHub** | github.com/Srujan0798/Ultra-Dex |
-| **Target Launch** | February 14, 2026 |
+| Metric            | Value                                     |
+| ----------------- | ----------------------------------------- |
+| **Version**       | v3.4.5                                    |
+| **npm**           | `npx ultra-dex`                           |
+| **Commands**      | 46+ (7 production-ready, 15 beta, 18 dev) |
+| **Agents**        | 17 specialized (6 tiers)                  |
+| **Cursor Rules**  | 31 .mdc files                             |
+| **Tests**         | 281 passing                               |
+| **GitHub**        | github.com/Srujan0798/Ultra-Dex           |
+| **Target Launch** | February 14, 2026                         |
 
 ### Core DNA (SACRED — Never Deviate)
 
-| Principle | Why It's Sacred |
-|-----------|-----------------|
-| **34-Section Template** | Production bulletproof — covers EVERYTHING |
-| **21-Step Verification** | Prevents "forgot X" disasters |
-| **AI-Agnostic** | Works with Claude/GPT/Gemini/Devin/Cursor |
-| **"Skeleton, Not Cage"** | User owns implementation, we provide structure |
-| **Git-Versioned Context** | CONTEXT.md survives session amnesia |
-| **Atomic Tasks** | 4-9 hours max per task |
+| Principle                 | Why It's Sacred                                |
+| ------------------------- | ---------------------------------------------- |
+| **34-Section Template**   | Production bulletproof — covers EVERYTHING     |
+| **21-Step Verification**  | Prevents "forgot X" disasters                  |
+| **AI-Agnostic**           | Works with Claude/GPT/Gemini/Devin/Cursor      |
+| **"Skeleton, Not Cage"**  | User owns implementation, we provide structure |
+| **Git-Versioned Context** | CONTEXT.md survives session amnesia            |
+| **Atomic Tasks**          | 4-9 hours max per task                         |
 
 ---
 
@@ -379,22 +388,27 @@ WITH ULTRA-DEX:
 ## ⚡ 2026 REALITY CHECK (Is It Modern?)
 
 ### 1. Is it ACTIVE or PASSIVE?
+
 - ❌ BAD: Static markdown files users manually copy-paste
 - ✅ GOOD: CLI commands that execute, generate, serve, sync
 
 ### 2. Is it DYNAMIC or STATIC?
+
 - ❌ BAD: CONTEXT.md that users must update manually
 - ✅ GOOD: Auto-sync with codebase, live MCP server
 
 ### 3. Does it EXECUTE or just PLAN?
+
 - ❌ BAD: "Here's your plan, now go code it yourself"
 - ✅ GOOD: `ultra-dex init --live` generates actual runnable code
 
 ### 4. Does it INTEGRATE or ISOLATE?
+
 - ❌ BAD: "Copy this prompt into your AI tool"
 - ✅ GOOD: MCP server, API integration, IDE extensions
 
 ### 5. Is it 2024 or 2026?
+
 - ❌ 2024: Markdown templates, manual checklists, copy-paste workflows
 - ✅ 2026: MCP, AI providers, live scaffolds, git hooks, auto-verification
 
@@ -404,38 +418,39 @@ WITH ULTRA-DEX:
 
 ## ⚔️ KILLERS WE MUST BEAT
 
-| Tool | Their Strength | Our Gap | Our Counter |
-|------|----------------|---------|-------------|
-| **Devin AI** | End-to-end app in 60min | No live boilerplate | CLI `--live` mode |
-| **Cursor 2.0** | Perfect Next.js patterns | Missing .mdc rules | Add 25+ rules |
-| **Replit Agent** | Voice→code→deploy | CLI too static | Voice input |
-| **Antigravity** | Full IDE agent | Passive approach | MCP + swarm |
-| **LangGraph** | Agent orchestration | Manual coord | Swarm mode |
-| **Bolt.new** | 30s app prototypes | Phase1→code gap | Boilerplate gen |
-| **Claude Code** | Full codebase understanding | Session amnesia | CONTEXT.md |
-| **Cody** | Context-aware | Single-tool only | Multi-tool |
+| Tool             | Their Strength              | Our Gap             | Our Counter       |
+| ---------------- | --------------------------- | ------------------- | ----------------- |
+| **Devin AI**     | End-to-end app in 60min     | No live boilerplate | CLI `--live` mode |
+| **Cursor 2.0**   | Perfect Next.js patterns    | Missing .mdc rules  | Add 25+ rules     |
+| **Replit Agent** | Voice→code→deploy           | CLI too static      | Voice input       |
+| **Antigravity**  | Full IDE agent              | Passive approach    | MCP + swarm       |
+| **LangGraph**    | Agent orchestration         | Manual coord        | Swarm mode        |
+| **Bolt.new**     | 30s app prototypes          | Phase1→code gap     | Boilerplate gen   |
+| **Claude Code**  | Full codebase understanding | Session amnesia     | CONTEXT.md        |
+| **Cody**         | Context-aware               | Single-tool only    | Multi-tool        |
 
 ---
 
 ## 🔗 2026 TECHNOLOGY STACK (Must Integrate)
 
-| Technology | What It Is | Ultra-Dex Integration |
-|------------|------------|----------------------|
-| **MCP (Model Context Protocol)** | Anthropic's standard for AI-tool communication | `ultra-dex serve` = MCP server |
-| **LangChain** | LLM orchestration framework | Compatible agent architecture |
-| **LangGraph** | Stateful agent graphs | Swarm mode uses similar patterns |
-| **OpenAI Assistants API** | Persistent AI threads | CONTEXT.md = permanent thread |
-| **Claude Computer Use** | AI browser/desktop control | Provide structured context |
-| **Ollama / LMStudio** | Local LLMs | Provider abstraction supports |
-| **Vercel AI SDK** | Streaming AI responses | CLI should use streaming |
-| **FalkorDB / Neo4j** | Graph databases for RAG | Future: Graph-based context |
-| **Pinecone / Weaviate** | Vector stores | Future: Semantic search |
+| Technology                       | What It Is                                     | Ultra-Dex Integration            |
+| -------------------------------- | ---------------------------------------------- | -------------------------------- |
+| **MCP (Model Context Protocol)** | Anthropic's standard for AI-tool communication | `ultra-dex serve` = MCP server   |
+| **LangChain**                    | LLM orchestration framework                    | Compatible agent architecture    |
+| **LangGraph**                    | Stateful agent graphs                          | Swarm mode uses similar patterns |
+| **OpenAI Assistants API**        | Persistent AI threads                          | CONTEXT.md = permanent thread    |
+| **Claude Computer Use**          | AI browser/desktop control                     | Provide structured context       |
+| **Ollama / LMStudio**            | Local LLMs                                     | Provider abstraction supports    |
+| **Vercel AI SDK**                | Streaming AI responses                         | CLI should use streaming         |
+| **FalkorDB / Neo4j**             | Graph databases for RAG                        | Future: Graph-based context      |
+| **Pinecone / Weaviate**          | Vector stores                                  | Future: Semantic search          |
 
 ### API Layer Requirements
+
 ```
 MUST HAVE:
 ├── MCP Server (port 3001) ✅ Implemented
-├── REST API for context retrieval ✅ Implemented  
+├── REST API for context retrieval ✅ Implemented
 ├── WebSocket for real-time updates ⚠️ Needed
 └── Claude Desktop MCP config ✅ Implemented
 
@@ -449,13 +464,13 @@ SHOULD HAVE:
 
 ## 📊 REVIEW DIMENSIONS (Score 1-10)
 
-| Dimension | Weight | What to Check |
-|-----------|--------|---------------|
-| **Active Execution** | 25% | Does CLI DO things, not just document? |
-| **Meta-Layer Position** | 25% | Is it clear we orchestrate, not compete? |
-| **2026 Integration** | 20% | MCP, Cursor, VS Code, Git, CI/CD |
-| **Competitive Moat** | 15% | 34-sections, 21-step, multi-tool |
-| **Tech Readiness** | 15% | LangGraph, Graph RAG, Local LLMs |
+| Dimension               | Weight | What to Check                            |
+| ----------------------- | ------ | ---------------------------------------- |
+| **Active Execution**    | 25%    | Does CLI DO things, not just document?   |
+| **Meta-Layer Position** | 25%    | Is it clear we orchestrate, not compete? |
+| **2026 Integration**    | 20%    | MCP, Cursor, VS Code, Git, CI/CD         |
+| **Competitive Moat**    | 15%    | 34-sections, 21-step, multi-tool         |
+| **Tech Readiness**      | 15%    | LangGraph, Graph RAG, Local LLMs         |
 
 ---
 
@@ -505,14 +520,14 @@ SHOULD HAVE:
 
 ## 🚨 ANTI-PATTERNS (DO NOT RECOMMEND)
 
-| Bad Advice | Why It's Wrong |
-|------------|----------------|
-| "Reduce to 7 sections" | 34 sections IS the value |
-| "21-step is overkill" | Production apps NEED rigorous QA |
+| Bad Advice               | Why It's Wrong                         |
+| ------------------------ | -------------------------------------- |
+| "Reduce to 7 sections"   | 34 sections IS the value               |
+| "21-step is overkill"    | Production apps NEED rigorous QA       |
 | "Just use Devin instead" | Devin = tool. We = orchestration layer |
-| "Build an AI yourself" | We ORCHESTRATE, don't compete |
-| "Simplify for beginners" | Comprehensive = Feature, not Bug |
-| "VS Code extension only" | We're IDE-agnostic |
+| "Build an AI yourself"   | We ORCHESTRATE, don't compete          |
+| "Simplify for beginners" | Comprehensive = Feature, not Bug       |
+| "VS Code extension only" | We're IDE-agnostic                     |
 
 ---
 
@@ -521,23 +536,25 @@ SHOULD HAVE:
 ### 1. Summary (1 paragraph)
 
 ### 2. Score Table
-| Dimension | Score | Evidence |
-|-----------|-------|----------|
-| Active Execution | /10 | |
-| Meta-Layer Position | /10 | |
-| 2026 Integration | /10 | |
-| Competitive Moat | /10 | |
-| Tech Readiness | /10 | |
-| **TOTAL** | **/10** | |
+
+| Dimension           | Score   | Evidence |
+| ------------------- | ------- | -------- |
+| Active Execution    | /10     |          |
+| Meta-Layer Position | /10     |          |
+| 2026 Integration    | /10     |          |
+| Competitive Moat    | /10     |          |
+| Tech Readiness      | /10     |          |
+| **TOTAL**           | **/10** |          |
 
 ### 3. 2026 Reality Check
-| Check | Pass? | Evidence |
-|-------|-------|----------|
-| ACTIVE not PASSIVE | | |
-| DYNAMIC not STATIC | | |
-| EXECUTES not just PLANS | | |
-| INTEGRATES not ISOLATES | | |
-| 2026 not 2024 | | |
+
+| Check                   | Pass? | Evidence |
+| ----------------------- | ----- | -------- |
+| ACTIVE not PASSIVE      |       |          |
+| DYNAMIC not STATIC      |       |          |
+| EXECUTES not just PLANS |       |          |
+| INTEGRATES not ISOLATES |       |          |
+| 2026 not 2024           |       |          |
 
 ### 4. Top 5 Strengths
 
@@ -602,4 +619,4 @@ Priority 4 (Integration):
 
 ---
 
-*Updated: February 2, 2026 | v3.4.5 | Target: Feb 14 Launch*
+_Updated: February 2, 2026 | v3.4.5 | Target: Feb 14 Launch_

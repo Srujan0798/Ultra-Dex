@@ -1,7 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useBalance, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi';
+import {
+  useAccount,
+  useBalance,
+  useContractRead,
+  useContractWrite,
+  useWaitForTransaction,
+} from 'wagmi';
 import { MyTokenABI } from '@/config/abis';
 import contracts from '@/config/contracts.json';
 import { Coins, Send, Flame, Plus, RefreshCw } from 'lucide-react';
@@ -136,9 +142,7 @@ export default function TokenPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Amount
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
                   <input
                     type="number"
                     value={transferAmount}

@@ -6,21 +6,22 @@
 
 ## 📊 File Inventory
 
-| Location | Files | Status |
-|----------|-------|--------|
-| `archived_docs/` | 137 | 🔴 Needs cleanup |
-| `archives/` | 28 | 🔴 Needs cleanup |
-| `43Reviews.md/` | 6 | 🔴 Consolidate |
-| `WTF Reviews/` | 8 | 🔴 Consolidate |
-| Root `.md` files | 15 | 🟡 Organize |
-| `docs/` | 100 | 🟡 Verify current |
-| **TOTAL** | **294** | |
+| Location         | Files   | Status            |
+| ---------------- | ------- | ----------------- |
+| `archived_docs/` | 137     | 🔴 Needs cleanup  |
+| `archives/`      | 28      | 🔴 Needs cleanup  |
+| `43Reviews.md/`  | 6       | 🔴 Consolidate    |
+| `WTF Reviews/`   | 8       | 🔴 Consolidate    |
+| Root `.md` files | 15      | 🟡 Organize       |
+| `docs/`          | 100     | 🟡 Verify current |
+| **TOTAL**        | **294** |                   |
 
 ---
 
 ## 🤖 AGENT ASSIGNMENTS
 
 ### AGENT 1: OpenCode (Port 45290) - archived_docs
+
 **137 files across nested folders**
 
 ```
@@ -37,6 +38,7 @@ Tasks:
 ```
 
 **Prompt:**
+
 ```
 Scan the entire archived_docs/ folder recursively. There are 137 files in there including nested archive/archive structures. Create a complete inventory with recommendations: KEEP (still relevant), MERGE (combine with another), DELETE (outdated). Focus on removing duplicates across the nested A_New_Review folders.
 ```
@@ -44,6 +46,7 @@ Scan the entire archived_docs/ folder recursively. There are 137 files in there 
 ---
 
 ### AGENT 2: OpenCode (Port 37836) - Reviews & archives
+
 **42 files total**
 
 ```
@@ -60,10 +63,11 @@ Tasks:
 ```
 
 **Prompt:**
+
 ```
 Review and consolidate:
 1. 43Reviews.md/ folder (6 files, 224KB)
-2. "WTF Reviews/" folder (8 files, 158KB)  
+2. "WTF Reviews/" folder (8 files, 158KB)
 3. archives/ folder (28 files)
 
 Create ONE consolidated document with only ACTIONABLE items for v3.5.0+. Remove duplicates and completed items.
@@ -72,6 +76,7 @@ Create ONE consolidated document with only ACTIONABLE items for v3.5.0+. Remove 
 ---
 
 ### AGENT 3: Gemini - docs verification
+
 **100 files to verify**
 
 ```
@@ -91,6 +96,7 @@ Tasks:
 ```
 
 **Prompt:**
+
 ```
 Audit the docs/ folder (100 files). Check each file:
 1. Is it current with v3.5.0?
@@ -102,6 +108,7 @@ Create a report with files needing updates.
 ---
 
 ### AGENT 4: Qwen - Root organization
+
 **15 root-level .md files**
 
 ```
@@ -116,6 +123,7 @@ Tasks:
 ```
 
 **Prompt:**
+
 ```
 List all .md files in the project root. Recommend for each:
 - KEEP at root (only essential)
@@ -151,5 +159,5 @@ Ultra-Dex/
 ## 📈 Metrics
 
 - **Before:** 294 scattered files
-- **After:** ~50 organized files + 1 _archived folder
+- **After:** ~50 organized files + 1 \_archived folder
 - **Reduction:** ~80%

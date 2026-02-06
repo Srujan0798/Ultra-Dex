@@ -21,24 +21,24 @@ npx ultra-dex agent backend
 
 ## 🤖 16 AI Agents by Tier
 
-| Tier | Agent | Use When |
-|------|-------|----------|
-| **1. Leadership** | @CTO | Architecture & tech stack decisions |
-| | @Planner | Breaking down features into tasks |
-| | @Research | Comparing frameworks/libraries |
-| **2. Development** | @Backend | Building APIs & server logic |
-| | @Frontend | Building UI & components |
-| | @Database | Database schema & queries |
-| **3. Security** | @Auth | Authentication & authorization |
-| | @Security | Security audits & OWASP checks |
-| **4. DevOps** | @DevOps | Deployment & CI/CD |
-| **5. Quality** | @Testing | Writing tests & QA |
-| | @Documentation | Technical writing & docs |
-| | @Reviewer | Code review & quality checks |
-| | @Debugger | Bug fixing & troubleshooting |
-| **6. Specialist** | @Performance | Performance optimization |
-| | @Refactoring | Code quality & design patterns |
-| **0. Orchestration** | @Orchestrator | Multi-agent coordination |
+| Tier                 | Agent          | Use When                            |
+| -------------------- | -------------- | ----------------------------------- |
+| **1. Leadership**    | @CTO           | Architecture & tech stack decisions |
+|                      | @Planner       | Breaking down features into tasks   |
+|                      | @Research      | Comparing frameworks/libraries      |
+| **2. Development**   | @Backend       | Building APIs & server logic        |
+|                      | @Frontend      | Building UI & components            |
+|                      | @Database      | Database schema & queries           |
+| **3. Security**      | @Auth          | Authentication & authorization      |
+|                      | @Security      | Security audits & OWASP checks      |
+| **4. DevOps**        | @DevOps        | Deployment & CI/CD                  |
+| **5. Quality**       | @Testing       | Writing tests & QA                  |
+|                      | @Documentation | Technical writing & docs            |
+|                      | @Reviewer      | Code review & quality checks        |
+|                      | @Debugger      | Bug fixing & troubleshooting        |
+| **6. Specialist**    | @Performance   | Performance optimization            |
+|                      | @Refactoring   | Code quality & design patterns      |
+| **0. Orchestration** | @Orchestrator  | Multi-agent coordination            |
 
 **Full Index:** [agents/00-AGENT_INDEX.md](./agents/00-AGENT_INDEX.md)
 
@@ -81,14 +81,14 @@ npx ultra-dex agent backend
 
 ## 📚 Essential Guides
 
-| Guide | Use For | Time |
-|-------|---------|------|
-| [Project Orchestration](./guides/PROJECT-ORCHESTRATION.md) | Learn multi-agent workflow | 20 min |
-| [Advanced Workflows](./guides/ADVANCED-WORKFLOWS.md) | Copy Stripe/email/real-time patterns | 10 min |
+| Guide                                                        | Use For                               | Time   |
+| ------------------------------------------------------------ | ------------------------------------- | ------ |
+| [Project Orchestration](./guides/PROJECT-ORCHESTRATION.md)   | Learn multi-agent workflow            | 20 min |
+| [Advanced Workflows](./guides/ADVANCED-WORKFLOWS.md)         | Copy Stripe/email/real-time patterns  | 10 min |
 | [Database Decision](./guides/DATABASE-DECISION-FRAMEWORK.md) | Choose PostgreSQL vs MongoDB vs MySQL | 10 min |
-| [Architecture Patterns](./guides/ARCHITECTURE-PATTERNS.md) | Choose architecture for team size | 15 min |
-| [AI Model Selection](./guides/AI-MODEL-SELECTION.md) | Optimize AI costs | 8 min |
-| [Multi-Tool Workflow](./guides/MULTI-TOOL-WORKFLOW.md) | Use multiple AIs together | 12 min |
+| [Architecture Patterns](./guides/ARCHITECTURE-PATTERNS.md)   | Choose architecture for team size     | 15 min |
+| [AI Model Selection](./guides/AI-MODEL-SELECTION.md)         | Optimize AI costs                     | 8 min  |
+| [Multi-Tool Workflow](./guides/MULTI-TOOL-WORKFLOW.md)       | Use multiple AIs together             | 12 min |
 
 **All Guides:** [guides/README.md](./guides/README.md)
 **AI Research:** [guides/AI-RESEARCH.md](./guides/AI-RESEARCH.md)
@@ -175,13 +175,13 @@ your-project/
 
 Use different AI tools for different tasks:
 
-| Task | Best Tool | Why |
-|------|-----------|-----|
-| Planning | ChatGPT (free) | Built-in web search |
-| Architecture | Claude Opus | Best reasoning |
-| Coding | GPT-5.2 or Cursor | Optimized for code |
-| Quick fixes | Claude Haiku | Fast & cheap |
-| Review | Claude Sonnet | Thorough analysis |
+| Task         | Best Tool         | Why                 |
+| ------------ | ----------------- | ------------------- |
+| Planning     | ChatGPT (free)    | Built-in web search |
+| Architecture | Claude Opus       | Best reasoning      |
+| Coding       | GPT-5.2 or Cursor | Optimized for code  |
+| Quick fixes  | Claude Haiku      | Fast & cheap        |
+| Review       | Claude Sonnet     | Thorough analysis   |
 
 **Shared state:** All tools read/write `IMPLEMENTATION-PLAN.md`
 
@@ -191,26 +191,28 @@ Use different AI tools for different tasks:
 
 ## 📊 Quality Targets
 
-| Area | Target | Tool |
-|------|--------|------|
-| Code Coverage | >80% | Jest, Vitest |
-| API Response (p95) | <500ms | Lighthouse, New Relic |
-| Page Load | <3s | Lighthouse |
-| Lighthouse Score | >90 | Chrome DevTools |
-| Bundle Size | <200KB (initial) | Webpack Bundle Analyzer |
-| Database Queries | <100ms (p95) | Prisma/Drizzle logs |
+| Area               | Target           | Tool                    |
+| ------------------ | ---------------- | ----------------------- |
+| Code Coverage      | >80%             | Jest, Vitest            |
+| API Response (p95) | <500ms           | Lighthouse, New Relic   |
+| Page Load          | <3s              | Lighthouse              |
+| Lighthouse Score   | >90              | Chrome DevTools         |
+| Bundle Size        | <200KB (initial) | Webpack Bundle Analyzer |
+| Database Queries   | <100ms (p95)     | Prisma/Drizzle logs     |
 
 ---
 
 ## 🎓 Learning Path
 
 ### Beginner (60 minutes)
+
 1. Read [Project Orchestration](./guides/PROJECT-ORCHESTRATION.md) - 20 min
 2. Read [Database Decision](./guides/DATABASE-DECISION-FRAMEWORK.md) - 10 min
 3. Read [Architecture Patterns](./guides/ARCHITECTURE-PATTERNS.md) - 15 min
 4. Scan [Advanced Workflows](./guides/ADVANCED-WORKFLOWS.md) - 15 min
 
 ### Experienced (30 minutes)
+
 1. Scan [Advanced Workflows](./guides/ADVANCED-WORKFLOWS.md) - 10 min
 2. Read [Multi-Tool Workflow](./guides/MULTI-TOOL-WORKFLOW.md) - 10 min
 3. Read [AI Model Selection](./guides/AI-MODEL-SELECTION.md) - 10 min
@@ -220,21 +222,25 @@ Use different AI tools for different tasks:
 ## 🔗 Quick Links
 
 **Core:**
+
 - [Main README](./README.md) - Project overview
 - [Agent Index](./agents/00-AGENT_INDEX.md) - All 17 agents
 - [Guide Directory](./guides/README.md) - All guides
 - [CHANGELOG](./CHANGELOG.md) - Version history
 
 **Templates:**
+
 - [Master Plan Template](./templates/MASTER-PLAN-TEMPLATE.md) - Project overview
 - [Phase Tracker Template](./templates/PHASE-TRACKER-TEMPLATE.md) - Task tracking
 - [Template Usage Guide](./templates/README.md) - How to use templates
 
 **Examples:**
+
 - [Orchestration Examples](./Orchestration/EXAMPLES.md) - Multi-agent workflows
 - [TaskFlow Complete](../@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md) - Full SaaS example
 
 **External:**
+
 - [GitHub Repo](https://github.com/Srujan0798/Ultra-Dex)
 - [Issues](https://github.com/Srujan0798/Ultra-Dex/issues)
 - [npm Package](https://www.npmjs.com/package/ultra-dex)
@@ -328,16 +334,18 @@ Use different AI tools for different tasks:
 ## 🆘 Need Help?
 
 **Documentation:**
+
 - [Main README](./README.md) - Start here
 - [Guide Directory](./guides/README.md) - All guides
 - [Agent Index](./agents/00-AGENT_INDEX.md) - All agents
 
 **Support:**
+
 - [GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues) - Report bugs
 - [GitHub Discussions](https://github.com/Srujan0798/Ultra-Dex/discussions) - Ask questions
 
 ---
 
-*Ultra-Dex v2.1.0 - Professional AI Orchestration Meta Layer*
+_Ultra-Dex v2.1.0 - Professional AI Orchestration Meta Layer_
 
 **Print this page for quick reference while coding!**

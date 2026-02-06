@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
 import { doomsdayTheme } from '../themes/doomsday.js';
 
@@ -9,7 +11,7 @@ export const themes = {
     success: '#22c55e',
     warning: '#eab308',
     error: '#ef4444',
-    dim: '#6b7280'
+    dim: '#6b7280',
   },
   ocean: {
     primary: '#0ea5e9',
@@ -18,7 +20,7 @@ export const themes = {
     success: '#22c55e',
     warning: '#f59e0b',
     error: '#f43f5e',
-    dim: '#64748b'
+    dim: '#64748b',
   },
   forest: {
     primary: '#22c55e',
@@ -27,7 +29,16 @@ export const themes = {
     success: '#22c55e',
     warning: '#eab308',
     error: '#ef4444',
-    dim: '#6b7280'
+    dim: '#6b7280',
+  },
+  cyberpunk: {
+    primary: '#00f5ff',
+    secondary: '#ff2e63',
+    accent: '#08f7fe',
+    success: '#22c55e',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    dim: '#475569',
   },
   doomsday: {
     primary: doomsdayTheme.primary,
@@ -36,8 +47,8 @@ export const themes = {
     success: '#f59e0b',
     warning: '#f97316',
     error: '#dc2626',
-    dim: '#4b5563'
-  }
+    dim: '#4b5563',
+  },
 };
 
 let currentTheme = themes.default;

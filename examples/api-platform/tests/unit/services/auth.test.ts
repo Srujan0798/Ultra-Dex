@@ -19,9 +19,9 @@ describe('ApiKeyService', () => {
     });
 
     it('should create API key with custom tier', async () => {
-      const result = await service.createKey('user-123', { 
-        name: 'Pro Key', 
-        tier: 'pro' 
+      const result = await service.createKey('user-123', {
+        name: 'Pro Key',
+        tier: 'pro',
       });
 
       expect(result.tier).toBe('pro');

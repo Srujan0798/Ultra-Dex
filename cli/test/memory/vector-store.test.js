@@ -127,7 +127,7 @@ describe('VectorStore - Add Operations', () => {
     await store.add('duplicate', 'second text');
 
     const list = await store.list();
-    const duplicates = list.filter(item => item.id === 'duplicate');
+    const duplicates = list.filter((item) => item.id === 'duplicate');
 
     assert.strictEqual(duplicates.length, 1);
     assert.strictEqual(duplicates[0].text, 'second text');
@@ -174,7 +174,7 @@ describe('VectorStore - List Operations', () => {
 
   test('should return most recent first', async () => {
     await store.add('old', 'old text');
-    await new Promise(resolve => setTimeout(resolve, 10)); // Ensure time difference
+    await new Promise((resolve) => setTimeout(resolve, 10)); // Ensure time difference
     await store.add('new', 'new text');
 
     const list = await store.list();
@@ -252,8 +252,8 @@ describe('VectorStore - Remove Operations', () => {
 
     const list = await store.list();
     assert.strictEqual(list.length, 2);
-    assert.ok(list.some(v => v.id === 'keep-1'));
-    assert.ok(list.some(v => v.id === 'keep-2'));
+    assert.ok(list.some((v) => v.id === 'keep-1'));
+    assert.ok(list.some((v) => v.id === 'keep-2'));
   });
 
   test('should succeed when removing non-existent ID', async () => {
@@ -399,11 +399,19 @@ describe('VectorStore - Clear Operations', () => {
     // Manually insert with specific dates
     await store.db.run(
       `INSERT INTO vectors (id, text, embedding, metadata, created_at) VALUES (?, ?, ?, ?, ?)`,
-      'old', 'old text', JSON.stringify([0.1, 0.2]), '{}', oldDate
+      'old',
+      'old text',
+      JSON.stringify([0.1, 0.2]),
+      '{}',
+      oldDate
     );
     await store.db.run(
       `INSERT INTO vectors (id, text, embedding, metadata, created_at) VALUES (?, ?, ?, ?, ?)`,
-      'recent', 'recent text', JSON.stringify([0.3, 0.4]), '{}', recentDate
+      'recent',
+      'recent text',
+      JSON.stringify([0.3, 0.4]),
+      '{}',
+      recentDate
     );
 
     await store.clear({ olderThan: '2025-01-01' });
@@ -501,7 +509,8 @@ describe('VectorStore - Edge Cases', () => {
   });
 
   test('should handle special characters in text', async () => {
-    const specialText = 'hello! @world #test $price %off ^power &more *star (paren) [bracket] {brace}';
+    const specialText =
+      'hello! @world #test $price %off ^power &more *star (paren) [bracket] {brace}';
     await store.add('special', specialText);
 
     const list = await store.list();
@@ -528,7 +537,11 @@ describe('VectorStore - Edge Cases', () => {
     // Manually insert with null metadata
     await store.db.run(
       `INSERT INTO vectors (id, text, embedding, metadata, created_at) VALUES (?, ?, ?, ?, ?)`,
-      'null-meta', 'text', JSON.stringify([0.1]), null, new Date().toISOString()
+      'null-meta',
+      'text',
+      JSON.stringify([0.1]),
+      null,
+      new Date().toISOString()
     );
 
     const list = await store.list();
@@ -539,7 +552,11 @@ describe('VectorStore - Edge Cases', () => {
     // Manually insert with invalid JSON metadata
     await store.db.run(
       `INSERT INTO vectors (id, text, embedding, metadata, created_at) VALUES (?, ?, ?, ?, ?)`,
-      'bad-meta', 'text', JSON.stringify([0.1]), 'not-valid-json', new Date().toISOString()
+      'bad-meta',
+      'text',
+      JSON.stringify([0.1]),
+      'not-valid-json',
+      new Date().toISOString()
     );
 
     const list = await store.list();

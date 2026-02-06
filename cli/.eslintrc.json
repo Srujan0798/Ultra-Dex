@@ -1,6 +1,6 @@
 {
   "env": { "node": true, "es2022": true },
-  "parserOptions": { "ecmaVersion": 2022, "sourceType": "module" },
+  "parserOptions": { "ecmaVersion": 2022, "sourceType": "module", "ecmaFeatures": { "jsx": true } },
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
     "no-console": "off"

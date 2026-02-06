@@ -17,13 +17,6 @@
     "allowJs": true,
     "checkJs": false
   },
-  "include": [
-    "lib/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test",
-    "**/*.test.js"
-  ]
+  "include": ["lib/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test", "**/*.test.js"]
 }

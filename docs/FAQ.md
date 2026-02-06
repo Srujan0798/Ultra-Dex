@@ -1,6 +1,7 @@
 # Ultra-Dex Frequently Asked Questions (FAQ)
 
 ## Table of Contents
+
 1. [General Questions](#general-questions)
 2. [Installation & Setup](#installation--setup)
 3. [AI Providers & Keys](#ai-providers--keys)
@@ -15,14 +16,18 @@
 ## General Questions
 
 ### Q: What is Ultra-Dex and who is it for?
+
 **A:** Ultra-Dex is an AI orchestration meta-layer that provides structure, memory, and architectural context for AI assistants. It's designed for:
+
 - SaaS developers building production applications
 - Teams wanting structured AI orchestration
 - Developers who need architectural memory across sessions
 - Anyone building with a team (not solo weekend projects)
 
 ### Q: How is Ultra-Dex different from other templates?
+
 **A:** Unlike simple templates, Ultra-Dex provides:
+
 - 34-section comprehensive planning template
 - 21-step verification framework for quality
 - Atomic task methodology (4-9 hour tasks)
@@ -31,7 +36,9 @@
 - Multi-tool orchestration capabilities
 
 ### Q: Is Ultra-Dex suitable for beginners?
+
 **A:** Ultra-Dex is designed for developers building production SaaS applications. It's best suited for:
+
 - Developers with 3+ months of experience
 - Those building complex applications (5+ database tables)
 - Teams of 2+ developers
@@ -40,19 +47,24 @@
 For simple projects or learning, consider starting with smaller tools first.
 
 ### Q: Can I use Ultra-Dex without AI?
+
 **A:** Yes! Ultra-Dex works perfectly without AI. The 34-section template and 21-step verification framework provide value regardless of AI usage. AI features are optional enhancements.
 
 ## Installation & Setup
 
 ### Q: What are the system requirements?
-**A:** 
+
+**A:**
+
 - Node.js 18 or higher
 - Git
 - macOS, Linux, or Windows with WSL2
 - Minimum 4GB RAM (8GB recommended)
 
 ### Q: How do I install Ultra-Dex?
-**A:** 
+
+**A:**
+
 ```bash
 # Global installation (recommended)
 npm install -g ultra-dex
@@ -62,14 +74,18 @@ npx ultra-dex --help
 ```
 
 ### Q: I'm getting "command not found" error
-**A:** 
+
+**A:**
+
 1. Verify Node.js is installed: `node --version`
 2. Try reinstalling: `npm install -g ultra-dex`
 3. Check your PATH environment variable includes npm global packages
 4. Try using npx instead: `npx ultra-dex --version`
 
 ### Q: How do I update Ultra-Dex?
-**A:** 
+
+**A:**
+
 ```bash
 npm update -g ultra-dex
 # Or for latest
@@ -79,7 +95,9 @@ npm install -g ultra-dex@latest
 ## AI Providers & Keys
 
 ### Q: Which AI providers are supported?
+
 **A:** Ultra-Dex supports:
+
 - Anthropic Claude (recommended)
 - OpenAI GPT models
 - Google Gemini
@@ -87,7 +105,9 @@ npm install -g ultra-dex@latest
 - All providers are AI-agnostic
 
 ### Q: How do I set up API keys?
-**A:** 
+
+**A:**
+
 ```bash
 # For Claude (recommended)
 export ANTHROPIC_API_KEY=your-key-here
@@ -103,7 +123,9 @@ echo $ANTHROPIC_API_KEY
 ```
 
 ### Q: Are my API keys secure?
+
 **A:** Yes, Ultra-Dex:
+
 - Never stores your keys
 - Only accesses keys from environment variables
 - Doesn't transmit keys unnecessarily
@@ -111,7 +133,9 @@ echo $ANTHROPIC_API_KEY
 - Never commits keys to version control
 
 ### Q: Why is my API call failing?
+
 **A:** Common causes:
+
 - Incorrect API key format
 - Insufficient API credits
 - Network connectivity issues
@@ -121,7 +145,9 @@ echo $ANTHROPIC_API_KEY
 ## Project Structure
 
 ### Q: What does the project structure look like?
-**A:** 
+
+**A:**
+
 ```
 my-project/
 ├── QUICK-START.md         # Quick project overview
@@ -135,14 +161,18 @@ my-project/
 ```
 
 ### Q: Can I modify the project structure?
+
 **A:** Absolutely! Ultra-Dex is 100% flexible:
+
 - Add or remove sections from the template
 - Modify the 21-step verification checklist
 - Customize the project structure to fit your needs
 - The system adapts to your modifications
 
 ### Q: What's the difference between the template files?
-**A:** 
+
+**A:**
+
 - `QUICK-START.md`: Captures your core idea quickly
 - `CONTEXT.md`: Detailed project context and requirements
 - `IMPLEMENTATION-PLAN.md`: Comprehensive 34-section plan
@@ -151,14 +181,18 @@ my-project/
 ## Plugin System
 
 ### Q: What is the plugin system?
+
 **A:** The plugin system allows you to extend Ultra-Dex functionality:
+
 - Add custom commands
 - Modify existing behavior
 - Create specialized workflows
 - Extend functionality without modifying core code
 
 ### Q: How do I create a plugin?
-**A:** 
+
+**A:**
+
 ```javascript
 // my-plugin.js
 export const name = 'my-plugin';
@@ -178,7 +212,9 @@ export default { name, version, description, activate };
 ```
 
 ### Q: How do I install a plugin?
-**A:** 
+
+**A:**
+
 ```bash
 # Install from local file
 ultra-dex plugin install ./my-plugin.js
@@ -194,7 +230,9 @@ ultra-dex plugin info my-plugin
 ```
 
 ### Q: Are plugins safe to use?
+
 **A:** Plugins run in a sandboxed environment with limited privileges:
+
 - Restricted file system access
 - Limited network access
 - No direct access to sensitive data
@@ -204,7 +242,9 @@ ultra-dex plugin info my-plugin
 ## Performance & Optimization
 
 ### Q: How can I improve performance?
-**A:** 
+
+**A:**
+
 - Use the latest version of Ultra-Dex
 - Ensure stable internet connection
 - Use a responsive AI provider API
@@ -212,7 +252,9 @@ ultra-dex plugin info my-plugin
 - Increase Node.js memory limit if processing large files
 
 ### Q: Why is graph analysis slow?
+
 **A:** Graph analysis performance depends on:
+
 - Project size (number of files)
 - File complexity
 - System resources
@@ -220,7 +262,9 @@ ultra-dex plugin info my-plugin
 - The system caches results for subsequent runs
 
 ### Q: How do I monitor performance?
-**A:** 
+
+**A:**
+
 ```bash
 # Check system metrics
 ultra-dex metrics
@@ -238,7 +282,9 @@ node benchmark.js  # if you have the benchmark file
 ## Security
 
 ### Q: How secure is Ultra-Dex?
+
 **A:** Ultra-Dex implements multiple security layers:
+
 - Path traversal prevention
 - Input sanitization
 - Credential validation
@@ -247,7 +293,9 @@ node benchmark.js  # if you have the benchmark file
 - Comprehensive security documentation
 
 ### Q: How do I secure my project?
-**A:** 
+
+**A:**
+
 - Never commit API keys to version control
 - Use environment variables for sensitive data
 - Implement proper authentication/authorization
@@ -256,7 +304,9 @@ node benchmark.js  # if you have the benchmark file
 - Use HTTPS for all communications
 
 ### Q: What security measures are built-in?
-**A:** 
+
+**A:**
+
 - Path validation prevents directory traversal
 - Input sanitization for all user inputs
 - Secure credential handling
@@ -266,7 +316,9 @@ node benchmark.js  # if you have the benchmark file
 ## Troubleshooting
 
 ### Q: My command is hanging/never finishes
-**A:** 
+
+**A:**
+
 - Check your internet connection
 - Verify API key is valid and has sufficient credits
 - Try with a simpler command first
@@ -274,14 +326,18 @@ node benchmark.js  # if you have the benchmark file
 - Check provider status pages for service outages
 
 ### Q: I'm getting permission errors
-**A:** 
+
+**A:**
+
 - Ensure you have write permissions to the target directory
 - Check if the directory is empty or you're OK with overwriting files
 - On Unix systems, you might need to adjust file permissions
 - Run with appropriate user privileges
 
 ### Q: The serve command says port is already in use
-**A:** 
+
+**A:**
+
 ```bash
 # Check what's using the port
 lsof -i :3001  # or whatever port is in use
@@ -294,7 +350,9 @@ ultra-dex serve --port 3002
 ```
 
 ### Q: Commands fail due to missing files
-**A:** 
+
+**A:**
+
 - Ensure you're running commands from the correct project directory
 - Verify the project was initialized properly
 - Check that required files exist (IMPLEMENTATION-PLAN.md, CONTEXT.md, etc.)
@@ -303,28 +361,36 @@ ultra-dex serve --port 3002
 ## Advanced Topics
 
 ### Q: How do I customize the 34-section template?
-**A:** 
+
+**A:**
+
 - The template is in `@ ultra-dex/Saas plan/04-Imp-Template.md`
 - You can modify sections to fit your specific needs
 - Add or remove sections as required
 - The system adapts to your modifications
 
 ### Q: Can I use multiple AI providers together?
+
 **A:** Yes! Ultra-Dex supports multi-tool orchestration:
+
 - Use different providers for different tasks
 - Claude for architecture, GPT for implementation, Gemini for review
 - The system coordinates multiple tools without losing context
 - Each tool acts as a specific agent (@Backend, @Frontend, etc.)
 
 ### Q: How do I create custom AI agents?
-**A:** 
+
+**A:**
+
 - Agents are defined in the `agents/` directory
 - Each agent has a specific role and prompt
 - You can create custom agents by following the existing pattern
 - Agents can be invoked programmatically or through CLI
 
 ### Q: What are the 21-step verification framework?
+
 **A:** The 21-step framework ensures quality:
+
 1. Atomic Scope Defined
 2. Context Loaded
 3. Architecture Alignment
@@ -350,7 +416,9 @@ ultra-dex serve --port 3002
 ## Community & Support
 
 ### Q: Where can I get help?
-**A:** 
+
+**A:**
+
 - Check the documentation files in the root directory
 - Open an issue on GitHub
 - Search existing issues for similar problems
@@ -358,7 +426,9 @@ ultra-dex serve --port 3002
 - Look for troubleshooting guides
 
 ### Q: How do I contribute to Ultra-Dex?
-**A:** 
+
+**A:**
+
 - Fork the repository on GitHub
 - Create a branch for your changes
 - Make your improvements
@@ -367,7 +437,9 @@ ultra-dex serve --port 3002
 - See CONTRIBUTING.md for detailed guidelines
 
 ### Q: How do I report security issues?
-**A:** 
+
+**A:**
+
 - For security issues, contact maintainers directly
 - Do not report security issues in public forums
 - Provide detailed information about the vulnerability
@@ -375,7 +447,9 @@ ultra-dex serve --port 3002
 - Follow responsible disclosure practices
 
 ### Q: Can I share my plugins with others?
+
 **A:** Yes! Once the plugin marketplace is available:
+
 - Package your plugin properly
 - Write clear documentation
 - Follow security best practices
@@ -385,6 +459,7 @@ ultra-dex serve --port 3002
 ## Additional Resources
 
 ### Documentation Files
+
 - `APIDOC.md` - Complete API documentation
 - `USERGUIDE.md` - Comprehensive user guide
 - `BESTPRACTICES.md` - Recommended practices
@@ -395,6 +470,7 @@ ultra-dex serve --port 3002
 - `ONBOARDING.md` - Complete onboarding guide
 
 ### Getting Started
+
 - Start with `QUICK-START.md` in your project
 - Follow the 30-minute auth tutorial
 - Use `ultra-dex build` for incremental progress

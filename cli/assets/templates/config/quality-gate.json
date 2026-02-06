@@ -21,16 +21,12 @@
       "scan_secrets": true
     },
     "architecture": {
-      "banned_patterns": [
-        "console.log",
-        "TODO:",
-        "FIXME:"
-      ],
+      "banned_patterns": ["console.log", "TODO:", "FIXME:"],
       "required_patterns": []
     }
   },
   "on_failure": {
-    "action": "reject", 
+    "action": "reject",
     "retry_attempts": 2
   }
 }

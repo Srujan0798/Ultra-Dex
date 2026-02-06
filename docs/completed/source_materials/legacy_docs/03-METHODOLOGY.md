@@ -10,11 +10,11 @@
 
 Every task must be completable in **one focused session**.
 
-| Task Size | Rule |
-|-----------|------|
+| Task Size | Rule                                  |
+| --------- | ------------------------------------- |
 | < 4 hours | Too small - combine with related work |
-| 4-9 hours | Perfect - one developer, one session |
-| > 9 hours | Too big - break it down |
+| 4-9 hours | Perfect - one developer, one session  |
+| > 9 hours | Too big - break it down               |
 
 **Why?** Tasks over 9 hours have hidden complexity. You'll miss edge cases, underestimate effort, and ship bugs.
 
@@ -69,21 +69,23 @@ FINAL (~15 min)
 
 Raw estimates are always wrong. Apply these multipliers:
 
-| Factor | Add | When |
-|--------|-----|------|
-| Testing | +25% | Always |
-| Code Review | +10% | Always |
-| Context Switching | +15% | If >2 active tasks |
-| New Technology | +30% | First time using a tool |
-| Integration | +20% | Connecting to external APIs |
-| Uncertainty | +20% | Unclear requirements |
+| Factor            | Add  | When                        |
+| ----------------- | ---- | --------------------------- |
+| Testing           | +25% | Always                      |
+| Code Review       | +10% | Always                      |
+| Context Switching | +15% | If >2 active tasks          |
+| New Technology    | +30% | First time using a tool     |
+| Integration       | +20% | Connecting to external APIs |
+| Uncertainty       | +20% | Unclear requirements        |
 
 **Formula:**
+
 ```
 Actual Hours = Base Estimate × (1 + sum of applicable factors)
 ```
 
 **Example:**
+
 - Base estimate: 6 hours
 - New tech (+30%) + Testing (+25%) + Review (+10%)
 - Actual: 6 × 1.65 = **9.9 hours** → Split into 2 tasks
@@ -95,21 +97,25 @@ Actual Hours = Base Estimate × (1 + sum of applicable factors)
 A feature is DONE when ALL are true:
 
 **Code Quality:**
+
 - [ ] All 21 steps verified
 - [ ] Zero P0/P1 bugs
 - [ ] Test coverage >80%
 
 **Performance:**
+
 - [ ] Page load <3s
 - [ ] API response <500ms (p95)
 - [ ] No memory leaks
 
 **Operations:**
+
 - [ ] Monitoring in place
 - [ ] Logs are useful
 - [ ] Rollback plan exists
 
 **User:**
+
 - [ ] Works on mobile
 - [ ] Accessible (WCAG 2.1 AA)
 - [ ] Error messages are helpful
@@ -118,12 +124,12 @@ A feature is DONE when ALL are true:
 
 ## Why This Works
 
-| Other Templates | Ultra-Dex |
-|-----------------|-----------|
-| "Add auth" (vague) | "Implement Google OAuth with session management" (6h, 21 steps) |
-| No verification | Every task has acceptance criteria |
-| Estimates are fiction | Overhead calculation = realistic timelines |
-| "Done" is undefined | Production-ready checklist = clear finish line |
+| Other Templates       | Ultra-Dex                                                       |
+| --------------------- | --------------------------------------------------------------- |
+| "Add auth" (vague)    | "Implement Google OAuth with session management" (6h, 21 steps) |
+| No verification       | Every task has acceptance criteria                              |
+| Estimates are fiction | Overhead calculation = realistic timelines                      |
+| "Done" is undefined   | Production-ready checklist = clear finish line                  |
 
 ---
 
@@ -137,6 +143,6 @@ A feature is DONE when ALL are true:
 
 ## Navigation
 
-| ← Previous | Current | Next → |
-|------------|---------|--------|
+| ← Previous                          | Current            | Next →                                  |
+| ----------------------------------- | ------------------ | --------------------------------------- |
 | [02-HOW-TO-USE](./02-HOW-TO-USE.md) | **03-METHODOLOGY** | [04-Imp-Template](./04-Imp-Template.md) |

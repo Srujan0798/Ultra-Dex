@@ -16,6 +16,7 @@
 
 **Problem Statement:**
 People fail at building habits because:
+
 1. They forget to do them (no reminders/accountability)
 2. They don't see progress (no visualization)
 3. They give up after breaking a streak (no recovery mechanism)
@@ -23,6 +24,7 @@ People fail at building habits because:
 
 **Solution:**
 HabitStack provides:
+
 - Simple daily check-ins (30 seconds)
 - Streak tracking with "freeze" days (miss one day, don't lose everything)
 - Visual progress charts and calendars
@@ -30,34 +32,35 @@ HabitStack provides:
 - Smart reminders at optimal times
 
 **Target Audience:**
+
 - Primary: Productivity-focused millennials (25-40)
 - Secondary: Students building study habits
 - Tertiary: Health-conscious individuals
 
 ## 1.2 Core Features (MVP)
 
-| Feature | Priority | Complexity | User Value |
-|---------|----------|------------|------------|
-| User Authentication | P0 | Medium | Critical |
-| Create/Edit Habits | P0 | Low | Critical |
-| Daily Check-ins | P0 | Low | Critical |
-| Streak Tracking | P0 | Medium | High |
-| Calendar View | P0 | Medium | High |
-| Push Notifications | P1 | Medium | High |
-| Progress Analytics | P1 | Medium | Medium |
-| Accountability Partners | P2 | High | High |
-| Habit Templates | P2 | Low | Medium |
-| Subscription (Pro) | P0 | High | Critical |
+| Feature                 | Priority | Complexity | User Value |
+| ----------------------- | -------- | ---------- | ---------- |
+| User Authentication     | P0       | Medium     | Critical   |
+| Create/Edit Habits      | P0       | Low        | Critical   |
+| Daily Check-ins         | P0       | Low        | Critical   |
+| Streak Tracking         | P0       | Medium     | High       |
+| Calendar View           | P0       | Medium     | High       |
+| Push Notifications      | P1       | Medium     | High       |
+| Progress Analytics      | P1       | Medium     | Medium     |
+| Accountability Partners | P2       | High       | High       |
+| Habit Templates         | P2       | Low        | Medium     |
+| Subscription (Pro)      | P0       | High       | Critical   |
 
 ## 1.3 Success Metrics
 
-| Metric | Target (Month 1) | Target (Month 6) | Target (Year 1) |
-|--------|------------------|------------------|-----------------|
-| Downloads | 1,000 | 20,000 | 100,000 |
-| DAU/MAU Ratio | 30% | 40% | 50% |
-| Paid Subscribers | 50 | 1,000 | 10,000 |
-| MRR | $250 | $5,000 | $50,000 |
-| 30-Day Retention | 20% | 30% | 40% |
+| Metric           | Target (Month 1) | Target (Month 6) | Target (Year 1) |
+| ---------------- | ---------------- | ---------------- | --------------- |
+| Downloads        | 1,000            | 20,000           | 100,000         |
+| DAU/MAU Ratio    | 30%              | 40%              | 50%             |
+| Paid Subscribers | 50               | 1,000            | 10,000          |
+| MRR              | $250             | $5,000           | $50,000         |
+| 30-Day Retention | 20%              | 30%              | 40%             |
 
 ---
 
@@ -65,40 +68,40 @@ HabitStack provides:
 
 ## 2.1 Frontend Stack
 
-| Layer | Technology | Version | Justification |
-|-------|------------|---------|---------------|
-| Framework | Next.js | 14.x | PWA support, great mobile web |
-| Language | TypeScript | 5.3+ | Type safety |
-| Styling | Tailwind CSS | 3.4+ | Rapid UI |
-| UI Components | shadcn/ui | Latest | Accessible |
-| State | Zustand | 4.x | Simple, fast |
-| Charts | Recharts | 2.x | Progress visualization |
-| Calendar | react-day-picker | 8.x | Calendar heatmap |
-| Animations | Framer Motion | 10.x | Celebration animations |
+| Layer         | Technology       | Version | Justification                 |
+| ------------- | ---------------- | ------- | ----------------------------- |
+| Framework     | Next.js          | 14.x    | PWA support, great mobile web |
+| Language      | TypeScript       | 5.3+    | Type safety                   |
+| Styling       | Tailwind CSS     | 3.4+    | Rapid UI                      |
+| UI Components | shadcn/ui        | Latest  | Accessible                    |
+| State         | Zustand          | 4.x     | Simple, fast                  |
+| Charts        | Recharts         | 2.x     | Progress visualization        |
+| Calendar      | react-day-picker | 8.x     | Calendar heatmap              |
+| Animations    | Framer Motion    | 10.x    | Celebration animations        |
 
 ## 2.2 Backend Stack
 
-| Layer | Technology | Version | Justification |
-|-------|------------|---------|---------------|
-| Runtime | Node.js | 20 LTS | Stable |
-| Framework | Next.js API Routes | 14.x | Unified |
-| Database | PostgreSQL | 16 | Reliable |
-| ORM | Prisma | 5.x | Type-safe |
-| Cache | Upstash Redis | Serverless | Session, streaks |
-| Push Notifications | OneSignal | Latest | Cross-platform |
-| Auth | NextAuth.js | 5.x | Multiple providers |
-| Payments | Stripe | Latest | Subscriptions |
-| Background Jobs | Trigger.dev | Latest | Reminders |
+| Layer              | Technology         | Version    | Justification      |
+| ------------------ | ------------------ | ---------- | ------------------ |
+| Runtime            | Node.js            | 20 LTS     | Stable             |
+| Framework          | Next.js API Routes | 14.x       | Unified            |
+| Database           | PostgreSQL         | 16         | Reliable           |
+| ORM                | Prisma             | 5.x        | Type-safe          |
+| Cache              | Upstash Redis      | Serverless | Session, streaks   |
+| Push Notifications | OneSignal          | Latest     | Cross-platform     |
+| Auth               | NextAuth.js        | 5.x        | Multiple providers |
+| Payments           | Stripe             | Latest     | Subscriptions      |
+| Background Jobs    | Trigger.dev        | Latest     | Reminders          |
 
 ## 2.3 Infrastructure Costs
 
-| Component | Provider | Plan | Monthly Cost |
-|-----------|----------|------|--------------|
-| Hosting | Vercel | Pro | $20 |
-| Database | Neon | Launch | $19 |
-| Cache | Upstash | Pay-as-you-go | ~$5 |
-| Push | OneSignal | Free tier | $0 |
-| Monitoring | Sentry | Team | $26 |
+| Component  | Provider  | Plan          | Monthly Cost |
+| ---------- | --------- | ------------- | ------------ |
+| Hosting    | Vercel    | Pro           | $20          |
+| Database   | Neon      | Launch        | $19          |
+| Cache      | Upstash   | Pay-as-you-go | ~$5          |
+| Push       | OneSignal | Free tier     | $0           |
+| Monitoring | Sentry    | Team          | $26          |
 
 **Total MVP Cost: ~$70/month**
 
@@ -280,27 +283,28 @@ model Session {
 
 ## 4.1 API Routes
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | /api/habits | List user's habits | Yes |
-| POST | /api/habits | Create habit | Yes |
-| PATCH | /api/habits/[id] | Update habit | Yes |
-| DELETE | /api/habits/[id] | Delete habit | Yes |
-| POST | /api/habits/[id]/check-in | Mark today complete | Yes |
-| DELETE | /api/habits/[id]/check-in | Uncheck today | Yes |
-| GET | /api/habits/[id]/entries | Get entries (for calendar) | Yes |
-| GET | /api/stats | Get user statistics | Yes |
-| POST | /api/streak-freeze | Use a streak freeze | Yes |
-| GET | /api/partners | List accountability partners | Yes |
-| POST | /api/partners/invite | Invite partner | Yes |
-| POST | /api/partners/[id]/accept | Accept invitation | Yes |
-| GET | /api/partners/[id]/activity | Get partner's activity | Yes |
+| Method | Endpoint                    | Description                  | Auth |
+| ------ | --------------------------- | ---------------------------- | ---- |
+| GET    | /api/habits                 | List user's habits           | Yes  |
+| POST   | /api/habits                 | Create habit                 | Yes  |
+| PATCH  | /api/habits/[id]            | Update habit                 | Yes  |
+| DELETE | /api/habits/[id]            | Delete habit                 | Yes  |
+| POST   | /api/habits/[id]/check-in   | Mark today complete          | Yes  |
+| DELETE | /api/habits/[id]/check-in   | Uncheck today                | Yes  |
+| GET    | /api/habits/[id]/entries    | Get entries (for calendar)   | Yes  |
+| GET    | /api/stats                  | Get user statistics          | Yes  |
+| POST   | /api/streak-freeze          | Use a streak freeze          | Yes  |
+| GET    | /api/partners               | List accountability partners | Yes  |
+| POST   | /api/partners/invite        | Invite partner               | Yes  |
+| POST   | /api/partners/[id]/accept   | Accept invitation            | Yes  |
+| GET    | /api/partners/[id]/activity | Get partner's activity       | Yes  |
 
 ## 4.2 Request/Response Examples
 
 ### Check-in Habit
 
 **Request:**
+
 ```http
 POST /api/habits/habit_abc123/check-in
 Authorization: Bearer <token>
@@ -313,6 +317,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "entry": {
@@ -348,7 +353,10 @@ Content-Type: application/json
 import { prisma } from '@/lib/prisma';
 import { startOfDay, subDays, eachDayOfInterval, format } from 'date-fns';
 
-export async function calculateStreak(habitId: string, userId: string): Promise<{
+export async function calculateStreak(
+  habitId: string,
+  userId: string
+): Promise<{
   currentStreak: number;
   longestStreak: number;
 }> {
@@ -368,9 +376,7 @@ export async function calculateStreak(habitId: string, userId: string): Promise<
   const freezesAvailable = user?.streakFreezes || 0;
 
   // Get all completed dates as Set for O(1) lookup
-  const completedDates = new Set(
-    habit.entries.map(e => format(e.date, 'yyyy-MM-dd'))
-  );
+  const completedDates = new Set(habit.entries.map((e) => format(e.date, 'yyyy-MM-dd')));
 
   // Calculate current streak (going backwards from today)
   let currentStreak = 0;
@@ -403,9 +409,7 @@ export async function calculateStreak(habitId: string, userId: string): Promise<
   let tempStreak = 0;
   let lastDate: Date | null = null;
 
-  const sortedEntries = habit.entries.sort(
-    (a, b) => a.date.getTime() - b.date.getTime()
-  );
+  const sortedEntries = habit.entries.sort((a, b) => a.date.getTime() - b.date.getTime());
 
   for (const entry of sortedEntries) {
     if (!lastDate) {
@@ -448,10 +452,7 @@ export async function POST(req: Request) {
   });
 
   if (!user || user.streakFreezes <= 0) {
-    return NextResponse.json(
-      { error: 'No streak freezes available' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'No streak freezes available' }, { status: 400 });
   }
 
   // Create a "frozen" entry (completed but marked as freeze)
@@ -807,18 +808,16 @@ export async function GET() {
   // Calculate stats
   const totalHabits = habits.length;
   const totalStreak = habits.reduce((sum, h) => sum + h.currentStreak, 0);
-  const longestStreak = Math.max(...habits.map(h => h.longestStreak), 0);
+  const longestStreak = Math.max(...habits.map((h) => h.longestStreak), 0);
 
   // Completion rate (last 7 days)
-  const last7Days = Array.from({ length: 7 }, (_, i) =>
-    format(subDays(today, i), 'yyyy-MM-dd')
-  );
+  const last7Days = Array.from({ length: 7 }, (_, i) => format(subDays(today, i), 'yyyy-MM-dd'));
 
   let completed = 0;
   let possible = 0;
 
-  habits.forEach(habit => {
-    habit.entries.forEach(entry => {
+  habits.forEach((habit) => {
+    habit.entries.forEach((entry) => {
       if (last7Days.includes(format(entry.date, 'yyyy-MM-dd'))) {
         possible++;
         if (entry.completed) completed++;
@@ -829,10 +828,10 @@ export async function GET() {
   const completionRate = possible > 0 ? Math.round((completed / possible) * 100) : 0;
 
   // Weekly heatmap data
-  const weeklyData = last7Days.reverse().map(date => ({
+  const weeklyData = last7Days.reverse().map((date) => ({
     date,
     completed: habits.reduce((sum, h) => {
-      const entry = h.entries.find(e => format(e.date, 'yyyy-MM-dd') === date);
+      const entry = h.entries.find((e) => format(e.date, 'yyyy-MM-dd') === date);
       return sum + (entry?.completed ? 1 : 0);
     }, 0),
     total: habits.length,
@@ -841,7 +840,7 @@ export async function GET() {
   // Best performing habit
   const bestHabit = habits.reduce(
     (best, habit) => (habit.currentStreak > (best?.currentStreak || 0) ? habit : best),
-    null as typeof habits[0] | null
+    null as (typeof habits)[0] | null
   );
 
   return NextResponse.json({
@@ -919,11 +918,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   // Calculate partner's stats
   const stats = {
     totalHabits: partner?.habits.length || 0,
-    completedToday: partner?.habits.filter(h =>
-      h.entries.some(e =>
-        format(e.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') && e.completed
-      )
-    ).length || 0,
+    completedToday:
+      partner?.habits.filter((h) =>
+        h.entries.some(
+          (e) => format(e.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') && e.completed
+        )
+      ).length || 0,
     weeklyStreak: partner?.habits.reduce((sum, h) => sum + h.currentStreak, 0) || 0,
   };
 
@@ -934,7 +934,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       avatarUrl: partner?.avatarUrl,
     },
     stats,
-    recentActivity: partner?.habits.map(h => ({
+    recentActivity: partner?.habits.map((h) => ({
       habit: { name: h.name, icon: h.icon },
       entries: h.entries.slice(0, 7),
     })),
@@ -948,39 +948,39 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
 ## 10.1 Epic Overview
 
-| Epic | Tasks | Hours |
-|------|-------|-------|
-| E1: Setup & Auth | 5 | 24 |
-| E2: Habit CRUD | 5 | 22 |
-| E3: Check-ins & Streaks | 4 | 20 |
-| E4: Calendar & History | 3 | 14 |
-| E5: Push Notifications | 4 | 18 |
-| E6: Analytics Dashboard | 4 | 18 |
-| E7: Accountability | 5 | 26 |
-| E8: Subscription | 4 | 20 |
-| E9: Testing & Deploy | 5 | 24 |
-| **Total** | **39** | **186** |
+| Epic                    | Tasks  | Hours   |
+| ----------------------- | ------ | ------- |
+| E1: Setup & Auth        | 5      | 24      |
+| E2: Habit CRUD          | 5      | 22      |
+| E3: Check-ins & Streaks | 4      | 20      |
+| E4: Calendar & History  | 3      | 14      |
+| E5: Push Notifications  | 4      | 18      |
+| E6: Analytics Dashboard | 4      | 18      |
+| E7: Accountability      | 5      | 26      |
+| E8: Subscription        | 4      | 20      |
+| E9: Testing & Deploy    | 5      | 24      |
+| **Total**               | **39** | **186** |
 
 ## 10.2 Key Tasks
 
 ### Epic 3: Check-ins & Streaks
 
-| ID | Task | Hours | Acceptance Criteria |
-|----|------|-------|---------------------|
-| E3-T1 | Build check-in API | 5 | Creates entry, updates streak |
-| E3-T2 | Streak calculation logic | 6 | Handles gaps, freezes, custom frequency |
-| E3-T3 | Check-in UI with animations | 5 | Tap to complete, confetti on milestone |
-| E3-T4 | Streak freeze feature | 4 | Can use freeze, streak preserved |
+| ID    | Task                        | Hours | Acceptance Criteria                     |
+| ----- | --------------------------- | ----- | --------------------------------------- |
+| E3-T1 | Build check-in API          | 5     | Creates entry, updates streak           |
+| E3-T2 | Streak calculation logic    | 6     | Handles gaps, freezes, custom frequency |
+| E3-T3 | Check-in UI with animations | 5     | Tap to complete, confetti on milestone  |
+| E3-T4 | Streak freeze feature       | 4     | Can use freeze, streak preserved        |
 
 ### Epic 7: Accountability
 
-| ID | Task | Hours | Acceptance Criteria |
-|----|------|-------|---------------------|
-| E7-T1 | Partner invite API | 5 | Email sent, token works |
-| E7-T2 | Accept/decline flow | 5 | Partnership created on accept |
-| E7-T3 | Partner activity feed | 6 | Shows partner's habits/streaks |
-| E7-T4 | Daily digest email | 5 | Sent at user's preferred time |
-| E7-T5 | Partner comparison view | 5 | Side-by-side progress |
+| ID    | Task                    | Hours | Acceptance Criteria            |
+| ----- | ----------------------- | ----- | ------------------------------ |
+| E7-T1 | Partner invite API      | 5     | Email sent, token works        |
+| E7-T2 | Accept/decline flow     | 5     | Partnership created on accept  |
+| E7-T3 | Partner activity feed   | 6     | Shows partner's habits/streaks |
+| E7-T4 | Daily digest email      | 5     | Sent at user's preferred time  |
+| E7-T5 | Partner comparison view | 5     | Side-by-side progress          |
 
 ---
 
@@ -988,10 +988,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
 ## 11.1 Plans
 
-| Plan | Price | Limits | Features |
-|------|-------|--------|----------|
-| Free | $0 | 3 habits | Basic tracking, 1 partner |
-| Pro | $5/month | Unlimited | Analytics, unlimited partners, streak freezes |
+| Plan | Price    | Limits    | Features                                      |
+| ---- | -------- | --------- | --------------------------------------------- |
+| Free | $0       | 3 habits  | Basic tracking, 1 partner                     |
+| Pro  | $5/month | Unlimited | Analytics, unlimited partners, streak freezes |
 
 ## 11.2 Conversion Strategy
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 import { summarizeFindings } from './report.js';
@@ -18,14 +20,18 @@ export async function issueCertificate(findings) {
     score,
     summary,
     issuedAt: new Date().toISOString(),
-    status: score >= 80 ? 'pass' : 'needs-review'
+    status: score >= 80 ? 'pass' : 'needs-review',
   };
 
   const jsonPath = path.join(CERT_DIR, 'certificate.json');
   const mdPath = path.join(CERT_DIR, 'certificate.md');
 
   await fs.writeFile(jsonPath, JSON.stringify(payload, null, 2), 'utf8');
-  await fs.writeFile(mdPath, `# Ultra-Dex Security Certificate\n\nScore: **${score}**\n\nStatus: **${payload.status}**\n`, 'utf8');
+  await fs.writeFile(
+    mdPath,
+    `# Ultra-Dex Security Certificate\n\nScore: **${score}**\n\nStatus: **${payload.status}**\n`,
+    'utf8'
+  );
 
   return { score, summary, jsonPath, mdPath };
 }

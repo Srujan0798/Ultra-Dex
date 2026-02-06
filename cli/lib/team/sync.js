@@ -1,8 +1,12 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { ContextSyncManager } from './collaboration.js';
 
 export class TeamSyncManager {
   constructor(options = {}) {
-    this.manager = new ContextSyncManager({ workspacePath: options.workspacePath || process.cwd() });
+    this.manager = new ContextSyncManager({
+      workspacePath: options.workspacePath || process.cwd(),
+    });
   }
 
   createSnapshot() {

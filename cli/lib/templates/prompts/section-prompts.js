@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Section Prompts for 34-Section Implementation Plan Generation
  * These prompts guide the AI to generate each section properly

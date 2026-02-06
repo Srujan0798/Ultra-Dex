@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * MCP Apps - Interactive UI Components for AI Tools
  * Provides UI components that can be rendered in MCP-compatible tools like Cursor, Claude Desktop
@@ -18,7 +20,7 @@ const SUPPORTED_COMPONENTS = [
   'status-indicator',
   'task-list',
   'code-editor',
-  'terminal'
+  'terminal',
 ];
 
 // Component registry
@@ -38,7 +40,7 @@ class DashboardComponent {
       agents: props.agents || [],
       tasks: props.tasks || [],
       metrics: props.metrics || {},
-      ...props
+      ...props,
     };
   }
 
@@ -47,13 +49,13 @@ class DashboardComponent {
       type: 'dashboard',
       props: this.props,
       html: this.renderHTML(),
-      interactive: true
+      interactive: true,
     };
   }
 
   renderHTML() {
     const { project, status, score, agents, tasks, metrics } = this.props;
-    
+
     let html = `<div class="dashboard">
       <h2>${this.props.title}</h2>
       <div class="project-info">
@@ -61,27 +63,30 @@ class DashboardComponent {
         <div class="status ${status}">${status.toUpperCase()}</div>
         <div class="score">Alignment: ${score}%</div>
       </div>`;
-    
+
     if (agents.length > 0) {
       html += `<div class="agents">
         <h4>Active Agents (${agents.length})</h4>
-        <ul>${agents.map(agent => `<li>${agent.name} - ${agent.status}</li>`).join('')}</ul>
+        <ul>${agents.map((agent) => `<li>${agent.name} - ${agent.status}</li>`).join('')}</ul>
       </div>`;
     }
-    
+
     if (tasks.length > 0) {
       html += `<div class="tasks">
-        <h4>Tasks (${tasks.filter(t => !t.completed).length}/${tasks.length})</h4>
-        <ul>${tasks.map(task => 
-          `<li class="${task.completed ? 'completed' : 'pending'}">
+        <h4>Tasks (${tasks.filter((t) => !t.completed).length}/${tasks.length})</h4>
+        <ul>${tasks
+          .map(
+            (task) =>
+              `<li class="${task.completed ? 'completed' : 'pending'}">
             ${task.completed ? '✅' : '⏳'} ${task.name}
           </li>`
-        ).join('')}</ul>
+          )
+          .join('')}</ul>
       </div>`;
     }
-    
+
     html += '</div>';
-    
+
     return html;
   }
 }
@@ -98,13 +103,13 @@ class ProgressComponent {
       total: props.total || 100,
       status: props.status || 'in-progress',
       description: props.description || '',
-      ...props
+      ...props,
     };
   }
 
   render() {
     const percentage = Math.round((this.props.current / this.props.total) * 100);
-    
+
     return {
       type: 'progress',
       props: this.props,
@@ -113,15 +118,15 @@ class ProgressComponent {
       data: {
         percentage,
         current: this.props.current,
-        total: this.props.total
-      }
+        total: this.props.total,
+      },
     };
   }
 
   renderHTML() {
     const { title, description, current, total } = this.props;
     const percentage = Math.round((current / total) * 100);
-    
+
     return `<div class="progress-component">
       <h3>${title}</h3>
       ${description ? `<p>${description}</p>` : ''}
@@ -143,7 +148,7 @@ class FormComponent {
       title: props.title || 'Form',
       fields: props.fields || [],
       onSubmit: props.onSubmit || (() => {}),
-      ...props
+      ...props,
     };
   }
 
@@ -154,18 +159,18 @@ class FormComponent {
       html: this.renderHTML(),
       interactive: true,
       handlers: {
-        submit: this.props.onSubmit
-      }
+        submit: this.props.onSubmit,
+      },
     };
   }
 
   renderHTML() {
     const { title, fields } = this.props;
-    
+
     let html = `<div class="form-component">
       <h3>${title}</h3>
       <form class="mcp-form">`;
-    
+
     for (const field of fields) {
       html += `<div class="form-field">
         <label>${field.label}</label>
@@ -177,11 +182,11 @@ class FormComponent {
         >
       </div>`;
     }
-    
+
     html += `<button type="submit">Submit</button>
       </form>
     </div>`;
-    
+
     return html;
   }
 }
@@ -196,7 +201,7 @@ class TableComponent {
       title: props.title || 'Data Table',
       headers: props.headers || [],
       rows: props.rows || [],
-      ...props
+      ...props,
     };
   }
 
@@ -205,24 +210,24 @@ class TableComponent {
       type: 'table',
       props: this.props,
       html: this.renderHTML(),
-      interactive: false
+      interactive: false,
     };
   }
 
   renderHTML() {
     const { title, headers, rows } = this.props;
-    
+
     let html = `<div class="table-component">
       <h3>${title}</h3>
       <table class="mcp-table">
         <thead><tr>`;
-    
+
     for (const header of headers) {
       html += `<th>${header}</th>`;
     }
-    
+
     html += `</tr></thead><tbody>`;
-    
+
     for (const row of rows) {
       html += '<tr>';
       for (const cell of row) {
@@ -230,9 +235,9 @@ class TableComponent {
       }
       html += '</tr>';
     }
-    
+
     html += `</tbody></table></div>`;
-    
+
     return html;
   }
 }
@@ -248,7 +253,7 @@ class ChartComponent {
       type: props.type || 'bar', // bar, line, pie
       data: props.data || [],
       labels: props.labels || [],
-      ...props
+      ...props,
     };
   }
 
@@ -258,13 +263,13 @@ class ChartComponent {
       props: this.props,
       html: this.renderHTML(),
       interactive: false,
-      data: this.props.data
+      data: this.props.data,
     };
   }
 
   renderHTML() {
     const { title, type, data, labels } = this.props;
-    
+
     // For now, return a simple representation - in a real implementation
     // this would render actual chart elements
     return `<div class="chart-component">
@@ -288,7 +293,7 @@ class ButtonComponent {
       onClick: props.onClick || (() => {}),
       variant: props.variant || 'primary',
       disabled: props.disabled || false,
-      ...props
+      ...props,
     };
   }
 
@@ -299,14 +304,14 @@ class ButtonComponent {
       html: this.renderHTML(),
       interactive: true,
       handlers: {
-        click: this.props.onClick
-      }
+        click: this.props.onClick,
+      },
     };
   }
 
   renderHTML() {
     const { label, variant, disabled } = this.props;
-    
+
     return `<button 
       class="mcp-button ${variant} ${disabled ? 'disabled' : ''}"
       ${disabled ? 'disabled' : ''}
@@ -346,7 +351,9 @@ export function renderComponent(type, props) {
  */
 export function registerComponent(name, ComponentClass) {
   if (SUPPORTED_COMPONENTS.includes(name)) {
-    throw new AppError(`Component name already reserved: ${name}`, { code: 'COMPONENT_NAME_RESERVED' });
+    throw new AppError(`Component name already reserved: ${name}`, {
+      code: 'COMPONENT_NAME_RESERVED',
+    });
   }
 
   COMPONENT_REGISTRY.set(name, ComponentClass);
@@ -370,31 +377,31 @@ export function validateComponentProps(type, props) {
       project: 'string',
       score: 'number',
       agents: 'array',
-      tasks: 'array'
+      tasks: 'array',
     },
     progress: {
       title: 'string',
       current: 'number',
       total: 'number',
-      status: 'string'
+      status: 'string',
     },
     form: {
       title: 'string',
-      fields: 'array'
+      fields: 'array',
     },
     table: {
       headers: 'array',
-      rows: 'array'
+      rows: 'array',
     },
     chart: {
       type: 'string',
       data: 'array',
-      labels: 'array'
+      labels: 'array',
     },
     button: {
       label: 'string',
-      variant: 'string'
-    }
+      variant: 'string',
+    },
   };
 
   const requiredValidations = validations[type];
@@ -414,7 +421,7 @@ export function validateComponentProps(type, props) {
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -461,7 +468,9 @@ export class MCPAppRenderer {
   async handleInteraction(appId, interactionType, data) {
     const app = this.apps.get(appId);
     if (!app || !app.handlers || !app.handlers[interactionType]) {
-      throw new AppError(`No handler for ${interactionType} in app ${appId}`, { code: 'NO_HANDLER' });
+      throw new AppError(`No handler for ${interactionType} in app ${appId}`, {
+        code: 'NO_HANDLER',
+      });
     }
 
     return await app.handlers[interactionType](data);
@@ -484,5 +493,5 @@ export default {
   getSupportedComponents,
   validateComponentProps,
   MCPAppRenderer,
-  mcpAppRenderer
+  mcpAppRenderer,
 };

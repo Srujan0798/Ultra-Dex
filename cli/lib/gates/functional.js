@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import { exec as execCb } from 'node:child_process';
 import { promisify } from 'node:util';
 

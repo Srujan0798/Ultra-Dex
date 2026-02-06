@@ -16,7 +16,7 @@ test('Files: readFileSafe', async () => {
 
   const missing = await readFileSafe(path.join(tmpDir, 'missing.txt'), 'Missing');
   assert.strictEqual(missing.content, '');
-  
+
   await fs.rm(tmpDir, { recursive: true, force: true });
 });
 
@@ -37,7 +37,7 @@ test('Files: copyDirectory', async () => {
   const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-copy-test-'));
   const src = path.join(tmpRoot, 'src');
   const dest = path.join(tmpRoot, 'dest');
-  
+
   await fs.mkdir(path.join(src, 'sub'), { recursive: true });
   await fs.writeFile(path.join(src, 'a.txt'), 'A');
   await fs.writeFile(path.join(src, 'sub', 'b.txt'), 'B');

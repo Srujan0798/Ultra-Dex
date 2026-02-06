@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -21,7 +23,7 @@ export async function setConsent(consent, meta = {}) {
   const payload = {
     consent: Boolean(consent),
     updatedAt: new Date().toISOString(),
-    meta
+    meta,
   };
   await fs.writeFile(CONSENT_PATH, JSON.stringify(payload, null, 2), 'utf8');
   return payload;

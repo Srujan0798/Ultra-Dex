@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Performance Monitoring System for Ultra-Dex
  * Tracks command execution times, memory usage, and provides insights
@@ -30,7 +32,7 @@ class PerformanceTracker {
       name: operation,
       startTime: performance.now(),
       startMemory: process.memoryUsage(),
-      metadata
+      metadata,
     };
     return this;
   }
@@ -53,11 +55,11 @@ class PerformanceTracker {
       memoryDelta: {
         heapUsed: endMemory.heapUsed - this.currentOperation.startMemory.heapUsed,
         external: endMemory.external - this.currentOperation.startMemory.external,
-        rss: endMemory.rss - this.currentOperation.startMemory.rss
+        rss: endMemory.rss - this.currentOperation.startMemory.rss,
       },
       result,
       error: error ? error.message : null,
-      metadata: this.currentOperation.metadata
+      metadata: this.currentOperation.metadata,
     };
 
     this.metrics.push(metric);
@@ -81,23 +83,25 @@ class PerformanceTracker {
    */
   save() {
     const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
-    
+
     // Load existing metrics
     let existing = [];
     if (fs.existsSync(perfPath)) {
       try {
         existing = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     } else {
       fs.mkdirSync(join(process.cwd(), PERF_DIR), { recursive: true });
     }
 
     // Append new metrics
     const allMetrics = [...existing, ...this.metrics];
-    
+
     // Keep only last 1000 metrics to prevent file bloat
     const trimmed = allMetrics.slice(-1000);
-    
+
     fs.writeFileSync(perfPath, JSON.stringify(trimmed, null, 2));
     return trimmed.length;
   }
@@ -110,13 +114,13 @@ class PerformanceTracker {
     if (!fs.existsSync(perfPath)) return null;
 
     const metrics = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
-    const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
-    const recent = metrics.filter(m => new Date(m.timestamp).getTime() > cutoff);
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const recent = metrics.filter((m) => new Date(m.timestamp).getTime() > cutoff);
 
     if (recent.length === 0) return null;
 
     const byOperation = {};
-    recent.forEach(m => {
+    recent.forEach((m) => {
       if (!byOperation[m.operation]) {
         byOperation[m.operation] = [];
       }
@@ -126,20 +130,21 @@ class PerformanceTracker {
     const summary = {
       totalOperations: recent.length,
       period: `${days} days`,
-      operations: {}
+      operations: {},
     };
 
     Object.entries(byOperation).forEach(([op, data]) => {
-      const durations = data.map(d => d.duration);
-      const successes = data.filter(d => d.result === 'success').length;
-      
+      const durations = data.map((d) => d.duration);
+      const successes = data.filter((d) => d.result === 'success').length;
+
       summary.operations[op] = {
         count: data.length,
-        avgDuration: Math.round((durations.reduce((a, b) => a + b, 0) / durations.length) * 100) / 100,
+        avgDuration:
+          Math.round((durations.reduce((a, b) => a + b, 0) / durations.length) * 100) / 100,
         minDuration: Math.min(...durations),
         maxDuration: Math.max(...durations),
         successRate: Math.round((successes / data.length) * 100),
-        lastRun: data[data.length - 1].timestamp
+        lastRun: data[data.length - 1].timestamp,
       };
     });
 
@@ -154,26 +159,26 @@ const globalTracker = new PerformanceTracker();
  * Middleware to wrap command execution with performance tracking
  */
 export function withPerformance(commandName, fn) {
-  return async function(...args) {
+  return async function (...args) {
     const tracker = new PerformanceTracker();
     const spinner = ora(`Running ${commandName}...`).start();
-    
+
     tracker.start(commandName, {
-      args: args.map(a => typeof a === 'object' ? '[options]' : a),
-      cwd: process.cwd()
+      args: args.map((a) => (typeof a === 'object' ? '[options]' : a)),
+      cwd: process.cwd(),
     });
 
     try {
       const result = await fn.apply(this, args);
       const metric = tracker.end('success');
       tracker.save();
-      
+
       spinner.succeed(`${commandName} completed in ${metric.durationFormatted}`);
       return result;
     } catch (error) {
       const metric = tracker.end('error', error);
       tracker.save();
-      
+
       spinner.fail(`${commandName} failed after ${metric.durationFormatted}`);
       throw error;
     }
@@ -214,12 +219,12 @@ export function registerPerformanceCommand(program) {
           console.log(chalk.yellow('No performance data found'));
           return;
         }
-        
+
         const data = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
-        const exportData = options.operation 
-          ? data.filter(d => d.operation === options.operation)
+        const exportData = options.operation
+          ? data.filter((d) => d.operation === options.operation)
           : data;
-        
+
         fs.writeFileSync(options.export, JSON.stringify(exportData, null, 2));
         console.log(chalk.green(`✅ Exported ${exportData.length} metrics to ${options.export}`));
         return;
@@ -238,16 +243,17 @@ export function registerPerformanceCommand(program) {
         console.log(chalk.white.bold(`📊 Summary (Last ${summary.period})\n`));
         console.log(chalk.gray(`Total Operations: ${summary.totalOperations}\n`));
 
-        const ops = Object.entries(summary.operations)
-          .sort((a, b) => b[1].count - a[1].count);
+        const ops = Object.entries(summary.operations).sort((a, b) => b[1].count - a[1].count);
 
         ops.forEach(([name, stats]) => {
-          const color = stats.successRate >= 90 ? 'green' : 
-                       stats.successRate >= 70 ? 'yellow' : 'red';
-          
+          const color =
+            stats.successRate >= 90 ? 'green' : stats.successRate >= 70 ? 'yellow' : 'red';
+
           console.log(chalk.cyan.bold(`${name}`));
           console.log(`  Runs: ${stats.count} | Success: ${chalk[color](stats.successRate + '%')}`);
-          console.log(`  Avg: ${chalk.white(stats.avgDuration + 'ms')} | Min: ${stats.minDuration}ms | Max: ${stats.maxDuration}ms`);
+          console.log(
+            `  Avg: ${chalk.white(stats.avgDuration + 'ms')} | Min: ${stats.minDuration}ms | Max: ${stats.maxDuration}ms`
+          );
           console.log(chalk.gray(`  Last: ${new Date(stats.lastRun).toLocaleString()}`));
           console.log();
         });
@@ -276,7 +282,7 @@ export function registerPerformanceCommand(program) {
         }
 
         const data = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
-        const filtered = data.filter(d => d.operation === options.operation).slice(-20);
+        const filtered = data.filter((d) => d.operation === options.operation).slice(-20);
 
         if (filtered.length === 0) {
           console.log(chalk.yellow(`No data found for operation: ${options.operation}`));
@@ -284,8 +290,8 @@ export function registerPerformanceCommand(program) {
         }
 
         console.log(chalk.white.bold(`📈 Recent runs of: ${options.operation}\n`));
-        
-        filtered.reverse().forEach(m => {
+
+        filtered.reverse().forEach((m) => {
           const time = new Date(m.timestamp).toLocaleTimeString();
           const icon = m.result === 'success' ? chalk.green('✓') : chalk.red('✗');
           const duration = chalk.cyan(m.durationFormatted);
@@ -304,7 +310,7 @@ export function registerPerformanceCommand(program) {
       }
 
       console.log(chalk.gray('💡 Tips:'));
-      console.log(chalk.gray('  • Use --days 1 for today\'s metrics'));
+      console.log(chalk.gray("  • Use --days 1 for today's metrics"));
       console.log(chalk.gray('  • Use --operation <name> to see specific command history'));
       console.log(chalk.gray('  • Use --export metrics.json to analyze externally\n'));
     });
@@ -320,16 +326,18 @@ export function trackMetric(name, value, unit = 'ms') {
     name,
     value,
     unit,
-    type: 'custom'
+    type: 'custom',
   };
 
   const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
   let data = [];
-  
+
   if (fs.existsSync(perfPath)) {
     try {
       data = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   data.push(metric);
@@ -348,5 +356,5 @@ export default {
   withPerformance,
   registerPerformanceCommand,
   trackMetric,
-  getTracker
+  getTracker,
 };

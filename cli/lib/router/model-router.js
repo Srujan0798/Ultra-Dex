@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Smart Model Router
  * Task-based routing with cost optimization, fallback chains, health checks, and usage forecasts.
@@ -14,24 +16,32 @@ const MODEL_MAP = {
   claude: {
     fast: 'claude-haiku-20240307',
     balanced: 'claude-sonnet-4-20250514',
-    powerful: 'claude-opus-20240229'
+    powerful: 'claude-opus-20240229',
   },
   openai: {
     fast: 'gpt-3.5-turbo',
     balanced: 'gpt-4-turbo',
-    powerful: 'gpt-4'
+    powerful: 'gpt-4',
   },
   gemini: {
     fast: 'gemini-pro',
     balanced: 'gemini-pro',
-    powerful: 'gemini-1.5-pro'
-  }
+    powerful: 'gemini-1.5-pro',
+  },
 };
 
 const COMPLEXITY_KEYWORDS = {
-  complex: ['architecture', 'refactor', 'migration', 'performance', 'security audit', 'distributed', 'multi-agent'],
+  complex: [
+    'architecture',
+    'refactor',
+    'migration',
+    'performance',
+    'security audit',
+    'distributed',
+    'multi-agent',
+  ],
   medium: ['feature', 'endpoint', 'integration', 'optimize', 'module', 'component'],
-  simple: ['typo', 'docs', 'readme', 'rename', 'format', 'comment']
+  simple: ['typo', 'docs', 'readme', 'rename', 'format', 'comment'],
 };
 
 function classifyTask(task = '') {
@@ -39,7 +49,7 @@ function classifyTask(task = '') {
   const score = { simple: 0, medium: 0, complex: 0 };
 
   Object.entries(COMPLEXITY_KEYWORDS).forEach(([level, keywords]) => {
-    keywords.forEach(keyword => {
+    keywords.forEach((keyword) => {
       if (lower.includes(keyword)) score[level] += 1;
     });
   });
@@ -63,7 +73,7 @@ function getProviderHealth() {
   const health = {
     claude: !!process.env.ANTHROPIC_API_KEY,
     openai: !!process.env.OPENAI_API_KEY,
-    gemini: !!process.env.GOOGLE_AI_KEY
+    gemini: !!process.env.GOOGLE_AI_KEY,
   };
   return health;
 }
@@ -76,7 +86,9 @@ export class SmartModelRouter {
   }
 
   selectProvider(preferred, health) {
-    const chain = preferred ? [preferred, ...this.fallbackChain.filter(p => p !== preferred)] : this.fallbackChain;
+    const chain = preferred
+      ? [preferred, ...this.fallbackChain.filter((p) => p !== preferred)]
+      : this.fallbackChain;
     for (const provider of chain) {
       if (health[provider]) return provider;
     }
@@ -107,7 +119,10 @@ export class SmartModelRouter {
 
     if (options.useBenchmarks) {
       const benchmarks = await loadBenchmarks();
-      const best = selectBestModel(benchmarks.records || [], options.taskType || classification.level);
+      const best = selectBestModel(
+        benchmarks.records || [],
+        options.taskType || classification.level
+      );
       if (best?.model) model = best.model;
     }
 
@@ -128,7 +143,7 @@ export class SmartModelRouter {
       classification,
       fallbackChain: this.fallbackChain,
       health,
-      forecast
+      forecast,
     };
   }
 }

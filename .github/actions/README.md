@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Verify Ultra-Dex Plan
         uses: Srujan0798/ultra-dex-action/verify@v1
         with:
@@ -27,6 +27,7 @@ jobs:
 ```
 
 **Inputs:**
+
 - `template` - Path to implementation plan (default: './IMPLEMENTATION-PLAN.md')
 - `fail-on` - Fail condition: 'never', 'incomplete-p0-sections', 'incomplete-all', 'low-alignment' (default: 'incomplete-p0-sections')
 - `min-alignment` - Minimum alignment score % (default: '70')
@@ -45,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Check Alignment
         uses: Srujan0798/ultra-dex-action/align@v1
         with:
@@ -54,6 +55,7 @@ jobs:
 ```
 
 **Inputs:**
+
 - `min-score` - Minimum alignment score (default: '75')
 - `comment-on-pr` - Post results as PR comment: 'true' or 'false' (default: 'true')
 - `github-token` - GitHub token for PR comments (default: '${{ github.token }}')
@@ -64,7 +66,7 @@ Automatically fix common issues based on Ultra-Dex rules.
 
 ```yaml
 name: Auto-Fix
-on: 
+on:
   push:
     branches: [main]
 
@@ -75,7 +77,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }} # For pushing fixes
-      
+
       - name: Auto-Fix Issues
         uses: Srujan0798/ultra-dex-action/fix@v1
         with:
@@ -85,6 +87,7 @@ jobs:
 ```
 
 **Inputs:**
+
 - `rules` - Rules to check: 'all', 'cursor-rules', '21-step', 'alignment' (default: 'all')
 - `auto-commit` - Commit fixes automatically: 'true' or 'false' (default: 'false')
 - `commit-message` - Commit message for auto-fixes (default: 'chore: ultra-dex auto-fixes')
@@ -106,15 +109,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install Ultra-Dex
         run: npm install -g ultra-dex
-      
+
       - name: Verify Implementation Plan
         uses: Srujan0798/ultra-dex-action/verify@v1
         with:
@@ -127,15 +130,15 @@ jobs:
     needs: verify
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install Ultra-Dex
         run: npm install -g ultra-dex
-      
+
       - name: Check Alignment
         uses: Srujan0798/ultra-dex-action/align@v1
         with:
@@ -153,15 +156,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install Ultra-Dex
         run: npm install -g ultra-dex
-      
+
       - name: Apply Auto-Fixes
         uses: Srujan0798/ultra-dex-action/fix@v1
         with:
@@ -178,7 +181,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Deploy
         run: |
           echo "Deployment would happen here"

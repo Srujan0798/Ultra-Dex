@@ -54,7 +54,7 @@
 > **Source:** HabitStack-Complete.md (1048 lines)
 > **Status:** Full documentation exists
 
-```
+````
 ## Task: Create HabitStack Template
 
 **Files to create:**
@@ -84,9 +84,10 @@ async function calculateStreak(habitId: string, userId: string) {
   // Handle target days (Mon-Fri only, etc.)
   // Use streak freezes if available
 }
-```
+````
 
 **Commit:** "feat: Add HabitStack B2C template"
+
 ```
 
 ---
@@ -97,9 +98,11 @@ async function calculateStreak(habitId: string, userId: string) {
 > **Status:** Full documentation exists
 
 ```
+
 ## Task: Create DevToolsHub Template
 
 **Files to create:**
+
 - templates/devtoolshub/README.md (NEW)
 - templates/devtoolshub/rate-limiter.ts (NEW)
 - templates/devtoolshub/webhook-delivery.ts (NEW)
@@ -123,6 +126,7 @@ async function calculateStreak(habitId: string, userId: string) {
    | Metered Billing | P0 | High |
 
 3. Rate limiting middleware:
+
 ```typescript
 // Token bucket in Redis
 // <5ms overhead
@@ -130,6 +134,7 @@ async function calculateStreak(habitId: string, userId: string) {
 ```
 
 **Commit:** "feat: Add DevToolsHub API platform template"
+
 ```
 
 ---
@@ -140,9 +145,11 @@ async function calculateStreak(habitId: string, userId: string) {
 > **Status:** Documentation exists
 
 ```
+
 ## Task: Create SupportDesk Template
 
 **Files to create:**
+
 - templates/supportdesk/README.md (NEW)
 - templates/supportdesk/ticket-workflow.ts (NEW)
 
@@ -161,6 +168,7 @@ async function calculateStreak(habitId: string, userId: string) {
    - Customer satisfaction ratings
 
 **Commit:** "feat: Add SupportDesk helpdesk template"
+
 ```
 
 ---
@@ -171,9 +179,11 @@ async function calculateStreak(habitId: string, userId: string) {
 > **Status:** Documentation exists
 
 ```
+
 ## Task: Create CourseForge LMS Template
 
 **Files to create:**
+
 - templates/courseforge/README.md (NEW)
 - templates/courseforge/progress-tracker.ts (NEW)
 
@@ -192,6 +202,7 @@ async function calculateStreak(habitId: string, userId: string) {
    - Certificate generation
 
 **Commit:** "feat: Add CourseForge LMS template"
+
 ```
 
 ---
@@ -202,9 +213,11 @@ async function calculateStreak(habitId: string, userId: string) {
 > **Status:** Documentation exists
 
 ```
+
 ## Task: Create ContentStudio CMS Template
 
 **Files to create:**
+
 - templates/contentstudio/README.md (NEW)
 - templates/contentstudio/editor.tsx (NEW)
 
@@ -223,6 +236,7 @@ async function calculateStreak(habitId: string, userId: string) {
    - Multi-author support
 
 **Commit:** "feat: Add ContentStudio CMS template"
+
 ```
 
 ---
@@ -237,15 +251,18 @@ async function calculateStreak(habitId: string, userId: string) {
 > **Status:** Full documentation exists
 
 ```
+
 ## Task: Create Database Advisor Command
 
 **Files to create:**
+
 - cli/lib/commands/db-advisor.js (NEW)
 - cli/lib/advisor/database-tree.js (NEW)
 
 **Requirements:**
 
 1. Interactive decision tree:
+
 ```bash
 ultra-dex db-advisor
 # What's your primary use case?
@@ -263,12 +280,14 @@ ultra-dex db-advisor
    | Analytics | PostgreSQL + TimescaleDB | Railway |
 
 3. Output Prisma setup commands:
+
 ```bash
 npm install prisma @prisma/client
 npx prisma init --datasource-provider postgresql
 ```
 
 **Commit:** "feat: Add database advisor CLI"
+
 ```
 
 ---
@@ -279,15 +298,18 @@ npx prisma init --datasource-provider postgresql
 > **Status:** Full documentation exists
 
 ```
+
 ## Task: Create AI Model Advisor Command
 
 **Files to create:**
+
 - cli/lib/commands/ai-advisor.js (NEW)
 - cli/lib/advisor/model-costs.js (NEW)
 
 **Requirements:**
 
 1. Interactive selection:
+
 ```bash
 ultra-dex ai-advisor
 # What's your budget?
@@ -307,6 +329,7 @@ ultra-dex ai-advisor
 3. Hybrid strategy recommendation
 
 **Commit:** "feat: Add AI model advisor CLI"
+
 ```
 
 ---
@@ -317,9 +340,11 @@ ultra-dex ai-advisor
 > **Status:** Full documentation exists
 
 ```
+
 ## Task: Add Multi-Tool Orchestration Docs
 
 **Files to update:**
+
 - docs/MULTI-TOOL.md (NEW)
 - cli/lib/commands/workflow.js (enhance)
 
@@ -332,19 +357,23 @@ ultra-dex ai-advisor
    - ChatGPT for research (free)
 
 2. Handoff protocol:
+
 ```markdown
 ## Handoff from @Backend to @Frontend
 
 ### What I Built
+
 - POST /api/auth/signup
 - POST /api/auth/login
 
 ### API Contract
+
 POST /api/auth/login
 Body: { email, password }
 Response: { token, user }
 
 ### Next Steps for @Frontend
+
 - Create login form
 - Store token in httpOnly cookie
 ```
@@ -353,6 +382,7 @@ Response: { token, user }
    - `ultra-dex workflow validate`
 
 **Commit:** "docs: Add multi-tool orchestration guide"
+
 ```
 
 ---
@@ -367,15 +397,18 @@ Response: { token, user }
 > **Status:** Full documentation exists
 
 ```
+
 ## Task: Automate 21-Step Verification
 
 **Files to create:**
+
 - cli/lib/commands/verify.js (enhance)
 - cli/lib/verify/21-steps.js (NEW)
 
 **Requirements:**
 
 1. Run all 21 verification steps:
+
 ```bash
 ultra-dex verify --full
 ```
@@ -393,6 +426,7 @@ ultra-dex verify --full
 3. Output blockers for incomplete steps
 
 **Commit:** "feat: Add 21-step verification command"
+
 ```
 
 ---
@@ -403,14 +437,17 @@ ultra-dex verify --full
 > **Status:** Formula documented
 
 ```
+
 ## Task: Create Overhead Calculator
 
 **Files to create:**
+
 - cli/lib/commands/estimate.js (NEW)
 
 **Requirements:**
 
 1. Command:
+
 ```bash
 ultra-dex estimate --hours 6 --new-tech --integration
 ```
@@ -426,6 +463,7 @@ ultra-dex estimate --hours 6 --new-tech --integration
    | Uncertainty | +20% | Unclear reqs |
 
 3. Formula:
+
 ```
 Actual Hours = Base × (1 + sum of factors)
 ```
@@ -433,6 +471,7 @@ Actual Hours = Base × (1 + sum of factors)
 4. Auto-split tasks >9 hours
 
 **Commit:** "feat: Add task overhead calculator"
+
 ```
 
 ---
@@ -443,14 +482,17 @@ Actual Hours = Base × (1 + sum of factors)
 > **Status:** Full guide exists
 
 ```
+
 ## Task: Create Interactive Onboarding
 
 **Files to create:**
+
 - cli/lib/commands/onboard.js (NEW)
 
 **Requirements:**
 
 1. Interactive wizard:
+
 ```bash
 ultra-dex onboard
 # Step 1: Set up AI provider
@@ -460,6 +502,7 @@ ultra-dex onboard
 ```
 
 2. Provider setup:
+
 ```bash
 # For Claude
 export ANTHROPIC_API_KEY=xxx
@@ -473,6 +516,7 @@ export OPENAI_API_KEY=xxx
    - `ultra-dex validate --scan` checks structure
 
 **Commit:** "feat: Add interactive onboarding wizard"
+
 ```
 
 ---
@@ -483,14 +527,17 @@ export OPENAI_API_KEY=xxx
 > **Status:** Multiple templates documented
 
 ```
+
 ## Task: Create Unified Template Command
 
 **Files to create:**
+
 - cli/lib/commands/template.js (enhance)
 
 **Requirements:**
 
 1. Single command for all templates:
+
 ```bash
 ultra-dex template list
 ultra-dex template saaskit
@@ -512,6 +559,7 @@ ultra-dex template contentstudio
    - `ultra-dex template --interactive`
 
 **Commit:** "feat: Add unified template command"
+
 ```
 
 ---
@@ -522,15 +570,18 @@ ultra-dex template contentstudio
 > **Status:** Patterns documented
 
 ```
+
 ## Task: Enhance Quick Start Flow
 
 **Files to update:**
+
 - cli/lib/commands/init.js (enhance)
 - templates/quick-start/README.md (enhance)
 
 **Requirements:**
 
 1. 2-minute quick start:
+
 ```bash
 mkdir my-saas
 cd my-saas
@@ -540,6 +591,7 @@ ultra-dex build
 ```
 
 2. Generated structure:
+
 ```
 my-saas/
 ├── QUICK-START.md
@@ -554,6 +606,7 @@ my-saas/
 3. Auto-detect AI provider from env
 
 **Commit:** "feat: Enhance quick start flow"
+
 ```
 
 ---
@@ -564,14 +617,17 @@ my-saas/
 > **Status:** Full checklist exists
 
 ```
+
 ## Task: Create Production Readiness Check
 
 **Files to create:**
+
 - cli/lib/commands/production-ready.js (NEW)
 
 **Requirements:**
 
 1. Command:
+
 ```bash
 ultra-dex production-ready
 ```
@@ -587,6 +643,7 @@ ultra-dex production-ready
 3. Output report with blockers
 
 **Commit:** "feat: Add production readiness checker"
+
 ```
 
 ---
@@ -645,3 +702,4 @@ ultra-dex production-ready
 | 10 | #81-95 | Templates + Frameworks |
 
 *All prompts copy-paste ready for AI agents!*
+```

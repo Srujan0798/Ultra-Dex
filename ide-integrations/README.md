@@ -3,6 +3,7 @@
 Official integration stubs for popular AI coding environments. Each plugin includes a manifest, activation entrypoint, and wiring to connect Ultra-Dex workflows.
 
 ## Plugins
+
 - Cursor (`ide-integrations/cursor`)
 - Windsurf (`ide-integrations/windsurf`)
 - Cline (`ide-integrations/cline`)

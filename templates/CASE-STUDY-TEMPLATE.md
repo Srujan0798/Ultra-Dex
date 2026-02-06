@@ -6,13 +6,13 @@
 
 ## Overview
 
-| Metric | Value |
-|--------|-------|
-| **Project** | [Name] |
-| **Type** | [SaaS / Internal Tool / API] |
-| **Team Size** | [# developers] |
-| **Duration** | [X weeks/months] |
-| **Status** | [Shipped / Beta / In Progress] |
+| Metric        | Value                          |
+| ------------- | ------------------------------ |
+| **Project**   | [Name]                         |
+| **Type**      | [SaaS / Internal Tool / API]   |
+| **Team Size** | [# developers]                 |
+| **Duration**  | [X weeks/months]               |
+| **Status**    | [Shipped / Beta / In Progress] |
 
 ---
 
@@ -24,20 +24,21 @@
 
 ## Tech Stack
 
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Frontend | | |
-| Backend | | |
-| Database | | |
-| Auth | | |
-| Hosting | | |
-| Payments | | |
+| Layer    | Choice | Why |
+| -------- | ------ | --- |
+| Frontend |        |     |
+| Backend  |        |     |
+| Database |        |     |
+| Auth     |        |     |
+| Hosting  |        |     |
+| Payments |        |     |
 
 ---
 
 ## How Ultra-Dex Helped
 
 ### Planning Phase
+
 - [ ] Used QUICK-START.md to capture the idea
 - [ ] Filled out Phase 1 sections (X hours)
 - [ ] Used @Planner for task breakdown
@@ -54,6 +55,7 @@
 | @Security | | |
 
 ### Quality Phase
+
 - [ ] Ran 21-step verification
 - [ ] Used @Reviewer for code review
 - [ ] Used @Testing for test coverage
@@ -65,17 +67,17 @@
 ### Time Savings
 
 | Without Ultra-Dex (estimate) | With Ultra-Dex | Saved |
-|------------------------------|----------------|-------|
-| [X weeks] | [Y weeks] | [Z%] |
+| ---------------------------- | -------------- | ----- |
+| [X weeks]                    | [Y weeks]      | [Z%]  |
 
 ### Quality Metrics
 
-| Metric | Result |
-|--------|--------|
-| Test Coverage | X% |
-| Lighthouse Score | X |
-| Security Score | X |
-| API Response (p95) | Xms |
+| Metric             | Result |
+| ------------------ | ------ |
+| Test Coverage      | X%     |
+| Lighthouse Score   | X      |
+| Security Score     | X      |
+| API Response (p95) | Xms    |
 
 ---
 
@@ -132,8 +134,8 @@
 
 ---
 
-*Want to share your Ultra-Dex case study? [Submit it here](https://github.com/Srujan0798/Ultra-Dex/issues/new?template=case-study.md)*
+_Want to share your Ultra-Dex case study? [Submit it here](https://github.com/Srujan0798/Ultra-Dex/issues/new?template=case-study.md)_
 
 ---
 
-*Ultra-Dex - From Idea to Production-Ready SaaS*
+_Ultra-Dex - From Idea to Production-Ready SaaS_

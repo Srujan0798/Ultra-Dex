@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import fs from 'fs/promises';
 
 export function analyzeDiff(diffText = '') {
@@ -26,9 +28,9 @@ export async function analyzeFile(filePath) {
 }
 
 export function buildSummary(issues = []) {
-  const critical = issues.filter(i => i.severity === 'critical');
-  const warnings = issues.filter(i => i.severity === 'warning');
-  const infos = issues.filter(i => i.severity === 'info');
+  const critical = issues.filter((i) => i.severity === 'critical');
+  const warnings = issues.filter((i) => i.severity === 'warning');
+  const infos = issues.filter((i) => i.severity === 'info');
   return { critical: critical.length, warnings: warnings.length, infos: infos.length };
 }
 
@@ -41,7 +43,7 @@ export function formatMarkdownReport(issues = []) {
     `- Critical: ${summary.critical}`,
     `- Warnings: ${summary.warnings}`,
     `- Info: ${summary.infos}`,
-    ''
+    '',
   ];
 
   if (!issues.length) {
@@ -50,9 +52,10 @@ export function formatMarkdownReport(issues = []) {
   }
 
   issues.forEach((issue) => {
-    lines.push(`- **${issue.severity.toUpperCase()}**: ${issue.message} (line ${issue.line || 'n/a'})`);
+    lines.push(
+      `- **${issue.severity.toUpperCase()}**: ${issue.message} (line ${issue.line || 'n/a'})`
+    );
   });
 
   return lines.join('\n');
 }
-

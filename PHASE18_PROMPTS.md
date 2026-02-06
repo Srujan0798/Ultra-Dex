@@ -11,6 +11,7 @@
 ---
 
 ### PROMPT 201: The Great Reconciliation Check
+
 > **Source:** COMMAND-INVENTORY-REAL.md vs Devin-CEO-Review.md
 > **Status:** Critical Audit
 
@@ -32,6 +33,7 @@
 ---
 
 ### PROMPT 202: Beta Command Polish
+
 > **Source:** COMMAND-INVENTORY-REAL.md (Beta List)
 > **Status:** Completion
 
@@ -58,6 +60,7 @@
 ---
 
 ### PROMPT 203: VS Code Sidebar
+
 > **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 3.1)
 > **Status:** Extension
 
@@ -79,6 +82,7 @@
 ---
 
 ### PROMPT 204: VS Code Hover Provider
+
 > **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 3.1)
 > **Status:** Extension
 
@@ -99,6 +103,7 @@
 ---
 
 ### PROMPT 205: Dashboard Enhancements
+
 > **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 6)
 > **Status:** UI
 
@@ -120,6 +125,7 @@
 ---
 
 ### PROMPT 206: Documentation Completion
+
 > **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 7)
 > **Status:** Documentation
 
@@ -141,6 +147,7 @@
 ---
 
 ### PROMPT 207: MCP Test Suite
+
 > **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 8)
 > **Status:** Testing
 
@@ -162,6 +169,7 @@
 ---
 
 ### PROMPT 208: Publish Prep
+
 > **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 9)
 > **Status:** DevOps
 
@@ -187,6 +195,7 @@
 ---
 
 ### PROMPT 209: Dependency Graph Visualizer
+
 > **Source:** COMMAND-INVENTORY-REAL.md
 > **Status:** Utility
 
@@ -207,6 +216,7 @@
 ---
 
 ### PROMPT 210: License & Headers
+
 > **Source:** Standard Practice
 > **Status:** Legal
 
@@ -226,6 +236,7 @@
 ---
 
 ### PROMPT 211: Contributor Guide
+
 > **Source:** Standard Practice
 > **Status:** Community
 
@@ -247,6 +258,7 @@
 ---
 
 ### PROMPT 212: Telemetry (Optional)
+
 > **Source:** Product Logic
 > **Status:** Analytics
 
@@ -267,6 +279,7 @@
 ---
 
 ### PROMPT 213: Self-Update
+
 > **Source:** COMMAND-INVENTORY-REAL.md (Upgrade)
 > **Status:** DevOps
 
@@ -287,6 +300,7 @@
 ---
 
 ### PROMPT 214: Shell Completion
+
 > **Source:** DX
 > **Status:** DX
 
@@ -307,6 +321,7 @@
 ---
 
 ### PROMPT 215: The Final Polish
+
 > **Source:** All Sources
 > **Status:** Polish
 

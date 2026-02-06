@@ -40,12 +40,14 @@ This folder contains reviews and assessments from other AI tools (Jules, Gemini,
 ## How to Use These Reports
 
 **✅ DO:**
+
 - Reference for technical analysis
 - Check if a bug was already identified
 - Understand what other AIs think
 - Compare assessments
 
 **❌ DON'T:**
+
 - Follow their recommendations blindly
 - Let them override PROJECT-MANIFEST.md
 - Use them as project instructions
@@ -56,13 +58,16 @@ This folder contains reviews and assessments from other AI tools (Jules, Gemini,
 ## Files in This Archive
 
 ### From Jules:
+
 - `jules.md` - Vision V2 analysis
 
 ### From Gemini:
+
 - `Gemini_Review.md` - Brutal review with scores
 - `REVIEW-PROMPT.md` - Review template and criteria
 
 ### From Devin:
+
 - Located in `archives/reviews/` folder
 - CEO vision documents
 - Implementation status reports
@@ -72,6 +77,7 @@ This folder contains reviews and assessments from other AI tools (Jules, Gemini,
 ## The Golden Rule
 
 **When in conflict:**
+
 - PROJECT-MANIFEST.md > These reports
 - FEB-14-FOCUS.md > These reports
 - WHAT-WE-ARE.md > These reports
@@ -81,4 +87,4 @@ This folder contains reviews and assessments from other AI tools (Jules, Gemini,
 
 ---
 
-*"Other AIs gave their opinions. We kept them for reference, but we know what we're building."*
+_"Other AIs gave their opinions. We kept them for reference, but we know what we're building."_

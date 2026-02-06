@@ -11,6 +11,7 @@
 ---
 
 ### PROMPT 216: The Ultra Protocol (`ultra://`)
+
 > **Source:** 05-mcp-context-bus.md
 > **Status:** Deep Tech
 
@@ -33,6 +34,7 @@
 ---
 
 ### PROMPT 217: Model Router Configuration
+
 > **Source:** 02-model-router.md
 > **Status:** Deep Tech
 
@@ -58,6 +60,7 @@
 ---
 
 ### PROMPT 218: Evaluation Loops (Self-Healing)
+
 > **Source:** 02-model-router.md
 > **Status:** Advanced AI
 
@@ -79,6 +82,7 @@
 ---
 
 ### PROMPT 219: Memory Entry Schema
+
 > **Source:** 01-persistent-memory.md
 > **Status:** Deep Tech
 
@@ -100,6 +104,7 @@
 ---
 
 ### PROMPT 220: Graph Traversal Engine
+
 > **Source:** 01-persistent-memory.md
 > **Status:** Deep Tech
 
@@ -124,6 +129,7 @@
 ---
 
 ### PROMPT 221: Challenge Mode Engine
+
 > **Source:** BUILD-AUTH-30M.md
 > **Status:** Gamification
 
@@ -145,6 +151,7 @@
 ---
 
 ### PROMPT 222: 'Build Auth' Challenge
+
 > **Source:** BUILD-AUTH-30M.md
 > **Status:** Content
 
@@ -166,6 +173,7 @@
 ---
 
 ### PROMPT 223: Leaderboard System
+
 > **Source:** Gamification Logic
 > **Status:** Gamification
 
@@ -187,6 +195,7 @@
 ---
 
 ### PROMPT 224: Achievements System
+
 > **Source:** Gamification Logic
 > **Status:** Gamification
 
@@ -213,6 +222,7 @@
 ---
 
 ### PROMPT 225: Template Pack Manager
+
 > **Source:** VISION-V2.md
 > **Status:** Templates
 
@@ -234,6 +244,7 @@
 ---
 
 ### PROMPT 226: Next.js SaaS Template
+
 > **Source:** Standard Project
 > **Status:** Template
 
@@ -256,6 +267,7 @@
 ---
 
 ### PROMPT 227: Documentation Generator
+
 > **Source:** General
 > **Status:** Productivity
 
@@ -277,6 +289,7 @@
 ---
 
 ### PROMPT 228: The 'God Mode' Dashboard V2
+
 > **Source:** VISION-V2.md
 > **Status:** UI
 
@@ -298,6 +311,7 @@
 ---
 
 ### PROMPT 229: CLI Telemetry (Privacy)
+
 > **Source:** Enterprise
 > **Status:** compliance
 
@@ -319,6 +333,7 @@
 ---
 
 ### PROMPT 230: The Final Omnibus
+
 > **Source:** Completion
 > **Status:** Milestone
 
