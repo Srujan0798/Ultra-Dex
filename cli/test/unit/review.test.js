@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { registerReviewCommand } from '../../lib/commands/review.js';
 import { Command } from 'commander';
 
@@ -13,14 +14,14 @@ describe('review command', () => {
     registerReviewCommand(program);
 
     const command = program.commands.find((cmd) => cmd.name() === 'review');
-    expect(command).toBeDefined();
-    expect(command.description()).toContain('Review code against the implementation plan');
+    assert.ok(command);
+    assert.match(command.description(), /Review code against the implementation plan/i);
 
     const options = command.options.map((opt) => opt.flags);
-    expect(options).toContain('-p, --provider <provider>');
-    expect(options).toContain('-d, --dir <directory>');
-    expect(options).toContain('-k, --key <apiKey>');
-    expect(options).toContain('--quick');
-    expect(options).toContain('--json');
+    assert.ok(options.includes('-p, --provider <provider>'));
+    assert.ok(options.includes('-d, --dir <directory>'));
+    assert.ok(options.includes('-k, --key <apiKey>'));
+    assert.ok(options.includes('--quick'));
+    assert.ok(options.includes('--json'));
   });
 });

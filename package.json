@@ -99,11 +99,11 @@
     "vitest": "^4.0.18"
   },
   "scripts": {
-    "test": "vitest run",
-    "test:unit": "vitest run cli/test/unit",
-    "test:integration": "vitest run cli/test/integration",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test": "NODE_ENV=test node --test $(find cli/test -name \"*.test.js\" -print)",
+    "test:unit": "NODE_ENV=test node --test $(find cli/test/unit -name \"*.test.js\" -print)",
+    "test:integration": "NODE_ENV=test node --test $(find cli/test/integration -name \"*.test.js\" -print)",
+    "test:watch": "NODE_ENV=test node --test --watch $(find cli/test -name \"*.test.js\" -print)",
+    "test:coverage": "NODE_ENV=test c8 node --test $(find cli/test -name \"*.test.js\" -print)",
+    "test:ui": "NODE_ENV=test node --test --watch $(find cli/test -name \"*.test.js\" -print)"
   }
 }

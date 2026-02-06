@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { registerRalphCommand } from '../../lib/commands/ralph.js';
 import { Command } from 'commander';
 
@@ -13,23 +14,23 @@ describe('ralph command', () => {
     registerRalphCommand(program);
 
     const command = program.commands.find((cmd) => cmd.name() === 'ralph');
-    expect(command).toBeDefined();
-    expect(command.description()).toContain('Run the autonomous Ralph loop');
+    assert.ok(command);
+    assert.match(command.description(), /Run the autonomous Ralph loop/i);
 
     const options = command.options.map((opt) => opt.flags);
-    expect(options).toContain('-p, --provider <provider>');
-    expect(options).toContain('--test <command>');
-    expect(options).toContain('--retries <number>');
+    assert.ok(options.includes('-p, --provider <provider>'));
+    assert.ok(options.includes('--test <command>'));
+    assert.ok(options.includes('--retries <number>'));
   });
 
   it('should have required task argument', () => {
     registerRalphCommand(program);
 
     const command = program.commands.find((cmd) => cmd.name() === 'ralph');
-    expect(command).toBeDefined();
+    assert.ok(command);
 
     const args = command._args;
-    expect(args).toHaveLength(1);
-    expect(args[0].required).toBe(true);
+    assert.equal(args.length, 1);
+    assert.equal(args[0].required, true);
   });
 });

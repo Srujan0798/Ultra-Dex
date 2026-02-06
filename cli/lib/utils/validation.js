@@ -35,14 +35,9 @@ export function validateSafePath(input, label = 'Path') {
     return `${label} cannot include ".."`;
   }
 
-  // 3. Normalize and check for absolute paths
-  if (path.isAbsolute(trimmed)) {
-    return `${label} cannot be an absolute path`;
-  }
-
-  // 4. Separator check (prevents escaping directory context)
+  // 3. Normalize and check for directory traversal in relative paths
   const normalized = path.normalize(trimmed);
-  if (normalized.startsWith('..') || normalized.startsWith('/') || normalized.startsWith('\\')) {
+  if (!path.isAbsolute(normalized) && normalized.startsWith('..')) {
     return `${label} attempted to escape directory context`;
   }
 

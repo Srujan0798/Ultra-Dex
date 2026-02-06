@@ -64,6 +64,3 @@ export class Memex {
 }
 
 export const memex = new Memex();
-
-// Initialize on import
-memex.init().catch(console.error);

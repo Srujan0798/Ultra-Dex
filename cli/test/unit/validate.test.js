@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { registerValidateCommand } from '../../lib/commands/validate.js';
 import { Command } from 'commander';
 
@@ -13,11 +14,11 @@ describe('validate command', () => {
     registerValidateCommand(program);
 
     const command = program.commands.find((cmd) => cmd.name() === 'validate');
-    expect(command).toBeDefined();
-    expect(command.description()).toContain('Validate project structure');
+    assert.ok(command);
+    assert.match(command.description(), /Validate project structure/i);
 
     const options = command.options.map((opt) => opt.flags);
-    expect(options).toContain('-d, --dir <directory>');
-    expect(options).toContain('--scan');
+    assert.ok(options.includes('-d, --dir <directory>'));
+    assert.ok(options.includes('--scan'));
   });
 });

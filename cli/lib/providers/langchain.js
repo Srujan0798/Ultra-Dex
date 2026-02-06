@@ -40,18 +40,27 @@ const GraphState = {
  */
 export class LangChainAdapter extends BaseProvider {
   constructor(options = {}) {
-    super(options.apiKey || process.env.OPENAI_API_KEY, options);
+    const apiKey = options.apiKey || process.env.OPENAI_API_KEY;
+    super(apiKey, options);
     this.memory = options.memory || null;
     this.verbose = options.verbose || false;
 
-    // Core LLM
-    this.llm = new ChatOpenAI({
-      modelName: this.model || 'gpt-4',
-      temperature: this.temperature || 0.7,
-      maxTokens: this.maxTokens,
-      openAIApiKey: this.apiKey,
-      streaming: true,
-    });
+    // Core LLM (lazy-safe for test environments or missing keys)
+    if (apiKey) {
+      this.llm = new ChatOpenAI({
+        modelName: this.model || 'gpt-4',
+        temperature: this.temperature || 0.7,
+        maxTokens: this.maxTokens,
+        openAIApiKey: apiKey,
+        streaming: true,
+      });
+    } else {
+      this.llm = {
+        invoke: async () => {
+          throw new Error('OpenAI API key required for LangChain adapter');
+        },
+      };
+    }
 
     // Initialize graphs
     this.graphs = this.initializeGraphs();
@@ -98,7 +107,7 @@ export class LangChainAdapter extends BaseProvider {
   // ============================================================================
   createCodeReviewGraph() {
     const workflow = new StateGraph({ channels: GraphState })
-      .addNode('review', async (state) => {
+      .addNode('reviewNode', async (state) => {
         const code = state.messages[state.messages.length - 1].content;
         const response = await this.llm.invoke([
           new SystemMessage(
@@ -108,8 +117,8 @@ export class LangChainAdapter extends BaseProvider {
         ]);
         return { review: response.content, messages: [response] };
       })
-      .addEdge(START, 'review')
-      .addEdge('review', END);
+      .addEdge(START, 'reviewNode')
+      .addEdge('reviewNode', END);
 
     return workflow.compile();
   }

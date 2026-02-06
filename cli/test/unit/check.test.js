@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { registerCheckCommand } from '../../lib/commands/advanced.js';
 import { Command } from 'commander';
 
@@ -13,10 +14,10 @@ describe('check command', () => {
     registerCheckCommand(program);
 
     const command = program.commands.find((cmd) => cmd.name() === 'check');
-    expect(command).toBeDefined();
-    expect(command.description()).toContain('Repository health and alignment check');
+    assert.ok(command);
+    assert.match(command.description(), /Repository health and alignment check/i);
 
     // Check command has no options
-    expect(command.options).toHaveLength(0);
+    assert.equal(command.options.length, 0);
   });
 });

@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { swarmCommand } from '../../lib/commands/swarm.js';
 import { Command } from 'commander';
 
@@ -18,12 +19,12 @@ describe('swarm command', () => {
       .action(swarmCommand);
 
     const command = program.commands.find((cmd) => cmd.name() === 'swarm');
-    expect(command).toBeDefined();
-    expect(command.description()).toContain('Run autonomous agent pipeline');
+    assert.ok(command);
+    assert.match(command.description(), /Run autonomous agent pipeline/i);
 
     const options = command.options.map((opt) => opt.flags);
-    expect(options).toContain('--dry-run');
-    expect(options).toContain('--parallel');
+    assert.ok(options.includes('--dry-run'));
+    assert.ok(options.includes('--parallel'));
   });
 
   it('should have required task argument', () => {
@@ -35,10 +36,10 @@ describe('swarm command', () => {
       .action(swarmCommand);
 
     const command = program.commands.find((cmd) => cmd.name() === 'swarm');
-    expect(command).toBeDefined();
+    assert.ok(command);
 
     const args = command._args;
-    expect(args).toHaveLength(1);
-    expect(args[0].required).toBe(true);
+    assert.equal(args.length, 1);
+    assert.equal(args[0].required, true);
   });
 });

@@ -875,6 +875,11 @@ export class CodeGraph {
     return this.edges.filter((e) => e.to.includes(fileName));
   }
 
+  // Backwards-compatible misspelling (tests rely on it)
+  findRefereces(fileName) {
+    return this.findReferences(fileName);
+  }
+
   findSymbol(name) {
     if (!name) return [];
     const results = [];

@@ -4,7 +4,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs';
-import { join, basename, resolve } from 'path';
+import { join, basename, resolve, dirname } from 'path';
 import yaml from 'js-yaml';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
@@ -107,7 +107,17 @@ export async function exportCommand(options) {
   // Validate output path to prevent path traversal
   const resolvedOutput = resolve(outputPath);
   const cwd = process.cwd();
-  if (!resolvedOutput.startsWith(cwd)) {
+  let isSafeOutput = false;
+
+  try {
+    const realCwd = fs.realpathSync(cwd);
+    const realOutputDir = fs.realpathSync(dirname(resolvedOutput));
+    isSafeOutput = realOutputDir.startsWith(realCwd);
+  } catch (error) {
+    isSafeOutput = false;
+  }
+
+  if (!isSafeOutput) {
     printError(chalk.red('❌ Error: Invalid output path. Path traversal detected.'));
     process.exitCode = 1;
     process.exit(process.exitCode);

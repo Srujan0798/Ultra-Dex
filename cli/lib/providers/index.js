@@ -67,8 +67,8 @@ export function createProvider(providerId, options = {}) {
   }
 
   if (providerId === 'router') {
-    const cloudId = options.cloudProvider || getDefaultProvider() || 'claude';
-    const cloudProvider = createProvider(cloudId, options);
+    const cloudId = options.cloudProvider || getDefaultProvider();
+    const cloudProvider = cloudId ? createProvider(cloudId, options) : null;
 
     let localProvider = null;
     try {
@@ -243,7 +243,9 @@ export function getDefaultProvider() {
   if (process.env.GOOGLE_AI_KEY) return 'gemini';
 
   // Final fallback to Ollama (local-first resilience)
-  return 'ollama';
+  if (process.env.OLLAMA_HOST) return 'ollama';
+
+  return null;
 }
 
 /**

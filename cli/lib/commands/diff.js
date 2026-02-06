@@ -20,6 +20,7 @@ const DEFAULT_IGNORED_DIRS = new Set([
   'dist',
   'build',
 ]);
+const DEFAULT_IGNORED_FILES = new Set(['IMPLEMENTATION-PLAN.md', 'CONTEXT.md', 'ULTRA.md']);
 const SOURCE_EXTENSIONS = new Set([
   '.js',
   '.ts',
@@ -114,6 +115,8 @@ async function listFilesRecursive(rootDir) {
       }
 
       if (!item.isFile()) continue;
+
+      if (DEFAULT_IGNORED_FILES.has(item.name)) continue;
 
       const ext = path.extname(item.name);
       if (!SOURCE_EXTENSIONS.has(ext)) continue;
@@ -243,11 +246,14 @@ async function comparePlanVsImplementation(options = {}) {
  */
 function generateDriftReport(results) {
   const report = [];
+  const totalTasks = results.completedTasks + results.pendingTasks;
+  const alignment = totalTasks > 0 ? Math.round((results.completedTasks / totalTasks) * 100) : 0;
 
   report.push(chalk.bold.cyan('\n🔍 DRIFT ANALYSIS REPORT\n'));
-  report.push(`📊 Total Tasks: ${results.completedTasks + results.pendingTasks}`);
+  report.push(`📊 Total Tasks: ${totalTasks}`);
   report.push(`✅ Completed: ${results.completedTasks}`);
   report.push(`⏳ Pending: ${results.pendingTasks}`);
+  report.push(`📈 Alignment: ${alignment}%`);
   report.push(`❌ Missing Implementations: ${results.missingImplementations.length}`);
   report.push(`➕ Extra Implementations: ${results.extraImplementations.length}\n`);
 
@@ -607,6 +613,8 @@ export async function diffCommand(options = {}) {
       process.stdout.write(
         JSON.stringify(
           {
+            alignment: reportData.summary.completionPercentage,
+            sections: reportData.sectionStats,
             ...reportData,
             report: reportInfo,
           },
@@ -617,7 +625,7 @@ export async function diffCommand(options = {}) {
       return;
     }
 
-    if (options.drift) {
+    if (options.drift || (!options.detailed && !options.summary)) {
       printInfo(generateDriftReport(results));
     } else if (options.detailed) {
       // Generate detailed report with color-coded output

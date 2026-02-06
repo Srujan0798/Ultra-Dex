@@ -638,7 +638,11 @@ ${answers.prompt}
         console.log(chalk.cyan(`\n🚀 Preparing to publish agent: ${name}...`));
         const agentPath = await getCustomAgentPath(name);
         if (!agentPath) {
-          console.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
+          console.log(
+            chalk.yellow(
+              `\n⚠️ Marketplace publishing is coming soon. Create a custom agent "${name}" first.\n`
+            )
+          );
           return;
         }
 

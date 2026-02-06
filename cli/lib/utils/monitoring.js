@@ -261,6 +261,23 @@ class MonitoringSystem {
     });
   }
 
+  async shutdown() {
+    if (!this.logger) return;
+    try {
+      for (const transport of this.logger.transports || []) {
+        if (typeof transport.close === 'function') {
+          transport.close();
+        }
+      }
+      if (typeof this.logger.close === 'function') {
+        this.logger.close();
+      }
+    } catch (error) {
+      console.warn(`Failed to shutdown monitoring: ${error.message}`);
+    }
+    this.initialized = false;
+  }
+
   setupDefaultHealthChecks() {
     // System health check
     this.healthChecker.registerCheck('system', async () => {
@@ -461,9 +478,6 @@ class MonitoringSystem {
 
 // Global monitoring instance
 export const monitoring = new MonitoringSystem();
-
-// Initialize monitoring system
-monitoring.initialize().catch(console.error);
 
 // Export for use in other modules
 export default monitoring;
