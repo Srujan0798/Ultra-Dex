@@ -58,6 +58,6 @@ File: `cli/lib/commands/memory.js`
 ---
 
 ## SUCCESS CRITERIA
-- [ ] Auto-prune triggers at threshold
-- [ ] `ultra-dex memory status --visual` shows bar
-- [ ] Config validation works
+- [x] Auto-prune triggers at threshold
+- [x] `ultra-dex memory status --visual` shows bar
+- [x] Config validation works

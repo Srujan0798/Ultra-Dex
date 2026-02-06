@@ -47,6 +47,6 @@ Update `verify_task` to include governance check:
 ---
 
 ## SUCCESS CRITERIA
-- [ ] ADR schema created
-- [ ] Governor agent prompt exists
-- [ ] verify_task includes governance check
+- [x] ADR schema created
+- [x] Governor agent prompt exists
+- [x] verify_task includes governance check

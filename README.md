@@ -62,6 +62,18 @@ Ultra-Dex enforces a strict **"Glass Box"** philosophy:
 
 ---
 
+## 🧭 Governance & Capability Contracts
+
+Ultra-Dex v4.0.0 ships with a governance layer that enforces architectural decisions and plugin safety.
+
+- **Capability Contracts (RFC-001):** Declarative tool permissions, rate limits, and risk scores.
+- **Governance Agent (RFC-002):** ADR-aware validation embedded in verification workflows.
+- **Active Enforcement:** High-risk tools require approval; governance checks are part of verification.
+
+See: `docs/rfc/001-capability-contracts.md` and `docs/rfc/002-governance-agent.md`.
+
+---
+
 ## 🏁 Getting Started
 
 ### 1. Install the Meta-Layer
