@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Ultra-Dex Configuration Management System
  * Handles settings, preferences, and environment configuration
@@ -11,13 +13,13 @@ import { homedir } from 'os';
 // Default configuration values
 const DEFAULT_CONFIG = {
   // Core settings
-  version: '3.2.0',
+  version: '4.0.0',
   projectRoot: process.cwd(),
-  
+
   // AI Provider settings
   ai: {
     defaultProvider: 'claude',
-    defaultModel: 'claude-sonnet-5-20260201',  // Claude Sonnet 5 "Fennec"
+    defaultModel: 'claude-sonnet-5-20260201', // Claude Sonnet 5 "Fennec"
     temperature: 0.7,
     maxTokens: 8192,
     timeout: 120000, // 2 minutes
@@ -26,71 +28,78 @@ const DEFAULT_CONFIG = {
     // Claude Sonnet 5 specific settings
     claudeSonnet5: {
       enableAdvancedFeatures: true,
-      contextWindow: 200000,  // Sonnet 5 has larger context window
+      contextWindow: 200000, // Sonnet 5 has larger context window
       reasoningCapabilities: true,
       codeGenerationQuality: 'high',
-      multimodalSupport: true
-    }
+      multimodalSupport: true,
+    },
   },
-  
+
+  // Memory settings (v4.0.1)
+  memory: {
+    maxContextTokens: 8192,
+    autoPrune: true,
+    pruneThreshold: 0.8, // Prune when 80% full
+  },
+
   // MCP settings
   mcp: {
     port: 3001,
     host: 'localhost',
     timeout: 30000,
     connectionRetry: 3,
-    autoConnect: true
+    autoConnect: true,
   },
-  
+
   // Performance settings
   performance: {
     cacheEnabled: true,
     cacheTimeout: 30000, // 30 seconds
     parallelProcessing: true,
     maxConcurrentTasks: 5,
-    graphScanInterval: 30000 // 30 seconds
+    graphScanInterval: 30000, // 30 seconds
   },
-  
+
   // Security settings
   security: {
     validatePaths: true,
     allowExternalConnections: true,
     sandboxOnly: false, // Default to false, can be enabled for strict mode
     maxFileSize: 10485760, // 10MB
-    allowedFileTypes: ['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.yaml', '.yml']
+    allowedFileTypes: ['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.yaml', '.yml'],
   },
-  
+
   // Logging settings
   logging: {
     level: 'info',
     file: '.ultra-dex/logs/ultra-dex.log',
     maxSize: '20m',
     maxFiles: 5,
-    format: 'json'
+    format: 'json',
   },
-  
+
   // UI settings
   ui: {
     theme: 'professional-purple',
     autoRefresh: true,
     refreshInterval: 30000, // 30 seconds
-    showAnimations: true
+    showAnimations: true,
   },
-  
+
   // Development settings
   development: {
     debugMode: false,
     verboseLogging: false,
     enableExperimental: false,
-    autoSave: true
+    autoSave: true,
   },
 
   // Governance settings
   governance: {
     allowlist: [],
     blocklist: [],
-    strict: false
-  }
+    strict: false,
+  },
 };
 
 class ConfigManager {
@@ -134,14 +143,14 @@ class ConfigManager {
    */
   async save(config = null, type = 'project') {
     if (!config) config = this.config;
-    
+
     const targetPath = type === 'global' ? this.globalConfigPath : this.configPath;
 
     try {
       // Create directory if it doesn't exist
       const dir = path.dirname(targetPath);
       await fs.mkdir(dir, { recursive: true });
-      
+
       // Write configuration to file
       await fs.writeFile(targetPath, JSON.stringify(config, null, 2));
       return true;
@@ -222,28 +231,45 @@ class ConfigManager {
       errors.push('ai.defaultProvider must be a string');
     }
 
-    if (typeof this.config.ai.temperature !== 'number' || 
-        this.config.ai.temperature < 0 || 
-        this.config.ai.temperature > 1) {
+    if (
+      typeof this.config.ai.temperature !== 'number' ||
+      this.config.ai.temperature < 0 ||
+      this.config.ai.temperature > 1
+    ) {
       errors.push('ai.temperature must be a number between 0 and 1');
     }
 
     // Validate MCP settings
-    if (typeof this.config.mcp.port !== 'number' || 
-        this.config.mcp.port < 1 || 
-        this.config.mcp.port > 65535) {
+    if (
+      typeof this.config.mcp.port !== 'number' ||
+      this.config.mcp.port < 1 ||
+      this.config.mcp.port > 65535
+    ) {
       errors.push('mcp.port must be a number between 1 and 65535');
     }
 
+
     // Validate performance settings
-    if (typeof this.config.performance.maxConcurrentTasks !== 'number' || 
-        this.config.performance.maxConcurrentTasks < 1) {
+    if (
+      typeof this.config.performance.maxConcurrentTasks !== 'number' ||
+      this.config.performance.maxConcurrentTasks < 1
+    ) {
       errors.push('performance.maxConcurrentTasks must be a positive number');
+    }
+
+    // Validate memory settings (v4.0.1)
+    if (this.config.memory) {
+      if (
+        typeof this.config.memory.maxContextTokens !== 'number' ||
+        this.config.memory.maxContextTokens < 1
+      ) {
+        errors.push('memory.maxContextTokens must be a positive number');
+      }
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -348,9 +374,9 @@ class ConfigManager {
    */
   mergeDeep(target, source) {
     const output = { ...target };
-    
+
     if (this.isObject(target) && this.isObject(source)) {
-      Object.keys(source).forEach(key => {
+      Object.keys(source).forEach((key) => {
         if (this.isObject(source[key])) {
           if (!(key in target)) {
             Object.assign(output, { [key]: source[key] });
@@ -362,7 +388,7 @@ class ConfigManager {
         }
       });
     }
-    
+
     return output;
   }
 
@@ -370,7 +396,7 @@ class ConfigManager {
    * Check if value is an object
    */
   isObject(item) {
-    return (item && typeof item === 'object' && !Array.isArray(item));
+    return item && typeof item === 'object' && !Array.isArray(item);
   }
 
   /**
@@ -386,24 +412,24 @@ class ConfigManager {
             defaultProvider: { type: 'string', enum: ['claude', 'openai', 'gemini', 'ollama'] },
             temperature: { type: 'number', minimum: 0, maximum: 1 },
             maxTokens: { type: 'number', minimum: 1 },
-            timeout: { type: 'number', minimum: 1000 }
-          }
+            timeout: { type: 'number', minimum: 1000 },
+          },
         },
         mcp: {
           type: 'object',
           properties: {
             port: { type: 'number', minimum: 1, maximum: 65535 },
-            timeout: { type: 'number', minimum: 1000 }
-          }
+            timeout: { type: 'number', minimum: 1000 },
+          },
         },
         performance: {
           type: 'object',
           properties: {
             maxConcurrentTasks: { type: 'number', minimum: 1 },
-            cacheTimeout: { type: 'number', minimum: 1000 }
-          }
-        }
-      }
+            cacheTimeout: { type: 'number', minimum: 1000 },
+          },
+        },
+      },
     };
   }
 
@@ -414,11 +440,11 @@ class ConfigManager {
     if (!this.loaded) {
       throw new Error('Configuration not loaded. Call load() first.');
     }
-    
+
     return {
       ...this.config,
       exportedAt: new Date().toISOString(),
-      version: this.config.version
+      version: this.config.version,
     };
   }
 
@@ -445,7 +471,7 @@ class ConfigManager {
    */
   validateImport(configData) {
     const errors = [];
-    
+
     // Basic structure validation
     if (typeof configData !== 'object') {
       errors.push('Configuration must be an object');
@@ -454,24 +480,28 @@ class ConfigManager {
 
     // Validate specific sections
     if (configData.ai && typeof configData.ai === 'object') {
-      if (configData.ai.defaultProvider && 
-          !['claude', 'openai', 'gemini', 'ollama'].includes(configData.ai.defaultProvider)) {
+      if (
+        configData.ai.defaultProvider &&
+        !['claude', 'openai', 'gemini', 'ollama'].includes(configData.ai.defaultProvider)
+      ) {
         errors.push('Invalid AI provider in imported config');
       }
     }
 
     if (configData.mcp && typeof configData.mcp === 'object') {
-      if (configData.mcp.port && 
-          (typeof configData.mcp.port !== 'number' || 
-           configData.mcp.port < 1 || 
-           configData.mcp.port > 65535)) {
+      if (
+        configData.mcp.port &&
+        (typeof configData.mcp.port !== 'number' ||
+          configData.mcp.port < 1 ||
+          configData.mcp.port > 65535)
+      ) {
         errors.push('Invalid MCP port in imported config');
       }
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }
