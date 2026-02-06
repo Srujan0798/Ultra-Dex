@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { registerGenerateCommand } from '../../lib/commands/generate.js';
 import { Command } from 'commander';
 
@@ -13,13 +14,13 @@ describe('generate command', () => {
     registerGenerateCommand(program);
 
     const command = program.commands.find((cmd) => cmd.name() === 'generate');
-    expect(command).toBeDefined();
-    expect(command.description()).toContain('Create the plan');
+    assert.ok(command);
+    assert.match(command.description(), /Create the plan/i);
 
     const options = command.options.map((opt) => opt.flags);
     // Check for the actual options that exist in the generate command
-    expect(options).toContain('-p, --provider <provider>');
-    expect(options).toContain('-o, --output <directory>');
-    expect(options).toContain('--stream');
+    assert.ok(options.includes('-p, --provider <provider>'));
+    assert.ok(options.includes('-o, --output <directory>'));
+    assert.ok(options.includes('--stream'));
   });
 });

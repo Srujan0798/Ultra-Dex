@@ -54,6 +54,12 @@ export class SessionManager {
     printSuccess(chalk.green('✅ Agent Session Manager Initialized'));
   }
 
+  async ensureInitialized() {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+  }
+
   /**
    * Initialize the session database
    */
@@ -104,6 +110,7 @@ export class SessionManager {
    * Create a new agent session
    */
   async createSession(task, options = {}) {
+    await this.ensureInitialized();
     const sessionId = uuidv4();
     const session = {
       id: sessionId,
@@ -243,6 +250,7 @@ export class SessionManager {
    * Resume a session from the latest checkpoint
    */
   async resumeSession(sessionId) {
+    await this.ensureInitialized();
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new AppError(`Session not found: ${sessionId}`, { code: 'SESSION_NOT_FOUND' });
@@ -280,6 +288,7 @@ export class SessionManager {
    * Pause a session
    */
   async pauseSession(sessionId) {
+    await this.ensureInitialized();
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new AppError(`Session not found: ${sessionId}`, { code: 'SESSION_NOT_FOUND' });
@@ -305,6 +314,7 @@ export class SessionManager {
    * Stop a session
    */
   async stopSession(sessionId) {
+    await this.ensureInitialized();
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new AppError(`Session not found: ${sessionId}`, { code: 'SESSION_NOT_FOUND' });
@@ -334,6 +344,7 @@ export class SessionManager {
    * Complete a session
    */
   async completeSession(sessionId, result) {
+    await this.ensureInitialized();
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new AppError(`Session not found: ${sessionId}`, { code: 'SESSION_NOT_FOUND' });
@@ -364,6 +375,7 @@ export class SessionManager {
    * Fail a session
    */
   async failSession(sessionId, error) {
+    await this.ensureInitialized();
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new AppError(`Session not found: ${sessionId}`, { code: 'SESSION_NOT_FOUND' });
@@ -415,6 +427,7 @@ export class SessionManager {
    * Update session progress
    */
   async updateSessionProgress(sessionId, progress, stepInfo) {
+    await this.ensureInitialized();
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new AppError(`Session not found: ${sessionId}`, { code: 'SESSION_NOT_FOUND' });
@@ -437,6 +450,7 @@ export class SessionManager {
    * Update session state
    */
   async updateSessionState(sessionId, newState) {
+    await this.ensureInitialized();
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new AppError(`Session not found: ${sessionId}`, { code: 'SESSION_NOT_FOUND' });
@@ -454,6 +468,7 @@ export class SessionManager {
    * List all sessions with details
    */
   async listSessions() {
+    await this.ensureInitialized();
     const sessions = this.getSessions();
 
     if (sessions.length === 0) {
@@ -493,6 +508,7 @@ export class SessionManager {
    * Get session logs
    */
   async getSessionLogs(sessionId) {
+    await this.ensureInitialized();
     const session = this.getSession(sessionId);
     if (!session) {
       throw new AppError(`Session not found: ${sessionId}`, { code: 'SESSION_NOT_FOUND' });
@@ -505,6 +521,7 @@ export class SessionManager {
    * Cleanup method
    */
   async cleanup() {
+    await this.ensureInitialized();
     // Clear all timers
     for (const [sessionId, timer] of this.checkpointTimers) {
       clearInterval(timer);
@@ -523,10 +540,5 @@ export class SessionManager {
 
 // Create singleton instance
 export const sessionManager = new SessionManager();
-
-// Initialize on module load
-sessionManager.initialize().catch((error) => {
-  printError(chalk.red(`❌ Failed to initialize session manager: ${error.message}`));
-});
 
 export default sessionManager;

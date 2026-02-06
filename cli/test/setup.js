@@ -1,48 +1,23 @@
 /**
- * Test setup file for Vitest
- * Sets up global test utilities and mocks
+ * Shared test utilities (framework-agnostic)
  */
 
-import { vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-// Mock global console methods to suppress output during tests
-vi.spyOn(global.console, 'log').mockImplementation(() => {});
-vi.spyOn(global.console, 'info').mockImplementation(() => {});
-vi.spyOn(global.console, 'warn').mockImplementation(() => {});
-vi.spyOn(global.console, 'error').mockImplementation(() => {});
+let tempDir = null;
 
-// Create temporary directory for test files
-let tempDir;
-
-beforeAll(async () => {
-  tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-test-'));
-});
-
-afterAll(async () => {
-  if (tempDir) {
-    try {
-      await fs.rm(tempDir, { recursive: true, force: true });
-    } catch (error) {
-      // Ignore cleanup errors
-    }
+async function ensureTempDir() {
+  if (!tempDir) {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-test-'));
   }
-});
+  return tempDir;
+}
 
-beforeEach(() => {
-  // Reset mocks before each test
-  vi.clearAllMocks();
-});
-
-afterEach(() => {
-  // Cleanup after each test
-});
-
-// Global test utilities
 export const createTestProject = async (projectName = 'test-project') => {
-  const projectDir = path.join(tempDir, projectName);
+  const root = await ensureTempDir();
+  const projectDir = path.join(root, projectName);
   await fs.mkdir(projectDir, { recursive: true });
   return projectDir;
 };
@@ -69,8 +44,9 @@ export const cleanupTestProject = async (projectDir) => {
   }
 };
 
-// Make utilities available globally
-global.createTestProject = createTestProject;
-global.writeTestFile = writeTestFile;
-global.readTestFile = readTestFile;
-global.cleanupTestProject = cleanupTestProject;
+export const cleanupTempDir = async () => {
+  if (tempDir) {
+    await fs.rm(tempDir, { recursive: true, force: true });
+    tempDir = null;
+  }
+};

@@ -13,6 +13,21 @@ import { printInfo, printSuccess, printWarning, printError } from '../utils/outp
 import { handleError } from '../utils/error-handler.js';
 import { AppError } from '../utils/errors.js';
 
+function detectTechStack(content) {
+  const stack = new Set();
+  if (/next\.?js/i.test(content)) stack.add('Next.js');
+  if (/remix/i.test(content)) stack.add('Remix');
+  if (/sveltekit/i.test(content)) stack.add('SvelteKit');
+  if (/prisma/i.test(content)) stack.add('Prisma');
+  if (/drizzle/i.test(content)) stack.add('Drizzle');
+  if (/clerk/i.test(content)) stack.add('Clerk');
+  if (/supabase/i.test(content)) stack.add('Supabase');
+  if (/postgres|postgresql/i.test(content)) stack.add('PostgreSQL');
+  if (/mysql/i.test(content)) stack.add('MySQL');
+  if (/mongo/i.test(content)) stack.add('MongoDB');
+  return Array.from(stack);
+}
+
 /**
  * Parse IMPLEMENTATION-PLAN.md for folder structure and tasks
  */
@@ -29,6 +44,7 @@ async function parsePlanStructure() {
       configFiles: [],
       apiRoutes: [],
       dataModels: [],
+      techStack: detectTechStack(planContent),
     };
 
     // Look for common patterns indicating file structure
@@ -255,7 +271,8 @@ build
  * Generate Prisma schema from data model section
  */
 async function generatePrismaSchema(dataModels, options = {}) {
-  if (dataModels.length === 0) return null;
+  const allowDefault = Boolean(options.allowDefault);
+  if (dataModels.length === 0 && !allowDefault) return null;
 
   const schemaPath = path.resolve(process.cwd(), 'prisma', 'schema.prisma');
   const force = Boolean(options.force);
@@ -287,8 +304,10 @@ datasource db {
 
 `;
 
+  const models = dataModels.length > 0 ? dataModels : ['User'];
+
   // Generate basic models from data models
-  for (const model of dataModels) {
+  for (const model of models) {
     const modelName = model
       .replace(/[^a-zA-Z0-9_]/g, ' ')
       .split(' ')
@@ -314,6 +333,41 @@ datasource db {
 
   await fs.writeFile(schemaPath, schemaContent);
   return schemaPath;
+}
+
+/**
+ * Create Prisma client helper if Prisma is detected
+ */
+async function ensurePrismaClientFile(options = {}) {
+  const force = Boolean(options.force);
+  const dbPath = path.resolve(process.cwd(), 'src', 'lib', 'db.ts');
+
+  try {
+    await fs.access(dbPath);
+    if (!force) {
+      return null;
+    }
+  } catch {
+    // File doesn't exist, proceed to create
+  }
+
+  await fs.mkdir(path.dirname(dbPath), { recursive: true });
+
+  const content = `import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = globalThis;
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
+
+export default prisma;
+`;
+
+  await fs.writeFile(dbPath, content);
+  return dbPath;
 }
 
 /**
@@ -386,6 +440,7 @@ export default async function handler(req, res) {
 export async function scaffoldFromPlan(options = {}) {
   try {
     printInfo(chalk.cyan('\n🏗️  Ultra-Dex Plan-Based Scaffolding\n'));
+    printInfo(chalk.cyan('Scaffolding from Implementation Plan...\n'));
 
     if (options.dryRun) {
       printInfo(chalk.yellow('📝 DRY RUN MODE - No files will be created\n'));
@@ -394,6 +449,12 @@ export async function scaffoldFromPlan(options = {}) {
     // Parse the plan structure
     printInfo(chalk.blue('🔍 Parsing IMPLEMENTATION-PLAN.md...'));
     const structure = await parsePlanStructure();
+    const usesPrisma = (structure.techStack || []).some((tech) => tech.toLowerCase() === 'prisma');
+    const detectedStack =
+      structure.techStack && structure.techStack.length > 0
+        ? structure.techStack.join(', ')
+        : 'Unknown';
+    printInfo(chalk.green(`✅ Detected Tech Stack: ${detectedStack}\n`));
 
     if (options.dryRun) {
       printInfo(chalk.green(`✅ Would create ${structure.directories.size} directories`));
@@ -401,14 +462,26 @@ export async function scaffoldFromPlan(options = {}) {
       printInfo(chalk.green(`✅ Would create ${structure.configFiles.length} config files`));
       printInfo(chalk.green(`✅ Would create ${structure.apiRoutes.length} API routes`));
       printInfo(chalk.green(`✅ Would generate ${structure.dataModels.length} data models`));
+      if (usesPrisma) {
+        printInfo(chalk.green('✅ Would generate Prisma schema and db client'));
+      }
       return;
     }
 
     if (options.prismaOnly) {
       printInfo(chalk.blue('🗄️  Generating Prisma schema (prisma-only)...'));
-      const schemaPath = await generatePrismaSchema(structure.dataModels, options);
+      const schemaPath = await generatePrismaSchema(structure.dataModels, {
+        ...options,
+        allowDefault: usesPrisma,
+      });
       if (schemaPath) {
         printSuccess(chalk.green(`✅ Created Prisma schema at ${schemaPath}\n`));
+      }
+      if (usesPrisma) {
+        const dbPath = await ensurePrismaClientFile(options);
+        if (dbPath) {
+          printSuccess(chalk.green(`✅ Created Prisma client at ${dbPath}\n`));
+        }
       }
       return;
     }
@@ -436,13 +509,22 @@ export async function scaffoldFromPlan(options = {}) {
     printSuccess(chalk.green(`✅ Created ${createdConfigs.length} config files\n`));
 
     // Generate Prisma schema
-    if (structure.dataModels.length > 0) {
+    if (structure.dataModels.length > 0 || usesPrisma) {
       printInfo(chalk.blue('🗄️  Generating Prisma schema...'));
-      const schemaPath = await generatePrismaSchema(structure.dataModels, options);
+      const schemaPath = await generatePrismaSchema(structure.dataModels, {
+        ...options,
+        allowDefault: usesPrisma,
+      });
       if (schemaPath) {
         printSuccess(chalk.green(`✅ Created Prisma schema at ${schemaPath}\n`));
       } else {
         printInfo(chalk.gray('ℹ️  Skipped Prisma schema generation\n'));
+      }
+      if (usesPrisma) {
+        const dbPath = await ensurePrismaClientFile(options);
+        if (dbPath) {
+          printSuccess(chalk.green(`✅ Created Prisma client at ${dbPath}\n`));
+        }
       }
     }
 
@@ -453,6 +535,7 @@ export async function scaffoldFromPlan(options = {}) {
       printSuccess(chalk.green(`✅ Created ${createdRoutes.length} API route files\n`));
     }
 
+    printSuccess(chalk.bold.green('✅ Scaffolding Complete'));
     printSuccess(chalk.bold.green('🎉 Scaffolding completed successfully!\n'));
     printInfo(chalk.gray('Next steps:'));
     printInfo(chalk.gray('  1. Review generated files and implement TODOs'));

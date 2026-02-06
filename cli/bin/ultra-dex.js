@@ -20,17 +20,25 @@ import { governance } from '../lib/governance/index.js';
 import { installHistoryTracking } from '../lib/history/tracker.js';
 import '../lib/utils/error-recovery.js';
 
+const wantsHelp =
+  process.argv.includes('--help') ||
+  process.argv.includes('-h') ||
+  process.argv.includes('--version') ||
+  process.argv.includes('-V');
+
 // Wait for initialization
-try {
-  await Promise.all([
-    monitoring.initialize(),
-    configManager.load(),
-    pluginManager.initialize(),
-    governance.init(),
-    installHistoryTracking(),
-  ]);
-} catch (error) {
-  console.error(chalk.red('Failed to initialize systems:'), error.message);
+if (!wantsHelp) {
+  try {
+    await Promise.all([
+      monitoring.initialize(),
+      configManager.load(),
+      pluginManager.initialize(),
+      governance.init(),
+      installHistoryTracking(),
+    ]);
+  } catch (error) {
+    console.error(chalk.red('Failed to initialize systems:'), error.message);
+  }
 }
 
 // Log startup
@@ -195,6 +203,7 @@ import { registerSnapCommand } from '../lib/commands/snap.js';
 import { registerChallengeCommand } from '../lib/commands/challenge.js';
 import { registerScaffoldCommand } from '../lib/commands/scaffold.js';
 import { registerScaffoldPlanCommand } from '../lib/commands/scaffold-plan.js';
+import { registerDeployCommand } from '../lib/commands/deploy.js';
 import { registerTemplatesCommand } from '../lib/commands/templates.js';
 import { registerBillingCommands } from '../lib/commerce/billing.js';
 import { registerBudgetCommands } from '../lib/commerce/budget.js';
@@ -368,6 +377,8 @@ registerVerifyCommand(program);
 registerPackCommand(program);
 registerWorkflowCommand(program);
 registerPlanCommand(program);
+registerGitHubCommand(program);
+registerBrainCommand(program);
 registerSuggestCommand(program);
 registerValidateCommand(program);
 registerFixCommand(program);
@@ -387,7 +398,10 @@ registerMcpHostCommand(program);
 registerBotCommand(program);
 registerBudgetCommand(program);
 registerDocsCommand(program);
+registerSearchCommand(program);
+registerVectorSearchCommand(program);
 registerBrowseCommand(program);
+registerBrowserCommand(program);
 registerChromeAgentCommand(program);
 registerNeuroPlanCommand(program);
 registerVibeCommand(program);
@@ -420,6 +434,7 @@ registerSnapCommand(program);
 registerChallengeCommand(program);
 registerScaffoldCommand(program);
 registerScaffoldPlanCommand(program);
+registerDeployCommand(program);
 registerTemplatesCommand(program);
 registerBillingCommands(program);
 registerBudgetCommands(program);
@@ -450,3 +465,12 @@ registerHealthCommand(program);
 registerDebugCommand(program);
 registerBannerCommand(program);
 
+await program.parseAsync(process.argv);
+
+const LONG_RUNNING = new Set(['serve', 'watch', 'daemon', 'cloud', 'ci-monitor', 'repl', 'dashboard']);
+const isLongRunning = process.argv.some((arg) => LONG_RUNNING.has(arg));
+
+if (!wantsHelp && !isLongRunning) {
+  await monitoring.shutdown();
+  process.exit(process.exitCode ?? 0);
+}

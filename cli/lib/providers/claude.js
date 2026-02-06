@@ -13,6 +13,7 @@ import { handleError } from '../utils/error-handler.js';
 
 // Claude Sonnet 5 model constant
 export const CLAUDE_SONNET_5 = 'claude-sonnet-5-20260201';
+export const CLAUDE_DEFAULT_MODEL = 'claude-sonnet-4-20250514';
 
 // Model aliases
 const MODEL_ALIASES = {
@@ -21,6 +22,11 @@ const MODEL_ALIASES = {
   'claude-sonnet-5': CLAUDE_SONNET_5,
   'claude-sonnet-5-20260201': CLAUDE_SONNET_5,
 };
+
+export function normalizeClaudeModel(modelName) {
+  if (!modelName) return CLAUDE_SONNET_5;
+  return MODEL_ALIASES[modelName] || modelName;
+}
 
 // Pricing for Claude Sonnet 5 (per 1M tokens)
 const SONNET_5_PRICING = {
@@ -69,7 +75,7 @@ export async function checkSonnet5Availability(apiKey) {
  */
 export function getClaudeModel(modelName, apiKey) {
   // Resolve alias if provided
-  const resolvedModel = MODEL_ALIASES[modelName] || modelName;
+  const resolvedModel = normalizeClaudeModel(modelName);
 
   // If requesting Sonnet 5 specifically, check availability
   if (resolvedModel === CLAUDE_SONNET_5) {
@@ -252,6 +258,57 @@ export class ClaudeSonnet5Provider {
   }
 }
 
+export class ClaudeProvider extends ClaudeSonnet5Provider {
+  constructor(apiKey, options = {}) {
+    const envModel =
+      options.model || process.env.ULTRA_DEX_CLAUDE_MODEL || CLAUDE_DEFAULT_MODEL;
+    const normalized = normalizeClaudeModel(envModel);
+    super({ ...options, apiKey, model: normalized });
+    this.model = normalized;
+    this.baseUrl = options.baseUrl || 'https://api.anthropic.com/v1';
+    this.apiVersion = options.apiVersion || '2023-06-01';
+  }
+
+  getName() {
+    return 'Claude (Anthropic)';
+  }
+
+  getDefaultModel() {
+    return CLAUDE_DEFAULT_MODEL;
+  }
+
+  getAvailableModels() {
+    return [
+      { id: CLAUDE_DEFAULT_MODEL, name: 'Claude Sonnet 4', maxTokens: 200000 },
+      { id: CLAUDE_SONNET_5, name: 'Claude Sonnet 5', maxTokens: 200000 },
+      { id: 'claude-3-opus-20240229', name: 'Claude Opus 3', maxTokens: 200000 },
+      { id: 'claude-3-5-sonnet-20241022', name: 'Claude Sonnet 3.5', maxTokens: 200000 },
+      { id: 'claude-3-haiku-20240307', name: 'Claude Haiku 3', maxTokens: 200000 },
+    ];
+  }
+
+  estimateCost(inputTokens, outputTokens) {
+    const model = this.model || CLAUDE_DEFAULT_MODEL;
+    let pricing = { input: 3.0, output: 15.0 };
+
+    if (model.includes('opus')) {
+      pricing = { input: 15.0, output: 75.0 };
+    } else if (model.includes('haiku')) {
+      pricing = { input: 0.25, output: 1.25 };
+    } else if (model.includes('sonnet')) {
+      pricing = { input: 3.0, output: 15.0 };
+    }
+
+    const inputCost = (inputTokens / 1_000_000) * pricing.input;
+    const outputCost = (outputTokens / 1_000_000) * pricing.output;
+    return {
+      input: Number(inputCost.toFixed(6)),
+      output: Number(outputCost.toFixed(6)),
+      total: Number((inputCost + outputCost).toFixed(6)),
+    };
+  }
+}
+
 /**
  * Register Claude Sonnet 5 functionality with config manager
  */
@@ -280,6 +337,7 @@ export function registerClaudeSonnet5Config(configManager) {
 
 export default {
   CLAUDE_SONNET_5,
+  CLAUDE_DEFAULT_MODEL,
   MODEL_ALIASES,
   SONNET_5_PRICING,
   checkSonnet5Availability,
@@ -287,5 +345,7 @@ export default {
   getModelPricing,
   detectBestClaudeModel,
   ClaudeSonnet5Provider,
+  ClaudeProvider,
+  normalizeClaudeModel,
   registerClaudeSonnet5Config,
 };

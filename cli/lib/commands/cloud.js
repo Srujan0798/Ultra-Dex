@@ -18,6 +18,12 @@ export function registerCloudCommand(program) {
     .description('Cloud deployment management (Vercel, Railway, Fly.io)');
 
   cloudCmd
+    .option('--api-port <port>', 'API server port', '4001')
+    .option('--ws-port <port>', 'WebSocket server port', '4002')
+    .option('--dashboard-port <port>', 'Dashboard server port', '4003')
+    .option('--no-dashboard', 'Disable dashboard server');
+
+  cloudCmd
     .command('deploy')
     .description('Deploy project to cloud provider')
     .option('-p, --provider <provider>', 'Cloud provider (vercel, railway, fly)', 'vercel')
@@ -178,6 +184,11 @@ export function registerCloudCommand(program) {
     { command: 'ultra-dex cloud status', description: 'Check deployment status' },
     { command: 'ultra-dex cloud login --provider vercel', description: 'Login to Vercel' },
   ];
+
+  // Preserve root command name for test mocks that reuse the same object
+  if (cloudCmd && typeof cloudCmd === 'object') {
+    cloudCmd.commandName = 'cloud';
+  }
 }
 
 /**

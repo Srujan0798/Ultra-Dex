@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { registerPlanCommand } from '../../lib/commands/plan.js';
 import { Command } from 'commander';
 
@@ -13,14 +14,14 @@ describe('plan command', () => {
     registerPlanCommand(program);
 
     const command = program.commands.find((cmd) => cmd.name() === 'plan');
-    expect(command).toBeDefined();
-    expect(command.description()).toContain('Manage project plan');
+    assert.ok(command);
+    assert.match(command.description(), /Manage project plan/i);
 
     const options = command.options.map((opt) => opt.flags);
-    expect(options).toContain('--gantt');
-    expect(options).toContain('--timeline');
-    expect(options).toContain('--milestones');
-    expect(options).toContain('--generate');
-    expect(options).toContain('--estimate');
+    assert.ok(options.includes('--gantt'));
+    assert.ok(options.includes('--timeline'));
+    assert.ok(options.includes('--milestones'));
+    assert.ok(options.includes('--generate'));
+    assert.ok(options.includes('--estimate'));
   });
 });

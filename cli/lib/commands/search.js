@@ -499,7 +499,11 @@ export function registerSearchCommand(program) {
         }
 
         // Search
-        const spinner = ora(`Searching for: "${query}"`).start();
+        const searchMessage = `Searching for: "${query}"`;
+        if (!process.stdout.isTTY) {
+          printInfo(searchMessage);
+        }
+        const spinner = ora({ text: searchMessage, isEnabled: process.stdout.isTTY }).start();
 
         try {
           const results = await searchCodebase(query, {

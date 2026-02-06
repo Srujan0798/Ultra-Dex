@@ -42,6 +42,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEMPLATE_ROOT = path.resolve(__dirname, '../../templates');
 const TEMPLATE_FALLBACK = path.join(ROOT_FALLBACK, 'cli', 'templates');
+const SYSTEM_DIRS = new Set(['.ultra-dex', '.ultra', '.DS_Store']);
+
+function filterNonSystemEntries(entries) {
+  return entries.filter((entry) => !SYSTEM_DIRS.has(entry));
+}
 
 /**
  * Register the init command with Commander
@@ -98,6 +103,7 @@ export function registerInitCommand(program) {
  */
 function handlePreview() {
   process.stdout.write(chalk.bold.cyan('\n📋 PREVIEW MODE: ARCHITECTURAL BLUEPRINT\n'));
+  process.stdout.write(chalk.dim('Planned files:\n'));
   process.stdout.write('  ├── QUICK-START.md        (Foundation)\n');
   process.stdout.write('  ├── CONTEXT.md            (Project Memory)\n');
   process.stdout.write('  ├── ULTRA.md              (Agent Synchronization)\n');
@@ -117,7 +123,7 @@ async function handleTemplateInit(options) {
   }
 
   if (await pathExists(outputDir, 'dir')) {
-    const existing = await fs.readdir(outputDir);
+    const existing = filterNonSystemEntries(await fs.readdir(outputDir));
     if (existing.length > 0) {
       throw new AppError('Target sector is occupied. Execution halted to prevent data loss.', {
         code: 'DIR_NOT_EMPTY',
@@ -165,7 +171,7 @@ async function handleLiveScaffold(options) {
 
   const outputDir = path.resolve(options.dir);
   if (await pathExists(outputDir, 'dir')) {
-    const existing = await fs.readdir(outputDir);
+    const existing = filterNonSystemEntries(await fs.readdir(outputDir));
     if (existing.length > 0) {
       throw new AppError('Target sector is occupied. Execution halted to prevent data loss.', {
         code: 'DIR_NOT_EMPTY',

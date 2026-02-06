@@ -32,10 +32,11 @@ export class RouterProvider extends BaseProvider {
     super(apiKey, options);
     this.cloudProvider = options.cloudProvider;
     this.localProvider = options.localProvider;
+    this.threshold = options.threshold || 'medium';
   }
 
   getDefaultModel() {
-    return 'router';
+    return 'router-v1';
   }
 
   getAvailableModels() {
@@ -50,19 +51,52 @@ export class RouterProvider extends BaseProvider {
   }
 
   getName() {
-    return 'Semantic Router (Hybrid)';
+    const localName = this.localProvider?.getName?.() || null;
+    const cloudName = this.cloudProvider?.getName?.() || null;
+    if (localName || cloudName) {
+      const parts = [];
+      if (localName) parts.push(`Local: ${localName}`);
+      if (cloudName) parts.push(`Cloud: ${cloudName}`);
+      return `Semantic Router (${parts.join(' | ')})`;
+    }
+    return 'Semantic Router';
   }
 
   async validateApiKey() {
+    if (!this.cloudProvider) return false;
     if (this.cloudProvider?.validateApiKey) return this.cloudProvider.validateApiKey();
     return true;
   }
 
+  assessComplexity(systemPrompt = '', userPrompt = '') {
+    const combined = `${systemPrompt}\n${userPrompt}`.toLowerCase();
+    if (combined.length > 2000) return true;
+
+    const keywords = [
+      'refactor',
+      'architect',
+      'architecture',
+      'security',
+      'audit',
+      'design pattern',
+      'design patterns',
+      'migration',
+      'performance',
+      'optimiz',
+      'complex',
+      'production',
+      'bug',
+    ];
+
+    return keywords.some((keyword) => combined.includes(keyword));
+  }
+
   selectProvider(systemPrompt, userPrompt) {
-    // Simple heuristic: short prompts go to local if available
-    const length = (systemPrompt?.length || 0) + (userPrompt?.length || 0);
-    if (this.localProvider && length < 800) return this.localProvider;
-    return this.cloudProvider || this.localProvider;
+    const isComplex = this.assessComplexity(systemPrompt, userPrompt);
+    if (isComplex) {
+      return this.cloudProvider || this.localProvider;
+    }
+    return this.localProvider || this.cloudProvider;
   }
 
   async generate(systemPrompt, userPrompt, options = {}) {

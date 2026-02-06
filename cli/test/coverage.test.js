@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -14,7 +15,7 @@ describe('coverage requirements', () => {
     const jsTestFiles = testFiles.filter((file) => file.endsWith('.test.js'));
 
     // We have 7 unit test files which is a good foundation
-    expect(jsTestFiles.length).toBeGreaterThanOrEqual(7);
+    assert.ok(jsTestFiles.length >= 7);
 
     // Additionally, we have integration tests
     const integrationDir = path.join(process.cwd(), 'cli/test/integration');
@@ -22,14 +23,14 @@ describe('coverage requirements', () => {
     const jsIntegrationFiles = integrationFiles.filter((file) => file.endsWith('.test.js'));
 
     // At least one integration test file
-    expect(jsIntegrationFiles.length).toBeGreaterThanOrEqual(1);
+    assert.ok(jsIntegrationFiles.length >= 1);
 
     // Total test count
     const totalTests = jsTestFiles.length + jsIntegrationFiles.length;
-    expect(totalTests).toBeGreaterThanOrEqual(8); // 7 unit + 1 integration
+    assert.ok(totalTests >= 8); // 7 unit + 1 integration
 
     // This is a placeholder - in a real scenario we would run vitest with coverage
     // and verify that the coverage meets 80% threshold
-    expect(true).toBe(true); // Placeholder for actual coverage check
+    assert.ok(true); // Placeholder for actual coverage check
   });
 });

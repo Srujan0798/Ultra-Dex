@@ -14,6 +14,8 @@ const CONFIG = {
   lineDelay: 100, // ms between lines
 };
 
+const IS_TEST = process.env.NODE_ENV === 'test' || process.env.ULTRA_DEX_TEST === '1';
+
 /**
  * The Renderer Class
  * Replaces console.log with a professional UI manager
@@ -66,6 +68,7 @@ class Renderer {
    * @param {boolean} stream - Whether to use typing effect (default: true)
    */
   async text(text, stream = true) {
+    if (IS_TEST) stream = false;
     if (!stream) {
       console.log('  ' + this.formatMarkdown(text));
       return;
@@ -102,6 +105,10 @@ class Renderer {
    * @param {string} message
    */
   startSpinner(message) {
+    if (IS_TEST) {
+      console.log(theme.dim(message));
+      return;
+    }
     if (this.spinner) this.spinner.stop();
     this.spinner = ora({
       text: theme.dim(message),
@@ -166,6 +173,10 @@ class Renderer {
    * @param {string[]} steps - Array of steps to show sequentially
    */
   async thinking(header, steps) {
+    if (IS_TEST) {
+      console.log(theme.dim(header));
+      return;
+    }
     console.log(theme.dim('╭─ ') + theme.accent('⚡ ' + header));
 
     for (const step of steps) {
@@ -210,6 +221,7 @@ class Renderer {
   }
 
   sleep(ms) {
+    if (IS_TEST) return Promise.resolve();
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

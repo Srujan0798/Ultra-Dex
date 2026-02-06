@@ -159,7 +159,8 @@ export function registerSwarmCommand(program) {
   const swarm = program
     .command('swarm <task>')
     .description('Deploy an autonomous agent swarm for a task')
-    .option('-p, --parallel <workers>', 'Execute with parallel workers (default: 4)', '4')
+    .option('-p, --parallel', 'Run implementation tier agents in parallel', false)
+    .option('--workers <count>', 'Parallel worker count', '4')
     .option('--dry-run', 'Preview the swarm pipeline', false)
     .option('--resume', 'Resume from last checkpoint after a failure', false)
     .option('--clean', 'Clear checkpoint and start fresh', false)

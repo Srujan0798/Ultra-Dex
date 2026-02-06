@@ -37,6 +37,15 @@ export class AgentStateMachine {
   }
 
   /**
+   * Load a persisted state machine from disk (or create a fresh one).
+   */
+  static async load(filePath) {
+    const machine = new AgentStateMachine();
+    await machine.loadState(filePath);
+    return machine;
+  }
+
+  /**
    * Define a transition between states
    */
   addTransition(from, to, condition = () => true, action = null) {
@@ -85,6 +94,29 @@ export class AgentStateMachine {
     if (data.result) {
       this.state.results[newState] = data.result;
     }
+
+    return { ...this.state };
+  }
+
+  /**
+   * Set state directly (bypasses transition rules).
+   */
+  setState(step, data = {}) {
+    const previousStep = this.state.currentStep;
+    if (data && typeof data === 'object') {
+      this.updateState(data);
+    }
+
+    this.state.currentStep = step;
+    this.state.status = this.deriveStatusFromStep(step);
+    this.state.updatedAt = new Date().toISOString();
+
+    this.history.push({
+      from: previousStep,
+      to: step,
+      data,
+      timestamp: new Date().toISOString(),
+    });
 
     return { ...this.state };
   }
@@ -215,6 +247,13 @@ export class AgentStateMachine {
         code: 'STATE_SAVE_FAILED',
       });
     }
+  }
+
+  /**
+   * Save state to disk (alias for saveState).
+   */
+  async save(filePath) {
+    return this.saveState(filePath);
   }
 
   /**
