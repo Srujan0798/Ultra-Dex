@@ -25,11 +25,14 @@ export function showBanner(version = VERSION) {
   console.log(ultraGradient.multiline(asciiLogo));
 
   const info = [
-    `${chalk.bold('⚡ ULTRA-DEX')} ${chalk.dim(`v${version}`)}`,
-    `${chalk.magenta('AI Orchestration Meta-Layer for SaaS')}`,
     '',
-    `${chalk.green('●')} ${chalk.white('CORE SYSTEMS:')} ${chalk.green('ONLINE')}`,
-    `${chalk.green('●')} ${chalk.white('NEURAL LINK:')} ${chalk.green('ESTABLISHED')}`,
+    `${chalk.bold.magenta('v' + version)} ${chalk.bold.yellow('「 THE ENDGAME 」')} ${chalk.dim('🎮')}`,
+    '',
+    `${chalk.cyan('AI Orchestration Meta-Layer for SaaS Development')}`,
+    '',
+    `${chalk.green('✓')} ${chalk.white('Protocol 21')} ${chalk.green('ACTIVE')}`,
+    `${chalk.green('✓')} ${chalk.white('Memory Tiers')} ${chalk.green('ONLINE')}`,
+    `${chalk.green('✓')} ${chalk.white('Governance')} ${chalk.green('ENFORCED')}`,
     '',
     `${chalk.italic.dim('"Perfectly balanced, as all code should be."')}`,
   ].join('\n');
@@ -38,11 +41,11 @@ export function showBanner(version = VERSION) {
     boxen(info, {
       padding: 1,
       margin: { top: 1, bottom: 1 },
-      borderStyle: 'double',
-      borderColor: '#8b5cf6',
+      borderStyle: 'bold',
+      borderColor: '#d946ef',
       textAlignment: 'center',
-      title: 'System Boot',
-      titleAlignment: 'left',
+      title: '🚀 ULTRA-DEX',
+      titleAlignment: 'center',
     })
   );
 }

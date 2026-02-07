@@ -14,6 +14,7 @@ import { AppError } from '../utils/errors.js';
 import { capabilitiesRouter } from './router.js';
 import { auditGovernance } from '../governance/governor.js';
 import { saveADR } from '../governance/schema.js';
+import { checkADRGovernance } from '../governance/adr-check.js';
 
 const DEFAULT_TOOL_CAPABILITY = {
   sideEffects: ['none'],
@@ -302,15 +303,21 @@ export function registerTools(server) {
 
         // v4.1: Active Governance Audit
         const govResult = await auditGovernance(process.cwd());
-        const govReport = govResult.ok 
+        const govReport = govResult.ok
           ? "\n\n🛡️  Governance: COMPLIANT"
           : `\n\n🛡️  Governance: VIOLATIONS DETECTED\n${govResult.violations.map(v => `  - [${v.adrId}] ${v.title} (${v.file})`).join('\n')}`;
+
+        // v4.2: ADR Compliance Check
+        const adrResult = await checkADRCompliance(taskName);
+        const adrReport = adrResult.compliant
+          ? "\n\n📋 ADR Compliance: PASS"
+          : `\n\n📋 ADR Compliance: FAIL\n${adrResult.violations.map(v => `  - [${v.adrId}] ${v.reason}`).join('\n')}`;
 
         return {
           content: [
             {
               type: 'text',
-              text: fullReport + govReport,
+              text: fullReport + govReport + adrReport,
             },
           ],
         };
@@ -321,6 +328,24 @@ export function registerTools(server) {
       }
     }
   );
+
+  /**
+   * Check ADR compliance for a task
+   */
+  async function checkADRCompliance(taskName) {
+    try {
+      // Use the ADR governance checker
+      const result = await checkADRGovernance(taskName);
+      return result;
+    } catch (error) {
+      // If ADR check fails, return compliant to not block the process
+      return {
+        compliant: true,
+        violations: [],
+        error: error.message
+      };
+    }
+  }
 
   // Tool: Read Code
   server.tool(

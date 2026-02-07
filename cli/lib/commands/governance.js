@@ -7,6 +7,7 @@ import {
   exportAuditLog,
   generateComplianceReport,
 } from '../governance/audit.js';
+import { checkADRGovernance } from '../governance/adr-check.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
 function formatList(items) {
@@ -112,6 +113,48 @@ export function registerGovernanceCommand(program) {
       } catch (error) {
         printError(chalk.red(`Failed to generate governance report: ${error.message}`));
         process.exitCode = 1;
+      }
+    });
+
+  cmd
+    .command('adr')
+    .description('Run ADR compliance checks and list violations')
+    .option('--task <name>', 'Task or change description', 'general')
+    .option('--json', 'Output JSON')
+    .option('--strict', 'Exit non-zero on violations')
+    .action(async (options) => {
+      try {
+        const result = await checkADRGovernance(options.task);
+
+        if (options.json) {
+          printInfo(JSON.stringify(result, null, 2));
+          if (options.strict && !result.compliant) process.exit(1);
+          return;
+        }
+
+        if (result.checkedADRs?.length) {
+          printInfo(chalk.cyan.bold('\n📘 ADR Compliance\n'));
+          printInfo(`Checked ADRs: ${result.checkedADRs.join(', ')}`);
+        } else {
+          printWarning(chalk.yellow('No ADRs found to validate.'));
+        }
+
+        if (result.compliant) {
+          printSuccess(chalk.green('✅ ADR compliance passed'));
+          return;
+        }
+
+        printError(chalk.red('\n❌ ADR violations detected:'));
+        result.violations.forEach((violation) => {
+          printError(
+            `- ${violation.adrId}: ${violation.title} (${violation.reason || 'non-compliant'})`
+          );
+        });
+
+        if (options.strict) process.exit(1);
+      } catch (error) {
+        printError(chalk.red(`ADR check failed: ${error.message}`));
+        process.exit(1);
       }
     });
 }

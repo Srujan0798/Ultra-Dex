@@ -1,489 +1,309 @@
-// Copyright (c) 2026 Ultra-Dex
-
 /**
  * ultra-dex memory command
- * Manage persistent memory for AI agents
+ * Context pruning and visual status
  */
 
 import chalk from 'chalk';
-import Table from 'cli-table3';
-import { ultraMemory } from '../mcp/memory.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import inquirer from 'inquirer';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { configManager } from '../utils/config-manager.js';
+import { loadTieredMemory } from '../memory/hot-warm-cold.js';
 import { memex } from '../memory/memex.js';
-import { titansMemory } from '../memory/titans.js';
-import { ppmManager } from '../memory/manager.js';
-import { createSessionPersistence } from '../utils/sessionPersistence.js';
-import { saveSession, loadSession } from '../memory/session.js';
-import { savePersistent, loadPersistent } from '../memory/persistent.js';
-import { getProjectRoot } from '../utils/config.js';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+
+const execAsync = promisify(exec);
+
+export async function showMemoryStatus(options = {}) {
+  printInfo(chalk.cyan('\n🧠 Ultra-Dex Memory Status\n'));
+
+  // Load configuration
+  if (!configManager.loaded) {
+    await configManager.load();
+  }
+
+  const maxTokens = configManager.get('contextPruning.maxContextTokens') || configManager.get('memory.maxContextTokens') || 8192;
+  const autoPrune = configManager.get('contextPruning.autoPrune') || configManager.get('memory.autoPrune') || true;
+  const pruneThreshold = configManager.get('contextPruning.pruneThreshold') || configManager.get('memory.pruneThreshold') || 0.8;
+
+  // Calculate current memory usage
+  const state = await loadTieredMemory();
+  const hotItems = state.hot || [];
+  const warmItems = state.warm || [];
+  const coldItems = state.cold || [];
+
+  let hotTokens = 0;
+  for (const item of hotItems) {
+    hotTokens += item.tokens || Math.ceil(item.content.length / 4);
+  }
+
+  let warmTokens = 0;
+  for (const item of warmItems) {
+    warmTokens += item.tokens || Math.ceil(item.content.length / 4);
+  }
+
+  let coldTokens = 0;
+  for (const item of coldItems) {
+    coldTokens += item.tokens || Math.ceil(item.content.length / 4);
+  }
+
+  const totalTokens = hotTokens + warmTokens + coldTokens;
+  const hotPercentage = (hotTokens / maxTokens) * 100;
+  const totalPercentage = (totalTokens / maxTokens) * 100;
+
+  // Show memory status
+  printSuccess(chalk.green(`📊 Memory Usage Summary:`));
+  printInfo(chalk.gray(`Max Context Tokens: ${maxTokens}`));
+  printInfo(chalk.gray(`Auto Prune: ${autoPrune ? chalk.green('ENABLED') : chalk.red('DISABLED')}`));
+  printInfo(chalk.gray(`Prune Threshold: ${(pruneThreshold * 100).toFixed(0)}%\n`));
+
+  // Show visual token usage bar if requested
+  if (options.visual) {
+    printInfo(chalk.cyan('Token Usage Visualization:\n'));
+    
+    // Create visual bars
+    const hotBar = createTokenBar(hotTokens, maxTokens, 'HOT');
+    const totalBar = createTokenBar(totalTokens, maxTokens, 'TOTAL');
+    
+    printInfo(`Hot Memory: ${hotBar}`);
+    printInfo(`Total Mem:  ${totalBar}`);
+    
+    printInfo(chalk.gray(`\nHot Tokens: ${hotTokens}/${maxTokens} (${hotPercentage.toFixed(1)}%)`));
+    printInfo(chalk.gray(`Total Tokens: ${totalTokens}/${maxTokens} (${totalPercentage.toFixed(1)}%)`));
+    
+    // Show pruning status
+    if (hotPercentage > pruneThreshold * 100) {
+      printWarning(chalk.yellow(`⚠️  Hot memory usage (${hotPercentage.toFixed(1)}%) exceeds prune threshold (${(pruneThreshold * 100).toFixed(0)}%)`));
+      printInfo(chalk.gray('Auto-consolidation will trigger soon'));
+    } else {
+      const remaining = (pruneThreshold * maxTokens) - hotTokens;
+      printSuccess(chalk.green(`✅ ${Math.round(remaining)} tokens remaining before auto-prune threshold`));
+    }
+  } else {
+    // Show simple status
+    printInfo(chalk.gray(`Hot Memory: ${hotTokens} tokens (${hotPercentage.toFixed(1)}% of limit)`));
+    printInfo(chalk.gray(`Warm Memory: ${warmTokens} tokens`));
+    printInfo(chalk.gray(`Cold Memory: ${coldTokens} tokens`));
+    printInfo(chalk.gray(`Total Memory: ${totalTokens} tokens (${totalPercentage.toFixed(1)}% of limit)`));
+    
+    if (hotPercentage > pruneThreshold * 100) {
+      printWarning(chalk.yellow(`⚠️  Hot memory usage exceeds threshold. Auto-prune recommended.`));
+    } else {
+      printSuccess(chalk.green('✅ Memory usage within safe limits'));
+    }
+  }
+
+  // Show memory tier statistics
+  printInfo(chalk.cyan('\nMemory Tiers:'));
+  printInfo(chalk.gray(`  Hot: ${hotItems.length} items (${hotTokens} tokens)`));
+  printInfo(chalk.gray(`  Warm: ${warmItems.length} items (${warmTokens} tokens)`));
+  printInfo(chalk.gray(`  Cold: ${coldItems.length} items (${coldTokens} tokens)`));
+}
+
+/**
+ * Create a visual token usage bar
+ */
+function createTokenBar(usedTokens, maxTokens, label) {
+  const percentage = Math.min(100, (usedTokens / maxTokens) * 100);
+  const barWidth = 50;
+  const filledBlocks = Math.floor((percentage / 100) * barWidth);
+  const emptyBlocks = barWidth - filledBlocks;
+  
+  let bar = '';
+  
+  // Create filled portion
+  for (let i = 0; i < filledBlocks; i++) {
+    if (percentage > 90) {
+      bar += chalk.red('█');
+    } else if (percentage > 75) {
+      bar += chalk.yellow('█');
+    } else {
+      bar += chalk.green('█');
+    }
+  }
+  
+  // Create empty portion
+  for (let i = 0; i < emptyBlocks; i++) {
+    bar += chalk.gray('░');
+  }
+  
+  const percentStr = `${percentage.toFixed(1)}%`;
+  return `${bar} ${percentStr}`;
+}
+
+/**
+ * Prune memory by consolidating older entries
+ */
+export async function pruneMemory(options = {}) {
+  printInfo(chalk.yellow('\n✂️  Initiating memory pruning...\n'));
+
+  const state = await loadTieredMemory();
+  
+  if (!state.hot || state.hot.length === 0) {
+    printInfo(chalk.gray('No hot memory entries to prune.'));
+    return;
+  }
+
+  // Load configuration
+  if (!configManager.loaded) {
+    await configManager.load();
+  }
+
+  const maxTokens = configManager.get('contextPruning.maxContextTokens') || configManager.get('memory.maxContextTokens') || 8192;
+  const pruneThreshold = configManager.get('contextPruning.pruneThreshold') || configManager.get('memory.pruneThreshold') || 0.8;
+
+  let currentTokens = 0;
+  for (const item of state.hot) {
+    currentTokens += item.tokens || Math.ceil(item.content.length / 4);
+  }
+
+  if (currentTokens <= maxTokens * pruneThreshold && !options.force) {
+    printInfo(chalk.gray('Memory usage is within limits. Use --force to prune anyway.'));
+    return;
+  }
+
+  // Calculate how many tokens need to be pruned
+  const targetTokens = maxTokens * pruneThreshold * 0.8; // Target 80% of threshold
+  const excessTokens = currentTokens - targetTokens;
+
+  printInfo(chalk.gray(`Current tokens: ${currentTokens}, Target: ${Math.round(targetTokens)}`));
+  printInfo(chalk.gray(`Need to prune ~${Math.round(excessTokens)} tokens`));
+
+  // Sort hot items by age (oldest first) and move to warm
+  const sortedHot = [...state.hot].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  
+  let prunedTokens = 0;
+  const itemsToMove = [];
+  
+  for (const item of sortedHot) {
+    const itemTokens = item.tokens || Math.ceil(item.content.length / 4);
+    
+    if (prunedTokens < excessTokens) {
+      itemsToMove.push(item);
+      prunedTokens += itemTokens;
+    } else {
+      break;
+    }
+  }
+
+  if (itemsToMove.length === 0) {
+    printInfo(chalk.gray('No items to prune.'));
+    return;
+  }
+
+  // Confirm with user before pruning
+  if (!options.force) {
+    const { confirm } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'confirm',
+        message: chalk.cyan(`Prune ${itemsToMove.length} items (~${Math.round(prunedTokens)} tokens)?`),
+        default: true
+      }
+    ]);
+
+    if (!confirm) {
+      printInfo(chalk.gray('Pruning cancelled by user.'));
+      return;
+    }
+  }
+
+  // Move items from hot to warm
+  state.warm = state.warm || [];
+  state.hot = state.hot.filter(item => !itemsToMove.some(moveItem => moveItem.id === item.id));
+  state.warm.push(...itemsToMove);
+
+  await saveTieredMemory(state);
+
+  printSuccess(chalk.green(`✅ Pruned ${itemsToMove.length} items (~${Math.round(prunedTokens)} tokens)`));
+  printInfo(chalk.gray('Moved to warm memory tier'));
+}
 
 export function registerMemoryCommand(program) {
-  const memory = program
+  const memoryCmd = program
     .command('memory')
-    .description('Manage persistent agent memory')
-    .option('--search <query>', 'Vector search across Memex')
-    .option('-l, --limit <n>', 'Number of results for --search', '5')
-    .action(async (options) => {
-      if (!options.search) {
-        memory.help();
-        return;
-      }
+    .alias('mem')
+    .description('Memory management and context pruning');
 
-      const limit = parseInt(options.limit, 10) || 5;
+  memoryCmd
+    .command('status')
+    .alias('stats')
+    .description('Show memory usage and token status')
+    .option('-v, --visual', 'Show visual token usage bar')
+    .action(async (options) => {
       try {
-        const results = await memex.search(options.search, limit);
-        printInfo(chalk.cyan.bold(`\n🔍 Memex Results for "${options.search}":\n`));
-        if (results.length === 0) {
-          printInfo(chalk.gray('  No matches found.'));
-          return;
-        }
-
-        results.forEach((item, i) => {
-          const score = item.score ? item.score.toFixed(3) : '0.000';
-          const agent = item.metadata?.agent || item.agent || 'unknown';
-          printInfo(
-            chalk.white(
-              `${i + 1}. [${new Date(item.created_at).toLocaleDateString()}] (${score}) ${agent}`
-            )
-          );
-          const snippet = (item.text || item.output || item.input || '').toString().slice(0, 160);
-          if (snippet) {
-            printInfo(chalk.gray(`   ${snippet}${snippet.length >= 160 ? '...' : ''}`));
-          }
-          printInfo('');
-        });
+        await showMemoryStatus(options);
       } catch (error) {
-        printError(chalk.red(`Memex search failed: ${error.message}`));
+        printError(chalk.red(`Memory status failed: ${error.message}`));
+        process.exit(1);
       }
     });
 
-  // Existing commands
-  memory
-    .command('list')
-    .description('List all remembered facts')
-    .option('--json', 'Output as JSON')
+  memoryCmd
+    .command('prune')
+    .description('Prune memory to stay within token limits')
+    .option('-f, --force', 'Force pruning even if within limits')
     .action(async (options) => {
-      const items = await ultraMemory.getAll();
-
-      if (options.json) {
-        console.log(JSON.stringify(items, null, 2));
-        return;
+      try {
+        await pruneMemory(options);
+      } catch (error) {
+        printError(chalk.red(`Memory pruning failed: ${error.message}`));
+        process.exit(1);
       }
-
-      printInfo(chalk.cyan.bold('\n🧠 Ultra-Dex Persistent Memory\n'));
-
-      if (items.length === 0) {
-        printInfo(chalk.gray('  Memory is empty.'));
-        return;
-      }
-
-      items.forEach((item, i) => {
-        printInfo(
-          chalk.white(
-            `${i + 1}. [${new Date(item.timestamp).toLocaleDateString()}] (${item.source})`
-          )
-        );
-        printInfo(chalk.gray(`   ${item.text}`));
-        if (item.tags && item.tags.length > 0) {
-          printInfo(chalk.blue(`   Tags: ${item.tags.join(', ')}`));
-        }
-        printInfo('');
-      });
     });
 
-  memory
-    .command('add <text>')
-    .description('Add a fact to memory')
-    .option('-t, --tags <tags>', 'Comma-separated tags')
-    .option('--memex', 'Also store in vector memory')
-    .action(async (text, options) => {
-      if (!text || text.trim().length === 0) {
-        printError(chalk.red('Text content is required.'));
-        return;
-      }
-      const tags = options.tags ? options.tags.split(',').map((t) => t.trim()) : [];
-      await ultraMemory.remember(text, tags, 'manual');
-      await ppmManager.add({
-        content: text,
-        type: tags.includes('decision') ? 'decision' : 'pattern',
-        source: { agent: 'manual' },
-        relations: tags,
-      });
-      if (options.memex) {
-        await memex.storeItem(`memex-${Date.now()}`, text, { tags, source: 'manual' });
-      }
-      printSuccess(chalk.green('✅ Fact remembered.'));
-    });
-
-  memory
-    .command('query <query>')
-    .description('Semantic search in vector memory (Memex)')
-    .option('-l, --limit <n>', 'Number of results', '5')
+  memoryCmd
+    .command('search <query>')
+    .description('Semantic search across persistent memory')
+    .option('-l, --limit <n>', 'Max results', '5')
+    .option('--json', 'Output JSON')
     .action(async (query, options) => {
       try {
-        const limit = parseInt(options.limit, 10) || 5;
+        const limit = Math.max(parseInt(options.limit, 10) || 5, 1);
         const results = await memex.search(query, limit);
-        printInfo(chalk.cyan.bold(`\n🔍 Memex Query Results for "${query}":\n`));
-        if (results.length === 0) {
-          printInfo(chalk.gray('  No matches found.'));
+
+        if (options.json) {
+          console.log(JSON.stringify(results, null, 2));
           return;
         }
 
-        results.forEach((item, i) => {
-          const score = item.score ? item.score.toFixed(3) : '0.000';
-          const agent = item.metadata?.agent || 'unknown';
-          printInfo(chalk.white(`${i + 1}. (${score}) ${agent}`));
-          const snippet = (item.text || '').toString().slice(0, 160);
-          if (snippet) {
-            printInfo(chalk.gray(`   ${snippet}${snippet.length >= 160 ? '...' : ''}`));
+        if (!results.length) {
+          printWarning(chalk.yellow('No memory hits found.'));
+          return;
+        }
+
+        printInfo(chalk.cyan(`\n🔎 Memory results for "${query}":\n`));
+        results.forEach((hit, index) => {
+          const preview =
+            typeof hit.text === 'string' ? hit.text.slice(0, 180).replace(/\s+/g, ' ') : '';
+          printInfo(
+            chalk.gray(`${index + 1}.`) +
+              ' ' +
+              chalk.white(preview || '[no content]')
+          );
+          if (hit.metadata) {
+            printInfo(chalk.dim(`   • metadata: ${JSON.stringify(hit.metadata)}`));
           }
-          printInfo('');
         });
       } catch (error) {
-        printError(chalk.red(`Memex query failed: ${error.message}`));
+        printError(chalk.red(`Memory search failed: ${error.message}`));
+        process.exit(1);
       }
     });
 
-  memory
-    .command('search <query>')
-    .description('Search memory')
-    .action(async (query) => {
-      if (!query || query.trim().length === 0) {
-        printError(chalk.red('Search query is required.'));
-        return;
-      }
-      const results = await ppmManager.search(query, 5);
-      printInfo(chalk.cyan.bold(`\n🔍 Search Results for "${query}":\n`));
-
-      if (results.length === 0) {
-        printInfo(chalk.gray('  No matches found.'));
-        return;
-      }
-
-      results.forEach((item, i) => {
-        const ts = item.timestamp || item.created_at || new Date().toISOString();
-        printInfo(chalk.white(`${i + 1}. [${new Date(ts).toLocaleDateString()}]`));
-        printInfo(chalk.gray(`   ${item.content || item.text || ''}`));
-        printInfo('');
-      });
-    });
-
-  memory
-    .command('clear')
-    .description('Clear all memory')
-    .option('--before <date>', 'Clear before date (ISO)')
-    .option('--memex', 'Clear vector memory (Memex)')
-    .option('--all', 'Clear both standard memory and Memex')
-    .action(async (options) => {
-      if (options.before) {
-        const date = new Date(options.before);
-        if (isNaN(date.getTime())) {
-          printError(chalk.red('Invalid date format. Use ISO format (e.g. 2023-01-01).'));
-          return;
-        }
-      }
-      if (options.all || !options.memex) {
-        await ultraMemory.clear(options.before);
-      }
-      if (options.all || options.memex) {
-        await memex.deleteAfter(options.before || new Date(0).toISOString());
-      }
-      printSuccess(chalk.green('✅ Memory cleared.'));
-    });
-
-  memory
-    .command('save')
-    .description('Save current session memory snapshot')
-    .action(async () => {
-      const snapshot = {
-        timestamp: new Date().toISOString(),
-        context: await createSessionPersistence(getProjectRoot()),
-      };
-      const location = await saveSession(snapshot);
-      await savePersistent(snapshot);
-      printSuccess(chalk.green(`✅ Session memory saved to ${location}`));
-    });
-
-  memory
-    .command('restore')
-    .description('Restore last session memory snapshot')
-    .action(async () => {
-      try {
-        const snapshot = await loadSession();
-        printInfo(chalk.cyan('\n✅ Restored session snapshot:\n'));
-        printInfo(JSON.stringify(snapshot, null, 2));
-      } catch (error) {
-        printError(chalk.red(`Restore failed: ${error.message}`));
-      }
-    });
-
-  memory
-    .command('sync')
-    .description('Sync session memory to persistent store')
-    .action(async () => {
-      try {
-        const snapshot = await loadSession();
-        await savePersistent(snapshot);
-        printSuccess(chalk.green('✅ Session memory synced.'));
-      } catch (error) {
-        printError(chalk.red(`Sync failed: ${error.message}`));
-      }
-    });
-
-  memory
-    .command('tier <tier>')
-    .description('Show memory tier (hot|warm|cold)')
-    .action(async (tier) => {
-      const entries = await ppmManager.getTier(tier);
-      printInfo(chalk.cyan(`\n${tier.toUpperCase()} memory (${entries.length})\n`));
-      entries.slice(0, 10).forEach((entry) => {
-        printInfo(chalk.gray(`- ${entry.summary || entry.content?.slice(0, 120) || ''}`));
-      });
-    });
-
-  memory
-    .command('why <query>')
-    .description('Explain why a decision was made (cold tier)')
-    .action(async (query) => {
-      const entries = await ppmManager.why(query);
-      if (!entries.length) {
-        printWarning(chalk.yellow('\nNo related decisions found.\n'));
-        return;
-      }
-      printInfo(chalk.cyan(`\nWhy "${query}"\n`));
-      entries.forEach((entry) => {
-        printInfo(chalk.white(`- ${entry.content}`));
-      });
-    });
-
-  memory
-    .command('consolidate')
-    .description('Consolidate warm memory into cold')
-    .action(async () => {
-      await titansMemory.consolidate();
-      printSuccess(chalk.green('\n✅ Memory consolidated.\n'));
-    });
-
-  memory
-    .command('stats')
-    .alias('status') // Alias for status
-    .description('Show memory statistics')
-    .option('--visual', 'Show visual progress bar')
-    .action(async (options) => {
-      const state = await titansMemory.stats(); // Gets base stats
-
-      // v4.0.1: Stats logic
-      if (options.visual) {
-        // Dynamic imports to save startup time
-        const { configManager } = await import('../utils/config-manager.js');
-        const { default: terminalLink } = await import('terminal-link');
-
-        const config = configManager.getConfig();
-        const maxTokens = config.memory?.maxContextTokens || 8192;
-
-        // Helper to estimate current tokens (Hot tier)
-        // In a real implementation this would come from the state, 
-        // but for v4.0.1 we estimate based on item count * avg
-        const estimatedTokens = state.hot * 150; // Avg 150 tokens per turn
-        const percent = Math.min(100, Math.round((estimatedTokens / maxTokens) * 100));
-
-        // Create the bar manually since we don't want a heavy deps for just this
-        const width = 40;
-        const filled = Math.round((width * percent) / 100);
-        const empty = width - filled;
-
-        const barColor = percent > 80 ? chalk.red : (percent > 50 ? chalk.yellow : chalk.green);
-        const bar = barColor('█'.repeat(filled)) + chalk.gray('░'.repeat(empty));
-
-        printInfo(chalk.cyan.bold('\n🧠 Memory Context Window\n'));
-        printInfo(`Usage: ${bar} ${percent}%`);
-        printInfo(chalk.gray(`       ${estimatedTokens} / ${maxTokens} tokens (est)\n`));
-
-        if (percent > 80) {
-          printWarning(chalk.yellow('⚠️  Token Limit Approaching. Auto-Prune pending.'));
-        }
-
-        printInfo('');
-        return;
-      }
-
-      // Default stats output
-      printInfo(chalk.cyan('\nMemory Stats\n'));
-      printInfo(`Hot: ${state.hot}`);
-      printInfo(`Warm: ${state.warm}`);
-      printInfo(`Cold: ${state.cold}`);
-    });
-
-  // NEW: Session persistence commands
-  memory
-    .command('sessions')
-    .description('List all persistent sessions')
-    .action(async () => {
-      try {
-        const projectRoot = getProjectRoot();
-        const persistence = createSessionPersistence(projectRoot);
-        await persistence.init();
-
-        const sessions = await persistence.db.all(
-          'SELECT * FROM sessions ORDER BY created_at DESC'
-        );
-
-        if (sessions.length === 0) {
-          printWarning(chalk.yellow('\n📁 No sessions found.\n'));
-          printInfo(chalk.gray('Start a swarm to create a session.'));
-          return;
-        }
-
-        printInfo(chalk.cyan.bold('\n📁 Persistent Sessions:\n'));
-
-        for (const session of sessions) {
-          const stats = await persistence.getDecisionStats(session.id);
-
-          printInfo(chalk.white(`${session.name}`));
-          printInfo(chalk.gray(`   ID: ${session.id}`));
-          printInfo(chalk.gray(`   Created: ${new Date(session.created_at).toLocaleString()}`));
-          printInfo(
-            chalk.gray(`   Decisions: ${stats.total_decisions} by ${stats.unique_agents} agents`)
-          );
-          printInfo('');
-        }
-
-        await persistence.close();
-      } catch (error) {
-        printError(chalk.red('Error:'), error.message);
-      }
-    });
-
-  memory
-    .command('decisions [sessionId]')
-    .description('Show decisions for a session')
-    .option('-l, --limit <n>', 'Number of results', '20')
-    .action(async (sessionId, options) => {
-      try {
-        const projectRoot = getProjectRoot();
-        const persistence = createSessionPersistence(projectRoot);
-        await persistence.init();
-
-        if (!sessionId) {
-          printWarning(chalk.yellow('No session ID provided.'));
-          printInfo(chalk.gray('Use `memory sessions` to list available sessions.'));
-          return;
-        }
-
-        printInfo(chalk.cyan(`\n📋 Decisions for session ${sessionId}\n`));
-
-        const results = await persistence.getRecentDecisions(sessionId, parseInt(options.limit));
-
-        if (results.length === 0) {
-          printWarning(chalk.yellow('No decisions found for this session.'));
-          return;
-        }
-
-        results.forEach((r, i) => {
-          printInfo(
-            chalk.white(`${i + 1}. [${new Date(r.created_at).toLocaleTimeString()}] ${r.agent}`)
-          );
-          printInfo(chalk.gray(`   Task: ${r.task}`));
-          printInfo(
-            chalk.gray(
-              `   Decision: ${r.decision.substring(0, 80)}${r.decision.length > 80 ? '...' : ''}`
-            )
-          );
-          printInfo('');
-        });
-
-        await persistence.close();
-      } catch (error) {
-        printError(chalk.red('Error:'), error.message);
-      }
-    });
-
-  memory
-    .command('query <searchQuery>')
-    .description('Query decisions by keyword search')
-    .option('-l, --limit <n>', 'Number of results', '10')
-    .action(async (searchQuery, options) => {
-      try {
-        const projectRoot = getProjectRoot();
-        const persistence = createSessionPersistence(projectRoot);
-        await persistence.init();
-
-        printInfo(chalk.cyan(`\n🔍 Querying: "${searchQuery}"\n`));
-
-        const results = await persistence.searchDecisions(searchQuery, parseInt(options.limit));
-
-        if (results.length === 0) {
-          printWarning(chalk.yellow('No matching decisions found.'));
-          printInfo(chalk.gray('Try different keywords or check if sessions exist.'));
-          return;
-        }
-
-        printSuccess(chalk.green(`Found ${results.length} results:\n`));
-
-        const table = new Table({
-          head: ['Date', 'Agent', 'Task', 'Decision'],
-          colWidths: [20, 15, 30, 35],
-          style: { head: ['cyan'] },
-        });
-
-        results.forEach((r) => {
-          table.push([
-            new Date(r.created_at).toLocaleDateString(),
-            chalk.white(r.agent),
-            r.task.substring(0, 28),
-            r.decision.substring(0, 32) + (r.decision.length > 32 ? '...' : ''),
-          ]);
-        });
-
-        console.log(table.toString());
-
-        await persistence.close();
-      } catch (error) {
-        printError(chalk.red('Error:'), error.message);
-      }
-    });
-
-  memory
-    .command('stats [sessionId]')
-    .description('Show memory statistics')
-    .action(async (sessionId) => {
-      try {
-        const projectRoot = getProjectRoot();
-        const persistence = createSessionPersistence(projectRoot);
-        await persistence.init();
-
-        const stats = sessionId
-          ? await persistence.getDecisionStats(sessionId)
-          : await persistence.db.get(`
-            SELECT 
-              COUNT(*) as total_decisions, 
-              COUNT(DISTINCT session_id) as total_sessions 
-            FROM decisions
-          `);
-
-        printInfo(chalk.cyan.bold('\n📊 Memory Statistics:\n'));
-
-        if (sessionId) {
-          printInfo(`Session: ${chalk.white(sessionId)}`);
-          printInfo(`Total decisions: ${chalk.white(stats.total_decisions)}`);
-          printInfo(`Unique agents: ${chalk.white(stats.unique_agents)}`);
-          if (stats.first_decision) {
-            printInfo(
-              `First decision: ${chalk.white(new Date(stats.first_decision).toLocaleString())}`
-            );
-            printInfo(
-              `Last decision: ${chalk.white(new Date(stats.last_decision).toLocaleString())}`
-            );
-          }
-        } else {
-          printInfo(`Total decisions (all sessions): ${chalk.white(stats.total_decisions)}`);
-          printInfo(`Total sessions: ${chalk.white(stats.total_sessions)}`);
-        }
-
-        printInfo('');
-        await persistence.close();
-      } catch (error) {
-        printError(chalk.red('Error:'), error.message);
-      }
-    });
+  memoryCmd._examples = [
+    { command: 'ultra-dex memory status', description: 'Show current memory usage' },
+    { command: 'ultra-dex memory status --visual', description: 'Show visual token usage bar' },
+    { command: 'ultra-dex memory prune', description: 'Prune memory if exceeding limits' },
+    { command: 'ultra-dex memory prune --force', description: 'Force memory pruning' },
+    { command: 'ultra-dex memory search "auth decisions"', description: 'Search persistent memory' }
+  ];
 }
+
+export default {
+  showMemoryStatus,
+  pruneMemory,
+  registerMemoryCommand
+};
