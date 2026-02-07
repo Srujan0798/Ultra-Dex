@@ -1,3 +1,8 @@
 # CourseForge Template
+Learning Management System (LMS) with progress tracking.
 
-LMS template with course builder, progress tracking, and certificates.
+## Features
+- Course & Module Management
+- Lesson Progress Tracking
+- Student Enrollments
+- Instructor Dashboard

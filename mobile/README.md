@@ -1,11 +1,9 @@
 # Ultra-Dex Mobile
 
-React Native companion app with voice commands, notifications, and project status.
+React Native (Expo) scaffold for the Ultra-Dex mobile experience.
 
-## Run
-
-```bash
-cd mobile
-npm install
-npm run start
-```
+Planned screens:
+- Dashboard
+- Projects
+- Agents
+- Commands

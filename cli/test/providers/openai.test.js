@@ -6,6 +6,7 @@
 
 import { describe, test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { isValidOpenAIModel } from '../../lib/providers/openai.js';
 
 describe('OpenAI Provider - Initialization', () => {
   let originalApiKey;
@@ -66,12 +67,11 @@ describe('OpenAI Provider - Models', () => {
     const invalidModels = ['', null, undefined, 'invalid-model'];
 
     validModels.forEach(model => {
-      assert.ok(typeof model === 'string');
-      assert.ok(model.length > 0);
+      assert.ok(isValidOpenAIModel(model));
     });
 
     invalidModels.forEach(model => {
-      assert.ok(!model || typeof model !== 'string' || model.length === 0);
+      assert.ok(!isValidOpenAIModel(model));
     });
   });
 });

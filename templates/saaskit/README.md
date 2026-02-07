@@ -1,3 +1,8 @@
 # SaaSKit Template
+Multi-tenant SaaS boilerplate with workspaces, RBAC, and billing.
 
-B2B SaaS starter with multi-tenant workspaces, RBAC, billing, and notifications.
+## Features
+- Workspace Management
+- Role-Based Access Control (RBAC)
+- Stripe Integration
+- Invitation System

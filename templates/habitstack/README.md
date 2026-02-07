@@ -1,3 +1,8 @@
 # HabitStack Template
+Habit tracking application with streaks and achievements.
 
-B2C habit tracking app with streaks, freezes, and charts.
+## Features
+- Habit Tracking
+- Streak Calculation
+- Achievement System
+- Progress Visualization

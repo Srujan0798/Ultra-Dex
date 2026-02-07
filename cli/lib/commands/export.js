@@ -747,7 +747,7 @@ export function registerExportCommand(program) {
   program
     .command('export')
     .description('Export project metadata to various formats')
-    .option('-f, --format <format>', 'Export format: json, markdown, html, pdf, yaml (yml)', 'json')
+    .option('-f, --format <format>', 'Export format: json, markdown, html, pdf, yaml, notion', 'json')
     .option('--pdf', 'Shortcut for --format pdf')
     .option('-o, --output <file>', 'Output file path')
     .option('--include-agents', 'Include agent prompts in export')
@@ -755,8 +755,33 @@ export function registerExportCommand(program) {
       '--sections <ranges>',
       'Export specific sections only (comma-separated numbers or ranges, e.g. 1,2,3 or 1-5)'
     )
+    .option('--exclude <ranges>', 'Exclude specific sections (e.g., 15,16 or 10-12)')
+    .option('--p0', 'Export only P0 (priority 0) sections')
     .option('--toc', 'Include auto-generated table of contents')
-    .option('--template <file>', 'Use custom template file for export')
+    .option('--template <name>', 'Use built-in template: executive, technical, handoff')
+    .addHelpText('after', `
+
+Built-in Templates:
+  executive  - High-level summary with vision, goals, KPIs, risks
+  technical  - Technical handoff with architecture, data model, APIs
+  handoff    - Developer handoff with setup, gaps, next tasks
+
+Formats:
+  json       - Structured JSON export
+  markdown   - Markdown with optional TOC
+  html       - Styled HTML with dark theme
+  pdf        - PDF export (requires Puppeteer)
+  yaml       - YAML format
+  notion     - Notion-compatible markdown
+
+Examples:
+  $ ultra-dex export --format json --output export.json
+  $ ultra-dex export --format html --toc --include-agents
+  $ ultra-dex export --sections 1-5 --format markdown
+  $ ultra-dex export --p0 --format pdf --output p0-sections.pdf
+  $ ultra-dex export --template executive --format markdown
+  $ ultra-dex export --exclude 15,16 --format notion
+    `)
     .action(async (options) => {
       try {
         await exportCommand(options);

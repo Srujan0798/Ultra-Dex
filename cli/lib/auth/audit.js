@@ -43,11 +43,15 @@ export class AuditLogger {
    * Start automatic flush interval
    */
   startFlushInterval() {
-    setInterval(() => {
+    const timer = setInterval(() => {
       if (this.buffer.length > 0) {
         this.flush();
       }
     }, this.flushInterval);
+    if (typeof timer.unref === 'function') {
+      timer.unref();
+    }
+    this.flushTimer = timer;
   }
 
   /**

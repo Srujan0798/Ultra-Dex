@@ -1,13 +1,55 @@
-model Habit {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String
-  createdAt DateTime @default(now())
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model HabitCheckin {
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Habit {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  frequency   Frequency @default(DAILY)
+  targetDays  Int[]
+  color       String   @default("#6366f1")
+  icon        String   @default("✓")
+  createdAt   DateTime @default(now())
+  
+  completions Completion[]
+  streaks     Streak[]
+}
+
+model Completion {
   id        String   @id @default(cuid())
   habitId   String
-  date      DateTime
-  createdAt DateTime @default(now())
+  date      DateTime @db.Date
+  notes     String?
+  
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  @@unique([habitId, date])
 }
+
+model Streak {
+  id          String    @id @default(cuid())
+  habitId     String
+  startDate   DateTime  @db.Date
+  endDate     DateTime? @db.Date
+  currentDays Int       @default(1)
+  
+  habit       Habit     @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  @@index([habitId])
+}
+
+model Achievement {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  name      String
+  earnedAt  DateTime @default(now())
+  xp        Int      @default(0)
+}
+
+enum Frequency { DAILY, WEEKLY, CUSTOM }

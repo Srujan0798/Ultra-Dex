@@ -92,6 +92,23 @@ export function formatCommandGroups(groups) {
 }
 
 /**
+ * Format subcommands for a command
+ */
+export function formatSubcommands(subcommands) {
+  if (!subcommands || subcommands.length === 0) return '';
+
+  let output = chalk.bold('\nSubcommands:\n');
+
+  subcommands.forEach((cmd) => {
+    const name = (typeof cmd.name === 'function' ? cmd.name() : cmd.name || '').padEnd(20);
+    const desc = typeof cmd.description === 'function' ? cmd.description() : cmd.description || '';
+    output += `  ${theme.accent(name)} ${theme.dim(desc)}\n`;
+  });
+
+  return output;
+}
+
+/**
  * Format a complete help section with all components
  */
 export function formatHelpSection(title, content, options = {}) {
@@ -178,8 +195,8 @@ export function formatTroubleshooting(troubleshooting) {
 export function createEnhancedHelp(command) {
   let output = '';
 
-  // Usage
-  if (command.usage) {
+  // Usage (always show if name is available)
+  if (command.name) {
     output += formatUsage(command.name, command.options) + '\n';
   }
 
@@ -196,6 +213,11 @@ export function createEnhancedHelp(command) {
   // Examples
   if (command.examples) {
     output += formatExamples(command.examples) + '\n';
+  }
+
+  // Subcommands
+  if (command.subcommands && command.subcommands.length > 0) {
+    output += formatSubcommands(command.subcommands) + '\n';
   }
 
   // Aliases
@@ -223,6 +245,7 @@ export default {
   formatExamples,
   formatAliases,
   formatCommandGroups,
+  formatSubcommands,
   formatHelpSection,
   formatWarning,
   formatInfo,

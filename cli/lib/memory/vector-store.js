@@ -14,6 +14,8 @@ export class VectorStore {
   constructor(options = {}) {
     this.storagePath =
       options.storagePath || path.resolve(process.cwd(), '.ultra-dex', 'memory.db');
+    this.embeddings = options.embeddings || null;
+    this.dimensions = options.dimensions || 128;
     this.db = null;
   }
 
@@ -32,7 +34,7 @@ export class VectorStore {
   }
 
   async add(id, text, metadata = {}) {
-    const embedding = embedText(text);
+    const embedding = await this.embed(text);
     const payload = {
       id,
       text,
@@ -65,7 +67,7 @@ export class VectorStore {
   }
 
   async query(queryText, limit = 5) {
-    const queryEmbedding = embedText(queryText);
+    const queryEmbedding = await this.embed(queryText);
     const rows = await this.db.all(`SELECT * FROM vectors`);
     const scored = rows.map((row) => {
       const embedding = JSON.parse(row.embedding);
@@ -74,6 +76,10 @@ export class VectorStore {
     });
 
     return scored.sort((a, b) => b.score - a.score).slice(0, limit);
+  }
+
+  async search(queryText, limit = 10) {
+    return this.query(queryText, limit);
   }
 
   async clear({ olderThan = null } = {}) {
@@ -89,6 +95,14 @@ export class VectorStore {
       await this.db.close();
       this.db = null;
     }
+  }
+
+  async embed(text) {
+    if (this.embeddings?.embed) {
+      const result = this.embeddings.embed(text);
+      return result instanceof Promise ? await result : result;
+    }
+    return embedText(text, this.dimensions);
   }
 }
 

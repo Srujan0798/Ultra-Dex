@@ -1,3 +1,8 @@
 # DevToolsHub Template
+API platform with key management and rate limiting.
 
-API platform with key management, usage tracking, rate limiting, and webhooks.
+## Features
+- API Key Management
+- Usage Logging
+- Rate Limiting
+- Scoped Permissions

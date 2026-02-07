@@ -41,6 +41,18 @@ export function registerCheckCommand(program) {
     .option('--strict', 'Exit with error if any required section is missing/partial')
     .option('--fix', 'Auto-fill missing sections with suggested content')
     .option('--compliance', 'Show compliance checklist guidance (GDPR/CCPA/SOC2)')
+    .option('--report <path>', 'Generate detailed report file (markdown or JSON)')
+    .option('--visual', 'Show visual progress bars and enhanced colors')
+    .addHelpText('after', `
+
+Examples:
+  $ ultra-dex check                    # Full completeness check
+  $ ultra-dex check --p0-only          # Check only P0 sections
+  $ ultra-dex check --strict           # Exit with error on failures
+  $ ultra-dex check --fix              # Auto-fill suggestions
+  $ ultra-dex check --visual           # Enhanced visual output
+  $ ultra-dex check --report check.md  # Save report to file
+    `)
     .action(async (options) => {
       try {
         if (options.compliance) {
@@ -184,29 +196,34 @@ export function registerCheckCommand(program) {
         }
 
         // Display results
+        const reportData = {
+          total: sectionsToCheck.length,
+          complete: completeCount,
+          partial: partialCount,
+          missing: missingCount,
+          percentage: Math.round((completeCount / sectionsToCheck.length) * 100),
+          contextValid,
+          contextFresh,
+          contextDetails,
+          fixApplied,
+          sections: results,
+          generatedAt: new Date().toISOString(),
+        };
+
         if (options.json) {
-          console.log(
-            JSON.stringify(
-              {
-                total: sectionsToCheck.length,
-                complete: completeCount,
-                partial: partialCount,
-                missing: missingCount,
-                percentage: Math.round((completeCount / sectionsToCheck.length) * 100),
-                contextValid,
-                contextFresh,
-                contextDetails,
-                fixApplied,
-                sections: results,
-              },
-              null,
-              2
-            )
-          );
+          console.log(JSON.stringify(reportData, null, 2));
           return;
         }
 
-        // Table output
+        // Generate report file if requested
+        if (options.report) {
+          await generateCheckReport(options.report, reportData, results, criticalMissing);
+          if (!silent) {
+            console.log(chalk.green(`\n✅ Report saved to ${options.report}`));
+          }
+        }
+
+        // Table output with visual enhancements
         const table = new Table({
           head: ['Section', 'Status', 'Completeness', 'Issues'],
           colWidths: [35, 12, 15, 45],
@@ -214,17 +231,26 @@ export function registerCheckCommand(program) {
         });
 
         results.forEach((r) => {
-          const status =
-            r.status === 'complete'
-              ? chalk.green('✓')
-              : r.status === 'partial'
-                ? chalk.yellow('◐')
-                : chalk.red('✗');
+          let status;
+          let completeness;
+
+          if (options.visual) {
+            // Visual mode with color-coded progress bars
+            const barWidth = 10;
+            const filled = Math.round((r.percentage / 100) * barWidth);
+            const empty = barWidth - filled;
+            const barColor = r.status === 'complete' ? chalk.green : r.status === 'partial' ? chalk.yellow : chalk.red;
+            completeness = barColor('█'.repeat(filled)) + chalk.gray('░'.repeat(empty)) + ` ${r.percentage}%`;
+            status = r.status === 'complete' ? chalk.green('✓ COMPLETE') : r.status === 'partial' ? chalk.yellow('◐ PARTIAL') : chalk.red('✗ MISSING');
+          } else {
+            status = r.status === 'complete' ? chalk.green('✓') : r.status === 'partial' ? chalk.yellow('◐') : chalk.red('✗');
+            completeness = `${r.percentage}%`;
+          }
 
           table.push([
             `Section ${r.number}: ${r.title.substring(0, 25)}`,
             status,
-            `${r.percentage}%`,
+            completeness,
             r.issues.join(', ').substring(0, 43) || '-',
           ]);
         });
@@ -539,4 +565,60 @@ function applyAutoFixes(planContent, sections, results) {
     });
 
   return lines.join('\n');
+}
+
+async function generateCheckReport(reportPath, reportData, results, criticalMissing) {
+  const isJson = reportPath.endsWith('.json');
+  let content;
+
+  if (isJson) {
+    content = JSON.stringify({ ...reportData, criticalMissing }, null, 2);
+  } else {
+    // Markdown report
+    const lines = [];
+    lines.push('# Ultra-Dex Completeness Check Report');
+    lines.push('');
+    lines.push(`Generated: ${new Date(reportData.generatedAt).toLocaleString()}`);
+    lines.push('');
+    lines.push('## Summary');
+    lines.push('');
+    lines.push(`- Total Sections: ${reportData.total}`);
+    lines.push(`- Complete: ${reportData.complete}`);
+    lines.push(`- Partial: ${reportData.partial}`);
+    lines.push(`- Missing: ${reportData.missing}`);
+    lines.push(`- Overall Score: ${reportData.percentage}%`);
+    lines.push('');
+
+    if (criticalMissing.length > 0) {
+      lines.push('## Critical P0 Sections Incomplete');
+      lines.push('');
+      criticalMissing.forEach((msg) => {
+        lines.push(`- ${msg}`);
+      });
+      lines.push('');
+    }
+
+    lines.push('## Section Details');
+    lines.push('');
+    results.forEach((r) => {
+      const statusEmoji = r.status === 'complete' ? '✅' : r.status === 'partial' ? '⚠️' : '❌';
+      lines.push(`### ${statusEmoji} Section ${r.number}: ${r.title}`);
+      lines.push('');
+      lines.push(`- Status: ${r.status.toUpperCase()}`);
+      lines.push(`- Completeness: ${r.percentage}%`);
+      if (r.issues.length > 0) {
+        lines.push(`- Issues:`);
+        r.issues.forEach((issue) => lines.push(`  - ${issue}`));
+      }
+      if (r.suggestions.length > 0) {
+        lines.push(`- Suggestions:`);
+        r.suggestions.forEach((suggestion) => lines.push(`  - ${suggestion}`));
+      }
+      lines.push('');
+    });
+
+    content = lines.join('\n');
+  }
+
+  await fs.writeFile(reportPath, content, 'utf8');
 }

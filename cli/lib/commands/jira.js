@@ -1,85 +1,81 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex jira command
- * Lightweight Jira Ticket-to-Code integration
+ * Jira Ticket-to-Code integration (real API)
  */
 
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
-import path from 'path';
-import inquirer from 'inquirer';
+import { JiraClient, validateJiraConfig, syncFromPlan } from '../integrations/jira.js';
+import { parsePlanFromMarkdown } from './plan.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { validateSafePath } from '../utils/validation.js';
 
 const execAsync = promisify(exec);
 
-// Mock Jira tickets for demonstration when no credentials are provided
-const MOCK_TICKETS = {
-  'TEST-123': {
-    key: 'TEST-123',
-    summary: 'Implement user authentication system',
-    description:
-      'Create a secure authentication system with login, logout, and password reset functionality.',
-    type: 'Story',
-    priority: 'High',
-    assignee: 'Developer',
-    reporter: 'Product Owner',
-    status: 'To Do',
-    components: ['Frontend', 'Backend', 'Security'],
-    labels: ['security', 'authentication', 'feature'],
-  },
-  'TEST-456': {
-    key: 'TEST-456',
-    summary: 'Fix critical bug in payment processing',
-    description:
-      'Payment gateway occasionally fails to process transactions, resulting in failed orders.',
-    type: 'Bug',
-    priority: 'Critical',
-    assignee: 'Developer',
-    reporter: 'QA Engineer',
-    status: 'To Do',
-    components: ['Backend', 'Payments'],
-    labels: ['bug', 'payments', 'critical'],
-  },
-};
+function normalizeDomain(domain) {
+  if (!domain) return '';
+  return domain
+    .replace(/^https?:\/\//, '')
+    .replace(/\.atlassian\.net\/?.*$/, '')
+    .trim();
+}
+
+function getJiraConfig(options = {}) {
+  return {
+    domain: normalizeDomain(options.domain || process.env.JIRA_DOMAIN || process.env.JIRA_BASE_URL),
+    email: options.email || process.env.JIRA_EMAIL,
+    apiToken: options.token || process.env.JIRA_API_TOKEN,
+  };
+}
+
+function extractDescription(description) {
+  if (!description) return '';
+  if (typeof description === 'string') return description;
+  if (!description.content) return '';
+  const parts = [];
+  const walk = (nodes = []) => {
+    nodes.forEach((node) => {
+      if (node.text) parts.push(node.text);
+      if (node.content) walk(node.content);
+    });
+  };
+  walk(description.content);
+  return parts.join(' ').trim();
+}
+
+async function fetchTicketFromJira(client, ticketKey) {
+  const issue = await client.getIssue(ticketKey);
+  const fields = issue.fields || {};
+  return {
+    key: issue.key,
+    summary: fields.summary || ticketKey,
+    description: extractDescription(fields.description),
+    type: fields.issuetype?.name || 'Task',
+    priority: fields.priority?.name || 'Medium',
+    assignee: fields.assignee?.displayName || 'Unassigned',
+    reporter: fields.reporter?.displayName || 'Unknown',
+    status: fields.status?.name || 'To Do',
+    components: (fields.components || []).map((c) => c.name),
+    labels: fields.labels || [],
+  };
+}
 
 export async function startJiraTicket(ticketKey, options = {}) {
   printInfo(chalk.cyan(`\n🎫 Starting work on Jira ticket: ${ticketKey}\n`));
 
-  // Validate ticket key format
   if (!ticketKey || !/^[A-Z0-9]+-[0-9]+$/.test(ticketKey)) {
     throw new Error(`Invalid Jira ticket key format: ${ticketKey}. Expected format: PROJECT-123`);
   }
 
-  // Check if Jira credentials are available
-  const hasCredentials =
-    process.env.JIRA_BASE_URL && (process.env.JIRA_API_TOKEN || process.env.JIRA_USERNAME);
+  const config = getJiraConfig(options);
+  await validateJiraConfig(config);
+  const client = new JiraClient(config);
 
-  let ticketData;
-
-  if (hasCredentials) {
-    printInfo(chalk.gray('Fetching ticket details from Jira...'));
-    ticketData = await fetchTicketFromJira(ticketKey);
-  } else {
-    printWarning(chalk.yellow('Jira credentials not found. Using mock data for demonstration.'));
-    ticketData = MOCK_TICKETS[ticketKey] || {
-      key: ticketKey,
-      summary: `Work on ticket ${ticketKey}`,
-      description: `Implement the requirements for Jira ticket ${ticketKey}`,
-      type: 'Task',
-      priority: 'Medium',
-      assignee: 'Developer',
-      reporter: 'System',
-      status: 'To Do',
-      components: ['Development'],
-      labels: ['development'],
-    };
-  }
-
-  if (!ticketData) {
-    throw new Error(`Ticket ${ticketKey} not found in Jira (or mock data)`);
-  }
+  printInfo(chalk.gray('Fetching ticket details from Jira...'));
+  const ticketData = await fetchTicketFromJira(client, ticketKey);
 
   printSuccess(chalk.green(`✅ Fetched ticket: ${ticketData.summary}`));
   printInfo(
@@ -88,73 +84,41 @@ export async function startJiraTicket(ticketKey, options = {}) {
     )
   );
 
-  // Create a new branch for the ticket
   const branchName = `feature/${ticketKey.toLowerCase()}`;
   printInfo(chalk.gray(`\nCreating branch: ${branchName}`));
 
   try {
-    // Check if git repo exists
     await execAsync('git rev-parse --git-dir');
-  } catch (error) {
+  } catch {
     throw new Error('Not a git repository. Run this command from inside a git repository.');
   }
 
-  // Create and switch to the new branch
   try {
     await execAsync(`git checkout -b ${branchName}`);
     printSuccess(chalk.green(`✅ Created and switched to branch: ${branchName}`));
   } catch (error) {
-    // If branch already exists, switch to it
     try {
       await execAsync(`git checkout ${branchName}`);
       printWarning(
         chalk.yellow(`⚠️  Branch ${branchName} already exists. Switched to existing branch.`)
       );
-    } catch (switchError) {
+    } catch {
       throw new Error(`Failed to create or switch to branch ${branchName}: ${error.message}`);
     }
   }
 
-  // Generate a plan.md based on ticket requirements
   await generatePlanFromTicket(ticketData);
 
-  // Show next steps
   printSuccess(chalk.green('\n🎉 Ticket setup complete!'));
   printInfo(chalk.gray(`Branch: ${branchName}`));
-  printInfo(chalk.gray(`Plan: plan.md has been created with ticket details`));
+  printInfo(chalk.gray('Plan: plan.md has been created with ticket details'));
   printInfo(chalk.cyan('\nNext steps:'));
-  printInfo(chalk.gray(`  1. Review plan.md and adjust as needed`));
-  printInfo(chalk.gray(`  2. Start implementing the requirements`));
+  printInfo(chalk.gray('  1. Review plan.md and adjust as needed'));
+  printInfo(chalk.gray('  2. Start implementing the requirements'));
   printInfo(chalk.gray(`  3. Commit changes with references to ${ticketKey}`));
-  printInfo(chalk.gray(`  4. Create a pull request when ready`));
+  printInfo(chalk.gray('  4. Create a pull request when ready'));
 }
 
-/**
- * Fetch ticket details from Jira API
- */
-async function fetchTicketFromJira(ticketKey) {
-  // In a real implementation, this would call the Jira API
-  // For now, we'll simulate the API call
-  try {
-    // Check if we have credentials
-    if (!process.env.JIRA_BASE_URL || (!process.env.JIRA_API_TOKEN && !process.env.JIRA_USERNAME)) {
-      return null;
-    }
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // For demo purposes, return mock data if it exists
-    return MOCK_TICKETS[ticketKey] || null;
-  } catch (error) {
-    printWarning(chalk.yellow(`Failed to fetch ticket from Jira: ${error.message}`));
-    return null;
-  }
-}
-
-/**
- * Generate a plan.md file based on ticket requirements
- */
 async function generatePlanFromTicket(ticketData) {
   const planContent = `# Implementation Plan for ${ticketData.key}
 
@@ -168,7 +132,7 @@ async function generatePlanFromTicket(ticketData) {
 - **Reporter:** ${ticketData.reporter}
 
 ## Description
-${ticketData.description}
+${ticketData.description || 'No description provided.'}
 
 ## Requirements
 Based on the ticket description, the following requirements need to be implemented:
@@ -178,8 +142,8 @@ Based on the ticket description, the following requirements need to be implement
 3. [ ] Requirement 3 - Describe what needs to be done
 
 ## Technical Approach
-- **Components:** ${ticketData.components.join(', ')}
-- **Labels:** ${ticketData.labels.join(', ')}
+- **Components:** ${ticketData.components.join(', ') || 'N/A'}
+- **Labels:** ${ticketData.labels.join(', ') || 'N/A'}
 
 ## Implementation Steps
 1. [ ] Step 1: Analyze requirements
@@ -205,24 +169,72 @@ Based on the ticket description, the following requirements need to be implement
 }
 
 export function registerJiraCommand(program) {
-  program
-    .command('jira')
-    .description('Jira ticket-to-code integration')
-    .argument('<action>', 'Action to perform (start)')
-    .argument('[ticket]', 'Jira ticket key (e.g., PROJECT-123)')
-    .action(async (action, ticket) => {
+  const jira = program.command('jira').description('Jira ticket integration');
+
+  jira
+    .command('start <ticket>')
+    .description('Start work on a Jira ticket')
+    .option('--domain <domain>', 'Jira domain (e.g. mycompany)')
+    .option('--email <email>', 'Jira account email')
+    .option('--token <token>', 'Jira API token')
+    .action(async (ticket, options) => {
       try {
-        if (action === 'start') {
-          if (!ticket) {
-            printError(chalk.red('Ticket key is required for start action'));
-            return;
-          }
-          await startJiraTicket(ticket);
-        } else {
-          printError(chalk.red(`Unknown action: ${action}. Supported actions: start`));
-        }
+        await startJiraTicket(ticket, options);
       } catch (error) {
-        printError(chalk.red(`Jira command failed: ${error.message}`));
+        printError(chalk.red(`Jira start failed: ${error.message}`));
+        process.exit(1);
+      }
+    });
+
+  jira
+    .command('status <ticket>')
+    .description('Show status of a Jira ticket')
+    .option('--domain <domain>', 'Jira domain (e.g. mycompany)')
+    .option('--email <email>', 'Jira account email')
+    .option('--token <token>', 'Jira API token')
+    .action(async (ticket, options) => {
+      try {
+        const config = getJiraConfig(options);
+        await validateJiraConfig(config);
+        const client = new JiraClient(config);
+        const ticketData = await fetchTicketFromJira(client, ticket);
+        printInfo(chalk.cyan(`\n${ticketData.key}: ${ticketData.summary}`));
+        printInfo(chalk.gray(`Status: ${ticketData.status} | Priority: ${ticketData.priority}`));
+        if (ticketData.assignee) printInfo(chalk.gray(`Assignee: ${ticketData.assignee}`));
+      } catch (error) {
+        printError(chalk.red(`Jira status failed: ${error.message}`));
+        process.exit(1);
+      }
+    });
+
+  jira
+    .command('sync')
+    .description('Sync IMPLEMENTATION-PLAN.md to Jira issues')
+    .option('--domain <domain>', 'Jira domain (e.g. mycompany)')
+    .option('--email <email>', 'Jira account email')
+    .option('--token <token>', 'Jira API token')
+    .option('--project <key>', 'Jira project key (e.g. ULTRA)')
+    .action(async (options) => {
+      try {
+        if (!options.project) {
+          printError(chalk.red('Missing --project key (e.g. ULTRA).'));
+          process.exit(1);
+        }
+        const config = getJiraConfig(options);
+        await validateJiraConfig(config);
+        const client = new JiraClient(config);
+        const planSections = await parsePlanFromMarkdown();
+        const mapped = planSections.map((section) => ({
+          projectKey: options.project,
+          name: section.name,
+          description: (section.steps || []).map((s) => `- ${s.task}`).join('\n'),
+          type: 'Story',
+        }));
+
+        const issues = await syncFromPlan(client, mapped);
+        printSuccess(chalk.green(`✅ Created ${issues.length} Jira issues.`));
+      } catch (error) {
+        printError(chalk.red(`Jira sync failed: ${error.message}`));
         process.exit(1);
       }
     });

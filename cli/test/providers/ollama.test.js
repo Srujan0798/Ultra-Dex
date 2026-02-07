@@ -316,7 +316,7 @@ describe('Ollama Provider - Edge Cases', () => {
   });
 
   test('should handle very long prompts', () => {
-    const longPrompt = 'word '.repeat(10000);
+    const longPrompt = 'word '.repeat(10001);
 
     assert.ok(longPrompt.length > 50000);
   });

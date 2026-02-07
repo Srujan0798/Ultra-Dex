@@ -5,8 +5,11 @@
  * Handles screenshot analysis, Figma imports, and design system reasoning
  */
 
-export class VisionAgent {
+import BaseAgent from './base-agent.js';
+
+export class VisionAgent extends BaseAgent {
   constructor(options = {}) {
+    super('vision', options);
     this.provider = options.provider; // OpenAI GPT-4V or Claude 3 Vision
     this.designSystem = options.designSystem || 'tailwind';
   }

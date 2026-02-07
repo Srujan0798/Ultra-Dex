@@ -1,225 +1,200 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * ultra-dex trello command
- * Kanban Board Sync
+ * Kanban Board Sync (real API)
  */
 
 import chalk from 'chalk';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs/promises';
-import path from 'path';
-import inquirer from 'inquirer';
+import { TrelloClient } from '../integrations/trello.js';
+import { parsePlanFromMarkdown } from './plan.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { validateSafePath } from '../utils/validation.js';
 
-const execAsync = promisify(exec);
+function getTrelloConfig(options = {}) {
+  return {
+    apiKey: options.key || process.env.TRELLO_API_KEY,
+    token: options.token || process.env.TRELLO_TOKEN,
+    boardId: options.board || process.env.TRELLO_BOARD_ID,
+  };
+}
 
-// Mock Trello data for demonstration when no credentials are provided
-const MOCK_BOARDS = {
-  'board-1': {
-    id: 'board-1',
-    name: 'Project Board',
-    lists: [
-      {
-        id: 'list-1',
-        name: 'To Do',
-        cards: [
-          { id: 'card-1', name: 'Design new UI', desc: 'Create wireframes for new UI', pos: 1 },
-          { id: 'card-2', name: 'Implement auth', desc: 'Build authentication system', pos: 2 },
-        ],
-      },
-      {
-        id: 'list-2',
-        name: 'Doing',
-        cards: [
-          { id: 'card-3', name: 'Fix login bug', desc: 'Resolve login issue with OAuth', pos: 1 },
-          { id: 'card-4', name: 'API integration', desc: 'Connect to third-party API', pos: 2 },
-        ],
-      },
-      {
-        id: 'list-3',
-        name: 'Done',
-        cards: [
-          { id: 'card-5', name: 'Setup project', desc: 'Initialize project structure', pos: 1 },
-        ],
-      },
-    ],
-  },
-};
+async function getBoard(client, boardId) {
+  const board = await client.getBoard(boardId);
+  const lists = await client.getBoardLists(boardId);
+  const cards = await client.getBoardCards(boardId);
+  return {
+    ...board,
+    lists: lists.map((list) => ({
+      ...list,
+      cards: cards.filter((card) => card.idList === list.id),
+    })),
+  };
+}
+
+function findListByName(lists, name) {
+  if (!name) return null;
+  const lower = name.toLowerCase();
+  return lists.find((list) => list.name.toLowerCase().includes(lower));
+}
+
+async function ensureLists(client, boardId, desired) {
+  const lists = await client.getBoardLists(boardId);
+  const existing = new Map(lists.map((l) => [l.name.toLowerCase(), l]));
+  const created = [];
+
+  for (const name of desired) {
+    if (!existing.has(name.toLowerCase())) {
+      const list = await client.createList(boardId, name);
+      created.push(list);
+      existing.set(name.toLowerCase(), list);
+    }
+  }
+
+  const merged = [...lists, ...created];
+  return merged;
+}
 
 export async function showTrelloStatus(options = {}) {
-  printInfo(chalk.cyan('\n📋 Trello Board Status\n'));
-
-  // Check if Trello credentials are available
-  const hasCredentials = process.env.TRELLO_API_KEY && process.env.TRELLO_TOKEN;
-
-  let boardData;
-
-  if (hasCredentials) {
-    printInfo(chalk.gray('Fetching board status from Trello...'));
-    boardData = await fetchBoardFromTrello();
-  } else {
-    printWarning(chalk.yellow('Trello credentials not found. Using mock data for demonstration.'));
-    boardData = MOCK_BOARDS['board-1'];
+  const config = getTrelloConfig(options);
+  if (!config.apiKey || !config.token || !config.boardId) {
+    throw new Error('Missing Trello config. Set TRELLO_API_KEY, TRELLO_TOKEN, TRELLO_BOARD_ID.');
   }
 
-  if (!boardData) {
-    throw new Error('Could not fetch Trello board data');
-  }
+  const client = new TrelloClient(config.apiKey, config.token);
+  const boardData = await getBoard(client, config.boardId);
 
-  // Find the "Doing" list
-  const doingList = boardData.lists.find(
-    (list) =>
-      list.name.toLowerCase().includes('doing') ||
-      list.name.toLowerCase().includes('in progress') ||
-      list.name.toLowerCase().includes('work')
-  );
-
-  if (!doingList || doingList.cards.length === 0) {
-    printInfo(chalk.gray('No cards found in "Doing" column.'));
+  const targetList = findListByName(boardData.lists, options.list || 'doing');
+  if (!targetList) {
+    printWarning(chalk.yellow('No matching list found.'));
     return;
   }
 
-  printSuccess(chalk.green(`Cards in "${doingList.name}":\n`));
+  printInfo(chalk.cyan(`\n📋 Trello Board: ${boardData.name}`));
+  printSuccess(chalk.green(`Cards in "${targetList.name}":\n`));
 
-  doingList.cards.forEach((card, index) => {
+  if (!targetList.cards.length) {
+    printInfo(chalk.gray('No cards in this list.'));
+    return;
+  }
+
+  targetList.cards.forEach((card, index) => {
     printInfo(chalk.yellow(`${index + 1}. ${card.name}`));
-    if (card.desc) {
-      printInfo(chalk.gray(`   ${card.desc}`));
-    }
-    console.log('');
+    if (card.desc) printInfo(chalk.gray(`   ${card.desc}`));
   });
 }
 
-export async function moveTrelloCard(cardId, targetListName, options = {}) {
-  printInfo(chalk.cyan(`\n🔄 Moving card to "${targetListName}"\n`));
-
-  // Check if Trello credentials are available
-  const hasCredentials = process.env.TRELLO_API_KEY && process.env.TRELLO_TOKEN;
-
-  let boardData;
-
-  if (hasCredentials) {
-    printInfo(chalk.gray('Fetching board data from Trello...'));
-    boardData = await fetchBoardFromTrello();
-  } else {
-    printWarning(chalk.yellow('Trello credentials not found. Using mock data for demonstration.'));
-    boardData = MOCK_BOARDS['board-1'];
+export async function moveTrelloCard(cardIdOrName, targetListName, options = {}) {
+  const config = getTrelloConfig(options);
+  if (!config.apiKey || !config.token || !config.boardId) {
+    throw new Error('Missing Trello config. Set TRELLO_API_KEY, TRELLO_TOKEN, TRELLO_BOARD_ID.');
   }
 
-  if (!boardData) {
-    throw new Error('Could not fetch Trello board data');
-  }
+  const client = new TrelloClient(config.apiKey, config.token);
+  const boardData = await getBoard(client, config.boardId);
 
-  // Find the card
-  let cardToMove = null;
-  let sourceList = null;
-
+  let card = null;
   for (const list of boardData.lists) {
-    const card = list.cards.find(
-      (c) => c.id === cardId || c.name.toLowerCase().includes(cardId.toLowerCase())
+    const match = list.cards.find(
+      (c) => c.id === cardIdOrName || c.name.toLowerCase().includes(cardIdOrName.toLowerCase())
     );
-    if (card) {
-      cardToMove = card;
-      sourceList = list;
+    if (match) {
+      card = match;
       break;
     }
   }
 
-  if (!cardToMove) {
-    throw new Error(`Card not found: ${cardId}`);
+  if (!card) {
+    throw new Error(`Card not found: ${cardIdOrName}`);
   }
 
-  // Find the target list
-  const targetList = boardData.lists.find((list) =>
-    list.name.toLowerCase().includes(targetListName.toLowerCase())
-  );
-
+  const targetList = findListByName(boardData.lists, targetListName);
   if (!targetList) {
     throw new Error(`Target list not found: ${targetListName}`);
   }
 
-  printInfo(
-    chalk.gray(
-      `Moving card "${cardToMove.name}" from "${sourceList.name}" to "${targetList.name}"...`
-    )
-  );
-
-  if (hasCredentials) {
-    // In a real implementation, this would call the Trello API
-    // For now, we'll just simulate the move
-    printSuccess(chalk.green(`✅ Moved card "${cardToMove.name}" to "${targetList.name}"`));
-  } else {
-    printSuccess(
-      chalk.green(`✅ Simulated moving card "${cardToMove.name}" to "${targetList.name}"`)
-    );
-  }
+  await client.moveCardToList(card.id, targetList.id);
+  printSuccess(chalk.green(`✅ Moved "${card.name}" to "${targetList.name}"`));
 }
 
-/**
- * Fetch board data from Trello API
- */
-async function fetchBoardFromTrello() {
-  // In a real implementation, this would call the Trello API
-  // For now, we'll simulate the API call
-  try {
-    // Check if we have credentials
-    if (!process.env.TRELLO_API_KEY || !process.env.TRELLO_TOKEN) {
-      return null;
-    }
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // For demo purposes, return mock data
-    return MOCK_BOARDS['board-1'];
-  } catch (error) {
-    printWarning(chalk.yellow(`Failed to fetch board from Trello: ${error.message}`));
-    return null;
+export async function syncPlanToTrello(options = {}) {
+  const config = getTrelloConfig(options);
+  if (!config.apiKey || !config.token || !config.boardId) {
+    throw new Error('Missing Trello config. Set TRELLO_API_KEY, TRELLO_TOKEN, TRELLO_BOARD_ID.');
   }
+
+  const client = new TrelloClient(config.apiKey, config.token);
+  const lists = await ensureLists(client, config.boardId, ['To Do', 'In Progress', 'Done']);
+  const todoList = findListByName(lists, 'To Do') || lists[0];
+
+  const phases = await parsePlanFromMarkdown();
+  if (!phases.length) {
+    printWarning(chalk.yellow('No phases found in IMPLEMENTATION-PLAN.md'));
+    return;
+  }
+
+  for (const phase of phases) {
+    await client.createCard(
+      todoList.id,
+      phase.name,
+      (phase.steps || []).map((s) => `- ${s.task}`).join('\n')
+    );
+  }
+
+  printSuccess(chalk.green(`✅ Synced ${phases.length} plan sections to Trello.`));
 }
 
 export function registerTrelloCommand(program) {
-  const trelloCmd = program.command('trello').description('Trello Kanban board synchronization');
+  const trello = program.command('trello').description('Trello Kanban board synchronization');
 
-  trelloCmd
+  trello
     .command('status')
-    .description('Show cards in "Doing" column')
-    .action(async () => {
+    .description('Show cards in a specific list (defaults to "Doing")')
+    .option('--board <id>', 'Board ID (or set TRELLO_BOARD_ID)')
+    .option('--list <name>', 'List name to show')
+    .option('--key <key>', 'Trello API key')
+    .option('--token <token>', 'Trello API token')
+    .action(async (options) => {
       try {
-        await showTrelloStatus();
+        await showTrelloStatus(options);
       } catch (error) {
         printError(chalk.red(`Trello status failed: ${error.message}`));
         process.exit(1);
       }
     });
 
-  trelloCmd
+  trello
     .command('move')
-    .description('Move card to Done')
-    .argument('<card>', 'Card ID or name to move')
-    .argument('<target>', 'Target list name (e.g., "done", "completed")')
-    .action(async (card, target) => {
+    .description('Move a card to another list')
+    .argument('<card>', 'Card ID or name')
+    .argument('<list>', 'Target list name')
+    .option('--board <id>', 'Board ID (or set TRELLO_BOARD_ID)')
+    .option('--key <key>', 'Trello API key')
+    .option('--token <token>', 'Trello API token')
+    .action(async (card, list, options) => {
       try {
-        await moveTrelloCard(card, target);
+        await moveTrelloCard(card, list, options);
       } catch (error) {
         printError(chalk.red(`Trello move failed: ${error.message}`));
         process.exit(1);
       }
     });
 
-  trelloCmd._examples = [
-    { command: 'ultra-dex trello status', description: 'Show cards in "Doing" column' },
-    { command: 'ultra-dex trello move "API integration" done', description: 'Move card to Done' },
-    {
-      command: 'ultra-dex trello move card-4 completed',
-      description: 'Move card by ID to Completed',
-    },
-  ];
+  trello
+    .command('sync')
+    .description('Sync IMPLEMENTATION-PLAN.md to Trello')
+    .option('--board <id>', 'Board ID (or set TRELLO_BOARD_ID)')
+    .option('--key <key>', 'Trello API key')
+    .option('--token <token>', 'Trello API token')
+    .action(async (options) => {
+      try {
+        await syncPlanToTrello(options);
+      } catch (error) {
+        printError(chalk.red(`Trello sync failed: ${error.message}`));
+        process.exit(1);
+      }
+    });
 }
 
 export default {
-  showTrelloStatus,
-  moveTrelloCard,
   registerTrelloCommand,
 };

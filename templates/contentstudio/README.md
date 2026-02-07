@@ -1,3 +1,8 @@
 # ContentStudio Template
+Headless CMS with versioning and categorization.
 
-CMS template with rich editor and publishing workflow.
+## Features
+- Content Versioning
+- Categorization & Tagging
+- Author Management
+- Draft/Publish Workflow
