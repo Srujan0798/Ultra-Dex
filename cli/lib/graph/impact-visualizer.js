@@ -136,3 +136,75 @@ export async function writeImpactReport(outputPath, graph) {
 
   return { path: resolvedPath, format: extension === '.json' ? 'json' : 'html' };
 }
+
+export class ImpactVisualizer {
+  constructor(graph) {
+    this.graph = graph;
+  }
+
+  async generateImpactGraph(changedFiles) {
+    const nodes = new Set();
+    const edges = [];
+
+    for (const file of changedFiles) {
+      nodes.add(file);
+      const dependents = await this.graph.getDependents(file);
+
+      for (const dep of dependents) {
+        nodes.add(dep.path);
+        edges.push({
+          source: file,
+          target: dep.path,
+          type: dep.type,
+          risk: this.calculateRisk(dep),
+        });
+      }
+    }
+
+    return { nodes: Array.from(nodes), edges };
+  }
+
+  calculateRisk(dependency) {
+    const factors = {
+      isCore: dependency.path.includes('/lib/') ? 0.3 : 0,
+      isTest: dependency.path.includes('/test/') ? -0.2 : 0,
+      depth: Math.min((dependency.depth || 0) / 5, 0.3),
+      coupling: Math.min((dependency.coupling || 0) / 10, 0.4),
+    };
+    return Object.values(factors).reduce((a, b) => a + b, 0);
+  }
+
+  generateD3Visualization(impactData) {
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .node { fill: #69b3a2; stroke: #333; stroke-width: 1.5px; }
+    .node.high-risk { fill: #e74c3c; }
+    .node.medium-risk { fill: #f39c12; }
+    .link { stroke: #999; stroke-opacity: 0.6; }
+    .link.high-risk { stroke: #e74c3c; stroke-width: 2px; }
+  </style>
+</head>
+<body>
+  <svg width="960" height="600"></svg>
+  <script>
+    const data = ${JSON.stringify(impactData)};
+    // D3 force simulation code...
+  </script>
+</body>
+</html>`;
+  }
+
+  async saveVisualization(changedFiles, outputPath) {
+    const impact = await this.generateImpactGraph(changedFiles);
+    const html = this.generateD3Visualization(impact);
+    const resolvedPath = path.resolve(process.cwd(), outputPath);
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
+    await fs.writeFile(resolvedPath, html, 'utf8');
+    return resolvedPath;
+  }
+}
+
+export default ImpactVisualizer;

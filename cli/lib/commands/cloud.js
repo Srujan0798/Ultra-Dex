@@ -15,10 +15,11 @@ import { validateSafePath } from '../utils/validation.js';
 export function registerCloudCommand(program) {
   const cloudCmd = program
     .command('cloud')
-    .description('Cloud deployment management (Vercel, Railway, Fly.io)');
+    .description('Cloud deployment management and team collaboration (Vercel, Railway, Fly.io)');
 
   cloudCmd
-    .option('--api-port <port>', 'API server port', '4001')
+    .option('--port <port>', 'API server port', '4001')
+    .option('--api-port <port>', 'Alias for --port', '4001')
     .option('--ws-port <port>', 'WebSocket server port', '4002')
     .option('--dashboard-port <port>', 'Dashboard server port', '4003')
     .option('--no-dashboard', 'Disable dashboard server');

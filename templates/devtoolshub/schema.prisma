@@ -1,37 +1,55 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 model ApiKey {
-  id         String   @id @default(cuid())
-  prefix     String   @unique
-  hashedKey  String
-  name       String?
-  createdAt  DateTime @default(now())
-  revokedAt  DateTime?
-  usage      Usage[]
+  id        String   @id @default(cuid())
+  workspaceId String?
+  name      String
+  keyHash   String   @unique
+  prefix    String   @unique
+  rateLimit Int      @default(100)
+  createdAt DateTime @default(now())
+  lastUsed  DateTime?
+  revokedAt DateTime?
+
+  usage     Usage[]
+  rateLimits RateLimit[]
 }
 
 model Usage {
-  id        String   @id @default(cuid())
-  apiKeyId  String
-  endpoint  String
-  count     Int      @default(0)
-  window    DateTime
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  keyId       String
+  endpoint    String
+  timestamp   DateTime @default(now())
+  responseTime Int
+  statusCode  Int
 
-  apiKey ApiKey @relation(fields: [apiKeyId], references: [id])
+  apiKey ApiKey @relation(fields: [keyId], references: [id], onDelete: Cascade)
+}
+
+model RateLimit {
+  id          String   @id @default(cuid())
+  keyId       String
+  windowStart DateTime
+  count       Int      @default(0)
+
+  apiKey ApiKey @relation(fields: [keyId], references: [id], onDelete: Cascade)
+
+  @@unique([keyId, windowStart])
 }
 
 model WebhookEndpoint {
   id        String   @id @default(cuid())
+  workspaceId String?
   url       String
   secret    String
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

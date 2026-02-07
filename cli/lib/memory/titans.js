@@ -2,8 +2,19 @@
 
 import { loadTieredMemory, saveTieredMemory, promoteEntry, demoteEntry } from './hot-warm-cold.js';
 import { summarizeMemory } from './compression.js';
+import { configManager } from '../utils/config-manager.js';
+import chalk from 'chalk';
+import { printInfo, printSuccess } from '../utils/output.js';
 
 export class TitansMemory {
+  constructor() {
+    this.tiers = {
+      hot: [],
+      warm: [],
+      cold: []
+    };
+  }
+
   async add(content, tier = 'hot') {
     const state = await loadTieredMemory();
     const entry = {
@@ -16,7 +27,7 @@ export class TitansMemory {
     state[tier].unshift(entry);
     await saveTieredMemory(state);
 
-    // Auto-prune if enabled (v4.0.1)
+    // Auto-prune if enabled (v4.0.2)
     if (tier === 'hot') {
       await this.checkAndPrune();
     }
@@ -24,36 +35,41 @@ export class TitansMemory {
     return entry;
   }
 
-  // v4.0.1: Auto-Pruning Logic
+  /**
+   * Check if pruning is needed based on token threshold
+   */
   async checkAndPrune() {
-    // Dynamic import to avoid circular dependency
-    const { configManager } = await import('../utils/config-manager.js');
-    try {
+    // Load configuration
+    if (!configManager.loaded) {
       await configManager.load();
-    } catch {
-      // ignore
     }
 
-    let config = {};
-    try {
-      config = configManager.getConfig();
-    } catch {
-      config = {};
-    }
+    const maxTokens = configManager.get('contextPruning.maxContextTokens') || configManager.get('memory.maxContextTokens') || 8192;
+    const autoPrune = configManager.get('contextPruning.autoPrune') || configManager.get('memory.autoPrune') || true;
+    const pruneThreshold = configManager.get('contextPruning.pruneThreshold') || configManager.get('memory.pruneThreshold') || 0.8;
 
-    if (!config.memory?.autoPrune) return false;
+    if (!autoPrune) {
+      return false;
+    }
 
     const state = await loadTieredMemory();
-    const hotMem = state.hot || [];
+    const hotItems = state.hot || [];
 
-    // Default limit: 20 items or configured token limit
-    // Here we use a simple item count threshold for safety if tokens aren't tracked
-    const maxItems = 20;
+    // Calculate current token usage
+    let currentTokens = 0;
+    for (const item of hotItems) {
+      currentTokens += item.tokens || Math.ceil(item.content.length / 4);
+    }
 
-    if (hotMem.length > maxItems) {
+    const thresholdTokens = maxTokens * pruneThreshold;
+
+    if (currentTokens > thresholdTokens) {
+      printInfo(chalk.yellow(`⚠️  Context token usage (${currentTokens}/${maxTokens}) exceeds threshold. Initiating consolidation...`));
       await this.consolidate();
+      printSuccess(chalk.green('✅ Context consolidated to reduce token usage'));
       return true;
     }
+
     return false;
   }
 

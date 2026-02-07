@@ -42,6 +42,13 @@ const DEFAULT_CONFIG = {
     pruneThreshold: 0.8, // Prune when 80% full
   },
 
+  // Context pruning settings (v4.0.2)
+  contextPruning: {
+    maxContextTokens: 8192,
+    autoPrune: true,
+    pruneThreshold: 0.8 // Prune when 80% full
+  },
+
   // MCP settings
   mcp: {
     port: 3001,
@@ -264,6 +271,40 @@ class ConfigManager {
         this.config.memory.maxContextTokens < 1
       ) {
         errors.push('memory.maxContextTokens must be a positive number');
+      }
+
+      if (typeof this.config.memory.autoPrune !== 'boolean') {
+        errors.push('memory.autoPrune must be a boolean');
+      }
+
+      if (
+        typeof this.config.memory.pruneThreshold !== 'number' ||
+        this.config.memory.pruneThreshold < 0 ||
+        this.config.memory.pruneThreshold > 1
+      ) {
+        errors.push('memory.pruneThreshold must be a number between 0 and 1');
+      }
+    }
+
+    // Validate context pruning settings (v4.0.2)
+    if (this.config.contextPruning) {
+      if (
+        typeof this.config.contextPruning.maxContextTokens !== 'number' ||
+        this.config.contextPruning.maxContextTokens < 1
+      ) {
+        errors.push('contextPruning.maxContextTokens must be a positive number');
+      }
+
+      if (typeof this.config.contextPruning.autoPrune !== 'boolean') {
+        errors.push('contextPruning.autoPrune must be a boolean');
+      }
+
+      if (
+        typeof this.config.contextPruning.pruneThreshold !== 'number' ||
+        this.config.contextPruning.pruneThreshold < 0 ||
+        this.config.contextPruning.pruneThreshold > 1
+      ) {
+        errors.push('contextPruning.pruneThreshold must be a number between 0 and 1');
       }
     }
 

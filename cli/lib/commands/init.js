@@ -163,6 +163,13 @@ async function handleTemplateInit(options) {
  */
 async function handleLiveScaffold(options) {
   const preset = options.stack || 'next15-saas';
+  if (!options.stack) {
+    printInfo(
+      chalk.gray(
+        `No --stack provided. Defaulting to ${preset}. Use --stack to select a preset.`
+      )
+    );
+  }
   if (!LIVE_STACKS[preset]) {
     throw new ValidationError(`Unknown frequency modulation: ${preset}`, [
       `Available presets: ${Object.keys(LIVE_STACKS).join(', ')}`,

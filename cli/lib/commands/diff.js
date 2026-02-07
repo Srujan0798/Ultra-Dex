@@ -90,7 +90,7 @@ async function parseImplementationPlan(sectionFilter = null) {
     return tasks;
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw new AppError('IMPLEMENTATION-PLAN.md not found in current directory', {
+      throw new AppError('No IMPLEMENTATION-PLAN.md found in current directory', {
         code: 'PLAN_NOT_FOUND',
       });
     }
@@ -241,6 +241,26 @@ async function comparePlanVsImplementation(options = {}) {
   return results;
 }
 
+function getConfidenceIcon(alignment) {
+  if (alignment >= 80) return '●';
+  if (alignment >= 50) return '◐';
+  return '○';
+}
+
+function getStatusLabel(completed, total) {
+  if (total === 0) return 'Missing';
+  if (completed >= total) return 'Implemented';
+  if (completed > 0) return 'Partial';
+  return 'Missing';
+}
+
+function getRecommendation(alignment) {
+  if (alignment >= 85) return 'Excellent alignment. Continue executing as planned.';
+  if (alignment >= 60) return 'Good progress. Focus on closing remaining gaps.';
+  if (alignment >= 35) return 'Moderate drift. Focus on missing implementations.';
+  return 'Low alignment. Revisit the plan and re-baseline priorities.';
+}
+
 /**
  * Generate drift analysis report (terminal-friendly)
  */
@@ -248,8 +268,17 @@ function generateDriftReport(results) {
   const report = [];
   const totalTasks = results.completedTasks + results.pendingTasks;
   const alignment = totalTasks > 0 ? Math.round((results.completedTasks / totalTasks) * 100) : 0;
+  const confidenceIcon = getConfidenceIcon(alignment);
+  const overallStatus = getStatusLabel(results.completedTasks, totalTasks);
 
-  report.push(chalk.bold.cyan('\n🔍 DRIFT ANALYSIS REPORT\n'));
+  report.push(chalk.bold.cyan('\n🔍 Implementation Analysis\n'));
+  report.push(`Alignment Score: ${alignment}% ${confidenceIcon}`);
+  report.push(
+    `Confidence: ${confidenceIcon} ${alignment >= 80 ? 'High' : alignment >= 50 ? 'Medium' : 'Low'}`
+  );
+  report.push(`Overall Status: ${overallStatus}\n`);
+
+  report.push(chalk.bold.cyan('Drift Analysis Report'));
   report.push(`📊 Total Tasks: ${totalTasks}`);
   report.push(`✅ Completed: ${results.completedTasks}`);
   report.push(`⏳ Pending: ${results.pendingTasks}`);
@@ -265,8 +294,9 @@ function generateDriftReport(results) {
       const total = entry.total || 0;
       const missing = entry.missing || 0;
       const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      const status = getStatusLabel(completed, total);
       report.push(
-        `  • [${entry.sectionNumber ?? 'N/A'}] ${entry.section || 'Uncategorized'}: ${percentage}% (${completed}/${total}) missing ${missing}`
+        `  • [${entry.sectionNumber ?? 'N/A'}] ${entry.section || 'Uncategorized'}: ${percentage}% (${completed}/${total}) missing ${missing} · ${status}`
       );
     });
     report.push('');
@@ -311,6 +341,9 @@ function generateDriftReport(results) {
       report.push(`  ... and ${results.fileMatches.length - 10} more\n`);
     }
   }
+
+  report.push(chalk.bold.cyan('Recommendations'));
+  report.push(`Recommendation: ${getRecommendation(alignment)}\n`);
 
   return report.join('\n');
 }
@@ -580,7 +613,9 @@ async function compareWithExample(exampleName) {
  */
 export async function diffCommand(options = {}) {
   try {
-    printInfo(chalk.cyan.bold('\n🔍 Ultra-Dex Smart Diff\n'));
+    if (!options.json) {
+      printInfo(chalk.cyan.bold('\n🔍 Ultra-Dex Smart Diff\n'));
+    }
 
     if (options.analyzeDrift && !options.drift) {
       options.drift = true;
@@ -606,16 +641,27 @@ export async function diffCommand(options = {}) {
     let reportInfo = null;
     if (resolvedReport) {
       reportInfo = await writeDeltaReport(resolvedReport, reportData);
-      printSuccess(chalk.green(`✅ Delta report saved to ${reportInfo.path}`));
+      if (!options.json) {
+        printSuccess(chalk.green(`✅ Delta report saved to ${reportInfo.path}`));
+      }
     }
 
     if (options.json) {
+      const sections = Object.values(reportData.sectionStats || {}).map((entry) => ({
+        ...entry,
+        status: getStatusLabel(entry.completed || 0, entry.total || 0),
+      }));
       process.stdout.write(
         JSON.stringify(
           {
             alignment: reportData.summary.completionPercentage,
-            sections: reportData.sectionStats,
-            ...reportData,
+            totalSections: sections.length,
+            sections,
+            summary: reportData.summary,
+            missingImplementations: reportData.missingImplementations,
+            extraImplementations: reportData.extraImplementations,
+            implementedPending: reportData.implementedPending,
+            exampleComparison: reportData.exampleComparison,
             report: reportInfo,
           },
           null,
@@ -758,8 +804,21 @@ export function registerDiffCommand(program) {
     .option('--with-example <name>', 'Compare with example project')
     .option('--sections <list>', 'Limit diff analysis to specific sections (e.g., 1-3,5)')
     .option('--json', 'Output as JSON')
-    .option('--report <path>', 'Write delta report to a file (json or md)')
+    .option('--report <path>', 'Write delta report to a file (json, md, or html)')
     .option('--output <path>', 'Alias for --report')
+    .option('--suggest-fixes', 'Generate AI-powered fix suggestions for drift')
+    .option('--auto-fix', 'Automatically mark implemented tasks as complete')
+    .addHelpText('after', `
+
+Examples:
+  $ ultra-dex diff                           # Quick comparison
+  $ ultra-dex diff --drift                   # Detailed drift analysis
+  $ ultra-dex diff --sections 1-5            # Compare specific sections
+  $ ultra-dex diff --report drift.md         # Save report to file
+  $ ultra-dex diff --suggest-fixes           # Get AI fix suggestions
+  $ ultra-dex diff --auto-fix                # Auto-mark completed tasks
+  $ ultra-dex diff --with-example saaskit    # Compare with example
+    `)
     .action(async (options) => {
       await diffCommand(options);
     });

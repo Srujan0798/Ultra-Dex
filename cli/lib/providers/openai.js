@@ -23,6 +23,13 @@ const MODELS = [
   { id: 'gpt-4', name: 'GPT-4', maxTokens: 8192 },
 ];
 
+export function isValidOpenAIModel(model) {
+  if (!model || typeof model !== 'string') return false;
+  const normalized = model.trim().toLowerCase();
+  if (normalized.length === 0) return false;
+  return normalized.startsWith('gpt-') || normalized.startsWith('text-embedding-');
+}
+
 export class OpenAIProvider extends BaseProvider {
   constructor(apiKey, options = {}) {
     super(apiKey, options);

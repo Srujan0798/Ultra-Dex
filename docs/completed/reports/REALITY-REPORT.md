@@ -1,6 +1,6 @@
 # 🔍 ULTRA-DEX REALITY REPORT
 
-> **Generated:** 2026-02-06T09:26:32.899Z
+> **Generated:** 2026-02-06T19:22:35.669Z
 > **Scope:** CLI Commands, Agents, Templates
 
 ## 1. Command Inventory Audit
@@ -9,20 +9,20 @@
 |---------|--------|-------|-----------|------|
 | **agents** | ✅ REAL | 1008 | No | `cli/lib/commands/agents.js` |
 | **scaffold-enhanced** | ✅ REAL | 843 | No | `cli/lib/commands/scaffold-enhanced.js` |
+| **diff** | ✅ REAL | 826 | No | `cli/lib/commands/diff.js` |
 | **swarm** | ✅ REAL | 799 | No | `cli/lib/commands/swarm.js` |
 | **dashboard** | ✅ REAL | 795 | No | `cli/lib/commands/dashboard.js` |
-| **export** | ✅ REAL | 770 | No | `cli/lib/commands/export.js` |
-| **diff** | ✅ REAL | 767 | No | `cli/lib/commands/diff.js` |
+| **export** | ✅ REAL | 795 | No | `cli/lib/commands/export.js` |
 | **deploy** | ✅ REAL | 732 | No | `cli/lib/commands/deploy.js` |
 | **code-gen** | ✅ REAL | 728 | No | `cli/lib/commands/code-gen.js` |
-| **init** | ✅ REAL | 702 | No | `cli/lib/commands/init.js` |
+| **init** | ✅ REAL | 709 | No | `cli/lib/commands/init.js` |
 | **browser** | ✅ REAL | 664 | No | `cli/lib/commands/browser.js` |
 | **run** | ✅ REAL | 631 | No | `cli/lib/commands/run.js` |
+| **check** | ✅ REAL | 625 | No | `cli/lib/commands/check.js` |
 | **sync** | ✅ REAL | 591 | No | `cli/lib/commands/sync.js` |
 | **scaffold-plan** | ✅ REAL | 565 | No | `cli/lib/commands/scaffold-plan.js` |
 | **team** | ✅ REAL | 564 | No | `cli/lib/commands/team.js` |
 | **search** | ✅ REAL | 553 | No | `cli/lib/commands/search.js` |
-| **check** | ✅ REAL | 543 | No | `cli/lib/commands/check.js` |
 | **quality** | ✅ REAL | 533 | No | `cli/lib/commands/quality.js` |
 | **browser-auto** | ✅ REAL | 531 | Yes | `cli/lib/commands/browser-auto.js` |
 | **doctor** | ✅ REAL | 519 | No | `cli/lib/commands/doctor.js` |
@@ -37,7 +37,7 @@
 | **serve** | ✅ REAL | 442 | No | `cli/lib/commands/serve.js` |
 | **auth** | ✅ REAL | 439 | No | `cli/lib/commands/auth.js` |
 | **autonomous** | ✅ REAL | 437 | No | `cli/lib/commands/autonomous.js` |
-| **cloud** | ✅ REAL | 426 | No | `cli/lib/commands/cloud.js` |
+| **cloud** | ✅ REAL | 427 | No | `cli/lib/commands/cloud.js` |
 | **workflows** | ✅ REAL | 422 | Yes | `cli/lib/commands/workflows.js` |
 | **audit** | ✅ REAL | 421 | No | `cli/lib/commands/audit.js` |
 | **hooks** | ✅ REAL | 407 | No | `cli/lib/commands/hooks.js` |
@@ -65,17 +65,17 @@
 | **setup** | ✅ REAL | 272 | No | `cli/lib/commands/setup.js` |
 | **advanced** | ✅ REAL | 261 | No | `cli/lib/commands/advanced.js` |
 | **pty** | ✅ REAL | 253 | No | `cli/lib/commands/pty.js` |
+| **jira** | ✅ REAL | 247 | No | `cli/lib/commands/jira.js` |
 | **suggest** | ✅ REAL | 246 | No | `cli/lib/commands/suggest.js` |
 | **quality-enhanced** | ✅ REAL | 245 | No | `cli/lib/commands/quality-enhanced.js` |
-| **jira** | ✅ REAL | 235 | No | `cli/lib/commands/jira.js` |
 | **rollback** | ✅ REAL | 235 | No | `cli/lib/commands/rollback.js` |
 | **graph** | ✅ REAL | 234 | No | `cli/lib/commands/graph.js` |
 | **brain** | ✅ REAL | 231 | No | `cli/lib/commands/brain.js` |
-| **trello** | ✅ REAL | 226 | No | `cli/lib/commands/trello.js` |
 | **rag** | ✅ REAL | 217 | No | `cli/lib/commands/rag.js` |
 | **swarm-advanced** | ✅ REAL | 216 | No | `cli/lib/commands/swarm-advanced.js` |
 | **upgrade** | ✅ REAL | 210 | No | `cli/lib/commands/upgrade.js` |
 | **build** | ✅ REAL | 205 | No | `cli/lib/commands/build.js` |
+| **trello** | ✅ REAL | 201 | No | `cli/lib/commands/trello.js` |
 | **validate** | ✅ REAL | 194 | No | `cli/lib/commands/validate.js` |
 | **fetch** | ✅ REAL | 193 | No | `cli/lib/commands/fetch.js` |
 | **template** | ✅ REAL | 163 | Yes | `cli/lib/commands/template.js` |
@@ -86,10 +86,12 @@
 | **dr-check** | ✅ REAL | 141 | No | `cli/lib/commands/dr-check.js` |
 | **challenge** | ✅ REAL | 133 | No | `cli/lib/commands/challenge.js` |
 | **monitor** | ✅ REAL | 129 | No | `cli/lib/commands/monitor.js` |
+| **notion** | ✅ REAL | 128 | No | `cli/lib/commands/notion.js` |
 | **undo** | ✅ REAL | 126 | No | `cli/lib/commands/undo.js` |
 | **fix** | ✅ REAL | 124 | No | `cli/lib/commands/fix.js` |
 | **cicd** | ✅ REAL | 122 | No | `cli/lib/commands/cicd.js` |
 | **vibe** | ✅ REAL | 122 | No | `cli/lib/commands/vibe.js` |
+| **governance** | ✅ REAL | 118 | No | `cli/lib/commands/governance.js` |
 | **chat** | ✅ REAL | 116 | No | `cli/lib/commands/chat.js` |
 | **agent-gen** | ✅ REAL | 115 | No | `cli/lib/commands/agent-gen.js` |
 | **security** | ✅ REAL | 112 | No | `cli/lib/commands/security.js` |
@@ -116,7 +118,6 @@
 | **clean** | ✅ REAL | 65 | No | `cli/lib/commands/clean.js` |
 | **gate** | ✅ REAL | 65 | No | `cli/lib/commands/gate.js` |
 | **mcp-host** | ✅ REAL | 64 | No | `cli/lib/commands/mcp-host.js` |
-| **notion** | ✅ REAL | 63 | No | `cli/lib/commands/notion.js` |
 | **reality-check** | ✅ REAL | 62 | No | `cli/lib/commands/reality-check.js` |
 | **forge** | ✅ REAL | 61 | No | `cli/lib/commands/forge.js` |
 | **profile** | ✅ REAL | 61 | No | `cli/lib/commands/profile.js` |
@@ -138,7 +139,7 @@
 | **status** | ✅ REAL | 10 | No | `cli/lib/commands/status.js` |
 
 ### Summary
-- **Total Production Commands:** 129
+- **Total Production Commands:** 130
 - **Total Stubs/Betas:** 0
 - **Missing from Inventory:** None
 
