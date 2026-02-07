@@ -86,3 +86,23 @@ spec:
         averageUtilization: ${targetCPU}
 `;
 }
+
+export function generateManifests(config) {
+  const parts = [];
+  if (!config || !config.name || !config.image || !config.port) {
+    throw new Error('Missing required config: name, image, port');
+  }
+  parts.push(generateDeployment(config));
+  parts.push(generateService(config));
+  if (config.hpa !== false) {
+    parts.push(generateHPA(config));
+  }
+  return parts.join('\n---\n');
+}
+
+export default {
+  generateDeployment,
+  generateService,
+  generateHPA,
+  generateManifests,
+};

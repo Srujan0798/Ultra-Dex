@@ -6,6 +6,7 @@
 import sodium from 'libsodium-wrappers';
 import { Octokit } from 'octokit';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { requireConfig } from './utils.js';
 import { throttling } from '@octokit/plugin-throttling';
 import { retry } from '@octokit/plugin-retry';
 
@@ -14,6 +15,7 @@ const MyOctokit = Octokit.plugin(throttling, retry);
 
 export class GitHubClient {
   constructor(token, options = {}) {
+    requireConfig({ token }, ['token'], 'GitHub');
     this.token = token;
     this.owner = options.owner;
     this.repo = options.repo;

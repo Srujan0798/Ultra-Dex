@@ -5,6 +5,7 @@
 
 import { Client } from '@notionhq/client';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { retryWithBackoff } from './utils.js';
 
 export class NotionClient {
   constructor(apiKey) {
@@ -13,11 +14,11 @@ export class NotionClient {
 
   async queryDatabase(databaseId, filter = undefined, sorts = undefined) {
     try {
-      const response = await this.client.databases.query({
+      const response = await retryWithBackoff(() => this.client.databases.query({
         database_id: databaseId,
         filter,
         sorts
-      });
+      }));
       return response;
     } catch (error) {
       printError(`Failed to query Notion database ${databaseId}: ${error.message}`);
@@ -27,11 +28,11 @@ export class NotionClient {
 
   async createPage(databaseId, properties, content = []) {
     try {
-      const response = await this.client.pages.create({
+      const response = await retryWithBackoff(() => this.client.pages.create({
         parent: { database_id: databaseId },
         properties,
         children: content
-      });
+      }));
       return response;
     } catch (error) {
       printError(`Failed to create Notion page in database ${databaseId}: ${error.message}`);
@@ -41,10 +42,10 @@ export class NotionClient {
 
   async updatePage(pageId, properties) {
     try {
-      const response = await this.client.pages.update({
+      const response = await retryWithBackoff(() => this.client.pages.update({
         page_id: pageId,
         properties
-      });
+      }));
       return response;
     } catch (error) {
       printError(`Failed to update Notion page ${pageId}: ${error.message}`);
@@ -54,7 +55,7 @@ export class NotionClient {
 
   async getPage(pageId) {
     try {
-      const response = await this.client.pages.retrieve({ page_id: pageId });
+      const response = await retryWithBackoff(() => this.client.pages.retrieve({ page_id: pageId }));
       return response;
     } catch (error) {
       printError(`Failed to retrieve Notion page ${pageId}: ${error.message}`);
@@ -64,11 +65,11 @@ export class NotionClient {
 
   async getBlockChildren(blockId, startCursor = undefined, pageSize = 100) {
     try {
-      const response = await this.client.blocks.children.list({
+      const response = await retryWithBackoff(() => this.client.blocks.children.list({
         block_id: blockId,
         start_cursor: startCursor,
         page_size: pageSize
-      });
+      }));
       return response;
     } catch (error) {
       printError(`Failed to get block children for ${blockId}: ${error.message}`);
@@ -78,10 +79,10 @@ export class NotionClient {
 
   async appendBlockChildren(blockId, children) {
     try {
-      const response = await this.client.blocks.children.append({
+      const response = await retryWithBackoff(() => this.client.blocks.children.append({
         block_id: blockId,
         children
-      });
+      }));
       return response;
     } catch (error) {
       printError(`Failed to append block children to ${blockId}: ${error.message}`);
@@ -91,7 +92,7 @@ export class NotionClient {
 
   async createDatabase(parentPageId, title, properties) {
     try {
-      const response = await this.client.databases.create({
+      const response = await retryWithBackoff(() => this.client.databases.create({
         parent: {
           type: 'page_id',
           page_id: parentPageId
@@ -101,7 +102,7 @@ export class NotionClient {
           text: { content: title }
         }],
         properties
-      });
+      }));
       return response;
     } catch (error) {
       printError(`Failed to create Notion database: ${error.message}`);

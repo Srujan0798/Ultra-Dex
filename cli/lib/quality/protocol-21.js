@@ -104,7 +104,21 @@ export async function runVerification(taskId = null, options = {}) {
 
   printInfo(chalk.yellow('Starting verification process...\n'));
 
-  for (const step of VERIFICATION_STEPS) {
+  const phaseFilter = options.phase ? options.phase.toLowerCase() : null;
+  const phaseMap = {
+    planning: ['understand', 'analyze', 'design', 'implement'],
+    implementation: ['unit-test', 'integration-test', 'security', 'performance', 'accessibility'],
+    quality: ['compatibility', 'error-handling', 'logging', 'documentation', 'code-review'],
+    security: ['dependency-check', 'backup', 'rollback'],
+    documentation: ['deployment', 'monitoring', 'user-testing'],
+    final: ['sign-off'],
+  };
+  const allowedIds = phaseFilter ? phaseMap[phaseFilter] : null;
+  const stepsToRun = allowedIds
+    ? VERIFICATION_STEPS.filter((step) => allowedIds.includes(step.id))
+    : VERIFICATION_STEPS;
+
+  for (const step of stepsToRun) {
     // Skip if already completed
     if (results.completed.includes(step.id)) {
       printInfo(chalk.gray(`✓ ${step.title} (already completed)`));
@@ -139,7 +153,7 @@ export async function runVerification(taskId = null, options = {}) {
   }
 
   // Check if all steps are completed
-  const allSteps = VERIFICATION_STEPS.map((s) => s.id);
+  const allSteps = stepsToRun.map((s) => s.id);
   const remainingSteps = allSteps.filter(
     (step) => !results.completed.includes(step) && !results.skipped.includes(step)
   );

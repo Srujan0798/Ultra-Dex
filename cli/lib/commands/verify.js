@@ -76,11 +76,12 @@ export function registerVerifyCommand(program) {
     .option('--live', 'Run active verification (automated gates only)')
     .option('--pre-push', 'Run pre-push checks (update CONTEXT.md + live gates)')
     .option('--full', 'Run full 21-step verification')
+    .option('--phase <name>', 'Run only a specific verification phase (Planning|Implementation|Quality|Security|Documentation|Final)')
     .action(async (task, options) => {
       try {
         const taskId = options.task || task;
         if (taskId && !options.skipProtocol) {
-          const summary = await runProtocol21({ taskId });
+          const summary = await runProtocol21({ taskId, options: { phase: options.phase } });
           if (summary.status !== 'PASS') {
             const error = new AppError('Protocol 21 incomplete', {
               code: 'PROTOCOL_21_INCOMPLETE',

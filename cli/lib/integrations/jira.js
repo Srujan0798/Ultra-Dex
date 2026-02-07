@@ -5,6 +5,7 @@
 
 import fetch from 'node-fetch';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { retryWithBackoff } from './utils.js';
 
 export class JiraClient {
   constructor(config) {
@@ -24,7 +25,7 @@ export class JiraClient {
 
   async createIssue(data) {
     try {
-      const response = await fetch(`${this.baseUrl}/issue`, {
+      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue`, {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify({
@@ -44,7 +45,7 @@ export class JiraClient {
             labels: data.labels || []
           }
         })
-      });
+      }));
 
       if (!response.ok) {
         const error = await response.json();
@@ -60,9 +61,9 @@ export class JiraClient {
 
   async getIssue(issueKey) {
     try {
-      const response = await fetch(`${this.baseUrl}/issue/${issueKey}`, {
+      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}`, {
         headers: this.headers
-      });
+      }));
 
       if (!response.ok) {
         throw new Error(`Failed to get issue: ${response.status} ${response.statusText}`);
@@ -77,7 +78,7 @@ export class JiraClient {
 
   async searchIssues(jql, maxResults = 50) {
     try {
-      const response = await fetch(`${this.baseUrl}/search`, {
+      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/search`, {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify({ 
@@ -85,7 +86,7 @@ export class JiraClient {
           maxResults,
           fields: ['summary', 'status', 'assignee', 'priority', 'labels', 'description']
         })
-      });
+      }));
 
       if (!response.ok) {
         throw new Error(`Failed to search issues: ${response.status} ${response.statusText}`);
@@ -100,11 +101,11 @@ export class JiraClient {
 
   async updateIssue(issueKey, updates) {
     try {
-      const response = await fetch(`${this.baseUrl}/issue/${issueKey}`, {
+      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}`, {
         method: 'PUT',
         headers: this.headers,
         body: JSON.stringify({ fields: updates })
-      });
+      }));
 
       if (!response.ok) {
         throw new Error(`Failed to update issue: ${response.status} ${response.statusText}`);
@@ -119,11 +120,11 @@ export class JiraClient {
 
   async transitionIssue(issueKey, transitionId) {
     try {
-      const response = await fetch(`${this.baseUrl}/issue/${issueKey}/transitions`, {
+      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}/transitions`, {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify({ transition: { id: transitionId } })
-      });
+      }));
 
       if (!response.ok) {
         throw new Error(`Failed to transition issue: ${response.status} ${response.statusText}`);
@@ -138,7 +139,7 @@ export class JiraClient {
 
   async addComment(issueKey, comment) {
     try {
-      const response = await fetch(`${this.baseUrl}/issue/${issueKey}/comment`, {
+      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}/comment`, {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify({
@@ -151,7 +152,7 @@ export class JiraClient {
             }]
           }
         })
-      });
+      }));
 
       if (!response.ok) {
         throw new Error(`Failed to add comment: ${response.status} ${response.statusText}`);
@@ -166,9 +167,9 @@ export class JiraClient {
 
   async getTransitions(issueKey) {
     try {
-      const response = await fetch(`${this.baseUrl}/issue/${issueKey}/transitions`, {
+      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}/transitions`, {
         headers: this.headers
-      });
+      }));
 
       if (!response.ok) {
         throw new Error(`Failed to get transitions: ${response.status} ${response.statusText}`);
