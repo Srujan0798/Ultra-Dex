@@ -8,6 +8,65 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-06-20',
 });
 
+type SubscriptionStatus =
+  | 'incomplete'
+  | 'incomplete_expired'
+  | 'trialing'
+  | 'active'
+  | 'past_due'
+  | 'canceled'
+  | 'unpaid'
+  | 'paused';
+
+type SubscriptionRecord = {
+  id: string;
+  customerId: string;
+  status: SubscriptionStatus;
+  priceId?: string;
+  currentPeriodEnd?: number;
+  cancelAtPeriodEnd?: boolean;
+  updatedAt: number;
+};
+
+// Minimal storage adapter that works out of the box.
+// Swap this with your DB integration (Prisma, Drizzle, Supabase, etc.).
+const subscriptionStore = new Map<string, SubscriptionRecord>();
+
+function upsertSubscription(record: SubscriptionRecord) {
+  subscriptionStore.set(record.id, record);
+  return record;
+}
+
+function recordPaymentFailure(subscriptionId: string, customerId: string) {
+  const existing = subscriptionStore.get(subscriptionId);
+  upsertSubscription({
+    id: subscriptionId,
+    customerId,
+    status: existing?.status ?? 'past_due',
+    priceId: existing?.priceId,
+    currentPeriodEnd: existing?.currentPeriodEnd,
+    cancelAtPeriodEnd: existing?.cancelAtPeriodEnd,
+    updatedAt: Date.now(),
+  });
+}
+
+function normalizeSubscription(subscription: Stripe.Subscription): SubscriptionRecord {
+  const priceId =
+    subscription.items.data[0]?.price?.id ||
+    (subscription.items.data[0]?.price?.product as string) ||
+    undefined;
+
+  return {
+    id: subscription.id,
+    customerId: String(subscription.customer),
+    status: subscription.status,
+    priceId,
+    currentPeriodEnd: subscription.current_period_end,
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    updatedAt: Date.now(),
+  };
+}
+
 export async function createCheckoutSession({
   customerId,
   priceId,
@@ -42,12 +101,28 @@ export async function handleStripeWebhook(request: Request) {
 
   switch (event.type) {
     case 'checkout.session.completed':
-      // TODO: mark subscription active
-      break;
+      {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const subscriptionId = session.subscription;
+        if (subscriptionId && typeof subscriptionId === 'string') {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          upsertSubscription(normalizeSubscription(subscription));
+        }
+      }
+      return new Response('ok');
     case 'customer.subscription.updated':
-    case 'customer.subscription.deleted':
-      // TODO: update status in DB
-      break;
+    case 'customer.subscription.deleted': {
+      const subscription = event.data.object as Stripe.Subscription;
+      upsertSubscription(normalizeSubscription(subscription));
+      return new Response('ok');
+    }
+    case 'invoice.payment_failed': {
+      const invoice = event.data.object as Stripe.Invoice;
+      if (invoice.subscription && typeof invoice.subscription === 'string') {
+        recordPaymentFailure(invoice.subscription, String(invoice.customer || ''));
+      }
+      return new Response('ok');
+    }
     default:
       break;
   }

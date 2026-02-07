@@ -45,8 +45,10 @@ model Enrollment {
   studentId String
   courseId  String
   enrolledAt DateTime @default(now())
+  completedAt DateTime?
 
   course Course @relation(fields: [courseId], references: [id])
+  certificate Certificate?
 
   @@unique([studentId, courseId])
 }
@@ -60,4 +62,15 @@ model Progress {
 
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   @@unique([studentId, lessonId])
+}
+
+model Certificate {
+  id           String   @id @default(cuid())
+  enrollmentId String   @unique
+  studentId    String
+  courseId     String
+  issuedAt     DateTime @default(now())
+  url          String?
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 }

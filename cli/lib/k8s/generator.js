@@ -63,6 +63,44 @@ spec:
 `;
 }
 
+export function generateIngress(config) {
+  const {
+    name,
+    host,
+    serviceName = `${name}-service`,
+    servicePort = config?.port || 80,
+    path = '/',
+    className,
+    tlsSecret,
+  } = config;
+
+  const ingressClass = className
+    ? `  ingressClassName: ${className}\n`
+    : '';
+
+  const tlsBlock = tlsSecret && host
+    ? `  tls:\n  - hosts:\n    - ${host}\n    secretName: ${tlsSecret}\n`
+    : '';
+
+  return `apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${name}-ingress
+spec:
+${ingressClass}${tlsBlock}  rules:
+  - host: ${host || 'example.local'}
+    http:
+      paths:
+        - path: ${path}
+          pathType: Prefix
+          backend:
+            service:
+              name: ${serviceName}
+              port:
+                number: ${servicePort}
+`;
+}
+
 export function generateHPA(config) {
   const { name, minReplicas = 2, maxReplicas = 10, targetCPU = 70 } = config;
 
@@ -87,6 +125,51 @@ spec:
 `;
 }
 
+export function generateConfigMap(config) {
+  const { name, data = {}, namespace } = config;
+  const lines = Object.entries(data).map(
+    ([key, value]) => `  ${key}: "${String(value).replace(/"/g, '\\"')}"`
+  );
+
+  return `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${name}-config
+${namespace ? `  namespace: ${namespace}\n` : ''}data:
+${lines.length ? lines.join('\n') : '  {}'}
+`;
+}
+
+export function generateSecret(config) {
+  const { name, data = {}, namespace, type = 'Opaque', encode = true } = config;
+  const entries = Object.entries(data).map(([key, value]) => {
+    const raw = value ?? '';
+    const encoded = encode ? Buffer.from(String(raw)).toString('base64') : String(raw);
+    return `  ${key}: ${encoded}`;
+  });
+
+  return `apiVersion: v1
+kind: Secret
+metadata:
+  name: ${name}-secret
+${namespace ? `  namespace: ${namespace}\n` : ''}type: ${type}
+data:
+${entries.length ? entries.join('\n') : '  {}'}
+`;
+}
+
+export function generateNamespace(name) {
+  if (!name) {
+    throw new Error('Namespace name is required');
+  }
+
+  return `apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${name}
+`;
+}
+
 export function generateManifests(config) {
   const parts = [];
   if (!config || !config.name || !config.image || !config.port) {
@@ -103,6 +186,10 @@ export function generateManifests(config) {
 export default {
   generateDeployment,
   generateService,
+  generateIngress,
   generateHPA,
+  generateConfigMap,
+  generateSecret,
+  generateNamespace,
   generateManifests,
 };

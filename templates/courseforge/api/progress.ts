@@ -1,9 +1,9 @@
 import { prisma } from '../lib/prisma';
-import { calculateCourseProgress } from '../lib/progress-calc';
 import { updateLessonProgress } from '../lib/progress-tracking';
+import { getCourseProgress, trackLessonComplete } from '../progress-tracker';
 
 export async function markLessonComplete(studentId: string, lessonId: string) {
-  return updateLessonProgress({ studentId, lessonId, completed: true });
+  return trackLessonComplete(studentId, lessonId);
 }
 
 export async function markLessonIncomplete(studentId: string, lessonId: string) {
@@ -11,8 +11,7 @@ export async function markLessonIncomplete(studentId: string, lessonId: string) 
 }
 
 export async function getStudentProgress(courseId: string, studentId: string) {
-  const percentage = await calculateCourseProgress(courseId, studentId);
-  return { courseId, studentId, percentage };
+  return getCourseProgress(studentId, courseId);
 }
 
 export async function listProgress(studentId: string) {

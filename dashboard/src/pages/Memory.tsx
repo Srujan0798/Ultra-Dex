@@ -1,4 +1,5 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { Chart } from '../components/Chart';
 
 const memoryData = [
   { tier: 'Hot', tokens: 2048, max: 4096 },
@@ -31,17 +32,14 @@ export function Memory() {
         ))}
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-        <h2 className="text-lg font-semibold mb-4">Token Distribution</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={memoryData}>
-            <XAxis dataKey="tier" stroke="#9ca3af" />
-            <YAxis stroke="#9ca3af" />
-            <Tooltip />
-            <Bar dataKey="tokens" fill="#8b5cf6" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <Chart title="Token Distribution" subtitle="Across hot / warm / cold tiers">
+        <BarChart data={memoryData}>
+          <XAxis dataKey="tier" stroke="#9ca3af" />
+          <YAxis stroke="#9ca3af" />
+          <Tooltip />
+          <Bar dataKey="tokens" fill="#8b5cf6" />
+        </BarChart>
+      </Chart>
     </div>
   );
 }

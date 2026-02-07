@@ -32,7 +32,13 @@ const statusColor = (status: string) => {
 export function Agents() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Agents</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Agents</h1>
+          <p className="text-sm text-gray-400">Swarm health and execution history</p>
+        </div>
+        <button className="rounded bg-purple-600 px-3 py-2 text-sm">Spawn Swarm</button>
+      </div>
 
       <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
         <table className="w-full text-left">

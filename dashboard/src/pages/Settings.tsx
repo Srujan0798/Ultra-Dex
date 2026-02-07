@@ -1,7 +1,10 @@
 export function Settings() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Settings</h1>
+        <p className="text-sm text-gray-400">Preferences, keys, and runtime configuration</p>
+      </div>
 
       <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 space-y-4">
         <div>

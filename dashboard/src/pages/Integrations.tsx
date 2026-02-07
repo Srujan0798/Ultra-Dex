@@ -20,7 +20,10 @@ const statusColor = (status: string) => {
 export function Integrations() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Integrations</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Integrations</h1>
+        <p className="text-sm text-gray-400">Connection status and sync health</p>
+      </div>
 
       <div className="space-y-4">
         {integrations.map((integration) => (
