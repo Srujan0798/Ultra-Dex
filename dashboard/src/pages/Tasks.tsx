@@ -5,13 +5,46 @@ const tasks = [
   { id: 'T-398', title: 'CI/CD template sync', status: 'completed', owner: '@DevOps' },
 ];
 
+const ganttData = [
+  { name: 'Planning', progress: 80 },
+  { name: 'Implementation', progress: 55 },
+  { name: 'Testing', progress: 40 },
+  { name: 'Release', progress: 15 },
+];
+
 const statusClass = (status: string) =>
   status === 'completed' ? 'text-green-400' : 'text-blue-400';
 
 export function Tasks() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Tasks</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Tasks</h1>
+          <p className="text-sm text-gray-400">Active pipeline and Gantt view</p>
+        </div>
+        <button className="rounded bg-purple-600 px-3 py-2 text-sm">Create Task</button>
+      </div>
+
+      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-4">
+        <h2 className="text-lg font-semibold mb-4">Gantt Snapshot</h2>
+        <div className="space-y-3">
+          {ganttData.map((stage) => (
+            <div key={stage.name}>
+              <div className="flex justify-between text-sm text-gray-400">
+                <span>{stage.name}</span>
+                <span>{stage.progress}%</span>
+              </div>
+              <div className="mt-2 h-2 rounded-full bg-gray-700">
+                <div
+                  className="h-full rounded-full bg-purple-500"
+                  style={{ width: `${stage.progress}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
         <table className="w-full text-left">
