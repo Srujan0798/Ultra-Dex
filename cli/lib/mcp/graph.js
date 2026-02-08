@@ -160,23 +160,32 @@ export class GraphRAG {
       // Batch insert functions from symbols
       for (let i = 0; i < files.length; i += BATCH_SIZE) {
         const batch = files.slice(i, i + BATCH_SIZE);
+        const symbolBatch = [];
+
         for (const [filePath, node] of batch) {
           if (node.symbols && node.symbols.length > 0) {
-            await session.run(
-              `
-              UNWIND $symbols as symbol
-              MATCH (f:File {path: $filePath, project: $projectId})
-              MERGE (fn:Function {name: symbol, file: $filePath, project: $projectId})
-              SET fn.lastUpdated = datetime()
-              MERGE (f)-[:CONTAINS]->(fn)
-            `,
-              {
-                symbols: node.symbols,
-                filePath,
-                projectId: this.projectId,
-              }
-            );
+            symbolBatch.push({
+              filePath,
+              symbols: node.symbols,
+            });
           }
+        }
+
+        if (symbolBatch.length > 0) {
+          await session.run(
+            `
+            UNWIND $batch as item
+            MATCH (f:File {path: item.filePath, project: $projectId})
+            UNWIND item.symbols as symbol
+            MERGE (fn:Function {name: symbol, file: item.filePath, project: $projectId})
+            SET fn.lastUpdated = datetime()
+            MERGE (f)-[:CONTAINS]->(fn)
+          `,
+            {
+              batch: symbolBatch,
+              projectId: this.projectId,
+            }
+          );
         }
       }
 
