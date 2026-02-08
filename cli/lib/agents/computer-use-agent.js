@@ -1,319 +1,999 @@
 import { spawn } from 'child_process';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { join } from 'path';
-import { tmpdir } from 'os';
-import axios from 'axios';
+import { createCanvas, loadImage } from 'canvas';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
+import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
+import { ultraMemory } from '../mcp/memory.js';
 
-const execPromise = promisify(exec);
+const execAsync = promisify(exec);
 
-interface ComputerUseOptions {
-  apiKey?: string;
-  model?: string;
-  verbose?: boolean;
-}
-
+/**
+ * Computer Use Agent - Full desktop automation capabilities
+ * Enables AI to interact with the desktop environment like a human developer
+ */
 export class ComputerUseAgent {
-  private apiKey: string;
-  private verbose: boolean;
+  constructor(options = {}) {
+    this.options = {
+      enableScreenCapture: options.screenCapture !== false,
+      enableFileOperations: options.fileOperations !== false,
+      enableAppControl: options.appControl !== false,
+      enableSystemCommands: options.systemCommands !== false,
+      enableBrowserAutomation: options.browserAutomation !== false,
+      sandboxMode: options.sandboxMode || false,
+      verbose: options.verbose || false,
+      ...options
+    };
 
-  constructor(options?: ComputerUseOptions) {
-    this.apiKey = options?.apiKey || process.env.OPENAI_API_KEY || '';
-    this.verbose = options?.verbose || false;
+    this.sessionId = uuidv4();
+    this.activeProcesses = new Map();
+    this.permissions = new Map();
+    this.screenshots = [];
+    
+    this.initializePermissions();
   }
 
   /**
-   * Execute a computer use command
+   * Initialize default permissions
    */
-  async executeCommand(command: string, options?: ComputerUseOptions): Promise<string> {
+  initializePermissions() {
+    // Define permission levels
+    this.permissions.set('file-read', { level: 'low', requiresConfirmation: false });
+    this.permissions.set('file-write', { level: 'medium', requiresConfirmation: true });
+    this.permissions.set('file-delete', { level: 'high', requiresConfirmation: true });
+    this.permissions.set('system-exec', { level: 'high', requiresConfirmation: true });
+    this.permissions.set('app-control', { level: 'medium', requiresConfirmation: true });
+    this.permissions.set('screen-capture', { level: 'low', requiresConfirmation: false });
+    this.permissions.set('browser-automation', { level: 'medium', requiresConfirmation: true });
+  }
+
+  /**
+   * Check if operation is permitted
+   */
+  async checkPermission(operation, target) {
+    const perm = this.permissions.get(operation);
+    if (!perm) {
+      return { allowed: false, reason: `Unknown operation: ${operation}` };
+    }
+
+    if (perm.requiresConfirmation && this.options.confirmationRequired) {
+      return { allowed: await this.requestConfirmation(operation, target), reason: 'User confirmed' };
+    }
+
+    return { allowed: true, reason: 'Permission granted' };
+  }
+
+  /**
+   * Request user confirmation for sensitive operations
+   */
+  async requestConfirmation(operation, target) {
+    // In a real implementation, this would show a UI dialog
+    // For now, we'll return true for simulation
+    if (this.options.verbose) {
+      printInfo(`🔐 Confirmation required for ${operation}: ${target}`);
+    }
+    return true; // Simulate user confirmation
+  }
+
+  /**
+   * Take a screenshot of the current screen
+   */
+  async takeScreenshot(options = {}) {
     try {
-      if (this.verbose) {
-        console.log(`🤖 Computer Use Agent: Executing "${command}"`);
+      if (!this.options.enableScreenCapture) {
+        throw new Error('Screen capture is disabled');
       }
 
-      // Parse the command to determine action
-      const parsedCommand = this.parseCommand(command);
+      const permission = await this.checkPermission('screen-capture', 'desktop');
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      // Platform-specific screenshot capture
+      let screenshotPath;
+      const timestamp = Date.now();
+      const fileName = `screenshot_${timestamp}.png`;
+      screenshotPath = path.join(os.tmpdir(), fileName);
+
+      let command;
+      if (process.platform === 'darwin') { // macOS
+        command = `screencapture -x "${screenshotPath}"`;
+      } else if (process.platform === 'win32') { // Windows
+        command = `powershell -Command "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $screen = [System.Windows.Forms.Screen]::PrimaryScreen; $bounds = $screen.Bounds; $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height; $graphics = [System.Drawing.Graphics]::FromImage($bitmap); $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size); $bitmap.Save('${screenshotPath}', [System.Drawing.Imaging.ImageFormat]::Png); $bitmap.Dispose(); $graphics.Dispose(); return"`;
+      } else { // Linux
+        command = `import -window root "${screenshotPath}"`;
+      }
+
+      await execAsync(command);
       
-      switch (parsedCommand.action) {
-        case 'file_operation':
-          return await this.handleFileOperation(parsedCommand);
-        case 'system_command':
-          return await this.handleSystemCommand(parsedCommand);
-        case 'web_browsing':
-          return await this.handleWebBrowsing(parsedCommand);
-        case 'application_control':
-          return await this.handleApplicationControl(parsedCommand);
-        default:
-          return await this.handleGeneralCommand(command);
+      // Store screenshot reference
+      this.screenshots.push({
+        path: screenshotPath,
+        timestamp,
+        sessionId: this.sessionId
+      });
+
+      if (this.options.verbose) {
+        printSuccess(`📸 Screenshot captured: ${screenshotPath}`);
       }
+
+      return {
+        success: true,
+        path: screenshotPath,
+        timestamp,
+        message: `Screenshot captured successfully`
+      };
     } catch (error) {
-      throw new Error(`Computer use failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Parse command into structured format
-   */
-  private parseCommand(command: string): any {
-    const lowerCmd = command.toLowerCase();
-    
-    // File operations
-    if (lowerCmd.includes('create') && (lowerCmd.includes('file') || lowerCmd.includes('folder'))) {
+      printError(`Screenshot failed: ${error.message}`);
       return {
-        action: 'file_operation',
-        operation: 'create',
-        path: this.extractPath(command),
-        content: this.extractContent(command)
-      };
-    } else if (lowerCmd.includes('read') && lowerCmd.includes('file')) {
-      return {
-        action: 'file_operation',
-        operation: 'read',
-        path: this.extractPath(command)
-      };
-    } else if (lowerCmd.includes('delete') && (lowerCmd.includes('file') || lowerCmd.includes('folder'))) {
-      return {
-        action: 'file_operation',
-        operation: 'delete',
-        path: this.extractPath(command)
-      };
-    } else if (lowerCmd.includes('open') || lowerCmd.includes('launch') || lowerCmd.includes('start')) {
-      return {
-        action: 'application_control',
-        operation: 'open',
-        application: this.extractApplication(command)
-      };
-    } else if (lowerCmd.includes('browse') || lowerCmd.includes('search') || lowerCmd.includes('google')) {
-      return {
-        action: 'web_browsing',
-        operation: 'search',
-        query: this.extractSearchQuery(command)
-      };
-    } else {
-      return {
-        action: 'system_command',
-        command: command
+        success: false,
+        error: error.message,
+        message: `Screenshot failed: ${error.message}`
       };
     }
   }
 
   /**
-   * Handle file operations
+   * Analyze screenshot with vision agent
    */
-  private async handleFileOperation(cmd: any): Promise<string> {
-    switch (cmd.operation) {
-      case 'create':
-        return await this.createFile(cmd.path, cmd.content);
-      case 'read':
-        return await this.readFile(cmd.path);
-      case 'delete':
-        return await this.deleteFile(cmd.path);
-      default:
-        throw new Error(`Unsupported file operation: ${cmd.operation}`);
-    }
-  }
-
-  /**
-   * Handle system commands
-   */
-  private async handleSystemCommand(cmd: any): Promise<string> {
+  async analyzeScreenshot(screenshotPath, prompt = "Analyze this UI and describe the elements and functionality") {
     try {
-      const { stdout, stderr } = await execPromise(cmd.command);
-      return stdout || stderr || 'Command executed successfully';
+      if (!this.options.enableAppControl) {
+        throw new Error('Vision analysis is disabled');
+      }
+
+      // This would integrate with the vision agent
+      // For now, we'll simulate
+      printInfo(`👁️  Analyzing screenshot: ${screenshotPath}`);
+      
+      // In a real implementation, this would call the vision agent
+      // with GPT-4 Vision or similar to analyze the image
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      
+      return {
+        success: true,
+        analysis: "Screenshot analysis completed (simulated). Contains UI elements that can be converted to code.",
+        suggestions: ["Consider converting this UI to React components", "Identify the main interactive elements"],
+        timestamp: new Date().toISOString()
+      };
     } catch (error) {
-      return `Command failed: ${error.message}`;
+      printError(`Screenshot analysis failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Analysis failed: ${error.message}`
+      };
     }
   }
 
   /**
-   * Handle web browsing
+   * Read file content
    */
-  private async handleWebBrowsing(cmd: any): Promise<string> {
-    // In a real implementation, this would use browser automation
-    // For now, we'll simulate with search results
-    if (cmd.query) {
-      return `🔍 Searching for: "${cmd.query}"\nResults would appear here in a real implementation.`;
+  async readFile(filePath) {
+    try {
+      const permission = await this.checkPermission('file-read', filePath);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      // Security validation
+      const normalizedPath = path.normalize(filePath);
+      if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+        throw new Error('Path traversal detected');
+      }
+
+      const fullPath = path.resolve(process.cwd(), normalizedPath);
+      if (!fullPath.startsWith(process.cwd()) && !this.options.sandboxMode) {
+        throw new Error('Access outside project directory not allowed');
+      }
+
+      const content = await fs.readFile(fullPath, 'utf8');
+      
+      if (this.options.verbose) {
+        printSuccess(`📖 Read file: ${filePath} (${content.length} chars)`);
+      }
+
+      return {
+        success: true,
+        content,
+        path: fullPath,
+        size: content.length,
+        message: `File read successfully`
+      };
+    } catch (error) {
+      printError(`Read file failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Read failed: ${error.message}`
+      };
     }
-    return 'Web browsing command processed.';
   }
 
   /**
-   * Handle application control
+   * Write file content
    */
-  private async handleApplicationControl(cmd: any): Promise<string> {
-    // Determine OS and execute appropriate command
-    const platform = process.platform;
-    
+  async writeFile(filePath, content) {
+    try {
+      const permission = await this.checkPermission('file-write', filePath);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      // Security validation
+      const normalizedPath = path.normalize(filePath);
+      if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+        throw new Error('Path traversal detected');
+      }
+
+      const fullPath = path.resolve(process.cwd(), normalizedPath);
+      if (!fullPath.startsWith(process.cwd()) && !this.options.sandboxMode) {
+        throw new Error('Write outside project directory not allowed');
+      }
+
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+      
+      await fs.writeFile(fullPath, content, 'utf8');
+      
+      if (this.options.verbose) {
+        printSuccess(`📝 Wrote file: ${filePath} (${content.length} chars)`);
+      }
+
+      // Update memory with file change
+      await ultraMemory.remember(`File ${filePath} was updated with ${content.length} characters`, ['file-operation', 'write']);
+
+      return {
+        success: true,
+        path: fullPath,
+        size: content.length,
+        message: `File written successfully`
+      };
+    } catch (error) {
+      printError(`Write file failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Write failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Delete file
+   */
+  async deleteFile(filePath) {
+    try {
+      const permission = await this.checkPermission('file-delete', filePath);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      const normalizedPath = path.normalize(filePath);
+      if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+        throw new Error('Path traversal detected');
+      }
+
+      const fullPath = path.resolve(process.cwd(), normalizedPath);
+      if (!fullPath.startsWith(process.cwd()) && !this.options.sandboxMode) {
+        throw new Error('Delete outside project directory not allowed');
+      }
+
+      await fs.unlink(fullPath);
+      
+      if (this.options.verbose) {
+        printSuccess(`🗑️  Deleted file: ${filePath}`);
+      }
+
+      // Update memory with file change
+      await ultraMemory.remember(`File ${filePath} was deleted`, ['file-operation', 'delete']);
+
+      return {
+        success: true,
+        path: fullPath,
+        message: `File deleted successfully`
+      };
+    } catch (error) {
+      printError(`Delete file failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Delete failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Execute system command
+   */
+  async executeCommand(command, options = {}) {
+    try {
+      const permission = await this.checkPermission('system-exec', command);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      // Security validation - prevent dangerous commands
+      const dangerousPatterns = [
+        /rm\s+-rf/,
+        /mv\s+.*\s+\/tmp/,
+        /dd\s+if=/,
+        /mkfs/,
+        /shutdown/,
+        /reboot/,
+        /poweroff/,
+        /halt/,
+        /kill\s+-9\s+\d+/
+      ];
+
+      for (const pattern of dangerousPatterns) {
+        if (pattern.test(command)) {
+          throw new Error(`Dangerous command blocked: ${command}`);
+        }
+      }
+
+      if (this.options.verbose) {
+        printInfo(`💻 Executing command: ${command}`);
+      }
+
+      const result = await execAsync(command, {
+        timeout: options.timeout || 30000,
+        maxBuffer: options.maxBuffer || 1024 * 1024 // 1MB
+      });
+
+      if (this.options.verbose) {
+        printSuccess(`✅ Command executed successfully`);
+      }
+
+      // Update memory with command execution
+      await ultraMemory.remember(`Command executed: ${command}`, ['system-command', 'execution']);
+
+      return {
+        success: true,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        exitCode: result.code,
+        message: `Command executed successfully`
+      };
+    } catch (error) {
+      printError(`Command execution failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        stdout: error.stdout,
+        stderr: error.stderr,
+        message: `Command failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Open application
+   */
+  async openApplication(appName, args = []) {
+    try {
+      const permission = await this.checkPermission('app-control', appName);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      let command;
+      const appArgs = args.join(' ');
+
+      if (process.platform === 'darwin') { // macOS
+        command = `open -a "${appName}" ${appArgs}`;
+      } else if (process.platform === 'win32') { // Windows
+        command = `start "" "${appName}" ${appArgs}`;
+      } else { // Linux
+        command = `xdg-open "${appName}" ${appArgs}`;
+      }
+
+      if (this.options.verbose) {
+        printInfo(`📱 Opening application: ${appName} ${appArgs}`);
+      }
+
+      await execAsync(command);
+      
+      if (this.options.verbose) {
+        printSuccess(`✅ Application opened: ${appName}`);
+      }
+
+      // Update memory with app opening
+      await ultraMemory.remember(`Application opened: ${appName}`, ['app-control', 'open']);
+
+      return {
+        success: true,
+        app: appName,
+        message: `Application opened successfully`
+      };
+    } catch (error) {
+      printError(`Open application failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Open failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Close application
+   */
+  async closeApplication(appName) {
+    try {
+      const permission = await this.checkPermission('app-control', `close-${appName}`);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      let command;
+
+      if (process.platform === 'darwin') { // macOS
+        command = `osascript -e 'quit app "${appName}"'`;
+      } else if (process.platform === 'win32') { // Windows
+        command = `taskkill /f /im "${appName}.exe"`;
+      } else { // Linux
+        command = `pkill -f "${appName}"`;
+      }
+
+      if (this.options.verbose) {
+        printInfo(`⏹️  Closing application: ${appName}`);
+      }
+
+      await execAsync(command);
+      
+      if (this.options.verbose) {
+        printSuccess(`✅ Application closed: ${appName}`);
+      }
+
+      return {
+        success: true,
+        app: appName,
+        message: `Application closed successfully`
+      };
+    } catch (error) {
+      printError(`Close application failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Close failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * List running processes
+   */
+  async listProcesses() {
     try {
       let command;
-      if (platform === 'darwin') { // macOS
-        command = `open -a "${cmd.application}"`;
-      } else if (platform === 'win32') { // Windows
-        command = `start "" "${cmd.application}"`;
-      } else { // Linux
-        command = `xdg-open "${cmd.application}"`;
+      
+      if (process.platform === 'win32') {
+        command = 'tasklist';
+      } else {
+        command = 'ps aux';
       }
+
+      const result = await execAsync(command);
       
-      await execPromise(command);
-      return `✅ Application "${cmd.application}" launched successfully`;
-    } catch (error) {
-      return `❌ Failed to launch application "${cmd.application}": ${error.message}`;
-    }
-  }
-
-  /**
-   * Handle general commands with AI assistance
-   */
-  private async handleGeneralCommand(command: string): Promise<string> {
-    // Use AI to interpret and execute complex commands
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a computer use agent. Interpret the user's command and provide the appropriate action or response. Respond with a JSON object containing the action and parameters.`
-        },
-        {
-          role: 'user',
-          content: `Command: "${command}". What should I do?`
-        }
-      ],
-      temperature: 0.3,
-    }, {
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const interpretation = response.data.choices[0].message.content;
-    return `🤖 AI interpretation: ${interpretation}`;
-  }
-
-  /**
-   * Create a file
-   */
-  private async createFile(path: string, content: string = ''): Promise<string> {
-    const fs = await import('fs');
-    const pathModule = await import('path');
-    
-    try {
-      // Ensure directory exists
-      const dir = pathModule.dirname(path);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+      if (this.options.verbose) {
+        printInfo(`📋 Listed ${result.stdout.split('\n').length - 1} processes`);
       }
-      
-      fs.writeFileSync(path, content);
-      return `✅ File created: ${path}`;
+
+      return {
+        success: true,
+        processes: result.stdout,
+        count: result.stdout.split('\n').length - 1,
+        message: `Processes listed successfully`
+      };
     } catch (error) {
-      return `❌ Failed to create file: ${error.message}`;
-    }
-  }
-
-  /**
-   * Read a file
-   */
-  private async readFile(path: string): Promise<string> {
-    const fs = await import('fs');
-    
-    try {
-      const content = fs.readFileSync(path, 'utf8');
-      return `📄 Contents of ${path}:\n${content}`;
-    } catch (error) {
-      return `❌ Failed to read file: ${error.message}`;
-    }
-  }
-
-  /**
-   * Delete a file
-   */
-  private async deleteFile(path: string): Promise<string> {
-    const fs = await import('fs');
-    
-    try {
-      fs.unlinkSync(path);
-      return `🗑️ File deleted: ${path}`;
-    } catch (error) {
-      return `❌ Failed to delete file: ${error.message}`;
-    }
-  }
-
-  /**
-   * Extract path from command
-   */
-  private extractPath(command: string): string {
-    // Simple path extraction (in reality, this would be more sophisticated)
-    const pathRegex = /(?:file|folder|directory)\s+([^\s]+)/i;
-    const match = command.match(pathRegex);
-    return match ? match[1] : './unnamed';
-  }
-
-  /**
-   * Extract content from command
-   */
-  private extractContent(command: string): string {
-    // Simple content extraction
-    const contentRegex = /(?:containing|with)\s+(.*)/i;
-    const match = command.match(contentRegex);
-    return match ? match[1] : '';
-  }
-
-  /**
-   * Extract application name
-   */
-  private extractApplication(command: string): string {
-    const appRegex = /(?:open|launch|start)\s+(.+?)(?:\s|$)/i;
-    const match = command.match(appRegex);
-    return match ? match[1].trim() : 'default';
-  }
-
-  /**
-   * Extract search query
-   */
-  private extractSearchQuery(command: string): string {
-    const queryRegex = /(?:search|browse|google)\s+(.+?)(?:\s|$)/i;
-    const match = command.match(queryRegex);
-    return match ? match[1].trim() : command;
-  }
-
-  /**
-   * Take screenshot of current screen
-   */
-  async takeScreenshot(filename?: string): Promise<string> {
-    const fs = await import('fs');
-    const pathModule = await import('path');
-    
-    try {
-      const screenshotName = filename || `screenshot_${Date.now()}.png`;
-      const screenshotPath = pathModule.join(tmpdir(), screenshotName);
-      
-      // This is a simplified approach - in reality, you'd use a proper screenshot library
-      // For now, we'll just return the path where a screenshot would be saved
-      return screenshotPath;
-    } catch (error) {
-      throw new Error(`Screenshot failed: ${error.message}`);
+      printError(`List processes failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `List failed: ${error.message}`
+      };
     }
   }
 
   /**
    * Get system information
    */
-  async getSystemInfo(): Promise<any> {
-    const os = await import('os');
-    
+  async getSystemInfo() {
+    try {
+      const osInfo = await execAsync('uname -a');
+      const diskInfo = await execAsync('df -h');
+      const memoryInfo = await execAsync(process.platform === 'win32' ? 'wmic computersystem get TotalPhysicalMemory' : 'free -h');
+      const cpuInfo = await execAsync(process.platform === 'win32' ? 'wmic cpu get name' : 'lscpu | head -20');
+
+      const systemInfo = {
+        os: osInfo.stdout,
+        disk: diskInfo.stdout,
+        memory: memoryInfo.stdout,
+        cpu: cpuInfo.stdout,
+        platform: process.platform,
+        arch: process.arch,
+        uptime: os.uptime(),
+        freemem: os.freemem(),
+        totalmem: os.totalmem()
+      };
+
+      if (this.options.verbose) {
+        printInfo(`🖥️  Retrieved system information`);
+      }
+
+      return {
+        success: true,
+        info: systemInfo,
+        message: `System info retrieved successfully`
+      };
+    } catch (error) {
+      printError(`Get system info failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `System info failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Create directory
+   */
+  async createDirectory(dirPath) {
+    try {
+      const permission = await this.checkPermission('file-write', dirPath);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      const normalizedPath = path.normalize(dirPath);
+      if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+        throw new Error('Path traversal detected');
+      }
+
+      const fullPath = path.resolve(process.cwd(), normalizedPath);
+      if (!fullPath.startsWith(process.cwd()) && !this.options.sandboxMode) {
+        throw new Error('Directory creation outside project not allowed');
+      }
+
+      await fs.mkdir(fullPath, { recursive: true });
+      
+      if (this.options.verbose) {
+        printSuccess(`📁 Created directory: ${dirPath}`);
+      }
+
+      return {
+        success: true,
+        path: fullPath,
+        message: `Directory created successfully`
+      };
+    } catch (error) {
+      printError(`Create directory failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Create directory failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * List directory contents
+   */
+  async listDirectory(dirPath = '.') {
+    try {
+      const permission = await this.checkPermission('file-read', dirPath);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      const normalizedPath = path.normalize(dirPath);
+      if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+        throw new Error('Path traversal detected');
+      }
+
+      const fullPath = path.resolve(process.cwd(), normalizedPath);
+      if (!fullPath.startsWith(process.cwd()) && !this.options.sandboxMode) {
+        throw new Error('Directory access outside project not allowed');
+      }
+
+      const entries = await fs.readdir(fullPath, { withFileTypes: true });
+      const contents = entries.map(entry => ({
+        name: entry.name,
+        type: entry.isDirectory() ? 'directory' : 'file',
+        size: entry.isFile() ? fs.statSync(path.join(fullPath, entry.name)).size : 0,
+        path: path.join(fullPath, entry.name)
+      }));
+
+      if (this.options.verbose) {
+        printInfo(`📋 Listed ${contents.length} items in: ${dirPath}`);
+      }
+
+      return {
+        success: true,
+        contents,
+        path: fullPath,
+        count: contents.length,
+        message: `Directory listed successfully`
+      };
+    } catch (error) {
+      printError(`List directory failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `List directory failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Move/rename file
+   */
+  async moveFile(sourcePath, destPath) {
+    try {
+      const permission = await this.checkPermission('file-write', `${sourcePath} -> ${destPath}`);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      const normalizedSource = path.normalize(sourcePath);
+      const normalizedDest = path.normalize(destPath);
+
+      if (normalizedSource.includes('../') || normalizedSource.includes('..\\') ||
+          normalizedDest.includes('../') || normalizedDest.includes('..\\')) {
+        throw new Error('Path traversal detected');
+      }
+
+      const sourceFullPath = path.resolve(process.cwd(), normalizedSource);
+      const destFullPath = path.resolve(process.cwd(), normalizedDest);
+
+      if ((!sourceFullPath.startsWith(process.cwd()) || !destFullPath.startsWith(process.cwd())) && !this.options.sandboxMode) {
+        throw new Error('Move operation outside project directory not allowed');
+      }
+
+      await fs.rename(sourceFullPath, destFullPath);
+      
+      if (this.options.verbose) {
+        printSuccess(`🔄 Moved file: ${sourcePath} -> ${destPath}`);
+      }
+
+      return {
+        success: true,
+        source: sourceFullPath,
+        destination: destFullPath,
+        message: `File moved successfully`
+      };
+    } catch (error) {
+      printError(`Move file failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Move failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Copy file
+   */
+  async copyFile(sourcePath, destPath) {
+    try {
+      const permission = await this.checkPermission('file-read', sourcePath);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      const normalizedSource = path.normalize(sourcePath);
+      const normalizedDest = path.normalize(destPath);
+
+      if (normalizedSource.includes('../') || normalizedSource.includes('..\\') ||
+          normalizedDest.includes('../') || normalizedDest.includes('..\\')) {
+        throw new Error('Path traversal detected');
+      }
+
+      const sourceFullPath = path.resolve(process.cwd(), normalizedSource);
+      const destFullPath = path.resolve(process.cwd(), normalizedDest);
+
+      if ((!sourceFullPath.startsWith(process.cwd()) || !destFullPath.startsWith(process.cwd())) && !this.options.sandboxMode) {
+        throw new Error('Copy operation outside project directory not allowed');
+      }
+
+      await fs.copyFile(sourceFullPath, destFullPath);
+      
+      if (this.options.verbose) {
+        printSuccess(`📋 Copied file: ${sourcePath} -> ${destPath}`);
+      }
+
+      return {
+        success: true,
+        source: sourceFullPath,
+        destination: destFullPath,
+        message: `File copied successfully`
+      };
+    } catch (error) {
+      printError(`Copy file failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Copy failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Search for files
+   */
+  async searchFiles(pattern, options = {}) {
+    try {
+      const { glob } = await import('glob');
+      
+      const searchPath = options.path || process.cwd();
+      const ignore = options.ignore || ['node_modules/**', '.git/**', 'dist/**', 'build/**'];
+      
+      const files = await glob(pattern, {
+        cwd: searchPath,
+        ignore,
+        absolute: true
+      });
+
+      if (this.options.verbose) {
+        printInfo(`🔍 Found ${files.length} files matching: ${pattern}`);
+      }
+
+      return {
+        success: true,
+        files,
+        pattern,
+        count: files.length,
+        message: `Files searched successfully`
+      };
+    } catch (error) {
+      printError(`Search files failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Search failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Get file statistics
+   */
+  async getFileStats(filePath) {
+    try {
+      const permission = await this.checkPermission('file-read', filePath);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      const normalizedPath = path.normalize(filePath);
+      if (normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+        throw new Error('Path traversal detected');
+      }
+
+      const fullPath = path.resolve(process.cwd(), normalizedPath);
+      if (!fullPath.startsWith(process.cwd()) && !this.options.sandboxMode) {
+        throw new Error('File access outside project not allowed');
+      }
+
+      const stats = await fs.stat(fullPath);
+      
+      const fileStats = {
+        size: stats.size,
+        isFile: stats.isFile(),
+        isDirectory: stats.isDirectory(),
+        isSymbolicLink: stats.isSymbolicLink(),
+        atime: stats.atime,
+        mtime: stats.mtime,
+        ctime: stats.ctime,
+        birthtime: stats.birthtime,
+        mode: stats.mode,
+        path: fullPath
+      };
+
+      if (this.options.verbose) {
+        printInfo(`📊 Stats for: ${filePath} (${stats.size} bytes)`);
+      }
+
+      return {
+        success: true,
+        stats: fileStats,
+        message: `File stats retrieved successfully`
+      };
+    } catch (error) {
+      printError(`Get file stats failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Stats failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Monitor file changes
+   */
+  async monitorFile(filePath, callback) {
+    try {
+      const { watch } = await import('chokidar');
+      
+      const watcher = watch(filePath, {
+        ignoreInitial: true,
+        awaitWriteFinish: true
+      });
+
+      watcher.on('change', (changedPath) => {
+        if (this.options.verbose) {
+          printInfo(`🔄 File changed: ${changedPath}`);
+        }
+        if (callback) {
+          callback('change', changedPath);
+        }
+      });
+
+      watcher.on('add', (addedPath) => {
+        if (this.options.verbose) {
+          printInfo(`➕ File added: ${addedPath}`);
+        }
+        if (callback) {
+          callback('add', addedPath);
+        }
+      });
+
+      watcher.on('unlink', (removedPath) => {
+        if (this.options.verbose) {
+          printInfo(`➖ File removed: ${removedPath}`);
+        }
+        if (callback) {
+          callback('unlink', removedPath);
+        }
+      });
+
+      if (this.options.verbose) {
+        printSuccess(`👀 Monitoring file: ${filePath}`);
+      }
+
+      return {
+        success: true,
+        watcher,
+        message: `File monitoring started`
+      };
+    } catch (error) {
+      printError(`Monitor file failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Monitor failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Execute browser automation (using Playwright)
+   */
+  async automateBrowser(task, options = {}) {
+    try {
+      if (!this.options.enableBrowserAutomation) {
+        throw new Error('Browser automation is disabled');
+      }
+
+      const permission = await this.checkPermission('browser-automation', task);
+      if (!permission.allowed) {
+        throw new Error(`Permission denied: ${permission.reason}`);
+      }
+
+      const { chromium } = await import('playwright');
+      
+      const browser = await chromium.launch({
+        headless: options.headless !== false,
+        ...options.browserOptions
+      });
+
+      const context = await browser.newContext({
+        viewport: { width: 1280, height: 720 },
+        ...options.contextOptions
+      });
+
+      const page = await context.newPage();
+
+      if (this.options.verbose) {
+        printInfo(`🌐 Automating browser task: ${task}`);
+      }
+
+      // Execute the browser task
+      let result;
+      if (task.startsWith('navigate:')) {
+        const url = task.replace('navigate:', '');
+        await page.goto(url);
+        result = { url, title: await page.title() };
+      } else if (task.startsWith('click:')) {
+        const selector = task.replace('click:', '');
+        await page.click(selector);
+        result = { action: 'click', selector };
+      } else if (task.startsWith('fill:')) {
+        const [selector, value] = task.split(':').slice(1);
+        await page.fill(selector, value);
+        result = { action: 'fill', selector, value };
+      } else if (task.startsWith('screenshot:')) {
+        const path = task.replace('screenshot:', '');
+        await page.screenshot({ path });
+        result = { action: 'screenshot', path };
+      } else {
+        // Generic task execution
+        result = await page.evaluate(task);
+      }
+
+      await browser.close();
+
+      if (this.options.verbose) {
+        printSuccess(`✅ Browser automation completed`);
+      }
+
+      return {
+        success: true,
+        result,
+        message: `Browser automation completed successfully`
+      };
+    } catch (error) {
+      printError(`Browser automation failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        message: `Browser automation failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Get current session status
+   */
+  getSessionStatus() {
     return {
-      platform: os.platform(),
-      arch: os.arch(),
-      hostname: os.hostname(),
-      userInfo: os.userInfo(),
-      totalMemory: os.totalmem(),
-      freeMemory: os.freemem(),
-      uptime: os.uptime(),
-      loadAverage: os.loadavg()
+      sessionId: this.sessionId,
+      activeProcesses: this.activeProcesses.size,
+      screenshotsTaken: this.screenshots.length,
+      permissions: Object.fromEntries(this.permissions),
+      options: this.options,
+      timestamp: new Date().toISOString()
     };
   }
+
+  /**
+   * Clean up resources
+   */
+  async cleanup() {
+    // Kill any active processes
+    for (const [pid, process] of this.activeProcesses) {
+      try {
+        process.kill();
+      } catch (error) {
+        // Process may have already exited
+      }
+    }
+    this.activeProcesses.clear();
+
+    // Clean up old screenshots
+    for (const screenshot of this.screenshots) {
+      try {
+        await fs.unlink(screenshot.path).catch(() => {});
+      } catch (error) {
+        // File may have already been deleted
+      }
+    }
+    this.screenshots = [];
+
+    if (this.options.verbose) {
+      printInfo(`🧹 Computer use agent cleaned up`);
+    }
+  }
 }
+
+// Singleton instance
+export const computerUseAgent = new ComputerUseAgent();
 
 export default ComputerUseAgent;

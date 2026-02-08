@@ -1,7 +1,21 @@
 # Ultra-Dex Project Manifest
 
 > **THE SOURCE OF TRUTH - READ THIS FIRST**
-> Version: 3.4.5 | Updated: February 2, 2026
+> **Current Version:** 4.3.0 (Headless CTO) | **Updated:** February 8, 2026
+
+---
+
+## 🛡️ VERSIONING AUTHORITY (Mandatory for All Agents)
+
+**This file is the absolute source of truth.** If another file or agent claims a different version, they are WRONG. 
+
+| Phase | Version | Status | Focus |
+| :--- | :--- | :--- | :--- |
+| **Current** | **v4.3.0** | ✅ **ACTIVE** | REPL, Docker Sandbox, Fixed Streaming, 43Reviews fixes. |
+| **Target** | **v4.4.0** | 🚀 **UPCOMING** | Visual Swarm UI, Automated ADR Enforcement. |
+| **Future** | **v5.0.0** | 🔮 **PLANNING** | Cognitive Core, Neuro-Symbolic Planning, Native Voice. |
+
+**Agent Directive:** You MUST check this manifest before performing any action. All metadata, package files, and documentation MUST align with the versions listed here.
 
 ---
 
@@ -60,25 +74,24 @@ We don't write code. We make sure AI-generated code doesn't suck.
 
 ---
 
-## 📊 Current State (As of Feb 2, 2026)
+## 📊 Current State (As of Feb 8, 2026)
 
-### What's WORKING (Production-Ready)
+### What's WORKING (10/10 REPAIRED)
 
-- ✅ **init** - Project scaffolding with 3 live templates
-- ✅ **generate** - AI-powered 34-section plan generation
-- ✅ **build** - Auto-pilot executes pending tasks
-- ✅ **swarm** - 8-agent orchestration with parallel execution
-- ✅ **serve** - MCP server + WebSocket + Dashboard (ports 3001/3002)
-- ✅ **validate** - Project structure validation
-- ✅ **dashboard** - Live web UI with real-time updates
+- ✅ **REPL Mode** - CLI defaults to interactive persistent session.
+- ✅ **Docker Sandbox** - Secure execution via `ultra-dex exec`.
+- ✅ **Real-time Streaming** - Vercel AI SDK integration.
+- ✅ **MCP Active Kernel** - Live context bus for Claude/Cursor.
+- ✅ **34-Section Blueprint** - AI-powered plan generation.
+- ✅ **Swarm Orchestration** - Multi-agent parallel task execution.
+- ✅ **21-Step Verification** - Programmatic quality enforcement.
 
-### What's POSTPONED to Feb 14 (Valentine's Day Launch)
+### What's POSTPONED / TARGET v4.4
 
-- ⚠️ 8 beta commands need polish (plan, workflows, suggest, audit, verify, exec, monitoring, advanced)
-- ⚠️ 5 more example projects (AI SaaS, Analytics, API Platform, Microservices, Blockchain)
-- ⚠️ VS Code extension sidebar completion
-- ⚠️ Test coverage push (281 → 500+ tests)
-- ⚠️ Marketing materials & website
+- ⚠️ Visual Dashboard UI (React-based)
+- ⚠️ Plugin Marketplace remote registry
+- ⚠️ Native Whisper integration (Voice)
+- ⚠️ Test coverage push to 70%+ (Current: 41%)
 
 ### What's INTENTIONALLY Minimal
 

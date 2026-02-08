@@ -1,121 +1,254 @@
-// Copyright (c) 2026 Ultra-Dex
+import { Command } from 'commander';
+import { selfHealingCICD } from '../cicd/self-healing.js';
+import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
-import chalk from 'chalk';
-import fs from 'fs/promises';
-import fsSync from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+export function registerCICDCommand(program) {
+  const cicdCommand = program
+    .command('cicd')
+    .description('Self-healing CI/CD pipeline with autonomous bug fixing');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const TEMPLATE_ROOT = path.resolve(__dirname, '../../../templates/cicd');
-
-function detectPlatform() {
-  if (exists('.gitlab-ci.yml')) return 'gitlab';
-  if (exists('Jenkinsfile')) return 'jenkins';
-  if (exists('azure-pipelines.yml')) return 'azure';
-  if (exists('.circleci/config.yml')) return 'circleci';
-  return 'github';
-}
-
-function exists(filePath) {
-  return fsSync.existsSync(path.resolve(process.cwd(), filePath));
-}
-
-async function copyTemplate(source, target) {
-  await fs.mkdir(path.dirname(target), { recursive: true });
-  const content = await fs.readFile(source, 'utf8');
-  await fs.writeFile(target, content, 'utf8');
-}
-
-export function registerCicdCommand(program) {
-  const cmd = program.command('cicd').description('CI/CD template generator');
-
-  cmd
-    .command('init')
-    .description('Initialize CI/CD pipeline')
-    .option('--platform <platform>', 'github|gitlab|circleci|azure|jenkins')
-    .option('--advanced', 'Use advanced template (GitHub only)')
-    .option('--basic', 'Use basic template')
-    .option('--pr-review', 'Include PR auto-review workflow')
-    .option('--nightly', 'Include nightly schedule (GitHub)')
+  cicdCommand
+    .command('run')
+    .option('-a, --auto-fix', 'Enable auto-fixing of issues')
+    .option('-n, --no-notifications', 'Disable notifications')
+    .option('-v, --verbose', 'Enable verbose output')
+    .option('--max-retries <n>', 'Maximum retry attempts', '3')
+    .option('--timeout <ms>', 'Timeout for each stage', '300000')
+    .option('--stages <stages>', 'Comma-separated stages to run', 'test,build,deploy')
+    .description('Run self-healing CI/CD pipeline')
     .action(async (options) => {
       try {
-        const platform = options.platform || detectPlatform();
-        printInfo(chalk.cyan(`\nSetting up CI/CD for ${platform}...`));
+        await selfHealingCICD.initialize();
+        
+        const config = {
+          autoFix: options.autoFix,
+          notifications: options.notifications,
+          verbose: options.verbose,
+          maxRetries: parseInt(options.maxRetries),
+          timeout: parseInt(options.timeout),
+          stages: options.stages.split(',').map(s => s.trim())
+        };
 
-        if (platform === 'github') {
-          const templateName = options.advanced ? 'github-advanced.yml' : 'github-advanced.yml';
-          const source = path.join(TEMPLATE_ROOT, templateName);
-          const target = path.resolve(process.cwd(), '.github', 'workflows', 'ultra-dex.yml');
-          await copyTemplate(source, target);
-          printSuccess(chalk.green(`✅ GitHub Actions template written to ${target}`));
+        printInfo('🔄 Starting self-healing CI/CD pipeline...');
+        printInfo(`🔧 Auto-fix: ${config.autoFix ? 'ENABLED' : 'DISABLED'}`);
+        printInfo(`📊 Stages: ${config.stages.join(', ')}`);
 
-          if (options.prReview) {
-            const prSource = path.join(TEMPLATE_ROOT, 'pr-review.yml');
-            const prTarget = path.resolve(
-              process.cwd(),
-              '.github',
-              'workflows',
-              'ultra-dex-pr-review.yml'
-            );
-            await copyTemplate(prSource, prTarget);
-            printSuccess(chalk.green('✅ PR review workflow added.'));
-          }
-
-          if (options.nightly) {
-            const nightlyTarget = path.resolve(
-              process.cwd(),
-              '.github',
-              'workflows',
-              'ultra-dex-nightly.yml'
-            );
-            await fs.writeFile(
-              nightlyTarget,
-              `name: Ultra-Dex Nightly\n\non:\n  schedule:\n    - cron: '0 3 * * *'\n\njobs:\n  nightly:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm test\n`
-            );
-            printSuccess(chalk.green('✅ Nightly schedule added.'));
-          }
-
-          return;
+        const result = await selfHealingCICD.runPipeline(config);
+        
+        printSuccess(`✅ Pipeline completed in ${result.duration}ms`);
+        printInfo(`🔧 Fixes applied: ${result.fixesApplied}`);
+        printInfo(`❌ Errors: ${result.errors.length}`);
+        
+        if (result.status === 'success') {
+          printSuccess('🎉 Pipeline completed successfully!');
+        } else {
+          printWarning('⚠️  Pipeline completed with partial success');
         }
-
-        if (platform === 'gitlab') {
-          const source = path.join(TEMPLATE_ROOT, 'gitlab-ci.yml');
-          const target = path.resolve(process.cwd(), '.gitlab-ci.yml');
-          await copyTemplate(source, target);
-          printSuccess(chalk.green(`✅ GitLab CI template written to ${target}`));
-          return;
-        }
-
-        if (platform === 'circleci') {
-          const source = path.join(TEMPLATE_ROOT, 'circleci-config.yml');
-          const target = path.resolve(process.cwd(), '.circleci', 'config.yml');
-          await copyTemplate(source, target);
-          printSuccess(chalk.green(`✅ CircleCI template written to ${target}`));
-          return;
-        }
-
-        if (platform === 'azure') {
-          const source = path.join(TEMPLATE_ROOT, 'azure-pipelines.yml');
-          const target = path.resolve(process.cwd(), 'azure-pipelines.yml');
-          await copyTemplate(source, target);
-          printSuccess(chalk.green(`✅ Azure Pipelines template written to ${target}`));
-          return;
-        }
-
-        if (platform === 'jenkins') {
-          const source = path.join(TEMPLATE_ROOT, 'Jenkinsfile');
-          const target = path.resolve(process.cwd(), 'Jenkinsfile');
-          await copyTemplate(source, target);
-          printSuccess(chalk.green(`✅ Jenkinsfile written to ${target}`));
-          return;
-        }
-
-        printWarning(chalk.yellow('Unknown platform.'));
       } catch (error) {
-        printError(chalk.red(`CI/CD init failed: ${error.message}`));
+        printError(`Pipeline failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  cicdCommand
+    .command('monitor')
+    .option('-v, --verbose', 'Enable verbose output')
+    .description('Start CI/CD failure monitoring')
+    .action(async (options) => {
+      try {
+        await selfHealingCICD.initialize();
+        
+        printInfo('👀 Starting CI/CD monitoring...');
+        
+        await selfHealingCICD.startMonitoring();
+        
+        printSuccess('✅ Monitoring started. Press Ctrl+C to stop.');
+        
+        // Keep process alive
+        await new Promise(() => {});
+      } catch (error) {
+        printError(`Monitoring failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  cicdCommand
+    .command('status')
+    .description('Get current pipeline status')
+    .action(async () => {
+      try {
+        const status = await selfHealingCICD.getPipelineStatus();
+        
+        printInfo('📊 Pipeline Status:');
+        console.log(`  Running: ${status.running ? 'Yes' : 'No'}`);
+        console.log(`  Last Run: ${status.lastRun}`);
+        console.log(`  Success Rate: ${(status.successRate * 100).toFixed(1)}%`);
+        console.log(`  Avg Duration: ${status.avgDuration}`);
+        console.log(`  Pending Jobs: ${status.pendingJobs}`);
+        console.log(`  Failed Jobs: ${status.failedJobs}`);
+      } catch (error) {
+        printError(`Status check failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  cicdCommand
+    .command('rules')
+    .description('Manage healing rules')
+    .action(async () => {
+      try {
+        await selfHealingCICD.initialize();
+        const rules = Array.from(selfHealingCICD.healingRules.entries());
+        
+        printSuccess(`📋 ${rules.length} healing rules loaded:`);
+        rules.forEach(([pattern, rule]) => {
+          console.log(`  ${pattern}: ${rule.description} (${rule.priority})`);
+        });
+      } catch (error) {
+        printError(`Rules check failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  cicdCommand
+    .command('add-rule')
+    .argument('<pattern>', 'Regex pattern for error matching')
+    .argument('<action>', 'Action to take when pattern matches')
+    .option('-d, --description <desc>', 'Rule description')
+    .option('-p, --priority <level>', 'Priority level (low, medium, high)', 'medium')
+    .description('Add a new healing rule')
+    .action(async (pattern, action, options) => {
+      try {
+        await selfHealingCICD.initialize();
+        
+        const rule = {
+          action,
+          description: options.description || `Auto-fix for ${pattern}`,
+          priority: options.priority
+        };
+        
+        selfHealingCICD.addHealingRule(new RegExp(pattern), rule);
+        
+        printSuccess(`✅ Rule added: ${pattern} -> ${action}`);
+      } catch (error) {
+        printError(`Rule addition failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  cicdCommand
+    .command('stats')
+    .description('Get healing statistics')
+    .action(async () => {
+      try {
+        await selfHealingCICD.initialize();
+        const stats = selfHealingCICD.getHealingStats();
+        
+        printSuccess('🔧 Self-Healing Statistics:');
+        console.log(`  Total Fixes: ${stats.totalFixes}`);
+        console.log(`  Success Rate: ${(stats.successRate * 100).toFixed(1)}%`);
+        console.log(`  Active Rules: ${stats.rulesCount}`);
+        console.log(`  Active Monitors: ${stats.activeMonitors}`);
+        if (stats.lastFix) {
+          console.log(`  Last Fix: ${stats.lastFix.description}`);
+        }
+      } catch (error) {
+        printError(`Stats retrieval failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  cicdCommand
+    .command('report')
+    .option('-f, --format <format>', 'Output format (json, md, txt)', 'json')
+    .option('-o, --output <path>', 'Output file path')
+    .description('Generate healing report')
+    .action(async (options) => {
+      try {
+        await selfHealingCICD.initialize();
+        const report = await selfHealingCICD.exportReport(options.format);
+        
+        if (options.output) {
+          await fs.writeFile(options.output, report);
+          printSuccess(`📊 Report saved to: ${options.output}`);
+        } else {
+          console.log(report);
+        }
+      } catch (error) {
+        printError(`Report generation failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  cicdCommand
+    .command('setup')
+    .argument('<provider>', 'CI provider (github, gitlab, circleci, jenkins, vercel)')
+    .description('Set up CI/CD integration')
+    .action(async (provider) => {
+      try {
+        await selfHealingCICD.initialize();
+        
+        await selfHealingCICD.setupCIIntegration(provider);
+        
+        printSuccess(`✅ ${provider} CI/CD integration set up successfully`);
+        printInfo('Run: ultra-dex cicd run to execute pipeline');
+      } catch (error) {
+        printError(`Setup failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  cicdCommand
+    .command('history')
+    .option('-l, --limit <n>', 'Number of entries to show', '10')
+    .description('Show healing history')
+    .action(async (options) => {
+      try {
+        await selfHealingCICD.initialize();
+        
+        const history = selfHealingCICD.fixHistory.slice(-parseInt(options.limit));
+        
+        if (history.length === 0) {
+          printInfo('📭 No healing history available');
+          return;
+        }
+
+        printSuccess(`📋 Last ${history.length} fixes:`);
+        history.forEach(entry => {
+          console.log(`  ${entry.timestamp}: ${entry.description} (${entry.success ? 'SUCCESS' : 'FAILED'})`);
+        });
+      } catch (error) {
+        printError(`History retrieval failed: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  // Add cicd as a main command alias
+  program
+    .command('self-heal')
+    .description('Alias for cicd run')
+    .option('-a, --auto-fix', 'Enable auto-fixing')
+    .option('-v, --verbose', 'Verbose output')
+    .action(async (options) => {
+      // Delegate to cicd run command
+      const config = {
+        autoFix: options.autoFix,
+        verbose: options.verbose,
+        notifications: true,
+        maxRetries: 3,
+        timeout: 300000,
+        stages: ['test', 'build', 'deploy']
+      };
+
+      await selfHealingCICD.initialize();
+      const result = await selfHealingCICD.runPipeline(config);
+      
+      if (result.status === 'success') {
+        printSuccess('✅ Self-healing pipeline completed successfully');
+      } else {
+        printWarning('⚠️  Self-healing pipeline completed with issues');
       }
     });
 }
+
+export default registerCICDCommand;

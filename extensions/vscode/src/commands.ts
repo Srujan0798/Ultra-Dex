@@ -1,139 +1,76 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
-import { StatusProvider } from './sidebar';
+import { AgentItem } from './agentTreeProvider';
+import { updateAlignmentStatusBar } from './statusBar';
 
-function runCli(command: string, cwd?: string): Promise<{ success: boolean; output?: string; error?: string }> {
-  return new Promise((resolve, reject) => {
-    exec(command, { cwd }, (error, stdout, stderr) => {
-      if (error) {
-        const errorMsg = stderr || error.message;
-        vscode.window.showErrorMessage(`Ultra-Dex Error: ${errorMsg}`);
-        resolve({ success: false, error: errorMsg });
+export function registerCommands(context: vscode.ExtensionContext, workspaceRoot?: string): void {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('ultra-dex.selectAgent', async (agent?: AgentItem) => {
+      if (!agent || !workspaceRoot) {
+        vscode.window.showWarningMessage('No agent selected.');
         return;
       }
-      if (stdout.trim()) {
-        const output = stdout.split('\n')[0];
-        vscode.window.showInformationMessage(`Ultra-Dex: ${output}`);
-        resolve({ success: true, output });
-      } else {
-        resolve({ success: true });
+      const prompt = await readAgentPrompt(workspaceRoot, agent.filePath);
+      if (!prompt) {
+        vscode.window.showErrorMessage(`Unable to load prompt for ${agent.name}.`);
+        return;
       }
-    });
-  });
+      await vscode.env.clipboard.writeText(prompt);
+      vscode.window.showInformationMessage(`${agent.name} prompt copied to clipboard.`);
+    }),
+    vscode.commands.registerCommand('ultra-dex.checkAlignment', async () => {
+      const score = await getAlignmentScore(workspaceRoot);
+      updateAlignmentStatusBar(score);
+      vscode.window.showInformationMessage(`Alignment score: ${score}`);
+    }),
+    vscode.commands.registerCommand('ultra-dex.generatePlan', async () => {
+      vscode.window.showInformationMessage(
+        'Generate plan: Use @Planner with the Implementation Template.'
+      );
+    }),
+    vscode.commands.registerCommand('ultra-dex.askAgent', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor || editor.selection.isEmpty) {
+        vscode.window.showWarningMessage('Select code to ask an agent.');
+        return;
+      }
+      const selection = editor.document.getText(editor.selection);
+      const prompt = `Ask an Ultra-Dex agent about the following selection:\n\n${selection}`;
+      await vscode.env.clipboard.writeText(prompt);
+      vscode.window.showInformationMessage('Selection copied to clipboard with prompt.');
+    })
+  );
 }
 
-export function registerCommands(
-  context: vscode.ExtensionContext,
-  statusProvider: StatusProvider
-) {
-  const workspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+export async function refreshAlignmentStatus(workspaceRoot?: string): Promise<void> {
+  const score = await getAlignmentScore(workspaceRoot);
+  updateAlignmentStatusBar(score);
+}
 
-  // Register all commands
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ultra-dex.start', async () => {
-      const result = await runCli('ultra-dex init', workspace);
-      if (result.success) {
-        statusProvider.refresh();
-      }
-    })
-  );
+async function readAgentPrompt(
+  workspaceRoot: string,
+  relativePath: string
+): Promise<string | null> {
+  const fullPath = path.join(workspaceRoot, 'agents', relativePath);
+  try {
+    const data = await vscode.workspace.fs.readFile(vscode.Uri.file(fullPath));
+    return Buffer.from(data).toString('utf8');
+  } catch {
+    return null;
+  }
+}
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ultra-dex.plan', async () => {
-      // Prompt user for plan description
-      const planDescription = await vscode.window.showInputBox({
-        prompt: 'Describe what you want to build',
-        placeHolder: 'e.g., "Create a React todo app with authentication"'
-      });
-
-      if (planDescription) {
-        const result = await runCli(`ultra-dex plan "${planDescription}"`, workspace);
-        if (result.success) {
-          statusProvider.refresh();
-
-          // Open the generated plan
-          const planFiles = await vscode.workspace.findFiles('**/IMPLEMENTATION_PLAN.md', '**/node_modules/**', 1);
-          if (planFiles.length > 0) {
-            const doc = await vscode.workspace.openTextDocument(planFiles[0]);
-            await vscode.window.showTextDocument(doc);
-          }
-        }
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ultra-dex.fix', async () => {
-      const result = await runCli('ultra-dex fix', workspace);
-      if (result.success) {
-        statusProvider.refresh();
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ultra-dex.openContext', async () => {
-      const files = await vscode.workspace.findFiles('**/CONTEXT.md', '**/node_modules/**', 1);
-      if (!files.length) {
-        vscode.window.showWarningMessage('CONTEXT.md not found in this workspace.');
-        return;
-      }
-      const doc = await vscode.workspace.openTextDocument(files[0]);
-      await vscode.window.showTextDocument(doc);
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ultra-dex.statusBarClick', async () => {
-      // Show status information in an information message
-      const statusItems = statusProvider.getStatusItems();
-      if (statusItems.length > 0) {
-        const statusText = statusItems.map(item => `${item.label}: ${item.description}`).join('\n');
-        vscode.window.showInformationMessage(`Ultra-Dex Status:\n${statusText}`);
-      } else {
-        vscode.window.showInformationMessage('Ultra-Dex: Checking status...');
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ultra-dex.runTask', async () => {
-      const taskFile = await vscode.window.showOpenDialog({
-        canSelectMany: false,
-        openLabel: 'Select Task File',
-        filters: {
-          'Task Files': ['md', 'txt', 'json'],
-          'All files': ['*']
-        }
-      });
-
-      if (taskFile && taskFile.length > 0) {
-        const taskPath = taskFile[0].fsPath;
-        const fileName = taskPath.split('/').pop();
-
-        const result = await runCli(`ultra-dex run "${taskPath}"`, workspace);
-        if (result.success) {
-          statusProvider.refresh();
-        }
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ultra-dex.verify', async () => {
-      const result = await runCli('ultra-dex verify --full', workspace);
-      if (result.success) {
-        statusProvider.refresh();
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('ultra-dex.swarm', async () => {
-      const result = await runCli('ultra-dex swarm start --parallel 3', workspace);
-      if (result.success) {
-        statusProvider.refresh();
-      }
-    })
-  );
+async function getAlignmentScore(workspaceRoot?: string): Promise<string> {
+  if (!workspaceRoot) {
+    return 'Unknown';
+  }
+  const filePath = path.join(workspaceRoot, 'CONTEXT.md');
+  try {
+    const data = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath));
+    const content = Buffer.from(data).toString('utf8');
+    const match = content.match(/alignment\s*score\s*:\s*(\d+%?)/i);
+    return match?.[1] ?? 'Unknown';
+  } catch {
+    return 'Unknown';
+  }
 }

@@ -1,83 +1,197 @@
 {
-  "name": "ultra-dex-extension",
-  "displayName": "Ultra-Dex",
-  "description": "Ultra-Dex companion extension for orchestration and status",
-  "version": "4.3.0",
-  "publisher": "ultra-dex",
+  "name": "ultra-dex",
+  "displayName": "Ultra-Dex AI Development Platform",
+  "description": "AI-powered development tools with persistent memory and governance",
+  "version": "4.2.0",
+  "publisher": "UltraDex",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.74.0"
   },
-  "categories": ["Other", "Productivity", "AI"],
-  "activationEvents": [
-    "onCommand:ultra-dex.start",
-    "onCommand:ultra-dex.plan",
-    "onCommand:ultra-dex.fix",
-    "onCommand:ultra-dex.openContext",
-    "onCommand:ultra-dex.statusBarClick",
-    "onView:ultraDexStatus",
-    "onLanguage:ultra"
+  "categories": [
+    "AI",
+    "Other"
   ],
-  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onCommand:ultraDex.openDashboard",
+    "onCommand:ultraDex.runAgent",
+    "onCommand:ultraDex.syncContext",
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      { "command": "ultra-dex.start", "title": "Ultra-Dex: Start Project" },
-      { "command": "ultra-dex.plan", "title": "Ultra-Dex: Plan Project" },
-      { "command": "ultra-dex.fix", "title": "Ultra-Dex: Fix Issues" },
-      { "command": "ultra-dex.openContext", "title": "Ultra-Dex: Open CONTEXT.md" },
-      { "command": "ultra-dex.statusBarClick", "title": "Ultra-Dex: Show Status" },
-      { "command": "ultra-dex.runTask", "title": "Ultra-Dex: Run Task" },
-      { "command": "ultra-dex.verify", "title": "Ultra-Dex: Verify Implementation" },
-      { "command": "ultra-dex.swarm", "title": "Ultra-Dex: Start Swarm" }
+      {
+        "command": "ultraDex.openDashboard",
+        "title": "Open Ultra-Dex Dashboard"
+      },
+      {
+        "command": "ultraDex.runAgent",
+        "title": "Run Ultra-Dex Agent"
+      },
+      {
+        "command": "ultraDex.syncContext",
+        "title": "Sync Context with Ultra-Dex"
+      },
+      {
+        "command": "ultraDex.voiceCommand",
+        "title": "Voice Command to Code"
+      },
+      {
+        "command": "ultraDex.analyzeFile",
+        "title": "Analyze File with AI"
+      },
+      {
+        "command": "ultraDex.startMCP",
+        "title": "Start MCP Server"
+      },
+      {
+        "command": "ultraDex.stopMCP",
+        "title": "Stop MCP Server"
+      },
+      {
+        "command": "ultraDex.mcpStatus",
+        "title": "Check MCP Status"
+      }
     ],
     "views": {
       "explorer": [
-        { "id": "ultraDexStatus", "name": "Ultra-Dex Status" }
-      ]
-    },
-    "menus": {
-      "editor/title": [
         {
-          "command": "ultra-dex.verify",
-          "when": "resourceExtname == .md",
-          "group": "navigation"
+          "id": "ultraDex-agents",
+          "name": "AI Agents",
+          "when": "workspaceFolder"
+        },
+        {
+          "id": "ultraDex-context",
+          "name": "Project Context",
+          "when": "workspaceFolder"
+        },
+        {
+          "id": "ultraDex-memory",
+          "name": "Memory Tiers",
+          "when": "workspaceFolder"
+        }
+      ],
+      "ultraDex": [
+        {
+          "id": "ultraDex-dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "id": "ultraDex-agents",
+          "name": "Agents"
+        },
+        {
+          "id": "ultraDex-memory",
+          "name": "Memory"
         }
       ]
     },
-    "languages": [
-      {
-        "id": "ultra",
-        "aliases": ["Ultra", "ultra"],
-        "extensions": [".ultra", ".udcf"]
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ultraDex",
+          "title": "Ultra-Dex",
+          "icon": "resources/ultra-dex-icon.svg"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ultraDex.analyzeFile",
+          "when": "resourceExtname == '.js' || resourceExtname == '.ts' || resourceExtname == '.jsx' || resourceExtname == '.tsx' || resourceExtname == '.py' || resourceExtname == '.go' || resourceExtname == '.rs'",
+          "group": "ai-tools@1"
+        },
+        {
+          "command": "ultraDex.voiceCommand",
+          "when": "editorHasSelection",
+          "group": "ai-tools@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "ultraDex.analyzeFile",
+          "when": "resourceExtname == '.js' || resourceExtname == '.ts' || resourceExtname == '.jsx' || resourceExtname == '.tsx' || resourceExtname == '.py' || resourceExtname == '.go' || resourceExtname == '.rs'",
+          "group": "ai-tools@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Ultra-Dex",
+      "properties": {
+        "ultraDex.apiKey": {
+          "type": "string",
+          "description": "Your Ultra-Dex API key",
+          "default": ""
+        },
+        "ultraDex.model": {
+          "type": "string",
+          "description": "AI model to use",
+          "default": "gpt-4",
+          "enum": ["gpt-4", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet", "gemini-pro", "ollama-llama2"]
+        },
+        "ultraDex.enableContextSync": {
+          "type": "boolean",
+          "description": "Enable automatic context synchronization",
+          "default": true
+        },
+        "ultraDex.mcpPort": {
+          "type": "number",
+          "description": "MCP server port",
+          "default": 3002
+        },
+        "ultraDex.autoFix": {
+          "type": "boolean",
+          "description": "Enable auto-fix suggestions",
+          "default": true
+        },
+        "ultraDex.voiceEnabled": {
+          "type": "boolean",
+          "description": "Enable voice commands",
+          "default": false
+        }
       }
-    ],
-    "grammars": [
+    },
+    "keybindings": [
       {
-        "language": "ultra",
-        "scopeName": "source.ultra",
-        "path": "./syntaxes/ultra.json"
+        "command": "ultraDex.voiceCommand",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v"
+      },
+      {
+        "command": "ultraDex.runAgent",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      },
+      {
+        "command": "ultraDex.openDashboard",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d"
       }
     ]
   },
   "scripts": {
-    "build": "tsc -p .",
-    "watch": "tsc -watch -p .",
-    "compile": "tsc -p .",
-    "lint": "eslint src --ext ts",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/vscode": "^1.85.0",
-    "@types/mocha": "^10.0.6",
-    "@types/chai": "^4.3.11",
-    "typescript": "^5.3.0",
-    "mocha": "^10.2.0",
-    "chai": "^4.4.1",
-    "vscode-test": "^1.6.1"
+    "@types/vscode": "^1.74.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4",
+    "eslint": "^8.33.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.4"
   },
   "dependencies": {
-    "vscode-languageclient": "^9.0.1",
-    "vscode-languageserver": "^9.0.1"
+    "axios": "^1.6.0",
+    "ws": "^8.14.2",
+    "node-fetch": "^2.7.0"
   }
 }

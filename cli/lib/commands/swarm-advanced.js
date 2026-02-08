@@ -12,8 +12,8 @@ import {
   ConflictResolver,
   CostTracker,
   ProgressReporter,
-} from '../lib/swarm/orchestrator.js';
-import { printInfo, printSuccess, printWarning, printError } from '../lib/utils/output.js';
+} from '../swarm/orchestrator.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
 /**
  * Start swarm with checkpoint support

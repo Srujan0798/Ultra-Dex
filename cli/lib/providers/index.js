@@ -284,3 +284,40 @@ export { LangChainAdapter } from './langchain.js';
 // Test providers
 export { MockOpenAI, MockAnthropic, MockGoogle } from './mock.js';
 export { OpenAIAssistantsProvider } from './openai-assistants.js';
+
+export function createOpenAIRunnable(model) {
+  return {
+    invoke: async ({ messages }) => {
+      const provider = createProvider('openai', { model });
+      const systemMessage = messages.find((m) => m.role === 'system')?.content || '';
+      const userMessage = messages.find((m) => m.role === 'user')?.content || '';
+      const result = await provider.generate(systemMessage, userMessage);
+      return { content: result.content };
+    },
+  };
+}
+
+export function createAnthropicRunnable(model) {
+  return {
+    invoke: async ({ messages }) => {
+      const provider = createProvider('claude', { model });
+      const systemMessage = messages.find((m) => m.role === 'system')?.content || '';
+      const userMessage = messages.find((m) => m.role === 'user')?.content || '';
+      const result = await provider.generate(systemMessage, userMessage);
+      return { content: result.content };
+    },
+  };
+}
+
+export function createGoogleRunnable(model) {
+  return {
+    invoke: async ({ messages }) => {
+      const provider = createProvider('gemini', { model });
+      const systemMessage = messages.find((m) => m.role === 'system')?.content || '';
+      const userMessage = messages.find((m) => m.role === 'user')?.content || '';
+      const result = await provider.generate(systemMessage, userMessage);
+      return { content: result.content };
+    },
+  };
+}
+

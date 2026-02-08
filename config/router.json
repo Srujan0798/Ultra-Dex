@@ -1,25 +1,8 @@
 {
-  "strategies": {
-    "cost": { "defaultModel": "gpt-4o-mini", "performancePriority": "cost" },
-    "performance": { "defaultModel": "claude-3-5-sonnet", "performancePriority": "accuracy" },
-    "balanced": { "defaultModel": "gpt-4o", "performancePriority": "balanced" }
-  },
   "routes": {
-    "code-generation": {
-      "preferred": ["claude-3-5-sonnet"],
-      "fallbacks": ["gpt-4o", "gemini-1.5-pro"]
-    },
-    "refactoring": {
-      "preferred": ["gpt-4o"],
-      "fallbacks": ["claude-3-5-sonnet", "gemini-1.5-pro"]
-    },
-    "documentation": {
-      "preferred": ["gemini-1.5-pro"],
-      "fallbacks": ["gpt-4o", "claude-3-5-sonnet"]
-    }
-  },
-  "overrides": [
-    { "keyword": "security", "model": "gpt-4o" },
-    { "keyword": "architecture", "model": "claude-3-5-sonnet" }
-  ]
+    "planning": "claude-sonnet",
+    "coding": "gpt-4",
+    "review": "claude-opus",
+    "simple": "ollama"
+  }
 }

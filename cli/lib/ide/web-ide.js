@@ -1,6 +1,5 @@
-// File: cli/lib/ide/web-ide.js
 import express from 'express';
-import { Server } from 'socket.io';
+import { WebSocketServer } from 'ws';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -8,7 +7,7 @@ export class WebIDE {
   constructor(options = {}) {
     this.app = express();
     this.server = null;
-    this.io = null;
+    this.wss = null;
     this.projectDir = options.projectDir || process.cwd();
     this.port = options.port || 3006;
   }
@@ -22,12 +21,7 @@ export class WebIDE {
       console.log(`Web IDE running on http://localhost:${this.port}`);
     });
     
-    this.io = new Server(this.server, {
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      }
-    });
+    this.wss = new WebSocketServer({ server: this.server });
     
     this.setupSocketHandlers();
   }
@@ -93,31 +87,43 @@ export class WebIDE {
   }
 
   setupSocketHandlers() {
-    this.io.on('connection', (socket) => {
+    this.wss.on('connection', (ws) => {
       console.log('IDE client connected');
       
-      socket.on('file-change', async (data) => {
+      ws.on('message', async (message) => {
         try {
-          await fs.writeFile(path.join(this.projectDir, data.path), data.content);
-          socket.broadcast.emit('file-updated', data);
-        } catch (error) {
-          socket.emit('error', { message: error.message });
-        }
-      });
-
-      socket.on('run-command', async (data) => {
-        try {
-          const { exec } = await import('child_process');
-          const { promisify } = await import('util');
-          const execAsync = promisify(exec);
+          const data = JSON.parse(message);
           
-          const result = await execAsync(data.command, { cwd: this.projectDir });
-          socket.emit('command-result', {
-            stdout: result.stdout,
-            stderr: result.stderr
-          });
-        } catch (error) {
-          socket.emit('command-error', { error: error.message });
+          if (data.type === 'file-change') {
+            try {
+              await fs.writeFile(path.join(this.projectDir, data.path), data.content);
+              // Broadcast
+              this.wss.clients.forEach(client => {
+                if (client !== ws && client.readyState === 1) {
+                  client.send(JSON.stringify({ type: 'file-updated', ...data }));
+                }
+              });
+            } catch (error) {
+              ws.send(JSON.stringify({ type: 'error', message: error.message }));
+            }
+          } else if (data.type === 'run-command') {
+            try {
+              const { exec } = await import('child_process');
+              const { promisify } = await import('util');
+              const execAsync = promisify(exec);
+              
+              const result = await execAsync(data.command, { cwd: this.projectDir });
+              ws.send(JSON.stringify({
+                type: 'command-result',
+                stdout: result.stdout,
+                stderr: result.stderr
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({ type: 'command-error', error: error.message }));
+            }
+          }
+        } catch (e) {
+          console.error('Failed to parse message', e);
         }
       });
     });

@@ -1,8 +1,0 @@
-{
-  "routes": {
-    "planning": "claude-sonnet",
-    "coding": "gpt-4",
-    "review": "claude-opus",
-    "simple": "ollama"
-  }
-}
