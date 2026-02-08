@@ -1,0 +1,53 @@
+{
+  "fileTypes": ["ultra", "udcf"],
+  "name": "Ultra",
+  "patterns": [
+    {
+      "match": "\\b(function|class|var|let|const|if|else|for|while|return|import|export|from|as)\\b",
+      "name": "keyword.control.ultra"
+    },
+    {
+      "match": "\\b(true|false|null|undefined)\\b",
+      "name": "constant.language.ultra"
+    },
+    {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.ultra",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.ultra"
+        }
+      ]
+    },
+    {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.ultra",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.ultra"
+        }
+      ]
+    },
+    {
+      "match": "/\\*.*?\\*/",
+      "name": "comment.block.ultra"
+    },
+    {
+      "match": "//.*$",
+      "name": "comment.line.double-slash.ultra"
+    },
+    {
+      "match": "\\b(\\d+(\\.\\d*)?|\\.\\d+)\\b",
+      "name": "constant.numeric.ultra"
+    },
+    {
+      "match": "\\b(ultra-dex|plan|run|verify|swarm|config|init|start|status|health|budget|tasks)\\b",
+      "name": "support.function.ultra"
+    }
+  ],
+  "scopeName": "source.ultra"
+}

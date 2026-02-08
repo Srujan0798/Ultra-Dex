@@ -1,164 +1,161 @@
 # Configuration
 
-Ultra-Dex can be configured in several ways to customize its behavior for your specific needs.
+Ultra-Dex uses a hierarchical configuration system that allows you to customize behavior at different levels.
 
-## Configuration File
+## Configuration Files
 
-Create a `.ultra-dexrc` file in your project root or home directory. This file should be in JSON format:
+Ultra-Dex looks for configuration in the following locations (in order of precedence):
+
+1. **Project Level**: `.ultra-dex/config.json` (in your project directory)
+2. **User Level**: `~/.ultra-dex/config.json` (applies to all projects for the current user)
+3. **Global Level**: Built-in defaults
+
+### Project Configuration
+
+Create a project-specific configuration:
+
+```bash
+# Initialize project config
+ultra-dex config init
+```
+
+Or manually create `.ultra-dex/config.json`:
 
 ```json
 {
-  "aiProvider": "anthropic",
-  "model": "claude-3-5-sonnet-20241022",
-  "workspace": "./projects/my-app",
-  "sandboxEnabled": true,
-  "debugMode": false,
-  "maxTokens": 4096,
-  "temperature": 0.2,
-  "plugins": [
-    "ultra-dex-plugin-auth",
-    "ultra-dex-plugin-db"
-  ],
-  "customAgents": [
-    "./custom-agents/payment-agent.js"
-  ]
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-4-turbo",
+    "temperature": 0.7
+  },
+  "project": {
+    "name": "my-awesome-project",
+    "type": "web-application",
+    "language": "javascript"
+  },
+  "integrations": {
+    "github": {
+      "autoCommit": true,
+      "branchPrefix": "feature/"
+    }
+  },
+  "verification": {
+    "strictMode": false,
+    "requireTests": true
+  }
 }
 ```
 
-### Configuration Options
+### User Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `aiProvider` | string | `"anthropic"` | AI provider to use (anthropic, openai, google) |
-| `model` | string | `"claude-3-5-sonnet-20241022"` | Specific model to use |
-| `workspace` | string | `"./"` | Workspace directory path |
-| `sandboxEnabled` | boolean | `true` | Enable Docker sandboxing |
-| `debugMode` | boolean | `false` | Enable debug logging |
-| `maxTokens` | number | `4096` | Maximum tokens for AI responses |
-| `temperature` | number | `0.2` | AI response randomness (0-1) |
-| `plugins` | array | `[]` | Array of plugin names to load |
-| `customAgents` | array | `[]` | Array of custom agent file paths |
+Set user-wide preferences in `~/.ultra-dex/config.json`:
+
+```json
+{
+  "ai": {
+    "provider": "anthropic",
+    "model": "claude-3-opus-20240229",
+    "apiKey": "env:ANTHROPIC_API_KEY"
+  },
+  "theme": "dark",
+  "notifications": {
+    "enabled": true,
+    "email": "user@example.com"
+  }
+}
+```
 
 ## Environment Variables
 
-You can also configure Ultra-Dex using environment variables:
+Ultra-Dex recognizes the following environment variables:
 
-```bash
+```env
 # AI Provider Configuration
-export ULTRA_DEX_AI_PROVIDER=anthropic
-export ULTRA_DEX_MODEL=claude-3-5-sonnet-20241022
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=...
+GOOGLE_API_KEY=...
 
-# API Keys
-export ANTHROPIC_API_KEY=your-anthropic-key
-export OPENAI_API_KEY=your-openai-key
-export GOOGLE_AI_KEY=your-google-key
+# Ultra-Dex Specific
+ULTRA_DEX_THEME=dark|light
+ULTRA_DEX_PROVIDER=openai|anthropic|google
+ULTRA_DEX_MODEL=gpt-4-turbo|claude-3-opus-20240229
+ULTRA_DEX_DEBUG=true
 
-# Workspace Configuration
-export ULTRA_DEX_WORKSPACE=./my-project
-export ULTRA_DEX_SANDBOX_ENABLED=true
-
-# Debugging
-export ULTRA_DEX_DEBUG=true
-export DEBUG=ultra-dex:*
+# Integration Keys
+GITHUB_TOKEN=ghp_...
+STRIPE_SECRET_KEY=sk_test_...
+DATABASE_URL=postgresql://...
 ```
 
-## Command-Line Options
+## Command Line Configuration
 
-Most configuration options can also be specified as command-line arguments:
+View current configuration:
 
 ```bash
-# Specify AI provider and model
-ultra-dex --ai-provider openai --model gpt-4o
+# Show effective configuration
+ultra-dex config show
 
-# Enable debug mode
-ultra-dex --debug
+# Get specific value
+ultra-dex config get ai.model
 
-# Specify workspace
-ultra-dex --workspace ./my-project
+# Set configuration value
+ultra-dex config set ai.temperature 0.5
 ```
 
-## VS Code Extension Configuration
+## Configuration Schema
 
-The VS Code extension can be configured through VS Code settings. Add to your `settings.json`:
+### AI Settings
 
 ```json
 {
-  "ultra-dex.defaultProvider": "anthropic",
-  "ultra-dex.kernelPort": 3001,
-  "ultra-dex.dashboardPort": 3002,
-  "ultra-dex.autoStartKernel": false,
-  "ultra-dex.enableSandbox": true
+  "ai": {
+    "provider": "openai|anthropic|google|azure-openai",
+    "model": "gpt-4-turbo|claude-3-opus-20240229|...",
+    "temperature": 0.0-1.0,
+    "maxTokens": 4096,
+    "topP": 1.0,
+    "frequencyPenalty": 0.0,
+    "presencePenalty": 0.0
+  }
 }
 ```
 
-## MCP Configuration
+### Project Settings
 
-For MCP (Model Context Protocol) integration, Ultra-Dex can generate configuration files:
-
-```bash
-# Generate MCP configuration for Claude Desktop
-ultra-dex config --mcp
-
-# Generate Cursor rules
-ultra-dex config --cursor
-
-# Generate VS Code settings
-ultra-dex config --vscode
-```
-
-## Custom Agent Configuration
-
-Custom agents can be configured in the `customAgents` array. Each agent should be a path to a JavaScript file that exports an agent configuration:
-
-```javascript
-// custom-agents/payment-agent.js
-export default {
-  name: '@Payment',
-  description: 'Handles payment processing and billing',
-  tier: '4-quality',
-  prompt: `You are a payment processing expert...
-  [Detailed agent prompt here]`
-};
-```
-
-## Plugin Configuration
-
-Plugins extend Ultra-Dex functionality. To use a plugin:
-
-1. Install the plugin package:
-```bash
-npm install ultra-dex-plugin-auth
-```
-
-2. Add it to your configuration:
 ```json
 {
-  "plugins": ["ultra-dex-plugin-auth"]
+  "project": {
+    "name": "string",
+    "type": "web-application|mobile-app|api-service|library",
+    "language": "javascript|python|go|rust|typescript",
+    "framework": "react|vue|angular|express|fastapi|...",
+    "architecture": "monolith|microservices|serverless"
+  }
 }
 ```
 
-## Troubleshooting Configuration
+### Integration Settings
 
-### Configuration Not Loading
-
-If your configuration isn't being applied:
-
-1. Verify the file is named `.ultra-dexrc` (note the dot)
-2. Ensure it's in the correct location (project root or home directory)
-3. Validate the JSON syntax
-4. Check that environment variables don't override your settings
-
-### Environment Variables Override
-
-Environment variables take precedence over configuration files. If you're experiencing unexpected behavior, check your environment variables:
-
-```bash
-env | grep ULTRA_DEX
+```json
+{
+  "integrations": {
+    "github": {
+      "autoCommit": true,
+      "branchPrefix": "feature/",
+      "prTemplate": ".github/PULL_REQUEST_TEMPLATE.md"
+    },
+    "slack": {
+      "notifications": true,
+      "channel": "#development"
+    }
+  }
+}
 ```
 
 ## Best Practices
 
-- Keep sensitive information like API keys in environment variables, not in configuration files
-- Use different configuration files for different projects
-- Version control your configuration files (but exclude sensitive data)
-- Test configuration changes in a development environment first
+1. **Keep sensitive data out of config files** - Use environment variables for API keys
+2. **Use project configs for project-specific settings** - Like framework choice or team preferences
+3. **Use user configs for personal preferences** - Like theme or notification settings
+4. **Document custom configurations** - Add comments to explain non-obvious settings
+5. **Validate configurations** - Use `ultra-dex config validate` to check for errors

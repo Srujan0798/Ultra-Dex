@@ -2,40 +2,82 @@
   "name": "ultra-dex-extension",
   "displayName": "Ultra-Dex",
   "description": "Ultra-Dex companion extension for orchestration and status",
-  "version": "0.1.0",
+  "version": "4.3.0",
   "publisher": "ultra-dex",
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Other", "Productivity"],
+  "categories": ["Other", "Productivity", "AI"],
   "activationEvents": [
     "onCommand:ultra-dex.start",
     "onCommand:ultra-dex.plan",
     "onCommand:ultra-dex.fix",
     "onCommand:ultra-dex.openContext",
-    "onView:ultraDexStatus"
+    "onCommand:ultra-dex.statusBarClick",
+    "onView:ultraDexStatus",
+    "onLanguage:ultra"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
-      { "command": "ultra-dex.start", "title": "Ultra-Dex: Init Project" },
-      { "command": "ultra-dex.plan", "title": "Ultra-Dex: Generate Plan" },
+      { "command": "ultra-dex.start", "title": "Ultra-Dex: Start Project" },
+      { "command": "ultra-dex.plan", "title": "Ultra-Dex: Plan Project" },
       { "command": "ultra-dex.fix", "title": "Ultra-Dex: Fix Issues" },
-      { "command": "ultra-dex.openContext", "title": "Ultra-Dex: Open CONTEXT.md" }
+      { "command": "ultra-dex.openContext", "title": "Ultra-Dex: Open CONTEXT.md" },
+      { "command": "ultra-dex.statusBarClick", "title": "Ultra-Dex: Show Status" },
+      { "command": "ultra-dex.runTask", "title": "Ultra-Dex: Run Task" },
+      { "command": "ultra-dex.verify", "title": "Ultra-Dex: Verify Implementation" },
+      { "command": "ultra-dex.swarm", "title": "Ultra-Dex: Start Swarm" }
     ],
     "views": {
       "explorer": [
         { "id": "ultraDexStatus", "name": "Ultra-Dex Status" }
       ]
-    }
+    },
+    "menus": {
+      "editor/title": [
+        {
+          "command": "ultra-dex.verify",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "ultra",
+        "aliases": ["Ultra", "ultra"],
+        "extensions": [".ultra", ".udcf"]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ultra",
+        "scopeName": "source.ultra",
+        "path": "./syntaxes/ultra.json"
+      }
+    ]
   },
   "scripts": {
     "build": "tsc -p .",
-    "watch": "tsc -watch -p ."
+    "watch": "tsc -watch -p .",
+    "compile": "tsc -p .",
+    "lint": "eslint src --ext ts",
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/vscode": "^1.85.0",
-    "typescript": "^5.3.0"
+    "@types/mocha": "^10.0.6",
+    "@types/chai": "^4.3.11",
+    "typescript": "^5.3.0",
+    "mocha": "^10.2.0",
+    "chai": "^4.4.1",
+    "vscode-test": "^1.6.1"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1"
   }
 }

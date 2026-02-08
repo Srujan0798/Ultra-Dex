@@ -4,40 +4,60 @@ sidebar_position: 1
 
 # Introduction
 
-Ultra-Dex is the autonomous OS for software engineering — the Headless CTO. It's designed to solve the "AI-generated code chaos" problem by providing a structured, meta-layer for AI coding tools.
+Ultra-Dex is the **Autonomous OS for Software Engineering** — essentially the "Headless CTO". It's a meta-orchestration layer that standardizes context, planning, verification, and multi-agent execution across your entire development stack.
 
 ## What is Ultra-Dex?
 
-Ultra-Dex is an orchestration layer that coordinates multiple AI agents (Claude, GPT, Cursor, Copilot) with a shared, transparent structure. It uses a 34-section implementation plan template to prevent the "forgot to plan X" syndrome common in AI-generated projects.
+Ultra-Dex transforms how teams build software by providing:
+
+- **AI-Native Development**: First-class support for AI agents with standardized protocols
+- **Context Management**: Centralized project context that all tools can access
+- **Multi-Agent Orchestration**: Coordinated execution of specialized AI agents
+- **Verification-First Approach**: Built-in quality gates and compliance checks
+- **Integration Ecosystem**: Seamless connections to GitHub, Jira, Stripe, and 100+ services
+
+## Core Philosophy
+
+> **Orchestration > Competition**: Work with existing tools instead of replacing them
+
+Ultra-Dex doesn't aim to replace your favorite tools. Instead, it creates a unified layer that connects them all, enabling AI agents to work seamlessly across your entire tech stack.
 
 ## Key Benefits
 
-- **Structured Development**: Prevents AI drift from original plans
-- **Multi-Agent Coordination**: 18 specialized agents organized in 6 tiers
-- **Persistent Memory**: Knowledge graph maintains context across sessions
-- **Verification Framework**: 21-step process ensures production-ready quality
-- **MCP Integration**: Native support for Cursor, Claude Desktop, and other MCP tools
+### For Developers
+- Spend less time on context switching
+- Automated boilerplate generation
+- Intelligent code review and verification
+- Streamlined collaboration workflows
 
-## Core Concepts
+### For Teams
+- Standardized development processes
+- Improved code quality and consistency
+- Better project visibility and tracking
+- Reduced onboarding time for new members
 
-### Multi-Agent Orchestration
-Ultra-Dex orchestrates 18 specialized AI agents organized in 6 tiers:
-- **Leadership Tier**: @CTO, @Planner, @Research
-- **Development Tier**: @Backend, @Frontend, @Database
-- **Security Tier**: @Auth, @Security
-- **DevOps Tier**: @DevOps
-- **Quality Tier**: @Testing, @Documentation, @Reviewer, @Debugger
-- **Specialist Tier**: @Performance, @Refactoring
+### For Organizations
+- Accelerated development velocity
+- Enhanced security and compliance
+- Reduced technical debt
+- Improved ROI on AI investments
 
-### Implementation Plans
-The 34-section template ensures comprehensive planning:
-- Tech Stack & Architecture
-- Database Schema & Migrations
-- API Design & Documentation
-- Security & Authentication
-- Testing Strategy
-- Deployment & Monitoring
-- And much more...
+## Architecture Overview
 
-### Verification Framework
-Every task follows a 21-step verification process ensuring production-ready quality.
+Ultra-Dex consists of several interconnected layers:
+
+- **Context Layer**: Centralized project state and memory
+- **Planning Engine**: AI-powered project planning and task decomposition
+- **Agent Swarm**: Orchestrated execution of specialized AI agents
+- **Verification Gates**: Quality and compliance checks at every step
+- **Integration Layer**: Connections to 100+ external services
+
+## Getting Started
+
+Ready to transform your development workflow? Start with our [Quick Start Guide](./getting-started/quick-start.md) to set up Ultra-Dex in minutes.
+
+## Learn More
+
+- [Architecture Overview](./architecture/system-overview.md) - Deep dive into the system design
+- [CLI Reference](./api/cli-reference.md) - Complete command documentation
+- [Integration Guides](./api/integrations.md) - Connect with your favorite tools

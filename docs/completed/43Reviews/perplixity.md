@@ -1,3 +1,5 @@
+# Perplexity Audit: Ultra-Dex v3.4.5
+
 **Ultra-Dex v3.4.5 positions itself as a meta-layer CLI tool for AI coding orchestration, emphasizing persistent context via files like CONTEXT.md and MCP server integration to solve AI amnesia across tools like Claude, Cursor, and Devin.** No public GitHub repository at github.com/Srujan0798/Ultra-Dex or npm package for `npx ultra-dex` exists as of February 2026, suggesting it's either private, unreleased, or conceptual. [peerj](https://peerj.com/articles/16351)
 
 ## Summary

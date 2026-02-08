@@ -1,0 +1,218 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #2d2d2d;
+  border-bottom: 1px solid #444;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #00d0ff, #00ffcc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-indicator.connected {
+  background-color: rgba(72, 199, 116, 0.2);
+  color: #48c774;
+}
+
+.status-indicator.disconnected {
+  background-color: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+}
+
+.app-nav {
+  display: flex;
+  background-color: #222;
+  border-bottom: 1px solid #333;
+}
+
+.app-nav button {
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.app-nav button:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.app-nav button.active {
+  color: #00d0ff;
+  background-color: rgba(0, 208, 255, 0.1);
+}
+
+.app-nav button.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00d0ff, #00ffcc);
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.dashboard h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: #00d0ff;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.quick-actions button {
+  padding: 1rem;
+  background-color: #333;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.quick-actions button:hover {
+  background-color: #444;
+  border-color: #00d0ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 208, 255, 0.2);
+}
+
+.project-summary h3 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  color: #00ffcc;
+}
+
+.project-list {
+  list-style: none;
+}
+
+.project-item {
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.project-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.project-info h4 {
+  font-size: 1.1rem;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background-color: rgba(72, 199, 116, 0.2);
+  color: #48c774;
+}
+
+.status-badge.planning {
+  background-color: rgba(255, 204, 0, 0.2);
+  color: #ffcc00;
+}
+
+.status-badge.completed {
+  background-color: rgba(107, 116, 255, 0.2);
+  color: #6b74ff;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 0.5rem;
+  background: linear-gradient(90deg, #00d0ff, #00ffcc);
+  border-radius: 0.25rem;
+  min-width: 0;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: #aaa;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Tab-specific styles */
+.projects-tab, .agents-tab, .settings-tab {
+  padding: 1rem;
+}
+
+.projects-tab h2, .agents-tab h2, .settings-tab h2 {
+  color: #00d0ff;
+  margin-bottom: 1rem;
+}

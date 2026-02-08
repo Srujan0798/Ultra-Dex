@@ -1,3 +1,5 @@
+# Research Notes: Gemini 2 Strategist
+
 Examining the Context-First Framework
 I am starting my evaluation by breaking down how this project aims to act as a permanent memory for artificial intelligence, specifically focusing on its claim to solve session amnesia through structured, versioned project knowledge. I've observed that its unique value proposition lies in a meta-layered structure that intends to orchestrate existing coding tools, though I am carefully verifying if its extensive template system translates into functional, automated code management.
 Auditing the 2026 Tech Stack Claims

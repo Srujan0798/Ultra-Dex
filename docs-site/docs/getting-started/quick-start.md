@@ -1,103 +1,79 @@
-# Getting Started
+# Quick Start
 
-Welcome to Ultra-Dex! This guide will help you get started with the autonomous OS for software engineering.
+Get up and running with Ultra-Dex in just a few minutes.
 
-## Prerequisites
+## Create a New Project
 
-- Node.js (v18 or higher)
-- npm or yarn package manager
-- Docker (for sandboxing, recommended)
-
-## Installation
-
-You can use Ultra-Dex in several ways:
-
-### Option 1: npx (Recommended for trying out)
+Initialize a new project with Ultra-Dex:
 
 ```bash
-npx ultra-dex
-```
-
-This is the easiest way to try Ultra-Dex without installing it globally.
-
-### Option 2: Global Installation
-
-```bash
-npm install -g ultra-dex
-```
-
-Then you can run:
-
-```bash
-ultra-dex
-```
-
-### Option 3: Local Installation
-
-```bash
-npm install ultra-dex --save-dev
-```
-
-Then run with:
-
-```bash
-npx ultra-dex
-```
-
-## Quick Start
-
-### Initialize a New Project
-
-```bash
-mkdir my-ultra-project
-cd my-ultra-project
+mkdir my-awesome-project
+cd my-awesome-project
 ultra-dex init
 ```
 
-This will create a new project with the Ultra-Dex structure.
+Follow the interactive prompts to configure your project settings.
 
-### Generate an Implementation Plan
+## Generate Your First Feature
 
-```bash
-ultra-dex generate "A task management SaaS with user authentication"
-```
-
-This creates a comprehensive 34-section implementation plan.
-
-### Run the Interactive Dashboard
+Describe what you want to build:
 
 ```bash
-ultra-dex
+ultra-dex plan "Create a simple TODO list application with React and Node.js"
 ```
 
-This starts the interactive dashboard where you can manage agents and tasks.
+This will generate an implementation plan based on your requirements.
 
-### Run an Agent Swarm
+## Review and Execute
+
+Review the generated plan:
 
 ```bash
-ultra-dex swarm "Build user authentication system"
+cat IMPLEMENTATION_PLAN.md
 ```
 
-This coordinates multiple agents to implement the feature.
+Then execute it:
 
-## Configuration
+```bash
+ultra-dex run IMPLEMENTATION_PLAN.md
+```
 
-Create a `.ultra-dexrc` file in your project root:
+## Verify Your Implementation
 
-```json
-{
-  "aiProvider": "anthropic",
-  "model": "claude-3-5-sonnet-20241022",
-  "workspace": "./projects/my-app",
-  "sandboxEnabled": true,
-  "debugMode": false,
-  "maxTokens": 4096,
-  "temperature": 0.2
-}
+Check that everything was implemented correctly:
+
+```bash
+ultra-dex verify --full
+```
+
+## Explore Advanced Features
+
+### Multi-Agent Collaboration
+
+Run a swarm of agents to work on different aspects simultaneously:
+
+```bash
+ultra-dex swarm start IMPLEMENTATION_PLAN.md --parallel 3
+```
+
+### Integration with External Services
+
+Connect to GitHub to create a repository:
+
+```bash
+ultra-dex github repo create --name my-awesome-project --private
+```
+
+### Quality Assurance
+
+Run comprehensive quality checks:
+
+```bash
+ultra-dex quality --fix
 ```
 
 ## Next Steps
 
-- Explore the [CLI Reference](../cli/overview.md) for all available commands
-- Learn about [Agent Orchestration](../agents/overview.md)
-- Understand [MCP Integration](../mcp/overview.md)
+- Explore the [CLI Reference](../api/cli-reference.md) for all available commands
+- Learn about [Integrations](../api/integrations.md) with external services
+- Understand the [Architecture](../architecture/system-overview.md) behind Ultra-Dex
