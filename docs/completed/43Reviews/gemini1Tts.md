@@ -1,3 +1,5 @@
+# Research Notes: Gemini 1 Architect
+
 Project Archeology
 I am initiating a deep-dive audit of the Ultra-Dex Meta-Layer project to evaluate its readiness for the upcoming February 14th launch. My first priority is synthesizing the architectural relationship between the core CLI and its claimed identity as an orchestration layer for modern AI coding tools. I am examining the repository structure to verify the existence of the 34-section production templates and the specialized agent tiers that form the project's 'Sacred DNA'.
 Verifying Technical Execution

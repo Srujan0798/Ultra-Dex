@@ -87,3 +87,12 @@ export async function streamWithProvider({
 export function getStreamingProviders() {
   return Object.keys(PROVIDER_MAP);
 }
+
+function normalizeClaudeModel(model) {
+  if (!model) return 'claude-3-5-sonnet-20240620';
+  if (model === 'sonnet') return 'claude-3-5-sonnet-20240620';
+  if (model === 'opus') return 'claude-3-opus-20240229';
+  if (model === 'haiku') return 'claude-3-haiku-20240307';
+  return model;
+}
+

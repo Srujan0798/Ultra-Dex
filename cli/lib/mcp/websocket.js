@@ -6,6 +6,9 @@ import http from 'http';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
 
+import { projectGraph } from './graph.js';
+import { loadState } from '../commands/plan.js';
+
 class UltraDexWebSocketServer {
   constructor(port = 3002) {
     this.port = port;
@@ -34,6 +37,9 @@ class UltraDexWebSocketServer {
     const port = options.port || 3002;
 
     try {
+      // Ensure graph is scanned
+      projectGraph.scan().catch(() => {});
+
       // Create HTTP server to upgrade to WebSocket
       this.server = http.createServer();
 
@@ -108,6 +114,14 @@ class UltraDexWebSocketServer {
           } catch (error) {
             logger.error('[WebSocket] Error parsing message', error);
           }
+        });
+
+        ws.on('close', (code, _reason) => {
+          this.clients.delete(ws);
+          this.clientMetadata.delete(ws);
+          logger.debug(
+            `[WebSocket] Client disconnected (code: ${code}). Total: ${this.clients.size}`
+          );
         });
 
         ws.on('close', (code, _reason) => {
@@ -239,52 +253,59 @@ class UltraDexWebSocketServer {
   }
 
   async getSystemUpdate() {
-    // Placeholder for system update logic
-    // In a real implementation, this would fetch current state
+    const state = await loadState();
+    const summary = projectGraph.getSummary();
+
     return {
       type: 'system_update',
       timestamp: new Date().toISOString(),
       data: {
-        state: {
-          status: 'running',
-          progress: 100,
-          lastUpdated: new Date().toISOString(),
-        },
+        state: state || { status: 'initializing' },
         graph: {
-          nodes: 0,
-          edges: 0,
-          files: 0,
+          nodes: summary.nodeCount,
+          edges: summary.edgeCount,
+          files: summary.files.length,
         },
         metrics: {
-          requests: 0,
-          errors: 0,
-          uptime: 0,
+          clients: this.clients.size,
+          memory: process.memoryUsage().heapUsed,
+          uptime: process.uptime(),
         },
-        clients: this.clients.size,
       },
     };
   }
 
-  sendStateUpdate(ws) {
-    // Placeholder for state update logic
-    ws.send(
-      JSON.stringify({
-        type: 'state_update',
-        data: { status: 'ready', timestamp: new Date().toISOString() },
-        timestamp: new Date().toISOString(),
-      })
-    );
+  async sendStateUpdate(ws) {
+    const state = await loadState();
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(
+        JSON.stringify({
+          type: 'state_update',
+          data: state || { status: 'no_state' },
+          timestamp: new Date().toISOString(),
+        })
+      );
+    }
   }
 
-  sendGraphUpdate(ws) {
-    // Placeholder for graph update logic
-    ws.send(
-      JSON.stringify({
-        type: 'graph_update',
-        data: { nodes: [], edges: [] },
-        timestamp: new Date().toISOString(),
-      })
-    );
+  async sendGraphUpdate(ws) {
+    const summary = projectGraph.getSummary();
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(
+        JSON.stringify({
+          type: 'graph_update',
+          data: {
+            nodes: Array.from(projectGraph.nodes.entries()).map(([path, node]) => ({
+              id: path,
+              type: node.type,
+              size: node.size,
+            })),
+            edges: projectGraph.edges,
+          },
+          timestamp: new Date().toISOString(),
+        })
+      );
+    }
   }
 
   broadcast(data) {

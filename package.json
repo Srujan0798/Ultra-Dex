@@ -1,7 +1,7 @@
 {
   "name": "ultra-dex",
-  "version": "4.2.0",
-  "description": "The Gamified AI Kernel & Meta-Layer for Autonomous Coding",
+  "version": "4.3.0",
+  "description": "The AI Orchestration Meta-Layer for SaaS Development - The Headless CTO",
   "keywords": [
     "ai",
     "orchestration",
@@ -30,17 +30,83 @@
     "url": "https://github.com/Srujan0798/Ultra-Dex"
   },
   "homepage": "https://github.com/Srujan0798/Ultra-Dex",
+  "bugs": {
+    "url": "https://github.com/Srujan0798/Ultra-Dex/issues"
+  },
   "bin": {
     "ultra-dex": "./cli/bin/ultra-dex.js"
   },
   "files": [
     "cli/bin",
     "cli/lib",
-    "cli/assets"
+    "cli/assets",
+    "cli/templates",
+    "cli/test",
+    "PRODUCTION_DEPLOYMENT.md",
+    "GETTING_STARTED.md",
+    "ADVANCED_USAGE.md",
+    "BEST_PRACTICES.md",
+    "README.md",
+    "LICENSE"
   ],
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "scripts": {
+    "start": "node cli/bin/ultra-dex.js",
+    "dev": "node --watch cli/bin/ultra-dex.js",
+    "test": "NODE_ENV=test node --test $(find cli/test -name \"*.test.js\" -print)",
+    "test:unit": "NODE_ENV=test node --test $(find cli/test/unit -name \"*.test.js\" -print)",
+    "test:integration": "NODE_ENV=test node --test $(find cli/test/integration -name \"*.test.js\" -print)",
+    "test:watch": "NODE_ENV=test node --test --watch $(find cli/test -name \"*.test.js\" -print)",
+    "test:coverage": "NODE_ENV=test c8 node --test $(find cli/test -name \"*.test.js\" -print)",
+    "test:ui": "NODE_ENV=test node --test --watch $(find cli/test -name \"*.test.js\" -print)",
+    "lint": "eslint cli/lib --ext .js,.ts",
+    "lint:fix": "eslint cli/lib --ext .js,.ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "echo 'No build step required'",
+    "build:docs": "cd docs-site && npm run build",
+    "build:desktop": "cd apps/desktop && npm run build",
+    "build:vscode": "cd extensions/vscode && npm run build",
+    "publish": "npm publish",
+    "publish:beta": "npm publish --tag beta",
+    "version:bump": "npm version",
+    "clean": "rm -rf node_modules package-lock.json && npm install",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "governance": "node scripts/pre-commit-governor.js",
+    "security:audit": "npm audit --audit-level high",
+    "security:fix": "npm audit fix",
+    "perf:benchmark": "node scripts/benchmark.js",
+    "perf:profile": "node --prof scripts/profile.js",
+    "docker:build": "docker build -t ultra-dex .",
+    "docker:run": "docker run -it ultra-dex",
+    "docker:publish": "docker push ultra-dex",
+    "kubernetes:deploy": "kubectl apply -f k8s/deployment.yaml",
+    "release:alpha": "npm version prerelease --preid alpha && npm publish --tag alpha",
+    "release:beta": "npm version prerelease --preid beta && npm publish --tag beta",
+    "release:rc": "npm version prerelease --preid rc && npm publish --tag next",
+    "release:stable": "npm version minor && npm publish",
+    "docs:serve": "cd docs-site && npm run start",
+    "dashboard:dev": "cd dashboard && npm run dev",
+    "dashboard:build": "cd dashboard && npm run build",
+    "dashboard:preview": "cd dashboard && npm run preview",
+    "cli:dev": "nodemon --watch cli/bin --watch cli/lib cli/bin/ultra-dex.js",
+    "cli:profile": "clinic doctor -- node cli/bin/ultra-dex.js",
+    "cli:flame": "clinic flame -- node cli/bin/ultra-dex.js",
+    "cli:heapprofile": "clinic bubbleprof -- node cli/bin/ultra-dex.js"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.36",
@@ -66,6 +132,7 @@
     "execa": "^8.0.1",
     "express": "^5.2.1",
     "figures": "^6.1.0",
+    "form-data": "^4.0.0",
     "glob": "^13.0.0",
     "gpt-tokenizer": "^3.4.0",
     "gradient-string": "^3.0.0",
@@ -92,23 +159,134 @@
     "uuid": "^9.0.1",
     "winston": "^3.19.0",
     "ws": "^8.19.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zod-validation-error": "^3.0.3",
+    "adm-zip": "^0.5.10",
+    "archiver": "^7.0.1",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "hpp": "^0.2.3",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.14",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "rate-limiter-flexible": "^4.0.1",
+    "sharp": "^0.33.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuidv7": "^1.0.2",
+    "validator": "^13.12.0",
+    "yaml": "^2.4.5"
   },
   "devDependencies": {
     "@types/node": "^20.19.30",
-    "@vitest/coverage-v8": "^4.0.18",
-    "c8": "^9.1.0",
+    "@types/express": "^5.0.0",
+    "@types/mocha": "^10.0.6",
+    "@types/chai": "^4.3.11",
+    "@types/supertest": "^6.0.2",
+    "@types/passport": "^1.0.16",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/uuid": "^10.0.0",
+    "@types/dotenv": "^8.2.0",
+    "@types/form-data": "^2.5.0",
+    "@types/axios": "^0.14.0",
+    "@types/validator": "^13.11.9",
+    "@types/yaml": "^2.2.7",
+    "@types/sharp": "^0.32.1",
+    "@types/adm-zip": "^0.5.5",
+    "@types/archiver": "^6.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/helmet": "^4.0.0",
+    "@types/hpp": "^0.2.4",
+    "@types/listr2": "^4.0.5",
+    "@types/ora": "^3.2.0",
+    "@types/ink": "^3.0.4",
+    "@types/ink-spinner": "^3.0.0",
+    "@types/ink-box": "^1.0.3",
+    "@types/figures": "^3.2.2",
+    "@types/cli-progress": "^3.11.5",
+    "@types/cli-table3": "^0.6.4",
+    "@types/boxen": "^4.1.1",
+    "@types/gradient-string": "^1.1.6",
+    "@types/ws": "^8.17.0",
+    "@types/winston": "^2.4.4",
+    "@types/acorn": "^4.0.6",
+    "@types/acorn-walk": "^8.3.2",
+    "@types/marked": "^5.0.2",
+    "@types/neo4j-driver": "^5.23.3",
+    "@types/libsodium-wrappers": "^0.7.14",
+    "@types/node-fetch": "^2.6.11",
+    "@types/node-pty": "^0.10.12",
+    "@types/octokit__rest-endpoint-method-types": "^7.3.1",
+    "@types/playwright": "^1.41.1",
+    "@types/puppeteer": "^7.0.4",
+    "@types/sqlite": "^4.1.1",
+    "@types/sqlite3": "^3.1.11",
+    "@types/terminal-link": "^2.1.4",
+    "@types/update-notifier": "^6.0.8",
+    "@types/zod": "^3.23.2",
+    "@types/zod-validation-error": "^3.0.3",
+    "@eslint/js": "^9.15.0",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-security": "^3.0.1",
+    "eslint-plugin-unicorn": "^56.0.0",
     "prettier": "^3.8.1",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.0.0",
+    "nock": "^13.5.4",
+    "sinon": "^18.0.0",
+    "chai": "^4.4.1",
+    "mocha": "^10.2.0",
+    "nyc": "^17.0.0",
+    "c8": "^10.1.2",
+    "istanbul": "^0.4.5",
+    "benchmark": "^2.1.4",
+    "clinic": "^13.0.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.6.2"
   },
-  "scripts": {
-    "test": "NODE_ENV=test node --test $(find cli/test -name \"*.test.js\" -print)",
-    "test:unit": "NODE_ENV=test node --test $(find cli/test/unit -name \"*.test.js\" -print)",
-    "test:integration": "NODE_ENV=test node --test $(find cli/test/integration -name \"*.test.js\" -print)",
-    "test:watch": "NODE_ENV=test node --test --watch $(find cli/test -name \"*.test.js\" -print)",
-    "test:coverage": "NODE_ENV=test c8 node --test $(find cli/test -name \"*.test.js\" -print)",
-    "test:ui": "NODE_ENV=test node --test --watch $(find cli/test -name \"*.test.js\" -print)",
-    "governance": "node scripts/pre-commit-governor.js"
+  "lint-staged": {
+    "*.{js,ts,json,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.js": [
+      "eslint --fix"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm test && npm run security:audit"
+    }
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "volta": {
+    "node": "20.18.0",
+    "npm": "10.8.2"
   }
 }

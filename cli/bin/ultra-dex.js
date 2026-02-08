@@ -123,6 +123,7 @@ import { registerCheckCommand } from '../lib/commands/check.js';
 import { registerBatchCommand, registerPipelineCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
 import { registerVerifyCommand } from '../lib/commands/verify.js';
+import { registerQualityCommand } from '../lib/commands/quality.js';
 import { registerPluginCommand } from '../lib/commands/plugin.js';
 import { registerMarketplaceCommand } from '../lib/commands/marketplace.js';
 import { registerWorkspaceCommand } from '../lib/commands/workspace.js';
@@ -244,6 +245,10 @@ import { registerCloudCommand } from '../lib/commands/cloud.js';
 import { registerApiCommand } from '../lib/commands/api.js';
 import { registerAutonomousCommand } from '../lib/commands/autonomous.js';
 import { registerPTYCommands } from '../lib/commands/pty.js';
+import { registerIdeCommand } from '../lib/commands/ide.js';
+import { registerMobileCommand } from '../lib/commands/mobile.js';
+import { registerSSOCommand } from '../lib/commands/sso.js';
+import { registerWhiteLabelCommand } from '../lib/commands/white-label.js';
 import { startREPL } from '../lib/repl/index.js';
 import { theme, ultraGradient } from '../lib/ui/theme.js';
 
@@ -375,6 +380,7 @@ registerStateCommand(program);
 registerDoctorCommand(program);
 registerDashboardCommand(program);
 registerCheckCommand(program);
+registerQualityCommand(program);
 registerServeCommand(program);
 registerVerifyCommand(program);
 registerPackCommand(program);
@@ -452,6 +458,10 @@ registerVoiceCommand(program);
 registerAuthCommand(program);
 registerAuthSsoCommand(program);
 registerSetupCommand(program);
+registerIdeCommand(program);
+registerMobileCommand(program);
+registerSSOCommand(program);
+registerWhiteLabelCommand(program);
 registerForgeCommand(program);
 registerHelpCommand(program);
 registerCostEstimatorCommand(program);
@@ -470,6 +480,12 @@ registerMetricsCommand(program);
 registerHealthCommand(program);
 registerDebugCommand(program);
 registerBannerCommand(program);
+
+// Default to REPL if no arguments provided
+if (process.argv.length <= 2) {
+  await startREPL({ continue: false });
+  process.exit(0);
+}
 
 await program.parseAsync(process.argv);
 

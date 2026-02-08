@@ -1,280 +1,105 @@
 {
   "name": "ultra-dex-vscode",
-  "displayName": "Ultra-Dex: AI Agent Orchestration",
-  "description": "Meta-orchestration layer for AI development. Coordinate Claude, GPT, Cursor, and Copilot with architectural memory, agent swarms, and code execution sandbox.",
-  "version": "3.4.5",
-  "publisher": "SrujanSaiKarna",
-  "license": "MIT",
-  "icon": "resources/icons/ultra-dex-128.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Srujan0798/Ultra-Dex"
-  },
-  "homepage": "https://github.com/Srujan0798/Ultra-Dex#readme",
-  "bugs": {
-    "url": "https://github.com/Srujan0798/Ultra-Dex/issues"
-  },
+  "displayName": "Ultra-Dex AI Development Platform",
+  "description": "AI-powered development tools with persistent memory and governance",
+  "version": "1.0.0",
+  "publisher": "UltraDex",
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
-    "Machine Learning",
-    "Programming Languages",
-    "Snippets",
     "Other"
   ],
-  "keywords": [
-    "ai",
-    "agents",
-    "claude",
-    "gpt",
-    "cursor",
-    "copilot",
-    "orchestration",
-    "swarm",
-    "mcp",
-    "model-context-protocol",
-    "anthropic",
-    "openai"
-  ],
-  "galleryBanner": {
-    "color": "#6366f1",
-    "theme": "dark"
-  },
-  "badges": [
-    {
-      "url": "https://img.shields.io/npm/v/ultra-dex.svg",
-      "href": "https://www.npmjs.com/package/ultra-dex",
-      "description": "npm version"
-    }
-  ],
   "activationEvents": [
-    "workspaceContains:IMPLEMENTATION-PLAN.md",
-    "workspaceContains:CONTEXT.md",
-    "workspaceContains:.ultra-dex/**",
-    "onView:ultra-dex.agentExplorer",
-    "onView:ultra-dex.quickActions",
-    "onView:ultra-dex.swarmStatus",
-    "onView:ultra-dex.contextPreview",
-    "onView:ultra-dex.sidebar"
+    "onCommand:ultra-dex.openDashboard",
+    "onCommand:ultra-dex.runAgent",
+    "onCommand:ultra-dex.syncContext",
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "ultra-dex",
-          "title": "Ultra-Dex",
-          "icon": "resources/icons/ultra-dex.svg"
-        }
-      ]
-    },
-    "views": {
-      "ultra-dex": [
-        {
-          "id": "ultra-dex.agentExplorer",
-          "name": "Agent Explorer"
-        },
-        {
-          "id": "ultra-dex.swarmStatus",
-          "name": "Swarm Status"
-        },
-        {
-          "id": "ultra-dex.contextPreview",
-          "name": "Context Preview"
-        },
-        {
-          "id": "ultra-dex.quickActions",
-          "name": "Quick Actions"
-        },
-        {
-          "id": "ultra-dex.sidebar",
-          "name": "Agent Sidebar"
-        }
-      ]
-    },
     "commands": [
       {
-        "command": "ultra-dex.selectAgent",
-        "title": "Select Agent",
-        "category": "Ultra-Dex",
-        "icon": "$(robot)"
-      },
-      {
-        "command": "ultra-dex.checkAlignment",
-        "title": "Check Alignment",
-        "category": "Ultra-Dex",
-        "icon": "$(check)"
-      },
-      {
-        "command": "ultra-dex.generatePlan",
-        "title": "Generate Plan",
-        "category": "Ultra-Dex",
-        "icon": "$(list-ordered)"
-      },
-      {
-        "command": "ultra-dex.askAgent",
-        "title": "Ask @Agent about selection",
-        "category": "Ultra-Dex",
-        "icon": "$(comment-discussion)"
-      },
-      {
-        "command": "ultra-dex.runSwarm",
-        "title": "Run Agent Swarm",
-        "category": "Ultra-Dex",
-        "icon": "$(run-all)"
-      },
-      {
-        "command": "ultra-dex.execCode",
-        "title": "Execute in Sandbox",
-        "category": "Ultra-Dex",
-        "icon": "$(play)"
-      },
-      {
-        "command": "ultra-dex.searchCode",
-        "title": "Semantic Search",
-        "category": "Ultra-Dex",
-        "icon": "$(search)"
-      },
-      {
-        "command": "ultra-dex.startKernel",
-        "title": "Start Active Kernel",
-        "category": "Ultra-Dex",
-        "icon": "$(server-process)"
-      },
-      {
         "command": "ultra-dex.openDashboard",
-        "title": "Open Dashboard",
-        "category": "Ultra-Dex",
-        "icon": "$(dashboard)"
+        "title": "Open Ultra-Dex Dashboard"
       },
       {
-        "command": "ultra-dex.syncGitHub",
-        "title": "Sync GitHub Issues",
-        "category": "Ultra-Dex",
-        "icon": "$(github)"
+        "command": "ultra-dex.runAgent",
+        "title": "Run Ultra-Dex Agent"
       },
       {
-        "command": "ultra-dex.refreshAgents",
-        "title": "Refresh Agents",
-        "category": "Ultra-Dex",
-        "icon": "$(refresh)"
+        "command": "ultra-dex.syncContext",
+        "title": "Sync Context with Ultra-Dex"
       },
       {
-        "command": "ultra-dex.runSpecificAgent",
-        "title": "Run Agent",
-        "category": "Ultra-Dex",
-        "icon": "$(play)"
+        "command": "ultra-dex.voiceCommand",
+        "title": "Voice Command to Code"
       },
       {
-        "command": "ultra-dex.stopAgent",
-        "title": "Stop Agent",
-        "category": "Ultra-Dex",
-        "icon": "$(stop-circle)"
+        "command": "ultra-dex.analyzeFile",
+        "title": "Analyze File with AI"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "ultra-dex-agents",
+          "name": "AI Agents",
+          "when": "workspaceFolder"
+        },
+        {
+          "id": "ultra-dex-context",
+          "name": "Project Context",
+          "when": "workspaceFolder"
+        }
+      ]
+    },
     "menus": {
       "editor/context": [
         {
-          "command": "ultra-dex.askAgent",
-          "when": "editorHasSelection",
-          "group": "Ultra-Dex@1"
-        },
-        {
-          "command": "ultra-dex.execCode",
-          "when": "editorHasSelection && resourceExtname =~ /\\.(js|ts|py|go|rs)$/",
-          "group": "Ultra-Dex@2"
-        }
-      ],
-      "view/title": [
-        {
-          "command": "ultra-dex.refreshAgents",
-          "when": "view == ultra-dex.agentExplorer",
-          "group": "navigation"
-        },
-        {
-          "command": "ultra-dex.runSwarm",
-          "when": "view == ultra-dex.swarmStatus",
-          "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "ultra-dex.runSpecificAgent",
-          "when": "view == ultra-dex.agentExplorer && viewItem == agent",
-          "group": "Ultra-Dex@1"
-        },
-        {
-          "command": "ultra-dex.stopAgent",
-          "when": "view == ultra-dex.agentExplorer && viewItem == agent",
-          "group": "Ultra-Dex@2"
+          "command": "ultra-dex.analyzeFile",
+          "when": "resourceExtname == '.js' || resourceExtname == '.ts' || resourceExtname == '.jsx' || resourceExtname == '.tsx'",
+          "group": "ai-tools@1"
         }
       ]
     },
     "configuration": {
       "title": "Ultra-Dex",
       "properties": {
-        "ultra-dex.defaultProvider": {
+        "ultra-dex.apiKey": {
           "type": "string",
-          "default": "anthropic",
-          "enum": [
-            "anthropic",
-            "openai",
-            "google"
-          ],
-          "description": "Default AI provider for agents"
+          "description": "Your Ultra-Dex API key",
+          "default": ""
         },
-        "ultra-dex.kernelPort": {
-          "type": "number",
-          "default": 3001,
-          "description": "Port for the Active Kernel server"
+        "ultra-dex.model": {
+          "type": "string",
+          "description": "AI model to use",
+          "default": "gpt-4",
+          "enum": ["gpt-4", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"]
         },
-        "ultra-dex.dashboardPort": {
-          "type": "number",
-          "default": 3002,
-          "description": "Port for the God Mode dashboard"
-        },
-        "ultra-dex.autoStartKernel": {
+        "ultra-dex.enableContextSync": {
           "type": "boolean",
-          "default": false,
-          "description": "Automatically start the kernel when opening a project"
+          "description": "Enable automatic context synchronization",
+          "default": true
         },
-        "ultra-dex.enableSandbox": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable Docker sandbox for code execution"
+        "ultra-dex.mcpPort": {
+          "type": "number",
+          "description": "MCP server port",
+          "default": 3002
         }
       }
-    },
-    "keybindings": [
-      {
-        "command": "ultra-dex.selectAgent",
-        "key": "ctrl+shift+a",
-        "mac": "cmd+shift+a"
-      },
-      {
-        "command": "ultra-dex.searchCode",
-        "key": "ctrl+shift+s",
-        "mac": "cmd+shift+s"
-      },
-      {
-        "command": "ultra-dex.runSwarm",
-        "key": "ctrl+shift+r",
-        "mac": "cmd+shift+r"
-      }
-    ]
+    }
   },
   "scripts": {
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "package": "vsce package",
-    "publish": "vsce publish",
-    "vscode:prepublish": "npm run compile"
+    "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/node": "^20.11.30",
-    "@types/vscode": "^1.80.0",
-    "@vscode/vsce": "^2.22.0",
-    "typescript": "^5.5.4"
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
   }
 }

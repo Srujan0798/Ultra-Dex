@@ -1,159 +1,63 @@
 # Installation
 
-This guide covers how to install and set up Ultra-Dex for your development environment.
+This guide will walk you through installing Ultra-Dex on your system.
 
-## System Requirements
+## Prerequisites
 
-- **Operating System**: macOS, Linux, or Windows (with WSL2)
-- **Node.js**: v18.0 or higher
-- **npm**: v8.0 or higher (or yarn)
-- **Docker**: Recommended for sandboxing (optional but recommended)
-- **Git**: Required for certain operations
+Before installing Ultra-Dex, ensure you have:
 
-## Installing Node.js
+- Node.js version 18 or higher
+- npm or yarn package manager
+- Git version control system
+- At least 4GB of free disk space
 
-Ultra-Dex requires Node.js v18 or higher. If you don't have it installed:
+## Quick Install
 
-### Using Node Version Manager (Recommended)
-
-```bash
-# Install nvm if you don't have it
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-
-# Restart your terminal or run:
-source ~/.bashrc
-
-# Install and use Node.js v18+
-nvm install 18
-nvm use 18
-```
-
-### Using Package Managers
-
-On macOS with Homebrew:
-```bash
-brew install node
-```
-
-On Ubuntu/Debian:
-```bash
-sudo apt update
-sudo apt install nodejs npm
-```
-
-## Installing Ultra-Dex
-
-You have three options for installing Ultra-Dex:
-
-### Option 1: npx (No Installation Required)
-
-The easiest way to try Ultra-Dex is using npx without installation:
-
-```bash
-npx ultra-dex
-```
-
-This downloads and runs Ultra-Dex without installing it permanently.
-
-### Option 2: Global Installation
-
-To install Ultra-Dex globally on your system:
+Install Ultra-Dex globally using npm:
 
 ```bash
 npm install -g ultra-dex
 ```
 
-After installation, you can run Ultra-Dex from anywhere:
+Or using yarn:
 
 ```bash
-ultra-dex
+yarn global add ultra-dex
 ```
 
-### Option 3: Project-Specific Installation
+## Verify Installation
 
-To install Ultra-Dex in a specific project:
-
-```bash
-# Navigate to your project directory
-cd your-project-directory
-
-# Install as a development dependency
-npm install ultra-dex --save-dev
-
-# Run using npx within the project
-npx ultra-dex
-```
-
-## Docker Setup (Recommended)
-
-For enhanced security and isolation, install Docker:
-
-### On macOS
-```bash
-# Using Homebrew
-brew install --cask docker
-
-# Or download from: https://desktop.docker.com/mac/main/arm64/Docker.dmg
-```
-
-### On Ubuntu
-```bash
-sudo apt update
-sudo apt install docker.io
-sudo usermod -aG docker $USER
-```
-
-After installing Docker, restart your terminal to apply group changes.
-
-## Verification
-
-Verify your installation by running:
+Check that Ultra-Dex is properly installed:
 
 ```bash
 ultra-dex --version
 ```
 
-You should see the version number of Ultra-Dex.
+You should see the version number printed to your terminal.
+
+## Docker Installation (Alternative)
+
+If you prefer using Docker, you can run Ultra-Dex without installing it globally:
+
+```bash
+docker run -it --rm srujan0798/ultra-dex:latest ultra-dex --version
+```
 
 ## Configuration
 
-After installation, you may want to configure Ultra-Dex. Create a `.ultra-dexrc` file in your home directory or project root:
-
-```json
-{
-  "aiProvider": "anthropic",
-  "model": "claude-3-5-sonnet-20241022",
-  "sandboxEnabled": true,
-  "debugMode": false
-}
-```
-
-## Troubleshooting
-
-### Permission Errors on Linux/macOS
-
-If you get permission errors when installing globally, you may need to change npm's default directory:
+After installation, run the setup wizard to configure Ultra-Dex:
 
 ```bash
-mkdir ~/.npm-global
-npm config set prefix '~/.npm-global'
+ultra-dex setup
 ```
 
-Then add this line to your `~/.profile` or `~/.bashrc`:
-```bash
-export PATH=~/.npm-global/bin:$PATH
-```
+This will guide you through setting up:
 
-### Docker Permission Issues
-
-On Linux, if Docker commands fail with permission errors, add your user to the docker group:
-
-```bash
-sudo usermod -aG docker $USER
-```
-
-Log out and log back in for changes to take effect.
+- AI provider preferences (OpenAI, Anthropic, Google)
+- API keys for various services
+- Default project templates
+- Integration settings
 
 ## Next Steps
 
-Once installed, proceed to the [Quick Start](./quick-start.md) guide to begin using Ultra-Dex.
+Once installed, proceed to the [Quick Start Guide](./quick-start.md) to create your first project with Ultra-Dex.

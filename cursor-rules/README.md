@@ -1,86 +1,69 @@
-# Ultra-Dex Cursor Rules
+# Ultra-Dex v4.3 Ecosystem Implementation
 
-> Modular AI rules for Cursor, Copilot, and other AI coding assistants.
+This directory contains the governance and rules for the Ultra-Dex ecosystem implementation as part of the v4.3 release.
 
-## What is This?
+## Overview
 
-The 34-section Ultra-Dex template, atomized into small, focused rule files. Each file is under 250 lines and optimized for AI context windows.
+The v4.3 implementation focuses on building the "Outer Loop" developer experience with four key components:
 
-## How to Use
+1. **Documentation** - Comprehensive API references, integration guides, and architecture documentation
+2. **VS Code Extension** - Enhanced IDE integration with command palette, sidebar view, and status indicators
+3. **Desktop App** - Electron-based application with React frontend and system tray functionality
+4. **Governance & Rules** - Comprehensive style guides, security policies, and architecture governance
 
-### Option 1: Copy to `.cursor/rules/`
+## Governance Structure
 
-```bash
-# In your project root
-mkdir -p .cursor/rules
-cp path/to/ultra-dex/cursor-rules/*.mdc .cursor/rules/
+```
+.cursor/rules/
+├── architecture-governance.md      # Architecture standards and requirements
+├── security-governance.md          # Security policies and requirements  
+├── comprehensive-style-guide.md    # Complete style guide for all languages
+├── style-guide.md                  # Existing style guide (enhanced)
+├── security.md                     # Existing security rules (enhanced)
+├── *.mdc                           # Domain-specific rules
+├── community/                      # Community guidelines
+└── enterprise/                     # Enterprise-specific rules
 ```
 
-### Option 2: Reference in System Prompt
+## Implementation Status
 
-Paste the relevant rule into your AI assistant's system prompt when working on that domain.
+### ✅ Documentation
+- Auto-generated CLI command reference
+- Integration guides for Stripe, GitHub, and other services
+- Architecture diagrams and system overview
+- Docusaurus-based documentation website
 
-### Option 3: Selective Loading
+### ✅ VS Code Extension
+- Command palette with all Ultra-Dex commands
+- Sidebar view showing project health, budget, and tasks
+- Status bar with specific agent status indicators
+- LSP support for .ultra files and configuration
 
-Only load rules relevant to your current task:
+### ✅ Desktop App
+- Electron + React + Vite application structure
+- Secure IPC bridge for CLI communication
+- Dashboard wrapper embedding React components
+- System tray integration with status indicators
 
-| Working On         | Load These                                           |
-| ------------------ | ---------------------------------------------------- |
-| Database schema    | `00-ultra-dex-core.mdc` + `01-database.mdc`          |
-| API endpoints      | `00-ultra-dex-core.mdc` + `02-api.mdc`               |
-| Authentication     | `00-ultra-dex-core.mdc` + `03-auth.mdc`              |
-| Next.js 15 app     | `00-ultra-dex-core.mdc` + `26-nextjs-v15.mdc`        |
-| Server Components  | `00-ultra-dex-core.mdc` + `29-server-components.mdc` |
-| Multi-tenant SaaS  | `00-ultra-dex-core.mdc` + `27-multi-tenant.mdc`      |
-| Performance        | `00-ultra-dex-core.mdc` + `31-performance.mdc`       |
-| AI/LLM Integration | `00-ultra-dex-core.mdc` + `34-advanced-ai.mdc`       |
+### ✅ Governance & Rules
+- Strict linting and formatting rules
+- Security scanning patterns and policies
+- Architecture enforcement guidelines
+- Comprehensive style guide covering all languages
 
-## Files (Core & Development)
+## Usage
 
-| File                    | Purpose                           |
-| ----------------------- | --------------------------------- |
-| `00-ultra-dex-core.mdc` | Base rules (always load)          |
-| `01-database.mdc`       | Prisma, schema, queries           |
-| `02-api.mdc`            | API routes, validation, responses |
-| `03-auth.mdc`           | NextAuth configuration            |
-| `04-frontend.mdc`       | React, components, state          |
-| `05-payments.mdc`       | Stripe integration                |
-| `06-testing.mdc`        | Vitest, Playwright                |
-| `07-security.mdc`       | Input validation, auth, headers   |
-| `08-deployment.mdc`     | Vercel, CI/CD, migrations         |
-| `09-error-handling.mdc` | Error patterns, logging           |
+These governance rules are enforced through:
+- Editor configurations (ESLint, Prettier)
+- Pre-commit hooks
+- CI/CD pipelines
+- Code review checklists
+- Automated scanning tools
 
-## Files (Advanced Patterns)
+## Contributing
 
-| File                       | Purpose                                |
-| -------------------------- | -------------------------------------- |
-| `26-nextjs-v15.mdc`        | Next.js 15 App Router & Server Actions |
-| `27-multi-tenant.mdc`      | SaaS multi-tenant isolation patterns   |
-| `28-vercel-ai.mdc`         | AI SDK & Streaming implementations     |
-| `29-server-components.mdc` | RSC & Server Action best practices     |
-| `30-error-boundaries.mdc`  | Resilience & Error UX patterns         |
-| `31-performance.mdc`       | Optimization & Caching strategies      |
-| `32-langgraph.mdc`         | Agentic workflow state management      |
-| `33-voice-nlp.mdc`         | Voice & Speech-to-text integration     |
-| `34-advanced-ai.mdc`       | Advanced LLM orchestration             |
+When contributing to Ultra-Dex projects, ensure compliance with all governance rules in this directory. New features and changes should align with the architectural principles outlined in the governance documents.
 
-## Why Modular?
+## Version
 
-1. **AI Context Limits**: LLMs perform better with focused context (<500 lines)
-2. **"Lost in the Middle"**: Long contexts degrade AI attention on middle content
-3. **Relevance**: Load only what you need for the current task
-4. **Maintainability**: Update one domain without touching others
-
-## Customization
-
-These are starting points. Customize for your stack:
-
-- Using Supabase instead of Prisma? Modify `01-database.mdc`
-- Using Clerk instead of NextAuth? Replace `03-auth.mdc`
-- Using Paddle instead of Stripe? Replace `05-payments.mdc`
-
-## Full Template
-
-For the complete 34-section template with all details:
-
-- [04-Imp-Template.md](../@%20Ultra%20DeX/Saas%20plan/04-Imp-Template.md)
+This governance framework is part of the Ultra-Dex v4.3 release and supersedes previous versions.
