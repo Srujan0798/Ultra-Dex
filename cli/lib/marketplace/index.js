@@ -4,6 +4,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { z } from 'zod';
 import axios from 'axios';
+import { marketplaceClient } from './client.js';
 import { AppError } from '../utils/errors.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
@@ -46,16 +47,12 @@ export class AgentMarketplace {
    */
   async searchAgents(query, options = {}) {
     try {
-      const params = {
-        q: query,
-        category: options.category,
-        tier: options.tier,
+      return await marketplaceClient.searchAgents(query, {
+        ...options,
         sort: options.sort || 'downloads',
-        limit: options.limit || 20
-      };
-
-      const response = await axios.get(`${this.options.registryUrl}/api/agents`, { params });
-      return response.data;
+        limit: options.limit || 20,
+        throwOnError: true
+      });
     } catch (error) {
       printWarning('⚠️  Marketplace search failed, using local cache');
       return await this.searchLocalAgents(query, options);
