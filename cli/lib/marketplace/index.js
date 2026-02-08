@@ -4,6 +4,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { z } from 'zod';
 import axios from 'axios';
+import AdmZip from 'adm-zip';
+import FormData from 'form-data';
 import { AppError } from '../utils/errors.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
@@ -186,7 +188,6 @@ export class AgentMarketplace {
     });
     
     // Extract to install path
-    const AdmZip = (await import('adm-zip')).default;
     const zip = new AdmZip(tempFile);
     zip.extractAllTo(installPath, true);
     
@@ -325,14 +326,16 @@ export class AgentMarketplace {
       const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
 
       // Create package
-      const AdmZip = (await import('adm-zip')).default;
       const zip = new AdmZip();
       zip.addLocalFolder(agentPath);
       const zipBuffer = zip.toBuffer();
 
       // Upload to marketplace
       const formData = new FormData();
-      formData.append('agent', new Blob([zipBuffer]), `${manifest.name}-${manifest.version}.zip`);
+      formData.append('agent', zipBuffer, {
+        filename: `${manifest.name}-${manifest.version}.zip`,
+        contentType: 'application/zip'
+      });
       formData.append('manifest', JSON.stringify(manifest));
 
       const response = await axios.post(`${this.options.registryUrl}/api/agents/publish`, formData, {
