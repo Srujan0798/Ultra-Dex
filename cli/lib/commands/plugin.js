@@ -10,10 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { PluginManager, PLUGIN_MANIFEST_EXAMPLE, PLUGIN_EXAMPLE } from '../utils/plugin-system.js';
 import { pluginRegistry } from '../plugins/index.js'; // Import the new plugin registry
-import {
-  installPlugin as marketplaceInstallPlugin,
-  uninstallPlugin as marketplaceUninstallPlugin,
-} from '../marketplace/index.js';
+import { agentMarketplace } from '../marketplace/index.js';
 
 /**
  * Create a plugin from a template
@@ -274,7 +271,7 @@ export function registerPluginCommand(program) {
     .action(async (source, options) => {
       try {
         printInfo(chalk.blue(`\nInstalling plugin: ${source}\n`));
-        const result = await marketplaceInstallPlugin(source, options);
+        const result = await agentMarketplace.installAgent(source, options.version);
 
         if (result.success) {
           printSuccess(chalk.green(`\n✅ Plugin installed: ${result.name}`));
@@ -313,7 +310,7 @@ export function registerPluginCommand(program) {
       }
 
       try {
-        await marketplaceUninstallPlugin(name);
+        await agentMarketplace.uninstallAgent(name);
         printSuccess(chalk.green(`\n✅ Plugin uninstalled: ${name}`));
       } catch (error) {
         printError(chalk.red(`\n❌ ${error.message}`));

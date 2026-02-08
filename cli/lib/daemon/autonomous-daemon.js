@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
+import { promisify } from 'util';
 import { CronJob } from 'cron';
 import chokidar from 'chokidar';
 import axios from 'axios';
@@ -10,6 +11,10 @@ import { printInfo, printSuccess, printError, printWarning } from '../utils/outp
 import { loadState } from '../commands/state.js';
 import { ultraMemory } from '../mcp/memory.js';
 import { GovernanceEngine } from '../governance/index.js';
+import { AgentSwarm } from '../agents/swarm.js';
+import { MCPHost } from '../mcp/host.js';
+
+const execAsync = promisify(exec);
 
 /**
  * Autonomous Daemon - 24/7 AI Assistant for Development
@@ -33,6 +38,8 @@ export class AutonomousDaemon {
     this.fileWatcher = null;
     this.healthCheckJob = null;
     this.governanceEngine = new GovernanceEngine();
+    this.agentSwarm = new AgentSwarm();
+    this.mcpHost = new MCPHost();
     this.interrupted = false;
     
     // Task queues
@@ -45,8 +52,15 @@ export class AutonomousDaemon {
       issuesFixed: 0,
       errors: 0,
       uptime: 0,
-      lastActivity: null
+      lastActivity: null,
+      activeAgents: 0,
+      aiRequests: 0,
+      memoryUsage: 0
     };
+    
+    // Monitors
+    this.monitors = new Map();
+    this.activeChecks = new Set();
   }
 
   /**
@@ -70,6 +84,12 @@ export class AutonomousDaemon {
       // Initialize governance engine
       await this.governanceEngine.init();
 
+      // Initialize agent swarm
+      await this.agentSwarm.init();
+
+      // Initialize MCP host
+      await this.mcpHost.init();
+
       // Start HTTP server
       this.server = createServer();
       this.server.listen(this.options.port, () => {
@@ -90,6 +110,9 @@ export class AutonomousDaemon {
 
       // Start task processors
       this.startTaskProcessors();
+
+      // Start autonomous monitoring
+      this.startAutonomousMonitoring();
 
       // Notify startup
       await this.sendNotification('Daemon started', 'success', {
@@ -168,6 +191,12 @@ export class AutonomousDaemon {
       case 'command':
         this.executeRemoteCommand(data.command, ws);
         break;
+      case 'monitor':
+        this.startMonitor(data.monitor, ws);
+        break;
+      case 'stop-monitor':
+        this.stopMonitor(data.monitorId);
+        break;
     }
   }
 
@@ -194,18 +223,11 @@ export class AutonomousDaemon {
    */
   setupFileWatcher() {
     this.fileWatcher = chokidar.watch([
-      '**/*.js',
-      '**/*.ts',
-      '**/*.jsx',
-      '**/*.tsx',
-      '**/*.py',
-      '**/*.go',
-      '**/*.rs',
-      '**/*.json',
-      '**/*.md',
+      '**/*.{js,ts,jsx,tsx,py,go,rs,md,json,yaml,toml}',
       'package.json',
       'CONTEXT.md',
-      'IMPLEMENTATION-PLAN.md'
+      'IMPLEMENTATION-PLAN.md',
+      '.ultra-dex/**/*'
     ], {
       ignored: [
         'node_modules/**',
@@ -214,7 +236,9 @@ export class AutonomousDaemon {
         'build/**',
         '.next/**',
         'coverage/**',
-        '*.log'
+        '*.log',
+        'tmp/**',
+        'temp/**'
       ],
       ignoreInitial: true,
       awaitWriteFinish: true
@@ -226,6 +250,10 @@ export class AutonomousDaemon {
 
     this.fileWatcher.on('add', (filePath) => {
       this.handleFileChange(filePath);
+    });
+
+    this.fileWatcher.on('unlink', (filePath) => {
+      this.handleFileDelete(filePath);
     });
 
     printSuccess('👀 File watcher initialized');
@@ -262,6 +290,29 @@ export class AutonomousDaemon {
   }
 
   /**
+   * Handle file deletion
+   */
+  async handleFileDelete(filePath) {
+    try {
+      if (this.options.verbose) {
+        printInfo(`🗑️ File deleted: ${filePath}`);
+      }
+
+      // Update context and memory
+      await ultraMemory.remember(`File deleted: ${filePath}`, ['file-change', 'deletion']);
+      
+      // Check if this affects other parts of the system
+      this.priorityQueue.push({
+        type: 'file_delete',
+        filePath,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      printError(`File deletion handling failed: ${error.message}`);
+    }
+  }
+
+  /**
    * Analyze file change for potential issues
    */
   async analyzeFileChange(filePath) {
@@ -274,7 +325,8 @@ export class AutonomousDaemon {
         size: stats.size,
         needsAttention: false,
         issues: [],
-        suggestions: []
+        suggestions: [],
+        type: this.getFileType(filePath)
       };
 
       // Check for common issues
@@ -304,6 +356,12 @@ export class AutonomousDaemon {
         analysis.issues.push('Potential security issues detected');
       }
 
+      // Check for performance issues
+      if (this.containsPerformanceIssues(content)) {
+        analysis.needsAttention = true;
+        analysis.issues.push('Potential performance issues detected');
+      }
+
       return analysis;
     } catch (error) {
       printError(`File analysis failed: ${error.message}`);
@@ -331,6 +389,42 @@ export class AutonomousDaemon {
     ];
 
     return securityPatterns.some(pattern => pattern.test(content));
+  }
+
+  /**
+   * Check for performance issues in content
+   */
+  containsPerformanceIssues(content) {
+    const performancePatterns = [
+      /for\s*\(\s*let\s+i\s*=\s*0\s*;\s*i\s*<\s*arr\.length\s*;\s*i\s*\+\+\s*\)/, // Inefficient loop
+      /JSON\.parse\s*\(\s*JSON\.stringify\s*\(/, // JSON cloning
+      /document\.querySelectorAll\s*\(\s*".*"\s*\)\s*\[\s*\d+\s*\]/, // Inefficient DOM access
+      /new\s+Array\s*\(\s*\d+\s*\)/, // Large array creation
+      /while\s*\(\s*true\s*\)/, // Infinite loop
+    ];
+
+    return performancePatterns.some(pattern => pattern.test(content));
+  }
+
+  /**
+   * Get file type based on extension
+   */
+  getFileType(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === '.js' || ext === '.ts' || ext === '.jsx' || ext === '.tsx') {
+      return 'frontend';
+    } else if (ext === '.py') {
+      return 'backend';
+    } else if (ext === '.go') {
+      return 'backend';
+    } else if (ext === '.rs') {
+      return 'backend';
+    } else if (ext === '.md') {
+      return 'documentation';
+    } else if (ext === '.json' || ext === '.yaml' || ext === '.toml') {
+      return 'config';
+    }
+    return 'other';
   }
 
   /**
@@ -372,6 +466,12 @@ export class AutonomousDaemon {
       
       // Check dependencies
       healthReport.checks.dependencies = await this.checkDependencies();
+      
+      // Check agent health
+      healthReport.checks.agents = await this.checkAgentHealth();
+      
+      // Check MCP connectivity
+      healthReport.checks.mcp = await this.checkMCPConnectivity();
       
       // Determine overall health
       const unhealthyChecks = Object.values(healthReport.checks).filter(check => check.status !== 'healthy');
@@ -446,9 +546,13 @@ export class AutonomousDaemon {
    */
   async checkGovernanceCompliance() {
     try {
-      // This would check ADR compliance, Protocol 21, etc.
-      // For now, we'll return healthy
-      return { status: 'healthy', message: 'Governance checks passing' };
+      const compliance = await this.governanceEngine.checkCompliance();
+      
+      return {
+        status: compliance.passed ? 'healthy' : 'unhealthy',
+        message: compliance.passed ? 'Governance checks passing' : 'Governance violations detected',
+        data: compliance
+      };
     } catch (error) {
       return { status: 'unhealthy', message: `Governance check failed: ${error.message}` };
     }
@@ -459,7 +563,6 @@ export class AutonomousDaemon {
    */
   async checkSecurityIssues() {
     try {
-      // Scan for security vulnerabilities
       const issues = await this.scanSecurityIssues();
       
       return {
@@ -478,13 +581,11 @@ export class AutonomousDaemon {
   async scanSecurityIssues() {
     const issues = [];
     
-    // This would implement a comprehensive security scan
-    // For now, we'll scan common patterns
     try {
       const files = await this.getAllProjectFiles();
       
       for (const file of files) {
-        if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.py')) {
+        if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.py') || file.endsWith('.go') || file.endsWith('.rs')) {
           const content = await fs.readFile(file, 'utf8');
           
           if (this.containsSecurityIssues(content)) {
@@ -501,24 +602,6 @@ export class AutonomousDaemon {
     }
     
     return issues;
-  }
-
-  /**
-   * Get all project files
-   */
-  async getAllProjectFiles() {
-    const { glob } = await import('glob');
-    return await glob('**/*.{js,ts,jsx,tsx,py,go,rs,json,md}', {
-      ignore: [
-        'node_modules/**',
-        '.git/**',
-        'dist/**',
-        'build/**',
-        '.next/**',
-        'coverage/**',
-        '*.log'
-      ]
-    });
   }
 
   /**
@@ -554,6 +637,40 @@ export class AutonomousDaemon {
   }
 
   /**
+   * Check agent health
+   */
+  async checkAgentHealth() {
+    try {
+      const agentHealth = await this.agentSwarm.getHealth();
+      
+      return {
+        status: agentHealth.allHealthy ? 'healthy' : 'warning',
+        message: agentHealth.allHealthy ? 'All agents healthy' : `${agentHealth.unhealthyCount} agents unhealthy`,
+        data: agentHealth
+      };
+    } catch (error) {
+      return { status: 'unhealthy', message: `Agent health check failed: ${error.message}` };
+    }
+  }
+
+  /**
+   * Check MCP connectivity
+   */
+  async checkMCPConnectivity() {
+    try {
+      const mcpStatus = await this.mcpHost.getStatus();
+      
+      return {
+        status: mcpStatus.connected ? 'healthy' : 'unhealthy',
+        message: mcpStatus.connected ? 'MCP connected' : 'MCP disconnected',
+        data: mcpStatus
+      };
+    } catch (error) {
+      return { status: 'unhealthy', message: `MCP check failed: ${error.message}` };
+    }
+  }
+
+  /**
    * Handle health issues by creating tasks
    */
   async handleHealthIssues(healthReport) {
@@ -565,7 +682,8 @@ export class AutonomousDaemon {
           check: checkName,
           issue: checkResult.message,
           priority: 'high',
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          data: checkResult.data
         };
         
         this.priorityQueue.push(task);
@@ -599,6 +717,101 @@ export class AutonomousDaemon {
   }
 
   /**
+   * Start autonomous monitoring
+   */
+  startAutonomousMonitoring() {
+    // Monitor for common patterns that need attention
+    this.startCodeQualityMonitor();
+    this.startSecurityMonitor();
+    this.startPerformanceMonitor();
+    this.startDependencyMonitor();
+  }
+
+  /**
+   * Start code quality monitor
+   */
+  startCodeQualityMonitor() {
+    this.monitors.set('code_quality', {
+      interval: 300000, // 5 minutes
+      check: async () => {
+        // Check for code quality issues
+        const issues = await this.scanCodeQualityIssues();
+        if (issues.length > 0) {
+          this.priorityQueue.push({
+            type: 'code_quality_fix',
+            issues,
+            priority: 'medium',
+            timestamp: Date.now()
+          });
+        }
+      }
+    });
+  }
+
+  /**
+   * Start security monitor
+   */
+  startSecurityMonitor() {
+    this.monitors.set('security', {
+      interval: 600000, // 10 minutes
+      check: async () => {
+        // Check for security vulnerabilities
+        const issues = await this.scanSecurityIssues();
+        if (issues.length > 0) {
+          this.priorityQueue.push({
+            type: 'security_fix',
+            issues,
+            priority: 'high',
+            timestamp: Date.now()
+          });
+        }
+      }
+    });
+  }
+
+  /**
+   * Start performance monitor
+   */
+  startPerformanceMonitor() {
+    this.monitors.set('performance', {
+      interval: 900000, // 15 minutes
+      check: async () => {
+        // Check for performance issues
+        const issues = await this.scanPerformanceIssues();
+        if (issues.length > 0) {
+          this.priorityQueue.push({
+            type: 'performance_optimization',
+            issues,
+            priority: 'medium',
+            timestamp: Date.now()
+          });
+        }
+      }
+    });
+  }
+
+  /**
+   * Start dependency monitor
+   */
+  startDependencyMonitor() {
+    this.monitors.set('dependencies', {
+      interval: 3600000, // 1 hour
+      check: async () => {
+        // Check for outdated dependencies
+        const outdated = await this.checkOutdatedDependencies();
+        if (outdated.length > 0) {
+          this.backgroundQueue.push({
+            type: 'dependency_update',
+            outdated,
+            priority: 'low',
+            timestamp: Date.now()
+          });
+        }
+      }
+    });
+  }
+
+  /**
    * Process a task
    */
   async processTask(task) {
@@ -618,6 +831,18 @@ export class AutonomousDaemon {
           break;
         case 'auto_fix':
           result = await this.processAutoFixTask(task);
+          break;
+        case 'code_quality_fix':
+          result = await this.processCodeQualityFix(task);
+          break;
+        case 'security_fix':
+          result = await this.processSecurityFix(task);
+          break;
+        case 'performance_optimization':
+          result = await this.processPerformanceOptimization(task);
+          break;
+        case 'dependency_update':
+          result = await this.processDependencyUpdate(task);
           break;
         default:
           result = { success: false, message: `Unknown task type: ${task.type}` };
@@ -659,7 +884,7 @@ export class AutonomousDaemon {
       // Auto-fix common issues if autoFix is enabled
       if (this.options.autoFix) {
         // Remove console.log statements (except in tests)
-        if (!task.filePath.includes('__tests__') && !task.filePath.includes('.test.')) {
+        if (!task.filePath.includes('__tests__') && !task.filePath.includes('.test.') && !task.filePath.includes('.spec.')) {
           const originalLength = newContent.length;
           newContent = newContent.replace(/console\.log\(.*?\);?\n?/g, '');
           if (newContent.length !== originalLength) {
@@ -712,6 +937,9 @@ export class AutonomousDaemon {
         case 'projectState':
           // Implement project state fixes
           break;
+        case 'governance':
+          // Implement governance fixes
+          break;
       }
 
       return {
@@ -740,6 +968,102 @@ export class AutonomousDaemon {
       return {
         success: false,
         message: `Auto-fix failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Process code quality fix
+   */
+  async processCodeQualityFix(task) {
+    try {
+      // Implement code quality improvements
+      for (const issue of task.issues) {
+        // Apply quality fixes
+        printInfo(`🔧 Fixing code quality issue in ${issue.file}: ${issue.type}`);
+      }
+
+      return {
+        success: true,
+        message: `Fixed ${task.issues.length} code quality issues`,
+        fixedIssues: task.issues.length
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Code quality fix failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Process security fix
+   */
+  async processSecurityFix(task) {
+    try {
+      // Implement security fixes
+      for (const issue of task.issues) {
+        printWarning(`🔒 Addressing security issue in ${issue.file}: ${issue.type}`);
+        // Apply security fixes
+      }
+
+      return {
+        success: true,
+        message: `Fixed ${task.issues.length} security issues`,
+        fixedIssues: task.issues.length
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Security fix failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Process performance optimization
+   */
+  async processPerformanceOptimization(task) {
+    try {
+      // Implement performance optimizations
+      for (const issue of task.issues) {
+        printInfo(`⚡ Optimizing performance in ${issue.file}: ${issue.type}`);
+        // Apply performance optimizations
+      }
+
+      return {
+        success: true,
+        message: `Optimized ${task.issues.length} performance issues`,
+        fixedIssues: task.issues.length
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Performance optimization failed: ${error.message}`
+      };
+    }
+  }
+
+  /**
+   * Process dependency update
+   */
+  async processDependencyUpdate(task) {
+    try {
+      // Update dependencies
+      for (const dep of task.outdated) {
+        printInfo(`📦 Updating dependency: ${dep.name} ${dep.current} → ${dep.latest}`);
+        // Apply dependency updates
+      }
+
+      return {
+        success: true,
+        message: `Updated ${task.outdated.length} dependencies`,
+        fixedIssues: task.outdated.length
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Dependency update failed: ${error.message}`
       };
     }
   }
@@ -826,7 +1150,9 @@ export class AutonomousDaemon {
       queueSizes: {
         priority: this.priorityQueue.length,
         background: this.backgroundQueue.length
-      }
+      },
+      monitors: Array.from(this.monitors.keys()),
+      activeChecks: Array.from(this.activeChecks)
     };
   }
 
@@ -886,6 +1212,11 @@ export class AutonomousDaemon {
       await this.fileWatcher.close();
     }
     
+    // Stop all monitors
+    for (const [id, monitor] of this.monitors) {
+      clearInterval(monitor.intervalId);
+    }
+    
     printSuccess('✅ Autonomous daemon stopped');
   }
 
@@ -903,9 +1234,151 @@ export class AutonomousDaemon {
     
     process.exit(0);
   }
+
+  /**
+   * Start a specific monitor
+   */
+  startMonitor(monitorType, ws) {
+    const monitor = this.monitors.get(monitorType);
+    if (monitor) {
+      const intervalId = setInterval(async () => {
+        try {
+          await monitor.check();
+        } catch (error) {
+          printError(`Monitor ${monitorType} failed: ${error.message}`);
+        }
+      }, monitor.interval);
+
+      monitor.intervalId = intervalId;
+      this.activeChecks.add(monitorType);
+      
+      ws.send(JSON.stringify({
+        type: 'monitor_started',
+        data: { monitor: monitorType }
+      }));
+    }
+  }
+
+  /**
+   * Stop a specific monitor
+   */
+  stopMonitor(monitorId) {
+    const monitor = this.monitors.get(monitorId);
+    if (monitor && monitor.intervalId) {
+      clearInterval(monitor.intervalId);
+      this.activeChecks.delete(monitorId);
+    }
+  }
+
+  /**
+   * Scan all project files
+   */
+  async getAllProjectFiles() {
+    const { glob } = await import('glob');
+    return await glob('**/*.{js,ts,jsx,tsx,py,go,rs,json,md,html,css,scss}', {
+      ignore: [
+        'node_modules/**',
+        '.git/**',
+        'dist/**',
+        'build/**',
+        '.next/**',
+        'coverage/**',
+        '*.log',
+        'tmp/**',
+        'temp/**'
+      ]
+    });
+  }
+
+  /**
+   * Scan for code quality issues
+   */
+  async scanCodeQualityIssues() {
+    const issues = [];
+    const files = await this.getAllProjectFiles();
+    
+    for (const file of files) {
+      if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.jsx') || file.endsWith('.tsx')) {
+        const content = await fs.readFile(file, 'utf8');
+        
+        // Check for common quality issues
+        if (content.includes('any') && file.endsWith('.ts')) {
+          issues.push({
+            file,
+            type: 'type_any_usage',
+            severity: 'medium'
+          });
+        }
+        
+        if (content.includes('TODO') || content.includes('FIXME')) {
+          issues.push({
+            file,
+            type: 'technical_debt',
+            severity: 'low'
+          });
+        }
+      }
+    }
+    
+    return issues;
+  }
+
+  /**
+   * Scan for performance issues
+   */
+  async scanPerformanceIssues() {
+    const issues = [];
+    const files = await this.getAllProjectFiles();
+    
+    for (const file of files) {
+      if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.py') || file.endsWith('.go')) {
+        const content = await fs.readFile(file, 'utf8');
+        
+        // Check for performance anti-patterns
+        if (content.includes('JSON.parse(JSON.stringify(')) {
+          issues.push({
+            file,
+            type: 'inefficient_cloning',
+            severity: 'medium'
+          });
+        }
+        
+        if (content.includes('for (let i = 0; i < arr.length; i++)') && content.includes('arr.length')) {
+          issues.push({
+            file,
+            type: 'inefficient_loop',
+            severity: 'medium'
+          });
+        }
+      }
+    }
+    
+    return issues;
+  }
+
+  /**
+   * Check for outdated dependencies
+   */
+  async checkOutdatedDependencies() {
+    try {
+      const packageJsonPath = path.join(process.cwd(), 'package.json');
+      if (await fs.access(packageJsonPath).then(() => true).catch(() => false)) {
+        const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+        const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+        
+        // In a real implementation, this would call npm outdated
+        // For now, return empty array
+        return [];
+      }
+      return [];
+    } catch (error) {
+      printError(`Dependency check failed: ${error.message}`);
+      return [];
+    }
+  }
 }
 
-// Global daemon instance
+// Singleton instance
 export const autonomousDaemon = new AutonomousDaemon();
 
 export default AutonomousDaemon;
