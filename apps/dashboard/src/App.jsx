@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { 
   Activity, 
   Bot, 
@@ -33,6 +32,23 @@ import {
   GitCommit as GitCommitIcon,
   Bot as BotIcon
 } from 'lucide-react';
+import { 
+  LineChart, 
+  Line, 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer, 
+  Cell 
+} from 'recharts';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -182,7 +198,7 @@ const Dashboard = () => {
               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
                 <Brain className="w-5 h-5" />
               </div>
-              <h1 className="text-xl font-bold">.Ultra-Dex Dashboard</h1>
+              <h1 className="text-xl font-bold">Ultra-Dex Dashboard</h1>
             </div>
             <div className="hidden md:flex items-center space-x-6 text-sm text-gray-400">
               <span className="flex items-center space-x-1">
@@ -360,7 +376,7 @@ const Dashboard = () => {
             </div>
 
             {/* Active Agents */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 lg:col-span-2">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <Bot className="w-5 h-5 mr-2" />
                 Active Agents
@@ -377,8 +393,10 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
+          </div>
 
-            {/* Recent Tasks */}
+          {/* Recent Tasks */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <CheckCircle className="w-5 h-5 mr-2" />
@@ -405,36 +423,36 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
-          </div>
 
-          {/* Real-time Activity Feed */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <Activity className="w-5 h-5 mr-2" />
-              Real-time Activity
-            </h3>
-            <div className="h-64 overflow-y-auto">
-              {realTimeData.map((data, index) => (
-                <div key={index} className="flex items-center justify-between py-3 border-b border-gray-700/50 last:border-b-0">
-                  <span className="text-sm text-gray-400">{data.timestamp}</span>
-                  <div className="flex items-center space-x-6 text-sm">
-                    <span className="text-blue-400 flex items-center">
-                      <GitCommit className="w-4 h-4 mr-1" />
-                      +{data.commits} commits
-                    </span>
-                    <span className="text-green-400 flex items-center">
-                      <Zap className="w-4 h-4 mr-1" />
-                      +{data.aiRequests} AI req
-                    </span>
-                    {data.errors > 0 && (
-                      <span className="text-red-400 flex items-center">
-                        <AlertTriangle className="w-4 h-4 mr-1" />
-                        -{data.errors} err
+            {/* Real-time Activity Feed */}
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Activity className="w-5 h-5 mr-2" />
+                Real-time Activity
+              </h3>
+              <div className="h-64 overflow-y-auto space-y-2">
+                {realTimeData.map((data, index) => (
+                  <div key={index} className="flex items-center justify-between py-2 border-b border-gray-700/50 last:border-b-0">
+                    <span className="text-sm text-gray-400">{data.timestamp}</span>
+                    <div className="flex items-center space-x-4 text-sm">
+                      <span className="text-blue-400 flex items-center">
+                        <GitCommit className="w-4 h-4 mr-1" />
+                        +{data.commits} commits
                       </span>
-                    )}
+                      <span className="text-green-400 flex items-center">
+                        <Zap className="w-4 h-4 mr-1" />
+                        +{data.aiRequests} AI req
+                      </span>
+                      {data.errors > 0 && (
+                        <span className="text-red-400 flex items-center">
+                          <AlertTriangle className="w-4 h-4 mr-1" />
+                          -{data.errors} err
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </main>
