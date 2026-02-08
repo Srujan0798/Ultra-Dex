@@ -1,90 +1,382 @@
-# Performance Tuning Guide
+# Performance Optimization Guide
 
-> **Optimize Ultra-Dex for speed and scale.**
-> Strategies for handling large codebases and complex agent swarms.
+## Overview
 
----
+This guide helps you optimize Ultra-Dex CLI performance. Use the built-in profiler to identify bottlenecks and apply these optimizations.
 
-## ⚡ Overview
+## Using the Profiler
 
-Ultra-Dex is built for performance, but large projects (>10k files) may require tuning. This guide covers configuration and best practices.
+### Basic Usage
 
-## 🛠️ Configuration
+```javascript
+import { timeAsync, timeSync, showReport } from './lib/utils/profiler.js';
 
-Edit your `~/.ultra-dex/config.json` or project `.ultra/config.json`:
+// Time an async operation
+await timeAsync('file-scan', async () => {
+  await scanProjectFiles();
+});
 
-```json
-{
-  "performance": {
-    "cacheEnabled": true,
-    "maxConcurrentTasks": 10,
-    "graphScanInterval": 60000
+// Time a sync operation
+const result = timeSync('data-process', () => {
+  return processData();
+});
+
+// Show performance report
+showReport();
+```
+
+### Profiling a Full Command
+
+```javascript
+import { profileCommand } from './lib/utils/profiler.js';
+
+await profileCommand('init', async () => {
+  // Your command logic here
+  await initializeProject();
+});
+```
+
+### Manual Timing
+
+```javascript
+import { startTimer, endTimer } from './lib/utils/profiler.js';
+
+startTimer('custom-operation');
+// ... do work ...
+const duration = endTimer('custom-operation');
+console.log(`Operation took ${duration}ms`);
+```
+
+## Performance Targets
+
+| Operation       | Target  | Critical Threshold |
+| --------------- | ------- | ------------------ |
+| Command startup | < 100ms | > 500ms            |
+| File scan       | < 1s    | > 5s               |
+| Graph build     | < 3s    | > 10s              |
+| Agent pipeline  | < 30s   | > 60s              |
+| API call        | < 5s    | > 15s              |
+| Context sync    | < 2s    | > 5s               |
+
+## Common Bottlenecks & Solutions
+
+### 1. File System Operations
+
+**Problem**: Excessive file reads/writes
+
+**Solutions**:
+
+- Use `Promise.all()` for parallel operations
+- Implement file caching
+- Batch file operations
+- Exclude unnecessary directories
+
+```javascript
+// ❌ Slow: Sequential reads
+for (const file of files) {
+  await fs.readFile(file);
+}
+
+// ✅ Fast: Parallel reads
+await Promise.all(files.map((f) => fs.readFile(f)));
+
+// ✅ Fast: Batched reads
+const BATCH_SIZE = 50;
+for (let i = 0; i < files.length; i += BATCH_SIZE) {
+  const batch = files.slice(i, i + BATCH_SIZE);
+  await Promise.all(batch.map((f) => fs.readFile(f)));
+}
+```
+
+### 2. Graph Scanning
+
+**Problem**: Full project scan is slow on large projects
+
+**Solutions**:
+
+- Use caching with 30s TTL (already implemented)
+- Exclude directories: `node_modules`, `.git`, `dist`, `build`
+- Implement incremental scanning
+- Limit file size analyzed
+
+```javascript
+// In mcp/graph.js
+const cacheTimeout = 30000; // 30 seconds
+
+async scan(useCache = true) {
+  const now = Date.now();
+  if (useCache && (now - this.lastScanTime) < cacheTimeout) {
+    return this.getSummary();
+  }
+  // ... scan logic
+}
+```
+
+### 3. API Calls
+
+**Problem**: Slow AI provider responses
+
+**Solutions**:
+
+- Implement request timeouts (default: 30s)
+- Use streaming for large responses
+- Cache API responses when appropriate
+- Implement retry logic with exponential backoff
+
+```javascript
+// Timeout handling
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+try {
+  const response = await fetch(url, {
+    signal: controller.signal,
+  });
+} finally {
+  clearTimeout(timeoutId);
+}
+```
+
+### 4. State Management
+
+**Problem**: Race conditions in state updates
+
+**Solutions**:
+
+- Use file locking (already implemented)
+- Batch state updates
+- Use atomic writes
+
+```javascript
+// File locking in state.js
+async function withStateLock(callback) {
+  const lockFile = path.join(process.cwd(), '.ultra-dex', 'state.lock');
+  // ... lock implementation
+}
+```
+
+### 5. Memory Usage
+
+**Problem**: High memory consumption with large projects
+
+**Solutions**:
+
+- Stream file contents instead of loading all at once
+- Use generators for lazy evaluation
+- Clear references when done
+- Implement pagination for large lists
+
+```javascript
+// ❌ High memory: Loading all files
+const contents = await Promise.all(files.map((f) => fs.readFile(f, 'utf8')));
+
+// ✅ Low memory: Streaming/chunking
+for (const file of files) {
+  const content = await fs.readFile(file, 'utf8');
+  await processContent(content);
+  // Content can be garbage collected
+}
+```
+
+## Optimization Patterns
+
+### Caching Strategy
+
+```javascript
+import { timeAsync } from './lib/utils/profiler.js';
+
+class FileCache {
+  constructor(ttl = 30000) {
+    this.cache = new Map();
+    this.ttl = ttl;
+  }
+
+  async get(key, fetchFn) {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.time < this.ttl) {
+      return cached.value;
+    }
+
+    const value = await timeAsync(`fetch-${key}`, fetchFn);
+    this.cache.set(key, { value, time: Date.now() });
+    return value;
   }
 }
 ```
 
-| Setting              | Default | Recommendation for Large Projects                   |
-| -------------------- | ------- | --------------------------------------------------- |
-| `cacheEnabled`       | `true`  | Keep `true`. Crucial for graph scans.               |
-| `maxConcurrentTasks` | `5`     | Increase to `10-20` if you have high bandwidth/CPU. |
-| `graphScanInterval`  | `30000` | Increase to `300000` (5 mins) to reduce I/O.        |
+### Lazy Loading
 
-## 🧠 Code Graph Optimization
+```javascript
+// Load expensive resources only when needed
+class LazyLoader {
+  constructor(loaderFn) {
+    this.loaderFn = loaderFn;
+    this.promise = null;
+  }
 
-The Code Property Graph (CPG) scans your project to understand dependencies.
-
-### Ignoring Files
-
-Ensure you are ignoring build artifacts and heavy directories in `.gitignore`. Ultra-Dex respects `.gitignore` automatically.
-
-**Recommended `.gitignore`:**
-
-```text
-node_modules/
-dist/
-build/
-coverage/
-.next/
-*.log
+  async get() {
+    if (!this.promise) {
+      this.promise = this.loaderFn();
+    }
+    return this.promise;
+  }
+}
 ```
 
-### Selective Scanning
+### Connection Pooling
 
-Use `ultra-dex search --index --force` only when structure changes significantly. Routine operations use the cache.
+```javascript
+// For API providers, reuse connections
+class ApiClient {
+  constructor() {
+    this.agent = new Agent({ keepAlive: true });
+  }
 
-## 🤖 Agent Performance
+  async request(url, options) {
+    return fetch(url, {
+      ...options,
+      agent: this.agent,
+    });
+  }
+}
+```
 
-### Parallel Swarms
+## Command-Specific Optimizations
 
-Use the `--parallel` flag when tasks are independent:
+### `init` Command
+
+- Cache template files
+- Parallel file creation
+- Lazy dependency installation
+
+### `brain` Command
+
+- Incremental context updates
+- Cache graph data
+- Batch file analysis
+
+### `swarm` Command
+
+- Parallel agent execution (already implemented)
+- Stream results
+- Cache agent prompts
+
+### `agents` Command
+
+- Cache agent index
+- Lazy load agent details
+- Optimize search with indexing
+
+## Benchmarking
+
+### Run Built-in Benchmarks
 
 ```bash
-npx ultra-dex swarm "Build auth and payment endpoints" --parallel
+# Profile a specific command
+cd cli
+node -e "
+const { profileCommand } = require('./lib/utils/profiler.js');
+const { init } = require('./lib/commands/init.js');
+
+profileCommand('init', async () => {
+  await init({ preview: true });
+});
+"
 ```
 
-This runs `@Backend` (Auth) and `@Backend` (Payments) simultaneously if the planner determines they don't overlap.
+### Custom Benchmark Script
 
-### Context Window Management
+```javascript
+import { timeAsync, showReport, clearMetrics } from './lib/utils/profiler.js';
 
-Large context windows ($$$) slow down responses.
+async function benchmark() {
+  clearMetrics();
 
-- **Use `CONTEXT.md` effectively:** Keep it high-level. Don't dump entire files unless necessary.
-- **Use `read_file` sparsely:** Agents should read only what they need.
+  // Warm up
+  await timeAsync('warmup', async () => {
+    await fs.readdir('.');
+  });
 
-## 🐳 Docker Sandbox
+  // Actual benchmark
+  for (let i = 0; i < 10; i++) {
+    await timeAsync('operation', async () => {
+      // Operation to benchmark
+    });
+  }
 
-The Docker sandbox adds overhead (~1-2s startup).
+  showReport();
+}
 
-- **Reuse Containers:** (Coming in v3.5)
-- **Native Mode:** Use `--no-sandbox` if you trust the agents and need raw speed (use with caution).
+benchmark();
+```
 
-## 📊 Monitoring
+## Monitoring in Production
 
-Use `ultra-dex metrics --watch` to identify bottlenecks.
+### Performance Budgets
 
-- **High CPU?** Reduce `maxConcurrentTasks`.
-- **High Memory?** Check graph node count. If >100k nodes, consider splitting the project into workspaces.
+Set budgets for critical paths:
+
+```javascript
+const BUDGETS = {
+  'file-scan': 1000, // 1 second
+  'graph-build': 3000, // 3 seconds
+  'api-call': 5000, // 5 seconds
+};
+
+function checkBudget(operation, duration) {
+  const budget = BUDGETS[operation];
+  if (budget && duration > budget) {
+    console.warn(
+      `⚠️  Performance budget exceeded: ${operation} took ${duration}ms (budget: ${budget}ms)`
+    );
+  }
+}
+```
+
+### Metrics Collection
+
+```javascript
+import { getStatistics } from './lib/utils/profiler.js';
+
+// Export metrics for monitoring
+const stats = getStatistics();
+console.log(
+  JSON.stringify({
+    timestamp: new Date().toISOString(),
+    performance: stats,
+  })
+);
+```
+
+## Best Practices
+
+1. **Profile Before Optimizing**: Use profiler to identify actual bottlenecks
+2. **Measure Impact**: Compare before/after metrics for every optimization
+3. **Cache Strategically**: Cache expensive operations with appropriate TTL
+4. **Fail Fast**: Validate inputs early to avoid wasted work
+5. **Parallelize Wisely**: Use Promise.all() for independent operations
+6. **Stream Large Data**: Don't load entire files into memory
+7. **Use Appropriate Data Structures**: Maps for lookups, Sets for uniqueness
+8. **Debounce Rapid Changes**: Don't trigger operations on every keystroke
+9. **Lazy Load**: Defer loading until actually needed
+10. **Monitor Continuously**: Track performance in CI/CD pipeline
+
+## Tools & Resources
+
+- **Node.js Profiler**: `node --prof`
+- **Clinic.js**: `npx clinic doctor`
+- **0x**: `npx 0x`
+- **Built-in profiler**: `lib/utils/profiler.js`
+
+## Getting Help
+
+If you encounter performance issues:
+
+1. Run with profiler enabled
+2. Check performance report
+3. Review optimization suggestions
+4. File an issue with profiler output
 
 ---
 
-_Found a performance bug? Report it on GitHub._
+_Last updated: February 2026_

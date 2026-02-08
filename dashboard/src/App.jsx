@@ -1,297 +1,446 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import io from 'socket.io-client';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { 
+  Activity, 
+  Bot, 
+  CheckCircle, 
+  AlertTriangle, 
+  Clock, 
+  Zap, 
+  Shield, 
+  Users, 
+  GitBranch,
+  Database,
+  Cpu,
+  HardDrive,
+  Globe,
+  Terminal,
+  Code,
+  Eye,
+  Brain,
+  Cog,
+  TrendingUp,
+  Star,
+  MessageSquare,
+  GitCommit,
+  Server,
+  Smartphone,
+  Globe as GlobeIcon,
+  Activity as ActivityIcon,
+  Shield as ShieldIcon,
+  Cpu as CpuIcon,
+  HardDrive as HardDriveIcon,
+  GitCommit as GitCommitIcon,
+  Bot as BotIcon
+} from 'lucide-react';
 
-// Mock data for initial display
-const mockMetrics = {
-  totalCommits: 1247,
-  activeProjects: 23,
-  aiRequests: 8934,
-  memoryUsage: 78,
-  agentsOnline: 12,
-  uptime: 99.9,
-  responseTime: 124,
-  errorRate: 0.2
-};
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalCommits: 1247,
+    activeProjects: 23,
+    aiRequests: 8934,
+    memoryUsage: 78,
+    agentsOnline: 12,
+    uptime: 99.9,
+    responseTime: 124,
+    errorRate: 0.2,
+    cpuUsage: 45,
+    memoryUsagePercent: 67,
+    diskUsage: 34,
+    networkTraffic: 2.3
+  });
 
-const mockChartData = [
-  { name: 'Mon', commits: 45, aiRequests: 1200 },
-  { name: 'Tue', commits: 52, aiRequests: 1350 },
-  { name: 'Wed', commits: 38, aiRequests: 980 },
-  { name: 'Thu', commits: 61, aiRequests: 1420 },
-  { name: 'Fri', commits: 49, aiRequests: 1180 },
-  { name: 'Sat', commits: 23, aiRequests: 650 },
-  { name: 'Sun', commits: 18, aiRequests: 520 },
-];
+  const [realTimeData, setRealTimeData] = useState([
+    { timestamp: '10:00:00', commits: 24, aiRequests: 1200, errors: 2 },
+    { timestamp: '10:01:00', commits: 31, aiRequests: 1350, errors: 1 },
+    { timestamp: '10:02:00', commits: 28, aiRequests: 980, errors: 3 },
+    { timestamp: '10:03:00', commits: 35, aiRequests: 1420, errors: 0 },
+    { timestamp: '10:04:00', commits: 42, aiRequests: 1180, errors: 1 },
+  ]);
 
-const mockAgentData = [
-  { name: 'Planner', value: 15, status: 'active' },
-  { name: 'Backend', value: 25, status: 'active' },
-  { name: 'Frontend', value: 20, status: 'active' },
-  { name: 'Database', value: 10, status: 'idle' },
-  { name: 'Reviewer', value: 15, status: 'active' },
-  { name: 'Debugger', value: 15, status: 'busy' },
-];
+  const [activeTab, setActiveTab] = useState('overview');
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+  // Mock data for charts
+  const activityData = [
+    { date: 'Mon', commits: 24, aiRequests: 1200, errors: 2 },
+    { date: 'Tue', commits: 52, aiRequests: 1350, errors: 1 },
+    { date: 'Wed', commits: 38, aiRequests: 980, errors: 3 },
+    { date: 'Thu', commits: 61, aiRequests: 1420, errors: 0 },
+    { date: 'Fri', commits: 49, aiRequests: 1180, errors: 1 },
+    { date: 'Sat', commits: 23, aiRequests: 650, errors: 0 },
+    { date: 'Sun', commits: 18, aiRequests: 520, errors: 2 },
+  ];
 
-function Dashboard() {
-  const [metrics, setMetrics] = useState(mockMetrics);
-  const [realTimeData, setRealTimeData] = useState([]);
-  const [socket, setSocket] = useState(null);
+  const agentData = [
+    { name: 'Planner', value: 15, status: 'active', tasks: 45 },
+    { name: 'Backend', value: 25, status: 'active', tasks: 67 },
+    { name: 'Frontend', value: 20, status: 'busy', tasks: 34 },
+    { name: 'Database', value: 10, status: 'idle', tasks: 23 },
+    { name: 'Reviewer', value: 15, status: 'active', tasks: 56 },
+    { name: 'Debugger', value: 15, status: 'busy', tasks: 12 },
+  ];
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+
+  const agentStatusData = [
+    { status: 'Active', count: 8, color: '#10B981' },
+    { status: 'Busy', count: 3, color: '#F59E0B' },
+    { status: 'Idle', count: 1, color: '#6B7280' },
+  ];
+
+  const recentTasks = [
+    { id: 1, task: 'Implement auth system', agent: 'Backend', status: 'completed', time: '2m ago' },
+    { id: 2, task: 'Design dashboard UI', agent: 'Frontend', status: 'in-progress', time: '5m ago' },
+    { id: 3, task: 'Setup database schema', agent: 'Database', status: 'pending', time: '10m ago' },
+    { id: 4, task: 'Write unit tests', agent: 'Testing', status: 'completed', time: '15m ago' },
+    { id: 5, task: 'Fix security vulnerability', agent: 'Security', status: 'in-progress', time: '20m ago' },
+  ];
 
   useEffect(() => {
-    // In a real implementation, connect to WebSocket server
-    // const ws = io('http://localhost:4000'); // Ultra-Dex dashboard server
-    // setSocket(ws);
-
-    // For demo purposes, simulate real-time updates
+    // Simulate real-time data updates
     const interval = setInterval(() => {
-      setMetrics(prev => ({
+      setRealTimeData(prev => {
+        const newData = [...prev, {
+          timestamp: new Date().toLocaleTimeString().split(' ')[0],
+          commits: Math.floor(Math.random() * 10),
+          aiRequests: Math.floor(Math.random() * 100),
+          errors: Math.floor(Math.random() * 3)
+        }];
+        return newData.length > 20 ? newData.slice(-20) : newData;
+      });
+
+      // Update stats periodically
+      setStats(prev => ({
         ...prev,
-        aiRequests: prev.aiRequests + Math.floor(Math.random() * 10),
-        totalCommits: prev.totalCommits + (Math.random() > 0.7 ? 1 : 0),
-        responseTime: 100 + Math.floor(Math.random() * 50)
+        totalCommits: prev.totalCommits + Math.floor(Math.random() * 3),
+        aiRequests: prev.aiRequests + Math.floor(Math.random() * 50),
+        errorRate: Math.random() * 5,
+        responseTime: 50 + Math.random() * 150,
+        cpuUsage: 20 + Math.random() * 60,
+        memoryUsagePercent: 30 + Math.random() * 50
       }));
     }, 3000);
 
     return () => clearInterval(interval);
   }, []);
 
+  const StatCard = ({ title, value, icon: Icon, change, color = "blue" }) => (
+    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-colors">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-400 text-sm">{title}</p>
+          <p className="text-2xl font-bold mt-1">{value}</p>
+          {change && (
+            <p className={`text-sm mt-1 ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+              {change}
+            </p>
+          )}
+        </div>
+        <div className={`p-3 bg-${color}-500/20 rounded-lg`}>
+          <Icon className={`w-6 h-6 text-${color}-400`} />
+        </div>
+      </div>
+    </div>
+  );
+
+  const AgentStatusCard = ({ name, status, tasks, icon: Icon }) => {
+    const statusColors = {
+      active: 'text-green-400',
+      busy: 'text-yellow-400',
+      idle: 'text-gray-400'
+    };
+
+    const statusIcons = {
+      active: '🟢',
+      busy: '🟡',
+      idle: '⚪'
+    };
+
+    return (
+      <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
+        <div className="flex items-center space-x-3">
+          <Icon className="w-5 h-5 text-blue-400" />
+          <span className="font-medium">{name}</span>
+        </div>
+        <div className="flex items-center space-x-4">
+          <span className={`text-sm ${statusColors[status]}`}>
+            {statusIcons[status]} {status.charAt(0).toUpperCase() + status.slice(1)}
+          </span>
+          <span className="text-sm text-gray-400">{tasks} tasks</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-xl font-bold text-indigo-600">.Ultra-Dex Dashboard</h1>
+      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                <Brain className="w-5 h-5" />
               </div>
-              <nav className="ml-6 flex space-x-8">
-                <Link to="/" className="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                  Overview
-                </Link>
-                <Link to="/agents" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                  Agents
-                </Link>
-                <Link to="/projects" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                  Projects
-                </Link>
-                <Link to="/settings" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                  Settings
-                </Link>
-              </nav>
+              <h1 className="text-xl font-bold">.Ultra-Dex Dashboard</h1>
             </div>
-            <div className="flex items-center">
-              <span className="text-sm text-green-600 font-medium">● Online</span>
+            <div className="hidden md:flex items-center space-x-6 text-sm text-gray-400">
+              <span className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Operational</span>
+              </span>
+              <span>Uptime: {stats.uptime}%</span>
+              <span>Version: 4.2.0</span>
             </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
+              New Project
+            </button>
+            <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+              <Cog className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Commits</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{metrics.totalCommits.toLocaleString()}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 bg-gray-800 border-r border-gray-700 min-h-screen">
+          <nav className="p-4 space-y-2">
+            {[
+              { icon: ActivityIcon, label: 'Overview', active: activeTab === 'overview' },
+              { icon: BotIcon, label: 'Agents', active: activeTab === 'agents' },
+              { icon: Code, label: 'Code Analysis', active: activeTab === 'code' },
+              { icon: Eye, label: 'Vision', active: activeTab === 'vision' },
+              { icon: Terminal, label: 'Terminal', active: activeTab === 'terminal' },
+              { icon: ShieldIcon, label: 'Security', active: activeTab === 'security' },
+              { icon: Users, label: 'Team', active: activeTab === 'team' },
+              { icon: Server, label: 'Infrastructure', active: activeTab === 'infra' },
+              { icon: MessageSquare, label: 'Chat', active: activeTab === 'chat' },
+              { icon: GitCommitIcon, label: 'Commits', active: activeTab === 'commits' },
+            ].map((item, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveTab(item.label.toLowerCase().replace(' ', '-'))}
+                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  item.active 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <StatCard 
+              title="Total Commits" 
+              value={stats.totalCommits.toLocaleString()} 
+              icon={GitCommit} 
+              change="+12%" 
+              color="green"
+            />
+            <StatCard 
+              title="AI Requests" 
+              value={stats.aiRequests.toLocaleString()} 
+              icon={Zap} 
+              change="+8%" 
+              color="purple"
+            />
+            <StatCard 
+              title="Active Agents" 
+              value={stats.agentsOnline} 
+              icon={Bot} 
+              change="+2" 
+              color="blue"
+            />
+            <StatCard 
+              title="Response Time" 
+              value={`${stats.responseTime.toFixed(0)}ms`} 
+              icon={Clock} 
+              change="-5%" 
+              color="yellow"
+            />
+          </div>
+
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Activity Chart */}
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Activity className="w-5 h-5 mr-2" />
+                Activity Overview
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={activityData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="date" stroke="#9CA3AF" />
+                  <YAxis stroke="#9CA3AF" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1F2937', 
+                      border: '1px solid #374151',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Area type="monotone" dataKey="commits" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.3} />
+                  <Area type="monotone" dataKey="aiRequests" stackId="2" stroke="#10B981" fill="#10B981" fillOpacity={0.3} />
+                  <Area type="monotone" dataKey="errors" stackId="3" stroke="#EF4444" fill="#EF4444" fillOpacity={0.3} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Agent Distribution */}
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Bot className="w-5 h-5 mr-2" />
+                Agent Distribution
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={agentData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {agentData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Active Projects</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{metrics.activeProjects}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">AI Requests</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{metrics.aiRequests.toLocaleString()}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Uptime</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{metrics.uptime}%</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Activity Chart */}
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Weekly Activity</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={mockChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="commits" fill="#8884d8" name="Commits" />
-                <Bar dataKey="aiRequests" fill="#82ca9d" name="AI Requests" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Response Time Chart */}
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Response Time</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={mockChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="commits" stroke="#8884d8" activeDot={{ r: 8 }} name="Commits" />
-                <Line type="monotone" dataKey="aiRequests" stroke="#82ca9d" name="AI Requests" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Agent Status */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Agent Distribution */}
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Agent Distribution</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={mockAgentData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {mockAgentData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* System Status */}
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">System Status</h3>
-            </div>
-            <div className="border-t border-gray-200">
-              <dl>
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Memory Usage</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div className="bg-blue-600 h-2.5 rounded-full" style={{width: `${metrics.memoryUsage}%`}}></div>
+          {/* System Health and Active Agents */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* System Health */}
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Shield className="w-5 h-5 mr-2" />
+                System Health
+              </h3>
+              <div className="space-y-4">
+                {[
+                  { label: 'CPU Usage', value: `${stats.cpuUsage.toFixed(1)}%`, status: stats.cpuUsage > 80 ? 'warning' : 'good' },
+                  { label: 'Memory Usage', value: `${stats.memoryUsagePercent.toFixed(1)}%`, status: stats.memoryUsagePercent > 80 ? 'warning' : 'good' },
+                  { label: 'Disk Usage', value: `${stats.diskUsage.toFixed(1)}%`, status: stats.diskUsage > 90 ? 'critical' : 'good' },
+                  { label: 'Network Traffic', value: `${stats.networkTraffic.toFixed(1)} Mbps`, status: 'good' },
+                ].map((metric, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-gray-300">{metric.label}</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`text-sm ${
+                        metric.status === 'critical' ? 'text-red-400' : 
+                        metric.status === 'warning' ? 'text-yellow-400' : 'text-green-400'
+                      }`}>
+                        {metric.value}
+                      </span>
+                      <div className={`w-2 h-2 rounded-full ${
+                        metric.status === 'critical' ? 'bg-red-500' : 
+                        metric.status === 'warning' ? 'bg-yellow-500' : 'bg-green-500'
+                      }`}></div>
                     </div>
-                    <span className="text-xs text-gray-500">{metrics.memoryUsage}% used</span>
-                  </dd>
-                </div>
-                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Agents Online</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {metrics.agentsOnline} active
-                    </span>
-                  </dd>
-                </div>
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Avg Response Time</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {metrics.responseTime}ms
-                  </dd>
-                </div>
-                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Error Rate</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {metrics.errorRate}%
-                  </dd>
-                </div>
-              </dl>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Active Agents */}
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Bot className="w-5 h-5 mr-2" />
+                Active Agents
+              </h3>
+              <div className="space-y-3">
+                {agentData.filter(a => a.status !== 'idle').map((agent, index) => (
+                  <AgentStatusCard
+                    key={index}
+                    name={agent.name}
+                    status={agent.status}
+                    tasks={agent.tasks}
+                    icon={Bot}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Tasks */}
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Recent Tasks
+              </h3>
+              <div className="space-y-3">
+                {recentTasks.map((task, index) => (
+                  <div key={task.id} className="p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium truncate">{task.task}</span>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        task.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                        task.status === 'in-progress' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        {task.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+                      <span>{task.agent}</span>
+                      <span>{task.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+
+          {/* Real-time Activity Feed */}
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <Activity className="w-5 h-5 mr-2" />
+              Real-time Activity
+            </h3>
+            <div className="h-64 overflow-y-auto">
+              {realTimeData.map((data, index) => (
+                <div key={index} className="flex items-center justify-between py-3 border-b border-gray-700/50 last:border-b-0">
+                  <span className="text-sm text-gray-400">{data.timestamp}</span>
+                  <div className="flex items-center space-x-6 text-sm">
+                    <span className="text-blue-400 flex items-center">
+                      <GitCommit className="w-4 h-4 mr-1" />
+                      +{data.commits} commits
+                    </span>
+                    <span className="text-green-400 flex items-center">
+                      <Zap className="w-4 h-4 mr-1" />
+                      +{data.aiRequests} AI req
+                    </span>
+                    {data.errors > 0 && (
+                      <span className="text-red-400 flex items-center">
+                        <AlertTriangle className="w-4 h-4 mr-1" />
+                        -{data.errors} err
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
-}
+};
 
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/agents" element={<div>Agents Page</div>} />
-        <Route path="/projects" element={<div>Projects Page</div>} />
-        <Route path="/settings" element={<div>Settings Page</div>} />
-      </Routes>
-    </Router>
-  );
-}
-
-export default App;
+export default Dashboard;
