@@ -32,14 +32,20 @@ type SubscriptionRecord = {
 // Swap this with your DB integration (Prisma, Drizzle, Supabase, etc.).
 const subscriptionStore = new Map<string, SubscriptionRecord>();
 
-function upsertSubscription(record: SubscriptionRecord) {
+async function upsertSubscription(record: SubscriptionRecord) {
   subscriptionStore.set(record.id, record);
-  return record;
+  // In a real app, you would do something like:
+  // await prisma.subscription.upsert({
+  //   where: { id: record.id },
+  //   update: record,
+  //   create: record,
+  // });
+  return Promise.resolve(record);
 }
 
-function recordPaymentFailure(subscriptionId: string, customerId: string) {
+async function recordPaymentFailure(subscriptionId: string, customerId: string) {
   const existing = subscriptionStore.get(subscriptionId);
-  upsertSubscription({
+  await upsertSubscription({
     id: subscriptionId,
     customerId,
     status: existing?.status ?? 'past_due',
@@ -105,21 +111,22 @@ export async function handleStripeWebhook(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const subscriptionId = session.subscription;
         if (subscriptionId && typeof subscriptionId === 'string') {
+          // Sync subscription status to database (e.g. mark as active)
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          upsertSubscription(normalizeSubscription(subscription));
+          await upsertSubscription(normalizeSubscription(subscription));
         }
       }
       return new Response('ok');
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
-      upsertSubscription(normalizeSubscription(subscription));
+      await upsertSubscription(normalizeSubscription(subscription));
       return new Response('ok');
     }
     case 'invoice.payment_failed': {
       const invoice = event.data.object as Stripe.Invoice;
       if (invoice.subscription && typeof invoice.subscription === 'string') {
-        recordPaymentFailure(invoice.subscription, String(invoice.customer || ''));
+        await recordPaymentFailure(invoice.subscription, String(invoice.customer || ''));
       }
       return new Response('ok');
     }
