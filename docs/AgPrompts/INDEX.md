@@ -21,6 +21,7 @@ This directory contains all agent prompts for Ultra-Dex development.
 | [PROMPT_05_MEMORY_GRAPH.md](./PROMPT_05_MEMORY_GRAPH.md) | Deep RAG & impact visualizer | 🟡 P1 ✅ |
 | [PROMPT_06_DEVOPS.md](./PROMPT_06_DEVOPS.md) | Docker, K8s, CI/CD generators | 🟢 P2 ✅ |
 | [PROMPT_07_DASHBOARD.md](./PROMPT_07_DASHBOARD.md) | React dashboard GUI | 🟢 P2 ✅ |
+| [PROMPT_08_ECOSYSTEM.md](./PROMPT_08_ECOSYSTEM.md) | Docs, VS Code Ext, Desktop App | 🔵 P3 ✅ |
 
 ---
 
