@@ -1,14 +1,25 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, memo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Stars, Grid } from '@react-three/drei';
 import * as THREE from 'three';
 
+interface BuildingData {
+    id: number;
+    x: number;
+    z: number;
+    height: number;
+    type: string;
+    color: string;
+    name: string;
+    complexity: number;
+}
+
 // Mock Data for Code City
 // In a real implementation, this would come from a code analysis API
-const generateCityData = (count = 50) => {
-    const data = [];
-    const fileTypes = ['ts', 'tsx', 'js', 'css', 'json'];
-    const colors = {
+const generateCityData = (count = 50): BuildingData[] => {
+    const data: BuildingData[] = [];
+    const fileTypes = ['ts', 'tsx', 'js', 'css', 'json'] as const;
+    const colors: Record<string, string> = {
         ts: '#3178c6',
         tsx: '#61dafb',
         js: '#f7df1e',
@@ -32,13 +43,21 @@ const generateCityData = (count = 50) => {
     return data;
 };
 
-const Building = ({ position, height, color, name, complexity }) => {
-    const mesh = useRef();
+interface BuildingProps {
+    position: [number, number, number];
+    height: number;
+    color: string;
+    name: string;
+    complexity?: number;
+}
+
+const Building = ({ position, height, color, name }: BuildingProps) => {
+    const mesh = useRef<THREE.Mesh>(null);
     const [hovered, setHover] = useState(false);
     const [active, setActive] = useState(false);
 
     useFrame((state, delta) => {
-        if (active) {
+        if (active && mesh.current) {
             mesh.current.rotation.y += delta;
         }
     });
@@ -53,6 +72,7 @@ const Building = ({ position, height, color, name, complexity }) => {
                 onClick={() => setActive(!active)}
                 onPointerOver={() => setHover(true)}
                 onPointerOut={() => setHover(false)}
+                aria-label={`File: ${name}`}
             >
                 <boxGeometry args={[1, height, 1]} />
                 <meshStandardMaterial
@@ -78,23 +98,31 @@ const Building = ({ position, height, color, name, complexity }) => {
     );
 };
 
-const Hologram = () => {
+/**
+ * Hologram Page - 3D Code Visualization
+ * @returns {JSX.Element} Hologram page component
+ */
+const Hologram = memo(() => {
     const cityData = useMemo(() => generateCityData(60), []);
 
     return (
-        <div className="h-full w-full bg-gray-900 text-white flex flex-col">
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+        <main
+            className="h-full w-full bg-gray-900 text-white flex flex-col"
+            role="application"
+            aria-label="3D Code Visualization"
+        >
+            <header className="p-4 border-b border-gray-800 flex justify-between items-center">
                 <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
                     Project Hologram: Code City
                 </h1>
-                <div className="flex gap-4 text-sm text-gray-400">
-                    <span className="flex items-center"><span className="w-3 h-3 bg-[#3178c6] mr-2"></span>TS</span>
-                    <span className="flex items-center"><span className="w-3 h-3 bg-[#61dafb] mr-2"></span>React</span>
-                    <span className="flex items-center"><span className="w-3 h-3 bg-[#f7df1e] mr-2"></span>JS</span>
+                <div className="flex gap-4 text-sm text-gray-400" aria-label="Language Legend">
+                    <span className="flex items-center"><span className="w-3 h-3 bg-[#3178c6] mr-2" aria-hidden="true"></span>TS</span>
+                    <span className="flex items-center"><span className="w-3 h-3 bg-[#61dafb] mr-2" aria-hidden="true"></span>React</span>
+                    <span className="flex items-center"><span className="w-3 h-3 bg-[#f7df1e] mr-2" aria-hidden="true"></span>JS</span>
                 </div>
-            </div>
+            </header>
 
-            <div className="flex-1 relative">
+            <div className="flex-1 relative" aria-label="3D Canvas">
                 <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
                     {/* Lighting */}
                     <ambientLight intensity={0.5} />
@@ -114,6 +142,7 @@ const Hologram = () => {
                                 height={building.height}
                                 color={building.color}
                                 name={building.name}
+                                complexity={building.complexity}
                             />
                         ))}
                     </group>
@@ -128,12 +157,16 @@ const Hologram = () => {
                     />
                 </Canvas>
 
-                <div className="absolute bottom-4 left-4 bg-black/50 p-2 rounded text-xs">
+                <div
+                    className="absolute bottom-4 left-4 bg-black/50 p-2 rounded text-xs"
+                    role="contentinfo"
+                    aria-label="Navigation Controls"
+                >
                     <p>Left Click: Inspect | Right Click: Pan | Scroll: Zoom</p>
                 </div>
             </div>
-        </div>
+        </main>
     );
-};
+});
 
 export default Hologram;

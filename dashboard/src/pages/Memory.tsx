@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Chart } from '../components/Chart';
 
 const memoryTiers = [
@@ -14,45 +15,77 @@ const retentionData = [
   { day: 'Fri', hot: 2400, warm: 6700, cold: 46000 },
 ];
 
-export function Memory() {
+/**
+ * Memory Dashboard Page - Visualize AI memory usage tiers
+ * @returns {JSX.Element} Memory page component
+ */
+export const Memory = memo(function Memory() {
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
+    <main className="space-y-6" role="main" aria-label="Memory Dashboard">
+      <section
+        className="grid gap-4 md:grid-cols-3"
+        aria-label="Memory Tiers"
+        role="region"
+      >
         {memoryTiers.map((tier) => (
           <div
             key={tier.tier}
             className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5"
+            role="article"
+            aria-label={`${tier.tier} Tier usage`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                <div
+                  className="text-xs uppercase tracking-[0.2em] text-slate-500"
+                  id={`tier-label-${tier.tier.toLowerCase()}`}
+                >
                   {tier.tier} Tier
                 </div>
-                <div className="mt-2 text-2xl font-semibold text-slate-100">
+                <div
+                  className="mt-2 text-2xl font-semibold text-slate-100"
+                  aria-labelledby={`tier-label-${tier.tier.toLowerCase()}`}
+                >
                   {tier.tokens.toLocaleString()} tokens
                 </div>
               </div>
-              <span className="text-sm text-emerald-400">
+              <span className="text-sm text-emerald-400" aria-label={`${Math.round((tier.tokens / tier.max) * 100)}% Used`}>
                 {Math.round((tier.tokens / tier.max) * 100)}%
               </span>
             </div>
-            <div className="mt-4 h-2 rounded-full bg-slate-800">
+            <div
+              className="mt-4 h-2 rounded-full bg-slate-800"
+              role="progressbar"
+              aria-valuenow={tier.tokens}
+              aria-valuemin={0}
+              aria-valuemax={tier.max}
+              aria-label={`${tier.tier} tier capacity`}
+            >
               <div
                 className="h-2 rounded-full bg-emerald-500/80"
                 style={{ width: `${(tier.tokens / tier.max) * 100}%` }}
+                aria-hidden="true"
               />
             </div>
           </div>
         ))}
-      </div>
+      </section>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-        <div className="flex items-center justify-between">
+      <section
+        className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6"
+        aria-label="Retention Flow Chart"
+        role="region"
+      >
+        <header className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-100">Retention Flow</h2>
-          <span className="text-xs uppercase tracking-[0.2em] text-slate-500">
+          <span
+            className="text-xs uppercase tracking-[0.2em] text-slate-500"
+            role="status"
+            aria-live="polite"
+          >
             Last 5 days
           </span>
-        </div>
+        </header>
         <Chart
           data={retentionData}
           xKey="day"
@@ -63,8 +96,10 @@ export function Memory() {
           ]}
           variant="area"
           height={280}
+          title="Memory Retention Flow"
         />
-      </div>
-    </div>
+      </section>
+    </main>
   );
-}
+});
+
