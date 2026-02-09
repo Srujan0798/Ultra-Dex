@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Activity, Bot, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { MetricCard } from '../components/MetricCard';
 import { Chart } from '../components/Chart';
@@ -13,7 +14,11 @@ const activityData = [
   { day: 'Sun', tasks: 14, completed: 12 },
 ];
 
-export function Overview() {
+/**
+ * Overview Dashboard Page - Main dashboard with metrics and charts
+ * @returns {JSX.Element} Overview page component
+ */
+export const Overview = memo(function Overview() {
   const { data, connected } = useWebSocket<Record<string, number>>(
     'ws://localhost:3002'
   );
@@ -50,21 +55,37 @@ export function Overview() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-4">
+    <main
+      className="space-y-6"
+      role="main"
+      aria-label="Dashboard Overview"
+    >
+      <section
+        className="grid gap-4 lg:grid-cols-4"
+        aria-label="Key Metrics"
+        role="region"
+      >
         {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
-      </div>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 lg:col-span-2">
-          <div className="flex items-center justify-between">
+        <section
+          className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 lg:col-span-2"
+          aria-label="Execution Velocity Chart"
+          role="region"
+        >
+          <header className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-100">Execution Velocity</h2>
-            <span className="text-xs uppercase tracking-[0.2em] text-slate-500">
+            <span
+              className="text-xs uppercase tracking-[0.2em] text-slate-500"
+              role="status"
+              aria-live="polite"
+            >
               {connected ? 'Live' : 'Snapshot'}
             </span>
-          </div>
+          </header>
           <Chart
             data={activityData}
             xKey="day"
@@ -74,28 +95,42 @@ export function Overview() {
             ]}
             variant="line"
             height={260}
+            title="Weekly Execution Velocity"
           />
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-6">
+        <section
+          className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-6"
+          aria-label="System Health Status"
+          role="region"
+        >
           <h2 className="text-lg font-semibold text-slate-100">System Health</h2>
-          <div className="mt-6 space-y-4">
+          <ul className="mt-6 space-y-4" role="list" aria-label="Health metrics">
             {[
               { label: 'API latency', value: '128ms', status: 'Stable' },
               { label: 'Memory tier usage', value: '64%', status: 'Optimal' },
               { label: 'Agent queue', value: '6 pending', status: 'Active' },
             ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+              <li
+                key={item.label}
+                className="rounded-xl border border-slate-800 bg-slate-900/50 p-4"
+                role="listitem"
+                aria-label={`${item.label}: ${item.value}, ${item.status}`}
+              >
                 <div className="text-sm text-slate-400">{item.label}</div>
-                <div className="mt-2 text-xl font-semibold text-slate-100">{item.value}</div>
-                <div className="mt-1 text-xs uppercase tracking-[0.2em] text-emerald-400">
+                <div className="mt-2 text-xl font-semibold text-slate-100" aria-hidden="true">{item.value}</div>
+                <div
+                  className="mt-1 text-xs uppercase tracking-[0.2em] text-emerald-400"
+                  role="status"
+                >
                   {item.status}
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       </div>
-    </div>
+    </main>
   );
-}
+});
+
