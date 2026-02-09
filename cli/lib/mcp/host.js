@@ -176,4 +176,25 @@ export function registerHostTools(server) {
   );
 }
 
+/**
+ * MCP Host Class Wrapper
+ * Provides object-oriented interface for the daemon
+ */
+export class MCPHost {
+  constructor() { }
+
+  async init(options = {}) {
+    return initializeMcpHost(options);
+  }
+
+  async getStatus() {
+    const status = mcpHub.getStatus();
+    const connected = Object.values(status).some(s => s.connected);
+    return {
+      connected,
+      servers: status
+    };
+  }
+}
+
 export { mcpHub };

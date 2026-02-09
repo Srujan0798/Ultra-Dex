@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
-import { CronJob } from 'cron';
+// import { CronJob } from 'cron'; // Removed external dependency
 import chokidar from 'chokidar';
 import axios from 'axios';
 import { createServer } from 'http';
@@ -31,7 +31,7 @@ export class AutonomousDaemon {
       verbose: options.verbose || false,
       ...options
     };
-    
+
     this.isRunning = false;
     this.server = null;
     this.wss = null;
@@ -41,11 +41,11 @@ export class AutonomousDaemon {
     this.agentSwarm = new AgentSwarm();
     this.mcpHost = new MCPHost();
     this.interrupted = false;
-    
+
     // Task queues
     this.priorityQueue = [];
     this.backgroundQueue = [];
-    
+
     // Stats
     this.stats = {
       tasksCompleted: 0,
@@ -57,7 +57,7 @@ export class AutonomousDaemon {
       aiRequests: 0,
       memoryUsage: 0
     };
-    
+
     // Monitors
     this.monitors = new Map();
     this.activeChecks = new Set();
@@ -74,7 +74,7 @@ export class AutonomousDaemon {
 
     this.isRunning = true;
     this.startTime = Date.now();
-    
+
     printInfo('🎮 Starting Ultra-Dex Autonomous Daemon...');
     printInfo('🛡️  Mode: 24/7 AI Assistant Active');
     printInfo(`📡 Port: ${this.options.port}`);
@@ -125,7 +125,7 @@ export class AutonomousDaemon {
 
       // Update stats
       this.stats.lastActivity = new Date();
-      
+
       // Handle graceful shutdown
       process.on('SIGINT', this.gracefulShutdown.bind(this));
       process.on('SIGTERM', this.gracefulShutdown.bind(this));
@@ -142,7 +142,7 @@ export class AutonomousDaemon {
   setupWebSocketHandlers() {
     this.wss.on('connection', (ws) => {
       printInfo('🌐 New daemon client connected');
-      
+
       // Send initial status
       ws.send(JSON.stringify({
         type: 'status',
@@ -270,7 +270,7 @@ export class AutonomousDaemon {
 
       // Analyze the change
       const analysis = await this.analyzeFileChange(filePath);
-      
+
       if (analysis.needsAttention) {
         // Add to priority queue for immediate attention
         this.priorityQueue.push({
@@ -300,7 +300,7 @@ export class AutonomousDaemon {
 
       // Update context and memory
       await ultraMemory.remember(`File deleted: ${filePath}`, ['file-change', 'deletion']);
-      
+
       // Check if this affects other parts of the system
       this.priorityQueue.push({
         type: 'file_delete',
@@ -319,7 +319,7 @@ export class AutonomousDaemon {
     try {
       const content = await fs.readFile(filePath, 'utf8');
       const stats = await fs.stat(filePath);
-      
+
       const analysis = {
         filePath,
         size: stats.size,
@@ -431,9 +431,9 @@ export class AutonomousDaemon {
    * Start health check cron job
    */
   startHealthChecks() {
-    this.healthCheckJob = new CronJob(`*/5 * * * * *`, async () => {
+    this.healthCheckJob = setInterval(async () => {
       await this.runHealthCheck();
-    }, null, true);
+    }, 5000); // Check every 5 seconds
 
     printSuccess('🏥 Health check scheduler started (every 5 minutes)');
   }
@@ -451,28 +451,28 @@ export class AutonomousDaemon {
 
       // Check project state
       healthReport.checks.projectState = await this.checkProjectState();
-      
+
       // Check memory system
       healthReport.checks.memory = await this.checkMemorySystem();
-      
+
       // Check governance compliance
       healthReport.checks.governance = await this.checkGovernanceCompliance();
-      
+
       // Check security
       healthReport.checks.security = await this.checkSecurityIssues();
-      
+
       // Check performance
       healthReport.checks.performance = await this.checkPerformanceMetrics();
-      
+
       // Check dependencies
       healthReport.checks.dependencies = await this.checkDependencies();
-      
+
       // Check agent health
       healthReport.checks.agents = await this.checkAgentHealth();
-      
+
       // Check MCP connectivity
       healthReport.checks.mcp = await this.checkMCPConnectivity();
-      
+
       // Determine overall health
       const unhealthyChecks = Object.values(healthReport.checks).filter(check => check.status !== 'healthy');
       healthReport.overall = unhealthyChecks.length > 0 ? 'unhealthy' : 'healthy';
@@ -513,7 +513,7 @@ export class AutonomousDaemon {
 
       // Check for incomplete tasks
       const incompleteTasks = this.getIncompleteTasks(state);
-      
+
       return {
         status: incompleteTasks.length === 0 ? 'healthy' : 'warning',
         message: incompleteTasks.length === 0 ? 'All tasks complete' : `${incompleteTasks.length} incomplete tasks`,
@@ -530,7 +530,7 @@ export class AutonomousDaemon {
   async checkMemorySystem() {
     try {
       const memoryStats = ultraMemory.getStats();
-      
+
       return {
         status: 'healthy',
         message: `Memory system active, ${memoryStats.total} items`,
@@ -547,7 +547,7 @@ export class AutonomousDaemon {
   async checkGovernanceCompliance() {
     try {
       const compliance = await this.governanceEngine.checkCompliance();
-      
+
       return {
         status: compliance.passed ? 'healthy' : 'unhealthy',
         message: compliance.passed ? 'Governance checks passing' : 'Governance violations detected',
@@ -564,7 +564,7 @@ export class AutonomousDaemon {
   async checkSecurityIssues() {
     try {
       const issues = await this.scanSecurityIssues();
-      
+
       return {
         status: issues.length === 0 ? 'healthy' : 'unhealthy',
         message: issues.length === 0 ? 'No security issues found' : `${issues.length} security issues found`,
@@ -580,14 +580,14 @@ export class AutonomousDaemon {
    */
   async scanSecurityIssues() {
     const issues = [];
-    
+
     try {
       const files = await this.getAllProjectFiles();
-      
+
       for (const file of files) {
         if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.py') || file.endsWith('.go') || file.endsWith('.rs')) {
           const content = await fs.readFile(file, 'utf8');
-          
+
           if (this.containsSecurityIssues(content)) {
             issues.push({
               file,
@@ -600,7 +600,7 @@ export class AutonomousDaemon {
     } catch (error) {
       printError(`Security scan failed: ${error.message}`);
     }
-    
+
     return issues;
   }
 
@@ -624,12 +624,12 @@ export class AutonomousDaemon {
       const packageJsonPath = path.join(process.cwd(), 'package.json');
       if (await fs.access(packageJsonPath).then(() => true).catch(() => false)) {
         const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-        
+
         // Check for outdated dependencies
         // This would normally call npm audit or similar
         return { status: 'healthy', message: 'Dependency check passed' };
       }
-      
+
       return { status: 'warning', message: 'No package.json found' };
     } catch (error) {
       return { status: 'unhealthy', message: `Dependency check failed: ${error.message}` };
@@ -642,7 +642,7 @@ export class AutonomousDaemon {
   async checkAgentHealth() {
     try {
       const agentHealth = await this.agentSwarm.getHealth();
-      
+
       return {
         status: agentHealth.allHealthy ? 'healthy' : 'warning',
         message: agentHealth.allHealthy ? 'All agents healthy' : `${agentHealth.unhealthyCount} agents unhealthy`,
@@ -659,7 +659,7 @@ export class AutonomousDaemon {
   async checkMCPConnectivity() {
     try {
       const mcpStatus = await this.mcpHost.getStatus();
-      
+
       return {
         status: mcpStatus.connected ? 'healthy' : 'unhealthy',
         message: mcpStatus.connected ? 'MCP connected' : 'MCP disconnected',
@@ -685,9 +685,9 @@ export class AutonomousDaemon {
           timestamp: Date.now(),
           data: checkResult.data
         };
-        
+
         this.priorityQueue.push(task);
-        
+
         if (this.options.verbose) {
           printWarning(`⚠️  Health issue detected: ${checkName} - ${checkResult.message}`);
         }
@@ -821,7 +821,7 @@ export class AutonomousDaemon {
       }
 
       let result;
-      
+
       switch (task.type) {
         case 'file_change':
           result = await this.processFileChangeTask(task);
@@ -1168,7 +1168,7 @@ export class AutonomousDaemon {
    */
   getIncompleteTasks(state) {
     if (!state || !state.phases) return [];
-    
+
     const incomplete = [];
     for (const phase of state.phases) {
       if (phase.steps) {
@@ -1189,34 +1189,34 @@ export class AutonomousDaemon {
     if (!this.isRunning) return;
 
     printInfo('🛑 Shutting down autonomous daemon...');
-    
+
     this.isRunning = false;
-    
+
     // Close WebSocket server
     if (this.wss) {
       this.wss.close();
     }
-    
+
     // Close HTTP server
     if (this.server) {
       this.server.close();
     }
-    
+
     // Stop cron jobs
     if (this.healthCheckJob) {
-      this.healthCheckJob.stop();
+      clearInterval(this.healthCheckJob);
     }
-    
+
     // Close file watcher
     if (this.fileWatcher) {
       await this.fileWatcher.close();
     }
-    
+
     // Stop all monitors
     for (const [id, monitor] of this.monitors) {
       clearInterval(monitor.intervalId);
     }
-    
+
     printSuccess('✅ Autonomous daemon stopped');
   }
 
@@ -1226,12 +1226,12 @@ export class AutonomousDaemon {
   async gracefulShutdown(signal) {
     printInfo(`\n⚠️  Received ${signal}, shutting down gracefully...`);
     this.interrupted = true;
-    
+
     await this.stop();
-    
+
     // Give any remaining operations a moment to complete
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     process.exit(0);
   }
 
@@ -1251,7 +1251,7 @@ export class AutonomousDaemon {
 
       monitor.intervalId = intervalId;
       this.activeChecks.add(monitorType);
-      
+
       ws.send(JSON.stringify({
         type: 'monitor_started',
         data: { monitor: monitorType }
@@ -1296,11 +1296,11 @@ export class AutonomousDaemon {
   async scanCodeQualityIssues() {
     const issues = [];
     const files = await this.getAllProjectFiles();
-    
+
     for (const file of files) {
       if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.jsx') || file.endsWith('.tsx')) {
         const content = await fs.readFile(file, 'utf8');
-        
+
         // Check for common quality issues
         if (content.includes('any') && file.endsWith('.ts')) {
           issues.push({
@@ -1309,7 +1309,7 @@ export class AutonomousDaemon {
             severity: 'medium'
           });
         }
-        
+
         if (content.includes('TODO') || content.includes('FIXME')) {
           issues.push({
             file,
@@ -1319,7 +1319,7 @@ export class AutonomousDaemon {
         }
       }
     }
-    
+
     return issues;
   }
 
@@ -1329,11 +1329,11 @@ export class AutonomousDaemon {
   async scanPerformanceIssues() {
     const issues = [];
     const files = await this.getAllProjectFiles();
-    
+
     for (const file of files) {
       if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.py') || file.endsWith('.go')) {
         const content = await fs.readFile(file, 'utf8');
-        
+
         // Check for performance anti-patterns
         if (content.includes('JSON.parse(JSON.stringify(')) {
           issues.push({
@@ -1342,7 +1342,7 @@ export class AutonomousDaemon {
             severity: 'medium'
           });
         }
-        
+
         if (content.includes('for (let i = 0; i < arr.length; i++)') && content.includes('arr.length')) {
           issues.push({
             file,
@@ -1352,7 +1352,7 @@ export class AutonomousDaemon {
         }
       }
     }
-    
+
     return issues;
   }
 
@@ -1365,7 +1365,7 @@ export class AutonomousDaemon {
       if (await fs.access(packageJsonPath).then(() => true).catch(() => false)) {
         const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
         const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-        
+
         // In a real implementation, this would call npm outdated
         // For now, return empty array
         return [];
