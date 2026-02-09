@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import { memo } from 'react';
 
 const toneStyles: Record<string, { icon: string; ring: string }> = {
   emerald: { icon: 'text-emerald-400', ring: 'bg-emerald-500/10' },
@@ -7,6 +8,14 @@ const toneStyles: Record<string, { icon: string; ring: string }> = {
   rose: { icon: 'text-rose-400', ring: 'bg-rose-500/10' },
 };
 
+/**
+ * MetricCard - Displays a key metric with icon and optional delta
+ * @param label - The metric label
+ * @param value - The metric value
+ * @param delta - Optional change indicator (e.g., "+5%")
+ * @param icon - Lucide icon component
+ * @param tone - Color tone (emerald, cyan, amber, rose)
+ */
 interface MetricCardProps {
   label: string;
   value: string | number;
@@ -15,7 +24,7 @@ interface MetricCardProps {
   tone?: keyof typeof toneStyles;
 }
 
-export function MetricCard({
+export const MetricCard = memo(function MetricCard({
   label,
   value,
   delta,
@@ -23,26 +32,45 @@ export function MetricCard({
   tone = 'emerald',
 }: MetricCardProps) {
   const toneClass = toneStyles[tone] || toneStyles.emerald;
+  const isPositive = delta?.startsWith('+');
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+    <article
+      className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5"
+      role="region"
+      aria-label={`${label} metric: ${value}`}
+    >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{label}</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-100">{value}</p>
+          <p
+            className="text-xs uppercase tracking-[0.2em] text-slate-500"
+            id={`metric-label-${label.replace(/\s+/g, '-').toLowerCase()}`}
+          >
+            {label}
+          </p>
+          <p
+            className="mt-2 text-2xl font-semibold text-slate-100"
+            aria-labelledby={`metric-label-${label.replace(/\s+/g, '-').toLowerCase()}`}
+          >
+            {value}
+          </p>
         </div>
         <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${toneClass.ring}`}>
-          <Icon className={`h-5 w-5 ${toneClass.icon}`} />
+          <Icon className={`h-5 w-5 ${toneClass.icon}`} aria-hidden="true" />
         </div>
       </div>
       {delta ? (
-        <p className="mt-3 text-sm text-slate-400">
-          <span className={delta.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}>
+        <p className="mt-3 text-sm text-slate-400" role="status" aria-live="polite">
+          <span
+            className={isPositive ? 'text-emerald-400' : 'text-rose-400'}
+            aria-label={`Change: ${delta}`}
+          >
             {delta}
           </span>{' '}
           vs last week
         </p>
       ) : null}
-    </div>
+    </article>
   );
-}
+});
+
