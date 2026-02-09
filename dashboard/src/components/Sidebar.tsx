@@ -22,10 +22,14 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-64 shrink-0 border-r border-slate-800 bg-slate-950/90">
+    <aside
+      className="w-64 shrink-0 border-r border-slate-800 bg-slate-950/90"
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className="flex items-center gap-3 px-5 py-6">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15">
-          <Zap className="h-5 w-5 text-emerald-400" />
+          <Zap className="h-5 w-5 text-emerald-400" aria-hidden="true" />
         </div>
         <div>
           <div className="text-lg font-semibold tracking-wide text-slate-100">
@@ -37,11 +41,12 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav className="space-y-1 px-3 pb-6">
+      <nav className="space-y-1 px-3 pb-6" aria-label="Dashboard navigation">
         {navItems.map(({ path, label, icon: Icon }) => (
           <NavLink
             key={path}
             to={path}
+            aria-label={`Navigate to ${label}`}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${isActive
                 ? 'bg-emerald-500/10 text-emerald-200'
@@ -49,7 +54,7 @@ export function Sidebar() {
               }`
             }
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-4 w-4" aria-hidden="true" />
             <span>{label}</span>
           </NavLink>
         ))}

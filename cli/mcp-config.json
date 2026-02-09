@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ultra-dex": {
+      "command": "npx",
+      "args": [
+        "ultra-dex",
+        "serve"
+      ],
+      "cwd": "/Users/roshwinram/Music/Ultra-Dex/cli"
+    }
+  }
+}
