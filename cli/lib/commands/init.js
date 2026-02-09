@@ -100,6 +100,7 @@ export function registerInitCommand(program) {
 
 /**
  * Show a preview of the architectural blueprint
+ * @returns {void}
  */
 function handlePreview() {
   process.stdout.write(chalk.bold.cyan('\n📋 PREVIEW MODE: ARCHITECTURAL BLUEPRINT\n'));
@@ -114,6 +115,14 @@ function handlePreview() {
   printSuccess('  ✓ Blueprint Validated. Ready to Execute.');
 }
 
+/**
+ * Handle project initialization from a template
+ * @param {Object} options - Command options
+ * @param {string} options.template - Template name
+ * @param {string} options.dir - Output directory
+ * @param {boolean} [options.enterprise] - Enterprise mode flag
+ * @returns {Promise<void>}
+ */
 async function handleTemplateInit(options) {
   const templateName = options.template;
   const outputDir = path.resolve(options.dir);
@@ -160,6 +169,14 @@ async function handleTemplateInit(options) {
 /**
  * Handle live scaffolding for specific tech stacks
  * @param {Object} options Command options
+ */
+/**
+ * Handle live scaffolding for specific tech stacks
+ * @param {Object} options - Command options
+ * @param {string} [options.stack] - Stack preset name
+ * @param {string} options.dir - Output directory
+ * @param {boolean} [options.enterprise] - Enterprise mode flag
+ * @returns {Promise<void>}
  */
 async function handleLiveScaffold(options) {
   const preset = options.stack || 'next15-saas';
@@ -424,6 +441,12 @@ async function applyEnterprisePreset(outputDir) {
  * Scaffold the project files based on answers
  * @param {string} outputDir Target directory
  * @param {Object} answers User answers from inquirer
+ */
+/**
+ * Scaffold the project files based on answers
+ * @param {string} outputDir - Target directory
+ * @param {Object} answers - User answers from inquirer
+ * @returns {Promise<void>}
  */
 async function scaffoldProject(outputDir, answers) {
   await fs.mkdir(outputDir, { recursive: true });
