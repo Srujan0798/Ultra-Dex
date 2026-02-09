@@ -22,6 +22,7 @@ This directory contains all agent prompts for Ultra-Dex development.
 | [PROMPT_06_DEVOPS.md](./PROMPT_06_DEVOPS.md) | Docker, K8s, CI/CD generators | 🟢 P2 ✅ |
 | [PROMPT_07_DASHBOARD.md](./PROMPT_07_DASHBOARD.md) | React dashboard GUI | 🟢 P2 ✅ |
 | [PROMPT_08_ECOSYSTEM.md](./PROMPT_08_ECOSYSTEM.md) | Docs, VS Code Ext, Desktop App | 🔵 P3 ✅ |
+| [PROMPT_09_V5_MOONSHOTS.md](./PROMPT_09_V5_MOONSHOTS.md) | Voice, Computer Use, 3D Viz | 🟣 P4 🔮 |
 
 ---
 
