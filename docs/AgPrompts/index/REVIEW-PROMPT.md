@@ -77,14 +77,29 @@
 
 ---
 
-## ⚔️ KILLERS WE MUST BEAT
+## 🔮 FUTURE-PROOFING MANDATE (The Racing Edge — ADDED FEB 8)
 
-| Tool            | Their Strength           | Our Counter                     | Status         |
-| --------------- | ------------------------ | ------------------------------- | -------------- |
-| **Devin AI**    | End-to-end app in 60min  | **Live SaaS Scaffolds (T3)**    | ✅ VERIFIED    |
-| **Cursor 2.0**  | Perfect Next.js patterns | **31 .mdc Domain Rules**        | ✅ VERIFIED    |
-| **Bolt.new**    | 30s prototypes           | **Active REPL + Execution**     | ✅ VERIFIED    |
-| **Claude Code** | Codebase understanding   | **CONTEXT.md + Persistent REPL**| ✅ VERIFIED    |
+**TO THE REVIEWING AGENT:**
+You must not just check what *is*. You must check what *should be*.
+The AI race moves fast. Ultra-Dex must move FASTER.
+
+**Your Mandate:**
+1.  **Scout New Trends:** Identify *any* new AI coding tool (released in the last month) that Ultra-Dex does not yet orchestrate.
+2.  **Suggest Integrations:** How do we wrap it? How do we make it a "plugin" for Ultra-Dex?
+3.  **Kill Legacies:** Flag any Ultra-Dex feature that has been superseded by a better native AI capability.
+
+---
+
+## ⚔️ KILLERS WE MUST BEAT (Targeting Complete Dominance)
+
+| Tool            | Their Strength           | Our Gap             | Our Counter                     | Status         |
+| --------------- | ------------------------ | ------------------- | ------------------------------- | -------------- |
+| **Devin AI**    | End-to-end app in 60min  | No live boilerplate | **Phase 19: SaaS Templates**    | ✅ VERIFIED    |
+| **Cursor 2.0**  | Perfect Next.js patterns | Missing .mdc rules  | **Phase 9: 30+ .mdc Rules**     | ✅ VERIFIED    |
+| **Bolt.new**    | 30s prototypes           | Phase1→code gap     | **Phase 14: Vision Agent**      | ✅ VERIFIED    |
+| **LangGraph**   | Orchestration            | Manual coord        | **Phase 11: Swarm Engine**      | ✅ VERIFIED    |
+| **Claude Code** | Codebase understanding   | Session amnesia     | **Phase 17: Persistent Memory** | ✅ VERIFIED    |
+| **[NEXT BIG THING]** | [Unknown Superpower] | [Potential Risk] | **Ultra-Dex Plugin System** | 🏗️ PREPARED   |
 
 ---
 
