@@ -464,6 +464,8 @@ registerVaultCommand(program);
 registerAuthCommand(program);
 import { registerThinkCommand } from '../lib/commands/think.js';
 registerThinkCommand(program);
+import { registerPredictCommand } from '../lib/commands/predict.js';
+registerPredictCommand(program);
 registerAuthSsoCommand(program);
 registerSetupCommand(program);
 registerIdeCommand(program);
