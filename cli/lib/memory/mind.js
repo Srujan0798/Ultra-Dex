@@ -11,7 +11,7 @@ import { createHash } from 'crypto';
 import { glob } from 'glob';
 
 // Simple in-memory storage for the mind
-class ProjectMind {
+export class ProjectMind {
   constructor() {
     this.memory = {
       hot: new Map(), // Recent active files and concepts

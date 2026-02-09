@@ -16,10 +16,10 @@
 
 | Version | Focus Area | Key Features | Status | Prompt Source |
 | :--- | :--- | :--- | :--- | :--- |
-| **v4.0.0** | **The Engine** | CLI, Protocol 21, Governance | ✅ **SHIPPED** | `docs/AgPrompts/V4_IMPLEMENTATION.md` |
-| **v4.1.0** | **Templates** | 5 SaaS Starters, 14 Integrations | ✅ **SHIPPED** | `docs/AgPrompts/PROMPT_01_TEMPLATES.md` |
-| **v4.2.0** | **DevOps** | Docker/K8s Generators, Dashboard | ✅ **SHIPPED** | `docs/AgPrompts/PROMPT_06_DEVOPS.md` |
-| **v4.3.0** | **Ecosystem** | VS Code Ext, Desktop App, Docs | ✅ **SCAFFOLDED** | `docs/AgPrompts/PROMPT_08_ECOSYSTEM.md` |
+| **v4.0.0** | **The Engine** | CLI, Protocol 21, Governance | ✅ **SHIPPED** | `docs/AgPrompts/archive/v4.x/V4_IMPLEMENTATION.md` |
+| **v4.1.0** | **Templates** | 5 SaaS Starters, 14 Integrations | ✅ **SHIPPED** | `docs/AgPrompts/archive/v4.x/PROMPT_01_TEMPLATES.md` |
+| **v4.2.0** | **DevOps** | Docker/K8s Generators, Dashboard | ✅ **SHIPPED** | `docs/AgPrompts/archive/v4.x/PROMPT_06_DEVOPS.md` |
+| **v4.3.0** | **Ecosystem** | VS Code Ext, Desktop App, Docs | ✅ **SCAFFOLDED** | `docs/AgPrompts/active/PROMPT_08_ECOSYSTEM.md` |
 
 ---
 
@@ -29,10 +29,12 @@
 
 | Project | Description | Tech Stack | Status | Authoritative Prompt |
 | :--- | :--- | :--- | :--- | :--- |
-| **Siren** | **Voice Coding CLI** | OpenAI Whisper (Local), Porcupine | 🟡 PLANNED | [`PROMPT_09_V5_MOONSHOTS.md`](docs/AgPrompts/PROMPT_09_V5_MOONSHOTS.md) |
-| **Ghost** | **Computer Use Agent** | Claude 3.5 Sonnet (Beta), Puppeteer | 🔴 PLANNED | [`PROMPT_09_V5_MOONSHOTS.md`](docs/AgPrompts/PROMPT_09_V5_MOONSHOTS.md) |
-| **Hologram** | **3D Code Viz** | Three.js, React Three Fiber | 🟣 PLANNED | [`PROMPT_09_V5_MOONSHOTS.md`](docs/AgPrompts/PROMPT_09_V5_MOONSHOTS.md) |
-| **Nexus** | **WASM Plugin System** | Wasmtime, Rust/Go SDK | 🔵 PLANNED | [`PROMPT_09_V5_MOONSHOTS.md`](docs/AgPrompts/PROMPT_09_V5_MOONSHOTS.md) |
+| **Siren** | **Voice Coding CLI** | OpenAI Whisper, node-record-lpcm16 | ✅ **DONE** | [`PROMPT_09_V5_MOONSHOTS.md`](docs/AgPrompts/active/PROMPT_09_V5_MOONSHOTS.md) |
+| **Ghost** | **Computer Use Agent** | OpenAI GPT-4o Vision, robotjs | ✅ **DONE** | [`PROMPT_09_V5_MOONSHOTS.md`](docs/AgPrompts/active/PROMPT_09_V5_MOONSHOTS.md) |
+| **Hologram** | **3D Code Viz** | Three.js, React Three Fiber | ✅ **DONE** | [`PROMPT_09_V5_MOONSHOTS.md`](docs/AgPrompts/active/PROMPT_09_V5_MOONSHOTS.md) |
+| **Nexus** | **WASM Plugin System** | Node.js WebAssembly API | ✅ **DONE** | [`PROMPT_09_V5_MOONSHOTS.md`](docs/AgPrompts/active/PROMPT_09_V5_MOONSHOTS.md) |
+| **Fortress** | **Quantum-Safe Crypto** | AES-256-GCM | ✅ **DONE** | v5.0 |
+| **UltraLSP** | **Language Server** | vscode-languageserver | ✅ **DONE** | v5.0 |
 
 ---
 

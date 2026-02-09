@@ -1,68 +1,45 @@
-# Ultra-Dex Documentation
+# 📚 Ultra-Dex Documentation
 
-> Documentation hub for Ultra-Dex v4.3.0
+Welcome to the comprehensive documentation for **Ultra-Dex**, the AI Orchestration Meta-Layer.
 
----
+## 📂 Documentation Structure
 
-## 📚 Quick Start
-
-| Goal                | Document                                   |
-| ------------------- | ------------------------------------------ |
-| **First feature**   | [guides/BUILD-AUTH-30M.md](./guides/BUILD-AUTH-30M.md)   |
-| **CI/CD setup**     | [guides/CICD-GUIDE.md](./guides/CICD-GUIDE.md)           |
-| **MCP integration** | [reference/MCP-INTEGRATION.md](./reference/MCP-INTEGRATION.md) |
-| **Project roadmap** | [../ROADMAP_V5.md](../ROADMAP_V5.md)                 |
-| **Product vision**  | [concepts/VISION-V2.md](./concepts/VISION-V2.md)             |
-
----
-
-## 🗂️ Directory Structure
-
-```
-docs/
-├── guides/              # User guides & tutorials
-│   ├── GETTING_STARTED.md
-│   ├── BUILD-AUTH-30M.md
-│   └── PROJECT-ORCHESTRATION.md
-│
-├── reference/           # API & CLI reference
-│   ├── API-REFERENCE.md
-│   ├── CHECKLIST-21-STEP.md
-│   └── FAQ.md
-│
-├── concepts/            # Core concepts & architecture
-│   ├── ULTRA-DEX-FLOW.md
-│   └── GRAPH-RAG.md
-│
-├── marketing/           # Marketing materials
-│   └── LAUNCH_ANNOUNCEMENT.md
-│
-└── archive/             # Old versions & reports
-```
+| Section | Description | Target Audience |
+| :--- | :--- | :--- |
+| [**🤖 AgPrompts**](./AgPrompts/INDEX.md) | **Start Here**. The Master Prompt Library for Agents. | **Agents & Devs** |
+| [**📘 Guides**](./guides/) | User guides separated by topic (`basics`, `advanced`, `ai`, `ops`). | **Users** |
+| [**🏗️ Architecture**](./architecture/) | System design, technical specs, and MCP integration. | **Architects** |
+| [**🔌 API Reference**](./api/) | CLI commands, schemas, and API documentation. | **Developers** |
+| [**🌍 Ecosystem**](./ecosystem/) | Community, marketing, and educational resources. | **Community** |
+| [**🧠 Meta**](./meta/) | Internal processes, roadmaps, and project governance. | **Contributors** |
+| [**🏛️ Archive**](./archive/) | Legacy documentation and completed task logs. | **Historians** |
 
 ---
 
-## 🔗 Related Documentation
+## 🚀 Quick Links
 
-| Location                          | Contents                    |
-| --------------------------------- | --------------------------- |
-| [/agents](../agents/)             | 17 AI agent prompts         |
-| [/cursor-rules](../cursor-rules/) | 31 Cursor IDE rules         |
-| [/templates](../templates/)       | Project templates           |
-| [/00-START](../00-START/)         | Project Manifest            |
+-   [**Master Roadmap**](../ROADMAP.md)
+-   [**CLI Reference**](./api/reference/cli-reference.md)
+-   [**Getting Started**](./guides/basics/GETTING_STARTED.md)
+-   [**Agent Orchestration**](./guides/ai/PROJECT-ORCHESTRATION.md)
 
----
+## 📌 Categorized Guides
 
-## 🧭 Quick Navigation
+### 🟢 Basics
+*   [User Guide](./guides/basics/USER-GUIDE.md)
+*   [Quick Start](./guides/basics/QUICK-START.md)
 
-| Topic                 | File                                                                             |
-| --------------------- | -------------------------------------------------------------------------------- |
-| Getting started       | [guides/BUILD-AUTH-30M.md](./guides/BUILD-AUTH-30M.md)                           |
-| CLI commands          | [../cli/README.md](../cli/README.md)                                             |
-| Multi-agent workflows | [guides/PROJECT-ORCHESTRATION.md](./guides/PROJECT-ORCHESTRATION.md)             |
-| Database selection    | [guides/DATABASE-DECISION-FRAMEWORK.md](./guides/DATABASE-DECISION-FRAMEWORK.md) |
-| Architecture patterns | [guides/ARCHITECTURE-PATTERNS.md](./guides/ARCHITECTURE-PATTERNS.md)             |
+### 🔴 Advanced
+*   [Advanced Workflows](./guides/advanced/ADVANCED-WORKFLOWS.md)
+*   [Performance Turning](./guides/advanced/PERFORMANCE.md)
 
----
+### 🤖 AI Systems
+*   [Model Selection](./guides/ai/AI-MODEL-SELECTION.md)
+*   [Custom Agents](./guides/ai/CUSTOM-AGENTS-GUIDE.md)
 
-_Ultra-Dex v4.3.0 - The Headless CTO_
+### 🛠️ Development
+*   [Plugin Dev](./guides/dev/PLUGIN-DEV.md)
+*   [Testing Guide](./guides/dev/TESTING_GUIDE.md)
+
+### 🚢 Deployment
+*   [Production Guide](./guides/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ultra-Dex Decision Ledger Entry",
+  "type": "object",
+  "required": ["block_id", "timestamp", "task_id", "agent", "action", "decision"],
+  "properties": {
+    "block_id": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "task_id": { "type": "string" },
+    "agent": { "type": "string" },
+    "action": { "type": "string" },
+    "decision": {
+      "type": "object",
+      "required": ["selected_option"],
+      "properties": {
+        "selected_option": { "type": "string" },
+        "rejected_options": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reasoning": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "constraints_checked": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rule": { "type": "string" },
+          "status": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "checksum": { "type": "string" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,63 @@
+{
+  "name": "ultra-dex-extension",
+  "displayName": "Ultra-Dex",
+  "description": "Ultra-Dex CLI companion for planning, execution, and review workflows.",
+  "version": "0.1.0",
+  "publisher": "ultra-dex",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onCommand:ultraDex.start",
+    "onCommand:ultraDex.plan",
+    "onCommand:ultraDex.fix",
+    "onView:ultraDex.status"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ultraDex.start",
+        "title": "Ultra-Dex: Start"
+      },
+      {
+        "command": "ultraDex.plan",
+        "title": "Ultra-Dex: Plan"
+      },
+      {
+        "command": "ultraDex.fix",
+        "title": "Ultra-Dex: Fix"
+      },
+      {
+        "command": "ultraDex.openStatus",
+        "title": "Ultra-Dex: Open Status View"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ultraDex",
+          "title": "Ultra-Dex",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ultraDex": [
+        {
+          "id": "ultraDex.status",
+          "name": "Project Status"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}

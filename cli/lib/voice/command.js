@@ -1,62 +1,106 @@
 // Copyright (c) 2026 Ultra-Dex
+// Voice Command Handler
+// Orchestrates recording, transcription, and intent routing
 
-/**
- * Voice Command for Ultra-Dex CLI
- */
-
+import { audioRecorder } from './recorder.js';
+import { whisperService } from './whisper.js';
 import { routeIntent, extractParams, getIntentConfidence } from '../nlp/router.js';
-import { handleVoiceCommand, checkVoicePrerequisites, voiceToText } from './whisper.js';
+import { execSync } from 'child_process';
+import fs from 'fs';
+
+function checkPrerequisites() {
+  const missing = [];
+
+  // Check for SoX or Rec (Linux/Mac)
+  try {
+    execSync('rec --version', { stdio: 'ignore' });
+  } catch (e) {
+    try {
+      execSync('sox --version', { stdio: 'ignore' });
+    } catch (e2) {
+      missing.push('sox (or rec)');
+    }
+  }
+
+  // Check for API Key
+  if (!whisperService.isReady()) {
+    missing.push('OPENAI_API_KEY environment variable');
+  }
+
+  return {
+    ready: missing.length === 0,
+    missing,
+    installInstructions: missing.length > 0 ?
+      `Missing prerequisites:\n${missing.map(m => `- ${m}`).join('\n')}\n\nTo install SoX:\n  macOS: brew install sox\n  Linux: sudo apt install sox` : null
+  };
+}
 
 export async function voiceCommand(options = {}) {
-  // Check prerequisites
-  const prereqs = checkVoicePrerequisites();
+  const prereqs = checkPrerequisites();
 
   if (!prereqs.ready) {
-    console.log('❌ Voice input not available\n');
+    console.log('❌ Voice input not available');
     console.log(prereqs.installInstructions);
     return null;
   }
 
-  console.log('🎤 Ultra-Dex Voice Mode\n');
+  console.log('🎤 Ultra-Dex Voice Mode');
+  console.log('   Speak your command (e.g., "Create a new Next.js project")');
+  console.log('   Press Ctrl+C to stop recording if not auto-detected.\n');
 
-  if (options.continuous) {
-    console.log('Continuous listening mode (Ctrl+C to exit)\n');
+  try {
+    // Start recording
+    const audioPath = audioRecorder.start();
 
-    while (true) {
-      try {
-        const result = await handleVoiceCommand(routeIntent, options);
+    // Wait for silence or manual stop (simulated by duration for now if not stream)
+    // node-record-lpcm16 handles silence stop if configured
 
-        if (result && result.intent) {
-          console.log(`\nExecuting: ${result.intent}`);
-          // Return the intent for the main CLI to handle
-          return result;
-        }
-      } catch (err) {
-        if (err.message.includes('SIGINT')) {
-          console.log('\n👋 Exiting voice mode');
-          break;
-        }
-        console.error(`Error: ${err.message}`);
+    // For the CLI command, we might want to wait for the 'end' event from recorder
+    // But recorder.start returns the path immediately.
+    // We need to wait for the stream to end.
+
+    await new Promise((resolve, reject) => {
+      audioRecorder.on('end', resolve);
+      audioRecorder.on('error', reject);
+
+      // Safety timeout
+      if (options.duration) {
+        setTimeout(() => audioRecorder.stop(), options.duration * 1000);
       }
-    }
-  } else {
-    // Single command mode
-    const result = await handleVoiceCommand(routeIntent, {
-      duration: options.duration || 5,
-      ...options,
+
+      // Handle Ctrl+C to stop recording gracefully
+      process.on('SIGINT', () => {
+        audioRecorder.stop();
+        console.log('\n🛑 Stopping recording...');
+      });
     });
 
-    if (result) {
-      const { intent, confidence } = getIntentConfidence(result.text);
-      console.log(`\nConfidence: ${Math.round(confidence * 100)}%`);
+    console.log('🔄 Transcribing...');
+    const text = await whisperService.transcribe(audioPath);
+    console.log(`📝 Heard: "${text}"`);
 
-      if (intent) {
-        const params = extractParams(intent, result.text);
-        return { ...result, params };
-      }
+    // Clean up temp file
+    fs.unlinkSync(audioPath);
+
+    if (!text || text.trim().length === 0) {
+      console.log('❌ No speech detected');
+      return null;
     }
 
-    return result;
+    // NLP Routing
+    const { intent, confidence } = getIntentConfidence(text);
+    console.log(`🎯 Intent: ${intent} (${Math.round(confidence * 100)}%)`);
+
+    if (intent) {
+      const params = extractParams(intent, text);
+      return { text, intent, params, confidence };
+    }
+
+    return { text, intent: null };
+
+  } catch (error) {
+    console.error(`🔇 Voice error: ${error.message}`);
+    return null;
   }
 }
 
