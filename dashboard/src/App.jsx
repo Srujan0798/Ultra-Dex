@@ -11,7 +11,7 @@ import { Settings } from './pages/Settings';
 import Hologram from './pages/Hologram';
 import { useWebSocket } from './hooks/useWebSocket';
 
-export default function App() {
+const App = React.memo(function App() {
   const socketUrl =
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ULTRA_DEX_WS) ||
     'ws://localhost:3002';
@@ -40,4 +40,6 @@ export default function App() {
       </div>
     </BrowserRouter>
   );
-}
+});
+
+export default App;

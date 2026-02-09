@@ -147,10 +147,15 @@ export async function verifyArchitectureAlignment(projectDir) {
 export async function verifyErrorHandlingStrategy(projectDir) {
   const summary = await projectGraph.scan();
   let totalFiles = 0;
+  /* Error Handling Check */
   let filesWithErrorHandling = 0;
 
   const codeFiles = summary.files.filter(
-    (f) => /\.(js|ts|tsx|jsx)$/.test(f) && !f.includes('node_modules')
+    (f) => /\.(js|ts|tsx|jsx)$/.test(f) &&
+      !f.includes('node_modules') &&
+      !f.includes('templates/') &&
+      !f.includes('examples/') &&
+      !f.includes('assets/')
   );
 
   for (const file of codeFiles) {
@@ -178,7 +183,13 @@ export async function verifyErrorHandlingStrategy(projectDir) {
 
 export async function verifyApiDocumentation(projectDir) {
   const summary = await projectGraph.scan();
-  const apiFiles = summary.files.filter((f) => f.includes('api/') || f.includes('routes/'));
+  const apiFiles = summary.files.filter((f) =>
+    (f.includes('api/') || f.includes('routes/')) &&
+    !f.includes('node_modules') &&
+    !f.includes('templates/') &&
+    !f.includes('examples/') &&
+    !f.includes('assets/')
+  );
 
   if (apiFiles.length === 0) return { status: 'SKIP', message: 'No API files detected' };
 
@@ -193,7 +204,7 @@ export async function verifyApiDocumentation(projectDir) {
   }
 
   const percentage = (documented / apiFiles.length) * 100;
-  if (percentage > 0)
+  if (percentage > 10)
     return {
       status: 'PASS',
       message: `API Documentation found in ${percentage.toFixed(0)}% of endpoints`,
@@ -231,7 +242,13 @@ export async function verifyEnvironmentVariables(projectDir) {
 
 export async function verifyAccessibility(projectDir) {
   const summary = await projectGraph.scan();
-  const uiFiles = summary.files.filter((f) => /\.(tsx|jsx)$/.test(f));
+  const uiFiles = summary.files.filter((f) =>
+    /\.(tsx|jsx)$/.test(f) &&
+    !f.includes('node_modules') &&
+    !f.includes('templates/') &&
+    !f.includes('examples/') &&
+    !f.includes('assets/')
+  );
 
   if (uiFiles.length === 0) return { status: 'SKIP', message: 'No UI files detected' };
 
@@ -259,7 +276,13 @@ export async function verifyAccessibility(projectDir) {
 
 export async function verifyPerformance(projectDir) {
   const summary = await projectGraph.scan();
-  const reactFiles = summary.files.filter((f) => /\.(tsx|jsx)$/.test(f));
+  const reactFiles = summary.files.filter((f) =>
+    /\.(tsx|jsx)$/.test(f) &&
+    !f.includes('node_modules') &&
+    !f.includes('templates/') &&
+    !f.includes('examples/') &&
+    !f.includes('assets/')
+  );
 
   if (reactFiles.length === 0) return { status: 'SKIP', message: 'No React files detected' };
 

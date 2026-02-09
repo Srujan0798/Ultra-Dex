@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 
 type WebSocketStatus = 'connecting' | 'open' | 'closed' | 'error';
 
@@ -16,48 +16,76 @@ export function useWebSocket<T = unknown>(
   const [data, setData] = useState<T | null>(null);
   const [status, setStatus] = useState<WebSocketStatus>('connecting');
   const [error, setError] = useState<string | null>(null);
+
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef<number | null>(null);
   const aliveRef = useRef(true);
 
+  // Use a ref for onMessage to prevent effect re-runs
+  const onMessageRef = useRef(onMessage);
   useEffect(() => {
-    aliveRef.current = true;
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
+
+  useEffect(() => {
+    aliveRef.current = true; // Reset alive state on mount/url change
 
     const connect = () => {
       if (!url) return;
       setStatus('connecting');
 
-      const socket = new WebSocket(url);
-      socketRef.current = socket;
+      try {
+        const socket = new WebSocket(url);
+        socketRef.current = socket;
 
-      socket.onopen = () => {
-        setStatus('open');
-        setError(null);
-      };
+        socket.onopen = () => {
+          if (aliveRef.current) {
+            setStatus('open');
+            setError(null);
+          }
+        };
 
-      socket.onmessage = (event) => {
-        try {
-          const parsed = JSON.parse(event.data) as T;
-          setData(parsed);
-          if (onMessage) onMessage(parsed);
-        } catch (err) {
+        socket.onmessage = (event) => {
+          if (!aliveRef.current) return;
+          try {
+            const parsed = JSON.parse(event.data) as T;
+            setData(parsed);
+            if (onMessageRef.current) {
+              onMessageRef.current(parsed);
+            }
+          } catch (err) {
+            console.error('[WebSocket] Parse error:', err);
+            // Don't set global error for parse failures to keep connection alive
+          }
+        };
+
+        socket.onerror = (event) => {
+          if (aliveRef.current) {
+            console.error('[WebSocket] Error:', event);
+            setStatus('error');
+            setError('Connection failed');
+          }
+        };
+
+        socket.onclose = () => {
+          if (aliveRef.current) {
+            setStatus('closed');
+            if (reconnect) {
+              if (reconnectRef.current) {
+                window.clearTimeout(reconnectRef.current);
+              }
+              reconnectRef.current = window.setTimeout(() => {
+                if (aliveRef.current) connect();
+              }, reconnectInterval);
+            }
+          }
+        };
+      } catch (err) {
+        if (aliveRef.current) {
+          setStatus('error');
           setError((err as Error).message);
         }
-      };
-
-      socket.onerror = () => {
-        setStatus('error');
-      };
-
-      socket.onclose = () => {
-        setStatus('closed');
-        if (reconnect && aliveRef.current) {
-          if (reconnectRef.current) {
-            window.clearTimeout(reconnectRef.current);
-          }
-          reconnectRef.current = window.setTimeout(connect, reconnectInterval);
-        }
-      };
+      }
     };
 
     connect();
@@ -67,14 +95,17 @@ export function useWebSocket<T = unknown>(
       if (reconnectRef.current) {
         window.clearTimeout(reconnectRef.current);
       }
-      socketRef.current?.close();
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
     };
-  }, [url, reconnect, reconnectInterval, onMessage]);
+  }, [url, reconnect, reconnectInterval]); // onMessage removed from deps
 
-  return {
+  return useMemo(() => ({
     data,
     status,
     connected: status === 'open',
     error,
-  };
+  }), [data, status, error]);
 }

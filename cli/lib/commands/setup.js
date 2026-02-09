@@ -18,6 +18,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CLI_ROOT = path.resolve(__dirname, '..', '..');
 
+/**
+ * Register the setup command with Commander
+ * @param {Command} program - Commander program instance
+ * @returns {void}
+ */
 export function registerSetupCommand(program) {
   program
     .command('setup')
@@ -35,6 +40,14 @@ export function registerSetupCommand(program) {
     });
 }
 
+/**
+ * Run the interactive setup wizard
+ * @param {Object} options - Command options
+ * @param {boolean} [options.quick] - Quick setup flag
+ * @param {boolean} [options.reset] - Reset config flag
+ * @param {boolean} [options.completions] - Install completions flag
+ * @returns {Promise<void>}
+ */
 async function runSetup(options) {
   printInfo(chalk.cyan.bold('\n⚡ Ultra-Dex Setup Wizard\n'));
 
@@ -206,6 +219,11 @@ async function resetConfig() {
   }
 }
 
+/**
+ * Save configuration to disk
+ * @param {Object} config - Configuration object
+ * @returns {Promise<void>}
+ */
 async function saveConfig(config) {
   const configDir = path.join(os.homedir(), '.ultra-dex');
   const configPath = path.join(configDir, 'config.json');

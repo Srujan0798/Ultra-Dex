@@ -64,6 +64,11 @@ const CHECKLIST = [
 /**
  * Register the verify command with Commander
  */
+/**
+ * Register the verify command with Commander
+ * @param {Command} program - Commander program instance
+ * @returns {void}
+ */
 export function registerVerifyCommand(program) {
   program
     .command('verify [task]')
@@ -108,6 +113,12 @@ export function registerVerifyCommand(program) {
 
 /**
  * Live verification mode (Automated Gates Only)
+ */
+/**
+ * Live verification mode (Automated Gates Only)
+ * @param {string} projectDir - Absolute path to project directory
+ * @returns {Promise<void>}
+ * @throws {Error} If verification fails
  */
 export async function verifyLive(projectDir) {
   printInfo('\n⚡ Ultra-Dex Active Verification (Live Mode)\n');
@@ -164,6 +175,12 @@ async function updateContextWithDiff() {
 
 /**
  * Core verification logic
+ */
+/**
+ * Core verification logic (Full 21-Step Process)
+ * @param {string} taskName - Name of the task to verify
+ * @param {Object} options - Command options
+ * @returns {Promise<void>}
  */
 export async function verifyCommand(taskName, options) {
   if (options.json) {
@@ -247,6 +264,11 @@ export function listVerificationSteps() {
 
 /**
  * Execute all automated verification gates
+ */
+/**
+ * Execute all automated verification gates
+ * @param {string} projectDir - Project directory path
+ * @returns {Promise<Object>} Map of gate names to status (PASS/FAIL/SKIP)
  */
 export async function runAutomatedGates(projectDir) {
   const automatedResults = {};
