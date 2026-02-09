@@ -5,7 +5,6 @@ RAW IDEA: "[YOUR IDEA HERE]"
 INSTRUCTIONS FOR AI AGENTS:
 
 **Content Requirements:**
-
 - Generate complete, detailed content for ALL sections (1-35)
 - Do NOT skip, merge, or shorten any section
 - Provide actionable, specific information (no generic placeholders)
@@ -14,7 +13,6 @@ INSTRUCTIONS FOR AI AGENTS:
 - Output must be ready for immediate production implementation with 21-step rules
 
 **Quality Standards (v3.0 - God Mode):**
-
 - **Structural Graph Awareness:** All implementation tasks must reference existing architectural patterns identified by the `Codebase Graph`.
 - **Automated Verification:** Every atomic task must be defined such that it can be audited by `ultra-dex verify` against the 21-step framework.
 - **Acceptance Criteria:** All criteria MUST be measurable (avoid "should work well" → use "<200ms response time")
@@ -24,14 +22,12 @@ INSTRUCTIONS FOR AI AGENTS:
 - **Dependency Mapping:** Changes to core files must include an "Impact Analysis" using graph dependencies.
 
 **Specificity Rules:**
-
 - Product Vision: ≤15 words, memorable, answers "what does this do?"
 - Feature descriptions: Include user story + acceptance criteria + edge cases
 - Task definitions: Single responsibility, testable completion criteria
 - Cost estimates: Include specific provider pricing, not ranges
 
 **Output Format:**
-
 - Preserve all section numbers and headers exactly
 - Use consistent markdown formatting throughout
 - Close all code blocks properly
@@ -44,14 +40,14 @@ INSTRUCTIONS FOR AI AGENTS:
 
 Use this to track which sections you've completed:
 
-| Phase                | Sections                   | Est. Time    | Status |
-| -------------------- | -------------------------- | ------------ | ------ |
-| **Foundation**       | 1, 2, 4, 6, 10, 11, 12, 15 | 4-5 hours    | [ ]    |
-| **Core Development** | 9, 16, 20                  | As you build | [ ]    |
-| **Production Prep**  | 19, 21, 22, 27             | 2-3 hours    | [ ]    |
-| **Polish**           | 28, 29, 30, 31             | As needed    | [ ]    |
-| **Advanced**         | 23-26, 32-34               | As needed    | [ ]    |
-| **God Mode**         | 35                         | 1 hour       | [ ]    |
+| Phase | Sections | Est. Time | Status |
+|-------|----------|-----------|--------|
+| **Foundation** | 1, 2, 4, 6, 10, 11, 12, 15 | 4-5 hours | [ ] |
+| **Core Development** | 9, 16, 20 | As you build | [ ] |
+| **Production Prep** | 19, 21, 22, 27 | 2-3 hours | [ ] |
+| **Polish** | 28, 29, 30, 31 | As needed | [ ] |
+| **Advanced** | 23-26, 32-34 | As needed | [ ] |
+| **God Mode** | 35 | 1 hour | [ ] |
 
 > **Tip:** Don't fill all sections upfront! See [02-HOW-TO-USE.md](./02-HOW-TO-USE.md) for the phased approach.
 
@@ -71,13 +67,13 @@ Use this to track which sections you've completed:
 
 ═══════════════════════════════════════════════════════════════
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 1: HIGH-LEVEL SUMMARY
 
----
+------------------------------------------------------------------
 
 ### 1.1 Product Vision (One-liner)
 
@@ -105,20 +101,19 @@ Use this to track which sections you've completed:
 - Metric 2: [e.g., 90% user satisfaction score]
 - Metric 3: [e.g., $10K MRR in 6 months]
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 2: CORE FEATURES
 
----
+------------------------------------------------------------------
 
 ### 2.1 Core Production Features (Critical - P0)
 
 List core features required for the full production release:
 
 **Feature 1: [Name]**
-
 - Simple Description: [What it does in one sentence]
 - Industry Standard: [How similar products implement this]
 - Acceptance Criteria:
@@ -141,13 +136,13 @@ List core features required for the full production release:
 
 [Features for later iterations]
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 3: PRODUCT DESCRIPTION (Industry Standard)
 
----
+------------------------------------------------------------------
 
 ### 3.1 Elevator Pitch (30 seconds)
 
@@ -173,60 +168,54 @@ Step 3: [User sees result]
 
 [How does this compare to alternatives?]
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 4: USER PERSONAS
 
----
+------------------------------------------------------------------
 
 ### Persona 1: [Name/Title]
 
 **Demographics:**
-
 - Age: [Range]
 - Occupation: [Job title/industry]
 - Tech Savviness: [Low/Medium/High]
 - Location: [Geographic]
 
 **Goals:**
-
 - Goal 1: [What they want to achieve]
 - Goal 2: [What they want to achieve]
 
 **Pain Points:**
-
 - Pain 1: [Current frustration]
 - Pain 2: [Current frustration]
 
 **Behaviors:**
-
 - Uses: [Current tools/methods]
 - Frequency: [How often they need solution]
 
 **Motivations:**
-
 - [Why they'd use your product]
 
 ### Persona 2: [Name/Title]
 
 [Repeat structure for 2-3 key personas]
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 5: USER STORIES
 
----
+------------------------------------------------------------------
 
 ### 5.1 Basic User Stories (Epic Level)
 
 Format: "As a [persona], I want to [action] so that [benefit]"
 
 **Epic 1: User Management**
-
 - As a new user, I want to sign up quickly so that I can start using the product immediately
 - As a registered user, I want to log in securely so that my data is protected
 
@@ -237,7 +226,6 @@ Format: "As a [persona], I want to [action] so that [benefit]"
 ### 5.2 Detailed User Stories (Task Level)
 
 **Story: User Registration**
-
 - As a: New user
 - I want to: Create an account with email and password
 - So that: I can access personalized features
@@ -250,19 +238,18 @@ Format: "As a [persona], I want to [action] so that [benefit]"
 □ Confirmation email is sent
 
 □ User is redirected to onboarding
-
 - Priority: P0
 - Estimated Effort: 6 hours
 
 [Continue with 20-30 detailed stories covering all features]
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 6: SCREEN / PAGE MAP
 
----
+------------------------------------------------------------------
 
 ### 6.1 Public Pages (No Auth Required)
 
@@ -320,13 +307,13 @@ Billing (if applicable)
 └── Footer Component
 ```
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 7: USER FLOW & SYSTEM FLOW
 
----
+------------------------------------------------------------------
 
 ### 7.1 Simple User Flow (Happy Path)
 
@@ -369,17 +356,18 @@ Client stores token → Save to secure storage → Redirect to dashboard
 
 [Step-by-step]
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 8: OBJECTIVES
 
----
+------------------------------------------------------------------
 
 ### 8.1 Primary Objectives (Must Achieve)
 
 1. **[Objective 1]**
+
    - Success Metric: [Measurable target]
    - Timeline: [When to achieve]
    - Owner: [Who's responsible]
@@ -401,13 +389,13 @@ Client stores token → Save to secure storage → Redirect to dashboard
 1. [Explicitly state what's out of scope]
 2. [Helps prevent feature creep]
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 9: FULL FEATURE SPECIFICATIONS
 
----
+------------------------------------------------------------------
 
 ### Feature 1: [Feature Name]
 
@@ -424,13 +412,11 @@ Client stores token → Save to secure storage → Redirect to dashboard
 [Why users need this]
 
 **Functional Requirements:**
-
 1. Requirement 1: [Specific capability]
 2. Requirement 2: [Specific capability]
 3. Requirement 3: [Specific capability]
 
 **Technical Requirements:**
-
 - Frontend: [What UI components needed]
 - Backend: [What API endpoints needed]
 - Database: [What data models needed]
@@ -444,7 +430,6 @@ Client stores token → Save to secure storage → Redirect to dashboard
 □ Accessible (keyboard navigation, screen reader)
 
 **Dependencies:**
-
 - Depends on: [Other features that must exist first]
 - Blocked by: [Technical blockers]
 
@@ -453,7 +438,6 @@ Client stores token → Save to secure storage → Redirect to dashboard
 [Design considerations, mockup references]
 
 **Test Scenarios:**
-
 1. Happy path: [Normal usage]
 2. Edge case: [Unusual but valid usage]
 3. Error case: [Invalid usage]
@@ -462,13 +446,13 @@ Client stores token → Save to secure storage → Redirect to dashboard
 
 [Repeat structure for all features]
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 10: DATA MODEL
 
----
+------------------------------------------------------------------
 
 ### 10.1 Entity Relationship Overview
 
@@ -549,6 +533,7 @@ CREATE INDEX idx_task_project ON tasks(project_id);
 Request Body:
 
 ```json
+
 {
   "email": "user@example.com",
   "password": "Use a secure, randomly generated password following company standards",
@@ -560,6 +545,7 @@ Request Body:
 Success Response (201):
 
 ```json
+
 {
   "status": "success",
   "message": "User registered successfully",
@@ -574,6 +560,7 @@ Success Response (201):
 Error Response (400):
 
 ```json
+
 {
   "status": "error",
   "message": "Email already exists",
@@ -594,6 +581,7 @@ Error Response (400):
 Request Body:
 
 ```json
+
 {
   "email": "user@example.com",
   "password": "Use a secure, randomly generated password following company standards"
@@ -603,6 +591,7 @@ Request Body:
 Success Response (200):
 
 ```json
+
 {
   "status": "success",
   "data": {
@@ -621,6 +610,7 @@ Success Response (200):
 Error Response (401):
 
 ```json
+
 {
   "status": "error",
   "message": "Invalid credentials"
@@ -645,16 +635,16 @@ GET /api/v1/[resource] POST /api/v1/[resource] GET /api/v1/[resource]/:id PUT /a
 
 Standard Error Response:
 {
-"status": "error",
-"code": "ERROR_CODE",
-"message": "Human-readable message",
-"errors": [
-{
-"field": "fieldName",
-"message": "Specific field error"
-}
-],
-"timestamp": "2024-12-22T10:30:00Z"
+  "status": "error",
+  "code": "ERROR_CODE",
+  "message": "Human-readable message",
+  "errors": [
+    {
+      "field": "fieldName",
+      "message": "Specific field error"
+    }
+  ],
+  "timestamp": "2024-12-22T10:30:00Z"
 }
 
 ### 11.6 Rate Limiting
@@ -671,32 +661,32 @@ Standard Error Response:
 ### 12.1 Architecture Overview
 
 ┌─────────────┐
-│ Client │ (React/Vue/Next.js)
-│ (Browser) │
+│   Client    │  (React/Vue/Next.js)
+│  (Browser)  │
 └──────┬──────┘
-│ HTTPS
-↓
+       │ HTTPS
+       ↓
 ┌─────────────┐
-│ CDN/WAF │ (Cloudflare/AWS CloudFront)
+│   CDN/WAF   │  (Cloudflare/AWS CloudFront)
 └──────┬──────┘
-│
-↓
+       │
+       ↓
 ┌─────────────┐
-│ API Layer │ (Node.js/Express/NestJS)
-│ (Backend) │
+│  API Layer  │  (Node.js/Express/NestJS)
+│  (Backend)  │
 └──────┬──────┘
-│
-├─────→ ┌────────────┐
-│ │ Database │ (PostgreSQL/MongoDB)
-│ └────────────┘
-│
-├─────→ ┌────────────┐
-│ │ Cache │ (Redis)
-│ └────────────┘
-│
-└─────→ ┌────────────┐
-│ Storage │ (AWS S3/Cloudinary)
-└────────────┘
+       │
+       ├─────→ ┌────────────┐
+       │       │  Database  │  (PostgreSQL/MongoDB)
+       │       └────────────┘
+       │
+       ├─────→ ┌────────────┐
+       │       │   Cache    │  (Redis)
+       │       └────────────┘
+       │
+       └─────→ ┌────────────┐
+               │  Storage   │  (AWS S3/Cloudinary)
+               └────────────┘
 
 ### 12.2 Frontend Architecture
 
@@ -707,16 +697,16 @@ Standard Error Response:
 
 Folder Structure:
 /src
-/components
-/common (Reusable UI components)
-/features (Feature-specific components)
-/pages (Route pages)
-/hooks (Custom React hooks)
-/utils (Helper functions)
-/services (API calls)
-/store (State management)
-/assets (Images, fonts, etc.)
-/styles (Global styles)
+  /components
+    /common      (Reusable UI components)
+    /features    (Feature-specific components)
+  /pages         (Route pages)
+  /hooks         (Custom React hooks)
+  /utils         (Helper functions)
+  /services      (API calls)
+  /store         (State management)
+  /assets        (Images, fonts, etc.)
+  /styles        (Global styles)
 
 ### 12.3 Backend Architecture
 
@@ -726,14 +716,14 @@ Folder Structure:
 
 Folder Structure:
 /src
-/controllers (Route handlers)
-/services (Business logic)
-/models (Data models)
-/middleware (Auth, validation, etc.)
-/utils (Helper functions)
-/config (Configuration)
-/routes (API routes)
-/validators (Input validation)
+  /controllers   (Route handlers)
+  /services      (Business logic)
+  /models        (Data models)
+  /middleware    (Auth, validation, etc.)
+  /utils         (Helper functions)
+  /config        (Configuration)
+  /routes        (API routes)
+  /validators    (Input validation)
 
 ### 12.4 Database Architecture
 
@@ -758,38 +748,38 @@ Folder Structure:
 
 // User Registration Flow
 async function registerUser(userData) {
-// Step 1: Validate input
-const validation = validateRegistrationData(userData);
-if (!validation.isValid) {
-throw new ValidationError(validation.errors);
-}
+  // Step 1: Validate input
+  const validation = validateRegistrationData(userData);
+  if (!validation.isValid) {
+    throw new ValidationError(validation.errors);
+  }
 
-// Step 2: Check if user exists
-const existingUser = await db.user.findByEmail(userData.email);
-if (existingUser) {
-throw new ConflictError('Email already registered');
-}
+  // Step 2: Check if user exists
+  const existingUser = await db.user.findByEmail(userData.email);
+  if (existingUser) {
+    throw new ConflictError('Email already registered');
+  }
 
-// Step 3: Hash password
-const hashedPassword = await bcrypt.hash(userData.password, 10);
+  // Step 3: Hash password
+  const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-// Step 4: Create user
-const newUser = await db.user.create({
-...userData,
-password: hashedPassword,
-isVerified: false
-});
+  // Step 4: Create user
+  const newUser = await db.user.create({
+    ...userData,
+    password: hashedPassword,
+    isVerified: false
+  });
 
-// Step 5: Send verification email
-const verificationToken = generateToken(newUser.id);
-await emailService.sendVerification(newUser.email, verificationToken);
+  // Step 5: Send verification email
+  const verificationToken = generateToken(newUser.id);
+  await emailService.sendVerification(newUser.email, verificationToken);
 
-// Step 6: Return response
-return {
-userId: newUser.id,
-email: newUser.email,
-message: 'Registration successful. Please verify your email.'
-};
+  // Step 6: Return response
+  return {
+    userId: newUser.id,
+    email: newUser.email,
+    message: 'Registration successful. Please verify your email.'
+  };
 }
 
 ### 13.2 Core Feature Logic Flows
@@ -798,15 +788,14 @@ message: 'Registration successful. Please verify your email.'
 **Feature:** [Name]
 **INPUT:** [What comes in]
 PROCESS:
-
-1. Validate input
-2. Check authorization
-3. Business logic step 1
-4. Business logic step 2
-5. Update database
-6. Send notifications (if needed)
-   **OUTPUT:** [What goes out]
-   **ERROR HANDLING:** [What errors can occur]
+  1. Validate input
+  2. Check authorization
+  3. Business logic step 1
+  4. Business logic step 2
+  5. Update database
+  6. Send notifications (if needed)
+**OUTPUT:** [What goes out]
+**ERROR HANDLING:** [What errors can occur]
 
 ### 13.3 State Management Flow
 
@@ -943,7 +932,6 @@ E2E: [Playwright / Cypress]
 ### 15.6 TASK BREAKDOWN METHODOLOGY
 
 #### 15.6.1 Feature-to-Task Mapping Strategy
-
 How to break down a feature into tasks:
 Identify the feature (from Section 9)
 
@@ -958,20 +946,19 @@ Create atomic tasks (each completable in 4-9 hours)
 
 **Example:** User Authentication Feature
 **FEATURE:** User Authentication
-└─ TASK-001: Create User database model (4h)
-└─ TASK-002: Implement registration API endpoint (6h)
-└─ TASK-003: Implement login API endpoint (5h)
-└─ TASK-004: Implement JWT token generation (4h)
-└─ TASK-005: Build registration UI form (6h)
-└─ TASK-006: Build login UI form (5h)
-└─ TASK-007: Integrate frontend with auth APIs (5h)
-└─ TASK-008: Write unit tests for auth logic (7h)
-└─ TASK-009: Write E2E tests for auth flows (8h)
+  └─ TASK-001: Create User database model (4h)
+  └─ TASK-002: Implement registration API endpoint (6h)
+  └─ TASK-003: Implement login API endpoint (5h)
+  └─ TASK-004: Implement JWT token generation (4h)
+  └─ TASK-005: Build registration UI form (6h)
+  └─ TASK-006: Build login UI form (5h)
+  └─ TASK-007: Integrate frontend with auth APIs (5h)
+  └─ TASK-008: Write unit tests for auth logic (7h)
+  └─ TASK-009: Write E2E tests for auth flows (8h)
 
 #### 15.6.2 Task Sizing Guidelines
 
 **Task Duration Targets:**
-
 - **Ideal:** 4-6 hours (completable in one focused work session)
 - **Acceptable:** 6-9 hours (completable in one work day)
 - **Too Large:** 9+ hours (must be broken down further)
@@ -986,17 +973,16 @@ Create atomic tasks (each completable in 4-9 hours)
 
 **Overhead Adjustments (Add to Base Estimate):**
 
-| Factor            | Additional Time | When to Apply                      |
-| ----------------- | --------------- | ---------------------------------- |
-| Testing Overhead  | +25%            | Always (unit + integration tests)  |
-| Code Review       | +10%            | Always (review + revision time)    |
-| Context Switching | +15%            | If developer has >2 active tasks   |
-| New Technology    | +30%            | First time using a library/pattern |
-| Team Size <3      | +20%            | Small team, less specialization    |
-| Documentation     | +10%            | If user-facing feature             |
+| Factor | Additional Time | When to Apply |
+|--------|-----------------|---------------|
+| Testing Overhead | +25% | Always (unit + integration tests) |
+| Code Review | +10% | Always (review + revision time) |
+| Context Switching | +15% | If developer has >2 active tasks |
+| New Technology | +30% | First time using a library/pattern |
+| Team Size <3 | +20% | Small team, less specialization |
+| Documentation | +10% | If user-facing feature |
 
 **Buffer Calculation Formula:**
-
 ```
 Final Estimate = Base Estimate × (1 + Testing + Review + Applicable Factors)
 
@@ -1009,7 +995,6 @@ Example:
 ```
 
 #### 15.6.3 Atomic Task Definition Criteria
-
 A task is "atomic" if:
 □ Can be completed by one person
 □ Has clear start and end points
@@ -1020,37 +1005,33 @@ A task is "atomic" if:
 □ Can be verified using the 21-step checklist
 NOT Atomic (Examples): ❌ "Build user management" (too broad) ❌ "Fix bugs" (not specific) ❌ "Improve performance" (not measurable)
 Atomic (Examples): ✅ "Create User model with validation" ✅ "Implement password reset API endpoint" ✅ "Build login form with error handling"
-
 #### 15.6.4 Task Dependency Mapping Rules
-
 Dependency Types:
 **Blocking:** Task A must complete before Task B starts
 **Parallel:** Tasks can be worked on simultaneously
 **Soft Dependency:** Helpful but not required
 How to map dependencies:
 TASK-001: Database setup
-└─ Blocks → TASK-002: Create models
-└─ Blocks → TASK-003: API endpoints
-└─ Blocks → TASK-004: Frontend integration
+  └─ Blocks → TASK-002: Create models
+              └─ Blocks → TASK-003: API endpoints
+                          └─ Blocks → TASK-004: Frontend integration
 
 TASK-005: UI component library (Parallel to backend tasks)
 TASK-006: Email service setup (Soft dependency)
 
 #### 15.6.5 Parallel vs Sequential Task Identification
-
 Can be done in parallel if:
 No shared code modifications
 Different layers (DB vs UI)
 Different features
 Different developers available
 Example Parallel Streams:
-Stream 1 (Backend): Stream 2 (Frontend):
-TASK-001: Auth API → TASK-010: UI Components
-TASK-002: User API → TASK-011: Auth Pages
-TASK-003: Admin API → TASK-012: Dashboard Pages
+Stream 1 (Backend):     Stream 2 (Frontend):
+TASK-001: Auth API  →   TASK-010: UI Components
+TASK-002: User API  →   TASK-011: Auth Pages
+TASK-003: Admin API →   TASK-012: Dashboard Pages
 
 #### 15.6.6 Task Granularity Examples
-
 **Feature:** Blog Post Management
 ❌ TOO BROAD (Not Granular Enough):
 TASK-001: Implement blog functionality
@@ -1078,13 +1059,11 @@ TASK-012: Write E2E tests for post management flow (8h)
 **You've filled Sections 1-15?** You have enough to start coding!
 
 **NEXT STEPS:**
-
 1. Load cursor-rules for your tech stack (see [cursor-rules/](../../../cursor-rules/))
 2. Create your first atomic task below (Section 16.C)
 3. Start coding with 21-step verification ([CHECKLIST-21-STEP.md](../../../CHECKLIST-21-STEP.md))
 
 **Come back to remaining sections AS YOU HIT PROBLEMS:**
-
 - Need error handling? → Section 27
 - Need deployment? → Section 19
 - Need security audit? → Section 21
@@ -1397,7 +1376,6 @@ Can work in parallel with basic UI mockup
 TASK-008: Build Login Form Component
 
 **Description:**
-
 - Create responsive login form
 - Implement client-side validation
 - Add "remember me" option
@@ -1425,7 +1403,6 @@ TASK-008: Build Login Form Component
 TASK-009: Implement Protected Route HOC/Middleware
 
 **Description:**
-
 - Create higher-order component for route protection
 - Check authentication state
 - Redirect unauthenticated users
@@ -1450,7 +1427,6 @@ TASK-009: Implement Protected Route HOC/Middleware
 TASK-010: Write Unit Tests for Authentication Logic
 
 **Description:**
-
 - Test password hashing
 - Test token generation/validation
 - Test registration validation
@@ -1476,7 +1452,6 @@ TASK-010: Write Unit Tests for Authentication Logic
 TASK-011: Write E2E Tests for Authentication Flow
 
 **Description:**
-
 - Test complete registration flow
 - Test complete login flow
 - Test protected route access
@@ -1537,18 +1512,18 @@ TASK-XXX: [Feature name]
 
 Critical Path (Longest Dependent Chain):
 TASK-000 (Git)
-→ TASK-001 (Environment)
-→ TASK-003 (Database)
-→ TASK-004 (Registration API)
-→ TASK-007 (Registration UI)
-→ TASK-011 (E2E Tests)
+  → TASK-001 (Environment)
+  → TASK-003 (Database)
+  → TASK-004 (Registration API)
+  → TASK-007 (Registration UI)
+  → TASK-011 (E2E Tests)
 
 **Total Critical Path Time:** [X] hours
 
 Parallel Work Streams:
-Stream 1 (Backend): Stream 2 (Frontend):
-TASK-004 (Auth API) ║ TASK-007 (Auth UI)
-TASK-012 (Feature API) ║ TASK-014 (Feature UI)
+Stream 1 (Backend):        Stream 2 (Frontend):
+TASK-004 (Auth API)    ║   TASK-007 (Auth UI)
+TASK-012 (Feature API) ║   TASK-014 (Feature UI)
 
 Bottleneck Identification:
 Bottleneck 1: [Task that blocks many others]
@@ -1602,15 +1577,15 @@ TECHNICAL DETAILS:
 
 21-STEP VERIFICATION STATUS:
 
-□ 1. UNDERSTAND: Read requirements ✓ (10 min)
-□ 2. ASSUMPTIONS: Listed API response format assumptions (5 min)
-□ 3. ANALYZE: Mapped auth flow diagram (15 min)
-□ 4. DECOMPOSE: Broke into 7 sub-steps (10 min)
-□ 5. PREPARE: Set up test database, email mock (20 min)
-□ 6. IMPLEMENT: Wrote endpoint code (90 min)
-□ 7. DOCUMENT: Added JSDoc comments (15 min)
-□ 8. UNIT TEST: Wrote 12 test cases (40 min)
-□ 9. DEBUG: Fixed validation edge cases (30 min)
+□  1. UNDERSTAND: Read requirements ✓ (10 min)
+□  2. ASSUMPTIONS: Listed API response format assumptions (5 min)
+□  3. ANALYZE: Mapped auth flow diagram (15 min)
+□  4. DECOMPOSE: Broke into 7 sub-steps (10 min)
+□  5. PREPARE: Set up test database, email mock (20 min)
+□  6. IMPLEMENT: Wrote endpoint code (90 min)
+□  7. DOCUMENT: Added JSDoc comments (15 min)
+□  8. UNIT TEST: Wrote 12 test cases (40 min)
+□  9. DEBUG: Fixed validation edge cases (30 min)
 □ 10. INTEGRATE: Tested with database (20 min)
 □ 11. VALIDATE: Verified all acceptance criteria (15 min)
 □ 12. UX CHECK: Tested error messages clarity (10 min)
@@ -1638,7 +1613,7 @@ NEXT TASKS:
 
 - TASK-005: Login endpoint (similar pattern)
 - TASK-007: Frontend registration form (can start now)
-  ═══════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════
 
 ---
 
@@ -1648,12 +1623,12 @@ NEXT TASKS:
 
 Branch Types:
 
-- main (Production-ready code)
-- develop (Integration branch)
-- feature/\* (New features)
-- bugfix/\* (Bug fixes)
-- hotfix/\* (Urgent production fixes)
-- release/\* (Release preparation)
+- main           (Production-ready code)
+- develop        (Integration branch)
+- feature/*      (New features)
+- bugfix/*       (Bug fixes)
+- hotfix/*       (Urgent production fixes)
+- release/*      (Release preparation)
 
 Format:
 feature/TASK-XXX-short-description
@@ -1671,17 +1646,17 @@ release/v1.0.0
 
 GitFlow (Recommended for team projects):
 main (production)
-↑
+  ↑
 release/v1.x.x (release prep)
-↑
+  ↑
 develop (integration)
-↑
-feature/_, bugfix/_ (development)
+  ↑
+feature/*, bugfix/* (development)
 
 Trunk-Based (Recommended for solo/small teams):
 main (production)
-↑
-feature/_, bugfix/_ (short-lived branches)
+  ↑
+feature/*, bugfix/* (short-lived branches)
 
 ### 17.3 Commit Message Format
 
@@ -1756,18 +1731,18 @@ Added request/response examples and error codes.
 
 ### 17.4 Commit Types
 
-[feat] New feature
-[fix] Bug fix
-[docs] Documentation only
-[style] Code style (formatting, semicolons, etc.)
+[feat]     New feature
+[fix]      Bug fix
+[docs]     Documentation only
+[style]    Code style (formatting, semicolons, etc.)
 [refactor] Code restructuring (no functional change)
-[perf] Performance improvement
-[test] Adding/updating tests
-[chore] Maintenance tasks (dependencies, configs)
+[perf]     Performance improvement
+[test]     Adding/updating tests
+[chore]    Maintenance tasks (dependencies, configs)
 [security] Security fixes
-[a11y] Accessibility improvements
-[build] Build system changes
-[ci] CI/CD changes
+[a11y]     Accessibility improvements
+[build]    Build system changes
+[ci]       CI/CD changes
 
 ### 17.5 Pull Request Requirements
 
@@ -1842,13 +1817,13 @@ TASK-XXX: [Task name]
 - [ ] Accessible (if UI changes)
 - [ ] Mobile responsive (if UI changes)
 
----
+------------------------------------------------------------------
 
 ---
 
 ### 17.6 CODE QUALITY STANDARDS
 
----
+------------------------------------------------------------------
 
 #### 17.6.1 Linting Configuration
 
@@ -1896,7 +1871,6 @@ Prettier Configuration (.prettierrc):
 **Bracket Spacing:** Yes
 
 #### 17.6.3 Naming Conventions
-
 Variables & Functions:
 // camelCase for variables and functions
 const userName = 'John';
@@ -1935,27 +1909,26 @@ user_id, created_at, first_name
 {userId, createdAt, firstName}
 
 #### 17.6.4 Comment & Documentation Requirements
-
 Function Documentation (JSDoc):
-/\*\*
+/**
 
-- Registers a new user in the system
--
+ * Registers a new user in the system
+ *
 
-- @param {Object} userData - The user registration data
-- @param {string} userData.email - User's email address
-- @param {string} userData.password - User's password (will be hashed)
-- @returns {Promise<Object>} The created user object with JWT token
-- @throws {ValidationError} If input data is invalid
-- @throws {ConflictError} If email already exists
--
+ * @param {Object} userData - The user registration data
+ * @param {string} userData.email - User's email address
+ * @param {string} userData.password - User's password (will be hashed)
+ * @returns {Promise<Object>} The created user object with JWT token
+ * @throws {ValidationError} If input data is invalid
+ * @throws {ConflictError} If email already exists
+ *
 
-- @example
-- const user = await registerUser({
-- email: 'user@example.com',
-- password: 'Use a secure, randomly generated password following company standards'
-- });
-  \*/
+ * @example
+ * const user = await registerUser({
+ *   email: 'user@example.com',
+ *   password: 'Use a secure, randomly generated password following company standards'
+ * });
+ */
 
 ```javascript
 async function registerUser(userData) {
@@ -1979,7 +1952,6 @@ TODO Comments:
 // HACK: Temporary workaround until API v2 is ready
 
 #### 17.6.5 Code Review Checklist
-
 Before submitting PR, verify:
 Code Quality:
 [ ] No ESLint errors or warnings
@@ -2015,9 +1987,7 @@ Documentation:
 [ ] Complex logic commented
 [ ] README updated (if needed)
 [ ] API docs updated (if API changes)
-
 #### 17.6.6 Pre-commit Hooks Setup
-
 Husky + Lint-Staged Configuration:
 package.json:
 
@@ -2035,7 +2005,9 @@ package.json:
       "prettier --write",
       "jest --findRelatedTests --passWithNoTests"
     ],
-    "*.{json,md}": ["prettier --write"]
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }
 ```
@@ -2315,7 +2287,8 @@ Three Environments:
 
 **URL:** http://localhost:3000 (frontend), http://localhost:4000 (backend)
 **Database:** Local PostgreSQL / SQLite
-**Purpose:** Active development 2. Staging
+**Purpose:** Active development
+2. Staging
 
 **URL:** https://staging.yourapp.com
 **Database:** Staging database (separate from prod)
@@ -2511,16 +2484,16 @@ vercel maintenance disable
 
 Blue-Green Deployment:
 ┌─────────────┐
-│ Load │
-│ Balancer │
+│   Load      │
+│  Balancer   │
 └──────┬──────┘
-│
-┌───┴────┐
-│ │
-┌──▼──┐ ┌──▼──┐
-│Blue │ │Green│
-│(Old)│ │(New)│
-└─────┘ └─────┘
+       │
+   ┌───┴────┐
+   │        │
+┌──▼──┐  ┌──▼──┐
+│Blue │  │Green│
+│(Old)│  │(New)│
+└─────┘  └─────┘
 
 Process:
 
@@ -2557,12 +2530,12 @@ Authentication logic
 Unit Test Example (Jest):
 // userService.test.js
 describe('UserService', () => {
-describe('registerUser', () => {
-it('should create user with hashed password', async () => {
-const userData = {
-email: 'test@example.com',
-password: 'Use a secure, randomly generated password following company standards'
-};
+  describe('registerUser', () => {
+    it('should create user with hashed password', async () => {
+      const userData = {
+        email: 'test@example.com',
+        password: 'Use a secure, randomly generated password following company standards'
+      };
 
       const result = await registerUser(userData);
 
@@ -2578,8 +2551,7 @@ password: 'Use a secure, randomly generated password following company standards
     it('should validate email format', async () => {
       // Test email validation
     });
-
-});
+  });
 });
 
 ### 20.2 Integration Test Scenarios
@@ -2592,19 +2564,19 @@ Payment processing (if applicable)
 Integration Test Example:
 // auth.integration.test.js
 describe('Authentication Integration', () => {
-beforeAll(async () => {
-// Set up test database
-await setupTestDatabase();
-});
+  beforeAll(async () => {
+    // Set up test database
+    await setupTestDatabase();
+  });
 
-it('should complete full registration flow', async () => {
-// 1. Register user
-const registerResponse = await request(app)
-.post('/api/auth/register')
-.send({
-email: 'integration@test.com',
-password: 'Use a secure, randomly generated password following company standards'
-});
+  it('should complete full registration flow', async () => {
+    // 1. Register user
+    const registerResponse = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'integration@test.com',
+        password: 'Use a secure, randomly generated password following company standards'
+      });
 
     expect(registerResponse.status).toBe(201);
 
@@ -2622,8 +2594,7 @@ password: 'Use a secure, randomly generated password following company standards
 
     expect(loginResponse.status).toBe(200);
     expect(loginResponse.body.token).toBeDefined();
-
-});
+  });
 });
 
 ### 20.3 End-to-End Test Flows
@@ -2636,27 +2607,26 @@ Cross-browser testing
 E2E Test Example (Playwright):
 // userRegistration.e2e.test.js
 test('user can register and access dashboard', async ({ page }) => {
-// 1. Navigate to signup page
-await page.goto('https://yourapp.com/signup');
+  // 1. Navigate to signup page
+  await page.goto('https://yourapp.com/signup');
 
-// 2. Fill registration form
-await page.fill('[name="email"]', 'e2e@test.com');
-await page.fill('[name="password"]', 'Use a secure, randomly generated password following company standards');
-await page.fill('[name="firstName"]', 'Test');
-await page.fill('[name="lastName"]', 'User');
+  // 2. Fill registration form
+  await page.fill('[name="email"]', 'e2e@test.com');
+  await page.fill('[name="password"]', 'Use a secure, randomly generated password following company standards');
+  await page.fill('[name="firstName"]', 'Test');
+  await page.fill('[name="lastName"]', 'User');
 
-// 3. Submit form
-await page.click('button[type="submit"]');
+  // 3. Submit form
+  await page.click('button[type="submit"]');
 
-// 4. Should redirect to dashboard
-await page.waitForURL('\*\*/dashboard');
+  // 4. Should redirect to dashboard
+  await page.waitForURL('**/dashboard');
 
-// 5. Verify user sees welcome message
-await expect(page.locator('h1')).toContainText('Welcome, Test');
+  // 5. Verify user sees welcome message
+  await expect(page.locator('h1')).toContainText('Welcome, Test');
 });
 
 E2E Test Scenarios:
-
 - User registration → Email verification → Login → Dashboard
 - Create resource → Edit resource → Delete resource
 - Add to cart → Checkout → Payment → Confirmation (if e-commerce)
@@ -2677,26 +2647,26 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 export let options = {
-stages: [
-{ duration: '2m', target: 100 }, // Ramp up to 100 users
-{ duration: '5m', target: 100 }, // Stay at 100 users
-{ duration: '2m', target: 0 }, // Ramp down
-],
-thresholds: {
-http_req_duration: ['p(95)<500'], // 95% requests under 500ms
-http_req_failed: ['rate<0.01'], // Error rate under 1%
-},
+  stages: [
+    { duration: '2m', target: 100 },  // Ramp up to 100 users
+    { duration: '5m', target: 100 },  // Stay at 100 users
+    { duration: '2m', target: 0 },    // Ramp down
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<500'], // 95% requests under 500ms
+    http_req_failed: ['rate<0.01'],   // Error rate under 1%
+  },
 };
 
 export default function () {
-let response = http.get('https://yourapp.com/api/posts');
+  let response = http.get('https://yourapp.com/api/posts');
 
-check(response, {
-'status is 200': (r) => r.status === 200,
-'response time < 500ms': (r) => r.timings.duration < 500,
-});
+  check(response, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 500ms': (r) => r.timings.duration < 500,
+  });
 
-sleep(1);
+  sleep(1);
 }
 
 Performance Targets (from Section 22):
@@ -2720,39 +2690,36 @@ Rate limiting enforcement
 Input validation
 Security Test Example:
 describe('Security Tests', () => {
-it('should prevent SQL injection in login', async () => {
-const response = await request(app)
-.post('/api/auth/login')
-.send({
-email: "admin'--",
-password: "Use a secure, randomly generated password following company standards"
-});
+  it('should prevent SQL injection in login', async () => {
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: "admin'--",
+        password: "Use a secure, randomly generated password following company standards"
+      });
 
     // Should not succeed with SQL injection
     expect(response.status).toBe(401);
+  });
 
-});
-
-it('should prevent XSS in user input', async () => {
-const maliciousInput = '<script>alert("XSS")</script>';
-const response = await request(app)
-.post('/api/posts')
-.set('Authorization', `Bearer ${validToken}`)
-.send({
-title: maliciousInput
-});
+  it('should prevent XSS in user input', async () => {
+    const maliciousInput = '<script>alert("XSS")</script>';
+    const response = await request(app)
+      .post('/api/posts')
+      .set('Authorization', `Bearer ${validToken}`)
+      .send({
+        title: maliciousInput
+      });
 
     // Input should be sanitized
     const post = await db.post.findById(response.body.id);
     expect(post.title).not.toContain('<script>');
-
-});
+  });
 });
 
 ### 20.6 User Acceptance Testing (UAT)
 
 UAT Process:
-
 1. Select beta users (5-10 representative users)
 2. Provide test scenarios (specific tasks to complete)
 3. Collect feedback (surveys, interviews, analytics)
@@ -2763,7 +2730,6 @@ UAT Process:
 **UAT Test Scenarios:**
 
 **Scenario 1: First-Time User Onboarding**
-
 - User visits homepage
 - User signs up for account
 - User verifies email
@@ -2772,12 +2738,10 @@ UAT Process:
 - **Success Criteria:** Completes without confusion in <5 minutes
 
 **Scenario 2: Core Feature Usage**
-
 - [Specific task related to main feature]
 - **Success Criteria:** Task completed successfully
 
 **Scenario 3: Error Recovery**
-
 - [Deliberately cause error state]
 - User should understand error and recover
 - **Success Criteria:** User knows what to do next
@@ -2785,7 +2749,6 @@ UAT Process:
 ### 20.7 Test Data Management
 
 Test Data Requirements:
-
 - Separate test database from development
 - Seed data for consistent testing
 - Ability to reset to known state
@@ -2800,13 +2763,13 @@ async function seedTestData() {
     {
       email: 'test1@example.com',
       password: await hash('Use a secure, randomly generated password following company standards'),
-      role: 'user',
+      role: 'user'
     },
     {
       email: 'admin@example.com',
       password: await hash('Use a secure, randomly generated password following company standards'),
-      role: 'admin',
-    },
+      role: 'admin'
+    }
   ]);
 
   // Create test data
@@ -2819,20 +2782,18 @@ async function seedTestData() {
 ### 20.8 QUALITY GATES & VERIFICATION CHECKPOINTS
 
 #### 20.8.1 When to Apply 21-Step Verification
-
 Mandatory Verification Points:
 ✅ Every atomic task - Before marking task complete
 ✅ Before PR merge - All 21 steps verified in code review
 ✅ Before milestone - All tasks in milestone verified
 ✅ Before deployment - Final verification checklist
 Verification Matrix:
-Task Complete (Local) → 21-step complete → ○ → ●
-Code Review (PR) → Reviewer verifies → ● → ✓
-Integration Testing → System verified → ✓ → ✓
-Deployment (Staging) → Environment check → ✓ → 🔒
+Task Complete (Local)     → 21-step complete → ○ → ●
+Code Review (PR)          → Reviewer verifies → ● → ✓
+Integration Testing       → System verified   → ✓ → ✓
+Deployment (Staging)      → Environment check → ✓ → 🔒
 
 #### 20.8.2 Quality Metrics per Phase
-
 Phase 1: Foundation (Weeks 1-2)
 ✅ Code Coverage: >70%
 ✅ Critical Bugs: 0
@@ -2875,7 +2836,6 @@ Phase 5: Launch (Week 12)
 ✅ User feedback positive
 
 #### 20.8.3 Review Schedule
-
 Daily Reviews (During Development):
 📝 Morning: Sprint planning / task selection
 💻 During: Peer code reviews on PRs
@@ -2883,19 +2843,16 @@ Daily Reviews (During Development):
 **Weekly Reviews:**
 
 🗓️ **Monday:** Sprint planning
-
 - Select tasks for the week
 - Review dependencies
 - Assign ownership
 
 🔍 **Wednesday:** Mid-sprint check
-
 - Progress review
 - Adjust if behind
 - Unblock issues
 
 ✅ **Friday:** Sprint retrospective
-
 - Demo completed work
 - Review metrics
 - Identify improvements
@@ -2910,9 +2867,7 @@ Monthly Reviews:
 Code quality review
 Technical debt assessment
 Scalability planning
-
 #### 20.8.4 Acceptance Criteria Validation Points
-
 Task Level:
 When developer marks task complete:
 
@@ -2965,45 +2920,45 @@ Before production deployment:
 Authentication & Authorization:
 ✅ Password Requirements:
 
-- Minimum 8 characters
-- Must include: uppercase, lowercase, number, special char
-- Hashed with bcrypt (10+ rounds)
-- Never store plain text passwords
+   - Minimum 8 characters
+   - Must include: uppercase, lowercase, number, special char
+   - Hashed with bcrypt (10+ rounds)
+   - Never store plain text passwords
 
 ✅ JWT Tokens:
 
-- Short-lived access tokens (15-60 minutes)
-- Longer-lived refresh tokens (7-30 days)
-- Store securely (HTTP-only cookies or secure storage)
-- Validate on every request
+   - Short-lived access tokens (15-60 minutes)
+   - Longer-lived refresh tokens (7-30 days)
+   - Store securely (HTTP-only cookies or secure storage)
+   - Validate on every request
 
 ✅ Session Management:
 
-- Logout invalidates tokens
-- Auto-logout after inactivity
-- Concurrent session limits (if needed)
+   - Logout invalidates tokens
+   - Auto-logout after inactivity
+   - Concurrent session limits (if needed)
 
 Data Protection:
 ✅ Encryption:
 
-- HTTPS everywhere (SSL/TLS)
-- Encrypt sensitive data at rest
-- Encrypt data in transit
-- Use environment variables for secrets
+   - HTTPS everywhere (SSL/TLS)
+   - Encrypt sensitive data at rest
+   - Encrypt data in transit
+   - Use environment variables for secrets
 
 ✅ Input Validation:
 
-- Validate all user input
-- Sanitize HTML to prevent XSS
-- Use parameterized queries (prevent SQL injection)
-- Rate limit API endpoints
+   - Validate all user input
+   - Sanitize HTML to prevent XSS
+   - Use parameterized queries (prevent SQL injection)
+   - Rate limit API endpoints
 
 ✅ Data Privacy:
 
-- GDPR compliance (if EU users)
-- Allow users to export/delete data
-- Clear privacy policy
-- Minimal data collection
+   - GDPR compliance (if EU users)
+   - Allow users to export/delete data
+   - Clear privacy policy
+   - Minimal data collection
 
 ### 21.2 OWASP Top 10 Mitigation
 
@@ -3059,7 +3014,8 @@ Data Protection:
 
 ✅ Log authentication events
 ✅ Log authorization failures
-✅ Monitor suspicious activity 10. Server-Side Request Forgery (SSRF)
+✅ Monitor suspicious activity
+10. Server-Side Request Forgery (SSRF)
 ✅ Validate and sanitize URLs
 ✅ Whitelist allowed domains
 ✅ Network segmentation
@@ -3102,70 +3058,70 @@ In Transit:
 Frontend Optimization:
 ✅ Code Splitting:
 
-- Load only what's needed
-- Dynamic imports for routes
-- Lazy load components
+   - Load only what's needed
+   - Dynamic imports for routes
+   - Lazy load components
 
 ✅ Image Optimization:
 
-- Use WebP format
-- Responsive images (srcset)
-- Lazy loading
-- CDN delivery
+   - Use WebP format
+   - Responsive images (srcset)
+   - Lazy loading
+   - CDN delivery
 
 ✅ Bundle Optimization:
 
-- Tree shaking (remove unused code)
-- Minification
-- Gzip/Brotli compression
-- Code splitting
+   - Tree shaking (remove unused code)
+   - Minification
+   - Gzip/Brotli compression
+   - Code splitting
 
 ✅ React Optimization:
 
-- useMemo for expensive calculations
-- useCallback for function props
-- React.memo for component memoization
-- Virtualization for long lists
+   - useMemo for expensive calculations
+   - useCallback for function props
+   - React.memo for component memoization
+   - Virtualization for long lists
 
 Backend Optimization:
 ✅ Database Optimization:
 
-- Proper indexing
-- Query optimization
-- Connection pooling
-- Avoid N+1 queries
+   - Proper indexing
+   - Query optimization
+   - Connection pooling
+   - Avoid N+1 queries
 
 ✅ API Optimization:
 
-- Response compression
-- Pagination for large datasets
-- Field selection (GraphQL-style)
-- Rate limiting
+   - Response compression
+   - Pagination for large datasets
+   - Field selection (GraphQL-style)
+   - Rate limiting
 
 ✅ Server Optimization:
 
-- Horizontal scaling
-- Load balancing
-- CDN for static assets
-- Async processing for heavy tasks
+   - Horizontal scaling
+   - Load balancing
+   - CDN for static assets
+   - Async processing for heavy tasks
 
 ### 21.5 Caching Strategy
 
 Multi-Layer Caching:
 ┌─────────────┐
-│ Browser │ ← Cache static assets (CSS, JS, images)
+│   Browser   │ ← Cache static assets (CSS, JS, images)
 └──────┬──────┘
-↓
+       ↓
 ┌─────────────┐
-│ CDN │ ← Cache at edge locations
+│     CDN     │ ← Cache at edge locations
 └──────┬──────┘
-↓
+       ↓
 ┌─────────────┐
-│ App Server │ ← Cache API responses (Redis)
+│  App Server │ ← Cache API responses (Redis)
 └──────┬──────┘
-↓
+       ↓
 ┌─────────────┐
-│ Database │ ← Query caching
+│  Database   │ ← Query caching
 └─────────────┘
 
 Cache Implementation:
@@ -3180,43 +3136,42 @@ async function getCachedData(key) {
     return JSON.parse(cached);
   }
 ```
-
-return null;
+  return null;
 }
 
 async function setCachedData(key, data, ttl = 3600) {
-await client.setex(key, ttl, JSON.stringify(data));
+  await client.setex(key, ttl, JSON.stringify(data));
 }
 
 // Usage in API endpoint
 app.get('/api/posts', async (req, res) => {
-const cacheKey = 'posts:list';
+  const cacheKey = 'posts:list';
 
-// Try cache first
-const cached = await getCachedData(cacheKey);
-if (cached) {
-return res.json(cached);
-}
+  // Try cache first
+  const cached = await getCachedData(cacheKey);
+  if (cached) {
+    return res.json(cached);
+  }
 
-// Cache miss - fetch from DB
-const posts = await db.post.findMany();
+  // Cache miss - fetch from DB
+  const posts = await db.post.findMany();
 
-// Store in cache
-await setCachedData(cacheKey, posts, 600); // 10 min TTL
+  // Store in cache
+  await setCachedData(cacheKey, posts, 600); // 10 min TTL
 
-res.json(posts);
+  res.json(posts);
 });
 
 Cache Invalidation:
 // Invalidate cache on update
 app.post('/api/posts', async (req, res) => {
-const newPost = await db.post.create(req.body);
+  const newPost = await db.post.create(req.body);
 
-// Invalidate relevant caches
-await client.del('posts:list');
-await client.del(`posts:${newPost.id}`);
+  // Invalidate relevant caches
+  await client.del('posts:list');
+  await client.del(`posts:${newPost.id}`);
 
-res.json(newPost);
+  res.json(newPost);
 });
 
 ### 21.6 Database Optimization
@@ -3241,23 +3196,23 @@ Query Optimization:
 // ❌ BAD: N+1 query problem
 const users = await db.user.findMany();
 for (const user of users) {
-user.posts = await db.post.findMany({ where: { userId: user.id } });
+  user.posts = await db.post.findMany({ where: { userId: user.id } });
 }
 
 // ✅ GOOD: Use eager loading / joins
 const users = await db.user.findMany({
-include: {
-posts: true
-}
+  include: {
+    posts: true
+  }
 });
 
 // ✅ GOOD: Selective fields
 const users = await db.user.findMany({
-select: {
-id: true,
-email: true,
-// Don't fetch unnecessary fields
-}
+  select: {
+    id: true,
+    email: true,
+    // Don't fetch unnecessary fields
+  }
 });
 
 ---
@@ -3374,16 +3329,15 @@ Device Support:
 ✅ Tablet: iPad, Android tablets
 ✅ Mobile: iPhone, Android phones (360px width minimum)
 Responsive Breakpoints:
-/_ Mobile: 320px - 767px _/
-/_ Tablet: 768px - 1023px _/
-/_ Desktop: 1024px+ _/
+/* Mobile: 320px - 767px */
+/* Tablet: 768px - 1023px */
+/* Desktop: 1024px+ */
 
 ### 22.7 Production-Ready Definition
 
 **A feature/product is PRODUCTION-READY when ALL criteria are met:**
 
 **Code Quality:**
-
 - [ ] All 21-step verification completed for each task
 - [ ] Zero P0 (critical) bugs
 - [ ] Zero P1 (high) bugs
@@ -3392,7 +3346,6 @@ Responsive Breakpoints:
 - [ ] Security audit passed (0 critical/high issues)
 
 **Testing:**
-
 - [ ] Unit tests passing (100%)
 - [ ] Integration tests passing (100%)
 - [ ] E2E tests for critical paths passing
@@ -3400,7 +3353,6 @@ Responsive Breakpoints:
 - [ ] Load testing completed (expected traffic × 3)
 
 **Infrastructure:**
-
 - [ ] Deployed to staging environment
 - [ ] Staging environment tested by team
 - [ ] Production environment configured
@@ -3409,7 +3361,6 @@ Responsive Breakpoints:
 - [ ] Database backups verified
 
 **Monitoring & Operations:**
-
 - [ ] Error tracking configured (Sentry/similar)
 - [ ] Uptime monitoring active
 - [ ] Performance dashboards live
@@ -3418,21 +3369,18 @@ Responsive Breakpoints:
 - [ ] Rollback procedure tested in staging
 
 **Documentation:**
-
 - [ ] API documentation complete
 - [ ] User-facing help content ready
 - [ ] Internal technical docs updated
 - [ ] Deployment guide documented
 
 **Legal & Compliance:**
-
 - [ ] Terms of Service published
 - [ ] Privacy Policy published
 - [ ] Cookie consent implemented (if applicable)
 - [ ] GDPR/CCPA compliance verified
 
 **Team Readiness:**
-
 - [ ] Support team trained
 - [ ] On-call rotation established
 - [ ] Escalation path documented
@@ -3630,17 +3578,17 @@ Test thoroughly in staging
 Gradual rollout to production
 Document lessons learned
 
----
+------------------------------------------------------------------
 
 ---
 
 ## SECTION 24: FINAL HANDOFF PACKAGE (ENHANCED)
 
----
+------------------------------------------------------------------
 
 ### 24.A CODE REPOSITORY STRUCTURE
 
-````
+```
 project-root/
 ├── .github/
 │   ├── workflows/
@@ -3751,7 +3699,7 @@ npm run dev
 
 ## License
 [License type]
-````
+```
 
 **docs/SETUP.md:**
 
@@ -3759,7 +3707,6 @@ npm run dev
 # Development Environment Setup
 
 ## Prerequisites
-
 - Node.js 18+
 - PostgreSQL 15+
 - Git
@@ -3767,7 +3714,6 @@ npm run dev
 ## Step-by-Step Setup
 
 ### 1. Clone Repository
-
 git clone [repo-url]
 cd [project-name]
 
@@ -3785,14 +3731,12 @@ npm install
 ### 3. Configure Environment Variables
 
 # Copy example files
-
 cp frontend/.env.example frontend/.env
 cp backend/.env.example backend/.env
 
 # Edit .env files with your values
 
 ### 4. Set Up Database
-
 cd backend
 npm run db:setup
 npm run db:migrate
@@ -3809,13 +3753,11 @@ cd frontend
 npm run dev
 
 ### 6. Verify Installation
-
 - **Frontend:** http://localhost:3000
 - **Backend:** http://localhost:4000
 - **API Health:** http://localhost:4000/health
 
 ## Troubleshooting
-
 See TROUBLESHOOTING.md
 ```
 
@@ -3836,23 +3778,18 @@ See TROUBLESHOOTING.md
 ## Common Issues
 
 ### Database Connection Fails
-
 **Error:** "Connection refused to localhost:5432"
 
 **Solution:**
-
 1. Verify PostgreSQL is running: `pg_isready`
 2. Check DATABASE_URL in .env
 3. Verify credentials
 
 ### Port Already in Use
-
 **Error:** "Port 3000 is already in use"
 
 **Solution:**
-
 # Find process using port
-
 lsof -i :3000
 
 # Kill process
@@ -3896,19 +3833,19 @@ services:
       POSTGRES_PASSWORD: devpassword
       POSTGRES_DB: myapp_dev
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
     ports:
-      - '6379:6379'
+      - "6379:6379"
 
   backend:
     build: ./backend
     ports:
-      - '4000:4000'
+      - "4000:4000"
     environment:
       DATABASE_URL: postgresql://myapp:devpassword@postgres:5432/myapp_dev
       REDIS_URL: redis://redis:6379
@@ -3919,7 +3856,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
       VITE_API_URL: http://localhost:4000
     depends_on:
@@ -4094,21 +4031,18 @@ Key Metrics to Watch:
 Common Issues & Solutions:
 
 **Issue:** High error rate
-
 1. Check error logs for patterns
 2. Identify affected endpoint/feature
 3. If critical: Rollback immediately
 4. If minor: Create hotfix ticket
 
 **Issue:** Slow response times
-
 1. Check database query performance
 2. Check external API response times
 3. Check server CPU/memory
 4. Scale horizontally if needed
 
 **Issue:** Database connection errors
-
 1. Check connection pool exhaustion
 2. Check for long-running queries
 3. Restart application servers
@@ -4122,40 +4056,40 @@ Monitoring Dashboard Configuration:
 
 ```yaml
 dashboards:
-  - name: 'Production Health'
+  - name: "Production Health"
     widgets:
       - type: timeseries
-        title: 'API Response Time (p95)'
-        query: 'p95:api.response_time{env:production}'
+        title: "API Response Time (p95)"
+        query: "p95:api.response_time{env:production}"
       - type: query_value
-        title: 'Error Rate'
-        query: 'sum:api.errors{env:production}'
+        title: "Error Rate"
+        query: "sum:api.errors{env:production}"
       - type: timeseries
-        title: 'Request Rate'
-        query: 'sum:api.requests{env:production}'
+        title: "Request Rate"
+        query: "sum:api.requests{env:production}"
 ```
 
 **Alert Rules:**
 
 ```yaml
 alerts:
-  - name: 'High Error Rate'
+  - name: "High Error Rate"
     condition: error_rate > 5%
     duration: 5 minutes
     severity: critical
-    notify: ['#incidents', 'oncall@yourapp.com']
+    notify: ["#incidents", "oncall@yourapp.com"]
 
-  - name: 'Slow Response Time'
+  - name: "Slow Response Time"
     condition: p95_response_time > 1000ms
     duration: 10 minutes
     severity: warning
-    notify: ['#alerts']
+    notify: ["#alerts"]
 
-  - name: 'High CPU Usage'
+  - name: "High CPU Usage"
     condition: cpu > 90%
     duration: 5 minutes
     severity: warning
-    notify: ['#devops']
+    notify: ["#devops"]
 ```
 
 ### 24.G BACKUP & DISASTER RECOVERY PLAN
@@ -4168,7 +4102,7 @@ Backup Schedule:
 **Encryption:** AES-256
 
 Backup Script (cron):
-0 _/6 _ \* \* /scripts/backup-db.sh
+0 */6 * * * /scripts/backup-db.sh
 
 **backup-db.sh:**
 
@@ -4289,7 +4223,6 @@ npm update
 ```
 
 **Quarterly major version updates:**
-
 - Test thoroughly in staging first
 
 ```bash
@@ -4305,16 +4238,16 @@ Low (Enhancement): <1 week response, backlog
 
 Support Escalation:
 Level 1: Email support (support@yourapp.com)
-→ Response: 24 hours
-→ Resolution: 3-5 days
+  → Response: 24 hours
+  → Resolution: 3-5 days
 
 Level 2: Engineering investigation
-→ For complex bugs
-→ Involves dev team
+  → For complex bugs
+  → Involves dev team
 
 Level 3: Emergency hotfix
-→ Critical production issues
-→ Immediate response
+  → Critical production issues
+  → Immediate response
 
 ### 24.I TRAINING MATERIALS (If Team Handoff)
 
@@ -4376,35 +4309,35 @@ export async function handler(req, res) {
 
 ## SECTION 25: COST ESTIMATION & BUDGET
 
----
+------------------------------------------------------------------
 
 ### 25.1 Infrastructure Cost Calculator
 
 **Compute Costs:**
 
-| Resource     | Provider                    | Pricing Model            | Estimated Cost |
-| ------------ | --------------------------- | ------------------------ | -------------- |
-| Web Server   | [Vercel/Railway/AWS]        | [Per request / Per hour] | $[X]/month     |
-| API Server   | [Same or different]         | [Compute hours]          | $[X]/month     |
-| Database     | [Supabase/PlanetScale/RDS]  | [Storage + Connections]  | $[X]/month     |
-| Cache Layer  | [Upstash Redis/ElastiCache] | [Commands + Storage]     | $[X]/month     |
-| File Storage | [S3/Cloudflare R2]          | [GB stored + Bandwidth]  | $[X]/month     |
-| CDN          | [Cloudflare/Vercel Edge]    | [Bandwidth]              | $[X]/month     |
+| Resource | Provider | Pricing Model | Estimated Cost |
+|----------|----------|---------------|----------------|
+| Web Server | [Vercel/Railway/AWS] | [Per request / Per hour] | $[X]/month |
+| API Server | [Same or different] | [Compute hours] | $[X]/month |
+| Database | [Supabase/PlanetScale/RDS] | [Storage + Connections] | $[X]/month |
+| Cache Layer | [Upstash Redis/ElastiCache] | [Commands + Storage] | $[X]/month |
+| File Storage | [S3/Cloudflare R2] | [GB stored + Bandwidth] | $[X]/month |
+| CDN | [Cloudflare/Vercel Edge] | [Bandwidth] | $[X]/month |
 
 **Total Infrastructure:** $[X]/month
 
 ### 25.2 Third-Party Service Costs
 
-| Service            | Provider              | Pricing Tier      | Estimated Cost |
-| ------------------ | --------------------- | ----------------- | -------------- |
-| Payment Processing | Stripe                | 2.9% + $0.30/txn  | $[X]/month     |
-| Email Service      | SendGrid/Resend       | [Per 1K emails]   | $[X]/month     |
-| Analytics          | PostHog/Mixpanel      | [Per event/user]  | $[X]/month     |
-| Error Tracking     | Sentry                | [Per event quota] | $[X]/month     |
-| Monitoring         | DataDog/Grafana       | [Per host/metric] | $[X]/month     |
-| Authentication     | [Clerk/Auth0]         | [Per MAU]         | $[X]/month     |
-| Search             | [Algolia/Meilisearch] | [Per search]      | $[X]/month     |
-| SMS/Notifications  | [Twilio]              | [Per message]     | $[X]/month     |
+| Service | Provider | Pricing Tier | Estimated Cost |
+|---------|----------|--------------|----------------|
+| Payment Processing | Stripe | 2.9% + $0.30/txn | $[X]/month |
+| Email Service | SendGrid/Resend | [Per 1K emails] | $[X]/month |
+| Analytics | PostHog/Mixpanel | [Per event/user] | $[X]/month |
+| Error Tracking | Sentry | [Per event quota] | $[X]/month |
+| Monitoring | DataDog/Grafana | [Per host/metric] | $[X]/month |
+| Authentication | [Clerk/Auth0] | [Per MAU] | $[X]/month |
+| Search | [Algolia/Meilisearch] | [Per search] | $[X]/month |
+| SMS/Notifications | [Twilio] | [Per message] | $[X]/month |
 
 **Total Services:** $[X]/month
 
@@ -4427,7 +4360,6 @@ User Tier Breakdown:
 ### 25.4 Cost Optimization Strategies
 
 **Immediate Optimizations:**
-
 - [ ] Use serverless for variable traffic (pay per use)
 - [ ] Enable CDN caching for static assets
 - [ ] Use connection pooling for database
@@ -4435,7 +4367,6 @@ User Tier Breakdown:
 - [ ] Compress images and assets
 
 **Scaling Optimizations:**
-
 - [ ] Move to reserved instances at predictable load
 - [ ] Implement read replicas for database
 - [ ] Use edge functions for global latency
@@ -4445,7 +4376,6 @@ User Tier Breakdown:
 ### 25.5 Monthly Burn Rate Tracking
 
 **Cost Monitoring Setup:**
-
 - [ ] Set up billing alerts at 50%, 80%, 100% of budget
 - [ ] Track cost per customer (infrastructure / active users)
 - [ ] Monitor service usage vs limits
@@ -4467,14 +4397,13 @@ Break-even:      [X] paying customers at $[Y]/month
 
 ## SECTION 26: ANALYTICS & METRICS IMPLEMENTATION
 
----
+------------------------------------------------------------------
 
 ### 26.1 Product Analytics Requirements
 
 **Required Tracking Events:**
 
 **User Lifecycle Events:**
-
 - `user_signed_up` - New registration
 - `user_verified_email` - Email confirmation
 - `user_completed_onboarding` - Finished setup
@@ -4483,13 +4412,11 @@ Break-even:      [X] paying customers at $[Y]/month
 - `user_churned` - Cancelled/inactive
 
 **Feature Usage Events:**
-
 - `feature_[name]_viewed` - Feature page opened
 - `feature_[name]_used` - Feature action completed
 - `feature_[name]_error` - Feature error occurred
 
 **Business Events:**
-
 - `subscription_started` - New subscription
 - `subscription_cancelled` - Cancellation
 - `payment_succeeded` - Successful charge
@@ -4500,21 +4427,18 @@ Break-even:      [X] paying customers at $[Y]/month
 **Core Funnels to Track:**
 
 **Signup Funnel:**
-
 ```
 Landing Page → Signup Form → Email Verification → Onboarding → First Action
      100%    →     40%     →        30%         →    25%     →    20%
 ```
 
 **Activation Funnel:**
-
 ```
 First Login → Setup Complete → Core Feature Used → Aha Moment → Retained D7
     100%    →      70%       →       50%         →    30%     →    25%
 ```
 
 **Conversion Funnel:**
-
 ```
 Trial Start → Feature Exploration → Upgrade Page → Checkout → Paid
     100%    →        60%          →      20%     →   10%    →  8%
@@ -4524,47 +4448,44 @@ Trial Start → Feature Exploration → Upgrade Page → Checkout → Paid
 
 **Key Metrics to Track:**
 
-| Metric     | Definition                            | Target           | Frequency |
-| ---------- | ------------------------------------- | ---------------- | --------- |
-| MRR        | Monthly Recurring Revenue             | Growth 10%/month | Daily     |
-| ARR        | Annual Recurring Revenue              | MRR × 12         | Monthly   |
-| Churn Rate | Cancellations / Total Customers       | <5%/month        | Weekly    |
-| LTV        | Average Revenue per Customer Lifetime | >3× CAC          | Monthly   |
-| CAC        | Cost to Acquire Customer              | <$[X]            | Monthly   |
-| NPS        | Net Promoter Score                    | >40              | Quarterly |
-| DAU/MAU    | Daily/Monthly Active Users            | >30% ratio       | Daily     |
-| ARPU       | Average Revenue Per User              | $[X]/month       | Monthly   |
+| Metric | Definition | Target | Frequency |
+|--------|------------|--------|-----------|
+| MRR | Monthly Recurring Revenue | Growth 10%/month | Daily |
+| ARR | Annual Recurring Revenue | MRR × 12 | Monthly |
+| Churn Rate | Cancellations / Total Customers | <5%/month | Weekly |
+| LTV | Average Revenue per Customer Lifetime | >3× CAC | Monthly |
+| CAC | Cost to Acquire Customer | <$[X] | Monthly |
+| NPS | Net Promoter Score | >40 | Quarterly |
+| DAU/MAU | Daily/Monthly Active Users | >30% ratio | Daily |
+| ARPU | Average Revenue Per User | $[X]/month | Monthly |
 
 ### 26.4 Analytics Tools Selection
 
 **Recommended Stack:**
 
-| Purpose           | Tool                          | Why                                                |
-| ----------------- | ----------------------------- | -------------------------------------------------- |
-| Product Analytics | PostHog                       | Open-source, self-hostable, feature flags included |
-| Web Analytics     | Plausible/Fathom              | Privacy-focused, GDPR compliant                    |
-| Revenue Metrics   | Stripe Dashboard + ChartMogul | Native integration                                 |
-| Error Tracking    | Sentry                        | Industry standard                                  |
-| Session Replay    | PostHog / LogRocket           | Debug UX issues                                    |
+| Purpose | Tool | Why |
+|---------|------|-----|
+| Product Analytics | PostHog | Open-source, self-hostable, feature flags included |
+| Web Analytics | Plausible/Fathom | Privacy-focused, GDPR compliant |
+| Revenue Metrics | Stripe Dashboard + ChartMogul | Native integration |
+| Error Tracking | Sentry | Industry standard |
+| Session Replay | PostHog / LogRocket | Debug UX issues |
 
 ### 26.5 Implementation Checklist
 
 **Phase 1 (Core):**
-
 - [ ] Basic event tracking (signup, login, core actions)
 - [ ] Signup funnel instrumentation
 - [ ] Error event tracking
 - [ ] Basic dashboard setup
 
 **Phase 2 (Launch):**
-
 - [ ] Full feature usage tracking
 - [ ] Conversion funnel tracking
 - [ ] Revenue metrics integration
 - [ ] Session replay for debugging
 
 **Phase 3 (Growth):**
-
 - [ ] Cohort analysis setup
 - [ ] A/B testing integration
 - [ ] Custom dashboards
@@ -4574,19 +4495,19 @@ Trial Start → Feature Exploration → Upgrade Page → Checkout → Paid
 
 ## SECTION 27: ERROR HANDLING & LOGGING STRATEGY
 
----
+------------------------------------------------------------------
 
 ### 27.1 Error Classification Taxonomy
 
 **Error Categories:**
 
-| Category           | HTTP Code | Examples                                | User Message                      |
-| ------------------ | --------- | --------------------------------------- | --------------------------------- |
-| **User Error**     | 400-422   | Invalid input, validation failed        | Specific field errors             |
-| **Auth Error**     | 401, 403  | Expired token, insufficient permissions | "Please log in again"             |
-| **Business Error** | 422       | Quota exceeded, invalid state           | Business-specific message         |
-| **System Error**   | 500       | Database down, unhandled exception      | "Something went wrong"            |
-| **External Error** | 502, 503  | Third-party API timeout                 | "Service temporarily unavailable" |
+| Category | HTTP Code | Examples | User Message |
+|----------|-----------|----------|--------------|
+| **User Error** | 400-422 | Invalid input, validation failed | Specific field errors |
+| **Auth Error** | 401, 403 | Expired token, insufficient permissions | "Please log in again" |
+| **Business Error** | 422 | Quota exceeded, invalid state | Business-specific message |
+| **System Error** | 500 | Database down, unhandled exception | "Something went wrong" |
+| **External Error** | 502, 503 | Third-party API timeout | "Service temporarily unavailable" |
 
 ### 27.2 Error Response Format
 
@@ -4621,9 +4542,18 @@ const retryConfig = {
 
   // Retry schedule: 100ms → 200ms → 400ms
 
-  retryableErrors: ['ETIMEDOUT', 'ECONNRESET', 'RATE_LIMITED', 'SERVICE_UNAVAILABLE'],
+  retryableErrors: [
+    'ETIMEDOUT',
+    'ECONNRESET',
+    'RATE_LIMITED',
+    'SERVICE_UNAVAILABLE'
+  ],
 
-  nonRetryableErrors: ['VALIDATION_ERROR', 'AUTHENTICATION_ERROR', 'NOT_FOUND'],
+  nonRetryableErrors: [
+    'VALIDATION_ERROR',
+    'AUTHENTICATION_ERROR',
+    'NOT_FOUND'
+  ]
 };
 ```
 
@@ -4641,10 +4571,10 @@ CLOSED → [5 failures in 30s] → OPEN → [30s timeout] → HALF-OPEN
 
 ```javascript
 const circuitBreakerConfig = {
-  failureThreshold: 5, // Failures before opening
-  successThreshold: 2, // Successes to close from half-open
-  timeout: 30000, // Time in open state (ms)
-  monitorInterval: 10000, // Health check interval
+  failureThreshold: 5,        // Failures before opening
+  successThreshold: 2,        // Successes to close from half-open
+  timeout: 30000,             // Time in open state (ms)
+  monitorInterval: 10000,     // Health check interval
 };
 ```
 
@@ -4676,12 +4606,12 @@ const circuitBreakerConfig = {
 
 ### 27.6 Log Levels & Retention
 
-| Level     | When to Use                             | Retention | Alert     |
-| --------- | --------------------------------------- | --------- | --------- |
-| **ERROR** | Production-breaking issues              | 90 days   | Immediate |
-| **WARN**  | Degraded performance, retries exhausted | 30 days   | Threshold |
-| **INFO**  | Auth events, transactions, milestones   | 7 days    | None      |
-| **DEBUG** | Algorithm execution, data flow          | 1 day     | None      |
+| Level | When to Use | Retention | Alert |
+|-------|-------------|-----------|-------|
+| **ERROR** | Production-breaking issues | 90 days | Immediate |
+| **WARN** | Degraded performance, retries exhausted | 30 days | Threshold |
+| **INFO** | Auth events, transactions, milestones | 7 days | None |
+| **DEBUG** | Algorithm execution, data flow | 1 day | None |
 
 ### 27.7 Centralized Logging Architecture
 
@@ -4695,7 +4625,6 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 ```
 
 **Setup Checklist:**
-
 - [ ] Configure structured JSON logging
 - [ ] Set up log shipping to aggregator
 - [ ] Create dashboards for error rates
@@ -4705,13 +4634,11 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 ### 27.8 Distributed Tracing
 
 **Trace Context:**
-
 - Every request gets a unique `traceId`
 - Each service call gets a `spanId`
 - Context propagated via headers
 
 **OpenTelemetry Setup:**
-
 - [ ] Install OpenTelemetry SDK
 - [ ] Configure trace exporter (Jaeger/Zipkin)
 - [ ] Instrument HTTP clients
@@ -4721,7 +4648,7 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 
 ## SECTION 28: LEGAL & COMPLIANCE PACKAGE
 
----
+------------------------------------------------------------------
 
 ### 28.1 Terms of Service Structure
 
@@ -4817,15 +4744,14 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 
 **Cookie Categories:**
 
-| Category   | Purpose            | Examples         | Consent Required |
-| ---------- | ------------------ | ---------------- | ---------------- |
-| Essential  | Site functionality | Session, CSRF    | No               |
-| Functional | User preferences   | Language, theme  | Yes              |
-| Analytics  | Usage statistics   | Google Analytics | Yes              |
-| Marketing  | Advertising        | Facebook Pixel   | Yes              |
+| Category | Purpose | Examples | Consent Required |
+|----------|---------|----------|------------------|
+| Essential | Site functionality | Session, CSRF | No |
+| Functional | User preferences | Language, theme | Yes |
+| Analytics | Usage statistics | Google Analytics | Yes |
+| Marketing | Advertising | Facebook Pixel | Yes |
 
 **Cookie Consent Implementation:**
-
 - [ ] Cookie banner on first visit
 - [ ] Granular consent options
 - [ ] Easy withdrawal mechanism
@@ -4834,7 +4760,6 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 ### 28.4 Data Processing Addendum (DPA)
 
 **For B2B/Enterprise:**
-
 - [ ] Standard Contractual Clauses (EU)
 - [ ] Data processing terms
 - [ ] Sub-processor list
@@ -4844,7 +4769,6 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 ### 28.5 Compliance Checklist by Region
 
 **GDPR (EU/EEA):**
-
 - [ ] Privacy policy updated
 - [ ] Cookie consent mechanism
 - [ ] Data subject request process
@@ -4853,14 +4777,12 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 - [ ] Data breach notification process
 
 **CCPA (California):**
-
 - [ ] "Do Not Sell" link
 - [ ] Privacy policy with CCPA disclosures
 - [ ] Data deletion request process
 - [ ] Opt-out mechanism
 
 **SOC 2 (Enterprise):**
-
 - [ ] Security policies documented
 - [ ] Access controls implemented
 - [ ] Monitoring and logging
@@ -4871,12 +4793,11 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 
 ## SECTION 29: SEO & DISCOVERABILITY
 
----
+------------------------------------------------------------------
 
 ### 29.1 Technical SEO Checklist
 
 **Essential Setup:**
-
 - [ ] SSL certificate (HTTPS)
 - [ ] Mobile-responsive design
 - [ ] Fast page load (<3 seconds)
@@ -4892,25 +4813,25 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 ```html
 <!-- Primary Meta Tags -->
 <title>[Page Title] | [Brand Name]</title>
-<meta name="description" content="[155 characters max]" />
-<meta name="keywords" content="[relevant keywords]" />
+<meta name="description" content="[155 characters max]">
+<meta name="keywords" content="[relevant keywords]">
 
 <!-- Open Graph / Facebook -->
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://yoursite.com/page" />
-<meta property="og:title" content="[Title]" />
-<meta property="og:description" content="[Description]" />
-<meta property="og:image" content="https://yoursite.com/og-image.jpg" />
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yoursite.com/page">
+<meta property="og:title" content="[Title]">
+<meta property="og:description" content="[Description]">
+<meta property="og:image" content="https://yoursite.com/og-image.jpg">
 
 <!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:url" content="https://yoursite.com/page" />
-<meta name="twitter:title" content="[Title]" />
-<meta name="twitter:description" content="[Description]" />
-<meta name="twitter:image" content="https://yoursite.com/twitter-image.jpg" />
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://yoursite.com/page">
+<meta name="twitter:title" content="[Title]">
+<meta name="twitter:description" content="[Description]">
+<meta name="twitter:image" content="https://yoursite.com/twitter-image.jpg">
 
 <!-- Canonical URL -->
-<link rel="canonical" href="https://yoursite.com/page" />
+<link rel="canonical" href="https://yoursite.com/page">
 ```
 
 ### 29.3 Structured Data (Schema.org)
@@ -4924,7 +4845,10 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
   "name": "[Company Name]",
   "url": "https://yoursite.com",
   "logo": "https://yoursite.com/logo.png",
-  "sameAs": ["https://twitter.com/yourcompany", "https://linkedin.com/company/yourcompany"]
+  "sameAs": [
+    "https://twitter.com/yourcompany",
+    "https://linkedin.com/company/yourcompany"
+  ]
 }
 ```
 
@@ -4947,7 +4871,6 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 ### 29.4 URL Structure Guidelines
 
 **Best Practices:**
-
 - Use lowercase letters
 - Use hyphens (not underscores)
 - Keep URLs short and descriptive
@@ -4955,7 +4878,6 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 - Avoid query parameters when possible
 
 **Examples:**
-
 ```
 ✅ Good: /pricing
 ✅ Good: /blog/how-to-get-started
@@ -4968,14 +4890,13 @@ Application → Structured Logs → Log Aggregator → Dashboard + Alerts
 
 ### 29.5 Core Web Vitals Targets
 
-| Metric                             | Target | What It Measures    |
-| ---------------------------------- | ------ | ------------------- |
-| **LCP** (Largest Contentful Paint) | <2.5s  | Loading performance |
-| **FID** (First Input Delay)        | <100ms | Interactivity       |
-| **CLS** (Cumulative Layout Shift)  | <0.1   | Visual stability    |
+| Metric | Target | What It Measures |
+|--------|--------|------------------|
+| **LCP** (Largest Contentful Paint) | <2.5s | Loading performance |
+| **FID** (First Input Delay) | <100ms | Interactivity |
+| **CLS** (Cumulative Layout Shift) | <0.1 | Visual stability |
 
 **Optimization Checklist:**
-
 - [ ] Optimize images (WebP, lazy loading)
 - [ ] Minimize JavaScript bundle
 - [ ] Use CDN for static assets
@@ -5016,18 +4937,18 @@ Sitemap: https://yoursite.com/sitemap.xml
 
 ## SECTION 30: INTERNATIONALIZATION (i18n)
 
----
+------------------------------------------------------------------
 
 ### 30.1 Multi-Language Architecture
 
 **i18n Library Selection:**
 
-| Framework | Recommended Library       |
-| --------- | ------------------------- |
-| React     | react-i18next             |
-| Next.js   | next-intl or next-i18next |
-| Vue       | vue-i18n                  |
-| Backend   | i18next                   |
+| Framework | Recommended Library |
+|-----------|---------------------|
+| React | react-i18next |
+| Next.js | next-intl or next-i18next |
+| Vue | vue-i18n |
+| Backend | i18next |
 
 **File Structure:**
 
@@ -5073,7 +4994,7 @@ const formatDate = (date, locale) => {
   return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
+    day: 'numeric'
   }).format(date);
 };
 
@@ -5089,7 +5010,7 @@ const formatDate = (date, locale) => {
 const formatCurrency = (amount, locale, currency) => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: currency,
+    currency: currency
   }).format(amount);
 };
 
@@ -5101,14 +5022,12 @@ const formatCurrency = (amount, locale, currency) => {
 ### 30.4 RTL Language Support
 
 **Languages Requiring RTL:**
-
 - Arabic (ar)
 - Hebrew (he)
 - Persian/Farsi (fa)
 - Urdu (ur)
 
 **Implementation:**
-
 - [ ] Add `dir="rtl"` attribute dynamically
 - [ ] Use logical CSS properties (`margin-inline-start` vs `margin-left`)
 - [ ] Mirror layout for RTL
@@ -5117,7 +5036,6 @@ const formatCurrency = (amount, locale, currency) => {
 ### 30.5 Language Detection Strategy
 
 **Detection Priority:**
-
 1. User preference (stored in account)
 2. URL parameter (`?lang=es`)
 3. Cookie (`NEXT_LOCALE`)
@@ -5127,7 +5045,6 @@ const formatCurrency = (amount, locale, currency) => {
 ### 30.6 Translation Workflow
 
 **Process:**
-
 1. Developer adds English strings
 2. Extract strings to translation files
 3. Send to translation service/team
@@ -5135,7 +5052,6 @@ const formatCurrency = (amount, locale, currency) => {
 5. Import and deploy
 
 **Tools:**
-
 - Crowdin / Lokalise / Phrase for management
 - Machine translation for first pass
 - Human review for quality
@@ -5144,18 +5060,18 @@ const formatCurrency = (amount, locale, currency) => {
 
 ## SECTION 31: FEATURE FLAGS & EXPERIMENTATION
 
----
+------------------------------------------------------------------
 
 ### 31.1 Feature Flag Infrastructure
 
 **Recommended Tools:**
 
-| Tool         | Best For                       | Pricing             |
-| ------------ | ------------------------------ | ------------------- |
-| PostHog      | All-in-one (analytics + flags) | Free tier available |
-| LaunchDarkly | Enterprise scale               | Paid                |
-| Unleash      | Self-hosted                    | Free/OSS            |
-| Flagsmith    | Open-source option             | Free tier           |
+| Tool | Best For | Pricing |
+|------|----------|---------|
+| PostHog | All-in-one (analytics + flags) | Free tier available |
+| LaunchDarkly | Enterprise scale | Paid |
+| Unleash | Self-hosted | Free/OSS |
+| Flagsmith | Open-source option | Free tier |
 
 ### 31.2 Flag Naming Convention
 
@@ -5172,13 +5088,13 @@ kill_switch_payments
 
 ### 31.3 Flag Types
 
-| Type            | Purpose             | Example                        |
-| --------------- | ------------------- | ------------------------------ |
-| **Release**     | Gradual rollout     | `release_new_editor`           |
-| **Experiment**  | A/B testing         | `experiment_cta_color`         |
-| **Ops**         | Operational control | `ops_maintenance_mode`         |
-| **Permission**  | Entitlement         | `permission_advanced_features` |
-| **Kill Switch** | Emergency disable   | `kill_switch_external_api`     |
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Release** | Gradual rollout | `release_new_editor` |
+| **Experiment** | A/B testing | `experiment_cta_color` |
+| **Ops** | Operational control | `ops_maintenance_mode` |
+| **Permission** | Entitlement | `permission_advanced_features` |
+| **Kill Switch** | Emergency disable | `kill_switch_external_api` |
 
 ### 31.4 Gradual Rollout Strategy
 
@@ -5193,7 +5109,6 @@ Stage 5: Full rollout (100%)
 ```
 
 **Rollout Checklist:**
-
 - [ ] Define success metrics
 - [ ] Set rollback criteria
 - [ ] Monitor error rates
@@ -5206,19 +5121,22 @@ Stage 5: Full rollout (100%)
 
 ```javascript
 const experiment = {
-  name: 'pricing_page_redesign',
+  name: "pricing_page_redesign",
   variants: [
-    { name: 'control', weight: 50 },
-    { name: 'variant_a', weight: 50 },
+    { name: "control", weight: 50 },
+    { name: "variant_a", weight: 50 }
   ],
-  metrics: ['conversion_rate', 'time_on_page', 'bounce_rate'],
+  metrics: [
+    "conversion_rate",
+    "time_on_page",
+    "bounce_rate"
+  ],
   minimumSampleSize: 1000,
-  statisticalSignificance: 0.95,
+  statisticalSignificance: 0.95
 };
 ```
 
 **A/B Test Checklist:**
-
 - [ ] Define hypothesis
 - [ ] Calculate required sample size
 - [ ] Set experiment duration
@@ -5235,7 +5153,7 @@ const experiment = {
 if (await featureFlags.isEnabled('kill_switch_payments')) {
   return {
     success: false,
-    error: 'Payments temporarily unavailable',
+    error: 'Payments temporarily unavailable'
   };
 }
 
@@ -5243,7 +5161,6 @@ if (await featureFlags.isEnabled('kill_switch_payments')) {
 ```
 
 **Kill Switch Response Time:**
-
 - Target: <30 seconds from decision to disabled
 - Method: Edge config or fast-propagating flags
 
@@ -5251,18 +5168,18 @@ if (await featureFlags.isEnabled('kill_switch_payments')) {
 
 ## SECTION 32: REAL-TIME FEATURES ARCHITECTURE
 
----
+------------------------------------------------------------------
 
 ### 32.1 WebSocket vs SSE Trade-offs
 
-| Feature         | WebSocket           | SSE (Server-Sent Events) |
-| --------------- | ------------------- | ------------------------ |
-| Direction       | Bidirectional       | Server → Client only     |
-| Complexity      | Higher              | Lower                    |
-| Browser Support | Good                | Good (except IE)         |
-| Auto-reconnect  | Manual              | Built-in                 |
-| Binary Data     | Yes                 | No (text only)           |
-| Use Case        | Chat, collaboration | Notifications, feeds     |
+| Feature | WebSocket | SSE (Server-Sent Events) |
+|---------|-----------|--------------------------|
+| Direction | Bidirectional | Server → Client only |
+| Complexity | Higher | Lower |
+| Browser Support | Good | Good (except IE) |
+| Auto-reconnect | Manual | Built-in |
+| Binary Data | Yes | No (text only) |
+| Use Case | Chat, collaboration | Notifications, feeds |
 
 ### 32.2 Real-Time Notification System
 
@@ -5280,10 +5197,10 @@ User Action → API → Message Queue → WebSocket Server → Connected Clients
 
 ```javascript
 const notificationTypes = {
-  SYSTEM: 'system', // App-wide announcements
-  PERSONAL: 'personal', // User-specific
-  ACTIVITY: 'activity', // Related to user actions
-  ALERT: 'alert', // Urgent/important
+  SYSTEM: 'system',      // App-wide announcements
+  PERSONAL: 'personal',  // User-specific
+  ACTIVITY: 'activity',  // Related to user actions
+  ALERT: 'alert'         // Urgent/important
 };
 ```
 
@@ -5313,7 +5230,6 @@ if (result.error) {
 ### 32.4 Presence Indicators
 
 **User Presence States:**
-
 - `online` - Active in last 5 minutes
 - `away` - Active in last 15 minutes
 - `offline` - No activity >15 minutes
@@ -5330,7 +5246,7 @@ setInterval(() => {
 const userPresence = {
   userId: 'user_123',
   lastSeen: Date.now(),
-  status: 'online',
+  status: 'online'
 };
 ```
 
@@ -5338,12 +5254,12 @@ const userPresence = {
 
 **Strategy Options:**
 
-| Strategy          | When to Use        | Example           |
-| ----------------- | ------------------ | ----------------- |
-| Last Write Wins   | Simple data        | User profile      |
-| First Write Wins  | Reservations       | Booking system    |
-| Merge             | Compatible changes | Document editing  |
-| Manual Resolution | Critical data      | Financial records |
+| Strategy | When to Use | Example |
+|----------|-------------|---------|
+| Last Write Wins | Simple data | User profile |
+| First Write Wins | Reservations | Booking system |
+| Merge | Compatible changes | Document editing |
+| Manual Resolution | Critical data | Financial records |
 
 ### 32.6 Scaling Real-Time Connections
 
@@ -5364,7 +5280,6 @@ const userPresence = {
 ```
 
 **Scaling Checklist:**
-
 - [ ] Use Redis Pub/Sub for multi-server messaging
 - [ ] Implement sticky sessions or room-based routing
 - [ ] Monitor connection counts
@@ -5375,7 +5290,7 @@ const userPresence = {
 
 ## SECTION 33: CUSTOMER SUPPORT INTEGRATION
 
----
+------------------------------------------------------------------
 
 ### 33.1 Help Center Structure
 
@@ -5409,18 +5324,17 @@ const ticket = {
   id: 'ticket_abc123',
   subject: 'Cannot access dashboard',
   description: '...',
-  priority: 'high', // low, medium, high, urgent
-  status: 'open', // open, in_progress, waiting, resolved, closed
-  category: 'technical', // billing, technical, feature_request, other
+  priority: 'high',       // low, medium, high, urgent
+  status: 'open',         // open, in_progress, waiting, resolved, closed
+  category: 'technical',  // billing, technical, feature_request, other
   userId: 'user_123',
   assignedTo: 'agent_456',
   createdAt: '2024-01-15T10:00:00Z',
-  updatedAt: '2024-01-15T11:30:00Z',
+  updatedAt: '2024-01-15T11:30:00Z'
 };
 ```
 
 **Integration Options:**
-
 - Zendesk
 - Intercom
 - Freshdesk
@@ -5430,7 +5344,6 @@ const ticket = {
 ### 33.3 Live Chat Implementation
 
 **Chat Widget Requirements:**
-
 - [ ] Unobtrusive placement (bottom-right)
 - [ ] Mobile responsive
 - [ ] Offline message handling
@@ -5439,7 +5352,6 @@ const ticket = {
 - [ ] Read receipts
 
 **Recommended Tools:**
-
 - Intercom (full-featured)
 - Crisp (affordable)
 - Tawk.to (free)
@@ -5449,15 +5361,14 @@ const ticket = {
 
 **Bot Capabilities:**
 
-| Tier | Capability       | Example                      |
-| ---- | ---------------- | ---------------------------- |
-| L0   | FAQ Matching     | "How do I reset password?"   |
-| L1   | Guided Workflows | Step-by-step troubleshooting |
-| L2   | Account Actions  | Check status, basic changes  |
-| L3   | Escalation       | Hand off to human agent      |
+| Tier | Capability | Example |
+|------|------------|---------|
+| L0 | FAQ Matching | "How do I reset password?" |
+| L1 | Guided Workflows | Step-by-step troubleshooting |
+| L2 | Account Actions | Check status, basic changes |
+| L3 | Escalation | Hand off to human agent |
 
 **Escalation Triggers:**
-
 - User requests human agent
 - Sentiment detection (frustration)
 - Complex query not in knowledge base
@@ -5467,15 +5378,14 @@ const ticket = {
 
 **Feedback Collection Points:**
 
-| Touchpoint           | Method          | When             |
-| -------------------- | --------------- | ---------------- |
-| After support ticket | CSAT survey     | Ticket closed    |
-| Feature usage        | In-app feedback | After key action |
-| Churn                | Exit survey     | Cancellation     |
-| Periodic             | NPS survey      | Quarterly        |
+| Touchpoint | Method | When |
+|------------|--------|------|
+| After support ticket | CSAT survey | Ticket closed |
+| Feature usage | In-app feedback | After key action |
+| Churn | Exit survey | Cancellation |
+| Periodic | NPS survey | Quarterly |
 
 **Feedback Processing:**
-
 1. Collect feedback
 2. Categorize (bug, feature request, UX issue)
 3. Prioritize by frequency/impact
@@ -5484,12 +5394,12 @@ const ticket = {
 
 ### 33.6 Support SLA Definitions
 
-| Priority        | First Response | Resolution Target |
-| --------------- | -------------- | ----------------- |
-| **Urgent** (P0) | 1 hour         | 4 hours           |
-| **High** (P1)   | 4 hours        | 24 hours          |
-| **Medium** (P2) | 24 hours       | 3 business days   |
-| **Low** (P3)    | 48 hours       | 5 business days   |
+| Priority | First Response | Resolution Target |
+|----------|----------------|-------------------|
+| **Urgent** (P0) | 1 hour | 4 hours |
+| **High** (P1) | 4 hours | 24 hours |
+| **Medium** (P2) | 24 hours | 3 business days |
+| **Low** (P3) | 48 hours | 5 business days |
 
 **Escalation Path:**
 
@@ -5502,19 +5412,19 @@ L1 Support → L2 Technical → L3 Engineering → Management
 
 ## SECTION 34: AI/ML INTEGRATION (Modern SaaS)
 
----
+------------------------------------------------------------------
 
 ### 34.1 LLM API Integration Patterns
 
 **Common AI Features:**
 
-| Feature            | Use Case                | Provider              |
-| ------------------ | ----------------------- | --------------------- |
-| Chat/Assistant     | Customer support, Q&A   | OpenAI, Anthropic     |
-| Content Generation | Writing assistance      | OpenAI, Anthropic     |
-| Summarization      | Document processing     | OpenAI, Anthropic     |
-| Classification     | Categorization, routing | OpenAI, custom models |
-| Embeddings         | Search, recommendations | OpenAI, Cohere        |
+| Feature | Use Case | Provider |
+|---------|----------|----------|
+| Chat/Assistant | Customer support, Q&A | OpenAI, Anthropic |
+| Content Generation | Writing assistance | OpenAI, Anthropic |
+| Summarization | Document processing | OpenAI, Anthropic |
+| Classification | Categorization, routing | OpenAI, custom models |
+| Embeddings | Search, recommendations | OpenAI, Cohere |
 
 **API Integration Best Practices:**
 
@@ -5533,8 +5443,8 @@ const llmConfig = {
   retryDelay: 1000,
 
   // Cost control
-  maxDailySpend: 100, // USD
-  rateLimitPerUser: 50, // requests/hour
+  maxDailySpend: 100,  // USD
+  rateLimitPerUser: 50  // requests/hour
 };
 ```
 
@@ -5542,16 +5452,15 @@ const llmConfig = {
 
 **Options:**
 
-| Database        | Best For           | Pricing          |
-| --------------- | ------------------ | ---------------- |
-| Pinecone        | Production scale   | Paid             |
-| Weaviate        | Self-hosted option | OSS/Paid         |
-| Qdrant          | Performance        | OSS/Paid         |
-| pgvector        | PostgreSQL users   | Free (extension) |
-| Supabase Vector | Supabase users     | Included         |
+| Database | Best For | Pricing |
+|----------|----------|---------|
+| Pinecone | Production scale | Paid |
+| Weaviate | Self-hosted option | OSS/Paid |
+| Qdrant | Performance | OSS/Paid |
+| pgvector | PostgreSQL users | Free (extension) |
+| Supabase Vector | Supabase users | Included |
 
 **Use Cases:**
-
 - Semantic search
 - Document similarity
 - Recommendation systems
@@ -5578,16 +5487,16 @@ const llmConfig = {
 const aiRateLimits = {
   free_tier: {
     requestsPerHour: 10,
-    tokensPerDay: 10000,
+    tokensPerDay: 10000
   },
   pro_tier: {
     requestsPerHour: 100,
-    tokensPerDay: 100000,
+    tokensPerDay: 100000
   },
   enterprise: {
     requestsPerHour: 1000,
-    tokensPerDay: 1000000,
-  },
+    tokensPerDay: 1000000
+  }
 };
 ```
 
@@ -5595,15 +5504,14 @@ const aiRateLimits = {
 
 **Cost Tracking:**
 
-| Model           | Input Cost | Output Cost | Typical Request |
-| --------------- | ---------- | ----------- | --------------- |
-| GPT-4 Turbo     | $0.01/1K   | $0.03/1K    | ~$0.05          |
-| GPT-3.5 Turbo   | $0.0005/1K | $0.0015/1K  | ~$0.002         |
-| Claude 3 Opus   | $0.015/1K  | $0.075/1K   | ~$0.10          |
-| Claude 3 Sonnet | $0.003/1K  | $0.015/1K   | ~$0.02          |
+| Model | Input Cost | Output Cost | Typical Request |
+|-------|------------|-------------|-----------------|
+| GPT-4 Turbo | $0.01/1K | $0.03/1K | ~$0.05 |
+| GPT-3.5 Turbo | $0.0005/1K | $0.0015/1K | ~$0.002 |
+| Claude 3 Opus | $0.015/1K | $0.075/1K | ~$0.10 |
+| Claude 3 Sonnet | $0.003/1K | $0.015/1K | ~$0.02 |
 
 **Cost Optimization:**
-
 - [ ] Use cheaper models for simple tasks
 - [ ] Cache common responses
 - [ ] Implement token budgets per request
@@ -5640,19 +5548,17 @@ async function getAIResponse(prompt) {
 
 ## SECTION 35: AGENTIC ORCHESTRATION & GOD MODE (v3.0)
 
----
+------------------------------------------------------------------
 
 ### 35.1 Active Kernel Architecture
 
 **Unified Kernel Components:**
-
 - **MCP Server (Port 3001):** Bridge for Claude/Cursor to read live state
 - **Dashboard UI (Port 3001/dashboard):** Real-time project visualization
 - **WebSocket Stream:** Live updates for IDE extensions and agents
 - **Code Property Graph (CPG):** In-memory structural map of the codebase
 
 **Kernel Startup:**
-
 ```bash
 npx ultra-dex serve
 ```
@@ -5660,7 +5566,6 @@ npx ultra-dex serve
 ### 35.2 Swarm Workflow Definition
 
 **Standard Swarm Pipeline:**
-
 1. **Planner:** Decomposes request into atomic tasks
 2. **Graph Analysis:** Maps dependencies using CPG
 3. **Execution Tier:**
@@ -5672,7 +5577,6 @@ npx ultra-dex serve
    - @Testing (Unit/E2E)
 
 **Triggering a Swarm:**
-
 - **CLI:** `npx ultra-dex swarm "Add Stripe Payments"`
 - **Dashboard:** "Deploy Agents" button
 - **IDE:** Right-click code -> "Trigger Swarm"
@@ -5683,19 +5587,21 @@ npx ultra-dex serve
 The AI Quality Gate runs an architectural review on every commit.
 
 **Configuration (.ultra/quality.json):**
-
 ```json
 {
   "gate": {
     "strict_mode": true,
     "min_score": 85,
-    "required_checks": ["security_scan", "architecture_compliance", "zod_validation_present"]
+    "required_checks": [
+      "security_scan",
+      "architecture_compliance",
+      "zod_validation_present"
+    ]
   }
 }
 ```
 
 **Bypass (Emergency Only):**
-
 ```bash
 git commit -m "hotfix: critical bug" --no-verify
 ```
@@ -5703,7 +5609,6 @@ git commit -m "hotfix: critical bug" --no-verify
 ### 35.4 Context Map Structure
 
 **The "Brain" (.ultra/state.json):**
-
 - **Project Mode:** GOD_MODE
 - **Phase Status:** Live tracking of 5 phases
 - **Agent Registry:** Active/Idle status of 17 agents
@@ -5714,4 +5619,4 @@ The kernel automatically updates `IMPLEMENTATION-PLAN.md` when code changes are 
 
 ---
 
-_End of Ultra-Dex Implementation Template_
+*End of Ultra-Dex Implementation Template*

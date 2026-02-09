@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ultra-Dex Quality Gate Config",
+  "type": "object",
+  "required": ["gates"],
+  "properties": {
+    "strict_mode": {
+      "type": "boolean",
+      "default": true
+    },
+    "gates": {
+      "type": "object",
+      "properties": {
+        "syntax": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "blocking": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "linting": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "command": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "testing": {
+          "type": "object",
+          "properties": {
+            "require_new_tests": { "type": "boolean" },
+            "command": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "architecture": {
+          "type": "object",
+          "properties": {
+            "banned_patterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "required_patterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "on_failure": {
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "enum": ["reject", "warn"] },
+        "retry_attempts": { "type": "integer", "minimum": 0 },
+        "feedback_prompt": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

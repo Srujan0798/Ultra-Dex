@@ -10,6 +10,8 @@
 
 ## 🎯 **WHAT IS ULTRA-DEX?**
 
+> **🚨 DEVELOPERS & AGENTS:** Start here → [**🗺️ MASTER ROADMAP**](./ROADMAP.md) | [**📚 AGENT PROMPTS**](./docs/AgPrompts/INDEX.md)
+
 Ultra-Dex is the **AI Orchestration Meta-Layer** that transforms how teams build software with AI. Rather than competing with AI tools like Cursor, Claude, or Devin, we create the **meta-layer** that makes them unstoppable together.
 
 ### **The Problem We Solve**

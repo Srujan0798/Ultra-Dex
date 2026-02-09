@@ -1,6 +1,15 @@
 const { contextBridge } = require('electron');
+const { exec } = require('child_process');
 
 contextBridge.exposeInMainWorld('ultraDex', {
-  // Placeholder bridge for future CLI interactions
-  ping: () => 'Ultra-Dex Desktop Ready',
+  run: (command) =>
+    new Promise((resolve, reject) => {
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          reject(stderr || error.message);
+          return;
+        }
+        resolve(stdout);
+      });
+    }),
 });

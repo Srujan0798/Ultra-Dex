@@ -1,8 +1,15 @@
-// Copyright (c) 2026 Ultra-Dex
+import { audioRecorder } from './recorder.js';
+import { whisperService } from './whisper.js';
+import { voiceCommand } from './command.js';
 
-/**
- * Voice Module Index
- */
+export {
+    audioRecorder,
+    whisperService,
+    voiceCommand
+};
 
-export * from './whisper.js';
-export * from './command.js';
+export default {
+    audioRecorder,
+    whisperService,
+    voiceCommand
+};
