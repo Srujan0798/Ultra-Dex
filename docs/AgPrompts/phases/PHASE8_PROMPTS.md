@@ -1,3 +1,26 @@
+---
+id: PHASE-08-PROMPTS
+title: 'Phase 8 - Extracted from Archives'
+category: phases
+priority: high
+status: completed
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-08-ECOSYSTEM
+  - SPEC-QA-SPEC
+  - SPEC-MEMORY
+tags:
+  - specs
+  - moonshots
+  - ecosystem
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 100%
+---
+
 # Ultra-Dex Phase 8 - Extracted from Archives
 
 > **Source:** \_old/archived_docs/excessive_documentation/, FUTURE-TASKS.md, ADVANCED-WORKFLOWS.md

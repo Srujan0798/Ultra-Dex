@@ -1,3 +1,25 @@
+---
+id: PHASE-16-PROMPTS
+title: 'Phase 16 - Enterprise & Advanced Workflows'
+category: phases
+priority: high
+status: in-progress
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-16-ENTERPRISE
+  - SPEC-ADVANCED-WORKFLOWS
+tags:
+  - enterprise
+  - advanced-workflows
+  - doomsday-theme
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 53%
+---
+
 # Ultra-Dex Phase 16 - Enterprise & Advanced Workflows
 
 > **Source:** ADVANCED-WORKFLOWS.md, 04-Imp-Template-ENTERPRISE.md, CLI-DOOMSDAY-THEME.md

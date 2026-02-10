@@ -1,67 +1,66 @@
-# PROMPT_09_V5_MOONSHOTS.md - The Future (v5.0)
+# 🚀 ULTRA-DEX v5.0 MOONSHOTS SPECIFICATION
 
-## Context
-v4.x established the **Ecosystem**. v5.0 is about **Breaking the Screen**.
-We are moving beyond text-based coding into Voice, Vision, and Spatial interfaces.
+## Prompt Metadata
+- **ID:** PROMPT_09_V5_MOONSHOTS
+- **Category:** Future Tech
+- **Priority:** P0
+- **Effort:** 4 weeks
+- **Dependencies:** porcupine, deepgram-sdk, three-js, wasmtime, claude-computer-use
+- **Affected Files:**
+  - cli/lib/voice/ (create)
+  - cli/lib/ghost/ (create)
+  - dashboard/src/views/Hologram.tsx (create)
+  - cli/src/wasm/ (create)
 
-## 🎯 Goal
-Implement the "Moonshot" features that will define AI coding in 2026+:
-1.  **Voice Coding CLI** (Talk to your codebase)
-2.  **Computer Use Agent** (AI that uses your mouse/keyboard)
-3.  **3D Context Visualization** (Minority Report for code)
-4.  **WASM Plugin System** (Safe, high-perf extensions)
+## Problem Statement
+AI coding is currently limited to text-based terminal/editor interaction. To achieve the "Racing Edge," we must move into Voice, Vision, and Spatial interfaces.
 
----
+## Success Criteria
+- [ ] Voice command latency < 300ms
+- [ ] Computer use agent can successfully navigate AWS/Azure consoles
+- [ ] 3D visualization renders codebase with > 60fps
+- [ ] WASM plugins execute at > 80% native speed
+- [ ] All safety gates (Human-in-the-loop) are functional
 
-## 📋 Task 1: Voice Coding CLI (Project "Siren")
-**Target:** `cli/lib/voice/`
+## Technical Specification
 
-Implement a real-time voice command loop:
-1.  **Wake Word:** "Hey Ultra" (using `porcupine` or similar).
-2.  **STT:** Deepgram or OpenAI Whisper (Local) for <200ms latency.
-3.  **Command Parser:** NLP to map "Refactor this file" -> `ultra-dex refactor`.
-4.  **Feedback:** TTS response ("Refactoring complete").
+### 1. Project "Siren" (Voice Coding)
+- **Wake Word:** "Hey Ultra" via Porcupine.
+- **Processing:** Local Whisper for STT (Privacy) or Deepgram (Speed).
+- **Execution:** Map NLP intent to `ultra-dex` commands.
 
-```bash
-ultra-dex voice listen --local
-# > Listening...
-# > "Create a new Next.js route for user settings"
-# > Executing: ultra-dex new route user-settings
-```
+### 2. Project "Ghost" (Computer Use)
+- **API:** Claude 3.5 Computer Use.
+- **Action Space:** Mouse movements, clicks, typing, screenshots.
+- **Safety:** Mandatory approval for `rm`, `delete`, `terminate` actions.
 
-## 📋 Task 2: Computer Use Agent (Project "Ghost")
-**Target:** `cli/lib/ghost/`
+### 3. Project "Hologram" (3D Viz)
+- **Engine:** React Three Fiber.
+- **Mapping:** 
+  - File Size -> Building Height.
+  - Test Coverage -> Building Color.
+  - Dependencies -> Streets/Bridges.
 
-Enable the agent to control the OS interface (Claude 3.5 Computer Use capability):
-1.  **Screen**: Capture screenshots of the dev environment.
-2.  **Input**: Mouse move/click, Keyboard typing.
-3.  **Safety**: "Human-in-the-loop" confirmation for destructive actions.
-4.  **Use Case**: "Log into AWS console and fix the bucket permissions."
+### 4. Project "Nexus" (WASM Plugin System)
+- **Runtime:** Wasmtime (Rust-based).
+- **Security:** Capability-based (WASI) sandboxing.
+- **Performance:** Offload heavy computations (Diffing, Indexing).
 
-## 📋 Task 3: 3D Context Visualization (Project "Hologram")
-**Target:** `dashboard/src/views/Hologram.tsx`
+## Security Considerations
+- [ ] **Voice Privacy:** Local-first wake word detection.
+- [ ] **Computer Safety:** Sandbox execution for all browser-based tasks.
+- [ ] **WASM Isolation:** Strict memory limits and no-access-by-default policies.
 
-Visualize the codebase as a 3D city/graph:
-1.  **Engine**: Three.js / React Three Fiber.
-2.  **Nodes**: Files are buildings, height = complexity, color = test coverage.
-3.  **Edges**: Dependencies identify streets/bridges.
-4.  **Interaction**: Fly through the code to find "hotspots" of tech debt.
+## Testing Strategy
+- [ ] Latency benchmarking for voice loop.
+- [ ] "Red Team" testing for computer use (trying to make it delete the repo).
+- [ ] Performance stress tests for 3D rendering (10k+ files).
 
-## 📋 Task 4: WASM Plugin System (Project "Nexus")
-**Target:** `cli/src/wasm/`
+## Rollback Plan
+- Disable individual moonshot modules via `.ultra-dex.json` config.
+- Fallback to standard text-based CLI.
 
-Allow plugins written in Rust/Go/C++ to run safely:
-1.  **Runtime**: Wasmtime or V8 (via Node).
-2.  **Sandboxing**: Strict capability-based security (WASI).
-3.  **Speed**: Near-native performance for heavy tasks (linting, parsing).
-
----
-
-## 🚀 Execution Strategy
-These are experimental. Assign **one agent** to prototype **one moonshot** at a time.
-
-**Suggested Prorities:**
-1.  Voice (High impact, low risk)
-2.  3D Viz (High impact, medium risk)
-3.  WASM (Medium impact, high technical checking)
-4.  Computer Use (High risk, requires safety rails)
+## Acceptance Criteria
+- A developer can say "Hey Ultra, refactor this file" and see the change happen without touching the keyboard.
+- A 3D city representation of the repo is visible in the dashboard.
+- WASM plugins can be installed and run via `ultra-dex plugin install`.

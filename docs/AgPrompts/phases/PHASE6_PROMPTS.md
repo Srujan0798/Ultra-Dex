@@ -1,3 +1,25 @@
+---
+id: PHASE-06-PROMPTS
+title: 'Phase 6 - Archived Tasks Prompts'
+category: phases
+priority: high
+status: completed
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-06-INFRASTRUCTURE
+  - SPEC-CLI-FRAMEWORK
+tags:
+  - infrastructure
+  - cli
+  - commands
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 100%
+---
+
 # Ultra-Dex Phase 6 - Archived Tasks Prompts
 
 > **Source:** docs/completed/, docs/FUTURE-TASKS.md, docs/ROADMAP.md

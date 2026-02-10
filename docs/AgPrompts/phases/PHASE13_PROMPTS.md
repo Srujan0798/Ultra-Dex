@@ -1,3 +1,25 @@
+---
+id: PHASE-13-PROMPTS
+title: 'Phase 13 - Strategic Reviews & Critical Improvements'
+category: phases
+priority: high
+status: completed
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-13-CRITICAL
+  - SPEC-REVIEWS
+tags:
+  - strategic-reviews
+  - critical-improvements
+  - ai-analysis
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 100%
+---
+
 # Ultra-Dex Phase 13 - Strategic Reviews & Critical Improvements
 
 > **Source:** Gemini-2-Review.md, Kimi-2.2-48H-Critical-Path.md, devin_ceo2.md

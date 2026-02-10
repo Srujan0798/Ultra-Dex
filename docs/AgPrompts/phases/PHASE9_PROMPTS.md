@@ -1,3 +1,25 @@
+---
+id: PHASE-09-PROMPTS
+title: 'Phase 9 - Developer Guides & Templates'
+category: phases
+priority: high
+status: in-progress
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-09-DEV-TOOLS
+  - SPEC-TEMPLATES
+tags:
+  - developer-tools
+  - templates
+  - guides
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 93%
+---
+
 # Ultra-Dex Phase 9 - Developer Guides & Templates
 
 > **Source:** CUSTOM-AGENTS-GUIDE.md, ARCHITECTURE-PATTERNS.md, CICD-TEMPLATES.md

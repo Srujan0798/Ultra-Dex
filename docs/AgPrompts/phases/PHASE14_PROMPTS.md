@@ -1,3 +1,25 @@
+---
+id: PHASE-14-PROMPTS
+title: 'Phase 14 - Vision & Moonshots'
+category: phases
+priority: high
+status: completed
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-14-VISION
+  - SPEC-MOONSHOTS
+tags:
+  - vision
+  - moonshots
+  - god-mode
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 100%
+---
+
 # Ultra-Dex Phase 14 - Vision & Moonshots
 
 > **Source:** AGENT-CEO-VISION.md, Gemini_Jarvis.md
