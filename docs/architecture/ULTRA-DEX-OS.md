@@ -1,9 +1,19 @@
 # Ultra-Dex OS Architecture
 
-Ultra-Dex OS is a long-term vision for a fully managed development environment.
+## Vision
 
-## Core Systems
+An operating system for software development.
+
+## Core Components
+
 - Workspaces: isolated project containers
-- Agent Pool: distributed AI workers
-- Memory Bank: persistent context store
-- Quality Engine: automated verification gates
+- Agent Pool: AI worker allocation
+- Memory Bank: persistent context
+- Quality Engine: automated verification
+- Deploy Layer: one-click release
+
+## Goals
+
+- Deterministic outcomes across agents
+- Rapid onboarding
+- Policy-driven compliance

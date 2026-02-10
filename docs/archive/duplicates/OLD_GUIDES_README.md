@@ -252,4 +252,4 @@ Found an error? Have a suggestion? Want to add a workflow example?
 
 ---
 
-_Ultra-Dex v1.7.0 - The only framework with comprehensive production guides for AI-driven development_
+_Ultra-Dex v6.0.0 OVERPOWERED - The only framework with comprehensive production guides for AI-driven development_

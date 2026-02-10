@@ -726,4 +726,4 @@ Use the [@Research](../agents/1-leadership/research.md) agent to compare options
 
 ---
 
-_Part of [Ultra-Dex v1.7.0](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer_
+_Part of [Ultra-Dex v6.0.0 OVERPOWERED](https://github.com/Srujan0798/Ultra-Dex) - Professional AI Orchestration Meta Layer_

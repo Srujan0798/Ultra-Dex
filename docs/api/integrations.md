@@ -1,170 +1,143 @@
 # Integrations Guide
 
-Ultra-Dex provides real API integrations with common tools. Each integration validates config, retries on transient errors, and surfaces actionable error messages.
+Ultra-Dex ships with first‑class integrations. Each integration exposes a small, focused API with real network calls and robust error handling.
 
 ---
 
-## Supported Integrations
+## General Pattern
 
-| Integration | Purpose | Primary Auth |
-| --- | --- | --- |
-| Jira | Issues, epics, story sync | Email + API token |
-| Notion | Plan sync to databases | Integration token |
-| Trello | Kanban boards and cards | API key + token |
-| Slack | Notifications and workflow | Bot token |
-| Discord | Notifications and bots | Bot token |
-| GitHub | Repo status, PR/issue workflows | PAT or GitHub App |
-| Stripe | Billing, subscriptions, webhooks | Secret key |
-| Vercel | Deployments and logs | Token |
-| Supabase | Project status and admin ops | Service key |
-| Linear | Issue workflows | API key |
-| Segment | Analytics event routing | Write key |
+Most integrations follow the same structure:
+- Create a client with config values
+- Validate required fields
+- Perform API calls with retries and rate‑limit handling
 
----
-
-## Configuration Pattern
-
-Most integrations accept a config object or environment variables:
-
-```ts
-{
-  token: "...",
-  baseUrl?: "...",
-  retries?: 3,
-  timeoutMs?: 15000
-}
+Example:
+```js
+import { SomeClient } from 'cli/lib/integrations/some.js';
+const client = new SomeClient({ apiKey: process.env.SOME_KEY });
+const result = await client.list();
 ```
-
-Common environment variables:
-- `ULTRA_DEX_INTEGRATIONS_DIR`
-- `JIRA_DOMAIN`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
-- `NOTION_API_KEY`
-- `TRELLO_API_KEY`, `TRELLO_TOKEN`
-- `SLACK_BOT_TOKEN`, `DISCORD_BOT_TOKEN`
-- `GITHUB_TOKEN`
-- `STRIPE_SECRET_KEY`
-- `VERCEL_TOKEN`
-- `SUPABASE_SERVICE_KEY`
-- `LINEAR_API_KEY`
-- `SEGMENT_WRITE_KEY`
 
 ---
 
 ## Jira
-**File:** `cli/lib/integrations/jira.js`
 
-Supported operations:
-- Create issues
-- Update and transition issues
-- Search using JQL
-
-Example:
+**File:** `cli/lib/integrations/jira.js`  
+**Auth:** Email + API token  
+**Usage:**
 ```js
 const client = new JiraClient({ domain, email, apiToken });
-await client.createIssue({ projectKey: 'UDX', summary: 'Implement billing' });
+await client.createIssue({ projectKey: 'UDX', summary: 'Implement auth' });
 ```
 
 ---
 
 ## Notion
-**File:** `cli/lib/integrations/notion.js`
 
-Supported operations:
-- Create pages
-- Query databases
-- Sync plan sections
+**File:** `cli/lib/integrations/notion.js`  
+**Auth:** Notion integration token  
+**Usage:**
+```js
+const client = new NotionClient(process.env.NOTION_API_KEY);
+await client.syncPlanToNotion(databaseId, planData);
+```
 
 ---
 
 ## Trello
-**File:** `cli/lib/integrations/trello.js`
 
-Supported operations:
-- Create boards
-- Create lists
-- Create cards and checklists
+**File:** `cli/lib/integrations/trello.js`  
+**Auth:** API key + token  
+**Usage:**
+```js
+const client = new TrelloClient(apiKey, token);
+const board = await client.createBoard('Ultra-Dex Roadmap');
+```
 
 ---
 
 ## Slack
-**File:** `cli/lib/integrations/slack.js`
 
-Supported operations:
-- Send messages with blocks
-- Create channels
-- Webhook handling
+**File:** `cli/lib/integrations/slack.js`  
+**Auth:** Bot token  
+**Features:** `sendMessage`, `createChannel`, interactive webhooks
 
 ---
 
 ## Discord
-**File:** `cli/lib/integrations/discord.js`
 
-Supported operations:
-- Rich embeds
-- Command handling
-- Role management
+**File:** `cli/lib/integrations/discord.js`  
+**Auth:** Bot token  
+**Features:** Rich embeds, role management, command handling
 
 ---
 
 ## GitHub
-**File:** `cli/lib/integrations/github.js`
 
-Supported operations:
-- Issue creation
-- PR metadata fetch
-- Repo status checks
+**File:** `cli/lib/integrations/github.js`  
+**Auth:** PAT or GitHub App token  
+**Features:** issue creation, repo status, PR metadata
 
 ---
 
 ## Stripe
-**File:** `cli/lib/integrations/stripe.js`
 
-Supported operations:
-- Customers and subscriptions
-- Checkout sessions
-- Webhooks verification
+**File:** `cli/lib/integrations/stripe.js`  
+**Auth:** Secret key  
+**Features:** customer management, products, pricing, subscriptions
 
 ---
 
 ## Vercel
-**File:** `cli/lib/integrations/vercel.js`
 
-Supported operations:
-- Deployment triggers
-- Environment variable sync
+**File:** `cli/lib/integrations/vercel.js`  
+**Auth:** Token  
+**Features:** deployments, logs, envs
 
 ---
 
 ## Supabase
-**File:** `cli/lib/integrations/supabase.js`
 
-Supported operations:
-- Status checks
-- Admin operations
+**File:** `cli/lib/integrations/supabase.js`  
+**Auth:** Project key  
+**Features:** DB health checks, admin operations
 
 ---
 
 ## Linear
-**File:** `cli/lib/integrations/linear.js`
 
-Supported operations:
-- Issue creation
-- Status updates
+**File:** `cli/lib/integrations/linear.js`  
+**Auth:** API key  
+**Features:** issue creation, status sync, labels
 
 ---
 
 ## Segment
-**File:** `cli/lib/integrations/segment.js`
 
-Supported operations:
-- Identify, track, group events
+**File:** `cli/lib/integrations/segment.js`  
+**Auth:** Write key  
+**Features:** identify, track, group
 
 ---
 
-## Troubleshooting
+## Integration CLI Commands
 
-- Ensure API keys are valid and scoped correctly.
-- Check network access for hosted endpoints.
-- Use `--verbose` to see request errors.
+```bash
+ultra-dex integrate --list
+ultra-dex integrate jira --sync plan.md
+ultra-dex integrate notion --db <databaseId>
+```
 
-For deeper reference material, see `docs/api/reference/API-REFERENCE.md`.
+---
+
+## Configuration Validation
+
+Each integration validates:
+- Missing credentials
+- Improper API endpoints
+- Response errors / rate limits
+
+When API calls fail, Ultra‑Dex will:
+1. Retry with exponential backoff
+2. Provide a clear error message
+3. Offer a remediation hint

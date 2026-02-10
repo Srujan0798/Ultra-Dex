@@ -1,6 +1,7 @@
 # Ultra-Dex CLI Reference
 
-This is the practical CLI guide for Ultra-Dex. It summarizes usage patterns, core commands, and the full command index. For deeper reference material, see `docs/api/reference/CLI-REFERENCE.md` and `docs/api/reference/QUICK-REFERENCE.md`.
+This guide documents the Ultra-Dex CLI surface area and how to use it in practice.  
+For the authoritative list on your machine, run `ultra-dex --help` or `ultra-dex <command> --help`.
 
 ---
 
@@ -10,158 +11,109 @@ This is the practical CLI guide for Ultra-Dex. It summarizes usage patterns, cor
 ultra-dex <command> [options]
 ```
 
-Common flags:
-- `--help` Show help for a command.
-- `--json` Output JSON (where supported).
-- `--verbose` Extra debug logging.
-- `--quiet` Minimal output.
+Common global flags:
+- `--help` show command help
+- `--json` output machine‑readable JSON (where supported)
+- `--verbose` show debug logging
+- `--quiet` suppress non‑critical output
+
+---
+
+## Configuration
+
+Config files:
+- Project: `.ultra-dex/config.json`
+- User: `~/.ultra-dex/config.json`
+
+Environment variables (common):
+- `OPENAI_API_KEY`
+- `ANTHROPIC_API_KEY`
+- `GOOGLE_API_KEY`
+- `ULTRA_DEX_THEME`
+- `ULTRA_DEX_PROVIDER`
+- `ULTRA_DEX_MODEL`
+
+Useful commands:
+- `ultra-dex config` (inspect or set config values)
+- `ultra-dex setup` (interactive wizard)
 
 ---
 
 ## Core Workflows
 
-### Initialize and Plan
+### Project Bootstrapping
 ```bash
 ultra-dex init
-ultra-dex plan "Build a SaaS dashboard"
+ultra-dex scaffold --from-plan
+ultra-dex template list
+ultra-dex template generate saaskit
 ```
 
-### Generate and Execute
+### Planning & Alignment
 ```bash
-ultra-dex generate "Build an auth system"
-ultra-dex run backend --task "Create auth endpoints"
-```
-
-### Validate and Review
-```bash
-ultra-dex check --p0-only
+ultra-dex plan "Build a task manager"
+ultra-dex check --p0-only --strict
 ultra-dex verify --full
-ultra-dex review
 ```
 
-### Diff and Export
+### Execution & Swarm
 ```bash
+ultra-dex run task.md
+ultra-dex swarm start task.md --parallel 4
+ultra-dex auto-implement "Add billing"
+```
+
+### Review & Quality
+```bash
+ultra-dex review
 ultra-dex diff --drift
-ultra-dex export --format pdf
+ultra-dex quality --fix
+ultra-dex production-ready
+```
+
+### DevOps & Deploy
+```bash
+ultra-dex docker init
+ultra-dex k8s init
+ultra-dex deploy --provider vercel
+ultra-dex cloud deploy
 ```
 
 ---
 
-## Command Groups
+## Command Catalog (Grouped)
 
-### Planning and Execution
-- `init` Project scaffolding and templates.
-- `plan` Generate or update implementation plans.
-- `generate` AI plan generation from a prompt.
-- `run` Execute a specific agent.
-- `swarm` Multi-agent execution.
-- `auto-implement` Autonomous task execution.
-- `scaffold` Create project scaffolds.
-- `scaffold-plan` Generate structure from `IMPLEMENTATION-PLAN.md`.
-- `exec` Run commands with optional sandbox.
+### Project + Planning
+`init`, `plan`, `generate`, `scaffold`, `scaffold-plan`, `scaffold-plan-new`, `scaffold-enhanced`,  
+`check`, `check-enhanced`, `check-enhanced-v2`, `verify`, `quality`, `quality-enhanced`, `diff`, `export`
 
-### Validation and Quality
-- `check` Completeness validation with section checks.
-- `verify` Protocol 21 verification.
-- `quality` Quality gates and audits.
-- `audit` Drift and context integrity checks.
-- `risk` Risk analysis.
-- `production-ready` Production readiness checklist.
+### Execution + Automation
+`run`, `exec`, `swarm`, `swarm-advanced`, `auto-implement`, `ralph`, `batch`, `pipeline`, `workflow`, `workflows`
 
-### Context and Memory
-- `memory` Memory tier management, search, visualize.
-- `rag` Retrieval-augmented context.
-- `graph` Dependency and impact graph.
-- `vector-search` Semantic search across codebase.
-- `sync` Sync context and project state.
-- `watch` File watching and auto-sync.
+### Context + Memory
+`memory`, `rag`, `graph`, `search`, `vector-search`, `brain`, `state`, `sync`, `sync-pm`, `watch`, `context`
+
+### Agents + Teams
+`agents`, `agent-gen`, `team`, `session`, `background-agent`, `bot`, `compare`, `governance`
 
 ### Integrations
-- `integrate` Integration manager and status.
-- `github` GitHub integration utilities.
-- `jira` Jira integration utilities.
-- `notion` Notion integration utilities.
-- `trello` Trello integration utilities.
-- `plugin` Plugin management.
+`integrate`, `github`, `jira`, `notion`, `trello`, `marketplace`, `plugin`, `plugin-scan`
 
-### DevOps and Deploy
-- `deploy` Deployment pipelines.
-- `cloud` Cloud wrapper utilities.
-- `docker` Docker generator.
-- `k8s` Kubernetes generator.
-- `env` Environment config manager.
-- `monitor` Monitoring configuration.
-- `dr-check` Disaster recovery check.
+### DevOps + Ops
+`deploy`, `cloud`, `docker`, `k8s`, `env`, `monitor`, `monitoring`, `dr-check`, `risk`, `audit`,  
+`security`, `privacy`, `gate`, `production-ready`, `benchmark`
 
-### UI and Experience
-- `dashboard` Local dashboard server.
-- `banner` ASCII banners.
-- `profile` Performance profiling.
-- `progress` Progress utilities (where available).
+### UI + Dashboard
+`dashboard`, `dashboard-websocket-client`, `browse`, `browser`, `browser-auto`, `playground`, `help`, `banner`
 
----
-
-## Core Command Details
-
-### `init`
-Initializes a new Ultra-Dex project.
-
-```bash
-ultra-dex init --live --stack next15-saas
-```
-
-### `generate`
-Generates a full implementation plan from an idea.
-
-```bash
-ultra-dex generate "AI meal planner" --provider openai
-```
-
-### `run`
-Runs a specific agent with a task.
-
-```bash
-ultra-dex run backend --task "Create user API endpoints"
-```
-
-### `swarm`
-Runs multiple agents in parallel, sequential, or waterfall mode.
-
-```bash
-ultra-dex swarm "Build auth system" --parallel
-```
-
-### `check`
-Validates the plan and context for completeness.
-
-```bash
-ultra-dex check --p0-only --strict
-```
-
-### `verify`
-Runs the 21-step verification protocol.
-
-```bash
-ultra-dex verify --full
-```
-
-### `diff`
-Compares plan vs implementation to detect drift.
-
-```bash
-ultra-dex diff --drift --output drift-report.md
-```
-
-### `export`
-Exports context and plans to different formats.
-
-```bash
-ultra-dex export --format json --sections 1,2,3
-```
+### Config + Tooling
+`config`, `setup`, `install-completion`, `telemetry`, `status`, `version-check`, `upgrade`, `clean`, `test`
 
 ---
 
 ## Full Command Index (Alphabetical)
+
+This list is generated from `cli/lib/commands/*.js` and is the canonical inventory.
 
 ```
 advanced
@@ -303,11 +255,14 @@ workspace
 
 ---
 
-## Environment Variables
+## Troubleshooting
 
-Common variables used by the CLI:
-- `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`
-- `ULTRA_DEX_PROVIDER`, `ULTRA_DEX_MODEL`
-- `ULTRA_DEX_HOME` (custom config path)
+If a command fails:
+- Run `ultra-dex doctor` to check environment health.
+- Use `--verbose` for stack traces.
+- Verify provider API keys are set and valid.
 
-For more details, see `docs/api/reference/API-REFERENCE.md`.
+For detailed options, always run:
+```bash
+ultra-dex <command> --help
+```

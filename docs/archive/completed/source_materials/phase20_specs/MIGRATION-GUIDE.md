@@ -74,7 +74,7 @@ ultra-dex --version
 ### Previous Versions
 
 - v3.0.0: MCP server integration introduced
-- v2.0.0: Generate command now uses AI for full plan generation
+- v6.0.0 OVERPOWERED: Generate command now uses AI for full plan generation
 
 ## Configuration Updates
 

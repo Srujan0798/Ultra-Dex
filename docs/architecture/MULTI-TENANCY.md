@@ -1,54 +1,42 @@
-# Multi‑Tenancy Strategy
-
-This doc summarizes tenant isolation strategies and recommended defaults for Ultra‑Dex SaaS products.
-
----
+# Multi-Tenancy Architecture Strategy
 
 ## Options
 
-### 1. Row‑Level Security (RLS) — **Recommended**
-- Single shared database
-- Strong logical isolation
-- Low operational overhead
-- Works best with PostgreSQL RLS policies
+1. **Row-Level Security (RLS)**
+   - Single schema with tenant_id on every table
+   - Postgres RLS policies enforce isolation
+   - Lower operational overhead
 
-### 2. Schema‑Per‑Tenant
-- Isolated schemas per tenant
-- Good for compliance‑heavy customers
-- Higher migration complexity
+2. **Schema-per-tenant**
+   - Dedicated schema per tenant
+   - Strong isolation, higher operational cost
+   - Best for regulated enterprise customers
 
-### 3. Database‑Per‑Tenant
-- Maximum isolation
-- Expensive and operationally heavy
-- Best for enterprise regulated sectors
+## Recommended Strategy
 
----
+**Postgres RLS + strict tenant context** for most SaaS workloads.
 
-## Recommended Approach (Default)
+## Implementation Plan (RLS)
 
-**PostgreSQL + RLS**
+- Add `tenant_id` to all multi-tenant tables
+- Create `current_setting('app.tenant_id')` guard
+- Use `set_config('app.tenant_id', <tenant>, true)` per request
+- Define RLS policies per table
 
-Benefits:
-- Secure isolation at query level
-- Shared infra for cost efficiency
-- Simple onboarding for new tenants
+## Tenant Lifecycle Management
 
-Key elements:
-- `organization_id` on all tenant‑scoped tables
-- Middleware to enforce current tenant
-- RLS policy for every tenant‑scoped table
+- **Onboard:** create tenant row, default roles, seed data
+- **Suspend:** disable auth tokens + webhook calls
+- **Offboard:** archive data, export, delete after retention
 
----
+## Isolation Verification Tests
 
-## Verification Checklist
+- Ensure queries cannot access other tenant data
+- Run RLS policy tests in CI
+- Include negative tests for cross-tenant access
 
-- [ ] No cross‑tenant queries possible
-- [ ] All tables have `organization_id`
-- [ ] Tenant context enforced at API layer
-- [ ] Automated tests for isolation
+## Operational Considerations
 
----
-
-## Reference
-
-Full technical spec: `docs/technical/architecture/MULTI-TENANCY.md`
+- Backup per-tenant exports
+- Reporting/analytics via read replicas
+- Tenant-aware caching and rate limits

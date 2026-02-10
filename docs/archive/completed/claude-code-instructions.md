@@ -17,7 +17,7 @@
 
 ---
 
-## TASK 1: Add Code Examples to Agents (v1.8.0 Roadmap)
+## TASK 1: Add Code Examples to Agents (v6.0.0 OVERPOWERED Roadmap)
 
 ### 1.1 Backend Agent
 

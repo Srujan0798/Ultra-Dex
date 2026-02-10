@@ -606,4 +606,4 @@ One agent = one domain. Don't create a "DoEverything" agent. If your domain has 
 
 ---
 
-_Ultra-Dex v1.7.0 - Build domain agents for YOUR SaaS_
+_Ultra-Dex v6.0.0 OVERPOWERED - Build domain agents for YOUR SaaS_

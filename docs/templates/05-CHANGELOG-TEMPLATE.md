@@ -1,6 +1,6 @@
 # 📝 PROJECT CHANGELOG - Decision & Change History
 
-> **Purpose:** Track all decisions and changes so nothing is lost.  
+> **Purpose:** Track all decisions and changes so nothing is lost.
 > Every significant change or decision gets recorded here.
 
 ---
@@ -34,13 +34,11 @@
 **What:** Switched from MongoDB to PostgreSQL
 
 **Why:**
-
 - Need for relational data integrity
 - Better support for complex queries
 - Team has more PostgreSQL experience
 
 **Impact:**
-
 - All database queries need rewriting
 - Prisma schema needs updating
 - Migration scripts required
@@ -70,13 +68,11 @@
 **What:** Rolled back from LemonSqueezy to Stripe
 
 **Why:** LemonSqueezy integration had issues with:
-
 - Tax calculation errors
 - Missing webhook events
 - EU payment failures
 
 **Impact:**
-
 - Payment code reverted to Stripe implementation
 - Need to migrate any LemonSqueezy customers
 
@@ -88,8 +84,8 @@
 
 ## Decision Log Summary
 
-| Date   | Decision         | Category             | Status            |
-| ------ | ---------------- | -------------------- | ----------------- |
+| Date | Decision | Category | Status |
+|------|----------|----------|--------|
 | [DATE] | [Brief decision] | Tech/Business/Design | Active/Superseded |
 
 ---
@@ -97,7 +93,6 @@
 ## Architecture Decision Records (ADRs)
 
 ### ADR-001: [Decision Title]
-
 - **Status:** Accepted / Superseded / Deprecated
 - **Context:** [Why we needed to make this decision]
 - **Decision:** [What we decided]
@@ -105,4 +100,4 @@
 
 ---
 
-_Add new entries at the TOP of this file_
+*Add new entries at the TOP of this file*

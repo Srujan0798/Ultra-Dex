@@ -1,13 +1,25 @@
-# Meta-Layer Architecture
+# Ultra-Dex Meta-Layer Architecture
 
-Ultra-Dex is a meta-orchestration layer over multiple AI tools.
+Ultra-Dex sits above coding tools and agents, orchestrating context, plans, and verification.
+
+```
+┌─────────────────────────────────────────┐
+│  LAYER 3: ULTRA-DEX (META-ORCHESTRATION) │
+└─────────────────────────────────────────┘
+     │           │           │           │
+ ┌───▼───┐  ┌───▼───┐  ┌───▼───┐  ┌───▼───┐
+ │Claude │  │Cursor │  │Devin  │  │Gemini │
+ └───────┘  └───────┘  └───────┘  └───────┘
+```
 
 ## Principles
-- Orchestrate, do not compete.
-- Persist context for tools with amnesia.
-- Enforce verification and governance.
 
-## Components
-- CLI: execution and context management
-- MCP Server: tool access and cross-tool syncing
-- Agents: specialized roles for planning, coding, and review
+- Orchestrate, do not compete with IDEs or model vendors
+- CONTEXT.md + IMPLEMENTATION-PLAN.md + verification enforce quality
+- Memory makes tools with amnesia consistent across sessions
+
+## Outcomes
+
+- Consistent delivery across agents/tools
+- Reusable templates and workflows
+- Faster onboarding with predictable structure
