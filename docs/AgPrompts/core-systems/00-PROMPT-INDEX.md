@@ -1,4 +1,4 @@
-# 🧠 ULTRA-DEX AGENT PROMPT INDEX — V5.1 COGNITIVE CORE
+# 🧠 ULTRA-DEX AGENT PROMPT INDEX — v6.0.0 OVERPOWERED
 
 > **"The Cognitive Core. The Brain of the Machine. Standards for the Swarm."**
 

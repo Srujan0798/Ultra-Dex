@@ -15,7 +15,9 @@
 | [**VERSIONS.md**](./VERSIONS.md)                           | Complete version history & roadmap       | ✅ Current     |
 | [**IMPLEMENTATION-STATUS.md**](./IMPLEMENTATION-STATUS.md) | Status of all 240 prompts (77% complete) | ✅ Updated     |
 | [**CHANGELOG.md**](./CHANGELOG.md)                         | All changes to the prompt system         | ✅ Current     |
-| [**IMPROVEMENT-PLAN.md**](./IMPROVEMENT-PLAN.md)           | Quality improvement roadmap              | 🚧 In Progress |
+| [**IMPROVEMENT-PLAN.md**](./IMPROVEMENT-PLAN.md)           | Quality improvement roadmap              | ✅ Updated     |
+| [**QUALITY-GUIDE.md**](./QUALITY-GUIDE.md)                 | Standards for prompt writing             | ✅ Available   |
+| [**CROSS-REFERENCE-MATRIX.md**](./CROSS-REFERENCE-MATRIX.md) | Prompt relationships & dependencies      | 🔄 Generated   |
 
 ---
 
@@ -118,7 +120,7 @@
 
 - [ANALYSIS.md](./archive/reports/ANALYSIS.md) — Initial analysis
 - [COMPREHENSIVE_ANALYSIS.md](./archive/reports/COMPREHENSIVE_ANALYSIS.md) — Quality analysis
-- [CEO_FINAL_VERIFICATION.md](./archive/reports/CEO_FINAL_VERIFICATION.md) — CEO verification report
+- [CEO-FINAL-VERIFICATION.md](./archive/reports/CEO-FINAL-VERIFICATION.md) — CEO verification report
 
 ---
 

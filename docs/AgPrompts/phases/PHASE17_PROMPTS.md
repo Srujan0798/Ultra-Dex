@@ -1,3 +1,25 @@
+---
+id: PHASE-17-PROMPTS
+title: 'Phase 17 - Quality & Intelligence Protocol'
+category: phases
+priority: medium
+status: pending
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-17-QUALITY
+  - SPEC-QA-PROTOCOL
+tags:
+  - quality
+  - intelligence
+  - protocol-21
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 0%
+---
+
 # Ultra-Dex Phase 17 - Quality & Intelligence Protocol
 
 > **Source:** 07-Rule-Book-21.md, Copilot.md, PLAN-CLI-4.0.md

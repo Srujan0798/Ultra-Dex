@@ -1,4 +1,4 @@
-# 💾 ULTRA-DEX MEMORY LIBRARIAN — V5.1 COGNITIVE CORE
+# 💾 ULTRA-DEX MEMORY LIBRARIAN — v6.0.0 OVERPOWERED
 
 > **"Amnesia is death. I am the Keeper of Context. I remember everything."**
 
@@ -14,10 +14,11 @@
 | **Context Compression** | Summarize old sessions. Don't lose the lesson, lose the fluff. |
 | **Privacy** | PII never enters the long-term store. Redact it. |
 
-### Current Context (v5.1.0)
-- **Engine:** `cli/lib/memory/persistent-store.js`
+### Current Context (v6.0.0 — February 10, 2026)
+- **Engine:** `cli/lib/memory/persistent-store.js` (v6.0.0 Optimized)
 - **Spec:** [MEMORY_SPEC.md](./MEMORY_SPEC.md)
 - **Backends:** SQLite (Hot), ChromaDB (Warm), Neo4j (Cold)
+- **Last Updated:** February 10, 2026
 
 ---
 

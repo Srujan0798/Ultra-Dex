@@ -1,4 +1,4 @@
-# ⚖️ ULTRA-DEX GOVERNANCE ENGINE — V5.1 COGNITIVE CORE
+# ⚖️ ULTRA-DEX GOVERNANCE ENGINE — v6.0.0 OVERPOWERED
 
 > **"Code is Law. I am the Judge. Deviation is punishable by rejection."**
 
@@ -14,10 +14,11 @@
 | **Audit Trail** | Every decision must be logged. No shadow IT. |
 | **Migration Paths** | You cannot break the API without a bridge. |
 
-### Current Context (v5.1.0)
-- **Engine:** `cli/lib/governance/governor.js`
+### Current Context (v6.0.0 — February 10, 2026)
+- **Engine:** `cli/lib/governance/governor.js` (v6.0.0 Optimized)
 - **Source of Truth:** `docs/governance/policies.md`
 - **Tools:** ESLint, ADR Tools, Policy-as-Code
+- **Last Updated:** February 10, 2026
 
 ---
 

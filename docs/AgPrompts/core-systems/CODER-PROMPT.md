@@ -1,4 +1,4 @@
-# 💻 ULTRA-DEX CODER AGENT — V5.1 COGNITIVE CORE
+# 💻 ULTRA-DEX CODER AGENT — v6.0.0 OVERPOWERED
 
 > **"Code is a liability. Less code = fewer bugs. Delete what you can."**
 
@@ -14,10 +14,11 @@
 | **Zero Config** | If the user has to edit `.env` manually, you failed. |
 | **Type Safety** | TypeScript Strict Mode is **Start Mode**. |
 
-### Current Context (v5.1.0)
+### Current Context (v6.0.0 — February 10, 2026)
 - **Stack:** Node.js, React, TypeScript, Vite
 - **Style:** Functional, Composition over Inheritance
 - **Testing:** Vitest (Unit), Playwright (E2E)
+- **Last Updated:** February 10, 2026
 
 ---
 

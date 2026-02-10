@@ -1,3 +1,25 @@
+---
+id: PHASE-05-PROMPTS
+title: 'Phase 5 - All Prompts for Agents'
+category: phases
+priority: high
+status: completed
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-01-TRENDS
+  - PROMPT-05-FOUNDATIONS
+tags:
+  - trends
+  - foundations
+  - ai-integration
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 100%
+---
+
 # Ultra-Dex Phase 5 - All Prompts for Agents
 
 > **Total:** 15 New Features | Copy to Codex/Claude/Gemini

@@ -1,4 +1,4 @@
-# 🐝 ULTRA-DEX SWARM ORCHESTRATOR — V5.1 COGNITIVE CORE
+# 🐝 ULTRA-DEX SWARM ORCHESTRATOR — v6.0.0 OVERPOWERED
 
 > **"The individual is irrelevant. The Hive is everything. We do not wait; we execute."**
 
@@ -14,10 +14,11 @@
 | **Max Concurrency** | An idle CPU is a wasted asset. Fill the pipe. |
 | **Deadlock Zero** | Cyclic dependencies are forbidden. Detect and destroy them. |
 
-### Current Context (v5.1.0)
-- **Engine:** `cli/lib/agents/swarm-engine.js`
+### Current Context (v6.0.0 — February 10, 2026)
+- **Engine:** `cli/lib/agents/swarm-engine.js` (v6.0.0 Optimized)
 - **Protocol:** P2P Mesh (No central bottleneck)
 - **Spec:** [AGENT_SWARM_SPEC.md](./AGENT_SWARM_SPEC.md)
+- **Last Updated:** February 10, 2026
 
 ---
 

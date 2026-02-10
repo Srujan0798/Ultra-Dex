@@ -1,3 +1,25 @@
+---
+id: PHASE-15-PROMPTS
+title: 'Phase 15 - Critical Repairs & Optimization'
+category: phases
+priority: high
+status: in-progress
+version: 6.0.0
+last-updated: 2026-02-10
+author: Ultra-Dex Team
+related:
+  - PROMPT-15-REPAIRS
+  - SPEC-OPTIMIZATION
+tags:
+  - repairs
+  - optimization
+  - critical-path
+dependencies: []
+testing:
+  - method: manual
+  - coverage: 67%
+---
+
 # Ultra-Dex Phase 15 - Critical Repairs & Optimization
 
 > **Source:** Devin-CEO-Review.md, Kimi-2.3-Review.md, jules.md
