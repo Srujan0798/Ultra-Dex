@@ -4,36 +4,43 @@
 
 ---
 
-## 📂 Core Systems (The Trinity)
+## 🎭 CORE PERSONAS (The Seven Agents)
 
-These prompts define the primary personas for the Ultra-Dex autonomous development lifecycle.
+These prompts define the **Identity** and **Behavior** of the agents.
+**Mandatory:** When initializing an agent, you MUST prepend the relevant prompt.
 
 | Agent Persona | File Path | Focus Area | "Brutal" Standard |
 | :--- | :--- | :--- | :--- |
-| **🏛️ ARCHITECT** | [ARCHITECT-PROMPT.md](./ARCHITECT-PROMPT.md) | System Design, Scalability, "The Moat" | 34-Section Template Integrity |
-| **💻 CODER** | [CODER-PROMPT.md](./CODER-PROMPT.md) | Implementation, Efficiency, Testing | "Death by 2027" Survival |
-| **🐞 DEBUGGER** | [DEBUGGER-PROMPT.md](./DEBUGGER-PROMPT.md) | Root Cause Analysis, Verification | Anti-Hallucination Protocol |
-| **🪐 REVIEWER** | [REVIEW-PROMPT.md](./REVIEW-PROMPT.md) | Audit, Quality Control, Standards | The "Middleware" UX Friction Check |
+| **🏛️ ARCHITECT** | [ARCHITECT-PROMPT.md](./ARCHITECT-PROMPT.md) | System Design, "The Moat" | 34-Section Integrity |
+| **💻 CODER** | [CODER-PROMPT.md](./CODER-PROMPT.md) | Implementation, Efficiency | "Death by 2027" |
+| **🪐 REVIEWER** | [REVIEW-PROMPT.md](./REVIEW-PROMPT.md) | Audit, Quality Control | The "Middleware" Check |
+| **🐞 DEBUGGER** | [DEBUGGER-PROMPT.md](./DEBUGGER-PROMPT.md) | Root Cause Analysis | Anti-Hallucination |
+| **🐝 SWARM** | [SWARM-PROMPT.md](./SWARM-PROMPT.md) | Orchestration, Throughput | The Bottleneck Test |
+| **💾 MEMORY** | [MEMORY-PROMPT.md](./MEMORY-PROMPT.md) | Context, Retrieval | Token Economy |
+| **✅ QA** | [QA-PROMPT.md](./QA-PROMPT.md) | Verification, Gatekeeping | 21-Step Protocol |
+| **⚖️ GOVERNANCE** | [GOVERNANCE-PROMPT.md](./GOVERNANCE-PROMPT.md) | Policy, Compliance | ADR Enforcement |
 
 ---
 
-## 📂 Advanced Orchestration
+## 📜 SACRED SPECIFICATIONS (The Law)
 
-These prompts manage the coordination and memory of the Swarm.
+These files contain the **Technical Requirements** that the Agents must enforce.
+**Usage:** Agents should reference these files for implementation details.
 
-| Agent Persona | File Path | Focus Area |
+| Specification | File Path | Scope |
 | :--- | :--- | :--- |
-| **🐝 SWARM** | [AGENT_SWARM_ORCHESTRATION_ENHANCED.md](../AGENT_SWARM_ORCHESTRATION_ENHANCED.md) | P2P Coordination, Task Delegation |
-| **💾 MEMORY** | [PERSISTENT_MEMORY_ENHANCED.md](../PERSISTENT_MEMORY_ENHANCED.md) | Context Retrieval, Knowledge Graph |
-| **✅ QA** | [QUALITY_ASSURANCE_ENHANCED.md](../QUALITY_ASSURANCE_ENHANCED.md) | Testing Strategy, E2E Automation |
+| **Swarm Engine** | [AGENT_SWARM_SPEC.md](./AGENT_SWARM_SPEC.md) | P2P Mesh, Task Queue |
+| **Memory System** | [MEMORY_SPEC.md](./MEMORY_SPEC.md) | Hot/Warm/Cold Store |
+| **QA Protocol** | [QA_SPEC.md](./QA_SPEC.md) | Quality Gates, Testing |
+| **MCP Server** | [MCP_SERVER_SPEC.md](./MCP_SERVER_SPEC.md) | Tool Protocol |
 
 ---
 
 ## ⚠️ USAGE DIRECTIVES
 
-1.  **Load the Prompt**: When spinning up an agent context, PREPEND the relevant prompt content.
-2.  **Enforce the DNA**: If an agent violates the "Sacred Principles" (e.g., token gloat, hallucination), KILL the process and restart.
-3.  **Update Cycle**: These prompts are **LIVING DOCUMENTS**. Update them weekly based on new failure modes.
+1.  **Load the Persona**: Start with the PROMPT.
+2.  **Load the Law**: Inject the SPEC into the context.
+3.  **Enforce the DNA**: If an agent violates the "Sacred Principles", **KILL THE PROCESS**.
 
 ---
 

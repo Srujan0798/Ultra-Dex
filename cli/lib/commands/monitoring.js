@@ -13,6 +13,7 @@ import { interactiveMode } from '../utils/interactive-mode.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
+import perfMonitor from '../performance/monitor.js';
 
 // ============================================================================
 // STATUS COMMAND
@@ -124,32 +125,75 @@ export async function metricsCommand(options) {
       throw new ValidationError(`Unsupported format: ${options.format}. Use json or csv.`);
     }
 
+    // Initialize performance monitor if not already done
+    await perfMonitor.initialize();
+
     if (options.watch) {
-      return runMetricsWatcher();
+      return runEnhancedMetricsWatcher();
     }
 
-    printInfo(chalk.bold('\n📈 Ultra-Dex Metrics\n'));
+    printInfo(chalk.bold('\n📈 Ultra-Dex Enhanced Metrics\n'));
+
+    // Show basic metrics
     interactiveMode.showMetrics();
+
+    // Show enhanced performance insights
+    const insights = perfMonitor.getInsights();
+    if (insights && insights.insights.length > 0) {
+      printInfo(chalk.bold('\n💡 Performance Insights:\n'));
+      insights.insights.forEach(insight => {
+        const color = insight.type === 'alert' ? chalk.red : chalk.yellow;
+        console.log(`  ${color('•')} ${insight.message}`);
+        console.log(`    ${chalk.gray(insight.recommendation)}`);
+      });
+    }
 
     if (options.export) {
       const format = options.format || 'json';
-      const metrics = await monitoring.exportMetrics(format);
+      let metrics;
+      if (format === 'enhanced') {
+        metrics = perfMonitor.getMetricsSnapshot();
+      } else {
+        metrics = await monitoring.exportMetrics(format);
+      }
       printInfo(chalk.bold('\n📊 Exported Metrics:\n'));
-      console.log(metrics);
+      console.log(JSON.stringify(metrics, null, 2));
     }
   } catch (error) {
     await handleError(error, { command: 'metrics', options });
   }
 }
 
-function runMetricsWatcher() {
+function runEnhancedMetricsWatcher() {
   console.clear();
-  printInfo(chalk.bold('\n📈 Ultra-Dex Real-Time Metrics (Press Ctrl+C to stop)\n'));
+  printInfo(chalk.bold('\n🚀 Ultra-Dex Enhanced Real-Time Metrics (Press Ctrl+C to stop)\n'));
 
   const interval = setInterval(() => {
     console.clear();
-    printInfo(chalk.bold('\n📈 Ultra-Dex Real-Time Metrics (Press Ctrl+C to stop)\n'));
+    printInfo(chalk.bold('\n🚀 Ultra-Dex Enhanced Real-Time Metrics (Press Ctrl+C to stop)\n'));
+
+    // Show basic metrics
     interactiveMode.showMetrics();
+
+    // Show enhanced performance insights
+    const insights = perfMonitor.getInsights();
+    if (insights && insights.insights.length > 0) {
+      printInfo(chalk.bold('\n💡 Performance Insights:\n'));
+      insights.insights.forEach(insight => {
+        const color = insight.type === 'alert' ? chalk.red : chalk.yellow;
+        console.log(`  ${color('•')} ${insight.message}`);
+      });
+    }
+
+    // Show recent alerts
+    const recentAlerts = perfMonitor.getRecentAlerts(1); // Last hour
+    if (recentAlerts.length > 0) {
+      printInfo(chalk.bold('\n🚨 Recent Alerts:\n'));
+      recentAlerts.slice(-5).reverse().forEach(alert => { // Show last 5 alerts
+        const color = alert.severity === 'error' ? chalk.red : chalk.yellow;
+        console.log(`  ${color('•')} [${alert.severity.toUpperCase()}] ${alert.message}`);
+      });
+    }
 
     const metrics = monitoring.getMetrics();
     if (metrics.system) {
@@ -168,8 +212,9 @@ function runMetricsWatcher() {
     console.log(chalk.gray(`\nLast updated: ${new Date().toLocaleTimeString()}`));
   }, 2000);
 
-  process.on('SIGINT', () => {
+  process.on('SIGINT', async () => {
     clearInterval(interval);
+    await perfMonitor.shutdown();
     process.exit(0);
   });
 
