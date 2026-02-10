@@ -9,24 +9,24 @@
 
 ## 📚 Phase Index
 
-| Phase        | Count | Focus                     | Status      | File Link                                  |
-| ------------ | ----- | ------------------------- | ----------- | ------------------------------------------ |
-| **Phase 5**  | 15    | 🔵 New 2026 Trends        | ✅ Complete | [PHASE5_PROMPTS.md](./PHASE5_PROMPTS.md)   |
-| **Phase 6**  | 20    | 🔵 Archived Tasks         | ✅ Complete | [PHASE6_PROMPTS.md](./PHASE6_PROMPTS.md)   |
-| **Phase 7**  | 15    | 🟢 Advanced AI            | ✅ Complete | [PHASE7_PROMPTS.md](./PHASE7_PROMPTS.md)   |
-| **Phase 8**  | 15    | 🟡 Specs + Moonshots      | ✅ Complete | [PHASE8_PROMPTS.md](./PHASE8_PROMPTS.md)   |
-| **Phase 9**  | 15    | 🔵 Developer Tools        | ✅ Complete | [PHASE9_PROMPTS.md](./PHASE9_PROMPTS.md)   |
-| **Phase 10** | 15    | 🔵 Templates + Frameworks | ✅ Complete | [PHASE10_PROMPTS.md](./PHASE10_PROMPTS.md) |
-| **Phase 11** | 15    | 🔵 DevOps + Visual        | ✅ Complete | [PHASE11_PROMPTS.md](./PHASE11_PROMPTS.md) |
-| **Phase 12** | 15    | 🟢 Strategic + Agents     | ✅ Complete | [PHASE12_PROMPTS.md](./PHASE12_PROMPTS.md) |
-| **Phase 13** | 15    | 🔵 Strategic Reviews      | ✅ Complete | [PHASE13_PROMPTS.md](./PHASE13_PROMPTS.md) |
-| **Phase 14** | 15    | 🟣 Vision & Moonshots     | ✅ Complete | [PHASE14_PROMPTS.md](./PHASE14_PROMPTS.md) |
-| **Phase 15** | 15    | 🔴 Repairs & Optimization | ✅ Complete | [PHASE15_PROMPTS.md](./PHASE15_PROMPTS.md) |
-| **Phase 16** | 15    | 🏢 Enterprise & Visuals   | ⏳ Pending  | [PHASE16_PROMPTS.md](./PHASE16_PROMPTS.md) |
-| **Phase 17** | 15    | 🛡️ Quality & Intelligence | ⏳ Pending  | [PHASE17_PROMPTS.md](./PHASE17_PROMPTS.md) |
-| **Phase 18** | 15    | 📦 Completion Inventory   | ⏳ Pending  | [PHASE18_PROMPTS.md](./PHASE18_PROMPTS.md) |
-| **Phase 19** | 15    | 🎮 Deep Tech & Games      | ⏳ Pending  | [PHASE19_PROMPTS.md](./PHASE19_PROMPTS.md) |
-| **Phase 20** | 10    | 📐 Final Specifications   | ⏳ Pending  | [PHASE20_PROMPTS.md](./PHASE20_PROMPTS.md) |
+| Phase        | Count | Focus                     | Status      | File Link                                                |
+| ------------ | ----- | ------------------------- | ----------- | -------------------------------------------------------- |
+| **Phase 5**  | 15    | 🔵 New 2026 Trends        | ✅ Complete | [PHASE5_PROMPTS.md](../../../phases/PHASE5_PROMPTS.md)   |
+| **Phase 6**  | 20    | 🔵 Archived Tasks         | ✅ Complete | [PHASE6_PROMPTS.md](../../../phases/PHASE6_PROMPTS.md)   |
+| **Phase 7**  | 15    | 🟢 Advanced AI            | ✅ Complete | [PHASE7_PROMPTS.md](../../../phases/PHASE7_PROMPTS.md)   |
+| **Phase 8**  | 15    | 🟡 Specs + Moonshots      | ✅ Complete | [PHASE8_PROMPTS.md](../../../phases/PHASE8_PROMPTS.md)   |
+| **Phase 9**  | 15    | 🔵 Developer Tools        | ✅ Complete | [PHASE9_PROMPTS.md](../../../phases/PHASE9_PROMPTS.md)   |
+| **Phase 10** | 15    | 🔵 Templates + Frameworks | ✅ Complete | [PHASE10_PROMPTS.md](../../../phases/PHASE10_PROMPTS.md) |
+| **Phase 11** | 15    | 🔵 DevOps + Visual        | ✅ Complete | [PHASE11_PROMPTS.md](../../../phases/PHASE11_PROMPTS.md) |
+| **Phase 12** | 15    | 🟢 Strategic + Agents     | ✅ Complete | [PHASE12_PROMPTS.md](../../../phases/PHASE12_PROMPTS.md) |
+| **Phase 13** | 15    | 🔵 Strategic Reviews      | ✅ Complete | [PHASE13_PROMPTS.md](../../../phases/PHASE13_PROMPTS.md) |
+| **Phase 14** | 15    | 🟣 Vision & Moonshots     | ✅ Complete | [PHASE14_PROMPTS.md](../../../phases/PHASE14_PROMPTS.md) |
+| **Phase 15** | 15    | 🔴 Repairs & Optimization | ✅ Complete | [PHASE15_PROMPTS.md](../../../phases/PHASE15_PROMPTS.md) |
+| **Phase 16** | 15    | 🏢 Enterprise & Visuals   | ⏳ Pending  | [PHASE16_PROMPTS.md](../../../phases/PHASE16_PROMPTS.md) |
+| **Phase 17** | 15    | 🛡️ Quality & Intelligence | ⏳ Pending  | [PHASE17_PROMPTS.md](../../../phases/PHASE17_PROMPTS.md) |
+| **Phase 18** | 15    | 📦 Completion Inventory   | ⏳ Pending  | [PHASE18_PROMPTS.md](../../../phases/PHASE18_PROMPTS.md) |
+| **Phase 19** | 15    | 🎮 Deep Tech & Games      | ⏳ Pending  | [PHASE19_PROMPTS.md](../../../phases/PHASE19_PROMPTS.md) |
+| **Phase 20** | 10    | 📐 Final Specifications   | ⏳ Pending  | [PHASE20_PROMPTS.md](../../../phases/PHASE20_PROMPTS.md) |
 
 ---
 
@@ -195,17 +195,17 @@
 97. **K8s Generator** - Orchestration
 98. **Env Config Manager** - Secrets
 99. **Monitoring Stack** - Observability
-100. **Security Audit** - Risk scanner
-101. **Credential Manager** - Key storage
-102. **Plugin Scanner** - Extension safety
-103. **Performance Profiler** - Bottlenecks
-104. **Caching System** - Speed layer
-105. **Budget Enforcer** - Resource limits
-106. **Gradient Banner** - CLI branding
-107. **Styled Tables** - Data display
-108. **Progress Bars** - Feedback UI
-109. **Theme System** - Customization
-110. **Update Notifier** - Version check
+100.  **Security Audit** - Risk scanner
+101.  **Credential Manager** - Key storage
+102.  **Plugin Scanner** - Extension safety
+103.  **Performance Profiler** - Bottlenecks
+104.  **Caching System** - Speed layer
+105.  **Budget Enforcer** - Resource limits
+106.  **Gradient Banner** - CLI branding
+107.  **Styled Tables** - Data display
+108.  **Progress Bars** - Feedback UI
+109.  **Theme System** - Customization
+110.  **Update Notifier** - Version check
 
 ### Phase 12: Strategic + Agents (#111-125)
 
