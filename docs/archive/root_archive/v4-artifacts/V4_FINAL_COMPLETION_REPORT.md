@@ -53,7 +53,7 @@ The mission to transform Ultra-Dex from a "sophisticated template generator" to 
 ## 🚀 LAUNCH STRATEGY (Feb 14)
 
 1.  **Public Release:** Publish `ultra-dex@4.3.0` to npm.
-2.  **Social Blast:** Utilize `LAUNCH_ANNOUNCEMENT.md` for HN/Twitter.
+2.  **Social Blast:** Utilize `launch-announcement.md` for HN/Twitter.
 3.  **Demo:** Record the "REPL Flow" showing context persistence.
 
 ---

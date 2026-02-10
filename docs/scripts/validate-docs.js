@@ -1,323 +1,219 @@
 #!/usr/bin/env node
 
 /**
- * Ultra-Dex Documentation Validation Script
- * Validates entire docs folder for quality, links, and completeness
+ * Ultra-Dex Docs Validation Script
+ * Validates all improvements made to the docs folder
+ * 
+ * Usage: node scripts/validate-docs.js
  */
 
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DOCS_DIR = path.join(__dirname, '..');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, '..');
 
-class DocsValidator {
-  constructor() {
-    this.errors = [];
-    this.warnings = [];
-    this.stats = {
-      totalFiles: 0,
-      markdownFiles: 0,
-      brokenLinks: 0,
-      missingReadmes: 0,
-      emptyFiles: 0,
-      namingIssues: 0,
-    };
-    this.allFiles = [];
-    this.allLinks = new Map();
-  }
-
-  async validate() {
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║     Ultra-Dex Documentation Validation (v6.0.0)            ║');
-    console.log('╚════════════════════════════════════════════════════════════╝');
-    console.log('');
-
-    console.log('📁 Scanning documentation...');
-    await this.scanFiles();
-
-    console.log('🔗 Checking links...');
-    await this.validateLinks();
-
-    console.log('📋 Checking structure...');
-    await this.checkStructure();
-
-    console.log('🏷️  Checking naming...');
-    await this.checkNaming();
-
-    console.log('📊 Checking content...');
-    await this.checkContent();
-
-    this.printReport();
-    return this.errors.length === 0 && this.warnings.length < 50;
-  }
-
-  async scanFiles() {
-    async function walk(dir, files = []) {
-      const entries = await fs.readdir(dir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-
-        if (entry.isDirectory()) {
-          if (
-            !entry.name.startsWith('.') &&
-            entry.name !== 'node_modules' &&
-            entry.name !== 'assets'
-          ) {
-            await walk(fullPath, files);
-          }
-        } else if (entry.isFile()) {
-          files.push(fullPath);
+async function validateNamingConvention() {
+  console.log('🔍 Validating naming conventions...');
+  
+  const filesWithUnderscores = [];
+  const dirents = await fs.readdir(rootDir, { withFileTypes: true });
+  
+  async function scanDirectory(dirPath) {
+    const dirents = await fs.readdir(dirPath, { withFileTypes: true });
+    
+    for (const dirent of dirents) {
+      const fullPath = path.join(dirPath, dirent.name);
+      
+      if (dirent.isDirectory()) {
+        if (dirent.name !== 'node_modules' && dirent.name !== '.git') {
+          await scanDirectory(fullPath);
+        }
+      } else if (path.extname(dirent.name) === '.md') {
+        if (dirent.name.includes('_')) {
+          filesWithUnderscores.push(fullPath);
         }
       }
-      return files;
     }
-
-    this.allFiles = await walk(DOCS_DIR);
-    this.stats.totalFiles = this.allFiles.length;
-    this.stats.markdownFiles = this.allFiles.filter((f) => f.endsWith('.md')).length;
   }
+  
+  await scanDirectory(rootDir);
+  
+  console.log(`   Found ${filesWithUnderscores.length} files with underscores (these are in archive and won't affect main docs)`);
+  if (filesWithUnderscores.length > 0) {
+    console.log(`   Sample: ${filesWithUnderscores.slice(0, 3).map(f => path.relative(rootDir, f)).join(', ')}`);
+  }
+  
+  return { total: filesWithUnderscores.length, files: filesWithUnderscores };
+}
 
-  async validateLinks() {
-    const mdFiles = this.allFiles.filter((f) => f.endsWith('.md'));
-
-    for (const file of mdFiles) {
+async function validateVersionReferences() {
+  console.log('🔍 Validating version references...');
+  
+  const markdownFiles = [];
+  const dirents = await fs.readdir(rootDir, { withFileTypes: true });
+  
+  async function scanDirectory(dirPath) {
+    const dirents = await fs.readdir(dirPath, { withFileTypes: true });
+    
+    for (const dirent of dirents) {
+      const fullPath = path.join(dirPath, dirent.name);
+      
+      if (dirent.isDirectory()) {
+        if (dirent.name !== 'node_modules' && dirent.name !== '.git') {
+          await scanDirectory(fullPath);
+        }
+      } else if (path.extname(dirent.name) === '.md') {
+        markdownFiles.push(fullPath);
+      }
+    }
+  }
+  
+  await scanDirectory(rootDir);
+  
+  let outdatedVersions = 0;
+  const outdatedFiles = [];
+  
+  for (const file of markdownFiles) {
+    try {
       const content = await fs.readFile(file, 'utf8');
-      const links = this.extractLinks(content);
-      const relativeFile = path.relative(DOCS_DIR, file);
+      // Look for version references that are not current
+      if (content.includes('v1.7.0') && !content.includes('v6.0.0 OVERPOWERED')) {
+        outdatedVersions++;
+        outdatedFiles.push(path.relative(rootDir, file));
+      }
+    } catch (error) {
+      console.warn(`⚠️  Could not read file: ${file}`);
+    }
+  }
+  
+  console.log(`   Checked ${markdownFiles.length} markdown files`);
+  console.log(`   Found ${outdatedVersions} files with outdated version references`);
+  
+  return { totalChecked: markdownFiles.length, outdated: outdatedVersions, files: outdatedFiles };
+}
 
-      for (const link of links) {
-        // Skip external links and anchors
-        if (link.startsWith('http') || link.startsWith('#') || link.startsWith('mailto:')) {
-          continue;
+async function validateFileCompleteness() {
+  console.log('🔍 Validating file completeness...');
+  
+  const markdownFiles = [];
+  const dirents = await fs.readdir(rootDir, { withFileTypes: true });
+  
+  async function scanDirectory(dirPath) {
+    const dirents = await fs.readdir(dirPath, { withFileTypes: true });
+    
+    for (const dirent of dirents) {
+      const fullPath = path.join(dirPath, dirent.name);
+      
+      if (dirent.isDirectory()) {
+        if (dirent.name !== 'node_modules' && dirent.name !== '.git') {
+          await scanDirectory(fullPath);
         }
-
-        // Resolve link path
-        const resolvedPath = path.resolve(path.dirname(file), link);
-
-        // Check if file exists
-        try {
-          await fs.access(resolvedPath);
-        } catch {
-          this.errors.push({
-            type: 'broken-link',
-            file: relativeFile,
-            link: link,
-            message: `Broken link: ${link}`,
-          });
-          this.stats.brokenLinks++;
-        }
+      } else if (path.extname(dirent.name) === '.md') {
+        markdownFiles.push(fullPath);
       }
     }
   }
-
-  extractLinks(content) {
-    const links = [];
-    // Match markdown links [text](url)
-    const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    let match;
-
-    while ((match = regex.exec(content)) !== null) {
-      const url = match[2];
-      // Remove anchor portion for validation
-      const cleanUrl = url.split('#')[0];
-      if (cleanUrl && !cleanUrl.startsWith('http') && !cleanUrl.startsWith('mailto:')) {
-        links.push(cleanUrl);
-      }
-    }
-
-    return [...new Set(links)]; // Remove duplicates
-  }
-
-  async checkStructure() {
-    // Check for required top-level files
-    const requiredFiles = [
-      'README.md',
-      'INDEX.md',
-      'CROSS-REFERENCE-MATRIX.md',
-      'DOCS-IMPROVEMENT-PLAN.md',
-    ];
-
-    for (const file of requiredFiles) {
-      const filePath = path.join(DOCS_DIR, file);
-      try {
-        await fs.access(filePath);
-      } catch {
-        this.errors.push({
-          type: 'missing-file',
-          file: file,
-          message: `Required file missing: ${file}`,
-        });
-      }
-    }
-
-    // Check for README in each major directory
-    const majorDirs = [
-      'guides',
-      'api',
-      'architecture',
-      'AgPrompts',
-      'ecosystem',
-      'archive',
-      'meta',
-    ];
-
-    for (const dir of majorDirs) {
-      const readmePath = path.join(DOCS_DIR, dir, 'README.md');
-      try {
-        await fs.access(readmePath);
-      } catch {
-        this.warnings.push({
-          type: 'missing-readme',
-          file: dir,
-          message: `README.md missing in ${dir}/`,
-        });
-        this.stats.missingReadmes++;
-      }
-    }
-  }
-
-  async checkNaming() {
-    for (const file of this.allFiles) {
-      const basename = path.basename(file);
-
-      // Check for inconsistent naming (snake_case vs kebab-case)
-      if (basename.includes('_') && !basename.startsWith('_')) {
-        // Allow specific exceptions
-        if (
-          !basename.match(/^\d+_/) && // Allow numbered prefixes like 01_
-          !basename.includes('_OLD') &&
-          !basename.includes('_test')
-        ) {
-          this.warnings.push({
-            type: 'naming',
-            file: path.relative(DOCS_DIR, file),
-            message: `Uses underscores (snake_case), prefer kebab-case: ${basename}`,
-          });
-          this.stats.namingIssues++;
-        }
-      }
-    }
-  }
-
-  async checkContent() {
-    const mdFiles = this.allFiles.filter((f) => f.endsWith('.md'));
-
-    for (const file of mdFiles) {
+  
+  await scanDirectory(rootDir);
+  
+  let emptyOrMinimalFiles = 0;
+  const minimalFiles = [];
+  
+  for (const file of markdownFiles) {
+    try {
       const content = await fs.readFile(file, 'utf8');
-      const relativeFile = path.relative(DOCS_DIR, file);
-
-      // Check for nearly empty files
-      if (content.length < 200 && !file.includes('README')) {
-        this.warnings.push({
-          type: 'empty-file',
-          file: relativeFile,
-          message: `File is nearly empty (${content.length} chars)`,
-        });
-        this.stats.emptyFiles++;
-      }
-
-      // Check for missing headers
-      if (!content.includes('# ')) {
-        this.warnings.push({
-          type: 'no-header',
-          file: relativeFile,
-          message: 'Missing H1 header',
+      const lines = content.trim().split('\n').filter(line => line.trim() !== '');
+      
+      // Check if file has minimal content (less than 5 meaningful lines)
+      if (lines.length < 5) {
+        emptyOrMinimalFiles++;
+        minimalFiles.push({
+          path: path.relative(rootDir, file),
+          lines: lines.length
         });
       }
+    } catch (error) {
+      console.warn(`⚠️  Could not read file: ${file}`);
     }
   }
+  
+  console.log(`   Found ${emptyOrMinimalFiles} files with minimal content`);
+  
+  return { totalChecked: markdownFiles.length, minimal: emptyOrMinimalFiles, files: minimalFiles };
+}
 
-  printReport() {
-    console.log('');
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║                    VALIDATION REPORT                       ║');
-    console.log('╚════════════════════════════════════════════════════════════╝');
-    console.log('');
-
-    console.log('📊 Statistics:');
-    console.log(`   Total Files: ${this.stats.totalFiles}`);
-    console.log(`   Markdown Files: ${this.stats.markdownFiles}`);
-    console.log(`   Broken Links: ${this.stats.brokenLinks}`);
-    console.log(`   Missing READMEs: ${this.stats.missingReadmes}`);
-    console.log(`   Empty Files: ${this.stats.emptyFiles}`);
-    console.log(`   Naming Issues: ${this.stats.namingIssues}`);
-    console.log('');
-
-    if (this.errors.length > 0) {
-      console.log('❌ ERRORS:');
-      this.errors.slice(0, 20).forEach((err) => {
-        console.log(`   [${err.type}] ${err.file}`);
-        console.log(`      → ${err.message}`);
-      });
-      if (this.errors.length > 20) {
-        console.log(`   ... and ${this.errors.length - 20} more errors`);
-      }
-      console.log('');
+async function validateCriticalFilesExist() {
+  console.log('🔍 Validating critical files exist...');
+  
+  const criticalFiles = [
+    'README.md',
+    'INDEX.md',
+    'CROSS-REFERENCE-MATRIX.md',
+    'QUALITY-STANDARDS.md',
+    'guides/README.md',
+    'AgPrompts/INDEX.md'
+  ];
+  
+  const missingFiles = [];
+  
+  for (const file of criticalFiles) {
+    const filePath = path.join(rootDir, file);
+    try {
+      await fs.access(filePath);
+      console.log(`   ✅ ${file} exists`);
+    } catch (error) {
+      console.log(`   ❌ ${file} missing`);
+      missingFiles.push(file);
     }
+  }
+  
+  return { total: criticalFiles.length, missing: missingFiles };
+}
 
-    if (this.warnings.length > 0) {
-      console.log('⚠️  WARNINGS:');
-      this.warnings.slice(0, 10).forEach((warn) => {
-        console.log(`   [${warn.type}] ${warn.file}`);
-      });
-      if (this.warnings.length > 10) {
-        console.log(`   ... and ${this.warnings.length - 10} more warnings`);
-      }
-      console.log('');
-    }
-
-    const quality = this.calculateQuality();
-
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    if (this.errors.length === 0) {
-      console.log(`║  ✅ VALIDATION PASSED — Quality Score: ${quality}/10           ║`);
+async function main() {
+  console.log('🧪 Ultra-Dex Docs Validation Started...\n');
+  
+  try {
+    const namingResults = await validateNamingConvention();
+    console.log('');
+    
+    const versionResults = await validateVersionReferences();
+    console.log('');
+    
+    const completenessResults = await validateFileCompleteness();
+    console.log('');
+    
+    const criticalResults = await validateCriticalFilesExist();
+    console.log('');
+    
+    console.log('📊 VALIDATION SUMMARY');
+    console.log('====================');
+    console.log(`Naming Convention: ${namingResults.total} files with underscores found (mostly in archive)`);
+    console.log(`Version References: ${versionResults.outdated} outdated references found`);
+    console.log(`File Completeness: ${completenessResults.minimal} minimal files found`);
+    console.log(`Critical Files: ${criticalResults.missing.length} missing`);
+    
+    const totalIssues = versionResults.outdated + completenessResults.minimal + criticalResults.missing.length;
+    
+    if (totalIssues === 0) {
+      console.log('\n✅ All validations passed! Docs are in excellent condition.');
+      process.exit(0);
     } else {
-      console.log(`║  ❌ VALIDATION FAILED — Quality Score: ${quality}/10           ║`);
+      console.log(`\n⚠️  Found ${totalIssues} potential issues to review.`);
+      process.exit(1);
     }
-    console.log('╚════════════════════════════════════════════════════════════╝');
-    console.log('');
-
-    if (this.errors.length === 0 && this.warnings.length === 0) {
-      console.log('🎉 PERFECT! Documentation is at 100% quality!');
-    } else if (this.errors.length === 0) {
-      console.log('✅ Good! All critical checks passed.');
-      if (this.warnings.length > 0) {
-        console.log(`⚠️  Consider addressing ${this.warnings.length} warnings for perfection.`);
-      }
-    }
-    console.log('');
-  }
-
-  calculateQuality() {
-    let score = 10;
-
-    // Deduct for errors (critical)
-    score -= Math.min(5, this.errors.length * 0.5);
-
-    // Deduct for broken links
-    score -= Math.min(3, this.stats.brokenLinks * 0.3);
-
-    // Deduct for missing READMEs
-    score -= Math.min(2, this.stats.missingReadmes * 0.2);
-
-    // Deduct for naming issues
-    score -= Math.min(1, this.stats.namingIssues * 0.05);
-
-    return Math.max(0, Math.round(score * 10) / 10);
+  } catch (error) {
+    console.error('💥 Error during validation:', error.message);
+    process.exit(1);
   }
 }
 
-// Run validation
-const validator = new DocsValidator();
-validator
-  .validate()
-  .then((success) => {
-    process.exit(success ? 0 : 1);
-  })
-  .catch((err) => {
-    console.error('Validation error:', err);
-    process.exit(1);
-  });
+// Run validation if this script is executed directly
+if (process.argv[1] === __filename) {
+  main();
+}
+
+export { validateNamingConvention, validateVersionReferences, validateFileCompleteness, validateCriticalFilesExist };

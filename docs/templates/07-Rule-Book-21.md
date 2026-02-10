@@ -24,6 +24,7 @@
 
 ## 📋 21-STEP VERIFICATION CHECKLIST
 
+>
 > Execute for EVERY Task Without Exception
 
 | Step | Action | Description | Est. Time |
@@ -164,6 +165,7 @@
 
 ## 🎯 CODE REVIEW CHECKLIST
 
+>
 > Before marking any task as complete, verify:
 
 ### Code Quality
@@ -304,6 +306,7 @@ Reviewed-by: @reviewer-name
 
 ## 📊 RISK REGISTER TEMPLATE
 
+>
 > Maintain for each phase/task:
 
 | Risk ID | Description | Probability | Impact | Mitigation Strategy | Owner | Status |
@@ -313,7 +316,7 @@ Reviewed-by: @reviewer-name
 
 | R-002 | Example: Third-party dependency | Low | Critical | Have backup solution | Tech Lead | Mitigated |
 
-**Probability:** Low / Medium / High  
+**Probability:** Low / Medium / High
 **Impact:** Low / Medium / High / Critical
 
 ---
@@ -389,7 +392,8 @@ Reviewed-by: @reviewer-name
 
 ### API Documentation Template
 
-````markdown
+```markdown
+
 ## Endpoint Name
 
 **Method:** GET/POST/PUT/DELETE
@@ -413,8 +417,8 @@ Brief description of what this endpoint does.
 {
   "field": "value"
 }
+
 ```
-````
 
 ### Response Example
 
@@ -423,6 +427,7 @@ Brief description of what this endpoint does.
   "status": "success",
   "data": {}
 }
+
 ```
 
 ### Error Responses
@@ -439,7 +444,7 @@ Brief description of what this endpoint does.
 
 100 requests per minute per API key
 
-````
+```
 
 ### Function Documentation Template:
 
@@ -459,7 +464,7 @@ Brief description of what this endpoint does.
  * @tested Yes - see tests/functionName.test.js
  */
 
-````
+```
 
 ---
 
@@ -616,6 +621,7 @@ Brief description of what this endpoint does.
 
 ## 📌 AGENT-SPECIFIC INSTRUCTIONS
 
+>
 > For AI Code Editors/Agents:
 
 ### On Task Start
@@ -709,4 +715,4 @@ This framework ensures consistent, high-quality implementation across all projec
 
 ---
 
-_~ Ultra-Dex Team_
+*~ Ultra-Dex Team*

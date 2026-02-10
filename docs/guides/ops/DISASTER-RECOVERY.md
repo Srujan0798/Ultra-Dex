@@ -1,81 +1,69 @@
-# Disaster Recovery Plan
+# Disaster Recovery & Business Continuity
 
-**Objective:** Restore service quickly and protect customer data under failure conditions.  
-**RTO:** 4 hours  
-**RPO:** 1 hour  
+## Objectives
 
----
+- **RTO:** 4 hours
+- **RPO:** 1 hour
+- **Goal:** Restore critical services within 4 hours of outage while limiting data loss to 1 hour.
 
-## 1. Backup Strategy
+## Scope
 
-- **Database:** Continuous replication + daily full backups
-- **Storage:** Object storage versioning enabled
-- **Config:** `config/`, `.ultra-dex/`, and secrets stored in secure vault
-- **Retention:** 30 daily snapshots, 12 monthly snapshots
+- API services
+- Databases and storage
+- Background workers
+- Authentication and billing
+- Observability stack
 
----
+## Backup Strategy
 
-## 2. Recovery Workflow
+- **Continuous replication:** Primary DB replicates to standby in a separate region.
+- **Daily full backups:** Retained for 30 days.
+- **Point-in-time recovery:** Enabled for the last 7 days.
+- **Object storage:** Versioning enabled, retention policy set to 90 days.
 
-1. **Detect & Triage**
-   - Automated alerts (uptime + error rate + DB health)
-   - Incident declared with severity
+## Incident Response Protocol
 
-2. **Contain**
+1. **Detection**
+   - Alerts from monitoring (latency, error rate, availability)
+   - On-call acknowledges within 5 minutes
+2. **Assessment**
+   - Determine blast radius and affected services
+   - Decide if failover is required
+3. **Containment**
+   - Disable writes if data integrity is at risk
    - Freeze deployments
-   - Stop destructive jobs
+4. **Recovery**
+   - Failover to standby region
+   - Restore data from latest backup if needed
+5. **Validation**
+   - Run smoke tests
+   - Verify critical user flows
+6. **Post-Incident Review**
+   - Root-cause analysis
+   - Action items and timeline updates
 
-3. **Recover**
-   - Restore DB to last known healthy snapshot
-   - Rebuild services from immutable artifacts
-   - Replay logs if required
+## Automated Rollback Triggers
 
-4. **Verify**
-   - Run health checks
-   - Validate critical workflows (auth, billing, data integrity)
-
-5. **Communicate**
-   - Post incident update
-   - Provide ETA and RCA timeline
-
----
-
-## 3. Automated Rollback Triggers
-
-- Deployment health fails > 2 minutes
-- Error rate spikes > 5%
+- Error rate > 5% for 5 minutes
+- P95 latency > 2s for 10 minutes
 - DB replication lag > 10 minutes
+- Failed health checks across 3 regions
 
----
+## Roles & Responsibilities
 
-## 4. Owner Matrix
+- **Incident Commander:** Owns decisions and communication
+- **SRE/DevOps:** Executes recovery steps
+- **Backend Lead:** Validates data integrity
+- **Support:** Updates customers and status page
 
-| Domain | Owner | Backup |
-|--------|-------|--------|
-| DB | @Database | @DevOps |
-| Infra | @DevOps | @SRE |
-| API | @Backend | @Reviewer |
+## Testing & Validation
 
----
+- Quarterly failover drills
+- Monthly backup restore tests
+- Annual full BCP simulation
 
-## 5. Validation Checklist
+## Communications
 
-- [ ] Backups present and recent
-- [ ] DB reachable & consistent
-- [ ] API health OK
-- [ ] Auth flow works
-- [ ] Billing webhooks verified
-
----
-
-## 6. Command Integration
-
-Run quick checks using:
-```bash
-ultra-dex dr-check
-```
-
-This validates:
-- Backup existence
-- DB connectivity
-- API health status
+- Status page updates within 15 minutes
+- Internal updates every 30 minutes
+- Post-mortem published within 5 business days

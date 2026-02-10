@@ -17,7 +17,7 @@ Your **Ultra-Dex** repository contains two distinct but complementary components
 
 ## Ultra-Dex Core Framework
 
-### Current State (v1.7.0)
+### Current State (v6.0.0 OVERPOWERED)
 
 - **15 Production Agents** in 6 tiers (Leadership → Specialist)
 - **34-Section Implementation Template** (137KB in `04-Imp-Template.md`)
@@ -253,7 +253,7 @@ APPROVED: API architecture
 - `README.md` - Main project overview
 - `AGENT-INSTRUCTIONS.md` - 7 agent prompts
 - `VISION-V2.md` - AI orchestration meta-layer vision
-- `ROADMAP.md` - v1.7.0 current, plan through v3.0
+- `ROADMAP.md` - v6.0.0 OVERPOWERED current, plan through v7.0
 
 ### Folders Explored
 

@@ -1,20 +1,22 @@
 # Agents Guide
 
-Ultra-Dex agents are specialized roles that operate under a shared orchestration layer. Agents are stored under `agents/` and registered in the agent index.
+Ultra‑Dex uses a tiered, multi‑agent architecture. Agents are specialized prompts + tooling with clear responsibilities. Swarm orchestration coordinates them in parallel or sequential modes.
 
 ---
 
-## Agent Tiers
+## Agent Tiers (Default)
 
-| Tier | Focus |
-| --- | --- |
-| 0 | Meta-Orchestration |
-| 1 | Leadership |
-| 2 | Core Development |
-| 3 | Security |
-| 4 | DevOps |
-| 5 | Quality |
-| 6 | Performance |
+| Tier | Focus | Examples |
+|------|------|----------|
+| 0 | Orchestration | Meta‑Orchestrator, Orchestrator |
+| 1 | Leadership | CTO, Planner, Research |
+| 2 | Core Dev | Backend, Frontend, Database |
+| 3 | Security | Security Auditor, Auth |
+| 4 | Ops | DevOps, Cloud |
+| 5 | Quality | Tester, Reviewer, Debugger, Docs |
+| 6 | Performance | Performance, Refactoring |
+
+Agents live in `agents/` and are registered in the agent index.
 
 ---
 
@@ -22,46 +24,54 @@ Ultra-Dex agents are specialized roles that operate under a shared orchestration
 
 ```bash
 ultra-dex agents
-ultra-dex run backend --task "Create auth endpoints"
-ultra-dex swarm "Build payment system" --parallel
+ultra-dex agents --tier leadership
+ultra-dex swarm start task.md --parallel 4
 ```
 
 ---
 
 ## Swarm Orchestration
 
-Swarm supports three execution modes:
-- Parallel: Agents run concurrently.
-- Sequential: Agents run in order, stopping on failure.
-- Waterfall: Output of one agent is input for the next.
+The `AgentSwarm` supports:
+- `runParallel(task)` — all agents in parallel
+- `runSequential(task)` — ordered execution
+- `runWaterfall(context)` — output from one becomes input to next
 
-The Meta-Orchestrator selects agents based on task complexity and domain.
-
----
-
-## Meta-Orchestrator
-
-Responsibilities:
-- Choose agent set based on task classification.
-- Manage dependencies between agent outputs.
-- Enforce quality gates and verification steps.
+The Meta‑Orchestrator selects the right mix of agents based on:
+- Task complexity
+- Domain classification
+- Required quality gate
 
 ---
 
-## Custom Agents
+## Health Checks & Metrics
 
-To add a custom agent:
-1. Create a new agent file under `agents/`.
-2. Update the registry or agent index.
-3. Provide a short usage example in the agent file.
+Each agent exposes:
+- `healthCheck()` — returns status and last check
+- `getMetrics()` — calls, errors, avg time
+
+---
+
+## Creating Custom Agents
+
+1. Add a new agent file under `agents/`  
+2. Register it in the agent registry  
+3. Add documentation (purpose, examples)
+
+Example:
+```md
+# @BillingAgent
+## Responsibilities
+- Stripe subscriptions
+- Webhook validation
+- Pricing page updates
+```
 
 ---
 
 ## Best Practices
 
-- Keep agents narrowly scoped to one responsibility.
-- Use quality gates before merges or releases.
-- Log decisions in the ledger for traceability.
-- Avoid placeholder output in agent responses.
-
-For detailed agent system prompts, see `docs/api/reference/AGENT-INSTRUCTIONS-UPDATED.md`.
+- Keep agent scope small and well‑defined
+- Avoid cross‑agent responsibilities
+- Use the 21‑step verification before merging
+- Record decisions in the ledger for traceability
