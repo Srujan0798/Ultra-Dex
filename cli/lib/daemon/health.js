@@ -9,3 +9,17 @@ export function collectDaemonHealth() {
     timestamp: new Date().toISOString(),
   };
 }
+
+/**
+ * Handle errors in health module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='health'] - Error context
+ */
+function handleModuleError(error, context = 'health') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

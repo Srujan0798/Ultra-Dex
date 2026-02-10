@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Snap module
+ * @module commands/snap
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';

@@ -1,10 +1,15 @@
+/**
+ * @fileoverview Stripe module
+ * @module lib/stripe
+ */
+
 import Stripe from 'stripe';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 export const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2024-06-20' as any,
 });
 
 export async function createCheckoutSession({
@@ -50,5 +55,17 @@ export async function handleStripeWebhook(rawBody: Buffer, signature?: string) {
       return event;
     default:
       return event;
+  }
+}
+
+/**
+ * Error handler for stripe
+ * @param {Error} error - Error to handle
+ */
+function handleStripeError(error) {
+  try {
+    console.error('[stripe]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

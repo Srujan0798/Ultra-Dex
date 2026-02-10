@@ -15,3 +15,19 @@ export async function addDecision({ agent, action, decision, rationale, affected
   await ledger.appendEntry(entry);
   return entry;
 }
+
+/**
+ * Safe execution wrapper with error handling for decisions
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='decisions'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'decisions') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

@@ -1,6 +1,6 @@
 # Ultra-Dex CLI Reference
 
-This document covers the 16 core Ultra-Dex CLI commands and their options.
+This document covers the legacy core command set. For the complete, up-to-date CLI catalog, see `docs/api/cli-reference.md` and `docs/api/reference/QUICK-REFERENCE.md`.
 
 ## Global Options
 
@@ -11,7 +11,7 @@ This document covers the 16 core Ultra-Dex CLI commands and their options.
 
 ---
 
-## Command Index (16)
+## Core Command Index (Legacy Subset)
 
 | Command    | Purpose                                      |
 | ---------- | -------------------------------------------- |

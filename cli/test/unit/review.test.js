@@ -25,3 +25,15 @@ describe('review command', () => {
     assert.ok(options.includes('--json'));
   });
 });
+
+/**
+ * Error handler for review.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[review.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

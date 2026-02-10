@@ -46,3 +46,17 @@ export default {
   shouldGenerateRecurring,
   generateRecurringInvoice,
 };
+
+/**
+ * Handle errors in invoice-state module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='invoice-state'] - Error context
+ */
+function handleModuleError(error, context = 'invoice-state') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -64,3 +64,17 @@ export function recommendPattern({ teamSize, traffic }) {
   if (teamSize === '10-50') return PATTERNS.find((p) => p.id === 'modular-monolith');
   return PATTERNS.find((p) => p.id === 'microservices');
 }
+
+/**
+ * Handle errors in decision-tree module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='decision-tree'] - Error context
+ */
+function handleModuleError(error, context = 'decision-tree') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

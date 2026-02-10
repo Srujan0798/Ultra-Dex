@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Route module
+ * @module stripe/route
+ */
+
 import { NextResponse } from 'next/server';
 import { createCheckoutSession } from '../../../lib/stripe.js';
 

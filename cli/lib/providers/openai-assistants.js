@@ -19,6 +19,14 @@ import { BaseProvider } from './base.js';
  * Supports persistent threads, file uploads, and code interpreter
  */
 export class OpenAIAssistantsProvider extends BaseProvider {
+  /**
+   * Create a new OpenAI Assistants provider instance
+   * @param {Object} [options] - Configuration options
+   * @param {string} [options.apiKey] - OpenAI API key
+   * @param {string} [options.assistantId] - Default assistant ID
+   * @param {string} [options.threadId] - Default thread ID
+   * @param {string[]} [options.tools] - Enabled tools (e.g. ['code_interpreter'])
+   */
   constructor(options = {}) {
     const apiKey = options.apiKey || process.env.OPENAI_API_KEY;
     super(apiKey, options);
@@ -28,14 +36,26 @@ export class OpenAIAssistantsProvider extends BaseProvider {
     this.tools = options.tools || ['code_interpreter'];
   }
 
+  /**
+   * Get provider name
+   * @returns {string} Provider name
+   */
   getName() {
     return 'OpenAI Assistants';
   }
 
+  /**
+   * Get default model ID
+   * @returns {string} Default model ID
+   */
   getDefaultModel() {
     return 'gpt-4-turbo';
   }
 
+  /**
+   * Get list of available models
+   * @returns {Array<Object>} List of models with details
+   */
   getAvailableModels() {
     return [
       { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', maxTokens: 128000 },
@@ -45,6 +65,12 @@ export class OpenAIAssistantsProvider extends BaseProvider {
     ];
   }
 
+  /**
+   * Estimate cost for a request
+   * @param {number} inputTokens - Number of input tokens
+   * @param {number} outputTokens - Number of output tokens
+   * @returns {Object} Cost estimate (input, output, total)
+   */
   estimateCost(inputTokens, outputTokens) {
     const inputCost = (inputTokens / 1000) * 0.01;
     const outputCost = (outputTokens / 1000) * 0.03;
@@ -56,7 +82,26 @@ export class OpenAIAssistantsProvider extends BaseProvider {
   }
 
   /**
+   * Validate API key by making a test request
+   * @returns {Promise<boolean>} True if valid
+   */
+  async validateApiKey() {
+    try {
+      await this._request('/models');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Make API request to OpenAI
+   * @param {string} endpoint - API endpoint (e.g. /assistants)
+   * @param {string} [method='GET'] - HTTP method
+   * @param {Object} [body=null] - Request body
+   * @returns {Promise<Object>} Response data
+   * @throws {Error} If API request fails
+   * @private
    */
   async _request(endpoint, method = 'GET', body = null) {
     const url = `${this.baseUrl}${endpoint}`;
@@ -107,6 +152,8 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * List all assistants
+   * @param {number} [limit=20] - Maximum number of assistants to return
+   * @returns {Promise<Object>} List of assistants
    */
   async listAssistants(limit = 20) {
     return await this._request(`/assistants?limit=${limit}`);
@@ -114,6 +161,8 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * Get an assistant by ID
+   * @param {string} assistantId - The assistant ID
+   * @returns {Promise<Object>} Assistant details
    */
   async getAssistant(assistantId) {
     return await this._request(`/assistants/${assistantId}`);
@@ -121,6 +170,9 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * Update an assistant
+   * @param {string} assistantId - The assistant ID
+   * @param {Object} updates - Properties to update
+   * @returns {Promise<Object>} Updated assistant
    */
   async updateAssistant(assistantId, updates) {
     return await this._request(`/assistants/${assistantId}`, 'POST', updates);
@@ -128,6 +180,8 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * Delete an assistant
+   * @param {string} assistantId - The assistant ID
+   * @returns {Promise<Object>} Deletion result
    */
   async deleteAssistant(assistantId) {
     return await this._request(`/assistants/${assistantId}`, 'DELETE');
@@ -156,6 +210,8 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * Get thread by ID
+   * @param {string} threadId - The thread ID
+   * @returns {Promise<Object>} Thread details
    */
   async getThread(threadId) {
     return await this._request(`/threads/${threadId}`);
@@ -163,6 +219,8 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * Delete a thread
+   * @param {string} threadId - The thread ID
+   * @returns {Promise<Object>} Deletion result
    */
   async deleteThread(threadId) {
     return await this._request(`/threads/${threadId}`, 'DELETE');
@@ -187,6 +245,9 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * List messages in a thread
+   * @param {string} threadId - Thread ID
+   * @param {number} [limit=20] - Max messages to return
+   * @returns {Promise<Object>} List of messages
    */
   async listMessages(threadId, limit = 20) {
     return await this._request(`/threads/${threadId}/messages?limit=${limit}`);
@@ -213,6 +274,9 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * Get run status
+   * @param {string} threadId - Thread ID
+   * @param {string} runId - Run ID
+   * @returns {Promise<Object>} Run status object
    */
   async getRunStatus(threadId, runId) {
     return await this._request(`/threads/${threadId}/runs/${runId}`);
@@ -247,6 +311,11 @@ export class OpenAIAssistantsProvider extends BaseProvider {
 
   /**
    * Run assistant and get response (convenience method)
+   * @param {string} message - User message
+   * @param {Object} [options] - Run options
+   * @param {string} [options.threadId] - Thread ID (optional if set on instance)
+   * @param {string} [options.assistantId] - Assistant ID (optional if set on instance)
+   * @returns {Promise<Object>} Assistant response
    */
   async chat(message, options = {}) {
     const threadId = options.threadId || this.threadId;
@@ -319,6 +388,7 @@ ${state.phases?.flatMap((p) => p.steps?.filter((s) => s.status === 'pending')?.m
 
   /**
    * Export thread history to Ultra-Dex format
+   * @returns {Promise<Array<Object>>} List of messages in standard format
    */
   async exportToUltraDex() {
     if (!this.threadId) return [];

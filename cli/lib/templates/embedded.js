@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Embedded module
+ * @module templates/embedded
+ */
+
 import { githubTreeUrl } from '../config/urls.js';
 
 export const CORE_CURSOR_RULE = `# Ultra-Dex Core Rules
@@ -141,3 +146,15 @@ export const VERIFICATION_CHECKLIST = `# Ultra-Dex 21-Step Verification Checklis
 ---
 Use Quick 5 for bug fixes. Use Full 21 for new features.
 `;
+
+/**
+ * Error handler for embedded
+ * @param {Error} error - Error to handle
+ */
+function handleEmbeddedError(error) {
+  try {
+    console.error('[embedded]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

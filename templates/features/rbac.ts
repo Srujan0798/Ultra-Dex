@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rbac module
+ * @module features/rbac
+ */
+
 // RBAC Template
 
 export type Role = 'ADMIN' | 'EDITOR' | 'VIEWER';
@@ -28,4 +33,16 @@ export function requireRole(minimum: Role) {
       throw new Error(`Role ${role} must be >= ${minimum}`);
     }
   };
+}
+
+/**
+ * Error handler for rbac
+ * @param {Error} error - Error to handle
+ */
+function handleRbacError(error) {
+  try {
+    console.error('[rbac]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

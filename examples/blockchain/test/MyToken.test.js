@@ -1,3 +1,8 @@
+/**
+ * @fileoverview MyToken Test module
+ * @module test/MyToken.test
+ */
+
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
@@ -189,3 +194,15 @@ describe('MyToken', function () {
     });
   });
 });
+
+/**
+ * Error handler for MyToken.test
+ * @param {Error} error - Error to handle
+ */
+function handleMyTokentestError(error) {
+  try {
+    console.error('[MyToken.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

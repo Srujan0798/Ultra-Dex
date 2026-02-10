@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Toast module
+ * @module ui/toast
+ */
+
 import * as React from 'react';
 import * as ToastPrimitives from '@radix-ui/react-toast';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -120,3 +125,15 @@ export {
   ToastClose,
   ToastAction,
 };
+
+/**
+ * Error handler for toast
+ * @param {Error} error - Error to handle
+ */
+function handleToastError(error) {
+  try {
+    console.error('[toast]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

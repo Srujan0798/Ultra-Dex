@@ -15,3 +15,19 @@ export async function handleContext7Request(params) {
 export default {
   handleContext7Request,
 };
+
+/**
+ * Safe execution wrapper with error handling for context7
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='context7'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'context7') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

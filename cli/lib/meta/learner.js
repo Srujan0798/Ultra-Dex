@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Learner module
+ * @module meta/learner
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

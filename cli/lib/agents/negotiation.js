@@ -42,3 +42,17 @@ export default {
   respondToAssignment,
   resolveConflict,
 };
+
+/**
+ * Handle errors in negotiation module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='negotiation'] - Error context
+ */
+function handleModuleError(error, context = 'negotiation') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

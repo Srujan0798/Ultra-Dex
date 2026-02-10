@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module register/page
+ */
+
 'use client';
 
 import Link from 'next/link';

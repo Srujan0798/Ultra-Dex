@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Coordinator module
+ * @module swarm/coordinator
+ */
+
 import chalk from 'chalk';
 import ora from 'ora';
 import { runAgentLoop } from '../commands/run.js';

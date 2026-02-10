@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Auth Sso module
+ * @module commands/auth-sso
+ */
+
 import chalk from 'chalk';
 import { ssoClient, configureSso, loginSso } from '../auth/sso/index.js';
 import { configManager } from '../utils/config-manager.js';

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Privacy module
+ * @module commands/privacy
+ */
+
 import chalk from 'chalk';
 import {
   exportPrivacyData,

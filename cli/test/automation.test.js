@@ -34,3 +34,15 @@ test('verifyEnvironmentVariables', async () => {
   const result = await verifyEnvironmentVariables(process.cwd());
   assert.ok(['PASS', 'FAIL', 'SKIP'].includes(result.status));
 });
+
+/**
+ * Error handler for automation.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[automation.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

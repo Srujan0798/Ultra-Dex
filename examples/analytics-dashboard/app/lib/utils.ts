@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Utils module
+ * @module lib/utils
+ */
+
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -64,4 +69,16 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
+}
+
+/**
+ * Error handler for utils
+ * @param {Error} error - Error to handle
+ */
+function handleUtilsError(error) {
+  try {
+    console.error('[utils]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

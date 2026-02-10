@@ -1,3 +1,8 @@
+/**
+ * @fileoverview HomepageFeatures module
+ * @module components/HomepageFeatures
+ */
+
 import React from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
@@ -62,4 +67,16 @@ export default function HomepageFeatures() {
       </div>
     </section>
   );
+}
+
+/**
+ * Error handler for HomepageFeatures
+ * @param {Error} error - Error to handle
+ */
+function handleHomepageFeaturesError(error) {
+  try {
+    console.error('[HomepageFeatures]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

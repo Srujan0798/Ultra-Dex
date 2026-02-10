@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module app/page
+ */
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -204,4 +209,16 @@ export default function HomePage() {
       </footer>
     </div>
   );
+}
+
+/**
+ * Error handler for page
+ * @param {Error} error - Error to handle
+ */
+function handlePageError(error) {
+  try {
+    console.error('[page]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

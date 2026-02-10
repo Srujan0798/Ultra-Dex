@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Layout module
+ * @module components/layout
+ */
+
 'use client';
 
 import React from 'react';
@@ -149,4 +154,16 @@ export function Header({ setSidebarOpen }: { setSidebarOpen: (open: boolean) => 
       </div>
     </header>
   );
+}
+
+/**
+ * Error handler for layout
+ * @param {Error} error - Error to handle
+ */
+function handleLayoutError(error) {
+  try {
+    console.error('[layout]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

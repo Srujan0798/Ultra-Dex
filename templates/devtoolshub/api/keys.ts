@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Keys module
+ * @module api/keys
+ */
+
 import { prisma } from '../lib/prisma';
 import { createKeyRecord, hashKey } from '../lib/key-generator';
 

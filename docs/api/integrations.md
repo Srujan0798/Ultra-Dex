@@ -4,11 +4,61 @@ Ultra-Dex provides real API integrations with common tools. Each integration val
 
 ---
 
-## Jira
-**File:** `cli/lib/integrations/jira.js`  
-**Auth:** Email + API token  
-**Features:** create/update/search issues, transitions, comments
+## Supported Integrations
 
+| Integration | Purpose | Primary Auth |
+| --- | --- | --- |
+| Jira | Issues, epics, story sync | Email + API token |
+| Notion | Plan sync to databases | Integration token |
+| Trello | Kanban boards and cards | API key + token |
+| Slack | Notifications and workflow | Bot token |
+| Discord | Notifications and bots | Bot token |
+| GitHub | Repo status, PR/issue workflows | PAT or GitHub App |
+| Stripe | Billing, subscriptions, webhooks | Secret key |
+| Vercel | Deployments and logs | Token |
+| Supabase | Project status and admin ops | Service key |
+| Linear | Issue workflows | API key |
+| Segment | Analytics event routing | Write key |
+
+---
+
+## Configuration Pattern
+
+Most integrations accept a config object or environment variables:
+
+```ts
+{
+  token: "...",
+  baseUrl?: "...",
+  retries?: 3,
+  timeoutMs?: 15000
+}
+```
+
+Common environment variables:
+- `ULTRA_DEX_INTEGRATIONS_DIR`
+- `JIRA_DOMAIN`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
+- `NOTION_API_KEY`
+- `TRELLO_API_KEY`, `TRELLO_TOKEN`
+- `SLACK_BOT_TOKEN`, `DISCORD_BOT_TOKEN`
+- `GITHUB_TOKEN`
+- `STRIPE_SECRET_KEY`
+- `VERCEL_TOKEN`
+- `SUPABASE_SERVICE_KEY`
+- `LINEAR_API_KEY`
+- `SEGMENT_WRITE_KEY`
+
+---
+
+## Jira
+**File:** `cli/lib/integrations/jira.js`
+
+Supported operations:
+- Create issues
+- Update and transition issues
+- Search using JQL
+
+Example:
 ```js
 const client = new JiraClient({ domain, email, apiToken });
 await client.createIssue({ projectKey: 'UDX', summary: 'Implement billing' });
@@ -17,82 +67,104 @@ await client.createIssue({ projectKey: 'UDX', summary: 'Implement billing' });
 ---
 
 ## Notion
-**File:** `cli/lib/integrations/notion.js`  
-**Auth:** Notion integration token  
-**Features:** page creation, DB sync, queries
+**File:** `cli/lib/integrations/notion.js`
+
+Supported operations:
+- Create pages
+- Query databases
+- Sync plan sections
 
 ---
 
 ## Trello
-**File:** `cli/lib/integrations/trello.js`  
-**Auth:** API key + token  
-**Features:** boards, lists, cards, checklists
+**File:** `cli/lib/integrations/trello.js`
+
+Supported operations:
+- Create boards
+- Create lists
+- Create cards and checklists
 
 ---
 
 ## Slack
-**File:** `cli/lib/integrations/slack.js`  
-**Auth:** Bot token  
-**Features:** blocks, channels, webhooks
+**File:** `cli/lib/integrations/slack.js`
+
+Supported operations:
+- Send messages with blocks
+- Create channels
+- Webhook handling
 
 ---
 
 ## Discord
-**File:** `cli/lib/integrations/discord.js`  
-**Auth:** Bot token  
-**Features:** embeds, roles, command handling
+**File:** `cli/lib/integrations/discord.js`
+
+Supported operations:
+- Rich embeds
+- Command handling
+- Role management
 
 ---
 
 ## GitHub
-**File:** `cli/lib/integrations/github.js`  
-**Auth:** PAT or GitHub App token  
-**Features:** repo status, issues, PR metadata
+**File:** `cli/lib/integrations/github.js`
+
+Supported operations:
+- Issue creation
+- PR metadata fetch
+- Repo status checks
 
 ---
 
 ## Stripe
-**File:** `cli/lib/integrations/stripe.js`  
-**Auth:** Secret key  
-**Features:** customers, products, pricing, subscriptions
+**File:** `cli/lib/integrations/stripe.js`
+
+Supported operations:
+- Customers and subscriptions
+- Checkout sessions
+- Webhooks verification
 
 ---
 
 ## Vercel
-**File:** `cli/lib/integrations/vercel.js`  
-**Auth:** Token  
-**Features:** deployments, logs, envs
+**File:** `cli/lib/integrations/vercel.js`
+
+Supported operations:
+- Deployment triggers
+- Environment variable sync
 
 ---
 
 ## Supabase
-**File:** `cli/lib/integrations/supabase.js`  
-**Auth:** Project key  
-**Features:** DB status, admin operations
+**File:** `cli/lib/integrations/supabase.js`
+
+Supported operations:
+- Status checks
+- Admin operations
 
 ---
 
 ## Linear
-**File:** `cli/lib/integrations/linear.js`  
-**Auth:** API key  
-**Features:** issue creation, labels, status sync
+**File:** `cli/lib/integrations/linear.js`
+
+Supported operations:
+- Issue creation
+- Status updates
 
 ---
 
 ## Segment
-**File:** `cli/lib/integrations/segment.js`  
-**Auth:** Write key  
-**Features:** identify, track, group
+**File:** `cli/lib/integrations/segment.js`
+
+Supported operations:
+- Identify, track, group events
 
 ---
 
-## Configuration
+## Troubleshooting
 
-Most integrations accept a config object with:
-- `token` or `apiKey`
-- optional `baseUrl` for self-hosted endpoints
+- Ensure API keys are valid and scoped correctly.
+- Check network access for hosted endpoints.
+- Use `--verbose` to see request errors.
 
-Run:
-```bash
-ultra-dex integrate --list
-```
+For deeper reference material, see `docs/api/reference/API-REFERENCE.md`.

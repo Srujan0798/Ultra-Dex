@@ -30,3 +30,15 @@ export async function activate(context) {
 }
 
 export default { name, version, description, author, activate };
+
+/**
+ * Error handler for logger-plugin
+ * @param {Error} error - Error to handle
+ */
+function handleLoggerpluginError(error) {
+  try {
+    console.error('[logger-plugin]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

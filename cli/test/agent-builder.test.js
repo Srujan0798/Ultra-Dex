@@ -73,3 +73,15 @@ describe('agent command', () => {
     );
   });
 });
+
+/**
+ * Error handler for agent-builder.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[agent-builder.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

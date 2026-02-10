@@ -94,3 +94,15 @@ const sidebars = {
 };
 
 export default sidebars;
+
+/**
+ * Error handler for sidebars
+ * @param {Error} error - Error to handle
+ */
+function handleSidebarsError(error) {
+  try {
+    console.error('[sidebars]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

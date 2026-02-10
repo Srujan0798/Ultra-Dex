@@ -58,3 +58,17 @@ export function stopWebSocketServer() {
     wss = null;
   }
 }
+
+/**
+ * Handle errors in websocket module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='websocket'] - Error context
+ */
+function handleModuleError(error, context = 'websocket') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

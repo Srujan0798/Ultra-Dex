@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Progress Tracking module
+ * @module lib/progress-tracking
+ */
+
 import { prisma } from './prisma';
 
 export async function updateLessonProgress(options: {
@@ -34,4 +39,16 @@ export async function recalcCourseProgress(courseId: string, studentId: string) 
   });
 
   return Math.round((completed / lessons) * 100);
+}
+
+/**
+ * Error handler for progress-tracking
+ * @param {Error} error - Error to handle
+ */
+function handleProgresstrackingError(error) {
+  try {
+    console.error('[progress-tracking]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

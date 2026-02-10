@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Scaffold module
+ * @module commands/scaffold
+ */
+
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';

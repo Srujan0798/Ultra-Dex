@@ -201,6 +201,10 @@ export async function handleError(error, context = {}) {
   return suggestions;
 }
 
+/**
+ * Offer interactive auto-fix for build/test failures
+ * @returns {Promise<void>} Resolves when the fix cycle completes
+ */
 export async function offerAutoFix() {
   const { confirm } = await inquirer.prompt([
     {
@@ -223,6 +227,8 @@ export async function offerAutoFix() {
 
 /**
  * Get suggestions for an error message
+ * @param {string} errorMessage - The error message string
+ * @returns {string[]} Array of suggested fixes
  */
 function getSuggestions(errorMessage) {
   const suggestions = [];
@@ -240,6 +246,10 @@ function getSuggestions(errorMessage) {
 
 /**
  * Wrap an async function with error handling
+ * @template T
+ * @param {Function} fn - Async function to wrap
+ * @param {Object} [context={}] - Context for error logging
+ * @returns {Function} Wrapped function that catches errors
  */
 export function withErrorHandling(fn, context = {}) {
   return async (...args) => {
@@ -254,6 +264,9 @@ export function withErrorHandling(fn, context = {}) {
 
 /**
  * Create a user-friendly error message
+ * @param {Error|string} error - The error object or message
+ * @param {string} command - The command that failed
+ * @returns {string} Formatted error string with suggestions
  */
 export function formatError(error, command) {
   const lines = [
@@ -280,6 +293,13 @@ export function formatError(error, command) {
  * Recovery strategies for common failures
  */
 export const RECOVERY_STRATEGIES = {
+  /**
+   * Retry an operation with exponential backoff
+   * @param {Function} operation - Async operation to retry
+   * @param {number} [maxAttempts=3] - Maximum retry attempts
+   * @param {number} [delay=1000] - Initial delay in ms
+   * @returns {Promise<any>} Operation result
+   */
   async retry(operation, maxAttempts = 3, delay = 1000) {
     for (let i = 1; i <= maxAttempts; i++) {
       try {
@@ -293,6 +313,12 @@ export const RECOVERY_STRATEGIES = {
     }
   },
 
+  /**
+   * Execute an operation with a timeout
+   * @param {Function} operation - Async operation
+   * @param {number} [timeoutMs=30000] - Timeout in ms
+   * @returns {Promise<any>} Operation result
+   */
   async withTimeout(operation, timeoutMs = 30000) {
     return Promise.race([
       operation(),
@@ -302,6 +328,12 @@ export const RECOVERY_STRATEGIES = {
     ]);
   },
 
+  /**
+   * Execute with a fallback strategy on failure
+   * @param {Function} primary - Primary operation
+   * @param {Function} fallback - Fallback operation
+   * @returns {Promise<any>} Result from primary or fallback
+   */
   async withFallback(primary, fallback) {
     try {
       return await primary();

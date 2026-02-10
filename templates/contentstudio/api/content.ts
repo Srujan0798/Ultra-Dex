@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Content module
+ * @module api/content
+ */
+
 import { prisma } from '../lib/prisma';
 import { createVersion } from '../lib/versioning';
 import { slugify } from '../lib/slugify';
@@ -64,4 +69,16 @@ export async function listContent(authorId: string, status?: string) {
     },
     orderBy: { updatedAt: 'desc' },
   });
+}
+
+/**
+ * Error handler for content
+ * @param {Error} error - Error to handle
+ */
+function handleContentError(error) {
+  try {
+    console.error('[content]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

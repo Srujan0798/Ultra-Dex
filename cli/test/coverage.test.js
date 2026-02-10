@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Coverage Test module
+ * @module test/coverage.test
+ */
+
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs/promises';

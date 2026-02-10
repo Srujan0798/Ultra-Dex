@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Notion module
+ * @module commands/notion
+ */
+
 import chalk from 'chalk';
 import { Command } from 'commander';
 import fs from 'fs/promises';

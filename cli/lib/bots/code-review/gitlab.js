@@ -32,3 +32,19 @@ export async function fetchMergeRequestDiff(projectId, mrIid, token) {
 }
 
 export default { fetchMergeRequestDiff };
+
+/**
+ * Safe execution wrapper with error handling for gitlab
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='gitlab'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'gitlab') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

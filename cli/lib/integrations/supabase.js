@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Supabase module
+ * @module integrations/supabase
+ */
+
 import { requireConfig, retryWithBackoff, normalizeWebhookEvent } from './utils.js';
 
 async function restRequest(url, method, apiKey, body) {

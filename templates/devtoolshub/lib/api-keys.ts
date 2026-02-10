@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Api Keys module
+ * @module lib/api-keys
+ */
+
 import { prisma } from './prisma';
 import { createKeyRecord, hashKey } from './key-generator';
 
@@ -50,4 +55,16 @@ export async function listApiKeys(workspaceId: string) {
     where: { workspaceId },
     orderBy: { createdAt: 'desc' },
   });
+}
+
+/**
+ * Error handler for api-keys
+ * @param {Error} error - Error to handle
+ */
+function handleApikeysError(error) {
+  try {
+    console.error('[api-keys]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

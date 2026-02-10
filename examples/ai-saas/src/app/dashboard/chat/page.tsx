@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module chat/page
+ */
+
 'use client';
 
 import { useState } from 'react';

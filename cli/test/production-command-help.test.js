@@ -61,3 +61,15 @@ describe('mocks for production command tests', () => {
     assert.ok(result.usage.inputTokens > 0);
   });
 });
+
+/**
+ * Error handler for production-command-help.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[production-command-help.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

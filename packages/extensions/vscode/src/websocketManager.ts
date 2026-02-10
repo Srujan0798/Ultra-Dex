@@ -1,3 +1,8 @@
+/**
+ * @fileoverview WebsocketManager module
+ * @module src/websocketManager
+ */
+
 import * as vscode from 'vscode';
 
 export class WebSocketManager {

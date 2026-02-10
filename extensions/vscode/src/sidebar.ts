@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Sidebar module
+ * @module src/sidebar
+ */
+
 import * as vscode from 'vscode';
 
 type StatusItem = {
@@ -26,5 +31,17 @@ export class StatusProvider implements vscode.TreeDataProvider<StatusItem> {
       { label: 'Budget', description: '72% used' },
       { label: 'Tasks', description: '6 active' },
     ];
+  }
+}
+
+/**
+ * Error handler for sidebar
+ * @param {Error} error - Error to handle
+ */
+function handleSidebarError(error) {
+  try {
+    console.error('[sidebar]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

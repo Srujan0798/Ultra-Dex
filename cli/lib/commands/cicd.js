@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Cicd module
+ * @module commands/cicd
+ */
+
 import { Command } from 'commander';
 import { selfHealingCICD } from '../cicd/self-healing.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';

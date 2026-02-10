@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Preload module
+ * @module desktop/preload
+ */
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('ultraDex', {
@@ -5,3 +10,15 @@ contextBridge.exposeInMainWorld('ultraDex', {
     onStatusUpdate: (callback) => ipcRenderer.on('status-update', (event, data) => callback(data)),
     removeStatusUpdateListener: () => ipcRenderer.removeAllListeners('status-update'),
 });
+
+/**
+ * Error handler for preload
+ * @param {Error} error - Error to handle
+ */
+function handlePreloadError(error) {
+  try {
+    console.error('[preload]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

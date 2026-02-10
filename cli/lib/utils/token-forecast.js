@@ -220,3 +220,17 @@ export default {
   TokenBudget,
   MODEL_SPECS,
 };
+
+/**
+ * Handle errors in token-forecast module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='token-forecast'] - Error context
+ */
+function handleModuleError(error, context = 'token-forecast') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

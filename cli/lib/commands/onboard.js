@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Onboard module
+ * @module commands/onboard
+ */
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
@@ -47,4 +52,20 @@ export function registerOnboardCommand(program) {
       printSuccess(chalk.green('\nOnboarding checklist complete.'));
       printWarning(chalk.yellow('Tip: run `ultra-dex doctor` to verify setup.'));
     });
+}
+
+/**
+ * Safe execution wrapper with error handling for onboard
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='onboard'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'onboard') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

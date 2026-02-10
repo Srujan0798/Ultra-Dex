@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Line Chart module
+ * @module charts/line-chart
+ */
+
 'use client';
 
 import React from 'react';
@@ -78,4 +83,16 @@ export function LineChartComponent({
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Error handler for line-chart
+ * @param {Error} error - Error to handle
+ */
+function handleLinechartError(error) {
+  try {
+    console.error('[line-chart]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

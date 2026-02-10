@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Privacy module
+ * @module utils/privacy
+ */
+
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';

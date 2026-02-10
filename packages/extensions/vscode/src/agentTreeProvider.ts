@@ -1,3 +1,8 @@
+/**
+ * @fileoverview AgentTreeProvider module
+ * @module src/agentTreeProvider
+ */
+
 import * as path from 'path';
 import * as vscode from 'vscode';
 

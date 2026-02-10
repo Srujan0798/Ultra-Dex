@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Theme Plugin module
+ * @module plugins/theme-plugin
+ */
+
 // examples/plugins/theme-plugin.js
 import chalk from 'chalk';
 
@@ -18,3 +23,15 @@ export async function activate(context) {
 }
 
 export default { name, version, description, activate };
+
+/**
+ * Error handler for theme-plugin
+ * @param {Error} error - Error to handle
+ */
+function handleThemepluginError(error) {
+  try {
+    console.error('[theme-plugin]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Db Advisor module
+ * @module commands/db-advisor
+ */
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { recommendDatabase } from '../advisor/database-tree.js';
@@ -26,4 +31,20 @@ export function registerDbAdvisorCommand(program) {
       printInfo('  npm install prisma @prisma/client');
       printInfo('  npx prisma init --datasource-provider postgresql');
     });
+}
+
+/**
+ * Safe execution wrapper with error handling for db-advisor
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='db-advisor'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'db-advisor') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

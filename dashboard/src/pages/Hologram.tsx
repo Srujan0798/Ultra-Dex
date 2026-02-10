@@ -1,7 +1,8 @@
-import React, { useRef, useState, useMemo, memo } from 'react';
+import React, { useRef, useState, useMemo, memo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Stars, Grid } from '@react-three/drei';
 import * as THREE from 'three';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 interface BuildingData {
     id: number;
@@ -14,18 +15,24 @@ interface BuildingData {
     complexity: number;
 }
 
+const FILE_COLORS: Record<string, string> = {
+    ts: '#3178c6',
+    tsx: '#61dafb',
+    js: '#f7df1e',
+    css: '#264de4',
+    json: '#a0a0a0'
+};
+
+function getFileType(name: string) {
+    const parts = name.split('.');
+    const ext = parts[parts.length - 1] || 'ts';
+    return ext.toLowerCase();
+}
+
 // Mock Data for Code City
-// In a real implementation, this would come from a code analysis API
 const generateCityData = (count = 50): BuildingData[] => {
     const data: BuildingData[] = [];
     const fileTypes = ['ts', 'tsx', 'js', 'css', 'json'] as const;
-    const colors: Record<string, string> = {
-        ts: '#3178c6',
-        tsx: '#61dafb',
-        js: '#f7df1e',
-        css: '#264de4',
-        json: '#a0a0a0'
-    };
 
     for (let i = 0; i < count; i++) {
         const type = fileTypes[Math.floor(Math.random() * fileTypes.length)];
@@ -35,13 +42,40 @@ const generateCityData = (count = 50): BuildingData[] => {
             z: (Math.random() - 0.5) * 40,
             height: Math.random() * 5 + 1, // Lines of Code
             type,
-            color: colors[type],
+            color: FILE_COLORS[type] || '#6b7280',
             name: `file_${i}.${type}`,
             complexity: Math.random() // width
         });
     }
     return data;
 };
+
+function buildCityFromGraph(nodes: Array<{ id?: string; name?: string; path?: string; size?: number; complexity?: number; metrics?: { loc?: number } }>) {
+    if (!nodes.length) return generateCityData(40);
+
+    const grid = Math.ceil(Math.sqrt(nodes.length));
+    const spacing = 3;
+
+    return nodes.map((node, index) => {
+        const row = Math.floor(index / grid);
+        const col = index % grid;
+        const name = node.name || node.path || `file_${index}.ts`;
+        const type = getFileType(name);
+        const loc = node.metrics?.loc || node.size || 10;
+        const height = Math.max(1, Math.min(12, loc / 20));
+
+        return {
+            id: index,
+            x: (col - grid / 2) * spacing,
+            z: (row - grid / 2) * spacing,
+            height,
+            type,
+            color: FILE_COLORS[type] || '#6b7280',
+            name,
+            complexity: node.complexity || Math.random()
+        } as BuildingData;
+    });
+}
 
 interface BuildingProps {
     position: [number, number, number];
@@ -103,7 +137,28 @@ const Building = ({ position, height, color, name }: BuildingProps) => {
  * @returns {JSX.Element} Hologram page component
  */
 const Hologram = memo(() => {
-    const cityData = useMemo(() => generateCityData(60), []);
+    const [cityData, setCityData] = useState<BuildingData[]>(() => generateCityData(60));
+    const socketUrl =
+        (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ULTRA_DEX_WS) ||
+        'ws://localhost:3002/ws';
+    const { data } = useWebSocket(socketUrl);
+
+    useEffect(() => {
+        if (!data || typeof data !== 'object') return;
+        const payload = data as {
+            type?: string;
+            nodes?: Array<{ id?: string; name?: string; path?: string; size?: number; complexity?: number; metrics?: { loc?: number } }>;
+            data?: { nodes?: Array<{ id?: string; name?: string; path?: string; size?: number; complexity?: number; metrics?: { loc?: number } }> };
+        };
+
+        if (payload.type === 'graph' && Array.isArray(payload.nodes)) {
+            setCityData(buildCityFromGraph(payload.nodes));
+        }
+
+        if (payload.type === 'graph_update' && Array.isArray(payload.data?.nodes)) {
+            setCityData(buildCityFromGraph(payload.data.nodes));
+        }
+    }, [data]);
 
     return (
         <main
@@ -170,3 +225,17 @@ const Hologram = memo(() => {
 });
 
 export default Hologram;
+
+/**
+ * Error handler for Hologram component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleHologramError(error, errorInfo) {
+  try {
+    console.error(`[Hologram] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview ContextView module
+ * @module sidebar/ContextView
+ */
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -53,5 +58,17 @@ class ContextItem extends vscode.TreeItem {
       arguments: [vscode.Uri.file(path.join(vscode.workspace.rootPath || '', filePath))],
     };
     this.iconPath = new vscode.ThemeIcon('file-code');
+  }
+}
+
+/**
+ * Error handler for ContextView
+ * @param {Error} error - Error to handle
+ */
+function handleContextViewError(error) {
+  try {
+    console.error('[ContextView]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

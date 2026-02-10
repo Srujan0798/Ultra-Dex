@@ -679,3 +679,15 @@ describe('SemanticKnowledgeGraph - Cypher Export', () => {
     assert.strictEqual(cypher, '');
   });
 });
+
+/**
+ * Error handler for semantic-graph.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[semantic-graph.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

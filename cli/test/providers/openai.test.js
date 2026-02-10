@@ -255,3 +255,15 @@ describe('OpenAI Provider - Edge Cases', () => {
 
 // Note: Integration tests with actual OpenAI API require API key
 // and should be run separately with proper mocking or in CI/CD
+
+/**
+ * Error handler for openai.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[openai.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

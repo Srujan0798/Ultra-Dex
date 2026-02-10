@@ -1,3 +1,8 @@
+/**
+ * @fileoverview MockEmailProvider module
+ * @module providers/mockEmailProvider
+ */
+
 const logger = require('../utils/logger');
 
 class MockEmailProvider {
@@ -39,3 +44,15 @@ class MockEmailProvider {
 }
 
 module.exports = MockEmailProvider;
+
+/**
+ * Error handler for mockEmailProvider
+ * @param {Error} error - Error to handle
+ */
+function handleMockEmailProviderError(error) {
+  try {
+    console.error('[mockEmailProvider]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

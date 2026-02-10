@@ -16,3 +16,19 @@ export async function loadPersistent() {
   const content = await fs.readFile(DEFAULT_PATH, 'utf8');
   return JSON.parse(content);
 }
+
+/**
+ * Safe execution wrapper with error handling for persistent
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='persistent'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'persistent') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

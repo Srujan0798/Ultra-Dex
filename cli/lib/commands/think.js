@@ -1,4 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
+
+/**
+ * @fileoverview Think module
+ * @module commands/think
+ */
 // v5.1 Cognitive Core: Think Command (MCTS Visualization)
 
 import { MCTSEngine } from '../ai/mcts/engine.js';
@@ -92,4 +97,20 @@ export function registerThinkCommand(program) {
             console.log(chalk.dim(`- Simulated ${iterations} distinct futures.`));
             console.log(chalk.dim(`- Explored ${mcts.root.visits} nodes.`));
         });
+}
+
+/**
+ * Safe execution wrapper with error handling for think
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='think'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'think') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

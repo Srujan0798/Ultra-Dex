@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Analytics module
+ * @module services/analytics
+ */
+
 import { logger } from '../utils/logger';
 
 interface UsageAnalytics {
@@ -83,5 +88,17 @@ export class AnalyticsService {
 
     // In production, send to analytics database or service
     logger.debug({ userId, endpoint, status }, 'Analytics request recorded');
+  }
+}
+
+/**
+ * Error handler for analytics
+ * @param {Error} error - Error to handle
+ */
+function handleAnalyticsError(error) {
+  try {
+    console.error('[analytics]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

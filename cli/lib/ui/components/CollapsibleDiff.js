@@ -44,3 +44,15 @@ const CollapsibleDiff = ({ title, diffContent, initiallyExpanded = false }) => {
 };
 
 export default CollapsibleDiff;
+
+/**
+ * Error handler for CollapsibleDiff
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[CollapsibleDiff]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

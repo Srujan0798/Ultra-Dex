@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rbac module
+ * @module lib/rbac
+ */
+
 import { prisma } from './prisma';
 
 export type Role = 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
@@ -28,4 +33,16 @@ export function hasPermission(role: Role, permission: string): boolean {
   const perms = PERMISSIONS[role];
   if (!perms) return false;
   return perms.includes('*') || perms.includes(permission);
+}
+
+/**
+ * Error handler for rbac
+ * @param {Error} error - Error to handle
+ */
+function handleRbacError(error) {
+  try {
+    console.error('[rbac]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -97,3 +97,19 @@ export default {
   recordAccess,
   registerDataGovernanceCommand,
 };
+
+/**
+ * Safe execution wrapper with error handling for data-policy
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='data-policy'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'data-policy') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

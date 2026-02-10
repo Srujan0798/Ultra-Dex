@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Telemetry module
+ * @module utils/telemetry
+ */
+
 import fs from 'fs';
 import fsPromises from 'fs/promises';
 import os from 'os';

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Metric Card module
+ * @module widgets/metric-card
+ */
+
 'use client';
 
 import React from 'react';
@@ -87,4 +92,16 @@ export function MetricCard({
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Error handler for metric-card
+ * @param {Error} error - Error to handle
+ */
+function handleMetriccardError(error) {
+  try {
+    console.error('[metric-card]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

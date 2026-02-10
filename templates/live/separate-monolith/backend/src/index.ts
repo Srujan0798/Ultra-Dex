@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module src/index
+ */
+
 import express from 'express';
 import { router as authRoutes } from './routes/auth.routes';
 import { router as userRoutes } from './routes/users.routes';
@@ -10,3 +15,15 @@ app.use('/users', userRoutes);
 app.listen(3001, () => {
   console.log('API running on http://localhost:3001');
 });
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

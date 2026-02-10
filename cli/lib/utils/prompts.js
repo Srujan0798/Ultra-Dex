@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Prompts module
+ * @module utils/prompts
+ */
+
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
@@ -252,4 +257,20 @@ export async function yesNoPrompt(message, yesLabel = 'Yes', noLabel = 'No') {
   ]);
 
   return answer;
+}
+
+/**
+ * Safe execution wrapper with error handling for prompts
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='prompts'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'prompts') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

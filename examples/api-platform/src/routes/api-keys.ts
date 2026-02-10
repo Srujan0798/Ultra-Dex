@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Api Keys module
+ * @module routes/api-keys
+ */
+
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { ApiKeyService } from '../services/auth';

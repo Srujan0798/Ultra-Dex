@@ -67,3 +67,17 @@ export default {
   printStatusCard,
   printHelpSection,
 };
+
+/**
+ * Handle errors in enhanced-output module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='enhanced-output'] - Error context
+ */
+function handleModuleError(error, context = 'enhanced-output') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

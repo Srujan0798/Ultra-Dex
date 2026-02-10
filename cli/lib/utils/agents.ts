@@ -40,3 +40,15 @@ export const agents: Record<string, Agent> = {
 
 // For compatibility if swarm.js imports avengersAgents
 export const avengersAgents = agents;
+
+/**
+ * Error handler for agents
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[agents]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

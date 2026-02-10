@@ -121,3 +121,19 @@ export class TitansMemory {
 
 export const titansMemory = new TitansMemory();
 export default titansMemory;
+
+/**
+ * Safe execution wrapper with error handling for titans
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='titans'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'titans') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

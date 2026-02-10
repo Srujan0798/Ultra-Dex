@@ -167,7 +167,7 @@ Status: ✅ Complete
 1. Copy CASE-STUDY-TEMPLATE.md after shipping your project
 2. Fill in the sections with real metrics
 3. Submit via GitHub issue or PR
-4. Get featured on the Ultra-Dex showcase (coming soon)
+4. Get featured on the Ultra-Dex showcase
 
 **Example submission:**
 

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module types/index
+ */
+
 import type { UserRole, MetricType, WidgetType } from '@prisma/client';
 
 export interface User {
@@ -117,4 +122,16 @@ export interface ExportOptions {
     start: Date;
     end: Date;
   };
+}
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

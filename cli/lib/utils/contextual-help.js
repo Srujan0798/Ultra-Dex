@@ -252,3 +252,17 @@ export default {
   suggestCommands,
   HELP_TOPICS,
 };
+
+/**
+ * Handle errors in contextual-help module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='contextual-help'] - Error context
+ */
+function handleModuleError(error, context = 'contextual-help') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

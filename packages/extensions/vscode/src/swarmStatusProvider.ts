@@ -1,3 +1,8 @@
+/**
+ * @fileoverview SwarmStatusProvider module
+ * @module src/swarmStatusProvider
+ */
+
 import * as vscode from 'vscode';
 
 export class SwarmStatusProvider implements vscode.TreeDataProvider<SwarmItem> {
@@ -161,5 +166,17 @@ class SwarmItem extends vscode.TreeItem {
     }
 
     this.contextValue = 'swarmItem';
+  }
+}
+
+/**
+ * Error handler for swarmStatusProvider
+ * @param {Error} error - Error to handle
+ */
+function handleSwarmStatusProviderError(error) {
+  try {
+    console.error('[swarmStatusProvider]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

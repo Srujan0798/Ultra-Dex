@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Mobile module
+ * @module commands/mobile
+ */
+
 // File: cli/lib/commands/mobile.js
 import { MobileAppGenerator } from '../mobile/core.js';
 import { printInfo, printSuccess, printError } from '../utils/output.js';

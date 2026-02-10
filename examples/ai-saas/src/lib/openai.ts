@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Openai module
+ * @module lib/openai
+ */
+
 import OpenAI from 'openai';
 
 export const openai = new OpenAI({
@@ -68,4 +73,16 @@ export async function calculateTokenCost(messages: ChatMessage[], model: AIModel
 export function estimateTokens(text: string): number {
   // Rough estimation: 1 token ≈ 4 characters for English text
   return Math.ceil(text.length / 4);
+}
+
+/**
+ * Error handler for openai
+ * @param {Error} error - Error to handle
+ */
+function handleOpenaiError(error) {
+  try {
+    console.error('[openai]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

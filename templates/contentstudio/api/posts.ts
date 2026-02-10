@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Posts module
+ * @module api/posts
+ */
+
 import { prisma } from '../lib/prisma';
 import { slugify } from '../lib/slugify';
 import { createVersion } from '../lib/versioning';
@@ -51,4 +56,16 @@ export async function getPost(slug: string) {
 
 export async function deletePost(id: string) {
   return prisma.content.delete({ where: { id } });
+}
+
+/**
+ * Error handler for posts
+ * @param {Error} error - Error to handle
+ */
+function handlePostsError(error) {
+  try {
+    console.error('[posts]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

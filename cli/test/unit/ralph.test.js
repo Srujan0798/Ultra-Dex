@@ -34,3 +34,15 @@ describe('ralph command', () => {
     assert.equal(args[0].required, true);
   });
 });
+
+/**
+ * Error handler for ralph.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[ralph.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

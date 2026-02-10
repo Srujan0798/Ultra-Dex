@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module app/page
+ */
+
 'use client';
 
 import Link from 'next/link';
@@ -103,4 +108,16 @@ export default function Home() {
       </div>
     </div>
   );
+}
+
+/**
+ * Error handler for page
+ * @param {Error} error - Error to handle
+ */
+function handlePageError(error) {
+  try {
+    console.error('[page]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

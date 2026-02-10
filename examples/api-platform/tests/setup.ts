@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Setup module
+ * @module tests/setup
+ */
+
 import { config } from '../src/config';
 
 // Mock environment for testing
@@ -15,3 +20,15 @@ beforeAll(() => {
 afterAll(() => {
   // Cleanup
 });
+
+/**
+ * Error handler for setup
+ * @param {Error} error - Error to handle
+ */
+function handleSetupError(error) {
+  try {
+    console.error('[setup]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

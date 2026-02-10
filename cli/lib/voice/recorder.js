@@ -29,6 +29,7 @@ export class AudioRecorder extends EventEmitter {
         };
         this.process = null;
         this.stream = null;
+        this.fileStream = null;
         this.recording = false;
     }
 
@@ -41,11 +42,14 @@ export class AudioRecorder extends EventEmitter {
         if (this.recording) {
             throw new Error('Already recording');
         }
+        if (!recorder) {
+            throw new Error('Voice recording dependency not installed: node-record-lpcm16');
+        }
 
         const output = filePath || path.join(os.tmpdir(), `ultra-dex-voice-${Date.now()}.wav`);
-        const fileStream = fs.createWriteStream(output, { encoding: 'binary' });
-
-        console.log('🎤 Recording... (Speak now)');
+        fs.mkdirSync(path.dirname(output), { recursive: true });
+        this.fileStream = fs.createWriteStream(output, { encoding: 'binary' });
+        this.emit('status', `recording:${output}`);
 
         this.stream = recorder.record({
             sampleRate: this.options.sampleRate,
@@ -55,16 +59,20 @@ export class AudioRecorder extends EventEmitter {
             recordProgram: this.options.recordProgram
         }).stream();
 
-        this.stream.pipe(fileStream);
+        this.stream.pipe(this.fileStream);
         this.recording = true;
 
         this.stream.on('end', () => {
             this.recording = false;
+            this.fileStream?.end();
+            this.fileStream = null;
             this.emit('end', output);
         });
 
         this.stream.on('error', (err) => {
             this.recording = false;
+            this.fileStream?.destroy();
+            this.fileStream = null;
             this.emit('error', err);
         });
 
@@ -76,7 +84,9 @@ export class AudioRecorder extends EventEmitter {
      */
     stop() {
         if (!this.recording) return;
-        recorder.stop();
+        if (recorder && typeof recorder.stop === 'function') {
+            recorder.stop();
+        }
         this.recording = false;
     }
 }

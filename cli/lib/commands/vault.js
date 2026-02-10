@@ -1,4 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
+
+/**
+ * @fileoverview Vault module
+ * @module commands/vault
+ */
 // Project Fortress CLI Command
 
 import { vault } from '../security/quantum-vault.js';

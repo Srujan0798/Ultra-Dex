@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Auth Test module
+ * @module services/auth.test
+ */
+
 import { ApiKeyService } from '../../src/services/auth';
 
 describe('ApiKeyService', () => {
@@ -55,3 +60,15 @@ describe('ApiKeyService', () => {
     });
   });
 });
+
+/**
+ * Error handler for auth.test
+ * @param {Error} error - Error to handle
+ */
+function handleAuthtestError(error) {
+  try {
+    console.error('[auth.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

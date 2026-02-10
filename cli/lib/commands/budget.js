@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Budget module
+ * @module commands/budget
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import { loadBudget, saveBudget, recordSpend } from '../commerce/budget.js';
@@ -96,4 +101,20 @@ export function registerBudgetCommand(program) {
       await recordSpend(Number(amount), options.agent);
       printSuccess(chalk.green('\n✅ Spend recorded.\n'));
     });
+}
+
+/**
+ * Safe execution wrapper with error handling for budget
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='budget'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'budget') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

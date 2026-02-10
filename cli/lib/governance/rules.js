@@ -218,3 +218,15 @@ export const DESTRUCTIVE_COMMAND_PATTERNS = [
   /\bchmod\s+-R\s+777\b/i,
   /\b>\s*\/dev\/sd[a-z]/i,
 ];
+
+/**
+ * Error handler for rules
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[rules]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

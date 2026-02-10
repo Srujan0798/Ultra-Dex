@@ -1,3 +1,8 @@
+/**
+ * @fileoverview QuickActionsView module
+ * @module sidebar/QuickActionsView
+ */
+
 import * as vscode from 'vscode';
 
 interface QuickAction {
@@ -81,5 +86,17 @@ class QuickActionItem extends vscode.TreeItem {
           ? ['reviewer']
           : [],
     };
+  }
+}
+
+/**
+ * Error handler for QuickActionsView
+ * @param {Error} error - Error to handle
+ */
+function handleQuickActionsViewError(error) {
+  try {
+    console.error('[QuickActionsView]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

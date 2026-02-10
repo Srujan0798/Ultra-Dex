@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Test module
+ * @module commands/test
+ */
+
 import chalk from 'chalk';
 import { spawn } from 'child_process';
 import fs from 'fs/promises';

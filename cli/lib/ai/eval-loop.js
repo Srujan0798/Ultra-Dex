@@ -4,3 +4,15 @@
 export * from './evaluation-loop.js';
 import evaluationLoop from './evaluation-loop.js';
 export default evaluationLoop;
+
+/**
+ * Error handler for eval-loop
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[eval-loop]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

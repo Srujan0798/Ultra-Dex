@@ -22,3 +22,15 @@ const FileSelector = ({ files, onSelect, title = 'Select a file:' }) => {
 };
 
 export default FileSelector;
+
+/**
+ * Error handler for FileSelector
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[FileSelector]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

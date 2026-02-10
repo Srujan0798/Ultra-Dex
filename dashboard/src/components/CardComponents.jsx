@@ -203,3 +203,17 @@ export default {
   TaskCard,
   ActivityItem
 };
+
+/**
+ * Error handler for CardComponents component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleCardComponentsError(error, errorInfo) {
+  try {
+    console.error(`[CardComponents] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}

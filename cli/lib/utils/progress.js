@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Progress module
+ * @module utils/progress
+ */
+
 import chalk from 'chalk';
 import gradient from 'gradient-string';
 import ora from 'ora';

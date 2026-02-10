@@ -208,6 +208,8 @@ export function determineBestModel(taskDescription, options = {}) {
 
 /**
  * Classify the task based on keywords
+ * @param {string} taskDescription - Task description to classify
+ * @returns {string[]} Array of capability classifications
  */
 function classifyTask(taskDescription) {
   const lowerDesc = taskDescription.toLowerCase();
@@ -229,6 +231,11 @@ function classifyTask(taskDescription) {
 
 /**
  * Calculate a score for how well a model fits the task
+ * @param {string} modelId - Model identifier
+ * @param {Object} config - Model configuration
+ * @param {string} taskDescription - Task description
+ * @param {string[]} taskClassification - Task classifications
+ * @returns {number} Fitness score
  */
 function calculateModelScore(modelId, config, taskDescription, taskClassification) {
   let score = 0;
@@ -274,6 +281,10 @@ function calculateModelScore(modelId, config, taskDescription, taskClassificatio
 
 /**
  * Generate reasoning for model selection
+ * @param {Object} candidate - Model candidate
+ * @param {string} taskDescription - Task description
+ * @param {string[]} taskClassification - Task classifications
+ * @returns {string} Human-readable reasoning
  */
 function generateReasoning(candidate, taskDescription, taskClassification) {
   const reasons = [];
@@ -302,7 +313,9 @@ function generateReasoning(candidate, taskDescription, taskClassification) {
 }
 
 /**
- * Calculate confidence level
+ * Calculate confidence level from score
+ * @param {number} score - Model fitness score
+ * @returns {'high'|'medium'|'low'} Confidence level
  */
 function calculateConfidence(score) {
   if (score >= 15) return 'high';
@@ -311,7 +324,10 @@ function calculateConfidence(score) {
 }
 
 /**
- * Estimate task cost
+ * Estimate task cost based on description length
+ * @param {string} modelId - Model identifier
+ * @param {string} taskDescription - Task description
+ * @returns {number} Estimated cost in USD
  */
 function estimateTaskCost(modelId, taskDescription) {
   const config = MODEL_CONFIGS[modelId];
@@ -329,6 +345,9 @@ function estimateTaskCost(modelId, taskDescription) {
 
 /**
  * Get model recommendation with cost/performance optimization
+ * @param {string} taskDescription - Task description
+ * @param {Object} [options={}] - Routing options
+ * @returns {Object} Recommendation with cost and performance estimates
  */
 export function getModelRecommendation(taskDescription, options = {}) {
   const recommendation = determineBestModel(taskDescription, options);
@@ -342,6 +361,9 @@ export function getModelRecommendation(taskDescription, options = {}) {
 
 /**
  * Estimate performance based on model characteristics
+ * @param {string} modelId - Model identifier
+ * @param {string} taskDescription - Task description
+ * @returns {'high'|'fast'|'balanced'|'unknown'} Performance estimate
  */
 function estimatePerformance(modelId, taskDescription) {
   const config = MODEL_CONFIGS[modelId];
@@ -358,7 +380,8 @@ function estimatePerformance(modelId, taskDescription) {
 }
 
 /**
- * Register model router command
+ * Register model router command with Commander
+ * @param {import('commander').Command} program - Commander program instance
  */
 export function registerModelRouterCommand(program) {
   const routerCmd = program

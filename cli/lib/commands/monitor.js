@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Monitor module
+ * @module commands/monitor
+ */
+
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import os from 'os';

@@ -36,6 +36,12 @@ build:
 deploy:
   stage: deploy
   script:
-    - echo "Deploy placeholder"
+    - |
+      if [ -n "$DEPLOY_COMMAND" ]; then
+        echo "Running deploy command"
+        eval "$DEPLOY_COMMAND"
+      else
+        echo "Skipping deploy. Set DEPLOY_COMMAND to enable."
+      fi
   only:
     - main

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Browser Auto module
+ * @module commands/browser-auto
+ */
+
 import { chromium } from 'playwright';
 import chalk from 'chalk';
 import ora from 'ora';

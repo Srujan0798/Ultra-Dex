@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Error Handler module
+ * @module middleware/error-handler
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
 
@@ -98,3 +103,15 @@ export const errorHandler = (
     },
   });
 };
+
+/**
+ * Error handler for error-handler
+ * @param {Error} error - Error to handle
+ */
+function handleErrorhandlerError(error) {
+  try {
+    console.error('[error-handler]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

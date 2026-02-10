@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Credentials module
+ * @module commands/credentials
+ */
+
 import chalk from 'chalk';
 import { setCredential, listCredentials, deleteCredential } from '../security/keychain.js';
 import { printInfo, printSuccess, printError } from '../utils/output.js';

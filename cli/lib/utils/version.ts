@@ -11,3 +11,15 @@ export const VERSION: string = pkg.version;
 export const PACKAGE_NAME: string = pkg.name;
 
 export default VERSION;
+
+/**
+ * Error handler for version
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[version]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

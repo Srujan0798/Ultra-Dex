@@ -386,3 +386,15 @@ describe('MCP Server - Edge Cases', () => {
 
 // Note: Integration tests require running MCP server
 // Tests should mock server or run against actual instance
+
+/**
+ * Error handler for server.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[server.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

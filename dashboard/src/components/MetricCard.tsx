@@ -74,3 +74,16 @@ export const MetricCard = memo(function MetricCard({
   );
 });
 
+/**
+ * Error handler for MetricCard component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleMetricCardError(error, errorInfo) {
+  try {
+    console.error(`[MetricCard] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}

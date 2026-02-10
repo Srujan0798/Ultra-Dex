@@ -6,3 +6,15 @@ export default {
   discoveryPath: '.well-known/openid-configuration',
   scopes: ['openid', 'profile', 'email'],
 };
+
+/**
+ * Error handler for google
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[google]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Streaks module
+ * @module api/streaks
+ */
+
 import { prisma } from '../lib/prisma';
 import {
   calculateStreak,
@@ -52,4 +57,16 @@ export async function getHabitStreak(userId: string, habitId: string) {
 
 export async function history(userId: string) {
   return getStreakHistory(userId);
+}
+
+/**
+ * Error handler for streaks
+ * @param {Error} error - Error to handle
+ */
+function handleStreaksError(error) {
+  try {
+    console.error('[streaks]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

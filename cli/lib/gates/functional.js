@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Functional module
+ * @module gates/functional
+ */
+
 import { exec as execCb } from 'node:child_process';
 import { promisify } from 'node:util';
 

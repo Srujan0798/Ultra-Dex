@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Server module
+ * @module lsp/server
+ */
+
 #!/usr/bin/env node
 
 // Copyright (c) 2026 Ultra-Dex

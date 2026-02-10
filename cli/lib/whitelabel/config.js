@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Config module
+ * @module whitelabel/config
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Use Toast module
+ * @module hooks/use-toast
+ */
+
 'use client';
 
 import * as React from 'react';
@@ -186,3 +191,15 @@ function useToast() {
 }
 
 export { useToast, toast };
+
+/**
+ * Error handler for use-toast
+ * @param {Error} error - Error to handle
+ */
+function handleUsetoastError(error) {
+  try {
+    console.error('[use-toast]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

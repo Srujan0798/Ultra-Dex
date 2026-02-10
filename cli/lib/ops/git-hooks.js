@@ -239,7 +239,7 @@ class GitHookManager {
         hookContent = this.createPostMergeHook(options);
         break;
       default:
-        printWarning(chalk.yellow(`⚠️  Hook ${hookName} not implemented yet. Using empty hook.`));
+        printWarning(chalk.yellow(`⚠️  Hook ${hookName} not configured. Writing empty hook.`));
         hookContent = '#!/bin/sh\n# Empty hook implementation\nexit 0\n';
     }
 

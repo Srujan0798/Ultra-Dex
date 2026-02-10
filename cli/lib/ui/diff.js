@@ -49,3 +49,17 @@ export function renderDiff(filePath, originalContent, newContent) {
   console.log(theme.dim('╰──────────────────────────────────────────────────────────╯'));
   console.log('');
 }
+
+/**
+ * Handle errors in diff module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='diff'] - Error context
+ */
+function handleModuleError(error, context = 'diff') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

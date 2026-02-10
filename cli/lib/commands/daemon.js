@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Daemon module
+ * @module commands/daemon
+ */
+
 import { Command } from 'commander';
 import { autonomousDaemon } from '../daemon/autonomous-daemon.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';

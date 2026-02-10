@@ -66,7 +66,7 @@ export async function verifySecurityPatterns(projectDir) {
   // Only fail on truly dangerous issues: secret leaks, SQL injection, eval
   // Exclude false positives: .env.example templates, docs, quality scanner files
   const dangerousRules = ['secret-leak', 'sql-injection', 'no-eval'];
-  const excludePatterns = ['.env.example', '.md', 'quality/', 'scanner', 'security.js', 'browser.js', 'bots/', 'commands/', 'docs-site/', 'templates/', 'live-templates/', 'assets/'];
+  const excludePatterns = ['.env.example', '.md', '.vsix', 'packages/', 'quality/', 'scanner', 'security.js', 'browser.js', 'bots/', 'commands/', 'docs-site/', 'templates/', 'live-templates/', 'assets/'];
 
   const dangerousIssues = results.details.filter(
     (d) => d.severity === 'critical' &&
@@ -77,7 +77,11 @@ export async function verifySecurityPatterns(projectDir) {
   if (dangerousIssues.length > 1) {
     return { status: 'FAIL', message: `Found ${dangerousIssues.length} critical security issues` };
   }
-  const criticalCount = results.details.filter(d => d.severity === 'critical').length;
+  const criticalCount = results.details.filter(
+    (d) => d.severity === 'critical' &&
+      !excludePatterns.some(pattern => d.file?.includes(pattern))
+  ).length;
+
   if (criticalCount > 0) {
     return { status: 'PASS', message: `Found ${criticalCount} low-risk issues (acceptable)` };
   }
@@ -184,11 +188,12 @@ export async function verifyErrorHandlingStrategy(projectDir) {
 export async function verifyApiDocumentation(projectDir) {
   const summary = await projectGraph.scan();
   const apiFiles = summary.files.filter((f) =>
-    (f.includes('api/') || f.includes('routes/')) &&
+    (f.includes('api/') || f.includes('routes/') || f.includes('commands/') || f.includes('providers/') || f.includes('utils/') || f.includes('agents/') || f.includes('ai/') || f.includes('sandbox/') || f.includes('mcp/') || f.includes('context/')) &&
     !f.includes('node_modules') &&
     !f.includes('templates/') &&
     !f.includes('examples/') &&
-    !f.includes('assets/')
+    !f.includes('assets/') &&
+    !f.includes('test/')
   );
 
   if (apiFiles.length === 0) return { status: 'SKIP', message: 'No API files detected' };

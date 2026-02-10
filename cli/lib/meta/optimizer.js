@@ -18,3 +18,19 @@ export async function suggestOptimization() {
 
   return { recommendation: 'Performance healthy. Keep monitoring.', metrics };
 }
+
+/**
+ * Safe execution wrapper with error handling for optimizer
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='optimizer'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'optimizer') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

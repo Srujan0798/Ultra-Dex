@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Server module
+ * @module src/server
+ */
+
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -38,3 +43,15 @@ app.get('*', (_req, res) => {
 app.listen(port, () => {
   console.log(`AI Chatbot running on http://localhost:${port}`);
 });
+
+/**
+ * Error handler for server
+ * @param {Error} error - Error to handle
+ */
+function handleServerError(error) {
+  try {
+    console.error('[server]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

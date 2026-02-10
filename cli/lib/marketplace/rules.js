@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Rules module
+ * @module marketplace/rules
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

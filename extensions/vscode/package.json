@@ -10,8 +10,11 @@
   "categories": ["Other"],
   "activationEvents": [
     "onCommand:ultraDex.start",
+    "onCommand:ultra-dex.start",
     "onCommand:ultraDex.plan",
+    "onCommand:ultra-dex.plan",
     "onCommand:ultraDex.fix",
+    "onCommand:ultra-dex.fix",
     "onView:ultraDex.status"
   ],
   "main": "./dist/extension.js",
@@ -22,16 +25,32 @@
         "title": "Ultra-Dex: Start"
       },
       {
+        "command": "ultra-dex.start",
+        "title": "Ultra-Dex: Start (compat)"
+      },
+      {
         "command": "ultraDex.plan",
         "title": "Ultra-Dex: Plan"
+      },
+      {
+        "command": "ultra-dex.plan",
+        "title": "Ultra-Dex: Plan (compat)"
       },
       {
         "command": "ultraDex.fix",
         "title": "Ultra-Dex: Fix"
       },
       {
+        "command": "ultra-dex.fix",
+        "title": "Ultra-Dex: Fix (compat)"
+      },
+      {
         "command": "ultraDex.openStatus",
         "title": "Ultra-Dex: Open Status View"
+      },
+      {
+        "command": "ultra-dex.openStatus",
+        "title": "Ultra-Dex: Open Status View (compat)"
       }
     ],
     "viewsContainers": {

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview +Page Server module
+ * @module dashboard/+page.server
+ */
+
 import { db } from '$lib/server/db';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -25,3 +30,15 @@ export const load: PageServerLoad = async ({ locals }) => {
     usage: user?.usage?.reduce((acc, u) => acc + u.count, 0) || 0,
   };
 };
+
+/**
+ * Error handler for +page.server
+ * @param {Error} error - Error to handle
+ */
+function handle+pageserverError(error) {
+  try {
+    console.error('[+page.server]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

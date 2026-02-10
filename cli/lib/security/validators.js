@@ -49,3 +49,19 @@ export async function scanForSecrets(rootDir) {
 export function listForbiddenPaths() {
   return [...FORBIDDEN_PATHS];
 }
+
+/**
+ * Safe execution wrapper with error handling for validators
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='validators'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'validators') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

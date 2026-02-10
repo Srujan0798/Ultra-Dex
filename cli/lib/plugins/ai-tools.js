@@ -272,3 +272,19 @@ export default {
   ClinePlugin,
   generateAllPluginConfigs,
 };
+
+/**
+ * Safe execution wrapper with error handling for ai-tools
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='ai-tools'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'ai-tools') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

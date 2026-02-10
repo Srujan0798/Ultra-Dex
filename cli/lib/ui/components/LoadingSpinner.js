@@ -17,3 +17,15 @@ const LoadingSpinner = ({ text = 'Loading...', isActive = true }) => {
 };
 
 export default LoadingSpinner;
+
+/**
+ * Error handler for LoadingSpinner
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[LoadingSpinner]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

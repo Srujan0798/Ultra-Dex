@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Test Compactor module
+ * @module context/test-compactor
+ */
+
 import { ContextCompactor } from './compactor.js';
 
 async function runTests() {

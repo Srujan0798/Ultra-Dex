@@ -56,7 +56,7 @@ ultra-dex serve
 # No more copying CONTEXT.md between tools
 
 # Plan and execute with AI orchestration
-ultra-dex plan "Build a React TODO app with authentication"
+ultra-dex plan "Build a React task list app with authentication"
 ultra-dex swarm start IMPLEMENTATION_PLAN.md
 ultra-dex verify --full
 ```

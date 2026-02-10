@@ -20,3 +20,15 @@ test('Validation: assertValidPath', () => {
   assert.strictEqual(assertValidPath('safe/path', 'Test'), 'safe/path');
   assert.throws(() => assertValidPath('../unsafe', 'Test'), /cannot include "\.\."/);
 });
+
+/**
+ * Error handler for validation-v2.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[validation-v2.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

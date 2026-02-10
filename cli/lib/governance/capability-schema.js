@@ -49,3 +49,16 @@ export function parseCapabilityManifest(payload) {
   return CapabilityManifestSchema.parse(payload);
 }
 
+/**
+ * Handle errors in capability-schema module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='capability-schema'] - Error context
+ */
+function handleModuleError(error, context = 'capability-schema') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module src/index
+ */
+
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -75,3 +80,15 @@ app.listen(PORT, () => {
 });
 
 export default app;
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

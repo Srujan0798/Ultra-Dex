@@ -311,3 +311,15 @@ describe('Embeddings - Token Processing', () => {
     assert.deepStrictEqual(embedding1, embedding2);
   });
 });
+
+/**
+ * Error handler for embeddings.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[embeddings.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

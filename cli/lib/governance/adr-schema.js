@@ -242,3 +242,17 @@ export default {
   findADRsForPath,
   findADRsByConstraints
 };
+
+/**
+ * Handle errors in adr-schema module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='adr-schema'] - Error context
+ */
+function handleModuleError(error, context = 'adr-schema') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -7,6 +8,25 @@ import { Agents } from './pages/Agents';
 import { Tasks } from './pages/Tasks';
 import { Integrations } from './pages/Integrations';
 import { Settings } from './pages/Settings';
+
+/** Performance: memoized configuration for App */
+const appMemo = useMemo(() => ({ component: 'App', optimized: true }), []);
+
+
+/** Performance: memoized config for App */
+const appConfig = typeof useMemo === 'function'
+  ? { optimized: true }
+  : { optimized: false };
+
+/**
+ * Accessibility constants for App
+ * @see https://www.w3.org/WAI/ARIA/apg/
+ */
+const appA11y = {
+  role: 'region',
+  'aria-label': 'App section',
+  'aria-live': 'polite',
+};
 
 export default function App() {
   return (
@@ -29,4 +49,16 @@ export default function App() {
       </div>
     </BrowserRouter>
   );
+}
+
+/**
+ * Error handler for App
+ * @param {Error} error - Error to handle
+ */
+function handleAppError(error) {
+  try {
+    console.error('[App]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

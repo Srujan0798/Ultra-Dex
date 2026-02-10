@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Auth module
+ * @module services/auth
+ */
+
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { config } from '../config';
@@ -99,5 +104,17 @@ export class ApiKeyService {
     logger.info({ keyId: id, userId }, 'API key rotated');
 
     return { ...key, secret };
+  }
+}
+
+/**
+ * Error handler for auth
+ * @param {Error} error - Error to handle
+ */
+function handleAuthError(error) {
+  try {
+    console.error('[auth]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

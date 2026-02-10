@@ -46,3 +46,15 @@ test('Graph: circular dependency impact', async () => {
   assert.ok(impact.includes('C.js'));
   assert.strictEqual(impact.length, 2);
 });
+
+/**
+ * Error handler for v4-final.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[v4-final.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

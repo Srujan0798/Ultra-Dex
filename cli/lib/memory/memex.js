@@ -64,3 +64,19 @@ export class Memex {
 }
 
 export const memex = new Memex();
+
+/**
+ * Safe execution wrapper with error handling for memex
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='memex'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'memex') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

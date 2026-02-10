@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Deploy Simple Storage module
+ * @module scripts/deploy-simple-storage
+ */
+
 const hre = require('hardhat');
 
 async function main() {

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Card module
+ * @module ui/card
+ */
+
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -53,3 +58,15 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardFooter.displayName = 'CardFooter';
 
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+
+/**
+ * Error handler for card
+ * @param {Error} error - Error to handle
+ */
+function handleCardError(error) {
+  try {
+    console.error('[card]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

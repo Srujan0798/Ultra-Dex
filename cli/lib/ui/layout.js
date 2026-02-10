@@ -38,3 +38,17 @@ export default {
   showFooter,
   showHelpFooter,
 };
+
+/**
+ * Handle errors in layout module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='layout'] - Error context
+ */
+function handleModuleError(error, context = 'layout') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Slicer module
+ * @module context/slicer
+ */
+
 import path from 'path';
 
 const RULE_MAP = [
@@ -16,4 +21,18 @@ export function selectRules(task, baseDir = '.cursor') {
     path.join(baseDir, entry.rule)
   );
   return Array.from(new Set(matched));
+}
+
+/**
+ * Handle errors in slicer module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='slicer'] - Error context
+ */
+function handleModuleError(error, context = 'slicer') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
 }

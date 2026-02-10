@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Meta Orchestrator module
+ * @module agents/meta-orchestrator
+ */
+
 import AgentSwarm from './swarm.js';
 
 export class MetaOrchestrator {
@@ -75,3 +80,19 @@ export class MetaOrchestrator {
 }
 
 export default MetaOrchestrator;
+
+/**
+ * Safe execution wrapper with error handling for meta-orchestrator
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='meta-orchestrator'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'meta-orchestrator') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

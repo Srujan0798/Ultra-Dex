@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Scanner module
+ * @module quality/scanner
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

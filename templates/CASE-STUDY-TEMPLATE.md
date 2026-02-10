@@ -6,12 +6,12 @@
 
 ## Overview
 
-| Metric        | Value                          |
-| ------------- | ------------------------------ |
-| **Project**   | [Name]                         |
-| **Type**      | [SaaS / Internal Tool / API]   |
-| **Team Size** | [# developers]                 |
-| **Duration**  | [X weeks/months]               |
+| Metric        | Value                        |
+| ------------- | ---------------------------- |
+| **Project**   | [Name]                       |
+| **Type**      | [SaaS / Internal Tool / API] |
+| **Team Size** | [# developers]               |
+| **Duration**  | [X weeks/months]             |
 | **Status**    | [Shipped / Beta / In Progress] |
 
 ---
@@ -40,25 +40,24 @@
 ### Planning Phase
 
 - [ ] Used QUICK-START.md to capture the idea
-- [ ] Filled out Phase 1 sections (X hours)
-- [ ] Used @Planner for task breakdown
+- [ ] Filled out planning sections
+- [ ] Used `@Planner` for task breakdown
 
 ### Implementation Phase
 
-**Agents Used:**
 | Agent | For What | Outcome |
-|-------|----------|---------|
-| @CTO | | |
-| @Database | | |
-| @Backend | | |
-| @Frontend | | |
-| @Security | | |
+| ----- | -------- | ------- |
+| `@CTO` |         |         |
+| `@Database` |    |         |
+| `@Backend` |     |         |
+| `@Frontend` |    |         |
+| `@Security` |    |         |
 
 ### Quality Phase
 
 - [ ] Ran 21-step verification
-- [ ] Used @Reviewer for code review
-- [ ] Used @Testing for test coverage
+- [ ] Used `@Reviewer` for code review
+- [ ] Used `@Testing` for test coverage
 
 ---
 
@@ -67,8 +66,8 @@
 ### Time Savings
 
 | Without Ultra-Dex (estimate) | With Ultra-Dex | Saved |
-| ---------------------------- | -------------- | ----- |
-| [X weeks]                    | [Y weeks]      | [Z%]  |
+| ----------------------------- | -------------- | ----- |
+| [X weeks]                     | [Y weeks]      | [Z%]  |
 
 ### Quality Metrics
 
@@ -91,19 +90,19 @@
 
 ## What Could Be Better
 
-1. **[Area 1]** - [Suggestion for Ultra-Dex improvement]
-2. **[Area 2]** - [Suggestion]
+1. **[Area 1]** - [Improvement suggestion]
+2. **[Area 2]** - [Improvement suggestion]
 
 ---
 
 ## Key Learnings
 
 > "[Quote about using Ultra-Dex]"
-> — [Name], [Role]
+> - [Name], [Role]
 
 ### Recommendations for Others
 
-1. Start with QUICK-START.md - don't skip it
+1. Start with `QUICK-START.md` and keep it updated.
 2. [Specific tip]
 3. [Specific tip]
 
@@ -130,12 +129,13 @@
 [Brief description]
 
 - Website: [URL]
-- Twitter: [@handle]
+- X/Twitter: [@handle]
 
 ---
 
-_Want to share your Ultra-Dex case study? [Submit it here](https://github.com/Srujan0798/Ultra-Dex/issues/new?template=case-study.md)_
+Want to share your Ultra-Dex case study? Submit it via:
+`https://github.com/Srujan0798/Ultra-Dex/issues/new?template=case-study.md`
 
 ---
 
-_Ultra-Dex - From Idea to Production-Ready SaaS_
+Ultra-Dex: from idea to production-ready SaaS.

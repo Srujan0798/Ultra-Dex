@@ -100,3 +100,16 @@ export const Chart = memo(function Chart({
   );
 });
 
+/**
+ * Error handler for Chart component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleChartError(error, errorInfo) {
+  try {
+    console.error(`[Chart] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}

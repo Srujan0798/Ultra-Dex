@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Background Agent module
+ * @module commands/background-agent
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Db Server module
+ * @module lib/db.server
+ */
+
 import { PrismaClient } from '@prisma/client';
 
 let db: PrismaClient;
@@ -16,3 +21,15 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 export { db };
+
+/**
+ * Error handler for db.server
+ * @param {Error} error - Error to handle
+ */
+function handleDbserverError(error) {
+  try {
+    console.error('[db.server]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

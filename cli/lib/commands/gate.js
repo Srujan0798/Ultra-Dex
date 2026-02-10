@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Gate module
+ * @module commands/gate
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
@@ -61,4 +66,20 @@ export function registerGateCommand(program) {
       }
       printSuccess(chalk.green(`\n✅ Report written to ${outputPath}\n`));
     });
+}
+
+/**
+ * Safe execution wrapper with error handling for gate
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='gate'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'gate') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

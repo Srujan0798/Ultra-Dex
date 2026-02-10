@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Pie Chart module
+ * @module charts/pie-chart
+ */
+
 'use client';
 
 import React from 'react';
@@ -57,4 +62,16 @@ export function PieChartComponent({
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Error handler for pie-chart
+ * @param {Error} error - Error to handle
+ */
+function handlePiechartError(error) {
+  try {
+    console.error('[pie-chart]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

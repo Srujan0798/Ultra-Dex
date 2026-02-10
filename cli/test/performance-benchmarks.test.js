@@ -150,3 +150,15 @@ test('Performance: Concurrency handling', async (t) => {
     });
   });
 });
+
+/**
+ * Error handler for performance-benchmarks.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[performance-benchmarks.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

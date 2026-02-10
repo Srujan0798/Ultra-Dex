@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Orders module
+ * @module routes/orders
+ */
+
 const express = require('express');
 const OrderController = require('../controllers/orderController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
@@ -34,3 +39,15 @@ module.exports = (pool, redis, channel) => {
 
   return router;
 };
+
+/**
+ * Error handler for orders
+ * @param {Error} error - Error to handle
+ */
+function handleOrdersError(error) {
+  try {
+    console.error('[orders]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

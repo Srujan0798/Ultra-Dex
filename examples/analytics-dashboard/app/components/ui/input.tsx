@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Input module
+ * @module ui/input
+ */
+
 import * as React from 'react';
 
 import { cn } from '@/app/lib/utils';
@@ -22,3 +27,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = 'Input';
 
 export { Input };
+
+/**
+ * Error handler for input
+ * @param {Error} error - Error to handle
+ */
+function handleInputError(error) {
+  try {
+    console.error('[input]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

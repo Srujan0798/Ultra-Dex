@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Ui Button module
+ * @module snippets/ui-button
+ */
+
 export function Button({ children, onClick, variant = 'primary' }) {
   const styles = variant === 'primary' 
     ? 'bg-blue-500 text-white hover:bg-blue-600' 
@@ -11,4 +16,16 @@ export function Button({ children, onClick, variant = 'primary' }) {
       {children}
     </button>
   );
+}
+
+/**
+ * Error handler for ui-button
+ * @param {Error} error - Error to handle
+ */
+function handleUibuttonError(error) {
+  try {
+    console.error('[ui-button]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

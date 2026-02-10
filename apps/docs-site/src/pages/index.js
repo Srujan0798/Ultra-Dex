@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module pages/index
+ */
+
 import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
@@ -41,4 +46,16 @@ export default function Home() {
       </main>
     </Layout>
   );
+}
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

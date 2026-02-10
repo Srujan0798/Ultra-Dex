@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Gdpr module
+ * @module privacy/gdpr
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import { getConsent, setConsent } from './consent.js';

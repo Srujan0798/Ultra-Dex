@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Ide module
+ * @module commands/ide
+ */
+
 // File: cli/lib/commands/ide.js
 import { WebIDE } from '../ide/web-ide.js';
 import { printInfo, printSuccess, printError } from '../utils/output.js';

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module clerk/index
+ */
+
 export default {
   async activate(manager) {
     // No hooks, just custom command
@@ -13,3 +18,15 @@ export default {
     },
   },
 };
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

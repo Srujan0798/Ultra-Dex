@@ -1,3 +1,8 @@
+/**
+ * @fileoverview DashboardPanel module
+ * @module dashboard/DashboardPanel
+ */
+
 import * as vscode from 'vscode';
 
 export class DashboardPanel {
@@ -203,5 +208,17 @@ export class DashboardPanel {
   </script>
 </body>
 </html>`;
+  }
+}
+
+/**
+ * Error handler for DashboardPanel
+ * @param {Error} error - Error to handle
+ */
+function handleDashboardPanelError(error) {
+  try {
+    console.error('[DashboardPanel]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

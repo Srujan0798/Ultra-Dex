@@ -40,3 +40,15 @@ const Thinking = ({ text = 'Thinking...', dotsCount = 3, isActive = true }) => {
 };
 
 export default Thinking;
+
+/**
+ * Error handler for Thinking
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[Thinking]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Route module
+ * @module stripe/route
+ */
+
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe/server';

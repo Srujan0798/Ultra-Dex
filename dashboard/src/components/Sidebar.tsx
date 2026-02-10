@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -20,7 +21,7 @@ const navItems = [
   { path: '/hologram', label: 'Hologram', icon: Box },
 ];
 
-export function Sidebar() {
+export const Sidebar = memo(function Sidebar() {
   return (
     <aside
       className="w-64 shrink-0 border-r border-slate-800 bg-slate-950/90"
@@ -61,4 +62,18 @@ export function Sidebar() {
       </nav>
     </aside>
   );
+});
+
+/**
+ * Error handler for Sidebar component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleSidebarError(error, errorInfo) {
+  try {
+    console.error(`[Sidebar] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
 }

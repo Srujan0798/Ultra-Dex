@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Main module
+ * @module desktop/main
+ */
+
 import { app, BrowserWindow, ipcMain, Tray, Menu, dialog } from 'electron';
 import path from 'path';
 import { exec } from 'child_process';

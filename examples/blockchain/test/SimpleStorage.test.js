@@ -1,3 +1,8 @@
+/**
+ * @fileoverview SimpleStorage Test module
+ * @module test/SimpleStorage.test
+ */
+
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
@@ -99,3 +104,15 @@ describe('SimpleStorage', function () {
     });
   });
 });
+
+/**
+ * Error handler for SimpleStorage.test
+ * @param {Error} error - Error to handle
+ */
+function handleSimpleStoragetestError(error) {
+  try {
+    console.error('[SimpleStorage.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

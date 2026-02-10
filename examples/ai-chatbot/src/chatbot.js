@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Chatbot module
+ * @module src/chatbot
+ */
+
 export function generateReply(message = '', history = []) {
   const cleaned = message.trim().toLowerCase();
 
@@ -33,4 +38,16 @@ export function summarizeConversation(history = []) {
   if (!history.length) return 'No conversation yet.';
   const userMessages = history.filter((item) => item.role === 'user').map((item) => item.content);
   return `You asked about: ${userMessages.slice(-3).join(' | ')}`;
+}
+
+/**
+ * Error handler for chatbot
+ * @param {Error} error - Error to handle
+ */
+function handleChatbotError(error) {
+  try {
+    console.error('[chatbot]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

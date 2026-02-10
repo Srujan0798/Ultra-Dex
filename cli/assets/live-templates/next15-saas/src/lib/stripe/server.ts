@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Server module
+ * @module stripe/server
+ */
+
 import Stripe from 'stripe';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -48,3 +53,15 @@ export const createCheckoutSession = async (customerId: string, priceId: string)
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?canceled=true`,
   });
 };
+
+/**
+ * Error handler for server
+ * @param {Error} error - Error to handle
+ */
+function handleServerError(error) {
+  try {
+    console.error('[server]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

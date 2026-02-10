@@ -52,3 +52,19 @@ export class DaemonServer extends EventEmitter {
     };
   }
 }
+
+/**
+ * Safe execution wrapper with error handling for server
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='server'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'server') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

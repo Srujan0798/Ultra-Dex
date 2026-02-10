@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rate Limit module
+ * @module middleware/rate-limit
+ */
+
 // Rate limiting middleware (Next.js)
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -31,4 +36,16 @@ export function rateLimit(req: NextRequest) {
 
   entry.count += 1;
   return null;
+}
+
+/**
+ * Error handler for rate-limit
+ * @param {Error} error - Error to handle
+ */
+function handleRatelimitError(error) {
+  try {
+    console.error('[rate-limit]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

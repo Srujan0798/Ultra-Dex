@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Sso module
+ * @module commands/sso
+ */
+
 // File: cli/lib/commands/sso.js
 import { EnterpriseSSO } from '../auth/sso.js';
 import { printInfo, printSuccess, printError } from '../utils/output.js';

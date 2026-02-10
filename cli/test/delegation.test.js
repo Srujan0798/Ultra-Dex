@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Delegation Test module
+ * @module test/delegation.test
+ */
+
 import assert from 'assert';
 import { runAgentLoop } from '../lib/commands/run.js';
 

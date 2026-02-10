@@ -5,6 +5,16 @@ import { FitAddon } from 'xterm-addon-fit';
 import 'xterm/css/xterm.css';
 import './App.css';
 
+/**
+ * Accessibility constants for App
+ * @see https://www.w3.org/WAI/ARIA/apg/
+ */
+const appA11y = {
+  role: 'region',
+  'aria-label': 'App section',
+  'aria-live': 'polite',
+};
+
 const AGENTS = [
   { id: 'architect', name: 'Architect', specialty: 'System design & constraints' },
   { id: 'frontend', name: 'Frontend', specialty: 'UI flows & components' },

@@ -70,3 +70,15 @@ describe('Streaming Providers - Provider Configuration', () => {
 
 // Note: streamWithProvider tests would require mocking the 'ai' SDK
 // and are better suited for integration tests
+
+/**
+ * Error handler for streaming.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[streaming.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

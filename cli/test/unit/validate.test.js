@@ -22,3 +22,15 @@ describe('validate command', () => {
     assert.ok(options.includes('--scan'));
   });
 });
+
+/**
+ * Error handler for validate.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[validate.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

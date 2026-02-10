@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Toast module
+ * @module ui/toast
+ */
+
 'use client';
 
 import * as React from 'react';
@@ -126,3 +131,15 @@ export {
   ToastClose,
   ToastAction,
 };
+
+/**
+ * Error handler for toast
+ * @param {Error} error - Error to handle
+ */
+function handleToastError(error) {
+  try {
+    console.error('[toast]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

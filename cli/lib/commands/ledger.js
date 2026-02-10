@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Ledger module
+ * @module commands/ledger
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import { ledger } from '../ledger/index.js';
@@ -92,4 +97,20 @@ export function registerLedgerCommand(program) {
         printError(chalk.red(`\n❌ Ledger checksum failures: ${result.invalid.length}\n`));
       }
     });
+}
+
+/**
+ * Safe execution wrapper with error handling for ledger
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='ledger'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'ledger') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

@@ -167,10 +167,10 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 
 | Service  | Platform         | Status  | URL |
 | -------- | ---------------- | ------- | --- |
-| Frontend | [Vercel/Netlify] | ⏳ TODO | -   |
-| Backend  | [Railway/Render] | ⏳ TODO | -   |
-| Database | [Provider]       | ⏳ TODO | -   |
-| Cache    | [Provider]       | ⏳ TODO | -   |
+| Frontend | [Vercel/Netlify] | ⏳ Pending | -   |
+| Backend  | [Railway/Render] | ⏳ Pending | -   |
+| Database | [Provider]       | ⏳ Pending | -   |
+| Cache    | [Provider]       | ⏳ Pending | -   |
 
 ---
 
@@ -478,7 +478,7 @@ npm run deploy:production
 | ----------- | --------------- | ----------------------------- |
 | Founder/CEO | [Your name]     | Vision, strategy, fundraising |
 | Developer   | [Name or "You"] | Full-stack development        |
-| Designer    | [Name or TBD]   | UI/UX design                  |
+| Designer    | [Name or Unassigned]   | UI/UX design                  |
 
 ### External Resources
 

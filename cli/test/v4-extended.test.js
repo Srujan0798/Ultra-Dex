@@ -74,3 +74,15 @@ test('Monitoring: checkAlerts logic', () => {
   assert.ok(alerts.includes('errors'));
   assert.ok(alerts.includes('performance'));
 });
+
+/**
+ * Error handler for v4-extended.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[v4-extended.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

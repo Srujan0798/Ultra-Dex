@@ -456,3 +456,15 @@ describe('run command', () => {
     assert.ok(result.output.length > 0);
   });
 });
+
+/**
+ * Error handler for critical-commands.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[critical-commands.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

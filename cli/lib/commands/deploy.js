@@ -460,6 +460,12 @@ jobs:
 };
 
 // Generate deployment configurations
+/**
+ * Generate Terraform configuration files
+ * @param {string} projectPath - Path to project root
+ * @param {Object} config - Configuration object
+ * @returns {Promise<boolean>} Success status
+ */
 async function generateTerraform(projectPath, config) {
   const spinner = ora('Generating Terraform configuration...').start();
 
@@ -499,6 +505,12 @@ async function generateTerraform(projectPath, config) {
   }
 }
 
+/**
+ * Generate Docker configuration files
+ * @param {string} projectPath - Path to project root
+ * @param {Object} config - Configuration object
+ * @returns {Promise<boolean>} Success status
+ */
 async function generateDocker(projectPath, config) {
   const spinner = ora('Generating Docker configuration...').start();
 
@@ -533,6 +545,12 @@ async function generateDocker(projectPath, config) {
   }
 }
 
+/**
+ * Generate Kubernetes manifests
+ * @param {string} projectPath - Path to project root
+ * @param {Object} config - Configuration object
+ * @returns {Promise<boolean>} Success status
+ */
 async function generateKubernetes(projectPath, config) {
   const spinner = ora('Generating Kubernetes manifests...').start();
 
@@ -582,6 +600,12 @@ async function generateKubernetes(projectPath, config) {
   }
 }
 
+/**
+ * Generate GitHub Actions workflow
+ * @param {string} projectPath - Path to project root
+ * @param {Object} config - Configuration object
+ * @returns {Promise<boolean>} Success status
+ */
 async function generateGitHubActions(projectPath, config) {
   const spinner = ora('Generating GitHub Actions workflow...').start();
 
@@ -615,6 +639,11 @@ async function generateGitHubActions(projectPath, config) {
 }
 
 // Export registration function
+/**
+ * Register the deploy command with Commander
+ * @param {Command} program - Commander program instance
+ * @returns {void}
+ */
 export function registerDeployCommand(program) {
   program
     .command('deploy')
@@ -628,6 +657,10 @@ export function registerDeployCommand(program) {
     .option('--all', 'Generate all configurations')
     .option('-r, --region <region>', 'AWS region', 'us-east-1')
     .option('-d, --domain <domain>', 'Domain name')
+    /**
+     * Deploy command action
+     * @param {Object} options - Deployment options
+     */
     .action(async (options) => {
       try {
         printInfo(chalk.blue('\n🚀 Deployment Automation\n'));

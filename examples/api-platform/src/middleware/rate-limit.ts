@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rate Limit module
+ * @module middleware/rate-limit
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import { RateLimiterService } from '../services/rate-limiter';
 import { RateLimitError } from './error-handler';

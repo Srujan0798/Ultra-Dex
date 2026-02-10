@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Stripe Webhook module
+ * @module api/stripe-webhook
+ */
+
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -34,4 +39,16 @@ async function cancelSubscription(subscription: Stripe.Subscription) {
 
 async function handlePaymentFailure(invoice: Stripe.Invoice) {
   // Implementation for handling payment failure
+}
+
+/**
+ * Error handler for stripe-webhook
+ * @param {Error} error - Error to handle
+ */
+function handleStripewebhookError(error) {
+  try {
+    console.error('[stripe-webhook]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

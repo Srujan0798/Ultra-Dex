@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Users module
+ * @module routes/users
+ */
+
 const express = require('express');
 const UserController = require('../controllers/userController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
@@ -36,3 +41,15 @@ module.exports = (pool, redis) => {
 
   return router;
 };
+
+/**
+ * Error handler for users
+ * @param {Error} error - Error to handle
+ */
+function handleUsersError(error) {
+  try {
+    console.error('[users]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

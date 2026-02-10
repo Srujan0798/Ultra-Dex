@@ -82,3 +82,19 @@ console.log('Ultra-Dex content script loaded');
   printInfo(chalk.gray('  - content.js'));
   printInfo(chalk.gray('  - popup.html'));
 }
+
+/**
+ * Safe execution wrapper with error handling for extension-scaffold
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='extension-scaffold'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'extension-scaffold') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

@@ -513,8 +513,8 @@ Integrate Ultra-Dex directly into development platforms.
 **Stay updated:**
 
 - Watch the [GitHub repo](https://github.com/Srujan0798/Ultra-Dex) for releases
-- Follow [@UltraDex](https://twitter.com/ultradex) (coming soon)
-- Join the Discord (coming soon)
+- Follow [@UltraDex](https://twitter.com/ultradex) (planned)
+- Join the Discord (planned)
 
 ---
 
@@ -524,7 +524,7 @@ Integrate Ultra-Dex directly into development platforms.
 
 **Want to help?** See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-**Enterprise inquiries?** Open an issue or email (coming soon)
+**Enterprise inquiries?** Open an issue or email (planned)
 
 ---
 

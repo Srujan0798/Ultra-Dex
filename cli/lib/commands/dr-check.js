@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Dr Check module
+ * @module commands/dr-check
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import net from 'net';

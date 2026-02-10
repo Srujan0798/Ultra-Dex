@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module config/index
+ */
+
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -56,3 +61,15 @@ export const config = {
     url: process.env.DEVELOPER_PORTAL_URL || 'http://localhost:3001',
   },
 };
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

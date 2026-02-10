@@ -60,4 +60,9 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
-      - run: echo "Deploy placeholder"
+      - name: Deploy (optional)
+        if: env.DEPLOY_COMMAND != ''
+        run: ${{ env.DEPLOY_COMMAND }}
+      - name: Skip deploy
+        if: env.DEPLOY_COMMAND == ''
+        run: echo "Skipping deploy. Set DEPLOY_COMMAND to enable."

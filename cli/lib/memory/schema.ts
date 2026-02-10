@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Schema module
+ * @module memory/schema
+ */
+
 export type MemoryEntryType = 'decision' | 'pattern' | 'constraint' | 'error' | 'note';
 
 export interface MemoryEntry {

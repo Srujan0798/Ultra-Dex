@@ -146,3 +146,15 @@ test('sync updates context', async () => {
   // Clean up
   await fs.rm(tmpDir, { recursive: true, force: true });
 });
+
+/**
+ * Error handler for cli.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[cli.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

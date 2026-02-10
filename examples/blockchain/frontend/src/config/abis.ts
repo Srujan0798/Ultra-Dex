@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Abis module
+ * @module config/abis
+ */
+
 export const SimpleStorageABI = [
   {
     inputs: [{ internalType: 'uint256', name: 'initialValue', type: 'uint256' }],
@@ -444,3 +449,15 @@ export const MyNFTABI = [
     type: 'receive',
   },
 ];
+
+/**
+ * Error handler for abis
+ * @param {Error} error - Error to handle
+ */
+function handleAbisError(error) {
+  try {
+    console.error('[abis]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

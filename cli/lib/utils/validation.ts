@@ -55,3 +55,17 @@ export function assertValidPath(input: string, label: string): string {
   }
   return input;
 }
+
+/**
+ * Handle errors in validation module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='validation'] - Error context
+ */
+function handleModuleError(error, context = 'validation') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

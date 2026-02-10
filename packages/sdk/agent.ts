@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Agent module
+ * @module sdk/agent
+ */
+
 import { EventEmitter } from 'node:events';
 
 type UltraAgentOptions = {
@@ -47,5 +52,17 @@ export class UltraAgent extends EventEmitter {
       verified: Boolean(options.verify),
       autoCommit: Boolean(options.autoCommit),
     };
+  }
+}
+
+/**
+ * Error handler for agent
+ * @param {Error} error - Error to handle
+ */
+function handleAgentError(error) {
+  try {
+    console.error('[agent]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Plugin Scan module
+ * @module commands/plugin-scan
+ */
+
 import chalk from 'chalk';
 import path from 'path';
 import { scanPlugin } from '../security/plugin-validator.js';

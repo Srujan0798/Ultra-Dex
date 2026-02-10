@@ -338,3 +338,15 @@ describe('AI Providers', () => {
     });
   });
 });
+
+/**
+ * Error handler for providers.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[providers.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

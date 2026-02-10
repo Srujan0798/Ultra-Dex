@@ -11,8 +11,8 @@ These are the currently active missions.
 
 | File | Description | Priority |
 | :--- | :--- | :--- |
-| [**PROMPT_08_ECOSYSTEM.md**](./active/PROMPT_08_ECOSYSTEM.md) | **v4.3 Ecosystem**: Docs, VS Code Ext, Desktop App | 🔵 P3 (Active) |
-| [**PROMPT_09_V5_MOONSHOTS.md**](./active/PROMPT_09_V5_MOONSHOTS.md) | **v5.0 Moonshots**: Voice, Computer Use, 3D Viz | 🟣 P4 (Planned) |
+| [**PROMPT_08_ECOSYSTEM.md**](./active/PROMPT_08_ECOSYSTEM.md) | **v4.3 Ecosystem**: Docs, VS Code Ext, Desktop App | ✅ Completed |
+| [**PROMPT_09_V5_MOONSHOTS.md**](./active/PROMPT_09_V5_MOONSHOTS.md) | **v5.0 Moonshots**: Voice, Computer Use, 3D Viz | 🔵 P4 (Active) |
 
 ---
 

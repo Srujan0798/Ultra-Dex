@@ -9,9 +9,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import chalk from 'chalk';
+import os from 'os';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
 const PLUGIN_DIR = '.ultra/plugins';
 const PLUGIN_MANIFEST = 'ultra-dex-plugin.json';
+const execAsync = promisify(exec);
 
 export class PluginManager {
   constructor(projectRoot) {
@@ -129,13 +133,69 @@ export class PluginManager {
 
     console.log(chalk.blue(`Installing plugin from ${source}...`));
 
-    // This is a placeholder - real implementation would:
-    // 1. npm install the package
-    // 2. Extract to plugin directory
-    // 3. Load and validate
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-plugin-'));
+    let pluginSourceDir = null;
 
-    console.log(chalk.green('✓ Plugin installed'));
-    console.log(chalk.gray('Restart Ultra-Dex to load the plugin'));
+    const exists = async (target) => {
+      try {
+        await fs.stat(target);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    const isDirectory = async (target) => {
+      try {
+        const stat = await fs.stat(target);
+        return stat.isDirectory();
+      } catch {
+        return false;
+      }
+    };
+
+    if (await isDirectory(source)) {
+      pluginSourceDir = source;
+    } else if (
+      source.startsWith('http') ||
+      source.endsWith('.git') ||
+      source.includes('github.com')
+    ) {
+      await execAsync(`git clone --depth=1 ${source} ${tempDir}`);
+      pluginSourceDir = tempDir;
+    } else if (await exists(source) && source.endsWith('.tgz')) {
+      await execAsync(`tar -xzf ${source} -C ${tempDir}`);
+      pluginSourceDir = path.join(tempDir, 'package');
+    } else {
+      // Assume npm package name
+      await execAsync(`npm pack ${source}`, { cwd: tempDir });
+      const files = await fs.readdir(tempDir);
+      const tarball = files.find((f) => f.endsWith('.tgz'));
+      if (!tarball) {
+        throw new Error('Failed to download npm package');
+      }
+      await execAsync(`tar -xzf ${tarball} -C ${tempDir}`, { cwd: tempDir });
+      pluginSourceDir = path.join(tempDir, 'package');
+    }
+
+    const manifestPath = path.join(pluginSourceDir, PLUGIN_MANIFEST);
+    if (!(await exists(manifestPath))) {
+      throw new Error(`Missing ${PLUGIN_MANIFEST} in plugin`);
+    }
+
+    const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+    if (!manifest.name) {
+      throw new Error('Plugin manifest missing name');
+    }
+
+    const targetPath = path.join(pluginDir, manifest.name);
+    await fs.rm(targetPath, { recursive: true, force: true });
+    await fs.cp(pluginSourceDir, targetPath, { recursive: true });
+
+    await this.loadPlugin(targetPath);
+
+    console.log(chalk.green(`✓ Plugin installed: ${manifest.name}`));
+    console.log(chalk.gray('Restart Ultra-Dex to reload plugins if already running'));
   }
 
   /**

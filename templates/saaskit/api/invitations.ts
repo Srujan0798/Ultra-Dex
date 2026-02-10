@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Invitations module
+ * @module api/invitations
+ */
+
 import { prisma } from '../lib/prisma';
 import crypto from 'crypto';
 
@@ -34,4 +39,16 @@ export async function revokeInvite(inviteId: string, revokedBy: string) {
     where: { id: inviteId },
     data: { status: 'REVOKED' }
   });
+}
+
+/**
+ * Error handler for invitations
+ * @param {Error} error - Error to handle
+ */
+function handleInvitationsError(error) {
+  try {
+    console.error('[invitations]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

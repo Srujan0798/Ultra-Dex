@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Challenge module
+ * @module commands/challenge
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';

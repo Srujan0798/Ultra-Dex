@@ -17,3 +17,17 @@ export default {
   gradientPresets,
   renderGradient,
 };
+
+/**
+ * Handle errors in gradients module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='gradients'] - Error context
+ */
+function handleModuleError(error, context = 'gradients') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module admin/page
+ */
+
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
@@ -86,4 +91,16 @@ export default async function AdminPage() {
       </div>
     </main>
   );
+}
+
+/**
+ * Error handler for page
+ * @param {Error} error - Error to handle
+ */
+function handlePageError(error) {
+  try {
+    console.error('[page]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

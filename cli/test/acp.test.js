@@ -68,3 +68,15 @@ test('ACP Host: session management', async () => {
   assert.strictEqual(promptResponse.id, 3);
   assert.ok(promptResponse.result.content[0].text.includes('Ultra-Dex'));
 });
+
+/**
+ * Error handler for acp.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[acp.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

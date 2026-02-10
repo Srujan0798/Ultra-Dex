@@ -127,3 +127,17 @@ export const Agents = memo(function Agents() {
     </main>
   );
 });
+
+/**
+ * Error handler for Agents component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleAgentsError(error, errorInfo) {
+  try {
+    console.error(`[Agents] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}

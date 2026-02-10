@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview K8s module
+ * @module commands/k8s
+ */
+
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs/promises';

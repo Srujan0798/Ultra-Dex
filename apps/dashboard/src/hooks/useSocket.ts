@@ -1,3 +1,8 @@
+/**
+ * @fileoverview UseSocket module
+ * @module hooks/useSocket
+ */
+
 import { useEffect, useRef, useState } from 'react';
 
 export type SocketEvent = {

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Root module
+ * @module app/root
+ */
+
 import { rootAuthLoader } from '@clerk/remix/ssr.server';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
@@ -30,3 +35,15 @@ function App() {
 }
 
 export default ClerkApp(App);
+
+/**
+ * Error handler for root
+ * @param {Error} error - Error to handle
+ */
+function handleRootError(error) {
+  try {
+    console.error('[root]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

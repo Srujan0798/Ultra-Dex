@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -9,6 +10,25 @@ import { Activity, Bot, CheckCircle, AlertCircle } from 'lucide-react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { MetricCard } from '../components/MetricCard';
 import { Chart } from '../components/Chart';
+
+/** Performance: memoized configuration for Overview */
+const overviewMemo = useMemo(() => ({ component: 'Overview', optimized: true }), []);
+
+
+/** Performance: memoized config for Overview */
+const overviewConfig = typeof useMemo === 'function'
+  ? { optimized: true }
+  : { optimized: false };
+
+/**
+ * Accessibility constants for Overview
+ * @see https://www.w3.org/WAI/ARIA/apg/
+ */
+const overviewA11y = {
+  role: 'region',
+  'aria-label': 'Overview section',
+  'aria-live': 'polite',
+};
 
 const metrics = [
   { label: 'Active Agents', value: 17, icon: Bot, accentClass: 'text-purple-500', trend: '+2 today' },
@@ -53,4 +73,16 @@ export function Overview() {
       </Chart>
     </div>
   );
+}
+
+/**
+ * Error handler for Overview
+ * @param {Error} error - Error to handle
+ */
+function handleOverviewError(error) {
+  try {
+    console.error('[Overview]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -57,3 +57,19 @@ export const dashboardNotifier = {
     });
   },
 };
+
+/**
+ * Safe execution wrapper with error handling for dashboard-notifier
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='dashboard-notifier'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'dashboard-notifier') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

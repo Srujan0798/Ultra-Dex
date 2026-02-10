@@ -52,3 +52,19 @@ export async function runSimpleGraph(createGraph, input, options = {}) {
   const messages = Array.isArray(input) ? input : [new HumanMessage(input ?? '')];
   return graph.invoke({ messages });
 }
+
+/**
+ * Safe execution wrapper with error handling for graph-utils
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='graph-utils'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'graph-utils') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

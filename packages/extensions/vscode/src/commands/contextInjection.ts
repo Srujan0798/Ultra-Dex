@@ -1,3 +1,8 @@
+/**
+ * @fileoverview ContextInjection module
+ * @module commands/contextInjection
+ */
+
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -116,4 +121,16 @@ export async function watchContext() {
   });
 
   return watcher;
+}
+
+/**
+ * Error handler for contextInjection
+ * @param {Error} error - Error to handle
+ */
+function handleContextInjectionError(error) {
+  try {
+    console.error('[contextInjection]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

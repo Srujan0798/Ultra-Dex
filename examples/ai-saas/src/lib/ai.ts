@@ -21,3 +21,15 @@ export async function generateChatResponse(messages: any[]) {
 export function parseStream(chunk: any) {
   return chunk.choices[0]?.delta?.content || '';
 }
+
+/**
+ * Error handler for ai
+ * @param {Error} error - Error to handle
+ */
+function handleAiError(error) {
+  try {
+    console.error('[ai]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

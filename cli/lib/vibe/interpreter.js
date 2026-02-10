@@ -100,3 +100,17 @@ export function interpretInput(input, context = {}) {
 export function listModes() {
   return [...MODES];
 }
+
+/**
+ * Handle errors in interpreter module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='interpreter'] - Error context
+ */
+function handleModuleError(error, context = 'interpreter') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

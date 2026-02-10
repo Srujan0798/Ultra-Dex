@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Stripe module
+ * @module lib/stripe
+ */
+
 import Stripe from 'stripe';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
@@ -19,4 +24,16 @@ export async function createCheckoutSession({ priceId, customerEmail }) {
     success_url: process.env.STRIPE_SUCCESS_URL || 'https://ultra-dex.ai/billing/success',
     cancel_url: process.env.STRIPE_CANCEL_URL || 'https://ultra-dex.ai/billing',
   });
+}
+
+/**
+ * Error handler for stripe
+ * @param {Error} error - Error to handle
+ */
+function handleStripeError(error) {
+  try {
+    console.error('[stripe]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

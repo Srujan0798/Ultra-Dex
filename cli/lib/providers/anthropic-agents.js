@@ -247,6 +247,13 @@ const execAsync = promisify(execCallback);
 /**
  * Execute a tool call
  */
+/**
+ * Execute a tool call with the provided input
+ * @param {string} toolName - Name of the tool to execute
+ * @param {Object} input - Input parameters for the tool
+ * @param {Object} [context={}] - Execution context (workdir, etc.)
+ * @returns {Promise<Object>} Tool execution result
+ */
 async function executeTool(toolName, input, context = {}) {
   const { workdir = process.cwd() } = context;
 
@@ -359,6 +366,13 @@ async function executeTool(toolName, input, context = {}) {
  * Autonomous Agent powered by Anthropic Agent SDK
  */
 export class AutonomousAgent {
+  /**
+   * Create a new autonomous agent instance
+   * @param {string} agentType - Type of agent (orchestrator, backend, etc.)
+   * @param {Object} [options] - Configuration options
+   * @param {number} [options.maxTurns=10] - Maximum execution turns
+   * @param {boolean} [options.verbose=false] - Enable verbose logging
+   */
   constructor(agentType, options = {}) {
     this.type = agentType;
     this.options = options;
@@ -377,6 +391,9 @@ export class AutonomousAgent {
 
   /**
    * Run the agent on a task
+   * @param {string} task - The task description
+   * @param {Object} context - Execution context (provider, workdir)
+   * @returns {Promise<Object>} Execution result with history and metrics
    */
   async run(task, context = {}) {
     const { provider, workdir = process.cwd() } = context;
@@ -480,6 +497,7 @@ export class AutonomousAgent {
 
   /**
    * Get execution summary
+   * @returns {Object} Summary of tools used and history length
    */
   getSummary() {
     return {
@@ -496,6 +514,9 @@ export class AutonomousAgent {
 
 /**
  * Run a multi-agent swarm for complex tasks
+ * @param {string} task - Complex task description
+ * @param {Object} [options] - Swarm configuration
+ * @returns {Promise<Object>} Swarm execution result
  */
 export async function runAutonomousSwarm(task, options = {}) {
   const { provider, workdir = process.cwd(), verbose = false } = options;
@@ -525,6 +546,8 @@ export async function runAutonomousSwarm(task, options = {}) {
 
 /**
  * Extend a provider with tool-use capability
+ * @param {Object} provider - The AI provider instance
+ * @returns {Object} Provider with generateWithTools method
  */
 export function extendProviderWithTools(provider) {
   if (provider.generateWithTools) {

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module login/page
+ */
+
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -11,4 +16,16 @@ export default function LoginPage() {
       </div>
     </div>
   );
+}
+
+/**
+ * Error handler for page
+ * @param {Error} error - Error to handle
+ */
+function handlePageError(error) {
+  try {
+    console.error('[page]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

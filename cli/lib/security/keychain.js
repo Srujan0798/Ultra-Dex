@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Keychain module
+ * @module security/keychain
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

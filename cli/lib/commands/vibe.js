@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Vibe module
+ * @module commands/vibe
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';

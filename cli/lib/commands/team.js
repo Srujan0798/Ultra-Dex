@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Team module
+ * @module commands/team
+ */
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import fs from 'fs/promises';

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Upgrade module
+ * @module commands/upgrade
+ */
+
 // cli/lib/commands/upgrade.js
 import chalk from 'chalk';
 import ora from 'ora';

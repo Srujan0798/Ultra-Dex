@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Chat module
+ * @module commands/chat
+ */
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { runAgentLoop } from './run.js';

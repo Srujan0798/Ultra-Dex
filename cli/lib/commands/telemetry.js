@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Telemetry module
+ * @module commands/telemetry
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import { telemetryLogPath, loadTelemetryConfig, saveTelemetryConfig } from '../utils/telemetry.js';

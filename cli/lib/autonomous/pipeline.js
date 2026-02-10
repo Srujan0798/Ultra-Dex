@@ -29,3 +29,19 @@ export class AutonomousPipeline {
     return { status: 'done', executed, description };
   }
 }
+
+/**
+ * Safe execution wrapper with error handling for pipeline
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='pipeline'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'pipeline') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

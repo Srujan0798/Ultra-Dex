@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Seed module
+ * @module prisma/seed
+ */
+
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/app/lib/db';
 

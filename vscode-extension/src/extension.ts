@@ -38,3 +38,15 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
+
+/**
+ * Error handler for extension
+ * @param {Error} error - Error to handle
+ */
+function handleExtensionError(error) {
+  try {
+    console.error('[extension]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

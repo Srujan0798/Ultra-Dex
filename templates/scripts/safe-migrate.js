@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Safe Migrate module
+ * @module scripts/safe-migrate
+ */
+
 #!/usr/bin/env node
 
 import { execSync } from 'child_process';

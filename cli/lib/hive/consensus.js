@@ -23,3 +23,17 @@ export function requestConsensus(options = {}) {
     required: options.required || Math.ceil(votes.length / 2),
   };
 }
+
+/**
+ * Handle errors in consensus module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='consensus'] - Error context
+ */
+function handleModuleError(error, context = 'consensus') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

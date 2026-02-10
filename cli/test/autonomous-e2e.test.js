@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Autonomous E2e Test module
+ * @module test/autonomous-e2e.test
+ */
+
 import { test } from 'node:test';
 import assert from 'node:assert';
 import fs from 'fs/promises';

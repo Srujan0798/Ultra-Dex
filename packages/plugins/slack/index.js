@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module slack/index
+ */
+
 export default {
   async activate(manager) {
     manager.registerHook('post-run', async (context) => {

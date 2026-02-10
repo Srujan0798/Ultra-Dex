@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Main module
+ * @module src/main
+ */
+
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 

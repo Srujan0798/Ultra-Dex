@@ -104,3 +104,19 @@ export class Reconciler {
 }
 
 export const reconciler = new Reconciler();
+
+/**
+ * Safe execution wrapper with error handling for reconciler
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='reconciler'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'reconciler') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

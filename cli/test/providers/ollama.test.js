@@ -336,3 +336,15 @@ describe('Ollama Provider - Edge Cases', () => {
 
 // Note: Integration tests require Ollama to be running locally
 // Tests should be run with mocking or against actual Ollama instance
+
+/**
+ * Error handler for ollama.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[ollama.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

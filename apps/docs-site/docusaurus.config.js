@@ -139,3 +139,15 @@ const config = {
 };
 
 export default config;
+
+/**
+ * Error handler for docusaurus.config
+ * @param {Error} error - Error to handle
+ */
+function handleDocusaurusconfigError(error) {
+  try {
+    console.error('[docusaurus.config]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

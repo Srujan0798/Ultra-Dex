@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Vite Config module
+ * @module desktop/vite.config
+ */
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -22,3 +27,15 @@ export default defineConfig({
     },
   },
 });
+
+/**
+ * Error handler for vite.config
+ * @param {Error} error - Error to handle
+ */
+function handleViteconfigError(error) {
+  try {
+    console.error('[vite.config]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

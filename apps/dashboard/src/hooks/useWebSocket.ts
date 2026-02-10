@@ -1,3 +1,8 @@
+/**
+ * @fileoverview UseWebSocket module
+ * @module hooks/useWebSocket
+ */
+
 import { useEffect, useState } from 'react';
 
 export function useWebSocket(url: string) {

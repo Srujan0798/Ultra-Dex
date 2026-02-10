@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module routes/index
+ */
+
 import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate';
 import { rateLimit } from '../middleware/rate-limit';
@@ -20,3 +25,15 @@ router.use('/webhook-deliveries', webhookRouter);
 router.use('/analytics', analyticsRouter);
 
 export { router as apiRouter };
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

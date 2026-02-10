@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Auth module
+ * @module routes/auth
+ */
+
 const express = require('express');
 const AuthController = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
@@ -22,3 +27,15 @@ module.exports = (pool, redis) => {
 
   return router;
 };
+
+/**
+ * Error handler for auth
+ * @param {Error} error - Error to handle
+ */
+function handleAuthError(error) {
+  try {
+    console.error('[auth]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

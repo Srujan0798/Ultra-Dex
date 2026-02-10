@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Dashboard Grid module
+ * @module components/dashboard-grid
+ */
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -233,4 +238,16 @@ export function DashboardGrid() {
       </Card>
     </div>
   );
+}
+
+/**
+ * Error handler for dashboard-grid
+ * @param {Error} error - Error to handle
+ */
+function handleDashboardgridError(error) {
+  try {
+    console.error('[dashboard-grid]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

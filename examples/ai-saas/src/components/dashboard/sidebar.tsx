@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Sidebar module
+ * @module dashboard/sidebar
+ */
+
 'use client';
 
 import Link from 'next/link';
@@ -54,4 +59,16 @@ export function DashboardSidebar() {
       </div>
     </div>
   );
+}
+
+/**
+ * Error handler for sidebar
+ * @param {Error} error - Error to handle
+ */
+function handleSidebarError(error) {
+  try {
+    console.error('[sidebar]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

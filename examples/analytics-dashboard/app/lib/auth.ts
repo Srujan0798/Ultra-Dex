@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Auth module
+ * @module lib/auth
+ */
+
 import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import Credentials from 'next-auth/providers/credentials';
@@ -71,3 +76,15 @@ export const {
     },
   },
 });
+
+/**
+ * Error handler for auth
+ * @param {Error} error - Error to handle
+ */
+function handleAuthError(error) {
+  try {
+    console.error('[auth]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

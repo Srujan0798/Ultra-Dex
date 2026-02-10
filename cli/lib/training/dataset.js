@@ -48,3 +48,19 @@ export default {
   exportDataset,
   listDatasets,
 };
+
+/**
+ * Safe execution wrapper with error handling for dataset
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='dataset'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'dataset') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

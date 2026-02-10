@@ -235,7 +235,19 @@ const DEFAULT_CONFIG = {
   preferredProvider: null, // Override to force specific provider
 };
 
+/**
+ * AI Model Router — selects the optimal model for a given task
+ */
 class ModelRouter {
+  /**
+   * Create a new ModelRouter
+   * @param {Object} [config={}] - Router configuration overrides
+   * @param {string} [config.defaultModel] - Default model ID
+   * @param {boolean} [config.enableFallback] - Enable fallback models
+   * @param {number} [config.maxRetries] - Max retry count
+   * @param {number} [config.costThreshold] - Max cost per request in USD
+   * @param {string} [config.performancePriority] - Priority: speed|accuracy|cost|balanced
+   */
   constructor(config = {}) {
     this.routerConfig = loadRouterConfigSync();
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -253,6 +265,10 @@ class ModelRouter {
 
   /**
    * Determine the best model for a given task
+   * @param {string} taskDescription - Description of the task
+   * @param {Object} [options={}] - Routing options
+   * @param {string} [options.strategy] - Routing strategy name
+   * @returns {{model: string, taskType: string, routingConfig: Object, confidence: number, reason: string}}
    */
   determineModel(taskDescription, options = {}) {
     // Update stats
@@ -318,7 +334,9 @@ class ModelRouter {
   }
 
   /**
-   * Classify a task based on description
+   * Classify a task based on description keywords
+   * @param {string} taskDescription - Task description
+   * @returns {string} Best matching task type
    */
   classifyTask(taskDescription) {
     const lowerDesc = taskDescription.toLowerCase();
@@ -356,7 +374,10 @@ class ModelRouter {
   }
 
   /**
-   * Filter models based on options
+   * Filter models based on provider and cost options
+   * @param {string[]} models - Candidate model IDs
+   * @param {Object} options - Filter options
+   * @returns {string[]} Filtered model IDs
    */
   filterModels(models, options) {
     return models.filter((modelId) => {
@@ -379,7 +400,10 @@ class ModelRouter {
   }
 
   /**
-   * Select model based on priority
+   * Select model based on performance priority
+   * @param {string[]} models - Candidate model IDs
+   * @param {Object} options - Selection options
+   * @returns {string} Selected model ID
    */
   selectModelByPriority(models, options) {
     if (models.length === 0) {
@@ -427,6 +451,9 @@ class ModelRouter {
 
   /**
    * Calculate confidence in model selection
+   * @param {string} model - Model ID
+   * @param {string} taskType - Task classification
+   * @returns {number} Confidence score 0-1
    */
   calculateConfidence(model, taskType) {
     const routingConfig = this.routingTable[taskType];
@@ -445,6 +472,10 @@ class ModelRouter {
 
   /**
    * Estimate cost for a task
+   * @param {string} model - Model ID
+   * @param {number} [inputTokens=1000] - Estimated input tokens
+   * @param {number} [outputTokens=500] - Estimated output tokens
+   * @returns {number} Estimated cost in USD
    */
   estimateCost(model, inputTokens = 1000, outputTokens = 500) {
     const config = this.modelConfigs[model];
@@ -458,6 +489,7 @@ class ModelRouter {
 
   /**
    * Get router statistics
+   * @returns {{requests: number, cost: number, successes: number, failures: number}}
    */
   getStats() {
     return { ...this.stats };
@@ -477,6 +509,8 @@ class ModelRouter {
 
   /**
    * Update routing table dynamically
+   * @param {string} taskType - Task type key
+   * @param {Object} config - New routing config for this task
    */
   updateRouting(taskType, config) {
     this.routingTable[taskType] = { ...this.routingTable[taskType], ...config };
@@ -484,6 +518,8 @@ class ModelRouter {
 
   /**
    * Get available models for a task type
+   * @param {string} taskType - Task type key
+   * @returns {string[]} Model IDs
    */
   getModelsForTask(taskType) {
     const routingConfig = this.routingTable[taskType];
@@ -497,7 +533,8 @@ class ModelRouter {
 const modelRouter = new ModelRouter();
 
 /**
- * Register model router command
+ * Register model router CLI command with Commander
+ * @param {import('commander').Command} program - Commander program instance
  */
 export function registerModelRouterCommand(program) {
   const routerCmd = program

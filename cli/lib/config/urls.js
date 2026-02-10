@@ -16,3 +16,17 @@ export function githubWebUrl(pathname = '') {
   if (!pathname) return GITHUB_WEB_BASE;
   return `${GITHUB_WEB_BASE}/${pathname}`;
 }
+
+/**
+ * Handle errors in urls module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='urls'] - Error context
+ */
+function handleModuleError(error, context = 'urls') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

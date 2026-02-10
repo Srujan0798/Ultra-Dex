@@ -1,3 +1,8 @@
+/**
+ * @fileoverview HomeScreen module
+ * @module screens/HomeScreen
+ */
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useQuery, useMutation } from 'react-query';
@@ -57,3 +62,15 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
+/**
+ * Error handler for HomeScreen
+ * @param {Error} error - Error to handle
+ */
+function handleHomeScreenError(error) {
+  try {
+    console.error('[HomeScreen]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

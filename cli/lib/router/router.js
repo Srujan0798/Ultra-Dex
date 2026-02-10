@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Router module
+ * @module router/router
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import { SmartModelRouter } from './model-router.js';

@@ -85,3 +85,15 @@ var jumpToCode = (function init() {
     };
 })();
 window.addEventListener('keydown', jumpToCode);
+
+/**
+ * Error handler for block-navigation
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[block-navigation]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

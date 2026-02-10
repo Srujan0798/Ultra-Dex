@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Chrome Agent module
+ * @module commands/chrome-agent
+ */
+
 import chalk from 'chalk';
 import { ChromeAgentsClient } from '../browser/chrome-agents.js';
 import { scaffoldChromeExtension } from '../browser/extension-scaffold.js';

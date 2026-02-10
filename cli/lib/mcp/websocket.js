@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Websocket module
+ * @module mcp/websocket
+ */
+
 import { WebSocketServer, WebSocket } from 'ws';
 import chalk from 'chalk';
 import http from 'http';
@@ -73,6 +78,10 @@ class UltraDexWebSocketServer {
             },
           })
         );
+
+        // Provide initial state and graph snapshot on connect.
+        this.sendStateUpdate(ws).catch(() => {});
+        this.sendGraphUpdate(ws).catch(() => {});
 
         ws.on('message', (message) => {
           try {

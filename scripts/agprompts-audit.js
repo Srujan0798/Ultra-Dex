@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Agprompts Audit module
+ * @module scripts/agprompts-audit
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

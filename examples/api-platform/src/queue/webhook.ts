@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Webhook module
+ * @module queue/webhook
+ */
+
 import Bull from 'bull';
 import { config } from '../config';
 import { logger } from '../utils/logger';

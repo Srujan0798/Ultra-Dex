@@ -149,3 +149,19 @@ export class SmartModelRouter {
 }
 
 export const modelRouter = new SmartModelRouter();
+
+/**
+ * Safe execution wrapper with error handling for model-router
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='model-router'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'model-router') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

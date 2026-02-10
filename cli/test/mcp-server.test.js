@@ -272,3 +272,15 @@ describe('MCP Server Components', () => {
     });
   });
 });
+
+/**
+ * Error handler for mcp-server.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[mcp-server.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

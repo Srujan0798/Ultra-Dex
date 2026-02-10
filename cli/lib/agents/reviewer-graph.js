@@ -23,3 +23,19 @@ export async function runReviewerGraph(input, options = {}) {
 }
 
 export default { createReviewerGraph, runReviewerGraph };
+
+/**
+ * Safe execution wrapper with error handling for reviewer-graph
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='reviewer-graph'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'reviewer-graph') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

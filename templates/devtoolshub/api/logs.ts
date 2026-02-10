@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Logs module
+ * @module api/logs
+ */
+
 import { prisma } from '../lib/prisma';
 
 export async function logUsage(
@@ -25,4 +30,16 @@ export async function getUsageStats(keyId: string) {
   });
 
   return logs.map((entry) => ({ status: entry.statusCode, count: entry._count.statusCode }));
+}
+
+/**
+ * Error handler for logs
+ * @param {Error} error - Error to handle
+ */
+function handleLogsError(error) {
+  try {
+    console.error('[logs]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

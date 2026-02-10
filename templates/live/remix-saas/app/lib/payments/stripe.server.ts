@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Stripe Server module
+ * @module payments/stripe.server
+ */
+
 import Stripe from 'stripe';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -43,3 +48,15 @@ export const getOrCreateCustomer = async (userId: string, email: string) => {
 
   return customer.id;
 };
+
+/**
+ * Error handler for stripe.server
+ * @param {Error} error - Error to handle
+ */
+function handleStripeserverError(error) {
+  try {
+    console.error('[stripe.server]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview MockSMSProvider module
+ * @module providers/mockSMSProvider
+ */
+
 const logger = require('../utils/logger');
 
 class MockSMSProvider {
@@ -36,3 +41,15 @@ class MockSMSProvider {
 }
 
 module.exports = MockSMSProvider;
+
+/**
+ * Error handler for mockSMSProvider
+ * @param {Error} error - Error to handle
+ */
+function handleMockSMSProviderError(error) {
+  try {
+    console.error('[mockSMSProvider]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

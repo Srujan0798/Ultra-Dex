@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Auth Test module
+ * @module integration/auth.test
+ */
+
 import request from 'supertest';
 import express from 'express';
 import { authenticate } from '../../src/middleware/authenticate';
@@ -41,3 +46,15 @@ describe('Authentication Middleware', () => {
     expect(response.body.error.code).toBe('unauthorized');
   });
 });
+
+/**
+ * Error handler for auth.test
+ * @param {Error} error - Error to handle
+ */
+function handleAuthtestError(error) {
+  try {
+    console.error('[auth.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

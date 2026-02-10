@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Ticket Agent module
+ * @module background/ticket-agent
+ */
+
 import { EventEmitter } from 'node:events';
 import fs from 'fs/promises';
 import path from 'path';

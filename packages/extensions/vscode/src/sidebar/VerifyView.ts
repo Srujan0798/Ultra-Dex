@@ -1,3 +1,8 @@
+/**
+ * @fileoverview VerifyView module
+ * @module sidebar/VerifyView
+ */
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -58,5 +63,17 @@ class VerifyItem extends vscode.TreeItem {
   ) {
     super(label, vscode.TreeItemCollapsibleState.None);
     this.checkboxState = checkboxState;
+  }
+}
+
+/**
+ * Error handler for VerifyView
+ * @param {Error} error - Error to handle
+ */
+function handleVerifyViewError(error) {
+  try {
+    console.error('[VerifyView]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

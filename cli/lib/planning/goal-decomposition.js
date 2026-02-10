@@ -16,3 +16,17 @@ export function decomposeGoal(goal = '') {
 export default {
   decomposeGoal,
 };
+
+/**
+ * Handle errors in goal-decomposition module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='goal-decomposition'] - Error context
+ */
+function handleModuleError(error, context = 'goal-decomposition') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

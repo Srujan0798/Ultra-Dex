@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module login/page
+ */
+
 'use client';
 
 import { useSession } from 'next-auth/react';

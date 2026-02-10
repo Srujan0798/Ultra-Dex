@@ -66,6 +66,11 @@ const RUNTIME_CONFIGS = {
   },
 };
 
+/**
+ * Detect programming language from file extension
+ * @param {string} [filePath=''] - Path to the file
+ * @returns {string} Language identifier (javascript, typescript, python, go, rust, ruby)
+ */
 export function detectLanguage(filePath = '') {
   const ext = path.extname(filePath).toLowerCase();
   switch (ext) {
@@ -85,10 +90,21 @@ export function detectLanguage(filePath = '') {
   }
 }
 
+/**
+ * Detect runtime from file extension (alias for detectLanguage)
+ * @param {string} [filePath=''] - Path to the file
+ * @returns {string} Runtime identifier
+ */
 export function detectRuntimeFromExtension(filePath = '') {
   return detectLanguage(filePath);
 }
 
+/**
+ * Get the shell command to execute a file in the given language
+ * @param {string} language - Language identifier
+ * @param {string} filename - File to execute
+ * @returns {string} Shell command
+ */
 export function getExecCommand(language, filename) {
   switch (language) {
     case 'python':
@@ -107,6 +123,10 @@ export function getExecCommand(language, filename) {
   }
 }
 
+/**
+ * Check if Docker is available on the system
+ * @returns {Promise<boolean>} True if Docker is installed
+ */
 export async function checkDocker() {
   try {
     await execAsync('docker --version');
@@ -116,6 +136,11 @@ export async function checkDocker() {
   }
 }
 
+/**
+ * Ensure a Docker image is available locally, pulling if necessary
+ * @param {string} image - Docker image tag
+ * @param {Object} [spinner] - Ora spinner instance for progress
+ */
 export async function ensureImage(image, spinner) {
   try {
     await execAsync(`docker image inspect ${image}`);
@@ -125,6 +150,18 @@ export async function ensureImage(image, spinner) {
   }
 }
 
+/**
+ * Execute code or a command inside a Docker sandbox container
+ * @param {string} input - Code string or shell command
+ * @param {Object} [options={}] - Execution options
+ * @param {number} [options.timeout=30000] - Timeout in ms
+ * @param {boolean} [options.allowNetwork=false] - Allow network access
+ * @param {string} [options.language='javascript'] - Language/runtime
+ * @param {string} [options.image] - Docker image override
+ * @param {boolean} [options.isCommand=false] - If true, treat input as command
+ * @param {boolean} [options.mountProject=false] - Mount project dir
+ * @returns {Promise<Object>} Execution result with stdout, stderr, exitCode, duration
+ */
 export async function executeInSandbox(input, options = {}) {
   const start = Date.now();
   const timeout = options.timeout ?? 30000;
@@ -202,8 +239,18 @@ export async function executeInSandbox(input, options = {}) {
 
 /**
  * Docker Sandbox Class
+ * Provides a high-level API for secure code execution in Docker containers
  */
 export class DockerSandbox {
+  /**
+   * Create a new DockerSandbox instance
+   * @param {Object} [options={}] - Sandbox configuration
+   * @param {boolean} [options.enabled=true] - Enable sandbox
+   * @param {number} [options.timeout=30000] - Execution timeout in ms
+   * @param {string} [options.memoryLimit='512m'] - Container memory limit
+   * @param {string} [options.networkMode='none'] - Docker network mode
+   * @param {string} [options.workDir] - Working directory for sandbox files
+   */
   constructor(options = {}) {
     this.enabled = options.enabled ?? true;
     this.timeout = options.timeout || 30000; // 30 seconds

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Notifications module
+ * @module routes/notifications
+ */
+
 const express = require('express');
 const NotificationController = require('../controllers/notificationController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
@@ -44,3 +49,15 @@ module.exports = (pool, redis) => {
 
   return router;
 };
+
+/**
+ * Error handler for notifications
+ * @param {Error} error - Error to handle
+ */
+function handleNotificationsError(error) {
+  try {
+    console.error('[notifications]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,6 +1,11 @@
+/**
+ * @fileoverview Progress module
+ * @module api/progress
+ */
+
 import { prisma } from '../lib/prisma';
 import { updateLessonProgress } from '../lib/progress-tracking';
-import { getCourseProgress, trackLessonComplete } from '../progress-tracker';
+import { getCourseProgress, trackLessonComplete } from '../lib/progress-tracker';
 
 export async function markLessonComplete(studentId: string, lessonId: string) {
   return trackLessonComplete(studentId, lessonId);
@@ -20,4 +25,16 @@ export async function listProgress(studentId: string) {
     include: { lesson: true },
     orderBy: { updatedAt: 'desc' },
   });
+}
+
+/**
+ * Error handler for progress
+ * @param {Error} error - Error to handle
+ */
+function handleProgressError(error) {
+  try {
+    console.error('[progress]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

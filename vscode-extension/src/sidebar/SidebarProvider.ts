@@ -1,3 +1,8 @@
+/**
+ * @fileoverview SidebarProvider module
+ * @module sidebar/SidebarProvider
+ */
+
 import * as vscode from 'vscode';
 
 const AGENTS = [
@@ -45,5 +50,17 @@ class AgentTreeItem extends vscode.TreeItem {
     super(`${icon} ${label}`, vscode.TreeItemCollapsibleState.None);
     this.tooltip = `${label} agent`;
     this.contextValue = 'agent';
+  }
+}
+
+/**
+ * Error handler for SidebarProvider
+ * @param {Error} error - Error to handle
+ */
+function handleSidebarProviderError(error) {
+  try {
+    console.error('[SidebarProvider]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

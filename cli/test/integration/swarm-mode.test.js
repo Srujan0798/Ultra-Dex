@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Swarm Mode Test module
+ * @module integration/swarm-mode.test
+ */
+
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createTestProject, writeTestFile, cleanupTestProject, cleanupTempDir } from '../setup.js';

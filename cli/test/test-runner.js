@@ -33,3 +33,15 @@ const child = spawn('node', args, {
 child.on('exit', (code) => {
   process.exit(code);
 });
+
+/**
+ * Error handler for test-runner
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[test-runner]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rate Limiter module
+ * @module services/rate-limiter
+ */
+
 import Redis from 'ioredis';
 import { config } from '../config';
 import { logger } from '../utils/logger';

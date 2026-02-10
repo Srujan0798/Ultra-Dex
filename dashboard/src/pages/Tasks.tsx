@@ -116,3 +116,17 @@ export const Tasks = memo(function Tasks() {
     </main>
   );
 });
+
+/**
+ * Error handler for Tasks component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleTasksError(error, errorInfo) {
+  try {
+    console.error(`[Tasks] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}

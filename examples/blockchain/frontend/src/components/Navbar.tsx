@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Navbar module
+ * @module components/Navbar
+ */
+
 'use client';
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -32,4 +37,16 @@ export function Navbar() {
       </div>
     </nav>
   );
+}
+
+/**
+ * Error handler for Navbar
+ * @param {Error} error - Error to handle
+ */
+function handleNavbarError(error) {
+  try {
+    console.error('[Navbar]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

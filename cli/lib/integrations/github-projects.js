@@ -81,3 +81,19 @@ export const integration = {
 };
 
 export default integration;
+
+/**
+ * Safe execution wrapper with error handling for github-projects
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='github-projects'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'github-projects') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

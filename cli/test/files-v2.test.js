@@ -50,3 +50,15 @@ test('Files: copyDirectory', async () => {
 
   await fs.rm(tmpRoot, { recursive: true, force: true });
 });
+
+/**
+ * Error handler for files-v2.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[files-v2.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rate Limiting module
+ * @module lib/rate-limiting
+ */
+
 import { prisma } from './prisma';
 
 const buckets = new Map<string, { tokens: number; lastRefill: number }>();
@@ -74,4 +79,16 @@ export async function incrementUsage(keyId: string) {
     update: { count: { increment: 1 } },
     create: { keyId, windowStart, count: 1 },
   });
+}
+
+/**
+ * Error handler for rate-limiting
+ * @param {Error} error - Error to handle
+ */
+function handleRatelimitingError(error) {
+  try {
+    console.error('[rate-limiting]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

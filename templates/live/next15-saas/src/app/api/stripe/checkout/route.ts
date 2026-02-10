@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Route module
+ * @module checkout/route
+ */
+
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { createCheckoutSession, getOrCreateCustomer } from '@/lib/stripe/server';

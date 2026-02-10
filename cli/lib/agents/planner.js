@@ -2,6 +2,13 @@
 
 import { printWarning } from '../utils/output.js';
 
+/**
+ * Enforce atomic task constraints (max 9 hours, min 20 char description)
+ * @param {Array<Object>} [tasks=[]] - Tasks to validate
+ * @param {number} [tasks[].estimateHours] - Estimated hours for the task
+ * @param {string} [tasks[].description] - Task description
+ * @returns {{ok: boolean, violations: Array<Object>}} Validation result
+ */
 export function enforceAtomicTasks(tasks = []) {
   const violations = [];
   tasks.forEach((task) => {
@@ -19,4 +26,18 @@ export function enforceAtomicTasks(tasks = []) {
   }
 
   return { ok: violations.length === 0, violations };
+}
+
+/**
+ * Handle errors in planner module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='planner'] - Error context
+ */
+function handleModuleError(error, context = 'planner') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
 }

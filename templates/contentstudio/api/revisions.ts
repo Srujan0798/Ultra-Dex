@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Revisions module
+ * @module api/revisions
+ */
+
 import { prisma } from '../lib/prisma';
 import { restoreVersion } from '../lib/versioning';
 
@@ -24,4 +29,16 @@ export async function restorePostRevision(
   if (!content) throw new Error('Content not found');
 
   return restoreVersion(contentId, versionNumber);
+}
+
+/**
+ * Error handler for revisions
+ * @param {Error} error - Error to handle
+ */
+function handleRevisionsError(error) {
+  try {
+    console.error('[revisions]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

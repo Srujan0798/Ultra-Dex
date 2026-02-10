@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Commands module
+ * @module src/commands
+ */
+
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { AgentItem } from './agentTreeProvider';
