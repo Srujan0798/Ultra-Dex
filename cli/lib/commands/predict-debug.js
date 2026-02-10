@@ -2,7 +2,7 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { PredictiveDebugger } from '../debugging/predictive.js';
+import { EnhancedPredictiveDebugger } from '../performance/enhanced-predictive-debugger.js';
 import { printSuccess, printInfo, printError, printTable } from '../ui/index.js';
 
 const debugCommand = new Command('predict')
@@ -14,9 +14,9 @@ debugCommand
   .argument('[path]', 'Project path', '.')
   .option('-w, --watch', 'Enable file watching', true)
   .action(async (projectPath, options) => {
-    printInfo(chalk.blue('🔮 Starting Predictive Debugger...'));
+    printInfo(chalk.blue('🔮 Starting Enhanced Predictive Debugger...'));
 
-    const debugInstance = new PredictiveDebugger({
+    const debugInstance = new EnhancedPredictiveDebugger({
       enableBackgroundAnalysis: options.watch,
     });
 
@@ -62,6 +62,7 @@ debugCommand
       printTable([
         ['Total Predictions', report.summary.totalPredictions],
         ['Critical', report.summary.bySeverity.critical],
+        ['High', report.summary.bySeverity.high],
         ['Medium', report.summary.bySeverity.medium],
         ['Low', report.summary.bySeverity.low],
       ]);
@@ -78,7 +79,7 @@ debugCommand
   .action(async (projectPath, options) => {
     printInfo(chalk.blue('🔍 Scanning project for potential bugs...'));
 
-    const debugInstance = new PredictiveDebugger({
+    const debugInstance = new EnhancedPredictiveDebugger({
       enableBackgroundAnalysis: false,
     });
 
@@ -124,7 +125,7 @@ debugCommand
   .action(async (projectPath, options) => {
     printInfo(chalk.blue('📄 Generating prediction report...'));
 
-    const debugInstance = new PredictiveDebugger({
+    const debugInstance = new EnhancedPredictiveDebugger({
       enableBackgroundAnalysis: false,
     });
 

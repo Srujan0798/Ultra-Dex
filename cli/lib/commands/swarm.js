@@ -18,6 +18,7 @@ import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError, NetworkError } from '../utils/errors.js';
 import { filterAgentsByAccess } from '../enterprise/agent-access.js';
 import { AgentStateMachine } from '../graph/state-machine.js';
+import { OptimizedSwarmExecutor } from '../performance/swarm-optimizer.js';
 
 // Maximum context size limit (100KB)
 const MAX_CONTEXT_SIZE = 100 * 1024; // 100KB in bytes
@@ -520,152 +521,29 @@ Task: "${task}"`);
     return;
   }
 
-  const executionTiers = options.parallel
-    ? [
-        {
-          name: '1-Planning',
-          agents: remainingPipeline.filter((a) => a.tier === '1-planning'),
-          parallel: false,
-        },
-        {
-          name: '2-Implementation',
-          agents: remainingPipeline.filter((a) => a.tier === '2-implementation'),
-          parallel: true,
-        },
-        {
-          name: '3-Security',
-          agents: remainingPipeline.filter((a) => a.tier === '3-security'),
-          parallel: false,
-        },
-        {
-          name: '4-Quality',
-          agents: remainingPipeline.filter((a) => a.tier === '4-quality'),
-          parallel: false,
-        },
-      ]
-    : [{ name: 'All', agents: remainingPipeline, parallel: false }];
+  // Use optimized executor for better performance
+  const executor = new OptimizedSwarmExecutor();
+  const executionResult = await executor.executeSwarm(remainingPipeline, task, context, provider, {
+    parallel: options.parallel
+  });
 
-  for (const tier of executionTiers) {
-    if (tier.agents.length === 0) continue;
-
-    printInfo(theme.dim(`\n📦 Tier: ${tier.name}`));
-
-    try {
-      if (tier.name.startsWith('1-')) {
-        stateMachine.transition('planning', { tier: tier.name });
-      } else if (tier.name.startsWith('2-')) {
-        stateMachine.transition('implementing', { tier: tier.name });
-      } else if (tier.name.startsWith('3-')) {
-        stateMachine.transition('reviewing', { tier: tier.name });
-      } else if (tier.name.startsWith('4-')) {
-        stateMachine.transition('testing', { tier: tier.name });
-      }
-      await stateMachine.save();
-    } catch {
-      stateMachine.setState('implementing', { tier: tier.name });
-      await stateMachine.save();
-    }
-
-    if (tier.parallel) {
-      // Parallel Execution
-      const promises = tier.agents.map(async (agent) => {
-        const agentStart = Date.now();
-        printInfo(`  ⟳ Running @${agent.name}...`);
-
-        try {
-          const result = await runAgent(agent, task, context, previousOutput, provider);
-          const duration = Date.now() - agentStart;
-          agentTimings[agent.name] = duration;
-          printSuccess(`  ✓ @${agent.name} complete (${duration}ms)`);
-          return { agent: agent.name, result, success: true };
-        } catch (error) {
-          printError(`  ✖ @${agent.name} failed: ${error.message}`);
-          return { agent: agent.name, error: error.message, success: false };
-        }
-      });
-
-      const results = await Promise.all(promises);
-      agentResults.push(...results);
-      previousOutput +=
-        '\n\n' +
-        results
-          .filter((r) => r.success)
-          .map((r) => r.result)
-          .join('\n\n');
-    } else {
-      // Serial Execution
-      for (const agent of tier.agents) {
-        const agentStart = Date.now();
-        renderer.startSpinner(`Agent @${agent.name} is working...`);
-
-        try {
-          const result = await runAgent(agent, task, context, previousOutput, provider);
-          const duration = Date.now() - agentStart;
-          agentTimings[agent.name] = duration;
-          previousOutput = result;
-          renderer.succeed(`@${agent.name} complete (${duration}ms)`);
-
-          const preview = result.slice(0, 150).replace(/\n/g, ' ') + '...';
-          printInfo(theme.dim(`    › ${preview}`));
-
-          agentResults.push({ agent: agent.name, result, success: true });
-          completedAgents.add(agent.name);
-
-          // Save checkpoint after each successful agent
-          await saveCheckpoint(
-            task,
-            agentResults,
-            previousOutput,
-            Array.from(completedAgents),
-            options
-          );
-        } catch (error) {
-          renderer.fail(`@${agent.name} failed: ${error.message}`);
-          agentResults.push({ agent: agent.name, error: error.message, success: false });
-
-          // Save checkpoint before throwing so user can resume
-          await saveCheckpoint(
-            task,
-            agentResults,
-            previousOutput,
-            Array.from(completedAgents),
-            options
-          );
-          printWarning(`💾 Checkpoint saved. Resume with: ultra-dex swarm "${task}" --resume`);
-          try {
-            stateMachine.setState('failed', { agent: agent.name, error: error.message });
-            await stateMachine.save();
-          } catch {
-            // ignore
-          }
-
-          // Stop sequential pipeline if a critical planning agent fails
-          if (agent.tier === '1-planning') {
-            throw new AppError(
-              `Critical failure in planning tier: @${agent.name}. Checkpoint saved. Resume with --resume flag.`,
-              { cause: error }
-            );
-          }
-          break;
-        }
-      }
-    }
-  }
-
-  const totalDuration = Date.now() - startTime;
-  const successCount = agentResults.filter((r) => r.success).length;
-  const failCount = agentResults.filter((r) => !r.success).length;
+  // Merge results with any previously completed agents
+  const allResults = [...agentResults, ...executionResult.results];
+  const totalDuration = executionResult.totalTime;
+  const successCount = allResults.filter((r) => r.success).length;
+  const failCount = allResults.filter((r) => !r.success).length;
 
   await updateStateFile();
 
   const stats = {
     totalDuration,
-    agentTimings,
+    agentTimings: executionResult.stats,
     successCount,
     failCount,
     parallel: options.parallel || false,
+    performance: executionResult.stats
   };
-  const logPath = await writeSwarmLog(logDir, task, agentResults, stats);
+  const logPath = await writeSwarmLog(logDir, task, allResults, stats);
 
   renderer.divider();
   await renderer.text(`**Execution Complete**
