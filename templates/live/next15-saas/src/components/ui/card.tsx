@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Card module
+ * @module ui/card
+ */
+
 import { cn } from '@/lib/utils';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -29,4 +34,16 @@ export function CardContent({ className, ...props }: CardProps) {
 
 export function CardFooter({ className, ...props }: CardProps) {
   return <div className={cn('flex items-center p-6 pt-0', className)} {...props} />;
+}
+
+/**
+ * Error handler for card
+ * @param {Error} error - Error to handle
+ */
+function handleCardError(error) {
+  try {
+    console.error('[card]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Warm Tier module
+ * @module memory/warm-tier
+ */
+
 import path from 'path';
 import fs from 'fs/promises';
 import crypto from 'node:crypto';

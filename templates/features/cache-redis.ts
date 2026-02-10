@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Cache Redis module
+ * @module features/cache-redis
+ */
+
 // Multi-layer cache template (L1 + L2)
 
 type CacheEntry<T> = { value: T; expiresAt: number };
@@ -44,5 +49,17 @@ export class MultiLayerCache<T = unknown> {
     if (this.redis) {
       await this.redis.setex(key, ttlSeconds, JSON.stringify(value));
     }
+  }
+}
+
+/**
+ * Error handler for cache-redis
+ * @param {Error} error - Error to handle
+ */
+function handleCacheredisError(error) {
+  try {
+    console.error('[cache-redis]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

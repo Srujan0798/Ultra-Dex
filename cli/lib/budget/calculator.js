@@ -18,3 +18,17 @@ export function estimateCost(model, inputTokens, outputTokens) {
     total: inputCost + outputCost,
   };
 }
+
+/**
+ * Handle errors in calculator module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='calculator'] - Error context
+ */
+function handleModuleError(error, context = 'calculator') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

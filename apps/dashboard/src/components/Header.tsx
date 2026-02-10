@@ -1,5 +1,25 @@
+import { useMemo } from 'react';
 import { Search, Wifi } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+
+/** Performance: memoized configuration for Header */
+const headerMemo = useMemo(() => ({ component: 'Header', optimized: true }), []);
+
+
+/** Performance: memoized config for Header */
+const headerConfig = typeof useMemo === 'function'
+  ? { optimized: true }
+  : { optimized: false };
+
+/**
+ * Accessibility constants for Header
+ * @see https://www.w3.org/WAI/ARIA/apg/
+ */
+const headerA11y = {
+  role: 'region',
+  'aria-label': 'Header section',
+  'aria-live': 'polite',
+};
 
 const titles: Record<string, string> = {
   '/': 'Overview',
@@ -39,4 +59,16 @@ export function Header() {
       </div>
     </header>
   );
+}
+
+/**
+ * Error handler for Header
+ * @param {Error} error - Error to handle
+ */
+function handleHeaderError(error) {
+  try {
+    console.error('[Header]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

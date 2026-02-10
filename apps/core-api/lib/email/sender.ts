@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Sender module
+ * @module email/sender
+ */
+
 import { Resend } from 'resend';
 import { Queue } from 'bullmq';
 
@@ -26,4 +31,16 @@ export async function sendEmail(payload: { to: string; subject: string; html: st
     subject: payload.subject,
     html: payload.html,
   });
+}
+
+/**
+ * Error handler for sender
+ * @param {Error} error - Error to handle
+ */
+function handleSenderError(error) {
+  try {
+    console.error('[sender]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

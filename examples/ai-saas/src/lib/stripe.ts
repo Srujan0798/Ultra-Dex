@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Stripe module
+ * @module lib/stripe
+ */
+
 import Stripe from 'stripe';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
@@ -136,4 +141,16 @@ export function getPlanByPriceId(priceId: string): Plan | undefined {
 export function getCreditsForPlan(planId: string): number {
   const plan = PLANS.find((p) => p.id === planId);
   return plan?.credits || 0;
+}
+
+/**
+ * Error handler for stripe
+ * @param {Error} error - Error to handle
+ */
+function handleStripeError(error) {
+  try {
+    console.error('[stripe]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

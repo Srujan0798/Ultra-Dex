@@ -1,3 +1,8 @@
+/**
+ * @fileoverview White Label module
+ * @module commands/white-label
+ */
+
 // File: cli/lib/commands/white-label.js
 import { WhiteLabelGenerator } from '../white-label/generator.js';
 import { printInfo, printSuccess, printError } from '../utils/output.js';

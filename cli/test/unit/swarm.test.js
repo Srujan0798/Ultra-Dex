@@ -43,3 +43,15 @@ describe('swarm command', () => {
     assert.equal(args[0].required, true);
   });
 });
+
+/**
+ * Error handler for swarm.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[swarm.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

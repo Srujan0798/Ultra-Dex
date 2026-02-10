@@ -41,3 +41,15 @@ export default {
   validateUDCF,
   validateUDCFFile,
 };
+
+/**
+ * Error handler for validator
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[validator]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

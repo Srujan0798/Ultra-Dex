@@ -22,7 +22,14 @@ pipeline {
     stage('Deploy') {
       when { branch 'main' }
       steps {
-        echo 'Deploy placeholder'
+        script {
+          if (env.DEPLOY_COMMAND?.trim()) {
+            echo 'Running deploy command'
+            sh env.DEPLOY_COMMAND
+          } else {
+            echo 'Skipping deploy. Set DEPLOY_COMMAND to enable.'
+          }
+        }
       }
     }
   }

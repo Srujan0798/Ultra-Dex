@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Sorter module
+ * @module coverage/sorter
+ */
+
 /* eslint-disable */
 var addSorting = (function() {
     'use strict';

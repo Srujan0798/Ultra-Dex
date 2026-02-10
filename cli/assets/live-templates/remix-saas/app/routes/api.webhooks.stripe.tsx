@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Api Webhooks Stripe module
+ * @module routes/api.webhooks.stripe
+ */
+
 import type { ActionFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { stripe } from '~/lib/payments/stripe.server';

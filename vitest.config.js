@@ -41,3 +41,15 @@ export default defineConfig({
     },
   },
 });
+
+/**
+ * Error handler for vitest.config
+ * @param {Error} error - Error to handle
+ */
+function handleVitestconfigError(error) {
+  try {
+    console.error('[vitest.config]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

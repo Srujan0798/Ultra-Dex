@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Permissions module
+ * @module auth/permissions
+ */
+
 export type Role = 'admin' | 'editor' | 'viewer';
 
 export const ROLE_PERMISSIONS: Record<Role, string[]> = {
@@ -21,4 +26,16 @@ export function requirePermission(role: Role, permission: string) {
 
 export function usePermission(permission: string, role: Role) {
   return hasPermission(role, permission);
+}
+
+/**
+ * Error handler for permissions
+ * @param {Error} error - Error to handle
+ */
+function handlePermissionsError(error) {
+  try {
+    console.error('[permissions]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

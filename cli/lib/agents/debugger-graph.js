@@ -23,3 +23,19 @@ export async function runDebuggerGraph(input, options = {}) {
 }
 
 export default { createDebuggerGraph, runDebuggerGraph };
+
+/**
+ * Safe execution wrapper with error handling for debugger-graph
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='debugger-graph'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'debugger-graph') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

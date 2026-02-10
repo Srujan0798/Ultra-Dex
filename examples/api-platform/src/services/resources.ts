@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Resources module
+ * @module services/resources
+ */
+
 import { v4 as uuidv4 } from 'uuid';
 
 interface Resource {
@@ -116,5 +121,17 @@ export class ResourceService {
 
     resourcesStore.delete(id);
     return true;
+  }
+}
+
+/**
+ * Error handler for resources
+ * @param {Error} error - Error to handle
+ */
+function handleResourcesError(error) {
+  try {
+    console.error('[resources]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

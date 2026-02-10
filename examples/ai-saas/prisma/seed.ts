@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Seed module
+ * @module prisma/seed
+ */
+
 import { prisma } from '../src/lib/prisma';
 import bcrypt from 'bcryptjs';
 

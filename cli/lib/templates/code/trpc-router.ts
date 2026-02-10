@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Trpc Router module
+ * @module code/trpc-router
+ */
+
 // Ultra-Dex Production Pattern: tRPC Router
 // Copy to server/routers/ directory
 
@@ -254,3 +259,15 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+
+/**
+ * Error handler for trpc-router
+ * @param {Error} error - Error to handle
+ */
+function handleTrpcrouterError(error) {
+  try {
+    console.error('[trpc-router]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

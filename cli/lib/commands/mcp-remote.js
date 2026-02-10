@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Mcp Remote module
+ * @module commands/mcp-remote
+ */
+
 import chalk from 'chalk';
 import { startRemoteServer } from '../mcp/remote/server.js';
 import { RemoteMCPClient } from '../mcp/remote/client.js';

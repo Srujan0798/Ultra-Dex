@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Middleware module
+ * @module src/middleware
+ */
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
@@ -36,3 +41,15 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/dashboard/:path*', '/auth/:path*', '/api/auth/:path*'],
 };
+
+/**
+ * Error handler for middleware
+ * @param {Error} error - Error to handle
+ */
+function handleMiddlewareError(error) {
+  try {
+    console.error('[middleware]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -23,3 +23,19 @@ export async function runArchitectGraph(input, options = {}) {
 }
 
 export default { createArchitectGraph, runArchitectGraph };
+
+/**
+ * Safe execution wrapper with error handling for architect-graph
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='architect-graph'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'architect-graph') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

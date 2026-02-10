@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Key Generator module
+ * @module lib/key-generator
+ */
+
 import crypto from 'crypto';
 
 export function hashKey(value: string) {
@@ -19,4 +24,16 @@ export function createKeyRecord() {
   const { key, prefix } = generateKey();
   const keyHash = hashKey(key);
   return { key, prefix, keyHash };
+}
+
+/**
+ * Error handler for key-generator
+ * @param {Error} error - Error to handle
+ */
+function handleKeygeneratorError(error) {
+  try {
+    console.error('[key-generator]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -33,3 +33,19 @@ export default {
   toMermaid,
   exportReasoningReport,
 };
+
+/**
+ * Safe execution wrapper with error handling for visualizer
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='visualizer'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'visualizer') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

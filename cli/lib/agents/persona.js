@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Persona module
+ * @module agents/persona
+ */
+
 export const AGENT_PERSONAS = {
   professional: {
     name: 'Professional',
@@ -39,3 +44,17 @@ export default {
   getPersona,
   listPersonas,
 };
+
+/**
+ * Handle errors in persona module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='persona'] - Error context
+ */
+function handleModuleError(error, context = 'persona') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

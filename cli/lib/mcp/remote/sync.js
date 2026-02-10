@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Sync module
+ * @module remote/sync
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview TokenBudget module
+ * @module ui/TokenBudget
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';

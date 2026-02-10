@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Session module
+ * @module memory/session
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

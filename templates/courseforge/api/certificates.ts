@@ -1,5 +1,10 @@
+/**
+ * @fileoverview Certificates module
+ * @module api/certificates
+ */
+
 import { prisma } from '../lib/prisma';
-import { generateCertificate } from '../progress-tracker';
+import { generateCertificate } from '../lib/progress-tracker';
 
 export async function issueCertificate(studentId: string, courseId: string) {
   return generateCertificate(studentId, courseId);
@@ -20,4 +25,16 @@ export async function listCertificates(studentId: string) {
     where: { studentId },
     orderBy: { issuedAt: 'desc' },
   });
+}
+
+/**
+ * Error handler for certificates
+ * @param {Error} error - Error to handle
+ */
+function handleCertificatesError(error) {
+  try {
+    console.error('[certificates]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

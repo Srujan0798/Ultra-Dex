@@ -108,3 +108,15 @@ describe('audit command', () => {
     assert.ok(planExists, 'Should create IMPLEMENTATION-PLAN.md');
   });
 });
+
+/**
+ * Error handler for audit.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[audit.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

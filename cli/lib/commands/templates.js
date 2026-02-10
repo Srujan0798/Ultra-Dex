@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Templates module
+ * @module commands/templates
+ */
+
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';

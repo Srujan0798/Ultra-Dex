@@ -461,3 +461,15 @@ describe('Integration - Error Handling', () => {
 
 // Note: These are unit tests for integration logic
 // Actual API calls should be mocked or tested in CI/CD with test accounts
+
+/**
+ * Error handler for integrations.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[integrations.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

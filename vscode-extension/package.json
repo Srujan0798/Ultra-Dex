@@ -29,6 +29,7 @@
     }
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc -p .",
     "watch": "tsc -watch -p ."
   },

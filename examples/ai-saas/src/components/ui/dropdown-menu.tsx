@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Dropdown Menu module
+ * @module ui/dropdown-menu
+ */
+
 'use client';
 
 import * as React from 'react';
@@ -185,3 +190,15 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
 };
+
+/**
+ * Error handler for dropdown-menu
+ * @param {Error} error - Error to handle
+ */
+function handleDropdownmenuError(error) {
+  try {
+    console.error('[dropdown-menu]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

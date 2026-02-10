@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module agent-protocol/index
+ */
+
 export class UltraAgent {
   constructor(options = {}) {
     this.options = options;
@@ -13,3 +18,15 @@ export class UltraAgent {
 }
 
 export default { UltraAgent };
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

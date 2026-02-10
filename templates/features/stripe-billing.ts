@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Stripe Billing module
+ * @module features/stripe-billing
+ */
+
 // Stripe Billing Template (Next.js App Router)
 // Copy-paste ready: Checkout + Webhook + Subscription management
 
@@ -141,4 +146,16 @@ export async function changeSubscription({
     items: [{ price: newPriceId }],
     proration_behavior: 'create_prorations',
   });
+}
+
+/**
+ * Error handler for stripe-billing
+ * @param {Error} error - Error to handle
+ */
+function handleStripebillingError(error) {
+  try {
+    console.error('[stripe-billing]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

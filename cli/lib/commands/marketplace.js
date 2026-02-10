@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Marketplace module
+ * @module commands/marketplace
+ */
+
 import { Command } from 'commander';
 import { agentMarketplace } from '../marketplace/index.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';

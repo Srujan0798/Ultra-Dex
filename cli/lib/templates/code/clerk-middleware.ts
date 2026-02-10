@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Clerk Middleware module
+ * @module code/clerk-middleware
+ */
+
 // Ultra-Dex Production Pattern: Clerk Middleware
 // Copy to middleware.ts in your Next.js root
 
@@ -133,3 +138,15 @@ export async function GET() {
   return NextResponse.json({ userId });
 }
 */
+
+/**
+ * Error handler for clerk-middleware
+ * @param {Error} error - Error to handle
+ */
+function handleClerkmiddlewareError(error) {
+  try {
+    console.error('[clerk-middleware]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

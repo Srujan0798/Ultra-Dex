@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rate Limit module
+ * @module lib/rate-limit
+ */
+
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 

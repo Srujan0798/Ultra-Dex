@@ -24,3 +24,15 @@ export async function activate(context) {
 }
 
 export default { name, version, description, author, activate };
+
+/**
+ * Error handler for slack-plugin
+ * @param {Error} error - Error to handle
+ */
+function handleSlackpluginError(error) {
+  try {
+    console.error('[slack-plugin]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

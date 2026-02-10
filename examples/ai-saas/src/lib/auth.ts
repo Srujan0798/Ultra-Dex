@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Auth module
+ * @module lib/auth
+ */
+
 import type { NextAuthOptions } from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
@@ -134,5 +139,17 @@ declare module 'next-auth/jwt' {
     id: string;
     credits: number;
     plan: string;
+  }
+}
+
+/**
+ * Error handler for auth
+ * @param {Error} error - Error to handle
+ */
+function handleAuthError(error) {
+  try {
+    console.error('[auth]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

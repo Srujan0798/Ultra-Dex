@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Members module
+ * @module api/members
+ */
+
 import { prisma } from '../lib/prisma';
 import { Role } from '@prisma/client';
 
@@ -21,4 +26,16 @@ export async function updateRole(workspaceId: string, userId: string, role: Role
     where: { workspaceId_userId: { workspaceId, userId } },
     data: { role }
   });
+}
+
+/**
+ * Error handler for members
+ * @param {Error} error - Error to handle
+ */
+function handleMembersError(error) {
+  try {
+    console.error('[members]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

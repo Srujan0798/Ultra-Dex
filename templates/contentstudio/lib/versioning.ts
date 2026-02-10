@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Versioning module
+ * @module lib/versioning
+ */
+
 import { prisma } from './prisma';
 
 export async function createVersion(contentId: string) {
@@ -60,4 +65,16 @@ export function diff(before: string, after: string) {
   }
 
   return changes;
+}
+
+/**
+ * Error handler for versioning
+ * @param {Error} error - Error to handle
+ */
+function handleVersioningError(error) {
+  try {
+    console.error('[versioning]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -16,3 +16,19 @@ export default {
   configureOidc,
   loginOidc,
 };
+
+/**
+ * Safe execution wrapper with error handling for oidc
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='oidc'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'oidc') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

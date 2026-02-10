@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Architect module
+ * @module commands/architect
+ */
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { recommendPattern } from '../architect/decision-tree.js';
@@ -31,4 +36,20 @@ export function registerArchitectCommand(program) {
       printInfo(chalk.cyan('\nSuggested Structure:'));
       recommendation.structure.forEach((item) => printInfo(`  - ${item}`));
     });
+}
+
+/**
+ * Safe execution wrapper with error handling for architect
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='architect'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'architect') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

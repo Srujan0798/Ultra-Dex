@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Deployment Plugin module
+ * @module plugins/deployment-plugin
+ */
+
 // examples/plugins/deployment-plugin.js
 export const name = 'deployment-plugin';
 export const version = '1.0.0';
@@ -24,3 +29,15 @@ export async function activate(context) {
 }
 
 export default { name, version, description, activate };
+
+/**
+ * Error handler for deployment-plugin
+ * @param {Error} error - Error to handle
+ */
+function handleDeploymentpluginError(error) {
+  try {
+    console.error('[deployment-plugin]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

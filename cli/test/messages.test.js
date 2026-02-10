@@ -15,3 +15,15 @@ test('Messages: getRandomMessage', () => {
   const loadingMsg = getRandomMessage('loading');
   assert.ok(professionalMessages.loading.includes(loadingMsg));
 });
+
+/**
+ * Error handler for messages.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[messages.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

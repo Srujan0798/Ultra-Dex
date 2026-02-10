@@ -410,3 +410,15 @@ describe('SmartModelRouter - Model Selection Edge Cases', () => {
     assert.ok(model);
   });
 });
+
+/**
+ * Error handler for model-router.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[model-router.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

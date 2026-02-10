@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Generate Cli Docs module
+ * @module scripts/generate-cli-docs
+ */
+
 #!/usr/bin/env node
 
 import fs from 'fs/promises';

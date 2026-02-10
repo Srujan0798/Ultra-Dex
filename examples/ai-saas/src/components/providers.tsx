@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Providers module
+ * @module components/providers
+ */
+
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
@@ -34,4 +39,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
       </QueryClientProvider>
     </SessionProvider>
   );
+}
+
+/**
+ * Error handler for providers
+ * @param {Error} error - Error to handle
+ */
+function handleProvidersError(error) {
+  try {
+    console.error('[providers]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

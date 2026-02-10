@@ -103,3 +103,16 @@ export const Memory = memo(function Memory() {
   );
 });
 
+/**
+ * Error handler for Memory component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleMemoryError(error, errorInfo) {
+  try {
+    console.error(`[Memory] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}

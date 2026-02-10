@@ -16,7 +16,7 @@ import { AppError } from '../utils/errors.js';
  * State Machine for Agent Workflows
  */
 export class AgentStateMachine {
-  constructor(initialState = {}) {
+  constructor(initialState = {}, options = {}) {
     this.state = {
       currentStep: 'init',
       status: 'idle',
@@ -34,6 +34,7 @@ export class AgentStateMachine {
 
     this.transitions = new Map();
     this.history = [];
+    this.executor = options.executor || null;
   }
 
   /**
@@ -154,9 +155,7 @@ export class AgentStateMachine {
       this.state.status = 'executing';
       this.state.updatedAt = new Date().toISOString();
 
-      // In a real implementation, this would call the actual agent
-      // For now, we'll simulate execution
-      const result = await this.simulateAgentExecution(agentName, task, context);
+      const result = await this.executeAgent(agentName, task, context);
 
       // Record agent execution
       this.state.agents.push({
@@ -191,9 +190,13 @@ export class AgentStateMachine {
   }
 
   /**
-   * Simulate agent execution (placeholder)
+   * Execute an agent using the injected executor, or simulate if none is provided.
    */
-  async simulateAgentExecution(agentName, task, context) {
+  async executeAgent(agentName, task, context) {
+    if (typeof this.executor === 'function') {
+      return this.executor(agentName, task, context);
+    }
+
     // Simulate agent work with random delay
     await new Promise((resolve) => setTimeout(resolve, Math.random() * 2000 + 500));
 
@@ -207,6 +210,13 @@ export class AgentStateMachine {
         simulated: true,
       },
     };
+  }
+
+  /**
+   * Set a custom executor for agent execution.
+   */
+  setExecutor(executor) {
+    this.executor = executor;
   }
 
   /**

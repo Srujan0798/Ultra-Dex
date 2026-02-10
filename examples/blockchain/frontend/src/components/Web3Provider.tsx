@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Web3Provider module
+ * @module components/Web3Provider
+ */
+
 'use client';
 
 import * as React from 'react';
@@ -36,4 +41,16 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
       </QueryClientProvider>
     </WagmiProvider>
   );
+}
+
+/**
+ * Error handler for Web3Provider
+ * @param {Error} error - Error to handle
+ */
+function handleWeb3ProviderError(error) {
+  try {
+    console.error('[Web3Provider]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -319,3 +319,15 @@ describe('Gemini Provider - Edge Cases', () => {
 
 // Note: Integration tests with actual Gemini API require API key
 // and should be run separately with proper mocking or in CI/CD
+
+/**
+ * Error handler for gemini.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[gemini.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

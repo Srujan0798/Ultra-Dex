@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Budget Checker module
+ * @module perf/budget-checker
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import { getStatistics } from '../utils/profiler.js';

@@ -11,3 +11,17 @@
 export function getProjectRoot() {
   return process.cwd();
 }
+
+/**
+ * Handle errors in config module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='config'] - Error context
+ */
+function handleModuleError(error, context = 'config') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

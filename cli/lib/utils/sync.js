@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Sync module
+ * @module utils/sync
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

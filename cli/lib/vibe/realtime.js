@@ -15,3 +15,17 @@ export function streamText(text, options = {}) {
     }, delay);
   });
 }
+
+/**
+ * Handle errors in realtime module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='realtime'] - Error context
+ */
+function handleModuleError(error, context = 'realtime') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

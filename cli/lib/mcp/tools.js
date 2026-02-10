@@ -43,6 +43,11 @@ const TOOL_CAPABILITIES = {
   search_symbols: { sideEffects: ['filesystem:read'], riskScore: 'low' },
 };
 
+/**
+ * Register all MCP tools with the server
+ * @param {McpServer} server - The MCP server instance
+ * @returns {void}
+ */
 export function registerTools(server) {
   const baseTool = server.tool.bind(server);
   server.tool = (name, description, schema, handler, capability) => {
@@ -381,6 +386,10 @@ export function registerTools(server) {
   );
 
   // Tool: Write Code (God Mode)
+  /**
+   * Tool: Write Code to File
+   * Securely writes content to files with path validation and quality gates.
+   */
   server.tool(
     'write_code',
     'Write or update a file in the codebase',
@@ -440,7 +449,7 @@ export function registerTools(server) {
           if (fileExists) {
             await fs.writeFile(fullPath, originalContent, 'utf8');
           } else {
-            await fs.unlink(fullPath).catch(() => {});
+            await fs.unlink(fullPath).catch(() => { });
           }
           throw new AppError(`Quality gates failed after write: ${gateError.message}`, {
             cause: gateError,
@@ -614,6 +623,10 @@ export function registerTools(server) {
   );
 
   // Tool: Start Swarm (Agent Orchestration)
+  /**
+   * Tool: Start Agent Swarm
+   * Triggers the multi-agent system to plan and execute complex features.
+   */
   server.tool(
     'start_swarm',
     'Trigger a multi-agent swarm to plan and implement a feature',
@@ -683,6 +696,10 @@ export function registerTools(server) {
   );
 
   // Tool: Deep Impact Analysis (GraphRAG)
+  /**
+   * Tool: Deep Impact Analysis
+   * Uses GraphRAG to determine transitive dependencies and risks.
+   */
   server.tool(
     'deep_impact_analysis',
     "Perform deep impact analysis using graph database. Answers 'What breaks if I change X?'",
@@ -726,6 +743,10 @@ export function registerTools(server) {
   );
 
   // Tool: Find Circular Dependencies
+  /**
+   * Tool: Trace Circular Dependencies
+   * Detects cycles in the dependency graph to prevent build issues.
+   */
   server.tool(
     'find_circular_deps',
     'Detect circular dependencies in the codebase using graph analysis',
@@ -764,6 +785,10 @@ export function registerTools(server) {
   );
 
   // Tool: Get Coupling Metrics
+  /**
+   * Tool: Analyze Coupling
+   * Returns metrics on file interdependence and cohesion.
+   */
   server.tool(
     'get_coupling_metrics',
     'Analyze code coupling metrics to identify tightly coupled components',
@@ -867,7 +892,7 @@ export function registerTools(server) {
     async ({ title, description, affectedFiles, status, patterns, enforcement }) => {
       try {
         const adrId = `ADR-${Date.now()}`;
-        
+
         // Save to ADR Index if patterns are provided
         if (patterns && patterns.length > 0) {
           await saveADR({

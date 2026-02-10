@@ -75,3 +75,19 @@ export async function auditGovernance(targetPath = process.cwd()) {
   printSuccess('✅ Governance audit passed. No strict violations found.');
   return { ok: true, violations };
 }
+
+/**
+ * Safe execution wrapper with error handling for governor
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='governor'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'governor') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

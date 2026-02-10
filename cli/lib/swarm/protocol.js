@@ -717,3 +717,17 @@ export function createMessage(from, to, content, context = {}) {
 export function createHandover(previousAgent, nextAgent, summary, artifacts = []) {
   return new HandoffPayload(previousAgent, nextAgent, { summary, artifacts });
 }
+
+/**
+ * Handle errors in protocol module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='protocol'] - Error context
+ */
+function handleModuleError(error, context = 'protocol') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

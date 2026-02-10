@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Header module
+ * @module dashboard/header
+ */
+
 'use client';
 
 import Link from 'next/link';
@@ -67,4 +72,16 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       </div>
     </header>
   );
+}
+
+/**
+ * Error handler for header
+ * @param {Error} error - Error to handle
+ */
+function handleHeaderError(error) {
+  try {
+    console.error('[header]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

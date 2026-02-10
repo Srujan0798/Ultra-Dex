@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+/**
+ * @fileoverview Ultra Dex module
+ * @module bin/ultra-dex
+ */
+
 process.env.FORCE_COLOR = '3';
 
 import { Command } from 'commander';

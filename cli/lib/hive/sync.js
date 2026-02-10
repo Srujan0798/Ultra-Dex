@@ -26,3 +26,17 @@ export class HiveSync extends EventEmitter {
 export function createHiveSync() {
   return new HiveSync();
 }
+
+/**
+ * Handle errors in sync module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='sync'] - Error context
+ */
+function handleModuleError(error, context = 'sync') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

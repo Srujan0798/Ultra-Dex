@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Commands module
+ * @module src/commands
+ */
+
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -9,11 +14,12 @@ export async function runUltraDex(command: string, args: string[] = []) {
   output.show(true);
 
   const fullCommand = ['ultra-dex', command, ...args].join(' ');
+  const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
   output.appendLine(`$ ${fullCommand}`);
 
   try {
     const { stdout, stderr } = await execAsync(fullCommand, {
-      cwd: vscode.workspace.rootPath,
+      cwd,
       env: process.env,
     });
 

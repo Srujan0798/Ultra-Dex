@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Spinners module
+ * @module ui/spinners
+ */
+
 // Ultra-Dex CLI — Spinner & Loading Animations
 // Professional loading states like Gemini CLI
 

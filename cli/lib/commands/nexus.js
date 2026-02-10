@@ -1,7 +1,13 @@
 // Copyright (c) 2026 Ultra-Dex
+
+/**
+ * @fileoverview Nexus module
+ * @module commands/nexus
+ */
 // Project Nexus CLI Command
 
 import { wasmRuntime } from '../wasm/runtime.js';
+import { pluginRegistry } from '../plugins/index.js';
 import path from 'path';
 import chalk from 'chalk';
 
@@ -35,9 +41,24 @@ export function registerNexusCommand(program) {
 
     nexusCommand
         .command('list')
-        .description('List installed plugins (Not implemented)')
-        .action(() => {
-            console.log('No global plugins installed yet.');
+        .description('List installed Nexus plugins')
+        .action(async () => {
+            await pluginRegistry.initialize();
+            const plugins = pluginRegistry.getInstalledPlugins();
+
+            if (!plugins.length) {
+                console.log('No Nexus plugins installed yet.');
+                return;
+            }
+
+            console.log(chalk.cyan('\nInstalled Nexus Plugins:\n'));
+            plugins.forEach((plugin) => {
+                if (!plugin) return;
+                const name = plugin.name || 'unknown-plugin';
+                const version = plugin.version ? `@${plugin.version}` : '';
+                const location = plugin.local ? 'local' : 'registry';
+                console.log(`- ${name}${version} (${location})`);
+            });
         });
 }
 

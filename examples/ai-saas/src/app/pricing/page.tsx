@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module pricing/page
+ */
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -120,4 +125,16 @@ export default function PricingPage() {
       </section>
     </div>
   );
+}
+
+/**
+ * Error handler for page
+ * @param {Error} error - Error to handle
+ */
+function handlePageError(error) {
+  try {
+    console.error('[page]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview AskAgent module
+ * @module commands/askAgent
+ */
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -53,4 +58,16 @@ Plan:
 
   await vscode.env.clipboard.writeText(prompt);
   vscode.window.showInformationMessage(`Prompt for @${agentName} copied to clipboard!`);
+}
+
+/**
+ * Error handler for askAgent
+ * @param {Error} error - Error to handle
+ */
+function handleAskAgentError(error) {
+  try {
+    console.error('[askAgent]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

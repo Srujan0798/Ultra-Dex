@@ -1,4 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
+
+/**
+ * @fileoverview Ghost module
+ * @module commands/ghost
+ */
 // Project Ghost CLI Command
 
 import { ghostAgent } from '../ghost/agent.js';
@@ -22,3 +27,19 @@ export function registerGhostCommand(program) {
 }
 
 export default registerGhostCommand;
+
+/**
+ * Safe execution wrapper with error handling for ghost
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='ghost'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'ghost') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

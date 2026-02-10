@@ -23,3 +23,15 @@ export default {
   parseUDCF,
   parseUDCFFile,
 };
+
+/**
+ * Error handler for parser
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[parser]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

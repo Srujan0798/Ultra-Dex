@@ -1,3 +1,8 @@
+/**
+ * @fileoverview OrderController module
+ * @module controllers/orderController
+ */
+
 const logger = require('../utils/logger');
 
 class OrderController {

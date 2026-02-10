@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Rules Engine module
+ * @module planning/rules-engine
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

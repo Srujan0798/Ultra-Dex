@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Stripe module
+ * @module lib/stripe
+ */
+
 import Stripe from 'stripe';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
@@ -41,4 +46,16 @@ export async function createCheckoutSession({
       },
     },
   });
+}
+
+/**
+ * Error handler for stripe
+ * @param {Error} error - Error to handle
+ */
+function handleStripeError(error) {
+  try {
+    console.error('[stripe]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

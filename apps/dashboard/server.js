@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Server module
+ * @module dashboard/server
+ */
+
 import express from 'express';
 import http from 'http';
 import socketIo from 'socket.io';

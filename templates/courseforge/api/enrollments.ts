@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Enrollments module
+ * @module api/enrollments
+ */
+
 import { prisma } from '../lib/prisma';
 
 export async function enrollUser(courseId: string, studentId: string) {
@@ -20,4 +25,16 @@ export async function unenrollUser(courseId: string, studentId: string) {
   return prisma.enrollment.deleteMany({
     where: { courseId, studentId },
   });
+}
+
+/**
+ * Error handler for enrollments
+ * @param {Error} error - Error to handle
+ */
+function handleEnrollmentsError(error) {
+  try {
+    console.error('[enrollments]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

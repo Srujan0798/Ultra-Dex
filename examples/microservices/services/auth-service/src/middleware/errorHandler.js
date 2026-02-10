@@ -1,3 +1,8 @@
+/**
+ * @fileoverview ErrorHandler module
+ * @module middleware/errorHandler
+ */
+
 const logger = require('../utils/logger');
 
 const errorHandler = (err, req, res, next) => {
@@ -18,3 +23,15 @@ const errorHandler = (err, req, res, next) => {
 };
 
 module.exports = { errorHandler };
+
+/**
+ * Error handler for errorHandler
+ * @param {Error} error - Error to handle
+ */
+function handleErrorHandlerError(error) {
+  try {
+    console.error('[errorHandler]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

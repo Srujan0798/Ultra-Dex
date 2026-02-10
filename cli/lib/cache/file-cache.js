@@ -20,3 +20,19 @@ export class FileCache {
     this.cache.clear();
   }
 }
+
+/**
+ * Safe execution wrapper with error handling for file-cache
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='file-cache'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'file-cache') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

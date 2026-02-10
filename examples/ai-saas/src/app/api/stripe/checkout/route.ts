@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Route module
+ * @module checkout/route
+ */
+
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';

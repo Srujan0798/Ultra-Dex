@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Webhooks module
+ * @module routes/webhooks
+ */
+
 import { Router } from 'express';
 import { WebhookService } from '../services/webhook';
 import { ValidationError, NotFoundError } from '../middleware/error-handler';

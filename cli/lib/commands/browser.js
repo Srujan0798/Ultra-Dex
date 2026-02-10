@@ -543,18 +543,65 @@ async function runBrowserTests(options) {
 }
 
 /**
- * Record a browser session (lightweight stub)
+ * Record a browser session to JSON with a screenshot and DOM snapshot metadata
  */
 async function recordSession(options) {
-  const record = {
-    url: options.url,
-    browser: options.browser,
-    startedAt: new Date().toISOString(),
-    actions: [{ type: 'navigate', url: options.url, timestamp: new Date().toISOString() }],
-  };
+  if (!options.url) {
+    throw new Error('URL is required to record a session');
+  }
 
-  await fs.writeFile(options.output, JSON.stringify(record, null, 2), 'utf8');
-  printSuccess(chalk.green(`✅ Recorded session saved to: ${options.output}`));
+  printInfo(chalk.yellow(`🎥 Recording session for ${options.url}...`));
+
+  let browser;
+  try {
+    let browserType;
+    switch (options.browser.toLowerCase()) {
+      case 'firefox':
+        browserType = firefox;
+        break;
+      case 'webkit':
+        browserType = webkit;
+        break;
+      case 'chromium':
+      default:
+        browserType = chromium;
+        break;
+    }
+
+    browser = await browserType.launch({ headless: true });
+    const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
+
+    await page.goto(options.url, { waitUntil: 'networkidle' });
+    const title = await page.title();
+    const dom = await page.content();
+
+    const outputPath = options.output || 'browser-session.json';
+    const screenshotPath =
+      outputPath.replace(/\.json$/i, '') + `-${Date.now()}.png`;
+
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+
+    const record = {
+      url: options.url,
+      browser: options.browser,
+      startedAt: new Date().toISOString(),
+      title,
+      domLength: dom.length,
+      screenshot: path.basename(screenshotPath),
+      actions: [
+        { type: 'navigate', url: options.url, timestamp: new Date().toISOString() },
+        { type: 'screenshot', path: screenshotPath, timestamp: new Date().toISOString() },
+      ],
+    };
+
+    await fs.writeFile(outputPath, JSON.stringify(record, null, 2), 'utf8');
+    printSuccess(chalk.green(`✅ Recorded session saved to: ${outputPath}`));
+    printInfo(chalk.gray(`Screenshot captured: ${screenshotPath}`));
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
 }
 
 /**

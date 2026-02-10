@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Chrome Agents module
+ * @module browser/chrome-agents
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import { printWarning } from '../utils/output.js';

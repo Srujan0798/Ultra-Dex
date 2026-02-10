@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Router module
+ * @module mcp/router
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import inquirer from 'inquirer';

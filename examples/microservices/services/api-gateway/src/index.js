@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module src/index
+ */
+
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -151,3 +156,15 @@ process.on('SIGINT', () => {
   redis.disconnect();
   process.exit(0);
 });
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

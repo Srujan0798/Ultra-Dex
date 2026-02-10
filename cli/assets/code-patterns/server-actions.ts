@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Server Actions module
+ * @module code-patterns/server-actions
+ */
+
 // Ultra-Dex Production Pattern: Next.js 15 Server Actions
 // Copy this file to your app/actions/ directory
 

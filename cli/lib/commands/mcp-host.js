@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Mcp Host module
+ * @module commands/mcp-host
+ */
+
 import chalk from 'chalk';
 import { initializeMcpHost, mcpHub } from '../mcp/host.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Snap Progress module
+ * @module utils/snap-progress
+ */
+
 import chalk from 'chalk';
 import { infinityStones, doomsdayMessages } from '../../assets/art/doomsday.js';
 
@@ -24,4 +29,20 @@ export async function snapProgress(steps = 6, delay = 120) {
   }
   process.stdout.write('\n');
   process.stdout.write(chalk.yellow(`${doomsdayMessages.success}\n`));
+}
+
+/**
+ * Safe execution wrapper with error handling for snap-progress
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='snap-progress'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'snap-progress') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

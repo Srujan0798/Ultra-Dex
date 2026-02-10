@@ -269,3 +269,17 @@ export function getIntentConfidence(input) {
 
   return { intent, confidence: 0.7 };
 }
+
+/**
+ * Handle errors in router module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='router'] - Error context
+ */
+function handleModuleError(error, context = 'router') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

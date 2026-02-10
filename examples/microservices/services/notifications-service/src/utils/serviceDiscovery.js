@@ -1,3 +1,8 @@
+/**
+ * @fileoverview ServiceDiscovery module
+ * @module utils/serviceDiscovery
+ */
+
 const logger = require('./logger');
 
 const CONSUL_HOST = process.env.CONSUL_HOST || 'localhost';

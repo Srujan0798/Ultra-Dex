@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Resources module
+ * @module mcp/resources
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import { loadState, generateMarkdown } from '../commands/plan.js';

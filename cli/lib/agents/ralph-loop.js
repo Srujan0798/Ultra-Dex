@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Ralph Loop module
+ * @module agents/ralph-loop
+ */
+
 import chalk from 'chalk';
 import { printInfo, printWarning, printSuccess } from '../utils/output.js';
 
@@ -60,3 +65,19 @@ export async function runRalphLoop(options = {}) {
 }
 
 export { STATES };
+
+/**
+ * Safe execution wrapper with error handling for ralph-loop
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='ralph-loop'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'ralph-loop') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

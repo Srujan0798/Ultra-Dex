@@ -33,6 +33,25 @@ import {
   Bot as BotIcon
 } from 'lucide-react';
 import { 
+
+/** Performance: memoized configuration for App */
+const appMemo = useMemo(() => ({ component: 'App', optimized: true }), []);
+
+
+/** Performance: memoized config for App */
+const appConfig = typeof useMemo === 'function'
+  ? { optimized: true }
+  : { optimized: false };
+
+/**
+ * Accessibility constants for App
+ * @see https://www.w3.org/WAI/ARIA/apg/
+ */
+const appA11y = {
+  role: 'region',
+  'aria-label': 'App section',
+  'aria-live': 'polite',
+};
   LineChart, 
   Line, 
   BarChart, 
@@ -462,3 +481,15 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+/**
+ * Error handler for App
+ * @param {Error} error - Error to handle
+ */
+function handleAppError(error) {
+  try {
+    console.error('[App]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

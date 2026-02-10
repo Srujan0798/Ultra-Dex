@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Benchmark module
+ * @module commands/benchmark
+ */
+
 import chalk from 'chalk';
 import { spawn } from 'child_process';
 import fs from 'fs/promises';

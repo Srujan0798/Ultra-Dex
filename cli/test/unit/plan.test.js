@@ -25,3 +25,15 @@ describe('plan command', () => {
     assert.ok(options.includes('--estimate'));
   });
 });
+
+/**
+ * Error handler for plan.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[plan.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

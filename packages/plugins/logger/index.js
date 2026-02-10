@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module logger/index
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -16,3 +21,15 @@ export default {
     });
   },
 };
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

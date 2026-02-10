@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Workflow Registry module
+ * @module marketplace/workflow-registry
+ */
+
 const DEFAULT_WORKFLOW_REGISTRY_URL =
   process.env.ULTRA_DEX_WORKFLOW_REGISTRY ||
   'https://raw.githubusercontent.com/Srujan0798/Ultra-Dex/main/workflows/registry.json';

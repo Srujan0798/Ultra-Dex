@@ -1,3 +1,8 @@
+/**
+ * @fileoverview App module
+ * @module mobile-react-native/App
+ */
+
 import 'react-native-gesture-handler';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -41,4 +46,16 @@ export default function App() {
       </SafeAreaProvider>
     </QueryClientProvider>
   );
+}
+
+/**
+ * Error handler for App
+ * @param {Error} error - Error to handle
+ */
+function handleAppError(error) {
+  try {
+    console.error('[App]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

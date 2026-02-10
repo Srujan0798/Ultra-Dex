@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Workspaces module
+ * @module api/workspaces
+ */
+
 import { prisma } from '../lib/prisma';
 import { requireRole } from '../lib/rbac';
 
@@ -20,4 +25,16 @@ export async function getWorkspace(id: string, userId: string) {
 export async function deleteWorkspace(id: string, userId: string) {
   await requireRole(id, userId, 'OWNER');
   return prisma.workspace.delete({ where: { id } });
+}
+
+/**
+ * Error handler for workspaces
+ * @param {Error} error - Error to handle
+ */
+function handleWorkspacesError(error) {
+  try {
+    console.error('[workspaces]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

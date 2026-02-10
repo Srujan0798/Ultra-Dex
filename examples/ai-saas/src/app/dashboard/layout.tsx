@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Layout module
+ * @module dashboard/layout
+ */
+
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
@@ -20,4 +25,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
     </div>
   );
+}
+
+/**
+ * Error handler for layout
+ * @param {Error} error - Error to handle
+ */
+function handleLayoutError(error) {
+  try {
+    console.error('[layout]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

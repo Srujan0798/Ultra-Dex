@@ -127,3 +127,15 @@ describe('validation utilities', () => {
     });
   });
 });
+
+/**
+ * Error handler for validation.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[validation.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

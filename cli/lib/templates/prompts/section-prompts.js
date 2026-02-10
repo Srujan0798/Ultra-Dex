@@ -275,3 +275,15 @@ export default {
   QUICK_START_PROMPT,
   CONTEXT_PROMPT,
 };
+
+/**
+ * Error handler for section-prompts
+ * @param {Error} error - Error to handle
+ */
+function handleSectionpromptsError(error) {
+  try {
+    console.error('[section-prompts]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

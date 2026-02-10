@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Scheduler module
+ * @module daemon/scheduler
+ */
+
 import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
 

@@ -16,6 +16,14 @@ import { logger } from '../ui/logger.js';
  * Provides graph-based context storage, relationship mapping, and impact analysis
  */
 export class GraphRAG {
+  /**
+   * Initialize GraphRAG instance
+   * @param {Object} config - Configuration options
+   * @param {string} [config.uri] - Neo4j URI
+   * @param {string} [config.user] - Neo4j user
+   * @param {string} [config.password] - Neo4j password
+   * @param {string} [config.projectId] - Project identifier
+   */
   constructor(config = {}) {
     this.uri = config.uri || process.env.NEO4J_URI || 'bolt://localhost:7687';
     this.user = config.user || process.env.NEO4J_USER || 'neo4j';
@@ -26,6 +34,10 @@ export class GraphRAG {
     this.connecting = null;
   }
 
+  /**
+   * Connect to Neo4j database
+   * @returns {Promise<boolean>} Connection status
+   */
   async connect() {
     if (this.connecting) return this.connecting;
 
@@ -49,6 +61,10 @@ export class GraphRAG {
     return this.connecting;
   }
 
+  /**
+   * Disconnect from Neo4j
+   * @returns {Promise<void>}
+   */
   async disconnect() {
     if (this.driver) {
       await this.driver.close();
@@ -56,6 +72,10 @@ export class GraphRAG {
     }
   }
 
+  /**
+   * Initialize graph schema with constraints and indexes
+   * @returns {Promise<void>}
+   */
   async initializeSchema() {
     if (!this.isConnected) return;
 
@@ -93,6 +113,10 @@ export class GraphRAG {
     }
   }
 
+  /**
+   * Clear all data for current project
+   * @returns {Promise<void>}
+   */
   async clearProject() {
     if (!this.isConnected) return;
 
@@ -112,6 +136,11 @@ export class GraphRAG {
     }
   }
 
+  /**
+   * Sync in-memory code graph to Neo4j
+   * @param {CodeGraph} codeGraph - Source code graph
+   * @returns {Promise<boolean>} Success status
+   */
   async syncFromCodeGraph(codeGraph) {
     if (!codeGraph) {
       throw new ValidationError('codeGraph is required for sync');
@@ -210,6 +239,11 @@ export class GraphRAG {
   /**
    * Impact Analysis: Find all files that depend on a given file (transitive)
    * Answer: "What breaks if I change X?"
+   * @param {string} filePath - Path of the file change
+   * @param {Object} options - Analysis options
+   * @param {number} [options.maxDepth=10] - Max dependency depth
+   * @param {boolean} [options.includeFunctions=false] - Include function-level analysis
+   * @returns {Promise<Object>} Impact analysis report
    */
   async getImpactAnalysis(filePath, options = {}) {
     if (!this.isConnected) {
@@ -287,7 +321,8 @@ export class GraphRAG {
   }
 
   /**
-   * Find circular dependencies
+   * Find circular dependencies in the graph
+   * @returns {Promise<Array<string[]>>} List of circular dependency chains
    */
   async findCircularDependencies() {
     if (!this.isConnected) {
@@ -315,6 +350,9 @@ export class GraphRAG {
 
   /**
    * Get dependency graph for visualization
+   * @param {string} filePath - Root file path
+   * @param {number} [depth=2] - Traversal depth
+   * @returns {Promise<Object>} Nodes and edges for visualization
    */
   async getDependencyGraph(filePath, depth = 2) {
     if (!this.isConnected) {
@@ -350,6 +388,10 @@ export class GraphRAG {
 
   /**
    * Search for symbols across the graph
+   * @param {string} query - Symbol name query
+   * @param {Object} options - Search options
+   * @param {number} [options.limit=20] - Max results
+   * @returns {Promise<Array<Object>>} Matching symbols
    */
   async searchSymbols(query, options = {}) {
     if (!this.isConnected) {
@@ -384,6 +426,7 @@ export class GraphRAG {
 
   /**
    * Get coupling metrics - how tightly coupled files are
+   * @returns {Promise<Object>} Coupling statistics
    */
   async getCouplingMetrics() {
     if (!this.isConnected) {
@@ -417,7 +460,9 @@ export class GraphRAG {
   }
 
   /**
-   * Store architectural decision
+   * Store architectural decision in the graph
+   * @param {Object} decision - ADR object
+   * @returns {Promise<boolean>} Success status
    */
   async storeDecision(decision) {
     if (!this.isConnected) return false;
@@ -454,6 +499,10 @@ export class GraphRAG {
   /**
    * Get related context for RAG
    * Returns files, functions, and decisions related to a query
+   * @param {string} query - Context query
+   * @param {Object} options - Retrieval options
+   * @param {number} [options.limit=10] - Max items per category
+   * @returns {Promise<Object>} RAG context object
    */
   async getRAGContext(query, options = {}) {
     if (!this.isConnected) {
@@ -547,6 +596,12 @@ export class GraphRAG {
  * Maintains backward compatibility while adding graph database capabilities
  */
 export class CodeGraph {
+  /**
+   * Initialize CodeGraph
+   * @param {Object} options - Graph options
+   * @param {GraphRAG} [options.graphRAG] - Optional GraphRAG instance
+   * @param {boolean} [options.useGraphDB=true] - Enable Neo4j integration
+   */
   constructor(options = {}) {
     this.nodes = new Map(); // file path -> node info
     this.edges = []; // { from, to, type }
@@ -563,6 +618,10 @@ export class CodeGraph {
     this.initializingRAG = null;
   }
 
+  /**
+   * Load graph from local JSON cache
+   * @returns {Promise<boolean>} Success status
+   */
   async loadCache() {
     try {
       if (existsSync(this.cacheFile)) {
@@ -579,6 +638,10 @@ export class CodeGraph {
     return false;
   }
 
+  /**
+   * Save graph to local JSON cache
+   * @returns {Promise<void>}
+   */
   async saveCache() {
     try {
       if (!existsSync(this.cacheDir)) {
@@ -595,6 +658,10 @@ export class CodeGraph {
     }
   }
 
+  /**
+   * Initialize GraphRAG connection
+   * @returns {Promise<boolean>} Connection status
+   */
   async initializeGraphRAG() {
     if (this.graphRAG || !this.useGraphDB) return false;
     if (this.initializingRAG) return this.initializingRAG;
@@ -619,6 +686,11 @@ export class CodeGraph {
     return this.initializingRAG;
   }
 
+  /**
+   * Scan codebase and build dependency graph
+   * @param {boolean} [useCache=true] - Use cached graph if valid
+   * @returns {Promise<Object>} Graph summary
+   */
   async scan(useCache = true) {
     if (this.isScanning) {
       logger.debug('[CodeGraph] Scan already in progress, skipping');
@@ -732,6 +804,12 @@ export class CodeGraph {
     }
   }
 
+  /**
+   * Analyze a single file for symbols and dependencies
+   * @param {string} filePath - Path to file
+   * @param {number} mtime - Last modified time
+   * @returns {Promise<Object>} File metadata and edges
+   */
   async analyzeFile(filePath, mtime) {
     if (!filePath) throw new ValidationError('filePath is required for analysis');
     try {

@@ -3,14 +3,9 @@
 // Captures screen state for VLM analysis
 
 // Optional dependencies
-let screenshot, jimp;
-try {
-    screenshot = (await import('screenshot-desktop')).default;
-} catch (e) {
-    screenshot = async () => Buffer.from(''); // Mock screenshot
-    screenshot.listDisplays = async () => [{ id: 'primary', name: 'Primary Display (Mock)' }];
-}
+import { screenSystem } from './screen.js';
 
+let jimp;
 try {
     jimp = (await import('jimp')).default;
 } catch (e) {
@@ -28,10 +23,7 @@ export class VisionSystem {
      */
     async captureParams() {
         try {
-            // Capture all screens creates a unified image or array depending on lib version
-            // For simplicity in MVP, we grab the primary display or generic full capture
-            const imgBuffer = await screenshot({ format: 'png' });
-            return imgBuffer;
+            return await screenSystem.capture({ format: 'png' });
         } catch (error) {
             throw new Error(`Failed to capture screen: ${error.message}`);
         }
@@ -63,7 +55,7 @@ export class VisionSystem {
      */
     async listDisplays() {
         try {
-            const displays = await screenshot.listDisplays();
+            const displays = await screenSystem.listDisplays();
             this.displays = displays;
             return displays;
         } catch (e) {

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview OrderConsumer module
+ * @module consumers/orderConsumer
+ */
+
 const logger = require('../utils/logger');
 const MockPaymentGateway = require('../gateways/mockPaymentGateway');
 

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Health module
+ * @module routes/health
+ */
+
 import { Router } from 'express';
 import { config } from '../config';
 import { logger } from '../utils/logger';

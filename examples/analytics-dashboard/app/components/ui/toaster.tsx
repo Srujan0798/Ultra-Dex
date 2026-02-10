@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Toaster module
+ * @module ui/toaster
+ */
+
 import { useToast } from '@/app/hooks/use-toast';
 import {
   Toast,
@@ -28,4 +33,16 @@ export function Toaster() {
       <ToastViewport />
     </ToastProvider>
   );
+}
+
+/**
+ * Error handler for toaster
+ * @param {Error} error - Error to handle
+ */
+function handleToasterError(error) {
+  try {
+    console.error('[toaster]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module types/index
+ */
+
 export interface User {
   id: string;
   name: string | null;
@@ -62,4 +67,16 @@ export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -11,6 +11,13 @@ import { logger } from '../ui/logger.js';
  * Replaces file-based context with graph-based semantic retrieval
  */
 export class ContextEngine {
+  /**
+   * Initialize Context Engine
+   * @param {Object} options - Configuration options
+   * @param {CodeGraph} [options.graph] - Dependency graph instance
+   * @param {boolean} [options.useGraphDB=true] - Enable GraphRAG
+   * @param {number} [options.maxContextSize=100000] - Max context tokens/chars
+   */
   constructor(options = {}) {
     this.graph = options.graph || projectGraph;
     this.useGraphDB = options.useGraphDB !== false;
@@ -21,7 +28,8 @@ export class ContextEngine {
   }
 
   /**
-   * Initialize the context engine
+   * Initialize the context engine and underlying graph
+   * @returns {Promise<ContextEngine>} Initialized instance
    */
   async initialize() {
     if (this.initializing) return this.initializing;
@@ -130,6 +138,10 @@ export class ContextEngine {
 
   /**
    * Get context for a specific file including its dependencies
+   * @param {string} filePath - Path to file
+   * @param {Object} options - Traversal options
+   * @param {number} [options.depth=2] - Dependency depth
+   * @returns {Promise<Array<Object>>} List of related file nodes
    */
   async getFileContext(filePath, options = {}) {
     const context = [];
@@ -167,6 +179,9 @@ export class ContextEngine {
 
   /**
    * Get context for a symbol (function, class, etc.)
+   * @param {string} symbol - Symbol name to search
+   * @param {Object} options - Search options
+   * @returns {Promise<Array<Object>>} List of nodes containing the symbol
    */
   async getSymbolContext(symbol, options = {}) {
     const results = this.graph.findSymbol(symbol);
@@ -191,6 +206,8 @@ export class ContextEngine {
 
   /**
    * Read contents of files
+   * @param {string[]} filePaths - List of file paths
+   * @returns {Promise<Object>} Map of file paths to content
    */
   async readFileContents(filePaths) {
     const contents = {};
@@ -209,7 +226,9 @@ export class ContextEngine {
   }
 
   /**
-   * Calculate total context size
+   * Calculate total context size in characters
+   * @param {Object} context - Context object
+   * @returns {number} Size in characters
    */
   calculateContextSize(context) {
     let size = 0;
@@ -225,6 +244,9 @@ export class ContextEngine {
 
   /**
    * Format context for LLM consumption
+   * @param {Object} context - Raw context object
+   * @param {Object} options - Formatting options
+   * @returns {string} Formatted markdown string
    */
   formatContextForLLM(context, options = {}) {
     const sections = [];
@@ -353,6 +375,9 @@ export class ContextEngine {
   /**
    * Query the graph with a natural language question
    * Example: "What breaks if I change the auth module?"
+   * @param {string} question - Natural language query
+   * @param {Object} options - Query options
+   * @returns {Promise<Object>} Structured answer and context
    */
   async query(question, options = {}) {
     const lowerQuestion = question.toLowerCase();

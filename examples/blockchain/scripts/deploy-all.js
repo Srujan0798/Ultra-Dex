@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Deploy All module
+ * @module scripts/deploy-all
+ */
+
 const hre = require('hardhat');
 const fs = require('fs');
 const path = require('path');

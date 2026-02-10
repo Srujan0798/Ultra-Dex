@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rate Limit module
+ * @module lib/rate-limit
+ */
+
 import { prisma } from './prisma';
 
 // Simple implementation using DB-based counters.
@@ -28,4 +33,16 @@ export async function checkRateLimit(workspaceId: string, windowMs = 3600000) {
   }
 
   return { allowed: true, remaining: maxRequests - currentUsage };
+}
+
+/**
+ * Error handler for rate-limit
+ * @param {Error} error - Error to handle
+ */
+function handleRatelimitError(error) {
+  try {
+    console.error('[rate-limit]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

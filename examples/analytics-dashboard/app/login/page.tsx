@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module login/page
+ */
+
 'use client';
 
 import React from 'react';
@@ -108,4 +113,16 @@ function BarChart3(props: React.SVGProps<SVGSVGElement>) {
       <path d="M8 17v-3" />
     </svg>
   );
+}
+
+/**
+ * Error handler for page
+ * @param {Error} error - Error to handle
+ */
+function handlePageError(error) {
+  try {
+    console.error('[page]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

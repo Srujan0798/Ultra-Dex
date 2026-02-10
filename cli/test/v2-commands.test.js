@@ -1,3 +1,8 @@
+/**
+ * @fileoverview V2 Commands Test module
+ * @module test/v2-commands.test
+ */
+
 import assert from 'assert';
 import { execSync } from 'child_process';
 import { test } from 'node:test';

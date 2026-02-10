@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Webhooks module
+ * @module api/webhooks
+ */
+
 import { prisma } from '../lib/prisma';
 
 export async function createWebhook(
@@ -26,4 +31,16 @@ export async function disableWebhook(id: string) {
 
 export async function deleteWebhook(id: string) {
   return prisma.webhookEndpoint.delete({ where: { id } });
+}
+
+/**
+ * Error handler for webhooks
+ * @param {Error} error - Error to handle
+ */
+function handleWebhooksError(error) {
+  try {
+    console.error('[webhooks]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

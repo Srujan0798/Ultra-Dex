@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Progress Calc module
+ * @module lib/progress-calc
+ */
+
 import { prisma } from './prisma';
 
 export async function calculateCourseProgress(courseId: string, studentId: string): Promise<number> {
@@ -26,4 +31,16 @@ export async function calculateCourseProgress(courseId: string, studentId: strin
   });
 
   return Math.round((completedCount / totalLessons) * 100);
+}
+
+/**
+ * Error handler for progress-calc
+ * @param {Error} error - Error to handle
+ */
+function handleProgresscalcError(error) {
+  try {
+    console.error('[progress-calc]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

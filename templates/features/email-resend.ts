@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Email Resend module
+ * @module features/email-resend
+ */
+
 // Resend Email Template (React Email + BullMQ)
 
 import React from 'react';
@@ -45,4 +50,16 @@ export function PasswordResetEmail({ url }: { url: string }) {
     React.createElement('p', null, 'Click the link below to reset your password.'),
     React.createElement('a', { href: url }, 'Reset Password')
   );
+}
+
+/**
+ * Error handler for email-resend
+ * @param {Error} error - Error to handle
+ */
+function handleEmailresendError(error) {
+  try {
+    console.error('[email-resend]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview MockPaymentGateway module
+ * @module gateways/mockPaymentGateway
+ */
+
 const logger = require('../utils/logger');
 
 class MockPaymentGateway {
@@ -84,3 +89,15 @@ class MockPaymentGateway {
 }
 
 module.exports = MockPaymentGateway;
+
+/**
+ * Error handler for mockPaymentGateway
+ * @param {Error} error - Error to handle
+ */
+function handleMockPaymentGatewayError(error) {
+  try {
+    console.error('[mockPaymentGateway]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

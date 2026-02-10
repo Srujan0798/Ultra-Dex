@@ -552,3 +552,15 @@ describe('edge cases', () => {
     results.forEach((r) => assert.ok(r.status !== null));
   });
 });
+
+/**
+ * Error handler for extended-commands.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[extended-commands.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

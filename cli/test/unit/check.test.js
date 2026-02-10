@@ -21,3 +21,15 @@ describe('check command', () => {
     assert.equal(command.options.length, 0);
   });
 });
+
+/**
+ * Error handler for check.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[check.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

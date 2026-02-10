@@ -24,3 +24,19 @@ export async function evaluateDataset(dataset = 'default') {
 export default {
   evaluateDataset,
 };
+
+/**
+ * Safe execution wrapper with error handling for evaluate
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='evaluate'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'evaluate') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

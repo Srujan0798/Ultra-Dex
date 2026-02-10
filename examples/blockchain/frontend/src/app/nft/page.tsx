@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module nft/page
+ */
+
 'use client';
 
 import { useState } from 'react';
@@ -176,4 +181,16 @@ export default function NFTPage() {
       )}
     </div>
   );
+}
+
+/**
+ * Error handler for page
+ * @param {Error} error - Error to handle
+ */
+function handlePageError(error) {
+  try {
+    console.error('[page]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

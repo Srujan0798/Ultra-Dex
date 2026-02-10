@@ -34,3 +34,19 @@ export default {
   recordSample,
   listTrainingDatasets,
 };
+
+/**
+ * Safe execution wrapper with error handling for studio
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='studio'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'studio') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

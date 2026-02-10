@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Dashboard module
+ * @module routes/dashboard
+ */
+
 import { getAuth } from '@clerk/remix/ssr.server';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -81,4 +86,16 @@ export default function Dashboard() {
       </div>
     </main>
   );
+}
+
+/**
+ * Error handler for dashboard
+ * @param {Error} error - Error to handle
+ */
+function handleDashboardError(error) {
+  try {
+    console.error('[dashboard]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

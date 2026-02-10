@@ -254,3 +254,17 @@ export default {
   formatTroubleshooting,
   createEnhancedHelp,
 };
+
+/**
+ * Handle errors in help module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='help'] - Error context
+ */
+function handleModuleError(error, context = 'help') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

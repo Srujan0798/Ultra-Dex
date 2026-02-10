@@ -273,3 +273,17 @@ export default {
   showSwarmPipeline,
   showHelp,
 };
+
+/**
+ * Handle errors in interface module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='interface'] - Error context
+ */
+function handleModuleError(error, context = 'interface') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

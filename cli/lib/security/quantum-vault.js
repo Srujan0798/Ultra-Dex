@@ -99,3 +99,15 @@ export class QuantumVault {
 export const vault = new QuantumVault(crypto.createHash('sha256').update('ultra-dex-default-key-do-not-use-in-prod').digest());
 
 export default vault;
+
+/**
+ * Error handler for quantum-vault
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[quantum-vault]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

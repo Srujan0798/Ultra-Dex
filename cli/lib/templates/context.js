@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Context module
+ * @module templates/context
+ */
+
 import { githubBlobUrl, githubWebUrl } from '../config/urls.js';
 
 export const CONTEXT_TEMPLATE = `# {{PROJECT_NAME}} - Context
@@ -26,3 +31,15 @@ Setting up the implementation plan.
 - [Ultra-Dex Template](${githubWebUrl()})
 - [TaskFlow Example](${githubBlobUrl('@%20Ultra%20DeX/Saas%20plan/Examples/TaskFlow-Complete.md')})
 `;
+
+/**
+ * Error handler for context
+ * @param {Error} error - Error to handle
+ */
+function handleContextError(error) {
+  try {
+    console.error('[context]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

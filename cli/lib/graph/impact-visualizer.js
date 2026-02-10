@@ -208,3 +208,19 @@ export class ImpactVisualizer {
 }
 
 export default ImpactVisualizer;
+
+/**
+ * Safe execution wrapper with error handling for impact-visualizer
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='impact-visualizer'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'impact-visualizer') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

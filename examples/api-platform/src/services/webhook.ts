@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Webhook module
+ * @module services/webhook
+ */
+
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { config } from '../config';

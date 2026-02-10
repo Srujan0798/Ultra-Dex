@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Achievements module
+ * @module api/achievements
+ */
+
 import { prisma } from '../lib/prisma';
 import { checkAchievements } from '../lib/streak-logic';
 
@@ -40,4 +45,16 @@ export async function getAchievementSummary(userId: string) {
     totalXp,
     achievements,
   };
+}
+
+/**
+ * Error handler for achievements
+ * @param {Error} error - Error to handle
+ */
+function handleAchievementsError(error) {
+  try {
+    console.error('[achievements]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

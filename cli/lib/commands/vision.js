@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Vision module
+ * @module commands/vision
+ */
+
 import { Command } from 'commander';
 import fs from 'fs/promises';
 import path from 'path';

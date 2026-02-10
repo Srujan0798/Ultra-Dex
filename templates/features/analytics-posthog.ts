@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Analytics Posthog module
+ * @module features/analytics-posthog
+ */
+
 // PostHog Analytics Template (GDPR mode)
 
 import posthog from 'posthog-js';
@@ -47,4 +52,16 @@ export function trackWebVitals(metric: { id: string; name: string; value: number
     value: metric.value,
     id: metric.id,
   });
+}
+
+/**
+ * Error handler for analytics-posthog
+ * @param {Error} error - Error to handle
+ */
+function handleAnalyticsposthogError(error) {
+  try {
+    console.error('[analytics-posthog]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

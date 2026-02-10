@@ -51,3 +51,15 @@ module.exports = {
     timeout: 40000,
   },
 };
+
+/**
+ * Error handler for hardhat.config
+ * @param {Error} error - Error to handle
+ */
+function handleHardhatconfigError(error) {
+  try {
+    console.error('[hardhat.config]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

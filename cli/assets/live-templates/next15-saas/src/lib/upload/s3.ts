@@ -1,3 +1,8 @@
+/**
+ * @fileoverview S3 module
+ * @module upload/s3
+ */
+
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -37,3 +42,15 @@ export const generateUniqueKey = (filename: string, userId: string) => {
   const ext = filename.split('.').pop();
   return `uploads/${userId}/${timestamp}.${ext}`;
 };
+
+/**
+ * Error handler for s3
+ * @param {Error} error - Error to handle
+ */
+function handleS3Error(error) {
+  try {
+    console.error('[s3]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

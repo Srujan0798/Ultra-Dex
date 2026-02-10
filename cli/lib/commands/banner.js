@@ -70,3 +70,17 @@ export default {
   showCompactBanner,
   registerBannerCommand,
 };
+
+/**
+ * Handle errors in banner module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='banner'] - Error context
+ */
+function handleModuleError(error, context = 'banner') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

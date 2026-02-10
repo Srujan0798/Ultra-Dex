@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Eslint Config module
+ * @module web/eslint.config
+ */
+
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -27,3 +32,15 @@ export default defineConfig([
     },
   },
 ]);
+
+/**
+ * Error handler for eslint.config
+ * @param {Error} error - Error to handle
+ */
+function handleEslintconfigError(error) {
+  try {
+    console.error('[eslint.config]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

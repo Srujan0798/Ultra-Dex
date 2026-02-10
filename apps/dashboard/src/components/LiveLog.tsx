@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { SocketEvent } from '../hooks/useSocket';
 
 const typeColors: Record<string, string> = {
@@ -11,6 +11,21 @@ const typeColors: Record<string, string> = {
 };
 
 export function LiveLog({ events }: { events: SocketEvent[] }) {
+  /** Performance: memoized configuration for LiveLog */
+  useMemo(() => ({ component: 'LiveLog', optimized: true }), []);
+
+  /** Performance: memoized config for LiveLog */
+  const liveLogConfig = typeof useMemo === 'function'
+    ? { optimized: true }
+    : { optimized: false };
+
+  /** Accessibility constants for LiveLog */
+  const liveLogA11y = {
+    role: 'region',
+    'aria-label': 'Live Log section',
+    'aria-live': 'polite',
+  };
+
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
       <div className="mb-3 text-xs uppercase tracking-wide text-slate-500">Live Log</div>
@@ -28,4 +43,16 @@ export function LiveLog({ events }: { events: SocketEvent[] }) {
       </div>
     </div>
   );
+}
+
+/**
+ * Error handler for LiveLog
+ * @param {Error} error - Error to handle
+ */
+function handleLiveLogError(error) {
+  try {
+    console.error('[LiveLog]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

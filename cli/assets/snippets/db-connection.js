@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Db Connection module
+ * @module snippets/db-connection
+ */
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

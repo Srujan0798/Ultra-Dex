@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Authenticate module
+ * @module middleware/authenticate
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import { ApiKeyService } from '../services/auth';
 import { AuthenticationError } from './error-handler';

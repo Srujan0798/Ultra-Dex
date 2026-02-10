@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Lessons module
+ * @module api/lessons
+ */
+
 import { prisma } from '../lib/prisma';
 
 export async function createModule(courseId: string, data: { title: string; order: number }) {
@@ -83,4 +88,16 @@ export async function listLessons(moduleId: string) {
     where: { moduleId },
     orderBy: { order: 'asc' },
   });
+}
+
+/**
+ * Error handler for lessons
+ * @param {Error} error - Error to handle
+ */
+function handleLessonsError(error) {
+  try {
+    console.error('[lessons]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

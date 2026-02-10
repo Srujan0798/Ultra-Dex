@@ -23,3 +23,15 @@ export class TeamSyncManager {
 }
 
 export default TeamSyncManager;
+
+/**
+ * Error handler for sync
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[sync]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

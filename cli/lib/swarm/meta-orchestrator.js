@@ -22,3 +22,19 @@ export async function orchestrate(task, options = {}) {
 }
 
 export default { orchestrate, selectAgents };
+
+/**
+ * Safe execution wrapper with error handling for meta-orchestrator
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='meta-orchestrator'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'meta-orchestrator') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

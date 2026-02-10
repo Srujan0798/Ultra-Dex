@@ -15,3 +15,15 @@ test('ClaudeProvider uses env model when provided', () => {
   assert.equal(provider.model, 'claude-sonnet-5-20260201');
   process.env.ULTRA_DEX_CLAUDE_MODEL = original;
 });
+
+/**
+ * Error handler for claude.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[claude.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

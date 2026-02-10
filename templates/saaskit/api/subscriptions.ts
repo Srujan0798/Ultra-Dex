@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Subscriptions module
+ * @module api/subscriptions
+ */
+
 import { prisma } from '../lib/prisma';
 import { createBillingPortalSession, createCheckoutSession, getPriceId } from '../lib/stripe';
 
@@ -53,4 +58,16 @@ export async function getSubscriptionStatus(workspaceId: string) {
     currentPeriodEnd: subscription.currentPeriodEnd,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
   };
+}
+
+/**
+ * Error handler for subscriptions
+ * @param {Error} error - Error to handle
+ */
+function handleSubscriptionsError(error) {
+  try {
+    console.error('[subscriptions]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

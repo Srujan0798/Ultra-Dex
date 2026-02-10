@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Web Ide module
+ * @module ide/web-ide
+ */
+
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import fs from 'fs/promises';

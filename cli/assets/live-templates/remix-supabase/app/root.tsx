@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Root module
+ * @module app/root
+ */
+
 import type { MetaFunction } from '@remix-run/node';
 import { Links, Meta, Outlet, Scripts } from '@remix-run/react';
 
@@ -16,4 +21,16 @@ export default function App() {
       </body>
     </html>
   );
+}
+
+/**
+ * Error handler for root
+ * @param {Error} error - Error to handle
+ */
+function handleRootError(error) {
+  try {
+    console.error('[root]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

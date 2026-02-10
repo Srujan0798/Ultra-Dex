@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Store module
+ * @module src/store
+ */
+
 import { v4 as uuid } from 'uuid';
 
 const users = new Map();
@@ -55,4 +60,16 @@ export function deleteTask(userId, taskId) {
   if (!task || task.userId !== userId) return false;
   tasks.delete(taskId);
   return true;
+}
+
+/**
+ * Error handler for store
+ * @param {Error} error - Error to handle
+ */
+function handleStoreError(error) {
+  try {
+    console.error('[store]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Sync module
+ * @module canvas/sync
+ */
+
 import { EventEmitter } from 'node:events';
 
 export class CanvasSyncHub extends EventEmitter {

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Consent module
+ * @module privacy/consent
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

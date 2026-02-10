@@ -247,7 +247,8 @@ async function handleLiveScaffold(options) {
 
 /**
  * Handle interactive project initialization
- * @param {Object} options Command options
+ * @param {Object} options - Command options
+ * @returns {Promise<void>}
  */
 async function handleInteractiveInit(options) {
   const answers = await inquirer.prompt([
@@ -363,6 +364,11 @@ async function handleInteractiveInit(options) {
   }
 }
 
+/**
+ * Prompt for telemetry consent if not already set
+ * @param {Object} context - Telemetry context
+ * @returns {Promise<void>}
+ */
 async function maybePromptTelemetry(context = {}) {
   try {
     const enabled = await ensureTelemetryConsent({ prompt: true, source: 'init' });
@@ -374,6 +380,11 @@ async function maybePromptTelemetry(context = {}) {
   }
 }
 
+/**
+ * Apply enterprise preset configuration
+ * @param {string} outputDir - Target directory
+ * @returns {Promise<void>}
+ */
 async function applyEnterprisePreset(outputDir) {
   const enterpriseDir = path.join(TEMPLATE_ROOT, 'enterprise');
   const fallbackDir = path.join(TEMPLATE_FALLBACK, 'enterprise');
@@ -652,6 +663,11 @@ async function deployAgents(outputDir) {
   }
 }
 
+/**
+ * Show final success instructions to the user
+ * @param {string} outputDir - Project directory
+ * @param {Object} answers - User choices
+ */
 function showFinalInstructions(outputDir, answers) {
   process.stdout.write('\n' + chalk.bold('Artifacts deployed to:') + '\n');
   process.stdout.write(chalk.gray(`  ${outputDir}/`) + '\n');

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Server Integration Test module
+ * @module mcp/server.integration.test
+ */
+
 import { test, describe, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';

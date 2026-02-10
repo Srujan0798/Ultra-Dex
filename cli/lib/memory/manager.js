@@ -74,3 +74,19 @@ export class MemoryManager {
 }
 
 export const ppmManager = new MemoryManager();
+
+/**
+ * Safe execution wrapper with error handling for manager
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='manager'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'manager') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

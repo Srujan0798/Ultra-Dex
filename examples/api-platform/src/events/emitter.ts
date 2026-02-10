@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Emitter module
+ * @module events/emitter
+ */
+
 import { EventEmitter as NodeEventEmitter } from 'events';
 import { logger } from '../utils/logger';
 import { webhookService } from '../services/webhook';

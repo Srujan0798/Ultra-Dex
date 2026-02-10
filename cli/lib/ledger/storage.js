@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Storage module
+ * @module ledger/storage
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';

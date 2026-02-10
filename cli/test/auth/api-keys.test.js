@@ -388,3 +388,15 @@ describe('APIKeyManager', () => {
     });
   });
 });
+
+/**
+ * Error handler for api-keys.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[api-keys.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

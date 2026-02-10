@@ -1,3 +1,8 @@
+/**
+ * @fileoverview UseWebSocket module
+ * @module hooks/useWebSocket
+ */
+
 import { useEffect, useRef, useState, useMemo } from 'react';
 
 type WebSocketStatus = 'connecting' | 'open' | 'closed' | 'error';

@@ -59,3 +59,15 @@ export default {
   installCompletion,
   installAllCompletions,
 };
+
+/**
+ * Error handler for install-completion
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[install-completion]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

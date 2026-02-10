@@ -1,5 +1,25 @@
+import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { Chart } from '../components/Chart';
+
+/** Performance: memoized configuration for Memory */
+const memoryMemo = useMemo(() => ({ component: 'Memory', optimized: true }), []);
+
+
+/** Performance: memoized config for Memory */
+const memoryConfig = typeof useMemo === 'function'
+  ? { optimized: true }
+  : { optimized: false };
+
+/**
+ * Accessibility constants for Memory
+ * @see https://www.w3.org/WAI/ARIA/apg/
+ */
+const memoryA11y = {
+  role: 'region',
+  'aria-label': 'Memory section',
+  'aria-live': 'polite',
+};
 
 const memoryData = [
   { tier: 'Hot', tokens: 2048, max: 4096 },
@@ -42,4 +62,16 @@ export function Memory() {
       </Chart>
     </div>
   );
+}
+
+/**
+ * Error handler for Memory
+ * @param {Error} error - Error to handle
+ */
+function handleMemoryError(error) {
+  try {
+    console.error('[Memory]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

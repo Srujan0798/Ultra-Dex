@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Route module
+ * @module checkout/route
+ */
+
 import { NextResponse } from 'next/server';
 import { createCheckoutSession } from '../../../../lib/stripe';
 
@@ -19,4 +24,16 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({ url: session.url });
+}
+
+/**
+ * Error handler for route
+ * @param {Error} error - Error to handle
+ */
+function handleRouteError(error) {
+  try {
+    console.error('[route]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

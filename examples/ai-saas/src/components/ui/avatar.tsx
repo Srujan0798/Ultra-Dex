@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Avatar module
+ * @module ui/avatar
+ */
+
 import * as React from 'react';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 
@@ -43,3 +48,15 @@ const AvatarFallback = React.forwardRef<
 AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
 
 export { Avatar, AvatarImage, AvatarFallback };
+
+/**
+ * Error handler for avatar
+ * @param {Error} error - Error to handle
+ */
+function handleAvatarError(error) {
+  try {
+    console.error('[avatar]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

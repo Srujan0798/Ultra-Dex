@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Design module
+ * @module multimodal/design
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

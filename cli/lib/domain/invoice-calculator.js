@@ -13,3 +13,17 @@ export function calculateInvoice(items, discountPercent = 0) {
 }
 
 export default { calculateInvoice };
+
+/**
+ * Handle errors in invoice-calculator module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='invoice-calculator'] - Error context
+ */
+function handleModuleError(error, context = 'invoice-calculator') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

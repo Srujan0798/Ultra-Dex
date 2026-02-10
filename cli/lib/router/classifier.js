@@ -30,3 +30,17 @@ export function classifyTask(prompt = '') {
 }
 
 export default classifyTask;
+
+/**
+ * Handle errors in classifier module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='classifier'] - Error context
+ */
+function handleModuleError(error, context = 'classifier') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

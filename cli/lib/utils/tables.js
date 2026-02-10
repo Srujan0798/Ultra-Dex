@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Tables module
+ * @module utils/tables
+ */
+
 import Table from 'cli-table3';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
@@ -184,4 +189,18 @@ export function showDataTable(data, title = 'Data Table') {
       colWidths: headers.map(() => 20), // Adjust column widths as needed
     })
   );
+}
+
+/**
+ * Handle errors in tables module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='tables'] - Error context
+ */
+function handleModuleError(error, context = 'tables') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
 }

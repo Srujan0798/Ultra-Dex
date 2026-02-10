@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Button module
+ * @module ui/button
+ */
+
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -54,3 +59,15 @@ function Button({
 }
 
 export { Button, buttonVariants };
+
+/**
+ * Error handler for button
+ * @param {Error} error - Error to handle
+ */
+function handleButtonError(error) {
+  try {
+    console.error('[button]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

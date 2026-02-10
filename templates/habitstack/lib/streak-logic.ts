@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Streak Logic module
+ * @module lib/streak-logic
+ */
+
 import { prisma } from './prisma';
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
@@ -182,4 +187,16 @@ export async function checkAchievements(userId: string) {
     longestStreak,
     completions: completions.length,
   };
+}
+
+/**
+ * Error handler for streak-logic
+ * @param {Error} error - Error to handle
+ */
+function handleStreaklogicError(error) {
+  try {
+    console.error('[streak-logic]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

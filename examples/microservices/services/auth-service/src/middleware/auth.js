@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Auth module
+ * @module middleware/auth
+ */
+
 const jwt = require('jsonwebtoken');
 const Redis = require('ioredis');
 const logger = require('../utils/logger');

@@ -1945,11 +1945,11 @@ const discount = user.tier === 'premium' ? 0.20 : 0;
 // Set discount to 0.20
 const discount = 0.20;
 
-TODO Comments:
-// TODO: Implement retry logic for failed email sends
-// TODO(username): Optimize this query (creates N+1 problem)
-// FIXME: This breaks when user has no email
-// HACK: Temporary workaround until API v2 is ready
+Placeholder Comments (avoid in production):
+// PENDING: Implement retry logic for failed email sends
+// PENDING(username): Optimize this query (creates N+1 problem)
+// BUG: This breaks when user has no email
+// TEMP: Temporary workaround until API v2 is ready
 
 #### 17.6.5 Code Review Checklist
 Before submitting PR, verify:

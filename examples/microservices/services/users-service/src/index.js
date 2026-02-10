@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module src/index
+ */
+
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');

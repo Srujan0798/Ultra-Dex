@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Index module
+ * @module types/index
+ */
+
 export interface User {
   id: string;
   clerkId: string;
@@ -70,4 +75,16 @@ export interface PricingPlan {
   priceId: string;
   features: string[];
   popular?: boolean;
+}
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

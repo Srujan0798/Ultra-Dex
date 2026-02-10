@@ -62,3 +62,15 @@ export class NetworkError extends AppError {
     });
   }
 }
+
+/**
+ * Error handler for errors
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[errors]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

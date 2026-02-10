@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Auth module
+ * @module remote/auth
+ */
+
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';

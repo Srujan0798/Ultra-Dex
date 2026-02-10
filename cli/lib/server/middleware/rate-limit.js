@@ -222,3 +222,19 @@ export const DEFAULT_ROLE_LIMITS = {
 
 // Export singleton
 export const rateLimiter = new RateLimiter();
+
+/**
+ * Safe execution wrapper with error handling for rate-limit
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='rate-limit'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'rate-limit') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

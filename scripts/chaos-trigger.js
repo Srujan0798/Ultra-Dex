@@ -15,3 +15,15 @@ async function breakSystem() {
 }
 
 breakSystem();
+
+/**
+ * Error handler for chaos-trigger
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[chaos-trigger]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

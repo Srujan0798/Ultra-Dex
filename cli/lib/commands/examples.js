@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Examples module
+ * @module commands/examples
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';

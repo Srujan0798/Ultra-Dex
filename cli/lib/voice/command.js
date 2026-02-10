@@ -1,4 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
+
+/**
+ * @fileoverview Command module
+ * @module voice/command
+ */
 // Voice Command Handler
 // Orchestrates recording, transcription, and intent routing
 
@@ -35,6 +40,47 @@ function checkPrerequisites() {
   };
 }
 
+async function recordOnce(options = {}) {
+  const audioPath = audioRecorder.start();
+
+  const stopRecording = () => {
+    audioRecorder.stop();
+    console.log('\n🛑 Stopping recording...');
+  };
+
+  await new Promise((resolve, reject) => {
+    audioRecorder.once('end', resolve);
+    audioRecorder.once('error', reject);
+
+    if (options.duration) {
+      setTimeout(() => audioRecorder.stop(), options.duration * 1000);
+    }
+
+    process.once('SIGINT', stopRecording);
+  });
+
+  console.log('🔄 Transcribing...');
+  const text = await whisperService.transcribe(audioPath);
+  console.log(`📝 Heard: "${text}"`);
+
+  fs.unlinkSync(audioPath);
+
+  if (!text || text.trim().length === 0) {
+    console.log('❌ No speech detected');
+    return null;
+  }
+
+  const { intent, confidence } = getIntentConfidence(text);
+  console.log(`🎯 Intent: ${intent} (${Math.round(confidence * 100)}%)`);
+
+  if (intent) {
+    const params = extractParams(intent, text);
+    return { text, intent, params, confidence };
+  }
+
+  return { text, intent: null };
+}
+
 export async function voiceCommand(options = {}) {
   const prereqs = checkPrerequisites();
 
@@ -49,55 +95,25 @@ export async function voiceCommand(options = {}) {
   console.log('   Press Ctrl+C to stop recording if not auto-detected.\n');
 
   try {
-    // Start recording
-    const audioPath = audioRecorder.start();
+    if (!options.continuous) {
+      return await recordOnce(options);
+    }
 
-    // Wait for silence or manual stop (simulated by duration for now if not stream)
-    // node-record-lpcm16 handles silence stop if configured
+    const rounds = Number.isFinite(options.rounds) ? options.rounds : 3;
+    const results = [];
 
-    // For the CLI command, we might want to wait for the 'end' event from recorder
-    // But recorder.start returns the path immediately.
-    // We need to wait for the stream to end.
-
-    await new Promise((resolve, reject) => {
-      audioRecorder.on('end', resolve);
-      audioRecorder.on('error', reject);
-
-      // Safety timeout
-      if (options.duration) {
-        setTimeout(() => audioRecorder.stop(), options.duration * 1000);
+    for (let i = 0; i < rounds; i += 1) {
+      console.log(`\n🔁 Listening round ${i + 1}/${rounds}`);
+      const result = await recordOnce(options);
+      if (result) {
+        results.push(result);
+        if (result.intent === 'exit') {
+          break;
+        }
       }
-
-      // Handle Ctrl+C to stop recording gracefully
-      process.on('SIGINT', () => {
-        audioRecorder.stop();
-        console.log('\n🛑 Stopping recording...');
-      });
-    });
-
-    console.log('🔄 Transcribing...');
-    const text = await whisperService.transcribe(audioPath);
-    console.log(`📝 Heard: "${text}"`);
-
-    // Clean up temp file
-    fs.unlinkSync(audioPath);
-
-    if (!text || text.trim().length === 0) {
-      console.log('❌ No speech detected');
-      return null;
     }
 
-    // NLP Routing
-    const { intent, confidence } = getIntentConfidence(text);
-    console.log(`🎯 Intent: ${intent} (${Math.round(confidence * 100)}%)`);
-
-    if (intent) {
-      const params = extractParams(intent, text);
-      return { text, intent, params, confidence };
-    }
-
-    return { text, intent: null };
-
+    return results;
   } catch (error) {
     console.error(`🔇 Voice error: ${error.message}`);
     return null;

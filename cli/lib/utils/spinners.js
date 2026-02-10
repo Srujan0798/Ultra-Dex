@@ -49,3 +49,17 @@ export default {
   createSpinner,
   startSpinner,
 };
+
+/**
+ * Handle errors in spinners module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='spinners'] - Error context
+ */
+function handleModuleError(error, context = 'spinners') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

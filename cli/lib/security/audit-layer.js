@@ -184,3 +184,19 @@ export class AuditLayer {
 export const auditLayer = new AuditLayer();
 
 export default AuditLayer;
+
+/**
+ * Safe execution wrapper with error handling for audit-layer
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='audit-layer'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'audit-layer') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

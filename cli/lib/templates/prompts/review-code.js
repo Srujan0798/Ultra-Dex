@@ -56,3 +56,15 @@ export default {
   USER_PROMPT_TEMPLATE,
   generateReviewPrompt,
 };
+
+/**
+ * Error handler for review-code
+ * @param {Error} error - Error to handle
+ */
+function handleReviewcodeError(error) {
+  try {
+    console.error('[review-code]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

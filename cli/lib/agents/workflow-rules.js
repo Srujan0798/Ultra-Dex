@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Workflow Rules module
+ * @module agents/workflow-rules
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Fine Tune module
+ * @module training/fine-tune
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 import { ensureTrainingDir } from './dataset.js';

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Compactor module
+ * @module memory/compactor
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

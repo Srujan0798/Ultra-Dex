@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Deletion module
+ * @module privacy/deletion
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

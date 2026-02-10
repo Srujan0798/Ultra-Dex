@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Whisper module
+ * @module providers/whisper
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -36,3 +41,19 @@ export class WhisperProvider {
 }
 
 export default WhisperProvider;
+
+/**
+ * Safe execution wrapper with error handling for whisper
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='whisper'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'whisper') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

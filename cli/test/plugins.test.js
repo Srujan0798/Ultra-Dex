@@ -37,3 +37,15 @@ describe('Plugin System', () => {
     assert.strictEqual(results.length, 0); // result is ignored on failure but doesn't crash
   });
 });
+
+/**
+ * Error handler for plugins.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[plugins.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

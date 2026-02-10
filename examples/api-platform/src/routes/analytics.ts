@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Analytics module
+ * @module routes/analytics
+ */
+
 import { Router } from 'express';
 import { AnalyticsService } from '../services/analytics';
 import { ValidationError } from '../middleware/error-handler';

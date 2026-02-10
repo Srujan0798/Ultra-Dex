@@ -153,3 +153,15 @@ export class MockFileSystem {
 }
 
 export default MockFileSystem;
+
+/**
+ * Error handler for filesystem
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[filesystem]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

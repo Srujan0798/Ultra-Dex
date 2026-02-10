@@ -1,3 +1,8 @@
+/**
+ * @fileoverview NotificationController module
+ * @module controllers/notificationController
+ */
+
 const logger = require('../utils/logger');
 
 class NotificationController {

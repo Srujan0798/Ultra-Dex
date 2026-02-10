@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Profile module
+ * @module commands/profile
+ */
+
 import chalk from 'chalk';
 import { spawn } from 'child_process';
 import path from 'path';
@@ -57,4 +62,20 @@ export function registerProfileCommand(program) {
       clearMetrics();
       printInfo('Metrics cleared.');
     });
+}
+
+/**
+ * Safe execution wrapper with error handling for profile
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='profile'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'profile') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

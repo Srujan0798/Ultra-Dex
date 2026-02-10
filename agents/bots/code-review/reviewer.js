@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Reviewer module
+ * @module code-review/reviewer
+ */
+
 import { checkSecurity } from './rules/security.js';
 import { checkPerformance } from './rules/performance.js';
 import { summarizeFindings } from './rules/summary.js';
@@ -14,4 +19,16 @@ export async function reviewPullRequest({ provider, payload }) {
   const performance = await checkPerformance(diffText);
 
   return summarizeFindings({ metadata, security, performance });
+}
+
+/**
+ * Error handler for reviewer
+ * @param {Error} error - Error to handle
+ */
+function handleReviewerError(error) {
+  try {
+    console.error('[reviewer]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -115,3 +115,15 @@ export class MCTSEngine {
         return best;
     }
 }
+
+/**
+ * Error handler for engine
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[engine]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

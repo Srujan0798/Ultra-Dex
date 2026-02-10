@@ -399,3 +399,15 @@ describe('compression - Integration', () => {
     assert.ok(compressedKeys.includes('createdAt'));
   });
 });
+
+/**
+ * Error handler for compression.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[compression.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

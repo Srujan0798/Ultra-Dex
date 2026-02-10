@@ -26,6 +26,13 @@ import { AppError, ValidationError, SecurityError } from '../utils/errors.js';
 // LOCAL EXECUTION (UNSAFE)
 // ============================================================================
 
+/**
+ * Execute a command locally (unsafe mode)
+ * @param {string} command - Command to execute
+ * @param {number} timeout - Timeout in milliseconds
+ * @param {Object} options - Spawn options
+ * @returns {Promise<Object>} Execution result (stdout, stderr, exitCode, duration)
+ */
 async function spawnLocal(command, timeout, options = {}) {
   return new Promise((resolve, reject) => {
     const result = { stdout: '', stderr: '', exitCode: null, timedOut: false, duration: 0 };
@@ -62,6 +69,11 @@ async function spawnLocal(command, timeout, options = {}) {
 // CLI COMMAND
 // ============================================================================
 
+/**
+ * Register the exec command with Commander
+ * @param {Command} program - Commander program instance
+ * @returns {void}
+ */
 export function registerExecCommand(program) {
   program
     .command('exec [file]')
@@ -135,6 +147,11 @@ export function registerExecCommand(program) {
     });
 }
 
+/**
+ * Handle npm test execution
+ * @param {number} timeout - Execution timeout
+ * @returns {Promise<Object>} Execution result
+ */
 async function handleTestExecution(timeout) {
   const spinner = ora('Running npm test in sandbox...').start();
   const result = await executeInSandbox('npm test', {
@@ -148,6 +165,13 @@ async function handleTestExecution(timeout) {
   return result;
 }
 
+/**
+ * Handle arbitrary command execution
+ * @param {string} command - Command to run
+ * @param {number} timeout - Execution timeout
+ * @param {boolean} allowNetwork - Allow network access
+ * @returns {Promise<Object>} Execution result
+ */
 async function handleCommandExecution(command, timeout, allowNetwork) {
   const spinner = ora(`Executing: ${command}`).start();
   const result = await executeInSandbox(command, {
@@ -161,6 +185,12 @@ async function handleCommandExecution(command, timeout, allowNetwork) {
   return result;
 }
 
+/**
+ * Resolve Docker image for execution
+ * @param {string} language - Target language
+ * @param {Object} options - Command options
+ * @returns {Promise<string>} Docker image tag
+ */
 async function resolveImage(language, options) {
   if (options.image) return options.image;
   if (options.dockerfile) {
@@ -171,6 +201,11 @@ async function resolveImage(language, options) {
   return SANDBOX_CONFIG.images[language] || SANDBOX_CONFIG.defaultImage;
 }
 
+/**
+ * Execute command synchronously and safely
+ * @param {string} cmd - Command to run
+ * @throws {AppError} If execution fails
+ */
 async function execSyncSafe(cmd) {
   try {
     const { execSync } = await import('child_process');
@@ -180,6 +215,14 @@ async function execSyncSafe(cmd) {
   }
 }
 
+/**
+ * Handle inline code execution
+ * @param {string} code - Code to execute
+ * @param {string} lang - Language identifier
+ * @param {number} timeout - Timeout in ms
+ * @param {Object} options - Execution options
+ * @returns {Promise<Object>} Execution result
+ */
 async function handleCodeExecution(code, lang, timeout, options) {
   const language = lang || 'javascript';
   const image = await resolveImage(language, options);
@@ -197,6 +240,14 @@ async function handleCodeExecution(code, lang, timeout, options) {
   return result;
 }
 
+/**
+ * Handle file execution
+ * @param {string} file - File path
+ * @param {string} lang - Language identifier
+ * @param {number} timeout - Timeout in ms
+ * @param {Object} options - Execution options
+ * @returns {Promise<Object>} Execution result
+ */
 async function handleFileExecution(file, lang, timeout, options) {
   const language = lang || detectLanguage(file);
   const image = await resolveImage(language, options);
@@ -216,6 +267,11 @@ async function handleFileExecution(file, lang, timeout, options) {
   return result;
 }
 
+/**
+ * Handle unsafe test execution (local)
+ * @param {number} timeout - Timeout in ms
+ * @returns {Promise<Object>} Execution result
+ */
 async function handleUnsafeTestExecution(timeout) {
   const spinner = ora('Running npm test (unsafe mode)...').start();
   assertSafeCommand('npm test');
@@ -225,6 +281,12 @@ async function handleUnsafeTestExecution(timeout) {
   return result;
 }
 
+/**
+ * Handle unsafe command execution (local)
+ * @param {string} command - Command to run
+ * @param {number} timeout - Timeout in ms
+ * @returns {Promise<Object>} Execution result
+ */
 async function handleUnsafeCommandExecution(command, timeout) {
   const spinner = ora(`Executing (unsafe): ${command}`).start();
   assertSafeCommand(command);
@@ -234,6 +296,13 @@ async function handleUnsafeCommandExecution(command, timeout) {
   return result;
 }
 
+/**
+ * Handle unsafe code execution (local)
+ * @param {string} code - Code to execute
+ * @param {string} lang - Language
+ * @param {number} timeout - Timeout in ms
+ * @returns {Promise<Object>} Execution result
+ */
 async function handleUnsafeCodeExecution(code, lang, timeout) {
   const language = lang || 'javascript';
   const tempDir = path.join(process.cwd(), '.ultra-dex', 'unsafe-exec');
@@ -261,6 +330,13 @@ async function handleUnsafeCodeExecution(code, lang, timeout) {
   return result;
 }
 
+/**
+ * Handle unsafe file execution (local)
+ * @param {string} file - File path
+ * @param {string} lang - Language
+ * @param {number} timeout - Timeout in ms
+ * @returns {Promise<Object>} Execution result
+ */
 async function handleUnsafeFileExecution(file, lang, timeout) {
   const resolved = assertSafePath(file, process.cwd());
   const language = lang || detectLanguage(resolved);
@@ -274,6 +350,12 @@ async function handleUnsafeFileExecution(file, lang, timeout) {
   return result;
 }
 
+/**
+ * Display execution result in a formatted box
+ * @param {Object} result - Execution result object
+ * @param {number} timeout - Timeout setting
+ * @param {boolean} allowNetwork - Network setting
+ */
 function displayExecutionResult(result, timeout, allowNetwork) {
   if (result.timedOut) {
     printError(`\n❌ Execution timed out after ${timeout}ms`);

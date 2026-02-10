@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Route module
+ * @module metrics/route
+ */
+
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/app/lib/db';

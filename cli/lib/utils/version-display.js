@@ -34,3 +34,17 @@ export function showVersionCard() {
 }
 
 export default showVersionCard;
+
+/**
+ * Handle errors in version-display module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='version-display'] - Error context
+ */
+function handleModuleError(error, context = 'version-display') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

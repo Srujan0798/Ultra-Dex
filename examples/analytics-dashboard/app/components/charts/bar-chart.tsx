@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Bar Chart module
+ * @module charts/bar-chart
+ */
+
 'use client';
 
 import React from 'react';
@@ -68,4 +73,16 @@ export function BarChartComponent({ title, data, bars, height = 300 }: BarChartC
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Error handler for bar-chart
+ * @param {Error} error - Error to handle
+ */
+function handleBarchartError(error) {
+  try {
+    console.error('[bar-chart]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

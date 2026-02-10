@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Schemas module
+ * @module validation/schemas
+ */
+
 import { z } from 'zod';
 
 export const createApiKeySchema = z.object({
@@ -33,3 +38,15 @@ export const createWebhookSchema = z.object({
     .min(1),
   secret: z.string().optional(),
 });
+
+/**
+ * Error handler for schemas
+ * @param {Error} error - Error to handle
+ */
+function handleSchemasError(error) {
+  try {
+    console.error('[schemas]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

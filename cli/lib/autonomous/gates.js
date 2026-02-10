@@ -9,3 +9,17 @@ export const AUTONOMOUS_GATES = [
 export function requireGateApproval(gateId, approvals = []) {
   return approvals.includes(gateId);
 }
+
+/**
+ * Handle errors in gates module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='gates'] - Error context
+ */
+function handleModuleError(error, context = 'gates') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

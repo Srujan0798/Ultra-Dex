@@ -1,3 +1,8 @@
+/**
+ * @fileoverview QuickActionsProvider module
+ * @module src/quickActionsProvider
+ */
+
 import * as vscode from 'vscode';
 
 export class QuickActionsProvider implements vscode.TreeDataProvider<QuickActionItem> {
@@ -84,5 +89,17 @@ class QuickActionItem extends vscode.TreeItem {
     this.description = this.description;
     this.command = command;
     this.contextValue = 'quickAction';
+  }
+}
+
+/**
+ * Error handler for quickActionsProvider
+ * @param {Error} error - Error to handle
+ */
+function handleQuickActionsProviderError(error) {
+  try {
+    console.error('[quickActionsProvider]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

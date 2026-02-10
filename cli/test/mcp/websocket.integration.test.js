@@ -70,3 +70,15 @@ describe('MCP WebSocket integration', () => {
     ws2.close();
   });
 });
+
+/**
+ * Error handler for websocket.integration.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[websocket.integration.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

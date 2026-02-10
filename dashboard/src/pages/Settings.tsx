@@ -116,3 +116,17 @@ export const Settings = memo(function Settings() {
     </main>
   );
 });
+
+/**
+ * Error handler for Settings component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleSettingsError(error, errorInfo) {
+  try {
+    console.error(`[Settings] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}

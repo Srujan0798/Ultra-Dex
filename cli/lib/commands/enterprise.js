@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Enterprise module
+ * @module commands/enterprise
+ */
+
 import { Command } from 'commander';
 import { enterpriseFeatures } from '../lib/enterprise/features.js';
 import { printInfo, printSuccess, printError, printWarning } from '../lib/utils/output.js';

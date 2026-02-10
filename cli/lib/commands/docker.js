@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Docker module
+ * @module commands/docker
+ */
+
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs/promises';

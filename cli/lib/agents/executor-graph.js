@@ -23,3 +23,19 @@ export async function runExecutorGraph(input, options = {}) {
 }
 
 export default { createExecutorGraph, runExecutorGraph };
+
+/**
+ * Safe execution wrapper with error handling for executor-graph
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='executor-graph'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'executor-graph') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

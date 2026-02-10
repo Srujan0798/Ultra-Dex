@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Stripe module
+ * @module server/stripe
+ */
+
 import Stripe from 'stripe';
 import { STRIPE_SECRET_KEY } from '$env/static/private';
 
@@ -15,3 +20,15 @@ export const createCheckoutSession = async (customerId: string, priceId: string)
     cancel_url: `${process.env.PUBLIC_APP_URL}/dashboard?canceled=true`,
   });
 };
+
+/**
+ * Error handler for stripe
+ * @param {Error} error - Error to handle
+ */
+function handleStripeError(error) {
+  try {
+    console.error('[stripe]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

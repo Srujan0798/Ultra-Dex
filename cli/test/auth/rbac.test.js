@@ -305,3 +305,15 @@ describe('Real-World Scenarios', () => {
     assert.strictEqual(hasPermission(ROLES.VIEWER, PERMISSIONS.CONFIGURE_SSO), false);
   });
 });
+
+/**
+ * Error handler for rbac.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[rbac.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

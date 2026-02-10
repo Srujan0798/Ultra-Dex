@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Generator module
+ * @module white-label/generator
+ */
+
 // File: cli/lib/white-label/generator.js
 import fs from 'fs/promises';
 import path from 'path';

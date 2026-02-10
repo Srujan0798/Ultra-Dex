@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Editor module
+ * @module contentstudio/editor
+ */
+
 import { useEffect } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -35,4 +40,16 @@ export function RichEditor({ value = '', onChange, readOnly = false }: RichEdito
       <EditorContent editor={editor} />
     </div>
   );
+}
+
+/**
+ * Error handler for editor
+ * @param {Error} error - Error to handle
+ */
+function handleEditorError(error) {
+  try {
+    console.error('[editor]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

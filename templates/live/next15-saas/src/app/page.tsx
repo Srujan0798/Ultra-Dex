@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Page module
+ * @module app/page
+ */
+
 import Link from 'next/link';
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
@@ -55,4 +60,16 @@ export default async function Home() {
       </section>
     </main>
   );
+}
+
+/**
+ * Error handler for page
+ * @param {Error} error - Error to handle
+ */
+function handlePageError(error) {
+  try {
+    console.error('[page]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

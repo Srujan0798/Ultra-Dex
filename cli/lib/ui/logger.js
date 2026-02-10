@@ -206,3 +206,15 @@ class Logger {
 
 export const logger = new Logger();
 export default logger;
+
+/**
+ * Error handler for logger
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[logger]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

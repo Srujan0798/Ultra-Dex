@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Python module
+ * @module runtimes/python
+ */
+
 export const pythonRuntime = {
   id: 'python',
   image: 'python:3.12-alpine',
@@ -7,3 +12,15 @@ export const pythonRuntime = {
 };
 
 export default pythonRuntime;
+
+/**
+ * Error handler for python
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[python]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

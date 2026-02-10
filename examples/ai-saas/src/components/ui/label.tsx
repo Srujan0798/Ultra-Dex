@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Label module
+ * @module ui/label
+ */
+
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
@@ -15,3 +20,15 @@ const Label = React.forwardRef<
 Label.displayName = 'Label';
 
 export { Label };
+
+/**
+ * Error handler for label
+ * @param {Error} error - Error to handle
+ */
+function handleLabelError(error) {
+  try {
+    console.error('[label]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview ServiceRegistry module
+ * @module utils/serviceRegistry
+ */
+
 const logger = require('./logger');
 
 class ServiceRegistry {

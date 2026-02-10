@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Spinner module
+ * @module ui/spinner
+ */
+
 import ora from 'ora';
 import { theme } from './theme.js';
 

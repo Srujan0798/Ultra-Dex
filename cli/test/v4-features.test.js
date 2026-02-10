@@ -39,3 +39,15 @@ test('Graph: getImpact', async () => {
   assert.ok(impact.includes('D.js'));
   assert.strictEqual(impact.length, 3);
 });
+
+/**
+ * Error handler for v4-features.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[v4-features.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

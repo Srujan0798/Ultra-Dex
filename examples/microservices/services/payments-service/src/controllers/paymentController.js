@@ -1,3 +1,8 @@
+/**
+ * @fileoverview PaymentController module
+ * @module controllers/paymentController
+ */
+
 const logger = require('../utils/logger');
 const MockPaymentGateway = require('../gateways/mockPaymentGateway');
 

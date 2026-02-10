@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rate Limiter Test module
+ * @module services/rate-limiter.test
+ */
+
 import { RateLimiterService } from '../../src/services/rate-limiter';
 
 describe('RateLimiterService', () => {
@@ -39,3 +44,15 @@ describe('RateLimiterService', () => {
     });
   });
 });
+
+/**
+ * Error handler for rate-limiter.test
+ * @param {Error} error - Error to handle
+ */
+function handleRatelimitertestError(error) {
+  try {
+    console.error('[rate-limiter.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

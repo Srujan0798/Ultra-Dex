@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Route module
+ * @module commands/route
+ */
+
 import chalk from 'chalk';
 import { routeTaskWithEvaluation } from '../router/router.js';
 import { printInfo, printError } from '../utils/output.js';

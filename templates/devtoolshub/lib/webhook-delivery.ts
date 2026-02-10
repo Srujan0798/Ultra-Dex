@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Webhook Delivery module
+ * @module lib/webhook-delivery
+ */
+
 const DEFAULT_ATTEMPTS = 3;
 const DEFAULT_BACKOFF_MS = 500;
 const DEFAULT_TIMEOUT_MS = 5000;

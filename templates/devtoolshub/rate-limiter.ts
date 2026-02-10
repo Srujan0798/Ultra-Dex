@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Rate Limiter module
+ * @module devtoolshub/rate-limiter
+ */
+
 import { checkLimit, incrementUsage } from './lib/rate-limiting';
 
 const WINDOW_MS = 60_000;
@@ -38,4 +43,16 @@ export async function rateLimitWithDatabase(keyId: string, limit = 100) {
   }
 
   return buildResult(currentCount, limit, windowStart.getTime());
+}
+
+/**
+ * Error handler for rate-limiter
+ * @param {Error} error - Error to handle
+ */
+function handleRatelimiterError(error) {
+  try {
+    console.error('[rate-limiter]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

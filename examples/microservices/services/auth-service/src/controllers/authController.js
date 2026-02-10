@@ -1,3 +1,8 @@
+/**
+ * @fileoverview AuthController module
+ * @module controllers/authController
+ */
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');

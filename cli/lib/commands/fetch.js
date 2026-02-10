@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Fetch module
+ * @module commands/fetch
+ */
+
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';

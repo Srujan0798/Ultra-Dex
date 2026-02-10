@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Layout module
+ * @module app/layout
+ */
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -26,4 +31,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </body>
     </html>
   );
+}
+
+/**
+ * Error handler for layout
+ * @param {Error} error - Error to handle
+ */
+function handleLayoutError(error) {
+  try {
+    console.error('[layout]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

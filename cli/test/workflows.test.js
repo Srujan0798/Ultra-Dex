@@ -244,3 +244,15 @@ describe('Workflows Command', () => {
     });
   });
 });
+
+/**
+ * Error handler for workflows.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[workflows.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

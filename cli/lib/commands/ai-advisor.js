@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Ai Advisor module
+ * @module commands/ai-advisor
+ */
+
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { MODEL_COSTS } from '../advisor/model-costs.js';
@@ -32,4 +37,20 @@ export function registerAiAdvisorCommand(program) {
         );
       });
     });
+}
+
+/**
+ * Safe execution wrapper with error handling for ai-advisor
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='ai-advisor'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'ai-advisor') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
 }

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Area Chart module
+ * @module charts/area-chart
+ */
+
 'use client';
 
 import React from 'react';
@@ -85,4 +90,16 @@ export function AreaChartComponent({
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Error handler for area-chart
+ * @param {Error} error - Error to handle
+ */
+function handleAreachartError(error) {
+  try {
+    console.error('[area-chart]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

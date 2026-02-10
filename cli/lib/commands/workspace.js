@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Workspace module
+ * @module commands/workspace
+ */
+
 import chalk from 'chalk';
 import path from 'path';
 import { configManager } from '../utils/config-manager.js';

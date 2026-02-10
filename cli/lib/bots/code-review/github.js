@@ -57,3 +57,19 @@ export async function fetchPullRequestDiff(owner, repo, prNumber, token) {
 export default {
   fetchPullRequestDiff,
 };
+
+/**
+ * Safe execution wrapper with error handling for github
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='github'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'github') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

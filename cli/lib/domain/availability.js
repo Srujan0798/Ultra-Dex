@@ -32,3 +32,17 @@ export function calculateAvailableSlots({ workingHours = [], bookings = [], buff
 }
 
 export default { calculateAvailableSlots };
+
+/**
+ * Handle errors in availability module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='availability'] - Error context
+ */
+function handleModuleError(error, context = 'availability') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

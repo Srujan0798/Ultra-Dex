@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Extension module
+ * @module src/extension
+ */
+
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { spawn } from 'child_process';

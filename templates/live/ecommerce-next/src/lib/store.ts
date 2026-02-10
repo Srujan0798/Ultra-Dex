@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Store module
+ * @module lib/store
+ */
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -61,3 +66,15 @@ export const useCart = create<CartStore>()(
     { name: 'cart-storage' }
   )
 );
+
+/**
+ * Error handler for store
+ * @param {Error} error - Error to handle
+ */
+function handleStoreError(error) {
+  try {
+    console.error('[store]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

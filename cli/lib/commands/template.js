@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Template module
+ * @module commands/template
+ */
+
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview MyNFT Test module
+ * @module test/MyNFT.test
+ */
+
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
@@ -304,3 +309,15 @@ describe('MyNFT', function () {
     });
   });
 });
+
+/**
+ * Error handler for MyNFT.test
+ * @param {Error} error - Error to handle
+ */
+function handleMyNFTtestError(error) {
+  try {
+    console.error('[MyNFT.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

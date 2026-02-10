@@ -35,3 +35,19 @@ export async function issueCertificate(findings) {
 
   return { score, summary, jsonPath, mdPath };
 }
+
+/**
+ * Safe execution wrapper with error handling for certifier
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='certifier'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'certifier') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

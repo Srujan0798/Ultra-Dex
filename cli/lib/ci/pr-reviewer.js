@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Pr Reviewer module
+ * @module ci/pr-reviewer
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

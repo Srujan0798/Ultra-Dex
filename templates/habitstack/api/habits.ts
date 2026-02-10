@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Habits module
+ * @module api/habits
+ */
+
 import { Frequency } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 
@@ -93,4 +98,16 @@ export async function deleteHabit(habitId: string, userId: string) {
   }
 
   return prisma.habit.delete({ where: { id: habitId } });
+}
+
+/**
+ * Error handler for habits
+ * @param {Error} error - Error to handle
+ */
+function handleHabitsError(error) {
+  try {
+    console.error('[habits]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

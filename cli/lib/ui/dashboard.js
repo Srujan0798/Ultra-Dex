@@ -11,6 +11,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { ConfigManager } from '../utils/config-manager.js';
 
 /**
  * Show interactive dashboard menu
@@ -75,7 +76,7 @@ async function showDashboard() {
           console.log(chalk.green('\n👋 Thank you for using Ultra-Dex!'));
           return;
         default:
-          console.log(chalk.yellow('Option not implemented yet.'));
+          console.log(chalk.yellow('Unknown option selected.'));
       }
 
       // Pause before showing menu again
@@ -226,6 +227,9 @@ async function handleSearchProjects() {
 async function handleSettings() {
   console.log(chalk.cyan('\n⚙️  Ultra-Dex Settings\n'));
 
+  const configManager = new ConfigManager();
+  await configManager.load();
+
   const { setting } = await inquirer.prompt([
     {
       type: 'list',
@@ -240,8 +244,107 @@ async function handleSettings() {
     },
   ]);
 
-  if (setting !== 'back') {
-    console.log(chalk.yellow(`\n${setting} configuration coming soon...`));
+  if (setting === 'back') {
+    return;
+  }
+
+  if (setting === 'providers') {
+    const { provider, model } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'provider',
+        message: 'Default AI provider:',
+        choices: [
+          { name: 'Claude', value: 'claude' },
+          { name: 'OpenAI', value: 'openai' },
+          { name: 'Gemini', value: 'gemini' },
+          { name: 'Ollama', value: 'ollama' },
+        ],
+        default: configManager.get('ai.defaultProvider'),
+      },
+      {
+        type: 'input',
+        name: 'model',
+        message: 'Default model (leave blank to keep current):',
+        default: configManager.get('ai.defaultModel'),
+      },
+    ]);
+
+    configManager.set('ai.defaultProvider', provider);
+    if (model && String(model).trim().length > 0) {
+      configManager.set('ai.defaultModel', model.trim());
+    }
+    await configManager.save();
+    printSuccess('Updated AI provider settings.');
+    return;
+  }
+
+  if (setting === 'defaults') {
+    const { temperature, maxTokens, debugMode, verboseLogging } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'temperature',
+        message: 'Default temperature (0-1):',
+        default: String(configManager.get('ai.temperature', 0.7)),
+        validate: (input) => {
+          const value = Number(input);
+          return Number.isFinite(value) && value >= 0 && value <= 1
+            ? true
+            : 'Temperature must be between 0 and 1.';
+        },
+      },
+      {
+        type: 'input',
+        name: 'maxTokens',
+        message: 'Default max tokens:',
+        default: String(configManager.get('ai.maxTokens', 8192)),
+        validate: (input) => {
+          const value = Number(input);
+          return Number.isFinite(value) && value > 0 ? true : 'Max tokens must be a positive number.';
+        },
+      },
+      {
+        type: 'confirm',
+        name: 'debugMode',
+        message: 'Enable debug mode?',
+        default: Boolean(configManager.get('development.debugMode', false)),
+      },
+      {
+        type: 'confirm',
+        name: 'verboseLogging',
+        message: 'Enable verbose logging?',
+        default: Boolean(configManager.get('development.verboseLogging', false)),
+      },
+    ]);
+
+    configManager.set('ai.temperature', Number(temperature));
+    configManager.set('ai.maxTokens', Number(maxTokens));
+    configManager.set('development.debugMode', debugMode);
+    configManager.set('development.verboseLogging', verboseLogging);
+    await configManager.save();
+    printSuccess('Updated default settings.');
+    return;
+  }
+
+  if (setting === 'theme') {
+    const { theme } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'theme',
+        message: 'Select UI theme:',
+        choices: [
+          { name: 'Professional Purple', value: 'professional-purple' },
+          { name: 'Ocean', value: 'ocean' },
+          { name: 'Forest', value: 'forest' },
+          { name: 'Doomsday', value: 'doomsday' },
+        ],
+        default: configManager.get('ui.theme', 'professional-purple'),
+      },
+    ]);
+
+    configManager.set('ui.theme', theme);
+    await configManager.save();
+    printSuccess(`Theme set to ${theme}.`);
   }
 }
 

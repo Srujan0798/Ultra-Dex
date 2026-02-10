@@ -1,3 +1,8 @@
+/**
+ * @fileoverview App module
+ * @module public/app
+ */
+
 const chat = document.getElementById('chat');
 const form = document.getElementById('chat-form');
 const input = document.getElementById('message');
@@ -36,3 +41,15 @@ form.addEventListener('submit', async (event) => {
 });
 
 renderMessage('assistant', 'Hello! Ask me about your product idea or architecture.');
+
+/**
+ * Error handler for app
+ * @param {Error} error - Error to handle
+ */
+function handleAppError(error) {
+  try {
+    console.error('[app]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

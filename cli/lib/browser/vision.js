@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Vision module
+ * @module browser/vision
+ */
+
 import fs from 'fs/promises';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 

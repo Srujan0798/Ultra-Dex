@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Payments module
+ * @module routes/payments
+ */
+
 const express = require('express');
 const PaymentController = require('../controllers/paymentController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
@@ -45,3 +50,15 @@ module.exports = (pool, redis, channel) => {
 
   return router;
 };
+
+/**
+ * Error handler for payments
+ * @param {Error} error - Error to handle
+ */
+function handlePaymentsError(error) {
+  try {
+    console.error('[payments]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

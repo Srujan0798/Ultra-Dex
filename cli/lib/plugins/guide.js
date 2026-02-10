@@ -123,3 +123,19 @@ export default {
   BEST_PRACTICES,
   HOOK_TYPES,
 };
+
+/**
+ * Safe execution wrapper with error handling for guide
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='guide'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'guide') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

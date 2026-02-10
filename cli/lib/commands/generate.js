@@ -27,6 +27,11 @@ import { printError, printInfo, printSuccess, printWarning } from '../utils/outp
 import { handleError } from '../utils/error-handler.js';
 import { getCache } from '../cache/index.js';
 
+/**
+ * Register the generate command with Commander
+ * @param {Command} program - Commander program instance
+ * @returns {void}
+ */
 export function registerGenerateCommand(program) {
   program
     .command('generate [idea]')
@@ -39,6 +44,11 @@ export function registerGenerateCommand(program) {
     .option('--no-stream', 'Disable streaming')
     .option('--voice', 'Use voice input for the prompt')
     .option('--cache', 'Use response caching to reduce API costs')
+    /**
+     * Generate plan action
+     * @param {string} idea - The project idea
+     * @param {Object} options - Command options
+     */
     .action(async (idea, options) => {
       try {
         printInfo(chalk.cyan('\n🚀 Ultra-Dex Plan Generator (Reality Stone Mode)\n'));
@@ -348,6 +358,11 @@ ${idea}
 
 const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
+/**
+ * Build context from feature templates based on idea keywords
+ * @param {string} idea - Project idea description
+ * @returns {Promise<string>} Context string with feature snippets
+ */
 async function buildFeatureContext(idea) {
   if (!idea) return '';
   const text = idea.toLowerCase();
@@ -379,6 +394,12 @@ async function buildFeatureContext(idea) {
   return ['Reference feature snippets (for implementation guidance):', ...cleaned].join('\n\n');
 }
 
+/**
+ * Read a template snippet file
+ * @param {string} fileName - Name of the template file
+ * @param {string} title - Title for the snippet
+ * @returns {Promise<string>} Formatted snippet string
+ */
 async function readTemplateSnippet(fileName, title) {
   const candidatePaths = [
     path.resolve(process.cwd(), 'templates', 'features', fileName),

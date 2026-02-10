@@ -1,68 +1,19 @@
-import { prisma } from './lib/prisma';
-import { calculateCourseProgress } from './lib/progress-calc';
-import { updateLessonProgress } from './lib/progress-tracking';
+/**
+ * @fileoverview Progress Tracker module
+ * @module courseforge/progress-tracker
+ */
 
-export async function trackLessonComplete(userId: string, lessonId: string) {
-  const progress = await updateLessonProgress({
-    studentId: userId,
-    lessonId,
-    completed: true,
-  });
+// Backward-compatible export for older template imports.
+export * from './lib/progress-tracker';
 
-  return progress;
-}
-
-export async function getCourseProgress(userId: string, courseId: string) {
-  const percentage = await calculateCourseProgress(courseId, userId);
-  return { courseId, studentId: userId, percentage };
-}
-
-export async function generateCertificate(userId: string, courseId: string) {
-  const enrollment = await prisma.enrollment.findFirst({
-    where: { studentId: userId, courseId },
-  });
-
-  if (!enrollment) {
-    throw new Error('Student is not enrolled in this course');
+/**
+ * Error handler for progress-tracker
+ * @param {Error} error - Error to handle
+ */
+function handleProgresstrackerError(error) {
+  try {
+    console.error('[progress-tracker]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
-
-  const progress = await calculateCourseProgress(courseId, userId);
-  if (progress < 100) {
-    throw new Error('Course not completed');
-  }
-
-  const existing = await prisma.certificate.findFirst({
-    where: { enrollmentId: enrollment.id },
-  });
-
-  if (existing) {
-    return existing;
-  }
-
-  const certificate = await prisma.certificate.create({
-    data: {
-      enrollmentId: enrollment.id,
-      studentId: userId,
-      courseId,
-    },
-  });
-
-  await prisma.enrollment.update({
-    where: { id: enrollment.id },
-    data: { completedAt: new Date() },
-  });
-
-  return certificate;
 }
-
-export async function markCompleteAndRecalc(options: {
-  courseId: string;
-  studentId: string;
-  lessonId: string;
-}) {
-  await trackLessonComplete(options.studentId, options.lessonId);
-  const percentage = await calculateCourseProgress(options.courseId, options.studentId);
-  return { courseId: options.courseId, studentId: options.studentId, percentage };
-}
-
-export { calculateCourseProgress, updateLessonProgress };

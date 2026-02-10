@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Agents module
+ * @module utils/agents
+ */
+
 // cli/lib/utils/agents.js
 export const agents = {
   // Leadership Tier
@@ -32,3 +37,15 @@ export const agents = {
 
 // For compatibility if swarm.js imports avengersAgents
 export const avengersAgents = agents;
+
+/**
+ * Error handler for agents
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[agents]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

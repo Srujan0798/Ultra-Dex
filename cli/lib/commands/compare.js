@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Compare module
+ * @module commands/compare
+ */
+
 import chalk from 'chalk';
 import { printInfo, printWarning } from '../utils/output.js';
 
@@ -48,4 +53,18 @@ ${key.toUpperCase()}`)
         printInfo(`Ultra-Dex Counter: ${competitor.counter}`);
       });
     });
+}
+
+/**
+ * Handle errors in compare module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='compare'] - Error context
+ */
+function handleModuleError(error, context = 'compare') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
 }

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Bot module
+ * @module commands/bot
+ */
+
 import chalk from 'chalk';
 import http from 'http';
 import { Command } from 'commander';

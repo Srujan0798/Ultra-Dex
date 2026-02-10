@@ -21,23 +21,48 @@ const MODELS = [
 ];
 
 export class GeminiProvider extends BaseProvider {
+  /**
+   * Create a new Gemini provider instance
+   * @param {string} apiKey - Google API key
+   * @param {Object} [options] - Configuration options
+   * @param {string} [options.model] - Model ID to use
+   * @param {number} [options.maxTokens] - Max output tokens
+   */
   constructor(apiKey, options = {}) {
     super(apiKey, options);
     this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
   }
 
+  /**
+   * Get provider name
+   * @returns {string} Provider name
+   */
   getName() {
     return 'Google Gemini';
   }
 
+  /**
+   * Get default model ID
+   * @returns {string} Default model ID
+   */
   getDefaultModel() {
     return 'gemini-1.5-pro';
   }
 
+  /**
+   * Get list of available models
+   * @returns {Array<Object>} List of models with details
+   */
   getAvailableModels() {
     return MODELS;
   }
 
+  /**
+   * Estimate cost for a request
+   * @param {number} inputTokens - Number of input tokens
+   * @param {number} outputTokens - Number of output tokens
+   * @returns {Object} Cost estimate (input, output, total)
+   */
   estimateCost(inputTokens, outputTokens) {
     const pricing = PRICING[this.model] || PRICING['gemini-1.5-pro'];
     const inputCost = (inputTokens / 1_000_000) * pricing.input;
@@ -49,6 +74,15 @@ export class GeminiProvider extends BaseProvider {
     };
   }
 
+  /**
+   * Generate content from prompt
+   * @param {string} systemPrompt - System instruction
+   * @param {string} userPrompt - User query
+   * @param {Object} [options] - Generation options
+   * @param {number} [options.maxRetries=3] - Max retry attempts
+   * @param {number} [options.maxTokens] - Max output tokens override
+   * @returns {Promise<Object>} Generated content and usage
+   */
   async generate(systemPrompt, userPrompt, options = {}) {
     // Retry logic with exponential backoff
     const maxRetries = options.maxRetries || 3;
@@ -130,6 +164,15 @@ export class GeminiProvider extends BaseProvider {
     throw lastError || new Error('Max retries exceeded');
   }
 
+  /**
+   * Generate streaming content
+   * @param {string} systemPrompt - System instruction
+   * @param {string} userPrompt - User query
+   * @param {Function} onChunk - Callback for new chunks
+   * @param {Object} [options] - Generation options
+   * @param {number} [options.maxRetries=3] - Max retry attempts
+   * @returns {Promise<Object>} Full content and usage
+   */
   async generateStream(systemPrompt, userPrompt, onChunk, options = {}) {
     // Retry logic with exponential backoff
     const maxRetries = options.maxRetries || 3;
@@ -238,6 +281,10 @@ export class GeminiProvider extends BaseProvider {
     throw lastError || new Error('Max retries exceeded');
   }
 
+  /**
+   * Validate API key by making a test request
+   * @returns {Promise<boolean>} True if valid
+   */
   async validateApiKey() {
     try {
       const url = `${this.baseUrl}/models?key=${this.apiKey}`;

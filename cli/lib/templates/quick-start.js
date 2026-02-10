@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Quick Start module
+ * @module templates/quick-start
+ */
+
 export const QUICK_START_TEMPLATE = `# {{PROJECT_NAME}} - Quick Start
 
 ## 1. Your Idea (2 sentences max)
@@ -43,3 +48,15 @@ export const QUICK_START_TEMPLATE = `# {{PROJECT_NAME}} - Quick Start
 
 **Next:** Fill out the full implementation plan using the Ultra-Dex template.
 `;
+
+/**
+ * Error handler for quick-start
+ * @param {Error} error - Error to handle
+ */
+function handleQuickstartError(error) {
+  try {
+    console.error('[quick-start]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

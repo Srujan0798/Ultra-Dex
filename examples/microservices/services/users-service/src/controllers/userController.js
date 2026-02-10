@@ -1,3 +1,8 @@
+/**
+ * @fileoverview UserController module
+ * @module controllers/userController
+ */
+
 const logger = require('../utils/logger');
 
 const CACHE_TTL = parseInt(process.env.CACHE_TTL) || 3600;

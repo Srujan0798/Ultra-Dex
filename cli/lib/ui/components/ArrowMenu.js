@@ -32,3 +32,15 @@ const ArrowMenu = ({ items, onSelect, initialIndex = 0 }) => {
 };
 
 export default ArrowMenu;
+
+/**
+ * Error handler for ArrowMenu
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[ArrowMenu]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

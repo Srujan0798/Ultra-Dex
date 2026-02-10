@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Memory module
+ * @module hive/memory
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Doomsday module
+ * @module art/doomsday
+ */
+
 export const doomsdayBanner = `
  █████╗ ██╗   ██╗███████╗███╗   ██╗ ██████╗ ███████╗██████╗
 ██╔══██╗██║   ██║██╔════╝████╗  ██║██╔════╝ ██╔════╝██╔══██╗
@@ -39,3 +44,15 @@ export default {
   infinityStones,
   doomsdayStatusIcons,
 };
+
+/**
+ * Error handler for doomsday
+ * @param {Error} error - Error to handle
+ */
+function handleDoomsdayError(error) {
+  try {
+    console.error('[doomsday]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

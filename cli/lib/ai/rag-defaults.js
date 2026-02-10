@@ -35,3 +35,17 @@ export const RAG_CONFIG = {
 export function getRagProfile(env = 'mvp') {
   return RAG_CONFIG[env] || RAG_CONFIG.mvp;
 }
+
+/**
+ * Handle errors in rag-defaults module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='rag-defaults'] - Error context
+ */
+function handleModuleError(error, context = 'rag-defaults') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

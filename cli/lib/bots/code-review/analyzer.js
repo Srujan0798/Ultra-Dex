@@ -59,3 +59,19 @@ export function formatMarkdownReport(issues = []) {
 
   return lines.join('\n');
 }
+
+/**
+ * Safe execution wrapper with error handling for analyzer
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='analyzer'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'analyzer') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

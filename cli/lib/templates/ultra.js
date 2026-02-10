@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Ultra module
+ * @module templates/ultra
+ */
+
 export const ULTRA_TEMPLATE = `# ULTRA Context: {{PROJECT_NAME}}
 
 > This is the source of truth for all AI agents. It defines boundaries, invariants, and collective memory.
@@ -36,3 +41,15 @@ export const ULTRA_TEMPLATE = `# ULTRA Context: {{PROJECT_NAME}}
 ## 📌 Decisions Log (Auto-Appended)
 - [{{DATE}}] (AUTO) ULTRA.md created. Append architectural decisions below.
 `;
+
+/**
+ * Error handler for ultra
+ * @param {Error} error - Error to handle
+ */
+function handleUltraError(error) {
+  try {
+    console.error('[ultra]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

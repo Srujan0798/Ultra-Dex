@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Button module
+ * @module ui/button
+ */
+
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
@@ -34,4 +39,16 @@ export interface ButtonProps
 
 export function Button({ className, variant, size, ...props }: ButtonProps) {
   return <button className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+}
+
+/**
+ * Error handler for button
+ * @param {Error} error - Error to handle
+ */
+function handleButtonError(error) {
+  try {
+    console.error('[button]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

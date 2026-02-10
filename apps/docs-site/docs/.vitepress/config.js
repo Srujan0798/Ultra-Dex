@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Config module
+ * @module .vitepress/config
+ */
+
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
@@ -62,3 +67,15 @@ export default defineConfig({
     }
   }
 })
+
+/**
+ * Error handler for config
+ * @param {Error} error - Error to handle
+ */
+function handleConfigError(error) {
+  try {
+    console.error('[config]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

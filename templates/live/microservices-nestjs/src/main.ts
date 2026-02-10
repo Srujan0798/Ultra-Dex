@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Main module
+ * @module src/main
+ */
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -38,3 +43,15 @@ async function bootstrap() {
   console.log(`Application is running on: http://localhost:${port}`);
 }
 bootstrap();
+
+/**
+ * Error handler for main
+ * @param {Error} error - Error to handle
+ */
+function handleMainError(error) {
+  try {
+    console.error('[main]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

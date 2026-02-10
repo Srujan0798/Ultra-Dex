@@ -66,3 +66,17 @@ export function setTheme(name) {
 export function styled(type, text) {
   return chalk.hex(currentTheme[type])(text);
 }
+
+/**
+ * Handle errors in theme module
+ * @param {Error} error - The error to handle
+ * @param {string} [context='theme'] - Error context
+ */
+function handleModuleError(error, context = 'theme') {
+  try {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+  } catch (_) {
+    // Fail silently
+  }
+}

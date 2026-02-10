@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Textarea module
+ * @module ui/textarea
+ */
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
@@ -20,3 +25,15 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 Textarea.displayName = 'Textarea';
 
 export { Textarea };
+
+/**
+ * Error handler for textarea
+ * @param {Error} error - Error to handle
+ */
+function handleTextareaError(error) {
+  try {
+    console.error('[textarea]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

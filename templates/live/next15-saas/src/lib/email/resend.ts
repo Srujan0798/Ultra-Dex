@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Resend module
+ * @module email/resend
+ */
+
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -26,3 +31,15 @@ export const sendInvoiceEmail = async (email: string, invoiceId: string, amount:
     `,
   });
 };
+
+/**
+ * Error handler for resend
+ * @param {Error} error - Error to handle
+ */
+function handleResendError(error) {
+  try {
+    console.error('[resend]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

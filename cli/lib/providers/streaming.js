@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Streaming module
+ * @module providers/streaming
+ */
+
 import { streamText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
@@ -96,3 +101,18 @@ function normalizeClaudeModel(model) {
   return model;
 }
 
+/**
+ * Safe execution wrapper with error handling for streaming
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='streaming'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'streaming') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

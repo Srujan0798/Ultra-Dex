@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Request Logging module
+ * @module middleware/request-logging
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
 
@@ -31,3 +36,15 @@ export const requestLogging = (req: Request, res: Response, next: NextFunction):
 
   next();
 };
+
+/**
+ * Error handler for request-logging
+ * @param {Error} error - Error to handle
+ */
+function handleRequestloggingError(error) {
+  try {
+    console.error('[request-logging]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

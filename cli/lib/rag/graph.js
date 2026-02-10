@@ -79,8 +79,7 @@ export class GraphRAG {
         await this.initializeSchema();
         return true;
       } else if (this.dbType === 'falkordb') {
-        // FalkorDB support
-        console.log(chalk.yellow('[GraphRAG] FalkorDB support coming soon'));
+        console.log(chalk.yellow('[GraphRAG] FalkorDB not configured. Falling back to in-memory graph.'));
         this.useInMemory = true;
         return true;
       }

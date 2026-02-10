@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Versions module
+ * @module api/versions
+ */
+
 import { prisma } from '../lib/prisma';
 import { createVersion } from '../lib/versioning';
 
@@ -20,4 +25,16 @@ export async function rollbackPost(contentId: string, versionNumber: number) {
     where: { id: contentId },
     data: { body: version.content, status: 'draft' },
   });
+}
+
+/**
+ * Error handler for versions
+ * @param {Error} error - Error to handle
+ */
+function handleVersionsError(error) {
+  try {
+    console.error('[versions]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

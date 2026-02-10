@@ -370,7 +370,7 @@ Read IMPLEMENTATION-PLAN.md to understand the project.
 
 - 🔄 Login UI (by @Frontend)
 
-## TODO
+## Next Steps
 
 - ⏳ Security review
 - ⏳ Deployment

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Media module
+ * @module api/media
+ */
+
 import { createMedia, deleteMedia, listMedia, prepareUpload } from '../lib/media';
 
 export async function uploadMedia(
@@ -21,4 +26,16 @@ export async function getMedia(ownerId: string) {
 
 export async function removeMedia(ownerId: string, mediaId: string) {
   return deleteMedia(mediaId, ownerId);
+}
+
+/**
+ * Error handler for media
+ * @param {Error} error - Error to handle
+ */
+function handleMediaError(error) {
+  try {
+    console.error('[media]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

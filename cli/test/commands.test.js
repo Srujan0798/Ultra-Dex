@@ -507,10 +507,10 @@ describe('agents marketplace (v3.4)', () => {
     assert.ok(existsSync(agentPath), 'Custom agent file should be created');
   });
 
-  test('agents publish shows coming soon message', () => {
+  test('agents publish warns when custom agent missing', () => {
     const result = runCli(['agents', 'publish', 'myagent']);
     assert.equal(result.status, 0);
-    assert.match(result.output, /coming soon|marketplace/i);
+    assert.match(result.output, /custom agent|not found|create/i);
   });
 });
 
@@ -565,3 +565,15 @@ describe('provider ecosystem (v3.4)', () => {
     assert.equal(typeof provider.syncFromUltraDex, 'function');
   });
 });
+
+/**
+ * Error handler for commands.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[commands.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

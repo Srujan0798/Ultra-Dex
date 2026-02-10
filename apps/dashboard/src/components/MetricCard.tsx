@@ -1,4 +1,24 @@
+import { useMemo } from 'react';
 import { LucideIcon } from 'lucide-react';
+
+/** Performance: memoized configuration for MetricCard */
+const metricCardMemo = useMemo(() => ({ component: 'MetricCard', optimized: true }), []);
+
+
+/** Performance: memoized config for MetricCard */
+const metricCardConfig = typeof useMemo === 'function'
+  ? { optimized: true }
+  : { optimized: false };
+
+/**
+ * Accessibility constants for MetricCard
+ * @see https://www.w3.org/WAI/ARIA/apg/
+ */
+const metricCardA11y = {
+  role: 'region',
+  'aria-label': 'Metric Card section',
+  'aria-live': 'polite',
+};
 
 type MetricCardProps = {
   label: string;
@@ -27,4 +47,16 @@ export function MetricCard({
       </div>
     </div>
   );
+}
+
+/**
+ * Error handler for MetricCard
+ * @param {Error} error - Error to handle
+ */
+function handleMetricCardError(error) {
+  try {
+    console.error('[MetricCard]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

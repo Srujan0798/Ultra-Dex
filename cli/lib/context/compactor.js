@@ -12,6 +12,13 @@ import { v4 as uuidv4 } from 'uuid';
  * - Optimization for 200k+ token window
  */
 class ContextCompactor {
+  /**
+   * Initialize ContextCompactor
+   * @param {Object} options - Configuration options
+   * @param {number} [options.tokenThreshold=0.95] - Compression trigger ratio
+   * @param {number} [options.maxTokens=200000] - Max context window size
+   * @param {number} [options.sacredDNASections=34] - Number of critical sections to preserve
+   */
   constructor(options = {}) {
     this.tokenThreshold = options.tokenThreshold || 0.95; // 95% threshold
     this.maxTokens = options.maxTokens || 200000; // 200k+ token window
@@ -22,6 +29,8 @@ class ContextCompactor {
 
   /**
    * Calculate total tokens in context
+   * @param {Object|Array|string} context - The context to measure
+   * @returns {number} Token count
    */
   calculateTokens(context) {
     const text = this.contextToString(context);
@@ -45,6 +54,8 @@ class ContextCompactor {
 
   /**
    * Check if context exceeds threshold
+   * @param {Object|Array|string} context - The context to check
+   * @returns {boolean} True if compaction is needed
    */
   isAboveThreshold(context) {
     const currentTokens = this.calculateTokens(context);
@@ -54,6 +65,8 @@ class ContextCompactor {
 
   /**
    * Extract and preserve Sacred DNA sections
+   * @param {Object|Array} context - The context to process
+   * @returns {Array<Object>} List of preserved sections
    */
   extractSacredDNA(context) {
     // Preserve the first N sections (Sacred DNA) that are critical
@@ -141,6 +154,8 @@ class ContextCompactor {
 
   /**
    * Summarize conversation intelligently
+   * @param {Object|Array|string} conversation - The conversation to summarize
+   * @returns {Promise<Object>} Summary data object
    */
   async summarizeConversation(conversation) {
     // This is a simplified version - in a real implementation,
@@ -291,6 +306,8 @@ class ContextCompactor {
 
   /**
    * Compact context when it exceeds the threshold
+   * @param {Object|Array|string} context - The context to compact
+   * @returns {Promise<Object>} Compaction result with stats
    */
   async compact(context) {
     const tokensBefore = this.calculateTokens(context);
@@ -487,7 +504,7 @@ class ContextCompactor {
     const avgCompressionRatio =
       this.summaryHistory.length > 0
         ? this.summaryHistory.reduce((sum, s) => sum + s.compressionRatio, 0) /
-          this.summaryHistory.length
+        this.summaryHistory.length
         : 0;
 
     return {
@@ -500,7 +517,7 @@ class ContextCompactor {
       efficiencyRate:
         this.summaryHistory.length > 0
           ? totalTokensSaved /
-            (this.summaryHistory.reduce((sum, s) => sum.tokensBefore || 0, 0) || 1)
+          (this.summaryHistory.reduce((sum, s) => sum.tokensBefore || 0, 0) || 1)
           : 0,
     };
   }
@@ -540,6 +557,8 @@ class ContextCompactor {
 
   /**
    * Aggressive compaction for very large contexts
+   * @param {Object|Array|string} context - The context to compact aggressively
+   * @returns {Promise<Object>} Access compaction result
    */
   async aggressiveCompact(context) {
     // Extract and preserve Sacred DNA sections first
@@ -588,3 +607,19 @@ class ContextCompactor {
 }
 
 export { ContextCompactor };
+
+/**
+ * Safe execution wrapper with error handling for compactor
+ * @param {Function} fn - Async function to execute
+ * @param {string} [context='compactor'] - Error context
+ * @returns {Promise<*>} Result or null on error
+ */
+async function safeExecute(fn, context = 'compactor') {
+  try {
+    return await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[${context}] Error: ${message}`);
+    return null;
+  }
+}

@@ -154,21 +154,70 @@ export function generateAsciiVisualization(graph) {
  * Generate SVG from Mermaid diagram
  */
 export async function generateSvgFromMermaid(mermaidCode) {
-  // In a real implementation, this would use a library like @mermaid-js/mermaid-cli
-  // For now, we'll return a placeholder SVG
+  const lines = mermaidCode.split('\n').map((line) => line.trim());
+  const edges = [];
+  const nodes = new Map();
 
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600">
-  <rect width="100%" height="100%" fill="white"/>
-  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="16">
-    LangGraph State Visualization
-  </text>
-  <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-family="monospace" font-size="12">
-    Mermaid Diagram Generated
-  </text>
+  const normalizeId = (raw) => raw.replace(/\[.*\]$/, '');
+  const ensureNode = (id) => {
+    const normalized = normalizeId(id);
+    if (!nodes.has(normalized)) {
+      nodes.set(normalized, { id: normalized, label: normalized });
+    }
+    return normalized;
+  };
+
+  for (const line of lines) {
+    const match = line.match(/^([A-Za-z0-9_:-]+)\s*-->\s*([A-Za-z0-9_:-]+)/);
+    if (match) {
+      const source = ensureNode(match[1]);
+      const target = ensureNode(match[2]);
+      edges.push({ source, target });
+    }
+  }
+
+  const nodeList = Array.from(nodes.values());
+  const width = 900;
+  const height = Math.max(200, 80 + nodeList.length * 70);
+
+  const positions = new Map();
+  nodeList.forEach((node, index) => {
+    positions.set(node.id, { x: 120, y: 60 + index * 70 });
+  });
+
+  const edgeLines = edges
+    .map((edge) => {
+      const from = positions.get(edge.source);
+      const to = positions.get(edge.target);
+      if (!from || !to) return '';
+      const midX = (from.x + to.x) / 2 + 200;
+      return `<path d="M ${from.x + 120} ${from.y} C ${midX} ${from.y}, ${midX} ${to.y}, ${to.x} ${to.y}" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>`;
+    })
+    .join('\n');
+
+  const nodeRects = nodeList
+    .map((node) => {
+      const pos = positions.get(node.id);
+      if (!pos) return '';
+      return `
+  <g>
+    <rect x="${pos.x - 10}" y="${pos.y - 22}" width="140" height="44" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+    <text x="${pos.x + 60}" y="${pos.y + 5}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" fill="#e2e8f0">${node.label}</text>
+  </g>`;
+    })
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#94a3b8" />
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#020617"/>
+  ${edgeLines}
+  ${nodeRects}
 </svg>`;
-
-  return svg;
 }
 
 /**

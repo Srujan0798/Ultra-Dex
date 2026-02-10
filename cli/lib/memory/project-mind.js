@@ -5,3 +5,15 @@ import { ProjectMind } from './mind.js';
 
 export { ProjectMind };
 export default ProjectMind;
+
+/**
+ * Error handler for project-mind
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[project-mind]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

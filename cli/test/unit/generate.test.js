@@ -24,3 +24,15 @@ describe('generate command', () => {
     assert.ok(options.includes('--stream'));
   });
 });
+
+/**
+ * Error handler for generate.test
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[generate.test]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

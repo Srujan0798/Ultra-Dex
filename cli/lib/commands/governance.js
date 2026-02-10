@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Governance module
+ * @module commands/governance
+ */
+
 import chalk from 'chalk';
 import { GovernanceEngine } from '../governance/index.js';
 import {

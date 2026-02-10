@@ -30,6 +30,10 @@ const DEFAULT_CONFIG = {
   },
 };
 
+/**
+ * Load configuration from multiple sources (project, global, default)
+ * @returns {Promise<Object>} Configuration object
+ */
 async function loadConfig() {
   // Check project-level config first
   try {
@@ -51,6 +55,12 @@ async function loadConfig() {
   return { ...DEFAULT_CONFIG, source: 'default' };
 }
 
+/**
+ * Save configuration to disk
+ * @param {Object} config - Configuration object
+ * @param {boolean} [global=false] - Save to global config file
+ * @returns {Promise<string>} Path to saved config file
+ */
 async function saveConfig(config, global = false) {
   const configPath = global
     ? path.join(process.env.HOME || process.env.USERPROFILE, '.ultra-dex.json')
@@ -61,12 +71,21 @@ async function saveConfig(config, global = false) {
   return configPath;
 }
 
+/**
+ * Register the doctor command with Commander
+ * @param {Command} program - Commander program instance
+ * @returns {void}
+ */
 export function registerDoctorCommand(program) {
   const doctorCmd = program
     .command('doctor')
     .description('System Diagnostics - Check System Health')
     .option('--fix', 'Attempt to fix issues automatically')
     .addHelpText('after', '\nExamples:\n  ultra-dex doctor\n  ultra-dex doctor --fix\n')
+    /**
+     * Doctor command action
+     * @param {Object} options - Doctor options
+     */
     .action(async (options) => {
       try {
         if (options.fix) {
@@ -326,6 +345,11 @@ export function registerDoctorCommand(program) {
   ];
 }
 
+/**
+ * Register the config command with Commander
+ * @param {Command} program - Commander program instance
+ * @returns {void}
+ */
 export function registerConfigCommand(program) {
   program
     .command('config')
@@ -336,6 +360,10 @@ export function registerConfigCommand(program) {
     .option('--global', 'Use global config (~/.ultra-dex.json)')
     .option('--init', 'Create a new config file')
     .option('--mcp', 'Generate MCP config for Claude Desktop')
+    /**
+     * Config command action
+     * @param {Object} options - Config options
+     */
     .action(async (options) => {
       try {
         const config = await loadConfig();

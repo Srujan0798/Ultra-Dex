@@ -30,3 +30,15 @@ export * from './graph-utils.js';
 export * from './ralph-loop.js';
 
 console.log('[AGENTS] Agent system initialized with all components');
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function handleError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

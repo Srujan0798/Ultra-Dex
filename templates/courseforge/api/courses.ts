@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Courses module
+ * @module api/courses
+ */
+
 import { prisma } from '../lib/prisma';
 
 export async function createCourse(instructorId: string, data: { title: string; description?: string }) {
@@ -122,4 +127,16 @@ export async function enrollStudent(courseId: string, studentId: string) {
       studentId,
     },
   });
+}
+
+/**
+ * Error handler for courses
+ * @param {Error} error - Error to handle
+ */
+function handleCoursesError(error) {
+  try {
+    console.error('[courses]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

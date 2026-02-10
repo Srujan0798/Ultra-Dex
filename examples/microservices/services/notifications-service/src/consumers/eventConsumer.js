@@ -1,3 +1,8 @@
+/**
+ * @fileoverview EventConsumer module
+ * @module consumers/eventConsumer
+ */
+
 const logger = require('../utils/logger');
 const MockEmailProvider = require('../providers/mockEmailProvider');
 const MockSMSProvider = require('../providers/mockSMSProvider');

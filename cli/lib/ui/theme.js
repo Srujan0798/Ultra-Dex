@@ -1,5 +1,10 @@
 // Copyright (c) 2026 Ultra-Dex
 
+/**
+ * @fileoverview Theme module
+ * @module ui/theme
+ */
+
 // Ultra-Dex CLI — Red to Purple (Vertical)
 // Clean Red-to-Purple top-to-bottom transition
 

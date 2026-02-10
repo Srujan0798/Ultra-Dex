@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Usage module
+ * @module lib/usage
+ */
+
 import { prisma } from './prisma';
 
 export async function trackUsage(options: {
@@ -24,4 +29,16 @@ export async function getUsageAnalytics(keyId: string, since?: Date) {
     },
     orderBy: { timestamp: 'desc' },
   });
+}
+
+/**
+ * Error handler for usage
+ * @param {Error} error - Error to handle
+ */
+function handleUsageError(error) {
+  try {
+    console.error('[usage]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

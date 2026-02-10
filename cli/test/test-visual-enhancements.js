@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Test Visual Enhancements module
+ * @module test/test-visual-enhancements
+ */
+
 #!/usr/bin/env node
 
 import { createTable, showAgentsTable, showCommandsTable } from './lib/utils/tables.js';

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview  Index module
+ * @module routes/_index
+ */
+
 import { SignInButton, SignUpButton, UserButton } from '@clerk/remix';
 import { getAuth } from '@clerk/remix/ssr.server';
 import type { LoaderFunctionArgs } from '@remix-run/node';
@@ -65,4 +70,16 @@ export default function Index() {
       </section>
     </main>
   );
+}
+
+/**
+ * Error handler for _index
+ * @param {Error} error - Error to handle
+ */
+function handleIndexError(error) {
+  try {
+    console.error('[_index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

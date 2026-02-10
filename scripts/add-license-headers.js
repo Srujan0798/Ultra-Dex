@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Add License Headers module
+ * @module scripts/add-license-headers
+ */
+
 import fs from 'fs/promises';
 import path from 'path';
 

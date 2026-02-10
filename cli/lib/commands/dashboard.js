@@ -22,6 +22,12 @@ const clients = new Set();
 const actionHistory = [];
 const MAX_HISTORY = 50;
 
+/**
+ * Add an action to the history and broadcast to clients
+ * @param {string} type - Action type (e.g., 'swarm', 'agent_start')
+ * @param {string} message - readable message
+ * @param {string|null} [agent=null] - Agent name if applicable
+ */
 function addAction(type, message, agent = null) {
   actionHistory.unshift({
     timestamp: new Date().toISOString(),
@@ -33,14 +39,24 @@ function addAction(type, message, agent = null) {
   sendToClients({ type: 'action', action: actionHistory[0] });
 }
 
+/**
+ * Broadcast data to all connected SSE clients
+ * @param {Object} data - Data payload to send
+ * @param {string} [data.type] - Event type
+ */
 function sendToClients(data) {
   const payload = `data: ${JSON.stringify(data)}
 
 `;
   clients.forEach((client) => client.res.write(payload));
+  // Also send via WebSocket
   broadcastWebSocketEvent(data.type || 'log', data);
 }
 
+/**
+ * Retrieve current Git status for the dashboard
+ * @returns {Promise<{branch: string, lastCommit: string, changedFiles: number}>} git info object
+ */
 async function getGitInfo() {
   try {
     const branch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
@@ -55,6 +71,14 @@ async function getGitInfo() {
   }
 }
 
+/**
+ * Generate the full HTML for the dashboard (Server-Side Rendering)
+ * @param {Object} state - The current application state
+ * @param {Object} gitInfo - Git status info
+ * @param {Object} [graphSummary] - Knowledge graph summary
+ * @param {Object} [usageSummary] - CLI usage statistics
+ * @returns {string} The complete HTML document
+ */
 export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary) {
   const usage = usageSummary || {
     totalCommands: 0,
@@ -92,15 +116,15 @@ export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary
         <div class="progress-mini"><div class="fill" style="width: ${progress}%"></div></div>
         <ul class="steps">
           ${phase.steps
-            .map(
-              (step) => `
+          .map(
+            (step) => `
             <li class="${step.status}">
               <span class="dot"></span>
               ${step.task}
             </li>
           `
-            )
-            .join('')}
+          )
+          .join('')}
         </ul>
       </div>
     `;
@@ -503,6 +527,10 @@ export function generateDashboardHTML(state, gitInfo, graphSummary, usageSummary
 </html>`;
 }
 
+/**
+ * Register the dashboard command
+ * @param {Command} program - The Commander program instance
+ */
 export function registerDashboardCommand(program) {
   program
     .command('dashboard')

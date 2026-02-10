@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Label module
+ * @module ui/label
+ */
+
 import * as React from 'react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -17,3 +22,15 @@ const Label = React.forwardRef<
 Label.displayName = LabelPrimitive.Root.displayName;
 
 export { Label };
+
+/**
+ * Error handler for label
+ * @param {Error} error - Error to handle
+ */
+function handleLabelError(error) {
+  try {
+    console.error('[label]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

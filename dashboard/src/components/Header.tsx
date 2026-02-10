@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Search, Wifi, WifiOff } from 'lucide-react';
 
 interface HeaderProps {
@@ -5,7 +6,7 @@ interface HeaderProps {
   connected?: boolean;
 }
 
-export function Header({ title, connected }: HeaderProps) {
+export const Header = memo(function Header({ title, connected }: HeaderProps) {
   return (
     <header
       className="flex items-center justify-between border-b border-slate-800 bg-slate-950/70 px-6 py-4 backdrop-blur"
@@ -50,4 +51,18 @@ export function Header({ title, connected }: HeaderProps) {
       </div>
     </header>
   );
+});
+
+/**
+ * Error handler for Header component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleHeaderError(error, errorInfo) {
+  try {
+    console.error(`[Header] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
 }

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Utils module
+ * @module lib/utils
+ */
+
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -49,4 +54,16 @@ export function getInitials(name: string): string {
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+}
+
+/**
+ * Error handler for utils
+ * @param {Error} error - Error to handle
+ */
+function handleUtilsError(error) {
+  try {
+    console.error('[utils]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

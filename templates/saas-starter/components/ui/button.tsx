@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Button module
+ * @module ui/button
+ */
+
 import * as React from 'react';
 
 export function Button({
@@ -13,4 +18,16 @@ export function Button({
       {children}
     </button>
   );
+}
+
+/**
+ * Error handler for button
+ * @param {Error} error - Error to handle
+ */
+function handleButtonError(error) {
+  try {
+    console.error('[button]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
 }

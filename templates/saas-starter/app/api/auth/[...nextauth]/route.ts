@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Route module
+ * @module [...nextauth]/route
+ */
+
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
@@ -20,3 +25,15 @@ const handler = NextAuth({
 });
 
 export { handler as GET, handler as POST };
+
+/**
+ * Error handler for route
+ * @param {Error} error - Error to handle
+ */
+function handleRouteError(error) {
+  try {
+    console.error('[route]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

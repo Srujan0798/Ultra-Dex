@@ -2,7 +2,15 @@
 
 import { EventEmitter } from 'events';
 
+/**
+ * Swarm orchestrator for running multiple agents in parallel, sequential, waterfall, or competitive modes
+ * @extends EventEmitter
+ */
 export class AgentSwarm extends EventEmitter {
+  /**
+   * Create a new agent swarm
+   * @param {Array<import('./base-agent.js').BaseAgent>} [agents=[]] - Initial agents
+   */
   constructor(agents = []) {
     super();
     this.agents = agents;
@@ -10,11 +18,21 @@ export class AgentSwarm extends EventEmitter {
     this.errors = [];
   }
 
+  /**
+   * Add an agent to the swarm
+   * @param {import('./base-agent.js').BaseAgent} agent - Agent to add
+   * @returns {AgentSwarm} this (for chaining)
+   */
   addAgent(agent) {
     this.agents.push(agent);
     return this;
   }
 
+  /**
+   * Run all agents in parallel on the same task
+   * @param {Object} task - Task to execute
+   * @returns {Promise<Array<PromiseSettledResult>>} Settled results
+   */
   async runParallel(task) {
     this.emit('start', { mode: 'parallel', agentCount: this.agents.length });
 
@@ -36,6 +54,11 @@ export class AgentSwarm extends EventEmitter {
     return results;
   }
 
+  /**
+   * Run agents sequentially, stopping on error or shouldStop signal
+   * @param {Object} task - Task to execute
+   * @returns {Promise<Array<Object>>} Ordered results
+   */
   async runSequential(task) {
     this.emit('start', { mode: 'sequential', agentCount: this.agents.length });
     const results = [];
@@ -60,6 +83,12 @@ export class AgentSwarm extends EventEmitter {
     return results;
   }
 
+  /**
+   * Run agents in waterfall mode — each agent receives previous output as input
+   * @param {*} initialContext - Initial context passed to the first agent
+   * @returns {Promise<*>} Final context after all agents
+   * @throws {Error} If any agent fails
+   */
   async runWaterfall(initialContext) {
     this.emit('start', { mode: 'waterfall', agentCount: this.agents.length });
     let context = initialContext;
@@ -77,6 +106,12 @@ export class AgentSwarm extends EventEmitter {
     return context;
   }
 
+  /**
+   * Run agents competitively and select the best result
+   * @param {Object} task - Task to execute
+   * @param {Function} selectBest - Selector function to pick the best result
+   * @returns {Promise<*>} Best result as chosen by selectBest
+   */
   async runCompetitive(task, selectBest) {
     const results = await this.runParallel(task);
     const successful = results.filter(

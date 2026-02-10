@@ -151,6 +151,12 @@ const TIERS = [
 const DEFAULT_PAGE_SIZE = 25;
 const DEFAULT_SEARCH_PAGE_SIZE = 10;
 
+/**
+ * Safely parse a positive integer
+ * @param {any} value - Value to parse
+ * @param {number} fallback - Fallback if invalid
+ * @returns {number} Parsed integer
+ */
 function parsePositiveInt(value, fallback) {
   if (value === undefined || value === null) return fallback;
   const parsed = parseInt(String(value), 10);
@@ -158,6 +164,13 @@ function parsePositiveInt(value, fallback) {
   return parsed;
 }
 
+/**
+ * Paginate an array of items
+ * @param {Array} items - Items to paginate
+ * @param {number} page - Current page (1-based)
+ * @param {number} limit - Items per page
+ * @returns {Object} Pagination result {total, totalPages, page, limit, start, end, items}
+ */
 function paginate(items, page, limit) {
   const safeLimit = Math.max(1, limit);
   const total = items.length;
@@ -185,10 +198,19 @@ function printPaginationSummary({ total, totalPages, page, start, end }) {
   );
 }
 
+/**
+ * Find a built-in agent by name
+ * @param {string} name - Agent name
+ * @returns {Object|undefined} Agent definition or undefined
+ */
 export function findBuiltInAgent(name) {
   return AGENTS.find((a) => a.name.toLowerCase() === name.toLowerCase());
 }
 
+/**
+ * List all custom agents in the local .ultra-dex/custom-agents directory
+ * @returns {Promise<string[]>} List of agent names
+ */
 export async function listCustomAgents() {
   try {
     const entries = await fs.readdir(CUSTOM_AGENTS_DIR, { withFileTypes: true });
@@ -200,6 +222,11 @@ export async function listCustomAgents() {
   }
 }
 
+/**
+ * Get the file path for a custom agent
+ * @param {string} name - Agent name
+ * @returns {Promise<string|null>} Absolute file path or null if not found
+ */
 export async function getCustomAgentPath(name) {
   // Rigorous validation of agent name
   const validation = validateSafePath(name, 'Agent name');
@@ -228,6 +255,12 @@ export async function readCustomAgent(name) {
   return fs.readFile(filePath, 'utf-8');
 }
 
+/**
+ * Read the prompt content for a given agent
+ * @param {Object} agent - Agent definition object
+ * @returns {Promise<string>} The agent's system prompt
+ * @throws {Error} If path is invalid or file is not found
+ */
 export async function readAgentPrompt(agent) {
   // Validate built-in agent file reference
   if (agent.file.includes('..') || path.isAbsolute(agent.file)) {
@@ -245,6 +278,11 @@ export async function readAgentPrompt(agent) {
   return readWithFallback(agentPath, fallbackPath, 'utf-8');
 }
 
+/**
+ * Extract metadata from an agent markdown file
+ * @param {string} content - Markdown content
+ * @returns {Object} Metadata {name, description, version, prompt, tags}
+ */
 function extractAgentMetadata(content) {
   const nameMatch = content.match(/^#\\s*@?([^\\n]+)/m);
   const roleMatch = content.match(/##\\s+Role\\s*\\n([\\s\\S]*?)(\\n##|$)/i);
@@ -258,14 +296,18 @@ function extractAgentMetadata(content) {
   const prompt = promptMatch ? promptMatch[1].trim() : null;
   const tags = expertiseMatch
     ? expertiseMatch[1]
-        .split(/[,\\n]/)
-        .map((tag) => tag.trim())
-        .filter(Boolean)
+      .split(/[,\\n]/)
+      .map((tag) => tag.trim())
+      .filter(Boolean)
     : [];
 
   return { name, description, version, prompt, tags };
 }
 
+/**
+ * Check health status of all built-in agents
+ * @returns {Promise<Array<{agent: string, status: string, error: string|null}>>} Health report
+ */
 export async function checkAgentsHealth() {
   const healthResults = [];
 
@@ -290,6 +332,10 @@ export async function checkAgentsHealth() {
   return healthResults;
 }
 
+/**
+ * Register agents command with Commander
+ * @param {Command} program - Commander program instance
+ */
 export function registerAgentsCommand(program) {
   const agentsCmd = program
     .command('agents')
@@ -640,7 +686,7 @@ ${answers.prompt}
         if (!agentPath) {
           console.log(
             chalk.yellow(
-              `\n⚠️ Marketplace publishing is coming soon. Create a custom agent "${name}" first.\n`
+              `\n⚠️ Custom agent "${name}" not found. Create it first with: ultra-dex agents create ${name}\n`
             )
           );
           return;
@@ -761,6 +807,17 @@ function mapTierToCategory(tier) {
   return map[tier] || 'general';
 }
 
+/**
+ * List all available agents (built-in and custom)
+ * @param {Object} options - Filter and pagination options
+ * @param {boolean} [options.builtinOnly] - Show only built-in agents
+ * @param {number} [options.page] - Page number
+ * @param {number} [options.limit] - Page size
+ * @param {boolean} [options.json] - Return JSON output
+ * @param {string} [options.tier] - Filter by tier
+ * @param {string} [options.category] - Filter by category
+ * @returns {Promise<void>}
+ */
 async function listAgents({
   builtinOnly = false,
   page = 1,

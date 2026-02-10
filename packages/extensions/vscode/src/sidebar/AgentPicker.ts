@@ -1,3 +1,8 @@
+/**
+ * @fileoverview AgentPicker module
+ * @module sidebar/AgentPicker
+ */
+
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -187,5 +192,17 @@ Focus on ${agent.description.toLowerCase()}.`;
     vscode.window.showInformationMessage(
       `Ask ${agent.name} prompt ready! Paste into your AI tool.`
     );
+  }
+}
+
+/**
+ * Error handler for AgentPicker
+ * @param {Error} error - Error to handle
+ */
+function handleAgentPickerError(error) {
+  try {
+    console.error('[AgentPicker]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
   }
 }

@@ -19,35 +19,63 @@ const activityData = [
  * @returns {JSX.Element} Overview page component
  */
 export const Overview = memo(function Overview() {
-  const { data, connected } = useWebSocket<Record<string, number>>(
-    'ws://localhost:3002'
-  );
+  const socketUrl =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ULTRA_DEX_WS) ||
+    'ws://localhost:3002/ws';
+  const { data, connected } = useWebSocket<{
+    type?: string;
+    data?: {
+      state?: Record<string, unknown>;
+      graph?: { nodes?: number; edges?: number; files?: number };
+      metrics?: { clients?: number; memory?: number; uptime?: number };
+    };
+  }>(socketUrl);
+
+  const state = data?.type === 'system_update' ? data.data?.state : null;
 
   const metrics = [
     {
       label: 'Active Agents',
-      value: data?.agents ?? 17,
+      value:
+        (Array.isArray(state?.activeAgents)
+          ? state.activeAgents.length
+          : Array.isArray(state?.agents)
+            ? state.agents.length
+            : undefined) ?? 17,
       delta: '+8%',
       icon: Bot,
       tone: 'cyan',
     },
     {
       label: 'Tasks Today',
-      value: data?.tasks ?? 42,
+      value:
+        (Array.isArray(state?.tasks)
+          ? state.tasks.length
+          : Array.isArray(state?.pendingTasks)
+            ? state.pendingTasks.length
+            : undefined) ?? 42,
       delta: '+12%',
       icon: Activity,
       tone: 'emerald',
     },
     {
       label: 'Completed',
-      value: data?.completed ?? 38,
+      value:
+        (Array.isArray(state?.completedTasks)
+          ? state.completedTasks.length
+          : undefined) ?? 38,
       delta: '+6%',
       icon: CheckCircle2,
       tone: 'emerald',
     },
     {
       label: 'Alerts',
-      value: data?.alerts ?? 2,
+      value:
+        (Array.isArray(state?.alerts)
+          ? state.alerts.length
+          : Array.isArray(state?.issues)
+            ? state.issues.length
+            : undefined) ?? 2,
       delta: '-1',
       icon: AlertTriangle,
       tone: 'amber',
@@ -134,3 +162,16 @@ export const Overview = memo(function Overview() {
   );
 });
 
+/**
+ * Error handler for Overview component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleOverviewError(error, errorInfo) {
+  try {
+    console.error(`[Overview] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
+  } catch (_) {
+    // Fail silently to avoid recursive errors
+  }
+}
