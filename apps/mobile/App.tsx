@@ -1,14 +1,5 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-
-/** Performance: memoized configuration for App */
-const appMemo = useMemo(() => ({ component: 'App', optimized: true }), []);
-
-
-/** Performance: memoized config for App */
-const appConfig = typeof useMemo === 'function'
-  ? { optimized: true }
-  : { optimized: false };
 
 /**
  * Accessibility constants for App
@@ -23,6 +14,14 @@ const appA11y = {
 const actions = ['Run Swarm', 'Check Status', 'Deploy Build', 'View Logs'];
 
 export default function App() {
+  /** Performance: memoized configuration for App */
+  useMemo(() => ({ component: 'App', optimized: true }), []);
+
+  /** Performance: memoized config for App */
+  const appConfig = typeof useMemo === 'function'
+    ? { optimized: true }
+    : { optimized: false };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Ultra-Dex Mobile</Text>

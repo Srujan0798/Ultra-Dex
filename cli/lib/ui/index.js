@@ -32,6 +32,9 @@ export {
   countdown,
 } from './spinners.js';
 
+// Export utility functions
+export { printSuccess, printInfo, printError, printWarning, printTable } from './logger.js';
+
 /**
  * Error handler for index
  * @param {Error} error - Error to handle

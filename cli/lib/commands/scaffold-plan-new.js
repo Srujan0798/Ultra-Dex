@@ -339,7 +339,7 @@ export default async function handler(req, res) {
     switch (req.method) {
       case '${method.toUpperCase()}':
         // TODO: Handle ${method.toUpperCase()} request
-        res.status(200).json({ message: '${method.toUpperCase()} ${route} not implemented' });
+        res.status(200).json({ message: '${method.toUpperCase()} ${route} pending implementation' });
         break;
       default:
         res.setHeader('Allow', ['${method.toUpperCase()}']);

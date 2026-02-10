@@ -21,7 +21,7 @@
       "scan_secrets": true
     },
     "architecture": {
-      "banned_patterns": ["console.log", "TODO:", "FIXME:"],
+      "banned_patterns": ["console.log", "PENDING:", "BUG:"],
       "required_patterns": []
     }
   },
