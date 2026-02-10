@@ -87,7 +87,7 @@ if (isAcpMode) {
   })();
 
   // ACP mode takes over completely - don't process other commands
-  await new Promise(() => { });
+  await new Promise(() => {});
 }
 
 // Check for updates
@@ -98,7 +98,7 @@ if (notifier.update) {
   console.log(
     formatWarning(
       `Update available! ${notifier.update.current} → ${notifier.update.latest}\n` +
-      `Run ${chalk.cyan('npm install -g ultra-dex')} to update`
+        `Run ${chalk.cyan('npm install -g ultra-dex')} to update`
     )
   );
 }
@@ -121,7 +121,6 @@ import {
 } from '../lib/commands/state.js';
 import { registerStatusCommand } from '../lib/commands/status.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
-
 
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
 import { registerCheckCommand } from '../lib/commands/check.js';
@@ -466,6 +465,12 @@ import { registerNexusCommand } from '../lib/commands/nexus.js';
 registerNexusCommand(program);
 import { registerVaultCommand } from '../lib/commands/vault.js';
 registerVaultCommand(program);
+
+// v5.1 Cognitive Core Commands
+import swarmP2PCommand from '../lib/commands/swarm-p2p.js';
+import predictDebugCommand from '../lib/commands/predict-debug.js';
+program.addCommand(swarmP2PCommand);
+program.addCommand(predictDebugCommand);
 registerAuthCommand(program);
 import { registerThinkCommand } from '../lib/commands/think.js';
 registerThinkCommand(program);
@@ -504,7 +509,15 @@ if (process.argv.length <= 2) {
 
 await program.parseAsync(process.argv);
 
-const LONG_RUNNING = new Set(['serve', 'watch', 'daemon', 'cloud', 'ci-monitor', 'repl', 'dashboard']);
+const LONG_RUNNING = new Set([
+  'serve',
+  'watch',
+  'daemon',
+  'cloud',
+  'ci-monitor',
+  'repl',
+  'dashboard',
+]);
 const isLongRunning = process.argv.some((arg) => LONG_RUNNING.has(arg));
 
 if (!wantsHelp && !isLongRunning) {

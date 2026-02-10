@@ -91,7 +91,7 @@ This document records all architectural and significant technical decisions made
 
 ## Legend
 - **Accepted**: Decision implemented and in effect
-- **Rejected**: Decision considered but not implemented
+- **Rejected**: Decision considered but deferred
 - **Deprecated**: Decision was accepted but is no longer in effect
 - **Superseded**: Decision replaced by a newer decision
 

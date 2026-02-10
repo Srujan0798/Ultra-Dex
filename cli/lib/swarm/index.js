@@ -36,6 +36,9 @@ export { createMessage, createHandover };
 // Re-export from tiers
 export { TIERS, AGENTS, TIER_FLOW, getAgent, getAgentsByTier, getTier };
 
+// Re-export P2P decentralized swarm (v5.1)
+export { P2PNode, DecentralizedSwarm } from './p2p.js';
+
 // ============================================================================
 // SWARM COORDINATOR CLASS
 // ============================================================================

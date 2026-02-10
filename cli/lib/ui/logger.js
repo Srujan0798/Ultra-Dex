@@ -207,6 +207,31 @@ class Logger {
 export const logger = new Logger();
 export default logger;
 
+// Export convenience functions
+export function printSuccess(message) {
+  logger.success(message);
+}
+
+export function printInfo(message) {
+  logger.info(message);
+}
+
+export function printError(message) {
+  logger.error(message);
+}
+
+export function printWarning(message) {
+  logger.warn(message);
+}
+
+export function printTable(data) {
+  // Simple table printing implementation
+  for (const row of data) {
+    const formattedRow = row.map(cell => String(cell)).join('\t');
+    console.log(formattedRow);
+  }
+}
+
 /**
  * Error handler for logger
  * @param {Error} error - Error to handle
