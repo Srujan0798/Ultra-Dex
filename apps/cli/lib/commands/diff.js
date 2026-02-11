@@ -203,7 +203,7 @@ async function comparePlanVsImplementation(options = {}) {
 
   // Look for code that might implement tasks not in the plan
   for (const file of implementationFiles) {
-    const todoMatches = file.content.match(/TO\u0044O:?\s*(.+)/gi);
+    const todoMatches = file.content.match(/TODO:?\s*(.+)/gi);
     if (!todoMatches) continue;
 
     for (const match of todoMatches) {
