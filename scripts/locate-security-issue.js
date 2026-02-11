@@ -1,5 +1,3 @@
-// Copyright (c) 2026 Ultra-Dex
-
 #!/usr/bin/env node
 // Copyright (c) 2026 Ultra-Dex
 
@@ -38,9 +36,25 @@ const EXCLUDED_DIRS = new Set([
 ]);
 
 const BINARY_EXTS = new Set([
-  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.ico',
-  '.pdf', '.zip', '.tar', '.gz', '.tgz', '.7z',
-  '.mp4', '.mp3', '.mov', '.avi', '.woff', '.woff2',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp',
+  '.bmp',
+  '.ico',
+  '.pdf',
+  '.zip',
+  '.tar',
+  '.gz',
+  '.tgz',
+  '.7z',
+  '.mp4',
+  '.mp3',
+  '.mov',
+  '.avi',
+  '.woff',
+  '.woff2',
 ]);
 
 const RULES = [
@@ -48,7 +62,8 @@ const RULES = [
     id: 'hardcoded-secret',
     severity: 'high',
     description: 'Potential hardcoded secret/token',
-    pattern: /(api_key|apikey|secret|token|access_key|auth_key)\s*[:=]\s*['"][A-Za-z0-9_\-]{16,}['"]/gi,
+    pattern:
+      /(api_key|apikey|secret|token|access_key|auth_key)\s*[:=]\s*['"][A-Za-z0-9_\-]{16,}['"]/gi,
   },
   {
     id: 'private-key',
@@ -176,7 +191,9 @@ async function main() {
   console.log('\nSecurity Issue Locator Report');
   console.log('Scan root:', scanRoot);
   console.log('Total findings:', summary.total);
-  console.log(`Critical: ${summary.critical}  High: ${summary.high}  Medium: ${summary.medium}  Low: ${summary.low}`);
+  console.log(
+    `Critical: ${summary.critical}  High: ${summary.high}  Medium: ${summary.medium}  Low: ${summary.low}`
+  );
 
   if (!allFindings.length) {
     console.log('No issues detected.');

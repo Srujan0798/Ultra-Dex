@@ -24,7 +24,7 @@ export class SQLiteProvider {
 
     this.db = await open({
       filename: this.dbPath,
-      driver: sqlite3.Database
+      driver: sqlite3.Database,
     });
 
     // Create tables for memory tiers
@@ -66,21 +66,21 @@ export class SQLiteProvider {
 
   async add(tier, record) {
     await this.init();
-    const table = `\${tier}_memory`;
+    const table = `${tier}_memory`;
     const metadata = JSON.stringify(record.metadata || {});
-    
+
     await this.db.run(
-      `INSERT OR REPLACE INTO \${table} (id, content, type, source, metadata) VALUES (?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO ${table} (id, content, type, source, metadata) VALUES (?, ?, ?, ?, ?)`,
       [record.id, record.content, record.type, record.source, metadata]
     );
-    
+
     return record;
   }
 
   async get(tier, id) {
     await this.init();
-    const table = `\${tier}_memory`;
-    const row = await this.db.get(`SELECT * FROM \${table} WHERE id = ?`, [id]);
+    const table = `${tier}_memory`;
+    const row = await this.db.get(`SELECT * FROM ${table} WHERE id = ?`, [id]);
     if (row) {
       row.metadata = JSON.parse(row.metadata);
     }
@@ -89,26 +89,28 @@ export class SQLiteProvider {
 
   async list(tier, limit = 100) {
     await this.init();
-    const table = `\${tier}_memory`;
-    const rows = await this.db.all(`SELECT * FROM \${table} ORDER BY timestamp DESC LIMIT ?`, [limit]);
-    return rows.map(row => ({
+    const table = `${tier}_memory`;
+    const rows = await this.db.all(`SELECT * FROM ${table} ORDER BY timestamp DESC LIMIT ?`, [
+      limit,
+    ]);
+    return rows.map((row) => ({
       ...row,
-      metadata: JSON.parse(row.metadata)
+      metadata: JSON.parse(row.metadata),
     }));
   }
 
   async delete(tier, id) {
     await this.init();
-    const table = `\${tier}_memory`;
-    await this.db.run(`DELETE FROM \${table} WHERE id = ?`, [id]);
+    const table = `${tier}_memory`;
+    await this.db.run(`DELETE FROM ${table} WHERE id = ?`, [id]);
   }
 
   async query(tier, sql, params = []) {
     await this.init();
-    const table = `\${tier}_memory`;
-    // Ensure the query only targets the specified table for security
+    const table = `${tier}_memory`;
+    // Ensure the query targets the correct table for the specified tier
     if (!sql.toLowerCase().includes(table)) {
-      throw new Error("Query must target the correct tier table");
+      throw new Error(`Query must target the correct tier table: ${table}`);
     }
     return await this.db.all(sql, params);
   }
