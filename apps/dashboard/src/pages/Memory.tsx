@@ -1,77 +1,118 @@
-import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { memo } from 'react';
 import { Chart } from '../components/Chart';
 
-/** Performance: memoized configuration for Memory */
-const memoryMemo = useMemo(() => ({ component: 'Memory', optimized: true }), []);
-
-
-/** Performance: memoized config for Memory */
-const memoryConfig = typeof useMemo === 'function'
-  ? { optimized: true }
-  : { optimized: false };
-
-/**
- * Accessibility constants for Memory
- * @see https://www.w3.org/WAI/ARIA/apg/
- */
-const memoryA11y = {
-  role: 'region',
-  'aria-label': 'Memory section',
-  'aria-live': 'polite',
-};
-
-const memoryData = [
+const memoryTiers = [
   { tier: 'Hot', tokens: 2048, max: 4096 },
-  { tier: 'Warm', tokens: 6000, max: 8192 },
+  { tier: 'Warm', tokens: 6200, max: 8192 },
   { tier: 'Cold', tokens: 45000, max: 100000 },
 ];
 
-export function Memory() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Memory Tiers</h1>
+const retentionData = [
+  { day: 'Mon', hot: 1800, warm: 5600, cold: 42000 },
+  { day: 'Tue', hot: 2000, warm: 6100, cold: 43000 },
+  { day: 'Wed', hot: 2100, warm: 6400, cold: 44000 },
+  { day: 'Thu', hot: 2200, warm: 6500, cold: 45000 },
+  { day: 'Fri', hot: 2400, warm: 6700, cold: 46000 },
+];
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {memoryData.map(({ tier, tokens, max }) => (
-          <div key={tier} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <h3 className="text-lg font-semibold">{tier} Tier</h3>
-            <div className="mt-4">
-              <div className="flex justify-between text-sm text-gray-400">
-                <span>{tokens.toLocaleString()} tokens</span>
-                <span>{Math.round((tokens / max) * 100)}%</span>
-              </div>
-              <div className="mt-2 h-3 bg-gray-700 rounded-full overflow-hidden">
+/**
+ * Memory Dashboard Page - Visualize AI memory usage tiers
+ * @returns {JSX.Element} Memory page component
+ */
+export const Memory = memo(function Memory() {
+  return (
+    <main className="space-y-6" role="main" aria-label="Memory Dashboard">
+      <section
+        className="grid gap-4 md:grid-cols-3"
+        aria-label="Memory Tiers"
+        role="region"
+      >
+        {memoryTiers.map((tier) => (
+          <div
+            key={tier.tier}
+            className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5"
+            role="article"
+            aria-label={`${tier.tier} Tier usage`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
                 <div
-                  className="h-full bg-purple-500 transition-all"
-                  style={{ width: `${(tokens / max) * 100}%` }}
-                />
+                  className="text-xs uppercase tracking-[0.2em] text-slate-500"
+                  id={`tier-label-${tier.tier.toLowerCase()}`}
+                >
+                  {tier.tier} Tier
+                </div>
+                <div
+                  className="mt-2 text-2xl font-semibold text-slate-100"
+                  aria-labelledby={`tier-label-${tier.tier.toLowerCase()}`}
+                >
+                  {tier.tokens.toLocaleString()} tokens
+                </div>
               </div>
+              <span className="text-sm text-emerald-400" aria-label={`${Math.round((tier.tokens / tier.max) * 100)}% Used`}>
+                {Math.round((tier.tokens / tier.max) * 100)}%
+              </span>
+            </div>
+            <div
+              className="mt-4 h-2 rounded-full bg-slate-800"
+              role="progressbar"
+              aria-valuenow={tier.tokens}
+              aria-valuemin={0}
+              aria-valuemax={tier.max}
+              aria-label={`${tier.tier} tier capacity`}
+            >
+              <div
+                className="h-2 rounded-full bg-emerald-500/80"
+                style={{ width: `${(tier.tokens / tier.max) * 100}%` }}
+                aria-hidden="true"
+              />
             </div>
           </div>
         ))}
-      </div>
+      </section>
 
-      <Chart title="Token Distribution" subtitle="Across hot / warm / cold tiers">
-        <BarChart data={memoryData}>
-          <XAxis dataKey="tier" stroke="#9ca3af" />
-          <YAxis stroke="#9ca3af" />
-          <Tooltip />
-          <Bar dataKey="tokens" fill="#8b5cf6" />
-        </BarChart>
-      </Chart>
-    </div>
+      <section
+        className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6"
+        aria-label="Retention Flow Chart"
+        role="region"
+      >
+        <header className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-100">Retention Flow</h2>
+          <span
+            className="text-xs uppercase tracking-[0.2em] text-slate-500"
+            role="status"
+            aria-live="polite"
+          >
+            Last 5 days
+          </span>
+        </header>
+        <Chart
+          data={retentionData}
+          xKey="day"
+          series={[
+            { key: 'hot', color: '#22c55e' },
+            { key: 'warm', color: '#0ea5e9' },
+            { key: 'cold', color: '#eab308' },
+          ]}
+          variant="area"
+          height={280}
+          title="Memory Retention Flow"
+        />
+      </section>
+    </main>
   );
-}
+});
 
 /**
- * Error handler for Memory
- * @param {Error} error - Error to handle
+ * Error handler for Memory component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
  */
-function handleMemoryError(error) {
+function handleMemoryError(error, errorInfo) {
   try {
-    console.error('[Memory]', error instanceof Error ? error.message : String(error));
+    console.error(`[Memory] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
   } catch (_) {
-    // Fail silently
+    // Fail silently to avoid recursive errors
   }
 }

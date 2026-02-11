@@ -1,4 +1,4 @@
-# Ultra-Dex: AI Agent Orchestration for VS Code
+# Ultra-Dex v6.0.0: AI Agent Orchestration for VS Code
 
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/SrujanSaiKarna.ultra-dex-vscode)](https://marketplace.visualstudio.com/items?itemName=SrujanSaiKarna.ultra-dex-vscode)
 [![npm version](https://img.shields.io/npm/v/ultra-dex.svg)](https://www.npmjs.com/package/ultra-dex)

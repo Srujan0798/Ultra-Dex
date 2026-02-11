@@ -1,3 +1,3 @@
-# Ultra-Dex Cloud API
+# Cloud API
 
-Placeholder for API contracts, auth flows, and service endpoints.
+OpenAPI and service endpoints for Ultra-Dex cloud.

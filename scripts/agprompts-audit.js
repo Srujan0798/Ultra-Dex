@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * @fileoverview Agprompts Audit module
  * @module scripts/agprompts-audit

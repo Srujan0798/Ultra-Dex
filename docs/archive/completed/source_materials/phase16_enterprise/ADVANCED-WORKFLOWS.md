@@ -463,7 +463,7 @@ const supabase = createClient(
 // 2. Sign up user
 const { data, error } = await supabase.auth.signUp({
   email: 'user@example.com',
-  password: 'secure-password',
+  password: process.env.DB_PASSWORD,  // Use environment variables for sensitive data
 });
 
 // 3. Sign in with OAuth

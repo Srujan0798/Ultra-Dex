@@ -2,7 +2,7 @@
   "name": "ultra-dex",
   "displayName": "Ultra-Dex AI Development Platform",
   "description": "AI-powered development tools with persistent memory and governance",
-  "version": "4.2.0",
+  "version": "6.0.0",
   "publisher": "UltraDex",
   "engines": {
     "vscode": "^1.74.0"

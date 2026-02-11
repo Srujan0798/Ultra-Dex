@@ -1,363 +1,104 @@
----
-id: PHASE-18-PROMPTS
-title: 'Phase 18 - Completion & Inventory Protocol'
-category: phases
-priority: medium
-status: pending
-version: 6.0.0
-last-updated: 2026-02-10
-author: Ultra-Dex Team
-related:
-  - PROMPT-18-COMPLETION
-  - SPEC-INVENTORY
-tags:
-  - completion
-  - inventory
-  - reconciliation
-dependencies: []
-testing:
-  - method: manual
-  - coverage: 0%
----
+# 🔍 ULTRA-DEX PHASE 18: COMPLETION & INVENTORY SPEC
 
-# Ultra-Dex Phase 18 - Completion & Inventory Protocol
+## Mission Metadata
+- **ID:** PHASE-18-SPEC
+- **Phase:** 18 (The Great Reconciliation)
+- **Category:** Infrastructure / Operations
+- **Priority:** P1
+- **Status:** v6.0.0 SPEC
+- **Total Prompts:** 15 (#201-215)
 
-> **Source:** COMMAND-INVENTORY-REAL.md, CODEX-IMPLEMENTATION-PLAN.md
-> **Total:** 15 New Prompts (#201-215)
-> **Date:** Feb 5, 2026
+## Problem Statement
+The "Codebase vs. Documentation" gap must be zero. Phase 18 verifies that every promised feature exists, polishes the beta command set, and prepares the system for official v6.0 distribution.
 
 ---
 
-## 🔍 TRUTH RECONCILIATION
+### PROMPT 201: [AUDIT] Truth Reconciliation Engine
+- **ID:** TRUTH-RECON
+- **Requirement:** Structural audit comparing `COMMAND-INVENTORY.md` to disk.
+- **Logic:** Mark files < 50 lines as "STUB" and > 200 lines as "REAL".
+- **Success:** Final `REALITY-REPORT.md` declaring 100% feature coverage.
+
+### PROMPT 202: [FIX] Beta Command Hardening
+- **ID:** BETA-POLISH
+- **Requirement:** Add missing validation and error handling to 18 "Beta" commands.
+- **Files:** `doctor.js`, `config.js`, `monitoring.js`.
+- **Success:** Zero "TODO" markers in the production command tree.
+
+### PROMPT 203: [EXT] VS Code Sidebar Webview
+- **ID:** VSCODE-SIDEBAR
+- **Requirement:** Unified management panel inside the editor.
+- **Success:** One-click copy for all 18 Agent Personas.
+
+### PROMPT 204: [EXT] Context Hover Provider
+- **ID:** VSCODE-HOVER
+- **Requirement:** Peek-at-docs functionality for implementation plans.
+- **Success:** Hovering over `Section 12` shows the requirements immediately.
+
+### PROMPT 205: [UI] Advanced Dashboard V2
+- **ID:** DASHBOARD-V2
+- **Requirement:** Chart.js integration for "Alignment Score" tracking.
+- **Success:** Real-time visual telemetry of the autonomous build.
+
+### PROMPT 206: [DOCS] Ecosystem Core Guides
+- **ID:** CORE-GUIDES-FINISH
+- **Requirement:** Finalize `MCP-INTEGRATION.md` and `CICD-GUIDE.md`.
+- **Success:** Zero broken links in the master documentation index.
+
+### PROMPT 207: [TEST] MCP Integration Suite
+- **ID:** MCP-TEST-SUITE
+- **Requirement:** End-to-end testing for the Context Bus protocol.
+- **Success:** Mocked tool calls verified for security and speed.
+
+### PROMPT 208: [OPS] NPM Publish Protocol
+- **ID:** NPM-PREP
+- **Requirement:** Final package optimization for `ultra-dex` distribution.
+- **Success:** All binary artifacts verified and minimal install size confirmed.
+
+### PROMPT 209: [UTIL] Dependency Graph Gen
+- **ID:** ARCH-GRAPH
+- **Requirement:** Mermaid graph generator for visualizing "Clean Architecture".
+- **Success:** `ARCHITECTURE.md` auto-updated on every push.
+
+### PROMPT 210: [LEGAL] License & Header Sweep
+- **ID:** LICENSE-SWEEP
+- **Requirement:** Add copyright headers to all 500+ source files.
+- **Success:** 100% compliance with MIT/Apache standards.
+
+### PROMPT 211: [DOCS] Contributor Blueprint
+- **ID:** CONTRIB-GUIDE
+- **Requirement:** Unified `CONTRIBUTING.md` for adding Agents and Commands.
+- **Success:** Clear path for community expansion.
+
+### PROMPT 212: [UTIL] Opt-in Telemetry
+- **ID:** TELEMETRY-MODULE
+- **Requirement:** Anonymized usage tracking for feature prioritization.
+- **Success:** Secure, privacy-first analytics layer.
+
+### PROMPT 213: [OPS] Self-Healing Update Engine
+- **ID:** SELF-UPDATE-CLI
+- **Requirement:** Command `ultra-dex upgrade` for atomic binary updates.
+- **Success:** Near-zero downtime for tool chain transitions.
+
+### PROMPT 214: [DX] Shell Autocomplete (Tab)
+- **ID:** SHELL-COMPLETION
+- **Requirement:** Tab-completion scripts for Zsh/Bash/Fish.
+- **Success:** Instant command/flag discovery in the shell.
+
+### PROMPT 215: [STYLE] The Final Polish Pass
+- **ID:** FINAL-BEAUTIFY
+- **Requirement:** Repository-wide Prettier/ESLint deep cleaning.
+- **Success:** Codebase passes 100% of the "Single Author" test.
 
 ---
 
-### PROMPT 201: The Great Reconciliation Check
+## 🔐 Security Considerations
+- Ensure shell completion scripts don't leak environment variables.
+- License sweep must include third-party dependency attribution.
 
-> **Source:** COMMAND-INVENTORY-REAL.md vs Devin-CEO-Review.md
-> **Status:** Critical Audit
-
-```
-## Task: Verify Command Inventory Reality
-
-**Files to check:**
-- cli/lib/commands/*.js
-
-**Requirement:**
-- Run a structural audit of the 21 "Production Ready" commands listed in Inventory.
-- If file size < 50 lines -> Mark as "STUB" (Devin was right).
-- If file size > 200 lines -> Mark as "REAL" (Inventory was right).
-- Generate `REALITY-REPORT.md`.
-
-**Commit:** "audit: Structural verification of command inventory"
-```
+## 📊 Performance Gates
+- Dashboard UI must render in < 500ms.
+- Dependency graph generation must handle 1k+ nodes.
 
 ---
-
-### PROMPT 202: Beta Command Polish
-
-> **Source:** COMMAND-INVENTORY-REAL.md (Beta List)
-> **Status:** Completion
-
-```
-## Task: Polish Beta Commands
-
-**Files to update:**
-- cli/lib/commands/doctor.js (Add checks)
-- cli/lib/commands/config.js (Add wizard)
-- cli/lib/commands/monitoring.js (Add metrics)
-
-**Requirement:**
-- Take the 18 "Beta" commands and add missing validation/error handling.
-- Ensure all have `--help` documentation.
-- Remove any "TODO" comments.
-
-**Commit:** "fix: Polish beta commands for production release"
-```
-
----
-
-## 📦 CODEX EXECUTION PLAN (Phases 3-9)
-
----
-
-### PROMPT 203: VS Code Sidebar
-
-> **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 3.1)
-> **Status:** Extension
-
-```
-## Task: Implement VS Code Sidebar
-
-**Files to create:**
-- vscode-extension/src/sidebar/SidebarProvider.ts
-
-**Requirement:**
-- Webview showing all 16 agents with icons.
-- "Click to Copy Prompt" functionality.
-- Display current "Alignment Score".
-- Quick Actions: Generate, Build, Review.
-
-**Commit:** "feat: Add VS Code agent sidebar webview"
-```
-
----
-
-### PROMPT 204: VS Code Hover Provider
-
-> **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 3.1)
-> **Status:** Extension
-
-```
-## Task: Implement Context Hover
-
-**Files to create:**
-- vscode-extension/src/providers/HoverProvider.ts
-
-**Requirement:**
-- When user hovers over reference to `CONTEXT.md` sections.
-- Show preview of that section in a tooltip.
-- Support `@[AgentName]` hovering to show agent description.
-
-**Commit:** "feat: Add context hover provider"
-```
-
----
-
-### PROMPT 205: Dashboard Enhancements
-
-> **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 6)
-> **Status:** UI
-
-```
-## Task: Upgrade Dashboard UI
-
-**Files to update:**
-- cli/lib/dashboard/public/index.html
-
-**Requirement:**
-- Integrate `Chart.js` for Real-time Alignment Score.
-- Add Dark/Light theme toggle.
-- Create "Export Report" button.
-- Add "Recent Actions" timeline widget.
-
-**Commit:** "ui: Upgrade dashboard with charts and theming"
-```
-
----
-
-### PROMPT 206: Documentation Completion
-
-> **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 7)
-> **Status:** Documentation
-
-```
-## Task: Complete Core Guides
-
-**Files to create:**
-- docs/MCP-INTEGRATION.md (Claude Desktop/Cursor setup)
-- docs/CICD-GUIDE.md (GitHub Actions/Hooks)
-
-**Requirement:**
-- Full setup guides for external integrations.
-- Step-by-step CI/CD configuration.
-- API Reference for MCP endpoints.
-
-**Commit:** "docs: Add MCP and CI/CD integration guides"
-```
-
----
-
-### PROMPT 207: MCP Test Suite
-
-> **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 8)
-> **Status:** Testing
-
-```
-## Task: Add MCP Test Suite
-
-**Files to create:**
-- cli/test/mcp.test.js
-
-**Requirement:**
-- Test all MCP endpoints (GET/POST).
-- Verify WebSocket connection handling.
-- Test error scenarios.
-- Mock AI provider responses.
-
-**Commit:** "test: Add comprehensive MCP server tests"
-```
-
----
-
-### PROMPT 208: Publish Prep
-
-> **Source:** CODEX-IMPLEMENTATION-PLAN.md (Phase 9)
-> **Status:** DevOps
-
-```
-## Task: Prepare for NPM Publish
-
-**Files to update:**
-- cli/package.json
-
-**Requirement:**
-- Update version to `3.0.0`.
-- Add correct keywords: `ai`, `orchestration`, `mcp`.
-- Ensure `main` points to `bin/ultra-dex.js`.
-- Run `npm run lint` and `npm run test` as pre-publish check.
-
-**Commit:** "chore: Prepare package for v3.0.0 release"
-```
-
----
-
-## 🛠️ FINAL UTILITIES
-
----
-
-### PROMPT 209: Dependency Graph Visualizer
-
-> **Source:** COMMAND-INVENTORY-REAL.md
-> **Status:** Utility
-
-```
-## Task: Visualize Dependency Graph
-
-**Files to create:**
-- cli/lib/commands/graph.js
-
-**Requirement:**
-- Scan imports and generate a Mermaid graph.
-- Output to `ARCHITECTURE.md`.
-- Visual verification of "Clean Architecture".
-
-**Commit:** "feat: Add dependency graph visualization command"
-```
-
----
-
-### PROMPT 210: License & Headers
-
-> **Source:** Standard Practice
-> **Status:** Legal
-
-```
-## Task: Add License Headers
-
-**Files to update:**
-- cli/lib/**/*.js
-
-**Requirement:**
-- Add "Copyright (c) 2026 Ultra-Dex" header to all source files.
-- Ensure `LICENSE` file is present in root (MIT/Apache).
-
-**Commit:** "chore: Add license headers to source files"
-```
-
----
-
-### PROMPT 211: Contributor Guide
-
-> **Source:** Standard Practice
-> **Status:** Community
-
-```
-## Task: Create Contributing Guide
-
-**Files to create:**
-- CONTRIBUTING.md
-
-**Requirement:**
-- "How to add a new Agent".
-- "How to add a new CLI command".
-- "Code Style & Linting rules".
-- "Pull Request Process".
-
-**Commit:** "docs: Add contributor guidelines"
-```
-
----
-
-### PROMPT 212: Telemetry (Optional)
-
-> **Source:** Product Logic
-> **Status:** Analytics
-
-```
-## Task: Add CLI Telemetry (Opt-in)
-
-**Files to create:**
-- cli/lib/utils/telemetry.js
-
-**Requirement:**
-- Track command usage (anonymized).
-- "Opt-in" prompt on first run: `ultra-dex init`.
-- Help prioritize which commands to improve.
-
-**Commit:** "feat: Add opt-in CLI usage telemetry"
-```
-
----
-
-### PROMPT 213: Self-Update
-
-> **Source:** COMMAND-INVENTORY-REAL.md (Upgrade)
-> **Status:** DevOps
-
-```
-## Task: Improve Self-Update
-
-**Files to update:**
-- cli/lib/commands/upgrade.js
-
-**Requirement:**
-- Check npm registry for new version.
-- `ultra-dex upgrade` -> downloads and installs latest.
-- Show "New version available" banner on run.
-
-**Commit:** "feat: Improve CLI self-update mechanism"
-```
-
----
-
-### PROMPT 214: Shell Completion
-
-> **Source:** DX
-> **Status:** DX
-
-```
-## Task: Add Shell Autocomplete
-
-**Files to create:**
-- cli/scripts/install-completion.js
-
-**Requirement:**
-- Generate completion scripts for Zsh/Bash.
-- Tab-completion for commands and flags.
-- `ultra-dex install-completion`.
-
-**Commit:** "feat: Add shell autocompletion"
-```
-
----
-
-### PROMPT 215: The Final Polish
-
-> **Source:** All Sources
-> **Status:** Polish
-
-```
-## Task: Final Codebase Polish
-
-**Files to update:**
-- All `.js` files
-
-**Requirement:**
-- Run `prettier --write .` on entire repo.
-- Ensure consistent indentation (2 spaces).
-- Fix any trailing commas or semicolon inconsistencies.
-- The codebase should look like it was written by one person.
-
-**Commit:** "style: Final codebase formatting polish"
-```
+_Updated: February 10, 2026 | v6.0.0 SPEC_

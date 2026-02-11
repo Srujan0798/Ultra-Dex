@@ -1,0 +1,89 @@
+{
+  "name": "ultra-dex-test-config",
+  "description": "Test configuration for Ultra-Dex project",
+  "testEnvironment": {
+    "nodeVersion": ">=18.0.0",
+    "timeout": 30000,
+    "coverage": {
+      "enabled": true,
+      "threshold": {
+        "lines": 80,
+        "functions": 80,
+        "branches": 70,
+        "statements": 80
+      },
+      "reporters": [
+        "text",
+        "html",
+        "lcov"
+      ],
+      "exclude": [
+        "node_modules/**",
+        "tests/**",
+        "coverage/**",
+        "dist/**",
+        "build/**",
+        "**/node_modules/**",
+        "**/coverage/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/vendor/**",
+        "**/fixtures/**"
+      ]
+    },
+    "mocking": {
+      "aiProviders": {
+        "enabled": true,
+        "defaultResponse": {
+          "content": "Mocked AI response for testing",
+          "usage": {
+            "totalTokens": 15,
+            "inputTokens": 10,
+            "outputTokens": 5
+          },
+          "finishReason": "stop"
+        }
+      },
+      "externalApis": [
+        "openai",
+        "anthropic",
+        "google",
+        "github",
+        "notion",
+        "jira"
+      ]
+    },
+    "performance": {
+      "benchmarks": {
+        "agentRegistration": "<5ms",
+        "aiCall": "<200ms",
+        "contextRetrieval": "<10ms",
+        "memoryStorage": "<5ms"
+      }
+    },
+    "integration": {
+      "enabled": true,
+      "timeout": 60000,
+      "cleanup": true
+    }
+  },
+  "scripts": {
+    "test": "NODE_ENV=test node --test --test-reporter=spec tests/core/*.test.js tests/integration/*.test.js tests/cli/*.test.js",
+    "test:unit": "NODE_ENV=test node --test --test-reporter=spec tests/core/*.test.js",
+    "test:integration": "NODE_ENV=test node --test --test-reporter=spec tests/integration/*.test.js",
+    "test:cli": "NODE_ENV=test node --test --test-reporter=spec tests/cli/*.test.js",
+    "test:coverage": "NODE_ENV=test c8 --all --include=['src/**','packages/core/**'] --exclude=['tests/**','node_modules/**','coverage/**'] --reporter=html --reporter=text --reporter=lcov node --test tests/core/*.test.js tests/integration/*.test.js tests/cli/*.test.js",
+    "test:watch": "NODE_ENV=test nodemon --exec 'node --test --test-reporter=spec' tests/core/*.test.js",
+    "test:ci": "NODE_ENV=test c8 --reporter=lcov --reporter=text-summary node --test tests/core/*.test.js tests/integration/*.test.js tests/cli/*.test.js"
+  },
+  "dependencies": {
+    "dev": [
+      "c8",
+      "nodemon",
+      "vitest",
+      "chai",
+      "mocha",
+      "jest"
+    ]
+  }
+}

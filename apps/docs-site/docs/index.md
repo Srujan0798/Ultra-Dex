@@ -1,35 +1,28 @@
+# 🌌 Ultra-Dex Documentation
+
+Welcome to the official documentation for **Ultra-Dex v6.0.0**, the AI Orchestration Meta-Layer.
+
+## 🚀 Key Concepts
+
+- **Meta-Layer Architecture**: A professional monorepo setup for large-scale AI orchestration.
+- **Protocol 21**: A rigorous 21-step verification engine for ensuring code quality and security.
+- **Agent Tiers**: 18 specialized agents organized into 7 functional tiers (0-6).
+- **Hardened Sandbox**: Docker-isolated execution environments for multiple runtimes.
+- **Tiered Memory**: High-performance Hot/Warm/Cold memory system using SQLite and Vector DBs.
+
+## 🛠️ Getting Started
+
+1. [Introduction to Ultra-Dex](./intro)
+2. [Quick Start Guide](./getting-started)
+3. [CLI Reference](./cli)
+4. [Agent System](./agents)
+
+## 🧩 Extension & Customization
+
+- [Building Plugins](./guides/plugins)
+- [MCP Integration](./mcp)
+- [SDK Usage](./api)
+
 ---
-layout: home
 
-title: Ultra-Dex
-titleTemplate: AI-Powered Development Platform
-
-hero:
-  name: Ultra-Dex
-  text: AI-Powered Development Platform
-  tagline: The Kubernetes of AI Development - Orchestrate, Don't Compete
-  image:
-    src: /logo.png
-    alt: Ultra-Dex
-  actions:
-    - theme: brand
-      text: Get Started
-      link: /guide/
-    - theme: alt
-      text: View on GitHub
-      link: https://github.com/Srujan0798/Ultra-Dex
-
-features:
-  - title: Persistent Memory
-    details: Hot/Warm/Cold tiered memory system that remembers everything between sessions
-  - title: AI Orchestration
-    details: Smart routing across OpenAI, Anthropic, Google, and local models
-  - title: MCP Protocol
-    details: First-class Model Context Protocol support for Claude Desktop
-  - title: Architectural Governance
-    details: Protocol 21 verification pipeline with ADR enforcement
-  - title: Self-Healing CI/CD
-    details: Autonomous bug detection and fixing
-  - title: Enterprise Ready
-    details: RBAC, SSO, compliance, and on-premise deployment
----
+Built for the GenAI 2.0 era.

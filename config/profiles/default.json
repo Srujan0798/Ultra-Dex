@@ -1,0 +1,106 @@
+{
+  "metaLayer": {
+    "version": "6.0.0",
+    "name": "Ultra-Dex",
+    "mode": "development"
+  },
+  "aiProviders": {
+    "openai": {
+      "enabled": true,
+      "apiKey": "${OPENAI_API_KEY}",
+      "defaultModel": "gpt-4o-2024-11-20",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "topP": 1,
+      "frequencyPenalty": 0,
+      "presencePenalty": 0
+    },
+    "anthropic": {
+      "enabled": true,
+      "apiKey": "${ANTHROPIC_API_KEY}",
+      "defaultModel": "claude-3-5-sonnet-20241022",
+      "temperature": 0.7,
+      "maxTokens": 4096
+    },
+    "google": {
+      "enabled": true,
+      "apiKey": "${GOOGLE_API_KEY}",
+      "defaultModel": "gemini-2.0-flash-exp",
+      "temperature": 0.7,
+      "maxOutputTokens": 2048
+    },
+    "ollama": {
+      "enabled": false,
+      "baseUrl": "http://localhost:11434",
+      "defaultModel": "llama3.2",
+      "temperature": 0.7
+    },
+    "azure": {
+      "enabled": false,
+      "apiKey": "${AZURE_OPENAI_API_KEY}",
+      "endpoint": "${AZURE_OPENAI_ENDPOINT}",
+      "defaultModel": "gpt-4o",
+      "temperature": 0.7
+    },
+    "aws": {
+      "enabled": false,
+      "region": "us-east-1",
+      "defaultModel": "anthropic.claude-3-5-sonnet-20241022-v1:0",
+      "temperature": 0.7
+    }
+  },
+  "orchestration": {
+    "maxConcurrentAgents": 8,
+    "timeout": 180000,
+    "retryPolicy": {
+      "maxRetries": 3,
+      "backoffMultiplier": 2,
+      "initialDelay": 1000
+    },
+    "circuitBreaker": {
+      "threshold": 5,
+      "timeout": 60000
+    },
+    "workflow": {
+      "enableParallelExecution": true,
+      "maxWorkflowDepth": 10,
+      "enableDynamicRouting": true
+    }
+  },
+  "memory": {
+    "storage": "sqlite",
+    "ttl": 86400,
+    "maxSize": 2048,
+    "enableCompression": true,
+    "enableEncryption": false,
+    "retentionPeriod": 30
+  },
+  "security": {
+    "enableSandbox": true,
+    "allowedDomains": ["localhost", "127.0.0.1", "ultra-dex.ai"],
+    "rateLimiting": {
+      "enabled": true,
+      "windowMs": 900000,
+      "maxRequests": 100
+    },
+    "enableAuditLogging": true,
+    "enableInputValidation": true,
+    "enableOutputSanitization": true
+  },
+  "monitoring": {
+    "enableMetrics": true,
+    "enableTracing": true,
+    "samplingRate": 1.0,
+    "enablePerformanceProfiling": true,
+    "enableAnomalyDetection": true
+  },
+  "features": {
+    "enableAgentSwarm": true,
+    "enableAutoHealing": true,
+    "enablePredictiveDebugging": true,
+    "enableCodeGeneration": true,
+    "enableCodeReview": true,
+    "enableSecurityScanning": true,
+    "enablePerformanceOptimization": true
+  }
+}

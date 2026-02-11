@@ -426,7 +426,7 @@ export async function swarmCommand(task, options) {
   if (!provider) {
     renderer.fail('No AI provider configured.');
     renderer.box(
-      `export ANTHROPIC_API_KEY=sk-ant-...\nexport OPENAI_API_KEY=sk-...\nollama serve`,
+      `export ANTHROPIC_API_KEY=your-anthropic-api-key-here\nexport OPENAI_API_KEY=your-openai-api-key-here\nollama serve`,
       'Configuration Required',
       'error'
     );

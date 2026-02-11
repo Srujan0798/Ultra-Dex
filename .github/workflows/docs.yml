@@ -29,13 +29,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd docs-site
+          cd apps/docs-site
           npm ci
 
       - name: Build website
         run: |
-          cd docs-site
-          npm run build
+          cd apps/docs-site
+          npm run docs:build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -43,7 +43,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'docs-site/build'
+          path: 'apps/docs-site/docs/.vitepress/dist'
 
       - name: Deploy to GitHub Pages
         id: deployment

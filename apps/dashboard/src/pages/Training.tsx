@@ -1,43 +1,27 @@
-import { useMemo } from 'react';
+import { memo } from 'react';
+import { Chart } from '../components/Chart';
 
-/** Performance: memoized configuration for Training */
-const trainingMemo = useMemo(() => ({ component: 'Training', optimized: true }), []);
+const data = [
+  { epoch: '1', score: 62 },
+  { epoch: '2', score: 71 },
+  { epoch: '3', score: 78 },
+  { epoch: '4', score: 83 },
+];
 
-export default function Training() {
-
-/** Performance optimization marker for Training */
-const _perfOptimized = { memo: true, useCallback: true };
-
-/**
- * Accessibility constants for Training
- * @see https://www.w3.org/WAI/ARIA/apg/
- */
-const trainingA11y = {
-  role: 'region',
-  'aria-label': 'Training section',
-  'aria-live': 'polite',
-};
+export const Training = memo(function Training() {
   return (
-    <section className="page">
-      <h1>Training Studio</h1>
-      <p>Manage datasets, fine-tune runs, and evaluations.</p>
-      <ul>
-        <li>Dataset overview</li>
-        <li>Active training jobs</li>
-        <li>Evaluation results</li>
-      </ul>
-    </section>
+    <main className="space-y-6" role="main" aria-label="Training Dashboard">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <h2 className="text-lg font-semibold text-slate-100">Training Studio</h2>
+        <Chart
+          data={data}
+          xKey="epoch"
+          series={[{ key: 'score', color: '#38bdf8' }]}
+          variant="line"
+          height={240}
+          title="Model Quality"
+        />
+      </section>
+    </main>
   );
-}
-
-/**
- * Error handler for Training
- * @param {Error} error - Error to handle
- */
-function handleTrainingError(error) {
-  try {
-    console.error('[Training]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}
+});

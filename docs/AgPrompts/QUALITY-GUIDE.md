@@ -141,12 +141,12 @@ testing:
 ## 🔗 RELATED PROMPTS
 
 ### Dependencies
-- **[PROMPT-XXX](./path/to/prompt.md):** Required prerequisite
-- **[SPEC-YYYY](./path/to/spec.md):** Related specification
+- **[ARCHITECT-PROMPT.md](./core-systems/ARCHITECT-PROMPT.md):** Required prerequisite
+- **[AGENT_SWARM_SPEC.md](./core-systems/AGENT_SWARM_SPEC.md):** Related specification
 
 ### Related Work
-- **[PROMPT-AAA](./path/to/prompt.md):** Complementary functionality
-- **[PROMPT-BBB](./path/to/prompt.md):** Alternative approach
+- **[CODER-PROMPT.md](./core-systems/CODER-PROMPT.md):** Complementary functionality
+- **[REVIEWER-PROMPT.md](./core-systems/REVIEWER-PROMPT.md):** Alternative approach
 
 ---
 

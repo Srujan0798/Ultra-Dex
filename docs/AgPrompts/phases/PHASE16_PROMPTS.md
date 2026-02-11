@@ -1,375 +1,108 @@
----
-id: PHASE-16-PROMPTS
-title: 'Phase 16 - Enterprise & Advanced Workflows'
-category: phases
-priority: high
-status: in-progress
-version: 6.0.0
-last-updated: 2026-02-10
-author: Ultra-Dex Team
-related:
-  - PROMPT-16-ENTERPRISE
-  - SPEC-ADVANCED-WORKFLOWS
-tags:
-  - enterprise
-  - advanced-workflows
-  - doomsday-theme
-dependencies: []
-testing:
-  - method: manual
-  - coverage: 53%
----
+# 🏢 ULTRA-DEX PHASE 16: ENTERPRISE & ADVANCED WORKFLOWS SPEC
 
-# Ultra-Dex Phase 16 - Enterprise & Advanced Workflows
+## Mission Metadata
+- **ID:** PHASE-16-SPEC
+- **Phase:** 16 (Enterprise Grade)
+- **Category:** Enterprise / Architecture
+- **Priority:** P1
+- **Status:** v6.0.0 SPEC
+- **Total Prompts:** 15 (#171-185)
 
-> **Source:** ADVANCED-WORKFLOWS.md, 04-Imp-Template-ENTERPRISE.md, CLI-DOOMSDAY-THEME.md
-> **Total:** 15 New Prompts (#171-185)
-> **Date:** Feb 5, 2026
+## Problem Statement
+Standard SaaS templates are insufficient for enterprise scale. Phase 16 implements the "Hardened Core" required for high-availability, multi-tenant, and SOC2-compliant environments, while adding high-fidelity visual themes.
 
 ---
 
-## 🏢 ENTERPRISE ARCHITECTURE
+### PROMPT 171: [SPEC] Enterprise 50-Section Template
+- **ID:** ENT-TEMPLATE-GEN
+- **Requirement:** Generate the master 50-section blueprint for regulated industries.
+- **Includes:** Data residency, RTO/RPO, Unit Economics, Compliance.
+- **Success:** Unified template for complex enterprise deployments.
+
+### PROMPT 172: [SPEC] Disaster Recovery Engine
+- **ID:** DISASTER-RECOVERY-SPEC
+- **Requirement:** Comprehensive RTO/RPO plan with automated backup triggers.
+- **File:** `docs/ops/DISASTER-RECOVERY.md`.
+- **Success:** Documented procedure for < 4h recovery time.
+
+### PROMPT 173: [SPEC] Infrastructure Cost Estimator
+- **ID:** COST-ESTIMATOR-CLI
+- **Requirement:** CLI tool calculating monthly burn based on DAU/Storage.
+- **File:** `cli/lib/ops/cost-estimator.js`.
+- **Success:** Real-time billing projections for Vercel/Postgres.
+
+### PROMPT 174: [SPEC] Data Governance Engine
+- **ID:** DATA-GOVERNANCE
+- **Requirement:** Enforcement of retention policies and PII purging.
+- **File:** `cli/lib/governance/data-policy.js`.
+- **Success:** Automated deletion of expired logs and sensitive data.
+
+### PROMPT 175: [SPEC] Multi-Tenant RLS Strategy
+- **ID:** MULTI-TENANT-RLS
+- **Requirement:** Designing Row-Level Security isolation for SaaS.
+- **File:** `docs/architecture/MULTI-TENANCY.md`.
+- **Success:** Proven isolation between workspace data.
+
+### PROMPT 176: [WORKFLOW] Stripe Lifecycle Integration
+- **ID:** STRIPE-WORKFLOW
+- **Requirement:** End-to-end subscription management with webhook signing.
+- **Files:** `src/lib/stripe.ts`, `api/webhooks/stripe/`.
+- **Success:** Verified payment lifecycle (Start/Cancel/Upgrade).
+
+### PROMPT 177: [WORKFLOW] Async Transactional Email
+- **ID:** EMAIL-WORKFLOW
+- **Requirement:** Resend + BullMQ async queue for reliable notification.
+- **Success:** Email logs stored in DB for auditability.
+
+### PROMPT 178: [WORKFLOW] Safe DB Migrations
+- **ID:** DB-MIGRATION-OPS
+- **Requirement:** Zero-downtime migration wrapper for Prisma/Drizzle.
+- **Success:** Expand-Contract strategy enforced in deployment.
+
+### PROMPT 179: [SEC] Granular RBAC System
+- **ID:** RBAC-ENFORCER
+- **Requirement:** Role-Based Access Control middleware for API protection.
+- **Success:** Permission-based UI and API gating.
+
+### PROMPT 180: [PERF] Multi-Layer Caching (Redis)
+- **ID:** REDIS-CACHE-STRAT
+- **Requirement:** L1 (Memory) + L2 (Redis) stale-while-revalidate pattern.
+- **Success:** 60% reduction in database read latency.
+
+### PROMPT 181: [UI] 'Doomsday' Avengers Theme
+- **ID:** DOOMSDAY-THEME
+- **Requirement:** High-fidelity Red/Purple theme for terminal power users.
+- **Success:** Unified design system for the "Overpowered" CLI.
+
+### PROMPT 182: [UX] Thanos 'Snap' Progress
+- **ID:** SNAP-PROGRESS
+- **Requirement:** Animated task stones indicating implementation steps.
+- **Success:** "Perfectly balanced" visual feedback for long tasks.
+
+### PROMPT 183: [UX] Agent Character Mapping
+- **ID:** AGENT-AVENGERS
+- **Requirement:** Assigning iconic archetypes to agent personalities.
+- **Success:** Increased engagement and clarity in agent handoffs.
+
+### PROMPT 184: [UI] Multiverse Help Dashboard
+- **ID:** MULTIVERSE-HELP
+- **Requirement:** Redesigned help screen with categorized "Battle Sections".
+- **Success:** Faster command discovery via visual grouping.
+
+### PROMPT 185: [UI] Gradient Banner Engine
+- **ID:** GRADIENT-ENGINE
+- **Requirement:** High-performance text gradient rendering for ASCII art.
+- **Success:** Consistent "Cyberpunk/Corporate" branding across tools.
 
 ---
 
-### PROMPT 171: Enterprise Template Generator
+## 🔐 Security Considerations
+- Multi-tenancy RLS must be verified via unit tests for data leaks.
+- All enterprise templates must include a "Zero Trust" security section.
 
-> **Source:** 04-Imp-Template-ENTERPRISE.md
-> **Status:** Production Ready
-
-```
-## Task: Create Enterprise Template
-
-**Files to create:**
-- templates/04-Imp-Template-ENTERPRISE.md
-
-**Requirement:**
-- Generate the full 50+ section template.
-- Include exclusive sections:
-  - Data Governance & Residency
-  - Disaster Recovery (RTO/RPO)
-  - Cost Management (Unit Economics)
-  - Compliance (SOC2, HIPAA, GDPR)
-  - Multi-tenancy Strategy
-
-**Commit:** "feat: Add 50-section Enterprise implementation template"
-```
+## 📊 Performance Gates
+- Multi-tenant query overhead must be < 5ms.
+- Cost estimator must finish execution in < 1s.
 
 ---
-
-### PROMPT 172: Disaster Recovery System
-
-> **Source:** 04-Imp-Template-ENTERPRISE.md (Section 25)
-> **Status:** High Value
-
-```
-## Task: Implement Disaster Recovery Plan
-
-**Files to create:**
-- docs/ops/DISASTER-RECOVERY.md
-
-**Requirement:**
-- Define RTO (4h) and RPO (1h).
-- Backup Strategy: Continuous replication + Daily fulls.
-- Incident Response Protocol: Detection -> Assessment -> Containment -> Recovery.
-- Automated rollback triggers.
-
-**Commit:** "docs: Define disaster recovery and business continuity plan"
-```
-
----
-
-### PROMPT 173: Cost Management Module
-
-> **Source:** 04-Imp-Template-ENTERPRISE.md (Section 26)
-> **Status:** High Value
-
-```
-## Task: Implement Cost Management
-
-**Files to create:**
-- cli/lib/ops/cost-estimator.js
-
-**Requirement:**
-- CLI tool to estimate infrastructure costs based on usage.
-- Inputs: Daily Active Users, Storage/User, Bandwidth.
-- Outputs: Estimated monthly bill (Vercel + DB + Storage).
-- Alert on budget thresholds.
-
-**Commit:** "feat: Add infrastructure cost estimation module"
-```
-
----
-
-### PROMPT 174: Data Governance Engine
-
-> **Source:** 04-Imp-Template-ENTERPRISE.md (Section 24)
-> **Status:** Enterprise
-
-```
-## Task: Implement Data Governance
-
-**Files to create:**
-- cli/lib/governance/data-policy.js
-
-**Requirement:**
-- Define Data Classification (Public, Internal, Confidential, Restricted).
-- Enforce Retention Policies (e.g., Logs: 30 days).
-- Automation: Script to purge expired PII data.
-- Audit Log generation for restricted data access.
-
-**Commit:** "feat: Add data governance and retention logic"
-```
-
----
-
-### PROMPT 175: Multi-Tenant Architecture
-
-> **Source:** 04-Imp-Template-ENTERPRISE.md (Section 23)
-> **Status:** Enterprise
-
-```
-## Task: Design Multi-Tenant System
-
-**Files to create:**
-- docs/architecture/MULTI-TENANCY.md
-
-**Requirement:**
-- Strategy: Row-level security vs Schema-per-tenant.
-- Implementation Plan using Postgres RLS.
-- Tenant isolation verification tests.
-- Tenant lifecycle management (Onboard, Suspend, Offboard).
-
-**Commit:** "docs: Document multi-tenant architecture strategy"
-```
-
----
-
-## ⚡ ADVANCED WORKFLOWS
-
----
-
-### PROMPT 176: Stripe Subscription System
-
-> **Source:** ADVANCED-WORKFLOWS.md (Example 1)
-> **Status:** Production Code
-
-```
-## Task: Implement Full Stripe Workflow
-
-**Files to create:**
-- src/lib/stripe.ts
-- src/app/api/webhooks/stripe/route.ts
-
-**Requirement:**
-- Full subscription lifecycle flow (Start, Cancel, Upgrade).
-- Database Schema: `Subscription` model with status tracking.
-- Webhook Handler: Secure signature verification + event processing.
-- Frontend: Pricing table to Checkout Session redirection.
-
-**Commit:** "feat: Implement robust Stripe subscription workflow"
-```
-
----
-
-### PROMPT 177: Transactional Email System
-
-> **Source:** ADVANCED-WORKFLOWS.md (Example 2)
-> **Status:** Production Code
-
-```
-## Task: Implement Resend + BullMQ Email
-
-**Files to create:**
-- src/lib/email/sender.ts
-- src/workers/email-worker.ts
-
-**Requirement:**
-- Async processing via BullMQ (don't block API).
-- Provider: Resend (React Email templates).
-- Features: Retry logic (backoff), Open/Click tracking logs.
-- Database: `EmailLog` table for audit trail.
-
-**Commit:** "feat: Add async transactional email system"
-```
-
----
-
-### PROMPT 178: Database Migration Workflow
-
-> **Source:** ADVANCED-WORKFLOWS.md (Example 3)
-> **Status:** Production Code
-
-```
-## Task: Automate Database Migrations
-
-**Files to create:**
-- scripts/db-migrate.sh
-
-**Requirement:**
-- Safe migration wrapper for Prisma/Drizzle.
-- Pre-migration backup trigger.
-- Zero-downtime deployment strategy (expand-contract).
-- Rollback script in case of failure.
-
-**Commit:** "ops: Automate safe database migration workflow"
-```
-
----
-
-### PROMPT 179: RBAC System Design
-
-> **Source:** ADVANCED-WORKFLOWS.md (Security)
-> **Status:** Security
-
-```
-## Task: Implement RBAC System
-
-**Files to create:**
-- src/lib/auth/permissions.ts
-
-**Requirement:**
-- Roles: Admin, Editor, Viewer.
-- Permissions: Granular (e.g., `post:create`, `settings:manage`).
-- Middleware for API route protection.
-- Frontend hooks `usePermission('post:edit')`.
-
-**Commit:** "feat: Implement Role-Based Access Control"
-```
-
----
-
-### PROMPT 180: Advanced Cache Strategy
-
-> **Source:** ADVANCED-WORKFLOWS.md (Performance)
-> **Status:** Performance
-
-```
-## Task: Implement Multi-Layer Caching
-
-**Files to create:**
-- src/lib/cache/redis.ts
-
-**Requirement:**
-- L1: In-memory cache (Request scope).
-- L2: Distributed cache (Redis).
-- Stale-While-Revalidate pattern for API data.
-- Cache invalidation tags system (next-revalidate).
-
-**Commit:** "perf: Implement advanced multi-layer caching"
-```
-
----
-
-## 🎨 VISUAL THEMES & GAMIFICATION
-
----
-
-### PROMPT 181: Doomsday Theme (Avengers)
-
-> **Source:** CLI-DOOMSDAY-THEME.md
-> **Status:** Gamification
-
-```
-## Task: Implement 'Doomsday' CLI Theme
-
-**Files to create:**
-- cli/lib/themes/doomsday.js
-
-**Requirement:**
-- Visuals: Red/Purple/Gold gradients (Scarlet Witch/Thanos).
-- Banner: ASCII Art "Avengers Assemble".
-- Messaging: "The Multiverse of Code has a new defender."
-- Colors: Primary `#dc2626`, Secondary `#7c3aed`.
-
-**Commit:** "ui: Add Avengers Doomsday CLI theme"
-```
-
----
-
-### PROMPT 182: Thanos Snap Progress
-
-> **Source:** CLI-DOOMSDAY-THEME.md
-> **Status:** Gamification
-
-```
-## Task: Implement 'Snap' Progress Bar
-
-**Files to create:**
-- cli/lib/utils/snap-progress.js
-
-**Requirement:**
-- Progress Bar using Infinity Stones (6 steps).
-- Animation: Light up stones as tasks complete.
-- Success: "Perfectly balanced, as all code should be."
-- Dust Effect: Particles for deleted files.
-
-**Commit:** "ui: Add Thanos Snap progress bar animation"
-```
-
----
-
-### PROMPT 183: Agent Personas (Avengers)
-
-> **Source:** CLI-DOOMSDAY-THEME.md
-> **Status:** Gamification
-
-```
-## Task: Map Agents to Avengers
-
-**Files to update:**
-- cli/lib/agents/registry.js
-
-**Requirement:**
-- CTO -> Iron Man ("I am the architecture").
-- Planner -> Nick Fury ("I have a plan").
-- Backend -> Thor ("Bring me the API!").
-- Frontend -> Spider-Man.
-- Security -> Captain America.
-- Add emoji and catchphrases to agent outputs.
-
-**Commit:** "ui: Map agent personas to Avengers characters"
-```
-
----
-
-### PROMPT 184: Multiverse Help Screen
-
-> **Source:** CLI-DOOMSDAY-THEME.md
-> **Status:** Gamification
-
-```
-## Task: Redesign Help Screen
-
-**Files to update:**
-- cli/lib/commands/help.js
-
-**Requirement:**
-- Section: ⚡ ASSEMBLE THE CODE (Init/Gen).
-- Section: 🛡️ DEFEND THE REALM (Review/Test).
-- Section: 💎 HARNESS INFINITY (Serve/Deploy).
-- Visual: Boxen borders with double lines.
-
-**Commit:** "ui: Redesign help screen with Doomsday theme"
-```
-
----
-
-### PROMPT 185: Gradient Banner Engine
-
-> **Source:** CLI-DOOMSDAY-THEME.md
-> **Status:** UI Tooling
-
-```
-## Task: Implement Gradient Engine
-
-**Files to create:**
-- cli/lib/ui/gradients.js
-
-**Requirement:**
-- Reusable gradient generator (gradient-string).
-- Presets: Doomsday (Red-Purple), Cyberpunk (Neon), Corporate (Blue-Grey).
-- Support for detailed ASCII art rendering.
-
-**Commit:** "feat: Add gradient text rendering engine"
-```
+_Updated: February 10, 2026 | v6.0.0 SPEC_

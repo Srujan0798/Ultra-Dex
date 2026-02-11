@@ -1,375 +1,103 @@
----
-id: PHASE-19-PROMPTS
-title: 'Phase 19 - Deep Tech & Gamification'
-category: phases
-priority: low
-status: pending
-version: 6.0.0
-last-updated: 2026-02-10
-author: Ultra-Dex Team
-related:
-  - PROMPT-19-DEEP-TECH
-  - SPEC-GAMIFICATION
-tags:
-  - deep-tech
-  - gamification
-  - model-router
-dependencies: []
-testing:
-  - method: manual
-  - coverage: 0%
----
+# 🧬 ULTRA-DEX PHASE 19: DEEP TECH & GAMIFICATION SPEC
 
-# Ultra-Dex Phase 19 - Deep Tech & Gamification
+## Mission Metadata
+- **ID:** PHASE-19-SPEC
+- **Phase:** 19 (The Racing Edge)
+- **Category:** Deep Tech / UX
+- **Priority:** P2
+- **Status:** v6.0.0 SPEC
+- **Total Prompts:** 15 (#216-230)
 
-> **Source:** 02-model-router.md, 05-mcp-context-bus.md, BUILD-AUTH-30M.md
-> **Total:** 15 New Prompts (#216-230)
-> **Date:** Feb 5, 2026
+## Problem Statement
+To maintain dominance, Ultra-Dex must innovate beyond standard CLI patterns. Phase 19 introduces the custom `ultra://` protocol, self-healing evaluation loops, and a gamified "Challenge Mode" to accelerate developer skill acquisition.
 
 ---
 
-## 🧬 DEEP TECH KERNEL
+### PROMPT 216: [TECH] The Ultra Protocol Engine
+- **ID:** PROTOCOL-HANDLER
+- **Requirement:** Implement `ultra://` custom URI scheme for context deep-linking.
+- **Paths:** `ultra://project/state`, `ultra://memory/search`.
+- **Success:** Browsers and IDEs can launch Ultra-Dex agents via links.
+
+### PROMPT 217: [AI] Advanced Model Routing
+- **ID:** ROUTER-POLICIES
+- **Requirement:** Routing table based on semantic intent (e.g., "Refactor" -> O1).
+- **Success:** Automatic switching between providers based on task complexity.
+
+### PROMPT 218: [AI] Self-Healing Eval Loops
+- **ID:** EVAL-LOOPS
+- **Requirement:** Automated verification loops that retry AI calls on failure.
+- **Success:** 95% reduction in "Hallucination errors" via self-critique.
+
+### PROMPT 219: [SPEC] Structured Memory Schema
+- **ID:** MEMORY-ENTRY-V2
+- **Requirement:** Strict TypeScript interface for Knowledge Graph nodes.
+- **Success:** Type-safe traversal of multi-session memory.
+
+### PROMPT 220: [TECH] Graph Traversal Engine
+- **ID:** MEMORY-GRAPH-ENGINE
+- **Requirement:** Logic for multi-hop memory retrieval (Why -> How -> Who).
+- **Success:** Agent can explain the rationale behind a 3-month-old bug fix.
+
+### PROMPT 221: [UX] CLI Challenge Mode
+- **ID:** CHALLENGE-ENGINE
+- **Requirement:** `ultra-dex challenge start` with countdown and scoring.
+- **Success:** Developers can "Speedrun" project setups.
+
+### PROMPT 222: [CONTENT] 'Build Auth' Speedrun
+- **ID:** AUTH-CHALLENGE
+- **Requirement:** 30-minute timed mission for a full authentication stack.
+- **Success:** Verified, secure auth implemented in under 30 minutes.
+
+### PROMPT 223: [UX] Leaderboard System
+- **ID:** LOCAL-LEADERBOARD
+- **Requirement:** JSON-based persistence for local developer high scores.
+- **Success:** Competitive motivation for internal development teams.
+
+### PROMPT 224: [UX] Developer Achievements
+- **ID:** ACHIEVEMENT-BADGES
+- **Requirement:** Unlockable titles (e.g., "The Architect", "Bug Hunter").
+- **Success:** Recognition of specialized skill usage in the CLI.
+
+### PROMPT 225: [OPS] Template Pack Manager
+- **ID:** TEMPLATE-REMOTE
+- **Requirement:** Install verified community templates via GitHub shortlinks.
+- **Success:** `ultra-dex template install user/repo`.
+
+### PROMPT 226: [CONTENT] Official SaaS Starter
+- **ID:** SAAS-STARTER-V2
+- **Requirement:** Next.js 15 + Shadcn + Stripe + Prisma production bundle.
+- **Success:** Zero-config "SaaS in a Box" ready for deployment.
+
+### PROMPT 227: [AI] Documentation Agent Pro
+- **ID:** DOC-GEN-AGENT
+- **Requirement:** Reverse-engineering agent that writes `ARCHITECTURE.md` from code.
+- **Success:** High-fidelity diagrams and docs generated automatically.
+
+### PROMPT 228: [UI] 'God Mode' Dashboard V2
+- **ID:** KERNEL-DASHBOARD
+- **Requirement:** Real-time stream of agent neural activity and logs.
+- **Success:** Full visual transparency of the "Cognitive Core".
+
+### PROMPT 229: [SEC] Privacy-First Telemetry
+- **ID:** PRIVACY-HARDENING
+- **Requirement:** Local PII stripping layer for enterprise compliance.
+- **Success:** GDPR-compliant audit logs across all environments.
+
+### PROMPT 230: [RELEASE] The v6.0 Omnibus
+- **ID:** RELEASE-OMNIBUS
+- **Requirement:** Consolidate all 19 phases into final distribution notes.
+- **Success:** `ULTRA_DEX_COMPLETE.md` updated with the "Racing Edge" seal.
 
 ---
 
-### PROMPT 216: The Ultra Protocol (`ultra://`)
+## 🔐 Security Considerations
+- The `ultra://` protocol must be restricted to authenticated local sessions.
+- Gamification scores must be signed to prevent tampering.
 
-> **Source:** 05-mcp-context-bus.md
-> **Status:** Deep Tech
-
-```
-## Task: Implement Ultra Protocol Handler
-
-**Files to create:**
-- cli/lib/mcp/protocol-handler.js
-
-**Requirement:**
-- Implement custom protocol `ultra://`.
-- `ultra://project/state` -> Returns current state JSON.
-- `ultra://context/decisions` -> Returns architectural decisions.
-- `ultra://memory/search?q={query}` -> Performs vector search.
-- Register as custom scheme in MCP server.
-
-**Commit:** "feat: Implement ultra:// custom protocol handler"
-```
+## 📊 Performance Gates
+- Evaluation loops must not exceed 3 retries (Cost safety).
+- Dashboard stream latency < 100ms.
 
 ---
-
-### PROMPT 217: Model Router Configuration
-
-> **Source:** 02-model-router.md
-> **Status:** Deep Tech
-
-```
-## Task: Implement Model Router Logic
-
-**Files to create:**
-- cli/lib/ai/router-config.js
-- config/router.json
-
-**Requirement:**
-- Implement the "Routing Table" logic.
-- Config schema: `strategies` (cost vs performance).
-- Rules:
-  - "Code Gen" -> Claude 3.5 Sonnet
-  - "Refactor" -> GPT-4o
-  - "Docs" -> Gemini 1.5 Pro
-- Support per-project overrides.
-
-**Commit:** "ai: Implement configurable model routing policy"
-```
-
----
-
-### PROMPT 218: Evaluation Loops (Self-Healing)
-
-> **Source:** 02-model-router.md
-> **Status:** Advanced AI
-
-```
-## Task: Implement Feedback Loops
-
-**Files to create:**
-- cli/lib/ai/eval-loop.js
-
-**Requirement:**
-- Wrap AI calls in an evaluation loop.
-- If (Output Fails Quality Gate) -> Escalation.
-- Example: GPT-4o-mini fails test -> Retry with Claude 3.5 Sonnet.
-- Max retries: 2 (to prevent cost runaways).
-
-**Commit:** "ai: Add self-healing AI evaluation loops"
-```
-
----
-
-### PROMPT 219: Memory Entry Schema
-
-> **Source:** 01-persistent-memory.md
-> **Status:** Deep Tech
-
-```
-## Task: Implement Structured Memory
-
-**Files to update:**
-- cli/lib/memory/schema.ts
-
-**Requirement:**
-- Implement strict `MemoryEntry` interface.
-- Fields: `id`, `content`, `type` (decision/pattern/error), `embedding` (vector).
-- Relations: `supersedes`, `relates_to` (Graph edges).
-- CRUD operations for the memory store.
-
-**Commit:** "feat: Define strict schema for persistent memory"
-```
-
----
-
-### PROMPT 220: Graph Traversal Engine
-
-> **Source:** 01-persistent-memory.md
-> **Status:** Deep Tech
-
-```
-## Task: Implement Memory Graph
-
-**Files to create:**
-- cli/lib/memory/graph-engine.js
-
-**Requirement:**
-- Ability to traverse memory nodes.
-- Query: "Why did we choose X?" -> Find `Decision` node -> Follow `relates_to` edges.
-- Visualization: Output Graphviz/Mermaid of memory connections.
-
-**Commit:** "feat: Add graph traversal engine for memory"
-```
-
----
-
-## 🎮 GAMIFICATION & CHALLENGES
-
----
-
-### PROMPT 221: Challenge Mode Engine
-
-> **Source:** BUILD-AUTH-30M.md
-> **Status:** Gamification
-
-```
-## Task: Implement CLI Challenge Mode
-
-**Files to create:**
-- cli/lib/commands/challenge.js
-
-**Requirement:**
-- Command: `ultra-dex challenge start [name]`.
-- Features: Countdown Timer (30m), Real-time Score.
-- Tracking: Agents used, Tasks completed, Tests passed.
-- Output: "Challenge Complete! Rank: S-Class".
-
-**Commit:** "feat: Add gamified challenge mode engine"
-```
-
----
-
-### PROMPT 222: 'Build Auth' Challenge
-
-> **Source:** BUILD-AUTH-30M.md
-> **Status:** Content
-
-```
-## Task: Port Auth Challenge
-
-**Files to create:**
-- cli/assets/challenges/auth-30m.json
-
-**Requirement:**
-- Define stages: Planning (5m), Design (7m), Security (8m), Build (10m).
-- Auto-inject prompts for Agents at each stage.
-- Validation checks: "Has Prisma Schema?", "Has Auth Route?".
-- The "Boss Fight": Running the final verification.
-
-**Commit:** "content: Add 'Build Auth in 30m' challenge"
-```
-
----
-
-### PROMPT 223: Leaderboard System
-
-> **Source:** Gamification Logic
-> **Status:** Gamification
-
-```
-## Task: Local Leaderboard
-
-**Files to create:**
-- cli/lib/gamification/leaderboard.js
-
-**Requirement:**
-- Store high scores locally (`.ultra/scores.json`).
-- Metrics: Time taken, Clean code score, Bug count.
-- Display ASCII leaderboard after challenge.
-- Encouragement: "Beat your best time of 28:45!"
-
-**Commit:** "feat: Add local challenge leaderboard"
-```
-
----
-
-### PROMPT 224: Achievements System
-
-> **Source:** Gamification Logic
-> **Status:** Gamification
-
-```
-## Task: Developer Achievements
-
-**Files to create:**
-- cli/lib/gamification/achievements.js
-
-**Requirement:**
-- Unlockable badges for CLI usage.
-- "The  Architect": Used @CTO 50 times.
-- "Speed Demon": Completed a challenge < 20 mins.
-- "Bug Hunter": Fixed 100 errors with @Debugger.
-- Display badges in `utils/dashboard.js`.
-
-**Commit:** "feat: Add developer achievements system"
-```
-
----
-
-## 📦 LIVE TEMPLATES & ASSETS
-
----
-
-### PROMPT 225: Template Pack Manager
-
-> **Source:** VISION-V2.md
-> **Status:** Templates
-
-```
-## Task: Implement Live Templates
-
-**Files to create:**
-- cli/lib/templates/pack-manager.js
-
-**Requirement:**
-- Command: `ultra-dex template install [name]`.
-- Source: Download verified templates from GitHub/Remote.
-- Structure: Template code + Pre-wired Agent Memories.
-- Include "Starter Context" in every template.
-
-**Commit:** "feat: Add remote template pack manager"
-```
-
----
-
-### PROMPT 226: Next.js SaaS Template
-
-> **Source:** Standard Project
-> **Status:** Template
-
-```
-## Task: Create SaaS Starter Pack
-
-**Files to create:**
-- templates/saas-starter/
-
-**Requirement:**
-- Next.js 15 (App Router) + Tailwind + Shadcn.
-- Auth ready (NextAuth).
-- Database ready (Prisma + Postgres).
-- Stripe ready (Checkout setup).
-- All wired up to `IMPLEMENTATION-PLAN.md` template.
-
-**Commit:** "content: Add official Next.js SaaS starter template"
-```
-
----
-
-### PROMPT 227: Documentation Generator
-
-> **Source:** General
-> **Status:** Productivity
-
-```
-## Task: Doc-Gen Agent
-
-**Files to update:**
-- cli/assets/agents/documentation.md
-
-**Requirement:**
-- Specialized prompt for "Reverse Engineering" docs.
-- Input: Codebase folder.
-- Output: `ARCHITECTURE.md`, `API.md`.
-- Ability to generate Mermaid diagrams from code.
-
-**Commit:** "ai: Enhanced documentation agent capabilities"
-```
-
----
-
-### PROMPT 228: The 'God Mode' Dashboard V2
-
-> **Source:** VISION-V2.md
-> **Status:** UI
-
-```
-## Task: Active Kernel Dashboard
-
-**Files to update:**
-- cli/lib/dashboard/server.js
-
-**Requirement:**
-- Show Real-time "Memory Stream" (what agents are reading).
-- Visual "Active Kernel" status (Heartbeat).
-- Live "Context Graph" visualization node.
-- "Emergency Stop" button for all agents.
-
-**Commit:** "ui: Upgrade dashboard to V2 God Mode"
-```
-
----
-
-### PROMPT 229: CLI Telemetry (Privacy)
-
-> **Source:** Enterprise
-> **Status:** compliance
-
-```
-## Task: Privacy-First Telemetry
-
-**Files to create:**
-- cli/lib/utils/privacy.js
-
-**Requirement:**
-- Strict PII stripping before any logging.
-- "Local Only" mode switch in config.
-- Encryption for stored memory/challenges.
-- GDPR compliance check utility.
-
-**Commit:** "sec: Implement strict privacy and security layer"
-```
-
----
-
-### PROMPT 230: The Final Omnibus
-
-> **Source:** Completion
-> **Status:** Milestone
-
-```
-## Task: Version 4.0 Release Build
-
-**Files to update:**
-- CHANGELOG.md
-
-**Requirement:**
-- Consolidate all 19 Phases into a release note.
-- "Ultra-Dex v4.0: The Gamified AI Kernel".
-- List all 230 features implemented.
-- Final "Ready for Launch" validation script.
-
-**Commit:** "chore: Compile final v4.0 release notes"
-```
+_Updated: February 10, 2026 | v6.0.0 SPEC_
