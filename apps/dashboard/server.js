@@ -35,6 +35,27 @@ const io = socketIo(server, {
   }
 });
 
+// Bridge Events to Socket.IO
+agentOrchestrator.on('task:start', (data) => {
+  io.emit('live-log', { message: `🚀 Task Started: ${data.task}`, level: 'info', timestamp: new Date().toISOString() });
+});
+
+agentOrchestrator.on('task:complete', (data) => {
+  io.emit('live-log', { message: `✅ Task Completed by @${data.agentId}`, level: 'success', timestamp: new Date().toISOString() });
+});
+
+agentOrchestrator.on('tool:use', (data) => {
+  io.emit('live-log', { message: `🛠️  Using tool: ${data.name}`, level: 'warning', timestamp: new Date().toISOString() });
+});
+
+agentOrchestrator.on('tool:result', (data) => {
+  io.emit('live-log', { message: `🔧 Tool ${data.name} returned result`, level: 'info', timestamp: new Date().toISOString() });
+});
+
+agentOrchestrator.on('error', (error) => {
+  io.emit('live-log', { message: `❌ Error: ${error.message}`, level: 'error', timestamp: new Date().toISOString() });
+});
+
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));

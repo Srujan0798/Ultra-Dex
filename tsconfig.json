@@ -1,42 +1,51 @@
 {
-    "compilerOptions": {
-        "target": "ES2022",
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "lib": [
-            "ES2022",
-            "DOM",
-            "DOM.Iterable"
-        ],
-        "types": [
-            "vite/client"
-        ],
-        "jsx": "react-jsx",
-        "strict": false,
-        "noEmit": true,
-        "allowJs": false,
-        "checkJs": false,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "allowImportingTsExtensions": true
-    },
-    "include": [
-        "dashboard/src/**/*.ts",
-        "dashboard/src/**/*.tsx",
-        "apps/**/*.ts",
-        "apps/**/*.tsx",
-        "cli/lib/**/*.ts"
-    ],
-    "exclude": [
-        "apps/mobile/**",
-        "node_modules",
-        "dist",
-        "build",
-        "**/templates/**",
-        "**/*.test.ts",
-        "**/*.d.ts"
-    ]
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client", "node"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "apps/dashboard/src/**/*.ts",
+    "apps/dashboard/src/**/*.tsx",
+    "apps/cloud/ide/src/**/*.ts",
+    "apps/cloud/ide/src/**/*.tsx",
+    "apps/cli/lib/**/*.ts",
+    "src/core/memory/**/*.ts",
+    "src/core/utils/**/*.ts"
+  ],
+  "exclude": [
+    "apps/cli/assets/**",
+    "apps/cli/lib/templates/**",
+    "apps/cli/lib/utils/error-handler.ts",
+    "apps/cli/lib/utils/performance-optimizer.ts",
+    "apps/mobile/**",
+    "examples/**",
+    "src/services/**",
+    "src/types/**",
+    "node_modules",
+    "dist",
+    "build",
+    "**/*.test.ts",
+    "**/*.d.ts"
+  ]
 }

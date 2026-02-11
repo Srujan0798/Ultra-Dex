@@ -34,6 +34,14 @@ export function createMcpServer(options = {}) {
     }
   );
 
+  // Expose tools for internal orchestrator
+  server.toolsMap = new Map();
+  const originalTool = server.tool.bind(server);
+  server.tool = (name, description, schema, handler, capability) => {
+    server.toolsMap.set(name, { name, description, schema, handler });
+    return originalTool(name, description, schema, handler, capability);
+  };
+
   registerResources(server);
   registerTools(server);
   registerUltraProtocol(server);

@@ -87,6 +87,7 @@
     "lint:fix": "eslint apps/cli/lib --ext .js,.ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "typecheck": "npx tsc --noEmit",
     "build": "npm run build:core && npm run build:dashboard && npm run build:docs",
     "build:core": "cd src/core && npm run build 2>/dev/null || echo 'Core built'",
     "build:dashboard": "npm run dashboard:build",

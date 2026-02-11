@@ -14,13 +14,54 @@ import { ppmManager } from '../memory/manager.js';
 import { ciHealer } from '../cicd/self-healing.js';
 import { aiMetaLayer } from '../ai/ai-meta-layer.js';
 import { createMcpServer } from '../../../apps/cli/lib/mcp/server.js';
+import { EventEmitter } from 'events';
 
-class AgentOrchestrator {
+class TaskGraph {
+  constructor() {
+    this.tasks = new Map();
+  }
+
+  addTask(task) {
+    if (!task.id) task.id = `task_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    this.tasks.set(task.id, {
+      ...task,
+      dependencies: task.dependencies || [],
+      status: task.status || 'pending',
+    });
+    return task.id;
+  }
+
+  markComplete(taskId) {
+    const task = this.tasks.get(taskId);
+    if (task) task.status = 'completed';
+  }
+
+  getReadyTasks() {
+    const ready = [];
+    for (const task of this.tasks.values()) {
+      if (task.status !== 'pending') continue;
+      const depsMet = task.dependencies.every((depId) => {
+        const dep = this.tasks.get(depId);
+        return dep && dep.status === 'completed';
+      });
+      if (depsMet) ready.push(task);
+    }
+    return ready;
+  }
+
+  hasPending() {
+    return Array.from(this.tasks.values()).some((task) => task.status === 'pending');
+  }
+}
+
+class AgentOrchestrator extends EventEmitter {
   constructor(options = {}) {
+    super();
     this.memory = ppmManager;
     this.healer = ciHealer;
     this.ai = aiMetaLayer;
     this.mcpServer = createMcpServer();
+    this.tasks = new TaskGraph();
     this.options = {
       maxConcurrentAgents: options.maxConcurrentAgents || 8,
       enableCoordination: options.enableCoordination !== false,
@@ -76,6 +117,7 @@ class AgentOrchestrator {
     const sessionId = `session_${Date.now()}`;
     this.metrics.totalSessions++;
     
+    this.emit('task:start', { sessionId, task, options });
     console.log(chalk.blue(`  - Executing Task: ${task}`));
     
     // 1. Determine Agent & Gather Context
@@ -104,6 +146,7 @@ class AgentOrchestrator {
       metadata: { agentId, sessionId }
     });
 
+    this.emit('task:complete', { sessionId, agentId, output: output.substring(0, 500) });
     return { status: 'COMPLETE', output, agentId };
   }
 
@@ -124,15 +167,32 @@ class AgentOrchestrator {
   }
 
   async getTools() {
-    return await this.mcpServer.listTools();
+    // Convert registered tools to a format the AI Meta-Layer understands
+    const tools = [];
+    if (this.mcpServer.toolsMap) {
+      for (const [name, tool] of this.mcpServer.toolsMap.entries()) {
+        tools.push({
+          name: name,
+          description: tool.description,
+          inputSchema: tool.schema
+        });
+      }
+    }
+    return { tools };
   }
 
   async executeTool(name, args) {
     try {
-      const result = await this.mcpServer.callTool(name, args);
+      this.emit('tool:use', { name, args });
+      const tool = this.mcpServer.toolsMap?.get(name);
+      if (!tool) throw new Error(`Tool ${name} not found`);
+      
+      // Call the tool's handler directly
+      const result = await tool.handler(args);
+      this.emit('tool:result', { name, result: JSON.stringify(result).substring(0, 500) });
       return result;
     } catch (error) {
-      console.error(`❌ MCP Tool Error (${name}): ${error.message}`);
+      console.error(`❌ Internal Tool Error (${name}): ${error.message}`);
       throw error;
     }
   }
