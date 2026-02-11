@@ -10,7 +10,7 @@ import Stripe from 'stripe';
 import { headers } from 'next/headers';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-06-20',
+  apiVersion: '2024-06-20' as any,
 });
 
 type SubscriptionStatus =
@@ -39,16 +39,8 @@ const subscriptionStore = new Map<string, SubscriptionRecord>();
 
 async function upsertSubscription(record: SubscriptionRecord) {
   subscriptionStore.set(record.id, record);
-<<<<<<< HEAD:src/core/templates/features/stripe-billing.ts
   // In production, replace with a durable DB write (Prisma/Drizzle/Supabase).
-=======
-  // In a real app, you would do something like:
-  // await prisma.subscription.upsert({
-  //   where: { id: record.id },
-  //   update: record,
-  //   create: record,
-  // });
->>>>>>> origin/feature/stripe-billing-activation-17617165515963690111:templates/features/stripe-billing.ts
+  // e.g. await prisma.subscription.upsert({ where: { id: record.id }, update: record, create: record });
   return Promise.resolve(record);
 }
 
@@ -76,7 +68,7 @@ function normalizeSubscription(subscription: Stripe.Subscription): SubscriptionR
     customerId: String(subscription.customer),
     status: subscription.status,
     priceId,
-    currentPeriodEnd: subscription.current_period_end,
+    currentPeriodEnd: (subscription as any).current_period_end,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     updatedAt: Date.now(),
   };
@@ -106,7 +98,7 @@ export async function createCheckoutSession({
 }
 
 export async function handleStripeWebhook(request: Request) {
-  const sig = headers().get('stripe-signature');
+  const sig = (await headers()).get('stripe-signature');
   if (!sig) throw new Error('Missing Stripe signature');
 
   const body = await request.text();
@@ -132,17 +124,14 @@ export async function handleStripeWebhook(request: Request) {
     case 'customer.subscription.deleted': {
       // TODO: Persist subscription status update/delete in your DB.
       const subscription = event.data.object as Stripe.Subscription;
-<<<<<<< HEAD:src/core/templates/features/stripe-billing.ts
       // TODO: update status in DB
-=======
->>>>>>> origin/feature/stripe-billing-activation-17617165515963690111:templates/features/stripe-billing.ts
       await upsertSubscription(normalizeSubscription(subscription));
       return new Response('ok');
     }
     case 'invoice.payment_failed': {
       const invoice = event.data.object as Stripe.Invoice;
-      if (invoice.subscription && typeof invoice.subscription === 'string') {
-        await recordPaymentFailure(invoice.subscription, String(invoice.customer || ''));
+      if ((invoice as any).subscription && typeof (invoice as any).subscription === 'string') {
+        await recordPaymentFailure((invoice as any).subscription, String(invoice.customer || ''));
       }
       return new Response('ok');
     }
@@ -170,7 +159,7 @@ export async function changeSubscription({
  * Error handler for stripe-billing
  * @param {Error} error - Error to handle
  */
-function handleStripebillingError(error) {
+function handleStripebillingError(error: unknown) {
   try {
     console.error('[stripe-billing]', error instanceof Error ? error.message : String(error));
   } catch (_) {
