@@ -9,11 +9,10 @@ process.env.FORCE_COLOR = '3';
 
 import { Command } from 'commander';
 import updateNotifier from 'update-notifier';
-import boxen from 'boxen';
 import chalk from 'chalk';
 import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
-import { formatInfo, formatWarning, formatSuccess } from '../lib/utils/status.js';
+import { formatWarning } from '../lib/utils/status.js';
 import { recordUsageEventSync } from '../lib/enterprise/usage.js';
 import { isTelemetryEnabledSync } from '../lib/utils/telemetry.js';
 
@@ -42,7 +41,8 @@ if (!wantsHelp && process.env.NODE_ENV !== 'test') {
       installHistoryTracking(),
     ]);
   } catch (error) {
-    console.error(chalk.red('Failed to initialize systems:'), error.message);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red('Failed to initialize systems:'), message);
   }
 }
 
@@ -124,13 +124,11 @@ import { registerDoctorCommand } from '../lib/commands/doctor.js';
 
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
 import { registerCheckCommand } from '../lib/commands/check.js';
-import { registerBatchCommand, registerPipelineCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
 import { registerVerifyCommand } from '../lib/commands/verify.js';
 import { registerQualityCommand } from '../lib/commands/quality-enhanced.js';
 import { registerPluginCommand } from '../lib/commands/plugin.js';
 import { registerMarketplaceCommand } from '../lib/commands/marketplace.js';
-import { registerWorkspaceCommand } from '../lib/commands/workspace.js';
 import { registerVoiceCommand } from '../lib/commands/voice.js';
 import { registerAuthCommand } from '../lib/commands/auth.js';
 import { registerAuthSsoCommand } from '../lib/commands/auth-sso.js';
@@ -138,7 +136,6 @@ import { registerSetupCommand } from '../lib/commands/setup.js';
 import { registerForgeCommand } from '../lib/commands/forge.js';
 import { registerHelpCommand } from '../lib/commands/help.js';
 import { registerCostEstimatorCommand } from '../lib/ops/cost-estimator.js';
-import { registerDataGovernanceCommand } from '../lib/governance/data-policy.js';
 import { registerRiskCommand } from '../lib/commands/risk.js';
 import { registerRollbackCommand } from '../lib/commands/rollback.js';
 import { registerTelemetryCommand } from '../lib/commands/telemetry.js';
@@ -155,7 +152,6 @@ import { registerExportCommand } from '../lib/commands/export.js';
 import { registerUpgradeCommand } from '../lib/commands/upgrade.js';
 import { registerConfigCommand } from '../lib/commands/config.js';
 
-import { registerRalphCommand } from '../lib/commands/ralph.js';
 import { registerWorkflowCommand } from '../lib/commands/workflows.js';
 import { registerPlanCommand } from '../lib/commands/plan.js';
 import { registerSuggestCommand } from '../lib/commands/suggest.js';
@@ -229,29 +225,13 @@ import {
   registerDebugCommand,
 } from '../lib/commands/monitoring.js';
 import { registerBrainCommand } from '../lib/commands/brain.js';
-import { registerEstimateCommand } from '../lib/commands/estimate.js';
-import { registerUndoCommand } from '../lib/commands/undo.js';
-import { startACPHost } from '../lib/acp/host.js';
-import {
-  createEnhancedHelp,
-  formatHelpSection,
-  formatUsage,
-  formatDescription,
-  formatOptions,
-} from '../lib/utils/help.js';
+import { createEnhancedHelp } from '../lib/utils/help.js';
 
 // v3.4.3 Commands - 2026 Competitive Features
 import { registerBrowserCommand } from '../lib/commands/browser.js';
-import { registerExecCommand } from '../lib/commands/exec.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
 import { registerSearchCommand } from '../lib/commands/search.js';
 import { registerVectorSearchCommand } from '../lib/commands/vector-search.js';
-import { registerImpactCommand } from '../lib/commands/impact.js';
-import { registerGraphCommand } from '../lib/commands/graph.js';
-import { registerCloudCommand } from '../lib/commands/cloud.js';
-import { registerApiCommand } from '../lib/commands/api.js';
-import { registerAutonomousCommand } from '../lib/commands/autonomous.js';
-import { registerPTYCommands } from '../lib/commands/pty.js';
 import { registerIdeCommand } from '../lib/commands/ide.js';
 import { registerMobileCommand } from '../lib/commands/mobile.js';
 import { registerSSOCommand } from '../lib/commands/sso.js';
@@ -264,35 +244,39 @@ const program = new Command();
 let commandStart = null;
 program.hook('preAction', (thisCommand, actionCommand) => {
   commandStart = Date.now();
-  let user = null;
-  try {
-    user = configManager.get('user', null);
-  } catch {
-    user = null;
-  }
   if (isTelemetryEnabledSync()) {
-    recordUsageEventSync({
-      stage: 'start',
-      command: actionCommand?.name?.(),
-      args: process.argv.slice(2),
-      user: null,
-      role: null,
-      cwd: process.cwd(),
-      pid: process.pid,
-    });
+    try {
+      recordUsageEventSync({
+        stage: 'start',
+        command: actionCommand?.name?.(),
+        args: process.argv.slice(2),
+        user: null,
+        role: null,
+        cwd: process.cwd(),
+        pid: process.pid,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      monitoring.warn('Telemetry start event failed', { message });
+    }
   }
 });
 
 program.hook('postAction', (thisCommand, actionCommand) => {
   const durationMs = commandStart ? Date.now() - commandStart : null;
   if (isTelemetryEnabledSync()) {
-    recordUsageEventSync({
-      stage: 'end',
-      command: actionCommand?.name?.(),
-      durationMs,
-      success: true,
-      cwd: process.cwd(),
-    });
+    try {
+      recordUsageEventSync({
+        stage: 'end',
+        command: actionCommand?.name?.(),
+        durationMs,
+        success: true,
+        cwd: process.cwd(),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      monitoring.warn('Telemetry end event failed', { message });
+    }
   }
   commandStart = null;
 });
@@ -517,11 +501,23 @@ const hasHelpOrVersion = process.argv.some(arg =>
   ['--version', '-V', '--help', '-h', '--'].includes(arg));
 
 if (!hasCommandArg && !hasHelpOrVersion) {
-  await startREPL({ continue: false });
-  process.exit(0);
+  try {
+    await startREPL({ continue: false });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red(`\n✕ Failed to start REPL: ${message}`));
+    process.exit(1);
+  }
+  try {
+    await monitoring.shutdown();
+  } catch (shutdownError) {
+    const shutdownMessage =
+      shutdownError instanceof Error ? shutdownError.message : String(shutdownError);
+    console.error(chalk.red(`\n✕ Monitoring shutdown failed: ${shutdownMessage}`));
+    process.exit(1);
+  }
+  process.exit(process.exitCode ?? 0);
 }
-
-await program.parseAsync(process.argv);
 
 const LONG_RUNNING = new Set([
   'serve',
@@ -534,7 +530,35 @@ const LONG_RUNNING = new Set([
 ]);
 const isLongRunning = process.argv.some((arg) => LONG_RUNNING.has(arg));
 
+try {
+  await program.parseAsync(process.argv);
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(chalk.red(`\n✕ Command failed: ${message}`));
+  if (isTelemetryEnabledSync()) {
+    recordUsageEventSync({
+      stage: 'end',
+      command: process.argv[2] || null,
+      durationMs: commandStart ? Date.now() - commandStart : null,
+      success: false,
+      error: message,
+      cwd: process.cwd(),
+    });
+  }
+  process.exitCode = 1;
+} finally {
+  if (!wantsHelp && !isLongRunning) {
+    try {
+      await monitoring.shutdown();
+    } catch (shutdownError) {
+      const shutdownMessage =
+        shutdownError instanceof Error ? shutdownError.message : String(shutdownError);
+      console.error(chalk.red(`\n✕ Monitoring shutdown failed: ${shutdownMessage}`));
+      process.exitCode = 1;
+    }
+  }
+}
+
 if (!wantsHelp && !isLongRunning) {
-  await monitoring.shutdown();
   process.exit(process.exitCode ?? 0);
 }

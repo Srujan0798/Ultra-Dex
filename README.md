@@ -1,174 +1,71 @@
-# Ultra-Dex: AI Orchestration Platform
+# Ultra-Dex v6.0.0
 
-## Overview
+Ultra-Dex is a multi-package monorepo for AI-agent orchestration, with a production CLI, core orchestration runtime, and platform apps.
 
-Ultra-Dex is an AI orchestration platform that enables teams to leverage multiple AI agents for software development tasks. The platform provides a command-line interface for managing AI-assisted development workflows with safety, governance, and verification controls.
+## v6.0.0 Scope
 
-## Current Functionality
+- Multi-agent orchestration core in `src/core`.
+- AI meta-layer with provider routing and fallback (`OpenAI`, `Anthropic`, `Google`, `Ollama`, `Azure`, `mock`).
+- CLI runtime and commands in `apps/cli` (mirrored to `cli` for packaging/runtime paths).
+- MCP integrations for tool execution and remote/server workflows.
+- Platform apps for dashboard, docs, web, mobile, desktop, cloud, and white-label variants.
 
-### ✅ Working Features
+## Repository Layout
 
-#### 1. Multi-Agent System
-- **18+ Specialized Agents**: Each with defined roles and responsibilities
-  - @Planner: Task breakdown and planning
-  - @CTO: Architecture and technical decisions
-  - @Backend: API and business logic development
-  - @Frontend: UI/UX development
-  - @Database: Schema design and queries
-  - @Testing: QA and test automation
-  - @Reviewer: Code review and quality assurance
-  - @Debugger: Bug fixing and troubleshooting
-  - And more specialized agents...
+- `apps/cli`: CLI entrypoint, commands, MCP, providers, templates, assets.
+- `src/core`: Orchestration, agents, AI layer, memory, protocols, system services.
+- `apps/dashboard`: Vite/React dashboard.
+- `apps/docs-site`: Docusaurus docs app.
+- `apps/web`, `apps/mobile`, `apps/desktop`, `apps/cloud`, `apps/white-label`: platform surfaces.
+- `packages/*`: shared packages/extensions.
+- `tests/*`: core, integration, and CLI test suites.
 
-#### 2. Enhanced AI Provider Support
-- **OpenAI**: GPT-4, GPT-4 Turbo, GPT-4o, GPT-4o Mini with tool calling
-- **Anthropic**: Claude models with function calling
-- **Google**: Gemini models
-- **Ollama**: Local AI models
-- **Router**: Semantic routing between providers
-- **Mock Provider**: For testing and development with simulated tool calls
+## Requirements
 
-#### 3. Advanced Tool Execution System
-- **Legacy Commands**: `>> READ_CODE`, `>> WRITE_CODE`, `>> SEARCH_CODE`, `>> RUN_SHELL`, `>> DELEGATE`
-- **Modern Tool Calling**: Structured function calls with parameters and validation
-- **Security Controls**: Path validation, permission checking, sensitive file protection
-- **Verification Hooks**: Code quality checks after operations
+- Node.js `>=18.0.0`
+- npm `>=8.0.0`
+- Optional API keys:
+  - `OPENAI_API_KEY`
+  - `ANTHROPIC_API_KEY`
+  - `GOOGLE_API_KEY`
+- Optional local mock mode:
+  - `MOCK_AI=true`
 
-#### 4. Safety & Governance
-- Permission system for agent operations
-- Verification gates (linting, type safety, security)
-- Error recovery mechanisms
-- Token usage tracking
-- Advanced approval workflows
-
-#### 5. Project Management
-- Automatic project scaffolding
-- Implementation planning
-- State management and persistence
-- Context awareness
-- Codebase analysis and graphing
-
-### 6. Command Line Interface
-- `ultra-dex init`: Initialize new projects
-- `ultra-dex generate`: Create implementation plans
-- `ultra-dex run <agent>`: Execute agent tasks
-- `ultra-dex swarm <feature>`: Run multi-agent workflows
-- `ultra-dex agents list`: View available agents
-- `ultra-dex agents show <name>`: View agent prompts
-
-## Enhanced Features
-
-### Tool Calling Capabilities
-Ultra-Dex now supports advanced tool calling that allows AI agents to interact with external systems:
+## Quick Start
 
 ```bash
-# Agents can now use structured tool calls
-The AI can call tools like:
-{
-  "name": "read_file",
-  "arguments": {"filePath": "src/config.js"}
-}
-
-# While maintaining legacy command support
->> READ_CODE: "src/config.js"
->> WRITE_CODE: "src/new-feature.js" "// New feature implementation"
+npm install
+npm start
 ```
 
-### Modern AI Integration
-- **Function Calling**: Native support for OpenAI-style function calling
-- **Streaming Tool Detection**: Real-time tool call detection during streaming responses
-- **Multi-Modal Ready**: Architecture prepared for vision and audio capabilities
-- **Provider Abstraction**: Consistent interface across all AI providers
+`npm start` runs `node apps/cli/bin/ultra-dex.js`.
 
-### Enhanced Security
-- **Path Validation**: Advanced directory traversal protection
-- **Permission System**: Granular access controls for all operations
-- **Verification Gates**: Automated code quality and security checks
-- **Audit Trail**: Comprehensive logging of all agent actions
-
-## Getting Started
-
-### Prerequisites
-- Node.js 18+
-- API keys for your preferred AI provider (OpenAI, Anthropic, Google, etc.)
-
-### Installation
-```bash
-npm install -g ultra-dex
-```
-
-### Quick Start
-```bash
-# Initialize a new project
-ultra-dex init
-
-# Generate an implementation plan
-ultra-dex generate "TODO app with authentication"
-
-# Run an agent task
-ultra-dex run planner -t "Break down the authentication requirements"
-
-# Run a multi-agent swarm
-ultra-dex swarm "Implement user registration"
-```
-
-### Testing Without API Keys
-You can test the platform functionality using the mock provider:
+## Common Root Commands
 
 ```bash
-MOCK_AI_PROVIDERS=true ultra-dex agents list
-```
-
-## Architecture
-
-### Enhanced Provider Abstraction Layer
-The platform uses a unified provider interface supporting multiple AI services with consistent APIs, cost estimation, error handling, and advanced tool calling capabilities.
-
-### Agent Orchestration Engine
-The core engine coordinates between specialized agents, manages context, executes both legacy commands and modern tool calls safely, and maintains governance controls.
-
-### Security Model
-Advanced role-based access control, file system protections, command execution safeguards, and comprehensive audit logging.
-
-## Development
-
-### Running Tests
-```bash
+# quality
+npm run lint
+npm run typecheck
 npm test
+
+# build
+npm run build
 ```
 
-### Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+`npm run build` executes:
 
-## Roadmap
+- `build:core`
+- `build:dashboard`
+- `build:docs`
 
-### Near Term
-- Enhanced agent communication protocols
-- Improved project graph analysis
-- Better error recovery mechanisms
+`build:docs` is configured to emit a fallback message when Docusaurus is unavailable in the environment.
 
-### Medium Term
-- Plugin ecosystem for custom agents
-- Integration with popular IDEs
-- Advanced project visualization
+## Notes
 
-### Long Term
-- Enterprise governance features
-- Team collaboration tools
-- Advanced AI model fine-tuning capabilities
+- CLI command registration source is `apps/cli/bin/ultra-dex.js`.
+- Root `package.json` exposes the `ultra-dex` bin as `./apps/cli/bin/ultra-dex.js`.
+- `src/core/orchestration` is designed to run even when optional MCP tool registration is not provided.
 
 ## License
 
-MIT License - see LICENSE file for details.
-
-## Support
-
-For support, please open an issue in the GitHub repository.
-
----
-
-**Note**: This project is actively under development. Features and APIs may change as we work towards a stable release.
+MIT (`LICENSE`)

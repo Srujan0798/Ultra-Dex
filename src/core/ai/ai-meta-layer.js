@@ -5,8 +5,6 @@ import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
-import { wrapLanguageModel } from 'ai';
-import { z } from 'zod';
 import { logger } from '../../utils/logging.js';
 import { performance } from 'perf_hooks';
 
@@ -50,7 +48,7 @@ export class AIMetaLayer {
   initializeProviders() {
     // Mock Provider
     this.providers.set('mock', {
-      client: (model) => ({
+      client: (_model) => ({
         call: async (opts) => ({
           text: `Mock response for: ${opts.messages[opts.messages.length - 1].content}`,
           usage: { totalTokens: 10 }
@@ -82,7 +80,7 @@ export class AIMetaLayer {
             usage: { totalTokens: 10 }
           };
         },
-        stream: async (opts) => ({
+        stream: async (_opts) => ({
           // Minimal stream mock
           async *[Symbol.asyncIterator]() {
             yield { text: 'Mock ' };
@@ -231,7 +229,10 @@ export class AIMetaLayer {
       }
 
       // Select provider
-      const provider = this.selectProvider({ ...options, metadata: { model, messages } });
+      const provider = this.selectProvider({
+        ...options,
+        metadata: { ...(options.metadata || {}), model, messages },
+      });
       if (!provider) {
         throw new Error('No AI provider available');
       }
@@ -262,6 +263,16 @@ export class AIMetaLayer {
     } catch (error) {
       this.metrics.failedRequests++;
       this.updateMetrics(startTime);
+      if (this.config.enableMonitoring) {
+        logger.warn('AI call failed', {
+          model,
+          provider: this.selectProvider({
+            ...options,
+            metadata: { ...(options.metadata || {}), model, messages },
+          })?.defaultModel,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
 
       if (this.config.enableFallback) {
         return this.callWithFallback(model, messages, options, error);
@@ -275,12 +286,16 @@ export class AIMetaLayer {
    * Call with fallback to other providers
    */
   async callWithFallback(model, messages, options, originalError) {
-    const providers = Array.from(this.providers.values());
-    const currentIndex = providers.indexOf(this.selectProvider({ metadata: { model, messages } }));
+    const providerEntries = Array.from(this.providers.entries());
+    const currentProvider = this.selectProvider({
+      ...options,
+      metadata: { ...(options.metadata || {}), model, messages },
+    });
+    const currentIndex = providerEntries.findIndex(([, provider]) => provider === currentProvider);
 
-    for (let i = currentIndex + 1; i < providers.length; i++) {
+    for (let i = currentIndex + 1; i < providerEntries.length; i++) {
       try {
-        const provider = providers[i];
+        const [providerName, provider] = providerEntries[i];
         const result = await provider.client(model || provider.defaultModel).call({
           model: provider.client(model || provider.defaultModel),
           messages,
@@ -288,11 +303,16 @@ export class AIMetaLayer {
         });
 
         if (this.config.enableMonitoring) {
-          logger.info(`Fallback succeeded with provider: ${provider.constructor.name}`);
+          logger.info(`Fallback succeeded with provider: ${providerName}`);
         }
 
         return result;
       } catch (fallbackError) {
+        if (this.config.enableMonitoring) {
+          logger.warn('Fallback provider failed', {
+            error: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+          });
+        }
         continue; // Try next provider
       }
     }
@@ -305,50 +325,89 @@ export class AIMetaLayer {
    * Stream response from AI provider
    */
   async stream(model, messages, options = {}) {
-    const provider = this.selectProvider({ ...options, metadata: { model, messages } });
+    const provider = this.selectProvider({
+      ...options,
+      metadata: { ...(options.metadata || {}), model, messages },
+    });
     if (!provider) {
       throw new Error('No AI provider available');
     }
 
-    return provider.client(model || provider.defaultModel).stream({
-      model: provider.client(model || provider.defaultModel),
-      messages,
-      ...options
-    });
+    try {
+      return provider.client(model || provider.defaultModel).stream({
+        model: provider.client(model || provider.defaultModel),
+        messages,
+        ...options
+      });
+    } catch (error) {
+      if (this.config.enableMonitoring) {
+        logger.warn('AI stream failed', {
+          model,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+      throw error;
+    }
   }
 
   /**
    * Generate structured output using Zod schema
    */
   async generateObject(model, messages, schema, options = {}) {
-    const provider = this.selectProvider({ ...options, metadata: { model, messages } });
+    const provider = this.selectProvider({
+      ...options,
+      metadata: { ...(options.metadata || {}), model, messages },
+    });
     if (!provider) {
       throw new Error('No AI provider available');
     }
 
-    return provider.client(model || provider.defaultModel).generateObject({
-      model: provider.client(model || provider.defaultModel),
-      messages,
-      schema,
-      ...options
-    });
+    try {
+      return provider.client(model || provider.defaultModel).generateObject({
+        model: provider.client(model || provider.defaultModel),
+        messages,
+        schema,
+        ...options
+      });
+    } catch (error) {
+      if (this.config.enableMonitoring) {
+        logger.warn('AI object generation failed', {
+          model,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+      throw error;
+    }
   }
 
   /**
    * Generate text with tool calling capability
    */
   async generateTextWithTools(model, messages, tools, options = {}) {
-    const provider = this.selectProvider({ ...options, metadata: { model, messages } });
+    const provider = this.selectProvider({
+      ...options,
+      metadata: { ...(options.metadata || {}), model, messages },
+    });
     if (!provider) {
       throw new Error('No AI provider available');
     }
 
-    return provider.client(model || provider.defaultModel).generateText({
-      model: provider.client(model || provider.defaultModel),
-      messages,
-      tools,
-      ...options
-    });
+    try {
+      return provider.client(model || provider.defaultModel).generateText({
+        model: provider.client(model || provider.defaultModel),
+        messages,
+        tools,
+        ...options
+      });
+    } catch (error) {
+      if (this.config.enableMonitoring) {
+        logger.warn('AI tool-enabled generation failed', {
+          model,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+      throw error;
+    }
   }
 
   /**
@@ -413,9 +472,11 @@ export class AIMetaLayer {
    */
   updateMetrics(startTime, usage = null) {
     const responseTime = performance.now() - startTime;
-    this.metrics.avgResponseTime = 
-      ((this.metrics.avgResponseTime * (this.metrics.successfulRequests - 1)) + responseTime) / 
-      this.metrics.successfulRequests;
+    if (this.metrics.successfulRequests > 0) {
+      this.metrics.avgResponseTime =
+        (this.metrics.avgResponseTime * (this.metrics.successfulRequests - 1) + responseTime) /
+        this.metrics.successfulRequests;
+    }
 
     if (usage?.totalTokens) {
       this.metrics.totalTokens += usage.totalTokens;
@@ -447,7 +508,7 @@ export class AIMetaLayer {
     const status = {};
     for (const [name, provider] of this.providers) {
       status[name] = {
-        available: !!provider.apiKey || name === 'ollama', // Ollama doesn't need API key
+        available: !!provider.apiKey || name === 'ollama' || name === 'mock', // Ollama/mock don't need API keys
         defaultModel: provider.defaultModel,
         config: provider.config
       };
