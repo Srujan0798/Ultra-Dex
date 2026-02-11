@@ -506,8 +506,17 @@ registerHealthCommand(program);
 registerDebugCommand(program);
 registerBannerCommand(program);
 
-// Default to REPL if no arguments provided
-if (process.argv.length <= 2) {
+// Default to REPL if no command is specified (only ultra-dex command)
+const hasCommandArg = process.argv.slice(2).some(arg =>
+  !arg.startsWith('-') &&
+  arg !== 'ultra-dex' &&
+  !arg.includes('ultra-dex.js')
+);
+
+const hasHelpOrVersion = process.argv.some(arg =>
+  ['--version', '-V', '--help', '-h', '--'].includes(arg));
+
+if (!hasCommandArg && !hasHelpOrVersion) {
   await startREPL({ continue: false });
   process.exit(0);
 }

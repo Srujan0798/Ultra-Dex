@@ -388,6 +388,15 @@ export class AIMetaLayer {
    */
   generateMockObject(schema) {
     // Simple mock object generation based on common patterns
+    if (schema.paths) {
+      return {
+        paths: [
+          { name: 'Path A: Monolithic', description: 'Fast implementation', steps: ['1', '2'] },
+          { name: 'Path B: Microservices', description: 'Scalable but complex', steps: ['1', '2', '3'] },
+          { name: 'Path C: Serverless', description: 'Lowest maintenance', steps: ['1'] }
+        ]
+      };
+    }
     if (schema.steps) {
       return {
         steps: [

@@ -381,7 +381,3 @@ Happy coding with Ultra-Dex! 🚀
     console.log(chalk.magenta('May your code be clean, your deployments be smooth, and your AI agents be helpful. 🤖💻'));
   }
 }
-
-// Run the onboarding system
-const onboarding = new OnboardingSystem();
-onboarding.start().catch(console.error);

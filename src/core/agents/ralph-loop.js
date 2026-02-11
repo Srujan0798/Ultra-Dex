@@ -13,6 +13,8 @@ import { createDockerSandbox } from '../../../apps/cli/lib/sandbox/docker.js';
 import { ppmManager } from '../memory/manager.js';
 import { codeValidator } from '../../services/security/validators.js';
 import { agentOrchestrator } from '../orchestration/index.js';
+import { MCTSEngine } from '../ai/mcts/engine.js';
+import { ArchitectSimulator } from '../ai/mcts/architect-simulator.js';
 
 const STATES = ['PLAN', 'ACT', 'VERIFY', 'RECOVER', 'COMMIT'];
 
@@ -22,43 +24,42 @@ export async function runAutonomousTask(objective, options = {}) {
   await registry.initialize();
   
   const plan = async (ctx) => {
-    printInfo(chalk.blue('🤖 Strategic Planning Phase'));
+    printInfo(chalk.blue('🤖 Strategic Planning Phase (with MCTS Reasoning)'));
     
     const plannerPrompt = await registry.getAgentPrompt('planner');
     const memoryContext = await ppmManager.search(objective);
     const availableTools = await agentOrchestrator.getTools();
     
-    let messages = [
-      { role: 'system', content: plannerPrompt },
-      { role: 'user', content: `Objective: ${objective}\n\nExisting Context: ${JSON.stringify(memoryContext)}` }
-    ];
-
-    // Initial tool-augmented reasoning
-    let toolCallsCount = 0;
-    while (toolCallsCount < 3) {
-      const toolResponse = await aiMetaLayer.generateTextWithTools(
-        options.model || 'claude-3-5-sonnet-20241022',
-        messages,
-        availableTools.tools
-      );
-
-      if (toolResponse.toolCalls && toolResponse.toolCalls.length > 0) {
-        toolCallsCount++;
-        for (const toolCall of toolResponse.toolCalls) {
-          const toolResult = await agentOrchestrator.executeTool(toolCall.toolName, toolCall.args);
-          messages.push({ role: 'assistant', content: toolResponse.text, tool_calls: [toolCall] });
-          messages.push({ role: 'tool', tool_call_id: toolCall.toolCallId, content: JSON.stringify(toolResult) });
-        }
-      } else {
-        break;
+    // 1. Initial Brainstorming
+    const initialActionsResponse = await aiMetaLayer.generateObject(
+      options.model || 'claude-3-5-sonnet-20241022',
+      [
+        { role: 'system', content: plannerPrompt },
+        { role: 'user', content: `Objective: ${objective}\nBrainstorm 3 different high-level implementation paths.` }
+      ],
+      {
+        paths: [{ name: 'string', description: 'string', steps: ['string'] }]
       }
-    }
+    );
+
+    // 2. MCTS Simulation
+    printInfo(chalk.cyan('🧠 Simulating implementation paths...'));
+    const simulator = new ArchitectSimulator(objective, memoryContext);
+    const mcts = new MCTSEngine({ 
+      remainingOptions: initialActionsResponse.object.paths,
+      history: []
+    }, simulator);
     
+    // Run simulation
+    const bestPath = await mcts.run(5); // Run 5 iterations of deep simulation
+    printInfo(chalk.green(`💎 Selected optimal path: ${bestPath?.name || 'Standard'}`));
+
+    // 3. Final Plan Generation
     const response = await aiMetaLayer.generateObject(
       options.model || 'claude-3-5-sonnet-20241022',
       [
-        ...messages,
-        { role: 'user', content: 'Now, based on the above information, generate the final structured plan.' }
+        { role: 'system', content: plannerPrompt },
+        { role: 'user', content: `Objective: ${objective}\nSelected Path: ${JSON.stringify(bestPath)}\n\nGenerate the final atomic task list.` }
       ],
       {
         steps: [
@@ -68,7 +69,14 @@ export async function runAutonomousTask(objective, options = {}) {
     );
 
     ctx.objective = objective;
-    ctx.steps = response.object.steps.map(s => ({ ...s, status: 'pending' }));
+    ctx.steps = response.object.steps.map(s => {
+      const taskId = agentOrchestrator.tasks.addTask({
+        ...s,
+        objective: objective,
+        status: 'pending'
+      });
+      return { ...s, id: taskId, status: 'pending' };
+    });
     
     await ppmManager.add({
       content: `Generated plan for: ${objective}`,
@@ -81,9 +89,18 @@ export async function runAutonomousTask(objective, options = {}) {
   };
 
   const act = async (ctx) => {
-    const currentStep = ctx.steps.find(s => s.status === 'pending');
-    if (!currentStep) return ctx;
+    const readyTasks = agentOrchestrator.tasks.getReadyTasks();
+    let currentTask = readyTasks[0]; 
     
+    if (!currentTask) {
+      const pendingStep = ctx.steps.find(s => s.status === 'pending');
+      if (!pendingStep) return ctx;
+      currentTask = pendingStep;
+    }
+    
+    const stepIndex = ctx.steps.findIndex(s => s.id === currentTask.id);
+    const currentStep = ctx.steps[stepIndex] || currentTask;
+
     const agentId = currentStep.assignedAgent || 'backend';
     printInfo(chalk.blue(`🚀 @${agentId} Executing: ${currentStep.task}`));
     
@@ -150,6 +167,7 @@ export async function runAutonomousTask(objective, options = {}) {
     
     if (sandboxResult.success) {
       currentStep.status = 'completed';
+      agentOrchestrator.tasks.markComplete(currentStep.id);
       currentStep.result = sandboxResult.output;
       printSuccess(chalk.green(`✓ Step completed: ${currentStep.task}`));
       
@@ -161,18 +179,16 @@ export async function runAutonomousTask(objective, options = {}) {
       });
     } else {
       currentStep.status = 'failed';
-      currentStep.error = sandboxResult.error;
       printWarning(chalk.red(`✗ Step failed: ${currentStep.task} - ${sandboxResult.error}`));
-      throw new Error(`Step failed: ${currentStep.error}`);
+      throw new Error(`Step failed: ${sandboxResult.error}`);
     }
 
     return ctx;
   };
 
   const verify = async (ctx) => {
-    const pendingStep = ctx.steps.find(s => s.status === 'pending');
-    if (pendingStep) {
-      printInfo(chalk.blue(`Wait, ${ctx.steps.filter(s => s.status === 'pending').length} steps still pending. Continuing ACT phase.`));
+    if (agentOrchestrator.tasks.hasPending()) {
+      printInfo(chalk.blue(`Wait, tasks still pending in the graph. Continuing ACT phase.`));
       return { ok: false, continue: true };
     }
 
