@@ -6,6 +6,9 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { z } from 'zod';
 import axios from 'axios';
+import AdmZip from 'adm-zip';
+import FormData from 'form-data';
+import { marketplaceClient } from './client.js';
 import { AppError } from '../utils/errors.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
@@ -20,9 +23,9 @@ export class AgentMarketplace {
     this.options = {
       registryUrl: options.registryUrl || 'https://marketplace.ultra-dex.ai',
       localRegistry: options.localRegistry || path.join(process.cwd(), '.ultra-dex', 'marketplace'),
-      ...options
+      ...options,
     };
-    
+
     this.agentsDir = path.join(this.options.localRegistry, 'agents');
     this.pluginsDir = path.join(this.options.localRegistry, 'plugins');
     this.templatesDir = path.join(this.options.localRegistry, 'templates');
@@ -36,7 +39,7 @@ export class AgentMarketplace {
       await fs.mkdir(this.agentsDir, { recursive: true });
       await fs.mkdir(this.pluginsDir, { recursive: true });
       await fs.mkdir(this.templatesDir, { recursive: true });
-      
+
       printSuccess('🏪 Agent marketplace initialized');
     } catch (error) {
       throw new AppError(`Marketplace initialization failed: ${error.message}`);
@@ -48,16 +51,12 @@ export class AgentMarketplace {
    */
   async searchAgents(query, options = {}) {
     try {
-      const params = {
-        q: query,
-        category: options.category,
-        tier: options.tier,
+      return await marketplaceClient.searchAgents(query, {
+        ...options,
         sort: options.sort || 'downloads',
-        limit: options.limit || 20
-      };
-
-      const response = await axios.get(`${this.options.registryUrl}/api/agents`, { params });
-      return response.data;
+        limit: options.limit || 20,
+        throwOnError: true,
+      });
     } catch (error) {
       printWarning('⚠️  Marketplace search failed, using local cache');
       return await this.searchLocalAgents(query, options);
@@ -71,27 +70,33 @@ export class AgentMarketplace {
     try {
       const agents = [];
       const agentDirs = await fs.readdir(this.agentsDir);
-      
+
       for (const dir of agentDirs) {
         const manifestPath = path.join(this.agentsDir, dir, 'manifest.json');
-        if (await fs.access(manifestPath).then(() => true).catch(() => false)) {
+        if (
+          await fs
+            .access(manifestPath)
+            .then(() => true)
+            .catch(() => false)
+        ) {
           const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
-          
-          if (!query || 
-              manifest.name.toLowerCase().includes(query.toLowerCase()) ||
-              manifest.description.toLowerCase().includes(query.toLowerCase()) ||
-              (manifest.tags && manifest.tags.some(tag => 
-                tag.toLowerCase().includes(query.toLowerCase())
-              ))) {
+
+          if (
+            !query ||
+            manifest.name.toLowerCase().includes(query.toLowerCase()) ||
+            manifest.description.toLowerCase().includes(query.toLowerCase()) ||
+            (manifest.tags &&
+              manifest.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())))
+          ) {
             agents.push({
               ...manifest,
               local: true,
-              path: path.join(this.agentsDir, dir)
+              path: path.join(this.agentsDir, dir),
             });
           }
         }
       }
-      
+
       return agents;
     } catch (error) {
       printError(`Local agent search failed: ${error.message}`);
@@ -105,7 +110,7 @@ export class AgentMarketplace {
   async installAgent(agentId, version = 'latest') {
     try {
       printInfo(`📥 Installing agent: ${agentId}@${version}`);
-      
+
       // Get agent info
       let agentInfo;
       try {
@@ -114,8 +119,8 @@ export class AgentMarketplace {
       } catch {
         // Fallback to local search
         const localAgents = await this.searchLocalAgents(agentId);
-        agentInfo = localAgents.find(a => a.name === agentId);
-        
+        agentInfo = localAgents.find((a) => a.name === agentId);
+
         if (!agentInfo) {
           throw new AppError(`Agent not found: ${agentId}`);
         }
@@ -123,7 +128,7 @@ export class AgentMarketplace {
 
       // Determine installation path
       const installPath = path.join(this.agentsDir, agentInfo.name);
-      
+
       // Download agent
       if (agentInfo.downloadUrl) {
         await this.downloadAgent(agentInfo.downloadUrl, installPath);
@@ -144,12 +149,12 @@ export class AgentMarketplace {
       await this.installAgentDependencies(installPath);
 
       printSuccess(`✅ Agent installed: ${agentInfo.name} (${agentInfo.version})`);
-      
+
       return {
         success: true,
         agent: agentInfo,
         path: installPath,
-        message: `Agent ${agentInfo.name} installed successfully`
+        message: `Agent ${agentInfo.name} installed successfully`,
       };
     } catch (error) {
       throw new AppError(`Agent installation failed: ${error.message}`);
@@ -164,13 +169,13 @@ export class AgentMarketplace {
     const { promisify } = await import('util');
     const { createWriteStream } = await import('fs');
     const { get } = await import('https');
-    
+
     const finished = promisify(pipeline);
-    
+
     // Create temporary file
     const tempFile = path.join(this.options.localRegistry, 'temp', `${Date.now()}.zip`);
     await fs.mkdir(path.dirname(tempFile), { recursive: true });
-    
+
     // Download
     await new Promise((resolve, reject) => {
       get(downloadUrl, (response) => {
@@ -178,20 +183,19 @@ export class AgentMarketplace {
           reject(new Error(`Download failed: ${response.statusCode}`));
           return;
         }
-        
+
         const writeStream = createWriteStream(tempFile);
         response.pipe(writeStream);
-        
+
         writeStream.on('finish', resolve);
         writeStream.on('error', reject);
       }).on('error', reject);
     });
-    
+
     // Extract to install path
-    const AdmZip = (await import('adm-zip')).default;
     const zip = new AdmZip(tempFile);
     zip.extractAllTo(installPath, true);
-    
+
     // Cleanup
     await fs.unlink(tempFile);
   }
@@ -209,13 +213,18 @@ export class AgentMarketplace {
   async validateAgent(agentPath) {
     try {
       const manifestPath = path.join(agentPath, 'manifest.json');
-      if (!(await fs.access(manifestPath).then(() => true).catch(() => false))) {
+      if (
+        !(await fs
+          .access(manifestPath)
+          .then(() => true)
+          .catch(() => false))
+      ) {
         printError(`Missing manifest.json in agent: ${agentPath}`);
         return false;
       }
 
       const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
-      
+
       // Validate manifest structure
       const manifestSchema = z.object({
         name: z.string().min(1),
@@ -228,14 +237,19 @@ export class AgentMarketplace {
         dependencies: z.record(z.string()).optional(),
         capabilities: z.array(z.string()).optional(),
         permissions: z.array(z.string()).optional(),
-        tags: z.array(z.string()).optional()
+        tags: z.array(z.string()).optional(),
       });
 
       manifestSchema.parse(manifest);
 
       // Check main file exists
       const mainPath = path.join(agentPath, manifest.main);
-      if (!(await fs.access(mainPath).then(() => true).catch(() => false))) {
+      if (
+        !(await fs
+          .access(mainPath)
+          .then(() => true)
+          .catch(() => false))
+      ) {
         printError(`Main file not found: ${mainPath}`);
         return false;
       }
@@ -252,7 +266,12 @@ export class AgentMarketplace {
    */
   async installAgentDependencies(agentPath) {
     const packageJsonPath = path.join(agentPath, 'package.json');
-    if (await fs.access(packageJsonPath).then(() => true).catch(() => false)) {
+    if (
+      await fs
+        .access(packageJsonPath)
+        .then(() => true)
+        .catch(() => false)
+    ) {
       try {
         await execAsync('npm install', { cwd: agentPath });
         printSuccess(`📦 Dependencies installed for agent: ${agentPath}`);
@@ -269,19 +288,24 @@ export class AgentMarketplace {
     try {
       const agents = [];
       const agentDirs = await fs.readdir(this.agentsDir);
-      
+
       for (const dir of agentDirs) {
         const manifestPath = path.join(this.agentsDir, dir, 'manifest.json');
-        if (await fs.access(manifestPath).then(() => true).catch(() => false)) {
+        if (
+          await fs
+            .access(manifestPath)
+            .then(() => true)
+            .catch(() => false)
+        ) {
           const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
           agents.push({
             ...manifest,
             path: path.join(this.agentsDir, dir),
-            installed: true
+            installed: true,
           });
         }
       }
-      
+
       return agents;
     } catch (error) {
       throw new AppError(`Failed to list installed agents: ${error.message}`);
@@ -294,17 +318,22 @@ export class AgentMarketplace {
   async uninstallAgent(agentName) {
     try {
       const agentPath = path.join(this.agentsDir, agentName);
-      
-      if (!(await fs.access(agentPath).then(() => true).catch(() => false))) {
+
+      if (
+        !(await fs
+          .access(agentPath)
+          .then(() => true)
+          .catch(() => false))
+      ) {
         throw new AppError(`Agent not found: ${agentName}`);
       }
 
       await fs.rm(agentPath, { recursive: true, force: true });
       printSuccess(`🗑️  Agent uninstalled: ${agentName}`);
-      
+
       return {
         success: true,
-        message: `Agent ${agentName} uninstalled successfully`
+        message: `Agent ${agentName} uninstalled successfully`,
       };
     } catch (error) {
       throw new AppError(`Agent uninstallation failed: ${error.message}`);
@@ -327,29 +356,35 @@ export class AgentMarketplace {
       const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
 
       // Create package
-      const AdmZip = (await import('adm-zip')).default;
       const zip = new AdmZip();
       zip.addLocalFolder(agentPath);
       const zipBuffer = zip.toBuffer();
 
       // Upload to marketplace
       const formData = new FormData();
-      formData.append('agent', new Blob([zipBuffer]), `${manifest.name}-${manifest.version}.zip`);
+      formData.append('agent', zipBuffer, {
+        filename: `${manifest.name}-${manifest.version}.zip`,
+        contentType: 'application/zip',
+      });
       formData.append('manifest', JSON.stringify(manifest));
 
-      const response = await axios.post(`${this.options.registryUrl}/api/agents/publish`, formData, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          ...formData.getHeaders()
+      const response = await axios.post(
+        `${this.options.registryUrl}/api/agents/publish`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            ...formData.getHeaders(),
+          },
         }
-      });
+      );
 
       printSuccess(`🚀 Agent published: ${manifest.name}@${manifest.version}`);
-      
+
       return {
         success: true,
         agent: response.data,
-        message: `Agent published successfully`
+        message: `Agent published successfully`,
       };
     } catch (error) {
       throw new AppError(`Agent publishing failed: ${error.message}`);
@@ -362,37 +397,39 @@ export class AgentMarketplace {
   async updateAgent(agentName, version = 'latest') {
     try {
       const installedAgents = await this.listInstalledAgents();
-      const agent = installedAgents.find(a => a.name === agentName);
-      
+      const agent = installedAgents.find((a) => a.name === agentName);
+
       if (!agent) {
         throw new AppError(`Agent not installed: ${agentName}`);
       }
 
       // Get latest version info
       try {
-        const response = await axios.get(`${this.options.registryUrl}/api/agents/${agentName}/versions/latest`);
+        const response = await axios.get(
+          `${this.options.registryUrl}/api/agents/${agentName}/versions/latest`
+        );
         const latestVersion = response.data;
-        
+
         if (latestVersion.version === agent.version) {
           printInfo(`✅ Agent ${agentName} is already up to date (${agent.version})`);
           return {
             success: true,
-            message: `Agent ${agentName} is up to date`
+            message: `Agent ${agentName} is up to date`,
           };
         }
 
         printInfo(`🔄 Updating ${agentName} from ${agent.version} to ${latestVersion.version}`);
-        
+
         // Uninstall old version
         await this.uninstallAgent(agentName);
-        
+
         // Install new version
         return await this.installAgent(agentName, latestVersion.version);
       } catch {
         printWarning(`⚠️  Could not check for updates, using local version`);
         return {
           success: true,
-          message: 'Update check failed, keeping current version'
+          message: 'Update check failed, keeping current version',
         };
       }
     } catch (error) {
@@ -412,7 +449,7 @@ export class AgentMarketplace {
       } catch {
         // Fallback to local
         const installedAgents = await this.listInstalledAgents();
-        return installedAgents.find(a => a.name === agentId);
+        return installedAgents.find((a) => a.name === agentId);
       }
     } catch (error) {
       throw new AppError(`Failed to get agent details: ${error.message}`);
@@ -425,7 +462,7 @@ export class AgentMarketplace {
   async createAgentTemplate(name, type = 'custom') {
     try {
       const agentPath = path.join(this.agentsDir, name);
-      
+
       // Create directory structure
       await fs.mkdir(agentPath, { recursive: true });
       await fs.mkdir(path.join(agentPath, 'src'));
@@ -444,14 +481,11 @@ export class AgentMarketplace {
         permissions: ['read', 'write'],
         tags: [type, 'custom'],
         dependencies: {
-          'ultra-dex-sdk': '^4.0.0'
-        }
+          'ultra-dex-sdk': '^4.0.0',
+        },
       };
 
-      await fs.writeFile(
-        path.join(agentPath, 'manifest.json'),
-        JSON.stringify(manifest, null, 2)
-      );
+      await fs.writeFile(path.join(agentPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
       // Create basic agent file
       const agentCode = `/**
@@ -562,11 +596,11 @@ MIT
       await fs.writeFile(path.join(agentPath, 'README.md'), readme);
 
       printSuccess(`🏗️  Agent template created: ${name}`);
-      
+
       return {
         success: true,
         path: agentPath,
-        message: `Agent template ${name} created successfully`
+        message: `Agent template ${name} created successfully`,
       };
     } catch (error) {
       throw new AppError(`Agent template creation failed: ${error.message}`);

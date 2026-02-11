@@ -320,8 +320,8 @@ export class AgentMarketplaceClient {
     return { success: true, path: downloadPath };
   }
 
-  async searchAgents(query = {}) {
-    const normalized = normalizeQuery(query);
+  async searchAgents(query = {}, options = {}) {
+    const normalized = { ...normalizeQuery(query), ...options };
     this.init();
 
     try {
@@ -338,7 +338,10 @@ export class AgentMarketplaceClient {
 
       const data = await this.request('get', `/agents/search?${params.toString()}`);
       return data.agents || [];
-    } catch {
+    } catch (error) {
+      if (normalized.throwOnError) {
+        throw error;
+      }
       const q = (normalized.q || '').toLowerCase();
       return FALLBACK_MARKETPLACE_AGENTS.filter(
         (agent) =>
