@@ -107,6 +107,7 @@ export async function handleStripeWebhook(request: Request) {
 
   switch (event.type) {
     case 'checkout.session.completed':
+      // TODO: mark subscription active
       {
         // TODO: Persist subscription activation in your DB.
         const session = event.data.object as Stripe.Checkout.Session;
@@ -121,6 +122,7 @@ export async function handleStripeWebhook(request: Request) {
     case 'customer.subscription.deleted': {
       // TODO: Persist subscription status update/delete in your DB.
       const subscription = event.data.object as Stripe.Subscription;
+      // TODO: update status in DB
       await upsertSubscription(normalizeSubscription(subscription));
       return new Response('ok');
     }
