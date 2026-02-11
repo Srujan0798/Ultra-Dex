@@ -39,14 +39,3 @@ I've detected a few areas for optimization in your current setup.
 
 runDemo();
 
-/**
- * Error handler for demo-pro
- * @param {Error} error - Error to handle
- */
-function handleError(error) {
-  try {
-    console.error('[demo-pro]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}

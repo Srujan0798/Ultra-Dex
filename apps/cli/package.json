@@ -41,7 +41,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@ultra-dex/core": "workspace:*",
+    "@ultra-dex/core": "^6.0.0",
     "@ai-sdk/anthropic": "^4.0.1",
     "@ai-sdk/google": "^1.0.1",
     "@ai-sdk/openai": "^5.0.1",
