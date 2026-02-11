@@ -39,7 +39,16 @@ const subscriptionStore = new Map<string, SubscriptionRecord>();
 
 async function upsertSubscription(record: SubscriptionRecord) {
   subscriptionStore.set(record.id, record);
+<<<<<<< HEAD:src/core/templates/features/stripe-billing.ts
   // In production, replace with a durable DB write (Prisma/Drizzle/Supabase).
+=======
+  // In a real app, you would do something like:
+  // await prisma.subscription.upsert({
+  //   where: { id: record.id },
+  //   update: record,
+  //   create: record,
+  // });
+>>>>>>> origin/feature/stripe-billing-activation-17617165515963690111:templates/features/stripe-billing.ts
   return Promise.resolve(record);
 }
 
@@ -113,6 +122,7 @@ export async function handleStripeWebhook(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const subscriptionId = session.subscription;
         if (subscriptionId && typeof subscriptionId === 'string') {
+          // Sync subscription status to database (e.g. mark as active)
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           await upsertSubscription(normalizeSubscription(subscription));
         }
@@ -122,7 +132,10 @@ export async function handleStripeWebhook(request: Request) {
     case 'customer.subscription.deleted': {
       // TODO: Persist subscription status update/delete in your DB.
       const subscription = event.data.object as Stripe.Subscription;
+<<<<<<< HEAD:src/core/templates/features/stripe-billing.ts
       // TODO: update status in DB
+=======
+>>>>>>> origin/feature/stripe-billing-activation-17617165515963690111:templates/features/stripe-billing.ts
       await upsertSubscription(normalizeSubscription(subscription));
       return new Response('ok');
     }
