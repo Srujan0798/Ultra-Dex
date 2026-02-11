@@ -76,8 +76,8 @@ async function analyzeFile(filePath) {
 async function generateReport() {
   console.log('🔍 Starting Truth Scan...');
 
-  // 1. Scan Commands
-  const commandsDir = path.join(ROOT_DIR, 'cli', 'lib', 'commands');
+  // 1. Scan Commands (apps/cli is the actual CLI app location)
+  const commandsDir = path.join(ROOT_DIR, 'apps', 'cli', 'lib', 'commands');
   const commandFiles = await scanDirectory(commandsDir);
   const commandAnalysis = [];
 
@@ -87,13 +87,13 @@ async function generateReport() {
     }
   }
 
-  // 2. Scan Agents
-  const agentsDir = path.join(ROOT_DIR, 'agents');
+  // 2. Scan Agents (stored with the CLI assets)
+  const agentsDir = path.join(ROOT_DIR, 'apps', 'cli', 'assets', 'agents');
   const agentFiles = await scanDirectory(agentsDir);
   const agentCount = agentFiles.filter((f) => f.endsWith('.md')).length;
 
-  // 3. Scan Templates
-  const templatesDir = path.join(ROOT_DIR, 'templates');
+  // 3. Scan Templates (live templates used by the core engine)
+  const templatesDir = path.join(ROOT_DIR, 'src', 'core', 'templates', 'live');
   const templateFiles = await scanDirectory(templatesDir);
   const templateCount = templateFiles.filter((f) => f.endsWith('package.json')).length;
 

@@ -57,6 +57,13 @@ class AgentOrchestrator {
   }
 
   /**
+   * Alias for executeNexus to support CLI compatibility
+   */
+  async execute(objective) {
+    return await this.executeNexus(objective);
+  }
+
+  /**
    * Initialize the orchestrator
    */
   async initialize() {

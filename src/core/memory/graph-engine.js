@@ -1,19 +1,22 @@
 // Copyright (c) 2026 Ultra-Dex
 
 /**
- * Memory Graph Engine
- * Traverses memory nodes and outputs Mermaid/Graphviz.
+ * Memory Graph Engine (v6.0.0)
+ * Handles semantic relationships between architectural decisions and code.
  */
 
 import { sqliteProvider } from './sqlite.js';
+import chalk from 'chalk';
+import { printSuccess } from '../utils/output.js';
 
 class MemoryGraph {
   constructor() {
-    this.nodes = new Map();
-    this.edges = new Map();
     this.provider = sqliteProvider;
   }
 
+  /**
+   * Relate two memory entries
+   */
   async relate(fromId, toId, relationshipType = 'RELATES_TO') {
     await this.provider.init();
     const fromNode = await this.provider.get('cold', fromId);
@@ -22,92 +25,91 @@ class MemoryGraph {
     if (fromNode && toNode) {
       const metadata = fromNode.metadata || {};
       metadata.relations = metadata.relations || [];
-      metadata.relations.push({ target: toId, type: relationshipType });
-      await this.provider.add('cold', { ...fromNode, metadata });
       
-      printSuccess(chalk.gray(\`Link established: \${fromId} --[\${relationshipType}]--> \${toId}\`));
-    }
-  }
-
-  async findPath(startId, endId, maxDepth = 5) {
-    // Basic BFS pathfinding implementation
-    // ... logic to follow metadata.relations ...
-  }
-
-  link(from, to, type = 'relates_to') {
-    if (!this.edges.has(from)) this.edges.set(from, []);
-    this.edges.get(from).push({ to, type });
-  }
-
-  getNode(id) {
-    return this.nodes.get(id) || null;
-  }
-
-  queryDecisionWhy(keyword) {
-    const matches = [];
-    for (const node of this.nodes.values()) {
-      if (node.type === 'decision' && node.content?.toLowerCase().includes(keyword.toLowerCase())) {
-        matches.push(node);
+      // Prevent duplicates
+      if (!metadata.relations.find(r => r.target === toId && r.type === relationshipType)) {
+        metadata.relations.push({ target: toId, type: relationshipType });
+        await this.provider.add('cold', { ...fromNode, metadata });
+        printSuccess(chalk.gray(`Link established: ${fromId} --[${relationshipType}]--> ${toId}`));
       }
     }
-    return matches;
   }
 
-  traverseFrom(id, depth = 2, visited = new Set()) {
-    if (depth < 0 || visited.has(id)) return [];
-    visited.add(id);
+  /**
+   * Trace the chain of thought for a decision
+   */
+  async getDecisionTrail(decisionId) {
+    await this.provider.init();
+    const trail = [];
+    let currentId = decisionId;
 
-    const edges = this.edges.get(id) || [];
-    const results = [];
-    for (const edge of edges) {
-      results.push(edge);
-      results.push(...this.traverseFrom(edge.to, depth - 1, visited));
+    while (currentId) {
+      const node = await this.provider.get('cold', currentId);
+      if (!node) break;
+      trail.push(node);
+      // Look for 'supersedes' or 'relates_to' in metadata
+      currentId = node.metadata?.supersedes || node.metadata?.relations?.find(r => r.type === 'SUPERSEDES')?.target;
     }
 
-    return results;
+    return trail;
   }
 
-  toMermaid() {
-    const lines = ['graph TD'];
-    for (const [from, edges] of this.edges.entries()) {
-      edges.forEach((edge) => {
-        lines.push(`  ${sanitize(from)} --|${edge.type}| ${sanitize(edge.to)}`);
-      });
+  /**
+   * Find a path between two nodes (BFS)
+   */
+  async findPath(startId, endId, maxDepth = 5) {
+    await this.provider.init();
+    const queue = [[{ id: startId }]];
+    const visited = new Set();
+
+    while (queue.length > 0) {
+      const path = queue.shift();
+      const node = path[path.length - 1];
+
+      if (node.id === endId) return path;
+
+      if (!visited.has(node.id) && path.length <= maxDepth) {
+        visited.add(node.id);
+        const record = await this.provider.get('cold', node.id);
+        
+        if (record?.metadata?.relations) {
+          for (const rel of record.metadata.relations) {
+            const newPath = [...path, { id: rel.target, type: rel.type }];
+            queue.push(newPath);
+          }
+        }
+      }
     }
-    return lines.join('\n');
+
+    return null;
   }
 
-  toGraphviz() {
-    const lines = ['digraph MemoryGraph {'];
-    for (const [from, edges] of this.edges.entries()) {
-      edges.forEach((edge) => {
-        lines.push(`  "${from}" -> "${edge.to}" [label="${edge.type}"];`);
-      });
+  /**
+   * Analyze impact of changing a node
+   */
+  async getImpact(nodeId) {
+    await this.provider.init();
+    const impact = new Set();
+    const queue = [nodeId];
+    
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      if (impact.has(currentId)) continue;
+      impact.add(currentId);
+
+      // In a real graph, we'd look for incoming edges too.
+      // For now, we follow outgoing relations.
+      const node = await this.provider.get('cold', currentId);
+      if (node?.metadata?.relations) {
+        for (const rel of node.metadata.relations) {
+          queue.push(rel.target);
+        }
+      }
     }
-    lines.push('}');
-    return lines.join('\n');
+    
+    return Array.from(impact);
   }
-}
-
-function sanitize(id) {
-  return String(id).replace(/[^a-zA-Z0-9_]/g, '_');
 }
 
 export const memoryGraph = new MemoryGraph();
-
-export default {
-  MemoryGraph,
-  memoryGraph,
-};
-
-/**
- * Error handler for graph-engine
- * @param {Error} error - Error to handle
- */
-function handleError(error) {
-  try {
-    console.error('[graph-engine]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}
+export default memoryGraph;

@@ -7,26 +7,43 @@
 
 import chalk from 'chalk';
 import { printInfo, printWarning, printSuccess } from '../utils/output.js';
-
-const STATES = ['PLAN', 'ACT', 'VERIFY', 'RECOVER', 'COMMIT'];
-
+import { aiMetaLayer } from '../ai/ai-meta-layer.js';
 import { verifyTask } from '../../../apps/cli/lib/quality/protocol-21.js';
 import { createDockerSandbox } from '../../../apps/cli/lib/sandbox/docker.js';
 import { ppmManager } from '../memory/manager.js';
-
 import { codeValidator } from '../../services/security/validators.js';
 
+const STATES = ['PLAN', 'ACT', 'VERIFY', 'RECOVER', 'COMMIT'];
+
 export async function runAutonomousTask(objective, options = {}) {
-  const sandbox = await createDockerSandbox({ enabled: true });
+  const sandbox = await createDockerSandbox({ enabled: options.sandbox !== false });
   
   const plan = async (ctx) => {
     printInfo(chalk.blue('🤖 Strategic Planning Phase'));
-    // Use CTO/Architect agents to generate sub-tasks
+    
+    const response = await aiMetaLayer.generateObject(
+      options.model || 'claude-3-5-sonnet-20241022',
+      [
+        { role: 'system', content: 'You are an expert Architect. Break down the user objective into a sequence of atomic, actionable steps. Each step should be clear and implementable.' },
+        { role: 'user', content: `Objective: ${objective}` }
+      ],
+      {
+        steps: [
+          { id: 'string', task: 'string', description: 'string' }
+        ]
+      }
+    );
+
     ctx.objective = objective;
-    ctx.steps = [
-      { id: 'scaffold', task: 'Create file structure', status: 'pending' },
-      { id: 'implement', task: 'Write core logic', status: 'pending' }
-    ];
+    ctx.steps = response.object.steps.map(s => ({ ...s, status: 'pending' }));
+    
+    await ppmManager.add({
+      content: `Generated plan for: ${objective}`,
+      type: 'decision',
+      importance: 7,
+      metadata: { steps: ctx.steps }
+    });
+
     return ctx;
   };
 
@@ -36,24 +53,42 @@ export async function runAutonomousTask(objective, options = {}) {
     
     printInfo(chalk.blue(`🚀 Executing: ${currentStep.task}`));
     
-    // Simulate agent-generated code
-    const generatedCode = 'console.log("Task executed")';
+    const response = await aiMetaLayer.call(
+      options.model || 'gpt-4o-2024-11-20',
+      [
+        { role: 'system', content: 'You are an expert Backend Engineer. Generate the code required to complete the following step of the objective.' },
+        { role: 'user', content: `Objective: ${ctx.objective}\nCurrent Step: ${currentStep.task}\nDescription: ${currentStep.description}` }
+      ]
+    );
+
+    const generatedCode = response.text;
     
     // Security Validation
     const validation = codeValidator.validate(generatedCode);
-    codeValidator.report(validation);
-    
     if (!validation.safe) {
-      throw new Error('Code execution blocked by security policy');
+      throw new Error(`Security violation in generated code: ${validation.reason}`);
     }
 
     const sandboxResult = await sandbox.execute(generatedCode, { runtime: 'node' });
-    currentStep.status = sandboxResult.success ? 'completed' : 'failed';
+    
+    if (sandboxResult.success) {
+      currentStep.status = 'completed';
+      currentStep.result = sandboxResult.output;
+      printSuccess(chalk.green(`✓ Step completed: ${currentStep.task}`));
+    } else {
+      currentStep.status = 'failed';
+      currentStep.error = sandboxResult.error;
+      printWarning(chalk.red(`✗ Step failed: ${currentStep.task} - ${sandboxResult.error}`));
+      throw new Error(`Step failed: ${currentStep.error}`);
+    }
+
     return ctx;
   };
 
   const verify = async (ctx) => {
+    printInfo(chalk.blue('🔍 Verifying results with Protocol 21'));
     const p21Result = await verifyTask(ctx.objective);
+    
     // Log the decision to cold memory
     await ppmManager.add({
       content: `Verified task: ${ctx.objective}`,
@@ -61,10 +96,30 @@ export async function runAutonomousTask(objective, options = {}) {
       importance: 8,
       metadata: p21Result
     });
-    return { ok: p21Result.passed };
+    
+    return { ok: p21Result.passed, error: p21Result.passed ? null : 'Protocol 21 verification failed' };
   };
 
-  return await runRalphLoop({ plan, act, verify, ...options });
+  const recover = async (ctx) => {
+    printWarning(chalk.yellow('🛠️ Attempting autonomous recovery'));
+    // Use an LLM to analyze the failure and adjust the plan
+    const currentStep = ctx.steps.find(s => s.status === 'failed');
+    
+    const response = await aiMetaLayer.call(
+      options.model || 'gpt-4o-2024-11-20',
+      [
+        { role: 'system', content: 'You are a Senior Debugger. Analyze the failure and provide a strategy to fix it.' },
+        { role: 'user', content: `Objective: ${ctx.objective}\nFailed Step: ${currentStep?.task}\nError: ${currentStep?.error}` }
+      ]
+    );
+
+    printInfo(chalk.cyan(`Recovery Strategy: ${response.text}`));
+    if (currentStep) currentStep.status = 'pending'; // Reset for retry
+    
+    return ctx;
+  };
+
+  return await runRalphLoop({ plan, act, verify, recover, ...options });
 }
 
 export async function runRalphLoop(options = {}) {

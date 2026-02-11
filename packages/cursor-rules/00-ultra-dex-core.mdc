@@ -1,29 +1,48 @@
-# Ultra-Dex Core Rules
+# Ultra-Dex Core Rules (v6.0.0)
 
-> Load this as your base ruleset. Add domain-specific rules as needed.
+> The foundational ruleset for the Meta-Layer. Load first.
 
-## Project Philosophy
+## Meta-Layer Philosophy
 
-- Build production-ready from day 1
-- Every task: 4-9 hours with clear acceptance criteria
-- 21-step verification for features (simplified for fixes)
-- Code > Documentation (but document decisions)
+<<<<<<< Current (Your changes)
+- **Autonomy First**: Build for the autonomous Ralph Loop execution.
+- **Verification Driven**: Protocol 21 is mandatory for all commits.
+- **Relational Memory**: Every decision MUST be logged to the Cold Memory.
+- **1000% Efficiency**: Optimize for reasoning-heavy AI models (DeepSeek-R1, o1).
 
 ## Code Standards
 
-- TypeScript strict mode always
-- Zod validation at all API boundaries
-- Error handling: never swallow errors silently
-- Logging: structured JSON, include request IDs
-- Tests: minimum 80% coverage for business logic
+- **TypeScript strict mode** always.
+- **Zod validation** at ALL boundaries.
+- **Error handling**: No silent failure; use `AppError` primitives.
+- **Logging**: Mandatory structured JSON via `src/core/utils/output.js`.
+- **Tests**: Minimum **90% coverage** for business logic.
 
 ## Architecture Defaults
 
-- Next.js App Router (or specified framework)
-- PostgreSQL with Prisma ORM
-- NextAuth.js for authentication
-- Stripe for payments
-- Vercel for deployment
+- **Structure**: Monorepo (apps/*, packages/*, src/*).
+- **Core**: ES Modules only.
+- **Security**: Mandatory Docker Sandbox for untrusted code execution.
+=======
+- Autonomy First: Build for the autonomous Ralph Loop execution.
+- Verification Driven: Protocol 21 is mandatory for all commits.
+- Relational Memory: Every decision MUST be logged to the Cold Memory.
+- 1000% Efficiency: Optimize for reasoning-heavy AI models (DeepSeek-R1, o1).
+
+## Code Standards
+
+- TypeScript strict mode always.
+- Zod validation at ALL boundaries.
+- Error handling: No silent failure; use `AppError` primitives.
+- Logging: Mandatory structured JSON via `src/core/utils/output.js`.
+- Tests: Minimum **90% coverage** for business logic.
+
+## Architecture Defaults
+
+- Structure: Monorepo (apps/*, packages/*, src/*).
+- Core: ES Modules only.
+- Security: Mandatory Docker Sandbox for untrusted code execution.
+>>>>>>> Incoming (Background Agent changes)
 
 ## Task Completion Checklist (Quick 5-Step)
 

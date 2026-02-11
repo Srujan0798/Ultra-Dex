@@ -5,26 +5,17 @@
 ## Tech Stack
 - **Language:** TypeScript
 - **Frameworks:** Next.js, Express
-- **Database:** None detected
-- **Auth:** None detected
-- **Testing:** Vitest, Playwright
+- **Database:** SQLite (Persistent Relational Memory), ChromaDB (Vector Search), Neo4j (Knowledge Graph)
+- **Auth:** JWT, Passport.js
+- **Testing:** Vitest, Playwright, Mocha
 
 ## Project Structure
-- `agents/`
 - `apps/`
-- `bin/`
-- `cli/`
-- `cloud/`
-- `dashboard/`
+- `packages/`
+- `src/`
 - `docs/`
 - `examples/`
-- `extensions/`
-- `mobile/`
-- `packages/`
 - `scripts/`
-- `sdk/`
-- `templates/`
-- `vscode-extension/`
 
 ## Key Functions
 - `deepDebug` in `debug-graph.js`

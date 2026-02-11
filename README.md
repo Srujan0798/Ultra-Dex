@@ -32,24 +32,31 @@ Ultra-Dex is the world's most advanced AI orchestration meta-layer, designed to 
 
 ```
 Ultra-Dex Monorepo
-├── apps/                    # Multi-platform applications
-│   ├── cli/                # Command-line interface (primary)
-│   ├── cloud/              # Cloud infrastructure
-│   ├── dashboard/          # Visual management
-│   ├── desktop/            # Desktop application
-│   ├── mobile/             # Mobile application
-│   └── web/                # Web application
-├── packages/               # Shared libraries
-│   ├── core/               # Core orchestration logic
-│   ├── agent-protocol/     # Agent communication
-│   ├── sdk/                # Developer SDK
-│   └── plugins/            # Extensibility system
-├── tests/                  # Comprehensive test suite
-│   ├── core/              # Unit tests
-│   ├── integration/       # Integration tests
-│   ├── performance/       # Benchmark tests
-│   └── cli/               # CLI command tests
-└── docs/                   # Documentation
+├── apps/                      # Runtime entrypoints and UIs
+│   ├── cli/                   # Command-line interface (primary)
+│   ├── cloud/                 # Cloud / dashboard surfaces
+│   ├── core-api/              # Core HTTP API services
+│   ├── dashboard/             # Visual management dashboard
+│   ├── desktop/               # Electron desktop app
+│   ├── docs-site/             # Documentation site
+│   ├── mobile/                # React Native mobile app
+│   ├── web/                   # Web playground
+│   └── white-label/           # White-label deployment presets
+├── packages/                  # Shared libraries and extensions
+│   ├── agent-protocol/        # Agent communication protocol
+│   ├── sdk/                   # Developer SDK
+│   ├── plugins/               # Plugin system (capability manifests)
+│   ├── cursor-rules/          # Cursor IDE rule packs
+│   └── extensions/            # IDE/editor integrations (VS Code, Cursor, etc.)
+├── src/                       # Core orchestration engine
+│   ├── core/                  # Agents, AI providers, memory, orchestration, templates
+│   ├── services/              # Shared services (e.g. security)
+│   ├── types/                 # Type definitions
+│   └── utils/                 # Shared runtime utilities
+├── examples/                  # Example SaaS and backend templates
+├── config/                    # Quality gates, router, deployment config
+├── scripts/                   # Governance, verification, and tooling scripts
+└── docs/                      # Documentation
 ```
 
 ---

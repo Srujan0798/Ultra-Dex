@@ -21,6 +21,7 @@ import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { runAutoContext } from '../auto-context/index.js';
 import { ensureTelemetryConsent, recordTelemetryEvent } from '../utils/telemetry.js';
+import { sqliteProvider } from '../memory/sqlite.js';
 
 const LIVE_STACKS = {
   'next15-saas': 'Next.js 15 SaaS (Clerk + Stripe + Prisma + Admin)',
@@ -450,11 +451,6 @@ async function applyEnterprisePreset(outputDir) {
 
 /**
  * Scaffold the project files based on answers
- * @param {string} outputDir Target directory
- * @param {Object} answers User answers from inquirer
- */
-/**
- * Scaffold the project files based on answers
  * @param {string} outputDir - Target directory
  * @param {Object} answers - User answers from inquirer
  * @returns {Promise<void>}
@@ -463,6 +459,18 @@ async function scaffoldProject(outputDir, answers) {
   await fs.mkdir(outputDir, { recursive: true });
   await fs.mkdir(path.join(outputDir, 'docs'), { recursive: true });
   await ensureProviderConfig(outputDir);
+
+  // Initialize v6.0.0 Relational Memory for this project
+  try {
+    const dbPath = path.join(outputDir, '.ultra-dex', 'memory.db');
+    const ProjectSQLiteProvider = sqliteProvider.constructor;
+    const projectDb = new ProjectSQLiteProvider(dbPath);
+    await projectDb.init();
+    printSuccess(chalk.gray('  ✓ Relational Memory initialized.'));
+  } catch (memoryError) {
+    // Relational memory should not block project initialization; surface as a soft warning
+    printError(chalk.yellow(`  ⚠️  Relational Memory initialization skipped: ${memoryError.message}`));
+  }
 
   const replacements = {
     '{{PROJECT_NAME}}': answers.projectName,

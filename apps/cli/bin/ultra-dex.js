@@ -216,7 +216,7 @@ import { registerScaffoldPlanCommand } from '../lib/commands/scaffold-plan.js';
 import { registerDeployCommand } from '../lib/commands/deploy.js';
 import { registerTemplatesCommand } from '../lib/commands/templates.js';
 import { registerBillingCommands } from '../lib/commerce/billing.js';
-import { registerBudgetCommands } from '../lib/commerce/budget.js';
+// import { registerBudgetCommands } from '../lib/commerce/budget.js'; // Handled via registerBudgetCommand to avoid duplicate wiring
 import { registerUsageCommands } from '../lib/commerce/usage.js';
 import { registerAlertCommands } from '../lib/commerce/alerts.js';
 import { registerRemoteClientCommand } from '../lib/mcp/remote/client.js';
@@ -455,7 +455,7 @@ registerScaffoldPlanCommand(program);
 registerDeployCommand(program);
 registerTemplatesCommand(program);
 registerBillingCommands(program);
-registerBudgetCommands(program);
+// registerBudgetCommands(program); // Handled via registerBudgetCommand; keep disabled to avoid duplicate wiring
 registerUsageCommands(program);
 registerAlertCommands(program);
 registerRemoteClientCommand(program);

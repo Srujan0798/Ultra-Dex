@@ -5,21 +5,21 @@ plugins {
 }
 
 group = "com.ultradex"
-version = "1.0.0"
+version = "6.0.0"
 
 repositories {
     mavenCentral()
 }
 
 intellij {
-    version.set("2023.3")
+    version.set("2024.1")
     type.set("IC")
     plugins.set(listOf())
 }
 
 tasks {
     patchPluginXml {
-        sinceBuild.set("233")
-        untilBuild.set("241.*")
+        sinceBuild.set("241")
+        untilBuild.set("251.*")
     }
 }

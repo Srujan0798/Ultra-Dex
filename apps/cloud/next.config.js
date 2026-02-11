@@ -1,25 +1,16 @@
-/**
- * @fileoverview Next Config module
- * @module cloud/next.config
- */
-
+// Copyright (c) 2026 Ultra-Dex
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Next.js 15 specific optimizations
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['localhost:3000', 'cloud.ultra-dex.ai'],
+    },
+    serverComponentsExternalPackages: ['@ultra-dex/core', 'sqlite3', 'sqlite'],
   },
+  // Ensure monorepo workspaces work correctly
+  transpilePackages: ['@ultra-dex/core', '@ultra-dex/agent-protocol'],
 };
 
 export default nextConfig;
-
-/**
- * Error handler for next.config
- * @param {Error} error - Error to handle
- */
-function handleNextconfigError(error) {
-  try {
-    console.error('[next.config]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}
