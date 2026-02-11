@@ -12,15 +12,19 @@ import { verifyTask } from '../../../apps/cli/lib/quality/protocol-21.js';
 import { createDockerSandbox } from '../../../apps/cli/lib/sandbox/docker.js';
 import { ppmManager } from '../memory/manager.js';
 import { codeValidator } from '../../services/security/validators.js';
-import { agentOrchestrator } from '../orchestration/index.js';
 import { MCTSEngine } from '../ai/mcts/engine.js';
 import { ArchitectSimulator } from '../ai/mcts/architect-simulator.js';
 
 const STATES = ['PLAN', 'ACT', 'VERIFY', 'RECOVER', 'COMMIT'];
 
-export async function runAutonomousTask(objective, options = {}) {
+export async function runAutonomousTask(objective, options = {}, orchestrator = null) {
   const sandbox = await createDockerSandbox({ enabled: options.sandbox !== false });
-  const registry = agentOrchestrator.registry;
+  const runtimeOrchestrator = options.orchestrator || orchestrator;
+  if (!runtimeOrchestrator) {
+    throw new Error('Orchestrator instance is required for autonomous execution');
+  }
+
+  const registry = runtimeOrchestrator.registry;
   await registry.initialize();
   
   const plan = async (ctx) => {
@@ -28,7 +32,6 @@ export async function runAutonomousTask(objective, options = {}) {
     
     const plannerPrompt = await registry.getAgentPrompt('planner');
     const memoryContext = await ppmManager.search(objective);
-    const availableTools = await agentOrchestrator.getTools();
     
     // 1. Initial Brainstorming
     const initialActionsResponse = await aiMetaLayer.generateObject(
@@ -70,7 +73,7 @@ export async function runAutonomousTask(objective, options = {}) {
 
     ctx.objective = objective;
     ctx.steps = response.object.steps.map(s => {
-      const taskId = agentOrchestrator.tasks.addTask({
+      const taskId = runtimeOrchestrator.tasks.addTask({
         ...s,
         objective: objective,
         status: 'pending'
@@ -89,7 +92,7 @@ export async function runAutonomousTask(objective, options = {}) {
   };
 
   const act = async (ctx) => {
-    const readyTasks = agentOrchestrator.tasks.getReadyTasks();
+    const readyTasks = runtimeOrchestrator.tasks.getReadyTasks();
     let currentTask = readyTasks[0]; 
     
     if (!currentTask) {
@@ -106,7 +109,7 @@ export async function runAutonomousTask(objective, options = {}) {
     
     const agentPrompt = await registry.getAgentPrompt(agentId);
     const memoryContext = await ppmManager.search(`${ctx.objective} ${currentStep.task}`);
-    const availableTools = await agentOrchestrator.getTools();
+    const availableTools = await runtimeOrchestrator.getTools();
     
     let messages = [
       { role: 'system', content: agentPrompt },
@@ -130,7 +133,7 @@ export async function runAutonomousTask(objective, options = {}) {
         
         for (const toolCall of response.toolCalls) {
           printInfo(chalk.gray(`   - Using tool: ${toolCall.toolName}`));
-          const toolResult = await agentOrchestrator.executeTool(toolCall.toolName, toolCall.args);
+          const toolResult = await runtimeOrchestrator.executeTool(toolCall.toolName, toolCall.args);
           
           messages.push({
             role: 'assistant',
@@ -167,7 +170,7 @@ export async function runAutonomousTask(objective, options = {}) {
     
     if (sandboxResult.success) {
       currentStep.status = 'completed';
-      agentOrchestrator.tasks.markComplete(currentStep.id);
+      runtimeOrchestrator.tasks.markComplete(currentStep.id);
       currentStep.result = sandboxResult.output;
       printSuccess(chalk.green(`✓ Step completed: ${currentStep.task}`));
       
@@ -187,7 +190,7 @@ export async function runAutonomousTask(objective, options = {}) {
   };
 
   const verify = async (ctx) => {
-    if (agentOrchestrator.tasks.hasPending()) {
+    if (runtimeOrchestrator.tasks.hasPending()) {
       printInfo(chalk.blue(`Wait, tasks still pending in the graph. Continuing ACT phase.`));
       return { ok: false, continue: true };
     }

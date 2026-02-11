@@ -4,16 +4,13 @@
  * Coordinates multi-agent workflows and manages agent communication.
  */
 
-import { executeProtocol21 } from '../quality/protocol-21.js';
 import { AgentStateMachine } from './agent-state.js';
 import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentScheduler } from './scheduler.js';
 import { AgentRegistry } from './registry.js';
 import chalk from 'chalk';
 import { ppmManager } from '../memory/manager.js';
-import { ciHealer } from '../cicd/self-healing.js';
 import { aiMetaLayer } from '../ai/ai-meta-layer.js';
-import { createMcpServer } from '../../../apps/cli/lib/mcp/server.js';
 import { EventEmitter } from 'events';
 
 class TaskGraph {
@@ -58,9 +55,10 @@ class AgentOrchestrator extends EventEmitter {
   constructor(options = {}) {
     super();
     this.memory = ppmManager;
-    this.healer = ciHealer;
     this.ai = aiMetaLayer;
-    this.mcpServer = createMcpServer();
+    this.mcpServer = this.normalizeMcpServer(options.mcpServer);
+    this.mcpServerFactory = options.mcpServerFactory;
+    this.nexusExecutor = options.nexusExecutor;
     this.tasks = new TaskGraph();
     this.options = {
       maxConcurrentAgents: options.maxConcurrentAgents || 8,
@@ -87,11 +85,44 @@ class AgentOrchestrator extends EventEmitter {
     };
   }
 
+  normalizeMcpServer(server) {
+    if (server?.toolsMap instanceof Map) {
+      return server;
+    }
+    return { toolsMap: new Map() };
+  }
+
   async initialize() {
-    await this.stateMachine.initialize();
-    await this.commBus.initialize();
-    await this.registry.initialize();
-    console.log(chalk.green('🤖 Agent Orchestration System Initialized'));
+    try {
+      await this.stateMachine.initialize();
+      await this.commBus.initialize();
+      await this.registry.initialize();
+      await this.initializeMcpServer();
+      console.log(chalk.green('🤖 Agent Orchestration System Initialized'));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`❌ Agent Orchestration initialization failed: ${message}`));
+      throw error;
+    }
+  }
+
+  async initializeMcpServer() {
+    if (this.mcpServer?.toolsMap instanceof Map && this.mcpServer.toolsMap.size > 0) {
+      return;
+    }
+
+    if (typeof this.mcpServerFactory !== 'function') {
+      return;
+    }
+
+    try {
+      const server = await this.mcpServerFactory();
+      this.mcpServer = this.normalizeMcpServer(server);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.mcpServer = { toolsMap: new Map() };
+      console.warn(chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}`));
+    }
   }
 
   /**
@@ -99,11 +130,21 @@ class AgentOrchestrator extends EventEmitter {
    */
   async executeNexus(objective, options = {}) {
     console.log(chalk.magenta(`\n🌌 Nexus Orchestration: ${objective}`));
-    await this.memory.init();
-    
-    // Integrate with Ralph Loop for autonomous execution
-    const { runAutonomousTask } = await import('../agents/ralph-loop.js');
-    return await runAutonomousTask(objective, options);
+    try {
+      await this.memory.init();
+
+      // Integrate with Ralph Loop for autonomous execution
+      if (typeof this.nexusExecutor === 'function') {
+        return await this.nexusExecutor(objective, options, this);
+      }
+
+      const { runAutonomousTask } = await import('../agents/ralph-loop.js');
+      return await runAutonomousTask(objective, options, this);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`❌ Nexus execution failed: ${message}`));
+      throw error;
+    }
   }
 
   /**
@@ -115,42 +156,66 @@ class AgentOrchestrator extends EventEmitter {
 
   async executeTask(task, options = {}) {
     const sessionId = `session_${Date.now()}`;
+    const startedAt = Date.now();
+    const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
     this.metrics.totalSessions++;
     
-    this.emit('task:start', { sessionId, task, options });
-    console.log(chalk.blue(`  - Executing Task: ${task}`));
-    
-    // 1. Determine Agent & Gather Context
-    const agentId = options.agentId || this.selectAgentForTask(task, options);
-    const memoryContext = await this.memory.search(task);
-    const systemPrompt = await this.registry.getAgentPrompt(agentId);
+    this.emit('task:start', { sessionId, task: normalizedTask, options });
+    console.log(chalk.blue(`  - Executing Task: ${normalizedTask}`));
+    try {
+      // 1. Determine Agent & Gather Context
+      const agentId = options.agentId || this.selectAgentForTask(normalizedTask, options);
+      const memoryContext = await this.memory.search(normalizedTask);
+      const systemPrompt = await this.registry.getAgentPrompt(agentId);
 
-    // 2. Call AI Meta-Layer
-    const response = await this.ai.call(null, [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Context: ${JSON.stringify(memoryContext)}\n\nTask: ${task}` }
-    ], { 
-      metadata: { 
-        taskType: options.taskType || 'coding', 
-        complexity: options.complexity || 'medium' 
-      } 
-    });
+      // 2. Call AI Meta-Layer
+      const response = await this.ai.call(
+        null,
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Context: ${JSON.stringify(memoryContext)}\n\nTask: ${normalizedTask}` },
+        ],
+        {
+          metadata: {
+            taskType: options.taskType || 'coding',
+            complexity: options.complexity || 'medium',
+          },
+        }
+      );
 
-    const output = response.text || response.content || JSON.stringify(response);
+      const output = response.text || response.content || JSON.stringify(response);
 
-    // 3. Record Observation
-    await this.memory.add({
-      content: `Task Completed by @${agentId}: ${task}\nOutput: ${output.substring(0, 200)}...`,
-      type: 'observation',
-      importance: 5,
-      metadata: { agentId, sessionId }
-    });
+      // 3. Record Observation
+      await this.memory.add({
+        content: `Task Completed by @${agentId}: ${normalizedTask}\nOutput: ${output.substring(0, 200)}...`,
+        type: 'observation',
+        importance: 5,
+        metadata: { agentId, sessionId },
+      });
 
-    this.emit('task:complete', { sessionId, agentId, output: output.substring(0, 500) });
-    return { status: 'COMPLETE', output, agentId };
+      this.metrics.successfulSessions++;
+      this.emit('task:complete', { sessionId, agentId, output: output.substring(0, 500) });
+      return { status: 'COMPLETE', output, agentId };
+    } catch (error) {
+      this.metrics.failedSessions++;
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`❌ Task execution failed (${sessionId}): ${message}`));
+      this.emit('task:error', { sessionId, task: normalizedTask, error: message });
+      throw error;
+    } finally {
+      const elapsed = Date.now() - startedAt;
+      const completedSessions = this.metrics.successfulSessions + this.metrics.failedSessions;
+      if (completedSessions > 0) {
+        this.metrics.avgResponseTime =
+          (this.metrics.avgResponseTime * (completedSessions - 1) + elapsed) / completedSessions;
+      }
+    }
   }
 
-  selectAgentForTask(task, options) {
+  selectAgentForTask(task, options = {}) {
+    if (!task || typeof task !== 'string') {
+      return 'orchestrator';
+    }
     if (options.requiredCapabilities) {
       const candidates = this.registry.findAgentsByCapabilities(options.requiredCapabilities);
       if (candidates.length > 0) return candidates[0].id;
@@ -192,7 +257,8 @@ class AgentOrchestrator extends EventEmitter {
       this.emit('tool:result', { name, result: JSON.stringify(result).substring(0, 500) });
       return result;
     } catch (error) {
-      console.error(`❌ Internal Tool Error (${name}): ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Internal Tool Error (${name}): ${message}`);
       throw error;
     }
   }
