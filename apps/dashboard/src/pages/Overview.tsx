@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ErrorInfo } from 'react';
 import { Activity, Bot, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { MetricCard } from '../components/MetricCard';
 import { Chart } from '../components/Chart';
@@ -167,7 +167,7 @@ export const Overview = memo(function Overview() {
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleOverviewError(error, errorInfo) {
+function handleOverviewError(error: Error, errorInfo?: ErrorInfo) {
   try {
     console.error(`[Overview] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);

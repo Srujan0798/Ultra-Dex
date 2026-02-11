@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ErrorInfo } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -69,7 +69,7 @@ export const Sidebar = memo(function Sidebar() {
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleSidebarError(error, errorInfo) {
+function handleSidebarError(error: Error, errorInfo?: ErrorInfo) {
   try {
     console.error(`[Sidebar] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);

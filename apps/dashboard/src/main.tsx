@@ -15,7 +15,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
  * Error handler for main
  * @param {Error} error - Error to handle
  */
-function handleMainError(error) {
+function handleMainError(error: Error | unknown) {
   try {
     console.error('[main]', error instanceof Error ? error.message : String(error));
   } catch (_) {

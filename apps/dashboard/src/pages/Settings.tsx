@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ErrorInfo } from 'react';
 
 /**
  * Settings Dashboard Page - Configure preferences and automation
@@ -122,7 +122,7 @@ export const Settings = memo(function Settings() {
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleSettingsError(error, errorInfo) {
+function handleSettingsError(error: Error, errorInfo?: ErrorInfo) {
   try {
     console.error(`[Settings] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);

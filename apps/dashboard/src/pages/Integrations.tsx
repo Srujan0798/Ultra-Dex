@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ErrorInfo } from 'react';
 
 const integrations = [
   { name: 'GitHub', status: 'Connected', lastSync: '2m ago' },
@@ -80,7 +80,7 @@ export const Integrations = memo(function Integrations() {
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleIntegrationsError(error, errorInfo) {
+function handleIntegrationsError(error: Error, errorInfo?: ErrorInfo) {
   try {
     console.error(`[Integrations] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);

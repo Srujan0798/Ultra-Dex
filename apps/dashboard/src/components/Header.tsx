@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ErrorInfo } from 'react';
 import { Search, Wifi, WifiOff } from 'lucide-react';
 
 interface HeaderProps {
@@ -58,7 +58,7 @@ export const Header = memo(function Header({ title, connected }: HeaderProps) {
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleHeaderError(error, errorInfo) {
+function handleHeaderError(error: Error, errorInfo?: ErrorInfo) {
   try {
     console.error(`[Header] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
