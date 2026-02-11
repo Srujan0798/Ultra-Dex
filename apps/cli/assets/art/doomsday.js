@@ -45,14 +45,3 @@ export default {
   doomsdayStatusIcons,
 };
 
-/**
- * Error handler for doomsday
- * @param {Error} error - Error to handle
- */
-function handleDoomsdayError(error) {
-  try {
-    console.error('[doomsday]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}

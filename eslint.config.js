@@ -52,15 +52,25 @@ export default [
         },
     },
     {
+        files: ['**/*.config.js', '**/*.config.cjs', '**/*.config.mjs'],
+        languageOptions: {
+            globals: {
+                module: 'readonly',
+                require: 'readonly',
+                exports: 'readonly'
+            }
+        }
+    },
+    {
         ignores: [
             'node_modules/**',
             'dist/**',
             'build/**',
             '.next/**',
             'coverage/**',
-            '*.config.js',
-            '*.config.mjs',
             '**/*.d.ts',
+            '**/*.ts',
+            '**/*.tsx',
             'apps/mobile/**',
             'apps/dashboard/**',
             'dashboard/**',

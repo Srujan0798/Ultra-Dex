@@ -10,7 +10,6 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import chalk from 'chalk';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

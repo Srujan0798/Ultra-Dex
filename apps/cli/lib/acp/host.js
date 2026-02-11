@@ -14,7 +14,7 @@ import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs/promises';
 import { VERSION } from '../utils/version.js';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { monitoring } from '../utils/monitoring.js';
 
 // ACP Protocol Version
@@ -218,7 +218,7 @@ export class ACPHost {
   /**
    * Handle JSON-RPC requests
    */
-  async handleRequest(method, params, id) {
+  async handleRequest(method, params, _id) {
     switch (method) {
       case 'initialize':
         return this.handleInitialize(params);
@@ -290,7 +290,7 @@ export class ACPHost {
     };
   }
 
-  handleAuthenticate(params) {
+  handleAuthenticate(_params) {
     return { authenticated: true };
   }
 
@@ -393,7 +393,7 @@ export class ACPHost {
     }
   }
 
-  async handleCursorGetContext(params) {
+  async handleCursorGetContext(_params) {
     let context = '';
     try {
       context = await fs.readFile(path.join(process.cwd(), 'CONTEXT.md'), 'utf8');
@@ -403,7 +403,7 @@ export class ACPHost {
     return { projectContext: context, timestamp: new Date().toISOString() };
   }
 
-  async handleCursorGetRules(params) {
+  async handleCursorGetRules(_params) {
     let rules = '';
     try {
       rules = await fs.readFile(path.join(process.cwd(), '.cursor', 'rules'), 'utf8');
@@ -414,7 +414,7 @@ export class ACPHost {
     return { rules, timestamp: new Date().toISOString() };
   }
 
-  async handleUltraDexSync(params) {
+  async handleUltraDexSync(_params) {
     monitoring.info('ACP: Sync requested');
     return { status: 'synced', timestamp: new Date().toISOString() };
   }
@@ -424,8 +424,8 @@ export class ACPHost {
     for (const t of terminals.values()) {
       try {
         t.process.kill();
-      } catch (e) {
-        /* ignore */
+      } catch (_e) { // eslint-disable-line no-unused-vars
+        // ignore error intentionally
       }
     }
     process.exit(0);

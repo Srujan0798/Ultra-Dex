@@ -7,14 +7,3 @@ export const MODEL_COSTS = [
   { name: 'GPT-5 mini', input: 0.25, output: 2, bestFor: 'Simple tasks' },
 ];
 
-/**
- * Error handler for model-costs
- * @param {Error} error - Error to handle
- */
-function handleError(error) {
-  try {
-    console.error('[model-costs]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}

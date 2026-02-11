@@ -75,7 +75,7 @@ export class CheckpointSystem {
       await fs.writeFile(checkpointPath, JSON.stringify(checkpointData, null, 2));
 
       // Clean up old checkpoints for this session
-      await this.cleanupOldCheckpoints(sessionId);
+      await this.cleanupOldCheckpointsBySession(sessionId);
 
       printSuccess(chalk.green(`📍 Checkpoint created: ${checkpointId} for session ${sessionId}`));
 
@@ -257,7 +257,7 @@ export class CheckpointSystem {
   /**
    * Cleanup old checkpoints for a session
    */
-  async cleanupOldCheckpoints(sessionId) {
+  async cleanupOldCheckpointsBySession(sessionId) {
     const checkpoints = await this.getSessionCheckpoints(sessionId);
 
     // Keep only the most recent full checkpoints
