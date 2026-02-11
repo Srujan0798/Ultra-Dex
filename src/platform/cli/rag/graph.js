@@ -79,7 +79,9 @@ export class GraphRAG {
         await this.initializeSchema();
         return true;
       } else if (this.dbType === 'falkordb') {
-        console.log(chalk.yellow('[GraphRAG] FalkorDB not configured. Falling back to in-memory graph.'));
+        console.log(
+          chalk.yellow('[GraphRAG] FalkorDB not configured. Falling back to in-memory graph.')
+        );
         this.useInMemory = true;
         return true;
       }
@@ -315,59 +317,67 @@ export class GraphRAG {
         fileNode
       );
 
-      // Create function nodes
-      for (const fn of functions) {
+      // Batch create function nodes
+      if (functions.length > 0) {
         await session.run(
           `
-          MERGE (fn:Function {id: $id})
-          SET fn.name = $name,
-              fn.type = $type,
-              fn.file = $file
-          WITH fn
-          MATCH (f:File {path: $file})
-          MERGE (f)-[:CONTAINS]->(fn)
+          UNWIND $functions AS fn
+          MERGE (func:Function {id: fn.id})
+          SET func.name = fn.name,
+              func.type = fn.type,
+              func.file = fn.file
+          WITH func, fn
+          MATCH (f:File {path: fn.file})
+          MERGE (f)-[:CONTAINS]->(func)
         `,
-          fn
+          { functions }
         );
       }
 
-      // Create class nodes
-      for (const cls of classes) {
+      // Batch create class nodes
+      if (classes.length > 0) {
         await session.run(
           `
-          MERGE (c:Class {id: $id})
-          SET c.name = $name,
-              c.file = $file
-          WITH c
-          MATCH (f:File {path: $file})
+          UNWIND $classes AS cls
+          MERGE (c:Class {id: cls.id})
+          SET c.name = cls.name,
+              c.file = cls.file
+          WITH c, cls
+          MATCH (f:File {path: cls.file})
           MERGE (f)-[:CONTAINS]->(c)
         `,
-          cls
+          { classes }
         );
 
-        // Create extends relationship
-        if (cls.extends) {
+        // Batch create extends relationships
+        const extendsList = classes
+          .filter((c) => c.extends)
+          .map((c) => ({ id: c.id, extends: c.extends }));
+
+        if (extendsList.length > 0) {
           await session.run(
             `
-            MATCH (c:Class {id: $id})
-            MATCH (parent:Class {name: $extends})
+            UNWIND $extendsList AS ext
+            MATCH (c:Class {id: ext.id})
+            MATCH (parent:Class {name: ext.extends})
             MERGE (c)-[:EXTENDS]->(parent)
           `,
-            cls
+            { extendsList }
           );
         }
       }
 
-      // Create import relationships
-      for (const imp of imports) {
+      // Batch create import relationships
+      if (imports.length > 0) {
         await session.run(
           `
-          MATCH (f:File {path: $file})
-          MERGE (target:File {path: $source})
-          ON CREATE SET target.path = $source
+          UNWIND $imports AS imp
+          MATCH (f:File {path: imp.file})
+          MERGE (target:File {path: imp.source})
+          ON CREATE SET target.path = imp.source
           MERGE (f)-[:IMPORTS]->(target)
         `,
-          imp
+          { imports }
         );
       }
     } finally {
