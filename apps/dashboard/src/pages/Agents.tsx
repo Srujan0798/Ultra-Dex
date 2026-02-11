@@ -1,96 +1,143 @@
-import { useMemo } from 'react';
+import { memo } from 'react';
+import { Bot, Shield, Cpu, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Chart } from '../components/Chart';
 
 const agents = [
-  { name: '@Planner', status: 'healthy', calls: 42, avgTime: '1.2s' },
-  { name: '@Backend', status: 'healthy', calls: 31, avgTime: '1.8s' },
-  { name: '@Frontend', status: 'healthy', calls: 29, avgTime: '1.6s' },
-  { name: '@Database', status: 'warning', calls: 15, avgTime: '2.4s' },
-  { name: '@Reviewer', status: 'healthy', calls: 26, avgTime: '1.1s' },
-  { name: '@Debugger', status: 'healthy', calls: 18, avgTime: '2.0s' },
-  { name: '@Security', status: 'healthy', calls: 9, avgTime: '1.9s' },
-  { name: '@DevOps', status: 'healthy', calls: 12, avgTime: '1.5s' },
-  { name: '@Vision', status: 'healthy', calls: 7, avgTime: '2.7s' },
-  { name: '@Tester', status: 'healthy', calls: 21, avgTime: '2.2s' },
-  { name: '@QA', status: 'healthy', calls: 10, avgTime: '1.4s' },
-  { name: '@Architect', status: 'healthy', calls: 13, avgTime: '1.9s' },
-  { name: '@Performance', status: 'healthy', calls: 8, avgTime: '1.6s' },
-  { name: '@Refactor', status: 'healthy', calls: 6, avgTime: '2.1s' },
-  { name: '@Research', status: 'healthy', calls: 5, avgTime: '1.3s' },
-  { name: '@Auth', status: 'healthy', calls: 11, avgTime: '1.7s' },
-  { name: '@Meta-Orchestrator', status: 'healthy', calls: 4, avgTime: '0.9s' },
+  { name: 'Planner', status: 'active', tasks: 12, type: 'Strategy', health: 98 },
+  { name: 'Backend', status: 'busy', tasks: 19, type: 'Build', health: 94 },
+  { name: 'Frontend', status: 'active', tasks: 14, type: 'UI', health: 96 },
+  { name: 'Database', status: 'idle', tasks: 3, type: 'Data', health: 92 },
+  { name: 'Security', status: 'active', tasks: 6, type: 'Audit', health: 99 },
+  { name: 'Reviewer', status: 'busy', tasks: 9, type: 'Quality', health: 95 },
 ];
 
-const statusColor = (status: string) => {
-  switch (status) {
-    case 'warning':
-      return 'text-yellow-400';
-    case 'error':
-      return 'text-red-400';
-    default:
-      return 'text-green-400';
-  }
+const throughputData = [
+  { hour: '09:00', requests: 12, errors: 1 },
+  { hour: '10:00', requests: 18, errors: 0 },
+  { hour: '11:00', requests: 24, errors: 2 },
+  { hour: '12:00', requests: 16, errors: 1 },
+  { hour: '13:00', requests: 28, errors: 0 },
+];
+
+const statusStyles: Record<string, string> = {
+  active: 'text-emerald-400 bg-emerald-500/10',
+  busy: 'text-amber-400 bg-amber-500/10',
+  idle: 'text-slate-400 bg-slate-500/10',
 };
 
-export function Agents() {
-  /** Performance: memoized configuration for Agents */
-  useMemo(() => ({ component: 'Agents', optimized: true }), []);
-
-  /** Performance optimization marker */
-  const _perfOptimized = { memo: true, useCallback: true };
-
-  /** Accessibility constants */
-  const agentsA11y = {
-    role: 'region',
-    'aria-label': 'Agents section',
-    'aria-live': 'polite',
-  };
-
+/**
+ * Agents Dashboard Page - Monitor AI agent status and guardrails
+ * @returns {JSX.Element} Agents page component
+ */
+export const Agents = memo(function Agents() {
   return (
-    <div role={agentsA11y.role} aria-label={agentsA11y['aria-label']}>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Agents</h1>
-          <p className="text-sm text-gray-400">Swarm health and execution history</p>
-        </div>
-        <button className="rounded bg-purple-600 px-3 py-2 text-sm">Spawn Swarm</button>
-      </div>
-
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-900 text-gray-400">
-            <tr>
-              <th className="px-4 py-3">Agent</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Calls</th>
-              <th className="px-4 py-3">Avg Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {agents.map((agent) => (
-              <tr key={agent.name} className="border-t border-gray-700">
-                <td className="px-4 py-3 font-medium">{agent.name}</td>
-                <td className={`px-4 py-3 ${statusColor(agent.status)}`}>
+    <main className="space-y-6" role="main" aria-label="Agents Dashboard">
+      <section
+        className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6"
+        aria-label="Agent Status Overview"
+        role="region"
+      >
+        <h2 className="text-lg font-semibold text-slate-100">Agent Status</h2>
+        <ul className="mt-4 grid gap-3 md:grid-cols-2" role="list" aria-label="Active agents">
+          {agents.map((agent) => (
+            <li
+              key={agent.name}
+              className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/40 p-4"
+              role="listitem"
+              aria-label={`${agent.name} agent: ${agent.status}, ${agent.tasks} tasks, ${agent.health}% health`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900" aria-hidden="true">
+                  <Bot className="h-5 w-5 text-cyan-300" aria-hidden="true" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-slate-100">{agent.name}</div>
+                  <div className="text-xs text-slate-500">{agent.type}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div
+                  className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs ${statusStyles[agent.status]}`}
+                  role="status"
+                  aria-label={`Status: ${agent.status}`}
+                >
                   {agent.status}
-                </td>
-                <td className="px-4 py-3">{agent.calls}</td>
-                <td className="px-4 py-3">{agent.avgTime}</td>
-              </tr>
+                </div>
+                <div className="mt-2 text-xs text-slate-400" aria-label={`${agent.tasks} tasks, ${agent.health}% health`}>
+                  {agent.tasks} tasks · {agent.health}% health
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section
+          className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 lg:col-span-2"
+          aria-label="Swarm Throughput Chart"
+          role="region"
+        >
+          <header className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-100">Swarm Throughput</h2>
+            <div className="text-xs uppercase tracking-[0.2em] text-slate-500" aria-hidden="true">Requests</div>
+          </header>
+          <Chart
+            data={throughputData}
+            xKey="hour"
+            series={[
+              { key: 'requests', color: '#06b6d4' },
+              { key: 'errors', color: '#f97316' },
+            ]}
+            variant="line"
+            height={240}
+            title="Hourly Swarm Throughput"
+          />
+        </section>
+
+        <section
+          className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6"
+          aria-label="System Guardrails"
+          role="region"
+        >
+          <h2 className="text-lg font-semibold text-slate-100">Guardrails</h2>
+          <ul className="mt-6 space-y-4" role="list" aria-label="Guardrail status">
+            {[
+              { label: 'Security Checks', value: '14 passed', icon: Shield, tone: 'text-emerald-400' },
+              { label: 'Compute Budget', value: '68% used', icon: Cpu, tone: 'text-cyan-400' },
+              { label: 'Quality Gates', value: 'All green', icon: CheckCircle2, tone: 'text-emerald-400' },
+              { label: 'Alerts', value: '2 warnings', icon: AlertTriangle, tone: 'text-amber-400' },
+            ].map((item) => (
+              <li
+                key={item.label}
+                className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 p-4"
+                role="listitem"
+                aria-label={`${item.label}: ${item.value}`}
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon className={`h-4 w-4 ${item.tone}`} aria-hidden="true" />
+                  <span className="text-sm text-slate-300">{item.label}</span>
+                </div>
+                <span className="text-sm text-slate-100" role="status">{item.value}</span>
+              </li>
             ))}
-          </tbody>
-        </table>
+          </ul>
+        </section>
       </div>
-    </div>
+    </main>
   );
-}
+});
 
 /**
- * Error handler for Agents
- * @param {Error} error - Error to handle
+ * Error handler for Agents component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
  */
-function handleAgentsError(error: unknown) {
+function handleAgentsError(error, errorInfo) {
   try {
-    console.error('[Agents]', error instanceof Error ? error.message : String(error));
+    console.error(`[Agents] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
   } catch (_) {
-    // Fail silently
+    // Fail silently to avoid recursive errors
   }
 }

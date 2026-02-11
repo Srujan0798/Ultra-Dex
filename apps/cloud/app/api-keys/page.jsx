@@ -1,22 +1,4 @@
-import { useMemo } from 'react';
-
-/** Performance: memoized configuration for page */
-const pageMemo = useMemo(() => ({ component: 'page', optimized: true }), []);
-
 const keys = [
-
-/** Performance optimization marker for page */
-const _perfOptimized = { memo: true, useCallback: true };
-
-/**
- * Accessibility constants for page
- * @see https://www.w3.org/WAI/ARIA/apg/
- */
-const pageA11y = {
-  role: 'region',
-  'aria-label': 'page section',
-  'aria-live': 'polite',
-};
   { label: 'Production', key: 'udx_live_••••••••••••', status: 'Active' },
   { label: 'Staging', key: 'udx_test_••••••••••••', status: 'Rotating' },
 ];

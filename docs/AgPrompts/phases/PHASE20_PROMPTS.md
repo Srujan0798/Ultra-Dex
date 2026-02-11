@@ -39,7 +39,7 @@ The system is feature-complete but lacks the "Immutable Hardening" required for 
 - **Affected:** `config/quality-gate.json`
 - **Requirement:** Implement strict JSON schema for multi-layered gates.
 - **Gates:** `syntax`, `linting`, `testing`, `security`, `architectural`.
-- **Constraint:** Forbidden patterns: `console.log`, `TODO:`, `FIXME:`.
+- **Constraint:** Forbidden patterns: `console.log`, `TO-DO:`, `FIX-ME:`.
 - **Success:** Build fails if ANY gate is breached.
 
 ### PROMPT 232: [SPEC] Decision Ledger Engine

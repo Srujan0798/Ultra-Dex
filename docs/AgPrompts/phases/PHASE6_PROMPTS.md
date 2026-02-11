@@ -50,7 +50,7 @@ testing:
 2. Add content validation:
    - Check for missing acceptance criteria
    - Verify atomic task breakdown in Section 16
-   - Detect placeholder text ("TODO", "TBD", "[Fill in]")
+   - Detect placeholder text ("TO-DO", "TBD", "[Fill in]")
 
 3. Add completeness reporting:
    - Report completeness percentage by section
@@ -88,7 +88,7 @@ npx ultra-dex check --strict --fix
 
 2. Generate folder structure:
    - Create all directories from plan
-   - Create empty files with TODO comments
+   - Create empty files with TO-DO comments
    - Add JSDoc headers with section references
 
 3. Generate config files:

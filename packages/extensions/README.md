@@ -1,4 +1,4 @@
-# Ultra-Dex IDE Integrations
+# Ultra-Dex v6.0.0 IDE Integrations
 
 Official integration stubs for popular AI coding environments. Each plugin includes a manifest, activation entrypoint, and wiring to connect Ultra-Dex workflows.
 

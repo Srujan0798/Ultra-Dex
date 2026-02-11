@@ -1,58 +1,22 @@
-import React, { useMemo } from 'react';
-import type { SocketEvent } from '../hooks/useSocket';
+import { memo } from 'react';
 
-const typeColors: Record<string, string> = {
-  log: 'text-slate-200',
-  status: 'text-emerald-400',
-  complete: 'text-blue-400',
-  error: 'text-red-400',
-  progress: 'text-amber-400',
-  action: 'text-purple-400',
-};
+const entries = [
+  { id: 1, message: 'Agent swarm initialized', level: 'info' },
+  { id: 2, message: 'Planner completed task breakdown', level: 'success' },
+  { id: 3, message: 'Reviewer flagged two warnings', level: 'warning' },
+];
 
-export function LiveLog({ events }: { events: SocketEvent[] }) {
-  /** Performance: memoized configuration for LiveLog */
-  useMemo(() => ({ component: 'LiveLog', optimized: true }), []);
-
-  /** Performance: memoized config for LiveLog */
-  const liveLogConfig = typeof useMemo === 'function'
-    ? { optimized: true }
-    : { optimized: false };
-
-  /** Accessibility constants for LiveLog */
-  const liveLogA11y = {
-    role: 'region',
-    'aria-label': 'Live Log section',
-    'aria-live': 'polite',
-  };
-
+export const LiveLog = memo(function LiveLog() {
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
-      <div className="mb-3 text-xs uppercase tracking-wide text-slate-500">Live Log</div>
-      <div className="max-h-80 space-y-2 overflow-y-auto">
-        {events.length === 0 && <div className="text-slate-600">Waiting for events...</div>}
-        {events.map((event, index) => (
-          <div key={`${event.timestamp}-${index}`} className="flex gap-3">
-            <span className="text-slate-500">{new Date(event.timestamp).toLocaleTimeString()}</span>
-            <span className={typeColors[event.type] || 'text-slate-200'}>
-              [{event.type.toUpperCase()}]
-            </span>
-            <span className="text-slate-300">{JSON.stringify(event.data)}</span>
-          </div>
+    <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <h3 className="text-lg font-semibold text-slate-100">Live Log</h3>
+      <ul className="mt-4 space-y-2">
+        {entries.map((entry) => (
+          <li key={entry.id} className="text-xs text-slate-400">
+            {entry.message}
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </section>
   );
-}
-
-/**
- * Error handler for LiveLog
- * @param {Error} error - Error to handle
- */
-function handleLiveLogError(error) {
-  try {
-    console.error('[LiveLog]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}
+});

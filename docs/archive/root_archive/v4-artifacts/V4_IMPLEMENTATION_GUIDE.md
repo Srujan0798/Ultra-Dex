@@ -198,10 +198,10 @@ ultra-dex ledger                    # View audit log
 
 ### Environment Variables
 ```bash
-OPENAI_API_KEY="sk-..."
-ANTHROPIC_API_KEY="sk-ant-..."
-GOOGLE_API_KEY="AIza..."
-GITHUB_TOKEN="ghp_..."
+OPENAI_API_KEY="your-openai-api-key-here"  # Replace with your actual API key
+ANTHROPIC_API_KEY="your-anthropic-api-key-here"  # Replace with your actual API key
+GOOGLE_API_KEY="your-google-api-key-here"  # Replace with your actual API key
+GITHUB_TOKEN="your-github-token-here"  # Replace with your actual GitHub token
 ```
 
 ## 8. Security & Compliance

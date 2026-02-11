@@ -1,4 +1,4 @@
-# Ultra-Dex Cloud
+# Ultra-Dex v6.0.0 Cloud
 
 Hosted SaaS dashboard for Ultra-Dex.
 

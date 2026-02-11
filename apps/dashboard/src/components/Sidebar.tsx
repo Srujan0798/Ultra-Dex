@@ -1,70 +1,79 @@
-import { useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-
-
-import { LayoutDashboard, Brain, Bot, ListTodo, Plug, Settings, Zap } from 'lucide-react';
+import { memo } from 'react';
+import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Brain,
+  Bot,
+  ListTodo,
+  Plug,
+  Settings as SettingsIcon,
+  Zap,
+  Box,
+} from 'lucide-react';
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Overview' },
-  { path: '/memory', icon: Brain, label: 'Memory' },
-  { path: '/agents', icon: Bot, label: 'Agents' },
-  { path: '/tasks', icon: ListTodo, label: 'Tasks' },
-  { path: '/integrations', icon: Plug, label: 'Integrations' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
+  { path: '/', label: 'Overview', icon: LayoutDashboard },
+  { path: '/memory', label: 'Memory', icon: Brain },
+  { path: '/agents', label: 'Agents', icon: Bot },
+  { path: '/tasks', label: 'Tasks', icon: ListTodo },
+  { path: '/integrations', label: 'Integrations', icon: Plug },
+  { path: '/settings', label: 'Settings', icon: SettingsIcon },
+  { path: '/hologram', label: 'Hologram', icon: Box },
 ];
 
-export function Sidebar() {
-  /** Performance: memoized configuration for Sidebar */
-  useMemo(() => ({ component: 'Sidebar', optimized: true }), []);
-
-  /** Performance: memoized config for Sidebar */
-  const sidebarConfig = typeof useMemo === 'function'
-    ? { optimized: true }
-    : { optimized: false };
-
-  /** Accessibility constants for Sidebar */
-  const sidebarA11y = {
-    role: 'region',
-    'aria-label': 'Sidebar section',
-    'aria-live': 'polite',
-  };
-
-  const location = useLocation();
-
+export const Sidebar = memo(function Sidebar() {
   return (
-    <aside className="w-64 bg-gray-800 border-r border-gray-700">
-      <div className="p-4 flex items-center gap-2">
-        <Zap className="h-8 w-8 text-purple-500" />
-        <span className="text-xl font-bold">Ultra-Dex</span>
+    <aside
+      className="w-64 shrink-0 border-r border-slate-800 bg-slate-950/90"
+      role="navigation"
+      aria-label="Main navigation"
+    >
+      <div className="flex items-center gap-3 px-5 py-6">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15">
+          <Zap className="h-5 w-5 text-emerald-400" aria-hidden="true" />
+        </div>
+        <div>
+          <div className="text-lg font-semibold tracking-wide text-slate-100">
+            Ultra-Dex
+          </div>
+          <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+            Control Room
+          </div>
+        </div>
       </div>
 
-      <nav className="mt-4">
-        {navItems.map(({ path, icon: Icon, label }) => (
-          <Link
+      <nav className="space-y-1 px-3 pb-6" aria-label="Dashboard navigation">
+        {navItems.map(({ path, label, icon: Icon }) => (
+          <NavLink
             key={path}
             to={path}
-            className={`flex items-center gap-3 px-4 py-3 transition-colors ${location.pathname === path
-              ? 'bg-purple-600 text-white'
-              : 'text-gray-400 hover:bg-gray-700'
-              }`}
+            aria-label={`Navigate to ${label}`}
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${isActive
+                ? 'bg-emerald-500/10 text-emerald-200'
+                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'
+              }`
+            }
           >
-            <Icon className="h-5 w-5" />
-            {label}
-          </Link>
+            <Icon className="h-4 w-4" aria-hidden="true" />
+            <span>{label}</span>
+          </NavLink>
         ))}
       </nav>
     </aside>
   );
-}
+});
 
 /**
- * Error handler for Sidebar
- * @param {Error} error - Error to handle
+ * Error handler for Sidebar component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
  */
-function handleSidebarError(error) {
+function handleSidebarError(error, errorInfo) {
   try {
-    console.error('[Sidebar]', error instanceof Error ? error.message : String(error));
+    console.error(`[Sidebar] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
   } catch (_) {
-    // Fail silently
+    // Fail silently to avoid recursive errors
   }
 }

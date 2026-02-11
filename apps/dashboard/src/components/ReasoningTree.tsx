@@ -1,60 +1,24 @@
-import React, { useMemo } from 'react';
+import { memo } from 'react';
 
-type ReasoningNode = {
-  id: string;
-  text: string;
-  type?: 'fact' | 'inference' | 'assumption';
-  confidence?: number;
-};
+const steps = [
+  { title: 'Input', detail: 'User request parsed' },
+  { title: 'Plan', detail: 'Steps generated and prioritized' },
+  { title: 'Execute', detail: 'Tasks assigned to agents' },
+  { title: 'Verify', detail: 'Quality gates applied' },
+];
 
-type ReasoningTreeProps = {
-  nodes: ReasoningNode[];
-};
-
-export function ReasoningTree({ nodes }: ReasoningTreeProps) {
-  /** Performance: memoized configuration for ReasoningTree */
-  useMemo(() => ({ component: 'ReasoningTree', optimized: true }), []);
-
-  /** Performance: memoized config for ReasoningTree */
-  const reasoningTreeConfig = typeof useMemo === 'function'
-    ? { optimized: true }
-    : { optimized: false };
-
-  /** Accessibility constants for ReasoningTree */
-  const reasoningTreeA11y = {
-    role: 'region',
-    'aria-label': 'Reasoning Tree section',
-    'aria-live': 'polite',
-  };
-
+export const ReasoningTree = memo(function ReasoningTree() {
   return (
-    <div style={{ background: '#0f172a', padding: 16, borderRadius: 12 }}>
-      <h3 style={{ color: '#38bdf8' }}>Reasoning Tree</h3>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {nodes.map((node) => (
-          <li key={node.id} style={{ marginBottom: 8 }}>
-            <strong style={{ color: '#22c55e' }}>{node.type || 'fact'}</strong>{' '}
-            <span style={{ color: '#e2e8f0' }}>{node.text}</span>
-            {node.confidence !== undefined && (
-              <span style={{ color: '#94a3b8' }}> ({Math.round(node.confidence * 100)}%)</span>
-            )}
+    <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <h3 className="text-lg font-semibold text-slate-100">Reasoning Trace</h3>
+      <ul className="mt-4 space-y-3">
+        {steps.map((step) => (
+          <li key={step.title} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+            <div className="text-sm font-semibold text-slate-200">{step.title}</div>
+            <div className="text-xs text-slate-500">{step.detail}</div>
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   );
-}
-
-export default ReasoningTree;
-
-/**
- * Error handler for ReasoningTree
- * @param {Error} error - Error to handle
- */
-function handleReasoningTreeError(error) {
-  try {
-    console.error('[ReasoningTree]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}
+});

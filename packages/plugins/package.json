@@ -1,0 +1,6 @@
+{
+  "name": "@ultra-dex/plugins",
+  "version": "6.0.0",
+  "private": true,
+  "description": "Official plugins for Ultra-Dex"
+}

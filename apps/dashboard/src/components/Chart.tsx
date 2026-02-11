@@ -1,54 +1,115 @@
-import {ReactNode, useMemo } from 'react';
-import { ResponsiveContainer } from 'recharts';
+import { memo } from 'react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
 
-/** Performance: memoized configuration for Chart */
-const chartMemo = useMemo(() => ({ component: 'Chart', optimized: true }), []);
+type ChartVariant = 'line' | 'area' | 'bar';
 
-
-/** Performance: memoized config for Chart */
-const chartConfig = typeof useMemo === 'function'
-  ? { optimized: true }
-  : { optimized: false };
-
-/**
- * Accessibility constants for Chart
- * @see https://www.w3.org/WAI/ARIA/apg/
- */
-const chartA11y = {
-  role: 'region',
-  'aria-label': 'Chart section',
-  'aria-live': 'polite',
-};
-
-type ChartProps = {
-  title: string;
-  subtitle?: string;
-  height?: number;
-  children: ReactNode;
-};
-
-export function Chart({ title, subtitle, height = 320, children }: ChartProps) {
-  return (
-    <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        {subtitle ? <p className="text-sm text-gray-400">{subtitle}</p> : null}
-      </div>
-      <ResponsiveContainer width="100%" height={height}>
-        {children as never}
-      </ResponsiveContainer>
-    </div>
-  );
+interface Series {
+  key: string;
+  color: string;
 }
 
 /**
- * Error handler for Chart
- * @param {Error} error - Error to handle
+ * Chart - Reusable chart component with multiple variants
+ * @param data - Array of data points
+ * @param xKey - Key for X-axis values
+ * @param series - Array of series configurations
+ * @param variant - Chart type: 'line', 'area', or 'bar'
+ * @param height - Chart height in pixels
  */
-function handleChartError(error) {
+interface ChartProps {
+  data: Array<Record<string, unknown>>;
+  xKey: string;
+  series: Series[];
+  variant?: ChartVariant;
+  height?: number;
+  title?: string;
+}
+
+export const Chart = memo(function Chart({
+  data,
+  xKey,
+  series,
+  variant = 'line',
+  height = 280,
+  title = 'Data Chart',
+}: ChartProps) {
+  const common = (
+    <>
+      <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+      <XAxis dataKey={xKey} stroke="#94a3b8" tickLine={false} axisLine={false} />
+      <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} />
+      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1f2937' }} />
+    </>
+  );
+
+  return (
+    <figure
+      role="img"
+      aria-label={`${title}: ${variant} chart showing ${series.map(s => s.key).join(', ')}`}
+    >
+      <ResponsiveContainer width="100%" height={height}>
+        {variant === 'bar' ? (
+          <BarChart data={data} aria-label={`Bar chart: ${title}`}>
+            {common}
+            {series.map((item) => (
+              <Bar key={item.key} dataKey={item.key} fill={item.color} radius={[6, 6, 0, 0]} />
+            ))}
+          </BarChart>
+        ) : variant === 'area' ? (
+          <AreaChart data={data} aria-label={`Area chart: ${title}`}>
+            {common}
+            {series.map((item) => (
+              <Area
+                key={item.key}
+                dataKey={item.key}
+                stroke={item.color}
+                fill={`${item.color}33`}
+                strokeWidth={2}
+              />
+            ))}
+          </AreaChart>
+        ) : (
+          <LineChart data={data} aria-label={`Line chart: ${title}`}>
+            {common}
+            {series.map((item) => (
+              <Line
+                key={item.key}
+                type="monotone"
+                dataKey={item.key}
+                stroke={item.color}
+                strokeWidth={2}
+                dot={false}
+              />
+            ))}
+          </LineChart>
+        )}
+      </ResponsiveContainer>
+    </figure>
+  );
+});
+
+/**
+ * Error handler for Chart component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
+ */
+function handleChartError(error, errorInfo) {
   try {
-    console.error('[Chart]', error instanceof Error ? error.message : String(error));
+    console.error(`[Chart] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
   } catch (_) {
-    // Fail silently
+    // Fail silently to avoid recursive errors
   }
 }

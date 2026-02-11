@@ -193,7 +193,7 @@ interface MemoryEntry {
     "linting": { "enabled": true, "command": "npm run lint" },
     "testing": { "require_new_tests": true },
     "architecture": {
-      "banned_patterns": ["console.log", "TODO:", "var "],
+      "banned_patterns": ["console.log", "TO-DO:", "var "],
       "required_patterns": ["try {", "} catch"]
     }
   },

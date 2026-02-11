@@ -1,12 +1,12 @@
+#!/usr/bin/env node
+
 /**
  * @fileoverview Ultra module
  * @module bin/ultra
  */
 
-#!/usr/bin/env node
-
 // Legacy shim for tests/tools expecting bin/ultra.js
-import '../cli/bin/ultra-dex.js';
+import '../apps/cli/bin/ultra-dex.js';
 
 /**
  * Error handler for ultra

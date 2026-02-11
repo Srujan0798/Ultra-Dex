@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * @fileoverview Add License Headers module
  * @module scripts/add-license-headers

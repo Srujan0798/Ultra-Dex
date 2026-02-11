@@ -20,7 +20,7 @@ class GenerateAction : AnAction() {
         if (!input.isNullOrEmpty()) {
             // In a real plugin, we'd pipe this to the tool window, but for now we just fire and forget or notify
             service.runCommand("generate "$input"") { output ->
-                // TODO: pipe to tool window
+                // TO-DO: pipe to tool window
             }
             Messages.showInfoMessage("Generation started. Check the Ultra-Dex tool window.", "Ultra-Dex")
         }

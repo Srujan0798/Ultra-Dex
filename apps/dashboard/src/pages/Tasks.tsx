@@ -1,104 +1,132 @@
-import { useMemo } from 'react';
-
-
+import { memo } from 'react';
 
 const tasks = [
-  { id: 'T-401', title: 'Upgrade routing model', status: 'active', owner: '@Planner' },
-  { id: 'T-402', title: 'Webhook validation', status: 'active', owner: '@Backend' },
-  { id: 'T-399', title: 'RAG index refresh', status: 'completed', owner: '@Research' },
-  { id: 'T-398', title: 'CI/CD template sync', status: 'completed', owner: '@DevOps' },
+  { id: 'UDX-401', title: 'Implement payments webhook', owner: 'Backend', status: 'In Progress', progress: 68 },
+  { id: 'UDX-402', title: 'Rewrite onboarding flow', owner: 'Frontend', status: 'Pending', progress: 25 },
+  { id: 'UDX-403', title: 'Add policy guardrails', owner: 'Security', status: 'Complete', progress: 100 },
+  { id: 'UDX-404', title: 'Refine memory compaction', owner: 'Memory', status: 'In Progress', progress: 54 },
+  { id: 'UDX-405', title: 'Sync integrations status', owner: 'Ops', status: 'Pending', progress: 18 },
 ];
 
-const ganttData = [
-  { name: 'Planning', progress: 80 },
-  { name: 'Implementation', progress: 55 },
-  { name: 'Testing', progress: 40 },
-  { name: 'Release', progress: 15 },
+const ganttRows = [
+  { label: 'Planning', start: 0, duration: 20 },
+  { label: 'Build', start: 20, duration: 40 },
+  { label: 'Verify', start: 60, duration: 25 },
+  { label: 'Deploy', start: 85, duration: 15 },
 ];
 
-const statusClass = (status: string) =>
-  status === 'completed' ? 'text-green-400' : 'text-blue-400';
-
-export function Tasks() {
-  /** Performance: memoized configuration for Tasks */
-  useMemo(() => ({ component: 'Tasks', optimized: true }), []);
-
-  /** Performance optimization marker */
-  const _perfOptimized = { memo: true, useCallback: true };
-
-  /** Accessibility constants */
-  const tasksA11y = {
-    role: 'region',
-    'aria-label': 'Tasks section',
-    'aria-live': 'polite',
-  };
-
+/**
+ * Tasks Dashboard Page - View active tasks and timeline
+ * @returns {JSX.Element} Tasks page component
+ */
+export const Tasks = memo(function Tasks() {
   return (
-    <div role={tasksA11y.role} aria-label={tasksA11y['aria-label']}>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Tasks</h1>
-          <p className="text-sm text-gray-400">Active pipeline and Gantt view</p>
+    <main className="space-y-6" role="main" aria-label="Tasks Dashboard">
+      <section
+        className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6"
+        aria-label="Active Tasks Table"
+        role="region"
+      >
+        <h2 className="text-lg font-semibold text-slate-100">Active Tasks</h2>
+        <div className="mt-4 overflow-hidden rounded-xl border border-slate-800">
+          <table className="w-full text-sm" role="table" aria-label="Tasks list">
+            <thead className="bg-slate-950/70 text-xs uppercase tracking-[0.2em] text-slate-500">
+              <tr role="row">
+                <th className="px-4 py-3 text-left" scope="col" aria-label="Task ID">ID</th>
+                <th className="px-4 py-3 text-left" scope="col" aria-label="Task title">Task</th>
+                <th className="px-4 py-3 text-left" scope="col" aria-label="Task owner">Owner</th>
+                <th className="px-4 py-3 text-left" scope="col" aria-label="Task status">Status</th>
+                <th className="px-4 py-3 text-left" scope="col" aria-label="Task progress">Progress</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map((task) => (
+                <tr
+                  key={task.id}
+                  className="border-t border-slate-800"
+                  role="row"
+                  aria-label={`Task ${task.id}: ${task.title}, ${task.status}, ${task.progress}%`}
+                >
+                  <td className="px-4 py-3 text-slate-400">{task.id}</td>
+                  <td className="px-4 py-3 text-slate-100">{task.title}</td>
+                  <td className="px-4 py-3 text-slate-400">{task.owner}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300"
+                      role="status"
+                      aria-label={`Status: ${task.status}`}
+                    >
+                      {task.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div
+                      className="h-2 rounded-full bg-slate-800"
+                      role="progressbar"
+                      aria-valuenow={task.progress}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Progress: ${task.progress}%`}
+                    >
+                      <div
+                        className="h-2 rounded-full bg-emerald-500"
+                        style={{ width: `${task.progress}%` }}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <button className="rounded bg-purple-600 px-3 py-2 text-sm">Create Task</button>
-      </div>
+      </section>
 
-      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-4">
-        <h2 className="text-lg font-semibold mb-4">Gantt Snapshot</h2>
-        <div className="space-y-3">
-          {ganttData.map((stage) => (
-            <div key={stage.name}>
-              <div className="flex justify-between text-sm text-gray-400">
-                <span>{stage.name}</span>
-                <span>{stage.progress}%</span>
+      <section
+        className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6"
+        aria-label="Project Timeline"
+        role="region"
+      >
+        <h2 className="text-lg font-semibold text-slate-100">Timeline</h2>
+        <div className="mt-6 space-y-4" role="list" aria-label="Project phases">
+          {ganttRows.map((row) => (
+            <div key={row.label} role="listitem" aria-label={`${row.label}: ${row.duration}% duration`}>
+              <div className="flex justify-between text-xs uppercase tracking-[0.2em] text-slate-500">
+                <span>{row.label}</span>
+                <span aria-label={`${row.duration}% of timeline`}>{row.duration}%</span>
               </div>
-              <div className="mt-2 h-2 rounded-full bg-gray-700">
+              <div
+                className="mt-2 h-3 rounded-full bg-slate-800"
+                role="progressbar"
+                aria-valuenow={row.duration}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`${row.label} progress`}
+              >
                 <div
-                  className="h-full rounded-full bg-purple-500"
-                  style={{ width: `${stage.progress}%` }}
+                  className="h-3 rounded-full bg-cyan-500"
+                  style={{ marginLeft: `${row.start}%`, width: `${row.duration}%` }}
+                  aria-hidden="true"
                 />
               </div>
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-900 text-gray-400">
-            <tr>
-              <th className="px-4 py-3">ID</th>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Owner</th>
-              <th className="px-4 py-3">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task) => (
-              <tr key={task.id} className="border-t border-gray-700">
-                <td className="px-4 py-3">{task.id}</td>
-                <td className="px-4 py-3">{task.title}</td>
-                <td className="px-4 py-3">{task.owner}</td>
-                <td className={`px-4 py-3 ${statusClass(task.status)}`}>
-                  {task.status}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      </section>
+    </main>
   );
-}
+});
 
 /**
- * Error handler for Tasks
- * @param {Error} error - Error to handle
+ * Error handler for Tasks component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
  */
-function handleTasksError(error) {
+function handleTasksError(error, errorInfo) {
   try {
-    console.error('[Tasks]', error instanceof Error ? error.message : String(error));
+    console.error(`[Tasks] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
   } catch (_) {
-    // Fail silently
+    // Fail silently to avoid recursive errors
   }
 }

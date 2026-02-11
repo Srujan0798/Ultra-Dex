@@ -1,74 +1,68 @@
-import { useMemo } from 'react';
-import { Search, Wifi } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { memo } from 'react';
+import { Search, Wifi, WifiOff } from 'lucide-react';
 
-/** Performance: memoized configuration for Header */
-const headerMemo = useMemo(() => ({ component: 'Header', optimized: true }), []);
+interface HeaderProps {
+  title: string;
+  connected?: boolean;
+}
 
-
-/** Performance: memoized config for Header */
-const headerConfig = typeof useMemo === 'function'
-  ? { optimized: true }
-  : { optimized: false };
-
-/**
- * Accessibility constants for Header
- * @see https://www.w3.org/WAI/ARIA/apg/
- */
-const headerA11y = {
-  role: 'region',
-  'aria-label': 'Header section',
-  'aria-live': 'polite',
-};
-
-const titles: Record<string, string> = {
-  '/': 'Overview',
-  '/memory': 'Memory',
-  '/agents': 'Agents',
-  '/tasks': 'Tasks',
-  '/integrations': 'Integrations',
-  '/settings': 'Settings',
-};
-
-export function Header() {
-  const location = useLocation();
-  const title = titles[location.pathname] || 'Dashboard';
-
+export const Header = memo(function Header({ title, connected }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-10 border-b border-gray-800 bg-gray-900/90 backdrop-blur">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <h1 className="text-xl font-semibold">{title}</h1>
-          <p className="text-sm text-gray-400">Ultra-Dex Control Center</p>
+    <header
+      className="flex items-center justify-between border-b border-slate-800 bg-slate-950/70 px-6 py-4 backdrop-blur"
+      role="banner"
+      aria-label="Dashboard header"
+    >
+      <div>
+        <h1 className="text-xl font-semibold text-slate-100">{title}</h1>
+        <p className="text-sm text-slate-500">
+          Real-time systems telemetry and orchestration overview.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="relative hidden items-center md:flex">
+          <Search className="absolute left-3 h-4 w-4 text-slate-500" aria-hidden="true" />
+          <input
+            placeholder="Search tasks, agents, logs..."
+            aria-label="Search tasks, agents, and logs"
+            className="w-64 rounded-full border border-slate-800 bg-slate-900/60 py-2 pl-9 pr-4 text-sm text-slate-200 focus:border-emerald-500/60 focus:outline-none"
+          />
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden items-center gap-2 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-300 md:flex">
-            <Search className="h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search tasks, agents..."
-              className="bg-transparent outline-none placeholder:text-gray-500"
-            />
-          </div>
-          <div className="flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-gray-300">
-            <Wifi className="h-3 w-3 text-green-400" />
-            Live
-          </div>
+        <div
+          className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/70 px-3 py-1 text-xs text-slate-400"
+          role="status"
+          aria-live="polite"
+          aria-label={connected ? 'Connection status: Live' : 'Connection status: Offline'}
+        >
+          {connected ? (
+            <>
+              <Wifi className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+              Live
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+              Offline
+            </>
+          )}
         </div>
       </div>
     </header>
   );
-}
+});
 
 /**
- * Error handler for Header
- * @param {Error} error - Error to handle
+ * Error handler for Header component failures
+ * @param {Error} error - The error to handle
+ * @param {Object} [errorInfo] - React error info
  */
-function handleHeaderError(error) {
+function handleHeaderError(error, errorInfo) {
   try {
-    console.error('[Header]', error instanceof Error ? error.message : String(error));
+    console.error(`[Header] Rendering error:`, error.message);
+    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
   } catch (_) {
-    // Fail silently
+    // Fail silently to avoid recursive errors
   }
 }

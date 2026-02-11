@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ultra-Dex
+
 #!/usr/bin/env node
 
 /**

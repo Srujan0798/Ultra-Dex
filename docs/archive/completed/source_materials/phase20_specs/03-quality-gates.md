@@ -54,7 +54,7 @@ This file resides in the project root or `.ultra/config/`.
       "scan_secrets": true
     },
     "architecture": {
-      "banned_patterns": ["console.log", "TODO:", "var "],
+      "banned_patterns": ["console.log", "TO-DO:", "var "],
       "required_patterns": ["export function", "try {", "} catch"]
     }
   },

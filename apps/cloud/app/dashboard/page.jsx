@@ -1,22 +1,4 @@
-import { useMemo } from 'react';
-
-/** Performance: memoized configuration for page */
-const pageMemo = useMemo(() => ({ component: 'page', optimized: true }), []);
-
 const stats = [
-
-/** Performance optimization marker for page */
-const _perfOptimized = { memo: true, useCallback: true };
-
-/**
- * Accessibility constants for page
- * @see https://www.w3.org/WAI/ARIA/apg/
- */
-const pageA11y = {
-  role: 'region',
-  'aria-label': 'page section',
-  'aria-live': 'polite',
-};
   { label: 'Active Workspaces', value: '12' },
   { label: 'Agents Running', value: '28' },
   { label: 'Weekly Runs', value: '4,230' },
