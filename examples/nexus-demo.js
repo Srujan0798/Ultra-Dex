@@ -18,7 +18,7 @@ async function runDemo() {
 `));
   
   try {
-    const result = await nexus.execute(objective);
+    const result = await nexus.execute(objective, { sandbox: false });
     
     console.log(chalk.bold.green(`
 ✅ Autonomous Objective Completed!`));

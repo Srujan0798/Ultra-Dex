@@ -1,335 +1,174 @@
-# 🌌 Ultra-Dex v6.0.0 - AI Orchestration Meta-Layer
+# Ultra-Dex: AI Orchestration Platform
 
-[![Version](https://img.shields.io/badge/version-6.0.0-blue.svg)](https://github.com/Srujan0798/Ultra-Dex)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Protocol](https://img.shields.io/badge/protocol-21-purple.svg)](docs/QUALITY-STANDARDS.md)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/Srujan0798/Ultra-Dex/actions)
-[![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](https://github.com/Srujan0798/Ultra-Dex)
+## Overview
 
-**The Ultimate AI Orchestration Meta-Layer for SaaS Development.**
-Building at the speed of thought with 1000% efficiency and 100% perfection.
+Ultra-Dex is an AI orchestration platform that enables teams to leverage multiple AI agents for software development tasks. The platform provides a command-line interface for managing AI-assisted development workflows with safety, governance, and verification controls.
 
----
+## Current Functionality
 
-## 🚀 What is Ultra-Dex?
+### ✅ Working Features
 
-Ultra-Dex is the world's most advanced AI orchestration meta-layer, designed to transform how teams build software with AI. We create the **Cognitive Core** that gives AI tools memory, structure, and quality standards.
+#### 1. Multi-Agent System
+- **18+ Specialized Agents**: Each with defined roles and responsibilities
+  - @Planner: Task breakdown and planning
+  - @CTO: Architecture and technical decisions
+  - @Backend: API and business logic development
+  - @Frontend: UI/UX development
+  - @Database: Schema design and queries
+  - @Testing: QA and test automation
+  - @Reviewer: Code review and quality assurance
+  - @Debugger: Bug fixing and troubleshooting
+  - And more specialized agents...
 
-### 🎯 Key Features
+#### 2. Enhanced AI Provider Support
+- **OpenAI**: GPT-4, GPT-4 Turbo, GPT-4o, GPT-4o Mini with tool calling
+- **Anthropic**: Claude models with function calling
+- **Google**: Gemini models
+- **Ollama**: Local AI models
+- **Router**: Semantic routing between providers
+- **Mock Provider**: For testing and development with simulated tool calls
 
-- **17 Specialized AI Agents** across 7 tiers (Orchestration, Leadership, Development, Security, DevOps, Quality, Specialist)
-- **P2P Agent Swarm Network** with decentralized coordination
-- **Persistent Project Mind** with multi-tier memory (Hot: SQLite, Warm: ChromaDB, Cold: Neo4j)
-- **21-Step Verification Protocol** for production-grade quality
-- **MCP Context Bus** for real-time AI tool synchronization
-- **Self-Healing Kernel** with autonomous background fixing
-- **Hardened Sandbox** for secure execution
-- **Enterprise Governance** with audit trails and RBAC
+#### 3. Advanced Tool Execution System
+- **Legacy Commands**: `>> READ_CODE`, `>> WRITE_CODE`, `>> SEARCH_CODE`, `>> RUN_SHELL`, `>> DELEGATE`
+- **Modern Tool Calling**: Structured function calls with parameters and validation
+- **Security Controls**: Path validation, permission checking, sensitive file protection
+- **Verification Hooks**: Code quality checks after operations
 
----
+#### 4. Safety & Governance
+- Permission system for agent operations
+- Verification gates (linting, type safety, security)
+- Error recovery mechanisms
+- Token usage tracking
+- Advanced approval workflows
 
-## 🏗️ Architecture Overview
+#### 5. Project Management
+- Automatic project scaffolding
+- Implementation planning
+- State management and persistence
+- Context awareness
+- Codebase analysis and graphing
 
-```
-Ultra-Dex Monorepo
-├── apps/                      # Runtime entrypoints and UIs
-│   ├── cli/                   # Command-line interface (primary)
-│   ├── cloud/                 # Cloud / dashboard surfaces
-│   ├── core-api/              # Core HTTP API services
-│   ├── dashboard/             # Visual management dashboard
-│   ├── desktop/               # Electron desktop app
-│   ├── docs-site/             # Documentation site
-│   ├── mobile/                # React Native mobile app
-│   ├── web/                   # Web playground
-│   └── white-label/           # White-label deployment presets
-├── packages/                  # Shared libraries and extensions
-│   ├── agent-protocol/        # Agent communication protocol
-│   ├── sdk/                   # Developer SDK
-│   ├── plugins/               # Plugin system (capability manifests)
-│   ├── cursor-rules/          # Cursor IDE rule packs
-│   └── extensions/            # IDE/editor integrations (VS Code, Cursor, etc.)
-├── src/                       # Core orchestration engine
-│   ├── core/                  # Agents, AI providers, memory, orchestration, templates
-│   ├── services/              # Shared services (e.g. security)
-│   ├── types/                 # Type definitions
-│   └── utils/                 # Shared runtime utilities
-├── examples/                  # Example SaaS and backend templates
-├── config/                    # Quality gates, router, deployment config
-├── scripts/                   # Governance, verification, and tooling scripts
-└── docs/                      # Documentation
-```
+### 6. Command Line Interface
+- `ultra-dex init`: Initialize new projects
+- `ultra-dex generate`: Create implementation plans
+- `ultra-dex run <agent>`: Execute agent tasks
+- `ultra-dex swarm <feature>`: Run multi-agent workflows
+- `ultra-dex agents list`: View available agents
+- `ultra-dex agents show <name>`: View agent prompts
 
----
+## Enhanced Features
 
-## 🚀 Quick Start
+### Tool Calling Capabilities
+Ultra-Dex now supports advanced tool calling that allows AI agents to interact with external systems:
 
 ```bash
-# Install globally
+# Agents can now use structured tool calls
+The AI can call tools like:
+{
+  "name": "read_file",
+  "arguments": {"filePath": "src/config.js"}
+}
+
+# While maintaining legacy command support
+>> READ_CODE: "src/config.js"
+>> WRITE_CODE: "src/new-feature.js" "// New feature implementation"
+```
+
+### Modern AI Integration
+- **Function Calling**: Native support for OpenAI-style function calling
+- **Streaming Tool Detection**: Real-time tool call detection during streaming responses
+- **Multi-Modal Ready**: Architecture prepared for vision and audio capabilities
+- **Provider Abstraction**: Consistent interface across all AI providers
+
+### Enhanced Security
+- **Path Validation**: Advanced directory traversal protection
+- **Permission System**: Granular access controls for all operations
+- **Verification Gates**: Automated code quality and security checks
+- **Audit Trail**: Comprehensive logging of all agent actions
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- API keys for your preferred AI provider (OpenAI, Anthropic, Google, etc.)
+
+### Installation
+```bash
 npm install -g ultra-dex
+```
 
-# Or use npx directly
-npx ultra-dex --version
-
+### Quick Start
+```bash
 # Initialize a new project
 ultra-dex init
 
-# Start the interactive dashboard
-ultra-dex
+# Generate an implementation plan
+ultra-dex generate "TODO app with authentication"
 
-# Run an agent swarm for a complex task
-ultra-dex swarm "Build a full-stack authentication system"
+# Run an agent task
+ultra-dex run planner -t "Break down the authentication requirements"
 
-# Execute with verification
-ultra-dex verify --full
+# Run a multi-agent swarm
+ultra-dex swarm "Implement user registration"
 ```
 
-### 🤖 Agent System
-
-Ultra-Dex features 17 specialized agents organized in 7 tiers:
+### Testing Without API Keys
+You can test the platform functionality using the mock provider:
 
 ```bash
-# List all available agents
-ultra-dex agents list
-
-# Show a specific agent's prompt
-ultra-dex agents show cto
-
-# Package an agent for external use
-ultra-dex pack cto
+MOCK_AI_PROVIDERS=true ultra-dex agents list
 ```
 
-**Agent Tiers:**
-1. **Orchestration**: `@orchestrator` - Coordinates complex workflows
-2. **Leadership**: `@cto`, `@planner`, `@research` - Strategic planning
-3. **Development**: `@backend`, `@frontend`, `@database` - Implementation
-4. **Security**: `@auth`, `@security` - Protection & compliance
-5. **DevOps**: `@devops` - Deployment & infrastructure
-6. **Quality**: `@debugger`, `@reviewer`, `@testing`, `@documentation` - Quality assurance
-7. **Specialist**: `@performance`, `@refactoring` - Optimization
+## Architecture
 
----
+### Enhanced Provider Abstraction Layer
+The platform uses a unified provider interface supporting multiple AI services with consistent APIs, cost estimation, error handling, and advanced tool calling capabilities.
 
-## 🧠 Advanced Features
+### Agent Orchestration Engine
+The core engine coordinates between specialized agents, manages context, executes both legacy commands and modern tool calls safely, and maintains governance controls.
 
-### Agent Swarms
+### Security Model
+Advanced role-based access control, file system protections, command execution safeguards, and comprehensive audit logging.
+
+## Development
+
+### Running Tests
 ```bash
-# Run agents in parallel for faster execution
-ultra-dex swarm --parallel "Create a complete CRUD API"
-
-# Monitor swarm execution
-ultra-dex swarm status
-```
-
-### Context Management
-```bash
-# Synchronize project context
-ultra-dex brain
-
-# Manage persistent memory
-ultra-dex memory --help
-
-# Search through project memory
-ultra-dex memory search "authentication"
-```
-
-### Verification & Quality
-```bash
-# Run 21-step verification
-ultra-dex verify --full
-
-# Check project quality
-ultra-dex quality
-
-# Audit security
-ultra-dex audit
-```
-
-### MCP (Model Context Protocol)
-```bash
-# Start the context bus for real-time synchronization
-ultra-dex serve
-
-# Connect external AI tools to share context
-ultra-dex mcp connect
-```
-
----
-
-## 🧪 Testing & Quality
-
-Ultra-Dex includes a comprehensive test suite:
-
-```bash
-# Run all tests
-npm test
-
-# Run specific test categories
-npm run test:unit          # Core functionality
-npm run test:integration   # End-to-end workflows
-npm run test:cli          # Command-line interface
-npm run test:performance  # Performance benchmarks
-npm run test:coverage     # Code coverage analysis
-
-# Run the complete test suite
-npm run test:runner
-```
-
-### Test Categories:
-- **Core Tests**: Individual component validation
-- **Integration Tests**: Multi-component workflows
-- **CLI Tests**: Command-line interface validation
-- **Performance Tests**: Benchmark and optimization
-- **End-to-End Tests**: Complete system validation
-
----
-
-## 🔧 Configuration & Customization
-
-### Environment Variables
-```bash
-# AI Provider Keys
-export OPENAI_API_KEY=your_openai_key
-export ANTHROPIC_API_KEY=your_anthropic_key
-export GOOGLE_API_KEY=your_google_key
-
-# Configuration
-export ULTRADEX_MODE=development  # development, staging, production
-export LOG_LEVEL=info            # error, warn, info, debug
-```
-
-### Advanced Configuration
-```bash
-# View current configuration
-ultra-dex config
-
-# Customize agent behavior
-ultra-dex config --set max-concurrent-agents=8
-
-# Set up custom AI provider
-ultra-dex config --provider ollama --url http://localhost:11434
-```
-
----
-
-## 📊 Performance & Scalability
-
-Ultra-Dex is optimized for maximum performance:
-
-- **Response Times**: <200ms for core operations
-- **Concurrent Agents**: Up to 16 agents running simultaneously
-- **Memory Management**: Multi-tier system with compression
-- **Caching**: Intelligent caching reduces redundant operations
-- **Parallel Execution**: Tasks execute in parallel when possible
-
-### Performance Monitoring
-```bash
-# Run performance benchmarks
-npm run perf:benchmark
-
-# Profile system performance
-npm run perf:profile
-
-# Monitor real-time metrics
-ultra-dex dashboard
-```
-
----
-
-## 🔐 Security & Governance
-
-### Hardened Security Model
-- **Sandboxed Execution**: All code runs in isolated containers
-- **API Key Management**: Secure key storage and rotation
-- **Rate Limiting**: Prevents API abuse
-- **Input Validation**: Sanitizes all inputs
-- **Audit Logging**: Immutable logs of all operations
-
-### Enterprise Governance
-- **RBAC**: Role-based access control
-- **Compliance**: SOC2, GDPR, HIPAA ready
-- **Data Encryption**: At-rest and in-transit encryption
-- **Privacy Controls**: Granular privacy settings
-
----
-
-## 🚀 Deployment & Production
-
-### Production Deployment
-```bash
-# Build for production
-npm run build
-
-# Deploy to cloud platforms
-npm run kubernetes:deploy    # Kubernetes deployment
-npm run docker:build         # Docker image
-npm run docker:publish       # Push to registry
-```
-
-### Monitoring & Observability
-```bash
-# Real-time dashboard
-ultra-dex dashboard
-
-# Performance metrics
-ultra-dex metrics
-
-# System health check
-ultra-dex status
-```
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Setup
-```bash
-# Clone the repository
-git clone https://github.com/Srujan0798/Ultra-Dex.git
-cd Ultra-Dex
-
-# Install dependencies
-npm install
-
-# Run in development mode
-npm run dev
-
-# Run tests
 npm test
 ```
 
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+## Roadmap
+
+### Near Term
+- Enhanced agent communication protocols
+- Improved project graph analysis
+- Better error recovery mechanisms
+
+### Medium Term
+- Plugin ecosystem for custom agents
+- Integration with popular IDEs
+- Advanced project visualization
+
+### Long Term
+- Enterprise governance features
+- Team collaboration tools
+- Advanced AI model fine-tuning capabilities
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Support
+
+For support, please open an issue in the GitHub repository.
+
 ---
 
-## 📚 Documentation
-
-- [Architecture Overview](docs/ARCHITECTURE.md) - System design and components
-- [Agent Guide](apps/cli/assets/agents/README.md) - Agent system documentation
-- [API Reference](docs/API.md) - Programmatic interface
-- [Quality Standards](docs/QUALITY-STANDARDS.md) - Protocol 21 verification
-- [Security Guide](docs/SECURITY.md) - Security best practices
-- [Performance Guide](docs/PERFORMANCE.md) - Optimization strategies
-
----
-
-## 🆘 Support & Community
-
-- [GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues) - Bug reports and feature requests
-- [Discord](https://discord.gg/ultradex) - Community chat and support
-- [Documentation](https://ultra-dex.ai/docs) - Comprehensive guides
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-<div align="center">
-
-**🌟 Star us on GitHub if Ultra-Dex helps you build amazing AI-powered applications! 🌟**
-
-**Built with ❤️ by the Ultra-Dex Core Team**
-
-</div>
+**Note**: This project is actively under development. Features and APIs may change as we work towards a stable release.

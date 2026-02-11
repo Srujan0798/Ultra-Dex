@@ -187,6 +187,8 @@ export class OpenAIProvider extends BaseProvider {
         const decoder = new TextDecoder();
         let fullContent = '';
         let usage = { inputTokens: 0, outputTokens: 0 };
+        let toolCalls = []; // Track any tool calls
+        let currentToolCall = null;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -203,10 +205,37 @@ export class OpenAIProvider extends BaseProvider {
               try {
                 const parsed = JSON.parse(data);
 
+                // Handle content delta
                 const content = parsed.choices?.[0]?.delta?.content;
                 if (content) {
                   fullContent += content;
-                  onChunk(content);
+                  if (onChunk) onChunk(content);
+                }
+
+                // Handle tool calls in streaming response
+                const toolCallDelta = parsed.choices?.[0]?.delta?.tool_calls?.[0];
+                if (toolCallDelta) {
+                  if (!currentToolCall) {
+                    currentToolCall = {
+                      id: toolCallDelta.id || '',
+                      type: toolCallDelta.type || 'function',
+                      function: {
+                        name: toolCallDelta.function?.name || '',
+                        arguments: toolCallDelta.function?.arguments || ''
+                      }
+                    };
+                  } else {
+                    // Append to existing tool call
+                    if (toolCallDelta.function?.arguments) {
+                      currentToolCall.function.arguments += toolCallDelta.function.arguments;
+                    }
+                  }
+                }
+
+                // Check if tool call is complete
+                if (parsed.choices?.[0]?.finish_reason === 'tool_calls' && currentToolCall) {
+                  toolCalls.push(currentToolCall);
+                  currentToolCall = null;
                 }
 
                 if (parsed.usage) {
@@ -220,7 +249,11 @@ export class OpenAIProvider extends BaseProvider {
           }
         }
 
-        return { content: fullContent, usage };
+        return {
+          content: fullContent,
+          usage,
+          toolCalls: toolCalls.length > 0 ? toolCalls : undefined
+        };
       } catch (error) {
         lastError = error;
 
@@ -278,6 +311,100 @@ export class OpenAIProvider extends BaseProvider {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Generate a completion with tool calling support
+   * @param {string} systemPrompt - System instructions
+   * @param {string} userPrompt - User message/request
+   * @param {Array} tools - Array of tool definitions
+   * @param {Object} options - Additional options
+   * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}, model: string, toolCalls?: Array}>}
+   */
+  async generateWithTools(systemPrompt, userPrompt, tools, options = {}) {
+    // Retry logic with exponential backoff
+    const maxRetries = options.maxRetries || 3;
+    let lastError;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+        const requestBody = {
+          model: this.model,
+          max_tokens: options.maxTokens || this.maxTokens,
+          temperature: options.temperature !== undefined ? options.temperature : this.temperature,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+        };
+
+        // Add tools if provided
+        if (tools && tools.length > 0) {
+          requestBody.tools = tools;
+          requestBody.tool_choice = options.toolChoice || 'auto'; // 'auto', 'required', or specific tool
+        }
+
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+
+          // Handle rate limiting
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After');
+            const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000; // Exponential backoff
+
+            if (attempt < maxRetries) {
+              await new Promise((resolve) => setTimeout(resolve, delay));
+              continue; // Retry
+            }
+          }
+
+          throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        const choice = data.choices[0];
+        const message = choice?.message;
+
+        return {
+          content: message?.content || '',
+          toolCalls: message?.tool_calls || undefined,
+          usage: {
+            inputTokens: data.usage?.prompt_tokens || 0,
+            outputTokens: data.usage?.completion_tokens || 0,
+          },
+        };
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < maxRetries) {
+          // Exponential backoff
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        throw error;
+      }
+    }
+
+    // This should not be reached, but just in case
+    throw lastError || new Error('Max retries exceeded');
   }
 }
 

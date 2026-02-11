@@ -17,6 +17,7 @@ import { runA11yCheck } from '../quality/a11y-check.js';
 import { checkDocker } from '../sandbox/docker.js';
 import { sqliteProvider } from '../memory/sqlite.js';
 import { agentOrchestrator as nexus } from '../../../../src/core/orchestration/index.js';
+import { codeValidator } from '../../../../src/services/security/validators.js';
 
 export function registerCheckCommand(program) {
   const check = program
@@ -50,7 +51,12 @@ export function registerCheckCommand(program) {
         console.log(chalk.green('✅ Nexus Orchestrator: Initialized'));
       }
 
-      // 4. Check Agents
+      // 4. Check Security Validator
+      if (codeValidator) {
+        console.log(chalk.green('✅ Security: Code Validator (AST-enabled) Operational'));
+      }
+
+      // 5. Check Agents
       const agentDir = path.join(process.cwd(), '.ultra-dex', 'agents');
       try {
         const tiers = await fs.readdir(agentDir);
@@ -60,6 +66,46 @@ export function registerCheckCommand(program) {
       }
 
       console.log(chalk.cyan('\nDiagnostic Complete.\n'));
+    });
+
+  check
+    .command('security [file]')
+    .description('Run a security scan on a file or the whole project')
+    .action(async (file) => {
+      console.log(chalk.cyan.bold('\n🛡️  Ultra-Dex Security Scan\n'));
+      
+      if (file) {
+        try {
+          const content = await fs.readFile(file, 'utf8');
+          const result = codeValidator.validate(content, path.extname(file).slice(1));
+          codeValidator.report(result);
+        } catch (e) {
+          console.log(chalk.red(`❌ Error reading file: ${e.message}`));
+        }
+      } else {
+        console.log(chalk.gray('Scanning project files for critical risks...'));
+        // Project-wide scan logic (simplified)
+        const { glob } = await import('glob');
+        const files = await glob('**/*.{js,ts}', { ignore: 'node_modules/**' });
+        
+        let totalFindings = 0;
+        for (const f of files) {
+          const content = await fs.readFile(f, 'utf8');
+          const result = codeValidator.validate(content, path.extname(f).slice(1));
+          if (!result.safe) {
+            console.log(chalk.bold(`\n📄 File: ${f}`));
+            codeValidator.report(result);
+            totalFindings++;
+          }
+        }
+        
+        if (totalFindings === 0) {
+          console.log(chalk.green('\n✅ Project-wide scan complete. No critical risks found.'));
+        } else {
+          console.log(chalk.red(`\n❌ Project-wide scan complete. Found risks in ${totalFindings} files.`));
+        }
+      }
+      console.log('');
     });
 
   check

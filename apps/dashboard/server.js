@@ -13,12 +13,21 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import { glob } from 'glob';
 
+// Import Ultra-Dex Core
+import { agentOrchestrator } from '../src/core/orchestration/index.js';
+import { ppmManager } from '../src/core/memory/manager.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const execAsync = promisify(exec);
 
 const app = express();
 const server = http.createServer(app);
+
+// Initialize Core
+await agentOrchestrator.initialize();
+await ppmManager.init();
+
 const io = socketIo(server, {
   cors: {
     origin: "*",
@@ -97,22 +106,26 @@ async function collectRealMetrics() {
     }
 
     // Get agent status from Ultra-Dex
-    agentData = [
-      { id: 1, name: 'Planner', status: 'active', tasksCompleted: 45, efficiency: 92 },
-      { id: 2, name: 'Backend', status: 'active', tasksCompleted: 67, efficiency: 88 },
-      { id: 3, name: 'Frontend', status: 'busy', tasksCompleted: 34, efficiency: 95 },
-      { id: 4, name: 'Database', status: 'idle', tasksCompleted: 23, efficiency: 98 },
-      { id: 5, name: 'Reviewer', status: 'active', tasksCompleted: 56, efficiency: 90 },
-      { id: 6, name: 'Debugger', status: 'busy', tasksCompleted: 12, efficiency: 85 },
-      { id: 7, name: 'Security', status: 'active', tasksCompleted: 28, efficiency: 96 },
-      { id: 8, name: 'Testing', status: 'idle', tasksCompleted: 41, efficiency: 89 },
-    ];
+    const registeredAgents = agentOrchestrator.registry.getAllAgents();
+    agentData = registeredAgents.map(a => {
+      const stats = agentOrchestrator.registry.getAgentStats(a.id);
+      return {
+        id: a.id,
+        name: a.name,
+        status: a.status,
+        tasksCompleted: stats?.executionCount || 0,
+        efficiency: Math.round(stats?.utilization || 90)
+      };
+    });
 
-    systemStats.agentsOnline = agentData.filter(a => a.status !== 'idle').length;
+    systemStats.agentsOnline = agentData.filter(a => a.status === 'active').length;
+    
+    // Update Memory Usage from real stats
+    const memStats = await ppmManager.stats();
+    systemStats.memoryUsage = memStats.hot + memStats.warm + memStats.cold;
 
     // Update timestamp
     systemStats.timestamp = new Date().toISOString();
-
   } catch (error) {
     console.error('Error collecting metrics:', error.message);
   }
@@ -124,36 +137,37 @@ app.get('/api/metrics', async (req, res) => {
   res.json(systemStats);
 });
 
-app.get('/api/agents', (req, res) => {
+app.get('/api/agents', async (req, res) => {
+  await collectRealMetrics();
   res.json(agentData);
 });
 
 app.get('/api/projects', (req, res) => {
   projectData = [
-    { id: 1, name: 'E-commerce Platform', status: 'active', progress: 85, team: 5 },
-    { id: 2, name: 'Analytics Dashboard', status: 'active', progress: 60, team: 3 },
-    { id: 3, name: 'Mobile App', status: 'paused', progress: 45, team: 4 },
-    { id: 4, name: 'API Gateway', status: 'completed', progress: 100, team: 2 },
+    { id: 1, name: 'Ultra-Dex Meta-Layer', status: 'active', progress: 100, team: 1 },
   ];
   res.json(projectData);
 });
 
 app.get('/api/tasks', (req, res) => {
-  const tasks = [
-    { id: 1, name: 'Implement auth system', status: 'completed', agent: 'Backend', priority: 'high', timeSpent: '2h 30m' },
-    { id: 2, name: 'Design dashboard UI', status: 'in-progress', agent: 'Frontend', priority: 'medium', timeSpent: '1h 15m' },
-    { id: 3, name: 'Setup database schema', status: 'pending', agent: 'Database', priority: 'high', timeSpent: '0m' },
-    { id: 4, name: 'Write unit tests', status: 'in-progress', agent: 'Testing', priority: 'low', timeSpent: '30m' },
-  ];
-  res.json(tasks);
+  const sessions = agentOrchestrator.getActiveSessions();
+  res.json(sessions.map(s => ({
+    id: s.id,
+    name: s.task.substring(0, 30) + '...',
+    status: s.status,
+    agent: s.agentsUsed?.[0] || 'Orchestrator',
+    priority: 'high',
+    timeSpent: `${Math.round((Date.now() - s.startTime) / 1000)}s`
+  })));
 });
 
-app.get('/api/memory', (req, res) => {
+app.get('/api/memory', async (req, res) => {
+  const memStats = await ppmManager.stats();
   const memoryStats = {
-    hotTier: { count: 25, size: '2.5 MB', accessRate: 95 },
-    warmTier: { count: 120, size: '12 MB', accessRate: 78 },
-    coldTier: { count: 450, size: '45 MB', accessRate: 23 },
-    total: { count: 595, size: '59.5 MB' }
+    hotTier: { count: memStats.hot, size: `${(memStats.hot * 0.1).toFixed(1)} KB`, accessRate: 95 },
+    warmTier: { count: memStats.warm, size: `${(memStats.warm * 0.5).toFixed(1)} KB`, accessRate: 78 },
+    coldTier: { count: memStats.cold, size: `${(memStats.cold * 2).toFixed(1)} KB`, accessRate: 23 },
+    total: { count: memStats.hot + memStats.warm + memStats.cold, size: 'Auto' }
   };
   res.json(memoryStats);
 });

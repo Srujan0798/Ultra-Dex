@@ -38,14 +38,17 @@ const PROVIDERS = {
     class: RouterProvider,
     name: 'Semantic Router (Hybrid)',
   },
-  // Note: Mock provider would be added here in a production implementation
-  // mock: {
-  //   class: (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true')
-  //     ? MockOpenAI // Use imported MockOpenAI when testing
-  //     : OpenAIProvider, // Fallback to OpenAI in prod
-  //   envKey: null,
-  //   name: 'Mock Provider (Testing)',
-  // },
+  mock: {
+    getMockClass: async () => {
+      if (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true') {
+        const mockModule = await import('./mock.js');
+        return mockModule.MockOpenAI;
+      }
+      return OpenAIProvider; // Fallback to OpenAI in prod
+    },
+    envKey: null,
+    name: 'Mock Provider (Testing)',
+  },
 };
 
 /**
@@ -101,20 +104,19 @@ export async function createProvider(providerId, options = {}) {
     );
   }
 
-  // Determine the actual class to use (needed for mock provider)
-  let ProviderClass = providerConfig.class;
+  // Handle mock provider specially (it's async)
   if (providerId === 'mock') {
-    // For mock provider, dynamically determine the class based on environment
-    ProviderClass = (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true')
-      ? MockOpenAI
-      : OpenAIProvider;
+    const MockProviderClass = await providerConfig.getMockClass();
+    const provider = new MockProviderClass(options);
+    const wrapped = agent ? wrapProviderWithGovernance(provider, agent) : provider;
+    return wrapProviderWithMemex(wrapped, { agent });
   }
 
   // Get API key from options or environment (Ollama doesn't strictly need one)
   const apiKey =
     options.apiKey || (providerConfig.envKey ? process.env[providerConfig.envKey] : null);
 
-  if (!apiKey && providerId !== 'ollama' && providerId !== 'mock') {
+  if (!apiKey && providerId !== 'ollama') {
     throw new Error(
       `API key not found for ${providerConfig.name}.\n\n` +
         `To fix this, either:\n` +
@@ -127,7 +129,7 @@ export async function createProvider(providerId, options = {}) {
     );
   }
 
-  const provider = new ProviderClass(apiKey, options);
+  const provider = new providerConfig.class(apiKey, options);
   const wrapped = agent ? wrapProviderWithGovernance(provider, agent) : provider;
   return wrapProviderWithMemex(wrapped, { agent });
 }

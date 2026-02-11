@@ -66,6 +66,34 @@ class MockProviderBase extends BaseProvider {
       model: this.model,
     };
   }
+
+  async generateWithTools(systemPrompt, userPrompt, tools, options = {}) {
+    const content = this.buildResponse(systemPrompt, userPrompt);
+
+    // If tools are provided, simulate a tool call response
+    let toolCalls = undefined;
+    if (tools && tools.length > 0) {
+      // Randomly decide if we should simulate a tool call
+      if (Math.random() > 0.7) { // 30% chance of tool call
+        const randomTool = tools[Math.floor(Math.random() * tools.length)];
+        toolCalls = [{
+          id: `call_${Math.random().toString(36).substr(2, 9)}`,
+          type: 'function',
+          function: {
+            name: randomTool.function?.name || 'unknown_tool',
+            arguments: JSON.stringify(randomTool.function?.parameters || {})
+          }
+        }];
+      }
+    }
+
+    return {
+      content,
+      toolCalls,
+      usage: { inputTokens: 0, outputTokens: content.length },
+      model: this.model,
+    };
+  }
 }
 
 export class MockOpenAI extends MockProviderBase {

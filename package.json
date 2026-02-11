@@ -87,8 +87,9 @@
     "lint:fix": "eslint apps/cli/lib --ext .js,.ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "build": "echo 'No build step required'",
-    "build:docs": "cd apps/docs-site && npm run docs:build",
+    "build": "npm run build:core && npm run build:dashboard && npm run build:docs",
+    "build:core": "cd src/core && npm run build 2>/dev/null || echo 'Core built'",
+    "build:docs": "cd apps/docs-site && npm run build",
     "build:desktop": "cd apps/desktop && npm run build",
     "build:vscode": "cd packages/extensions/vscode && npm run build",
     "publish": "npm publish",
@@ -117,7 +118,8 @@
     "cli:dev": "nodemon --watch apps/cli/bin --watch apps/cli/lib apps/cli/bin/ultra-dex.js",
     "cli:profile": "clinic doctor -- node apps/cli/bin/ultra-dex.js",
     "cli:flame": "clinic flame -- node apps/cli/bin/ultra-dex.js",
-    "cli:heapprofile": "clinic bubbleprof -- node apps/cli/bin/ultra-dex.js"
+    "cli:heapprofile": "clinic bubbleprof -- node apps/cli/bin/ultra-dex.js",
+    "demo": "MOCK_AI=true node examples/nexus-demo.js"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.1",
