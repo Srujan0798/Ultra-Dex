@@ -1,6 +1,5 @@
-// Copyright (c) 2026 Ultra-Dex
-
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';

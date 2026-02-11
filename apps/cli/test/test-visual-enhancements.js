@@ -1,9 +1,9 @@
+#!/usr/bin/env node
+
 /**
  * @fileoverview Test Visual Enhancements module
  * @module test/test-visual-enhancements
  */
-
-#!/usr/bin/env node
 
 import { createTable, showAgentsTable, showCommandsTable } from './lib/utils/tables.js';
 import { selectAgent, confirmAction, inputText, interactiveMenu } from './lib/utils/prompts.js';

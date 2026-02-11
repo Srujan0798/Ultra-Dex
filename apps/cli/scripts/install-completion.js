@@ -1,9 +1,9 @@
+#!/usr/bin/env node
+
 /**
  * @fileoverview Install Completion module
  * @module scripts/install-completion
  */
-
-#!/usr/bin/env node
 // Copyright (c) 2026 Ultra-Dex
 
 import { installCompletion } from '../lib/commands/install-completion.js';

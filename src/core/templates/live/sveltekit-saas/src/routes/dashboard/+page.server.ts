@@ -35,7 +35,7 @@ export const load: PageServerLoad = async ({ locals }) => {
  * Error handler for +page.server
  * @param {Error} error - Error to handle
  */
-function handle+pageserverError(error) {
+function handlePageServerError(error) {
   try {
     console.error('[+page.server]', error instanceof Error ? error.message : String(error));
   } catch (_) {

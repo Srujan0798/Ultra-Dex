@@ -1,10 +1,9 @@
-// Copyright (c) 2026 Ultra-Dex
-
 #!/usr/bin/env node
+// Copyright (c) 2026 Ultra-Dex
 
 /**
  * Ultra-Dex Version Coordination Script
- * 
+ *
  * This script helps agents coordinate version updates across all components
  * ensuring consistency and preventing version conflicts.
  */
@@ -21,14 +20,11 @@ const SYNCED_COMPONENTS = [
   './extensions/vscode/package.json',
   './apps/desktop/package.json',
   './web/package.json',
-  './dashboard/package.json'
+  './dashboard/package.json',
 ];
 
 // Components that have independent versions
-const INDEPENDENT_COMPONENTS = [
-  './mobile/package.json',
-  './sdk/package.json'
-];
+const INDEPENDENT_COMPONENTS = ['./mobile/package.json', './sdk/package.json'];
 
 async function getMasterVersion() {
   try {
@@ -45,9 +41,9 @@ async function updateComponentVersion(componentPath, newVersion) {
     const fullPath = path.join(ROOT_DIR, componentPath);
     const content = await fs.readFile(fullPath, 'utf8');
     const pkg = JSON.parse(content);
-    
+
     pkg.version = newVersion;
-    
+
     await fs.writeFile(fullPath, JSON.stringify(pkg, null, 2) + '\n');
     console.log(`✅ Updated ${componentPath} to ${newVersion}`);
     return true;
@@ -59,7 +55,7 @@ async function updateComponentVersion(componentPath, newVersion) {
 
 async function syncVersions(newVersion) {
   console.log(`🔄 Starting version synchronization to ${newVersion}...`);
-  
+
   // First, update the master version
   try {
     const masterContent = await fs.readFile(MASTER_PACKAGE, 'utf8');
@@ -71,18 +67,18 @@ async function syncVersions(newVersion) {
     console.error(`❌ Failed to update master version: ${error.message}`);
     return false;
   }
-  
+
   // Then update all synced components
   let successCount = 0;
   const totalCount = SYNCED_COMPONENTS.length;
-  
+
   for (const component of SYNCED_COMPONENTS) {
     const success = await updateComponentVersion(component, newVersion);
     if (success) successCount++;
   }
-  
+
   console.log(`\n📊 Sync Results: ${successCount}/${totalCount} components updated`);
-  
+
   if (successCount === totalCount) {
     console.log(`🎉 Version synchronization completed successfully!`);
     return true;
@@ -94,33 +90,33 @@ async function syncVersions(newVersion) {
 
 async function checkVersionConsistency() {
   console.log(`🔍 Checking version consistency...`);
-  
+
   const masterVersion = await getMasterVersion();
   console.log(`📋 Master version: ${masterVersion}`);
-  
+
   let inconsistent = [];
-  
+
   for (const component of SYNCED_COMPONENTS) {
     try {
       const fullPath = path.join(ROOT_DIR, component);
       const content = await fs.readFile(fullPath, 'utf8');
       const pkg = JSON.parse(content);
-      
+
       if (pkg.version !== masterVersion) {
         inconsistent.push({
           component,
           version: pkg.version,
-          expected: masterVersion
+          expected: masterVersion,
         });
       }
     } catch (error) {
       console.error(`❌ Could not read ${component}: ${error.message}`);
     }
   }
-  
+
   if (inconsistent.length > 0) {
     console.log(`❌ Found ${inconsistent.length} inconsistent components:`);
-    inconsistent.forEach(item => {
+    inconsistent.forEach((item) => {
       console.log(`   ${item.component}: ${item.version} (expected: ${item.expected})`);
     });
     return false;
@@ -133,11 +129,11 @@ async function checkVersionConsistency() {
 async function showVersionStatus() {
   console.log(`📋 Current Version Status:`);
   console.log(``);
-  
+
   const masterVersion = await getMasterVersion();
   console.log(`🎯 Master Version: ${masterVersion} (${MASTER_PACKAGE})`);
   console.log(``);
-  
+
   console.log(`🔄 Synchronized Components:`);
   for (const component of SYNCED_COMPONENTS) {
     try {
@@ -150,7 +146,7 @@ async function showVersionStatus() {
       console.log(`   ❌ ${component}: ERROR - ${error.message}`);
     }
   }
-  
+
   console.log(``);
   console.log(`📦 Independent Components:`);
   for (const component of INDEPENDENT_COMPONENTS) {
@@ -169,11 +165,11 @@ async function showVersionStatus() {
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0];
-  
+
   console.log(`🚀 Ultra-Dex Version Coordination System`);
   console.log(`📍 Coordination Center: ${ROOT_DIR}`);
   console.log(``);
-  
+
   switch (command) {
     case 'sync':
       if (args[1]) {
@@ -183,22 +179,24 @@ async function main() {
         console.log('   Example: node version-coordination.js sync 4.4.0');
       }
       break;
-      
+
     case 'check':
       await checkVersionConsistency();
       break;
-      
+
     case 'status':
       await showVersionStatus();
       break;
-      
+
     case 'help':
     case '--help':
     default:
       console.log('📖 Available Commands:');
       console.log('   node version-coordination.js status  - Show current version status');
       console.log('   node version-coordination.js check   - Check version consistency');
-      console.log('   node version-coordination.js sync <version> - Sync all components to version');
+      console.log(
+        '   node version-coordination.js sync <version> - Sync all components to version'
+      );
       console.log('');
       console.log('🎯 Coordination Center for all Ultra-Dex agents');
       console.log('   Use this script to ensure version consistency across all components');
@@ -206,7 +204,7 @@ async function main() {
 }
 
 // Run the main function
-main().catch(error => {
+main().catch((error) => {
   console.error(`💥 Coordination system error: ${error.message}`);
   process.exit(1);
 });
