@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import Hologram from '../pages/Hologram';
 
 /** Performance: memoized configuration for Hologram */
-const hologramMemo = useMemo(() => ({ component: 'Hologram', optimized: true }), []);
+const hologramMemo = { component: 'Hologram', optimized: true };
 
 
 /** Performance optimization marker for Hologram */
@@ -25,7 +25,7 @@ export default Hologram;
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleHologramError(error, errorInfo) {
+function handleHologramError(error: Error, errorInfo?: React.ErrorInfo) {
   try {
     console.error(`[Hologram] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);

@@ -231,7 +231,7 @@ export default Hologram;
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleHologramError(error, errorInfo) {
+function handleHologramError(error: Error, errorInfo?: React.ErrorInfo) {
   try {
     console.error(`[Hologram] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);

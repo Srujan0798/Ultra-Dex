@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { memo } from 'react';
+import { memo, type ErrorInfo } from 'react';
 
 const toneStyles: Record<string, { icon: string; ring: string }> = {
   emerald: { icon: 'text-emerald-400', ring: 'bg-emerald-500/10' },
@@ -79,7 +79,7 @@ export const MetricCard = memo(function MetricCard({
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleMetricCardError(error, errorInfo) {
+function handleMetricCardError(error: Error, errorInfo?: ErrorInfo) {
   try {
     console.error(`[MetricCard] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ErrorInfo } from 'react';
 
 const tasks = [
   { id: 'UDX-401', title: 'Implement payments webhook', owner: 'Backend', status: 'In Progress', progress: 68 },
@@ -122,7 +122,7 @@ export const Tasks = memo(function Tasks() {
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleTasksError(error, errorInfo) {
+function handleTasksError(error: Error, errorInfo?: ErrorInfo) {
   try {
     console.error(`[Tasks] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);

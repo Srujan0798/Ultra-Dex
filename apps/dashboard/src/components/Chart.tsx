@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ErrorInfo } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -105,7 +105,7 @@ export const Chart = memo(function Chart({
  * @param {Error} error - The error to handle
  * @param {Object} [errorInfo] - React error info
  */
-function handleChartError(error, errorInfo) {
+function handleChartError(error: Error, errorInfo?: ErrorInfo) {
   try {
     console.error(`[Chart] Rendering error:`, error.message);
     if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
