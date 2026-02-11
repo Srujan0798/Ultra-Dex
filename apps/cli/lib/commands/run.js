@@ -193,7 +193,7 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
 >> DELEGATE: @AgentName "Task"`;
 
   const agentContext = buildAgentContext(agentId, agent);
-  const providerInstance = typeof provider === 'function' ? provider(agentId) : provider;
+  const providerInstance = typeof provider === 'function' ? await provider(agentId) : provider;
 
   try {
     const executionDecision = await authorizeOperation({
@@ -527,14 +527,14 @@ function buildAgentContext(agentId, agent) {
   };
 }
 
-function createAgentProviderFactory(providerId, options = {}) {
+async function createAgentProviderFactory(providerId, options = {}) {
   const cache = new Map();
-  return (agentId) => {
+  return async (agentId) => {
     const key = agentId.toLowerCase();
     if (cache.has(key)) return cache.get(key);
     const agent = AGENTS[key];
     const agentContext = buildAgentContext(key, agent);
-    const provider = createProvider(providerId, { ...options, agent: agentContext });
+    const provider = await createProvider(providerId, { ...options, agent: agentContext });
     cache.set(key, provider);
     return provider;
   };
@@ -581,7 +581,7 @@ export function registerRunCommand(program) {
 
         const context = await readProjectContext();
         const providerId = options.provider || getDefaultProvider();
-        const providerFactory = createAgentProviderFactory(providerId, {
+        const providerFactory = await createAgentProviderFactory(providerId, {
           apiKey: options.key,
           maxTokens: 8000,
         });
@@ -610,7 +610,7 @@ export function registerSwarmCommand(program) {
         printInfo(chalk.cyan('\n🐝 Ultra-Dex Agent Swarm\n'));
         const context = await readProjectContext();
         const providerId = options.provider || getDefaultProvider();
-        const providerFactory = createAgentProviderFactory(providerId, {
+        const providerFactory = await createAgentProviderFactory(providerId, {
           apiKey: options.key,
           maxTokens: 8000,
         });

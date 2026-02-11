@@ -60,10 +60,22 @@ export class BaseProvider {
    * @param {string} userPrompt - User message/request
    * @param {Function} onChunk - Callback for each chunk: (text: string) => void
    * @param {Object} options - Additional options
-   * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}, model: string}>}
+   * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}, model: string, toolCalls?: Array}>}
    */
   async generateStream(systemPrompt, userPrompt, onChunk, _options = {}) {
     throw new Error('BaseProvider.generateStream() must be implemented by subclass');
+  }
+
+  /**
+   * Generate a completion with tool calling support
+   * @param {string} systemPrompt - System instructions
+   * @param {string} userPrompt - User message/request
+   * @param {Array} tools - Array of tool definitions
+   * @param {Object} options - Additional options
+   * @returns {Promise<{content: string, usage: {inputTokens: number, outputTokens: number}, model: string, toolCalls?: Array}>}
+   */
+  async generateWithTools(systemPrompt, userPrompt, tools, _options = {}) {
+    throw new Error('BaseProvider.generateWithTools() must be implemented by subclass');
   }
 
   /**

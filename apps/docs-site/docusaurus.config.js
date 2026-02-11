@@ -9,19 +9,16 @@ import {themes as prismThemes} from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Ultra-Dex',
-  tagline: 'The AI Orchestration Meta-Layer for SaaS Development - OVERPOWERED Edition',
+  tagline: 'The AI Orchestration Meta-Layer - v6.0.0 BEYOND AND ABOVE',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://ultra-dex.github.io',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/Ultra-Dex/',
+  url: 'https://ultra-dex.ai',
+  baseUrl: '/',
 
   // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'Srujan0798', // Usually your GitHub org/user name.
-  projectName: 'Ultra-Dex', // Usually your repo name.
+  organizationName: 'Srujan0798',
+  projectName: 'Ultra-Dex',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',

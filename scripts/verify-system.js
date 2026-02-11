@@ -55,7 +55,11 @@ async function verifySecurity() {
   try {
     const { checkDocker } = await import('../apps/cli/lib/sandbox/docker.js');
     const dockerOk = await checkDocker();
-    check(dockerOk, 'Docker available for sandbox (or intentionally disabled)');
+    if (dockerOk) {
+      check(true, 'Docker available for sandbox');
+    } else {
+      console.log(chalk.yellow('  ⚠️  Docker not found. Sandbox mode will be unavailable.'));
+    }
 
     const { codeValidator } = await import('../src/services/security/validators.js');
     check(!!codeValidator, 'Static code validator importable');

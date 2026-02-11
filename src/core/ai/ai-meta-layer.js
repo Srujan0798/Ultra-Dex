@@ -59,10 +59,29 @@ export class AIMetaLayer {
           object: this.generateMockObject(opts.schema),
           usage: { totalTokens: 15 }
         }),
-        generateText: async (opts) => ({
-          text: `Mock response for: ${opts.messages[opts.messages.length - 1].content}`,
-          usage: { totalTokens: 10 }
-        }),
+        generateText: async (opts) => {
+          const lastMessage = opts.messages[opts.messages.length - 1].content;
+          
+          // Simulate tool call if certain keywords are present
+          if ((lastMessage.includes('Objective') || lastMessage.includes('Relevant')) && !opts.messages.some(m => m.role === 'tool')) {
+            return {
+              text: 'I should check the codebase first.',
+              toolCalls: [
+                {
+                  toolCallId: 'call_' + Math.random().toString(36).substr(2, 9),
+                  toolName: 'query_codebase',
+                  args: { query: 'server', type: 'files' }
+                }
+              ],
+              usage: { totalTokens: 20 }
+            };
+          }
+
+          return {
+            text: `Mock response for: ${lastMessage.substring(0, 50)}...`,
+            usage: { totalTokens: 10 }
+          };
+        },
         stream: async (opts) => ({
           // Minimal stream mock
           async *[Symbol.asyncIterator]() {
@@ -91,7 +110,7 @@ export class AIMetaLayer {
       const anthropicConfig = this.config.providers?.anthropic || {};
       this.providers.set('anthropic', {
         client: anthropic,
-        defaultModel: anthropicConfig.defaultModel || 'claude-3-5-sonnet-20241022',
+        defaultModel: anthropicConfig.defaultModel || 'claude-3-5-sonnet-latest',
         apiKey: anthropicConfig.apiKey || process.env.ANTHROPIC_API_KEY,
         config: anthropicConfig
       });

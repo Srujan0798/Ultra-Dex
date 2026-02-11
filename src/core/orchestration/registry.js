@@ -1,6 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
 // src/core/orchestration/registry.js
 
+import fs from 'fs/promises';
+import path from 'path';
+
 /**
  * Agent Registry
  * Manages registration, discovery, and lifecycle of agents
@@ -12,6 +15,7 @@ export class AgentRegistry {
       autoDiscover: options.autoDiscover !== false,
       enablePersistence: options.enablePersistence !== false,
       maxAgents: options.maxAgents || 100,
+      agentsPath: options.agentsPath || path.join(process.cwd(), 'apps', 'cli', 'assets', 'agents'),
       ...options
     };
 
@@ -35,7 +39,7 @@ export class AgentRegistry {
     }
 
     this.isInitialized = true;
-    console.log(`📋 Agent Registry initialized with ${this.agents.size} agents`);
+    // console.log(`📋 Agent Registry initialized with ${this.agents.size} agents`);
   }
 
   /**
@@ -338,12 +342,76 @@ export class AgentRegistry {
    * Discover agents automatically
    */
   async discoverAgents() {
-    // In a real implementation, this would scan for agent definitions
-    // For now, we'll just log that discovery is happening
-    console.log('🔍 Discovering agents...');
+    const indexPath = path.join(this.options.agentsPath, '00-AGENT_INDEX.md');
     
-    // This could scan directories for agent definitions, 
-    // connect to remote agent registries, etc.
+    try {
+      const content = await fs.readFile(indexPath, 'utf8');
+      
+      // Basic regex to extract agents from markdown tables
+      // Matches: | **@AgentName** | Role | When to Use | File |
+      const agentRegex = /\|\s*\*\*@(\w+)\*\*\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|/g;
+      
+      let match;
+      while ((match = agentRegex.exec(content)) !== null) {
+        const [_, name, role, whenToUse, fileName, filePath] = match;
+        
+        const agentId = name.toLowerCase();
+        const absolutePath = path.resolve(this.options.agentsPath, filePath.replace('./', ''));
+        
+        // Register agent with metadata from index
+        await this.registerAgent(agentId, {
+          name: name,
+          description: role.trim(),
+          usage: whenToUse.trim(),
+          promptPath: absolutePath,
+          capabilities: this.inferCapabilities(agentId, role)
+        });
+      }
+      
+      console.log(`📋 Agent Registry: Discovered ${this.agents.size} agents from index`);
+    } catch (error) {
+      console.error(`❌ Agent Registry Discovery Failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Infer agent capabilities from their role and name
+   */
+  inferCapabilities(agentId, role) {
+    const capabilities = ['general'];
+    const roleLower = role.toLowerCase();
+    
+    if (roleLower.includes('architecture') || agentId === 'cto') capabilities.push('planning', 'architecture');
+    if (roleLower.includes('plan') || agentId === 'planner') capabilities.push('planning', 'task-breakdown');
+    if (roleLower.includes('implementation') || agentId === 'backend' || agentId === 'frontend') capabilities.push('implementation', 'coding');
+    if (roleLower.includes('api') || agentId === 'backend') capabilities.push('api-design');
+    if (roleLower.includes('ui') || agentId === 'frontend') capabilities.push('ui-design');
+    if (roleLower.includes('database') || agentId === 'database') capabilities.push('database-design', 'sql');
+    if (roleLower.includes('security') || agentId === 'security' || agentId === 'auth') capabilities.push('security', 'audit');
+    if (roleLower.includes('deploy') || agentId === 'devops') capabilities.push('devops', 'deployment');
+    if (roleLower.includes('test') || agentId === 'testing') capabilities.push('testing', 'qa');
+    if (roleLower.includes('review') || agentId === 'reviewer') capabilities.push('code-review');
+    if (roleLower.includes('debug') || agentId === 'debugger') capabilities.push('debugging');
+    if (roleLower.includes('research') || agentId === 'research') capabilities.push('research');
+    
+    return [...new Set(capabilities)];
+  }
+
+  /**
+   * Get the full prompt for an agent
+   */
+  async getAgentPrompt(agentId) {
+    const agent = this.agents.get(agentId);
+    if (!agent || !agent.promptPath) {
+      return `You are the ${agentId} agent.`;
+    }
+    
+    try {
+      return await fs.readFile(agent.promptPath, 'utf8');
+    } catch (error) {
+      console.error(`Error reading prompt for ${agentId}: ${error.message}`);
+      return `You are the ${agentId} agent.`;
+    }
   }
 
   /**
