@@ -3,7 +3,7 @@
 
 import { aiMetaLayer } from '../ai/ai-meta-layer.js';
 import { performance } from 'perf_hooks';
-import { logger } from '../../src/utils/logging.js';
+import { logger } from '../../utils/logging.js';
 
 /**
  * Agent Meta-Orchestrator

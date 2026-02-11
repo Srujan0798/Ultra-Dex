@@ -5,9 +5,9 @@ import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
-import { experimental_wrapLanguageModel as wrapLanguageModel } from 'ai';
+import { wrapLanguageModel } from 'ai';
 import { z } from 'zod';
-import { logger } from '../../src/utils/logging.js';
+import { logger } from '../../utils/logging.js';
 import { performance } from 'perf_hooks';
 
 /**
@@ -39,6 +39,7 @@ export class AIMetaLayer {
     
     this.cache = new Map();
     this.cacheExpiry = config.cacheExpiry || 300000; // 5 minutes
+    this.mockMode = config.mockMode || process.env.MOCK_AI === 'true';
     
     this.initializeProviders();
   }
@@ -47,6 +48,33 @@ export class AIMetaLayer {
    * Initialize all configured AI providers
    */
   initializeProviders() {
+    // Mock Provider
+    this.providers.set('mock', {
+      client: (model) => ({
+        call: async (opts) => ({
+          text: `Mock response for: ${opts.messages[opts.messages.length - 1].content}`,
+          usage: { totalTokens: 10 }
+        }),
+        generateObject: async (opts) => ({
+          object: this.generateMockObject(opts.schema),
+          usage: { totalTokens: 15 }
+        }),
+        generateText: async (opts) => ({
+          text: `Mock response for: ${opts.messages[opts.messages.length - 1].content}`,
+          usage: { totalTokens: 10 }
+        }),
+        stream: async (opts) => ({
+          // Minimal stream mock
+          async *[Symbol.asyncIterator]() {
+            yield { text: 'Mock ' };
+            yield { text: 'stream ' };
+            yield { text: 'response' };
+          }
+        })
+      }),
+      defaultModel: 'mock-model',
+      config: {}
+    });
     // OpenAI Provider
     if (this.config.providers?.openai?.enabled !== false) {
       const openaiConfig = this.config.providers?.openai || {};
@@ -120,6 +148,10 @@ export class AIMetaLayer {
    * Select the best provider based on the request
    */
   selectProvider(request) {
+    if (this.mockMode) {
+      return this.providers.get('mock');
+    }
+
     if (!this.config.enableRouting) {
       return this.activeProvider;
     }
@@ -330,6 +362,22 @@ export class AIMetaLayer {
       value,
       timestamp: Date.now()
     });
+  }
+
+  /**
+   * Generate a mock object based on a schema (simplified)
+   */
+  generateMockObject(schema) {
+    // Simple mock object generation based on common patterns
+    if (schema.steps) {
+      return {
+        steps: [
+          { id: '1', task: 'Mock Step 1', description: 'Description for mock step 1' },
+          { id: '2', task: 'Mock Step 2', description: 'Description for mock step 2' }
+        ]
+      };
+    }
+    return { status: 'ok', data: 'mock data' };
   }
 
   /**

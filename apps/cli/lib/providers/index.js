@@ -38,6 +38,14 @@ const PROVIDERS = {
     class: RouterProvider,
     name: 'Semantic Router (Hybrid)',
   },
+  // Note: Mock provider would be added here in a production implementation
+  // mock: {
+  //   class: (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true')
+  //     ? MockOpenAI // Use imported MockOpenAI when testing
+  //     : OpenAIProvider, // Fallback to OpenAI in prod
+  //   envKey: null,
+  //   name: 'Mock Provider (Testing)',
+  // },
 };
 
 /**
@@ -58,9 +66,9 @@ export function getAvailableProviders() {
  * @param {Object} options - Provider options
  * @param {string} options.apiKey - API key (optional, will use env var if not provided)
  * @param {string} options.model - Model to use (optional)
- * @returns {BaseProvider}
+ * @returns {Promise<BaseProvider>}
  */
-export function createProvider(providerId, options = {}) {
+export async function createProvider(providerId, options = {}) {
   const agent = options.agent;
   if (agent) {
     enforceAgentExecution({ agent, providerId });
@@ -93,11 +101,20 @@ export function createProvider(providerId, options = {}) {
     );
   }
 
+  // Determine the actual class to use (needed for mock provider)
+  let ProviderClass = providerConfig.class;
+  if (providerId === 'mock') {
+    // For mock provider, dynamically determine the class based on environment
+    ProviderClass = (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true')
+      ? MockOpenAI
+      : OpenAIProvider;
+  }
+
   // Get API key from options or environment (Ollama doesn't strictly need one)
   const apiKey =
     options.apiKey || (providerConfig.envKey ? process.env[providerConfig.envKey] : null);
 
-  if (!apiKey && providerId !== 'ollama') {
+  if (!apiKey && providerId !== 'ollama' && providerId !== 'mock') {
     throw new Error(
       `API key not found for ${providerConfig.name}.\n\n` +
         `To fix this, either:\n` +
@@ -110,7 +127,7 @@ export function createProvider(providerId, options = {}) {
     );
   }
 
-  const provider = new providerConfig.class(apiKey, options);
+  const provider = new ProviderClass(apiKey, options);
   const wrapped = agent ? wrapProviderWithGovernance(provider, agent) : provider;
   return wrapProviderWithMemex(wrapped, { agent });
 }

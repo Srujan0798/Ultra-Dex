@@ -2,7 +2,6 @@
 // src/utils/logging.js
 
 import winston from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
 import os from 'os';
 
 // Create logs directory if it doesn't exist
@@ -25,7 +24,7 @@ const logFormat = winston.format.combine(
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: logFormat,
-  defaultMeta: { 
+  defaultMeta: {
     service: 'ultra-dex-meta-layer',
     hostname: os.hostname(),
     pid: process.pid,
@@ -38,27 +37,30 @@ const logger = winston.createLogger({
         winston.format.colorize(),
         winston.format.simple()
       ),
-      silent: process.env.NODE_ENV === 'test'
+      level: process.env.NODE_ENV === 'test' ? 'error' : 'info'
     }),
-    
+
     // File transport for errors
-    new DailyRotateFile({
+    new winston.transports.File({
+      filename: path.join(logsDir, 'error.log'),
       level: 'error',
-      filename: 'logs/error-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d'
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.errors({ stack: true }),
+        winston.format.splat(),
+        winston.format.json()
+      )
     }),
-    
+
     // Combined file transport
-    new DailyRotateFile({
-      level: 'info',
-      filename: 'logs/combined-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d'
+    new winston.transports.File({
+      filename: path.join(logsDir, 'combined.log'),
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.errors({ stack: true }),
+        winston.format.splat(),
+        winston.format.json()
+      )
     })
   ]
 });
