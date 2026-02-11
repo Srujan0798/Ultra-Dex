@@ -455,6 +455,7 @@ registerScaffoldPlanCommand(program);
 registerDeployCommand(program);
 registerTemplatesCommand(program);
 registerBillingCommands(program);
+registerBudgetCommands(program);
 registerUsageCommands(program);
 registerAlertCommands(program);
 registerRemoteClientCommand(program);

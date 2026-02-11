@@ -8,8 +8,8 @@ export function analyzeDiff(diffText = '') {
 
   lines.forEach((line, index) => {
     if (!line.startsWith('+') || line.startsWith('+++')) return;
-    if (line.includes('TO_DO')) {
-      issues.push({ severity: 'warning', message: 'TO_DO found', line: index + 1 });
+    if (line.match(/TODO/i)) {
+      issues.push({ severity: 'warning', message: 'TODO found', line: index + 1 });
     }
     if (line.includes('console.log')) {
       issues.push({ severity: 'warning', message: 'console.log found', line: index + 1 });
