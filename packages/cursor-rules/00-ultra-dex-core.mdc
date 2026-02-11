@@ -4,7 +4,6 @@
 
 ## Meta-Layer Philosophy
 
-<<<<<<< Current (Your changes)
 - **Autonomy First**: Build for the autonomous Ralph Loop execution.
 - **Verification Driven**: Protocol 21 is mandatory for all commits.
 - **Relational Memory**: Every decision MUST be logged to the Cold Memory.
@@ -23,26 +22,6 @@
 - **Structure**: Monorepo (apps/*, packages/*, src/*).
 - **Core**: ES Modules only.
 - **Security**: Mandatory Docker Sandbox for untrusted code execution.
-=======
-- Autonomy First: Build for the autonomous Ralph Loop execution.
-- Verification Driven: Protocol 21 is mandatory for all commits.
-- Relational Memory: Every decision MUST be logged to the Cold Memory.
-- 1000% Efficiency: Optimize for reasoning-heavy AI models (DeepSeek-R1, o1).
-
-## Code Standards
-
-- TypeScript strict mode always.
-- Zod validation at ALL boundaries.
-- Error handling: No silent failure; use `AppError` primitives.
-- Logging: Mandatory structured JSON via `src/core/utils/output.js`.
-- Tests: Minimum **90% coverage** for business logic.
-
-## Architecture Defaults
-
-- Structure: Monorepo (apps/*, packages/*, src/*).
-- Core: ES Modules only.
-- Security: Mandatory Docker Sandbox for untrusted code execution.
->>>>>>> Incoming (Background Agent changes)
 
 ## Task Completion Checklist (Quick 5-Step)
 
