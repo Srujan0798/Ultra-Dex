@@ -12,6 +12,13 @@ export { TogetherProvider } from './together.js';
 export { FireworksProvider } from './fireworks.js';
 export { PerplexityProvider } from './perplexity.js';
 
+// Next-Gen (2026)
+export { GPT5Provider } from './gpt5.js';
+export { Claude4Provider } from './claude4.js';
+export { Gemini25Provider } from './gemini25.js';
+export { Llama4Provider } from './llama4.js';
+export { Grok3Provider } from './grok3.js';
+
 const providerMap = {
   openai: () => import('./openai.js').then((m) => m.OpenAIProvider),
   anthropic: () => import('./anthropic.js').then((m) => m.AnthropicProvider),
@@ -23,6 +30,12 @@ const providerMap = {
   together: () => import('./together.js').then((m) => m.TogetherProvider),
   fireworks: () => import('./fireworks.js').then((m) => m.FireworksProvider),
   perplexity: () => import('./perplexity.js').then((m) => m.PerplexityProvider),
+  // Next-Gen
+  gpt5: () => import('./gpt5.js').then((m) => m.GPT5Provider),
+  claude4: () => import('./claude4.js').then((m) => m.Claude4Provider),
+  'gemini-2.5': () => import('./gemini25.js').then((m) => m.Gemini25Provider),
+  llama4: () => import('./llama4.js').then((m) => m.Llama4Provider),
+  grok3: () => import('./grok3.js').then((m) => m.Grok3Provider),
 };
 
 export function listProviders() {

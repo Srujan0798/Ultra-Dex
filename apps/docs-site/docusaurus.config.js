@@ -1,31 +1,21 @@
 // @ts-check
-// `@type` JSDoc annotations allow editor autocompletion and type checking
-// (when paired with `@ts-check`).
-// There are various equivalent ways to declare your Docusaurus config.
-// See: https://docusaurus.io/docs/api/docusaurus-config
-
-import {themes as prismThemes} from 'prism-react-renderer';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Ultra-Dex',
-  tagline: 'The AI Orchestration Meta-Layer - v6.0.0 BEYOND AND ABOVE',
+  tagline: 'The AI Orchestration Meta-Layer — A Skeleton, Not a Cage',
   favicon: 'img/favicon.ico',
 
-  // Set the production url of your site here
-  url: 'https://ultra-dex.ai',
+  url: 'https://ultra-dex.dev',
   baseUrl: '/',
 
-  // GitHub pages deployment config.
   organizationName: 'Srujan0798',
   projectName: 'Ultra-Dex',
 
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
-  // Even if you don't use internationalization, you can use this field to set
-  // useful metadata like html lang. For example, if your site is Chinese, you
-  // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -38,17 +28,9 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/Srujan0798/Ultra-Dex/tree/main/docs/',
         },
         blog: {
           showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/Srujan0798/Ultra-Dex/tree/main/docs/',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -60,8 +42,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      image: 'img/ultra-dex-social.jpg',
       navbar: {
         title: 'Ultra-Dex',
         logo: {
@@ -75,54 +56,37 @@ const config = {
             position: 'left',
             label: 'Docs',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
-          {
-            href: 'https://github.com/Srujan0798/Ultra-Dex',
-            label: 'GitHub',
-            position: 'right',
-          },
+          { to: '/docs/providers', label: 'Providers', position: 'left' },
+          { to: '/docs/sdk', label: 'SDK', position: 'left' },
+          { to: '/blog', label: 'Blog', position: 'left' },
         ],
       },
       footer: {
         style: 'dark',
         links: [
           {
-            title: 'Docs',
+            title: 'Documentation',
             items: [
-              {
-                label: 'Tutorial',
-                to: '/docs/intro',
-              },
+              { label: 'Getting Started', to: '/docs/intro' },
+              { label: 'Architecture', to: '/docs/architecture' },
+              { label: 'Provider Guide', to: '/docs/providers' },
+              { label: 'SDK Reference', to: '/docs/sdk' },
             ],
           },
           {
-            title: 'Community',
+            title: 'Develop',
             items: [
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-              },
-              {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
-              },
+              { label: 'Extension Guide', to: '/docs/extensions' },
+              { label: 'Plugin System', to: '/docs/plugins' },
+              { label: 'CLI Reference', to: '/docs/cli' },
             ],
           },
           {
             title: 'More',
             items: [
-              {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
-                label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
-              },
+              { label: 'Blog', to: '/blog' },
+              { label: 'Changelog', to: '/docs/changelog' },
+              { label: 'Roadmap', to: '/docs/roadmap' },
             ],
           },
         ],
@@ -131,20 +95,14 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
+        additionalLanguages: ['bash', 'json', 'yaml', 'docker'],
+      },
+      colorMode: {
+        defaultMode: 'dark',
+        disableSwitch: false,
+        respectPrefersColorScheme: true,
       },
     }),
 };
 
 export default config;
-
-/**
- * Error handler for docusaurus.config
- * @param {Error} error - Error to handle
- */
-function handleDocusaurusconfigError(error) {
-  try {
-    console.error('[docusaurus.config]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}

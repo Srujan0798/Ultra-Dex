@@ -38,17 +38,17 @@
     "ultra-dex": "./apps/cli/bin/ultra-dex.js"
   },
   "files": [
-    "cli/bin",
-    "cli/lib",
-    "cli/assets",
-    "cli/templates",
-    "cli/test",
-    "PRODUCTION_DEPLOYMENT.md",
-    "GETTING_STARTED.md",
-    "ADVANCED_USAGE.md",
-    "BEST_PRACTICES.md",
+    "apps/cli/bin",
+    "apps/cli/lib",
+    "apps/cli/assets",
+    "apps/cli/templates",
+    "src/core",
+    "src/services/ai-providers",
+    "packages/sdk",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/ARCHITECTURE.md",
+    "docs/CHANGELOG.md"
   ],
   "type": "module",
   "engines": {
