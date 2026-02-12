@@ -1,3 +1,4 @@
+/* global window */
 // Copyright (c) 2026 Ultra-Dex
 
 /**

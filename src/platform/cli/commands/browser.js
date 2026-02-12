@@ -9,7 +9,8 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { chromium, firefox, webkit } from 'playwright';
-import { printError, printInfo, printSuccess } from '../utils/output.js';
+/* global document */
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
 export function registerBrowserCommand(program) {
@@ -576,8 +577,7 @@ async function recordSession(options) {
     const dom = await page.content();
 
     const outputPath = options.output || 'browser-session.json';
-    const screenshotPath =
-      outputPath.replace(/\.json$/i, '') + `-${Date.now()}.png`;
+    const screenshotPath = outputPath.replace(/\.json$/i, '') + `-${Date.now()}.png`;
 
     await page.screenshot({ path: screenshotPath, fullPage: true });
 
