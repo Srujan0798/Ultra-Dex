@@ -115,8 +115,8 @@ export class CodeReviewSystem extends EventEmitter {
     this.agents.set('performance', performanceAgent);
 
     // Quality Agent
-    const qualityGuard = new ReviewAgent('QualityGuard', 'quality');
-    qualityGuard.addRule(
+    const qualityAgent = new ReviewAgent('QualityGuard', 'quality');
+    qualityAgent.addRule(
       /TO_DO|FIXME|XXX|HACK/,
       'Address TO_DO/FIXME comments before merging',
       'medium'

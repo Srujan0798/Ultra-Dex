@@ -49,9 +49,9 @@ export async function streamTextWithDisplay(options = {}) {
     systemPrompt = '',
     userPrompt = '',
     apiKey = process.env.ANTHROPIC_API_KEY ||
-      process.env.OPENAI_API_KEY ||
-      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-      process.env.GOOGLE_API_KEY,
+    process.env.OPENAI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GOOGLE_API_KEY,
     onToken,
     onComplete,
     onError,
@@ -268,7 +268,7 @@ export class InterruptibleStream {
     } = options;
 
     // Set up interrupt handler
-    const originalSigint = process.listeners('SIGINT')[0] || (() => {});
+    const originalSigint = process.listeners('SIGINT')[0] || (() => { });
     const interruptHandler = () => {
       this.interrupt();
     };
@@ -364,7 +364,7 @@ export function formatStreamOutput(text, mode = 'default') {
     case 'typing':
       // Simulate typing effect (would be used with a delay in real implementation)
       return text;
-    case 'chunked':
+    case 'chunked': {
       // Split into chunks for display
       const chunkSize = 50;
       const chunks = [];
@@ -372,6 +372,7 @@ export function formatStreamOutput(text, mode = 'default') {
         chunks.push(text.slice(i, i + chunkSize));
       }
       return chunks;
+    }
     case 'annotated':
       // Add annotations to the text
       return text

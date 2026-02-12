@@ -14,7 +14,7 @@ import cliProgress from 'cli-progress';
 let multiBar = null;
 
 export function showProgress(tasks) {
-  // eslint-disable-next-line no-unused-vars
+   
   const _total = tasks.length;
   console.log('');
   console.log(gradient(['#6366f1', '#8b5cf6']).bold('  ⚡ EXECUTING TASKS...'));

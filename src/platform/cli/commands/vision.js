@@ -10,6 +10,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { visionAgent } from '../vision/vision-agent.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
+import { AppError } from '../utils/errors.js';
+import axios from 'axios';
 
 export function registerVisionCommand(program) {
   const visionCommand = program
@@ -34,7 +36,7 @@ export function registerVisionCommand(program) {
           const comparison = await visionAgent.compareUIs(imagePath, options.compare, {
             apiKey: options.key
           });
-          
+
           printSuccess(comparison.message);
           console.log(comparison.comparison);
         } else if (options.tokens) {
@@ -43,37 +45,37 @@ export function registerVisionCommand(program) {
           const tokens = await visionAgent.extractDesignTokens(imagePath, {
             apiKey: options.key
           });
-          
+
           printSuccess(tokens.message);
           console.log(JSON.stringify(tokens.tokens, null, 2));
         } else {
           // Generate code from screenshot
           printInfo(`👁️  Analyzing screenshot: ${imagePath}`);
-          
+
           const result = await visionAgent.analyzeScreenshot(imagePath, {
             framework: options.framework,
             prompt: options.prompt,
             apiKey: options.key
           });
-          
+
           printSuccess(result.message);
-          
+
           if (result.generatedCode) {
             if (options.verbose) {
               printInfo('\n📝 Generated Code:');
               console.log(result.generatedCode);
             }
-            
+
             // Determine output path
             let outputPath = options.output;
             if (!outputPath) {
               const componentName = visionAgent.generateComponentName(imagePath);
-              const extension = options.framework === 'vue' ? '.vue' : 
-                               options.framework === 'svelte' ? '.svelte' :
-                               options.framework === 'angular' ? '.component.ts' : '.tsx';
+              const extension = options.framework === 'vue' ? '.vue' :
+                options.framework === 'svelte' ? '.svelte' :
+                  options.framework === 'angular' ? '.component.ts' : '.tsx';
               outputPath = `src/components/${componentName}${extension}`;
             }
-            
+
             // Save to file
             const saveResult = await visionAgent.saveCodeToFile(result.generatedCode, outputPath);
             printSuccess(saveResult.message);
@@ -101,10 +103,10 @@ export function registerVisionCommand(program) {
         const result = await visionAgent.extractDesignTokens(image, {
           apiKey: options.key
         });
-        
+
         printSuccess(result.message);
         console.log(JSON.stringify(result.tokens, null, 2));
-        
+
         if (options.output) {
           await fs.writeFile(options.output, JSON.stringify(result.tokens, null, 2));
           printSuccess(`💾 Tokens saved to: ${options.output}`);
@@ -128,10 +130,10 @@ export function registerVisionCommand(program) {
         const result = await visionAgent.compareUIs(image1, image2, {
           apiKey: options.key
         });
-        
+
         printSuccess(result.message);
         console.log(result.comparison);
-        
+
         if (options.output) {
           await fs.writeFile(options.output, result.comparison);
           printSuccess(`💾 Comparison saved to: ${options.output}`);
@@ -151,19 +153,19 @@ export function registerVisionCommand(program) {
     .action(async (image, options) => {
       try {
         printInfo(`🔬 Analyzing UI components in: ${image}`);
-        
+
         // For detailed analysis, we'll use a more specific prompt
-        const prompt = options.detailed 
+        const prompt = options.detailed
           ? "Perform a comprehensive UI analysis identifying all components, their hierarchy, functionality, and accessibility features. List all interactive elements and their potential behaviors."
           : "Identify the main UI components and their relationships.";
-        
+
         const base64Image = await visionAgent.encodeImageToBase64(image);
         const apiKey = options.key || process.env.OPENAI_API_KEY;
-        
+
         if (!apiKey) {
           throw new AppError('OPENAI_API_KEY required for vision analysis');
         }
-        
+
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
           model: 'gpt-4-vision-preview',
           messages: [
@@ -192,7 +194,7 @@ export function registerVisionCommand(program) {
             'Content-Type': 'application/json',
           },
         });
-        
+
         const analysis = response.data.choices[0].message.content;
         printSuccess('✅ UI analysis complete');
         console.log(analysis);

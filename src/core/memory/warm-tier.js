@@ -78,4 +78,5 @@ export class WarmTier {
   }
 }
 
+export const warmTier = new WarmTier();
 export default WarmTier;

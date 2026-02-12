@@ -41,17 +41,17 @@ export class VoiceToCodeService {
         // Windows with PowerShell
         const psScript = `
         Add-Type -AssemblyName System.Windows.Forms,System.Drawing
-        \$rec = New-Object System.Media.SoundRecorder
-        \$rec.Recording = \$true
+        $rec = New-Object System.Media.SoundRecorder
+        $rec.Recording = $true
         Start-Sleep -Seconds 30
-        \$rec.Stop()
+        $rec.Stop()
         `;
         this.recordingProcess = exec(`powershell -Command "${psScript}"`);
       }
 
       this.recording = true;
       printInfo('🎤 Recording started... Speak your command (will stop after 30 seconds or press Ctrl+C)');
-      
+
       return { success: true, message: 'Recording started' };
     } catch (error) {
       throw new AppError(`Failed to start recording: ${error.message}`);
@@ -66,9 +66,9 @@ export class VoiceToCodeService {
       if (this.recordingProcess) {
         this.recordingProcess.kill();
       }
-      
+
       this.recording = false;
-      
+
       if (!this.audioFile || !(await fs.stat(this.audioFile).catch(() => false))) {
         throw new AppError('No audio file recorded');
       }
@@ -91,7 +91,7 @@ export class VoiceToCodeService {
     try {
       const FormData = (await import('form-data')).default;
       const axios = (await import('axios')).default;
-      
+
       const formData = new FormData();
       formData.append('file', createReadStream(audioFilePath));
       formData.append('model', 'whisper-1');
@@ -118,7 +118,7 @@ export class VoiceToCodeService {
     try {
       // Parse voice command to determine intent
       const parsedCommand = this.parseVoiceCommand(voiceCommand);
-      
+
       if (parsedCommand.action === 'unknown') {
         return {
           success: false,
@@ -128,13 +128,13 @@ export class VoiceToCodeService {
 
       // Generate code based on parsed command
       const codeGenerationResult = await this.generateCode(parsedCommand, options);
-      
+
       if (codeGenerationResult.success) {
         // Optionally write the generated code to files
         if (options.writeToFiles && codeGenerationResult.files) {
           await this.writeGeneratedFiles(codeGenerationResult.files);
         }
-        
+
         return {
           success: true,
           command: parsedCommand,
@@ -158,7 +158,7 @@ export class VoiceToCodeService {
    */
   parseVoiceCommand(command) {
     const lowerCmd = command.toLowerCase();
-    
+
     // Identify action
     let action = 'unknown';
     if (lowerCmd.includes('create') || lowerCmd.includes('make') || lowerCmd.includes('build') || lowerCmd.includes('add')) {
@@ -276,15 +276,15 @@ Context:
   parseCodeResponse(response) {
     const files = [];
     const dependencies = [];
-    
+
     // Extract code blocks with file paths
     const codeBlockRegex = /```(?:\w+)?\s*([^\n]+?)\n([\s\S]*?)```/g;
     let match;
-    
+
     while ((match = codeBlockRegex.exec(response)) !== null) {
       const filePath = match[1].trim();
       const content = match[2].trim();
-      
+
       if (filePath && content) {
         files.push({
           path: filePath,
@@ -292,14 +292,14 @@ Context:
         });
       }
     }
-    
+
     // Extract dependency information if mentioned
     const depRegex = /npm install ([\w@\-_/]+)/g;
     let depMatch;
     while ((depMatch = depRegex.exec(response)) !== null) {
       dependencies.push(depMatch[1]);
     }
-    
+
     return { files, dependencies };
   }
 
@@ -309,13 +309,13 @@ Context:
   async writeGeneratedFiles(files) {
     for (const file of files) {
       const fullPath = path.resolve(process.cwd(), file.path);
-      
+
       // Ensure directory exists
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
-      
+
       // Write file
       await fs.writeFile(fullPath, file.content, 'utf8');
-      
+
       printSuccess(`📝 Created: ${file.path}`);
     }
   }
@@ -329,7 +329,7 @@ Context:
       if (await fs.access(packageJsonPath).then(() => true).catch(() => false)) {
         const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
         const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-        
+
         const stack = [];
         if (deps.next) stack.push('Next.js');
         if (deps.react) stack.push('React');
@@ -342,7 +342,7 @@ Context:
         if (deps.typeorm) stack.push('TypeORM');
         if (deps.mongodb) stack.push('MongoDB');
         if (deps.pg) stack.push('PostgreSQL');
-        
+
         return stack.join(', ') || 'Unknown';
       }
       return 'Unknown';

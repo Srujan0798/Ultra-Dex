@@ -2,7 +2,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import axios from 'axios';
 import { z } from 'zod';
@@ -47,10 +47,10 @@ export class SelfHealingCICD {
   async initialize() {
     // Load healing rules from configuration
     await this.loadHealingRules();
-    
+
     // Set up monitors for common failure patterns
     this.setupFailureMonitors();
-    
+
     printSuccess('🔧 Self-healing CI/CD system initialized');
   }
 
@@ -169,7 +169,7 @@ export class SelfHealingCICD {
   async runPipeline(options = {}) {
     try {
       printInfo('🔄 Starting self-healing CI/CD pipeline...');
-      
+
       const pipeline = {
         stage: 'init',
         status: 'running',
@@ -269,7 +269,7 @@ export class SelfHealingCICD {
     } catch (error) {
       printWarning(`⚠️  Security issues found: ${error.message}`);
       pipeline.stages.security.error = error.message;
-      
+
       // Attempt to fix security issues
       try {
         await execAsync('npm audit fix', { timeout: this.options.timeout });
@@ -349,7 +349,7 @@ export class SelfHealingCICD {
     } catch (error) {
       printWarning(`⚠️  Performance issues: ${error.message}`);
       pipeline.stages.performance.error = error.message;
-      
+
       // Attempt performance optimizations
       try {
         // This would run performance optimization tools
@@ -375,7 +375,7 @@ export class SelfHealingCICD {
 
       // Determine deployment target
       const deployTarget = await this.detectDeploymentTarget();
-      
+
       let deployResult;
       switch (deployTarget) {
         case 'vercel':
@@ -470,20 +470,22 @@ export class SelfHealingCICD {
             case 'npm install':
               execSync('npm install');
               break;
-            case 'chmod +x':
+            case 'chmod +x': {
               // Extract file from error and make executable
               const fileMatch = errorInfo.error.match(/'([^']+)'/);
               if (fileMatch) {
                 execSync(`chmod +x "${fileMatch[1]}"`);
               }
               break;
-            case 'kill-port':
+            }
+            case 'kill-port': {
               // Extract port from error and kill process
               const portMatch = errorInfo.error.match(/port (\d+)/);
               if (portMatch) {
                 execSync(`lsof -ti:${portMatch[1]} | xargs kill -9`);
               }
               break;
+            }
             case 'start-db':
               // Start database service
               execSync('docker-compose up -d database || echo "Database not configured"');
@@ -522,7 +524,7 @@ export class SelfHealingCICD {
       printInfo('🤖 AI analyzing error and suggesting fix...');
 
       const provider = createOpenAIRunnable('gpt-4-turbo');
-      
+
       const messages = [
         {
           role: 'system',
@@ -620,10 +622,10 @@ export class SelfHealingCICD {
   async handleTestFailure(error) {
     try {
       printInfo('🔧 Attempting test fix...');
-      
+
       // Try to identify the failing test
       const failingTest = this.identifyFailingTest(error);
-      
+
       if (failingTest) {
         // Use AI to fix the specific test
         const aiFix = await this.fixTestWithAI(failingTest);
@@ -632,11 +634,11 @@ export class SelfHealingCICD {
           return { success: true, fix: 'ai-test-fix' };
         }
       }
-      
+
       // Fallback: reinstall dependencies and run tests again
       await execAsync('npm install');
       await execAsync('npm test');
-      
+
       printSuccess('✅ Tests fixed');
       return { success: true, fix: 'reinstall-and-test' };
     } catch (fixError) {
@@ -651,10 +653,10 @@ export class SelfHealingCICD {
   async handleBuildError(error) {
     try {
       printInfo('🔧 Attempting build fix...');
-      
+
       // Identify build issue type
       const issueType = this.identifyBuildIssue(error);
-      
+
       switch (issueType) {
         case 'dependency':
           await execAsync('npm install');
@@ -668,10 +670,10 @@ export class SelfHealingCICD {
         default:
           await execAsync('rm -rf node_modules package-lock.json && npm install');
       }
-      
+
       // Retry build
       await execAsync('npm run build');
-      
+
       printSuccess('✅ Build fixed');
       return { success: true, fix: 'build-fix' };
     } catch (fixError) {
@@ -686,10 +688,10 @@ export class SelfHealingCICD {
   async handleDeploymentError(error) {
     try {
       printInfo('🔧 Attempting deployment fix...');
-      
+
       // Identify deployment issue
       const issueType = this.identifyDeploymentIssue(error);
-      
+
       switch (issueType) {
         case 'environment':
           // Check and fix environment variables
@@ -704,7 +706,7 @@ export class SelfHealingCICD {
           // Retry deployment with different strategy
           break;
       }
-      
+
       printSuccess('✅ Deployment issue addressed');
       return { success: true, fix: 'deployment-fix' };
     } catch (fixError) {
@@ -736,9 +738,9 @@ export class SelfHealingCICD {
   async fixTestWithAI(testInfo) {
     try {
       const testContent = await fs.readFile(testInfo.file, 'utf8');
-      
+
       const provider = createAnthropicRunnable('claude-3-5-sonnet-20241022');
-      
+
       const messages = [
         {
           role: 'system',
@@ -754,10 +756,10 @@ export class SelfHealingCICD {
       ];
 
       const response = await provider.invoke({ messages });
-      
+
       // Write the fixed test back to file
       await fs.writeFile(testInfo.file, response.content);
-      
+
       return { success: true, fixed: true };
     } catch (error) {
       printError(`AI test fix failed: ${error.message}`);
@@ -803,22 +805,22 @@ export class SelfHealingCICD {
   async detectDeploymentTarget() {
     try {
       const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
-      
+
       if (packageJson.scripts && packageJson.scripts.deploy) {
         const deployScript = packageJson.scripts.deploy;
-        
+
         if (deployScript.includes('vercel')) return 'vercel';
         if (deployScript.includes('netlify')) return 'netlify';
         if (deployScript.includes('serverless')) return 'aws';
         if (deployScript.includes('docker')) return 'docker';
       }
-      
+
       // Check for deployment config files
       if (await fs.access('vercel.json').then(() => true).catch(() => false)) return 'vercel';
       if (await fs.access('netlify.toml').then(() => true).catch(() => false)) return 'netlify';
       if (await fs.access('serverless.yml').then(() => true).catch(() => false)) return 'aws';
       if (await fs.access('Dockerfile').then(() => true).catch(() => false)) return 'docker';
-      
+
       return 'unknown';
     } catch {
       return 'unknown';

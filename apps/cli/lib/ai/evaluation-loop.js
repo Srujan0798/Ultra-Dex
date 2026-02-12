@@ -38,6 +38,237 @@ const QUALITY_GATES = {
   },
 };
 
+/**
+ * Validate code output
+ */
+async function validateCode(content, context = {}) {
+  const score = 0.5; // Placeholder - in real implementation, this would analyze the code
+  let feedback = [];
+
+  // Check for basic code structure
+  if (typeof content === 'string') {
+    if (content.toLowerCase().includes('error') || content.toLowerCase().includes('failed')) {
+      feedback.push('Response contains error indicators');
+      return { score: 0.2, feedback };
+    }
+
+    if (content.length < 50) {
+      feedback.push('Response is too short');
+      return { score: 0.3, feedback };
+    }
+
+    // More sophisticated code validation would go here
+    // - Syntax checking
+    // - Logic validation
+    // - Best practices
+    // - Security checks
+
+    // For now, return a basic score based on length and keywords
+    let calculatedScore = 0.5;
+
+    // Bonus for including code-like structures
+    if (content.includes('function') || content.includes('class') || content.includes('def')) {
+      calculatedScore += 0.2;
+    }
+
+    // Bonus for including comments
+    if (content.includes('//') || content.includes('/*') || content.includes('#')) {
+      calculatedScore += 0.1;
+    }
+
+    // Penalty for placeholder content
+    if (content.toLowerCase().includes('todo') || content.toLowerCase().includes('placeholder')) {
+      calculatedScore -= 0.3;
+    }
+
+    calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
+
+    return {
+      score: calculatedScore,
+      feedback: [`Basic code validation completed`],
+    };
+  }
+
+  return { score: 0.1, feedback: ['Invalid content type'] };
+}
+
+/**
+ * Validate documentation output
+ */
+async function validateDocumentation(content, context = {}) {
+  if (typeof content !== 'string') {
+    return { score: 0.1, feedback: ['Invalid content type'] };
+  }
+
+  let calculatedScore = 0.5;
+  const feedback = [];
+
+  // Check for documentation structure
+  if (content.includes('#') || content.includes('##') || content.includes('###')) {
+    calculatedScore += 0.2; // Has headings
+  } else {
+    feedback.push('Missing proper heading structure');
+  }
+
+  // Check for explanations
+  if (
+    content.toLowerCase().includes('purpose') ||
+    content.toLowerCase().includes('description') ||
+    content.toLowerCase().includes('usage')
+  ) {
+    calculatedScore += 0.15;
+  }
+
+  // Check for examples
+  if (content.toLowerCase().includes('example') || content.includes('```')) {
+    calculatedScore += 0.15;
+  }
+
+  // Length check
+  if (content.length < 100) {
+    calculatedScore -= 0.2;
+    feedback.push('Documentation is too brief');
+  } else if (content.length > 10000) {
+    calculatedScore -= 0.1; // Too verbose
+  }
+
+  calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
+
+  return {
+    score: calculatedScore,
+    feedback,
+  };
+}
+
+/**
+ * Validate analysis output
+ */
+async function validateAnalysis(content, context = {}) {
+  if (typeof content !== 'string') {
+    return { score: 0.1, feedback: ['Invalid content type'] };
+  }
+
+  let calculatedScore = 0.5;
+  const feedback = [];
+
+  // Check for analytical structure
+  if (
+    content.toLowerCase().includes('analysis') ||
+    content.toLowerCase().includes('conclusion') ||
+    content.toLowerCase().includes('finding')
+  ) {
+    calculatedScore += 0.2;
+  }
+
+  // Check for evidence/reasoning
+  if (
+    content.toLowerCase().includes('because') ||
+    content.toLowerCase().includes('therefore') ||
+    content.toLowerCase().includes('thus')
+  ) {
+    calculatedScore += 0.15;
+  }
+
+  // Check for multiple perspectives
+  if (
+    content.toLowerCase().includes('advantage') ||
+    content.toLowerCase().includes('disadvantage') ||
+    content.toLowerCase().includes('pro') ||
+    content.toLowerCase().includes('con')
+  ) {
+    calculatedScore += 0.15;
+  }
+
+  // Length check
+  if (content.length < 200) {
+    calculatedScore -= 0.3;
+    feedback.push('Analysis is too brief');
+  }
+
+  calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
+
+  return {
+    score: calculatedScore,
+    feedback,
+  };
+}
+
+/**
+ * Validate refactoring output
+ */
+async function validateRefactoring(content, context = {}) {
+  if (typeof content !== 'string') {
+    return { score: 0.1, feedback: ['Invalid content type'] };
+  }
+
+  let calculatedScore = 0.5;
+  const feedback = [];
+
+  // Check for refactoring indicators
+  if (
+    content.toLowerCase().includes('refactor') ||
+    content.toLowerCase().includes('improve') ||
+    content.toLowerCase().includes('optimize')
+  ) {
+    calculatedScore += 0.2;
+  }
+
+  // Check for before/after structure
+  if (content.toLowerCase().includes('before') && content.toLowerCase().includes('after')) {
+    calculatedScore += 0.2;
+  }
+
+  // Check for performance or readability improvements
+  if (
+    content.toLowerCase().includes('performance') ||
+    content.toLowerCase().includes('readability') ||
+    content.toLowerCase().includes('maintainability')
+  ) {
+    calculatedScore += 0.15;
+  }
+
+  calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
+
+  return {
+    score: calculatedScore,
+    feedback,
+  };
+}
+
+/**
+ * Default validation
+ */
+async function validateDefault(content, context = {}) {
+  if (typeof content !== 'string') {
+    return { score: 0.1, feedback: ['Invalid content type'] };
+  }
+
+  let calculatedScore = 0.5;
+  const feedback = [];
+
+  // Basic quality checks
+  if (content.length < 50) {
+    calculatedScore -= 0.3;
+    feedback.push('Response is too short');
+  }
+
+  if (content.toLowerCase().includes('sorry') || content.toLowerCase().includes('cannot')) {
+    calculatedScore -= 0.2;
+    feedback.push('Response indicates inability to help');
+  }
+
+  if (content.toLowerCase().includes('please') || content.toLowerCase().includes('thank')) {
+    calculatedScore += 0.1; // Politeness bonus
+  }
+
+  calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
+
+  return {
+    score: calculatedScore,
+    feedback,
+  };
+}
+
 // Model escalation hierarchy
 const MODEL_ESCALATION = [
   'gpt-4o-mini',
@@ -175,236 +406,7 @@ class EvaluationLoop {
     return MODEL_ESCALATION[currentIndex + 1];
   }
 
-  /**
-   * Validate code output
-   */
-  async validateCode(content, context = {}) {
-    const score = 0.5; // Placeholder - in real implementation, this would analyze the code
-    let feedback = [];
-
-    // Check for basic code structure
-    if (typeof content === 'string') {
-      if (content.toLowerCase().includes('error') || content.toLowerCase().includes('failed')) {
-        feedback.push('Response contains error indicators');
-        return { score: 0.2, feedback };
-      }
-
-      if (content.length < 50) {
-        feedback.push('Response is too short');
-        return { score: 0.3, feedback };
-      }
-
-      // More sophisticated code validation would go here
-      // - Syntax checking
-      // - Logic validation
-      // - Best practices
-      // - Security checks
-
-      // For now, return a basic score based on length and keywords
-      let calculatedScore = 0.5;
-
-      // Bonus for including code-like structures
-      if (content.includes('function') || content.includes('class') || content.includes('def')) {
-        calculatedScore += 0.2;
-      }
-
-      // Bonus for including comments
-      if (content.includes('//') || content.includes('/*') || content.includes('#')) {
-        calculatedScore += 0.1;
-      }
-
-      // Penalty for placeholder content
-      if (content.toLowerCase().includes('todo') || content.toLowerCase().includes('placeholder')) {
-        calculatedScore -= 0.3;
-      }
-
-      calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
-
-      return {
-        score: calculatedScore,
-        feedback: [`Basic code validation completed`],
-      };
-    }
-
-    return { score: 0.1, feedback: ['Invalid content type'] };
-  }
-
-  /**
-   * Validate documentation output
-   */
-  async validateDocumentation(content, context = {}) {
-    if (typeof content !== 'string') {
-      return { score: 0.1, feedback: ['Invalid content type'] };
-    }
-
-    let calculatedScore = 0.5;
-    const feedback = [];
-
-    // Check for documentation structure
-    if (content.includes('#') || content.includes('##') || content.includes('###')) {
-      calculatedScore += 0.2; // Has headings
-    } else {
-      feedback.push('Missing proper heading structure');
-    }
-
-    // Check for explanations
-    if (
-      content.toLowerCase().includes('purpose') ||
-      content.toLowerCase().includes('description') ||
-      content.toLowerCase().includes('usage')
-    ) {
-      calculatedScore += 0.15;
-    }
-
-    // Check for examples
-    if (content.toLowerCase().includes('example') || content.includes('```')) {
-      calculatedScore += 0.15;
-    }
-
-    // Length check
-    if (content.length < 100) {
-      calculatedScore -= 0.2;
-      feedback.push('Documentation is too brief');
-    } else if (content.length > 10000) {
-      calculatedScore -= 0.1; // Too verbose
-    }
-
-    calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
-
-    return {
-      score: calculatedScore,
-      feedback,
-    };
-  }
-
-  /**
-   * Validate analysis output
-   */
-  async validateAnalysis(content, context = {}) {
-    if (typeof content !== 'string') {
-      return { score: 0.1, feedback: ['Invalid content type'] };
-    }
-
-    let calculatedScore = 0.5;
-    const feedback = [];
-
-    // Check for analytical structure
-    if (
-      content.toLowerCase().includes('analysis') ||
-      content.toLowerCase().includes('conclusion') ||
-      content.toLowerCase().includes('finding')
-    ) {
-      calculatedScore += 0.2;
-    }
-
-    // Check for evidence/reasoning
-    if (
-      content.toLowerCase().includes('because') ||
-      content.toLowerCase().includes('therefore') ||
-      content.toLowerCase().includes('thus')
-    ) {
-      calculatedScore += 0.15;
-    }
-
-    // Check for multiple perspectives
-    if (
-      content.toLowerCase().includes('advantage') ||
-      content.toLowerCase().includes('disadvantage') ||
-      content.toLowerCase().includes('pro') ||
-      content.toLowerCase().includes('con')
-    ) {
-      calculatedScore += 0.15;
-    }
-
-    // Length check
-    if (content.length < 200) {
-      calculatedScore -= 0.3;
-      feedback.push('Analysis is too brief');
-    }
-
-    calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
-
-    return {
-      score: calculatedScore,
-      feedback,
-    };
-  }
-
-  /**
-   * Validate refactoring output
-   */
-  async validateRefactoring(content, context = {}) {
-    if (typeof content !== 'string') {
-      return { score: 0.1, feedback: ['Invalid content type'] };
-    }
-
-    let calculatedScore = 0.5;
-    const feedback = [];
-
-    // Check for refactoring indicators
-    if (
-      content.toLowerCase().includes('refactor') ||
-      content.toLowerCase().includes('improve') ||
-      content.toLowerCase().includes('optimize')
-    ) {
-      calculatedScore += 0.2;
-    }
-
-    // Check for before/after structure
-    if (content.toLowerCase().includes('before') && content.toLowerCase().includes('after')) {
-      calculatedScore += 0.2;
-    }
-
-    // Check for performance or readability improvements
-    if (
-      content.toLowerCase().includes('performance') ||
-      content.toLowerCase().includes('readability') ||
-      content.toLowerCase().includes('maintainability')
-    ) {
-      calculatedScore += 0.15;
-    }
-
-    calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
-
-    return {
-      score: calculatedScore,
-      feedback,
-    };
-  }
-
-  /**
-   * Default validation
-   */
-  async validateDefault(content, context = {}) {
-    if (typeof content !== 'string') {
-      return { score: 0.1, feedback: ['Invalid content type'] };
-    }
-
-    let calculatedScore = 0.5;
-    const feedback = [];
-
-    // Basic quality checks
-    if (content.length < 50) {
-      calculatedScore -= 0.3;
-      feedback.push('Response is too short');
-    }
-
-    if (content.toLowerCase().includes('sorry') || content.toLowerCase().includes('cannot')) {
-      calculatedScore -= 0.2;
-      feedback.push('Response indicates inability to help');
-    }
-
-    if (content.toLowerCase().includes('please') || content.toLowerCase().includes('thank')) {
-      calculatedScore += 0.1; // Politeness bonus
-    }
-
-    calculatedScore = Math.max(0.1, Math.min(1.0, calculatedScore));
-
-    return {
-      score: calculatedScore,
-      feedback,
-    };
-  }
+  // Validator methods moved to standalone functions
 
   /**
    * Get evaluation statistics

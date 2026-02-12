@@ -60,7 +60,7 @@ export function registerPTYCommands(program) {
         const command = commandParts.join(' ');
         await handleExecCommand(command, options);
       } catch (error) {
-        await handleError(error, { command: 'pty-exec', command, options });
+        await handleError(error, { command: 'pty-exec', commandString: command, options });
         process.exit(error.exitCode || 1);
       }
     });

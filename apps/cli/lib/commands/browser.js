@@ -1,3 +1,4 @@
+/* global document, window */
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -9,7 +10,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { chromium, firefox, webkit } from 'playwright';
-import { printError, printInfo, printSuccess } from '../utils/output.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
 export function registerBrowserCommand(program) {

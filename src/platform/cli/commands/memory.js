@@ -13,7 +13,7 @@ import { promisify } from 'util';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { configManager } from '../utils/config-manager.js';
-import { loadTieredMemory } from '../memory/hot-warm-cold.js';
+import { loadTieredMemory, saveTieredMemory } from '../memory/hot-warm-cold.js';
 import { memex } from '../memory/memex.js';
 
 const execAsync = promisify(exec);
@@ -64,17 +64,17 @@ export async function showMemoryStatus(options = {}) {
   // Show visual token usage bar if requested
   if (options.visual) {
     printInfo(chalk.cyan('Token Usage Visualization:\n'));
-    
+
     // Create visual bars
     const hotBar = createTokenBar(hotTokens, maxTokens, 'HOT');
     const totalBar = createTokenBar(totalTokens, maxTokens, 'TOTAL');
-    
+
     printInfo(`Hot Memory: ${hotBar}`);
     printInfo(`Total Mem:  ${totalBar}`);
-    
+
     printInfo(chalk.gray(`\nHot Tokens: ${hotTokens}/${maxTokens} (${hotPercentage.toFixed(1)}%)`));
     printInfo(chalk.gray(`Total Tokens: ${totalTokens}/${maxTokens} (${totalPercentage.toFixed(1)}%)`));
-    
+
     // Show pruning status
     if (hotPercentage > pruneThreshold * 100) {
       printWarning(chalk.yellow(`⚠️  Hot memory usage (${hotPercentage.toFixed(1)}%) exceeds prune threshold (${(pruneThreshold * 100).toFixed(0)}%)`));
@@ -89,7 +89,7 @@ export async function showMemoryStatus(options = {}) {
     printInfo(chalk.gray(`Warm Memory: ${warmTokens} tokens`));
     printInfo(chalk.gray(`Cold Memory: ${coldTokens} tokens`));
     printInfo(chalk.gray(`Total Memory: ${totalTokens} tokens (${totalPercentage.toFixed(1)}% of limit)`));
-    
+
     if (hotPercentage > pruneThreshold * 100) {
       printWarning(chalk.yellow(`⚠️  Hot memory usage exceeds threshold. Auto-prune recommended.`));
     } else {
@@ -112,9 +112,9 @@ function createTokenBar(usedTokens, maxTokens, label) {
   const barWidth = 50;
   const filledBlocks = Math.floor((percentage / 100) * barWidth);
   const emptyBlocks = barWidth - filledBlocks;
-  
+
   let bar = '';
-  
+
   // Create filled portion
   for (let i = 0; i < filledBlocks; i++) {
     if (percentage > 90) {
@@ -125,12 +125,12 @@ function createTokenBar(usedTokens, maxTokens, label) {
       bar += chalk.green('█');
     }
   }
-  
+
   // Create empty portion
   for (let i = 0; i < emptyBlocks; i++) {
     bar += chalk.gray('░');
   }
-  
+
   const percentStr = `${percentage.toFixed(1)}%`;
   return `${bar} ${percentStr}`;
 }
@@ -142,7 +142,7 @@ export async function pruneMemory(options = {}) {
   printInfo(chalk.yellow('\n✂️  Initiating memory pruning...\n'));
 
   const state = await loadTieredMemory();
-  
+
   if (!state.hot || state.hot.length === 0) {
     printInfo(chalk.gray('No hot memory entries to prune.'));
     return;
@@ -175,13 +175,13 @@ export async function pruneMemory(options = {}) {
 
   // Sort hot items by age (oldest first) and move to warm
   const sortedHot = [...state.hot].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  
+
   let prunedTokens = 0;
   const itemsToMove = [];
-  
+
   for (const item of sortedHot) {
     const itemTokens = item.tokens || Math.ceil(item.content.length / 4);
-    
+
     if (prunedTokens < excessTokens) {
       itemsToMove.push(item);
       prunedTokens += itemTokens;
@@ -282,8 +282,8 @@ export function registerMemoryCommand(program) {
             typeof hit.text === 'string' ? hit.text.slice(0, 180).replace(/\s+/g, ' ') : '';
           printInfo(
             chalk.gray(`${index + 1}.`) +
-              ' ' +
-              chalk.white(preview || '[no content]')
+            ' ' +
+            chalk.white(preview || '[no content]')
           );
           if (hit.metadata) {
             printInfo(chalk.dim(`   • metadata: ${JSON.stringify(hit.metadata)}`));

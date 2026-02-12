@@ -16,7 +16,7 @@ import { copyWithFallback, listWithFallback, readWithFallback } from '../utils/f
 import { copyDirectory, pathExists } from '../utils/files.js';
 import { getRandomMessage } from '../utils/messages.js';
 import { showBanner } from './banner.js';
-import { printError, printInfo, printSuccess } from '../utils/output.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { runAutoContext } from '../auto-context/index.js';

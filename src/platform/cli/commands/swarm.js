@@ -2,7 +2,7 @@
 
 // cli/lib/commands/swarm.js
 import { getProvider } from '../providers/index.js';
-import fs from 'fs/promises';
+import fs, { readdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join, basename, dirname } from 'path';
 import { glob } from 'glob';
@@ -51,7 +51,7 @@ async function atomicWrite(filePath, data) {
   } catch (error) {
     // Clean up temp file if it exists
     try {
-      await fs.unlink(tempPath).catch(() => {});
+      await fs.unlink(tempPath).catch(() => { });
     } catch (unlinkError) {
       // Ignore cleanup errors
     }
@@ -104,7 +104,7 @@ async function withStateLock(callback) {
     return await callback();
   } finally {
     // Always release lock
-    await fs.unlink(lockFile).catch(() => {});
+    await fs.unlink(lockFile).catch(() => { });
   }
 }
 
@@ -385,7 +385,7 @@ async function cleanupOldSwarmLogs(logDir, maxLogs = 50) {
       // Delete oldest files to keep only maxLogs - 1 (to make room for new log)
       const filesToDelete = sortedFiles.slice(0, sortedFiles.length - maxLogs + 1);
       for (const file of filesToDelete) {
-        await fs.unlink(file.filepath).catch(() => {});
+        await fs.unlink(file.filepath).catch(() => { });
       }
     }
   } catch (error) {
@@ -413,7 +413,7 @@ async function writeSwarmLog(logDir, task, results, stats) {
     while (
       truncatedResults.length > 0 &&
       Buffer.byteLength(JSON.stringify({ ...logData, results: truncatedResults }), 'utf-8') >
-        MAX_CONTEXT_SIZE
+      MAX_CONTEXT_SIZE
     ) {
       truncatedResults.pop(); // Remove the last result
     }
@@ -586,22 +586,22 @@ Total time: ${totalDuration}ms`);
 function handleDryRun(options) {
   const pipelineInfo = options.parallel
     ? [
-        '📦 Tier: 1-Planning (sequential)',
-        '  1. @planner - Break down task into steps',
-        '  2. @cto - Define architecture',
-        '',
-        '📦 Tier: 2-Implementation (PARALLEL)',
-        '  3. @database - Design schema',
-        '  4. @backend - Implement API',
-        '  5. @frontend - Build UI',
-        '',
-        '📦 Tier: 3-Security (sequential)',
-        '  6. @auth - Security & authentication review',
-        '',
-        '📦 Tier: 4-Quality (sequential)',
-        '  7. @testing - Write tests',
-        '  8. @reviewer - Code review',
-      ].join('\n')
+      '📦 Tier: 1-Planning (sequential)',
+      '  1. @planner - Break down task into steps',
+      '  2. @cto - Define architecture',
+      '',
+      '📦 Tier: 2-Implementation (PARALLEL)',
+      '  3. @database - Design schema',
+      '  4. @backend - Implement API',
+      '  5. @frontend - Build UI',
+      '',
+      '📦 Tier: 3-Security (sequential)',
+      '  6. @auth - Security & authentication review',
+      '',
+      '📦 Tier: 4-Quality (sequential)',
+      '  7. @testing - Write tests',
+      '  8. @reviewer - Code review',
+    ].join('\n')
     : AGENT_PIPELINE.map((a, i) => `${i + 1}. @${a.name} - ${a.description}`).join('\n');
 
   renderer.box(

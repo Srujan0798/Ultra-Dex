@@ -10,7 +10,7 @@ const SECRET_PATTERNS = [
   /AIza[0-9A-Za-z\-_]{35}/g, // Google API key
   /AKIA[0-9A-Z]{16}/g, // AWS Access Key
   /-----BEGIN PRIVATE KEY-----/g,
-  /xoxb-[0-9A-Za-z\-]{10,}/g, // Slack
+  /xoxb-[0-9A-Za-z-]{10,}/g, // Slack
 ];
 
 export function validateSafePath(inputPath) {
