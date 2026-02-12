@@ -30,6 +30,8 @@ and legal hygiene. It is operational guidance, not legal advice.
 5. Security-impacting changes include tests and safe defaults.
 6. Changes are truthful, attributable, and not plagiarized.
 7. If GitHub is degraded, avoid risky release operations until status is green.
+8. Never add bulk/spam automation against GitHub users/issues/PRs.
+9. Do not scrape GitHub domains unless explicitly approved and documented.
 
 ## Before Every Merge
 
@@ -37,3 +39,9 @@ and legal hygiene. It is operational guidance, not legal advice.
 2. Reviewer confirms policy checklist items above.
 3. Security-impacting changes are reviewed by a maintainer.
 4. Release notes avoid exposing sensitive internal details.
+
+## Enforced Commands
+
+- Manual guard run:
+  `npm run guard:github`
+- Pre-push guard runs automatically via `.husky/pre-push`.
