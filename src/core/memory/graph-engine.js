@@ -111,5 +111,7 @@ class MemoryGraph {
   }
 }
 
-export const memoryGraph = new MemoryGraph();
+export class GraphEngine extends MemoryGraph {}
+
+export const memoryGraph = new GraphEngine();
 export default memoryGraph;

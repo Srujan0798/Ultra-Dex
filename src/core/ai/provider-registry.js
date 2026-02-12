@@ -114,7 +114,13 @@ class ProviderRegistry {
 
     for (const file of files.filter(isProviderFile)) {
       const moduleUrl = pathToFileURL(path.join(PROVIDERS_DIR, file)).href;
-      const mod = await import(moduleUrl);
+      let mod;
+      try {
+        mod = await import(moduleUrl);
+      } catch {
+        // Skip modules that fail to load due to optional dependency gaps.
+        continue;
+      }
       const ProviderClass = findProviderClass(mod);
 
       if (!ProviderClass) continue;
