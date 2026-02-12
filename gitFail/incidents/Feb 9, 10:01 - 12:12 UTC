@@ -1,0 +1,20 @@
+Degraded performance for Copilot Coding Agent
+Incident Report for GitHub
+Resolved
+On February 9, 2026, between ~06:00 UTC and ~12:12 UTC, Copilot Coding Agent and related Copilot API endpoints experienced degraded availability. The primary impact was to agent-based workflows (requests to /agents/swe/*, including custom agent configuration checks), where 154k users saw failed requests and error responses in their editor/agent experience. Impact was concentrated among users and integrations actively using Copilot Coding Agent with VS Code. 
+
+The degradation was caused by an unexpected surge in traffic to the related API endpoints that exceeded an internal secondary rate limit. That resulted in upstream request denials which were surfaced to users as elevated 500 errors.
+
+We mitigated the incident by deploying a change that increased the applicable rate limit for this traffic, which allowed requests to complete successfully and returned the service to normal operation.
+
+After the mitigation, we deployed guardrails with applicable caching to avoid a repeat of similar incidents. We also temporarily increased infrastructure capacity to better handle backlog recovery from the rate limiting. We're are improving monitoring around growing agentic API endpoints.
+Posted 3 days ago. Feb 09, 2026 - 12:12 UTC
+Update
+We are continuing to investigate the degraded availability for Copilot Coding Agent.
+Posted 3 days ago. Feb 09, 2026 - 11:14 UTC
+Update
+We are investigating degraded availability for Copilot Coding Agent. We will continue to keep users updated on progress towards mitigation.
+Posted 3 days ago. Feb 09, 2026 - 10:04 UTC
+Investigating
+We are investigating reports of impacted performance for some GitHub services.
+Posted 3 days ago. Feb 09, 2026 - 10:01 UTC

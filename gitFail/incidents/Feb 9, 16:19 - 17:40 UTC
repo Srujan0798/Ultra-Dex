@@ -1,0 +1,67 @@
+Incident with Pull Requests
+Incident Report for GitHub
+Resolved
+On February 9, 2026, GitHub experienced two related periods of degraded availability affecting GitHub.com, the GitHub API, GitHub Actions, Git operations, GitHub Copilot, and other services. The first period occurred between 16:12 UTC and 17:39 UTC, and the second between 18:53 UTC and 20:09 UTC. In total, users experienced approximately 2 hours and 43 minutes of degraded service across the two incidents.
+
+During both incidents, users encountered errors loading pages on GitHub.com, failures when pushing or pulling code over HTTPS, failures starting or completing GitHub Actions workflow runs, and errors using GitHub Copilot. Additional services including GitHub Issues, pull requests, webhooks, Dependabot, GitHub Pages, and GitHub Codespaces experienced intermittent errors. SSH-based Git operations were not affected during either incident.
+
+Our investigation determined that both incidents shared the same underlying cause: a configuration change to a user settings caching mechanism caused a large volume of cache rewrites to occur simultaneously. During the first incident, asynchronous rewrites overwhelmed a shared infrastructure component responsible for coordinating background work, triggering cascading failures. Increased load caused the service responsible for proxying Git operations over HTTPS to exhaust available connections, preventing it from accepting new requests. We mitigated this incident by disabling async cache rewrites and restarting the affected Git proxy service across multiple datacenters.
+
+An additional source of updates to the same cache circumvented our initial mitigations and caused the second incident. This generated a high volume of synchronous writes, causing replication delays that cascaded in a similar pattern and again exhausted the Git proxy’s connection capacity, degrading availability across multiple services. We mitigated by disabling the source of the cache rewrites and again restarting Git proxy.
+
+We know these incidents disrupted the workflows of millions of developers. While we have made substantial, long-term investments in how GitHub is built and operated to improve resilience, GitHub's availability is not yet meeting our expectations. Getting there requires deep architectural work that is already underway, as well as urgent, targeted improvements. We are taking the following immediate steps:
+
+1. We have already optimized the caching mechanism to avoid write amplification and added self-throttling during bulk updates.
+2. We are adding safeguards to ensure the caching mechanism responds more quickly to rollbacks and strengthening how changes to these caching systems are planned, validated, and rolled out with additional checks.
+3. We are fixing the underlying cause of connection exhaustion in our Git HTTPS proxy layer so the proxy can recover from this failure mode automatically without requiring manual restarts.
+
+GitHub is critical infrastructure for your work, your teams, and your businesses. We're focusing on these mitigations and long-term infrastructure work so GitHub is available, at scale, when and where you need it.
+Posted 3 days ago. Feb 09, 2026 - 17:40 UTC
+Update
+Pull Requests is operating normally.
+Posted 3 days ago. Feb 09, 2026 - 17:40 UTC
+Update
+Webhooks is operating normally.
+Posted 3 days ago. Feb 09, 2026 - 17:39 UTC
+Update
+Actions is operating normally.
+Posted 3 days ago. Feb 09, 2026 - 17:37 UTC
+Update
+We are seeing recovery across all products and are continuing to monitor service health.
+Posted 3 days ago. Feb 09, 2026 - 17:32 UTC
+Update
+Pages is operating normally.
+Posted 3 days ago. Feb 09, 2026 - 17:29 UTC
+Update
+Git Operations is operating normally.
+Posted 3 days ago. Feb 09, 2026 - 17:26 UTC
+Update
+Issues is operating normally.
+Posted 3 days ago. Feb 09, 2026 - 17:25 UTC
+Update
+Pages is experiencing degraded performance. We are continuing to investigate.
+Posted 3 days ago. Feb 09, 2026 - 17:08 UTC
+Update
+We have identified the cause of high error rates and taken steps to mitigate. We see early signs of recovery but are continuing to monitor impact.
+Posted 3 days ago. Feb 09, 2026 - 16:58 UTC
+Update
+Issues is experiencing degraded performance. We are continuing to investigate.
+Posted 3 days ago. Feb 09, 2026 - 16:50 UTC
+Update
+Webhooks is experiencing degraded performance. We are continuing to investigate.
+Posted 3 days ago. Feb 09, 2026 - 16:40 UTC
+Update
+Git Operations is experiencing degraded performance. We are continuing to investigate.
+Posted 3 days ago. Feb 09, 2026 - 16:40 UTC
+Update
+Actions is experiencing degraded performance. We are continuing to investigate.
+Posted 3 days ago. Feb 09, 2026 - 16:22 UTC
+Update
+We are seeing intermittent errors on many pages and API requests and are investigating.
+Posted 3 days ago. Feb 09, 2026 - 16:21 UTC
+Update
+Issues is experiencing degraded availability. We are continuing to investigate.
+Posted 3 days ago. Feb 09, 2026 - 16:20 UTC
+Investigating
+We are investigating reports of degraded performance for Pull Requests
+Posted 3 days ago. Feb 09, 2026 - 16:19 UTC

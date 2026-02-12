@@ -1,0 +1,18 @@
+Disruption with some GitHub services
+Incident Report for GitHub
+Resolved
+From Feb 2, 2026 17:13 UTC to Feb 2, 2026 17:36 UTC we experienced failures on ~0.02% of Git operations. While deploying an internal service, a misconfiguration caused a small subset of traffic to route to a service that was not ready. During the incident we observed the degradation and statused publicly.
+
+To mitigate the issue, traffic was redirected to healthy instances and we resumed normal operation.
+
+We are improving our monitoring and deployment processes in this area to avoid future routing issues.
+Posted 10 days ago. Feb 02, 2026 - 17:43 UTC
+Update
+We’ve observed a low rate (~0.01%) of 5xx errors for HTTP-based fetches and clones. We’re currently routing traffic away from the affected location and are seeing recovery.
+Posted 10 days ago. Feb 02, 2026 - 17:42 UTC
+Update
+Git Operations is experiencing degraded performance. We are continuing to investigate.
+Posted 10 days ago. Feb 02, 2026 - 17:35 UTC
+Investigating
+We are investigating reports of impacted performance for some GitHub services.
+Posted 10 days ago. Feb 02, 2026 - 17:34 UTC
