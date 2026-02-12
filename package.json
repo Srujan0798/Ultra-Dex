@@ -102,6 +102,7 @@
     "prepare": "husky install",
     "pre-commit": "lint-staged",
     "governance": "node scripts/pre-commit-governor.js",
+    "guard:github": "node gitFail/compliance/github-guard.js",
     "security:audit": "npm audit --audit-level high",
     "security:fix": "npm audit fix",
     "perf:benchmark": "node scripts/benchmark.js",

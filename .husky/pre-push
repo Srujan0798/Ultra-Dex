@@ -2,5 +2,6 @@
 set -e
 
 node gitFail/compliance/check-governance-files.js
+node gitFail/compliance/github-guard.js
 npm test
 npm run security:audit

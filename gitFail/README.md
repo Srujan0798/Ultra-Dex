@@ -12,6 +12,8 @@ related to outage/risk handling work.
 
 - Run compliance verification:
   `node gitFail/compliance/check-governance-files.js`
+- Run GitHub policy/status guard:
+  `node gitFail/compliance/github-guard.js`
 - Review checklist before commit/PR:
   `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md`
 - Capture a collaboration snapshot (Codex + Claude tracking):

@@ -12,6 +12,19 @@ ethical, and operationally mature way.
 - Provide factual evidence only.
 - Keep development moving locally with auditable backups.
 
+## Official Policy References
+
+- Terms of Service:
+  https://docs.github.com/en/site-policy/github-terms/github-terms-of-service
+- API Terms (rate limits / acceptable API use):
+  https://docs.github.com/en/site-policy/github-terms/github-terms-of-service#h-api-terms
+- Acceptable Use Policies:
+  https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies
+- Disrupting Users Policy:
+  https://docs.github.com/en/site-policy/acceptable-use-policies/github-disrupting-the-experience-of-other-users
+- GitHub Status:
+  https://www.githubstatus.com/
+
 ## Current Status (This Repo)
 
 - Remote: `git@github.com:Srujan0798/Ultra-Dex.git`
@@ -65,6 +78,16 @@ Thank you.
 3. Validate backups:
    `git bundle verify backups/ultra-dex-YYYY-MM-DD.bundle`
 4. Keep a local incident log in `gitFail/incidents/`.
+
+## Preventive Controls (Always On)
+
+1. Run guard manually before sensitive operations:
+   `npm run guard:github`
+2. Pre-push hook automatically runs:
+   - governance file checks
+   - GitHub status + remote/account checks
+   - secret/risky automation scans
+   - tests + security audit
 
 ## How Mature Teams Recover (Pattern)
 
