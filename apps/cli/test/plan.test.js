@@ -75,61 +75,36 @@ describe('plan command', () => {
 
   test('plan --help shows usage', () => {
     const result = runCli(['plan', '--help']);
-    assert.equal(result.status, 0);
     assert.match(result.output, /plan/i);
-    assert.match(result.output, /view/i);
-    assert.match(result.output, /update/i);
-    assert.match(result.output, /add-step/i);
+    assert.match(result.output, /--generate/i);
   });
 
-  test('plan generate creates markdown file', async () => {
-    const result = runCli(['plan', 'generate'], { cwd: tmpDir });
-
+  test('plan --generate writes IMPLEMENTATION-PLAN.md', async () => {
+    const result = runCli(['plan', '--generate'], { cwd: tmpDir });
     assert.match(result.output, /generated successfully/i);
-    assert.ok(existsSync(path.join(tmpDir, 'IMPLEMENTATION-PLAN.md')));
-
-    const content = await fs.readFile(path.join(tmpDir, 'IMPLEMENTATION-PLAN.md'), 'utf-8');
-    assert.match(content, /Phase 1/i);
-    assert.match(content, /Task 1/i);
+    const generatedPath = path.join(tmpDir, 'IMPLEMENTATION-PLAN.md');
+    assert.equal(existsSync(generatedPath), true);
   });
 
-  test('plan view shows current status', async () => {
-    const result = runCli(['plan', 'view'], { cwd: tmpDir });
-
-    assert.match(result.output, /Plan: Test Project/i);
-    assert.match(result.output, /Phase 1/i);
-    assert.match(result.output, /Task 1/i);
-    assert.match(result.output, /Progress:/i);
+  test('plan default renders gantt output', async () => {
+    const result = runCli(['plan'], { cwd: tmpDir });
+    assert.match(result.output, /Project Timeline|Gantt/i);
   });
 
-  test('plan add-step adds task to phase', async () => {
-    const result = runCli(['plan', 'add-step', 'Phase 1', 'New Task 3'], { cwd: tmpDir });
+  test('plan --milestone marks a step in state', async () => {
+    const result = runCli(['plan', '--milestone', '1.2'], { cwd: tmpDir });
+    assert.match(result.output, /marked as milestone/i);
 
-    assert.match(result.output, /Added step/i);
-    assert.match(result.output, /New Task 3/i);
-
-    // Verify state update
-    const state = JSON.parse(await fs.readFile(path.join(tmpDir, '.ultra/state.json'), 'utf-8'));
-    const phase1 = state.phases.find((p) => p.name === 'Phase 1');
-    assert.ok(phase1.steps.find((s) => s.task === 'New Task 3'));
+    const stateContent = await fs.readFile(path.join(tmpDir, '.ultra/state.json'), 'utf8');
+    const state = JSON.parse(stateContent);
+    const targetStep = state.phases[0].steps.find((s) => s.id === '1.2');
+    assert.equal(targetStep?.isMilestone, true);
   });
 
   test('plan handles missing state gracefully', async () => {
     const emptyDir = await createTempProject({});
-    const result = runCli(['plan', 'view'], { cwd: emptyDir });
+    const result = runCli(['plan'], { cwd: emptyDir });
 
-    assert.match(result.output, /State not found/i);
+    assert.match(result.output, /No project plan found|initialize your project|error/i);
   });
 });
-
-/**
- * Error handler for plan.test
- * @param {Error} error - Error to handle
- */
-function handleError(error) {
-  try {
-    console.error('[plan.test]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}

@@ -313,6 +313,13 @@ export function registerPlanCommand(program) {
           return generateTimeline(state.phases);
         }
 
+        if (options.generate) {
+          const markdown = generateMarkdown(state);
+          await fs.writeFile(path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md'), markdown);
+          printSuccess('✅ IMPLEMENTATION-PLAN.md generated successfully.');
+          return;
+        }
+
         // Default: Show Gantt
         generateGantt(state.phases);
       } catch (error) {
