@@ -1,4 +1,3 @@
-/* global document */
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -282,7 +281,7 @@ export class BrowserAutomation {
     await this.navigate(searchUrl);
 
     // Wait for results
-    await this.page.waitForSelector('#search', { timeout: 10000 }).catch(() => { });
+    await this.page.waitForSelector('#search', { timeout: 10000 }).catch(() => {});
 
     const results = await this.page.evaluate(() => {
       const items = document.querySelectorAll('#search .g');

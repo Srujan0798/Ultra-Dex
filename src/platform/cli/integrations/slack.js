@@ -1,4 +1,3 @@
-/* global URLSearchParams */
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -23,8 +22,8 @@ export class SlackClient {
 
   get headers() {
     return {
-      'Authorization': `Bearer ${this.token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${this.token}`,
+      'Content-Type': 'application/json',
     };
   }
 
@@ -33,14 +32,14 @@ export class SlackClient {
       const payload = {
         channel,
         text,
-        ...options
+        ...options,
       };
 
       const response = await retryWithBackoff(() =>
         fetch(`${SLACK_API_BASE}/chat.postMessage`, {
           method: 'POST',
           headers: this.headers,
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         })
       );
 
@@ -72,8 +71,8 @@ export class SlackClient {
           body: JSON.stringify({
             channel,
             text,
-            blocks
-          })
+            blocks,
+          }),
         })
       );
 
@@ -104,8 +103,8 @@ export class SlackClient {
           headers: this.headers,
           body: JSON.stringify({
             name,
-            is_private: isPrivate
-          })
+            is_private: isPrivate,
+          }),
         })
       );
 
@@ -135,8 +134,8 @@ export class SlackClient {
           method: 'POST',
           headers: this.headers,
           body: JSON.stringify({
-            channel: channelId
-          })
+            channel: channelId,
+          }),
         })
       );
 
@@ -174,9 +173,9 @@ export class SlackClient {
         method: 'POST',
         headers: {
           ...formData.getHeaders(),
-          'Authorization': `Bearer ${this.token}`
+          Authorization: `Bearer ${this.token}`,
         },
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
@@ -200,9 +199,12 @@ export class SlackClient {
 
   async getUserByEmail(email) {
     try {
-      const response = await fetch(`${SLACK_API_BASE}/users.lookupByEmail?email=${encodeURIComponent(email)}`, {
-        headers: this.headers
-      });
+      const response = await fetch(
+        `${SLACK_API_BASE}/users.lookupByEmail?email=${encodeURIComponent(email)}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -225,7 +227,7 @@ export class SlackClient {
   async getUserById(userId) {
     try {
       const response = await fetch(`${SLACK_API_BASE}/users.info?user=${userId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -248,9 +250,12 @@ export class SlackClient {
 
   async listChannels(excludeArchived = true, types = ['public_channel', 'private_channel']) {
     try {
-      const response = await fetch(`${SLACK_API_BASE}/conversations.list?exclude_archived=${excludeArchived}&types=${types.join(',')}`, {
-        headers: this.headers
-      });
+      const response = await fetch(
+        `${SLACK_API_BASE}/conversations.list?exclude_archived=${excludeArchived}&types=${types.join(',')}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -273,7 +278,7 @@ export class SlackClient {
   async getChannelInfo(channelId) {
     try {
       const response = await fetch(`${SLACK_API_BASE}/conversations.info?channel=${channelId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -298,11 +303,11 @@ export class SlackClient {
     try {
       const params = new URLSearchParams({
         channel: channelId,
-        ...options
+        ...options,
       });
 
       const response = await fetch(`${SLACK_API_BASE}/conversations.history?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -330,8 +335,8 @@ export class SlackClient {
         headers: this.headers,
         body: JSON.stringify({
           channel: channelId,
-          topic
-        })
+          topic,
+        }),
       });
 
       if (!response.ok) {
@@ -360,8 +365,8 @@ export class SlackClient {
         headers: this.headers,
         body: JSON.stringify({
           channel: channelId,
-          purpose
-        })
+          purpose,
+        }),
       });
 
       if (!response.ok) {
@@ -390,8 +395,8 @@ export class SlackClient {
         headers: this.headers,
         body: JSON.stringify({
           channel: channelId,
-          users: userId
-        })
+          users: userId,
+        }),
       });
 
       if (!response.ok) {
@@ -421,40 +426,40 @@ export class SlackClient {
           type: 'header',
           text: {
             type: 'plain_text',
-            text: options.title || 'Ultra-Dex Notification'
-          }
+            text: options.title || 'Ultra-Dex Notification',
+          },
         },
         {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: message
-          }
-        }
+            text: message,
+          },
+        },
       ];
 
       if (options.fields) {
         blocks.push({
           type: 'section',
-          fields: options.fields.map(field => ({
+          fields: options.fields.map((field) => ({
             type: 'mrkdwn',
-            text: `*${field.title}*:\n${field.value}`
-          }))
+            text: `*${field.title}*:\n${field.value}`,
+          })),
         });
       }
 
       if (options.actions) {
         blocks.push({
           type: 'actions',
-          elements: options.actions.map(action => ({
+          elements: options.actions.map((action) => ({
             type: 'button',
             text: {
               type: 'plain_text',
-              text: action.text
+              text: action.text,
             },
             action_id: action.id,
-            ...(action.style && { style: action.style })
-          }))
+            ...(action.style && { style: action.style }),
+          })),
         });
       }
 
@@ -471,30 +476,30 @@ export class SlackClient {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: '🚀 Deployment Status'
-        }
+          text: '🚀 Deployment Status',
+        },
       },
       {
         type: 'section',
         fields: [
           {
             type: 'mrkdwn',
-            text: `*Environment:*\n${deploymentInfo.environment}`
+            text: `*Environment:*\n${deploymentInfo.environment}`,
           },
           {
             type: 'mrkdwn',
-            text: `*Status:*\n${deploymentInfo.status}`
+            text: `*Status:*\n${deploymentInfo.status}`,
           },
           {
             type: 'mrkdwn',
-            text: `*Branch:*\n${deploymentInfo.branch}`
+            text: `*Branch:*\n${deploymentInfo.branch}`,
           },
           {
             type: 'mrkdwn',
-            text: `*Commit:*\n${deploymentInfo.commit?.substring(0, 8) || 'N/A'}`
-          }
-        ]
-      }
+            text: `*Commit:*\n${deploymentInfo.commit?.substring(0, 8) || 'N/A'}`,
+          },
+        ],
+      },
     ];
 
     if (deploymentInfo.url) {
@@ -502,8 +507,8 @@ export class SlackClient {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `🔗 <${deploymentInfo.url}|View Deployment>`
-        }
+          text: `🔗 <${deploymentInfo.url}|View Deployment>`,
+        },
       });
     }
 
@@ -513,9 +518,9 @@ export class SlackClient {
         elements: [
           {
             type: 'mrkdwn',
-            text: ':white_check_mark: Deployment completed successfully'
-          }
-        ]
+            text: ':white_check_mark: Deployment completed successfully',
+          },
+        ],
       });
     } else if (deploymentInfo.status === 'failure') {
       blocks.push({
@@ -523,9 +528,9 @@ export class SlackClient {
         elements: [
           {
             type: 'mrkdwn',
-            text: ':x: Deployment failed - please investigate'
-          }
-        ]
+            text: ':x: Deployment failed - please investigate',
+          },
+        ],
       });
     }
 
@@ -538,30 +543,30 @@ export class SlackClient {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: '🔨 Build Status'
-        }
+          text: '🔨 Build Status',
+        },
       },
       {
         type: 'section',
         fields: [
           {
             type: 'mrkdwn',
-            text: `*Project:*\n${buildInfo.project}`
+            text: `*Project:*\n${buildInfo.project}`,
           },
           {
             type: 'mrkdwn',
-            text: `*Status:*\n${buildInfo.status}`
+            text: `*Status:*\n${buildInfo.status}`,
           },
           {
             type: 'mrkdwn',
-            text: `*Duration:*\n${buildInfo.duration}`
+            text: `*Duration:*\n${buildInfo.duration}`,
           },
           {
             type: 'mrkdwn',
-            text: `*Commit:*\n${buildInfo.commit?.substring(0, 8) || 'N/A'}`
-          }
-        ]
-      }
+            text: `*Commit:*\n${buildInfo.commit?.substring(0, 8) || 'N/A'}`,
+          },
+        ],
+      },
     ];
 
     if (buildInfo.artifacts) {
@@ -569,8 +574,8 @@ export class SlackClient {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `📦 Artifacts: ${buildInfo.artifacts.join(', ')}`
-        }
+          text: `📦 Artifacts: ${buildInfo.artifacts.join(', ')}`,
+        },
       });
     }
 
@@ -580,9 +585,9 @@ export class SlackClient {
         elements: [
           {
             type: 'mrkdwn',
-            text: ':white_check_mark: Build completed successfully'
-          }
-        ]
+            text: ':white_check_mark: Build completed successfully',
+          },
+        ],
       });
     } else if (buildInfo.status === 'failure') {
       blocks.push({
@@ -590,9 +595,9 @@ export class SlackClient {
         elements: [
           {
             type: 'mrkdwn',
-            text: ':x: Build failed - please check logs'
-          }
-        ]
+            text: ':x: Build failed - please check logs',
+          },
+        ],
       });
     }
 
@@ -612,7 +617,10 @@ export function verifySlackSignature({ signingSecret, timestamp, signature, body
   }
 
   const baseString = `v0:${timestamp}:${body}`;
-  const digest = crypto.createHmac('sha256', signingSecret).update(baseString, 'utf8').digest('hex');
+  const digest = crypto
+    .createHmac('sha256', signingSecret)
+    .update(baseString, 'utf8')
+    .digest('hex');
   const expected = `v0=${digest}`;
 
   try {
@@ -650,14 +658,15 @@ export function parseSlackPayload(body) {
 
 export async function handleSlackInteractiveRequest({ signingSecret, headers, body, onAction }) {
   const rawBody = typeof body === 'string' ? body : JSON.stringify(body ?? {});
-  const timestamp = headers?.['x-slack-request-timestamp'] || headers?.['X-Slack-Request-Timestamp'];
+  const timestamp =
+    headers?.['x-slack-request-timestamp'] || headers?.['X-Slack-Request-Timestamp'];
   const signature = headers?.['x-slack-signature'] || headers?.['X-Slack-Signature'];
 
   const valid = verifySlackSignature({
     signingSecret,
     timestamp,
     signature,
-    body: rawBody
+    body: rawBody,
   });
 
   if (!valid) {
@@ -690,7 +699,7 @@ export async function validateSlackConfig(config) {
   try {
     // Test by fetching auth information
     const response = await fetch(`${SLACK_API_BASE}/auth.test`, {
-      headers: { 'Authorization': `Bearer ${config.token}` }
+      headers: { Authorization: `Bearer ${config.token}` },
     });
 
     if (!response.ok) {
@@ -711,5 +720,5 @@ export default {
   validateSlackConfig,
   verifySlackSignature,
   parseSlackPayload,
-  handleSlackInteractiveRequest
+  handleSlackInteractiveRequest,
 };
