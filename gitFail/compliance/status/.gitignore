@@ -1,3 +1,4 @@
 *.txt
 triage-*.md
+support-evidence-*.md
 !.gitkeep
