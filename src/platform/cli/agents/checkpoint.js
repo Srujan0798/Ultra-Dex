@@ -268,44 +268,6 @@ export class CheckpointSystem {
     }
   }
 
-  /**
-   * Cleanup all checkpoints older than specified days
-   */
-  async cleanupOldCheckpoints(days = 30) {
-    if (!this.initialized) {
-      await this.initialize();
-    }
-
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-
-    try {
-      const files = await fs.readdir(this.checkpointDir);
-      const oldFiles = files.filter((file) => {
-        const filePath = path.join(this.checkpointDir, file);
-        // In a real implementation, we'd check the actual file modification time
-        // For now, we'll just use the timestamp in the filename if available
-        return true; // Placeholder - implement proper date checking
-      });
-
-      for (const file of oldFiles) {
-        const filePath = path.join(this.checkpointDir, file);
-        await fs.unlink(filePath);
-        printInfo(chalk.gray(`🧹 Cleaned up old checkpoint: ${file}`));
-      }
-
-      return oldFiles.length;
-    } catch (error) {
-      printError(chalk.red(`❌ Failed to cleanup old checkpoints: ${error.message}`));
-      throw new AppError(`Failed to cleanup checkpoints: ${error.message}`, {
-        code: 'CHECKPOINT_CLEANUP_FAILED',
-      });
-    }
-  }
-
-  /**
-   * Get checkpoint statistics
-   */
   async getCheckpointStats() {
     if (!this.initialized) {
       await this.initialize();
