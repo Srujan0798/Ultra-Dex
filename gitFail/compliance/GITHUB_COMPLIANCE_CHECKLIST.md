@@ -42,6 +42,10 @@ and legal hygiene. It is operational guidance, not legal advice.
 
 ## Enforced Commands
 
+- Full local release gate:
+  `npm run gate:local`
+- Full push gate:
+  `npm run gate:push`
 - Manual guard run:
   `npm run guard:github`
 - Manual local-only guard run (during suspension/local workflow):

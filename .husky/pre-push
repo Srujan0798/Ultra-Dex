@@ -1,7 +1,4 @@
 #!/usr/bin/env sh
 set -e
 
-node gitFail/compliance/check-governance-files.js
-node gitFail/compliance/github-guard.js
-npm test
-npm run security:audit
+sh gitFail/compliance/run-enterprise-gate.sh push

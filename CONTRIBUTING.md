@@ -52,6 +52,7 @@ If you find a security issue, please email the maintainer instead of opening a p
 - Follow `CODE_OF_CONDUCT.md` in all project spaces.
 - Read `SECURITY.md` before reporting vulnerabilities.
 - Complete `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md` before every commit/PR.
+- Run `npm run gate:local` before release-sensitive operations.
 - Run `npm run guard:github` before push/release operations.
 - If account is suspended but local work continues, run `npm run guard:github:local`.
 - Do not commit secrets, private keys, tokens, or sensitive personal data.

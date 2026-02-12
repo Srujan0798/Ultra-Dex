@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,5 +24,5 @@ jobs:
       - name: Validate governance and policy files
         run: node gitFail/compliance/check-governance-files.js
 
-      - name: Run GitHub policy guard
-        run: node gitFail/compliance/github-guard.js
+      - name: Run GitHub policy guard (local mode)
+        run: SKIP_REMOTE_CHECK=1 node gitFail/compliance/github-guard.js
