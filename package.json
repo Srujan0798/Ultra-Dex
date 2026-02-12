@@ -103,6 +103,7 @@
     "pre-commit": "lint-staged",
     "governance": "node scripts/pre-commit-governor.js",
     "guard:github": "node gitFail/compliance/github-guard.js",
+    "guard:github:local": "SKIP_REMOTE_CHECK=1 node gitFail/compliance/github-guard.js",
     "security:audit": "npm audit --audit-level high",
     "security:fix": "npm audit fix",
     "perf:benchmark": "node scripts/benchmark.js",

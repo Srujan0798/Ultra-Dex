@@ -83,7 +83,9 @@ Thank you.
 
 1. Run guard manually before sensitive operations:
    `npm run guard:github`
-2. Pre-push hook automatically runs:
+2. During suspension/local-only operations, run:
+   `npm run guard:github:local`
+3. Pre-push hook automatically runs:
    - governance file checks
    - GitHub status + remote/account checks
    - secret/risky automation scans
