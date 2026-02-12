@@ -1,18 +1,22 @@
-import { z } from 'zod';
 import { Agent } from './agent.js';
 import { BaseProvider, assertProviderContract } from './provider.js';
 import { PluginLoader } from './plugin.js';
 
-const clientConfigSchema = z.object({
-  apiKey: z.string().optional(),
-  baseUrl: z.string().url().optional(),
-  defaultProvider: z.string().optional(),
-  timeoutMs: z.number().int().positive().default(45000),
-});
-
 export class UltraDex {
   constructor(config = {}) {
-    this.config = clientConfigSchema.parse(config);
+    if (config.baseUrl && typeof config.baseUrl !== 'string') {
+      throw new Error('UltraDex SDK: config.baseUrl must be a string URL');
+    }
+    if (config.defaultProvider && typeof config.defaultProvider !== 'string') {
+      throw new Error('UltraDex SDK: config.defaultProvider must be a string');
+    }
+
+    this.config = {
+      apiKey: config.apiKey,
+      baseUrl: config.baseUrl,
+      defaultProvider: config.defaultProvider,
+      timeoutMs: config.timeoutMs ?? 45000,
+    };
     this.providers = new Map();
     this.agents = new Map();
     this.plugins = new PluginLoader();

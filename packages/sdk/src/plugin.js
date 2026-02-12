@@ -1,77 +1,58 @@
-/**
- * Ultra-Dex Plugin Loader
- */
-
 export class PluginLoader {
-  constructor(config = {}) {
-    this.config = config;
+  constructor() {
     this.plugins = new Map();
     this.hooks = new Map();
   }
 
-  async initialize() {
-    // Initialize plugin system
-    return this;
-  }
+  load(plugin) {
+    if (!plugin || typeof plugin !== 'object') {
+      throw new Error('UltraDex SDK: plugin must be an object');
+    }
+    if (!plugin.id || typeof plugin.id !== 'string') {
+      throw new Error('UltraDex SDK: plugin must include a string id');
+    }
 
-  /**
-   * Load a plugin
-   */
-  async load(pluginId, config = {}) {
-    const plugin = {
-      id: pluginId,
-      config,
-      loaded: true,
-      hooks: new Map(),
-    };
+    this.plugins.set(plugin.id, plugin);
 
-    this.plugins.set(pluginId, plugin);
+    if (typeof plugin.setup === 'function') {
+      plugin.setup(this);
+    }
+
+    if (plugin.hooks && typeof plugin.hooks === 'object') {
+      for (const [event, handler] of Object.entries(plugin.hooks)) {
+        if (typeof handler === 'function') {
+          this.on(event, handler);
+        }
+      }
+    }
+
     return plugin;
   }
 
-  /**
-   * Get a loaded plugin
-   */
-  get(pluginId) {
-    return this.plugins.get(pluginId);
-  }
-
-  /**
-   * List all loaded plugins
-   */
-  list() {
-    return Array.from(this.plugins.values()).map((p) => ({
-      id: p.id,
-      loaded: p.loaded,
-    }));
-  }
-
-  /**
-   * Unload a plugin
-   */
   unload(pluginId) {
     return this.plugins.delete(pluginId);
   }
 
-  /**
-   * Register a hook
-   */
-  registerHook(event, callback) {
+  list() {
+    return Array.from(this.plugins.values()).map((plugin) => ({
+      id: plugin.id,
+      version: plugin.version || '0.0.0',
+    }));
+  }
+
+  on(event, handler) {
     if (!this.hooks.has(event)) {
       this.hooks.set(event, []);
     }
-    this.hooks.get(event).push(callback);
+    this.hooks.get(event).push(handler);
   }
 
-  /**
-   * Trigger hooks for an event
-   */
-  async trigger(event, data) {
-    const callbacks = this.hooks.get(event) || [];
-    for (const callback of callbacks) {
-      await callback(data);
+  async emit(event, payload) {
+    const handlers = this.hooks.get(event) || [];
+    for (const handler of handlers) {
+      await handler(payload);
     }
   }
 }
 
-export default { PluginLoader };
+export default PluginLoader;
