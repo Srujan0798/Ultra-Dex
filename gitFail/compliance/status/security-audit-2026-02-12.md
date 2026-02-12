@@ -6,25 +6,24 @@ Command: `npm run security:audit`
 ## Current Result
 
 - Status: `FAIL` (expected while vulnerabilities remain)
-- Total vulnerabilities: `21`
-- Severity split: `11 high`, `5 moderate`, `5 low`
+- Total vulnerabilities: `20`
+- Severity split: `10 high`, `5 moderate`, `5 low`
 
 ## Resolved In This Session
 
 - Removed unused `ink-box` dependency (eliminated legacy `cross-spawn` chain).
 - Removed locked `clinic` dependency; profiling commands now use `npx clinic`.
 - Removed unused `nodemailer` dependency.
-- Audit count reduced from `52` to `21`.
+- Applied a non-breaking `npm audit fix` pass (with `npm_config_ignore_scripts=true`).
+- Audit count reduced from `52` to `20`.
 
 ## Remaining High-Priority Findings
 
-1. `d3-color` (high)
-   - Transitive; update dependency chain that pins vulnerable d3 packages.
-2. `diff` via `mocha` / `sinon` (high)
+1. `diff` via `mocha` / `sinon` (high)
    - Requires major update path (`sinon` suggested by audit output).
-3. `tar` chain (high)
+2. `tar` chain (high)
    - Comes via `sqlite3` / electron build tooling and transitive node-gyp stack.
-4. `send` chain in Expo toolchain (high)
+3. `send` chain in Expo toolchain (high)
    - Requires upgrading Expo to patched range (major upgrade path).
 
 ## Moderate Findings Still Open
