@@ -28,14 +28,14 @@ export function registerDaemonCommand(program) {
     .action(async (options) => {
       try {
         const daemonOptions = {
-          port: parseInt(options.port),
-          checkInterval: parseInt(options.interval),
+          port: parseInt(options.port, 10),
+          checkInterval: parseInt(options.interval, 10),
           fileWatch: options.watch,
           autoFix: options.autofix,
+          aggressiveAutoFix: Boolean(options.autoFix),
           notifications: options.notifications,
           verbose: options.verbose,
           strict: options.strict,
-          autoFix: options.autoFix
         };
 
         printInfo('🎮 Starting Ultra-Dex Autonomous Daemon...');
@@ -46,7 +46,7 @@ export function registerDaemonCommand(program) {
         await autonomousDaemon.start(daemonOptions);
 
         // Keep process alive
-        await new Promise(() => {}); // This will keep the daemon running
+        await new Promise(() => {}); // Keep daemon process alive.
       } catch (error) {
         printError(`Daemon start failed: ${error.message}`);
         process.exit(1);
@@ -72,7 +72,7 @@ export function registerDaemonCommand(program) {
     .action(async () => {
       try {
         const stats = autonomousDaemon.getStats();
-        
+
         printInfo('🎮 Ultra-Dex Autonomous Daemon Status');
         printInfo(`📡 Running: ${stats.isRunning ? 'Yes' : 'No'}`);
         printInfo(`⏱️  Uptime: ${Math.floor(stats.uptime / 1000 / 60)} minutes`);
@@ -81,7 +81,7 @@ export function registerDaemonCommand(program) {
         printInfo(`❌ Errors: ${stats.errors}`);
         printInfo(`📋 Priority Queue: ${stats.queueSizes.priority}`);
         printInfo(`📋 Background Queue: ${stats.queueSizes.background}`);
-        
+
         if (stats.lastActivity) {
           printInfo(`🕒 Last Activity: ${stats.lastActivity.toLocaleString()}`);
         }
@@ -98,10 +98,10 @@ export function registerDaemonCommand(program) {
       try {
         await autonomousDaemon.stop();
         printInfo('🔄 Restarting daemon...');
-        
+
         // Small delay before restart
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
         await autonomousDaemon.start();
         printSuccess('✅ Daemon restarted successfully');
       } catch (error) {
@@ -140,11 +140,11 @@ export function registerDaemonCommand(program) {
     .action(async () => {
       try {
         const stats = autonomousDaemon.getStats();
-        
+
         printInfo('📋 Task Queues:');
         printInfo(`Priority Queue: ${stats.queueSizes.priority} tasks`);
         printInfo(`Background Queue: ${stats.queueSizes.background} tasks`);
-        
+
         // In production, this would show actual queue contents
         printInfo('\nUse --verbose for detailed queue contents');
       } catch (error) {
@@ -159,7 +159,7 @@ export function registerDaemonCommand(program) {
     .action(async () => {
       try {
         printInfo('🏥 Running immediate health check...');
-        
+
         // This would trigger an immediate health check
         // For now, we'll simulate
         const healthReport = {
@@ -171,10 +171,10 @@ export function registerDaemonCommand(program) {
             governance: { status: 'healthy', message: 'Governance checks passing' },
             security: { status: 'healthy', message: 'No security issues found' },
             performance: { status: 'healthy', message: 'Performance metrics nominal' },
-            dependencies: { status: 'healthy', message: 'Dependencies up to date' }
-          }
+            dependencies: { status: 'healthy', message: 'Dependencies up to date' },
+          },
         };
-        
+
         printSuccess('✅ Health check completed');
         console.log(JSON.stringify(healthReport, null, 2));
       } catch (error) {

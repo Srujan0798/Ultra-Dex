@@ -302,7 +302,11 @@ export function registerDoctorCommand(program) {
             checks.push({ name: 'Disk Space', status: 'ok', detail: `${availableGb}GB available` });
           } else {
             diskSpinner.warn(`Disk Space low (${availableGb}GB)`);
-            checks.push({ name: 'Disk Space', status: 'warn', detail: `${availableGb}GB available` });
+            checks.push({
+              name: 'Disk Space',
+              status: 'warn',
+              detail: `${availableGb}GB available`,
+            });
           }
         } catch {
           diskSpinner.info('Disk Space check unavailable');
@@ -342,7 +346,11 @@ export function registerDoctorCommand(program) {
           checks.push({ name: 'Docker', status: 'ok', detail: dockerVersion });
         } catch {
           dockerSpinner.info('Docker not installed');
-          checks.push({ name: 'Docker', status: 'info', detail: 'Optional for container workflows' });
+          checks.push({
+            name: 'Docker',
+            status: 'info',
+            detail: 'Optional for container workflows',
+          });
         }
 
         // Check 12: IDE
@@ -421,7 +429,6 @@ export function registerDoctorCommand(program) {
           status: setCount > 0 ? 'ok' : 'warn',
           detail: `${setCount}/${envKeys.length} key vars configured`,
         });
-
         // Check 17: Linting
         const lintSpinner = createSpinner('Checking Linting...');
         lintSpinner.start();
@@ -545,7 +552,7 @@ export function registerConfigCommand(program) {
           printInfo(
             chalk.gray('   macOS: ~/Library/Application Support/Claude/claude_desktop_config.json')
           );
-          printInfo(chalk.gray('   Windows: %APPDATA%\Claude\claude_desktop_config.json'));
+          printInfo(chalk.gray('   Windows: %APPDATA%\\Claude\\claude_desktop_config.json'));
           printInfo(chalk.gray('   Linux: ~/.config/Claude/claude_desktop_config.json\n'));
           return;
         }
@@ -620,11 +627,12 @@ export function registerConfigCommand(program) {
         ]);
 
         switch (action) {
-          case 'view':
+          case 'view': {
             process.stdout.write(chalk.gray('\n' + JSON.stringify(config, null, 2) + '\n') + '\n');
             break;
+          }
 
-          case 'provider':
+          case 'provider': {
             const { provider } = await inquirer.prompt([
               {
                 type: 'list',
@@ -638,8 +646,9 @@ export function registerConfigCommand(program) {
             await saveConfig(config, options.global);
             printSuccess(chalk.green(`\n✅ Default provider set to: ${provider}\n`));
             break;
+          }
 
-          case 'minScore':
+          case 'minScore': {
             const { minScore } = await inquirer.prompt([
               {
                 type: 'number',
@@ -653,8 +662,9 @@ export function registerConfigCommand(program) {
             await saveConfig(config, options.global);
             printSuccess(chalk.green(`\n✅ Minimum score set to: ${minScore}\n`));
             break;
+          }
 
-          case 'mcpPort':
+          case 'mcpPort': {
             const { mcpPort } = await inquirer.prompt([
               {
                 type: 'number',
@@ -668,14 +678,16 @@ export function registerConfigCommand(program) {
             await saveConfig(config, options.global);
             printSuccess(chalk.green(`\n✅ MCP port set to: ${mcpPort}\n`));
             break;
+          }
 
-          case 'mcp':
+          case 'mcp': {
             // Call the MCP generation
             options.mcp = true;
             await program.commands.find((c) => c.name() === 'config').action(options);
             break;
+          }
 
-          case 'init':
+          case 'init': {
             const { scope } = await inquirer.prompt([
               {
                 type: 'list',
@@ -690,6 +702,7 @@ export function registerConfigCommand(program) {
             const configPath = await saveConfig(DEFAULT_CONFIG, scope === 'global');
             printSuccess(chalk.green(`\n✅ Config created: ${configPath}\n`));
             break;
+          }
         }
       } catch (error) {
         await handleError(error, { command: 'config', options });
