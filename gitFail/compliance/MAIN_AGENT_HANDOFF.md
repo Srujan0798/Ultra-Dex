@@ -4,6 +4,8 @@ Date: February 12, 2026
 Repository: Ultra-Dex  
 Ticket: GitHub Support `#4080230` (account suspension)
 
+Verified replay companion: `gitFail/compliance/ULTRA_DEX_MASTER_REPLAY_SCRIPT_VERIFIED.md`
+
 ## Purpose
 
 This document is the full operating handoff for the main agent to:
