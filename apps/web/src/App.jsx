@@ -1,9 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Editor from '@monaco-editor/react';
-import { Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import 'xterm/css/xterm.css';
+import { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import '@xterm/xterm/css/xterm.css';
 import './App.css';
 
 const AGENTS = [
@@ -34,24 +34,17 @@ const DEFAULT_CODE = `<!doctype html>
   </body>
 </html>`;
 
-const DEFAULT_WS = 'ws://localhost:3002/ws';
-
 function App() {
   const [code, setCode] = useState(DEFAULT_CODE);
-  const [language, setLanguage] = useState('html');
-  const [wsUrl, setWsUrl] = useState(DEFAULT_WS);
+  const [language] = useState('javascript');
+  const [wsUrl] = useState('ws://localhost:3000');
   const [wsStatus, setWsStatus] = useState('disconnected');
   const [selectedAgent, setSelectedAgent] = useState(AGENTS[0].id);
-  const [collabLog, setCollabLog] = useState([]);
+
 
   const wsRef = useRef(null);
   const termRef = useRef(null);
   const termContainerRef = useRef(null);
-
-  const activeAgent = useMemo(
-    () => AGENTS.find((agent) => agent.id === selectedAgent),
-    [selectedAgent]
-  );
 
   useEffect(() => {
     const term = new Terminal({
@@ -79,7 +72,10 @@ function App() {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'code') setCode(msg.value);
-      } catch (e) {}
+        // Handle collaboration updates
+      } catch {
+        // ignore
+      }
     };
     return () => ws.close();
   }, [wsUrl]);

@@ -1,11 +1,12 @@
 {
   "name": "@ultra-dex/dashboard",
   "version": "6.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
-    "dev": "node ./node_modules/vite/bin/vite.js",
-    "build": "node ./node_modules/vite/bin/vite.js build",
-    "preview": "node ./node_modules/vite/bin/vite.js preview"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@ultra-dex/core": "*",
@@ -19,6 +20,7 @@
     "@react-three/drei": "^10.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.16",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",
