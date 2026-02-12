@@ -19,7 +19,8 @@ COPY apps/core-api/package*.json ./apps/core-api/
 COPY src/core/package*.json ./src/core/
 
 # Install dependencies (Workspaces aware)
-RUN npm install --omit=dev
+ENV HUSKY=0
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Runtime stage
 FROM node:20-alpine AS runtime
@@ -45,4 +46,4 @@ ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "apps/cli/bin/ultra-dex.js", "serve"]
 
 LABEL version="6.0.0" \
-      description="Ultra-Dex AI Orchestration Meta-Layer"
+    description="Ultra-Dex AI Orchestration Meta-Layer"

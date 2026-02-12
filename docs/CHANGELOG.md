@@ -2,58 +2,30 @@
 
 All notable changes to Ultra-Dex will be documented in this file.
 
-## [Unreleased]
-
-### Added - Test Infrastructure (February 5, 2026)
-
-- **456 new tests** across security, memory, graph, and provider modules
-- **Security test suite** (170 tests): API keys, RBAC, token storage, config management
-- **Memory system tests** (132 tests): Tiered architecture, embeddings, vector store, compression
-- **Graph & RAG tests** (105 tests): Semantic knowledge graph, FalkorDB client
-- **Provider & router tests** (49 tests): Streaming providers, smart task routing
-- Comprehensive TEST_COVERAGE_REPORT.md and updated test documentation
-
-### Changed
-
-- Test coverage improved from 41.27% to ~60% (target: 70%)
-- Test file count increased from 40 to 85+ (+112%)
-- Test case count increased from 281 to 737+ (+162%)
-- README.md now shows accurate coverage metrics
-
-### Fixed
-
-- Vision agent no longer returns fake placeholder responses
-- Integration commands clearly labeled as "Alpha"
-- NPM plugin installation provides clear guidance
-- All security-critical modules now properly validated
-
-## [4.0.0] - 2026-02-05
+## [6.0.0] - 2026-02-12
 
 ### Added
 
-- Ultra Protocol (`ultra://`) resources for state, context, decisions, and memory search
-- Self-healing evaluation loops with model escalation
-- Multi-tier memory schema + graph traversal engine
-- Gamified challenges, leaderboards, and achievements
-- Template pack manager and SaaS starter template
-- Enterprise/DoD visual theming upgrades and snap cleanup
-- Dashboard V2 kernel endpoints (heartbeat, memory stream)
+- `gitFail/compliance/MAIN_AGENT_HANDOFF.md` with complete suspension/reinstatement workflow and command reference.
+- Service-level AI provider registry and adapters under `src/services/ai-providers/`.
+- CLI integration adapters for Neon, Netlify, and Railway in both `apps/cli` and `src/platform/cli`.
+- Extension development guide at `packages/EXTENSION-GUIDE.md`.
+- Core regression test for provider registry behavior: `tests/core/ai-providers-registry.test.js`.
 
 ### Changed
 
-- Model routing now supports per-project strategy overrides
-- Telemetry sanitizes PII and supports encrypted local logs
+- `plan` command now supports `--generate` in both command trees:
+  - `apps/cli/lib/commands/plan.js`
+  - `src/platform/cli/commands/plan.js`
+- Docker dependency install now uses `HUSKY=0 npm install --omit=dev --legacy-peer-deps` for safer production installs.
+- README updated to remove stale hardcoded benchmark/competitor claims and keep repository description policy-safe.
 
 ### Fixed
 
-- MCP HTTP test suite stabilized with in-process kernel boot
+- `lru-cache` import compatibility in `apps/cli/lib/cache/index.js`.
+- Profiler test flakiness in `apps/cli/test/profiler.test.js`.
+- Plan CLI test alignment with option-driven flow in `apps/cli/test/plan.test.js`.
 
-## [3.4.5] - 2026-02-04
+## [Previous Releases]
 
-Initial baseline: 41.27% coverage, 350+ tests
-
----
-
-**Upcoming: v3.5.0 (Launch: February 14, 2026)**
-Theme: Security, Reliability, and Honest Metrics
-Status: ✅ Launch Ready
+Historical release details are preserved in git history and tags.

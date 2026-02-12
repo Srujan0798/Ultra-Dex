@@ -10,7 +10,7 @@ Ultra-Dex is a **control plane for AI-assisted engineering**. It coordinates age
 
 ## What Ultra-Dex Is
 
-- **Provider-agnostic orchestration**: route requests across OpenAI, Anthropic, Google, Mistral, Groq, DeepSeek, Qwen, and more.
+- **Provider-agnostic orchestration**: route requests across OpenAI, Anthropic, Google, Mistral, Groq, DeepSeek, Cohere, Together, Fireworks, Perplexity, and more.
 - **Agent execution runtime**: planner/coder/reviewer-style workflows with governance and verification hooks.
 - **Memory-aware system**: tiered memory + retrieval components for longer-running tasks.
 - **Tool-connected platform**: CLI, MCP server, plugins, extensions, and app surfaces.
@@ -55,16 +55,16 @@ npx ultra-dex status
 
 ## Feature Matrix
 
-| Capability | What it does | Status |
-| --- | --- | --- |
-| Agent Orchestration | Multi-agent execution with delegated tasks and sequencing | Ready |
-| AI Routing | Strategy-based provider selection (cost/latency/quality/fallback) | Ready |
-| Provider Layer | Unified adapters for major hosted/local model providers | Ready |
-| Memory | Tiered memory + retrieval utilities for persistent context | Ready |
-| MCP | MCP server mode with memory + agent status tools | Ready |
-| CLI Runtime | Large command surface for build/plan/review/ops workflows | Ready |
-| Dashboard & Apps | Dashboard, cloud/web/desktop/docs app workspaces | Ready |
-| SDK | Programmatic SDK for providers, agents, and plugins | Ready |
+| Capability          | What it does                                                      | Status |
+| ------------------- | ----------------------------------------------------------------- | ------ |
+| Agent Orchestration | Multi-agent execution with delegated tasks and sequencing         | Ready  |
+| AI Routing          | Strategy-based provider selection (cost/latency/quality/fallback) | Ready  |
+| Provider Layer      | Unified adapters for major hosted/local model providers           | Ready  |
+| Memory              | Tiered memory + retrieval utilities for persistent context        | Ready  |
+| MCP                 | MCP server mode with memory + agent status tools                  | Ready  |
+| CLI Runtime         | Large command surface for build/plan/review/ops workflows         | Ready  |
+| Dashboard & Apps    | Dashboard, cloud/web/desktop/docs app workspaces                  | Ready  |
+| SDK                 | Programmatic SDK for providers, agents, and plugins               | Ready  |
 
 ## Architecture Overview
 
@@ -102,6 +102,7 @@ Most AI coding stacks are strong at short sessions and weak at sustained deliver
 
 - `apps/cli` - core command runtime
 - `src/core` - orchestration, AI routing, memory, MCP, templates
+- `src/services/ai-providers` - 10 unified provider adapters
 - `apps/dashboard` - operator UI
 - `apps/cloud`, `apps/web`, `apps/desktop`, `apps/docs-site` - platform apps
 - `packages/sdk` - public JS/TS SDK

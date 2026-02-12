@@ -1,0 +1,8 @@
+{
+  "name": "clerk",
+  "version": "1.0.0",
+  "description": "Ultra-Dex clerk plugin",
+  "main": "index.js",
+  "capabilities": ["clerk"],
+  "requiredPermissions": ["file-read"]
+}
