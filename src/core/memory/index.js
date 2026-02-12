@@ -13,8 +13,15 @@ export { MemoryManager, ppmManager } from './manager.js';
 export { ContextManager } from './context-manager.js';
 export { PersistentMemoryStore } from './persistent-store.js';
 
-// Enhanced system
-export { EnhancedMemorySystem, enhancedMemorySystem } from './enhanced-memory-system.js';
+// Enhanced system (lazy to avoid hard dependency loading during basic memory usage/tests)
+export async function loadEnhancedMemorySystemModule() {
+  return import('./enhanced-memory-system.js');
+}
+
+export async function getEnhancedMemorySystem() {
+  const mod = await loadEnhancedMemorySystemModule();
+  return mod.enhancedMemorySystem;
+}
 
 // Tier managers
 export { HotTier, hotTier, HotTier as HotTierMemory } from './hot-tier.js';
