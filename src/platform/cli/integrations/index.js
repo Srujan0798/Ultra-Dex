@@ -9,6 +9,9 @@ import discord from './discord.js';
 import githubProjects from './github-projects.js';
 import vercel from './vercel.js';
 import supabase from './supabase.js';
+import neon from './neon.js';
+import netlify from './netlify.js';
+import railway from './railway.js';
 import stripe from './stripe.js';
 import segment from './segment.js';
 
@@ -22,6 +25,9 @@ export const integrations = {
   'github-projects': githubProjects,
   vercel,
   supabase,
+  neon,
+  netlify,
+  railway,
   stripe,
   segment,
 };
