@@ -1,377 +1,225 @@
-# Universal AI Provider Interface Specification
+# Ultra-Dex Universal Provider Interface Spec (v6.0.0)
 
-> **Version:** 6.0.0  
-> **Status:** REQUIRED - All providers MUST conform to this specification  
-> **Last Updated:** 2026-02-12
+This document defines the required contract for **all current and future AI providers** used by Ultra-Dex.
 
-## Overview
+## 1. Required Interface
 
-This document defines the foundational specification that ALL current and future AI providers in Ultra-Dex must implement. It ensures consistency, interchangeability, and reliability across the entire provider ecosystem.
+Every provider implementation MUST expose the following async methods:
 
-## Design Principles
+```js
+class Provider {
+  constructor(config) {}
 
-1. **Consistency**: All providers expose the same interface
-2. **Resilience**: Graceful degradation and proper error handling
-3. **Observability**: Built-in metrics and logging hooks
-4. **Extensibility**: Easy to add new capabilities
-5. **Interoperability**: Providers are swappable without code changes
-
-## Required Methods
-
-### 1. `chat(messages, opts)` → Promise&lt;ChatResponse&gt;
-
-Execute a chat completion request.
-
-```typescript
-interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
+  async chat(messages, opts = {}) {}
+  async stream(messages, opts = {}) {}
+  async embed(text) {}
+  async complete(prompt, opts = {}) {}
 }
+```
 
-interface ChatOptions {
-  model?: string; // Override default model
-  temperature?: number; // 0.0 - 2.0
-  maxTokens?: number; // Maximum tokens to generate
-  topP?: number; // Nucleus sampling
-  tools?: Tool[]; // Available tools/functions
-  toolChoice?: 'auto' | 'none' | ToolChoice;
-  timeoutMs?: number; // Request timeout
-  signal?: AbortSignal; // Cancellation signal
-}
+### 1.1 `chat(messages, opts)`
 
-interface ChatResponse {
-  content: string; // Generated text
+- Input:
+  - `messages`: `Array<{ role: 'system'|'user'|'assistant'|'tool', content: string | object }>`
+  - `opts`: provider-specific overrides
+- Output:
+
+```js
+{
+  content: string,
   usage: {
-    inputTokens: number;
-    outputTokens: number;
-    totalTokens: number;
-  };
-  model: string; // Actual model used
-  latencyMs?: number; // Response time
-  finishReason?: 'stop' | 'length' | 'tool_calls' | string;
+    inputTokens: number,
+    outputTokens: number,
+    totalCost?: number
+  },
+  model: string,
+  latencyMs?: number
 }
 ```
 
-**Implementation Requirements:**
+### 1.2 `stream(messages, opts)`
 
-- Must handle message normalization internally
-- Must track and return accurate token usage
-- Must measure and include latency
-- Must propagate provider-specific errors with context
+- Input format same as `chat`
+- Output: `AsyncIterable<StreamChunk>`
 
-### 2. `stream(messages, opts)` → AsyncIterable&lt;StreamChunk&gt;
+### 1.3 `embed(text)`
 
-Execute a streaming chat completion request.
+- Input: `text: string`
+- Output:
 
-```typescript
-interface StreamChunk {
-  type: 'text' | 'tool_call' | 'done' | 'error';
-  content?: string; // Text content (for 'text' type)
-  toolCall?: ToolCall; // Tool call data (for 'tool_call' type)
-  usage?: TokenUsage; // Final usage stats (on 'done')
-  error?: ProviderError; // Error details (for 'error' type)
+```js
+{
+  embedding: number[],
+  dimensions: number
 }
 ```
 
-**Implementation Requirements:**
+### 1.4 `complete(prompt, opts)`
 
-- Must yield chunks as they arrive from the provider
-- Must handle SSE (Server-Sent Events) parsing
-- Must yield a final 'done' chunk
-- Must handle stream interruptions gracefully
+- Convenience wrapper over `chat`
+- Input:
+  - `prompt: string`
+  - `opts: object`
+- Output: same contract as `chat`
 
-### 3. `embed(text)` → Promise&lt;EmbedResponse&gt;
+## 2. Optional Interface
 
-Generate embeddings for text.
+Providers MAY implement the following specialized methods:
 
-```typescript
-interface EmbedResponse {
-  embedding: number[]; // Vector representation
-  dimensions: number; // Vector dimension count
-  model?: string; // Embedding model used
+```js
+async vision(image, prompt)
+async code(prompt, language)
+async reasoning(prompt, steps)
+async functionCalling(messages, tools)
+```
+
+### Optional method expectations
+
+- `vision(image, prompt)`: multimodal image+text analysis
+- `code(prompt, language)`: code generation tuned for target language
+- `reasoning(prompt, steps)`: explicit multi-step reasoning execution
+- `functionCalling(messages, tools)`: tool invocation or structured function outputs
+
+## 3. Provider Config Schema
+
+Every provider constructor MUST accept a plain object compatible with:
+
+```js
+{
+  apiKey: string,
+  baseUrl: string,
+  defaultModel: string,
+  maxRetries: number,
+  timeout: number,
+  rateLimit: {
+    rpm: number,
+    tpm: number,
+    burst?: number
+  }
 }
 ```
 
-**Implementation Requirements:**
+### Config rules
 
-- Must return normalized float array
-- Dimensions must be consistent for the model
-- Must handle batch embedding if supported
-- May throw if provider doesn't support embeddings
+- `apiKey` MAY be omitted for local providers.
+- `baseUrl` SHOULD default to provider-native endpoint.
+- `defaultModel` MUST be defined (constructor or env fallback).
+- `maxRetries` default: `3`
+- `timeout` default: `45000` ms
 
-### 4. `complete(prompt, opts)` → Promise&lt;ChatResponse&gt;
+## 4. Response Contract
 
-Legacy completion interface (optional but recommended).
+All non-streaming generation methods MUST normalize to:
 
-**Default Implementation:**
-
-```javascript
-async complete(prompt, opts) {
-  return this.chat([{ role: 'user', content: prompt }], opts);
-}
-```
-
-## Optional Methods
-
-### 5. `vision(image, prompt, opts)` → Promise&lt;ChatResponse&gt;
-
-Vision/multimodal support.
-
-```typescript
-interface VisionOptions extends ChatOptions {
-  imageFormat?: 'url' | 'base64' | 'bytes';
-  detail?: 'low' | 'high' | 'auto';
-}
-```
-
-### 6. `code(prompt, language, opts)` → Promise&lt;CodeResponse&gt;
-
-Code-specific generation with structured output.
-
-```typescript
-interface CodeResponse extends ChatResponse {
-  code: string;
-  language: string;
-  explanation?: string;
-}
-```
-
-### 7. `reasoning(prompt, steps, opts)` → Promise&lt;ReasoningResponse&gt;
-
-Chain-of-thought reasoning with intermediate steps.
-
-```typescript
-interface ReasoningResponse extends ChatResponse {
-  reasoning: string; // Step-by-step reasoning
-  conclusion: string; // Final answer
-  confidence?: number; // 0.0 - 1.0
-}
-```
-
-### 8. `functionCalling(messages, tools, opts)` → Promise&lt;ToolResponse&gt;
-
-Structured tool/function calling.
-
-```typescript
-interface ToolResponse extends ChatResponse {
-  toolCalls: ToolCall[];
-  toolResults?: ToolResult[];
-}
-```
-
-## Configuration Schema
-
-All providers must accept this configuration structure:
-
-```typescript
-interface ProviderConfig {
-  // Required
-  apiKey: string; // Authentication key
-
-  // Optional with defaults
-  baseUrl?: string; // API endpoint (provider-specific default)
-  defaultModel?: string; // Default model for chat
-  embeddingModel?: string; // Default model for embeddings
-  maxRetries?: number; // Maximum retry attempts (default: 3)
-  timeoutMs?: number; // Default timeout in ms (default: 45000)
-
-  // Advanced
-  rateLimit?: {
-    rpm?: number; // Requests per minute
-    tpm?: number; // Tokens per minute
-  };
-  extraHeaders?: Record<string, string>; // Custom headers
-}
-```
-
-## Response Contract
-
-All successful responses must include:
-
-```typescript
-interface BaseResponse {
-  content: string; // Primary response content
+```js
+{
+  content: string,
   usage: {
-    inputTokens: number; // Prompt tokens consumed
-    outputTokens: number; // Completion tokens generated
-    totalCost?: number; // Estimated cost in USD (optional)
-  };
-  model: string; // Model identifier used
-  latencyMs: number; // Round-trip time
-  provider: string; // Provider name
-  timestamp: string; // ISO 8601 timestamp
+    inputTokens: number,
+    outputTokens: number,
+    totalCost: number
+  },
+  model: string,
+  latencyMs: number
 }
 ```
 
-## Error Contract
+### Cost normalization
 
-All errors must be thrown as `ProviderError`:
+- `totalCost` is computed from provider/model token rates.
+- If exact provider cost is unavailable, set `totalCost: 0` and attach telemetry warning.
 
-```typescript
-class ProviderError extends Error {
-  constructor(
-    provider: string,
-    message: string,
-    options: {
-      code: string; // Error code
-      status?: number; // HTTP status if applicable
-      retryable?: boolean; // Can be retried
-      retryAfterMs?: number; // Suggested retry delay
-      cause?: Error; // Original error
-    }
-  );
+## 5. Error Contract
+
+Provider errors MUST normalize to:
+
+```js
+{
+  code: string,
+  message: string,
+  provider: string,
+  retryable: boolean,
+  retryAfterMs?: number
 }
 ```
 
-### Standard Error Codes
+### Error code guidance
 
-| Code               | Description                       | Retryable |
-| ------------------ | --------------------------------- | --------- |
-| `INVALID_CONFIG`   | Missing or invalid configuration  | No        |
-| `AUTH_FAILED`      | Authentication failed             | No        |
-| `RATE_LIMITED`     | Rate limit exceeded               | Yes       |
-| `QUOTA_EXCEEDED`   | Account quota exhausted           | No        |
-| `TIMEOUT`          | Request timed out                 | Yes       |
-| `SERVER_ERROR`     | Provider server error (5xx)       | Yes       |
-| `INVALID_REQUEST`  | Malformed request (4xx)           | No        |
-| `CONTENT_FILTERED` | Content blocked by safety filters | No        |
-| `UNKNOWN`          | Unclassified error                | Maybe     |
+- `INVALID_CONFIG`
+- `AUTH_ERROR`
+- `RATE_LIMITED`
+- `HTTP_ERROR`
+- `NETWORK_ERROR`
+- `INVALID_RESPONSE`
+- `TIMEOUT`
 
-## Streaming Protocol
+## 6. Streaming Protocol
 
-SSE (Server-Sent Events) format:
+All `stream(...)` methods MUST return an `AsyncIterable` of:
 
-```
-data: {"type":"text","content":"Hello"}
-
-data: {"type":"text","content":" world"}
-
-data: {"type":"done","usage":{"inputTokens":10,"outputTokens":2}}
-```
-
-**Requirements:**
-
-- Each chunk is a JSON object
-- Must handle `data: [DONE]` or similar termination markers
-- Must gracefully handle partial/invalid JSON
-- Must support cancellation via AbortSignal
-
-## Rate Limiting
-
-Providers should implement token bucket rate limiting:
-
-```typescript
-interface RateLimiter {
-  checkLimit(cost: number): boolean;
-  waitIfNeeded(cost: number): Promise<void>;
-  getStatus(): {
-    remaining: number;
-    resetAt: Date;
-    limit: number;
-  };
+```js
+{
+  type: 'text' | 'tool_call' | 'done',
+  content: string | object,
+  raw?: any
 }
 ```
 
-**Default Limits (configurable):**
+### Stream semantics
 
-- RPM: 60 (requests per minute)
-- TPM: 100,000 (tokens per minute)
+- `text`: partial model tokens or text deltas
+- `tool_call`: tool/function invocation chunks
+- `done`: terminal chunk emitted exactly once
 
-## Retry Strategy
+## 7. Rate Limiting
 
-Default retry configuration:
+Providers SHOULD implement token bucket control with configurable RPM/TPM:
 
-```typescript
-const DEFAULT_RETRY_CONFIG = {
-  maxRetries: 3,
-  backoffMultiplier: 2,
-  initialDelayMs: 1000,
-  maxDelayMs: 30000,
-  jitter: true, // Add randomness to prevent thundering herd
+- RPM: requests per minute
+- TPM: tokens per minute
+- Optional burst allowance
 
-  // Don't retry these status codes
-  nonRetryableStatusCodes: [400, 401, 403, 404, 422],
+Recommended bucket behavior:
 
-  // Don't retry these error codes
-  nonRetryableErrors: ['INVALID_CONFIG', 'AUTH_FAILED', 'CONTENT_FILTERED'],
-};
-```
+- Reject or queue when both budget pools are exhausted
+- Include retry metadata in error payload
 
-**Backoff Formula:**
+## 8. Retry Strategy
 
-```
-delay = min(initialDelay * (multiplier ^ attempt), maxDelay)
-if (jitter) delay += random(0, delay * 0.1)
-```
+Required retry policy:
 
-## Provider Implementation Template
+- Exponential backoff with jitter
+- Max retries: `3`
+- Skip retries for client 4xx errors (except `429`)
+- Retry on:
+  - `429`
+  - `5xx`
+  - network failures/timeouts
 
-```javascript
-export class MyProvider {
-  constructor(config = {}) {
-    this.config = {
-      apiKey: config.apiKey || process.env.MY_API_KEY,
-      baseUrl: config.baseUrl || 'https://api.example.com/v1',
-      defaultModel: config.defaultModel || 'default-model',
-      maxRetries: config.maxRetries || 3,
-      timeoutMs: config.timeoutMs || 45000,
-    };
+Recommended schedule:
 
-    if (!this.config.apiKey) {
-      throw new ProviderError('myprovider', 'API key is required', {
-        code: 'INVALID_CONFIG',
-      });
-    }
+- base delay: `250ms`
+- multiplier: `2x`
+- jitter: `0-100ms`
 
-    this.name = 'myprovider';
-    this.metrics = { requests: 0, errors: 0 };
-  }
+## 9. Compliance Checklist
 
-  async chat(messages, opts = {}) {
-    const startTime = Date.now();
-    // Implementation
-  }
+A provider is **spec-compliant** when it satisfies all:
 
-  async *stream(messages, opts = {}) {
-    // Implementation
-  }
+- [ ] Implements required methods: `chat`, `stream`, `embed`, `complete`
+- [ ] Accepts config schema
+- [ ] Returns normalized response contract
+- [ ] Emits normalized error contract
+- [ ] Streams `text`/`tool_call`/`done` events
+- [ ] Honors retry and rate-limit policies
 
-  async embed(text) {
-    // Implementation or throw
-  }
-}
-```
+## 10. Migration Note
 
-## Validation Checklist
+Legacy providers with custom result shapes MUST be wrapped by an adapter layer that normalizes:
 
-Before submitting a new provider:
+- message format
+- usage fields
+- error fields
+- streaming frames
 
-- [ ] Implements all required methods
-- [ ] Accepts standard config schema
-- [ ] Returns proper response contract
-- [ ] Throws ProviderError with correct codes
-- [ ] Implements retry logic (or uses shared utility)
-- [ ] Supports cancellation via AbortSignal
-- [ ] Includes latency tracking
-- [ ] Handles rate limits appropriately
-- [ ] Has comprehensive error messages
-- [ ] Includes provider name in errors
-- [ ] Supports streaming if provider allows
-- [ ] Handles embedding (or throws clear error)
-
-## Version History
-
-| Version | Date       | Changes                                |
-| ------- | ---------- | -------------------------------------- |
-| 6.0.0   | 2026-02-12 | Initial specification for Ultra-Dex v6 |
-
-## References
-
-- [OpenAI API Reference](https://platform.openai.com/docs/api-reference)
-- [Anthropic API Reference](https://docs.anthropic.com/claude/reference)
-- [Google Gemini API](https://ai.google.dev/api)
-- [Mistral API Reference](https://docs.mistral.ai/api)
-
----
-
-**Note:** This specification is the FOUNDATION of the Ultra-Dex provider ecosystem. Any deviation must be documented and approved through the RFC process.
+No provider should bypass this contract in production codepaths.
