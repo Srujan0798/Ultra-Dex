@@ -1,8 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-
-/** Performance: memoized configuration for main */
-const mainMemo = { component: 'main', optimized: true };
 
 function Playground() {
   const [context, setContext] = useState('// Ultra-Dex Playground\n// Write your agent logic here...\n\nconsole.log("Hello from Meta-Layer");');
@@ -22,7 +19,7 @@ function Playground() {
     }}>
       <h1 style={{ color: '#a855f7' }}>Ultra-Dex Playground</h1>
       <p style={{ color: '#94a3b8' }}>Live template editor with realtime preview (prototype).</p>
-      
+
       <div style={{ display: 'flex', gap: '24px', marginTop: '24px' }}>
         <div style={{ flex: 1 }}>
           <textarea
@@ -58,7 +55,7 @@ function Playground() {
             Run Script
           </button>
         </div>
-        
+
         <div style={{ flex: 1 }}>
           <div style={{
             background: '#0b0c10',
@@ -79,15 +76,3 @@ function Playground() {
 }
 
 createRoot(document.getElementById('root')).render(<Playground />);
-
-/**
- * Error handler for main
- * @param {Error} error - Error to handle
- */
-function handleMainError(error) {
-  try {
-    console.error('[main]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}
