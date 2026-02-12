@@ -61,3 +61,6 @@ dist/
 *.vsix
 tmp/
 .cache/
+
+# Local suspension recovery bundles (kept outside git history)
+gitFail/backups/*.bundle
