@@ -17,10 +17,13 @@ Brief description of what this PR does.
 ## Checklist
 
 - [ ] I have read [CONTRIBUTING.md](../CONTRIBUTING.md)
+- [ ] I have completed [GitHub compliance checklist](../gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md)
 - [ ] Markdown renders correctly
 - [ ] No placeholder text (everything is specific)
 - [ ] Links work correctly
 - [ ] Commit messages follow conventional format
+- [ ] No secrets, tokens, or personal data were added
+- [ ] New dependencies/assets are license-compatible
 
 ## Testing
 

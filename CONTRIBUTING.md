@@ -6,7 +6,8 @@ Thanks for helping improve Ultra-Dex. This guide keeps changes consistent and re
 
 1. Fork and clone the repo.
 2. Install dependencies: `npm install` (or `pnpm install`).
-3. Run CLI tests: `npm run test` (root) or `cd cli && npm test`.
+3. Enable local Git hooks: `git config core.hooksPath .husky`.
+4. Run CLI tests: `npm run test` (root) or `cd cli && npm test`.
 
 ## How To Add a New Agent
 
@@ -45,3 +46,11 @@ Thanks for helping improve Ultra-Dex. This guide keeps changes consistent and re
 ## Security
 
 If you find a security issue, please email the maintainer instead of opening a public issue.
+
+## Legal and Ethical Rules
+
+- Follow `CODE_OF_CONDUCT.md` in all project spaces.
+- Read `SECURITY.md` before reporting vulnerabilities.
+- Complete `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md` before every commit/PR.
+- Do not commit secrets, private keys, tokens, or sensitive personal data.
+- Do not submit code/content that violates GitHub Terms or Acceptable Use Policies.
