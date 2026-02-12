@@ -1,3 +1,4 @@
+/* global WebSocket */
 // Copyright (c) 2026 Ultra-Dex
 
 import fs from 'fs/promises';
