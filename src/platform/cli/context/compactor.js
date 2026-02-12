@@ -241,7 +241,7 @@ class ContextCompactor {
     for (const paragraph of paragraphs) {
       if (paragraph.length > 500) {
         // Split long paragraphs into sentences
-        const sentences = paragraph.match(/[^\.!?]+[\.!?]+/g) || [paragraph];
+        const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
         segments.push(...sentences.map((s) => s.trim()).filter((s) => s.length > 0));
       } else {
         if (paragraph.trim().length > 0) {

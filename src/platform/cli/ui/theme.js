@@ -84,7 +84,7 @@ export const theme = {
 };
 
 export function stripAnsi(str) {
-  return str.replace(/\x1b\[[0-9;]*m/g, '');
+  return str.replace(/\x1b\[[0-9;]*m/g, ''); // eslint-disable-line no-control-regex
 }
 
 export function box(content, title = '') {

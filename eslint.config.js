@@ -42,6 +42,13 @@ export default [
                 EventTarget: 'readonly',
                 Event: 'readonly',
                 MessageChannel: 'readonly',
+                AbortSignal: 'readonly',
+                setImmediate: 'readonly',
+                clearImmediate: 'readonly',
+                global: 'readonly',
+                exports: 'readonly',
+                module: 'readonly',
+                require: 'readonly',
             },
         },
         rules: {

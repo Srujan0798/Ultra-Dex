@@ -11,7 +11,9 @@ import { GeminiProvider } from './gemini.js';
 import { OllamaProvider } from './ollama.js';
 import { RouterProvider } from './router.js';
 import { enforceAgentExecution } from '../governance/index.js';
+
 import { memex } from '../memory/memex.js';
+import { MockOpenAI } from './mock.js';
 
 const PROVIDERS = {
   claude: {
@@ -117,13 +119,13 @@ export async function createProvider(providerId, options = {}) {
   if (!apiKey && providerId !== 'ollama' && providerId !== 'mock') {
     throw new Error(
       `API key not found for ${providerConfig.name}.\n\n` +
-        `To fix this, either:\n` +
-        `  1. Set ${providerConfig.envKey} environment variable:\n` +
-        `     export ${providerConfig.envKey}=your-key-here\n\n` +
-        `  2. Pass the key directly:\n` +
-        `     ultra-dex generate "idea" --key your-key-here\n\n` +
-        `  3. Use Ollama for local AI (no key needed):\n` +
-        `     ultra-dex generate "idea" --provider ollama`
+      `To fix this, either:\n` +
+      `  1. Set ${providerConfig.envKey} environment variable:\n` +
+      `     export ${providerConfig.envKey}=your-key-here\n\n` +
+      `  2. Pass the key directly:\n` +
+      `     ultra-dex generate "idea" --key your-key-here\n\n` +
+      `  3. Use Ollama for local AI (no key needed):\n` +
+      `     ultra-dex generate "idea" --provider ollama`
     );
   }
 

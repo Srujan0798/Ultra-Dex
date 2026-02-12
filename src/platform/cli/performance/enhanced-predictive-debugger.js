@@ -102,7 +102,7 @@ class StaticAnalyzer {
         },
         {
           name: 'sql_injection',
-          regex: /(?:query|execute|sql)\s*[\+=]\s*["'`][^"'`]*\+[^"'`]*["'`]/gi,
+          regex: /(?:query|execute|sql)\s*[+=]\s*["'`][^"'`]*\+[^"'`]*["'`]/gi,
           severity: 'critical',
           confidence: 0.9,
           message: 'Potential SQL injection',
@@ -256,7 +256,7 @@ class StaticAnalyzer {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // Detect function start
       if (line.match(/^(function|const|let|var|class)\s+\w+\s*(=|\(|\s)/) && line.includes('{')) {
         currentFunction = line;
@@ -265,7 +265,7 @@ class StaticAnalyzer {
       } else if (currentFunction) {
         braceDepth += (line.match(/{/g) || []).length;
         braceDepth -= (line.match(/}/g) || []).length;
-        
+
         if (braceDepth <= 0) {
           // End of function
           if (i - functionStartLine > 50) { // More than 50 lines
@@ -313,17 +313,17 @@ class MLPredictor {
     const severityWeight = this.model.weights.severity[pattern.severity] || 0.5;
     const confidenceWeight = pattern.confidence;
     const contextWeight = this.model.weights.context;
-    
+
     // Contextual factors that affect probability
     let contextFactor = 1.0;
     if (context.inHotPath) contextFactor *= 1.5; // Hot code paths
     if (context.complexity > 10) contextFactor *= 1.2; // Complex functions
     if (context.churn > 5) contextFactor *= 1.3; // Frequently changed code
-    
+
     // Calculate probability
     const rawScore = (severityWeight * 0.4) + (confidenceWeight * 0.4) + (contextFactor * 0.2);
     const probability = Math.min(0.99, Math.max(0.01, rawScore)); // Clamp between 0.01 and 0.99
-    
+
     return probability;
   }
 }
@@ -342,7 +342,7 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
       maxConcurrentAnalyses: 4, // Limit concurrent analyses
       ...options,
     };
-    
+
     this.analyzer = new StaticAnalyzer();
     this.mlPredictor = new MLPredictor();
     this.predictions = new Map(); // predictionId -> EnhancedBugPrediction
@@ -400,35 +400,35 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     const batchSize = 10;
     for (let i = 0; i < files.length; i += batchSize) {
       const batch = files.slice(i, i + batchSize);
-      
+
       // Process batch in parallel but limit concurrency
       const batchPromises = batch.map(async (filePath) => {
         if (this.activeAnalyses >= this.maxAnalyses) {
           // Wait if we've hit the concurrency limit
           await new Promise(resolve => setTimeout(resolve, 100));
         }
-        
+
         this.activeAnalyses++;
         try {
           const content = await fs.readFile(filePath, 'utf8');
           const fileHash = this.calculateHash(content);
-          
+
           // Skip if file hasn't changed
           if (this.fileHashes.has(filePath) && this.fileHashes.get(filePath) === fileHash) {
             return [];
           }
-          
+
           this.fileHashes.set(filePath, fileHash);
           const result = await this.analyzer.analyzeFile(filePath, content);
           allPatterns.push(...result.patterns);
-          
+
           // Emit progress update
-          this.emit('file:analyzed', { 
-            filePath, 
-            patternCount: result.patterns.length, 
-            analysisTime: result.analysisTime 
+          this.emit('file:analyzed', {
+            filePath,
+            patternCount: result.patterns.length,
+            analysisTime: result.analysisTime
           });
-          
+
           return result.patterns;
         } finally {
           this.activeAnalyses--;
@@ -453,10 +453,10 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     }
 
     const scanTime = performance.now() - startTime;
-    this.emit('scan:complete', { 
-      fileCount: files.length, 
-      patternCount: allPatterns.length, 
-      scanTime 
+    this.emit('scan:complete', {
+      fileCount: files.length,
+      patternCount: allPatterns.length,
+      scanTime
     });
   }
 
@@ -514,13 +514,13 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     // In production, use chokidar or similar with debounce
     // For now, polling with intelligent intervals
     let timeoutId = null;
-    
+
     this.watcher = setInterval(async () => {
       // Debounce multiple rapid scans
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      
+
       timeoutId = setTimeout(async () => {
         await this.scanProject();
       }, 2000); // 2 second debounce
@@ -532,7 +532,7 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
    */
   addPrediction(prediction) {
     // Deduplicate similar predictions
-    const existing = Array.from(this.predictions.values()).find(p => 
+    const existing = Array.from(this.predictions.values()).find(p =>
       p.pattern.location.file === prediction.pattern.location.file &&
       p.pattern.location.line === prediction.pattern.location.line &&
       p.pattern.details.issue === prediction.pattern.details.issue
@@ -648,10 +648,10 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     const predictions = Array.from(this.predictions.values());
     const total = predictions.length;
 
-    if (total === 0) return { 
-      total: 0, 
-      accuracy: 0, 
-      precision: 0, 
+    if (total === 0) return {
+      total: 0,
+      accuracy: 0,
+      precision: 0,
       recall: 0,
       avgProbability: 0,
       criticalCount: 0,

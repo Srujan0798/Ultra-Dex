@@ -82,13 +82,13 @@ class MetricsCollector {
   // Collect system metrics
   collectSystemMetrics() {
     const timestamp = Date.now();
-    
+
     // CPU metrics
     if (PERF_MONITOR_CONFIG.metricsCollection.cpu) {
       const cpus = os.cpus();
       const cpuUsage = process.cpuUsage();
       const cpuPercent = this.calculateCpuPercent(cpuUsage);
-      
+
       this.metrics.cpu.push({
         timestamp,
         usage: cpuPercent,
@@ -141,10 +141,10 @@ class MetricsCollector {
     const endUsage = process.cpuUsage();
     const elapsed = process.hrtime();
     const elapsedMicro = elapsed[0] * 1e6 + elapsed[1] / 1e3;
-    
+
     const userDiff = endUsage.user - startUsage.user;
     const systemDiff = endUsage.system - startUsage.system;
-    
+
     return ((userDiff + systemDiff) / elapsedMicro) * 100;
   }
 
@@ -186,23 +186,23 @@ class MetricsCollector {
   recordResponseTime(duration, endpoint = 'unknown') {
     this.recordCustomMetric(`response_time_${endpoint}`, duration, 'ms');
     this.aggregatedMetrics.totalRequests++;
-    this.aggregatedMetrics.avgResponseTime = 
-      ((this.aggregatedMetrics.avgResponseTime * (this.aggregatedMetrics.totalRequests - 1)) + duration) / 
+    this.aggregatedMetrics.avgResponseTime =
+      ((this.aggregatedMetrics.avgResponseTime * (this.aggregatedMetrics.totalRequests - 1)) + duration) /
       this.aggregatedMetrics.totalRequests;
   }
 
   // Record error
   recordError(errorType = 'unknown') {
     this.recordCustomMetric(`error_${errorType}`, 1, 'count');
-    this.aggregatedMetrics.errorRate = 
-      (this.metrics.custom.filter(m => m.name.startsWith('error_')).length / 
-       this.aggregatedMetrics.totalRequests) * 100;
+    this.aggregatedMetrics.errorRate =
+      (this.metrics.custom.filter(m => m.name.startsWith('error_')).length /
+        this.aggregatedMetrics.totalRequests) * 100;
   }
 
   // Trim metrics to prevent memory overflow
   trimMetrics() {
     const maxSamples = PERF_MONITOR_CONFIG.maxSamples;
-    
+
     for (const key in this.metrics) {
       if (this.metrics[key].length > maxSamples) {
         this.metrics[key] = this.metrics[key].slice(-maxSamples);
@@ -237,14 +237,14 @@ class MetricsCollector {
   async exportMetrics(filename = `ultra-dex-metrics-${Date.now()}.json`) {
     const metrics = this.getMetricsSnapshot();
     const metricsPath = path.join(process.cwd(), '.ultra-dex', 'metrics', filename);
-    
+
     try {
       // Ensure metrics directory exists
       await fs.mkdir(path.dirname(metricsPath), { recursive: true });
-      
+
       // Write metrics to file
       await fs.writeFile(metricsPath, JSON.stringify(metrics, null, 2));
-      
+
       return metricsPath;
     } catch (error) {
       console.error('Failed to export metrics:', error);
@@ -330,12 +330,12 @@ class PerformanceProfiler {
   async measure(label, fn) {
     const start = performance.now();
     const startMemory = process.memoryUsage().heapUsed;
-    
+
     try {
       const result = await fn();
       const end = performance.now();
       const endMemory = process.memoryUsage().heapUsed;
-      
+
       const measurement = {
         label,
         startTime: start,
@@ -346,24 +346,24 @@ class PerformanceProfiler {
         memoryDelta: endMemory - startMemory,
         timestamp: Date.now()
       };
-      
+
       // Store measurement
       if (!this.measurements.has(label)) {
         this.measurements.set(label, []);
       }
       this.measurements.get(label).push(measurement);
-      
+
       // Keep only last 100 measurements per label
       const measurements = this.measurements.get(label);
       if (measurements.length > 100) {
         this.measurements.set(label, measurements.slice(-100));
       }
-      
+
       return result;
     } catch (error) {
       const end = performance.now();
       const endMemory = process.memoryUsage().heapUsed;
-      
+
       const measurement = {
         label,
         startTime: start,
@@ -375,12 +375,12 @@ class PerformanceProfiler {
         error: error.message,
         timestamp: Date.now()
       };
-      
+
       if (!this.measurements.has(label)) {
         this.measurements.set(label, []);
       }
       this.measurements.get(label).push(measurement);
-      
+
       throw error;
     }
   }
@@ -398,25 +398,25 @@ class PerformanceProfiler {
   measureBetween(startMark, endMark) {
     const start = this.markers.get(startMark);
     const end = this.markers.get(endMark);
-    
+
     if (!start || !end) {
       throw new Error(`Missing mark: ${!start ? startMark : endMark}`);
     }
-    
+
     return end.timestamp - start.timestamp;
   }
 
   // Get performance report for a label
   getReport(label) {
     const measurements = this.measurements.get(label) || [];
-    
+
     if (measurements.length === 0) {
       return null;
     }
-    
+
     const durations = measurements.map(m => m.duration);
     const memoryDeltas = measurements.map(m => m.memoryDelta);
-    
+
     const stats = {
       label,
       count: measurements.length,
@@ -432,7 +432,7 @@ class PerformanceProfiler {
       errors: measurements.filter(m => m.error).length,
       errorRate: (measurements.filter(m => m.error).length / measurements.length) * 100
     };
-    
+
     return stats;
   }
 
@@ -448,17 +448,17 @@ class PerformanceProfiler {
   // Export profiling data
   async exportProfilingData(filename = `ultra-dex-profiling-${Date.now()}.json`) {
     const profilingPath = path.join(process.cwd(), '.ultra-dex', 'profiling', filename);
-    
+
     try {
       await fs.mkdir(path.dirname(profilingPath), { recursive: true });
-      
+
       const data = {
         timestamp: Date.now(),
         measurements: Object.fromEntries(this.measurements),
         markers: Object.fromEntries(this.markers),
         reports: this.getAllReports()
       };
-      
+
       await fs.writeFile(profilingPath, JSON.stringify(data, null, 2));
       return profilingPath;
     } catch (error) {
@@ -535,7 +535,7 @@ class AlertManager {
 
     // Add new alerts to the list
     this.alerts.push(...newAlerts);
-    
+
     // Keep only recent alerts (last 1000)
     if (this.alerts.length > 1000) {
       this.alerts = this.alerts.slice(-1000);
@@ -694,10 +694,11 @@ class UltraDexPerformanceMonitor {
 
     let lastError;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      let timeoutId;
       try {
         // Add timeout protection
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        timeoutId = setTimeout(() => controller.abort(), timeout);
 
         const startTime = performance.now();
         const result = await this.measure(task.name, async () => {

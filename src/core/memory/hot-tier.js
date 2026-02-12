@@ -80,4 +80,5 @@ export class HotTier {
   }
 }
 
+export const hotTier = new HotTier();
 export default HotTier;

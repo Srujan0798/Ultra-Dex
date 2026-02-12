@@ -44,7 +44,7 @@ async function main() {
     // Run each scenario a few times to smooth out noise
     const runs = [];
     for (let i = 0; i < 3; i++) {
-      // eslint-disable-next-line no-await-in-loop
+       
       runs.push(await runScenario(scenario));
     }
 

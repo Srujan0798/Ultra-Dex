@@ -1,3 +1,4 @@
+/* global WebAssembly */
 // Copyright (c) 2026 Ultra-Dex
 // Project Nexus: WASM Runtime
 // Safe execution environment for WebAssembly plugins

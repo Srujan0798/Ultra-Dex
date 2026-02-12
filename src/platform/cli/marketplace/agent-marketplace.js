@@ -42,7 +42,7 @@ class AgentMarketplace {
     try {
       console.log(`Installing agent: ${agentId}${version ? `@${version}` : ""}`);
       const response = await axios.get(`${this.marketplaceUrl}/api/agents/${agentId}`);
-      const agentManifest = response.data;
+      let agentManifest = response.data;
       if (version && agentManifest.version !== version) {
         const versionResponse = await axios.get(`${this.marketplaceUrl}/api/agents/${agentId}/${version}`);
         agentManifest = versionResponse.data;
@@ -68,7 +68,7 @@ class AgentMarketplace {
     try {
       console.log(`Installing plugin: ${pluginId}${version ? `@${version}` : ""}`);
       const response = await axios.get(`${this.marketplaceUrl}/api/plugins/${pluginId}`);
-      const pluginManifest = response.data;
+      let pluginManifest = response.data;
       if (version && pluginManifest.version !== version) {
         const versionResponse = await axios.get(`${this.marketplaceUrl}/api/plugins/${pluginId}/${version}`);
         pluginManifest = versionResponse.data;

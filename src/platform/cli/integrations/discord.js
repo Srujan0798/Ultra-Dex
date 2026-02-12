@@ -1,3 +1,4 @@
+/* global URLSearchParams */
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -513,8 +514,8 @@ export class DiscordClient {
     const embed = {
       title: `🚨 ${alertInfo.severity.toUpperCase()} Alert`,
       description: alertInfo.message,
-      color: alertInfo.severity === 'critical' ? 0xff0000 : 
-             alertInfo.severity === 'warning' ? 0xffff00 : 0xff9900,
+      color: alertInfo.severity === 'critical' ? 0xff0000 :
+        alertInfo.severity === 'warning' ? 0xffff00 : 0xff9900,
       fields: [
         {
           name: 'Severity',
@@ -633,13 +634,13 @@ export async function validateDiscordConfig(config) {
   }
 
   const client = new DiscordClient(config.token);
-  
+
   try {
     // Test by fetching bot information
     const response = await fetch(`${DISCORD_API_BASE}/users/@me`, {
       headers: { 'Authorization': `Bot ${config.token}` }
     });
-    
+
     if (!response.ok) {
       throw new Error(`Discord connection test failed: ${response.status} ${response.statusText}`);
     }

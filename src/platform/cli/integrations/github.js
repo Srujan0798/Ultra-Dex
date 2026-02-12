@@ -1,3 +1,4 @@
+/* global URLSearchParams */
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -21,7 +22,7 @@ export class GitHubClient {
     this.token = token;
     this.owner = options.owner;
     this.repo = options.repo;
-    
+
     // Initialize Octokit with proper configuration
     this.octokit = new MyOctokit({
       auth: this.token,
@@ -863,7 +864,7 @@ export class GitHubClient {
 
       // Encrypt the secret value
       const encryptedValue = await encryptSecret(secretValue, keyData.key);
-      
+
       const response = await this.octokit.rest.actions.createOrUpdateRepoSecret({
         owner,
         repo,
@@ -1207,11 +1208,11 @@ export async function validateGitHubConfig(config) {
   }
 
   const client = new GitHubClient(config.token);
-  
+
   try {
     // Test by fetching user information
     const response = await client.octokit.rest.users.getAuthenticated();
-    
+
     if (response.status === 200) {
       printSuccess(`✅ GitHub connection validated for user: ${response.data.login}`);
       return true;

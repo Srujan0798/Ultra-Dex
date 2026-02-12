@@ -1,3 +1,4 @@
+/* global FormData */
 // Copyright (c) 2026 Ultra-Dex
 
 /**

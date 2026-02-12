@@ -18,9 +18,10 @@ export class UltraProtocolHandler {
         return await this.projectManager.getState();
       case 'project/context':
         return await this.projectManager.getContext();
-      case 'memory/search':
+      case 'memory/search': {
         const query = url.searchParams.get('q');
         return await this.projectManager.searchMemory(query);
+      }
       default:
         throw new Error(`Unknown ultra protocol path: ${path}`);
     }

@@ -1,3 +1,4 @@
+/* global URLSearchParams */
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -49,7 +50,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         printSuccess(`✅ Message sent to Slack channel: ${channel}`);
         return result;
@@ -82,7 +83,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         printSuccess(`✅ Rich message sent to Slack channel: ${channel}`);
         return result;
@@ -114,7 +115,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         printSuccess(`✅ Created Slack channel: #${name}`);
         return result.channel;
@@ -145,7 +146,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         printSuccess(`✅ Joined Slack channel: ${channelId}`);
         return result;
@@ -184,7 +185,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         printSuccess(`✅ Uploaded file to Slack: ${path.basename(filePath)}`);
         return result.file;
@@ -209,7 +210,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         return result.user;
       } else {
@@ -233,7 +234,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         return result.user;
       } else {
@@ -257,7 +258,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         return result.channels;
       } else {
@@ -281,7 +282,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         return result.channel;
       } else {
@@ -299,7 +300,7 @@ export class SlackClient {
         channel: channelId,
         ...options
       });
-      
+
       const response = await fetch(`${SLACK_API_BASE}/conversations.history?${params}`, {
         headers: this.headers
       });
@@ -310,7 +311,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         return result.messages;
       } else {
@@ -339,7 +340,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         printSuccess(`✅ Updated Slack channel topic: ${topic}`);
         return result;
@@ -369,7 +370,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         printSuccess(`✅ Updated Slack channel purpose: ${purpose}`);
         return result;
@@ -399,7 +400,7 @@ export class SlackClient {
       }
 
       const result = await response.json();
-      
+
       if (result.ok) {
         printSuccess(`✅ Invited user to Slack channel: ${channelId}`);
         return result;
@@ -685,13 +686,13 @@ export async function validateSlackConfig(config) {
   }
 
   const client = new SlackClient(config.token);
-  
+
   try {
     // Test by fetching auth information
     const response = await fetch(`${SLACK_API_BASE}/auth.test`, {
       headers: { 'Authorization': `Bearer ${config.token}` }
     });
-    
+
     if (!response.ok) {
       throw new Error(`Slack connection test failed: ${response.status} ${response.statusText}`);
     }

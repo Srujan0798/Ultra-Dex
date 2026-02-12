@@ -8,7 +8,7 @@ const BLOCKED_COMMAND_PATTERNS = [
   /mkfs\./i,
   /shutdown/i,
   /reboot/i,
-  /:\(\)\s*\{\s*:\|\:\s*;\s*\}/, // fork bomb
+  /:\(\)\s*\{\s*:\|:\s*;\s*\}/, // fork bomb
   /\bdd\s+if=/i,
   /\bsudo\b/i,
   /\bdocker\b/i,

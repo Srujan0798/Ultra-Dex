@@ -358,7 +358,7 @@ class AchievementsSystem {
       case 'perfect-score':
         return context.score && context.score >= condition.threshold;
 
-      case 'time-of-day':
+      case 'time-of-day': {
         const hour = new Date().getHours();
         if (condition.hourRange[0] <= condition.hourRange[1]) {
           return hour >= condition.hourRange[0] && hour <= condition.hourRange[1];
@@ -366,6 +366,7 @@ class AchievementsSystem {
           // Overnight range (e.g., 22 to 5)
           return hour >= condition.hourRange[0] || hour <= condition.hourRange[1];
         }
+      }
 
       case 'multiplayer':
         return context.multiplayer && context.sessionCount >= condition.count;
