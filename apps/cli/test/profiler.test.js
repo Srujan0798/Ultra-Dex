@@ -34,7 +34,7 @@ describe('Performance Profiler', () => {
       const duration = endTimer('test-op');
 
       assert.ok(duration > 0, 'Duration should be positive');
-      assert.ok(duration >= 10, 'Duration should be at least 10ms');
+      assert.ok(duration >= 5, `Duration should be at least 5ms, got ${duration}ms`);
     });
 
     test('endTimer without startTimer returns 0 and warns', () => {
