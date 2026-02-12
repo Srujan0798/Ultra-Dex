@@ -53,5 +53,6 @@ If you find a security issue, please email the maintainer instead of opening a p
 - Read `SECURITY.md` before reporting vulnerabilities.
 - Complete `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md` before every commit/PR.
 - Run `npm run guard:github` before push/release operations.
+- If account is suspended but local work continues, run `npm run guard:github:local`.
 - Do not commit secrets, private keys, tokens, or sensitive personal data.
 - Do not submit code/content that violates GitHub Terms or Acceptable Use Policies.

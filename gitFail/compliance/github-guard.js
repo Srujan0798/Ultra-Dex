@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
 import { execSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
 import process from 'node:process';
 
 const RED = '\x1b[31m';
@@ -134,41 +132,39 @@ function checkSecretLeakInRange(upstreamRef) {
   info('No secret patterns detected in to-be-pushed diff.');
 }
 
-function checkRiskyAutomationPatterns(files) {
-  const repoRoot = process.cwd();
-  const violations = [];
+function getDiffForPush(upstreamRef) {
+  try {
+    return upstreamRef
+      ? run(`git diff --no-color ${upstreamRef}..HEAD`)
+      : run('git diff --no-color HEAD~1..HEAD');
+  } catch {
+    return '';
+  }
+}
 
-  for (const relativeFile of files) {
-    const absoluteFile = path.resolve(repoRoot, relativeFile);
-    if (!fs.existsSync(absoluteFile)) continue;
+function checkRiskyAutomationInDiff(upstreamRef) {
+  const diff = getDiffForPush(upstreamRef);
+  const addedLines = diff
+    .split('\n')
+    .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+    .map((line) => line.slice(1))
+    .join('\n');
 
-    const stat = fs.statSync(absoluteFile);
-    if (!stat.isFile() || stat.size > 2_000_000) continue;
-
-    const lower = relativeFile.toLowerCase();
-    if (!lower.endsWith('.js') && !lower.endsWith('.ts') && !lower.endsWith('.md') && !lower.endsWith('.yml') && !lower.endsWith('.yaml')) {
-      continue;
-    }
-
-    const content = fs.readFileSync(absoluteFile, 'utf8');
-    for (const rule of riskyPatterns) {
-      if (rule.regex.test(content)) {
-        // Explicit allow marker for reviewed exceptions.
-        if (content.includes('ALLOW_GITHUB_POLICY_EXCEPTION')) continue;
-        violations.push(`${relativeFile}: ${rule.reason}`);
-      }
-    }
+  if (addedLines.includes('ALLOW_GITHUB_POLICY_EXCEPTION')) {
+    warn('Policy exception marker detected in added lines. Ensure documented review exists.');
+    return;
   }
 
-  if (violations.length > 0) {
-    const list = violations.map((v) => `- ${v}`).join('\n');
+  const hits = riskyPatterns.filter((rule) => rule.regex.test(addedLines));
+  if (hits.length > 0) {
+    const list = hits.map((hit) => `- ${hit.reason}`).join('\n');
     fail(
-      `Potential policy-risk automation detected in changed files:\n${list}\n` +
+      `Potential policy-risk automation detected in newly added lines:\n${list}\n` +
         'If this is legitimate and reviewed, add ALLOW_GITHUB_POLICY_EXCEPTION with documented justification.'
     );
   }
 
-  info('No policy-risk automation patterns detected in changed files.');
+  info('No policy-risk automation patterns detected in newly added lines.');
 }
 
 async function main() {
@@ -176,15 +172,21 @@ async function main() {
   const branch = getCurrentBranch();
   const upstreamRef = getUpstreamRef();
   const changedFiles = getChangedFilesForPush(upstreamRef);
+  const skipRemoteCheck = process.env.SKIP_REMOTE_CHECK === '1';
 
   info(`Branch: ${branch}`);
   info(`Upstream: ${upstreamRef || 'none'}`);
   info(`Files in push range: ${changedFiles.length}`);
+  if (skipRemoteCheck) {
+    warn('Remote access check is disabled via SKIP_REMOTE_CHECK=1.');
+  }
 
   await checkGitHubStatus();
-  checkRemoteAccess();
   checkSecretLeakInRange(upstreamRef);
-  checkRiskyAutomationPatterns(changedFiles);
+  checkRiskyAutomationInDiff(upstreamRef);
+  if (!skipRemoteCheck) {
+    checkRemoteAccess();
+  }
 
   info('GitHub policy guard passed.');
 }

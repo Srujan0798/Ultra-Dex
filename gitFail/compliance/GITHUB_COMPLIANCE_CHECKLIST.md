@@ -44,4 +44,6 @@ and legal hygiene. It is operational guidance, not legal advice.
 
 - Manual guard run:
   `npm run guard:github`
+- Manual local-only guard run (during suspension/local workflow):
+  `npm run guard:github:local`
 - Pre-push guard runs automatically via `.husky/pre-push`.
