@@ -1,14 +1,49 @@
 {
   "name": "@ultra-dex/sdk",
   "version": "6.0.0",
-  "description": "SDK for building with Ultra-Dex",
+  "description": "Official Ultra-Dex SDK for JavaScript and TypeScript",
   "type": "module",
-  "main": "./index.ts",
+  "main": "./src/client.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/client.js",
+      "types": "./types/index.d.ts"
+    },
+    "./client": "./src/client.js",
+    "./agent": "./src/agent.js",
+    "./provider": "./src/provider.js",
+    "./plugin": "./src/plugin.js"
+  },
+  "files": [
+    "src",
+    "types",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "build": "echo 'No build step required for ESM JavaScript sources'",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ultra-dex",
+    "ai",
+    "sdk",
+    "agents",
+    "orchestration",
+    "plugins"
+  ],
+  "author": "Srujan Sai Karna",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Srujan0798/Ultra-Dex"
+  },
   "dependencies": {
-    "axios": "^1.7.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "typescript": "^5.7.0"
   }
 }

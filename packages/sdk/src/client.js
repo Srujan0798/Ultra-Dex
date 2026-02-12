@@ -1,0 +1,109 @@
+import { z } from 'zod';
+import { Agent } from './agent.js';
+import { BaseProvider, assertProviderContract } from './provider.js';
+import { PluginLoader } from './plugin.js';
+
+const clientConfigSchema = z.object({
+  apiKey: z.string().optional(),
+  baseUrl: z.string().url().optional(),
+  defaultProvider: z.string().optional(),
+  timeoutMs: z.number().int().positive().default(45000),
+});
+
+export class UltraDex {
+  constructor(config = {}) {
+    this.config = clientConfigSchema.parse(config);
+    this.providers = new Map();
+    this.agents = new Map();
+    this.plugins = new PluginLoader();
+  }
+
+  registerProvider(name, provider) {
+    if (!name || typeof name !== 'string') {
+      throw new Error('UltraDex SDK: provider name must be a non-empty string');
+    }
+    assertProviderContract(name, provider);
+    this.providers.set(name, provider);
+    return this;
+  }
+
+  getProvider(name) {
+    return this.providers.get(name);
+  }
+
+  listProviders() {
+    return Array.from(this.providers.keys());
+  }
+
+  registerAgent(agent) {
+    if (!(agent instanceof Agent)) {
+      throw new Error('UltraDex SDK: registerAgent expects an Agent instance');
+    }
+    this.agents.set(agent.id, agent);
+    return this;
+  }
+
+  getAgent(id) {
+    return this.agents.get(id);
+  }
+
+  listAgents() {
+    return Array.from(this.agents.values()).map((agent) => agent.describe());
+  }
+
+  use(plugin) {
+    this.plugins.load(plugin);
+    return this;
+  }
+
+  async chat(messages, opts = {}) {
+    const provider = this.#resolveProvider(opts.provider);
+    return provider.chat(messages, opts);
+  }
+
+  async *stream(messages, opts = {}) {
+    const provider = this.#resolveProvider(opts.provider);
+    yield* provider.stream(messages, opts);
+  }
+
+  async embed(text, opts = {}) {
+    const provider = this.#resolveProvider(opts.provider);
+    return provider.embed(text, opts);
+  }
+
+  async runAgent(agentId, task, context = {}) {
+    const agent = this.getAgent(agentId);
+    if (!agent) {
+      throw new Error(`UltraDex SDK: unknown agent "${agentId}"`);
+    }
+    const result = await agent.run(task, context);
+    return {
+      agentId,
+      status: 'completed',
+      result,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  #resolveProvider(providerOverride) {
+    const name = providerOverride || this.config.defaultProvider;
+    if (!name) {
+      throw new Error(
+        'UltraDex SDK: no provider selected. Set config.defaultProvider or pass opts.provider'
+      );
+    }
+
+    const provider = this.getProvider(name);
+    if (!provider) {
+      throw new Error(`UltraDex SDK: provider "${name}" is not registered`);
+    }
+
+    if (!(provider instanceof BaseProvider)) {
+      assertProviderContract(name, provider);
+    }
+
+    return provider;
+  }
+}
+
+export default UltraDex;
