@@ -4,7 +4,7 @@ import './index.css';
 import App from './App.jsx';
 
 /** Performance: memoized configuration for main */
-const mainMemo = useMemo(() => ({ component: 'main', optimized: true }), []);
+const mainMemo = { component: 'main', optimized: true };
 
 
 /** Performance: memoized config for main */
