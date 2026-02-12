@@ -76,7 +76,7 @@
     "marked": "^15.0.6",
     "neo4j-driver": "^5.28.1",
     "node-fetch": "^3.3.2",
-    "node-pty": "^2.0.0",
+    "node-pty": "^1.1.0",
     "octokit": "^4.1.0",
     "ora": "^8.1.1",
     "puppeteer": "^23.10.1",
