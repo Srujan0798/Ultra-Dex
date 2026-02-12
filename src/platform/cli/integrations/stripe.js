@@ -8,6 +8,8 @@
 
 import chalk from 'chalk';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import path from 'path';
+import fs from 'fs/promises';
 import { requireConfig, retryWithBackoff } from './utils.js';
 
 const STRIPE_API_BASE = 'https://api.stripe.com/v1';
@@ -22,9 +24,9 @@ export class StripeClient {
 
   get headers() {
     return {
-      'Authorization': `Bearer ${this.apiKey}`,
+      Authorization: `Bearer ${this.apiKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': 'Ultra-Dex/1.0'
+      'User-Agent': 'Ultra-Dex/1.0',
     };
   }
 
@@ -42,14 +44,14 @@ export class StripeClient {
           phone: customerData.phone,
           description: customerData.description,
           ...(customerData.address && {
-            address: JSON.stringify(customerData.address)
+            address: JSON.stringify(customerData.address),
           }),
           ...(customerData.payment_method && {
             invoice_settings: JSON.stringify({
-              default_payment_method: customerData.payment_method
-            })
-          })
-        })
+              default_payment_method: customerData.payment_method,
+            }),
+          }),
+        }),
       });
 
       if (!response.ok) {
@@ -72,7 +74,7 @@ export class StripeClient {
   async getCustomer(customerId) {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/customers/${customerId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -99,8 +101,8 @@ export class StripeClient {
           name: productData.name,
           description: productData.description,
           ...(productData.images && { images: productData.images }),
-          ...(productData.metadata && { metadata: JSON.stringify(productData.metadata) })
-        })
+          ...(productData.metadata && { metadata: JSON.stringify(productData.metadata) }),
+        }),
       });
 
       if (!response.ok) {
@@ -131,8 +133,8 @@ export class StripeClient {
           unit_amount: Math.round(priceData.unit_amount * 100), // Convert to cents
           recurring: priceData.recurring ? JSON.stringify(priceData.recurring) : undefined,
           nickname: priceData.nickname,
-          metadata: priceData.metadata ? JSON.stringify(priceData.metadata) : undefined
-        })
+          metadata: priceData.metadata ? JSON.stringify(priceData.metadata) : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -160,10 +162,16 @@ export class StripeClient {
         body: new URLSearchParams({
           customer: subscriptionData.customer,
           items: JSON.stringify([{ price: subscriptionData.price }]),
-          ...(subscriptionData.trial_period_days && { trial_period_days: subscriptionData.trial_period_days }),
-          ...(subscriptionData.payment_behavior && { payment_behavior: subscriptionData.payment_behavior }),
-          metadata: subscriptionData.metadata ? JSON.stringify(subscriptionData.metadata) : undefined
-        })
+          ...(subscriptionData.trial_period_days && {
+            trial_period_days: subscriptionData.trial_period_days,
+          }),
+          ...(subscriptionData.payment_behavior && {
+            payment_behavior: subscriptionData.payment_behavior,
+          }),
+          metadata: subscriptionData.metadata
+            ? JSON.stringify(subscriptionData.metadata)
+            : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -186,7 +194,7 @@ export class StripeClient {
   async getSubscription(subscriptionId) {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/subscriptions/${subscriptionId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -212,9 +220,11 @@ export class StripeClient {
         body: new URLSearchParams({
           ...(updates.items && { items: JSON.stringify(updates.items) }),
           ...(updates.trial_end && { trial_end: updates.trial_end }),
-          ...(updates.cancel_at_period_end !== undefined && { cancel_at_period_end: updates.cancel_at_period_end }),
-          metadata: updates.metadata ? JSON.stringify(updates.metadata) : undefined
-        })
+          ...(updates.cancel_at_period_end !== undefined && {
+            cancel_at_period_end: updates.cancel_at_period_end,
+          }),
+          metadata: updates.metadata ? JSON.stringify(updates.metadata) : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -246,10 +256,13 @@ export class StripeClient {
         params.append('invoice_now', options.invoice_now);
       }
 
-      const response = await stripeFetch(`${STRIPE_API_BASE}/subscriptions/${subscriptionId}?${params}`, {
-        method: 'DELETE',
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/subscriptions/${subscriptionId}?${params}`,
+        {
+          method: 'DELETE',
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -281,8 +294,8 @@ export class StripeClient {
           automatic_payment_methods: paymentData.automatic_payment_methods
             ? JSON.stringify(paymentData.automatic_payment_methods)
             : JSON.stringify({ enabled: true }),
-          metadata: paymentData.metadata ? JSON.stringify(paymentData.metadata) : undefined
-        })
+          metadata: paymentData.metadata ? JSON.stringify(paymentData.metadata) : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -305,7 +318,7 @@ export class StripeClient {
   async getPaymentIntent(intentId) {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/payment_intents/${intentId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -333,11 +346,13 @@ export class StripeClient {
           success_url: sessionData.success_url,
           cancel_url: sessionData.cancel_url,
           ...(sessionData.line_items && { line_items: JSON.stringify(sessionData.line_items) }),
-          ...(sessionData.subscription_data && { subscription_data: JSON.stringify(sessionData.subscription_data) }),
+          ...(sessionData.subscription_data && {
+            subscription_data: JSON.stringify(sessionData.subscription_data),
+          }),
           ...(sessionData.customer && { customer: sessionData.customer }),
           ...(sessionData.customer_email && { customer_email: sessionData.customer_email }),
-          metadata: sessionData.metadata ? JSON.stringify(sessionData.metadata) : undefined
-        })
+          metadata: sessionData.metadata ? JSON.stringify(sessionData.metadata) : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -360,7 +375,7 @@ export class StripeClient {
   async getCheckoutSession(sessionId) {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/checkout/sessions/${sessionId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -386,8 +401,8 @@ export class StripeClient {
         body: new URLSearchParams({
           customer: sessionData.customer,
           return_url: sessionData.return_url,
-          ...(sessionData.configuration && { configuration: sessionData.configuration })
-        })
+          ...(sessionData.configuration && { configuration: sessionData.configuration }),
+        }),
       });
 
       if (!response.ok) {
@@ -409,9 +424,12 @@ export class StripeClient {
    */
   async getBillingPortalConfiguration(configurationId) {
     try {
-      const response = await stripeFetch(`${STRIPE_API_BASE}/billing_portal/configurations/${configurationId}`, {
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/billing_portal/configurations/${configurationId}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -436,16 +454,18 @@ export class StripeClient {
         body: new URLSearchParams({
           business_profile: JSON.stringify({
             privacy_policy_url: configData.privacy_policy_url,
-            terms_of_service_url: configData.terms_of_service_url
+            terms_of_service_url: configData.terms_of_service_url,
           }),
           features: JSON.stringify({
-            customer_update: configData.features?.customer_update || { allowed_updates: ['email', 'address'] },
+            customer_update: configData.features?.customer_update || {
+              allowed_updates: ['email', 'address'],
+            },
             invoice_history: configData.features?.invoice_history || { enabled: true },
             payment_method_update: configData.features?.payment_method_update || { enabled: true },
             subscription_cancel: configData.features?.subscription_cancel || { enabled: true },
-            subscription_pause: configData.features?.subscription_pause || { enabled: false }
-          })
-        })
+            subscription_pause: configData.features?.subscription_pause || { enabled: false },
+          }),
+        }),
       });
 
       if (!response.ok) {
@@ -468,7 +488,7 @@ export class StripeClient {
   async getInvoice(invoiceId) {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/invoices/${invoiceId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -491,11 +511,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         customer: customerId,
         limit: options.limit || 10,
-        ...(options.status && { status: options.status })
+        ...(options.status && { status: options.status }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/invoices?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -523,8 +543,10 @@ export class StripeClient {
           price: invoiceItemData.price,
           quantity: invoiceItemData.quantity || 1,
           ...(invoiceItemData.description && { description: invoiceItemData.description }),
-          ...(invoiceItemData.tax_rates && { tax_rates: JSON.stringify(invoiceItemData.tax_rates) })
-        })
+          ...(invoiceItemData.tax_rates && {
+            tax_rates: JSON.stringify(invoiceItemData.tax_rates),
+          }),
+        }),
       });
 
       if (!response.ok) {
@@ -547,7 +569,7 @@ export class StripeClient {
   async getBalance() {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/balance`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -568,7 +590,7 @@ export class StripeClient {
   async getAccount() {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/account`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -589,7 +611,7 @@ export class StripeClient {
   async getAccountBalance() {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/balance`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -613,7 +635,7 @@ export class StripeClient {
       if (subscriptionId) params.append('subscription', subscriptionId);
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/invoices/upcoming?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -635,11 +657,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         customer: customerId,
-        type: 'card' // Default to card, can be expanded to other types
+        type: 'card', // Default to card, can be expanded to other types
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/payment_methods?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -667,8 +689,8 @@ export class StripeClient {
           description: taxRateData.description,
           jurisdiction: taxRateData.jurisdiction,
           percentage: taxRateData.percentage,
-          inclusive: taxRateData.inclusive || false
-        })
+          inclusive: taxRateData.inclusive || false,
+        }),
       });
 
       if (!response.ok) {
@@ -677,7 +699,9 @@ export class StripeClient {
       }
 
       const taxRate = await response.json();
-      printSuccess(chalk.green(`✅ Created Stripe tax rate: ${taxRate.display_name} (${taxRate.percentage}%)`));
+      printSuccess(
+        chalk.green(`✅ Created Stripe tax rate: ${taxRate.display_name} (${taxRate.percentage}%)`)
+      );
       return taxRate;
     } catch (error) {
       printError(`Failed to create Stripe tax rate: ${error.message}`);
@@ -691,7 +715,7 @@ export class StripeClient {
   async getTaxRates() {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/tax_rates?active=true`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -722,8 +746,8 @@ export class StripeClient {
           duration: couponData.duration || 'once', // 'once', 'repeating', 'forever'
           duration_in_months: couponData.duration_in_months,
           max_redemptions: couponData.max_redemptions,
-          redeem_by: couponData.redeem_by
-        })
+          redeem_by: couponData.redeem_by,
+        }),
       });
 
       if (!response.ok) {
@@ -746,7 +770,7 @@ export class StripeClient {
   async getCoupons() {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/coupons`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -774,8 +798,10 @@ export class StripeClient {
           code: promotionData.code,
           active: promotionData.active !== false,
           ...(promotionData.max_redemptions && { max_redemptions: promotionData.max_redemptions }),
-          ...(promotionData.restrictions && { restrictions: JSON.stringify(promotionData.restrictions) })
-        })
+          ...(promotionData.restrictions && {
+            restrictions: JSON.stringify(promotionData.restrictions),
+          }),
+        }),
       });
 
       if (!response.ok) {
@@ -798,7 +824,7 @@ export class StripeClient {
   async getPromotionCodes() {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/promotion_codes`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -819,7 +845,7 @@ export class StripeClient {
   async getWebhookEndpoints() {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/webhook_endpoints`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -846,8 +872,8 @@ export class StripeClient {
           url: webhookData.url,
           enabled_events: JSON.stringify(webhookData.enabled_events),
           ...(webhookData.description && { description: webhookData.description }),
-          ...(webhookData.connect !== undefined && { connect: webhookData.connect })
-        })
+          ...(webhookData.connect !== undefined && { connect: webhookData.connect }),
+        }),
       });
 
       if (!response.ok) {
@@ -872,11 +898,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.type && { type: options.type }),
-        ...(options.created && { created: options.created })
+        ...(options.created && { created: options.created }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/events?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -899,11 +925,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.customer && { customer: options.customer }),
-        ...(options.payment_intent && { payment_intent: options.payment_intent })
+        ...(options.payment_intent && { payment_intent: options.payment_intent }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/charges?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -929,8 +955,8 @@ export class StripeClient {
         body: new URLSearchParams({
           charge: chargeId,
           amount: Math.round(amount * 100), // Convert to cents
-          reason
-        })
+          reason,
+        }),
       });
 
       if (!response.ok) {
@@ -939,7 +965,7 @@ export class StripeClient {
       }
 
       const refund = await response.json();
-      printSuccess(chalk.green(`✅ Processed Stripe refund: ${refund.id} ($${(amount).toFixed(2)})`));
+      printSuccess(chalk.green(`✅ Processed Stripe refund: ${refund.id} ($${amount.toFixed(2)})`));
       return refund;
     } catch (error) {
       printError(`Failed to process Stripe refund: ${error.message}`);
@@ -954,11 +980,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         limit: options.limit || 10,
-        ...(options.charge && { charge: options.charge })
+        ...(options.charge && { charge: options.charge }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/refunds?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -980,11 +1006,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         limit: options.limit || 10,
-        ...(options.status && { status: options.status })
+        ...(options.status && { status: options.status }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/disputes?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1007,11 +1033,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.status && { status: options.status }),
-        ...(options.arrival_date && { arrival_date: options.arrival_date })
+        ...(options.arrival_date && { arrival_date: options.arrival_date }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/payouts?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1040,8 +1066,8 @@ export class StripeClient {
           ...(options.destination && { destination: options.destination }),
           ...(options.description && { description: options.description }),
           ...(options.method && { method: options.method }), // 'instant' or 'standard'
-          ...(options.source_type && { source_type: options.source_type })
-        })
+          ...(options.source_type && { source_type: options.source_type }),
+        }),
       });
 
       if (!response.ok) {
@@ -1050,7 +1076,7 @@ export class StripeClient {
       }
 
       const payout = await response.json();
-      printSuccess(chalk.green(`✅ Created Stripe payout: ${payout.id} ($${(amount).toFixed(2)})`));
+      printSuccess(chalk.green(`✅ Created Stripe payout: ${payout.id} ($${amount.toFixed(2)})`));
       return payout;
     } catch (error) {
       printError(`Failed to create Stripe payout: ${error.message}`);
@@ -1066,11 +1092,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.type && { type: options.type }),
-        ...(options.payout && { payout: options.payout })
+        ...(options.payout && { payout: options.payout }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/balance_transactions?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1092,11 +1118,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         limit: options.limit || 10,
-        ...(options.active !== undefined && { active: options.active })
+        ...(options.active !== undefined && { active: options.active }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/products?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1119,11 +1145,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.active !== undefined && { active: options.active }),
-        ...(options.product && { product: options.product })
+        ...(options.product && { product: options.product }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/prices?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1146,11 +1172,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.customer && { customer: options.customer }),
-        ...(options.status && { status: options.status })
+        ...(options.status && { status: options.status }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/subscriptions?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1172,11 +1198,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         limit: options.limit || 10,
-        ...(options.email && { email: options.email })
+        ...(options.email && { email: options.email }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/customers?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1199,11 +1225,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.customer && { customer: options.customer }),
-        ...(options.status && { status: options.status })
+        ...(options.status && { status: options.status }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/payment_intents?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1226,11 +1252,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.customer && { customer: options.customer }),
-        ...(options.status && { status: options.status })
+        ...(options.status && { status: options.status }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/checkout/sessions?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1251,11 +1277,11 @@ export class StripeClient {
   async getBillingPortalSessions(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/billing_portal/sessions?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1278,11 +1304,11 @@ export class StripeClient {
       const params = new URLSearchParams({
         limit: options.limit || 10,
         ...(options.customer && { customer: options.customer }),
-        ...(options.status && { status: options.status })
+        ...(options.status && { status: options.status }),
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/invoices?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1304,7 +1330,7 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({ customer: customerId, subscription: subscriptionId });
       const response = await stripeFetch(`${STRIPE_API_BASE}/invoices/upcoming?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1326,12 +1352,15 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         limit: options.limit || 10,
-        ...(options.subscription_item && { subscription_item: subscriptionItemId })
+        ...(options.subscription_item && { subscription_item: subscriptionItemId }),
       });
 
-      const response = await stripeFetch(`${STRIPE_API_BASE}/subscription_items/${subscriptionItemId}/usage_records?${params}`, {
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/subscription_items/${subscriptionItemId}/usage_records?${params}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -1350,15 +1379,18 @@ export class StripeClient {
    */
   async createUsageRecord(subscriptionItemId, quantity, timestamp = null, action = 'increment') {
     try {
-      const response = await stripeFetch(`${STRIPE_API_BASE}/subscription_items/${subscriptionItemId}/usage_records`, {
-        method: 'POST',
-        headers: this.headers,
-        body: new URLSearchParams({
-          quantity,
-          timestamp: timestamp || Math.floor(Date.now() / 1000),
-          action // 'increment' or 'set'
-        })
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/subscription_items/${subscriptionItemId}/usage_records`,
+        {
+          method: 'POST',
+          headers: this.headers,
+          body: new URLSearchParams({
+            quantity,
+            timestamp: timestamp || Math.floor(Date.now() / 1000),
+            action, // 'increment' or 'set'
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -1366,7 +1398,11 @@ export class StripeClient {
       }
 
       const usageRecord = await response.json();
-      printSuccess(chalk.green(`✅ Created usage record: ${quantity} units for subscription item ${subscriptionItemId}`));
+      printSuccess(
+        chalk.green(
+          `✅ Created usage record: ${quantity} units for subscription item ${subscriptionItemId}`
+        )
+      );
       return usageRecord;
     } catch (error) {
       printError(`Failed to create Stripe usage record: ${error.message}`);
@@ -1380,11 +1416,11 @@ export class StripeClient {
   async getSubscriptionSchedules(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/subscription_schedules?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1411,8 +1447,8 @@ export class StripeClient {
           customer,
           start_date: startDate,
           phases: JSON.stringify(phases),
-          ...(options.end_behavior && { end_behavior: options.end_behavior })
-        })
+          ...(options.end_behavior && { end_behavior: options.end_behavior }),
+        }),
       });
 
       if (!response.ok) {
@@ -1435,11 +1471,11 @@ export class StripeClient {
   async getTaxCalculations(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/tax/calculations?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1466,15 +1502,17 @@ export class StripeClient {
           currency: options.currency || 'usd',
           customer_details: JSON.stringify({
             address: options.customer_address || {},
-            tax_ids: options.customer_tax_ids || []
+            tax_ids: options.customer_tax_ids || [],
           }),
-          line_items: JSON.stringify(items.map(item => ({
-            amount: Math.round(item.amount * 100), // Convert to cents
-            currency: item.currency || 'usd',
-            tax_behavior: item.tax_behavior || 'exclusive',
-            reference: item.reference
-          })))
-        })
+          line_items: JSON.stringify(
+            items.map((item) => ({
+              amount: Math.round(item.amount * 100), // Convert to cents
+              currency: item.currency || 'usd',
+              tax_behavior: item.tax_behavior || 'exclusive',
+              reference: item.reference,
+            }))
+          ),
+        }),
       });
 
       if (!response.ok) {
@@ -1497,11 +1535,11 @@ export class StripeClient {
   async getTaxTransactions(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/tax/transactions?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1522,12 +1560,15 @@ export class StripeClient {
   async getFinancialConnectionsAccounts(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
-      const response = await stripeFetch(`${STRIPE_API_BASE}/financial_connections/accounts?${params}`, {
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/financial_connections/accounts?${params}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -1547,12 +1588,15 @@ export class StripeClient {
   async getFinancialConnectionsSessions(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
-      const response = await stripeFetch(`${STRIPE_API_BASE}/financial_connections/sessions?${params}`, {
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/financial_connections/sessions?${params}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -1577,8 +1621,10 @@ export class StripeClient {
         body: new URLSearchParams({
           account_holder: JSON.stringify(account_holder),
           ...(options.permissions && { permissions: JSON.stringify(options.permissions) }),
-          ...(options.prefill_business_name && { prefill_business_name: options.prefill_business_name })
-        })
+          ...(options.prefill_business_name && {
+            prefill_business_name: options.prefill_business_name,
+          }),
+        }),
       });
 
       if (!response.ok) {
@@ -1601,12 +1647,15 @@ export class StripeClient {
   async getTreasuryFinancialAccounts(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
-      const response = await stripeFetch(`${STRIPE_API_BASE}/treasury/financial_accounts?${params}`, {
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/treasury/financial_accounts?${params}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -1627,11 +1676,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         financial_account: financialAccountId,
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/treasury/transactions?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1653,12 +1702,15 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         financial_account: financialAccountId,
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
-      const response = await stripeFetch(`${STRIPE_API_BASE}/treasury/outbound_payments?${params}`, {
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/treasury/outbound_payments?${params}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -1684,9 +1736,11 @@ export class StripeClient {
           financial_account: financialAccountId,
           amount: Math.round(amount * 100), // Convert to cents
           currency,
-          ...(options.destination_payment_method && { destination_payment_method: options.destination_payment_method }),
-          ...(options.description && { description: options.description })
-        })
+          ...(options.destination_payment_method && {
+            destination_payment_method: options.destination_payment_method,
+          }),
+          ...(options.description && { description: options.description }),
+        }),
       });
 
       if (!response.ok) {
@@ -1695,7 +1749,9 @@ export class StripeClient {
       }
 
       const payment = await response.json();
-      printSuccess(chalk.green(`✅ Created treasury outbound payment: ${payment.id} ($${(amount).toFixed(2)})`));
+      printSuccess(
+        chalk.green(`✅ Created treasury outbound payment: ${payment.id} ($${amount.toFixed(2)})`)
+      );
       return payment;
     } catch (error) {
       printError(`Failed to create Stripe treasury outbound payment: ${error.message}`);
@@ -1710,12 +1766,15 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         financial_account: financialAccountId,
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
-      const response = await stripeFetch(`${STRIPE_API_BASE}/treasury/inbound_transfers?${params}`, {
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/treasury/inbound_transfers?${params}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -1741,9 +1800,11 @@ export class StripeClient {
           financial_account: financialAccountId,
           amount: Math.round(amount * 100), // Convert to cents
           currency,
-          ...(options.origin_payment_method && { origin_payment_method: options.origin_payment_method }),
-          ...(options.description && { description: options.description })
-        })
+          ...(options.origin_payment_method && {
+            origin_payment_method: options.origin_payment_method,
+          }),
+          ...(options.description && { description: options.description }),
+        }),
       });
 
       if (!response.ok) {
@@ -1752,7 +1813,9 @@ export class StripeClient {
       }
 
       const transfer = await response.json();
-      printSuccess(chalk.green(`✅ Created treasury inbound transfer: ${transfer.id} ($${(amount).toFixed(2)})`));
+      printSuccess(
+        chalk.green(`✅ Created treasury inbound transfer: ${transfer.id} ($${amount.toFixed(2)})`)
+      );
       return transfer;
     } catch (error) {
       printError(`Failed to create Stripe treasury inbound transfer: ${error.message}`);
@@ -1767,11 +1830,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         financial_account: financialAccountId,
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/treasury/credit_reversals?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1793,11 +1856,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         financial_account: financialAccountId,
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/treasury/debit_reversals?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1819,11 +1882,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         financial_account: financialAccountId,
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/treasury/received_credits?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1845,11 +1908,11 @@ export class StripeClient {
     try {
       const params = new URLSearchParams({
         financial_account: financialAccountId,
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/treasury/received_debits?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1870,11 +1933,11 @@ export class StripeClient {
   async getReportingReportRuns(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
       const response = await stripeFetch(`${STRIPE_API_BASE}/reporting/report_runs?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1899,8 +1962,8 @@ export class StripeClient {
         headers: this.headers,
         body: new URLSearchParams({
           report_type: reportType,
-          parameters: JSON.stringify(options.parameters || {})
-        })
+          parameters: JSON.stringify(options.parameters || {}),
+        }),
       });
 
       if (!response.ok) {
@@ -1923,7 +1986,7 @@ export class StripeClient {
   async getReportingReportTypes() {
     try {
       const response = await stripeFetch(`${STRIPE_API_BASE}/reporting/report_types`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -1944,12 +2007,15 @@ export class StripeClient {
   async getSigmaScheduledQueryRuns(options = {}) {
     try {
       const params = new URLSearchParams({
-        limit: options.limit || 10
+        limit: options.limit || 10,
       });
 
-      const response = await stripeFetch(`${STRIPE_API_BASE}/sigma/scheduled_query_runs?${params}`, {
-        headers: this.headers
-      });
+      const response = await stripeFetch(
+        `${STRIPE_API_BASE}/sigma/scheduled_query_runs?${params}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -2005,7 +2071,7 @@ export class StripeClient {
     try {
       // Check if we can make a simple API call to verify connectivity
       const response = await stripeFetch(`${STRIPE_API_BASE}/balance`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -2017,13 +2083,13 @@ export class StripeClient {
       return {
         connected: true,
         account: balance.object, // Will be 'balance' if successful
-        currencies: balance.pending?.map(item => item.currency) || [],
-        available: balance.available?.map(item => item.currency) || []
+        currencies: balance.pending?.map((item) => item.currency) || [],
+        available: balance.available?.map((item) => item.currency) || [],
       };
     } catch (error) {
       return {
         connected: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -2040,13 +2106,13 @@ export class StripeClient {
         type: 'API',
         limits: {
           requestsPerSecond: 100, // Typical Stripe rate limit
-          concurrentRequests: 25
+          concurrentRequests: 25,
         },
         usage: {
           currentRequests: Math.floor(Math.random() * 10), // Mock current usage
-          percentageUsed: Math.floor(Math.random() * 30) // Mock percentage
+          percentageUsed: Math.floor(Math.random() * 30), // Mock percentage
         },
-        resetTime: new Date(Date.now() + 60000).toISOString() // Reset in 1 minute
+        resetTime: new Date(Date.now() + 60000).toISOString(), // Reset in 1 minute
       };
     } catch (error) {
       printError(`Failed to get Stripe API usage: ${error.message}`);
@@ -2071,7 +2137,7 @@ export class StripeClient {
         customers,
         subscriptions,
         products,
-        events
+        events,
       ] = await Promise.allSettled([
         this.getAccount(),
         this.getBalance(),
@@ -2081,7 +2147,7 @@ export class StripeClient {
         this.getCustomers({ limit: 50 }),
         this.getSubscriptions({ limit: 50 }),
         this.getProducts({ limit: 50 }),
-        this.getEvents({ limit: 50 })
+        this.getEvents({ limit: 50 }),
       ]);
 
       const report = {
@@ -2093,21 +2159,25 @@ export class StripeClient {
           totalRefunds: refunds.status === 'fulfilled' ? refunds.value.data.length : 0,
           totalDisputes: disputes.status === 'fulfilled' ? disputes.value.data.length : 0,
           totalCustomers: customers.status === 'fulfilled' ? customers.value.data.length : 0,
-          totalSubscriptions: subscriptions.status === 'fulfilled' ? subscriptions.value.data.length : 0,
+          totalSubscriptions:
+            subscriptions.status === 'fulfilled' ? subscriptions.value.data.length : 0,
           totalProducts: products.status === 'fulfilled' ? products.value.data.length : 0,
-          recentEvents: events.status === 'fulfilled' ? events.value.data.length : 0
+          recentEvents: events.status === 'fulfilled' ? events.value.data.length : 0,
         },
         summary: {
-          activeSubscriptions: subscriptions.status === 'fulfilled'
-            ? subscriptions.value.data.filter(sub => sub.status === 'active').length
-            : 0,
-          churnRate: subscriptions.status === 'fulfilled'
-            ? this.calculateChurnRate(subscriptions.value.data)
-            : 0,
-          refundRate: charges.status === 'fulfilled' && refunds.status === 'fulfilled'
-            ? this.calculateRefundRate(charges.value.data, refunds.value.data)
-            : 0
-        }
+          activeSubscriptions:
+            subscriptions.status === 'fulfilled'
+              ? subscriptions.value.data.filter((sub) => sub.status === 'active').length
+              : 0,
+          churnRate:
+            subscriptions.status === 'fulfilled'
+              ? this.calculateChurnRate(subscriptions.value.data)
+              : 0,
+          refundRate:
+            charges.status === 'fulfilled' && refunds.status === 'fulfilled'
+              ? this.calculateRefundRate(charges.value.data, refunds.value.data)
+              : 0,
+        },
       };
 
       // Generate report content
@@ -2131,10 +2201,9 @@ export class StripeClient {
   calculateChurnRate(subscriptions) {
     if (subscriptions.length === 0) return 0;
 
-    const canceledSubs = subscriptions.filter(sub =>
-      sub.status === 'canceled' ||
-      sub.status === 'unpaid' ||
-      sub.status === 'incomplete_expired'
+    const canceledSubs = subscriptions.filter(
+      (sub) =>
+        sub.status === 'canceled' || sub.status === 'unpaid' || sub.status === 'incomplete_expired'
     ).length;
 
     return (canceledSubs / subscriptions.length) * 100;
@@ -2166,8 +2235,8 @@ export class StripeClient {
 - **Country:** ${report.account?.country || 'N/A'}
 
 ## Financial Summary
-- **Available Balance:** ${report.balance?.available?.map(b => `${b.amount / 100} ${b.currency.toUpperCase()}`).join(', ') || 'N/A'}
-- **Pending Balance:** ${report.balance?.pending?.map(b => `${b.amount / 100} ${b.currency.toUpperCase()}`).join(', ') || 'N/A'}
+- **Available Balance:** ${report.balance?.available?.map((b) => `${b.amount / 100} ${b.currency.toUpperCase()}`).join(', ') || 'N/A'}
+- **Pending Balance:** ${report.balance?.pending?.map((b) => `${b.amount / 100} ${b.currency.toUpperCase()}`).join(', ') || 'N/A'}
 
 ## Key Metrics
 - **Total Charges:** ${report.metrics.totalCharges}
@@ -2199,22 +2268,28 @@ ${this.generateRecommendations(report)}
     const recommendations = [];
 
     if (report.summary.churnRate > 10) {
-      recommendations.push('- High churn rate detected (>10%). Review subscription cancellation reasons and improve retention strategies.');
+      recommendations.push(
+        '- High churn rate detected (>10%). Review subscription cancellation reasons and improve retention strategies.'
+      );
     }
 
     if (report.summary.refundRate > 5) {
-      recommendations.push('- High refund rate detected (>5%). Investigate product/service quality issues.');
+      recommendations.push(
+        '- High refund rate detected (>5%). Investigate product/service quality issues.'
+      );
     }
 
     if (report.metrics.totalDisputes > 0) {
-      recommendations.push('- Disputes detected. Review payment processing and fraud prevention measures.');
+      recommendations.push(
+        '- Disputes detected. Review payment processing and fraud prevention measures.'
+      );
     }
 
     if (recommendations.length === 0) {
       recommendations.push('- Payment system is performing well with low churn and refund rates.');
     }
 
-    return recommendations.map(r => `1. ${r}`).join('\n');
+    return recommendations.map((r) => `1. ${r}`).join('\n');
   }
 
   /**
@@ -2251,5 +2326,5 @@ export async function validateStripeConfig(config) {
 
 export default {
   StripeClient,
-  validateStripeConfig
+  validateStripeConfig,
 };

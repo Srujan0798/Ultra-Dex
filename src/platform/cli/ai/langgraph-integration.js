@@ -1,12 +1,11 @@
+import { StateGraph, Annotation, START, END, Message } from '@langchain/langgraph';
 import {
-  StateGraph,
-  Annotation,
-  START,
-  END,
-  Message
-} from "@langchain/langgraph";
-import { createOpenAIRunnable, createAnthropicRunnable, createGoogleRunnable } from "../providers/index.js";
-import { printInfo, printSuccess, printError } from "../utils/output.js";
+  createOpenAIRunnable,
+  createAnthropicRunnable,
+  createGoogleRunnable,
+} from '../providers/index.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
+import { AppError } from '../utils/errors.js';
 const WorkflowState = Annotation.Root({
   // Core workflow state
   task: Annotation,
@@ -18,12 +17,12 @@ const WorkflowState = Annotation.Root({
   currentAgent: Annotation,
   agentHistory: Annotation({
     reducer: (a, b) => [...a, ...b],
-    default: () => []
+    default: () => [],
   }),
   // Context and memory
   context: Annotation({
     reducer: (a, b) => ({ ...a, ...b }),
-    default: () => ({})
+    default: () => ({}),
   }),
   // Execution tracking
   step: Annotation,
@@ -31,7 +30,7 @@ const WorkflowState = Annotation.Root({
   completed: Annotation,
   // Quality metrics
   qualityScore: Annotation,
-  confidence: Annotation
+  confidence: Annotation,
 });
 class LangGraphIntegration {
   constructor(options = {}) {
@@ -40,7 +39,7 @@ class LangGraphIntegration {
       timeout: options.timeout || 3e5,
       // 5 minutes
       retryAttempts: options.retryAttempts || 3,
-      ...options
+      ...options,
     };
     this.graphs = /* @__PURE__ */ new Map();
     this.runningWorkflows = /* @__PURE__ */ new Map();
@@ -62,17 +61,23 @@ class LangGraphIntegration {
         maxSteps: null,
         completed: null,
         qualityScore: null,
-        confidence: null
-      }
+        confidence: null,
+      },
     });
-    workflow.addNode("analyze", this.plannerAnalyze.bind(this)).addNode("breakdown", this.plannerBreakdown.bind(this)).addNode("validate", this.plannerValidate.bind(this)).addNode("adjust", this.plannerAdjust.bind(this)).addEdge(START, "analyze").addEdge("analyze", "breakdown").addEdge("breakdown", "validate").addConditionalEdges(
-      "validate",
-      (state) => {
+    workflow
+      .addNode('analyze', this.plannerAnalyze.bind(this))
+      .addNode('breakdown', this.plannerBreakdown.bind(this))
+      .addNode('validate', this.plannerValidate.bind(this))
+      .addNode('adjust', this.plannerAdjust.bind(this))
+      .addEdge(START, 'analyze')
+      .addEdge('analyze', 'breakdown')
+      .addEdge('breakdown', 'validate')
+      .addConditionalEdges('validate', (state) => {
         if (state.completed) return END;
-        if (state.qualityScore < 0.7) return "adjust";
+        if (state.qualityScore < 0.7) return 'adjust';
         return END;
-      }
-    ).addEdge("adjust", "analyze");
+      })
+      .addEdge('adjust', 'analyze');
     return workflow.compile();
   }
   /**
@@ -81,21 +86,21 @@ class LangGraphIntegration {
   async plannerAnalyze(state) {
     try {
       printInfo(`\u{1F50D} Planner analyzing task: ${state.task.substring(0, 50)}...`);
-      const provider = createOpenAIRunnable("gpt-4-turbo");
+      const provider = createOpenAIRunnable('gpt-4-turbo');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `You are an expert project planner. Analyze the given task and identify:
           1. Core requirements
           2. Dependencies
           3. Potential risks
           4. Success criteria
-          5. Estimated complexity`
+          5. Estimated complexity`,
         }),
         new Message({
-          role: "user",
-          content: `Analyze this task: ${state.task}`
-        })
+          role: 'user',
+          content: `Analyze this task: ${state.task}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       return {
@@ -105,16 +110,16 @@ class LangGraphIntegration {
           analysis: response.content,
           requirements: this.extractRequirements(response.content),
           dependencies: this.extractDependencies(response.content),
-          risks: this.extractRisks(response.content)
+          risks: this.extractRisks(response.content),
         },
         agentHistory: [...state.agentHistory, `Planner analyzed: ${state.task}`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Planner analysis failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -124,10 +129,10 @@ class LangGraphIntegration {
   async plannerBreakdown(state) {
     try {
       printInfo(`\u{1F4CB} Breaking down task into subtasks...`);
-      const provider = createOpenAIRunnable("gpt-4-turbo");
+      const provider = createOpenAIRunnable('gpt-4-turbo');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Break down the task into 3-7 atomic subtasks that can be completed in 1-4 hours each.
           Each subtask should be:
           1. Specific and measurable
@@ -135,13 +140,13 @@ class LangGraphIntegration {
           3. Estimable in time
           4. Testable
           
-          Format as JSON: {subtasks: [{id, title, description, estimatedHours, dependencies, acceptanceCriteria}]}`
+          Format as JSON: {subtasks: [{id, title, description, estimatedHours, dependencies, acceptanceCriteria}]}`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Task: ${state.task}
-Analysis: ${state.context.analysis}`
-        })
+Analysis: ${state.context.analysis}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       const subtasks = this.parseSubtasks(response.content);
@@ -151,16 +156,16 @@ Analysis: ${state.context.analysis}`
         context: {
           ...state.context,
           subtasks,
-          breakdown: response.content
+          breakdown: response.content,
         },
         agentHistory: [...state.agentHistory, `Planner created ${subtasks.length} subtasks`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Planner breakdown failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -170,10 +175,10 @@ Analysis: ${state.context.analysis}`
   async plannerValidate(state) {
     try {
       printInfo(`\u2705 Validating plan quality...`);
-      const provider = createAnthropicRunnable("claude-3-5-sonnet-20241022");
+      const provider = createAnthropicRunnable('claude-3-5-sonnet-20241022');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Validate this implementation plan for:
           1. Completeness (does it cover all requirements?)
           2. Feasibility (are tasks achievable in estimated time?)
@@ -181,14 +186,14 @@ Analysis: ${state.context.analysis}`
           4. Risk mitigation (are risks addressed?)
           5. Quality gates (will this produce high-quality code?)
           
-          Return JSON: {valid: boolean, score: number 0-1, feedback: string, suggestions: string[]}`
+          Return JSON: {valid: boolean, score: number 0-1, feedback: string, suggestions: string[]}`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Task: ${state.task}
 Plan: ${state.plan}
-Analysis: ${state.context.analysis}`
-        })
+Analysis: ${state.context.analysis}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       const validation = this.parseValidation(response.content);
@@ -198,21 +203,24 @@ Analysis: ${state.context.analysis}`
         context: {
           ...state.context,
           validation,
-          feedback: validation.feedback
+          feedback: validation.feedback,
         },
-        agentHistory: [...state.agentHistory, `Planner validation: ${validation.score * 100}% quality`],
-        step: state.step + 1
+        agentHistory: [
+          ...state.agentHistory,
+          `Planner validation: ${validation.score * 100}% quality`,
+        ],
+        step: state.step + 1,
       };
       if (validation.score >= 0.7) {
         newState.completed = true;
-        newState.status = "validated";
+        newState.status = 'validated';
       }
       return newState;
     } catch (error) {
       return {
         ...state,
         error: `Planner validation failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -222,33 +230,33 @@ Analysis: ${state.context.analysis}`
   async plannerAdjust(state) {
     try {
       printInfo(`\u{1F527} Adjusting plan based on feedback...`);
-      const provider = createOpenAIRunnable("gpt-4-turbo");
+      const provider = createOpenAIRunnable('gpt-4-turbo');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Adjust the implementation plan based on the validation feedback.
           Improve the plan to address the identified issues while maintaining the core objectives.
-          Return the improved plan in the same format as before.`
+          Return the improved plan in the same format as before.`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Original Plan: ${state.plan}
 Validation Feedback: ${state.context.feedback}
-Suggestions: ${state.context.validation.suggestions.join(", ")}`
-        })
+Suggestions: ${state.context.validation.suggestions.join(', ')}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       return {
         ...state,
         plan: response.content,
         agentHistory: [...state.agentHistory, `Planner adjusted plan based on feedback`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Planner adjustment failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -270,18 +278,26 @@ Suggestions: ${state.context.validation.suggestions.join(", ")}`
         maxSteps: null,
         completed: null,
         qualityScore: null,
-        confidence: null
-      }
+        confidence: null,
+      },
     });
-    workflow.addNode("parsePlan", this.executorParsePlan.bind(this)).addNode("executeSubtask", this.executorExecuteSubtask.bind(this)).addNode("test", this.executorTest.bind(this)).addNode("review", this.executorReview.bind(this)).addNode("iterate", this.executorIterate.bind(this)).addEdge(START, "parsePlan").addEdge("parsePlan", "executeSubtask").addEdge("executeSubtask", "test").addEdge("test", "review").addConditionalEdges(
-      "review",
-      (state) => {
+    workflow
+      .addNode('parsePlan', this.executorParsePlan.bind(this))
+      .addNode('executeSubtask', this.executorExecuteSubtask.bind(this))
+      .addNode('test', this.executorTest.bind(this))
+      .addNode('review', this.executorReview.bind(this))
+      .addNode('iterate', this.executorIterate.bind(this))
+      .addEdge(START, 'parsePlan')
+      .addEdge('parsePlan', 'executeSubtask')
+      .addEdge('executeSubtask', 'test')
+      .addEdge('test', 'review')
+      .addConditionalEdges('review', (state) => {
         if (state.step >= state.maxSteps) return END;
         if (state.completed) return END;
         if (state.qualityScore >= 0.9) return END;
-        return "iterate";
-      }
-    ).addEdge("iterate", "executeSubtask");
+        return 'iterate';
+      })
+      .addEdge('iterate', 'executeSubtask');
     return workflow.compile();
   }
   /**
@@ -297,16 +313,16 @@ Suggestions: ${state.context.validation.suggestions.join(", ")}`
         context: {
           ...state.context,
           currentSubtask,
-          remainingSubtasks: subtasks.slice(state.step + 1)
+          remainingSubtasks: subtasks.slice(state.step + 1),
         },
         agentHistory: [...state.agentHistory, `Executor parsed subtask: ${currentSubtask.title}`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Executor parse plan failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -316,10 +332,10 @@ Suggestions: ${state.context.validation.suggestions.join(", ")}`
   async executorExecuteSubtask(state) {
     try {
       printInfo(`\u{1F680} Executing subtask: ${state.context.currentSubtask.title}`);
-      const provider = createOpenAIRunnable("gpt-4-turbo");
+      const provider = createOpenAIRunnable('gpt-4-turbo');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `You are an expert implementation agent. Execute the given subtask by:
           1. Analyzing the requirements
           2. Creating the necessary files/code
@@ -327,14 +343,14 @@ Suggestions: ${state.context.validation.suggestions.join(", ")}`
           4. Adding appropriate error handling
           5. Including documentation and comments
           
-          Return the implementation with file paths and content.`
+          Return the implementation with file paths and content.`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Subtask: ${state.context.currentSubtask.title}
 Description: ${state.context.currentSubtask.description}
-Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`
-        })
+Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       const implementation = this.parseImplementation(response.content);
@@ -344,16 +360,19 @@ Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`
         context: {
           ...state.context,
           implementation,
-          lastResult: response.content
+          lastResult: response.content,
         },
-        agentHistory: [...state.agentHistory, `Executor completed subtask: ${state.context.currentSubtask.title}`],
-        step: state.step + 1
+        agentHistory: [
+          ...state.agentHistory,
+          `Executor completed subtask: ${state.context.currentSubtask.title}`,
+        ],
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Executor subtask failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -363,10 +382,10 @@ Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`
   async executorTest(state) {
     try {
       printInfo(`\u{1F9EA} Testing implementation...`);
-      const provider = createGoogleRunnable("gemini-1.5-pro-latest");
+      const provider = createGoogleRunnable('gemini-1.5-pro-latest');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Test the implementation for:
           1. Functionality (does it work as expected?)
           2. Performance (are there performance issues?)
@@ -374,13 +393,13 @@ Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`
           4. Edge cases (does it handle edge cases?)
           5. Error handling (are errors properly handled?)
           
-          Return JSON: {pass: boolean, score: number 0-1, issues: string[], suggestions: string[]}`
+          Return JSON: {pass: boolean, score: number 0-1, issues: string[], suggestions: string[]}`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Implementation: ${state.result}
-Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`
-        })
+Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       const testResults = this.parseTestResults(response.content);
@@ -390,16 +409,19 @@ Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`
         context: {
           ...state.context,
           testResults,
-          lastTest: response.content
+          lastTest: response.content,
         },
-        agentHistory: [...state.agentHistory, `Executor test: ${testResults.score * 100}% pass rate`],
-        step: state.step + 1
+        agentHistory: [
+          ...state.agentHistory,
+          `Executor test: ${testResults.score * 100}% pass rate`,
+        ],
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Executor test failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -409,10 +431,10 @@ Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`
   async executorReview(state) {
     try {
       printInfo(`\u{1F440} Reviewing implementation quality...`);
-      const provider = createAnthropicRunnable("claude-3-5-sonnet-20241022");
+      const provider = createAnthropicRunnable('claude-3-5-sonnet-20241022');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Review the implementation for:
           1. Code quality (is it clean, readable, maintainable?)
           2. Best practices (does it follow industry standards?)
@@ -420,13 +442,13 @@ Acceptance Criteria: ${state.context.currentSubtask.acceptanceCriteria}`
           4. Performance (is it efficient?)
           5. Security (is it secure?)
           
-          Return JSON: {approved: boolean, score: number 0-1, feedback: string, improvements: string[]}`
+          Return JSON: {approved: boolean, score: number 0-1, feedback: string, improvements: string[]}`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Implementation: ${state.result}
-Test Results: ${JSON.stringify(state.context.testResults, null, 2)}`
-        })
+Test Results: ${JSON.stringify(state.context.testResults, null, 2)}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       const review = this.parseReview(response.content);
@@ -436,21 +458,21 @@ Test Results: ${JSON.stringify(state.context.testResults, null, 2)}`
         context: {
           ...state.context,
           review,
-          lastReview: response.content
+          lastReview: response.content,
         },
         agentHistory: [...state.agentHistory, `Executor review: ${review.score * 100}% quality`],
-        step: state.step + 1
+        step: state.step + 1,
       };
       if (state.context.remainingSubtasks?.length === 0 && review.score >= 0.8) {
         newState.completed = true;
-        newState.status = "completed";
+        newState.status = 'completed';
       }
       return newState;
     } catch (error) {
       return {
         ...state,
         error: `Executor review failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -460,34 +482,34 @@ Test Results: ${JSON.stringify(state.context.testResults, null, 2)}`
   async executorIterate(state) {
     try {
       printInfo(`\u{1F504} Iterating on implementation...`);
-      const provider = createOpenAIRunnable("gpt-4-turbo");
+      const provider = createOpenAIRunnable('gpt-4-turbo');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Improve the implementation based on the test results and review feedback.
           Address the identified issues while maintaining the core functionality.
-          Return the improved implementation.`
+          Return the improved implementation.`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Current Implementation: ${state.result}
 Test Feedback: ${state.context.testResults.feedback}
 Review Feedback: ${state.context.review.feedback}
-Improvements Needed: ${state.context.review.improvements.join(", ")}`
-        })
+Improvements Needed: ${state.context.review.improvements.join(', ')}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       return {
         ...state,
         result: response.content,
         agentHistory: [...state.agentHistory, `Executor iterated on implementation`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Executor iteration failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -509,10 +531,21 @@ Improvements Needed: ${state.context.review.improvements.join(", ")}`
         maxSteps: null,
         completed: null,
         qualityScore: null,
-        confidence: null
-      }
+        confidence: null,
+      },
     });
-    workflow.addNode("analyzeCode", this.reviewerAnalyzeCode.bind(this)).addNode("identifyIssues", this.reviewerIdentifyIssues.bind(this)).addNode("suggestFixes", this.reviewerSuggestFixes.bind(this)).addNode("prioritize", this.reviewerPrioritize.bind(this)).addNode("report", this.reviewerReport.bind(this)).addEdge(START, "analyzeCode").addEdge("analyzeCode", "identifyIssues").addEdge("identifyIssues", "suggestFixes").addEdge("suggestFixes", "prioritize").addEdge("prioritize", "report").addEdge("report", END);
+    workflow
+      .addNode('analyzeCode', this.reviewerAnalyzeCode.bind(this))
+      .addNode('identifyIssues', this.reviewerIdentifyIssues.bind(this))
+      .addNode('suggestFixes', this.reviewerSuggestFixes.bind(this))
+      .addNode('prioritize', this.reviewerPrioritize.bind(this))
+      .addNode('report', this.reviewerReport.bind(this))
+      .addEdge(START, 'analyzeCode')
+      .addEdge('analyzeCode', 'identifyIssues')
+      .addEdge('identifyIssues', 'suggestFixes')
+      .addEdge('suggestFixes', 'prioritize')
+      .addEdge('prioritize', 'report')
+      .addEdge('report', END);
     return workflow.compile();
   }
   /**
@@ -521,10 +554,10 @@ Improvements Needed: ${state.context.review.improvements.join(", ")}`
   async reviewerAnalyzeCode(state) {
     try {
       printInfo(`\u{1F50D} Analyzing code quality...`);
-      const provider = createAnthropicRunnable("claude-3-5-sonnet-20241022");
+      const provider = createAnthropicRunnable('claude-3-5-sonnet-20241022');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Analyze the code for:
           1. Security vulnerabilities
           2. Performance issues
@@ -532,12 +565,12 @@ Improvements Needed: ${state.context.review.improvements.join(", ")}`
           4. Architecture problems
           5. Best practice violations
           
-          Return structured analysis with specific line references.`
+          Return structured analysis with specific line references.`,
         }),
         new Message({
-          role: "user",
-          content: `Code to analyze: ${state.result}`
-        })
+          role: 'user',
+          content: `Code to analyze: ${state.result}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       return {
@@ -546,16 +579,16 @@ Improvements Needed: ${state.context.review.improvements.join(", ")}`
           ...state.context,
           codeAnalysis: response.content,
           securityIssues: this.extractSecurityIssues(response.content),
-          performanceIssues: this.extractPerformanceIssues(response.content)
+          performanceIssues: this.extractPerformanceIssues(response.content),
         },
         agentHistory: [...state.agentHistory, `Reviewer analyzed code quality`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Reviewer analysis failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -565,23 +598,23 @@ Improvements Needed: ${state.context.review.improvements.join(", ")}`
   async reviewerIdentifyIssues(state) {
     try {
       printInfo(`\u{1F50D} Identifying specific issues...`);
-      const provider = createOpenAIRunnable("gpt-4-turbo");
+      const provider = createOpenAIRunnable('gpt-4-turbo');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Identify specific issues in the code and categorize them:
           1. Critical (security, data loss, crashes)
           2. High (major functionality issues)
           3. Medium (minor functionality issues)
           4. Low (style, documentation)
           
-          Return JSON: {issues: [{severity, type, location, description, codeExample}]}`
+          Return JSON: {issues: [{severity, type, location, description, codeExample}]}`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Code Analysis: ${state.context.codeAnalysis}
-Code: ${state.result}`
-        })
+Code: ${state.result}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       const issues = this.parseIssues(response.content);
@@ -590,16 +623,16 @@ Code: ${state.result}`
         context: {
           ...state.context,
           issues,
-          issueCount: issues.length
+          issueCount: issues.length,
         },
         agentHistory: [...state.agentHistory, `Reviewer identified ${issues.length} issues`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Reviewer issue identification failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -609,19 +642,19 @@ Code: ${state.result}`
   async reviewerSuggestFixes(state) {
     try {
       printInfo(`\u{1F527} Suggesting fixes for issues...`);
-      const provider = createOpenAIRunnable("gpt-4-turbo");
+      const provider = createOpenAIRunnable('gpt-4-turbo');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `For each identified issue, suggest a specific fix with code examples.
           Prioritize fixes that address the root cause rather than symptoms.
-          Return JSON: {fixes: [{issueId, description, fix, codeExample, estimatedEffort}]}`
+          Return JSON: {fixes: [{issueId, description, fix, codeExample, estimatedEffort}]}`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Issues: ${JSON.stringify(state.context.issues, null, 2)}
-Code: ${state.result}`
-        })
+Code: ${state.result}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       const fixes = this.parseFixes(response.content);
@@ -630,16 +663,16 @@ Code: ${state.result}`
         context: {
           ...state.context,
           fixes,
-          fixCount: fixes.length
+          fixCount: fixes.length,
         },
         agentHistory: [...state.agentHistory, `Reviewer suggested ${fixes.length} fixes`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Reviewer fix suggestions failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -649,23 +682,23 @@ Code: ${state.result}`
   async reviewerPrioritize(state) {
     try {
       printInfo(`\u{1F4CA} Prioritizing issues and fixes...`);
-      const provider = createAnthropicRunnable("claude-3-5-sonnet-20241022");
+      const provider = createAnthropicRunnable('claude-3-5-sonnet-20241022');
       const messages = [
         new Message({
-          role: "system",
+          role: 'system',
           content: `Prioritize the issues and fixes based on:
           1. Impact on users
           2. Security risk
           3. Business criticality
           4. Effort to fix
           
-          Return prioritized list with recommended action order.`
+          Return prioritized list with recommended action order.`,
         }),
         new Message({
-          role: "user",
+          role: 'user',
           content: `Issues: ${JSON.stringify(state.context.issues, null, 2)}
-Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
-        })
+Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`,
+        }),
       ];
       const response = await provider.invoke({ messages });
       const prioritized = this.parsePrioritization(response.content);
@@ -675,16 +708,16 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
           ...state.context,
           prioritizedIssues: prioritized.issues,
           prioritizedFixes: prioritized.fixes,
-          recommendedActions: prioritized.actions
+          recommendedActions: prioritized.actions,
         },
         agentHistory: [...state.agentHistory, `Reviewer prioritized issues and fixes`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Reviewer prioritization failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -697,28 +730,28 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
       const report = {
         summary: {
           totalIssues: state.context.issueCount,
-          criticalIssues: state.context.issues.filter((i) => i.severity === "critical").length,
-          highIssues: state.context.issues.filter((i) => i.severity === "high").length,
-          qualityScore: state.qualityScore
+          criticalIssues: state.context.issues.filter((i) => i.severity === 'critical').length,
+          highIssues: state.context.issues.filter((i) => i.severity === 'high').length,
+          qualityScore: state.qualityScore,
         },
         issues: state.context.prioritizedIssues,
         fixes: state.context.prioritizedFixes,
         recommendations: state.context.recommendedActions,
-        confidence: state.confidence
+        confidence: state.confidence,
       };
       return {
         ...state,
         result: JSON.stringify(report, null, 2),
         completed: true,
-        status: "reviewed",
+        status: 'reviewed',
         agentHistory: [...state.agentHistory, `Reviewer completed quality report`],
-        step: state.step + 1
+        step: state.step + 1,
       };
     } catch (error) {
       return {
         ...state,
         error: `Reviewer report generation failed: ${error.message}`,
-        status: "failed"
+        status: 'failed',
       };
     }
   }
@@ -729,13 +762,13 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
     try {
       let graph;
       switch (workflowType) {
-        case "planner":
+        case 'planner':
           graph = this.createPlannerGraph();
           break;
-        case "executor":
+        case 'executor':
           graph = this.createExecutorGraph();
           break;
-        case "reviewer":
+        case 'reviewer':
           graph = this.createReviewerGraph();
           break;
         default:
@@ -749,7 +782,7 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
         qualityScore: 0,
         confidence: 0.5,
         agentHistory: [],
-        context: initialState.context || {}
+        context: initialState.context || {},
       };
       printInfo(`\u{1F504} Starting ${workflowType} workflow...`);
       const result = await graph.invoke(initial);
@@ -758,7 +791,7 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
         success: true,
         result,
         workflowType,
-        message: `${workflowType} workflow completed`
+        message: `${workflowType} workflow completed`,
       };
     } catch (error) {
       printError(`Workflow execution failed: ${error.message}`);
@@ -766,7 +799,7 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
         success: false,
         error: error.message,
         workflowType,
-        message: `Workflow failed: ${error.message}`
+        message: `Workflow failed: ${error.message}`,
       };
     }
   }
@@ -783,8 +816,8 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
           error: null,
           context: null,
           step: null,
-          completed: null
-        }
+          completed: null,
+        },
       });
       for (const [nodeName, nodeConfig] of Object.entries(definition.nodes)) {
         const nodeFunction = this.createDynamicNode(nodeConfig);
@@ -810,7 +843,7 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
         success: true,
         workflowId,
         workflow: compiled,
-        message: `Custom workflow created: ${workflowId}`
+        message: `Custom workflow created: ${workflowId}`,
       };
     } catch (error) {
       throw new AppError(`Custom workflow creation failed: ${error.message}`);
@@ -826,15 +859,15 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
           ...state,
           context: {
             ...state.context,
-            [config.id]: `Executed ${config.type} node`
+            [config.id]: `Executed ${config.type} node`,
           },
-          step: state.step + 1
+          step: state.step + 1,
         };
       } catch (error) {
         return {
           ...state,
           error: `Node ${config.id} failed: ${error.message}`,
-          status: "failed"
+          status: 'failed',
         };
       }
     };
@@ -851,7 +884,8 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    * Parse dependencies from text
    */
   extractDependencies(text) {
-    const depPattern = /(dependenc|require|need|prerequisit|extern|third-party)[^.!?]*(?=[.!?]|$)/gi;
+    const depPattern =
+      /(dependenc|require|need|prerequisit|extern|third-party)[^.!?]*(?=[.!?]|$)/gi;
     const matches = text.match(depPattern) || [];
     return matches.map((m) => m.trim()).slice(0, 10);
   }
@@ -868,9 +902,9 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    */
   parseSubtasks(text) {
     try {
-      if (text.includes("{") && text.includes("}")) {
-        const jsonStart = text.indexOf("{");
-        const jsonEnd = text.lastIndexOf("}") + 1;
+      if (text.includes('{') && text.includes('}')) {
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}') + 1;
         const jsonString = text.substring(jsonStart, jsonEnd);
         const parsed = JSON.parse(jsonString);
         return parsed.subtasks || [];
@@ -884,7 +918,7 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
         description: match[3].trim(),
         estimatedHours: 2,
         dependencies: [],
-        acceptanceCriteria: "Implementation works as described"
+        acceptanceCriteria: 'Implementation works as described',
       }));
     }
   }
@@ -893,19 +927,22 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    */
   parseValidation(text) {
     try {
-      if (text.includes("{") && text.includes("}")) {
-        const jsonStart = text.indexOf("{");
-        const jsonEnd = text.lastIndexOf("}") + 1;
+      if (text.includes('{') && text.includes('}')) {
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}') + 1;
         const jsonString = text.substring(jsonStart, jsonEnd);
         return JSON.parse(jsonString);
       }
     } catch {
-      const score = text.toLowerCase().includes("high") || text.includes("0.9") || text.includes("0.8") ? 0.85 : 0.65;
+      const score =
+        text.toLowerCase().includes('high') || text.includes('0.9') || text.includes('0.8')
+          ? 0.85
+          : 0.65;
       return {
         valid: score > 0.7,
         score,
         feedback: text.substring(0, 200),
-        suggestions: ["Improve clarity", "Add more details"]
+        suggestions: ['Improve clarity', 'Add more details'],
       };
     }
   }
@@ -925,7 +962,7 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
     }
     return {
       files,
-      summary: text.substring(0, 500)
+      summary: text.substring(0, 500),
     };
   }
   /**
@@ -933,18 +970,18 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    */
   parseTestResults(text) {
     try {
-      if (text.includes("{") && text.includes("}")) {
-        const jsonStart = text.indexOf("{");
-        const jsonEnd = text.lastIndexOf("}") + 1;
+      if (text.includes('{') && text.includes('}')) {
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}') + 1;
         const jsonString = text.substring(jsonStart, jsonEnd);
         return JSON.parse(jsonString);
       }
     } catch {
       return {
-        pass: text.toLowerCase().includes("pass") || !text.toLowerCase().includes("fail"),
-        score: text.toLowerCase().includes("pass") ? 0.8 : 0.3,
+        pass: text.toLowerCase().includes('pass') || !text.toLowerCase().includes('fail'),
+        score: text.toLowerCase().includes('pass') ? 0.8 : 0.3,
         issues: [],
-        suggestions: []
+        suggestions: [],
       };
     }
   }
@@ -953,18 +990,21 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    */
   parseReview(text) {
     try {
-      if (text.includes("{") && text.includes("}")) {
-        const jsonStart = text.indexOf("{");
-        const jsonEnd = text.lastIndexOf("}") + 1;
+      if (text.includes('{') && text.includes('}')) {
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}') + 1;
         const jsonString = text.substring(jsonStart, jsonEnd);
         return JSON.parse(jsonString);
       }
     } catch {
       return {
-        approved: !text.toLowerCase().includes("reject"),
-        score: text.toLowerCase().includes("good") || text.toLowerCase().includes("excellent") ? 0.9 : 0.6,
+        approved: !text.toLowerCase().includes('reject'),
+        score:
+          text.toLowerCase().includes('good') || text.toLowerCase().includes('excellent')
+            ? 0.9
+            : 0.6,
         feedback: text.substring(0, 200),
-        improvements: ["Consider performance", "Add error handling"]
+        improvements: ['Consider performance', 'Add error handling'],
       };
     }
   }
@@ -973,21 +1013,23 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    */
   parseIssues(text) {
     try {
-      if (text.includes("{") && text.includes("}")) {
-        const jsonStart = text.indexOf("{");
-        const jsonEnd = text.lastIndexOf("}") + 1;
+      if (text.includes('{') && text.includes('}')) {
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}') + 1;
         const jsonString = text.substring(jsonStart, jsonEnd);
         const parsed = JSON.parse(jsonString);
         return parsed.issues || [];
       }
     } catch {
-      return [{
-        severity: "medium",
-        type: "general",
-        location: "unknown",
-        description: text.substring(0, 100),
-        codeExample: "// No example provided"
-      }];
+      return [
+        {
+          severity: 'medium',
+          type: 'general',
+          location: 'unknown',
+          description: text.substring(0, 100),
+          codeExample: '// No example provided',
+        },
+      ];
     }
   }
   /**
@@ -995,21 +1037,23 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    */
   parseFixes(text) {
     try {
-      if (text.includes("{") && text.includes("}")) {
-        const jsonStart = text.indexOf("{");
-        const jsonEnd = text.lastIndexOf("}") + 1;
+      if (text.includes('{') && text.includes('}')) {
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}') + 1;
         const jsonString = text.substring(jsonStart, jsonEnd);
         const parsed = JSON.parse(jsonString);
         return parsed.fixes || [];
       }
     } catch {
-      return [{
-        issueId: 1,
-        description: "General fix suggestion",
-        fix: text.substring(0, 200),
-        codeExample: "// No example provided",
-        estimatedEffort: "medium"
-      }];
+      return [
+        {
+          issueId: 1,
+          description: 'General fix suggestion',
+          fix: text.substring(0, 200),
+          codeExample: '// No example provided',
+          estimatedEffort: 'medium',
+        },
+      ];
     }
   }
   /**
@@ -1017,9 +1061,9 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    */
   parsePrioritization(text) {
     try {
-      if (text.includes("{") && text.includes("}")) {
-        const jsonStart = text.indexOf("{");
-        const jsonEnd = text.lastIndexOf("}") + 1;
+      if (text.includes('{') && text.includes('}')) {
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}') + 1;
         const jsonString = text.substring(jsonStart, jsonEnd);
         return JSON.parse(jsonString);
       }
@@ -1027,7 +1071,7 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
       return {
         issues: [],
         fixes: [],
-        actions: ["Address critical issues first"]
+        actions: ['Address critical issues first'],
       };
     }
   }
@@ -1037,13 +1081,13 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
   getWorkflowStatus(workflowId) {
     const workflow = this.runningWorkflows.get(workflowId);
     if (!workflow) {
-      return { status: "not_found" };
+      return { status: 'not_found' };
     }
     return {
-      status: "running",
+      status: 'running',
       progress: workflow.progress,
       currentStep: workflow.currentStep,
-      startTime: workflow.startTime
+      startTime: workflow.startTime,
     };
   }
   /**
@@ -1051,16 +1095,12 @@ Fixes: ${JSON.stringify(state.context.fixes, null, 2)}`
    */
   listWorkflows() {
     return {
-      builtIn: ["planner", "executor", "reviewer"],
+      builtIn: ['planner', 'executor', 'reviewer'],
       custom: Array.from(this.graphs.keys()),
-      total: this.graphs.size + 3
+      total: this.graphs.size + 3,
     };
   }
 }
 const langGraphIntegration = new LangGraphIntegration();
 var langgraph_integration_default = LangGraphIntegration;
-export {
-  LangGraphIntegration,
-  langgraph_integration_default as default,
-  langGraphIntegration
-};
+export { LangGraphIntegration, langgraph_integration_default as default, langGraphIntegration };

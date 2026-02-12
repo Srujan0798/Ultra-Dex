@@ -10,29 +10,25 @@ import { createProvider } from '../providers/index.js';
 import { modelRouter } from './model-router.js';
 
 // Quality gates for different types of outputs
-const QUALITY_GATES = {
+// Quality gates moved inside class or resolved dynamically
+const QUALITY_GATES_CONFIG = {
   code: {
-    validator: validateCode,
     threshold: 0.8,
     description: 'Code quality must meet standards',
   },
   documentation: {
-    validator: validateDocumentation,
     threshold: 0.7,
     description: 'Documentation must be clear and complete',
   },
   analysis: {
-    validator: validateAnalysis,
     threshold: 0.85,
     description: 'Analysis must be thorough and accurate',
   },
   refactoring: {
-    validator: validateRefactoring,
     threshold: 0.8,
     description: 'Refactoring must preserve functionality',
   },
   default: {
-    validator: validateDefault,
     threshold: 0.75,
     description: 'Output must meet basic quality standards',
   },
@@ -77,8 +73,16 @@ class EvaluationLoop {
     this.stats.attempts++;
 
     // Determine the quality gate to use
-    const gate = qualityGate || QUALITY_GATES[modelType] || QUALITY_GATES.default;
-    const validator = customValidator || gate.validator;
+    const gateConfig = QUALITY_GATES_CONFIG[modelType] || QUALITY_GATES_CONFIG.default;
+
+    // Resolve validator method name
+    const validatorMethodName = `validate${modelType.charAt(0).toUpperCase() + modelType.slice(1)}`;
+    const defaultValidator = this[validatorMethodName]
+      ? this[validatorMethodName].bind(this)
+      : this.validateDefault.bind(this);
+
+    const validator = customValidator || defaultValidator;
+    const threshold = gateConfig.threshold;
 
     let currentModel = options.model || modelRouter.determineModel(prompt).model;
     let attempts = 0;
@@ -101,10 +105,10 @@ class EvaluationLoop {
           ...options,
         });
 
-        printInfo(`Quality score: ${evaluation.score.toFixed(2)}, Threshold: ${gate.threshold}`);
+        printInfo(`Quality score: ${evaluation.score.toFixed(2)}, Threshold: ${threshold}`);
 
         // Check if quality gate passes
-        if (evaluation.score >= gate.threshold) {
+        if (evaluation.score >= threshold) {
           this.stats.successes++;
           printSuccess(`✅ Quality gate passed! Score: ${evaluation.score.toFixed(2)}`);
           return {
@@ -510,7 +514,7 @@ export function registerEvaluationLoopCommand(program) {
 export default {
   EvaluationLoop,
   evaluationLoop,
-  QUALITY_GATES,
+  QUALITY_GATES: QUALITY_GATES_CONFIG,
   MODEL_ESCALATION,
   registerEvaluationLoopCommand,
 };

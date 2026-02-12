@@ -6,7 +6,12 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import axios from 'axios';
 import { z } from 'zod';
-import { createOpenAIRunnable, createAnthropicRunnable, createGoogleRunnable } from '../providers/index.js';
+import {
+  createOpenAIRunnable,
+  createAnthropicRunnable,
+  createGoogleRunnable,
+} from '../providers/index.js';
+import { execSync } from 'child_process';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 import { loadState } from '../commands/state.js';
 import { ultraMemory } from '../mcp/memory.js';
@@ -25,7 +30,7 @@ export class SelfHealingCICD {
       verbose: options.verbose || false,
       maxRetries: options.maxRetries || 3,
       timeout: options.timeout || 300000, // 5 minutes
-      ...options
+      ...options,
     };
 
     this.ciSystems = {
@@ -33,7 +38,7 @@ export class SelfHealingCICD {
       gitlab: this.gitlabIntegration.bind(this),
       circleci: this.circleciIntegration.bind(this),
       jenkins: this.jenkinsIntegration.bind(this),
-      vercel: this.vercelIntegration.bind(this)
+      vercel: this.vercelIntegration.bind(this),
     };
 
     this.healingRules = new Map();
@@ -47,10 +52,10 @@ export class SelfHealingCICD {
   async initialize() {
     // Load healing rules from configuration
     await this.loadHealingRules();
-    
+
     // Set up monitors for common failure patterns
     this.setupFailureMonitors();
-    
+
     printSuccess('🔧 Self-healing CI/CD system initialized');
   }
 
@@ -60,7 +65,12 @@ export class SelfHealingCICD {
   async loadHealingRules() {
     try {
       const rulesPath = path.join(process.cwd(), '.ultra-dex', 'healing-rules.json');
-      if (await fs.access(rulesPath).then(() => true).catch(() => false)) {
+      if (
+        await fs
+          .access(rulesPath)
+          .then(() => true)
+          .catch(() => false)
+      ) {
         const rules = JSON.parse(await fs.readFile(rulesPath, 'utf8'));
         for (const [pattern, rule] of Object.entries(rules)) {
           this.healingRules.set(pattern, rule);
@@ -83,49 +93,49 @@ export class SelfHealingCICD {
     this.healingRules.set(/node_modules.*missing/, {
       action: 'npm install',
       description: 'Missing dependencies detected',
-      priority: 'high'
+      priority: 'high',
     });
 
     this.healingRules.set(/cannot find module/, {
       action: 'npm install',
       description: 'Module not found',
-      priority: 'high'
+      priority: 'high',
     });
 
     this.healingRules.set(/EACCES.*permission denied/, {
       action: 'chmod +x',
       description: 'Permission denied',
-      priority: 'medium'
+      priority: 'medium',
     });
 
     this.healingRules.set(/port.*already in use/, {
       action: 'kill-port',
       description: 'Port already in use',
-      priority: 'medium'
+      priority: 'medium',
     });
 
     this.healingRules.set(/database.*connection failed/, {
       action: 'start-db',
       description: 'Database connection failed',
-      priority: 'high'
+      priority: 'high',
     });
 
     this.healingRules.set(/timeout.*exceeded/, {
       action: 'increase-timeout',
       description: 'Timeout exceeded',
-      priority: 'medium'
+      priority: 'medium',
     });
 
     this.healingRules.set(/SSL.*certificate/, {
       action: 'disable-ssl-verification',
       description: 'SSL certificate error',
-      priority: 'low'
+      priority: 'low',
     });
 
     this.healingRules.set(/out of memory/, {
       action: 'increase-memory',
       description: 'Out of memory error',
-      priority: 'high'
+      priority: 'high',
     });
 
     printInfo('📋 Default healing rules loaded');
@@ -139,25 +149,25 @@ export class SelfHealingCICD {
     this.activeMonitors.set('dependency-errors', {
       pattern: /node_modules|package-lock.json/,
       handler: this.handleDependencyError.bind(this),
-      interval: 30000 // Check every 30 seconds
+      interval: 30000, // Check every 30 seconds
     });
 
     this.activeMonitors.set('test-failures', {
       pattern: /test.*failed/,
       handler: this.handleTestFailure.bind(this),
-      interval: 10000 // Check every 10 seconds
+      interval: 10000, // Check every 10 seconds
     });
 
     this.activeMonitors.set('build-errors', {
       pattern: /build.*failed/,
       handler: this.handleBuildError.bind(this),
-      interval: 15000 // Check every 15 seconds
+      interval: 15000, // Check every 15 seconds
     });
 
     this.activeMonitors.set('deployment-errors', {
       pattern: /deploy.*failed/,
       handler: this.handleDeploymentError.bind(this),
-      interval: 20000 // Check every 20 seconds
+      interval: 20000, // Check every 20 seconds
     });
 
     printInfo('🔍 Failure monitors activated');
@@ -169,7 +179,7 @@ export class SelfHealingCICD {
   async runPipeline(options = {}) {
     try {
       printInfo('🔄 Starting self-healing CI/CD pipeline...');
-      
+
       const pipeline = {
         stage: 'init',
         status: 'running',
@@ -179,10 +189,10 @@ export class SelfHealingCICD {
           build: { status: 'pending', startTime: null, endTime: null, error: null },
           deploy: { status: 'pending', startTime: null, endTime: null, error: null },
           security: { status: 'pending', startTime: null, endTime: null, error: null },
-          performance: { status: 'pending', startTime: null, endTime: null, error: null }
+          performance: { status: 'pending', startTime: null, endTime: null, error: null },
         },
         fixesApplied: 0,
-        errors: []
+        errors: [],
       };
 
       // Run each stage with self-healing
@@ -196,7 +206,9 @@ export class SelfHealingCICD {
       pipeline.duration = pipeline.endTime - pipeline.startTime;
       pipeline.status = pipeline.errors.length === 0 ? 'success' : 'partial-success';
 
-      printSuccess(`✅ Pipeline completed: ${pipeline.status} (${pipeline.fixesApplied} fixes applied)`);
+      printSuccess(
+        `✅ Pipeline completed: ${pipeline.status} (${pipeline.fixesApplied} fixes applied)`
+      );
 
       return pipeline;
     } catch (error) {
@@ -228,7 +240,7 @@ export class SelfHealingCICD {
       const fixResult = await this.attemptFix({
         stage: 'test',
         error: error.message,
-        command: 'npm test'
+        command: 'npm test',
       });
 
       if (fixResult.applied) {
@@ -261,7 +273,9 @@ export class SelfHealingCICD {
       pipeline.stages.security.startTime = new Date();
 
       // Run security audit
-      const securityResult = await execAsync('npm audit --audit-level high', { timeout: this.options.timeout });
+      const securityResult = await execAsync('npm audit --audit-level high', {
+        timeout: this.options.timeout,
+      });
 
       pipeline.stages.security.status = 'success';
       pipeline.stages.security.endTime = new Date();
@@ -269,7 +283,7 @@ export class SelfHealingCICD {
     } catch (error) {
       printWarning(`⚠️  Security issues found: ${error.message}`);
       pipeline.stages.security.error = error.message;
-      
+
       // Attempt to fix security issues
       try {
         await execAsync('npm audit fix', { timeout: this.options.timeout });
@@ -308,7 +322,7 @@ export class SelfHealingCICD {
       const fixResult = await this.attemptFix({
         stage: 'build',
         error: error.message,
-        command: 'npm run build'
+        command: 'npm run build',
       });
 
       if (fixResult.applied) {
@@ -341,7 +355,10 @@ export class SelfHealingCICD {
       pipeline.stages.performance.startTime = new Date();
 
       // Run performance tests
-      const perfResult = await execAsync('npm run test:performance || echo "No performance tests"', { timeout: this.options.timeout });
+      const perfResult = await execAsync(
+        'npm run test:performance || echo "No performance tests"',
+        { timeout: this.options.timeout }
+      );
 
       pipeline.stages.performance.status = 'success';
       pipeline.stages.performance.endTime = new Date();
@@ -349,7 +366,7 @@ export class SelfHealingCICD {
     } catch (error) {
       printWarning(`⚠️  Performance issues: ${error.message}`);
       pipeline.stages.performance.error = error.message;
-      
+
       // Attempt performance optimizations
       try {
         // This would run performance optimization tools
@@ -375,17 +392,23 @@ export class SelfHealingCICD {
 
       // Determine deployment target
       const deployTarget = await this.detectDeploymentTarget();
-      
+
       let deployResult;
       switch (deployTarget) {
         case 'vercel':
-          deployResult = await execAsync('npx vercel --prod', { timeout: this.options.timeout * 2 });
+          deployResult = await execAsync('npx vercel --prod', {
+            timeout: this.options.timeout * 2,
+          });
           break;
         case 'netlify':
-          deployResult = await execAsync('npx netlify deploy --prod', { timeout: this.options.timeout * 2 });
+          deployResult = await execAsync('npx netlify deploy --prod', {
+            timeout: this.options.timeout * 2,
+          });
           break;
         case 'aws':
-          deployResult = await execAsync('npx serverless deploy', { timeout: this.options.timeout * 2 });
+          deployResult = await execAsync('npx serverless deploy', {
+            timeout: this.options.timeout * 2,
+          });
           break;
         default:
           deployResult = await execAsync('npm run deploy', { timeout: this.options.timeout * 2 });
@@ -403,7 +426,7 @@ export class SelfHealingCICD {
       const fixResult = await this.attemptFix({
         stage: 'deploy',
         error: error.message,
-        command: 'npm run deploy'
+        command: 'npm run deploy',
       });
 
       if (fixResult.applied) {
@@ -470,20 +493,22 @@ export class SelfHealingCICD {
             case 'npm install':
               execSync('npm install');
               break;
-            case 'chmod +x':
+            case 'chmod +x': {
               // Extract file from error and make executable
               const fileMatch = errorInfo.error.match(/'([^']+)'/);
               if (fileMatch) {
                 execSync(`chmod +x "${fileMatch[1]}"`);
               }
               break;
-            case 'kill-port':
+            }
+            case 'kill-port': {
               // Extract port from error and kill process
               const portMatch = errorInfo.error.match(/port (\d+)/);
               if (portMatch) {
-                execSync(`lsof -ti:${portMatch[1]} | xargs kill -9`);
+                execSync(`lsof -ti:${portMatch[1]} | xargs kill -9 || true`);
               }
               break;
+            }
             case 'start-db':
               // Start database service
               execSync('docker-compose up -d database || echo "Database not configured"');
@@ -502,7 +527,7 @@ export class SelfHealingCICD {
           return {
             applied: true,
             description: rule.description,
-            action: rule.action
+            action: rule.action,
           };
         } catch (ruleError) {
           printError(`Rule-based fix failed: ${ruleError.message}`);
@@ -522,13 +547,13 @@ export class SelfHealingCICD {
       printInfo('🤖 AI analyzing error and suggesting fix...');
 
       const provider = createOpenAIRunnable('gpt-4-turbo');
-      
+
       const messages = [
         {
           role: 'system',
           content: `You are an expert CI/CD troubleshooter. Analyze the error and suggest a fix.
           Provide the exact command to run or code change to make.
-          Return JSON: {fix: {type: "command|code", value: "exact fix", description: "what it does"}}`
+          Return JSON: {fix: {type: "command|code", value: "exact fix", description: "what it does"}}`,
         },
         {
           role: 'user',
@@ -536,8 +561,8 @@ export class SelfHealingCICD {
           Command: ${errorInfo.command}
           Error: ${errorInfo.error}
           
-          Suggest a fix for this CI/CD error.`
-        }
+          Suggest a fix for this CI/CD error.`,
+        },
       ];
 
       const response = await provider.invoke({ messages });
@@ -555,7 +580,7 @@ export class SelfHealingCICD {
         return {
           applied: true,
           description: fixData.fix.description,
-          action: fixData.fix.type
+          action: fixData.fix.type,
         };
       }
 
@@ -593,8 +618,8 @@ export class SelfHealingCICD {
         fix: {
           type: 'command',
           value: 'npm install',
-          description: 'Install dependencies'
-        }
+          description: 'Install dependencies',
+        },
       };
     }
   }
@@ -620,10 +645,10 @@ export class SelfHealingCICD {
   async handleTestFailure(error) {
     try {
       printInfo('🔧 Attempting test fix...');
-      
+
       // Try to identify the failing test
       const failingTest = this.identifyFailingTest(error);
-      
+
       if (failingTest) {
         // Use AI to fix the specific test
         const aiFix = await this.fixTestWithAI(failingTest);
@@ -632,11 +657,11 @@ export class SelfHealingCICD {
           return { success: true, fix: 'ai-test-fix' };
         }
       }
-      
+
       // Fallback: reinstall dependencies and run tests again
       await execAsync('npm install');
       await execAsync('npm test');
-      
+
       printSuccess('✅ Tests fixed');
       return { success: true, fix: 'reinstall-and-test' };
     } catch (fixError) {
@@ -651,11 +676,28 @@ export class SelfHealingCICD {
   async handleBuildError(error) {
     try {
       printInfo('🔧 Attempting build fix...');
-      
+
       // Identify build issue type
       const issueType = this.identifyBuildIssue(error);
-      
+
       switch (issueType) {
+        case 'formatting_fix': {
+          printInfo('Attempting formatting fix...');
+          execSync('npm run format', { stdio: 'inherit' });
+          break;
+        }
+
+        case 'linting_fix': {
+          printInfo('Attempting linting fix...');
+          execSync('npm run lint:fix', { stdio: 'inherit' });
+          break;
+        }
+
+        case 'test_fix': {
+          printInfo('Running tests to verify fix...');
+          execSync('npm test', { stdio: 'inherit' });
+          break;
+        }
         case 'dependency':
           await execAsync('npm install');
           break;
@@ -668,10 +710,10 @@ export class SelfHealingCICD {
         default:
           await execAsync('rm -rf node_modules package-lock.json && npm install');
       }
-      
+
       // Retry build
       await execAsync('npm run build');
-      
+
       printSuccess('✅ Build fixed');
       return { success: true, fix: 'build-fix' };
     } catch (fixError) {
@@ -686,10 +728,10 @@ export class SelfHealingCICD {
   async handleDeploymentError(error) {
     try {
       printInfo('🔧 Attempting deployment fix...');
-      
+
       // Identify deployment issue
       const issueType = this.identifyDeploymentIssue(error);
-      
+
       switch (issueType) {
         case 'environment':
           // Check and fix environment variables
@@ -704,7 +746,7 @@ export class SelfHealingCICD {
           // Retry deployment with different strategy
           break;
       }
-      
+
       printSuccess('✅ Deployment issue addressed');
       return { success: true, fix: 'deployment-fix' };
     } catch (fixError) {
@@ -724,7 +766,7 @@ export class SelfHealingCICD {
       return {
         file: match[1],
         line: parseInt(match[3]),
-        column: parseInt(match[4])
+        column: parseInt(match[4]),
       };
     }
     return null;
@@ -736,28 +778,28 @@ export class SelfHealingCICD {
   async fixTestWithAI(testInfo) {
     try {
       const testContent = await fs.readFile(testInfo.file, 'utf8');
-      
+
       const provider = createAnthropicRunnable('claude-3-5-sonnet-20241022');
-      
+
       const messages = [
         {
           role: 'system',
-          content: `Fix this failing test. Return the corrected test code.`
+          content: `Fix this failing test. Return the corrected test code.`,
         },
         {
           role: 'user',
           content: `Test file: ${testInfo.file}
           Line: ${testInfo.line}
           Current test code:
-          ${testContent}`
-        }
+          ${testContent}`,
+        },
       ];
 
       const response = await provider.invoke({ messages });
-      
+
       // Write the fixed test back to file
       await fs.writeFile(testInfo.file, response.content);
-      
+
       return { success: true, fixed: true };
     } catch (error) {
       printError(`AI test fix failed: ${error.message}`);
@@ -769,13 +811,24 @@ export class SelfHealingCICD {
    * Identify build issue type
    */
   identifyBuildIssue(error) {
-    if (error.includes('node_modules') || error.includes('module not found')) {
+    const normalized = String(error).toLowerCase();
+
+    if (normalized.includes('prettier') || normalized.includes('format')) {
+      return 'formatting_fix';
+    }
+    if (normalized.includes('lint')) {
+      return 'linting_fix';
+    }
+    if (normalized.includes('test')) {
+      return 'test_fix';
+    }
+    if (normalized.includes('node_modules') || normalized.includes('module not found')) {
       return 'dependency';
     }
-    if (error.includes('TS') || error.includes('typescript')) {
+    if (normalized.includes('ts') || normalized.includes('typescript')) {
       return 'typescript';
     }
-    if (error.includes('eslint') || error.includes('syntax error')) {
+    if (normalized.includes('eslint') || normalized.includes('syntax error')) {
       return 'eslint';
     }
     return 'unknown';
@@ -803,22 +856,46 @@ export class SelfHealingCICD {
   async detectDeploymentTarget() {
     try {
       const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
-      
+
       if (packageJson.scripts && packageJson.scripts.deploy) {
         const deployScript = packageJson.scripts.deploy;
-        
+
         if (deployScript.includes('vercel')) return 'vercel';
         if (deployScript.includes('netlify')) return 'netlify';
         if (deployScript.includes('serverless')) return 'aws';
         if (deployScript.includes('docker')) return 'docker';
       }
-      
+
       // Check for deployment config files
-      if (await fs.access('vercel.json').then(() => true).catch(() => false)) return 'vercel';
-      if (await fs.access('netlify.toml').then(() => true).catch(() => false)) return 'netlify';
-      if (await fs.access('serverless.yml').then(() => true).catch(() => false)) return 'aws';
-      if (await fs.access('Dockerfile').then(() => true).catch(() => false)) return 'docker';
-      
+      if (
+        await fs
+          .access('vercel.json')
+          .then(() => true)
+          .catch(() => false)
+      )
+        return 'vercel';
+      if (
+        await fs
+          .access('netlify.toml')
+          .then(() => true)
+          .catch(() => false)
+      )
+        return 'netlify';
+      if (
+        await fs
+          .access('serverless.yml')
+          .then(() => true)
+          .catch(() => false)
+      )
+        return 'aws';
+      if (
+        await fs
+          .access('Dockerfile')
+          .then(() => true)
+          .catch(() => false)
+      )
+        return 'docker';
+
       return 'unknown';
     } catch {
       return 'unknown';
@@ -968,24 +1045,25 @@ pipeline {
    */
   async vercelIntegration() {
     const vercelContent = {
-      "version": 2,
-      "builds": [
+      version: 2,
+      builds: [
         {
-          "src": "package.json",
-          "use": "@vercel/node",
-          "config": { "includeFiles": ["dist/**"] }
-        }
+          src: 'package.json',
+          use: '@vercel/node',
+          config: { includeFiles: ['dist/**'] },
+        },
       ],
-      "routes": [
-        { "src": "/(.*)", "dest": "/dist/$1" }
-      ],
-      "github": {
-        "enabled": true,
-        "autoJobCancelation": true
-      }
+      routes: [{ src: '/(.*)', dest: '/dist/$1' }],
+      github: {
+        enabled: true,
+        autoJobCancelation: true,
+      },
     };
 
-    await fs.writeFile(path.join(process.cwd(), 'vercel.json'), JSON.stringify(vercelContent, null, 2));
+    await fs.writeFile(
+      path.join(process.cwd(), 'vercel.json'),
+      JSON.stringify(vercelContent, null, 2)
+    );
   }
 
   /**
@@ -1021,7 +1099,7 @@ pipeline {
       successRate: 0.95,
       avgDuration: '5m 30s',
       pendingJobs: 0,
-      failedJobs: 0
+      failedJobs: 0,
     };
   }
 
@@ -1045,10 +1123,11 @@ pipeline {
   getHealingStats() {
     return {
       totalFixes: this.fixHistory.length,
-      successRate: this.fixHistory.filter(f => f.success).length / Math.max(this.fixHistory.length, 1),
+      successRate:
+        this.fixHistory.filter((f) => f.success).length / Math.max(this.fixHistory.length, 1),
       rulesCount: this.healingRules.size,
       activeMonitors: this.activeMonitors.size,
-      lastFix: this.fixHistory[this.fixHistory.length - 1] || null
+      lastFix: this.fixHistory[this.fixHistory.length - 1] || null,
     };
   }
 
@@ -1061,7 +1140,7 @@ pipeline {
       timestamp: new Date().toISOString(),
       stats,
       rules: Array.from(this.healingRules.entries()),
-      history: this.fixHistory.slice(-50) // Last 50 fixes
+      history: this.fixHistory.slice(-50), // Last 50 fixes
     };
 
     if (format === 'json') {
@@ -1089,7 +1168,7 @@ pipeline {
 ${report.rules.map(([pattern, rule]) => `- ${pattern}: ${rule.description}`).join('\n')}
 
 ## Recent Fixes
-${report.history.map(fix => `- ${fix.timestamp}: ${fix.description}`).join('\n')}
+${report.history.map((fix) => `- ${fix.timestamp}: ${fix.description}`).join('\n')}
 `;
   }
 
@@ -1109,7 +1188,7 @@ Healing Rules:
 ${report.rules.map(([pattern, rule]) => `  ${pattern}: ${rule.description}`).join('\n')}
 
 Recent Fixes:
-${report.history.map(fix => `  ${fix.timestamp}: ${fix.description}`).join('\n')}
+${report.history.map((fix) => `  ${fix.timestamp}: ${fix.description}`).join('\n')}
 `;
   }
 }
