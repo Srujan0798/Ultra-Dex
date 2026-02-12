@@ -13,6 +13,9 @@ commands and MCP capability routing.
 - `docs/rfc/001-capability-contracts.md`
 - `docs/rfc/002-governance-agent.md`
 - `cli/lib/governance/`
+- `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md`
+- `CODE_OF_CONDUCT.md`
+- `SECURITY.md`
 
 ## Enforcement Path
 1. Plugin/tool request enters capability router.

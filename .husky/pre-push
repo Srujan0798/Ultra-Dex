@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -e
+
+node gitFail/compliance/check-governance-files.js
+npm test
+npm run security:audit

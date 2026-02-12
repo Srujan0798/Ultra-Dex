@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+set -e
+
+# Block common secret patterns in staged additions.
+SECRET_PATTERN='ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{60,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+DIFF_OUTPUT="$(git diff --cached --no-color --unified=0)"
+
+if command -v rg >/dev/null 2>&1; then
+  printf "%s" "$DIFF_OUTPUT" | rg -n "^\+.*($SECRET_PATTERN)" >/dev/null && {
+    echo "Potential secret found in staged changes. Remove it before commit."
+    exit 1
+  }
+else
+  printf "%s" "$DIFF_OUTPUT" | grep -E -n "^\+.*($SECRET_PATTERN)" >/dev/null && {
+    echo "Potential secret found in staged changes. Remove it before commit."
+    exit 1
+  }
+fi
+
+node gitFail/compliance/check-governance-files.js
+echo "Compliance reminder: review CODE_OF_CONDUCT.md, SECURITY.md, and gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md before commit."
+
+if command -v lint-staged >/dev/null 2>&1; then
+  lint-staged
+else
+  echo "lint-staged not found; skipping staged formatting/lint checks."
+fi

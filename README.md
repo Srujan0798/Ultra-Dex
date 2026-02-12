@@ -147,6 +147,13 @@ npm install
 npm test
 ```
 
+## Governance and Compliance
+
+- Code of conduct: `CODE_OF_CONDUCT.md`
+- Security reporting: `SECURITY.md`
+- Commit/PR legal and policy checks: `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md`
+- Local compliance validation: `node gitFail/compliance/check-governance-files.js`
+
 ## License
 
 MIT. See `LICENSE`.
