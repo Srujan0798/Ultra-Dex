@@ -1,8 +1,8 @@
-# Ultra-Dex SDK
+# @ultra-dex/sdk
 
-Official JavaScript/TypeScript SDK for Ultra-Dex AI orchestration platform.
+JavaScript/TypeScript SDK for integrating Ultra-Dex providers, agents, and plugins into your app.
 
-## Installation
+## Install
 
 ```bash
 npm install @ultra-dex/sdk
@@ -10,70 +10,68 @@ npm install @ultra-dex/sdk
 
 ## Quick Start
 
-```javascript
-import { UltraDex } from '@ultra-dex/sdk';
+```js
+import { UltraDex } from '@ultra-dex/sdk/client';
+import { BaseProvider } from '@ultra-dex/sdk/provider';
+import { Agent } from '@ultra-dex/sdk/agent';
 
-// Initialize client
-const ultra = new UltraDex({
-  apiKey: 'your-api-key',
-  providers: ['openai', 'anthropic'],
-  defaultStrategy: 'cost',
-});
+class MockProvider extends BaseProvider {
+  async chat(messages) {
+    return {
+      content: `echo: ${messages.at(-1)?.content ?? ''}`,
+      usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+      model: 'mock-v1',
+    };
+  }
 
-await ultra.initialize();
+  async *stream(messages) {
+    yield { type: 'text', content: `echo: ${messages.at(-1)?.content ?? ''}` };
+    yield { type: 'done' };
+  }
 
-// Run an agent
-const result = await ultra.run('architect', 'Design a scalable API');
-console.log(result);
-
-// Chat with AI
-const response = await ultra.chat([{ role: 'user', content: 'Hello!' }]);
-console.log(response.content);
-
-// Stream responses
-for await (const chunk of ultra.stream(messages)) {
-  console.log(chunk.content);
+  async embed() {
+    return { embedding: [0.1, 0.2, 0.3], dimensions: 3 };
+  }
 }
+
+class PlannerAgent extends Agent {
+  async run(task) {
+    return { steps: [`Plan for: ${task}`] };
+  }
+}
+
+const sdk = new UltraDex({ defaultProvider: 'mock' });
+sdk.registerProvider('mock', new MockProvider());
+sdk.registerAgent(new PlannerAgent({ id: 'planner' }));
+
+const reply = await sdk.chat([{ role: 'user', content: 'Design auth flow' }]);
+console.log(reply.content);
+
+const plan = await sdk.runAgent('planner', 'Build project roadmap');
+console.log(plan.result);
 ```
 
-## Configuration
+## Plugin Example
 
-```javascript
-const ultra = new UltraDex({
-  apiKey: process.env.ULTRA_DEX_API_KEY,
-  baseUrl: 'https://api.ultra-dex.ai',
-  providers: ['openai', 'anthropic', 'google'],
-  defaultStrategy: 'balanced', // 'cost', 'latency', 'quality', 'fallback'
-});
-```
-
-## Agents
-
-```javascript
-// List available agents
-const agents = await ultra.listAgents();
-
-// Get agent details
-const agent = await ultra.getAgent('architect');
-
-// Run specific agent
-const result = await ultra.run('coder', 'Implement user authentication', {
-  language: 'typescript',
-  framework: 'express',
-});
-```
-
-## Plugins
-
-```javascript
-// Load a plugin
-await ultra.loadPlugin('github-integration', {
-  token: process.env.GITHUB_TOKEN,
+```js
+sdk.use({
+  id: 'audit-plugin',
+  hooks: {
+    afterChat: async (payload) => {
+      console.log('chat completed', payload);
+    },
+  },
 });
 
-// List loaded plugins
-const plugins = await ultra.listPlugins();
+await sdk.plugins.emit('afterChat', { ok: true });
 ```
+
+## API Surface
+
+- `UltraDex`: provider registry + agent runner + plugin host
+- `Agent`: base class for custom agents
+- `BaseProvider`: base contract for `chat`, `stream`, `embed`
+- `PluginLoader`: hook-based plugin loader
 
 ## License
 
