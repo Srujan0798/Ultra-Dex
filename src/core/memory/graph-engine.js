@@ -6,8 +6,12 @@
  */
 
 import { sqliteProvider } from './sqlite.js';
-import chalk from 'chalk';
-import { printSuccess } from '../utils/output.js';
+
+function logLink(fromId, toId, relationshipType) {
+  if (process.env.ULTRA_MEMORY_DEBUG === 'true') {
+    console.log(`Link established: ${fromId} --[${relationshipType}]--> ${toId}`);
+  }
+}
 
 class MemoryGraph {
   constructor() {
@@ -30,7 +34,7 @@ class MemoryGraph {
       if (!metadata.relations.find(r => r.target === toId && r.type === relationshipType)) {
         metadata.relations.push({ target: toId, type: relationshipType });
         await this.provider.add('cold', { ...fromNode, metadata });
-        printSuccess(chalk.gray(`Link established: ${fromId} --[${relationshipType}]--> ${toId}`));
+        logLink(fromId, toId, relationshipType);
       }
     }
   }
