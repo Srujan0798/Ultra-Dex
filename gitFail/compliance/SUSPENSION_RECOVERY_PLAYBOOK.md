@@ -81,11 +81,14 @@ Thank you.
 
 ## Preventive Controls (Always On)
 
-1. Run guard manually before sensitive operations:
+1. Run full local gate before sensitive operations:
+   `npm run gate:local`
+2. Run manual guard when needed:
    `npm run guard:github`
-2. During suspension/local-only operations, run:
+3. During suspension/local-only operations, run:
    `npm run guard:github:local`
-3. Pre-push hook automatically runs:
+4. Pre-push hook automatically runs full push gate:
+   `npm run gate:push`
    - governance file checks
    - GitHub status + remote/account checks
    - secret/risky automation scans

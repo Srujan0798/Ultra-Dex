@@ -16,6 +16,10 @@ related to outage/risk handling work.
   `node gitFail/compliance/github-guard.js`
 - Run local-only guard (skip remote access check):
   `SKIP_REMOTE_CHECK=1 node gitFail/compliance/github-guard.js`
+- Run enterprise local gate (governance + policy + tests + audit):
+  `npm run gate:local`
+- Run enterprise push gate (includes remote/account check):
+  `npm run gate:push`
 - Review checklist before commit/PR:
   `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md`
 - Capture a collaboration snapshot (Codex + Claude tracking):

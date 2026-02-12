@@ -104,6 +104,8 @@
     "governance": "node scripts/pre-commit-governor.js",
     "guard:github": "node gitFail/compliance/github-guard.js",
     "guard:github:local": "SKIP_REMOTE_CHECK=1 node gitFail/compliance/github-guard.js",
+    "gate:local": "sh gitFail/compliance/run-enterprise-gate.sh local",
+    "gate:push": "sh gitFail/compliance/run-enterprise-gate.sh push",
     "security:audit": "npm audit --audit-level high",
     "security:fix": "npm audit fix",
     "perf:benchmark": "node scripts/benchmark.js",
@@ -271,7 +273,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "npm test && npm run security:audit"
+      "pre-push": "npm run gate:push"
     }
   },
   "config": {
