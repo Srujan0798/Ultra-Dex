@@ -9,8 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       packages: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -28,30 +29,26 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Governance compliance check
+        run: node gitFail/compliance/check-governance-files.js
+
       - name: Build package
         run: npm run build
 
       - name: Publish to npm
-        run: npm publish
+        run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Setup VS Code Extension
-        run: |
-          cd vscode-extension
-          npm ci
+      - name: Install VS Code extension dependencies
+        working-directory: packages/extensions/vscode
+        run: npm ci
 
       - name: Package VS Code Extension
-        run: |
-          cd vscode-extension
-          npx vsce package
+        working-directory: packages/extensions/vscode
+        run: npx vsce package --no-dependencies
 
-      - name: Upload VS Code Extension
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload VSIX to release
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./vscode-extension/ultra-dex-vscode-*.vsix
-          asset_name: ultra-dex-vscode-${{ github.event.release.tag_name }}.vsix
-          asset_content_type: application/octet-stream
+          files: packages/extensions/vscode/*.vsix
