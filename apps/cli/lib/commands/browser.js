@@ -1,4 +1,3 @@
-/* global document, window */
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -577,8 +576,7 @@ async function recordSession(options) {
     const dom = await page.content();
 
     const outputPath = options.output || 'browser-session.json';
-    const screenshotPath =
-      outputPath.replace(/\.json$/i, '') + `-${Date.now()}.png`;
+    const screenshotPath = outputPath.replace(/\.json$/i, '') + `-${Date.now()}.png`;
 
     await page.screenshot({ path: screenshotPath, fullPage: true });
 

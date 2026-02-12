@@ -9,7 +9,6 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { chromium, firefox, webkit } from 'playwright';
-/* global document */
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 

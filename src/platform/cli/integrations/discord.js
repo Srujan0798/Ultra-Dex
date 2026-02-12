@@ -1,4 +1,3 @@
-/* global URLSearchParams */
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -19,9 +18,9 @@ export class DiscordClient {
 
   get headers() {
     return {
-      'Authorization': `Bot ${this.token}`,
+      Authorization: `Bot ${this.token}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'DiscordBot (Ultra-Dex, 1.0)'
+      'User-Agent': 'DiscordBot (Ultra-Dex, 1.0)',
     };
   }
 
@@ -29,14 +28,14 @@ export class DiscordClient {
     try {
       const payload = {
         content,
-        ...options
+        ...options,
       };
 
       const response = await retryWithBackoff(() =>
         fetch(`${DISCORD_API_BASE}/channels/${channelId}/messages`, {
           method: 'POST',
           headers: this.headers,
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         })
       );
 
@@ -62,8 +61,8 @@ export class DiscordClient {
           headers: this.headers,
           body: JSON.stringify({
             content,
-            embeds
-          })
+            embeds,
+          }),
         })
       );
 
@@ -89,8 +88,8 @@ export class DiscordClient {
           headers: this.headers,
           body: JSON.stringify({
             name,
-            avatar
-          })
+            avatar,
+          }),
         })
       );
 
@@ -114,9 +113,9 @@ export class DiscordClient {
         fetch(`${DISCORD_API_BASE}/webhooks/${webhookId}/${webhookToken}`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(messageData)
+          body: JSON.stringify(messageData),
         })
       );
 
@@ -136,7 +135,7 @@ export class DiscordClient {
   async getGuild(guildId) {
     try {
       const response = await fetch(`${DISCORD_API_BASE}/guilds/${guildId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -154,7 +153,7 @@ export class DiscordClient {
   async getChannel(channelId) {
     try {
       const response = await fetch(`${DISCORD_API_BASE}/channels/${channelId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -172,7 +171,7 @@ export class DiscordClient {
   async getGuildChannels(guildId) {
     try {
       const response = await fetch(`${DISCORD_API_BASE}/guilds/${guildId}/channels`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -192,14 +191,14 @@ export class DiscordClient {
       const payload = {
         name,
         type: options.type || 0, // 0 = text channel
-        ...options
+        ...options,
       };
 
       const response = await retryWithBackoff(() =>
         fetch(`${DISCORD_API_BASE}/guilds/${guildId}/channels`, {
           method: 'POST',
           headers: this.headers,
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         })
       );
 
@@ -222,7 +221,7 @@ export class DiscordClient {
       const response = await retryWithBackoff(() =>
         fetch(`${DISCORD_API_BASE}/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
           method: 'PUT',
-          headers: this.headers
+          headers: this.headers,
         })
       );
 
@@ -244,7 +243,7 @@ export class DiscordClient {
       const response = await retryWithBackoff(() =>
         fetch(`${DISCORD_API_BASE}/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
           method: 'DELETE',
-          headers: this.headers
+          headers: this.headers,
         })
       );
 
@@ -266,7 +265,7 @@ export class DiscordClient {
       const response = await fetch(`${DISCORD_API_BASE}/guilds/${guildId}/roles`, {
         method: 'POST',
         headers: this.headers,
-        body: JSON.stringify(roleData)
+        body: JSON.stringify(roleData),
       });
 
       if (!response.ok) {
@@ -286,7 +285,7 @@ export class DiscordClient {
   async getGuildRoles(guildId) {
     try {
       const response = await fetch(`${DISCORD_API_BASE}/guilds/${guildId}/roles`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -303,10 +302,13 @@ export class DiscordClient {
 
   async assignRole(userId, guildId, roleId) {
     try {
-      const response = await fetch(`${DISCORD_API_BASE}/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
-        method: 'PUT',
-        headers: this.headers
-      });
+      const response = await fetch(
+        `${DISCORD_API_BASE}/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+        {
+          method: 'PUT',
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -323,10 +325,13 @@ export class DiscordClient {
 
   async removeRole(userId, guildId, roleId) {
     try {
-      const response = await fetch(`${DISCORD_API_BASE}/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
-        method: 'DELETE',
-        headers: this.headers
-      });
+      const response = await fetch(
+        `${DISCORD_API_BASE}/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+        {
+          method: 'DELETE',
+          headers: this.headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -345,11 +350,11 @@ export class DiscordClient {
     try {
       const params = new URLSearchParams({
         limit: options.limit || 1000,
-        after: options.after || undefined
+        after: options.after || undefined,
       });
 
       const response = await fetch(`${DISCORD_API_BASE}/guilds/${guildId}/members?${params}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -367,7 +372,7 @@ export class DiscordClient {
   async getUser(userId) {
     try {
       const response = await fetch(`${DISCORD_API_BASE}/users/${userId}`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -385,7 +390,7 @@ export class DiscordClient {
   async getBotInfo() {
     try {
       const response = await fetch(`${DISCORD_API_BASE}/users/@me`, {
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -405,12 +410,12 @@ export class DiscordClient {
       title,
       description,
       color,
-      fields: fields.map(field => ({
+      fields: fields.map((field) => ({
         name: field.name,
         value: field.value,
-        inline: field.inline || false
+        inline: field.inline || false,
       })),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     return await this.sendEmbedMessage(channelId, [embed]);
@@ -425,33 +430,33 @@ export class DiscordClient {
         {
           name: 'Status',
           value: deploymentInfo.status,
-          inline: true
+          inline: true,
         },
         {
           name: 'Environment',
           value: deploymentInfo.environment,
-          inline: true
+          inline: true,
         },
         {
           name: 'Branch',
           value: deploymentInfo.branch || 'main',
-          inline: true
+          inline: true,
         },
         {
           name: 'Commit',
           value: deploymentInfo.commit?.substring(0, 8) || 'N/A',
-          inline: true
+          inline: true,
         },
         {
           name: 'Duration',
           value: deploymentInfo.duration || 'N/A',
-          inline: true
-        }
+          inline: true,
+        },
       ],
       timestamp: new Date().toISOString(),
       footer: {
-        text: 'Ultra-Dex Deployment System'
-      }
+        text: 'Ultra-Dex Deployment System',
+      },
     };
 
     if (deploymentInfo.url) {
@@ -470,32 +475,32 @@ export class DiscordClient {
         {
           name: 'Project',
           value: buildInfo.project || 'Unknown',
-          inline: true
+          inline: true,
         },
         {
           name: 'Status',
           value: buildInfo.status,
-          inline: true
+          inline: true,
         },
         {
           name: 'Duration',
           value: buildInfo.duration || 'N/A',
-          inline: true
+          inline: true,
         },
         {
           name: 'Commit',
           value: buildInfo.commit?.substring(0, 8) || 'N/A',
-          inline: true
-        }
+          inline: true,
+        },
       ],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (buildInfo.artifacts && buildInfo.artifacts.length > 0) {
       embed.fields.push({
         name: 'Artifacts',
         value: buildInfo.artifacts.join(', '),
-        inline: false
+        inline: false,
       });
     }
 
@@ -503,7 +508,7 @@ export class DiscordClient {
       embed.fields.push({
         name: 'Error',
         value: buildInfo.error.substring(0, 1000), // Limit error length
-        inline: false
+        inline: false,
       });
     }
 
@@ -514,33 +519,37 @@ export class DiscordClient {
     const embed = {
       title: `🚨 ${alertInfo.severity.toUpperCase()} Alert`,
       description: alertInfo.message,
-      color: alertInfo.severity === 'critical' ? 0xff0000 :
-        alertInfo.severity === 'warning' ? 0xffff00 : 0xff9900,
+      color:
+        alertInfo.severity === 'critical'
+          ? 0xff0000
+          : alertInfo.severity === 'warning'
+            ? 0xffff00
+            : 0xff9900,
       fields: [
         {
           name: 'Severity',
           value: alertInfo.severity,
-          inline: true
+          inline: true,
         },
         {
           name: 'Service',
           value: alertInfo.service || 'Unknown',
-          inline: true
+          inline: true,
         },
         {
           name: 'Timestamp',
           value: new Date(alertInfo.timestamp || Date.now()).toISOString(),
-          inline: true
-        }
+          inline: true,
+        },
       ],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (alertInfo.details) {
       embed.fields.push({
         name: 'Details',
         value: alertInfo.details.substring(0, 1000),
-        inline: false
+        inline: false,
       });
     }
 
@@ -548,7 +557,7 @@ export class DiscordClient {
       embed.fields.push({
         name: 'Resolution Steps',
         value: alertInfo.resolutionSteps.join('\n'),
-        inline: false
+        inline: false,
       });
     }
 
@@ -565,9 +574,9 @@ export class DiscordClient {
           type: 11, // Private thread
           invitable: true,
           message: {
-            content: message
-          }
-        })
+            content: message,
+          },
+        }),
       });
 
       if (!response.ok) {
@@ -588,7 +597,7 @@ export class DiscordClient {
     try {
       const response = await fetch(`${DISCORD_API_BASE}/channels/${channelId}/pins/${messageId}`, {
         method: 'PUT',
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -608,7 +617,7 @@ export class DiscordClient {
     try {
       const response = await fetch(`${DISCORD_API_BASE}/channels/${channelId}/pins/${messageId}`, {
         method: 'DELETE',
-        headers: this.headers
+        headers: this.headers,
       });
 
       if (!response.ok) {
@@ -638,7 +647,7 @@ export async function validateDiscordConfig(config) {
   try {
     // Test by fetching bot information
     const response = await fetch(`${DISCORD_API_BASE}/users/@me`, {
-      headers: { 'Authorization': `Bot ${config.token}` }
+      headers: { Authorization: `Bot ${config.token}` },
     });
 
     if (!response.ok) {
@@ -646,7 +655,9 @@ export async function validateDiscordConfig(config) {
     }
 
     const botInfo = await response.json();
-    printSuccess(`✅ Discord connection validated for bot: ${botInfo.username}#${botInfo.discriminator}`);
+    printSuccess(
+      `✅ Discord connection validated for bot: ${botInfo.username}#${botInfo.discriminator}`
+    );
     return true;
   } catch (error) {
     printError(`❌ Discord connection failed: ${error.message}`);
@@ -656,5 +667,5 @@ export async function validateDiscordConfig(config) {
 
 export default {
   DiscordClient,
-  validateDiscordConfig
+  validateDiscordConfig,
 };
