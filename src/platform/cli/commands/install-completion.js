@@ -42,11 +42,11 @@ _ultra_dex_completion() {
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
     opts="$(ultra-dex --completion-bash \${COMP_WORDS[@]:1:COMP_CWORD-1})"
 
-    if [[ ${cur} == -* ]] ; then
-        COMPREPLY=( \$(compgen -W "\${opts}" -- \${cur}) )
+    if [[ \${cur} == -* ]] ; then
+        COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
         return 0
     else
-        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
         return 0
     fi
 }

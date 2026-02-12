@@ -86,7 +86,7 @@ export function registerExamplesCommand(program) {
         name: projectName,
         private: true,
         version: '0.1.0',
-        scripts: { dev: 'echo \"Start development\"' },
+        scripts: { dev: 'echo "Start development"' },
       };
 
       await fs.writeFile(path.join(projectDir, 'package.json'), JSON.stringify(pkg, null, 2));
@@ -146,6 +146,8 @@ export function registerExamplesCommand(program) {
     });
 
   cmd.action(() => {
-    printWarning(chalk.yellow('Use `examples list`, `examples view <id>`, or `examples init <id>`.'));
+    printWarning(
+      chalk.yellow('Use `examples list`, `examples view <id>`, or `examples init <id>`.')
+    );
   });
 }

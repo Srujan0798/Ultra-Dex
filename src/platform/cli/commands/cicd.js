@@ -6,6 +6,7 @@
  */
 
 import { Command } from 'commander';
+import fs from 'fs/promises';
 import { selfHealingCICD } from '../cicd/self-healing.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
@@ -26,14 +27,14 @@ export function registerCICDCommand(program) {
     .action(async (options) => {
       try {
         await selfHealingCICD.initialize();
-        
+
         const config = {
           autoFix: options.autoFix,
           notifications: options.notifications,
           verbose: options.verbose,
-          maxRetries: parseInt(options.maxRetries),
-          timeout: parseInt(options.timeout),
-          stages: options.stages.split(',').map(s => s.trim())
+          maxRetries: parseInt(options.maxRetries, 10),
+          timeout: parseInt(options.timeout, 10),
+          stages: options.stages.split(',').map((s) => s.trim()),
         };
 
         printInfo('🔄 Starting self-healing CI/CD pipeline...');
@@ -41,11 +42,11 @@ export function registerCICDCommand(program) {
         printInfo(`📊 Stages: ${config.stages.join(', ')}`);
 
         const result = await selfHealingCICD.runPipeline(config);
-        
+
         printSuccess(`✅ Pipeline completed in ${result.duration}ms`);
         printInfo(`🔧 Fixes applied: ${result.fixesApplied}`);
         printInfo(`❌ Errors: ${result.errors.length}`);
-        
+
         if (result.status === 'success') {
           printSuccess('🎉 Pipeline completed successfully!');
         } else {
@@ -64,13 +65,13 @@ export function registerCICDCommand(program) {
     .action(async (options) => {
       try {
         await selfHealingCICD.initialize();
-        
+
         printInfo('👀 Starting CI/CD monitoring...');
-        
+
         await selfHealingCICD.startMonitoring();
-        
+
         printSuccess('✅ Monitoring started. Press Ctrl+C to stop.');
-        
+
         // Keep process alive
         await new Promise(() => {});
       } catch (error) {
@@ -85,7 +86,7 @@ export function registerCICDCommand(program) {
     .action(async () => {
       try {
         const status = await selfHealingCICD.getPipelineStatus();
-        
+
         printInfo('📊 Pipeline Status:');
         console.log(`  Running: ${status.running ? 'Yes' : 'No'}`);
         console.log(`  Last Run: ${status.lastRun}`);
@@ -106,7 +107,7 @@ export function registerCICDCommand(program) {
       try {
         await selfHealingCICD.initialize();
         const rules = Array.from(selfHealingCICD.healingRules.entries());
-        
+
         printSuccess(`📋 ${rules.length} healing rules loaded:`);
         rules.forEach(([pattern, rule]) => {
           console.log(`  ${pattern}: ${rule.description} (${rule.priority})`);
@@ -127,15 +128,15 @@ export function registerCICDCommand(program) {
     .action(async (pattern, action, options) => {
       try {
         await selfHealingCICD.initialize();
-        
+
         const rule = {
           action,
           description: options.description || `Auto-fix for ${pattern}`,
-          priority: options.priority
+          priority: options.priority,
         };
-        
+
         selfHealingCICD.addHealingRule(new RegExp(pattern), rule);
-        
+
         printSuccess(`✅ Rule added: ${pattern} -> ${action}`);
       } catch (error) {
         printError(`Rule addition failed: ${error.message}`);
@@ -150,7 +151,7 @@ export function registerCICDCommand(program) {
       try {
         await selfHealingCICD.initialize();
         const stats = selfHealingCICD.getHealingStats();
-        
+
         printSuccess('🔧 Self-Healing Statistics:');
         console.log(`  Total Fixes: ${stats.totalFixes}`);
         console.log(`  Success Rate: ${(stats.successRate * 100).toFixed(1)}%`);
@@ -174,7 +175,7 @@ export function registerCICDCommand(program) {
       try {
         await selfHealingCICD.initialize();
         const report = await selfHealingCICD.exportReport(options.format);
-        
+
         if (options.output) {
           await fs.writeFile(options.output, report);
           printSuccess(`📊 Report saved to: ${options.output}`);
@@ -194,9 +195,9 @@ export function registerCICDCommand(program) {
     .action(async (provider) => {
       try {
         await selfHealingCICD.initialize();
-        
+
         await selfHealingCICD.setupCIIntegration(provider);
-        
+
         printSuccess(`✅ ${provider} CI/CD integration set up successfully`);
         printInfo('Run: ultra-dex cicd run to execute pipeline');
       } catch (error) {
@@ -212,17 +213,19 @@ export function registerCICDCommand(program) {
     .action(async (options) => {
       try {
         await selfHealingCICD.initialize();
-        
-        const history = selfHealingCICD.fixHistory.slice(-parseInt(options.limit));
-        
+
+        const history = selfHealingCICD.fixHistory.slice(-parseInt(options.limit, 10));
+
         if (history.length === 0) {
           printInfo('📭 No healing history available');
           return;
         }
 
         printSuccess(`📋 Last ${history.length} fixes:`);
-        history.forEach(entry => {
-          console.log(`  ${entry.timestamp}: ${entry.description} (${entry.success ? 'SUCCESS' : 'FAILED'})`);
+        history.forEach((entry) => {
+          console.log(
+            `  ${entry.timestamp}: ${entry.description} (${entry.success ? 'SUCCESS' : 'FAILED'})`
+          );
         });
       } catch (error) {
         printError(`History retrieval failed: ${error.message}`);
@@ -244,12 +247,12 @@ export function registerCICDCommand(program) {
         notifications: true,
         maxRetries: 3,
         timeout: 300000,
-        stages: ['test', 'build', 'deploy']
+        stages: ['test', 'build', 'deploy'],
       };
 
       await selfHealingCICD.initialize();
       const result = await selfHealingCICD.runPipeline(config);
-      
+
       if (result.status === 'success') {
         printSuccess('✅ Self-healing pipeline completed successfully');
       } else {
