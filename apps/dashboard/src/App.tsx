@@ -8,6 +8,7 @@ import { Agents } from './pages/Agents';
 import { Tasks } from './pages/Tasks';
 import { Integrations } from './pages/Integrations';
 import { Settings } from './pages/Settings';
+import { Providers } from './pages/Providers';
 import Hologram from './pages/Hologram';
 import { useWebSocket } from './hooks/useWebSocket';
 
@@ -42,6 +43,7 @@ const App = React.memo(function App() {
                                 <Route path="/tasks" element={<Tasks />} />
                                 <Route path="/integrations" element={<Integrations />} />
                                 <Route path="/settings" element={<Settings />} />
+                                <Route path="/providers" element={<Providers />} />
                                 <Route path="/hologram" element={<Hologram />} />
                             </Routes>
                         </main>
