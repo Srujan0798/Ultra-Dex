@@ -35,3 +35,29 @@ coverage/
 
 # Reports
 *-report.json
+
+# Build outputs
+dist/
+**/dist/
+
+# Large assets (use Git LFS for these)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.webp
+
+# Lock files (regenerated)
+# package-lock.json
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Misc
+*.vsix
+tmp/
+.cache/
