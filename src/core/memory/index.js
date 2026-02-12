@@ -3,42 +3,51 @@
 
 /**
  * Memory System Index
- * Centralized export for all memory-related functionality
+ * Centralized export for memory modules with backward-compatible aliases.
  */
 
-// Core memory managers
+import { promoteEntry, demoteEntry, tieredMemoryPath } from './hot-warm-cold.js';
+
+// Core managers
 export { MemoryManager, ppmManager } from './manager.js';
 export { ContextManager } from './context-manager.js';
 export { PersistentMemoryStore } from './persistent-store.js';
 
-// Enhanced memory system
+// Enhanced system
 export { EnhancedMemorySystem, enhancedMemorySystem } from './enhanced-memory-system.js';
 
-// Tier-specific managers
-export { HotTierMemory } from './hot-tier.js';
-export { WarmTierMemory } from './warm-tier.js';
-export { ColdTierMemory } from './cold-tier.js';
-export { HotWarmColdManager } from './hot-warm-cold.js';
-export { MultiTierMemory } from './multi-tier.js';
+// Tier managers
+export { HotTier, hotTier, HotTier as HotTierMemory } from './hot-tier.js';
+export { WarmTier, warmTier, WarmTier as WarmTierMemory } from './warm-tier.js';
+export { ColdTier, coldTier, ColdTier as ColdTierMemory } from './cold-tier.js';
 
-// Vector and semantic search
-export { VectorDB } from './vector-db.js';
+export { promoteEntry, demoteEntry, tieredMemoryPath } from './hot-warm-cold.js';
+export const HotWarmColdManager = {
+  promoteEntry,
+  demoteEntry,
+  tieredMemoryPath,
+};
+
+export { multiTierMemory, multiTierMemory as MultiTierMemory } from './multi-tier.js';
+
+// Vector and semantic utilities
 export { VectorStore } from './vector-store.js';
-export { EmbeddingsManager } from './embeddings.js';
+export { embedText } from './embeddings.js';
+export * as VectorDB from './vector-db.js';
 
-// Advanced memory features
-export { Memex } from './memex.js';
-export { ProjectMind } from './project-mind.js';
-export { TitansMemory } from './titans.js';
-export { GraphEngine } from './graph-engine.js';
+// Advanced memory modules
+export { Memex, memex } from './memex.js';
+export { default as ProjectMind } from './project-mind.js';
+export { TitansMemory, titansMemory } from './titans.js';
+export { GraphEngine, memoryGraph } from './graph-engine.js';
 
-// Utilities
-export { Serializer } from './serializer.js';
-export { Compactor } from './compactor.js';
-export { CompressionManager } from './compression.js';
+// Serialization / compaction utilities
+export { serializeMemory, deserializeMemory } from './serializer.js';
+export { compactHistory, summarizeOutput } from './compactor.js';
+export { summarizeMemory, compressEntries } from './compression.js';
 
-// Schema and types
-export { MemorySchema } from './schema.js';
+// Schema
+export { default as MemorySchema } from './schema.js';
 
-// Export default for convenience
+// Default export for convenience
 export { ppmManager as default } from './manager.js';

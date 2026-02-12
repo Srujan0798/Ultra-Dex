@@ -53,7 +53,7 @@
     "@modelcontextprotocol/sdk": "^1.25.3",
     "@notionhq/client": "^2.3.0",
     "acorn": "^8.15.0",
-    "acorn-walk": "^8.4.0",
+    "acorn-walk": "^8.3.4",
     "ai": "^6.0.0",
     "axios": "^1.7.9",
     "boxen": "^8.0.1",
