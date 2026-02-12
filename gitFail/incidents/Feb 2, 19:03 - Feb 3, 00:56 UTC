@@ -1,0 +1,60 @@
+Incident with Actions
+Incident Report for GitHub
+Resolved
+On February 2, 2026, between 18:35 UTC and 22:15 UTC, GitHub Actions hosted runners were unavailable, with service degraded until full recovery at 23:10 UTC for standard runners and at February 3, 2026 00:30 UTC for larger runners. During this time, Actions jobs queued and timed out while waiting to acquire a hosted runner. Other GitHub features that leverage this compute infrastructure were similarly impacted, including Copilot Coding Agent, Copilot Code Review, CodeQL, Dependabot, GitHub Enterprise Importer, and Pages. All regions and runner types were impacted. Self-hosted runners on other providers were not impacted. 
+
+This outage was caused by a backend storage access policy change in our underlying compute provider that blocked access to critical VM metadata, causing all VM create, delete, reimage, and other operations to fail. More information is available at https://azure.status.microsoft/en-us/status/history/?trackingId=FNJ8-VQZ. This was mitigated by rolling back the policy change, which started at 22:15 UTC.  As VMs came back online, our runners worked through the backlog of requests that hadn’t timed out. 
+
+We are working with our compute provider to improve our incident response and engagement time, improve early detection before they impact our customers, and ensure safe rollout should similar changes occur in the future. We recognize this was a significant outage to our users that rely on GitHub’s workloads and apologize for the impact this had.
+Posted 9 days ago. Feb 03, 2026 - 00:56 UTC
+Update
+Actions is operating normally.
+Posted 9 days ago. Feb 03, 2026 - 00:56 UTC
+Update
+Based on our telemetry, most customers should see full recovery from failing GitHub Actions jobs on hosted runners.
+We are monitoring closely to confirm complete recovery.
+Other GitHub features that rely on GitHub Actions (for example, Copilot Coding Agent and Dependabot) should also see recovery.
+Posted 9 days ago. Feb 02, 2026 - 23:50 UTC
+Update
+Actions is experiencing degraded performance. We are continuing to investigate.
+Posted 9 days ago. Feb 02, 2026 - 23:43 UTC
+Update
+Copilot is operating normally.
+Posted 9 days ago. Feb 02, 2026 - 23:42 UTC
+Update
+Pages is operating normally.
+Posted 9 days ago. Feb 02, 2026 - 23:31 UTC
+Update
+Our upstream provider has applied a mitigation to address queuing and job failures on hosted runners.
+Telemetry shows improvement, and we are monitoring closely for full recovery.
+Posted 10 days ago. Feb 02, 2026 - 22:53 UTC
+Update
+We continue to investigate failures impacting GitHub Actions hosted-runner jobs.
+We're waiting on our upstream provider to apply the identified mitigations, and we're preparing to resume job processing as safely as possible.
+Posted 10 days ago. Feb 02, 2026 - 22:10 UTC
+Update
+Copilot is experiencing degraded performance. We are continuing to investigate.
+Posted 10 days ago. Feb 02, 2026 - 21:27 UTC
+Update
+We continue to investigate failures impacting GitHub Actions hosted-runner jobs.
+We have identified the root cause and are working with our upstream provider to mitigate.
+This is also impacting GitHub features that rely on GitHub Actions (for example, Copilot Coding Agent and Dependabot).
+Posted 10 days ago. Feb 02, 2026 - 21:13 UTC
+Update
+The team continues to investigate issues causing GitHub Actions jobs on hosted runners to remain queued for extended periods, with a percentage of jobs failing. We will continue to provide updates as we make progress toward mitigation.
+Posted 10 days ago. Feb 02, 2026 - 20:27 UTC
+Update
+Pages is experiencing degraded performance. We are continuing to investigate.
+Posted 10 days ago. Feb 02, 2026 - 19:48 UTC
+Update
+The team continues to investigate issues causing GitHub Actions jobs on hosted runners to remain queued for extended periods, with a percentage of jobs failing. We will continue to provide updates as we make progress toward mitigation.
+Posted 10 days ago. Feb 02, 2026 - 19:44 UTC
+Update
+Actions is experiencing degraded availability. We are continuing to investigate.
+Posted 10 days ago. Feb 02, 2026 - 19:43 UTC
+Update
+GitHub Actions hosted runners are experiencing high wait times across all labels. Self-hosted runners are not impacted.
+Posted 10 days ago. Feb 02, 2026 - 19:07 UTC
+Investigating
+We are investigating reports of degraded performance for Actions
+Posted 10 days ago. Feb 02, 2026 - 19:03 UTC

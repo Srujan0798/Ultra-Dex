@@ -1,0 +1,21 @@
+Disruption with some GitHub services
+Incident Report for GitHub
+Resolved
+This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available.
+Posted 10 hours ago. Feb 12, 2026 - 00:59 UTC
+Update
+Actions is experiencing capacity constraints with larger hosted runners, leading to high wait times. Standard hosted labels and self-hosted runners are not impacted.
+ 
+The issue is mitigated and we are monitoring recovery.
+Posted 14 hours ago. Feb 11, 2026 - 21:33 UTC
+Update
+We're continuing to work toward mitigation with our capacity provider, and adding capacity.
+Posted 16 hours ago. Feb 11, 2026 - 19:37 UTC
+Update
+Actions is experiencing capacity constraints with larger hosted runners, leading to high wait times. Standard hosted labels and self-hosted runners are not impacted.
+
+We're working with the capacity provider to mitigate the impact.
+Posted 16 hours ago. Feb 11, 2026 - 19:00 UTC
+Investigating
+We are investigating reports of impacted performance for some GitHub services.
+Posted 16 hours ago. Feb 11, 2026 - 18:58 UTC
