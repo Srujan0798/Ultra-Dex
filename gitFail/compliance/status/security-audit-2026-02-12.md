@@ -6,8 +6,8 @@ Command: `npm run security:audit`
 ## Current Result
 
 - Status: `FAIL` (expected while vulnerabilities remain)
-- Total vulnerabilities: `20`
-- Severity split: `10 high`, `5 moderate`, `5 low`
+- Total vulnerabilities: `15`
+- Severity split: `7 high`, `4 moderate`, `4 low`
 
 ## Resolved In This Session
 
@@ -15,7 +15,10 @@ Command: `npm run security:audit`
 - Removed locked `clinic` dependency; profiling commands now use `npx clinic`.
 - Removed unused `nodemailer` dependency.
 - Applied a non-breaking `npm audit fix` pass (with `npm_config_ignore_scripts=true`).
-- Audit count reduced from `52` to `20`.
+- Upgraded desktop toolchain:
+  - `electron` -> `^40.4.0`
+  - `electron-builder` -> `^26.7.0`
+- Audit count reduced from `52` to `15`.
 
 ## Remaining High-Priority Findings
 
@@ -30,8 +33,6 @@ Command: `npm run security:audit`
 
 1. `@langchain/community` / `langsmith`
    - Requires major-version migration to patched SDK lines.
-2. `electron` in desktop workspace
-   - Requires upgrade to patched line (`>=35.7.5`).
 
 ## Enforcement Status
 
@@ -42,10 +43,9 @@ Command: `npm run security:audit`
 
 ## Next Remediation Order
 
-1. Upgrade `apps/desktop` Electron to patched stable line.
-2. Plan and execute Expo workspace upgrade in `apps/mobile`.
-3. Upgrade LangChain packages to patched major lines with compatibility test pass.
-4. Upgrade `sinon`/`mocha` chain to clear `diff` advisory.
-5. Re-run:
+1. Plan and execute Expo workspace upgrade in `apps/mobile`.
+2. Upgrade LangChain packages to patched major lines with compatibility test pass.
+3. Upgrade `sinon`/`mocha` chain to clear `diff` advisory.
+4. Re-run:
    - `npm run security:audit`
    - `npm run gate:local`
