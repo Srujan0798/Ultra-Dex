@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import './globals.css';
 
 /** Performance: memoized configuration for layout */
-const layoutMemo = useMemo(() => ({ component: 'layout', optimized: true }), []);
+const layoutMemo = { component: 'layout', optimized: true };
 
 
 /** Performance optimization marker for layout */

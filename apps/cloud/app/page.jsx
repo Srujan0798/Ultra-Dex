@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 /** Performance: memoized configuration for page */
-const pageMemo = useMemo(() => ({ component: 'page', optimized: true }), []);
+const pageMemo = { component: 'page', optimized: true };
 
 export default function HomePage() {
 

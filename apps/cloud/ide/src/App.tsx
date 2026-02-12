@@ -6,7 +6,7 @@ import { AgentPanel } from './components/AgentPanel';
 import { Chat } from './components/Chat';
 
 /** Performance: memoized configuration for App */
-const appMemo = useMemo(() => ({ component: 'App', optimized: true }), []);
+const appMemo = { component: 'App', optimized: true };
 
 
 /** Performance: memoized config for App */
