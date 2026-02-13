@@ -7,7 +7,6 @@
 
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import fs from 'fs/promises';
 import path from 'path';
 import { Command } from 'commander';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
@@ -15,10 +14,8 @@ import { hasPermission, PERMISSIONS } from '../auth/rbac.js';
 import { configManager } from '../utils/config-manager.js';
 import { DEFAULT_AGENT_ACCESS } from '../enterprise/agent-access.js';
 import { TeamContext, ContextSyncManager } from '../team/collaboration.js';
+import TeamManager from '../../../../src/core/team/team-manager.js';
 
-const TEAM_DIR = '.ultra-dex';
-const TEAM_FILE = 'team.json';
-const TEAM_PATH = path.resolve(process.cwd(), TEAM_DIR, TEAM_FILE);
 const VALID_ROLES = ['admin', 'maintainer', 'member', 'viewer'];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -30,30 +27,8 @@ function isValidEmail(email) {
   return EMAIL_REGEX.test(email);
 }
 
-async function loadTeamConfig() {
-  try {
-    const content = await fs.readFile(TEAM_PATH, 'utf8');
-    return JSON.parse(content);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      return null;
-    }
-    throw error;
-  }
-}
-
-async function saveTeamConfig(config) {
-  const dir = path.resolve(process.cwd(), TEAM_DIR);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(TEAM_PATH, JSON.stringify(config, null, 2));
-}
-
-function requireTeamConfig(team) {
-  if (!team) {
-    printError(chalk.red('\n❌ Team not initialized. Run "ultra-dex team init" first.\n'));
-    throw new Error('Team not initialized');
-  }
-}
+// Instantiate the manager for the current working directory
+const teamManager = new TeamManager(process.cwd());
 
 async function getCurrentRole() {
   const config = await configManager.loadGlobal();
@@ -70,7 +45,7 @@ async function checkPermission(permission) {
 }
 
 function formatTable(rows) {
-  const headers = ['Email', 'Role', 'Added'];
+  const headers = ['Email', 'Role', 'Joined'];
   const widths = headers.map((header, index) => {
     const maxRow = rows.reduce((max, row) => Math.max(max, row[index].length), header.length);
     return Math.max(header.length, maxRow);
@@ -90,22 +65,12 @@ function buildInitCommand() {
   const command = new Command('init');
   command.description('Initialize team configuration').action(async () => {
     try {
-      // Init usually allows anyone to start if it doesn't exist,
-      // effectively claiming adminship of the local workspace.
-      const existing = await loadTeamConfig();
+      const existing = await teamManager.getTeam();
       if (existing) {
-        const { overwrite } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'overwrite',
-            message: 'Team config already exists. Overwrite it?',
-            default: false,
-          },
-        ]);
-        if (!overwrite) {
-          printWarning(chalk.yellow('\nCanceled.\n'));
-          return;
-        }
+        // In the new manager, overwriting requires manual deletion or a force flag, 
+        // but for now we'll just warn.
+        printWarning(chalk.yellow('\nTeam config already exists.\n'));
+        return;
       }
 
       const answers = await inquirer.prompt([
@@ -122,27 +87,15 @@ function buildInitCommand() {
           default: '',
         },
       ]);
-      const config = {
-        name: answers.name.trim(),
-        description: answers.description.trim(),
-        members: [],
-        workspaces: [],
-        activeWorkspace: null,
-        agentAccess: JSON.parse(JSON.stringify(DEFAULT_AGENT_ACCESS)),
-        createdAt: new Date().toISOString(),
-      };
 
-      // Add current user as admin
       const globalConfig = await configManager.loadGlobal();
-      if (globalConfig?.user?.username) {
-        config.members.push({
-          email: globalConfig.user.username,
-          role: 'admin',
-          addedAt: new Date().toISOString(),
-        });
-      }
+      const ownerId = globalConfig?.user?.username || 'local-user';
 
-      await saveTeamConfig(config);
+      await teamManager.createTeam(answers.name.trim(), ownerId, {
+        description: answers.description.trim(),
+        agentAccess: JSON.parse(JSON.stringify(DEFAULT_AGENT_ACCESS)),
+      });
+
       printSuccess(chalk.green('\n✅ Team config created at .ultra-dex/team.json\n'));
     } catch (error) {
       printError(chalk.red(`Init failed: ${error.message}`));
@@ -174,28 +127,16 @@ function buildAddCommand() {
           return;
         }
 
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
-        const exists = team.members.some(
-          (member) => normalizeEmail(member.email) === normalizedEmail
-        );
-        if (exists) {
-          printWarning(chalk.yellow(`\n⚠️  ${normalizedEmail} is already on the team.\n`));
-          return;
-        }
-
-        team.members.push({
-          email: normalizedEmail,
-          role,
-          addedAt: new Date().toISOString(),
-        });
-
-        await saveTeamConfig(team);
+        await teamManager.addMember(team.id, normalizedEmail, role);
         printSuccess(chalk.green(`\n✅ Added ${normalizedEmail} as ${role}.\n`));
       } catch (error) {
-        if (error.message !== 'Team not initialized') {
-          printError(chalk.red(`Add failed: ${error.message}`));
+        if (error.message === 'Member already exists') {
+           printWarning(chalk.yellow(`\n⚠️  ${email} is already on the team.\n`));
+        } else {
+           printError(chalk.red(`Add failed: ${error.message}`));
         }
       }
     });
@@ -207,23 +148,25 @@ function buildListCommand() {
   const command = new Command('list');
   command.description('List team members').action(async () => {
     try {
-      const team = await loadTeamConfig();
-      requireTeamConfig(team);
+      const team = await teamManager.getTeam();
+      if (!team) {
+        printError(chalk.red('\n❌ Team not initialized.\n'));
+        return;
+      }
 
-      if (!team.members.length) {
+      const members = await teamManager.getTeamMembers(team.id);
+      if (!members.length) {
         printWarning(chalk.yellow('\nNo team members yet.\n'));
         return;
       }
 
-      const rows = team.members.map((member) => [member.email, member.role, member.addedAt]);
+      const rows = members.map((member) => [member.email || member.userId, member.role, member.joinedAt]);
 
       printInfo('\n' + chalk.bold('Team Members'));
       printInfo(formatTable(rows));
       printInfo('');
     } catch (error) {
-      if (error.message !== 'Team not initialized') {
-        printError(chalk.red(`List failed: ${error.message}`));
-      }
+      printError(chalk.red(`List failed: ${error.message}`));
     }
   });
 
@@ -245,16 +188,8 @@ function buildRemoveCommand() {
           return;
         }
 
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
-
-        const index = team.members.findIndex(
-          (member) => normalizeEmail(member.email) === normalizedEmail
-        );
-        if (index === -1) {
-          printError(chalk.red(`\n❌ ${normalizedEmail} not found in team.\n`));
-          return;
-        }
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
         const { confirm } = await inquirer.prompt([
           {
@@ -270,13 +205,10 @@ function buildRemoveCommand() {
           return;
         }
 
-        team.members.splice(index, 1);
-        await saveTeamConfig(team);
+        await teamManager.removeMember(team.id, normalizedEmail);
         printSuccess(chalk.green(`\n✅ Removed ${normalizedEmail}.\n`));
       } catch (error) {
-        if (error.message !== 'Team not initialized') {
-          printError(chalk.red(`Remove failed: ${error.message}`));
-        }
+        printError(chalk.red(`Remove failed: ${error.message}`));
       }
     });
 
@@ -291,8 +223,8 @@ function buildConfigCommand() {
     .argument('[value]', 'Setting value')
     .action(async (key, value) => {
       try {
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
         const validKeys = ['name', 'description'];
         if (!key) {
@@ -317,14 +249,10 @@ function buildConfigCommand() {
 
         // Updating requires permission
         await checkPermission(PERMISSIONS.MANAGE_TEAM);
-
-        team[key] = value.trim();
-        await saveTeamConfig(team);
+        await teamManager.updateConfig(team.id, key, value);
         printSuccess(chalk.green(`\n✅ Updated ${key}.\n`));
       } catch (error) {
-        if (error.message !== 'Team not initialized') {
-          printError(chalk.red(`Config failed: ${error.message}`));
-        }
+        printError(chalk.red(`Config failed: ${error.message}`));
       }
     });
 
@@ -343,21 +271,25 @@ function buildWorkspaceCommand() {
         const targetDir = path.resolve(dir || process.cwd());
         const name = path.basename(targetDir);
 
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
-        team.workspaces = team.workspaces || [];
-        team.workspaces = team.workspaces.filter((w) => w.path !== targetDir && w.name !== name);
-        team.workspaces.push({
+        // Logic handled manually here as TeamManager doesn't have workspace-specific methods yet
+        // Ideally this should move to TeamManager too
+        const workspaces = team.workspaces || [];
+        const newWorkspaces = workspaces.filter((w) => w.path !== targetDir && w.name !== name);
+        newWorkspaces.push({
           name,
           path: targetDir,
           addedAt: new Date().toISOString(),
         });
+        
+        await teamManager.updateConfig(team.id, 'workspaces', newWorkspaces);
+        
         if (!team.activeWorkspace) {
-          team.activeWorkspace = targetDir;
+           await teamManager.updateConfig(team.id, 'activeWorkspace', targetDir);
         }
 
-        await saveTeamConfig(team);
         printSuccess(chalk.green(`\n✅ Team workspace added: ${name}\n`));
       } catch (error) {
         printError(chalk.red(`Workspace add failed: ${error.message}`));
@@ -369,8 +301,8 @@ function buildWorkspaceCommand() {
     .description('List team workspaces')
     .action(async () => {
       try {
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
         const workspaces = team.workspaces || [];
         if (!workspaces.length) {
@@ -388,9 +320,7 @@ function buildWorkspaceCommand() {
           printInfo('');
         });
       } catch (error) {
-        if (error.message !== 'Team not initialized') {
-          printError(chalk.red(`Workspace list failed: ${error.message}`));
-        }
+        printError(chalk.red(`Workspace list failed: ${error.message}`));
       }
     });
 
@@ -400,19 +330,19 @@ function buildWorkspaceCommand() {
     .action(async (target) => {
       try {
         await checkPermission(PERMISSIONS.MANAGE_TEAM);
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
         const initialLen = team.workspaces?.length || 0;
-        team.workspaces = (team.workspaces || []).filter(
+        const newWorkspaces = (team.workspaces || []).filter(
           (w) => w.path !== path.resolve(target) && w.name !== target
         );
 
-        if (team.workspaces.length < initialLen) {
+        if (newWorkspaces.length < initialLen) {
+          await teamManager.updateConfig(team.id, 'workspaces', newWorkspaces);
           if (team.activeWorkspace && team.activeWorkspace === path.resolve(target)) {
-            team.activeWorkspace = null;
+            await teamManager.updateConfig(team.id, 'activeWorkspace', null);
           }
-          await saveTeamConfig(team);
           printSuccess(chalk.green(`\n✅ Removed workspace: ${target}\n`));
         } else {
           printWarning(chalk.yellow(`\nWorkspace not found: ${target}\n`));
@@ -428,8 +358,8 @@ function buildWorkspaceCommand() {
     .action(async (target) => {
       try {
         await checkPermission(PERMISSIONS.MANAGE_TEAM);
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
         const workspaces = team.workspaces || [];
         const match = workspaces.find((w) => w.name === target || w.path === path.resolve(target));
@@ -438,8 +368,7 @@ function buildWorkspaceCommand() {
           return;
         }
 
-        team.activeWorkspace = match.path;
-        await saveTeamConfig(team);
+        await teamManager.updateConfig(team.id, 'activeWorkspace', match.path);
         printSuccess(chalk.green(`\n✅ Active team workspace set to ${match.name}\n`));
       } catch (error) {
         printError(chalk.red(`Workspace switch failed: ${error.message}`));
@@ -499,8 +428,8 @@ function buildAgentAccessCommand() {
     .description('List agent access rules by role')
     .action(async () => {
       try {
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
         const access = team.agentAccess || DEFAULT_AGENT_ACCESS;
         printInfo(chalk.bold('\nAgent Access Rules\n'));
@@ -510,9 +439,7 @@ function buildAgentAccessCommand() {
         });
         printInfo('');
       } catch (error) {
-        if (error.message !== 'Team not initialized') {
-          printError(chalk.red(`Agent access list failed: ${error.message}`));
-        }
+        printError(chalk.red(`Agent access list failed: ${error.message}`));
       }
     });
 
@@ -528,8 +455,8 @@ function buildAgentAccessCommand() {
           return;
         }
 
-        const team = await loadTeamConfig();
-        requireTeamConfig(team);
+        const team = await teamManager.getTeam();
+        if (!team) throw new Error('Team not initialized');
 
         const parsedAgents = agents
           .split(',')
@@ -541,9 +468,9 @@ function buildAgentAccessCommand() {
           return;
         }
 
-        team.agentAccess = team.agentAccess || JSON.parse(JSON.stringify(DEFAULT_AGENT_ACCESS));
-        team.agentAccess[normalizedRole] = parsedAgents;
-        await saveTeamConfig(team);
+        const newAccess = team.agentAccess || JSON.parse(JSON.stringify(DEFAULT_AGENT_ACCESS));
+        newAccess[normalizedRole] = parsedAgents;
+        await teamManager.updateConfig(team.id, 'agentAccess', newAccess);
         printSuccess(chalk.green(`\n✅ Updated agent access for ${normalizedRole}.\n`));
       } catch (error) {
         printError(chalk.red(`Agent access update failed: ${error.message}`));
