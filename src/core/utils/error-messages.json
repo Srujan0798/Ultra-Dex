@@ -1,0 +1,140 @@
+{
+  "database_errors": {
+    "SQLITE_ERROR_no_such_table": {
+      "message": "Database table not found",
+      "solution": "💡 Database not initialized. Run 'ultra-dex init' to set up.",
+      "category": "database",
+      "severity": "high"
+    },
+    "SQLITE_BUSY_database_locked": {
+      "message": "Database is busy",
+      "solution": "🔒 Another process is using the database. Wait a moment and try again.",
+      "category": "database",
+      "severity": "medium"
+    },
+    "SQLITE_CONSTRAINT_violation": {
+      "message": "Database constraint violation",
+      "solution": "🚫 Invalid data provided. Check your input format and try again.",
+      "category": "database",
+      "severity": "medium"
+    }
+  },
+  "network_errors": {
+    "ECONNREFUSED": {
+      "message": "Connection refused",
+      "solution": "🌐 Service is not responding. Check if the required service is running.",
+      "category": "network",
+      "severity": "high"
+    },
+    "ENOTFOUND": {
+      "message": "Host not found",
+      "solution": "🌐 DNS lookup failed. Check your internet connection and host configuration.",
+      "category": "network",
+      "severity": "high"
+    },
+    "ETIMEDOUT": {
+      "message": "Connection timed out",
+      "solution": "⏰ Request took too long. Check your network connection and try again.",
+      "category": "network",
+      "severity": "medium"
+    }
+  },
+  "filesystem_errors": {
+    "ENOENT": {
+      "message": "File or directory not found",
+      "solution": "📁 Path does not exist. Verify the file path is correct.",
+      "category": "filesystem",
+      "severity": "high"
+    },
+    "EACCES": {
+      "message": "Permission denied",
+      "solution": "🔐 Insufficient permissions. Run with appropriate privileges or check file permissions.",
+      "category": "filesystem",
+      "severity": "high"
+    },
+    "EPERM": {
+      "message": "Operation not permitted",
+      "solution": "🔐 Permission error. Check file/directory permissions and ownership.",
+      "category": "filesystem",
+      "severity": "high"
+    }
+  },
+  "provider_errors": {
+    "401_unauthorized": {
+      "message": "Unauthorized access",
+      "solution": "🔑 Invalid API key. Check your provider configuration with `ultra-dex config --wizard`.",
+      "category": "provider",
+      "severity": "high"
+    },
+    "403_forbidden": {
+      "message": "Access forbidden",
+      "solution": "🔐 Access denied by provider. Verify your API key and permissions.",
+      "category": "provider",
+      "severity": "high"
+    },
+    "429_rate_limit": {
+      "message": "Rate limit exceeded",
+      "solution": "⏱️ Too many requests. Wait before trying again or upgrade your provider plan.",
+      "category": "provider",
+      "severity": "medium"
+    },
+    "500_internal_error": {
+      "message": "Internal server error",
+      "solution": "🔧 Provider server error. Try again later or contact provider support.",
+      "category": "provider",
+      "severity": "medium"
+    }
+  },
+  "memory_errors": {
+    "MEMORY_LIMIT_EXCEEDED": {
+      "message": "Memory limit exceeded",
+      "solution": "💾 Too much data processed at once. Try breaking your task into smaller chunks.",
+      "category": "memory",
+      "severity": "medium"
+    }
+  },
+  "configuration_errors": {
+    "CONFIG_NOT_FOUND": {
+      "message": "Configuration not found",
+      "solution": "⚙️ Configuration file missing. Run 'ultra-dex init' to create default configuration.",
+      "category": "configuration",
+      "severity": "high"
+    }
+  },
+  "agent_errors": {
+    "AGENT_UNAVAILABLE": {
+      "message": "Agent unavailable",
+      "solution": "🤖 Requested agent is not available. Check agent status or try a different agent.",
+      "category": "agent",
+      "severity": "medium"
+    }
+  },
+  "general_errors": {
+    "UNKNOWN_ERROR": {
+      "message": "An unexpected error occurred",
+      "solution": "⚠️ Something went wrong. Check the logs for details and try again.",
+      "category": "general",
+      "severity": "low"
+    }
+  },
+  "contextual_errors": {
+    "init_EACCES": {
+      "message": "Cannot create configuration directory",
+      "solution": "🔐 Permission denied when creating .ultra-dex directory. Check parent directory permissions.",
+      "category": "configuration",
+      "severity": "high"
+    },
+    "memory_SQLITE_ERROR": {
+      "message": "Memory system error",
+      "solution": "🧠 Memory system failed to initialize. Run `ultra-dex init` to reset memory system.",
+      "category": "memory",
+      "severity": "high"
+    },
+    "provider_MISSING_API_KEY": {
+      "message": "API key not configured",
+      "solution": "🔑 No API key found for provider. Run `ultra-dex config --wizard` to set up providers.",
+      "category": "provider",
+      "severity": "high"
+    }
+  }
+}
