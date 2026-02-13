@@ -7,6 +7,7 @@ related to outage/risk handling work.
 
 - `INCIDENT_AUDIT_REPORT.md`: final incident-by-incident audit matrix and prevention plan.
 - `incidents/`: incident timeline notes and copied status entries.
+- `incidents/README.md`: chronological incident index with normalized Markdown links.
 - `compliance/`: commit/PR compliance checklist and verification script.
 - `compliance/DAILY_SAFETY_RUNBOOK.md`: one-page daily commit/push/incident operating flow.
 
