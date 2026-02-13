@@ -9,6 +9,7 @@ import {
   Settings as SettingsIcon,
   Zap,
   Box,
+  BarChart3,
 } from 'lucide-react';
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
   { path: '/agents', label: 'Agents', icon: Bot },
   { path: '/tasks', label: 'Tasks', icon: ListTodo },
   { path: '/integrations', label: 'Integrations', icon: Plug },
+  { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/settings', label: 'Settings', icon: SettingsIcon },
   { path: '/hologram', label: 'Hologram', icon: Box },
 ];
