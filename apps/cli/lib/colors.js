@@ -1,4 +1,19 @@
 import chalk from 'chalk';
+import gradient from 'gradient-string';
+
+/**
+ * Professional Gradient Presets for Ultra-Dex
+ */
+export const gradients = {
+  brand: gradient(['#6e40aa', '#963db3', '#bf38af', '#e731a1', '#ff3383']),
+  success: gradient(['#00b09b', '#96c93d']),
+  error: gradient(['#ff5f6d', '#ffc371']),
+  warning: gradient(['#f12711', '#f5af19']),
+  info: gradient(['#00c6ff', '#0072ff']),
+  cosmic: gradient(['#24c6dc', '#514a9d']),
+  rainbow: gradient.rainbow,
+  passion: gradient(['#f2709c', '#ff9472']),
+};
 
 /**
  * Consistent color scheme for Ultra-Dex CLI
@@ -30,9 +45,10 @@ export const colors = {
   },
   
   // Brand combinations
-  brand: (text) => chalk.bold.hex('#6e40aa')(text), // Ultra-Dex purple
+  brand: (text) => gradients.brand.bold(text),
   command: (text) => chalk.cyan.bold(`ultra-dex ${text}`),
   highlightBrand: (text) => chalk.bgHex('#6e40aa').white.bold(text),
+  celebrate: (text) => gradients.rainbow.bold(text),
 };
 
 /**
@@ -62,7 +78,8 @@ export function formatMessage(type, message) {
  * @returns {string} Formatted title
  */
 export function formatTitle(title) {
-  return `\n${colors.highlight(colors.brand(title))}\n${'─'.repeat(title.length + 2)}\n`;
+  const line = '━'.repeat(title.length + 4);
+  return `\n${gradients.brand(line)}\n  ${colors.highlight(colors.brand(title))}\n${gradients.brand(line)}\n`;
 }
 
 /**
@@ -71,7 +88,7 @@ export function formatTitle(title) {
  * @returns {string} Formatted header
  */
 export function formatSection(header) {
-  return `\n${colors.accent.bold('┌─')} ${header} ${colors.accent.bold('─┐')}\n`;
+  return `\n${colors.accent.bold('◈')} ${chalk.bold(header)} ${colors.accent.bold('◈')}\n`;
 }
 
 /**
@@ -81,6 +98,6 @@ export function formatSection(header) {
  * @returns {string} Formatted list item
  */
 export function formatListItem(item, index = null) {
-  const prefix = index !== null ? `${index + 1}. ` : '• ';
-  return `${colors.subtle(prefix)}${item}`;
+  const prefix = index !== null ? `${index + 1}. ` : '▸ ';
+  return `${colors.secondary(prefix)}${item}`;
 }
