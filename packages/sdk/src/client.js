@@ -1,6 +1,8 @@
 import { Agent } from './agent.js';
 import { BaseProvider, assertProviderContract } from './provider.js';
 import { PluginLoader } from './plugin.js';
+import { SmartRouter } from './router.js';
+import { MiddlewarePipeline } from './middleware.js';
 
 export class UltraDex {
   constructor(config = {}) {
@@ -20,7 +22,43 @@ export class UltraDex {
     this.providers = new Map();
     this.agents = new Map();
     this.plugins = new PluginLoader();
+    this.router = null;
+    this.middleware = new MiddlewarePipeline();
   }
+
+  // -----------------------------------------------------------------------
+  // Smart Router
+  // -----------------------------------------------------------------------
+
+  enableRouter(routerConfig = {}) {
+    this.router = new SmartRouter(routerConfig);
+    // Register any existing providers with the router
+    for (const [name, provider] of this.providers) {
+      this.router.addProvider(name, provider);
+    }
+    return this;
+  }
+
+  getRouter() {
+    return this.router;
+  }
+
+  getRouterStats() {
+    return this.router ? this.router.getAllStats() : {};
+  }
+
+  // -----------------------------------------------------------------------
+  // Middleware
+  // -----------------------------------------------------------------------
+
+  useMiddleware(name, fn) {
+    this.middleware.use(name, fn);
+    return this;
+  }
+
+  // -----------------------------------------------------------------------
+  // Providers
+  // -----------------------------------------------------------------------
 
   registerProvider(name, provider) {
     if (!name || typeof name !== 'string') {
@@ -28,6 +66,11 @@ export class UltraDex {
     }
     assertProviderContract(name, provider);
     this.providers.set(name, provider);
+
+    // Also register with router if enabled
+    if (this.router) {
+      this.router.addProvider(name, provider);
+    }
     return this;
   }
 
@@ -61,16 +104,27 @@ export class UltraDex {
   }
 
   async chat(messages, opts = {}) {
+    if (this.router && !opts.provider) {
+      const routed = await this.router.route('chat', [messages, opts]);
+      return routed.result;
+    }
     const provider = this.#resolveProvider(opts.provider);
     return provider.chat(messages, opts);
   }
 
   async *stream(messages, opts = {}) {
-    const provider = this.#resolveProvider(opts.provider);
+    // Streaming always goes direct (router handles non-streaming)
+    const provider = this.#resolveProvider(
+      opts.provider || (this.router ? this.router.selectProvider() : undefined)
+    );
     yield* provider.stream(messages, opts);
   }
 
   async embed(text, opts = {}) {
+    if (this.router && !opts.provider) {
+      const routed = await this.router.route('embed', [text, opts]);
+      return routed.result;
+    }
     const provider = this.#resolveProvider(opts.provider);
     return provider.embed(text, opts);
   }
