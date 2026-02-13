@@ -1,7 +1,8 @@
 import inquirer from 'inquirer';
-import { createSpinner, showSuccess, showInfo, showWarning, showError, withLoading } from './spinner.js';
-import { colors, formatMessage, formatTitle, formatSection, formatListItem } from './colors.js';
+import { createSpinner, showSuccess, showInfo, showWarning, showError, withLoading, runTaskSuite } from './spinner.js';
+import { colors, gradients, formatMessage, formatTitle, formatSection, formatListItem } from './colors.js';
 import { performance } from 'perf_hooks';
+import chalk from 'chalk';
 
 /**
  * Interactive CLI utilities for Ultra-Dex
@@ -15,12 +16,16 @@ export class InteractiveCLI {
    * Show a welcome message with Ultra-Dex branding
    */
   showWelcome() {
-    console.log(colors.brand(`
-  ╔══════════════════════════════════════╗
-  ║           ULTRA-DEX v6.0.0           ║
-  ║    AI Orchestration Meta-Layer       ║
-  ╚══════════════════════════════════════╝
-    `));
+    console.log('\n' + gradients.brand(`
+   __  ____  __               ____            
+  / / / / / / /__________ _  / __ \\___  _  __ 
+ / / / / / / / ___/ __ \`/ / / / / / _ \\| |/_/ 
+/ /_/ / /_/ / /  / /_/ / / / /_/ /  __/>  <   
+\\____/\\____/_/   \\__,_/_/ /_____/\\___/_/|_|   
+                                              
+    `) + '\n');
+    console.log(`  ${colors.brand('AI Orchestration Meta-Layer for SaaS Development')}`);
+    console.log(`  ${chalk.dim('Version 6.0.0 | Enterprise Ready')}\n`);
   }
 
   /**
@@ -34,7 +39,7 @@ export class InteractiveCLI {
     const question = {
       type: 'list',
       name: 'selection',
-      message: colors.info(message),
+      message: chalk.cyan(message),
       choices: choices.map(choice => ({
         name: choice.name,
         value: choice.value,
@@ -57,7 +62,7 @@ export class InteractiveCLI {
     const question = {
       type: 'checkbox',
       name: 'selections',
-      message: colors.info(message),
+      message: chalk.cyan(message),
       choices: choices.map(choice => ({
         name: choice.name,
         value: choice.value,
@@ -80,7 +85,7 @@ export class InteractiveCLI {
     const question = {
       type: 'input',
       name: 'input',
-      message: colors.info(message),
+      message: chalk.cyan(message),
       default: defaultValue
     };
 
@@ -101,7 +106,7 @@ export class InteractiveCLI {
     const question = {
       type: 'password',
       name: 'password',
-      message: colors.info(message),
+      message: chalk.cyan(message),
       mask: '*'
     };
 
@@ -119,7 +124,7 @@ export class InteractiveCLI {
     const question = {
       type: 'confirm',
       name: 'confirmed',
-      message: colors.warning(message),
+      message: chalk.yellow(message),
       default: defaultAnswer
     };
 
@@ -141,15 +146,15 @@ export class InteractiveCLI {
     let current = 0;
     const updateProgress = () => {
       current++;
-      spinner.text = `⏳ ${message} (${current}/${total})`;
+      spinner.text = ` ${message} (${current}/${total})`;
     };
 
     try {
       const result = await taskFn(updateProgress);
-      spinner.succeed(`✅ ${message} (${total}/${total})`);
+      spinner.succeed(chalk.green(` ${message} (${total}/${total})`));
       return result;
     } catch (error) {
-      spinner.fail(`❌ ${message} (${current}/${total})`);
+      spinner.fail(chalk.red(` ${message} (${current}/${total})`));
       throw error;
     }
   }
@@ -163,16 +168,34 @@ export class InteractiveCLI {
     const { default: Table } = await import('cli-table3');
 
     const table = new Table({
-      head: headers.map(h => colors.accent.bold(h)),
-      colWidths: headers.map(() => 20),
-      style: { head: ['cyan', 'bold'] }
+      head: headers.map(h => chalk.bold(h)),
+      chars: {
+        'top': '━', 'top-mid': '┳', 'top-left': '┏', 'top-right': '┓',
+        'bottom': '━', 'bottom-mid': '┻', 'bottom-left': '┗', 'bottom-right': '┛',
+        'left': '┃', 'left-mid': '┣', 'mid': '━', 'mid-mid': '╋',
+        'right': '┃', 'right-mid': '┫', 'middle': '┃'
+      },
+      style: {
+        head: [], // Disable default colors to use our own
+        border: ['dim']
+      }
     });
+
+    // Colorize headers
+    table.options.head = headers.map(h => gradients.info(h));
 
     rows.forEach(row => {
       table.push(row);
     });
 
-    console.log(table.toString());
+    console.log('\n' + table.toString() + '\n');
+  }
+
+  /**
+   * Run a suite of tasks
+   */
+  async runTasks(title, tasks) {
+    return await runTaskSuite(title, tasks);
   }
 
   /**
@@ -188,7 +211,7 @@ export class InteractiveCLI {
       const end = performance.now();
       const duration = Math.round(end - start);
       
-      showInfo(`${operation} completed in ${duration}ms`);
+      showInfo(`${operation} completed in ${chalk.bold(duration + 'ms')}`);
       return result;
     } catch (error) {
       const end = performance.now();
@@ -201,8 +224,6 @@ export class InteractiveCLI {
 
   /**
    * Display a formatted message
-   * @param {string} type - Message type
-   * @param {string} message - Message content
    */
   showMessage(type, message) {
     console.log(formatMessage(type, message));
@@ -210,7 +231,6 @@ export class InteractiveCLI {
 
   /**
    * Display a formatted title
-   * @param {string} title - Title to display
    */
   showTitle(title) {
     console.log(formatTitle(title));
@@ -218,7 +238,6 @@ export class InteractiveCLI {
 
   /**
    * Display a formatted section
-   * @param {string} header - Section header
    */
   showSection(header) {
     console.log(formatSection(header));
@@ -226,7 +245,6 @@ export class InteractiveCLI {
 
   /**
    * Display a list of items
-   * @param {Array<string>} items - Items to display
    */
   showList(items) {
     items.forEach((item, index) => {
@@ -239,7 +257,7 @@ export class InteractiveCLI {
    * @param {string} message - Success message
    */
   showCelebration(message) {
-    console.log(colors.success.bold(`🎉 ${message} 🎉`));
+    console.log('\n' + colors.celebrate(`✨ ${message} ✨`) + '\n');
   }
 }
 
@@ -253,5 +271,6 @@ export {
   showInfo,
   showWarning,
   showError,
-  withLoading
+  withLoading,
+  runTaskSuite
 };
