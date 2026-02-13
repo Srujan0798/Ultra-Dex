@@ -309,7 +309,7 @@ export class RemoteMCPServer {
   async executeMCPTOOL(toolName, params) {
     // Mock implementation of MCP tools
     switch (toolName) {
-      case 'read_code':
+      case 'read_code': {
         const filePath = params.file_path || params.path;
         if (!filePath)
           throw new AppError('file_path is required for read_code tool', {
@@ -319,8 +319,9 @@ export class RemoteMCPServer {
         const fullPath = path.join(this.projectRoot, filePath);
         const content = await fs.readFile(fullPath, 'utf8');
         return { content, path: filePath };
+      }
 
-      case 'write_code':
+      case 'write_code': {
         const writePath = params.file_path || params.path;
         const writeContent = params.content;
         if (!writePath || writeContent === undefined) {
@@ -333,12 +334,14 @@ export class RemoteMCPServer {
         await fs.mkdir(path.dirname(writeFullPath), { recursive: true });
         await fs.writeFile(writeFullPath, writeContent);
         return { success: true, path: writePath };
+      }
 
-      case 'list_files':
+      case 'list_files': {
         const dirPath = params.directory || '.';
         const fullDirPath = path.join(this.projectRoot, dirPath);
         const files = await fs.readdir(fullDirPath);
         return { files, directory: dirPath };
+      }
 
       default:
         throw new AppError(`Unknown MCP tool: ${toolName}`, { code: 'UNKNOWN_TOOL' });

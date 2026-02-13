@@ -16,7 +16,7 @@ export class AgentRegistry {
       enablePersistence: options.enablePersistence !== false,
       maxAgents: options.maxAgents || 100,
       agentsPath: options.agentsPath || path.join(process.cwd(), 'apps', 'cli', 'assets', 'agents'),
-      ...options
+      ...options,
     };
 
     this.agents = new Map(); // agentId -> agent definition
@@ -59,7 +59,7 @@ export class AgentRegistry {
       ...agentDefinition,
       registeredAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
-      status: 'active'
+      status: 'active',
     });
 
     // Index capabilities
@@ -77,13 +77,13 @@ export class AgentRegistry {
       lastAccessed: null,
       executionCount: 0,
       avgResponseTime: 0,
-      totalTokens: 0
+      totalTokens: 0,
     });
 
     return {
       id: agentId,
       status: 'registered',
-      registeredAt: new Date().toISOString()
+      registeredAt: new Date().toISOString(),
     };
   }
 
@@ -123,7 +123,9 @@ export class AgentRegistry {
    */
   findAgentsByCapability(capability) {
     const agentIds = this.agentCapabilities.get(capability) || new Set();
-    return Array.from(agentIds).map(id => this.agents.get(id)).filter(Boolean);
+    return Array.from(agentIds)
+      .map((id) => this.agents.get(id))
+      .filter(Boolean);
   }
 
   /**
@@ -136,14 +138,16 @@ export class AgentRegistry {
 
     // Get agents with first capability
     let candidateIds = this.agentCapabilities.get(capabilities[0]) || new Set();
-    
+
     // Intersect with agents having other capabilities
     for (let i = 1; i < capabilities.length; i++) {
       const capabilityIds = this.agentCapabilities.get(capabilities[i]) || new Set();
-      candidateIds = new Set([...candidateIds].filter(id => capabilityIds.has(id)));
+      candidateIds = new Set([...candidateIds].filter((id) => capabilityIds.has(id)));
     }
 
-    return Array.from(candidateIds).map(id => this.agents.get(id)).filter(Boolean);
+    return Array.from(candidateIds)
+      .map((id) => this.agents.get(id))
+      .filter(Boolean);
   }
 
   /**
@@ -151,7 +155,7 @@ export class AgentRegistry {
    */
   findAgentsByAnyCapability(capabilities) {
     const allAgentIds = new Set();
-    
+
     for (const capability of capabilities) {
       const agentIds = this.agentCapabilities.get(capability) || new Set();
       for (const id of agentIds) {
@@ -159,7 +163,9 @@ export class AgentRegistry {
       }
     }
 
-    return Array.from(allAgentIds).map(id => this.agents.get(id)).filter(Boolean);
+    return Array.from(allAgentIds)
+      .map((id) => this.agents.get(id))
+      .filter(Boolean);
   }
 
   /**
@@ -196,13 +202,13 @@ export class AgentRegistry {
 
     // Update agent
     Object.assign(agent, updates, {
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     });
 
     return {
       id: agentId,
       status: 'updated',
-      lastUpdated: agent.lastUpdated
+      lastUpdated: agent.lastUpdated,
     };
   }
 
@@ -235,7 +241,7 @@ export class AgentRegistry {
     return {
       id: agentId,
       status: 'removed',
-      removedAt: new Date().toISOString()
+      removedAt: new Date().toISOString(),
     };
   }
 
@@ -261,28 +267,29 @@ export class AgentRegistry {
     // This would normally call the actual agent execution system
     // For now, we'll simulate execution
     const startTime = Date.now();
-    
+
     try {
       // Simulate agent execution
       const result = {
         success: true,
         output: `Agent ${agent.name} processed task: ${task}`,
         agentId,
-        taskId: options.taskId || this.generateTaskId()
+        taskId: options.taskId || this.generateTaskId(),
       };
 
       const responseTime = Date.now() - startTime;
-      
+
       // Update response time metrics
       const currentAvg = metadata.avgResponseTime || 0;
-      metadata.avgResponseTime = ((currentAvg * (metadata.executionCount - 1)) + responseTime) / metadata.executionCount;
-      
+      metadata.avgResponseTime =
+        (currentAvg * (metadata.executionCount - 1) + responseTime) / metadata.executionCount;
+
       return result;
     } catch (error) {
       // Update error metrics
       metadata.errorCount = (metadata.errorCount || 0) + 1;
       this.agentMetadata.set(agentId, metadata);
-      
+
       throw error;
     }
   }
@@ -309,7 +316,7 @@ export class AgentRegistry {
       executionCount: metadata.executionCount,
       avgResponseTime: metadata.avgResponseTime,
       errorCount: metadata.errorCount || 0,
-      utilization: this.calculateUtilization(agentId)
+      utilization: this.calculateUtilization(agentId),
     };
   }
 
@@ -325,15 +332,15 @@ export class AgentRegistry {
     // Calculate based on execution count and time period
     // This is a simplified calculation
     const now = Date.now();
-    const registeredAt = new Date(agent.registeredAt).getTime();
+    const registeredAt = new Date(metadata.registeredAt).getTime();
     const uptimeMs = now - registeredAt;
-    
+
     if (uptimeMs <= 0) return 0;
-    
+
     // Simplified utilization: executions per hour
     const uptimeHours = uptimeMs / (1000 * 60 * 60);
     const executionsPerHour = metadata.executionCount / uptimeHours;
-    
+
     // Normalize to 0-100 scale
     return Math.min(100, executionsPerHour * 10); // Adjust multiplier as needed
   }
@@ -343,31 +350,32 @@ export class AgentRegistry {
    */
   async discoverAgents() {
     const indexPath = path.join(this.options.agentsPath, '00-AGENT_INDEX.md');
-    
+
     try {
       const content = await fs.readFile(indexPath, 'utf8');
-      
+
       // Basic regex to extract agents from markdown tables
       // Matches: | **@AgentName** | Role | When to Use | File |
-      const agentRegex = /\|\s*\*\*@(\w+)\*\*\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|/g;
-      
+      const agentRegex =
+        /\|\s*\*\*@(\w+)\*\*\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|/g;
+
       let match;
       while ((match = agentRegex.exec(content)) !== null) {
         const [_, name, role, whenToUse, fileName, filePath] = match;
-        
+
         const agentId = name.toLowerCase();
         const absolutePath = path.resolve(this.options.agentsPath, filePath.replace('./', ''));
-        
+
         // Register agent with metadata from index
         await this.registerAgent(agentId, {
           name: name,
           description: role.trim(),
           usage: whenToUse.trim(),
           promptPath: absolutePath,
-          capabilities: this.inferCapabilities(agentId, role)
+          capabilities: this.inferCapabilities(agentId, role),
         });
       }
-      
+
       console.log(`📋 Agent Registry: Discovered ${this.agents.size} agents from index`);
     } catch (error) {
       console.error(`❌ Agent Registry Discovery Failed: ${error.message}`);
@@ -380,20 +388,26 @@ export class AgentRegistry {
   inferCapabilities(agentId, role) {
     const capabilities = ['general'];
     const roleLower = role.toLowerCase();
-    
-    if (roleLower.includes('architecture') || agentId === 'cto') capabilities.push('planning', 'architecture');
-    if (roleLower.includes('plan') || agentId === 'planner') capabilities.push('planning', 'task-breakdown');
-    if (roleLower.includes('implementation') || agentId === 'backend' || agentId === 'frontend') capabilities.push('implementation', 'coding');
+
+    if (roleLower.includes('architecture') || agentId === 'cto')
+      capabilities.push('planning', 'architecture');
+    if (roleLower.includes('plan') || agentId === 'planner')
+      capabilities.push('planning', 'task-breakdown');
+    if (roleLower.includes('implementation') || agentId === 'backend' || agentId === 'frontend')
+      capabilities.push('implementation', 'coding');
     if (roleLower.includes('api') || agentId === 'backend') capabilities.push('api-design');
     if (roleLower.includes('ui') || agentId === 'frontend') capabilities.push('ui-design');
-    if (roleLower.includes('database') || agentId === 'database') capabilities.push('database-design', 'sql');
-    if (roleLower.includes('security') || agentId === 'security' || agentId === 'auth') capabilities.push('security', 'audit');
-    if (roleLower.includes('deploy') || agentId === 'devops') capabilities.push('devops', 'deployment');
+    if (roleLower.includes('database') || agentId === 'database')
+      capabilities.push('database-design', 'sql');
+    if (roleLower.includes('security') || agentId === 'security' || agentId === 'auth')
+      capabilities.push('security', 'audit');
+    if (roleLower.includes('deploy') || agentId === 'devops')
+      capabilities.push('devops', 'deployment');
     if (roleLower.includes('test') || agentId === 'testing') capabilities.push('testing', 'qa');
     if (roleLower.includes('review') || agentId === 'reviewer') capabilities.push('code-review');
     if (roleLower.includes('debug') || agentId === 'debugger') capabilities.push('debugging');
     if (roleLower.includes('research') || agentId === 'research') capabilities.push('research');
-    
+
     return [...new Set(capabilities)];
   }
 
@@ -405,7 +419,7 @@ export class AgentRegistry {
     if (!agent || !agent.promptPath) {
       return `You are the ${agentId} agent.`;
     }
-    
+
     try {
       return await fs.readFile(agent.promptPath, 'utf8');
     } catch (error) {
@@ -428,9 +442,12 @@ export class AgentRegistry {
   getMetrics() {
     return {
       totalAgents: this.agents.size,
-      activeAgents: Array.from(this.agents.values()).filter(a => a.status === 'active').length,
+      activeAgents: Array.from(this.agents.values()).filter((a) => a.status === 'active').length,
       capabilityIndexSize: this.agentCapabilities.size,
-      totalExecutions: Array.from(this.agentMetadata.values()).reduce((sum, meta) => sum + (meta.executionCount || 0), 0)
+      totalExecutions: Array.from(this.agentMetadata.values()).reduce(
+        (sum, meta) => sum + (meta.executionCount || 0),
+        0
+      ),
     };
   }
 

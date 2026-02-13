@@ -134,8 +134,9 @@ export function registerGenerateCommand(program) {
 
           // Check cache if enabled
           let cachedResult = null;
+          let cache = null;
           if (options.cache) {
-            const cache = getCache();
+            cache = getCache();
             const model =
               options.model || (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
             cachedResult = await cache.get(providerId, model, SYSTEM_PROMPT, finalPrompt);

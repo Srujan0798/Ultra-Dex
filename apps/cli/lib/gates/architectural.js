@@ -45,7 +45,7 @@ export async function runArchitecturalGates(projectDir = process.cwd()) {
 
     // 3. Security (Secret Scanning)
     const secretRegex =
-      /(?:key|secret|password|token|api_key)\s*[:=]\s*['"][a-zA-Z0-9_\-\.]{10,}['"]/i;
+      /(?:key|secret|password|token|api_key)\s*[:=]\s*['"][a-zA-Z0-9_.-]{10,}['"]/i;
     if (secretRegex.test(content)) {
       violations.push({
         file,

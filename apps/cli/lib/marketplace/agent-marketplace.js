@@ -1,15 +1,15 @@
-import { existsSync, readFileSync, writeFileSync, readdirSync } from "fs";
-import { join } from "path";
-import axios from "axios";
-import { execSync } from "child_process";
+import { existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
+import { join } from 'path';
+import axios from 'axios';
+import { execSync } from 'child_process';
 class AgentMarketplace {
   marketplaceUrl;
   localAgentsPath;
   localPluginsPath;
   constructor(options) {
-    this.marketplaceUrl = options?.marketplaceUrl || "https://marketplace.ultra-dex.ai";
-    this.localAgentsPath = options?.localAgentsPath || "./agents";
-    this.localPluginsPath = options?.localPluginsPath || "./plugins";
+    this.marketplaceUrl = options?.marketplaceUrl || 'https://marketplace.ultra-dex.ai';
+    this.localAgentsPath = options?.localAgentsPath || './agents';
+    this.localPluginsPath = options?.localPluginsPath || './plugins';
   }
   /**
    * List available agents in the marketplace
@@ -19,7 +19,7 @@ class AgentMarketplace {
       const response = await axios.get(`${this.marketplaceUrl}/api/agents`);
       return response.data;
     } catch (error) {
-      console.error("Failed to fetch agents from marketplace:", error.message);
+      console.error('Failed to fetch agents from marketplace:', error.message);
       return this.getLocalAgents();
     }
   }
@@ -31,7 +31,7 @@ class AgentMarketplace {
       const response = await axios.get(`${this.marketplaceUrl}/api/plugins`);
       return response.data;
     } catch (error) {
-      console.error("Failed to fetch plugins from marketplace:", error.message);
+      console.error('Failed to fetch plugins from marketplace:', error.message);
       return this.getLocalPlugins();
     }
   }
@@ -40,19 +40,21 @@ class AgentMarketplace {
    */
   async installAgent(agentId, version) {
     try {
-      console.log(`Installing agent: ${agentId}${version ? `@${version}` : ""}`);
+      console.log(`Installing agent: ${agentId}${version ? `@${version}` : ''}`);
       const response = await axios.get(`${this.marketplaceUrl}/api/agents/${agentId}`);
-      const agentManifest = response.data;
+      let agentManifest = response.data;
       if (version && agentManifest.version !== version) {
-        const versionResponse = await axios.get(`${this.marketplaceUrl}/api/agents/${agentId}/${version}`);
+        const versionResponse = await axios.get(
+          `${this.marketplaceUrl}/api/agents/${agentId}/${version}`
+        );
         agentManifest = versionResponse.data;
       }
       const agentPath = join(this.localAgentsPath, agentId);
       if (!existsSync(agentPath)) {
-        execSync(`mkdir -p ${agentPath}`, { stdio: "inherit" });
+        execSync(`mkdir -p ${agentPath}`, { stdio: 'inherit' });
       }
       const agentZipUrl = `${this.marketplaceUrl}/api/agents/${agentId}/download`;
-      const manifestPath = join(agentPath, "manifest.json");
+      const manifestPath = join(agentPath, 'manifest.json');
       writeFileSync(manifestPath, JSON.stringify(agentManifest, null, 2));
       console.log(`\u2705 Agent ${agentId} installed successfully`);
       return true;
@@ -66,19 +68,21 @@ class AgentMarketplace {
    */
   async installPlugin(pluginId, version) {
     try {
-      console.log(`Installing plugin: ${pluginId}${version ? `@${version}` : ""}`);
+      console.log(`Installing plugin: ${pluginId}${version ? `@${version}` : ''}`);
       const response = await axios.get(`${this.marketplaceUrl}/api/plugins/${pluginId}`);
-      const pluginManifest = response.data;
+      let pluginManifest = response.data;
       if (version && pluginManifest.version !== version) {
-        const versionResponse = await axios.get(`${this.marketplaceUrl}/api/plugins/${pluginId}/${version}`);
+        const versionResponse = await axios.get(
+          `${this.marketplaceUrl}/api/plugins/${pluginId}/${version}`
+        );
         pluginManifest = versionResponse.data;
       }
       const pluginPath = join(this.localPluginsPath, pluginId);
       if (!existsSync(pluginPath)) {
-        execSync(`mkdir -p ${pluginPath}`, { stdio: "inherit" });
+        execSync(`mkdir -p ${pluginPath}`, { stdio: 'inherit' });
       }
       const pluginZipUrl = `${this.marketplaceUrl}/api/plugins/${pluginId}/download`;
-      const manifestPath = join(pluginPath, "manifest.json");
+      const manifestPath = join(pluginPath, 'manifest.json');
       writeFileSync(manifestPath, JSON.stringify(pluginManifest, null, 2));
       console.log(`\u2705 Plugin ${pluginId} installed successfully`);
       return true;
@@ -94,7 +98,7 @@ class AgentMarketplace {
     try {
       const agentPath = join(this.localAgentsPath, agentId);
       if (existsSync(agentPath)) {
-        execSync(`rm -rf ${agentPath}`, { stdio: "inherit" });
+        execSync(`rm -rf ${agentPath}`, { stdio: 'inherit' });
         console.log(`\u2705 Agent ${agentId} uninstalled successfully`);
         return true;
       }
@@ -112,7 +116,7 @@ class AgentMarketplace {
     try {
       const pluginPath = join(this.localPluginsPath, pluginId);
       if (existsSync(pluginPath)) {
-        execSync(`rm -rf ${pluginPath}`, { stdio: "inherit" });
+        execSync(`rm -rf ${pluginPath}`, { stdio: 'inherit' });
         console.log(`\u2705 Plugin ${pluginId} uninstalled successfully`);
         return true;
       }
@@ -133,14 +137,14 @@ class AgentMarketplace {
     const agents = [];
     const agentDirs = readdirSync(this.localAgentsPath);
     for (const agentDir of agentDirs) {
-      const manifestPath = join(this.localAgentsPath, agentDir, "manifest.json");
+      const manifestPath = join(this.localAgentsPath, agentDir, 'manifest.json');
       if (existsSync(manifestPath)) {
         try {
-          const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+          const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
           agents.push({
             ...manifest,
             local: true,
-            path: join(this.localAgentsPath, agentDir)
+            path: join(this.localAgentsPath, agentDir),
           });
         } catch (error) {
           console.error(`Failed to parse manifest for agent ${agentDir}:`, error.message);
@@ -159,14 +163,14 @@ class AgentMarketplace {
     const plugins = [];
     const pluginDirs = readdirSync(this.localPluginsPath);
     for (const pluginDir of pluginDirs) {
-      const manifestPath = join(this.localPluginsPath, pluginDir, "manifest.json");
+      const manifestPath = join(this.localPluginsPath, pluginDir, 'manifest.json');
       if (existsSync(manifestPath)) {
         try {
-          const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+          const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
           plugins.push({
             ...manifest,
             local: true,
-            path: join(this.localPluginsPath, pluginDir)
+            path: join(this.localPluginsPath, pluginDir),
           });
         } catch (error) {
           console.error(`Failed to parse manifest for plugin ${pluginDir}:`, error.message);
@@ -182,13 +186,13 @@ class AgentMarketplace {
     try {
       const [agentsResponse, pluginsResponse] = await Promise.allSettled([
         axios.get(`${this.marketplaceUrl}/api/agents/search?q=${encodeURIComponent(query)}`),
-        axios.get(`${this.marketplaceUrl}/api/plugins/search?q=${encodeURIComponent(query)}`)
+        axios.get(`${this.marketplaceUrl}/api/plugins/search?q=${encodeURIComponent(query)}`),
       ]);
-      const agents = agentsResponse.status === "fulfilled" ? agentsResponse.value.data : [];
-      const plugins = pluginsResponse.status === "fulfilled" ? pluginsResponse.value.data : [];
+      const agents = agentsResponse.status === 'fulfilled' ? agentsResponse.value.data : [];
+      const plugins = pluginsResponse.status === 'fulfilled' ? pluginsResponse.value.data : [];
       return { agents, plugins };
     } catch (error) {
-      console.error("Search failed:", error.message);
+      console.error('Search failed:', error.message);
       return { agents: [], plugins: [] };
     }
   }
@@ -263,7 +267,9 @@ class AgentMarketplace {
         console.log(`\u2705 Plugin ${pluginId} is already up to date`);
         return true;
       }
-      console.log(`Updating plugin ${pluginId} from ${localPlugin.version} to ${latestPlugin.version}`);
+      console.log(
+        `Updating plugin ${pluginId} from ${localPlugin.version} to ${latestPlugin.version}`
+      );
       return await this.installPlugin(pluginId, latestPlugin.version);
     } catch (error) {
       console.error(`Failed to update plugin ${pluginId}:`, error.message);
@@ -274,7 +280,7 @@ class AgentMarketplace {
    * Validate agent manifest
    */
   validateAgentManifest(manifest) {
-    const requiredFields = ["id", "name", "version", "description", "author", "license", "main"];
+    const requiredFields = ['id', 'name', 'version', 'description', 'author', 'license', 'main'];
     for (const field of requiredFields) {
       if (!manifest[field]) {
         console.error(`Missing required field in agent manifest: ${field}`);
@@ -287,14 +293,14 @@ class AgentMarketplace {
    * Validate plugin manifest
    */
   validatePluginManifest(manifest) {
-    const requiredFields = ["id", "name", "version", "description", "type", "entryPoint"];
+    const requiredFields = ['id', 'name', 'version', 'description', 'type', 'entryPoint'];
     for (const field of requiredFields) {
       if (!manifest[field]) {
         console.error(`Missing required field in plugin manifest: ${field}`);
         return false;
       }
     }
-    const validTypes = ["command", "agent", "integration", "template"];
+    const validTypes = ['command', 'agent', 'integration', 'template'];
     if (!validTypes.includes(manifest.type)) {
       console.error(`Invalid plugin type: ${manifest.type}`);
       return false;
@@ -303,7 +309,4 @@ class AgentMarketplace {
   }
 }
 var agent_marketplace_default = AgentMarketplace;
-export {
-  AgentMarketplace,
-  agent_marketplace_default as default
-};
+export { AgentMarketplace, agent_marketplace_default as default };

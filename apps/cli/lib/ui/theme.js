@@ -84,7 +84,19 @@ export const theme = {
 };
 
 export function stripAnsi(str) {
-  return str.replace(/\x1b\[[0-9;]*m/g, '');
+  const input = String(str ?? '');
+  let out = '';
+
+  for (let i = 0; i < input.length; i++) {
+    if (input[i] === '\u001b' && input[i + 1] === '[') {
+      i += 2;
+      while (i < input.length && input[i] !== 'm') i++;
+      continue;
+    }
+    out += input[i];
+  }
+
+  return out;
 }
 
 export function box(content, title = '') {

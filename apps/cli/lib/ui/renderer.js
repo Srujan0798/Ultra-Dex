@@ -212,7 +212,7 @@ class Renderer {
         // Code
         .replace(/`(.*?)`/g, (_, p1) => theme.code(p1))
         // Link
-        .replace(/\`(.*?)`/g, (_, p1) => theme.link(p1))
+        .replace(/`(.*?)`/g, (_, p1) => theme.link(p1))
         // Arrow/Bullet
         .replace(/^- /g, theme.accent('  › '))
         // Key/Value

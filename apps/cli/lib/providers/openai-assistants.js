@@ -544,15 +544,6 @@ Cover unit tests, integration tests, and edge cases.`,
       model: this.model,
     };
   }
-
-  async validateApiKey() {
-    try {
-      await this._request('/models');
-      return true;
-    } catch {
-      return false;
-    }
-  }
 }
 
 export default OpenAIAssistantsProvider;

@@ -56,11 +56,11 @@ export function registerPTYCommands(program) {
     .description('Execute interactive command with AI assistance')
     .option('-t, --timeout <seconds>', 'Command timeout in seconds', '30')
     .action(async (commandParts, options) => {
+      const command = commandParts.join(' ');
       try {
-        const command = commandParts.join(' ');
         await handleExecCommand(command, options);
       } catch (error) {
-        await handleError(error, { command: 'pty-exec', command, options });
+        await handleError(error, { command: 'pty-exec', executedCommand: command, options });
         process.exit(error.exitCode || 1);
       }
     });

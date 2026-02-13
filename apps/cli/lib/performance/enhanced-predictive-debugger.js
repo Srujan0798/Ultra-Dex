@@ -98,15 +98,15 @@ class StaticAnalyzer {
           severity: 'critical',
           confidence: 0.95,
           message: 'Hardcoded secret detected',
-          fix: 'Move secrets to environment variables'
+          fix: 'Move secrets to environment variables',
         },
         {
           name: 'sql_injection',
-          regex: /(?:query|execute|sql)\s*[\+=]\s*["'`][^"'`]*\+[^"'`]*["'`]/gi,
+          regex: /(?:query|execute|sql)\s*[+=]\s*["'`][^"'`]*\+[^"'`]*["'`]/gi,
           severity: 'critical',
           confidence: 0.9,
           message: 'Potential SQL injection',
-          fix: 'Use parameterized queries'
+          fix: 'Use parameterized queries',
         },
         {
           name: 'xss_vulnerability',
@@ -114,7 +114,7 @@ class StaticAnalyzer {
           severity: 'high',
           confidence: 0.85,
           message: 'Potential XSS vulnerability',
-          fix: 'Use textContent or sanitize inputs'
+          fix: 'Use textContent or sanitize inputs',
         },
         {
           name: 'eval_usage',
@@ -122,8 +122,8 @@ class StaticAnalyzer {
           severity: 'high',
           confidence: 0.95,
           message: 'Dangerous eval() usage',
-          fix: 'Avoid eval() or use safer alternatives'
-        }
+          fix: 'Avoid eval() or use safer alternatives',
+        },
       ],
       // Bug-prone patterns
       bugProne: [
@@ -133,7 +133,7 @@ class StaticAnalyzer {
           severity: 'high',
           confidence: 0.9,
           message: 'Empty catch block',
-          fix: 'Add error handling or logging'
+          fix: 'Add error handling or logging',
         },
         {
           name: 'potential_null_access',
@@ -141,7 +141,7 @@ class StaticAnalyzer {
           severity: 'medium',
           confidence: 0.7,
           message: 'Potential null/undefined access',
-          fix: 'Add null checks or use optional chaining'
+          fix: 'Add null checks or use optional chaining',
         },
         {
           name: 'infinite_loop',
@@ -149,7 +149,7 @@ class StaticAnalyzer {
           severity: 'high',
           confidence: 0.8,
           message: 'Potential infinite loop',
-          fix: 'Add break conditions'
+          fix: 'Add break conditions',
         },
         {
           name: 'memory_leak',
@@ -157,8 +157,8 @@ class StaticAnalyzer {
           severity: 'medium',
           confidence: 0.6,
           message: 'Potential memory leak (setInterval without clearInterval)',
-          fix: 'Store interval ID and clear when component unmounts'
-        }
+          fix: 'Store interval ID and clear when component unmounts',
+        },
       ],
       // Performance patterns
       performance: [
@@ -168,7 +168,7 @@ class StaticAnalyzer {
           severity: 'medium',
           confidence: 0.7,
           message: 'Inefficient for...in loop on arrays',
-          fix: 'Use for...of or traditional for loop for arrays'
+          fix: 'Use for...of or traditional for loop for arrays',
         },
         {
           name: 'sync_operation',
@@ -176,7 +176,7 @@ class StaticAnalyzer {
           severity: 'medium',
           confidence: 0.8,
           message: 'Synchronous operation in async context',
-          fix: 'Use async alternatives'
+          fix: 'Use async alternatives',
         },
         {
           name: 'large_object_creation',
@@ -184,8 +184,8 @@ class StaticAnalyzer {
           severity: 'medium',
           confidence: 0.6,
           message: 'Large object/array creation',
-          fix: 'Consider lazy initialization or pagination'
-        }
+          fix: 'Consider lazy initialization or pagination',
+        },
       ],
       // Maintainability patterns
       maintainability: [
@@ -195,15 +195,16 @@ class StaticAnalyzer {
           severity: 'low',
           confidence: 0.5,
           message: 'Console statement in production code',
-          fix: 'Use proper logging framework'
+          fix: 'Use proper logging framework',
         },
         {
           name: 'magic_number',
-          regex: /[^a-zA-Z_$]([0-9]{4,}|0[xX][0-9a-fA-F]{5,}|0[oO][0-7]{5,}|0[bB][01]{10,})[^a-zA-Z_$]/g,
+          regex:
+            /[^a-zA-Z_$]([0-9]{4,}|0[xX][0-9a-fA-F]{5,}|0[oO][0-7]{5,}|0[bB][01]{10,})[^a-zA-Z_$]/g,
           severity: 'low',
           confidence: 0.4,
           message: 'Magic number detected',
-          fix: 'Assign to named constant'
+          fix: 'Assign to named constant',
         },
         {
           name: 'long_function',
@@ -211,9 +212,9 @@ class StaticAnalyzer {
           severity: 'medium',
           confidence: 0.6,
           message: 'Function too long (>50 lines)',
-          fix: 'Split into smaller functions'
-        }
-      ]
+          fix: 'Split into smaller functions',
+        },
+      ],
     };
   }
 
@@ -229,20 +230,26 @@ class StaticAnalyzer {
           while ((match = pattern.regex.exec(content)) !== null) {
             const lines = content.substring(0, match.index).split('\n');
             const lineNum = lines.length;
-            const colNum = lines[lineNum - 1].length - (lines[lineNum - 1].length - match.index + content.lastIndexOf('\n', match.index - 1));
+            const colNum =
+              lines[lineNum - 1].length -
+              (lines[lineNum - 1].length -
+                match.index +
+                content.lastIndexOf('\n', match.index - 1));
 
-            patterns.push(new EnhancedCodePattern(
-              category,
-              { file: filePath, line: lineNum, column: colNum },
-              pattern.confidence,
-              {
-                issue: pattern.name,
-                message: pattern.message,
-                code: match[0].substring(0, 100) + (match[0].length > 100 ? '...' : ''),
-                category
-              },
-              pattern.severity
-            ));
+            patterns.push(
+              new EnhancedCodePattern(
+                category,
+                { file: filePath, line: lineNum, column: colNum },
+                pattern.confidence,
+                {
+                  issue: pattern.name,
+                  message: pattern.message,
+                  code: match[0].substring(0, 100) + (match[0].length > 100 ? '...' : ''),
+                  category,
+                },
+                pattern.severity
+              )
+            );
           }
         }
       }
@@ -256,7 +263,7 @@ class StaticAnalyzer {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // Detect function start
       if (line.match(/^(function|const|let|var|class)\s+\w+\s*(=|\(|\s)/) && line.includes('{')) {
         currentFunction = line;
@@ -265,22 +272,25 @@ class StaticAnalyzer {
       } else if (currentFunction) {
         braceDepth += (line.match(/{/g) || []).length;
         braceDepth -= (line.match(/}/g) || []).length;
-        
+
         if (braceDepth <= 0) {
           // End of function
-          if (i - functionStartLine > 50) { // More than 50 lines
-            patterns.push(new EnhancedCodePattern(
-              'maintainability',
-              { file: filePath, line: functionStartLine + 1, column: 0 },
-              0.6,
-              {
-                issue: 'long_function',
-                message: 'Function too long (>50 lines)',
-                code: currentFunction.substring(0, 100),
-                lines: i - functionStartLine
-              },
-              'medium'
-            ));
+          if (i - functionStartLine > 50) {
+            // More than 50 lines
+            patterns.push(
+              new EnhancedCodePattern(
+                'maintainability',
+                { file: filePath, line: functionStartLine + 1, column: 0 },
+                0.6,
+                {
+                  issue: 'long_function',
+                  message: 'Function too long (>50 lines)',
+                  code: currentFunction.substring(0, 100),
+                  lines: i - functionStartLine,
+                },
+                'medium'
+              )
+            );
           }
           currentFunction = null;
         }
@@ -304,7 +314,7 @@ class MLPredictor {
         confidence: 1.0,
         context: 0.2, // Weight for contextual factors
       },
-      bias: 0.1
+      bias: 0.1,
     };
   }
 
@@ -313,17 +323,17 @@ class MLPredictor {
     const severityWeight = this.model.weights.severity[pattern.severity] || 0.5;
     const confidenceWeight = pattern.confidence;
     const contextWeight = this.model.weights.context;
-    
+
     // Contextual factors that affect probability
     let contextFactor = 1.0;
     if (context.inHotPath) contextFactor *= 1.5; // Hot code paths
     if (context.complexity > 10) contextFactor *= 1.2; // Complex functions
     if (context.churn > 5) contextFactor *= 1.3; // Frequently changed code
-    
+
     // Calculate probability
-    const rawScore = (severityWeight * 0.4) + (confidenceWeight * 0.4) + (contextFactor * 0.2);
+    const rawScore = severityWeight * 0.4 + confidenceWeight * 0.4 + contextFactor * 0.2;
     const probability = Math.min(0.99, Math.max(0.01, rawScore)); // Clamp between 0.01 and 0.99
-    
+
     return probability;
   }
 }
@@ -336,13 +346,19 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     super();
     this.options = {
       watchPatterns: ['**/*.js', '**/*.ts', '**/*.jsx', '**/*.tsx'],
-      ignorePatterns: ['**/node_modules/**', '**/*.test.js', '**/coverage/**', '**/dist/**', '**/build/**'],
+      ignorePatterns: [
+        '**/node_modules/**',
+        '**/*.test.js',
+        '**/coverage/**',
+        '**/dist/**',
+        '**/build/**',
+      ],
       enableBackgroundAnalysis: true,
       analysisInterval: 30000, // Reduced from default for better responsiveness
       maxConcurrentAnalyses: 4, // Limit concurrent analyses
       ...options,
     };
-    
+
     this.analyzer = new StaticAnalyzer();
     this.mlPredictor = new MLPredictor();
     this.predictions = new Map(); // predictionId -> EnhancedBugPrediction
@@ -400,35 +416,35 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     const batchSize = 10;
     for (let i = 0; i < files.length; i += batchSize) {
       const batch = files.slice(i, i + batchSize);
-      
+
       // Process batch in parallel but limit concurrency
       const batchPromises = batch.map(async (filePath) => {
         if (this.activeAnalyses >= this.maxAnalyses) {
           // Wait if we've hit the concurrency limit
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
-        
+
         this.activeAnalyses++;
         try {
           const content = await fs.readFile(filePath, 'utf8');
           const fileHash = this.calculateHash(content);
-          
+
           // Skip if file hasn't changed
           if (this.fileHashes.has(filePath) && this.fileHashes.get(filePath) === fileHash) {
             return [];
           }
-          
+
           this.fileHashes.set(filePath, fileHash);
           const result = await this.analyzer.analyzeFile(filePath, content);
           allPatterns.push(...result.patterns);
-          
+
           // Emit progress update
-          this.emit('file:analyzed', { 
-            filePath, 
-            patternCount: result.patterns.length, 
-            analysisTime: result.analysisTime 
+          this.emit('file:analyzed', {
+            filePath,
+            patternCount: result.patterns.length,
+            analysisTime: result.analysisTime,
           });
-          
+
           return result.patterns;
         } finally {
           this.activeAnalyses--;
@@ -453,10 +469,10 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     }
 
     const scanTime = performance.now() - startTime;
-    this.emit('scan:complete', { 
-      fileCount: files.length, 
-      patternCount: allPatterns.length, 
-      scanTime 
+    this.emit('scan:complete', {
+      fileCount: files.length,
+      patternCount: allPatterns.length,
+      scanTime,
     });
   }
 
@@ -475,7 +491,7 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
         const relPath = path.relative(process.cwd(), fullPath);
 
         // Check if path should be ignored
-        const shouldIgnore = Array.from(ignoreSet).some(pattern => {
+        const shouldIgnore = Array.from(ignoreSet).some((pattern) => {
           // Simple glob matching
           const regex = new RegExp(pattern.replace(/\*/g, '.*').replace(/\?/g, '.'));
           return regex.test(relPath);
@@ -487,7 +503,11 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
 
         if (entry.isDirectory()) {
           // Skip common directories that shouldn't be analyzed
-          if (['node_modules', '.git', 'dist', 'build', 'coverage', '.next', 'out'].includes(entry.name)) {
+          if (
+            ['node_modules', '.git', 'dist', 'build', 'coverage', '.next', 'out'].includes(
+              entry.name
+            )
+          ) {
             continue;
           }
           await traverse(fullPath);
@@ -514,13 +534,13 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     // In production, use chokidar or similar with debounce
     // For now, polling with intelligent intervals
     let timeoutId = null;
-    
+
     this.watcher = setInterval(async () => {
       // Debounce multiple rapid scans
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      
+
       timeoutId = setTimeout(async () => {
         await this.scanProject();
       }, 2000); // 2 second debounce
@@ -532,10 +552,11 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
    */
   addPrediction(prediction) {
     // Deduplicate similar predictions
-    const existing = Array.from(this.predictions.values()).find(p => 
-      p.pattern.location.file === prediction.pattern.location.file &&
-      p.pattern.location.line === prediction.pattern.location.line &&
-      p.pattern.details.issue === prediction.pattern.details.issue
+    const existing = Array.from(this.predictions.values()).find(
+      (p) =>
+        p.pattern.location.file === prediction.pattern.location.file &&
+        p.pattern.location.line === prediction.pattern.location.line &&
+        p.pattern.details.issue === prediction.pattern.details.issue
     );
 
     if (existing) {
@@ -574,8 +595,10 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
 
     // Sort by priority (probability * severity weight)
     return predictions.sort((a, b) => {
-      const priorityA = a.probability * (['critical', 'high', 'medium', 'low'].indexOf(a.severity) + 1);
-      const priorityB = b.probability * (['critical', 'high', 'medium', 'low'].indexOf(b.severity) + 1);
+      const priorityA =
+        a.probability * (['critical', 'high', 'medium', 'low'].indexOf(a.severity) + 1);
+      const priorityB =
+        b.probability * (['critical', 'high', 'medium', 'low'].indexOf(b.severity) + 1);
       return priorityB - priorityA; // Descending order
     });
   }
@@ -585,50 +608,50 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
    */
   generateFix(pattern) {
     const fixes = {
-      'hardcoded_secret': {
+      hardcoded_secret: {
         description: 'Use environment variables',
         replacement: 'process.env.SECRET_KEY',
       },
-      'sql_injection': {
+      sql_injection: {
         description: 'Use parameterized queries',
         replacement: 'db.query("SELECT * FROM users WHERE id = ?", [userId])',
       },
-      'xss_vulnerability': {
+      xss_vulnerability: {
         description: 'Use textContent or sanitize inputs',
         replacement: 'element.textContent = userInput',
       },
-      'eval_usage': {
+      eval_usage: {
         description: 'Avoid eval() or use safer alternatives',
         replacement: 'Use JSON.parse() or Function constructor carefully',
       },
-      'empty_catch_block': {
+      empty_catch_block: {
         description: 'Add error handling or logging',
         replacement: 'catch (error) { console.error("Error:", error); }',
       },
-      'potential_null_access': {
+      potential_null_access: {
         description: 'Add null checks or use optional chaining',
         replacement: 'obj?.property',
       },
-      'infinite_loop': {
+      infinite_loop: {
         description: 'Add break conditions',
         replacement: 'let attempts = 0; while (condition && attempts++ < 100) { ... }',
       },
-      'memory_leak': {
+      memory_leak: {
         description: 'Store interval ID and clear when needed',
         replacement: 'const id = setInterval(...); clearInterval(id);',
       },
-      'console_log': {
+      console_log: {
         description: 'Use proper logging framework',
         replacement: 'logger.info("message")',
       },
-      'magic_number': {
+      magic_number: {
         description: 'Assign to named constant',
         replacement: 'const TIMEOUT_MS = 5000;',
       },
-      'long_function': {
+      long_function: {
         description: 'Split into smaller functions',
         replacement: 'Extract logic into separate functions',
-      }
+      },
     };
 
     return fixes[pattern.details.issue] || null;
@@ -648,18 +671,19 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
     const predictions = Array.from(this.predictions.values());
     const total = predictions.length;
 
-    if (total === 0) return { 
-      total: 0, 
-      accuracy: 0, 
-      precision: 0, 
-      recall: 0,
-      avgProbability: 0,
-      criticalCount: 0,
-      highCount: 0
-    };
+    if (total === 0)
+      return {
+        total: 0,
+        accuracy: 0,
+        precision: 0,
+        recall: 0,
+        avgProbability: 0,
+        criticalCount: 0,
+        highCount: 0,
+      };
 
-    const criticalCount = predictions.filter(p => p.severity === 'critical').length;
-    const highCount = predictions.filter(p => p.severity === 'high').length;
+    const criticalCount = predictions.filter((p) => p.severity === 'critical').length;
+    const highCount = predictions.filter((p) => p.severity === 'high').length;
     const avgProbability = predictions.reduce((sum, p) => sum + p.probability, 0) / total;
 
     return {

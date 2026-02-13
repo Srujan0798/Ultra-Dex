@@ -155,7 +155,7 @@ export class AgentStateMachine {
       this.state.status = 'executing';
       this.state.updatedAt = new Date().toISOString();
 
-      const result = await this.executeAgent(agentName, task, context);
+      const result = await this.executeAgentCore(agentName, task, context);
 
       // Record agent execution
       this.state.agents.push({
@@ -192,7 +192,7 @@ export class AgentStateMachine {
   /**
    * Execute an agent using the injected executor, or simulate if none is provided.
    */
-  async executeAgent(agentName, task, context) {
+  async executeAgentCore(agentName, task, context) {
     if (typeof this.executor === 'function') {
       return this.executor(agentName, task, context);
     }

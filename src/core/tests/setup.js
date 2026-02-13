@@ -1,7 +1,7 @@
 // tests/setup.js
 // Global test setup for Ultra-Dex
 
-import { vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { vi, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, mkdirSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
@@ -21,7 +21,7 @@ beforeAll(async () => {
   process.env.TEST_ENV = 'true';
   process.env.MOCK_AI_PROVIDERS = 'true';
   process.env.DISABLE_EXTERNAL_APIS = 'true';
-  
+
   // Mock AI providers to avoid actual API calls
   vi.mock('../packages/core/core/ai/ai-meta-layer.js', async () => {
     const actual = await vi.importActual('../packages/core/core/ai/ai-meta-layer.js');
@@ -32,16 +32,18 @@ beforeAll(async () => {
         call: vi.fn().mockResolvedValue({
           content: 'Mocked AI response for testing',
           usage: { totalTokens: 15 },
-          finishReason: 'stop'
+          finishReason: 'stop',
         }),
         stream: vi.fn().mockResolvedValue({
-          [Symbol.asyncIterator]: async function*() { yield 'Mocked stream response'; }
+          [Symbol.asyncIterator]: async function* () {
+            yield 'Mocked stream response';
+          },
         }),
         generateObject: vi.fn().mockResolvedValue({
           object: { mocked: true },
-          usage: { totalTokens: 20 }
-        })
-      }
+          usage: { totalTokens: 20 },
+        }),
+      },
     };
   });
 
@@ -54,14 +56,14 @@ afterAll(() => {
   if (existsSync(testTempDir)) {
     rmSync(testTempDir, { recursive: true, force: true });
   }
-  
+
   console.log('🧹 Test environment cleaned up');
 });
 
 beforeEach(() => {
   // Reset mocks before each test
   vi.clearAllMocks();
-  
+
   // Set up any per-test configuration
   console.log(`\n📝 Starting test: ${expect.getState().currentTestName}`);
 });

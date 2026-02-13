@@ -43,10 +43,10 @@ _ultra_dex_completion() {
     opts="$(ultra-dex --completion-bash \${COMP_WORDS[@]:1:COMP_CWORD-1})"
 
     if [[ \${cur} == -* ]] ; then
-        COMPREPLY=( \$(compgen -W "\${opts}" -- \${cur}) )
+        COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
         return 0
     else
-        COMPREPLY=( \$(compgen -W "\${opts}" -- \${cur}) )
+        COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
         return 0
     fi
 }
@@ -75,7 +75,7 @@ _ultra_dex_completion
 complete -c ultra-dex -a '(__ultra_dex_complete)'
 
 function __ultra_dex_complete
-    ultra-dex --completion-fish \$argv
+    ultra-dex --completion-fish $argv
 end
 `,
 };

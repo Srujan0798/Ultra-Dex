@@ -367,7 +367,7 @@ async function ensureLogDirectory() {
 
 async function cleanupOldSwarmLogs(logDir, maxLogs = 50) {
   try {
-    const files = await readdir(logDir);
+    const files = await fs.readdir(logDir);
     const logFiles = files.filter((f) => f.startsWith('swarm-') && f.endsWith('.json'));
 
     if (logFiles.length >= maxLogs) {
@@ -532,7 +532,7 @@ Task: "${task}"`);
   // Use optimized executor for better performance
   const executor = new OptimizedSwarmExecutor();
   const executionResult = await executor.executeSwarm(remainingPipeline, task, context, provider, {
-    parallel: options.parallel
+    parallel: options.parallel,
   });
 
   // Merge results with any previously completed agents
@@ -549,7 +549,7 @@ Task: "${task}"`);
     successCount,
     failCount,
     parallel: options.parallel || false,
-    performance: executionResult.stats
+    performance: executionResult.stats,
   };
   const logPath = await writeSwarmLog(logDir, task, allResults, stats);
 

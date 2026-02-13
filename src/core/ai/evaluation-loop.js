@@ -49,6 +49,41 @@ const MODEL_ESCALATION = [
   'claude-3-opus',
 ];
 
+function heuristicScore(text = '', terms = []) {
+  const normalized = String(text || '').trim();
+  if (!normalized) return 0;
+  let score = Math.min(0.4, normalized.length / 4000);
+  for (const term of terms) {
+    if (normalized.toLowerCase().includes(term)) score += 0.1;
+  }
+  return Math.min(1, score);
+}
+
+async function validateCode(output) {
+  const score = heuristicScore(output, ['function', 'class', 'const', 'return', 'import']);
+  return { score, reasons: ['Heuristic code quality check'] };
+}
+
+async function validateDocumentation(output) {
+  const score = heuristicScore(output, ['overview', 'example', 'usage', 'steps']);
+  return { score, reasons: ['Heuristic documentation quality check'] };
+}
+
+async function validateAnalysis(output) {
+  const score = heuristicScore(output, ['because', 'therefore', 'tradeoff', 'risk']);
+  return { score, reasons: ['Heuristic analysis quality check'] };
+}
+
+async function validateRefactoring(output) {
+  const score = heuristicScore(output, ['before', 'after', 'improve', 'maintain']);
+  return { score, reasons: ['Heuristic refactoring quality check'] };
+}
+
+async function validateDefault(output) {
+  const score = heuristicScore(output, []);
+  return { score, reasons: ['Default heuristic quality check'] };
+}
+
 class EvaluationLoop {
   constructor(options = {}) {
     this.maxRetries = options.maxRetries || 3;

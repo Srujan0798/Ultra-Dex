@@ -58,18 +58,18 @@ export class BaseAgent {
   }
 
   // Subclasses must implement these:
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   async plan(_objective, _context) {
     throw new Error('Method "plan" must be implemented by subclass');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   async execute(_plan, _context) {
     throw new Error('Method "execute" must be implemented by subclass');
   }
 
   // Default verification hook
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   async verify(_result) {
     return { passed: true, steps: [] };
   }

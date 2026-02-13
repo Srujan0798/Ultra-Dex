@@ -23,7 +23,7 @@ export class ContextMetaManager {
       enableEncryption: config.enableEncryption || false,
       enableSemanticSearch: config.enableSemanticSearch !== false,
       similarityThreshold: config.similarityThreshold || 0.7,
-      ...config
+      ...config,
     };
 
     this.memoryStore = new Map(); // Short-term memory
@@ -31,7 +31,7 @@ export class ContextMetaManager {
     this.vectorStore = new Map(); // Vector embeddings
     this.contextWindows = new Map(); // Active context windows
     this.compressionCache = new Map(); // Compression cache
-    
+
     this.embeddingProvider = createOpenAI({
       baseURL: 'https://api.openai.com/v1',
       apiKey: process.env.OPENAI_API_KEY,
@@ -43,7 +43,7 @@ export class ContextMetaManager {
       totalEmbeddings: 0,
       cacheHits: 0,
       cacheMisses: 0,
-      avgRetrievalTime: 0
+      avgRetrievalTime: 0,
     };
   }
 
@@ -52,7 +52,7 @@ export class ContextMetaManager {
    */
   async store(key, data, context = {}, metadata = {}) {
     const startTime = performance.now();
-    
+
     const memoryEntry = {
       id: key,
       data,
@@ -62,10 +62,10 @@ export class ContextMetaManager {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         accessCount: 0,
-        lastAccessed: null
+        lastAccessed: null,
       },
       embedding: null,
-      compressed: false
+      compressed: false,
     };
 
     // Create embedding if semantic search is enabled
@@ -89,7 +89,7 @@ export class ContextMetaManager {
     }
 
     this.stats.totalMemories++;
-    
+
     const retrievalTime = performance.now() - startTime;
     this.updateRetrievalStats(retrievalTime);
 
@@ -97,7 +97,7 @@ export class ContextMetaManager {
       size: JSON.stringify(data).length,
       hasEmbedding: !!memoryEntry.embedding,
       isCompressed: memoryEntry.compressed,
-      retrievalTime: Math.round(retrievalTime)
+      retrievalTime: Math.round(retrievalTime),
     });
 
     return memoryEntry;
@@ -108,9 +108,9 @@ export class ContextMetaManager {
    */
   async retrieve(key, options = {}) {
     const startTime = performance.now();
-    
+
     let memoryEntry = this.memoryStore.get(key) || this.longTermMemory.get(key);
-    
+
     if (!memoryEntry) {
       // Try to decompress from cache
       const compressed = this.compressionCache.get(key);
@@ -144,7 +144,7 @@ export class ContextMetaManager {
 
     logger.info(`Memory retrieved: ${key}`, {
       accessCount: memoryEntry.metadata.accessCount,
-      retrievalTime: Math.round(retrievalTime)
+      retrievalTime: Math.round(retrievalTime),
     });
 
     return memoryEntry;
@@ -164,7 +164,7 @@ export class ContextMetaManager {
     const results = [];
     for (const [key, embedding] of this.vectorStore) {
       const similarity = this.cosineSimilarity(queryEmbedding, embedding);
-      
+
       if (similarity >= (options.threshold || this.config.similarityThreshold)) {
         const memoryEntry = await this.retrieve(key);
         results.push({
@@ -172,7 +172,7 @@ export class ContextMetaManager {
           similarity,
           data: memoryEntry?.data,
           context: memoryEntry?.context,
-          metadata: memoryEntry?.metadata
+          metadata: memoryEntry?.metadata,
         });
       }
     }
@@ -190,7 +190,7 @@ export class ContextMetaManager {
       queryLength: query.length,
       resultsFound: results.length,
       resultsReturned: limitedResults.length,
-      retrievalTime: Math.round(retrievalTime)
+      retrievalTime: Math.round(retrievalTime),
     });
 
     return limitedResults;
@@ -203,7 +203,7 @@ export class ContextMetaManager {
     try {
       const embedding = await embed({
         model: this.embeddingProvider.textEmbeddingModel(this.config.embeddingModel),
-        value: text
+        value: text,
       });
       return embedding;
     } catch (error) {
@@ -219,7 +219,7 @@ export class ContextMetaManager {
     try {
       const embeddings = await embedMany({
         model: this.embeddingProvider.textEmbeddingModel(this.config.embeddingModel),
-        values: texts
+        values: texts,
       });
       return embeddings;
     } catch (error) {
@@ -255,7 +255,7 @@ export class ContextMetaManager {
   formatForEmbedding(data, context = {}) {
     const textData = typeof data === 'string' ? data : JSON.stringify(data);
     const contextText = Object.keys(context).length > 0 ? JSON.stringify(context) : '';
-    
+
     return `${contextText}\n\n${textData}`.substring(0, 8192); // Limit embedding input
   }
 
@@ -269,7 +269,7 @@ export class ContextMetaManager {
         memories: new Set(),
         createdAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
-        size: 0
+        size: 0,
       });
       this.stats.totalContextWindows++;
     }
@@ -277,10 +277,10 @@ export class ContextMetaManager {
     const window = this.contextWindows.get(windowId);
     window.memories.add(memoryKey);
     window.lastUpdated = new Date().toISOString();
-    
+
     // Update window size
     window.size = this.calculateContextWindowSize(window);
-    
+
     // Trim window if too large
     if (window.size > this.config.maxContextLength) {
       await this.trimContextWindow(window);
@@ -309,20 +309,20 @@ export class ContextMetaManager {
     const sortedMemories = Array.from(window.memories).sort((a, b) => {
       const memA = this.memoryStore.get(a) || this.longTermMemory.get(a);
       const memB = this.memoryStore.get(b) || this.longTermMemory.get(b);
-      
+
       if (!memA || !memB) return 0;
-      
+
       // Prioritize by access count and recency
       const accessDiff = (memB.metadata.accessCount || 0) - (memA.metadata.accessCount || 0);
       if (accessDiff !== 0) return accessDiff;
-      
+
       return new Date(memB.metadata.lastAccessed || 0) - new Date(memA.metadata.lastAccessed || 0);
     });
 
     // Keep most important memories, remove least important
     const keepCount = Math.floor(sortedMemories.length * 0.7); // Keep 70%
     const toRemove = sortedMemories.slice(keepCount);
-    
+
     for (const key of toRemove) {
       window.memories.delete(key);
     }
@@ -342,7 +342,6 @@ export class ContextMetaManager {
   async compress(data) {
     // In a real implementation, use compression library like pako
     // For now, just return as-is
-    this.compressionCache.set(memoryEntry.id, data);
     return data;
   }
 
@@ -401,7 +400,7 @@ export class ContextMetaManager {
     logger.info(`Memory cleanup completed`, {
       expiredCount: expiredKeys.length,
       remainingShortTerm: this.memoryStore.size,
-      remainingLongTerm: this.longTermMemory.size
+      remainingLongTerm: this.longTermMemory.size,
     });
 
     return expiredKeys.length;
@@ -411,8 +410,8 @@ export class ContextMetaManager {
    * Update retrieval statistics
    */
   updateRetrievalStats(time) {
-    this.stats.avgRetrievalTime = 
-      ((this.stats.avgRetrievalTime * (this.stats.cacheHits + this.stats.cacheMisses - 1)) + time) / 
+    this.stats.avgRetrievalTime =
+      (this.stats.avgRetrievalTime * (this.stats.cacheHits + this.stats.cacheMisses - 1) + time) /
       (this.stats.cacheHits + this.stats.cacheMisses);
   }
 
@@ -426,7 +425,7 @@ export class ContextMetaManager {
       longTermMemorySize: this.longTermMemory.size,
       vectorStoreSize: this.vectorStore.size,
       contextWindowsCount: this.contextWindows.size,
-      compressionCacheSize: this.compressionCache.size
+      compressionCacheSize: this.compressionCache.size,
     };
   }
 
@@ -446,14 +445,14 @@ export class ContextMetaManager {
     this.vectorStore.clear();
     this.contextWindows.clear();
     this.compressionCache.clear();
-    
+
     this.stats = {
       totalMemories: 0,
       totalContextWindows: 0,
       totalEmbeddings: 0,
       cacheHits: 0,
       cacheMisses: 0,
-      avgRetrievalTime: 0
+      avgRetrievalTime: 0,
     };
 
     logger.info('All memories cleared');

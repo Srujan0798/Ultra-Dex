@@ -4,7 +4,7 @@ export function summarizeMemory(entries = []) {
   const text = entries.map((e) => e.content || e.text || '').join('\n');
   if (!text) return '';
   const sentences = text
-    .split(/[\.\n]/)
+    .split(/[.\n]/)
     .map((s) => s.trim())
     .filter(Boolean);
   return sentences.slice(0, 5).join('. ') + (sentences.length > 5 ? '...' : '');

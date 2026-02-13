@@ -23,7 +23,11 @@ const DEFAULT_TOOL_CAPABILITY = {
 };
 
 const TOOL_CAPABILITIES = {
-  remember: { sideEffects: ['memory:write'], riskScore: 'low', rateLimit: { max: 120, window: '1m' } },
+  remember: {
+    sideEffects: ['memory:write'],
+    riskScore: 'low',
+    rateLimit: { max: 120, window: '1m' },
+  },
   recall: { sideEffects: ['memory:read'], riskScore: 'low', rateLimit: { max: 120, window: '1m' } },
   clear_memory: { sideEffects: ['memory:write'], riskScore: 'medium', requiresApproval: true },
   update_task_status: { sideEffects: ['state:write'], riskScore: 'medium' },
@@ -309,14 +313,14 @@ export function registerTools(server) {
         // v4.1: Active Governance Audit
         const govResult = await auditGovernance(process.cwd());
         const govReport = govResult.ok
-          ? "\n\n🛡️  Governance: COMPLIANT"
-          : `\n\n🛡️  Governance: VIOLATIONS DETECTED\n${govResult.violations.map(v => `  - [${v.adrId}] ${v.title} (${v.file})`).join('\n')}`;
+          ? '\n\n🛡️  Governance: COMPLIANT'
+          : `\n\n🛡️  Governance: VIOLATIONS DETECTED\n${govResult.violations.map((v) => `  - [${v.adrId}] ${v.title} (${v.file})`).join('\n')}`;
 
         // v4.2: ADR Compliance Check
         const adrResult = await checkADRCompliance(taskName);
         const adrReport = adrResult.compliant
-          ? "\n\n📋 ADR Compliance: PASS"
-          : `\n\n📋 ADR Compliance: FAIL\n${adrResult.violations.map(v => `  - [${v.adrId}] ${v.reason}`).join('\n')}`;
+          ? '\n\n📋 ADR Compliance: PASS'
+          : `\n\n📋 ADR Compliance: FAIL\n${adrResult.violations.map((v) => `  - [${v.adrId}] ${v.reason}`).join('\n')}`;
 
         return {
           content: [
@@ -347,7 +351,7 @@ export function registerTools(server) {
       return {
         compliant: true,
         violations: [],
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -417,8 +421,9 @@ export function registerTools(server) {
         // Additional security: prevent writing to sensitive locations
         const forbiddenPaths = ['.git', 'node_modules', '.env', 'package-lock.json'];
         const pathParts = fullPath.split(path.sep);
-        if (pathParts.some((part) => forbiddenPaths.includes(part))) {
-          throw new Error(`Access denied: Cannot write to ${part} directory`);
+        const forbiddenPart = pathParts.find((part) => forbiddenPaths.includes(part));
+        if (forbiddenPart) {
+          throw new Error(`Access denied: Cannot write to ${forbiddenPart} directory`);
         }
 
         try {
@@ -449,7 +454,7 @@ export function registerTools(server) {
           if (fileExists) {
             await fs.writeFile(fullPath, originalContent, 'utf8');
           } else {
-            await fs.unlink(fullPath).catch(() => { });
+            await fs.unlink(fullPath).catch(() => {});
           }
           throw new AppError(`Quality gates failed after write: ${gateError.message}`, {
             cause: gateError,
@@ -887,7 +892,11 @@ export function registerTools(server) {
         .default('active')
         .describe('Decision status'),
       patterns: z.array(z.string()).optional().describe('Regex patterns to enforce for this ADR'),
-      enforcement: z.enum(['strict', 'warning', 'info']).optional().default('strict').describe('Enforcement level'),
+      enforcement: z
+        .enum(['strict', 'warning', 'info'])
+        .optional()
+        .default('strict')
+        .describe('Enforcement level'),
     },
     async ({ title, description, affectedFiles, status, patterns, enforcement }) => {
       try {
@@ -902,7 +911,7 @@ export function registerTools(server) {
             patterns,
             enforcement: enforcement || 'strict',
             rationale: description,
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
           });
         }
 

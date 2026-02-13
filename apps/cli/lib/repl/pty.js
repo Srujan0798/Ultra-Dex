@@ -118,7 +118,7 @@ class PTYBridge extends EventEmitter {
    */
   isCommandComplete(output, command) {
     // Simple heuristic: command prompt appears after command execution
-    const promptPattern = /[\$\#\%>] $/;
+    const promptPattern = /[$#%>] $/;
     return promptPattern.test(output);
   }
 

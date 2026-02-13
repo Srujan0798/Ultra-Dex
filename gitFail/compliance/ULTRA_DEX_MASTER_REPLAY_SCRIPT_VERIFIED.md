@@ -14,7 +14,7 @@ Scope: Validate the full replay script against current HEAD and provide an accur
 - Plan+Profiler tests: PASS (`NODE_ENV=test node --test apps/cli/test/profiler.test.js apps/cli/test/plan.test.js`) => 21/21
 - GitHub push guard: still blocks real push while account is suspended (expected)
 - Security audit: 4 moderate vulnerabilities remain in `@langchain/community` / `langsmith` dependency chain
-- Global ESLint: FAIL (`npx eslint . --quiet`) => 144 errors across 57 files
+- Global ESLint: PASS (`npx eslint . --quiet`) => 0 errors
 
 ## 2) Verified Governance/Compliance Assets
 
@@ -43,8 +43,9 @@ These items were outdated in the pasted script and are now corrected:
    - `src/services/ai-providers/` now has 17 JS files (not 12), 1144 total lines.
 2. Tests badge/count claims in old docs were stale:
    - Current fast suite is 20 passing tests in `npm test` path used by local gate.
-3. Global lint is not clean:
-   - 144 ESLint errors remain; top rules: `no-undef`, `no-useless-escape`, `no-case-declarations`.
+3. Global lint remediation completed:
+   - Previous 144 ESLint errors were resolved without disabling core lint rules.
+   - Current baseline is clean (`npx eslint . --quiet` => 0 errors).
 4. Docs line counts changed:
    - `docs/ARCHITECTURE.md` 332
    - `docs/ROADMAP.md` 98
@@ -141,10 +142,9 @@ sh gitFail/compliance/capture-support-evidence.sh
 
 ## 7) Priority Work Remaining
 
-1. ESLint debt burn-down (144 errors across 57 files).
-2. Decide dependency strategy for moderate `langchain/langsmith` advisories.
-3. Keep `guard:github` and support evidence cycle active until GitHub restores account.
-4. After reinstatement, run:
+1. Decide dependency strategy for moderate `langchain/langsmith` advisories.
+2. Keep `guard:github` and support evidence cycle active until GitHub restores account.
+3. After reinstatement, run:
 
 ```bash
 npm run guard:github

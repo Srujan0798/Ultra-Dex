@@ -6,7 +6,14 @@
  */
 
 import chalk from 'chalk';
-import { formatSuccess, formatError, formatWarning, formatInfo, formatLoading } from './status.js';
+import {
+  formatSuccess,
+  formatError,
+  formatWarning,
+  formatInfo,
+  formatLoading,
+  formatStatusCard,
+} from './status.js';
 import { formatHelpSection } from './help.js';
 
 /**
