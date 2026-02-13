@@ -106,6 +106,7 @@
     "guard:github:local": "SKIP_REMOTE_CHECK=1 node gitFail/compliance/github-guard.js",
     "gate:local": "sh gitFail/compliance/run-enterprise-gate.sh local",
     "gate:push": "sh gitFail/compliance/run-enterprise-gate.sh push",
+    "safety:daily": "sh gitFail/compliance/daily-safety-check.sh",
     "security:audit": "npm audit --audit-level high",
     "security:fix": "npm audit fix",
     "perf:benchmark": "node scripts/benchmark.js",
