@@ -1,0 +1,145 @@
+name: 'Ultra-Dex AI Orchestration'
+description: 'Run AI-powered development tasks with Ultra-Dex'
+branding:
+  icon: 'zap'
+  color: 'purple'
+inputs:
+  task:
+    description: 'The task to execute with Ultra-Dex'
+    required: true
+  api-key:
+    description: 'Ultra-Dex API key (or OpenAI, Anthropic, etc.)'
+    required: false
+  provider:
+    description: 'AI provider to use (openai, anthropic, google, ollama)'
+    required: false
+    default: 'openai'
+  model:
+    description: 'Specific model to use'
+    required: false
+    default: 'gpt-4o'
+  working-directory:
+    description: 'Working directory for the task'
+    required: false
+    default: '.'
+  config-file:
+    description: 'Path to Ultra-Dex config file'
+    required: false
+    default: '.ultra-dex/config.json'
+  install-dependencies:
+    description: 'Whether to install dependencies'
+    required: false
+    default: 'true'
+  enable-sandbox:
+    description: 'Enable sandbox mode for security'
+    required: false
+    default: 'true'
+
+outputs:
+  result:
+    description: 'The result of the Ultra-Dex execution'
+  status:
+    description: 'Execution status (success, error, timeout)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Ultra-Dex CLI
+      shell: bash
+      run: |
+        npm install -g ultra-dex@latest
+        ultra-dex --version
+
+    - name: Setup configuration
+      shell: bash
+      run: |
+        if [ -f "${{ inputs.config-file }}" ]; then
+          echo "Using existing config file: ${{ inputs.config-file }}"
+          cp ${{ inputs.config-file }} .ultra-dex/config.json
+        else
+          echo "Creating default config..."
+          mkdir -p .ultra-dex
+          cat > .ultra-dex/config.json << EOF
+        {
+          "version": "6.0.0",
+          "providers": {
+            "${{ inputs.provider }}": {
+              "enabled": true,
+              "defaultModel": "${{ inputs.model }}",
+              "apiKey": "\${{ secrets.ULTRADEX_API_KEY || secrets.OPENAI_API_KEY || secrets.ANTHROPIC_API_KEY || secrets.GOOGLE_API_KEY }}"
+            }
+          },
+          "security": {
+            "enableSandbox": ${{ inputs.enable-sandbox }}
+          }
+        }
+        EOF
+        fi
+
+    - name: Install dependencies
+      if: ${{ inputs.install-dependencies == 'true' }}
+      shell: bash
+      run: |
+        if [ -f "package.json" ]; then
+          npm ci
+        elif [ -f "requirements.txt" ]; then
+          pip install -r requirements.txt
+        elif [ -f "pyproject.toml" ]; then
+          pip install .
+        fi
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Run Ultra-Dex task
+      id: ultradex
+      shell: bash
+      run: |
+        echo "Running Ultra-Dex task: ${{ inputs.task }}"
+        
+        # Set API key if provided
+        if [ -n "${{ inputs.api-key }}" ]; then
+          export OPENAI_API_KEY="${{ inputs.api-key }}"
+          export ANTHROPIC_API_KEY="${{ inputs.api-key }}"
+          export GOOGLE_API_KEY="${{ inputs.api-key }}"
+        fi
+        
+        # Run the task
+        RESULT=$(ultra-dex run --task "${{ inputs.task }}" --provider "${{ inputs.provider }}" --model "${{ inputs.model }}" 2>&1)
+        EXIT_CODE=$?
+        
+        echo "result<<EOF" >> $GITHUB_OUTPUT
+        echo "$RESULT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "status=success" >> $GITHUB_OUTPUT
+        else
+          echo "status=error" >> $GITHUB_OUTPUT
+          echo "$RESULT" >&2
+          exit $EXIT_CODE
+        fi
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ultradex-execution-results
+        path: |
+          .ultra-dex/
+          *.log
+          **/IMPLEMENTATION-PLAN.md
+          **/docs/
+        retention-days: 7
