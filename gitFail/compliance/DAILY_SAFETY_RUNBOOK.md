@@ -2,6 +2,14 @@
 
 Use this flow every day to stay compliant, legal, and push-ready.
 
+## Fast Path (Recommended)
+
+```bash
+npm run safety:daily
+```
+
+This generates a timestamped report in `gitFail/compliance/status/`.
+
 ## A) Start-of-Day Verification
 
 ```bash
@@ -90,4 +98,3 @@ Also verify policy docs remain present and current:
 - `SECURITY.md`
 - `CONTRIBUTING.md`
 - `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md`
-

@@ -22,6 +22,8 @@ related to outage/risk handling work.
   `npm run gate:local`
 - Run enterprise push gate (includes remote/account check):
   `npm run gate:push`
+- Run the full daily safety flow with auto-report:
+  `npm run safety:daily`
 - Review checklist before commit/PR:
   `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md`
 - Capture a collaboration snapshot (Codex + Claude tracking):
