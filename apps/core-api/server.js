@@ -14,11 +14,11 @@ import { errorHandler } from './middleware/error-handler.js';
 import { requestLogger } from './middleware/logger.js';
 import { authenticateToken } from './middleware/auth.js';
 import { validateAPIVersion } from './middleware/validation.js';
-import { agentsRouter } from './routes/agents.js';
-import { memoryRouter } from './routes/memory.js';
-import { tasksRouter } from './routes/tasks.js';
-import { providersRouter } from './routes/providers.js';
-import { webhookRouter } from './routes/webhooks.js';
+import agentsRouter from './routes/agents.js';
+import memoryRouter from './routes/memory.js';
+import tasksRouter from './routes/tasks.js';
+import providersRouter from './routes/providers.js';
+import webhookRouter from './routes/webhooks.js';
 import { logger } from './middleware/logger.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -170,14 +170,14 @@ class UltraDexAPIServer {
 
   setupErrorHandling() {
     // 404 handler
-    this.app.use('*', (req, res) => {
+    this.app.use((req, res, next) => {
       res.status(404).json({
         error: 'Route not found',
         path: req.originalUrl,
         method: req.method
       });
     });
-    
+
     // Global error handler
     this.app.use(errorHandler);
   }
