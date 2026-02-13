@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventEmitter } from 'events';
 import fs from 'fs/promises';
 import path from 'path';
+import BillingManager from '../billing/billing-manager.js';
+import AuditLogger, { AUDIT_EVENTS } from '../audit/audit-logger.js';
 
 const TEAM_DIR = '.ultra-dex';
 const TEAM_FILE = 'team.json';
@@ -17,6 +19,8 @@ class TeamManager extends EventEmitter {
     this.cwd = cwd;
     this.teamPath = path.resolve(this.cwd, TEAM_DIR, TEAM_FILE);
     this.data = null; // Lazy loaded
+    this.billing = new BillingManager();
+    this.audit = new AuditLogger(cwd);
   }
 
   async _ensureLoaded() {
@@ -68,6 +72,10 @@ class TeamManager extends EventEmitter {
     };
 
     await this._save(); // Save the team before adding members
+    
+    // Log creation
+    await this.audit.log(AUDIT_EVENTS.TEAM_CREATED, { id: ownerId, role: 'owner' }, { teamId, name });
+
     await this.addMember(teamId, ownerId, 'owner');
 
     this.emit('team:created', this.data);
@@ -96,6 +104,17 @@ class TeamManager extends EventEmitter {
       throw new Error('Member already exists');
     }
 
+    // Check Billing Limits
+    const sub = this.billing.getSubscription(teamId);
+    // Determine plan limits (default to free if not found/mocked)
+    const planLimits = sub.planId === 'pro' ? 10 : (sub.planId === 'enterprise' ? 9999 : 2);
+    
+    if (this.data.members.length >= planLimits) {
+      const msg = `Seat limit reached for plan ${sub.planId} (${planLimits} seats). Upgrade required.`;
+      await this.audit.log(AUDIT_EVENTS.LIMIT_EXCEEDED, { id: 'system' }, { teamId, limit: 'seats', current: this.data.members.length });
+      throw new Error(msg);
+    }
+
     const membership = {
       userId, // treating as email/username for local CLI usage
       email: userId,
@@ -107,6 +126,10 @@ class TeamManager extends EventEmitter {
     this.data.updatedAt = new Date().toISOString();
 
     await this._save();
+    
+    // Log member add
+    await this.audit.log(AUDIT_EVENTS.MEMBER_ADDED, { id: 'system' }, { teamId, userId, role });
+
     this.emit('team:member_added', membership);
     return membership;
   }
@@ -121,6 +144,9 @@ class TeamManager extends EventEmitter {
     const removed = this.data.members.splice(index, 1)[0];
     this.data.updatedAt = new Date().toISOString();
     await this._save();
+    
+    // Log member remove
+    await this.audit.log(AUDIT_EVENTS.MEMBER_REMOVED, { id: 'system' }, { teamId, userId });
     
     this.emit('team:member_removed', removed);
     return removed;
@@ -153,6 +179,9 @@ class TeamManager extends EventEmitter {
     this.data[key] = value;
     this.data.updatedAt = new Date().toISOString();
     await this._save();
+    
+    await this.audit.log(AUDIT_EVENTS.CONFIG_CHANGED, { id: 'system' }, { teamId, key, value });
+
     return this.data;
   }
 
