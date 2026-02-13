@@ -8,27 +8,27 @@
 
 This audit covers all incident records currently stored in `gitFail/incidents/`:
 
-1. `gitFail/incidents/Feb 2, 17:34 - 17:43 UTC`
-2. `gitFail/incidents/Feb 2, 17:41 - 18:46 UTC`
-3. `gitFail/incidents/Feb 2, 19:03 - Feb 3, 00:56 UTC`
-4. `gitFail/incidents/Feb 2, 20:17 - Feb 3, 00:54 UTC`
-5. `gitFail/incidents/Feb 3, 10:16 - 10:56 UTC`
-6. `gitFail/incidents/Feb 3, 16:10 - 19:28 UTC`
-7. `gitFail/incidents/Feb 6, 11:16 - 11:58 UTC`
-8. `gitFail/incidents/Feb 6, 17:49 - 18:36 UTC`
-9. `gitFail/incidents/Feb 9, 08:15 - 11:26 UTC`
-10. `gitFail/incidents/Feb 9, 10:01 - 12:12 UTC`
-11. `gitFail/incidents/Feb 9, 14:17 - 15:46 UTC`
-12. `gitFail/incidents/Feb 9, 15:54 - 19:29 UTC`
-13. `gitFail/incidents/Feb 9, 16:19 - 17:40 UTC`
-14. `gitFail/incidents/Feb 9, 16:29 - Feb 10, 09:57 UTC`
-15. `gitFail/incidents/Feb 9, 19:01 - 20:09 UTC`
-16. `gitFail/incidents/Feb 10, 15:07 - 15:58 UTC`
-17. `gitFail/incidents/Feb 11, 15:26 - 15:46 UTC`
-18. `gitFail/incidents/Feb 11, 15:26 - 17:15 UTC`
-19. `gitFail/incidents/Feb 11, 18:58 - Feb 12, 00:59 UTC`
-20. `gitFail/incidents/Feb 12, 07:53 - 09:56 UTC`
-21. `gitFail/incidents/Feb 12, 10:38 UTC`
+1. `gitFail/incidents/Feb 2, 17:34 - 17:43 UTC.md`
+2. `gitFail/incidents/Feb 2, 17:41 - 18:46 UTC.md`
+3. `gitFail/incidents/Feb 2, 19:03 - Feb 3, 00:56 UTC.md`
+4. `gitFail/incidents/Feb 2, 20:17 - Feb 3, 00:54 UTC.md`
+5. `gitFail/incidents/Feb 3, 10:16 - 10:56 UTC.md`
+6. `gitFail/incidents/Feb 3, 16:10 - 19:28 UTC.md`
+7. `gitFail/incidents/Feb 6, 11:16 - 11:58 UTC.md`
+8. `gitFail/incidents/Feb 6, 17:49 - 18:36 UTC.md`
+9. `gitFail/incidents/Feb 9, 08:15 - 11:26 UTC.md`
+10. `gitFail/incidents/Feb 9, 10:01 - 12:12 UTC.md`
+11. `gitFail/incidents/Feb 9, 14:17 - 15:46 UTC.md`
+12. `gitFail/incidents/Feb 9, 15:54 - 19:29 UTC.md`
+13. `gitFail/incidents/Feb 9, 16:19 - 17:40 UTC.md`
+14. `gitFail/incidents/Feb 9, 16:29 - Feb 10, 09:57 UTC.md`
+15. `gitFail/incidents/Feb 9, 19:01 - 20:09 UTC.md`
+16. `gitFail/incidents/Feb 10, 15:07 - 15:58 UTC.md`
+17. `gitFail/incidents/Feb 11, 15:26 - 15:46 UTC.md`
+18. `gitFail/incidents/Feb 11, 15:26 - 17:15 UTC.md`
+19. `gitFail/incidents/Feb 11, 18:58 - Feb 12, 00:59 UTC.md`
+20. `gitFail/incidents/Feb 12, 07:53 - 09:56 UTC.md`
+21. `gitFail/incidents/Feb 12, 10:38 UTC.md`
 
 Related status/support artifacts used in this audit:
 
@@ -63,27 +63,27 @@ Related status/support artifacts used in this audit:
 
 | # | Incident File | Service/Type | What Happened (from incident note) | What We Did | Prevention/Fix for Next Time |
 |---|---|---|---|---|---|
-| 1 | `gitFail/incidents/Feb 2, 17:34 - 17:43 UTC` | Git operations routing | Small percent of HTTP git ops failed due to internal misrouting during deploy | Paused push/release attempts during instability | `C1`, `C3`, `C5`, `C11` |
-| 2 | `gitFail/incidents/Feb 2, 17:41 - 18:46 UTC` | Dependabot/DB failover | Dependabot PR creation degraded due to read-only DB path | Treated automation failures as platform-side; avoided noisy retries | `C1`, `C3`, `C8`, `C11` |
-| 3 | `gitFail/incidents/Feb 2, 19:03 - Feb 3, 00:56 UTC` | Actions hosted runners | Hosted runners unavailable globally (provider policy issue) | Switched to local test execution and local gate | `C3`, `C7`, `C11` |
-| 4 | `gitFail/incidents/Feb 2, 20:17 - Feb 3, 00:54 UTC` | Codespaces | Codespaces create/resume failed globally | Continued local development; avoided Codespaces dependency | `C3`, `C11` |
-| 5 | `gitFail/incidents/Feb 3, 10:16 - 10:56 UTC` | Copilot | Elevated Copilot errors from capacity imbalance | Kept core workflow independent from Copilot availability | `C3`, `C11` |
-| 6 | `gitFail/incidents/Feb 3, 16:10 - 19:28 UTC` | Actions/Webhooks delays | Workflow start and status updates delayed | Avoided release decisions during degraded eventing | `C1`, `C3`, `C11` |
-| 7 | `gitFail/incidents/Feb 6, 11:16 - 11:58 UTC` | Copilot model demand | Copilot degraded under high demand | Continued local engineering path | `C3`, `C11` |
-| 8 | `gitFail/incidents/Feb 6, 17:49 - 18:36 UTC` | Mobile PR comments | Mobile comment positioning defect | Treated as GitHub client issue, no risky workflow changes | `C1`, `C8` |
-| 9 | `gitFail/incidents/Feb 9, 08:15 - 11:26 UTC` | Webhooks/API/PR infra | Faulty infra component caused timeouts | Deferred push-sensitive operations until recovery | `C1`, `C3`, `C11` |
-| 10 | `gitFail/incidents/Feb 9, 10:01 - 12:12 UTC` | Copilot Coding Agent | Rate-limit surge caused 500 errors | No dependence on GitHub agent APIs for core delivery | `C3`, `C11` |
-| 11 | `gitFail/incidents/Feb 9, 14:17 - 15:46 UTC` | Actions pipeline | Bottleneck caused delayed run starts | Kept release gating local until normal service | `C1`, `C3`, `C11` |
-| 12 | `gitFail/incidents/Feb 9, 15:54 - 19:29 UTC` | Notifications | Delivery backlog and delay | Avoided making governance decisions based only on notifications | `C1`, `C8`, `C11` |
-| 13 | `gitFail/incidents/Feb 9, 16:19 - 17:40 UTC` | Multi-service outage wave 1 | Cache rewrite cascade impacted PR/API/Git/Actions/Copilot | Activated strict freeze on risky remote operations | `C1`, `C3`, `C5`, `C11` |
-| 14 | `gitFail/incidents/Feb 9, 16:29 - Feb 10, 09:57 UTC` | Copilot policy propagation | Policy updates delayed for some customers | Treated policy propagation delay as external dependency risk | `C1`, `C8` |
-| 15 | `gitFail/incidents/Feb 9, 19:01 - 20:09 UTC` | Multi-service outage wave 2 | Second outage wave from related cache/connection issues | Continued frozen push policy until status normalized | `C1`, `C3`, `C5`, `C11` |
-| 16 | `gitFail/incidents/Feb 10, 15:07 - 15:58 UTC` | Pull Requests latency | Intermittent timeouts on pages/PR flow | Delayed PR operations while GitHub mitigated | `C1`, `C3` |
-| 17 | `gitFail/incidents/Feb 11, 15:26 - 15:46 UTC` | Copilot upstream model | Upstream model provider degradation | Avoided coupling delivery to Copilot-specific path | `C3`, `C11` |
-| 18 | `gitFail/incidents/Feb 11, 15:26 - 17:15 UTC` | GraphQL/API latency | Degraded GraphQL dependency increased latency | No remote heavy operations during service instability | `C1`, `C3` |
-| 19 | `gitFail/incidents/Feb 11, 18:58 - Feb 12, 00:59 UTC` | Actions larger runners | Capacity constraints on larger hosted runners | Maintained local test and release readiness path | `C3`, `C7`, `C11` |
-| 20 | `gitFail/incidents/Feb 12, 07:53 - 09:56 UTC` | Codespaces availability | Create/resume failures across regions | Local-first environment remained primary | `C3`, `C11` |
-| 21 | `gitFail/incidents/Feb 12, 10:38 UTC` | Repo archives + LFS | Archive download issues for repos with LFS objects | Avoided release/archive reliance during incident window | `C1`, `C3` |
+| 1 | `gitFail/incidents/Feb 2, 17:34 - 17:43 UTC.md` | Git operations routing | Small percent of HTTP git ops failed due to internal misrouting during deploy | Paused push/release attempts during instability | `C1`, `C3`, `C5`, `C11` |
+| 2 | `gitFail/incidents/Feb 2, 17:41 - 18:46 UTC.md` | Dependabot/DB failover | Dependabot PR creation degraded due to read-only DB path | Treated automation failures as platform-side; avoided noisy retries | `C1`, `C3`, `C8`, `C11` |
+| 3 | `gitFail/incidents/Feb 2, 19:03 - Feb 3, 00:56 UTC.md` | Actions hosted runners | Hosted runners unavailable globally (provider policy issue) | Switched to local test execution and local gate | `C3`, `C7`, `C11` |
+| 4 | `gitFail/incidents/Feb 2, 20:17 - Feb 3, 00:54 UTC.md` | Codespaces | Codespaces create/resume failed globally | Continued local development; avoided Codespaces dependency | `C3`, `C11` |
+| 5 | `gitFail/incidents/Feb 3, 10:16 - 10:56 UTC.md` | Copilot | Elevated Copilot errors from capacity imbalance | Kept core workflow independent from Copilot availability | `C3`, `C11` |
+| 6 | `gitFail/incidents/Feb 3, 16:10 - 19:28 UTC.md` | Actions/Webhooks delays | Workflow start and status updates delayed | Avoided release decisions during degraded eventing | `C1`, `C3`, `C11` |
+| 7 | `gitFail/incidents/Feb 6, 11:16 - 11:58 UTC.md` | Copilot model demand | Copilot degraded under high demand | Continued local engineering path | `C3`, `C11` |
+| 8 | `gitFail/incidents/Feb 6, 17:49 - 18:36 UTC.md` | Mobile PR comments | Mobile comment positioning defect | Treated as GitHub client issue, no risky workflow changes | `C1`, `C8` |
+| 9 | `gitFail/incidents/Feb 9, 08:15 - 11:26 UTC.md` | Webhooks/API/PR infra | Faulty infra component caused timeouts | Deferred push-sensitive operations until recovery | `C1`, `C3`, `C11` |
+| 10 | `gitFail/incidents/Feb 9, 10:01 - 12:12 UTC.md` | Copilot Coding Agent | Rate-limit surge caused 500 errors | No dependence on GitHub agent APIs for core delivery | `C3`, `C11` |
+| 11 | `gitFail/incidents/Feb 9, 14:17 - 15:46 UTC.md` | Actions pipeline | Bottleneck caused delayed run starts | Kept release gating local until normal service | `C1`, `C3`, `C11` |
+| 12 | `gitFail/incidents/Feb 9, 15:54 - 19:29 UTC.md` | Notifications | Delivery backlog and delay | Avoided making governance decisions based only on notifications | `C1`, `C8`, `C11` |
+| 13 | `gitFail/incidents/Feb 9, 16:19 - 17:40 UTC.md` | Multi-service outage wave 1 | Cache rewrite cascade impacted PR/API/Git/Actions/Copilot | Activated strict freeze on risky remote operations | `C1`, `C3`, `C5`, `C11` |
+| 14 | `gitFail/incidents/Feb 9, 16:29 - Feb 10, 09:57 UTC.md` | Copilot policy propagation | Policy updates delayed for some customers | Treated policy propagation delay as external dependency risk | `C1`, `C8` |
+| 15 | `gitFail/incidents/Feb 9, 19:01 - 20:09 UTC.md` | Multi-service outage wave 2 | Second outage wave from related cache/connection issues | Continued frozen push policy until status normalized | `C1`, `C3`, `C5`, `C11` |
+| 16 | `gitFail/incidents/Feb 10, 15:07 - 15:58 UTC.md` | Pull Requests latency | Intermittent timeouts on pages/PR flow | Delayed PR operations while GitHub mitigated | `C1`, `C3` |
+| 17 | `gitFail/incidents/Feb 11, 15:26 - 15:46 UTC.md` | Copilot upstream model | Upstream model provider degradation | Avoided coupling delivery to Copilot-specific path | `C3`, `C11` |
+| 18 | `gitFail/incidents/Feb 11, 15:26 - 17:15 UTC.md` | GraphQL/API latency | Degraded GraphQL dependency increased latency | No remote heavy operations during service instability | `C1`, `C3` |
+| 19 | `gitFail/incidents/Feb 11, 18:58 - Feb 12, 00:59 UTC.md` | Actions larger runners | Capacity constraints on larger hosted runners | Maintained local test and release readiness path | `C3`, `C7`, `C11` |
+| 20 | `gitFail/incidents/Feb 12, 07:53 - 09:56 UTC.md` | Codespaces availability | Create/resume failures across regions | Local-first environment remained primary | `C3`, `C11` |
+| 21 | `gitFail/incidents/Feb 12, 10:38 UTC.md` | Repo archives + LFS | Archive download issues for repos with LFS objects | Avoided release/archive reliance during incident window | `C1`, `C3` |
 
 ## 5. Separate but Critical: Account Suspension Incident
 
