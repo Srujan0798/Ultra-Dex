@@ -9,7 +9,7 @@
  */
 
 import chalk from 'chalk';
-import { SmartRouter, ProviderStats } from '../../../packages/sdk/src/router.js';
+import { SmartRouter, ProviderStats } from '../../../../packages/sdk/src/router.js';
 
 // ---------------------------------------------------------------------------
 // Mock provider registry (in production, loads from config)
