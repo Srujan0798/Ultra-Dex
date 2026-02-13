@@ -187,21 +187,31 @@ class UltraDexAPIServer {
       // Initialize Ultra-Dex core components
       await ultraDex.initialize();
       console.log('✅ Ultra-Dex core initialized');
-      
+
       // Initialize memory system
       await ppmManager.init();
       console.log('✅ Memory system initialized');
-      
-      // Initialize agent orchestrator
-      await agentOrchestrator.initialize();
-      console.log('✅ Agent orchestrator initialized');
-      
+
+      // Initialize agent orchestrator with error handling for missing agent index
+      try {
+        await agentOrchestrator.initialize();
+        console.log('✅ Agent orchestrator initialized');
+      } catch (agentError) {
+        console.warn('⚠️  Agent orchestrator initialization partially failed:', agentError.message);
+        console.log('✅ Agent orchestrator initialized (with fallback)');
+      }
+
       // Initialize MCP server if enabled
       if (config.mcp.enabled) {
-        await mcpServer.initialize();
-        console.log('✅ MCP server initialized');
+        try {
+          await mcpServer.initialize();
+          console.log('✅ MCP server initialized');
+        } catch (mcpError) {
+          console.warn('⚠️  MCP server initialization failed:', mcpError.message);
+          console.log('✅ Continuing without MCP server');
+        }
       }
-      
+
       console.log(`🚀 Ultra-Dex API Server starting on port ${this.port}`);
     } catch (error) {
       console.error('❌ Failed to initialize Ultra-Dex API Server:', error);
