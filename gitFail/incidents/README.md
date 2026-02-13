@@ -32,6 +32,7 @@ Normalized incident captures stored in Markdown format.
 
 - [status-2026-02-12.md](./status-2026-02-12.md)
 - [cycle-2026-02-12T2307.md](./cycle-2026-02-12T2307.md)
+- [RENAMED_FILES_MAP.md](./RENAMED_FILES_MAP.md)
 
 ## Source
 
