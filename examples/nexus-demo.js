@@ -11,15 +11,18 @@ async function runDemo() {
   console.log(chalk.bold.magenta(`
 🌌 Ultra-Dex Nexus: Autonomous Demo
 `));
-  
+
   const objective = "Create a simple Express server with a single GET /health endpoint that returns { status: 'ok' }. Save it to health-server.js and verify it works.";
-  
+
   console.log(chalk.cyan(`Objective: ${objective}
 `));
-  
+
   try {
+    // Initialize the orchestrator to ensure MCP server is properly set up
+    await nexus.initialize();
+
     const result = await nexus.execute(objective, { sandbox: false });
-    
+
     console.log(chalk.bold.green(`
 ✅ Autonomous Objective Completed!`));
     console.log(chalk.gray('Final Result State:'), JSON.stringify(result, null, 2));

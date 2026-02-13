@@ -15,8 +15,11 @@
 │   ├── mobile/         # Mobile application (@ultra-dex/mobile)
 │   ├── web/            # Public web interface (@ultra-dex/web)
 │   └── docs-site/      # Documentation portal (@ultra-dex/docs)
-├── packages/
+├── src/
 │   ├── core/           # Shared core business logic (@ultra-dex/core)
+│   ├── services/       # Core service adapters
+│   └── types/          # Shared type definitions
+├── packages/
 │   ├── sdk/            # Public SDK for building extensions (@ultra-dex/sdk)
 │   ├── agent-protocol/ # Standardized agent communication (@ultra-dex/agent-protocol)
 │   ├── cursor-rules/   # Optimized rules for AI-assisted dev (@ultra-dex/cursor-rules)

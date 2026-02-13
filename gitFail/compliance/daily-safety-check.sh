@@ -19,9 +19,16 @@ append_cmd_output() {
   echo '```text' >> "$REPORT_PATH"
 
   set +e
-  "$@" >> "$REPORT_PATH" 2>&1
+  OUTPUT=$("$@" 2>&1)
   CODE=$?
   set -e
+
+  # Only write output if it exists and is not just whitespace
+  if [ -n "$(echo "$OUTPUT" | tr -d '[:space:]')" ]; then
+    echo "$OUTPUT" >> "$REPORT_PATH"
+  else
+    echo "(command produced no output)" >> "$REPORT_PATH"
+  fi
 
   echo '```' >> "$REPORT_PATH"
   echo "Exit code: $CODE" >> "$REPORT_PATH"
