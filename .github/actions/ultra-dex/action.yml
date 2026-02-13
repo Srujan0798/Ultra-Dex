@@ -63,7 +63,6 @@ runs:
       run: |
         if [ -f "${{ inputs.config-file }}" ]; then
           echo "Using existing config file: ${{ inputs.config-file }}"
-          cp ${{ inputs.config-file }} .ultra-dex/config.json
         else
           echo "Creating default config..."
           mkdir -p .ultra-dex

@@ -7,7 +7,6 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
-import { simpleGit } from 'simple-git';
 
 const execAsync = promisify(exec);
 
@@ -17,7 +16,6 @@ class GitIntegration {
       repoPath: options.repoPath || process.cwd(),
       ...options
     };
-    this.git = simpleGit(this.options.repoPath);
   }
 
   /**
@@ -42,8 +40,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const branchSummary = await this.git.branch();
-    return branchSummary.current;
+    const { stdout } = await execAsync('git branch --show-current', { cwd: this.options.repoPath });
+    return stdout.trim();
   }
 
   /**
@@ -55,7 +53,35 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    return await this.git.status();
+    const { stdout } = await execAsync('git status --porcelain', { cwd: this.options.repoPath });
+    const lines = stdout.trim().split('\n').filter(line => line);
+
+    const status = {
+      files: [],
+      created: [],
+      modified: [],
+      deleted: [],
+      renamed: [],
+      staged: [],
+      conflicted: []
+    };
+
+    for (const line of lines) {
+      if (!line) continue;
+      const [index, worktree, ...filePathParts] = line.split(' ');
+      const filePath = filePathParts.join(' ').trim();
+
+      status.files.push({ index, worktree, path: filePath });
+
+      if (index === 'A' || worktree === 'A') status.created.push(filePath);
+      if (index === 'M' || worktree === 'M') status.modified.push(filePath);
+      if (index === 'D' || worktree === 'D') status.deleted.push(filePath);
+      if (index === 'R') status.renamed.push({ from: filePath, to: filePath }); // Simplified
+      if (index !== ' ' && index !== '?') status.staged.push(filePath);
+      if (index === 'U' || worktree === 'U') status.conflicted.push(filePath);
+    }
+
+    return status;
   }
 
   /**
@@ -67,7 +93,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    return await this.git.diff(['--cached']);
+    const { stdout } = await execAsync('git diff --cached', { cwd: this.options.repoPath });
+    return stdout;
   }
 
   /**
@@ -79,7 +106,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    return await this.git.diff();
+    const { stdout } = await execAsync('git diff', { cwd: this.options.repoPath });
+    return stdout;
   }
 
   /**
@@ -92,8 +120,19 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const log = await this.git.log(['-n', count.toString()]);
-    return log.all;
+    const { stdout } = await execAsync(`git log --oneline --pretty=format:"%H|%an|%ae|%ad|%s" -n ${count}`, { cwd: this.options.repoPath });
+    const lines = stdout.trim().split('\n').filter(line => line);
+
+    return lines.map(line => {
+      const [hash, authorName, authorEmail, date, subject] = line.split('|');
+      return {
+        hash,
+        author: { name: authorName, email: authorEmail },
+        date,
+        message: subject,
+        refs: [] // Simplified - refs not parsed
+      };
+    });
   }
 
   /**
@@ -105,8 +144,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const revParse = await this.git.revparse(['HEAD']);
-    return revParse;
+    const { stdout } = await execAsync('git rev-parse HEAD', { cwd: this.options.repoPath });
+    return stdout.trim();
   }
 
   /**
@@ -118,11 +157,12 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const remotes = await this.git.getRemotes(true);
-    if (remotes.length > 0) {
-      return remotes[0].refs.push;
+    try {
+      const { stdout } = await execAsync('git remote get-url origin', { cwd: this.options.repoPath });
+      return stdout.trim();
+    } catch {
+      return null;
     }
-    return null;
   }
 
   /**
@@ -139,7 +179,7 @@ class GitIntegration {
       ...status.created,
       ...status.modified,
       ...status.deleted,
-      ...status.renamed.map(r => r.to)
+      ...status.renamed.map(r => typeof r === 'object' ? r.to : r)
     ];
   }
 
@@ -154,8 +194,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const content = await this.git.show([`${commitHash}:${filePath}`]);
-    return content;
+    const { stdout } = await execAsync(`git show ${commitHash}:${filePath}`, { cwd: this.options.repoPath });
+    return stdout;
   }
 
   /**
@@ -168,8 +208,19 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const log = await this.git.log([filePath]);
-    return log.all;
+    const { stdout } = await execAsync(`git log --oneline --pretty=format:"%H|%an|%ae|%ad|%s" ${filePath}`, { cwd: this.options.repoPath });
+    const lines = stdout.trim().split('\n').filter(line => line);
+
+    return lines.map(line => {
+      const [hash, authorName, authorEmail, date, subject] = line.split('|');
+      return {
+        hash,
+        author: { name: authorName, email: authorEmail },
+        date,
+        message: subject,
+        refs: [] // Simplified - refs not parsed
+      };
+    });
   }
 
   /**
@@ -181,8 +232,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const status = await this.getStatus();
-    return status.files.length > 0;
+    const { stdout } = await execAsync('git status --porcelain', { cwd: this.options.repoPath });
+    return stdout.trim().length > 0;
   }
 
   /**
@@ -196,8 +247,8 @@ class GitIntegration {
     }
 
     try {
-      const value = await this.git.getConfig(key);
-      return value.value;
+      const { stdout } = await execAsync(`git config ${key}`, { cwd: this.options.repoPath });
+      return stdout.trim();
     } catch {
       return null;
     }
@@ -212,8 +263,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const root = await this.git.revparse(['--show-toplevel']);
-    return root;
+    const { stdout } = await execAsync('git rev-parse --show-toplevel', { cwd: this.options.repoPath });
+    return stdout.trim();
   }
 
   /**
@@ -274,7 +325,7 @@ class GitIntegration {
     }
 
     // Create a Git tag with the memory tag as annotation
-    await this.git.addAnnotatedTag(tag, description);
+    await execAsync(`git tag -a ${tag} -m "${description}"`, { cwd: this.options.repoPath });
   }
 
   /**
@@ -345,7 +396,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    await this.git.add(files);
+    const filesList = files.join(' ');
+    await execAsync(`git add ${filesList}`, { cwd: this.options.repoPath });
   }
 
   /**
@@ -358,7 +410,8 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    return await this.git.commit(message);
+    const { stdout } = await execAsync(`git commit -m "${message}"`, { cwd: this.options.repoPath });
+    return { success: true, message: stdout };
   }
 
   /**
@@ -373,7 +426,7 @@ class GitIntegration {
     }
 
     const branchName = branch || await this.getCurrentBranch();
-    await this.git.push(remote, branchName);
+    await execAsync(`git push ${remote} ${branchName}`, { cwd: this.options.repoPath });
   }
 }
 
