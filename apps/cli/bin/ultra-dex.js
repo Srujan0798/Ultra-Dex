@@ -87,7 +87,7 @@ if (isAcpMode) {
   })();
 
   // ACP mode takes over completely - don't process other commands
-  await new Promise(() => {});
+  await new Promise(() => { });
 }
 
 // Check for updates
@@ -98,7 +98,7 @@ if (notifier.update) {
   console.log(
     formatWarning(
       `Update available! ${notifier.update.current} → ${notifier.update.latest}\n` +
-        `Run ${chalk.cyan('npm install -g ultra-dex')} to update`
+      `Run ${chalk.cyan('npm install -g ultra-dex')} to update`
     )
   );
 }
@@ -489,6 +489,10 @@ registerMetricsCommand(program);
 registerHealthCommand(program);
 registerDebugCommand(program);
 registerBannerCommand(program);
+
+// v6.0 Smart Router Command
+import { registerRouterCommand } from '../lib/commands/router-cmd.js';
+registerRouterCommand(program);
 
 // Default to REPL if no command is specified (only ultra-dex command)
 const hasCommandArg = process.argv.slice(2).some(arg =>
