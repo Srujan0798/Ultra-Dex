@@ -1,67 +1,57 @@
-// Copyright (c) 2026 Ultra-Dex
-import express from 'express';
-import { createServer } from 'http';
-import { WebSocketServer, WebSocket } from 'ws';
-import cors from 'cors';
-import { ppmManager } from '../../src/core/memory/manager.js';
-import { agentOrchestrator } from '../../src/core/orchestration/index.js';
+#!/usr/bin/env node
 
-const app = express();
-const server = createServer(app);
-const wss = new WebSocketServer({ server, path: '/ws' });
-const port = process.env.PORT || 3002;
+/**
+ * Ultra-Dex Core API Server
+ * Production-ready API server for the Ultra-Dex orchestration platform
+ */
 
-app.use(cors());
-app.use(express.json());
+import 'dotenv/config';
+import { ultraDexAPIServer } from './server.js';
+import { logger } from '../lib/logger.js';
 
-// WebSocket Broadcast Logic
-const broadcast = (data) => {
-  const message = JSON.stringify(data);
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
-};
+const PORT = process.env.PORT || 4000;
 
-// Listen for agent events
-agentOrchestrator.stateMachine?.on('transition', (state) => {
-  broadcast({ type: 'system_update', data: { state } });
-});
-
-wss.on('connection', (ws) => {
-  console.log('🔌 Dashboard connected via WebSocket');
-  ws.send(JSON.stringify({ type: 'initial_state', data: agentOrchestrator.getMetrics() }));
-});
-
-// REST Endpoints
-app.get('/health', (req, res) => {
-  res.json({ status: 'HEALTHY', version: '6.0.0', service: 'CORE-API' });
-});
-
-app.get('/api/memory/:tier', async (req, res) => {
+async function startServer() {
   try {
-    const data = await ppmManager.getTier(req.params.tier);
-    res.json(data);
+    logger.info('🚀 Starting Ultra-Dex Core API Server...');
+    
+    // Start the API server
+    const server = await ultraDexAPIServer.start(PORT);
+    
+    // Handle graceful shutdown
+    process.on('SIGTERM', async () => {
+      logger.info('SIGTERM received, shutting down gracefully...');
+      await ultraDexAPIServer.stop();
+      process.exit(0);
+    });
+    
+    process.on('SIGINT', async () => {
+      logger.info('SIGINT received, shutting down gracefully...');
+      await ultraDexAPIServer.stop();
+      process.exit(0);
+    });
+    
+    process.on('unhandledRejection', (reason, promise) => {
+      logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      process.exit(1);
+    });
+    
+    process.on('uncaughtException', (error) => {
+      logger.error('Uncaught Exception:', error);
+      process.exit(1);
+    });
+    
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    logger.error('Failed to start Ultra-Dex Core API Server:', error);
+    process.exit(1);
   }
-});
+}
 
-app.post('/api/execute', async (req, res) => {
-  const { objective } = req.body;
-  if (!objective) return res.status(400).json({ error: 'Objective required' });
-  
-  broadcast({ type: 'task_started', data: { objective } });
-  agentOrchestrator.executeNexus(objective).then(result => {
-    broadcast({ type: 'task_completed', data: { objective, result } });
-  }).catch(err => {
-    broadcast({ type: 'task_failed', data: { objective, error: err.message } });
-  });
+// Start the server if this file is run directly
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+  startServer();
+}
 
-  res.json({ status: 'ACCEPTED', objective });
-});
-
-server.listen(port, () => {
-  console.log(`🚀 Ultra-Dex Core-API (Express + WS) listening on port ${port}`);
-});
+// Export the server for use in tests and other modules
+export { ultraDexAPIServer };
+export default ultraDexAPIServer;
