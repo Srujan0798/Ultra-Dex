@@ -1,49 +1,77 @@
-name: Ultra-Dex CI/CD
+name: Ultra-Dex AI Development Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, develop ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
 
 jobs:
-  verify:
+  ai-development:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Ultra-Dex AI Code Review
+        uses: ./.github/actions/ultra-dex
         with:
-          node-version: '20'
-
-      - name: Install Ultra-Dex
-        run: npm install -g ultra-dex
-
-      - name: Verify Implementation Plan
-        uses: ./.github/actions/verify
-        with:
-          fail-on: 'incomplete-p0-sections'
-          min-alignment: '70'
-
-  alignment:
-    runs-on: ubuntu-latest
-    needs: verify
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Ultra-Dex
-        run: npm install -g ultra-dex
-
-      - name: Check Alignment
-        uses: ./.github/actions/align
-        with:
-          min-score: '75'
-          comment-on-pr: 'true'
+          task: 'Review the code changes in this pull request and suggest improvements focusing on security, performance, and maintainability'
+          provider: 'openai'
+          model: 'gpt-4o'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Ultra-Dex Implementation
+        uses: ./.github/actions/ultra-dex
+        with:
+          task: 'Implement the feature described in the latest commit message'
+          provider: 'anthropic'
+          model: 'claude-3-5-sonnet-latest'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Ultra-Dex Testing
+        uses: ./.github/actions/ultra-dex
+        with:
+          task: 'Write comprehensive tests for the changes in this pull request'
+          provider: 'openai'
+          model: 'gpt-4o'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Ultra-Dex Documentation
+        uses: ./.github/actions/ultra-dex
+        with:
+          task: 'Generate or update documentation for the changes in this pull request'
+          provider: 'openai'
+          model: 'gpt-4o'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+  ai-deployment:
+    needs: ai-development
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Ultra-Dex Deployment Preparation
+        uses: ./.github/actions/ultra-dex
+        with:
+          task: 'Prepare deployment configuration for production based on the latest changes'
+          provider: 'google'
+          model: 'gemini-2.0-flash-exp'
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+      - name: Deploy to Production
+        run: |
+          # Deployment steps would go here
+          echo "Deploying to production..."

@@ -66,8 +66,7 @@ class AuditLogger {
     const logFile = path.join(this.logPath, `audit-${dateStr}.jsonl`);
 
     // Append to file
-    await fs.appendFile(logFile, JSON.stringify(entry) + '
-');
+    await fs.appendFile(logFile, JSON.stringify(entry) + '\n');
     
     return entry;
   }
@@ -81,8 +80,7 @@ class AuditLogger {
       
       for (const file of files.filter(f => f.endsWith('.jsonl'))) {
         const content = await fs.readFile(path.join(this.logPath, file), 'utf8');
-        const lines = content.trim().split('
-');
+        const lines = content.trim().split('\n');
         for (const line of lines) {
           if (!line) continue;
           try {
