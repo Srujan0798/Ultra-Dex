@@ -91,21 +91,31 @@ export class SQLiteProvider {
     await this.init();
 
     if (this.mode === 'memory') {
-      const store = this.getTierStore(tier);
-      const normalized = this.toMemoryRecord(record);
-      store.set(record.id, normalized);
-      return normalized;
+      try {
+        const store = this.getTierStore(tier);
+        const normalized = this.toMemoryRecord(record);
+        store.set(record.id, normalized);
+        return normalized;
+      } catch (error) {
+        console.error(`SQLiteProvider memory mode add failed: ${error.message}`);
+        throw error;
+      }
     }
 
-    const table = `${tier}_memory`;
-    const metadata = JSON.stringify(record.metadata || {});
+    try {
+      const table = `${tier}_memory`;
+      const metadata = JSON.stringify(record.metadata || {});
 
-    await this.db.run(
-      `INSERT OR REPLACE INTO ${table} (id, content, type, source, metadata) VALUES (?, ?, ?, ?, ?)`,
-      [record.id, record.content, record.type, record.source, metadata]
-    );
+      await this.db.run(
+        `INSERT OR REPLACE INTO ${table} (id, content, type, source, metadata) VALUES (?, ?, ?, ?, ?)`,
+        [record.id, record.content, record.type, record.source, metadata]
+      );
 
-    return record;
+      return record;
+    } catch (error) {
+      console.error(`SQLiteProvider DB mode add failed for table ${table}: ${error.message}`);
+      throw error;
+    }
   }
 
   async get(tier, id) {
@@ -163,20 +173,30 @@ export class SQLiteProvider {
     }
 
     if (this.mode === 'memory') {
-      const store = this.getTierStore(tier);
-      const all = Array.from(store.values());
+      try {
+        const store = this.getTierStore(tier);
+        const all = Array.from(store.values());
 
-      // Support the subset used by MemoryManager (LIKE + LIMIT)
-      if (sql.toLowerCase().includes('content like')) {
-        const like = String(params[0] || '').replace(/%/g, '').toLowerCase();
-        const limit = Number(params[1] || all.length);
-        return all.filter((row) => String(row.content).toLowerCase().includes(like)).slice(0, limit);
+        // Support the subset used by MemoryManager (LIKE + LIMIT)
+        if (sql.toLowerCase().includes('content like')) {
+          const like = String(params[0] || '').replace(/%/g, '').toLowerCase();
+          const limit = Number(params[1] || all.length);
+          return all.filter((row) => String(row.content).toLowerCase().includes(like)).slice(0, limit);
+        }
+
+        return all;
+      } catch (error) {
+        console.error(`SQLiteProvider memory mode query failed: ${error.message}`);
+        throw error;
       }
-
-      return all;
     }
 
-    return this.db.all(sql, params);
+    try {
+      return await this.db.all(sql, params);
+    } catch (error) {
+      console.error(`SQLiteProvider DB mode query failed: ${error.message}`);
+      throw error;
+    }
   }
 
   async close() {

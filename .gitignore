@@ -21,6 +21,10 @@ node_modules/
 .ultra-dex/
 **/.ultra/
 **/.ultra-dex/
+data/memory.db
+data/autopsy/
+data/observability/
+data/agent-registry.json
 
 # Auto-generated context (use `ultra-dex sync --brain` to regenerate)
 # CONTEXT.md

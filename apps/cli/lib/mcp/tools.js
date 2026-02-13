@@ -53,12 +53,20 @@ const TOOL_CAPABILITIES = {
  * @returns {void}
  */
 export function registerTools(server) {
+  // Prevent duplicate registration
+  if (server._toolsRegistered) {
+    return;
+  }
+
   const baseTool = server.tool.bind(server);
   server.tool = (name, description, schema, handler, capability) => {
     const resolved = capability || TOOL_CAPABILITIES[name] || DEFAULT_TOOL_CAPABILITY;
     capabilitiesRouter.registerToolCapability(name, resolved);
     return baseTool(name, description, schema, capabilitiesRouter.wrapTool(name, handler));
   };
+
+  // Mark server as having tools registered
+  server._toolsRegistered = true;
 
   // Tool: Remember Fact
   server.tool(

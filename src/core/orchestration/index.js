@@ -112,6 +112,20 @@ class AgentOrchestrator extends EventEmitter {
     }
 
     if (typeof this.mcpServerFactory !== 'function') {
+      // Try to create a default MCP server with tools registered
+      try {
+        const { createMcpServer } = await import('../../../apps/cli/lib/mcp/server.js');
+        const { registerTools } = await import('../../../apps/cli/lib/mcp/tools.js');
+
+        const server = createMcpServer();
+        registerTools(server);
+
+        this.mcpServer = this.normalizeMcpServer(server);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.mcpServer = { toolsMap: new Map() };
+        console.warn(chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}`));
+      }
       return;
     }
 
