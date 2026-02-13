@@ -33,7 +33,13 @@ Normalized incident captures stored in Markdown format.
 - [status-2026-02-12.md](./status-2026-02-12.md)
 - [cycle-2026-02-12T2307.md](./cycle-2026-02-12T2307.md)
 - [RENAMED_FILES_MAP.md](./RENAMED_FILES_MAP.md)
+- [INCIDENT_TEMPLATE.md](./INCIDENT_TEMPLATE.md)
 
 ## Source
 
 These files are normalized copies of GitHub Status incident entries captured during suspension recovery.
+
+## Verification
+
+- Run archive format checks:
+  `node gitFail/incidents/verify-incident-archive.js`
