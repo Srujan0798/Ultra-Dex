@@ -15,6 +15,8 @@ related to outage/risk handling work.
 
 - Run compliance verification:
   `node gitFail/compliance/check-governance-files.js`
+- Run incident archive format verification:
+  `npm run incidents:verify`
 - Run GitHub policy/status guard:
   `node gitFail/compliance/github-guard.js`
 - Run local-only guard (skip remote access check):

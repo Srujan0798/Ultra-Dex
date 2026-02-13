@@ -89,13 +89,13 @@ Related status/support artifacts used in this audit:
 
 | Item | Value |
 |---|---|
-| Incident | Account suspension blocks remote push |
+| Incident | Historical account suspension blocked remote push |
 | Evidence | `gitFail/incidents/status-2026-02-12.md` and support artifacts in `gitFail/compliance/status/` |
 | Ticket | #4080230 |
-| Current behavior | Push gate fails closed when suspension is detected |
+| Current behavior | Push gate validates remote access and now passes (reinstated account) |
 | Enforced by | `C1`, `C3`, `C5`, `C9`, `C10`, `C12` |
 
-Operational rule now enforced: if account is suspended, do not push; continue local dev and capture evidence until support resolves the ticket.
+Operational rule remains enforced: if account risk appears again, do not push; continue local dev and capture evidence until support resolves the ticket.
 
 ## 6. Where We Follow GitHub Rules Every Time
 
@@ -144,8 +144,8 @@ As of this audit:
 
 - Governance checks pass locally.
 - Local enterprise gate passes (`mode=local`).
-- Push gate correctly blocks because account is suspended (expected fail-safe behavior).
-- Repository remains compliant-first and operational in local continuity mode.
+- Push enterprise gate passes (`mode=push`), including remote/account checks.
+- Repository remains compliant-first and operational in normal mode, with local-continuity fallback available.
 
 ## 9. Latest Verification Evidence (February 13, 2026)
 
@@ -153,12 +153,34 @@ Executed during final audit:
 
 1. `node gitFail/compliance/check-governance-files.js` -> **pass**
 2. `npm run gate:local` -> **pass**
-3. Local test run inside gate -> **20/20 tests passed**
+3. `npm run gate:push` -> **pass**
 4. Security audit inside gate -> **0 high/critical**, **4 moderate** (`langchain/langsmith` chain; breaking upgrade required for forced fix)
-5. Push gate behavior remains fail-safe: account-suspension remote check blocks push as designed
+5. Incident archive format validation -> `node gitFail/incidents/verify-incident-archive.js` -> **pass** (21 files)
+6. Remote access validation -> `git ls-remote --heads origin` -> **pass**
 
 Interpretation:
 
-- Engineering quality gates are green in local continuity mode.
+- Engineering quality gates are green in local and push modes.
 - Compliance and policy gates are functioning correctly.
-- Remote push remains blocked only by GitHub account status, not by repository rule violations.
+- Push path is open and guarded by policy checks.
+
+## 10. GitHub Rules Mapping
+
+| Rule Area | Source | Enforced By |
+|---|---|---|
+| Terms of Service | `docs.github.com/.../github-terms-of-service` | `C8`, `C2`, `C6` |
+| Acceptable Use | `docs.github.com/.../github-acceptable-use-policies` | `C1`, `C4`, `C5`, `C8` |
+| Privacy | `docs.github.com/.../github-general-privacy-statement` | `C4`, `C5`, `C8` |
+| Community Guidelines | `docs.github.com/.../github-community-guidelines` | `C8`, `C2`, `C6` |
+| Trade Controls | `docs.github.com/.../github-and-trade-controls` | `C8`, `C2` |
+| DMCA/Content Removal | `docs.github.com/.../dmca-takedown-policy` | `C8`, reviewer process in PR template |
+
+## 11. Future Incident Response Commands
+
+1. `npm run incidents:verify`
+2. `node gitFail/compliance/check-governance-files.js`
+3. `npm run gate:local`
+4. `npm run gate:push`
+5. `npm run safety:daily`
+
+If any check fails, stop push/release, collect evidence with `gitFail/compliance/capture-support-evidence.sh`, and record the failure in `gitFail/compliance/status/`.

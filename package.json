@@ -127,7 +127,8 @@
     "cli:profile": "npx --yes clinic doctor -- node apps/cli/bin/ultra-dex.js",
     "cli:flame": "npx --yes clinic flame -- node apps/cli/bin/ultra-dex.js",
     "cli:heapprofile": "npx --yes clinic bubbleprof -- node apps/cli/bin/ultra-dex.js",
-    "demo": "MOCK_AI=true node examples/nexus-demo.js"
+    "demo": "MOCK_AI=true node examples/nexus-demo.js",
+    "incidents:verify": "node gitFail/incidents/verify-incident-archive.js"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^4.0.0",
