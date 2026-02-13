@@ -25,14 +25,14 @@ const PERF_MONITOR_CONFIG = {
     memory: true,
     disk: true,
     network: true,
-    custom: true
+    custom: true,
   },
   alertThresholds: {
     cpu: 80, // percentage
     memory: 85, // percentage
     disk: 90, // percentage
-    responseTime: 5000 // milliseconds
-  }
+    responseTime: 5000, // milliseconds
+  },
 };
 
 // Performance metrics collector
@@ -44,7 +44,7 @@ class MetricsCollector {
       disk: [],
       network: [],
       custom: [],
-      events: []
+      events: [],
     };
     this.aggregatedMetrics = {
       cpuAvg: 0,
@@ -52,7 +52,7 @@ class MetricsCollector {
       peakMemory: 0,
       avgResponseTime: 0,
       totalRequests: 0,
-      errorRate: 0
+      errorRate: 0,
     };
     this.startTime = Date.now();
     this.isCollecting = false;
@@ -82,18 +82,18 @@ class MetricsCollector {
   // Collect system metrics
   collectSystemMetrics() {
     const timestamp = Date.now();
-    
+
     // CPU metrics
     if (PERF_MONITOR_CONFIG.metricsCollection.cpu) {
       const cpus = os.cpus();
       const cpuUsage = process.cpuUsage();
       const cpuPercent = this.calculateCpuPercent(cpuUsage);
-      
+
       this.metrics.cpu.push({
         timestamp,
         usage: cpuPercent,
         count: cpus.length,
-        model: cpus[0]?.model
+        model: cpus[0]?.model,
       });
     }
 
@@ -104,7 +104,7 @@ class MetricsCollector {
         total: os.totalmem(),
         free: os.freemem(),
         used: os.totalmem() - os.freemem(),
-        usagePercent: ((os.totalmem() - os.freemem()) / os.totalmem()) * 100
+        usagePercent: ((os.totalmem() - os.freemem()) / os.totalmem()) * 100,
       };
 
       this.metrics.memory.push({
@@ -113,7 +113,7 @@ class MetricsCollector {
         heapTotal: memoryUsage.heapTotal,
         external: memoryUsage.external,
         rss: memoryUsage.rss,
-        system: systemMemory
+        system: systemMemory,
       });
 
       // Update aggregated metrics
@@ -128,7 +128,7 @@ class MetricsCollector {
         timestamp,
         free: os.freemem(),
         total: os.totalmem(),
-        usagePercent: ((os.totalmem() - os.freemem()) / os.totalmem()) * 100
+        usagePercent: ((os.totalmem() - os.freemem()) / os.totalmem()) * 100,
       });
     }
 
@@ -141,10 +141,10 @@ class MetricsCollector {
     const endUsage = process.cpuUsage();
     const elapsed = process.hrtime();
     const elapsedMicro = elapsed[0] * 1e6 + elapsed[1] / 1e3;
-    
+
     const userDiff = endUsage.user - startUsage.user;
     const systemDiff = endUsage.system - startUsage.system;
-    
+
     return ((userDiff + systemDiff) / elapsedMicro) * 100;
   }
 
@@ -158,7 +158,10 @@ class MetricsCollector {
 
     // Calculate memory average
     if (this.metrics.memory.length > 0) {
-      const memSum = this.metrics.memory.reduce((sum, sample) => sum + sample.system.usagePercent, 0);
+      const memSum = this.metrics.memory.reduce(
+        (sum, sample) => sum + sample.system.usagePercent,
+        0
+      );
       this.aggregatedMetrics.memoryAvg = memSum / this.metrics.memory.length;
     }
   }
@@ -168,7 +171,7 @@ class MetricsCollector {
     this.metrics.events.push({
       timestamp: Date.now(),
       type: eventType,
-      metadata
+      metadata,
     });
   }
 
@@ -178,7 +181,7 @@ class MetricsCollector {
       timestamp: Date.now(),
       name,
       value,
-      unit
+      unit,
     });
   }
 
@@ -186,23 +189,25 @@ class MetricsCollector {
   recordResponseTime(duration, endpoint = 'unknown') {
     this.recordCustomMetric(`response_time_${endpoint}`, duration, 'ms');
     this.aggregatedMetrics.totalRequests++;
-    this.aggregatedMetrics.avgResponseTime = 
-      ((this.aggregatedMetrics.avgResponseTime * (this.aggregatedMetrics.totalRequests - 1)) + duration) / 
+    this.aggregatedMetrics.avgResponseTime =
+      (this.aggregatedMetrics.avgResponseTime * (this.aggregatedMetrics.totalRequests - 1) +
+        duration) /
       this.aggregatedMetrics.totalRequests;
   }
 
   // Record error
   recordError(errorType = 'unknown') {
     this.recordCustomMetric(`error_${errorType}`, 1, 'count');
-    this.aggregatedMetrics.errorRate = 
-      (this.metrics.custom.filter(m => m.name.startsWith('error_')).length / 
-       this.aggregatedMetrics.totalRequests) * 100;
+    this.aggregatedMetrics.errorRate =
+      (this.metrics.custom.filter((m) => m.name.startsWith('error_')).length /
+        this.aggregatedMetrics.totalRequests) *
+      100;
   }
 
   // Trim metrics to prevent memory overflow
   trimMetrics() {
     const maxSamples = PERF_MONITOR_CONFIG.maxSamples;
-    
+
     for (const key in this.metrics) {
       if (this.metrics[key].length > maxSamples) {
         this.metrics[key] = this.metrics[key].slice(-maxSamples);
@@ -228,8 +233,8 @@ class MetricsCollector {
         cpu: this.metrics.cpu.slice(-50),
         memory: this.metrics.memory.slice(-50),
         events: this.metrics.events.slice(-20),
-        custom: this.metrics.custom.slice(-50)
-      }
+        custom: this.metrics.custom.slice(-50),
+      },
     };
   }
 
@@ -237,14 +242,14 @@ class MetricsCollector {
   async exportMetrics(filename = `ultra-dex-metrics-${Date.now()}.json`) {
     const metrics = this.getMetricsSnapshot();
     const metricsPath = path.join(process.cwd(), '.ultra-dex', 'metrics', filename);
-    
+
     try {
       // Ensure metrics directory exists
       await fs.mkdir(path.dirname(metricsPath), { recursive: true });
-      
+
       // Write metrics to file
       await fs.writeFile(metricsPath, JSON.stringify(metrics, null, 2));
-      
+
       return metricsPath;
     } catch (error) {
       console.error('Failed to export metrics:', error);
@@ -263,7 +268,7 @@ class MetricsCollector {
         type: 'warning',
         category: 'cpu',
         message: `High average CPU usage: ${snapshot.aggregated.cpuAvg.toFixed(2)}%`,
-        recommendation: 'Consider optimizing algorithms or adding caching'
+        recommendation: 'Consider optimizing algorithms or adding caching',
       });
     }
 
@@ -273,16 +278,17 @@ class MetricsCollector {
         type: 'warning',
         category: 'memory',
         message: `High average memory usage: ${snapshot.aggregated.memoryAvg.toFixed(2)}%`,
-        recommendation: 'Review memory-intensive operations and implement garbage collection'
+        recommendation: 'Review memory-intensive operations and implement garbage collection',
       });
     }
 
-    if (snapshot.aggregated.peakMemory > 1e9) { // > 1GB
+    if (snapshot.aggregated.peakMemory > 1e9) {
+      // > 1GB
       insights.push({
         type: 'alert',
         category: 'memory',
         message: `High peak memory usage: ${(snapshot.aggregated.peakMemory / 1e6).toFixed(2)} MB`,
-        recommendation: 'Investigate memory leaks and optimize data structures'
+        recommendation: 'Investigate memory leaks and optimize data structures',
       });
     }
 
@@ -292,7 +298,7 @@ class MetricsCollector {
         type: 'warning',
         category: 'performance',
         message: `Slow average response time: ${snapshot.aggregated.avgResponseTime.toFixed(2)}ms`,
-        recommendation: 'Optimize database queries and implement caching strategies'
+        recommendation: 'Optimize database queries and implement caching strategies',
       });
     }
 
@@ -302,7 +308,7 @@ class MetricsCollector {
         type: 'alert',
         category: 'stability',
         message: `High error rate: ${snapshot.aggregated.errorRate.toFixed(2)}%`,
-        recommendation: 'Review error handling and investigate root causes'
+        recommendation: 'Review error handling and investigate root causes',
       });
     }
 
@@ -313,8 +319,8 @@ class MetricsCollector {
         cpuHealth: snapshot.aggregated.cpuAvg < 70 ? 'good' : 'concerning',
         memoryHealth: snapshot.aggregated.memoryAvg < 80 ? 'good' : 'concerning',
         performanceHealth: snapshot.aggregated.avgResponseTime < 2000 ? 'good' : 'concerning',
-        stabilityHealth: snapshot.aggregated.errorRate < 5 ? 'good' : 'concerning'
-      }
+        stabilityHealth: snapshot.aggregated.errorRate < 5 ? 'good' : 'concerning',
+      },
     };
   }
 }
@@ -330,12 +336,12 @@ class PerformanceProfiler {
   async measure(label, fn) {
     const start = performance.now();
     const startMemory = process.memoryUsage().heapUsed;
-    
+
     try {
       const result = await fn();
       const end = performance.now();
       const endMemory = process.memoryUsage().heapUsed;
-      
+
       const measurement = {
         label,
         startTime: start,
@@ -344,26 +350,26 @@ class PerformanceProfiler {
         memoryBefore: startMemory,
         memoryAfter: endMemory,
         memoryDelta: endMemory - startMemory,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      
+
       // Store measurement
       if (!this.measurements.has(label)) {
         this.measurements.set(label, []);
       }
       this.measurements.get(label).push(measurement);
-      
+
       // Keep only last 100 measurements per label
       const measurements = this.measurements.get(label);
       if (measurements.length > 100) {
         this.measurements.set(label, measurements.slice(-100));
       }
-      
+
       return result;
     } catch (error) {
       const end = performance.now();
       const endMemory = process.memoryUsage().heapUsed;
-      
+
       const measurement = {
         label,
         startTime: start,
@@ -373,14 +379,14 @@ class PerformanceProfiler {
         memoryAfter: endMemory,
         memoryDelta: endMemory - startMemory,
         error: error.message,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      
+
       if (!this.measurements.has(label)) {
         this.measurements.set(label, []);
       }
       this.measurements.get(label).push(measurement);
-      
+
       throw error;
     }
   }
@@ -390,7 +396,7 @@ class PerformanceProfiler {
     this.markers.set(label, {
       label,
       timestamp: performance.now(),
-      wallTime: Date.now()
+      wallTime: Date.now(),
     });
   }
 
@@ -398,25 +404,25 @@ class PerformanceProfiler {
   measureBetween(startMark, endMark) {
     const start = this.markers.get(startMark);
     const end = this.markers.get(endMark);
-    
+
     if (!start || !end) {
       throw new Error(`Missing mark: ${!start ? startMark : endMark}`);
     }
-    
+
     return end.timestamp - start.timestamp;
   }
 
   // Get performance report for a label
   getReport(label) {
     const measurements = this.measurements.get(label) || [];
-    
+
     if (measurements.length === 0) {
       return null;
     }
-    
-    const durations = measurements.map(m => m.duration);
-    const memoryDeltas = measurements.map(m => m.memoryDelta);
-    
+
+    const durations = measurements.map((m) => m.duration);
+    const memoryDeltas = measurements.map((m) => m.memoryDelta);
+
     const stats = {
       label,
       count: measurements.length,
@@ -429,10 +435,10 @@ class PerformanceProfiler {
         max: Math.max(...memoryDeltas),
         avg: memoryDeltas.reduce((a, b) => a + b, 0) / memoryDeltas.length,
       },
-      errors: measurements.filter(m => m.error).length,
-      errorRate: (measurements.filter(m => m.error).length / measurements.length) * 100
+      errors: measurements.filter((m) => m.error).length,
+      errorRate: (measurements.filter((m) => m.error).length / measurements.length) * 100,
     };
-    
+
     return stats;
   }
 
@@ -448,17 +454,17 @@ class PerformanceProfiler {
   // Export profiling data
   async exportProfilingData(filename = `ultra-dex-profiling-${Date.now()}.json`) {
     const profilingPath = path.join(process.cwd(), '.ultra-dex', 'profiling', filename);
-    
+
     try {
       await fs.mkdir(path.dirname(profilingPath), { recursive: true });
-      
+
       const data = {
         timestamp: Date.now(),
         measurements: Object.fromEntries(this.measurements),
         markers: Object.fromEntries(this.markers),
-        reports: this.getAllReports()
+        reports: this.getAllReports(),
       };
-      
+
       await fs.writeFile(profilingPath, JSON.stringify(data, null, 2));
       return profilingPath;
     } catch (error) {
@@ -497,7 +503,7 @@ class AlertManager {
         message: `CPU usage is high: ${metrics.aggregated.cpuAvg.toFixed(2)}%`,
         threshold: this.thresholds.cpu,
         currentValue: metrics.aggregated.cpuAvg,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       newAlerts.push(alert);
       this.triggerCallbacks('cpu-high', alert);
@@ -512,7 +518,7 @@ class AlertManager {
         message: `Memory usage is high: ${metrics.aggregated.memoryAvg.toFixed(2)}%`,
         threshold: this.thresholds.memory,
         currentValue: metrics.aggregated.memoryAvg,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       newAlerts.push(alert);
       this.triggerCallbacks('memory-high', alert);
@@ -527,7 +533,7 @@ class AlertManager {
         message: `Response time is slow: ${metrics.aggregated.avgResponseTime.toFixed(2)}ms`,
         threshold: this.thresholds.responseTime,
         currentValue: metrics.aggregated.avgResponseTime,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       newAlerts.push(alert);
       this.triggerCallbacks('response-slow', alert);
@@ -535,7 +541,7 @@ class AlertManager {
 
     // Add new alerts to the list
     this.alerts.push(...newAlerts);
-    
+
     // Keep only recent alerts (last 1000)
     if (this.alerts.length > 1000) {
       this.alerts = this.alerts.slice(-1000);
@@ -558,14 +564,14 @@ class AlertManager {
 
   // Get recent alerts
   getRecentAlerts(hours = 24) {
-    const cutoff = Date.now() - (hours * 60 * 60 * 1000);
-    return this.alerts.filter(alert => alert.timestamp > cutoff);
+    const cutoff = Date.now() - hours * 60 * 60 * 1000;
+    return this.alerts.filter((alert) => alert.timestamp > cutoff);
   }
 
   // Clear alerts older than specified hours
   clearOldAlerts(hours = 24) {
-    const cutoff = Date.now() - (hours * 60 * 60 * 1000);
-    this.alerts = this.alerts.filter(alert => alert.timestamp > cutoff);
+    const cutoff = Date.now() - hours * 60 * 60 * 1000;
+    this.alerts = this.alerts.filter((alert) => alert.timestamp > cutoff);
   }
 }
 
@@ -678,7 +684,7 @@ class UltraDexPerformanceMonitor {
       maxRetries = PERFORMANCE_CONFIG.maxRetries,
       timeout = PERFORMANCE_CONFIG.requestTimeout,
       circuitBreaker = true,
-      fallback = null
+      fallback = null,
     } = options;
 
     // Apply workload-specific optimizations
@@ -694,10 +700,11 @@ class UltraDexPerformanceMonitor {
 
     let lastError;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      let timeoutId;
       try {
         // Add timeout protection
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        timeoutId = setTimeout(() => controller.abort(), timeout);
 
         const startTime = performance.now();
         const result = await this.measure(task.name, async () => {
@@ -729,7 +736,7 @@ class UltraDexPerformanceMonitor {
           const baseDelay = Math.min(1000 * Math.pow(2, attempt), 10000); // Max 10 seconds
           const jitter = Math.random() * 1000; // Add up to 1 second of randomness
           const delay = baseDelay + jitter;
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
@@ -765,9 +772,4 @@ export const perfMonitor = new UltraDexPerformanceMonitor();
 export default perfMonitor;
 
 // Export individual components for advanced usage
-export {
-  MetricsCollector,
-  PerformanceProfiler,
-  AlertManager,
-  UltraDexPerformanceMonitor
-};
+export { MetricsCollector, PerformanceProfiler, AlertManager, UltraDexPerformanceMonitor };

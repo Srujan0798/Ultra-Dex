@@ -76,6 +76,16 @@ export default [
     },
   },
   {
+    files: ['apps/docs-site/src/**/*.js'],
+    languageOptions: {
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+  },
+  {
     ignores: [
       'node_modules/**',
       '**/dist/**',

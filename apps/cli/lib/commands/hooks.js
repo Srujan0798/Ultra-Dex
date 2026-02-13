@@ -341,7 +341,7 @@ echo "   Current alignment score: \${SCORE}%"
 # Check minimum score threshold
 if [ "$SCORE" -lt "$MIN_ALIGNMENT_SCORE" ]; then
     echo ""
-    echo "❌ COMMIT BLOCKED: Alignment score (\$SCORE%) is below minimum ($MIN_ALIGNMENT_SCORE%)"
+    echo "❌ COMMIT BLOCKED: Alignment score ($SCORE%) is below minimum ($MIN_ALIGNMENT_SCORE%)"
     echo ""
     echo "📋 To fix this:"
     echo "   1. Run: npx ultra-dex validate"

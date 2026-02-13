@@ -7,15 +7,18 @@ import { agentOrchestrator } from '../orchestration/index.js';
 
 export class EnhancedMCPServer {
   constructor() {
-    this.server = new Server({
-      name: 'ultra-dex-meta-layer',
-      version: '6.0.0',
-    }, {
-      capabilities: {
-        tools: {},
-        resources: {}
+    this.server = new Server(
+      {
+        name: 'ultra-dex-meta-layer',
+        version: '6.0.0',
+      },
+      {
+        capabilities: {
+          tools: {},
+          resources: {},
+        },
       }
-    });
+    );
 
     this.setupTools();
   }
@@ -30,30 +33,32 @@ export class EnhancedMCPServer {
             type: 'object',
             properties: {
               query: { type: 'string' },
-              tier: { type: 'string', enum: ['hot', 'warm', 'cold'] }
+              tier: { type: 'string', enum: ['hot', 'warm', 'cold'] },
             },
-            required: ['query']
-          }
+            required: ['query'],
+          },
         },
         {
           name: 'get_agent_status',
           description: 'Get the status of all active agents in the swarm',
-          inputSchema: { type: 'object', properties: {} }
-        }
-      ]
+          inputSchema: { type: 'object', properties: {} },
+        },
+      ],
     }));
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
 
       switch (name) {
-        case 'query_memory':
+        case 'query_memory': {
           const results = await ppmManager.search(args.query);
           return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] };
-        
-        case 'get_agent_status':
+        }
+
+        case 'get_agent_status': {
           const sessions = agentOrchestrator.getActiveSessions();
           return { content: [{ type: 'text', text: JSON.stringify(sessions, null, 2) }] };
+        }
 
         default:
           throw new Error('Tool not found');
@@ -69,4 +74,3 @@ export class EnhancedMCPServer {
 }
 
 export const mcpServer = new EnhancedMCPServer();
-

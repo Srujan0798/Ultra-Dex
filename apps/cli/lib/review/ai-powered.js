@@ -121,18 +121,18 @@ export class CodeReviewSystem extends EventEmitter {
       'Address TO_DO/FIXME comments before merging',
       'medium'
     );
-    qualityAgent.addRule(/var\s+/, 'Use const or let instead of var', 'low');
-    qualityAgent.addRule(
+    qualityGuard.addRule(/var\s+/, 'Use const or let instead of var', 'low');
+    qualityGuard.addRule(
       /catch\s*\([^)]*\)\s*\{\s*\}/,
       'Empty catch block - handle the error properly',
       'high'
     );
-    qualityAgent.addRule(
+    qualityGuard.addRule(
       /function\s*\([^)]*\)\s*\{/,
       'Consider using arrow functions for consistency',
       'info'
     );
-    this.agents.set('quality', qualityAgent);
+    this.agents.set('quality', qualityGuard);
 
     // Best Practices Agent
     const bestPracticesAgent = new ReviewAgent('BestPractice', 'best-practices');

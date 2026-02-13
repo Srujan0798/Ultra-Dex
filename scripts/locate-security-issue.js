@@ -63,7 +63,7 @@ const RULES = [
     severity: 'high',
     description: 'Potential hardcoded secret/token',
     pattern:
-      /(api_key|apikey|secret|token|access_key|auth_key)\s*[:=]\s*['"][A-Za-z0-9_\-]{16,}['"]/gi,
+      /(api_key|apikey|secret|token|access_key|auth_key)\s*[:=]\s*['"][A-Za-z0-9_-]{16,}['"]/gi,
   },
   {
     id: 'private-key',

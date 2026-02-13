@@ -41,17 +41,19 @@ export class VoiceToCodeService {
         // Windows with PowerShell
         const psScript = `
         Add-Type -AssemblyName System.Windows.Forms,System.Drawing
-        \$rec = New-Object System.Media.SoundRecorder
-        \$rec.Recording = \$true
+        $rec = New-Object System.Media.SoundRecorder
+        $rec.Recording = $true
         Start-Sleep -Seconds 30
-        \$rec.Stop()
+        $rec.Stop()
         `;
         this.recordingProcess = exec(`powershell -Command "${psScript}"`);
       }
 
       this.recording = true;
-      printInfo('🎤 Recording started... Speak your command (will stop after 30 seconds or press Ctrl+C)');
-      
+      printInfo(
+        '🎤 Recording started... Speak your command (will stop after 30 seconds or press Ctrl+C)'
+      );
+
       return { success: true, message: 'Recording started' };
     } catch (error) {
       throw new AppError(`Failed to start recording: ${error.message}`);
@@ -66,9 +68,9 @@ export class VoiceToCodeService {
       if (this.recordingProcess) {
         this.recordingProcess.kill();
       }
-      
+
       this.recording = false;
-      
+
       if (!this.audioFile || !(await fs.stat(this.audioFile).catch(() => false))) {
         throw new AppError('No audio file recorded');
       }
@@ -91,23 +93,29 @@ export class VoiceToCodeService {
     try {
       const FormData = (await import('form-data')).default;
       const axios = (await import('axios')).default;
-      
+
       const formData = new FormData();
       formData.append('file', createReadStream(audioFilePath));
       formData.append('model', 'whisper-1');
       formData.append('response_format', 'text');
 
-      const response = await axios.post('https://api.openai.com/v1/audio/transcriptions', formData, {
-        headers: {
-          ...formData.getHeaders(),
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        timeout: 30000,
-      });
+      const response = await axios.post(
+        'https://api.openai.com/v1/audio/transcriptions',
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(),
+            Authorization: `Bearer ${apiKey}`,
+          },
+          timeout: 30000,
+        }
+      );
 
       return response.data.trim();
     } catch (error) {
-      throw new AppError(`Transcription failed: ${error.response?.data?.error?.message || error.message}`);
+      throw new AppError(
+        `Transcription failed: ${error.response?.data?.error?.message || error.message}`
+      );
     }
   }
 
@@ -118,34 +126,34 @@ export class VoiceToCodeService {
     try {
       // Parse voice command to determine intent
       const parsedCommand = this.parseVoiceCommand(voiceCommand);
-      
+
       if (parsedCommand.action === 'unknown') {
         return {
           success: false,
-          message: `Unknown command: "${voiceCommand}". Try phrases like "create a login component" or "add authentication".`
+          message: `Unknown command: "${voiceCommand}". Try phrases like "create a login component" or "add authentication".`,
         };
       }
 
       // Generate code based on parsed command
       const codeGenerationResult = await this.generateCode(parsedCommand, options);
-      
+
       if (codeGenerationResult.success) {
         // Optionally write the generated code to files
         if (options.writeToFiles && codeGenerationResult.files) {
           await this.writeGeneratedFiles(codeGenerationResult.files);
         }
-        
+
         return {
           success: true,
           command: parsedCommand,
           generatedCode: codeGenerationResult.code,
           files: codeGenerationResult.files,
-          message: `✅ Voice command processed successfully. ${codeGenerationResult.files?.length || 0} files generated.`
+          message: `✅ Voice command processed successfully. ${codeGenerationResult.files?.length || 0} files generated.`,
         };
       } else {
         return {
           success: false,
-          message: `Failed to generate code: ${codeGenerationResult.error}`
+          message: `Failed to generate code: ${codeGenerationResult.error}`,
         };
       }
     } catch (error) {
@@ -158,16 +166,34 @@ export class VoiceToCodeService {
    */
   parseVoiceCommand(command) {
     const lowerCmd = command.toLowerCase();
-    
+
     // Identify action
     let action = 'unknown';
-    if (lowerCmd.includes('create') || lowerCmd.includes('make') || lowerCmd.includes('build') || lowerCmd.includes('add')) {
+    if (
+      lowerCmd.includes('create') ||
+      lowerCmd.includes('make') ||
+      lowerCmd.includes('build') ||
+      lowerCmd.includes('add')
+    ) {
       action = 'create';
-    } else if (lowerCmd.includes('update') || lowerCmd.includes('modify') || lowerCmd.includes('change') || lowerCmd.includes('edit')) {
+    } else if (
+      lowerCmd.includes('update') ||
+      lowerCmd.includes('modify') ||
+      lowerCmd.includes('change') ||
+      lowerCmd.includes('edit')
+    ) {
       action = 'update';
-    } else if (lowerCmd.includes('delete') || lowerCmd.includes('remove') || lowerCmd.includes('destroy')) {
+    } else if (
+      lowerCmd.includes('delete') ||
+      lowerCmd.includes('remove') ||
+      lowerCmd.includes('destroy')
+    ) {
       action = 'delete';
-    } else if (lowerCmd.includes('fix') || lowerCmd.includes('debug') || lowerCmd.includes('repair')) {
+    } else if (
+      lowerCmd.includes('fix') ||
+      lowerCmd.includes('debug') ||
+      lowerCmd.includes('repair')
+    ) {
       action = 'fix';
     }
 
@@ -175,11 +201,24 @@ export class VoiceToCodeService {
     let entityType = 'generic';
     if (lowerCmd.includes('component') || lowerCmd.includes('ui')) {
       entityType = 'component';
-    } else if (lowerCmd.includes('api') || lowerCmd.includes('endpoint') || lowerCmd.includes('route')) {
+    } else if (
+      lowerCmd.includes('api') ||
+      lowerCmd.includes('endpoint') ||
+      lowerCmd.includes('route')
+    ) {
       entityType = 'api';
-    } else if (lowerCmd.includes('auth') || lowerCmd.includes('authentication') || lowerCmd.includes('login') || lowerCmd.includes('register')) {
+    } else if (
+      lowerCmd.includes('auth') ||
+      lowerCmd.includes('authentication') ||
+      lowerCmd.includes('login') ||
+      lowerCmd.includes('register')
+    ) {
       entityType = 'auth';
-    } else if (lowerCmd.includes('database') || lowerCmd.includes('model') || lowerCmd.includes('schema')) {
+    } else if (
+      lowerCmd.includes('database') ||
+      lowerCmd.includes('model') ||
+      lowerCmd.includes('schema')
+    ) {
       entityType = 'database';
     } else if (lowerCmd.includes('test') || lowerCmd.includes('spec')) {
       entityType = 'test';
@@ -196,7 +235,7 @@ export class VoiceToCodeService {
       entityType,
       entityName,
       originalCommand: command,
-      raw: command
+      raw: command,
     };
   }
 
@@ -250,7 +289,7 @@ Context:
       // Get AI response
       const response = await provider.chatComplete([
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
+        { role: 'user', content: userPrompt },
       ]);
 
       // Parse the response to extract code and file structure
@@ -260,12 +299,12 @@ Context:
         success: true,
         code: response,
         files: parsedResponse.files,
-        dependencies: parsedResponse.dependencies
+        dependencies: parsedResponse.dependencies,
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -276,30 +315,30 @@ Context:
   parseCodeResponse(response) {
     const files = [];
     const dependencies = [];
-    
+
     // Extract code blocks with file paths
     const codeBlockRegex = /```(?:\w+)?\s*([^\n]+?)\n([\s\S]*?)```/g;
     let match;
-    
+
     while ((match = codeBlockRegex.exec(response)) !== null) {
       const filePath = match[1].trim();
       const content = match[2].trim();
-      
+
       if (filePath && content) {
         files.push({
           path: filePath,
-          content: content
+          content: content,
         });
       }
     }
-    
+
     // Extract dependency information if mentioned
     const depRegex = /npm install ([\w@\-_/]+)/g;
     let depMatch;
     while ((depMatch = depRegex.exec(response)) !== null) {
       dependencies.push(depMatch[1]);
     }
-    
+
     return { files, dependencies };
   }
 
@@ -309,13 +348,13 @@ Context:
   async writeGeneratedFiles(files) {
     for (const file of files) {
       const fullPath = path.resolve(process.cwd(), file.path);
-      
+
       // Ensure directory exists
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
-      
+
       // Write file
       await fs.writeFile(fullPath, file.content, 'utf8');
-      
+
       printSuccess(`📝 Created: ${file.path}`);
     }
   }
@@ -326,10 +365,15 @@ Context:
   async detectStack() {
     try {
       const packageJsonPath = path.join(process.cwd(), 'package.json');
-      if (await fs.access(packageJsonPath).then(() => true).catch(() => false)) {
+      if (
+        await fs
+          .access(packageJsonPath)
+          .then(() => true)
+          .catch(() => false)
+      ) {
         const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
         const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-        
+
         const stack = [];
         if (deps.next) stack.push('Next.js');
         if (deps.react) stack.push('React');
@@ -342,7 +386,7 @@ Context:
         if (deps.typeorm) stack.push('TypeORM');
         if (deps.mongodb) stack.push('MongoDB');
         if (deps.pg) stack.push('PostgreSQL');
-        
+
         return stack.join(', ') || 'Unknown';
       }
       return 'Unknown';
@@ -359,7 +403,7 @@ Context:
       const { glob } = await import('glob');
       const files = await glob('**/*.{js,ts,jsx,tsx,json,md}', {
         ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'],
-        maxDepth: 2
+        maxDepth: 2,
       });
       return files.slice(0, 10).join(', ') + (files.length > 10 ? '...' : '');
     } catch {

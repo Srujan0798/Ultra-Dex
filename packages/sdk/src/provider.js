@@ -8,6 +8,7 @@ export class BaseProvider {
   }
 
   async *stream() {
+    yield* [];
     throw new Error('UltraDex SDK: provider must implement stream(messages, opts)');
   }
 
@@ -21,7 +22,9 @@ export function assertProviderContract(name, provider) {
     throw new Error(`UltraDex SDK: provider "${name}" must be an object instance`);
   }
 
-  const missing = ['chat', 'stream', 'embed'].filter((method) => typeof provider[method] !== 'function');
+  const missing = ['chat', 'stream', 'embed'].filter(
+    (method) => typeof provider[method] !== 'function'
+  );
   if (missing.length > 0) {
     throw new Error(
       `UltraDex SDK: provider "${name}" is missing required methods: ${missing.join(', ')}`

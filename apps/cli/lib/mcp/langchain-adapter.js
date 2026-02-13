@@ -7,6 +7,7 @@
 
 import { Tool } from 'langchain/tools';
 import { z } from 'zod';
+import chalk from 'chalk';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
 /**
@@ -29,7 +30,7 @@ class UltraDexTool {
     try {
       return this.schema.parse(input);
     } catch (error) {
-      throw new Error(`Input validation failed: ${error.errors?.map(e => e.message).join(', ')}`);
+      throw new Error(`Input validation failed: ${error.errors?.map((e) => e.message).join(', ')}`);
     }
   }
 
@@ -48,7 +49,7 @@ class UltraDexTool {
 class LangChainToolAdapter extends Tool {
   constructor(ultraDexTool) {
     super();
-    
+
     this.ultraDexTool = ultraDexTool;
     this.name = ultraDexTool.name;
     this.description = ultraDexTool.description;
@@ -73,7 +74,7 @@ class LangChainToolAdapter extends Tool {
 
       for (const [key, value] of Object.entries(shape)) {
         properties[key] = this.convertZodTypeToLangChain(value);
-        
+
         // Check if field is required (not optional)
         if (!(value._def?.typeName === 'ZodOptional')) {
           required.push(key);
@@ -83,7 +84,7 @@ class LangChainToolAdapter extends Tool {
       return {
         type: 'object',
         properties,
-        required
+        required,
       };
     }
 
@@ -95,7 +96,7 @@ class LangChainToolAdapter extends Tool {
    */
   convertZodTypeToLangChain(zodType) {
     const def = zodType._def;
-    
+
     switch (def.typeName) {
       case 'ZodString':
         return { type: 'string', description: def.description };
@@ -107,7 +108,7 @@ class LangChainToolAdapter extends Tool {
         return {
           type: 'array',
           items: this.convertZodTypeToLangChain(def.type),
-          description: def.description
+          description: def.description,
         };
       case 'ZodObject':
         return this.convertZodToLangChainSchema(def.schema);
@@ -168,7 +169,7 @@ class LangChainAdapterManager {
     const adapter = new LangChainToolAdapter(ultraDexTool);
     this.adapters.set(toolName, adapter);
     this.langchainTools.set(toolName, adapter);
-    
+
     printSuccess(chalk.green(`✅ Created LangChain adapter for: ${toolName}`));
     return adapter;
   }
@@ -200,7 +201,7 @@ class LangChainAdapterManager {
    * Batch create adapters for multiple tools
    */
   createLangChainAdapters(toolNames) {
-    return toolNames.map(name => this.createLangChainAdapter(name));
+    return toolNames.map((name) => this.createLangChainAdapter(name));
   }
 
   /**
@@ -218,18 +219,18 @@ class LangChainAdapterManager {
    * Convert Ultra-Dex tools to LangChain tools
    */
   ultraDexToLangChain(ultraDexTools) {
-    return ultraDexTools.map(tool => new LangChainToolAdapter(tool));
+    return ultraDexTools.map((tool) => new LangChainToolAdapter(tool));
   }
 
   /**
    * Get tools by category
    */
   getToolsByCategory(category) {
-    const ultraDexTools = Array.from(this.ultraDexTools.values())
-      .filter(tool => tool.category === category);
-    
-    return ultraDexTools.map(tool => this.getLangChainTool(tool.name))
-      .filter(Boolean);
+    const ultraDexTools = Array.from(this.ultraDexTools.values()).filter(
+      (tool) => tool.category === category
+    );
+
+    return ultraDexTools.map((tool) => this.getLangChainTool(tool.name)).filter(Boolean);
   }
 
   /**
@@ -238,8 +239,8 @@ class LangChainAdapterManager {
   validateCompatibility(tool) {
     // Check if the tool has required properties
     const requiredProps = ['name', 'description', 'execute'];
-    const missingProps = requiredProps.filter(prop => !tool[prop]);
-    
+    const missingProps = requiredProps.filter((prop) => !tool[prop]);
+
     if (missingProps.length > 0) {
       throw new Error(`Tool missing required properties: ${missingProps.join(', ')}`);
     }
@@ -262,7 +263,7 @@ class LangChainAdapterManager {
    */
   validateTools(tools) {
     const results = [];
-    
+
     for (const tool of tools) {
       try {
         this.validateCompatibility(tool);
@@ -271,7 +272,7 @@ class LangChainAdapterManager {
         results.push({ tool: tool.name, valid: false, error: error.message });
       }
     }
-    
+
     return results;
   }
 
@@ -283,7 +284,7 @@ class LangChainAdapterManager {
       ultraDexTools: this.ultraDexTools.size,
       langchainTools: this.langchainTools.size,
       adapters: this.adapters.size,
-      categories: [...new Set(Array.from(this.ultraDexTools.values()).map(t => t.category))]
+      categories: [...new Set(Array.from(this.ultraDexTools.values()).map((t) => t.category))],
     };
   }
 
@@ -292,19 +293,19 @@ class LangChainAdapterManager {
    */
   exportForLangChain(options = {}) {
     const tools = this.getAllLangChainTools();
-    
+
     // Filter by category if specified
     if (options.categories) {
       const categorySet = new Set(options.categories);
-      return tools.filter(tool => categorySet.has(this.ultraDexTools.get(tool.name)?.category));
+      return tools.filter((tool) => categorySet.has(this.ultraDexTools.get(tool.name)?.category));
     }
-    
+
     // Filter by name if specified
     if (options.names) {
       const nameSet = new Set(options.names);
-      return tools.filter(tool => nameSet.has(tool.name));
+      return tools.filter((tool) => nameSet.has(tool.name));
     }
-    
+
     return tools;
   }
 
@@ -313,7 +314,7 @@ class LangChainAdapterManager {
    */
   importFromLangChain(langchainTools) {
     const ultraDexTools = [];
-    
+
     for (const lcTool of langchainTools) {
       const ultraDexTool = new UltraDexTool({
         name: lcTool.name,
@@ -324,13 +325,13 @@ class LangChainAdapterManager {
           // Convert the tool execution to match LangChain's format
           return await lcTool._call(input);
         },
-        category: 'imported'
+        category: 'imported',
       });
-      
+
       this.registerUltraDexTool(ultraDexTool);
       ultraDexTools.push(ultraDexTool);
     }
-    
+
     return ultraDexTools;
   }
 
@@ -344,10 +345,10 @@ class LangChainAdapterManager {
     }
 
     const shape = {};
-    
+
     for (const [key, value] of Object.entries(lcSchema.properties)) {
       let zodType;
-      
+
       switch (value.type) {
         case 'string':
           zodType = z.string();
@@ -367,19 +368,19 @@ class LangChainAdapterManager {
         default:
           zodType = z.string();
       }
-      
+
       if (value.description) {
         zodType = zodType.describe(value.description);
       }
-      
+
       // Make optional if not in required array
       if (lcSchema.required && !lcSchema.required.includes(key)) {
         zodType = zodType.optional();
       }
-      
+
       shape[key] = zodType;
     }
-    
+
     return z.object(shape);
   }
 
@@ -410,7 +411,7 @@ class LangChainAdapterManager {
     printInfo(chalk.gray(`Ultra-Dex Tools: ${stats.ultraDexTools}`));
     printInfo(chalk.gray(`LangChain Adapters: ${stats.langchainTools}`));
     printInfo(chalk.gray(`Categories: ${stats.categories.join(', ')}`));
-    
+
     // In a real implementation, this would sync status between systems
     // For now, just return the stats
     return stats;
@@ -427,7 +428,7 @@ class LangChainAdapterManager {
       successRate: 100,
       avgExecutionTime: 0,
       mostUsed: [],
-      leastUsed: []
+      leastUsed: [],
     };
   }
 
@@ -442,28 +443,28 @@ class LangChainAdapterManager {
 
     return async (input, options = {}) => {
       printInfo(chalk.gray(`Executing tool: ${toolName}`));
-      
+
       try {
         const startTime = Date.now();
         const result = await adapter._call(input);
         const executionTime = Date.now() - startTime;
-        
+
         printSuccess(chalk.green(`✅ Tool ${toolName} executed in ${executionTime}ms`));
-        
+
         // Log execution if requested
         if (options.logExecution) {
           this.logToolExecution(toolName, input, result, executionTime);
         }
-        
+
         return result;
       } catch (error) {
         printError(`❌ Tool ${toolName} failed: ${error.message}`);
-        
+
         // Log error if requested
         if (options.logErrors) {
           this.logToolError(toolName, input, error);
         }
-        
+
         throw error;
       }
     };
@@ -491,43 +492,43 @@ class LangChainAdapterManager {
   getToolRecommendations(context, options = {}) {
     // Analyze context to recommend relevant tools
     const allTools = this.getAllLangChainTools();
-    
+
     // Simple keyword matching for demonstration
     const recommendations = [];
-    
+
     for (const tool of allTools) {
       const toolDescription = tool.description.toLowerCase();
       const contextLower = context.toLowerCase();
-      
+
       // Score based on keyword matches
       let score = 0;
-      
+
       // Common keywords that might indicate tool relevance
       if (contextLower.includes('code') || contextLower.includes('generate')) {
         if (toolDescription.includes('code') || toolDescription.includes('generate')) score += 3;
       }
-      
+
       if (contextLower.includes('search') || contextLower.includes('find')) {
         if (toolDescription.includes('search') || toolDescription.includes('find')) score += 3;
       }
-      
+
       if (contextLower.includes('deploy') || contextLower.includes('publish')) {
         if (toolDescription.includes('deploy') || toolDescription.includes('publish')) score += 3;
       }
-      
+
       if (contextLower.includes('test') || contextLower.includes('verify')) {
         if (toolDescription.includes('test') || toolDescription.includes('verify')) score += 3;
       }
-      
+
       if (score > 0) {
         recommendations.push({ tool: tool, score });
       }
     }
-    
+
     // Sort by score and return top recommendations
     recommendations.sort((a, b) => b.score - a.score);
-    
-    return recommendations.slice(0, options.limit || 5).map(r => r.tool);
+
+    return recommendations.slice(0, options.limit || 5).map((r) => r.tool);
   }
 }
 
@@ -545,7 +546,7 @@ export function ultraDexToolToLangChain(ultraDexTool) {
  * Utility function to convert multiple Ultra-Dex tools to LangChain tools
  */
 export function ultraDexToolsToLangChain(ultraDexTools) {
-  return ultraDexTools.map(tool => ultraDexToolToLangChain(tool));
+  return ultraDexTools.map((tool) => ultraDexToolToLangChain(tool));
 }
 
 /**
@@ -554,10 +555,10 @@ export function ultraDexToolsToLangChain(ultraDexTools) {
 export function registerToolFromDefinition(definition) {
   const ultraDexTool = new UltraDexTool(definition);
   langchainAdapter.registerUltraDexTool(ultraDexTool);
-  
+
   // Automatically create adapter
   const adapter = langchainAdapter.createLangChainAdapter(ultraDexTool.name);
-  
+
   return adapter;
 }
 
@@ -579,46 +580,46 @@ export function createCommonToolRegistry() {
       description: 'Search the web for current information',
       schema: z.object({
         query: z.string().describe('Search query'),
-        max_results: z.number().optional().default(5).describe('Maximum number of results')
+        max_results: z.number().optional().default(5).describe('Maximum number of results'),
       }),
       execute: async ({ query, max_results }) => {
         // In a real implementation, this would call a search API
         return { results: [], query, max_results };
       },
-      category: 'search'
+      category: 'search',
     },
     {
       name: 'file-reader',
       description: 'Read content from a file',
       schema: z.object({
-        path: z.string().describe('File path to read')
+        path: z.string().describe('File path to read'),
       }),
       execute: async ({ path }) => {
         // In a real implementation, this would read the file
         return { content: '', path };
       },
-      category: 'file'
+      category: 'file',
     },
     {
       name: 'code-executor',
       description: 'Execute code in a sandboxed environment',
       schema: z.object({
         language: z.string().describe('Programming language'),
-        code: z.string().describe('Code to execute')
+        code: z.string().describe('Code to execute'),
       }),
       execute: async ({ language, code }) => {
         // In a real implementation, this would execute code safely
         return { result: '', language, code };
       },
-      category: 'execution'
-    }
+      category: 'execution',
+    },
   ];
 
   // Register all common tools
   for (const toolDef of commonTools) {
     registerToolFromDefinition(toolDef);
   }
-  
+
   printSuccess(chalk.green(`✅ Registered ${commonTools.length} common tools`));
 }
 
@@ -627,15 +628,15 @@ export function createCommonToolRegistry() {
  */
 export async function initializeLangChainAdapter() {
   printInfo(chalk.cyan('🔌 Initializing LangChain Adapter...\n'));
-  
+
   // Create common tool registry
   createCommonToolRegistry();
-  
+
   // Show adapter stats
   const stats = langchainAdapter.getStats();
   printSuccess(chalk.green(`✅ LangChain Adapter initialized with ${stats.ultraDexTools} tools`));
   printInfo(chalk.gray(`Categories: ${stats.categories.join(', ')}\n`));
-  
+
   return langchainAdapter;
 }
 
@@ -649,5 +650,5 @@ export default {
   registerToolFromDefinition,
   getLangChainAdapter,
   initializeLangChainAdapter,
-  createCommonToolRegistry
+  createCommonToolRegistry,
 };

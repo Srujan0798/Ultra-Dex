@@ -39,7 +39,9 @@ try {
 // Test 3: Agent System
 console.log(chalk.yellow('\n🤖 Test 3: Agent System'));
 try {
-  const agents = execSync('node apps/cli/bin/ultra-dex.js agents list --limit 5', { encoding: 'utf8' });
+  const agents = execSync('node apps/cli/bin/ultra-dex.js agents list --limit 5', {
+    encoding: 'utf8',
+  });
   console.log(chalk.green('   ✅ Agent system operational'));
   console.log(chalk.gray('   Sample agents: @planner, @cto, @backend, @frontend...'));
 } catch (e) {
@@ -50,21 +52,23 @@ try {
 console.log(chalk.yellow('\n🏗️  Test 4: Project Initialization'));
 console.log(chalk.gray('   Creating demo project in ./demo-project...'));
 
+const originalDir = process.cwd();
 try {
   // Create a temporary demo directory
   if (!fs.existsSync('demo-project')) {
     fs.mkdirSync('demo-project', { recursive: true });
   }
-  
+
   // Change to demo directory and initialize
-  const originalDir = process.cwd();
   process.chdir('demo-project');
-  
+
   // Run init command in preview mode to avoid actual file creation
-  const initPreview = execSync('node ../apps/cli/bin/ultra-dex.js init --preview', { encoding: 'utf8' });
+  const initPreview = execSync('node ../apps/cli/bin/ultra-dex.js init --preview', {
+    encoding: 'utf8',
+  });
   console.log(chalk.green('   ✅ Project initialization system operational'));
   console.log(chalk.gray('   Would create: QUICK-START.md, CONTEXT.md, IMPLEMENTATION-PLAN.md...'));
-  
+
   // Return to original directory
   process.chdir(originalDir);
 } catch (e) {
@@ -75,7 +79,9 @@ try {
 // Test 5: Show actual agent prompts
 console.log(chalk.yellow('\n📋 Test 5: Agent Prompts'));
 try {
-  const agentPrompt = execSync('node apps/cli/bin/ultra-dex.js agents show cto | head -20', { encoding: 'utf8' });
+  const agentPrompt = execSync('node apps/cli/bin/ultra-dex.js agents show cto | head -20', {
+    encoding: 'utf8',
+  });
   console.log(chalk.green('   ✅ Agent prompts accessible'));
   console.log(chalk.gray('   Sample: CTO agent handles architecture & tech decisions'));
 } catch (e) {
@@ -103,7 +109,9 @@ console.log(chalk.yellow('   • Multi-provider flexibility'));
 console.log(chalk.yellow('   • Governance and verification gates'));
 
 console.log(chalk.blue('\n🚀 TO EXPERIENCE FULL FUNCTIONALITY:'));
-console.log(chalk.blue('   1. Set an AI provider API key (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.)'));
+console.log(
+  chalk.blue('   1. Set an AI provider API key (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.)')
+);
 console.log(chalk.blue('   2. Run: ultra-dex init'));
 console.log(chalk.blue('   3. Run: ultra-dex generate "your idea"'));
 console.log(chalk.blue('   4. Run: ultra-dex run planner -t "break down this task"'));

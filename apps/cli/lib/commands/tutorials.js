@@ -41,7 +41,7 @@ export function registerTutorialsCommand(program) {
         // For now, we'll use a mock profile
         const mockProfile = {
           experience: 'beginner',
-          interests: ['code_generation', 'automation']
+          interests: ['code_generation', 'automation'],
         };
         await runTutorialSystem('recommended', { profile: mockProfile });
       } catch (error) {
@@ -96,49 +96,49 @@ export function registerTutorialsCommand(program) {
         if (!options.ids) {
           // Interactive mode to select tutorials
           const system = new VideoTutorialSystem();
-          
+
           console.log(chalk.cyan('\n🎯 CREATE CUSTOM TUTORIAL PLAYLIST\n'));
-          
+
           // Show all tutorials for selection
           const allTutorials = system.tutorials;
-          const choices = allTutorials.map(tutorial => ({
+          const choices = allTutorials.map((tutorial) => ({
             name: `${tutorial.title} (${tutorial.duration})`,
             value: tutorial.id,
-            short: tutorial.title
+            short: tutorial.title,
           }));
-          
+
           const { selectedIds } = await inquirer.prompt([
             {
               type: 'checkbox',
               name: 'selectedIds',
               message: chalk.cyan('Select tutorials for your playlist:'),
-              choices
-            }
+              choices,
+            },
           ]);
-          
+
           if (selectedIds.length === 0) {
             console.log(chalk.yellow('No tutorials selected. Playlist creation cancelled.'));
             return;
           }
-          
+
           const { playlistName } = await inquirer.prompt([
             {
               type: 'input',
               name: 'playlistName',
               message: chalk.cyan('Enter a name for your playlist:'),
-              default: `My Ultra-Dex Learning Path - ${new Date().toISOString().split('T')[0]}`
-            }
+              default: `My Ultra-Dex Learning Path - ${new Date().toISOString().split('T')[0]}`,
+            },
           ]);
-          
-          await runTutorialSystem('create-playlist', { 
-            ids: selectedIds, 
-            name: playlistName 
+
+          await runTutorialSystem('create-playlist', {
+            ids: selectedIds,
+            name: playlistName,
           });
         } else {
           // Use provided IDs
-          await runTutorialSystem('create-playlist', { 
-            ids: options.ids, 
-            name: options.name 
+          await runTutorialSystem('create-playlist', {
+            ids: options.ids,
+            name: options.name,
           });
         }
       } catch (error) {
@@ -154,45 +154,46 @@ export function registerTutorialsCommand(program) {
     .action(async () => {
       try {
         const system = new VideoTutorialSystem();
-        
+
         console.log(chalk.cyan('\n🎓 ULTRA-DEX INTERACTIVE TUTORIAL SELECTOR\n'));
-        
+
         const actionChoices = [
           { name: 'Browse All Tutorials', value: 'browse' },
           { name: 'Search Tutorials', value: 'search' },
           { name: 'View by Level', value: 'level' },
           { name: 'View by Topic', value: 'topic' },
           { name: 'Create Playlist', value: 'playlist' },
-          { name: 'Show Recommendations', value: 'recommend' }
+          { name: 'Show Recommendations', value: 'recommend' },
         ];
-        
+
         const { action } = await inquirer.prompt([
           {
             type: 'list',
             name: 'action',
             message: chalk.cyan('What would you like to do?'),
-            choices: actionChoices
-          }
+            choices: actionChoices,
+          },
         ]);
-        
+
         switch (action) {
           case 'browse':
             await system.listTutorials();
             break;
-            
-          case 'search':
+
+          case 'search': {
             const { query } = await inquirer.prompt([
               {
                 type: 'input',
                 name: 'query',
                 message: chalk.cyan('Enter search term:'),
-                validate: (input) => input.trim().length > 0 || 'Search term is required'
-              }
+                validate: (input) => input.trim().length > 0 || 'Search term is required',
+              },
             ]);
             await system.searchTutorials(query);
             break;
-            
-          case 'level':
+          }
+
+          case 'level': {
             const { level } = await inquirer.prompt([
               {
                 type: 'list',
@@ -201,14 +202,15 @@ export function registerTutorialsCommand(program) {
                 choices: [
                   { name: 'Beginner', value: 'beginner' },
                   { name: 'Intermediate', value: 'intermediate' },
-                  { name: 'Advanced', value: 'advanced' }
-                ]
-              }
+                  { name: 'Advanced', value: 'advanced' },
+                ],
+              },
             ]);
             await system.getTutorialsByLevel(level);
             break;
-            
-          case 'topic':
+          }
+
+          case 'topic': {
             const { topic } = await inquirer.prompt([
               {
                 type: 'list',
@@ -219,56 +221,59 @@ export function registerTutorialsCommand(program) {
                   { name: 'Agent System', value: 'agents' },
                   { name: 'Tool Execution', value: 'tools' },
                   { name: 'Security', value: 'security' },
-                  { name: 'Multi-Agent Swarms', value: 'swarm' }
-                ]
-              }
+                  { name: 'Multi-Agent Swarms', value: 'swarm' },
+                ],
+              },
             ]);
             await system.getTutorialsByTag(topic);
             break;
-            
-          case 'playlist':
+          }
+
+          case 'playlist': {
             // Reuse the playlist creation logic from above
             const allTutorials = system.tutorials;
-            const choices = allTutorials.map(tutorial => ({
+            const choices = allTutorials.map((tutorial) => ({
               name: `${tutorial.title} (${tutorial.duration})`,
               value: tutorial.id,
-              short: tutorial.title
+              short: tutorial.title,
             }));
-            
+
             const { selectedIds } = await inquirer.prompt([
               {
                 type: 'checkbox',
                 name: 'selectedIds',
                 message: chalk.cyan('Select tutorials for your playlist:'),
-                choices
-              }
+                choices,
+              },
             ]);
-            
+
             if (selectedIds.length === 0) {
               console.log(chalk.yellow('No tutorials selected. Playlist creation cancelled.'));
               return;
             }
-            
+
             const { playlistName } = await inquirer.prompt([
               {
                 type: 'input',
                 name: 'playlistName',
                 message: chalk.cyan('Enter a name for your playlist:'),
-                default: `My Ultra-Dex Learning Path - ${new Date().toISOString().split('T')[0]}`
-              }
+                default: `My Ultra-Dex Learning Path - ${new Date().toISOString().split('T')[0]}`,
+              },
             ]);
-            
+
             await system.createTutorialPlaylist(selectedIds, playlistName);
             break;
-            
-          case 'recommend':
+          }
+
+          case 'recommend': {
             // Mock profile for recommendations
             const mockProfile = {
               experience: 'beginner',
-              interests: ['code_generation', 'automation']
+              interests: ['code_generation', 'automation'],
             };
             await system.getRecommendedTutorials(mockProfile);
             break;
+          }
         }
       } catch (error) {
         console.error(chalk.red(`Error in interactive mode: ${error.message}`));
@@ -279,7 +284,11 @@ export function registerTutorialsCommand(program) {
   tutorialsCmd.action(async () => {
     try {
       await runTutorialSystem('recommended');
-      console.log(chalk.gray('\n💡 Tip: Use "ultra-dex tutorials interactive" for the full tutorial experience'));
+      console.log(
+        chalk.gray(
+          '\n💡 Tip: Use "ultra-dex tutorials interactive" for the full tutorial experience'
+        )
+      );
     } catch (error) {
       console.error(chalk.red(`Error: ${error.message}`));
     }

@@ -241,7 +241,7 @@ class ContextCompactor {
     for (const paragraph of paragraphs) {
       if (paragraph.length > 500) {
         // Split long paragraphs into sentences
-        const sentences = paragraph.match(/[^\.!?]+[\.!?]+/g) || [paragraph];
+        const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
         segments.push(...sentences.map((s) => s.trim()).filter((s) => s.length > 0));
       } else {
         if (paragraph.trim().length > 0) {
@@ -504,7 +504,7 @@ class ContextCompactor {
     const avgCompressionRatio =
       this.summaryHistory.length > 0
         ? this.summaryHistory.reduce((sum, s) => sum + s.compressionRatio, 0) /
-        this.summaryHistory.length
+          this.summaryHistory.length
         : 0;
 
     return {
@@ -517,7 +517,7 @@ class ContextCompactor {
       efficiencyRate:
         this.summaryHistory.length > 0
           ? totalTokensSaved /
-          (this.summaryHistory.reduce((sum, s) => sum.tokensBefore || 0, 0) || 1)
+            (this.summaryHistory.reduce((sum, s) => sum.tokensBefore || 0, 0) || 1)
           : 0,
     };
   }

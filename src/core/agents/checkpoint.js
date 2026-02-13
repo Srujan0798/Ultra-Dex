@@ -271,7 +271,7 @@ export class CheckpointSystem {
   /**
    * Cleanup all checkpoints older than specified days
    */
-  async cleanupOldCheckpoints(days = 30) {
+  async cleanupStaleCheckpoints(days = 30) {
     if (!this.initialized) {
       await this.initialize();
     }

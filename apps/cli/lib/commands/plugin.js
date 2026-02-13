@@ -147,7 +147,7 @@ export function registerPluginCommand(program) {
     .alias('ls')
     .description('List installed plugins')
     .action(async () => {
-      const plugins = await listInstalledPlugins();
+      const plugins = pluginRegistry.getInstalledPlugins();
 
       if (plugins.length === 0) {
         printWarning(chalk.yellow('\nNo plugins installed.'));
