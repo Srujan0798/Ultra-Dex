@@ -653,10 +653,17 @@ class OrganizationsManager extends EventEmitter {
    * @returns {object} Health information
    */
   getHealth() {
+    let totalMembers = 0;
+    for (const org of this.organizations.values()) {
+      if (org && org.members && Array.isArray(org.members)) {
+        totalMembers += org.members.length;
+      }
+    }
+
     return {
       status: 'healthy',
       organizationCount: this.organizations.size,
-      totalMembers: Array.from(this.organizations.values()).reduce((sum, org) => sum.members.length, 0),
+      totalMembers: totalMembers,
       timestamp: new Date().toISOString(),
     };
   }
