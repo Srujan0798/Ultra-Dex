@@ -12,6 +12,7 @@ import chalk from 'chalk';
 import { ppmManager } from '../memory/manager.js';
 import { aiMetaLayer } from '../ai/ai-meta-layer.js';
 import { EventEmitter } from 'events';
+import { selfHealing } from '../reliability/self-healing.js';
 
 class TaskGraph {
   constructor() {
@@ -98,7 +99,11 @@ class AgentOrchestrator extends EventEmitter {
       await this.commBus.initialize();
       await this.registry.initialize();
       await this.initializeMcpServer();
-      console.log(chalk.green('🤖 Agent Orchestration System Initialized'));
+      
+      // Initialize Self-Healing
+      await selfHealing.start();
+      
+      console.log(chalk.green('🤖 Agent Orchestration System Initialized (Self-Healing Active)'));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`❌ Agent Orchestration initialization failed: ${message}`));
@@ -157,6 +162,10 @@ class AgentOrchestrator extends EventEmitter {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`❌ Nexus execution failed: ${message}`));
+      
+      // Report failure to Self-Healing
+      await selfHealing.reportAgentError('nexus', error, { objective, options });
+      
       throw error;
     }
   }
@@ -215,6 +224,10 @@ class AgentOrchestrator extends EventEmitter {
       const message = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`❌ Task execution failed (${sessionId}): ${message}`));
       this.emit('task:error', { sessionId, task: normalizedTask, error: message });
+      
+      // Report to Self-Healing
+      await selfHealing.reportAgentError(options.agentId || 'unknown', error, { sessionId, task: normalizedTask });
+      
       throw error;
     } finally {
       const elapsed = Date.now() - startedAt;

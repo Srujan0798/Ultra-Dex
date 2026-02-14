@@ -1,149 +1,459 @@
-// Copyright (c) 2026 Ultra-Dex
-// Example: Chatbot with Persistent Memory
+#!/usr/bin/env node
 
 /**
- * A conversational AI chatbot that:
- *   1. Routes to the best model via Smart Router
- *   2. Remembers conversations across sessions (Unified Memory)
- *   3. Tracks costs with Token Guard
- *   4. Provides full observability with Trace Collector
- *
- * Usage:  node examples/chatbot/index.js
+ * Ultra-Dex AI Chatbot
+ * 
+ * This example demonstrates how to create an AI-powered chatbot using Ultra-Dex.
+ * The chatbot maintains conversation history, learns from interactions, and provides intelligent responses.
+ * 
+ * Features:
+ * - Natural language understanding
+ * - Context-aware responses
+ * - Conversation memory
+ * - Multi-turn dialogues
+ * - Personality customization
  */
 
-import { SmartRouter } from '../../packages/sdk/src/router.js';
-import { TraceCollector } from '../../src/core/observability/trace-collector.js';
+import { UltraDex } from '../src/ultradex.js';
 
-// ── Configuration ───────────────────────────────────────────────────────
-const config = {
-    model: process.env.ULTRA_MODEL || 'gpt-4o-mini',
-    maxHistory: 20,
-    systemPrompt: `You are Ultra-Bot, a helpful AI assistant powered by Ultra-Dex.
-You have persistent memory and can recall previous conversations.
-Be concise, friendly, and accurate. If unsure, say so.`,
-};
+class Chatbot {
+  constructor(config) {
+    this.ultraDex = new UltraDex(config.ultraDex);
+    
+    // Initialize specialized agents
+    this.agents = {
+      intentClassifier: this.ultraDex.createAgent({
+        name: 'intent-classifier',
+        role: 'Classifies user intents and extracts entities from messages',
+        tools: ['natural-language-parser', 'entity-extractor', 'intent-matcher', 'context-analyzer']
+      }),
+      
+      responseGenerator: this.ultraDex.createAgent({
+        name: 'response-generator',
+        role: 'Generates contextually appropriate responses based on intent and history',
+        tools: ['context-understanding', 'tone-matcher', 'knowledge-retriever', 'response-formatter']
+      }),
+      
+      conversationManager: this.ultraDex.createAgent({
+        name: 'conversation-manager',
+        role: 'Manages conversation flow and context across multiple turns',
+        tools: ['context-tracker', 'dialogue-state-manager', 'memory-archiver', 'topic-transitioner']
+      }),
+      
+      personalityEngine: this.ultraDex.createAgent({
+        name: 'personality-engine',
+        role: 'Maintains consistent personality traits and communication style',
+        tools: ['tone-regulator', 'style-matcher', 'personality-consistency-checker', 'brand-voice-adapter']
+      }),
+      
+      knowledgeEnhancer: this.ultraDex.createAgent({
+        name: 'knowledge-enhancer',
+        role: 'Retrieves and incorporates relevant knowledge into responses',
+        tools: ['information-retriever', 'fact-checker', 'source-verifier', 'knowledge-updater']
+      })
+    };
+    
+    // Maintain conversation history
+    this.conversations = new Map();
+    this.personality = config.personality || {
+      name: 'Ultra-Dex Assistant',
+      tone: 'helpful and professional',
+      expertise: 'AI and technology',
+      communicationStyle: 'clear and concise'
+    };
+  }
 
-// ── In-Memory Conversation Store (swap for Unified Memory in production)
-const conversations = new Map();
-
-function getHistory(sessionId) {
-    if (!conversations.has(sessionId)) {
-        conversations.set(sessionId, []);
+  /**
+   * Process a user message
+   */
+  async processMessage(userId, message, options = {}) {
+    // Get or create conversation
+    const conversationId = `${userId}-${Date.now()}`;
+    let conversation = this.conversations.get(userId);
+    
+    if (!conversation) {
+      conversation = {
+        id: conversationId,
+        userId,
+        messages: [],
+        context: {},
+        createdAt: new Date().toISOString(),
+        lastActive: new Date().toISOString()
+      };
+      this.conversations.set(userId, conversation);
     }
-    return conversations.get(sessionId);
-}
-
-function addMessage(sessionId, role, content) {
-    const history = getHistory(sessionId);
-    history.push({ role, content, timestamp: Date.now() });
-    if (history.length > config.maxHistory * 2) {
-        history.splice(0, history.length - config.maxHistory * 2);
-    }
-}
-
-// ── Trace Collector for Observability ───────────────────────────────────
-const tracer = new TraceCollector({ maxTraces: 100 });
-
-// ── Smart Router for Model Selection ────────────────────────────────────
-const router = new SmartRouter({
-    strategy: 'cost',
-    providers: [
-        { name: 'openai', models: ['gpt-4o', 'gpt-4o-mini'], priority: 1 },
-        { name: 'anthropic', models: ['claude-4-sonnet'], priority: 2 },
-        { name: 'google', models: ['gemini-2.0-flash'], priority: 3 },
-    ],
-});
-
-// ── Chat Function ───────────────────────────────────────────────────────
-async function chat(sessionId, userMessage) {
-    const traceId = tracer.startTrace({ agentId: 'chatbot', task: `chat-${sessionId}` });
-    const spanId = tracer.startSpan({ traceId, operation: 'chat-response' });
-
+    
+    // Add user message to conversation
+    const userMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      text: message,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+      metadata: {
+        wordCount: message.split(' ').length,
+        sentiment: await this.estimateSentiment(message)
+      }
+    };
+    
+    conversation.messages.push(userMessage);
+    conversation.lastActive = new Date().toISOString();
+    
     try {
-        // Record user message
-        addMessage(sessionId, 'user', userMessage);
-
-        // Build messages array
-        const messages = [
-            { role: 'system', content: config.systemPrompt },
-            ...getHistory(sessionId).map(m => ({ role: m.role, content: m.content })),
-        ];
-
-        // Route to best model
-        const route = router.route({ task: 'chat', messages });
-        tracer.addEvent(traceId, spanId, 'model-selected', { model: route.model || config.model, provider: route.provider || 'openai' });
-
-        // Simulate LLM response (in production, call the actual API)
-        const response = simulateResponse(userMessage, sessionId);
-        tracer.recordTokens(traceId, spanId, { promptTokens: Math.ceil(messages.join(' ').length / 4), completionTokens: Math.ceil(response.length / 4) });
-
-        // Record assistant message
-        addMessage(sessionId, 'assistant', response);
-
-        tracer.endSpan(traceId, spanId);
-        tracer.completeTrace(traceId);
-
-        return {
-            response,
-            model: route.model || config.model,
-            sessionId,
-            messageCount: getHistory(sessionId).length,
-            traceId,
-        };
+      // Classify intent
+      const intentResult = await this.agents.intentClassifier.execute({
+        message: message,
+        conversationHistory: conversation.messages,
+        context: conversation.context,
+        userPreferences: options.userPreferences || {}
+      });
+      
+      // Retrieve relevant knowledge
+      const knowledgeResult = await this.agents.knowledgeEnhancer.execute({
+        query: message,
+        intent: intentResult.intent,
+        entities: intentResult.entities,
+        context: conversation.context
+      });
+      
+      // Generate response
+      const responseResult = await this.agents.responseGenerator.execute({
+        message: message,
+        intent: intentResult.intent,
+        entities: intentResult.entities,
+        knowledge: knowledgeResult.knowledge,
+        conversationHistory: conversation.messages,
+        context: conversation.context,
+        personality: this.personality,
+        userPreferences: options.userPreferences || {}
+      });
+      
+      // Update conversation context
+      const contextUpdate = await this.agents.conversationManager.execute({
+        currentContext: conversation.context,
+        newMessage: userMessage,
+        response: responseResult,
+        intent: intentResult.intent
+      });
+      
+      conversation.context = { ...conversation.context, ...contextUpdate.context };
+      
+      // Apply personality to response
+      const personalizedResponse = await this.agents.personalityEngine.execute({
+        response: responseResult,
+        personality: this.personality,
+        context: conversation.context,
+        userHistory: conversation.messages.filter(m => m.sender === 'user')
+      });
+      
+      // Add bot response to conversation
+      const botMessage = {
+        id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        text: personalizedResponse.text,
+        sender: 'bot',
+        timestamp: new Date().toISOString(),
+        metadata: {
+          intent: intentResult.intent,
+          confidence: responseResult.confidence,
+          sources: knowledgeResult.sources || []
+        }
+      };
+      
+      conversation.messages.push(botMessage);
+      
+      // Trim conversation if too long
+      if (conversation.messages.length > 50) {
+        conversation.messages = conversation.messages.slice(-50);
+      }
+      
+      return {
+        response: personalizedResponse.text,
+        intent: intentResult.intent,
+        entities: intentResult.entities,
+        confidence: responseResult.confidence,
+        sources: knowledgeResult.sources,
+        conversationId: conversation.id,
+        timestamp: new Date().toISOString()
+      };
+      
     } catch (error) {
-        tracer.failSpan(traceId, spanId, error);
-        tracer.failTrace(traceId, error);
-        throw error;
+      console.error('Error processing message:', error);
+      
+      // Add error response to conversation
+      const errorMessage = {
+        id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        text: "I apologize, but I'm experiencing technical difficulties. Could you please try rephrasing your question?",
+        sender: 'bot',
+        timestamp: new Date().toISOString(),
+        metadata: { error: true }
+      };
+      
+      conversation.messages.push(errorMessage);
+      
+      return {
+        response: "I apologize, but I'm experiencing technical difficulties. Could you please try rephrasing your question?",
+        intent: 'error',
+        entities: [],
+        confidence: 0,
+        sources: [],
+        conversationId: conversation.id,
+        timestamp: new Date().toISOString()
+      };
     }
-}
+  }
 
-// ── Response Simulator (replace with real LLM call) ─────────────────────
-function simulateResponse(message, sessionId) {
-    const history = getHistory(sessionId);
-    const lower = message.toLowerCase();
+  /**
+   * Estimate sentiment of a message
+   */
+  async estimateSentiment(text) {
+    // Simplified sentiment estimation
+    // In a real implementation, use a proper sentiment analysis tool
+    const positiveWords = ['good', 'great', 'excellent', 'awesome', 'love', 'happy', 'pleased', 'satisfied'];
+    const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'angry', 'frustrated', 'disappointed', 'sad'];
+    
+    const lowerText = text.toLowerCase();
+    const posCount = positiveWords.filter(word => lowerText.includes(word)).length;
+    const negCount = negativeWords.filter(word => lowerText.includes(word)).length;
+    
+    if (posCount > negCount) return 'positive';
+    if (negCount > posCount) return 'negative';
+    return 'neutral';
+  }
 
-    if (lower.includes('hello') || lower.includes('hi')) {
-        return history.length <= 2
-            ? "Hello! I'm Ultra-Bot. I'm powered by Ultra-Dex's meta-layer, which means I can use any AI model and remember our conversations. How can I help you?"
-            : "Welcome back! I remember our conversation. What would you like to discuss?";
+  /**
+   * Get conversation history
+   */
+  getConversationHistory(userId) {
+    const conversation = this.conversations.get(userId);
+    return conversation ? [...conversation.messages] : [];
+  }
+
+  /**
+   * Clear conversation history
+   */
+  clearConversation(userId) {
+    this.conversations.delete(userId);
+  }
+
+  /**
+   * Update bot personality
+   */
+  updatePersonality(personality) {
+    this.personality = { ...this.personality, ...personality };
+  }
+
+  /**
+   * Train the chatbot with conversation examples
+   */
+  async trainWithExamples(examples) {
+    // In a real implementation, this would update the underlying models
+    // For now, we'll just log the training request
+    console.log(`Training chatbot with ${examples.length} conversation examples`);
+    
+    // Add examples to conversation memory for future reference
+    for (const example of examples) {
+      const userId = `training-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const conversation = {
+        id: `conv-${userId}`,
+        userId,
+        messages: [
+          {
+            id: `msg-${Date.now()}-user`,
+            text: example.input,
+            sender: 'user',
+            timestamp: new Date().toISOString()
+          },
+          {
+            id: `msg-${Date.now()}-bot`,
+            text: example.output,
+            sender: 'bot',
+            timestamp: new Date().toISOString()
+          }
+        ],
+        context: example.context || {},
+        createdAt: new Date().toISOString(),
+        lastActive: new Date().toISOString()
+      };
+      
+      this.conversations.set(userId, conversation);
     }
-    if (lower.includes('remember')) {
-        const userMsgs = history.filter(m => m.role === 'user');
-        return `I remember ${userMsgs.length} messages from you in this session. My memory persists across interactions thanks to Ultra-Dex's Unified Memory API.`;
+  }
+
+  /**
+   * Get chatbot statistics
+   */
+  getStats() {
+    const totalConversations = this.conversations.size;
+    const totalMessages = Array.from(this.conversations.values()).reduce(
+      (sum, conv) => sum + conv.messages.length, 0
+    );
+    
+    const avgMessagesPerConversation = totalConversations > 0 
+      ? Math.round(totalMessages / totalConversations) 
+      : 0;
+    
+    // Get most common intents (would need to track this properly)
+    const intents = {};
+    Array.from(this.conversations.values()).forEach(conv => {
+      conv.messages.forEach(msg => {
+        if (msg.metadata?.intent) {
+          intents[msg.metadata.intent] = (intents[msg.metadata.intent] || 0) + 1;
+        }
+      });
+    });
+    
+    return {
+      totalConversations,
+      totalMessages,
+      avgMessagesPerConversation,
+      activeConversations: this.getActiveConversations().length,
+      mostCommonIntents: intents,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Get active conversations (active in last 30 minutes)
+   */
+  getActiveConversations() {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    return Array.from(this.conversations.values()).filter(
+      conv => conv.lastActive >= thirtyMinutesAgo
+    );
+  }
+
+  /**
+   * Export conversation data
+   */
+  exportConversations(format = 'json') {
+    const data = {
+      conversations: Array.from(this.conversations.values()),
+      stats: this.getStats(),
+      exportedAt: new Date().toISOString()
+    };
+    
+    if (format === 'json') {
+      return JSON.stringify(data, null, 2);
+    } else if (format === 'csv') {
+      // Simplified CSV export
+      let csv = 'UserId,Timestamp,Sender,Message,Intent,Confidence\n';
+      Array.from(this.conversations.values()).forEach(conv => {
+        conv.messages.forEach(msg => {
+          csv += `"${conv.userId}","${msg.timestamp}","${msg.sender}","${msg.text.replace(/"/g, '""')}","${msg.metadata?.intent || ''}","${msg.metadata?.confidence || ''}"\n`;
+        });
+      });
+      return csv;
     }
-    if (lower.includes('help')) {
-        return "I can help with: coding questions, project planning, data analysis, writing, research, and more. I use the best AI model for each task via Smart Router. What do you need?";
+    
+    return JSON.stringify(data, null, 2);
+  }
+
+  /**
+   * Import conversation data
+   */
+  importConversations(data) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
     }
-    return `I understand your question about "${message.slice(0, 50)}". Let me think about that using the optimal model selected by Smart Router. In a production deployment, this would call the actual LLM API through Ultra-Dex's orchestration layer.`;
-}
+    
+    if (data.conversations) {
+      data.conversations.forEach(conv => {
+        this.conversations.set(conv.userId, conv);
+      });
+    }
+  }
 
-// ── Demo Runner ─────────────────────────────────────────────────────────
-async function demo() {
-    console.log('╔══════════════════════════════════════════════════╗');
-    console.log('║       Ultra-Dex Chatbot Example                 ║');
-    console.log('║       Persistent Memory + Smart Routing         ║');
-    console.log('╚══════════════════════════════════════════════════╝');
-    console.log();
+  /**
+   * Simulate a conversation for testing
+   */
+  async simulateConversation(initialPrompt, turns = 5) {
+    const userId = `sim-${Date.now()}`;
+    const conversation = [];
+    
+    let lastResponse = initialPrompt;
+    
+    for (let i = 0; i < turns; i++) {
+      const response = await this.processMessage(userId, lastResponse);
+      conversation.push({
+        turn: i + 1,
+        user: lastResponse,
+        bot: response.response,
+        timestamp: response.timestamp
+      });
+      
+      // Generate a follow-up question based on the bot's response
+      // In a real implementation, this could be more sophisticated
+      lastResponse = this.generateFollowUp(response.response);
+    }
+    
+    return conversation;
+  }
 
-    const session = 'demo-session-1';
-
-    const messages = [
-        'Hello! What can you do?',
-        'Can you help me with coding?',
-        'Do you remember what I asked earlier?',
+  /**
+   * Generate a follow-up question based on response
+   */
+  generateFollowUp(response) {
+    const followUpPhrases = [
+      "Can you elaborate on that?",
+      "That's interesting, tell me more.",
+      "How does that work in practice?",
+      "What are the implications of that?",
+      "Can you give me an example?",
+      "What else should I know about this?",
+      "How is this different from other approaches?",
+      "What are the pros and cons?",
+      "When would I use this?",
+      "Are there any limitations?"
     ];
-
-    for (const msg of messages) {
-        console.log(`👤 User: ${msg}`);
-        const result = await chat(session, msg);
-        console.log(`🤖 Bot:  ${result.response}`);
-        console.log(`   ↳ Model: ${result.model} | Messages: ${result.messageCount} | Trace: ${result.traceId}`);
-        console.log();
-    }
-
-    console.log('📊 Trace Stats:', JSON.stringify(tracer.getDashboard(), null, 2));
+    
+    return followUpPhrases[Math.floor(Math.random() * followUpPhrases.length)];
+  }
 }
 
-demo().catch(console.error);
+// Example usage
+async function main() {
+  const chatbot = new Chatbot({
+    ultraDex: {
+      apiKey: process.env.ULTRA_DEX_API_KEY,
+      endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
+    },
+    personality: {
+      name: 'Ultra-Dex Assistant',
+      tone: 'helpful and professional',
+      expertise: 'AI, technology, and software development',
+      communicationStyle: 'clear, concise, and informative'
+    }
+  });
+  
+  // Example conversation
+  try {
+    console.log('Chatbot initialized. Starting sample conversation...');
+    
+    // Process a sample message
+    const response = await chatbot.processMessage('user123', 'Hello! Can you tell me about AI orchestration?');
+    console.log(`Bot: ${response.response}`);
+    
+    // Process a follow-up
+    const followUpResponse = await chatbot.processMessage('user123', 'That sounds interesting. How does it work?');
+    console.log(`Bot: ${followUpResponse.response}`);
+    
+    // Print chatbot stats
+    console.log('Chatbot Stats:', chatbot.getStats());
+    
+    // Simulate a longer conversation
+    console.log('\nSimulating conversation:');
+    const simulation = await chatbot.simulateConversation('What is machine learning?', 3);
+    simulation.forEach(turn => {
+      console.log(`Turn ${turn.turn}:`);
+      console.log(`  User: ${turn.user}`);
+      console.log(`  Bot: ${turn.bot}`);
+    });
+  } catch (error) {
+    console.error('Error in main:', error);
+  }
+}
 
-export { chat, config, getHistory };
+if (require.main === module) {
+  main().catch(console.error);
+}
+
+export default Chatbot;

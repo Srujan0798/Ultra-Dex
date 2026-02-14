@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { FiBook, FiCode, FiTerminal, FiDatabase, FiZap, FiShield, FiGlobe, FiUsers, FiCpu, FiGitBranch, FiLock, FiServer, FiBarChart3 } from 'react-icons/fi';
+import { FiBook, FiCode, FiTerminal, FiDatabase, FiZap, FiShield, FiGlobe, FiUsers, FiCpu, FiGitBranch, FiLock, FiServer, FiBarChart3, FiSearch, FiArrowRight } from 'react-icons/fi';
 
 export default function DocsPage() {
   const docSections = [
