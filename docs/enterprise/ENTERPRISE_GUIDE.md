@@ -5,8 +5,9 @@
 2. [Architecture](#architecture)
 3. [Security](#security)
 4. [Compliance](#compliance)
-5. [Operations](#operations)
-6. [Troubleshooting](#troubleshooting)
+5. [Deployment](#deployment)
+6. [Operations](#operations)
+7. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -197,6 +198,119 @@ roles:
 - **Integrity Controls**: Data integrity mechanisms
 - **Transmission Security**: Integrity and encryption mechanisms
 
+## Deployment
+
+### Prerequisites
+
+#### Infrastructure Requirements
+- **Compute**: 8+ CPU cores, 32GB+ RAM (16 cores, 64GB RAM recommended for production)
+- **Storage**: 500GB+ SSD (1TB+ recommended for production)
+- **Network**: High-speed network with low latency
+- **OS**: Ubuntu 22.04 LTS, RHEL 8+, or Windows Server 2022
+
+#### Security Prerequisites
+- **SSL Certificate**: Valid SSL certificate for HTTPS
+- **Identity Provider**: SAML 2.0 or OIDC compliant identity provider
+- **Network Security**: Firewall rules allowing necessary ports
+- **IAM Roles**: Proper permissions for cloud deployments
+
+### Configuration
+
+#### Environment Variables
+```bash
+# Security Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+AUDIT_ENCRYPTION_KEY=your-audit-encryption-key
+ENCRYPTION_KEY=your-data-encryption-key
+
+# SSO Configuration
+SAML_ENTRY_POINT=https://your-idp.com/sso/saml
+SAML_ISSUER=your-saml-issuer
+SAML_CERT=/path/to/certificate.pem
+SAML_CALLBACK_URL=https://your-domain.com/auth/saml/callback
+
+OIDC_ISSUER_URL=https://your-idp.com
+OIDC_CLIENT_ID=your-oidc-client-id
+OIDC_CLIENT_SECRET=your-oidc-client-secret
+OIDC_REDIRECT_URI=https://your-domain.com/auth/oidc/callback
+
+# Database Configuration
+DATABASE_URL=postgresql://user:password@primary-db:5432/ultra_dex
+DATABASE_REPLICA_URL=postgresql://user:password@replica-db:5432/ultra_dex
+
+# Cache Configuration
+REDIS_URL=redis://cache-cluster:6379
+
+# AI Provider Configuration
+OPENAI_API_KEY=your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
+GOOGLE_API_KEY=your-google-key
+```
+
+#### Enterprise Configuration File
+```json
+{
+  "security": {
+    "jwt": {
+      "secret": "your-jwt-secret",
+      "expiration": "24h"
+    },
+    "encryption": {
+      "algorithm": "aes-256-gcm",
+      "keyRotationDays": 30
+    },
+    "sso": {
+      "enabled": true,
+      "providers": ["saml", "oidc"],
+      "defaultRole": "viewer"
+    },
+    "rbac": {
+      "enabled": true,
+      "hierarchical": true,
+      "defaultRole": "viewer"
+    }
+  },
+  "compliance": {
+    "soc2": {
+      "enabled": true,
+      "controls": ["access", "availability", "processing_integrity", "confidentiality", "privacy"]
+    },
+    "gdpr": {
+      "enabled": true,
+      "retentionDays": 365,
+      "dataResidency": "eu"
+    },
+    "audit": {
+      "enabled": true,
+      "retentionDays": 90,
+      "logLevel": "info"
+    }
+  },
+  "tenancy": {
+    "enabled": true,
+    "isolationLevel": "complete",
+    "resourceQuotas": {
+      "maxAgents": 100,
+      "maxMemoryEntries": 100000,
+      "maxStorage": 1073741824,
+      "maxApiCalls": 100000
+    }
+  },
+  "performance": {
+    "cache": {
+      "enabled": true,
+      "ttl": 3600,
+      "maxSize": 10000
+    },
+    "database": {
+      "connectionPooling": true,
+      "maxConnections": 50,
+      "queryOptimization": true
+    }
+  }
+}
+```
+
 ## Operations
 
 ### Monitoring & Observability
@@ -227,14 +341,14 @@ ultra_dex_cost_usd_total 125.67
 ```yaml
 alerts:
   - name: HighErrorRate
-    condition: rate(api_requests_total{status=~"5.."}[5m]) > 0.05
+    condition: rate(api_requests_total{status=~"5.."}[5m]) > 0.1
     severity: critical
-    description: "More than 5% of requests are failing"
+    description: "More than 10% of requests are failing"
 
   - name: HighLatency
-    condition: histogram_quantile(0.95, api_request_duration_seconds_bucket) > 1.0
+    condition: histogram_quantile(0.95, api_request_duration_seconds_bucket) > 2
     severity: warning
-    description: "95th percentile latency is above 1 second"
+    description: "95th percentile latency is above 2 seconds"
 
   - name: SecurityIncident
     condition: security_incidents_total > 0
@@ -260,28 +374,6 @@ alerts:
 5. Redirect traffic to recovered systems
 6. Communicate status to stakeholders
 7. Conduct post-incident review
-```
-
-### Scaling & Performance
-
-#### Auto-scaling Configuration
-```yaml
-autoscaling:
-  agents:
-    min_instances: 3
-    max_instances: 50
-    target_cpu_utilization: 70%
-    target_memory_utilization: 80%
-    scale_up_cooldown: 300s
-    scale_down_cooldown: 300s
-  database:
-    read_replicas: 3
-    connection_pool_size: 100
-    query_timeout: 30s
-  cache:
-    eviction_policy: lru
-    max_memory: 8gb
-    ttl_default: 3600s
 ```
 
 ## Troubleshooting
@@ -371,9 +463,32 @@ ultra-dex debug network
 ultra-dex debug database
 ```
 
+## Best Practices
+
+### Security Best Practices
+- Enable MFA for all administrative accounts
+- Use short-lived API keys with rotation
+- Implement network segmentation
+- Regular security assessments and penetration testing
+- Monitor for anomalous access patterns
+
+### Performance Best Practices
+- Use CDN for static assets
+- Implement caching strategies
+- Optimize database queries
+- Monitor resource utilization
+- Plan for capacity growth
+
+### Operational Best Practices
+- Implement comprehensive backup strategies
+- Establish incident response procedures
+- Regular system updates and patching
+- Monitor SLA compliance
+- Document operational procedures
+
 ---
 
 **Document Version**: 6.0.0  
-**Classification**: Internal Use  
-**Distribution**: Enterprise Customers  
+**Classification**: Enterprise Customers  
+**Last Updated**: February 13, 2026  
 **Next Review**: May 13, 2026

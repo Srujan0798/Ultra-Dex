@@ -68,21 +68,48 @@ Ultra-Dex supports enterprise-grade identity management:
 ```
 Owner (Full Access)
 ├── Admin (Management Access)
-│   ├── Member (Operational Access)
-│   │   └── Viewer (Read-Only Access)
-│   └── Guest (Limited Access)
-└── Service Account (Scoped Access)
+│   ├── Manager (Operational Access)
+│   │   ├── Developer (Execution Access)
+│   │   │   └── Viewer (Read-Only Access)
+│   │   └── Guest (Limited Access)
+│   └── Service Account (Scoped Access)
+└── Owner (Complete system access)
 ```
 
 Each role has specific permissions:
 
-| Role | Projects | Agents | Memory | Config | Audit |
-|------|----------|--------|--------|---------|-------|
-| Owner | CRUD | CRUD | CRUD | CRUD | Full |
-| Admin | CRUD | CRUD | CRUD | Read/Write | Full |
-| Member | CRUD | Read/Write | Read/Write | Read | Limited |
-| Viewer | Read | Read | Read | Read | Read |
-| Guest | Read | Read | Read | Read | None |
+| Role | Agents | Memory | Projects | Config | Audit | Security |
+|------|--------|--------|----------|---------|-------|----------|
+| Owner | CRUD | CRUD | CRUD | CRUD | Full | Full |
+| Admin | CRUD | CRUD | CRUD | Read/Write | Full | Full |
+| Manager | Read/Write | Read/Write | Read/Write | Read/Write | Limited | Read |
+| Developer | Read/Write | Read/Write | Read/Write | Read | Limited | Read |
+| Viewer | Read | Read | Read | Read | Read | Read |
+| Guest | Read | Read | Read | Read | None | None |
+
+### 2.3 SSO Implementation
+
+Ultra-Dex supports both SAML 2.0 and OIDC for enterprise SSO:
+
+```javascript
+// SAML Configuration
+const samlConfig = {
+  entryPoint: 'https://your-idp.com/sso/saml',
+  issuer: 'ultra-dex-saml',
+  cert: '-----BEGIN CERTIFICATE-----...',
+  callbackUrl: 'https://your-domain.com/auth/saml/callback',
+  signatureAlgorithm: 'sha256'
+};
+
+// OIDC Configuration
+const oidcConfig = {
+  issuerUrl: 'https://your-idp.com',
+  clientId: 'your-client-id',
+  clientSecret: 'your-client-secret',
+  redirectUri: 'https://your-domain.com/auth/oidc/callback',
+  scopes: ['openid', 'profile', 'email']
+};
+```
 
 ## 3. Data Protection
 
@@ -114,23 +141,48 @@ Data is classified into tiers with appropriate protection:
 
 ## 4. Compliance Framework
 
-### 4.1 Regulatory Compliance
+### 4.1 SOC 2 Type II Controls
 
-Ultra-Dex is designed to meet major regulatory requirements:
+Ultra-Dex implements comprehensive SOC 2 controls:
 
-- **SOC 2 Type II**: Security, availability, and confidentiality controls
-- **GDPR**: Privacy by design with data portability and right to erasure
-- **HIPAA**: Healthcare data protection (when applicable)
-- **ISO 27001**: Information security management system
+#### Security Category
+- **CC5.2**: Continuous monitoring of security controls
+- **CC6.1**: Logical access security implementation
+- **CC6.3**: Access authorization and modification
+- **CC7.1**: System operations monitoring
+- **CC7.2**: System change management
 
-### 4.2 Audit & Logging
+#### Availability Category
+- **A1.1**: Capacity monitoring and management
+- **A1.2**: Capacity demand and growth management
+- **A1.3**: System availability monitoring
 
-Comprehensive audit trail with:
+#### Confidentiality Category
+- **C1.2**: Information identification and maintenance
+- **C1.3**: Information disclosure
 
-- **Immutable Logs**: Tamper-evident logging using cryptographic hashes
-- **Real-time Monitoring**: Continuous security event monitoring
-- **Compliance Reports**: Automated compliance reporting
-- **Forensic Readiness**: Detailed logs for incident investigation
+#### Processing Integrity Category
+- **PI1.4**: Processing error prevention and correction
+
+### 4.2 GDPR Compliance
+
+Ultra-Dex is designed to meet GDPR requirements:
+
+- **Lawfulness, fairness and transparency**: Clear data processing policies
+- **Purpose limitation**: Data used only for specified purposes
+- **Data minimization**: Only necessary data is collected
+- **Accuracy**: Data validation and correction mechanisms
+- **Storage limitation**: Automatic data deletion based on retention
+- **Integrity and confidentiality**: Encryption and access controls
+- **Accountability**: Comprehensive audit logging
+
+### 4.3 HIPAA Compliance (Where Applicable)
+
+For healthcare applications, Ultra-Dex implements HIPAA controls:
+
+- **Administrative Safeguards**: Security management, workforce training
+- **Physical Safeguards**: Facility access, workstation security
+- **Technical Safeguards**: Access control, audit controls, transmission security
 
 ## 5. Security Controls
 
@@ -155,9 +207,39 @@ Comprehensive audit trail with:
 - **Secrets Management**: Secure storage and rotation of secrets
 - **Vulnerability Management**: Automated patching and updates
 
-## 6. Incident Response
+## 6. Audit & Logging
 
-### 6.1 Security Event Classification
+### 6.1 Immutable Audit Logs
+
+Ultra-Dex maintains tamper-evident audit logs:
+
+- **Cryptographic Hashing**: Each log entry includes SHA-256 hash
+- **Chain of Custody**: Previous entry hash included in current entry
+- **Retention Policy**: Configurable retention periods (minimum 90 days)
+- **Export Capabilities**: Audit logs available in standard formats
+
+### 6.2 Audit Events
+
+Comprehensive logging of security-relevant events:
+
+- Authentication events (login, logout, token refresh)
+- Authorization events (permission granted/denied)
+- Data access events (read, write, delete)
+- Configuration changes
+- System events (startup, shutdown, maintenance)
+
+### 6.3 Compliance Reporting
+
+Automated generation of compliance reports:
+
+- SOC 2 compliance reports
+- GDPR compliance reports
+- HIPAA compliance reports (where applicable)
+- Custom compliance reports
+
+## 7. Incident Response
+
+### 7.1 Security Event Classification
 
 | Level | Description | Response Time |
 |-------|-------------|---------------|
@@ -166,7 +248,7 @@ Comprehensive audit trail with:
 | Medium | Security warning, configuration issue | < 4 hours |
 | Low | Informational, routine security event | < 24 hours |
 
-### 6.2 Incident Response Process
+### 7.2 Incident Response Process
 
 1. **Detection**: Automated monitoring and alerting
 2. **Containment**: Isolate affected systems
@@ -174,11 +256,11 @@ Comprehensive audit trail with:
 4. **Recovery**: Restore systems and verify integrity
 5. **Lessons Learned**: Document and improve processes
 
-## 7. Risk Management
+## 8. Risk Management
 
-### 7.1 Threat Modeling
+### 8.1 Threat Modeling
 
-Ultra-Dex addresses common threats:
+Ultra-Dex addresses common enterprise threats:
 
 - **Threat**: Unauthorized access
   - **Mitigation**: Multi-factor authentication, RBAC
@@ -189,14 +271,34 @@ Ultra-Dex addresses common threats:
 - **Threat**: Supply chain attack
   - **Mitigation**: Dependency scanning, code signing
 
-### 7.2 Security Testing
+### 8.2 Security Testing
 
 - **Static Analysis**: Automated code scanning
 - **Dynamic Analysis**: Runtime security testing
 - **Penetration Testing**: Regular third-party assessments
 - **Vulnerability Scanning**: Automated dependency scanning
 
-## 8. Conclusion
+## 9. Enterprise Deployment Security
+
+### 9.1 On-Premises Security
+
+For on-premises deployments, Ultra-Dex provides:
+
+- **Air-gapped deployment**: Full isolation from public networks
+- **Custom security policies**: Integration with existing enterprise security
+- **Data residency**: Complete control over data location
+- **Network integration**: Connection to existing enterprise networks
+
+### 9.2 Private Cloud Security
+
+For private cloud deployments:
+
+- **Dedicated resources**: Isolated from other tenants
+- **Custom networking**: Enterprise networking configurations
+- **Enhanced security**: Additional security controls
+- **Compliance**: Enhanced compliance features
+
+## 10. Conclusion
 
 Ultra-Dex provides enterprise-grade security with defense-in-depth architecture, comprehensive compliance controls, and robust incident response capabilities. The platform is designed to meet the security requirements of Fortune 500 companies while maintaining the flexibility and innovation of modern AI orchestration.
 
@@ -205,4 +307,5 @@ Ultra-Dex provides enterprise-grade security with defense-in-depth architecture,
 **Document Version**: 6.0.0  
 **Classification**: Internal Use Only  
 **Distribution**: Enterprise Customers  
+**Last Updated**: February 13, 2026  
 **Next Review**: May 13, 2026

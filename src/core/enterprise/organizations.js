@@ -1,6 +1,6 @@
 /**
- * Ultra-Dex Organizations Module
- * Enterprise multi-tenancy with resource isolation
+ * Ultra-Dex Enterprise Organization Management
+ * Multi-tenancy with complete resource isolation
  */
 
 import fs from 'fs/promises';
@@ -8,7 +8,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { EventEmitter } from 'events';
 
-const ORG_DIR = '.ultra-dex/orgs';
+const ORG_DIR = '.ultra-dex/organizations';
 
 class OrganizationsManager extends EventEmitter {
   constructor(options = {}) {
@@ -25,8 +25,8 @@ class OrganizationsManager extends EventEmitter {
       },
       ...options
     };
-    
-    this.organizations = new Map();
+
+    this.organizations = new Map(); // orgId -> orgData
     this.storagePath = path.resolve(this.options.storagePath);
     this.initialize();
   }
@@ -74,6 +74,7 @@ class OrganizationsManager extends EventEmitter {
         role: 'owner',
         joinedAt: new Date().toISOString()
       }],
+      teams: [],
       projects: [],
       quotas: {
         ...this.options.defaultQuotas,
@@ -85,14 +86,34 @@ class OrganizationsManager extends EventEmitter {
         storageUsed: 0,
         apiCalls: 0
       },
+      settings: {
+        enableSandbox: orgData.enableSandbox !== false,
+        allowExternalTools: orgData.allowExternalTools || false,
+        dataResidency: orgData.dataResidency || 'global',
+        auditLogging: orgData.auditLogging !== false,
+        securityLevel: orgData.securityLevel || 'enterprise'
+      },
+      billing: {
+        plan: orgData.plan || 'team',
+        subscriptionId: null,
+        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+        usage: {
+          current: 0,
+          limit: orgData.plan === 'enterprise' ? Infinity : 50000 // Example limits
+        }
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isActive: true
     };
 
-    // Create organization directory
+    // Create organization-specific directory structure
     const orgDir = path.join(this.storagePath, orgId);
     await fs.mkdir(orgDir, { recursive: true });
+    await fs.mkdir(path.join(orgDir, 'projects'), { recursive: true });
+    await fs.mkdir(path.join(orgDir, 'agents'), { recursive: true });
+    await fs.mkdir(path.join(orgDir, 'memory'), { recursive: true });
+    await fs.mkdir(path.join(orgDir, 'logs'), { recursive: true });
 
     // Save organization to disk
     await this.saveOrganization(organization);
@@ -135,6 +156,8 @@ class OrganizationsManager extends EventEmitter {
     if (updates.name) organization.name = updates.name;
     if (updates.description) organization.description = updates.description;
     if (updates.isActive !== undefined) organization.isActive = updates.isActive;
+    if (updates.settings) organization.settings = { ...organization.settings, ...updates.settings };
+    if (updates.billing) organization.billing = { ...organization.billing, ...updates.billing };
 
     organization.updatedAt = new Date().toISOString();
 
@@ -160,7 +183,7 @@ class OrganizationsManager extends EventEmitter {
     }
 
     // Validate role
-    const validRoles = ['owner', 'admin', 'member', 'viewer'];
+    const validRoles = ['owner', 'admin', 'manager', 'developer', 'viewer'];
     if (!validRoles.includes(role)) {
       throw new Error(`Invalid role: ${role}. Valid roles: ${validRoles.join(', ')}`);
     }
@@ -237,7 +260,7 @@ class OrganizationsManager extends EventEmitter {
     }
 
     // Validate role
-    const validRoles = ['owner', 'admin', 'member', 'viewer'];
+    const validRoles = ['owner', 'admin', 'manager', 'developer', 'viewer'];
     if (!validRoles.includes(newRole)) {
       throw new Error(`Invalid role: ${newRole}. Valid roles: ${validRoles.join(', ')}`);
     }
@@ -263,6 +286,64 @@ class OrganizationsManager extends EventEmitter {
     });
 
     return organization;
+  }
+
+  /**
+   * Create a team within an organization
+   * @param {string} orgId - Organization ID
+   * @param {object} teamData - Team data
+   * @returns {object} Created team
+   */
+  async createTeam(orgId, teamData) {
+    const organization = this.organizations.get(orgId);
+    if (!organization) {
+      throw new Error(`Organization ${orgId} not found`);
+    }
+
+    // Check quota
+    if (this.options.enableResourceQuotas && 
+        organization.teams.length >= organization.quotas.maxTeams) {
+      throw new Error('Team quota exceeded for organization');
+    }
+
+    const teamId = `team_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+    const team = {
+      id: teamId,
+      name: teamData.name,
+      description: teamData.description || '',
+      ownerId: teamData.ownerId,
+      members: [{
+        userId: teamData.ownerId,
+        role: 'owner',
+        joinedAt: new Date().toISOString()
+      }],
+      projects: [],
+      settings: {
+        defaultAgentConcurrency: teamData.defaultAgentConcurrency || 4,
+        enableSandbox: teamData.enableSandbox !== false,
+        allowExternalTools: teamData.allowExternalTools || false
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isActive: true
+    };
+
+    organization.teams.push(teamId);
+    organization.updatedAt = new Date().toISOString();
+
+    // Create team directory within organization
+    const teamDir = path.join(this.storagePath, orgId, 'teams', teamId);
+    await fs.mkdir(teamDir, { recursive: true });
+
+    // Save organization to disk
+    await this.saveOrganization(organization);
+
+    // Save team to its own file
+    await this.saveTeam(orgId, team);
+
+    this.emit('team:created', { orgId, team, timestamp: new Date().toISOString() });
+
+    return team;
   }
 
   /**
@@ -294,13 +375,17 @@ class OrganizationsManager extends EventEmitter {
         role: 'owner',
         joinedAt: new Date().toISOString()
       }],
-      settings: projectData.settings || {},
+      settings: {
+        enableSandbox: projectData.enableSandbox !== false,
+        allowExternalTools: projectData.allowExternalTools || false,
+        securityLevel: projectData.securityLevel || 'standard'
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isActive: true
     };
 
-    organization.projects.push(project);
+    organization.projects.push(projectId);
     organization.updatedAt = new Date().toISOString();
 
     // Create project directory within organization
@@ -310,6 +395,9 @@ class OrganizationsManager extends EventEmitter {
     // Save organization to disk
     await this.saveOrganization(organization);
 
+    // Save project to its own file
+    await this.saveProject(orgId, project);
+
     this.emit('project:created', { orgId, project, timestamp: new Date().toISOString() });
 
     return project;
@@ -318,21 +406,26 @@ class OrganizationsManager extends EventEmitter {
   /**
    * Get all organizations for a user
    * @param {string} userId - User ID
-   * @returns {Array<object>} Array of organizations
+   * @returns {Array<object>} Array of organizations with user's role
    */
   getUserOrganizations(userId) {
     const userOrgs = [];
     
-    for (const [_, org] of this.organizations) {
-      const isMember = org.members.some(member => member.userId === userId);
-      if (isMember) {
+    for (const [orgId, org] of this.organizations) {
+      const member = org.members.find(m => m.userId === userId);
+      if (member) {
         userOrgs.push({
           id: org.id,
           name: org.name,
           description: org.description,
-          role: org.members.find(m => m.userId === userId).role,
+          role: member.role,
+          memberCount: org.members.length,
+          teamCount: org.teams.length,
+          projectCount: org.projects.length,
           createdAt: org.createdAt,
-          isActive: org.isActive
+          isActive: org.isActive,
+          usage: org.usage,
+          quotas: org.quotas
         });
       }
     }
@@ -364,9 +457,10 @@ class OrganizationsManager extends EventEmitter {
 
     // Define role hierarchy
     const roleHierarchy = {
-      'owner': 4,
-      'admin': 3,
-      'member': 2,
+      'owner': 5,
+      'admin': 4,
+      'manager': 3,
+      'developer': 2,
       'viewer': 1
     };
 
@@ -377,28 +471,77 @@ class OrganizationsManager extends EventEmitter {
   }
 
   /**
-   * Get organization usage statistics
+   * Check if an organization has exceeded its quotas
    * @param {string} orgId - Organization ID
-   * @returns {object} Usage statistics
+   * @returns {object} Quota status
    */
-  getUsage(orgId) {
+  checkQuotas(orgId) {
     const organization = this.organizations.get(orgId);
     if (!organization) {
       throw new Error(`Organization ${orgId} not found`);
     }
 
-    // In a real implementation, this would calculate actual usage
-    // For now, returning the stored usage data
-    return {
-      ...organization.usage,
-      quotas: organization.quotas,
-      utilization: {
-        agents: (organization.usage.agents / organization.quotas.maxAgents) * 100,
-        memoryEntries: (organization.usage.memoryEntries / organization.quotas.maxMemoryEntries) * 100,
-        storage: (organization.usage.storageUsed / organization.quotas.maxStorage) * 100,
-        apiCalls: (organization.usage.apiCalls / organization.quotas.maxApiCalls) * 100
+    const checks = {
+      agents: {
+        current: organization.usage.agents,
+        limit: organization.quotas.maxAgents,
+        exceeded: organization.usage.agents >= organization.quotas.maxAgents
+      },
+      memoryEntries: {
+        current: organization.usage.memoryEntries,
+        limit: organization.quotas.maxMemoryEntries,
+        exceeded: organization.usage.memoryEntries >= organization.quotas.maxMemoryEntries
+      },
+      storage: {
+        current: organization.usage.storageUsed,
+        limit: organization.quotas.maxStorage,
+        exceeded: organization.usage.storageUsed >= organization.quotas.maxStorage
+      },
+      apiCalls: {
+        current: organization.usage.apiCalls,
+        limit: organization.quotas.maxApiCalls,
+        exceeded: organization.usage.apiCalls >= organization.quotas.maxApiCalls
       }
     };
+
+    return {
+      organizationId: orgId,
+      checks,
+      anyExceeded: Object.values(checks).some(check => check.exceeded),
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Update organization usage metrics
+   * @param {string} orgId - Organization ID
+   * @param {object} usageUpdates - Usage updates to apply
+   * @returns {object} Updated usage
+   */
+  async updateUsage(orgId, usageUpdates) {
+    const organization = this.organizations.get(orgId);
+    if (!organization) {
+      throw new Error(`Organization ${orgId} not found`);
+    }
+
+    for (const [key, value] of Object.entries(usageUpdates)) {
+      if (organization.usage.hasOwnProperty(key)) {
+        organization.usage[key] = (organization.usage[key] || 0) + value;
+      }
+    }
+
+    organization.updatedAt = new Date().toISOString();
+
+    // Check if quotas are exceeded and emit event
+    const quotaStatus = this.checkQuotas(orgId);
+    if (quotaStatus.anyExceeded) {
+      this.emit('quota:exceeded', { orgId, quotaStatus, timestamp: new Date().toISOString() });
+    }
+
+    // Save to disk
+    await this.saveOrganization(organization);
+
+    return organization.usage;
   }
 
   /**
@@ -409,6 +552,28 @@ class OrganizationsManager extends EventEmitter {
   async saveOrganization(organization) {
     const orgPath = path.join(this.storagePath, organization.id, 'organization.json');
     await fs.writeFile(orgPath, JSON.stringify(organization, null, 2));
+  }
+
+  /**
+   * Save team to disk
+   * @param {string} orgId - Organization ID
+   * @param {object} team - Team to save
+   * @private
+   */
+  async saveTeam(orgId, team) {
+    const teamPath = path.join(this.storagePath, orgId, 'teams', `${team.id}.json`);
+    await fs.writeFile(teamPath, JSON.stringify(team, null, 2));
+  }
+
+  /**
+   * Save project to disk
+   * @param {string} orgId - Organization ID
+   * @param {object} project - Project to save
+   * @private
+   */
+  async saveProject(orgId, project) {
+    const projectPath = path.join(this.storagePath, orgId, 'projects', `${project.id}.json`);
+    await fs.writeFile(projectPath, JSON.stringify(project, null, 2));
   }
 
   /**
@@ -449,11 +614,38 @@ class OrganizationsManager extends EventEmitter {
       name: org.name,
       description: org.description,
       memberCount: org.members.length,
+      teamCount: org.teams.length,
       projectCount: org.projects.length,
       createdAt: org.createdAt,
       isActive: org.isActive,
-      usage: org.usage
+      usage: org.usage,
+      quotas: org.quotas,
+      billing: org.billing
     }));
+  }
+
+  /**
+   * Get organization usage statistics
+   * @param {string} orgId - Organization ID
+   * @returns {object} Usage statistics
+   */
+  getUsageStats(orgId) {
+    const organization = this.organizations.get(orgId);
+    if (!organization) {
+      throw new Error(`Organization ${orgId} not found`);
+    }
+
+    return {
+      ...organization.usage,
+      quotas: organization.quotas,
+      utilization: {
+        agents: (organization.usage.agents / organization.quotas.maxAgents) * 100,
+        memoryEntries: (organization.usage.memoryEntries / organization.quotas.maxMemoryEntries) * 100,
+        storage: (organization.usage.storageUsed / organization.quotas.maxStorage) * 100,
+        apiCalls: (organization.usage.apiCalls / organization.quotas.maxApiCalls) * 100
+      },
+      timestamp: new Date().toISOString()
+    };
   }
 
   /**
@@ -464,7 +656,7 @@ class OrganizationsManager extends EventEmitter {
     return {
       status: 'healthy',
       organizationCount: this.organizations.size,
-      totalMembers: Array.from(this.organizations.values()).reduce((sum, org) => sum + org.members.length, 0),
+      totalMembers: Array.from(this.organizations.values()).reduce((sum, org) => sum.members.length, 0),
       timestamp: new Date().toISOString(),
     };
   }
