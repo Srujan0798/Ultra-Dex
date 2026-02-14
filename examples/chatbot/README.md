@@ -1,78 +1,188 @@
-# Ultra-Dex Chatbot Example
+# AI Chatbot Example
 
-This example demonstrates how to create a sophisticated chatbot using Ultra-Dex's AI orchestration capabilities.
+This example demonstrates how to create an AI-powered chatbot using Ultra-Dex. The chatbot maintains conversation history, learns from interactions, and provides intelligent responses.
 
-## Overview
+## Features
 
-This chatbot combines multiple specialized agents to provide intelligent, contextual responses:
+- **Natural Language Understanding**: Processes and understands user queries
+- **Context-Aware Responses**: Maintains context across multiple conversation turns
+- **Conversation Memory**: Remembers previous interactions and user preferences
+- **Multi-Turn Dialogues**: Handles complex conversations spanning multiple exchanges
+- **Personality Customization**: Configurable personality and communication style
+- **Intent Classification**: Identifies user intents and extracts entities
+- **Knowledge Integration**: Retrieves and incorporates relevant information
+- **Sentiment Analysis**: Detects user sentiment for appropriate responses
 
-- **Intent Classifier**: Determines the user's intent
-- **Context Manager**: Maintains conversation history and context
-- **Response Generator**: Crafts appropriate responses
-- **Knowledge Base**: Retrieves relevant information
+## Prerequisites
+
+- Node.js 18+
+- Ultra-Dex API key
 
 ## Setup
 
-1. Make sure Ultra-Dex is installed and configured:
+1. **Install Dependencies**:
    ```bash
-   npm install -g ultra-dex
-   ultra-dex config --wizard
+   # This example uses the UltraDex library
    ```
 
-2. Navigate to this directory:
-   ```bash
-   cd examples/chatbot
+2. **Environment Variables**:
+   Create a `.env` file with the following:
+   ```env
+   ULTRA_DEX_API_KEY=your_ultra_dex_api_key
+   ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
    ```
+
+3. **Run the Example**:
+   ```bash
+   node index.js
+   ```
+
+## Configuration
+
+The chatbot uses several specialized agents:
+
+- `intent-classifier`: Classifies user intents and extracts entities from messages
+- `response-generator`: Generates contextually appropriate responses
+- `conversation-manager`: Manages conversation flow and context
+- `personality-engine`: Maintains consistent personality traits
+- `knowledge-enhancer`: Retrieves and incorporates relevant knowledge
 
 ## Usage
 
-Run the chatbot example:
+The chatbot can handle various types of conversations:
 
-```bash
-ultra-dex run --task "Create a customer support chatbot that can answer questions about orders, shipping, and returns"
+```javascript
+const chatbot = new Chatbot({
+  ultraDex: {
+    apiKey: process.env.ULTRA_DEX_API_KEY,
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
+  },
+  personality: {
+    name: 'Ultra-Dex Assistant',
+    tone: 'helpful and professional',
+    expertise: 'AI, technology, and software development',
+    communicationStyle: 'clear, concise, and informative'
+  }
+});
+
+// Process a user message
+const response = await chatbot.processMessage('user123', 'Hello! Can you tell me about AI orchestration?');
+
+console.log(response.response); // The bot's response
+console.log(response.intent); // The classified intent
+console.log(response.confidence); // Confidence level of the response
+
+// Get conversation history
+const history = chatbot.getConversationHistory('user123');
+
+// Clear conversation history
+chatbot.clearConversation('user123');
+
+// Update bot personality
+chatbot.updatePersonality({
+  tone: 'friendly and casual',
+  expertise: 'AI, technology, and creative arts'
+});
+
+// Train with examples
+await chatbot.trainWithExamples([
+  {
+    input: 'What is your favorite programming language?',
+    output: 'I appreciate all programming languages for their unique strengths. JavaScript is versatile for web development, Python excels in data science, and Rust offers excellent performance with safety.',
+    context: { topic: 'programming' }
+  }
+]);
+
+// Simulate a conversation for testing
+const simulation = await chatbot.simulateConversation('What is machine learning?', 5);
 ```
 
-Or use the interactive mode:
+## Personality Configuration
 
-```bash
-ultra-dex run --interactive
-```
+Customize the chatbot's personality:
 
-## Architecture
+- **Name**: The chatbot's identity
+- **Tone**: Formal, casual, friendly, professional, etc.
+- **Expertise**: Knowledge domains the bot specializes in
+- **Communication Style**: How the bot structures responses
 
-The chatbot follows this workflow:
+## Conversation Management
 
-1. **Input Processing**: User message is analyzed for intent and entities
-2. **Context Enrichment**: Conversation history and user profile are retrieved
-3. **Knowledge Retrieval**: Relevant information is fetched from knowledge base
-4. **Response Generation**: A contextual response is crafted
-5. **Memory Update**: Conversation is stored for future context
+The chatbot maintains conversation context:
 
-## Files
+- **Message History**: Tracks all messages in a conversation
+- **Context Variables**: Remembers important information from the conversation
+- **Session Management**: Handles multiple concurrent conversations
+- **Memory Archiving**: Preserves important information across sessions
 
-- `chatbot-agent.md`: Agent definition and system prompt
-- `knowledge-base.json`: Sample knowledge base
-- `conversation-history.json`: Example conversation history
-- `config.json`: Configuration for the chatbot
+## Intent Classification
+
+The system identifies user intents:
+
+- **Question Answering**: Responds to inquiries
+- **Task Requests**: Handles action requests
+- **Chitchat**: Manages casual conversation
+- **Feedback**: Processes user feedback
+- **Error Recovery**: Handles misunderstood inputs
+
+## Knowledge Integration
+
+The chatbot accesses relevant information:
+
+- **External Knowledge Bases**: Connects to documentation and resources
+- **Contextual Retrieval**: Finds information relevant to the conversation
+- **Source Attribution**: Cites sources when providing information
+- **Fact Verification**: Ensures accuracy of responses
+
+## Sentiment Analysis
+
+Detects and responds to user emotions:
+
+- **Positive Detection**: Recognizes happy or satisfied users
+- **Negative Detection**: Identifies frustrated or upset users
+- **Neutral Handling**: Manages neutral interactions appropriately
+- **Empathetic Responses**: Adjusts tone based on detected sentiment
+
+## Training and Improvement
+
+Continuously improve the chatbot:
+
+- **Example-Based Training**: Provide conversation examples
+- **Feedback Integration**: Learn from user corrections
+- **Performance Monitoring**: Track conversation quality
+- **Behavior Adjustment**: Modify responses based on outcomes
+
+## Export and Import
+
+Manage conversation data:
+
+- **JSON Export**: Export conversations in JSON format
+- **CSV Export**: Export conversations in CSV format
+- **Data Import**: Load previous conversations
+- **Analytics**: Analyze conversation patterns
+
+## Statistics and Analytics
+
+Track chatbot performance:
+
+- **Conversation Volume**: Number of conversations handled
+- **Message Count**: Total messages processed
+- **Common Intents**: Most frequent user intents
+- **Engagement Metrics**: Conversation length and user satisfaction
 
 ## Customization
 
 You can customize the chatbot by modifying:
 
-- **Agent Prompts**: Adjust the behavior in `chatbot-agent.md`
-- **Knowledge Base**: Add domain-specific information to `knowledge-base.json`
-- **Workflows**: Modify the orchestration in `workflow.json`
+- Personality traits and communication style
+- Knowledge sources and information access
+- Response formatting and structure
+- Conversation flow and management
+- Intent classification categories
+- Sentiment analysis sensitivity
 
-## Advanced Features
+## Security
 
-- **Multi-turn Conversations**: Maintains context across multiple exchanges
-- **Personalization**: Adapts responses based on user history
-- **Fallback Handling**: Gracefully handles unrecognized intents
-- **Learning**: Improves over time through interaction logging
-
-## Next Steps
-
-- Integrate with your existing customer support system
-- Add more specialized agents for domain-specific tasks
-- Connect to live databases for real-time information
-- Implement sentiment analysis for emotional intelligence
+- Store API keys securely using environment variables
+- Implement proper access controls for conversation data
+- Ensure privacy compliance for user interactions
