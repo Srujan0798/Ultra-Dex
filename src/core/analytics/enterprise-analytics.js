@@ -424,9 +424,9 @@ class EnterpriseAnalytics extends EventEmitter {
           history: history.slice(-options.historyLimit || 50), // Last 50 entries by default
           stats
         };
-
+        
         // Check for anomalies in this metric's history
-        if (this.options.enableAnomalyDetection && this.anomalyDetector) {
+        if (this.options.enableAnomalyDetection) {
           for (const entry of history) {
             if (this.anomalyDetector.detectAnomalies(metricName, entry.value)) {
               report.anomalies.push({
@@ -458,7 +458,8 @@ class EnterpriseAnalytics extends EventEmitter {
       ...report.summary,
       durationHours: (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60),
       totalMetrics: Object.keys(report.metrics).length,
-      anomalyCount: report.anomalies.length
+      anomalyCount: report.anomalies.length,
+      predictionCount: Object.keys(report.predictions).length
     };
 
     // Save report if persistence is enabled
@@ -655,23 +656,6 @@ class EnterpriseAnalytics extends EventEmitter {
   }
 
   /**
-   * Get system health information
-   * @returns {object} Health information
-   */
-  getHealth() {
-    return {
-      status: 'healthy',
-      metricCount: this.metrics.size,
-      realTimeBuffers: this.realTimeData.size,
-      anomalyDetection: this.options.enableAnomalyDetection,
-      predictiveAnalytics: this.options.enablePredictiveAnalytics,
-      retentionDays: this.options.retentionDays,
-      samplingRate: this.options.samplingRate,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  /**
    * Save metrics to disk
    * @private
    */
@@ -703,7 +687,7 @@ class EnterpriseAnalytics extends EventEmitter {
       if (error.code !== 'ENOENT') {
         console.warn('Failed to load metrics:', error.message);
       }
-      // File doesn't exist yet, which is fine
+      // Directory doesn't exist yet, which is fine
     }
   }
 
@@ -718,16 +702,25 @@ class EnterpriseAnalytics extends EventEmitter {
   }
 
   /**
-   * Get all available metrics
-   * @returns {Array<string>} Array of metric names
+   * Get system health information
+   * @returns {object} Health information
    */
-  getAvailableMetrics() {
-    return Array.from(this.metrics.keys());
+  getHealth() {
+    return {
+      status: 'healthy',
+      metricCount: this.metrics.size,
+      realTimeBuffers: this.realTimeData.size,
+      anomalyDetection: this.options.enableAnomalyDetection,
+      predictiveAnalytics: this.options.enablePredictiveAnalytics,
+      retentionDays: this.options.retentionDays,
+      samplingRate: this.options.samplingRate,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**
    * Get enterprise metrics summary
-   * @returns {object} Enterprise metrics summary
+   * @returns {object} Metrics summary
    */
   getEnterpriseMetrics() {
     const metrics = {};

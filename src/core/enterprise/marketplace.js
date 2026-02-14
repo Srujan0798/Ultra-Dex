@@ -1,6 +1,6 @@
 /**
- * Ultra-Dex Custom Agents Marketplace
- * Enterprise agent marketplace with security and governance
+ * Ultra-Dex Enterprise Marketplace
+ * Custom agents and extensions marketplace for enterprise deployments
  */
 
 import fs from 'fs/promises';
@@ -10,20 +10,29 @@ import { EventEmitter } from 'events';
 
 const MARKETPLACE_DIR = '.ultra-dex/marketplace';
 
-class MarketplaceManager extends EventEmitter {
+class AgentMarketplace extends EventEmitter {
   constructor(options = {}) {
     super();
     this.options = {
       storagePath: options.storagePath || MARKETPLACE_DIR,
+      enablePrivateRepos: options.enablePrivateRepos !== false,
       enableSecurityScanning: options.enableSecurityScanning !== false,
-      trustedSources: options.trustedSources || [],
+      enableApprovalWorkflow: options.enableApprovalWorkflow !== false,
       maxAgentSize: options.maxAgentSize || 10 * 1024 * 1024, // 10MB
+      agentCategories: options.agentCategories || [
+        'development', 'security', 'testing', 'deployment', 
+        'monitoring', 'compliance', 'infrastructure', 'business'
+      ],
       ...options
     };
-    
+
     this.agents = new Map(); // agentId -> agentData
-    this.installedAgents = new Map(); // tenantId -> [agentIds]
+    this.installedAgents = new Map(); // orgId -> [agentIds]
+    this.marketplace = new Map(); // public agents
+    this.privateRepos = new Map(); // orgId -> [privateAgentIds]
+    this.approvalQueue = new Map(); // agentId -> approvalRequest
     this.storagePath = path.resolve(this.options.storagePath);
+    
     this.initialize();
   }
 
@@ -33,6 +42,7 @@ class MarketplaceManager extends EventEmitter {
     await fs.mkdir(path.join(this.storagePath, 'agents'), { recursive: true });
     await fs.mkdir(path.join(this.storagePath, 'reviews'), { recursive: true });
     await fs.mkdir(path.join(this.storagePath, 'security'), { recursive: true });
+    await fs.mkdir(path.join(this.storagePath, 'private'), { recursive: true });
     
     // Load existing agents
     await this.loadAgents();
@@ -42,14 +52,15 @@ class MarketplaceManager extends EventEmitter {
    * Publish an agent to the marketplace
    * @param {object} agentData - Agent data to publish
    * @param {string} publisherId - Publisher user ID
+   * @param {boolean} isPrivate - Whether agent is private to organization
    * @returns {object} Published agent
    */
-  async publishAgent(agentData, publisherId) {
+  async publishAgent(agentData, publisherId, isPrivate = false) {
     if (!agentData.name || !agentData.code || !publisherId) {
       throw new Error('Agent name, code, and publisher ID are required');
     }
 
-    // Validate agent code for security
+    // Validate agent code for security if enabled
     if (this.options.enableSecurityScanning) {
       const securityResult = await this.scanAgentCode(agentData.code);
       if (!securityResult.safe) {
@@ -58,13 +69,10 @@ class MarketplaceManager extends EventEmitter {
     }
 
     // Check if agent already exists
-    for (const [_, agent] of this.agents) {
-      if (agent.name === agentData.name && agent.publisherId === publisherId) {
-        throw new Error(`Agent ${agentData.name} already published by this publisher`);
-      }
-    }
+    const agentId = isPrivate 
+      ? `private_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`
+      : `agent_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
 
-    const agentId = `agent_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
     const agent = {
       id: agentId,
       name: agentData.name,
@@ -85,7 +93,7 @@ class MarketplaceManager extends EventEmitter {
       security: {
         scanned: this.options.enableSecurityScanning,
         score: 100, // Calculated by security scanner
-        trusted: this.options.trustedSources.includes(publisherId),
+        trusted: this.options.trustedPublishers?.includes(publisherId) || false,
         vulnerabilities: []
       },
       pricing: {
@@ -94,29 +102,50 @@ class MarketplaceManager extends EventEmitter {
         subscriptionFee: agentData.pricing?.subscriptionFee || 0
       },
       permissions: agentData.permissions || [],
-      isActive: true
+      capabilities: agentData.capabilities || [],
+      configSchema: agentData.configSchema || {},
+      isPrivate,
+      organizationId: isPrivate ? agentData.organizationId : null,
+      isActive: true,
+      verified: false // Will be verified by marketplace admins
     };
 
     // Save agent to disk
-    const agentPath = path.join(this.storagePath, 'agents', `${agentId}.json`);
+    const agentPath = path.join(this.storagePath, isPrivate ? 'private' : 'agents', `${agentId}.json`);
     await fs.writeFile(agentPath, JSON.stringify(agent, null, 2));
 
-    // Add to in-memory store
+    // Add to appropriate store
+    if (isPrivate) {
+      if (!this.privateRepos.has(agent.organizationId)) {
+        this.privateRepos.set(agent.organizationId, new Set());
+      }
+      this.privateRepos.get(agent.organizationId).add(agentId);
+    } else {
+      this.marketplace.set(agentId, agent);
+    }
+
+    // Add to all agents store
     this.agents.set(agentId, agent);
 
-    this.emit('agent:published', { agent, publisherId, timestamp: new Date().toISOString() });
+    // Emit event
+    this.emit('agent:published', { 
+      agentId, 
+      publisherId, 
+      isPrivate, 
+      timestamp: new Date().toISOString() 
+    });
 
     return agent;
   }
 
   /**
-   * Install an agent to a tenant
+   * Install an agent to an organization
    * @param {string} agentId - Agent ID to install
-   * @param {string} tenantId - Tenant ID to install to
+   * @param {string} orgId - Organization ID to install to
    * @param {object} options - Installation options
    * @returns {object} Installation result
    */
-  async installAgent(agentId, tenantId, options = {}) {
+  async installAgent(agentId, orgId, options = {}) {
     const agent = this.agents.get(agentId);
     if (!agent) {
       throw new Error(`Agent ${agentId} not found in marketplace`);
@@ -126,49 +155,145 @@ class MarketplaceManager extends EventEmitter {
       throw new Error(`Agent ${agentId} is not active`);
     }
 
-    // Check security score
-    if (agent.security.score < 80 && !options.overrideSecurity) {
+    // Check if private agent belongs to organization
+    if (agent.isPrivate && agent.organizationId !== orgId) {
+      throw new Error(`Private agent ${agentId} does not belong to organization ${orgId}`);
+    }
+
+    // Check security score if enabled
+    if (this.options.enableSecurityScanning && 
+        agent.security.score < 80 && 
+        !agent.security.trusted) {
       throw new Error(`Agent ${agentId} has low security score (${agent.security.score}/100)`);
     }
 
-    // Check permissions
-    if (agent.permissions && agent.permissions.length > 0) {
-      // In a real implementation, this would check tenant permissions
-      // For now, we'll just log the required permissions
-      console.log(`[MARKETPLACE] Agent ${agentId} requires permissions:`, agent.permissions);
+    // Check approval if required
+    if (this.options.enableApprovalWorkflow && !agent.verified) {
+      const approvalRequest = await this.submitForApproval(agentId, orgId, 'install');
+      if (approvalRequest.status !== 'approved') {
+        throw new Error(`Agent ${agentId} requires approval before installation`);
+      }
     }
 
-    // Create tenant-specific agent directory
-    const tenantAgentDir = path.join(this.storagePath, 'tenants', tenantId, 'agents');
-    await fs.mkdir(tenantAgentDir, { recursive: true });
+    // Create organization-specific agent directory
+    const orgAgentDir = path.join(this.storagePath, 'organizations', orgId, 'agents');
+    await fs.mkdir(orgAgentDir, { recursive: true });
 
-    // Save agent code to tenant directory
-    const agentCodePath = path.join(tenantAgentDir, `${agent.name}.js`);
+    // Save agent code to organization directory
+    const agentCodePath = path.join(orgAgentDir, `${agent.name.replace(/[^a-zA-Z0-9]/g, '_')}.js`);
     await fs.writeFile(agentCodePath, agent.code);
 
-    // Update install count
+    // Update installation metrics
     agent.installs++;
-    agent.lastUpdated = new Date().toISOString();
+    agent.updatedAt = new Date().toISOString();
 
     // Save updated agent
-    const agentPath = path.join(this.storagePath, 'agents', `${agentId}.json`);
+    const agentPath = path.join(this.storagePath, agent.isPrivate ? 'private' : 'agents', `${agentId}.json`);
     await fs.writeFile(agentPath, JSON.stringify(agent, null, 2));
 
     // Track installation
-    if (!this.installedAgents.has(tenantId)) {
-      this.installedAgents.set(tenantId, new Set());
+    if (!this.installedAgents.has(orgId)) {
+      this.installedAgents.set(orgId, new Set());
     }
-    this.installedAgents.get(tenantId).add(agentId);
+    this.installedAgents.get(orgId).add(agentId);
 
-    this.emit('agent:installed', { agentId, tenantId, options, timestamp: new Date().toISOString() });
+    this.emit('agent:installed', { 
+      agentId, 
+      orgId, 
+      options, 
+      timestamp: new Date().toISOString() 
+    });
 
     return {
       success: true,
       agentId,
-      tenantId,
+      orgId,
       installedAt: new Date().toISOString(),
-      securityScore: agent.security.score
+      securityScore: agent.security.score,
+      verified: agent.verified
     };
+  }
+
+  /**
+   * Submit agent for approval
+   * @param {string} agentId - Agent ID
+   * @param {string} orgId - Organization ID
+   * @param {string} action - Action type (install, update, etc.)
+   * @returns {object} Approval request
+   */
+  async submitForApproval(agentId, orgId, action) {
+    const agent = this.agents.get(agentId);
+    if (!agent) {
+      throw new Error(`Agent ${agentId} not found`);
+    }
+
+    const approvalRequest = {
+      id: `approval_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`,
+      agentId,
+      orgId,
+      action,
+      status: 'pending',
+      submittedBy: orgId,
+      submittedAt: new Date().toISOString(),
+      reviewers: [],
+      approvals: [],
+      rejections: [],
+      comments: [],
+      metadata: {
+        agentName: agent.name,
+        agentVersion: agent.version,
+        securityScore: agent.security.score,
+        publisher: agent.publisherId
+      }
+    };
+
+    this.approvalQueue.set(approvalRequest.id, approvalRequest);
+
+    // Notify reviewers
+    this.emit('approval:submitted', approvalRequest);
+
+    return approvalRequest;
+  }
+
+  /**
+   * Approve an agent for installation
+   * @param {string} approvalId - Approval request ID
+   * @param {string} approverId - Approver ID
+   * @param {string} comment - Optional comment
+   * @returns {object} Updated approval request
+   */
+  async approveAgent(approvalId, approverId, comment = '') {
+    const approval = this.approvalQueue.get(approvalId);
+    if (!approval) {
+      throw new Error(`Approval request ${approvalId} not found`);
+    }
+
+    if (approval.status !== 'pending') {
+      throw new Error(`Approval request ${approvalId} is not pending`);
+    }
+
+    approval.status = 'approved';
+    approval.approvals.push({
+      approverId,
+      approvedAt: new Date().toISOString(),
+      comment
+    });
+
+    // Update agent to verified status
+    const agent = this.agents.get(approval.agentId);
+    if (agent) {
+      agent.verified = true;
+      agent.verifiedAt = new Date().toISOString();
+      
+      // Save updated agent
+      const agentPath = path.join(this.storagePath, agent.isPrivate ? 'private' : 'agents', `${approval.agentId}.json`);
+      await fs.writeFile(agentPath, JSON.stringify(agent, null, 2));
+    }
+
+    this.approvalQueue.set(approvalId, approval);
+    this.emit('approval:approved', approval);
+
+    return approval;
   }
 
   /**
@@ -199,6 +324,11 @@ class MarketplaceManager extends EventEmitter {
       /import\(['"`]\s*http\s*['"`]\)/i,
       /require\(['"`]\s*https\s*['"`]\)/i,
       /import\(['"`]\s*https\s*['"`]\)/i,
+      /import\(['"`]\s*crypto\s*['"`]\)/i,  // Could be used for key extraction
+      /process\.mainModule\.require/i,  // Dynamic require bypass
+      /global\[["']require["']\]/i,  // Dynamic require bypass
+      /Buffer\.from\([^)]*process\.env/i,  // Accessing environment variables
+      /JSON\.parse\([^)]*fs\.readFileSync/i,  // Reading files and parsing as JSON
     ];
 
     for (const pattern of dangerousPatterns) {
@@ -210,6 +340,11 @@ class MarketplaceManager extends EventEmitter {
         };
       }
     }
+
+    // Additional checks could include:
+    // - AST parsing to validate code structure
+    // - Sandboxing execution
+    // - Dependency analysis
 
     return {
       safe: true,
@@ -224,11 +359,20 @@ class MarketplaceManager extends EventEmitter {
    * @returns {Array<object>} Array of matching agents
    */
   searchAgents(query = {}) {
-    let results = Array.from(this.agents.values());
+    let results = query.privateOnly 
+      ? Array.from(this.privateRepos.get(query.orgId) || []).map(id => this.agents.get(id))
+      : Array.from(this.marketplace.values());
 
+    // Filter results based on query
     if (query.name) {
       results = results.filter(agent => 
         agent.name.toLowerCase().includes(query.name.toLowerCase())
+      );
+    }
+
+    if (query.publisherId) {
+      results = results.filter(agent => 
+        agent.publisherId === query.publisherId
       );
     }
 
@@ -238,9 +382,9 @@ class MarketplaceManager extends EventEmitter {
       );
     }
 
-    if (query.publisherId) {
+    if (query.tag) {
       results = results.filter(agent => 
-        agent.publisherId === query.publisherId
+        agent.tags.includes(query.tag)
       );
     }
 
@@ -256,22 +400,25 @@ class MarketplaceManager extends EventEmitter {
       );
     }
 
-    if (query.securityMin) {
+    if (query.verifiedOnly) {
       results = results.filter(agent => 
-        agent.security.score >= query.securityMin
+        agent.verified
       );
     }
 
     // Sort results
     if (query.sortBy === 'rating') {
-      results.sort((a, b) => b.rating - a.rating);
+      results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (query.sortBy === 'downloads') {
-      results.sort((a, b) => b.downloads - a.downloads);
+      results.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
     } else if (query.sortBy === 'newest') {
       results.sort((a, b) => new Date(b.metadata.publishedAt) - new Date(a.metadata.publishedAt));
+    } else if (query.sortBy === 'popular') {
+      // Sort by popularity (downloads * rating)
+      results.sort((a, b) => ((b.downloads || 0) * (b.rating || 0)) - ((a.downloads || 0) * (a.rating || 0)));
     } else {
       // Default sort: relevance (downloads * rating)
-      results.sort((a, b) => (b.downloads * b.rating) - (a.downloads * a.rating));
+      results.sort((a, b) => ((b.downloads || 0) * (b.rating || 0)) - ((a.downloads || 0) * (a.rating || 0)));
     }
 
     // Apply limit
@@ -279,7 +426,6 @@ class MarketplaceManager extends EventEmitter {
       results = results.slice(0, query.limit);
     }
 
-    // Return simplified agent objects
     return results.map(agent => ({
       id: agent.id,
       name: agent.name,
@@ -293,11 +439,15 @@ class MarketplaceManager extends EventEmitter {
       tags: agent.tags,
       security: {
         score: agent.security.score,
-        trusted: agent.security.trusted
+        trusted: agent.security.trusted,
+        verified: agent.verified
       },
       pricing: agent.pricing,
+      capabilities: agent.capabilities,
+      isPrivate: agent.isPrivate,
       isActive: agent.isActive,
-      publishedAt: agent.metadata.publishedAt
+      publishedAt: agent.metadata.publishedAt,
+      updatedAt: agent.updatedAt
     }));
   }
 
@@ -318,6 +468,7 @@ class MarketplaceManager extends EventEmitter {
       description: agent.description,
       version: agent.version,
       publisherId: agent.publisherId,
+      code: agent.code, // In production, this might be restricted
       metadata: agent.metadata,
       categories: agent.categories,
       tags: agent.tags,
@@ -327,17 +478,22 @@ class MarketplaceManager extends EventEmitter {
       security: agent.security,
       pricing: agent.pricing,
       permissions: agent.permissions,
-      isActive: agent.isActive
+      capabilities: agent.capabilities,
+      configSchema: agent.configSchema,
+      isPrivate: agent.isPrivate,
+      organizationId: agent.organizationId,
+      isActive: agent.isActive,
+      verified: agent.verified
     };
   }
 
   /**
-   * Get agents installed in a tenant
-   * @param {string} tenantId - Tenant ID
+   * Get all agents installed in an organization
+   * @param {string} orgId - Organization ID
    * @returns {Array<object>} Array of installed agents
    */
-  getTenantAgents(tenantId) {
-    const installedIds = this.installedAgents.get(tenantId) || new Set();
+  getInstalledAgents(orgId) {
+    const installedIds = this.installedAgents.get(orgId) || new Set();
     const installed = [];
 
     for (const agentId of installedIds) {
@@ -349,7 +505,8 @@ class MarketplaceManager extends EventEmitter {
           version: agent.version,
           publisherId: agent.publisherId,
           installedAt: agent.metadata.publishedAt, // This would be actual install time in real implementation
-          securityScore: agent.security.score
+          securityScore: agent.security.score,
+          verified: agent.verified
         });
       }
     }
@@ -363,7 +520,7 @@ class MarketplaceManager extends EventEmitter {
    * @param {string} userId - User ID rating
    * @param {number} rating - Rating (1-5)
    * @param {string} review - Optional review text
-   * @returns {object} Updated agent
+   * @returns {object} Updated agent with new rating
    */
   async rateAgent(agentId, userId, rating, review = '') {
     const agent = this.agents.get(agentId);
@@ -377,16 +534,19 @@ class MarketplaceManager extends EventEmitter {
 
     // In a real implementation, we'd store individual ratings and calculate average
     // For now, we'll just update the rating field directly
-    const oldRating = agent.rating;
-    const oldDownloads = agent.downloads;
+    const oldRating = agent.rating || 0;
+    const oldDownloads = agent.downloads || 0;
     
     // Simple average calculation (in real system, would store individual ratings)
-    agent.rating = Math.round((agent.rating * agent.downloads + rating) / (agent.downloads + 1));
-    agent.downloads++; // Count as a "download" for rating purposes
-    agent.metadata.lastUpdated = new Date().toISOString();
+    const totalRatings = (agent.downloads || 0) + 1;
+    const newRating = Math.round(((oldRating * oldDownloads) + rating) / totalRatings);
+    
+    agent.rating = newRating;
+    agent.downloads = (agent.downloads || 0) + 1;
+    agent.updatedAt = new Date().toISOString();
 
     // Save updated agent
-    const agentPath = path.join(this.storagePath, 'agents', `${agentId}.json`);
+    const agentPath = path.join(this.storagePath, agent.isPrivate ? 'private' : 'agents', `${agentId}.json`);
     await fs.writeFile(agentPath, JSON.stringify(agent, null, 2));
 
     this.emit('agent:rated', { 
@@ -402,20 +562,100 @@ class MarketplaceManager extends EventEmitter {
   }
 
   /**
+   * Get trending agents
+   * @param {number} limit - Number of agents to return
+   * @returns {Array<object>} Array of trending agents
+   */
+  getTrendingAgents(limit = 10) {
+    const allAgents = Array.from(this.marketplace.values());
+    
+    // Sort by recent downloads/activity
+    const trending = allAgents
+      .filter(agent => agent.isActive && agent.verified)
+      .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
+      .slice(0, limit);
+
+    return trending.map(agent => ({
+      id: agent.id,
+      name: agent.name,
+      description: agent.description,
+      publisherId: agent.publisherId,
+      rating: agent.rating,
+      downloads: agent.downloads,
+      categories: agent.categories,
+      tags: agent.tags,
+      security: {
+        score: agent.security.score,
+        trusted: agent.security.trusted
+      }
+    }));
+  }
+
+  /**
+   * Get featured agents
+   * @returns {Array<object>} Array of featured agents
+   */
+  getFeaturedAgents() {
+    const allAgents = Array.from(this.marketplace.values());
+    
+    // Featured agents are typically the most popular, highly rated, and trusted
+    const featured = allAgents
+      .filter(agent => agent.isActive && agent.verified && agent.security.trusted && (agent.rating || 0) >= 4)
+      .sort((a, b) => ((b.rating || 0) * (b.downloads || 0)) - ((a.rating || 0) * (a.downloads || 0)))
+      .slice(0, 6); // Top 6 featured agents
+
+    return featured.map(agent => ({
+      id: agent.id,
+      name: agent.name,
+      description: agent.description,
+      publisherId: agent.publisherId,
+      rating: agent.rating,
+      downloads: agent.downloads,
+      categories: agent.categories,
+      tags: agent.tags,
+      security: {
+        score: agent.security.score,
+        trusted: agent.security.trusted
+      }
+    }));
+  }
+
+  /**
    * Load all agents from disk
    * @private
    */
   async loadAgents() {
     try {
-      const agentFiles = await fs.readdir(path.join(this.storagePath, 'agents'));
-      
-      for (const file of agentFiles) {
+      // Load public agents
+      const publicAgentFiles = await fs.readdir(path.join(this.storagePath, 'agents'));
+      for (const file of publicAgentFiles) {
         if (file.endsWith('.json')) {
           const agentPath = path.join(this.storagePath, 'agents', file);
           const agentContent = await fs.readFile(agentPath, 'utf8');
           const agent = JSON.parse(agentContent);
           
           this.agents.set(agent.id, agent);
+          this.marketplace.set(agent.id, agent);
+        }
+      }
+
+      // Load private agents
+      const privateAgentFiles = await fs.readdir(path.join(this.storagePath, 'private'));
+      for (const file of privateAgentFiles) {
+        if (file.endsWith('.json')) {
+          const agentPath = path.join(this.storagePath, 'private', file);
+          const agentContent = await fs.readFile(agentPath, 'utf8');
+          const agent = JSON.parse(agentContent);
+          
+          this.agents.set(agent.id, agent);
+          
+          // Add to private repo for the organization
+          if (agent.organizationId) {
+            if (!this.privateRepos.has(agent.organizationId)) {
+              this.privateRepos.set(agent.organizationId, new Set());
+            }
+            this.privateRepos.get(agent.organizationId).add(agent.id);
+          }
         }
       }
     } catch (error) {
@@ -434,15 +674,17 @@ class MarketplaceManager extends EventEmitter {
     return {
       status: 'healthy',
       agentCount: this.agents.size,
+      publicAgentCount: this.marketplace.size,
+      privateAgentCount: Array.from(this.privateRepos.values()).reduce((sum, agents) => sum + agents.size, 0),
       installedCount: Array.from(this.installedAgents.values()).reduce((sum, agents) => sum + agents.size, 0),
-      trustedAgents: Array.from(this.agents.values()).filter(a => a.security.trusted).length,
+      approvalQueueSize: this.approvalQueue.size,
       timestamp: new Date().toISOString(),
     };
   }
 }
 
 // Export singleton instance
-export const marketplaceManager = new MarketplaceManager();
+export const agentMarketplace = new AgentMarketplace();
 
 // Export class for instantiation with custom options
-export default MarketplaceManager;
+export default AgentMarketplace;

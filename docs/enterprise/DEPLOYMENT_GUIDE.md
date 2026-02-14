@@ -1,57 +1,29 @@
 # Ultra-Dex Enterprise Deployment Guide
 
-## Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [Architecture Overview](#architecture-overview)
-3. [Installation](#installation)
-4. [Configuration](#configuration)
-5. [Security Setup](#security-setup)
-6. [Scaling & Performance](#scaling--performance)
-7. [Monitoring & Operations](#monitoring--operations)
-8. [Troubleshooting](#troubleshooting)
-9. [Best Practices](#best-practices)
+## Overview
 
-## Prerequisites
+This guide provides instructions for deploying Ultra-Dex in enterprise environments with security, compliance, and scalability requirements.
 
-### System Requirements
-- **CPU**: 8+ cores (16+ recommended for production)
-- **Memory**: 32GB+ RAM (64GB+ recommended for production)
-- **Storage**: 500GB+ SSD (1TB+ recommended for production)
-- **OS**: Linux (Ubuntu 22.04 LTS, CentOS 8+, RHEL 8+), macOS 13+, Windows Server 2022
-- **Node.js**: v18.17+ or v20.0+ (v20+ recommended)
-
-### Network Requirements
-- Outbound HTTPS access to AI providers (OpenAI, Anthropic, Google, etc.)
-- Inbound access for API requests (typically ports 80/443)
-- Optional: VPN access for private MCP servers
-
-### Security Prerequisites
-- Certificate authority for TLS termination
-- Identity provider for SSO (SAML/OIDC)
-- IAM roles and policies for cloud deployments
-- Network security groups/firewall rules
-
-## Architecture Overview
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Load Balancer                            │
-│                    (TLS Termination)                           │
+│                    Load Balancer / WAF                          │
 ├─────────────────────────────────────────────────────────────────┤
-│                        API Gateway                              │
+│                    API Gateway Layer                          │
 │                   (Authentication & Rate Limit)                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                    Ultra-Dex Cluster                            │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐              │
 │  │   Agent     │ │   Memory    │ │   MCP       │              │
 │  │  Orchestrator│ │   Manager   │ │   Server    │              │
-│  │             │ │             │ │             │              │
 │  └─────────────┘ └─────────────┘ └─────────────┘              │
 ├─────────────────────────────────────────────────────────────────┤
 │                    Data Layer                                 │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐              │
 │  │   PostgreSQL│ │   Redis     │ │   Object    │              │
 │  │   (Primary) │ │   (Cache)   │ │   Storage   │              │
+│  │   Cluster   │ │   Cluster   │ │   (S3)      │              │
 │  └─────────────┘ └─────────────┘ └─────────────┘              │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -64,75 +36,60 @@
 4. **API Gateway**: Authentication, rate limiting, and routing
 5. **Data Layer**: Persistent storage and caching
 
-## Installation
+## Prerequisites
+
+### Infrastructure Requirements
+- **Compute**: 8+ CPU cores, 32GB+ RAM (16 cores, 64GB RAM recommended for production)
+- **Storage**: 500GB+ SSD (1TB+ recommended for production)
+- **Network**: High-speed network with low latency
+- **OS**: Ubuntu 22.04 LTS, RHEL 8+, or Windows Server 2022
+
+### Security Prerequisites
+- **SSL Certificate**: Valid SSL certificate for HTTPS
+- **Identity Provider**: SAML 2.0 or OIDC compliant identity provider
+- **Network Security**: Firewall rules allowing necessary ports
+- **IAM Roles**: Proper permissions for cloud deployments
+
+### Compliance Prerequisites
+- **SOC 2**: Understanding of SOC 2 requirements
+- **GDPR**: Data residency and privacy requirements
+- **Audit Trail**: Requirements for audit logging and retention
+
+## Deployment Options
 
 ### Option 1: Docker Compose (Recommended for Production)
 
 ```bash
-# Clone the repository
-git clone https://github.com/ultra-dex/enterprise.git
-cd enterprise
+# Create deployment directory
+mkdir ultra-dex-enterprise && cd ultra-dex-enterprise
 
-# Configure environment variables
-cp .env.example .env
-# Edit .env with your configuration
+# Download enterprise configuration
+curl -o docker-compose.enterprise.yaml https://raw.githubusercontent.com/ultra-dex/enterprise/main/docker-compose.enterprise.yaml
 
-# Deploy with Docker Compose
-docker-compose -f docker-compose.enterprise.yaml up -d
-```
+# Create environment file
+cat > .env << EOF
+# Security Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+AUDIT_ENCRYPTION_KEY=your-audit-encryption-key
+ENCRYPTION_KEY=your-data-encryption-key
 
-### Option 2: Kubernetes (For Large-Scale Deployments)
+# SSO Configuration
+SAML_ENTRY_POINT=https://your-idp.com/sso/saml
+SAML_ISSUER=your-saml-issuer
+SAML_CERT=/path/to/certificate.pem
+SAML_CALLBACK_URL=https://your-domain.com/auth/saml/callback
 
-```bash
-# Add Ultra-Dex Helm repository
-helm repo add ultra-dex https://charts.ultra-dex.ai
-helm repo update
-
-# Install Ultra-Dex Enterprise
-helm install ultra-dex ultra-dex/ultra-dex-enterprise \
-  --namespace ultra-dex \
-  --create-namespace \
-  --values enterprise-values.yaml
-```
-
-### Option 3: Bare Metal/VM Deployment
-
-```bash
-# Install Node.js dependencies
-npm install -g ultra-dex@enterprise
-
-# Create system user
-sudo useradd -r -s /bin/false ultra-dex
-sudo mkdir -p /opt/ultra-dex /var/lib/ultra-dex /var/log/ultra-dex
-sudo chown ultra-dex:ultra-dex /opt/ultra-dex /var/lib/ultra-dex /var/log/ultra-dex
-
-# Configure systemd service
-sudo cp config/systemd/ultra-dex.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable ultra-dex
-sudo systemctl start ultra-dex
-```
-
-## Configuration
-
-### Environment Variables
-
-```bash
-# Core Configuration
-ULTRADEX_MODE=enterprise
-ULTRADEX_CLUSTER_MODE=true
-ULTRADEX_NODE_ID=node-1
-ULTRADEX_SHARED_SECRET=your-super-secret-here
+OIDC_ISSUER_URL=https://your-idp.com
+OIDC_CLIENT_ID=your-oidc-client-id
+OIDC_CLIENT_SECRET=your-oidc-client-secret
+OIDC_REDIRECT_URI=https://your-domain.com/auth/oidc/callback
 
 # Database Configuration
 DATABASE_URL=postgresql://user:password@primary-db:5432/ultra_dex
 DATABASE_REPLICA_URL=postgresql://user:password@replica-db:5432/ultra_dex
-REDIS_URL=redis://cache-cluster:6379
 
-# Security Configuration
-JWT_SECRET=your-jwt-secret-here
-ENCRYPTION_KEY=your-encryption-key-here
-AUDIT_LOG_LEVEL=info
+# Cache Configuration
+REDIS_URL=redis://cache-cluster:6379
 
 # AI Provider Configuration
 OPENAI_API_KEY=your-openai-key
@@ -149,90 +106,92 @@ MAX_BODY_SIZE=50mb
 MAX_CONCURRENT_AGENTS=50
 MEMORY_CACHE_SIZE=1gb
 AGENT_TIMEOUT=300s
+EOF
+
+# Deploy with Docker Compose
+docker-compose -f docker-compose.enterprise.yaml up -d
 ```
 
-### Configuration File (config/enterprise.yaml)
+### Option 2: Kubernetes (For Large-Scale Deployments)
 
-```yaml
-server:
-  host: 0.0.0.0
-  port: 443
-  ssl:
-    enabled: true
-    certificate: /path/to/certificate.pem
-    key: /path/to/private-key.pem
-  cors:
-    origin: https://your-domain.com
-    credentials: true
+```bash
+# Add Ultra-Dex Helm repository
+helm repo add ultra-dex https://charts.ultra-dex.ai
+helm repo update
 
-database:
-  primary:
-    url: postgresql://user:password@primary-db:5432/ultra_dex
-    poolSize: 20
-  replica:
-    url: postgresql://user:password@replica-db:5432/ultra_dex
-    poolSize: 10
+# Create namespace
+kubectl create namespace ultra-dex
 
-cache:
-  redis:
-    url: redis://cache-cluster:6379
-    ttl: 3600
-    maxMemory: 2gb
+# Create secrets
+kubectl create secret generic ultra-dex-secrets \
+  --namespace ultra-dex \
+  --from-literal=jwt-secret=$(openssl rand -base64 32) \
+  --from-literal=audit-encryption-key=$(openssl rand -base64 32) \
+  --from-literal=encryption-key=$(openssl rand -base64 32) \
+  --from-literal=openai-api-key=your-openai-key \
+  --from-literal=anthropic-api-key=your-anthropic-key
 
-security:
-  jwt:
-    secret: your-jwt-secret
-    expiresIn: 24h
-  encryption:
-    algorithm: aes-256-gcm
-    keyRotationDays: 30
-  audit:
-    enabled: true
-    retentionDays: 90
-    logLevel: info
-
-aiProviders:
-  openai:
-    enabled: true
-    apiKey: ${OPENAI_API_KEY}
-    models:
-      - gpt-4o-2024-11-20
-      - gpt-4o-mini
-  anthropic:
-    enabled: true
-    apiKey: ${ANTHROPIC_API_KEY}
-    models:
-      - claude-3-5-sonnet-latest
-      - claude-3-haiku-20240307
-
-agents:
-  defaultConcurrency: 50
-  maxRetries: 3
-  timeout: 300000
-  sandbox:
-    enabled: true
-    allowNetwork: false
-    maxMemory: 1gb
-    maxRuntime: 300000
-
-logging:
-  level: info
-  format: json
-  file:
-    enabled: true
-    path: /var/log/ultra-dex/app.log
-    maxSize: 100mb
-    maxFiles: 10
-  loki:
-    enabled: false
-    url: http://loki:3100
+# Install Ultra-Dex Enterprise
+helm install ultra-dex ultra-dex/ultra-dex-enterprise \
+  --namespace ultra-dex \
+  --values enterprise-values.yaml
 ```
 
-## Security Setup
+### Option 3: Bare Metal/VM Deployment
 
-### 1. Identity & Access Management
+```bash
+# Install dependencies
+sudo apt-get update
+sudo apt-get install -y nodejs npm docker.io docker-compose postgresql redis-server
 
-#### SSO Configuration (SAML 2.0)
+# Create system user
+sudo useradd -r -s /bin/false ultra-dex
+sudo mkdir -p /opt/ultra-dex /var/lib/ultra-dex /var/log/ultra-dex
+sudo chown ultra-dex:ultra-dex /opt/ultra-dex /var/lib/ultra-dex /var/log/ultra-dex
+
+# Install Ultra-Dex
+sudo -u ultra-dex npm install -g @ultra-dex/enterprise
+
+# Configure systemd service
+sudo tee /etc/systemd/system/ultra-dex.service << EOF
+[Unit]
+Description=Ultra-Dex Enterprise Service
+After=network.target
+
+[Service]
+Type=simple
+User=ultra-dex
+Group=ultra-dex
+WorkingDirectory=/opt/ultra-dex
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+EnvironmentFile=/opt/ultra-dex/.env
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start service
+sudo systemctl daemon-reload
+sudo systemctl enable ultra-dex
+sudo systemctl start ultra-dex
+```
+
+## Configuration
+
+### Security Configuration
+
+#### SSL/TLS Setup
+```bash
+# Generate self-signed certificate (for testing only)
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+
+# For production, obtain certificate from CA
+# certbot certonly --standalone -d your-domain.com
+```
+
+#### SSO Integration
 ```bash
 # Configure SAML with your identity provider
 ultra-dex config sso \
@@ -240,10 +199,7 @@ ultra-dex config sso \
   --entity-id https://your-domain.com \
   --acs-url https://your-domain.com/auth/saml/callback \
   --idp-metadata-url https://your-idp.com/metadata.xml
-```
 
-#### OIDC Configuration
-```bash
 # Configure OIDC with your identity provider
 ultra-dex config sso \
   --provider oidc \
@@ -253,149 +209,92 @@ ultra-dex config sso \
   --redirect-uri https://your-domain.com/auth/oidc/callback
 ```
 
-### 2. Network Security
+### Database Setup
 
-#### Firewall Rules
-```bash
-# Required inbound ports
-- 443/tcp: HTTPS API access
-- 80/tcp: HTTP redirect to HTTPS
-- 22/tcp: SSH (if needed for administration)
-
-# Required outbound ports
-- 443/tcp: AI provider APIs
-- 5432/tcp: PostgreSQL (if external)
-- 6379/tcp: Redis (if external)
-- 53/udp: DNS resolution
-```
-
-#### TLS Configuration
-```nginx
-# Nginx configuration for TLS termination
-server {
-    listen 443 ssl http2;
-    server_name your-domain.com;
-
-    ssl_certificate /path/to/certificate.pem;
-    ssl_certificate_key /path/to/private-key.pem;
-    ssl_protocols TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
-    ssl_prefer_server_ciphers off;
-
-    location / {
-        proxy_pass http://ultra-dex-backend;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-### 3. Data Protection
-
-#### Encryption at Rest
-```bash
-# Enable transparent data encryption for PostgreSQL
-ALTER SYSTEM SET ssl = 'on';
-ALTER SYSTEM SET ssl_cert_file = '/path/to/server.crt';
-ALTER SYSTEM SET ssl_key_file = '/path/to/server.key';
-SELECT pg_reload_conf();
-```
-
-#### Backup Encryption
-```bash
-# Configure encrypted backups
-BACKUP_ENCRYPTION_KEY=your-backup-encryption-key
-BACKUP_RETENTION_DAYS=90
-BACKUP_SCHEDULE="0 2 * * *"  # Daily at 2 AM
-```
-
-## Scaling & Performance
-
-### Horizontal Scaling
-
-#### Cluster Configuration
-```yaml
-# cluster.yaml
-cluster:
-  mode: true
-  nodes:
-    - id: node-1
-      host: ultra-dex-1.internal
-      port: 4000
-    - id: node-2
-      host: ultra-dex-2.internal
-      port: 4000
-    - id: node-3
-      host: ultra-dex-3.internal
-      port: 4000
-  loadBalancer: round-robin
-  failover:
-    enabled: true
-    timeout: 30s
-```
-
-#### Auto-scaling with Kubernetes
-```yaml
-# autoscaler.yaml
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: ultra-dex-agents
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: ultra-dex-agents
-  minReplicas: 3
-  maxReplicas: 20
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
-```
-
-### Performance Tuning
-
-#### Database Optimization
+#### PostgreSQL Configuration
 ```sql
--- PostgreSQL performance settings
-ALTER SYSTEM SET shared_buffers = '8GB';
-ALTER SYSTEM SET effective_cache_size = '24GB';
-ALTER SYSTEM SET work_mem = '32MB';
-ALTER SYSTEM SET maintenance_work_mem = '2GB';
-ALTER SYSTEM SET checkpoint_completion_target = 0.9;
-ALTER SYSTEM SET wal_buffers = '16MB';
-ALTER SYSTEM SET default_statistics_target = 100;
-SELECT pg_reload_conf();
+-- Create database and user
+CREATE DATABASE ultra_dex;
+CREATE USER ultra_dex_user WITH PASSWORD 'secure_password';
+GRANT ALL PRIVILEGES ON DATABASE ultra_dex TO ultra_dex_user;
+
+-- Enable extensions for advanced features
+\c ultra_dex
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
+
+-- Create tables for Ultra-Dex
+CREATE TABLE agents (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  status VARCHAR(50) DEFAULT 'active',
+  config JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE memory (
+  id VARCHAR(255) PRIMARY KEY,
+  content TEXT NOT NULL,
+  type VARCHAR(50) DEFAULT 'observation',
+  tier VARCHAR(10) DEFAULT 'hot',
+  importance INTEGER DEFAULT 5,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE audit_log (
+  id SERIAL PRIMARY KEY,
+  event VARCHAR(255) NOT NULL,
+  actor_id VARCHAR(255),
+  actor_name VARCHAR(255),
+  ip_address INET,
+  details JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for performance
+CREATE INDEX idx_agents_status ON agents(status);
+CREATE INDEX idx_memory_type ON memory(type);
+CREATE INDEX idx_memory_tier ON memory(tier);
+CREATE INDEX idx_memory_importance ON memory(importance);
+CREATE INDEX idx_audit_event ON audit_log(event);
+CREATE INDEX idx_audit_created_at ON audit_log(created_at);
 ```
 
-#### Memory Optimization
+#### Redis Configuration
 ```bash
-# JVM/Node.js optimization
-NODE_OPTIONS="--max-old-space-size=16384 --experimental-global-webcrypto"
-ULTRADEX_MEMORY_HOT_TTL=3600
-ULTRADEX_MEMORY_WARM_TTL=86400
-ULTRADEX_MEMORY_COLD_TTL=2592000
+# Configure Redis for security and performance
+echo "bind 127.0.0.1" >> /etc/redis/redis.conf
+echo "requirepass your-redis-password" >> /etc/redis/redis.conf
+echo "maxmemory 2gb" >> /etc/redis/redis.conf
+echo "maxmemory-policy allkeys-lru" >> /etc/redis/redis.conf
+
+sudo systemctl restart redis
 ```
 
 ## Monitoring & Operations
 
-### 1. Infrastructure Monitoring
+### Health Checks
+```bash
+# Check system health
+curl -s https://your-domain.com/health
 
-#### Prometheus Configuration
-```yaml
-# prometheus.yaml
+# Check specific components
+curl -s https://your-domain.com/api/v1/health/agents
+curl -s https://your-domain.com/api/v1/health/memory
+curl -s https://your-domain.com/api/v1/health/providers
+```
+
+### Metrics Collection
+```bash
+# Prometheus metrics endpoint
+curl -s https://your-domain.com/metrics
+
+# Example Prometheus configuration
 scrape_configs:
   - job_name: 'ultra-dex'
     static_configs:
@@ -404,141 +303,185 @@ scrape_configs:
     scrape_interval: 15s
 ```
 
-#### Key Metrics to Monitor
-- `ultra_dex_agents_active` - Active agents
-- `ultra_dex_memory_utilization` - Memory usage percentage
-- `ultra_dex_api_requests_total` - Total API requests
-- `ultra_dex_api_request_duration_seconds` - Request duration
-- `ultra_dex_cost_daily` - Daily costs
-- `ultra_dex_security_incidents_total` - Security incidents
-
-### 2. Log Management
-
-#### Centralized Logging
+### Log Management
 ```bash
-# Configure Fluent Bit for log forwarding
-[SERVICE]
-    Flush         1
-    Log_Level     info
-    Daemon        off
-    Parsers_File  parsers.conf
+# Access application logs
+tail -f /var/log/ultra-dex/app.log
 
-[INPUT]
-    Name              tail
-    Path              /var/log/ultra-dex/*.log
-    Parser            json
-    Refresh_Interval  5
+# Access audit logs
+tail -f /var/log/ultra-dex/audit.log
 
-[OUTPUT]
-    Name  forward
-    Match *
-    Host  log-aggregator
-    Port  24224
+# Set up log rotation
+cat > /etc/logrotate.d/ultra-dex << EOF
+/var/log/ultra-dex/*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}
+EOF
 ```
 
-### 3. Alerting
+## Security & Compliance
 
-#### Alert Rules (Prometheus)
-```yaml
-groups:
-- name: ultra-dex.rules
-  rules:
-  - alert: UltraDexHighErrorRate
-    expr: rate(ultra_dex_api_requests_total{status=~"5.."}[5m]) > 0.1
-    for: 2m
-    labels:
-      severity: critical
-    annotations:
-      summary: "Ultra-Dex high error rate"
-      description: "More than 10% of requests are failing for more than 2 minutes"
+### Audit Logging
+```bash
+# Verify audit logging is working
+tail -f /var/log/ultra-dex/audit.log | jq
 
-  - alert: UltraDexHighLatency
-    expr: histogram_quantile(0.95, ultra_dex_api_request_duration_seconds_bucket) > 2
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: "Ultra-Dex high latency"
-      description: "95th percentile latency is above 2 seconds"
+# Check for specific events
+grep "auth.login.success" /var/log/ultra-dex/audit.log
+```
+
+### Compliance Reports
+```bash
+# Generate SOC 2 compliance report
+ultra-dex compliance report --type soc2
+
+# Generate GDPR compliance report
+ultra-dex compliance report --type gdpr
+
+# Generate HIPAA compliance report (if applicable)
+ultra-dex compliance report --type hipaa
+```
+
+### Security Scanning
+```bash
+# Run security audit
+ultra-dex security audit
+
+# Check for vulnerabilities
+npm audit --audit-level high
+
+# Verify encryption
+ultra-dex security verify --encryption
+```
+
+## Scaling & Performance
+
+### Horizontal Scaling
+```bash
+# Add more nodes to the cluster
+kubectl scale deployment ultra-dex --replicas=5
+
+# Configure load balancer
+# Update your load balancer to include new nodes
+```
+
+### Performance Tuning
+```bash
+# Database performance tuning
+echo "shared_buffers = 8GB" >> /etc/postgresql/*/main/postgresql.conf
+echo "effective_cache_size = 24GB" >> /etc/postgresql/*/main/postgresql.conf
+echo "work_mem = 32MB" >> /etc/postgresql/*/main/postgresql.conf
+sudo systemctl restart postgresql
+
+# Application performance tuning
+export MAX_CONCURRENT_AGENTS=100
+export MEMORY_CACHE_SIZE=4gb
+export AGENT_TIMEOUT=600s
+```
+
+## Backup & Recovery
+
+### Backup Strategy
+```bash
+# Create backup script
+cat > /usr/local/bin/ultra-dex-backup.sh << EOF
+#!/bin/bash
+DATE=\$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/opt/ultra-dex/backups/\$DATE"
+
+mkdir -p \$BACKUP_DIR
+
+# Backup database
+pg_dump ultra_dex > \$BACKUP_DIR/database.sql
+
+# Backup configuration
+cp -r /opt/ultra-dex/config \$BACKUP_DIR/
+
+# Backup audit logs
+cp -r /var/log/ultra-dex/audit \$BACKUP_DIR/
+
+# Encrypt backup
+tar -czf \$BACKUP_DIR.tar.gz -C /opt/ultra-dex/backups \$DATE
+openssl enc -aes-256-cbc -salt -in \$BACKUP_DIR.tar.gz -out \$BACKUP_DIR.tar.gz.enc -k \$BACKUP_ENCRYPTION_KEY
+
+# Clean up temporary files
+rm -rf \$BACKUP_DIR
+
+echo "Backup completed: \$BACKUP_DIR.tar.gz.enc"
+EOF
+
+chmod +x /usr/local/bin/ultra-dex-backup.sh
+
+# Schedule backups
+echo "0 2 * * * root /usr/local/bin/ultra-dex-backup.sh" >> /etc/crontab
+```
+
+### Recovery Process
+```bash
+# In case of disaster, restore from backup
+ultra-dex-restore.sh --backup-path /path/to/backup.tar.gz.enc --encryption-key your-key
+
+# Verify system after recovery
+ultra-dex doctor
 ```
 
 ## Troubleshooting
 
 ### Common Issues
-
-#### 1. Agent Connection Issues
 ```bash
-# Check agent connectivity
-ultra-dex debug agents --status
-
-# Verify MCP server status
-ultra-dex debug mcp --status
-
-# Check network connectivity
-telnet ai-provider-api.com 443
-```
-
-#### 2. Performance Issues
-```bash
-# Check system resources
-top -p $(pgrep ultra-dex)
-df -h /var/lib/ultra-dex
-iostat -x 1 5
-
-# Check database performance
-EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM agents WHERE status = 'active';
-```
-
-#### 3. Security Issues
-```bash
-# Check audit logs
-tail -f /var/log/ultra-dex/audit.log
-
-# Verify encryption
-ultra-dex security verify --encryption
-ultra-dex security verify --certificates
-```
-
-### Diagnostic Commands
-```bash
-# System health check
+# Check system status
 ultra-dex doctor
 
-# Configuration validation
+# Verify configuration
 ultra-dex config validate
+
+# Check connectivity
+ultra-dex debug connectivity
 
 # Performance diagnostics
 ultra-dex debug performance
+```
 
-# Security audit
-ultra-dex security audit
+### Enterprise Support
+```bash
+# For enterprise support, contact:
+# Email: enterprise-support@ultra-dex.ai
+# Phone: 1-800-ULTRA-DEX
+# Portal: https://support.ultra-dex.ai
 ```
 
 ## Best Practices
 
-### 1. Security Best Practices
-- Enable MFA for all administrative accounts
-- Use short-lived API keys with rotation
+### Security Best Practices
+- Regular security audits and penetration testing
+- Keep all dependencies updated
+- Monitor for security events and anomalies
 - Implement network segmentation
-- Regular security assessments and penetration testing
-- Monitor for anomalous access patterns
+- Use dedicated hardware for sensitive operations
 
-### 2. Performance Best Practices
-- Use CDN for static assets
-- Implement caching strategies
+### Performance Best Practices
+- Monitor resource utilization regularly
+- Implement proper caching strategies
 - Optimize database queries
-- Monitor resource utilization
+- Use connection pooling
 - Plan for capacity growth
 
-### 3. Operational Best Practices
-- Implement comprehensive backup strategies
-- Establish incident response procedures
-- Regular system updates and patching
-- Monitor SLA compliance
-- Document operational procedures
+### Compliance Best Practices
+- Regular compliance audits
+- Maintain audit logs for required retention periods
+- Implement data classification
+- Train staff on compliance requirements
+- Document all processes and procedures
 
 ---
 
 **Document Version**: 6.0.0  
+**Classification**: Enterprise Customers  
 **Last Updated**: February 13, 2026  
 **Next Review**: May 13, 2026

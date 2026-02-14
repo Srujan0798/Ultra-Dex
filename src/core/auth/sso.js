@@ -1,9 +1,11 @@
 /**
- * Ultra-Dex Enterprise Authentication System
- * SSO, MFA, and RBAC implementation
+ * Ultra-Dex Enterprise Authentication Module
+ * SAML 2.0 and OIDC integration for enterprise SSO
  */
 
 import passport from 'passport';
+import { Strategy as SamlStrategy } from 'passport-saml';
+import { Issuer } from 'openid-client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -36,10 +38,10 @@ class EnterpriseAuth extends EventEmitter {
     this.permissions = new Map(); // permissionId -> permissionData
     this.mfaDevices = new Map(); // userId -> mfaData
     this.backupCodes = new Map(); // userId -> [codes]
-
+    
     this.samlStrategy = null;
     this.oidcStrategy = null;
-
+    
     this.initializeAuthStrategies();
     this.initializeDefaultRoles();
   }
@@ -67,8 +69,8 @@ class EnterpriseAuth extends EventEmitter {
               done(error);
             }
           });
-
-          passport.use(this.samlStrategy);
+          
+          passport.use('saml', this.samlStrategy);
         } catch (error) {
           console.warn('SAML strategy not available:', error.message);
         }
@@ -76,7 +78,32 @@ class EnterpriseAuth extends EventEmitter {
 
       // OIDC Strategy (dynamic import)
       if (this.options.ssoConfig.oidc) {
-        await this.initializeOidcStrategy();
+        try {
+          const { Issuer } = await import('openid-client');
+          const issuer = await Issuer.discover(this.options.ssoConfig.oidc.issuerUrl);
+          const client = new issuer.Client({
+            client_id: this.options.ssoConfig.oidc.clientId,
+            client_secret: this.options.ssoConfig.oidc.clientSecret,
+            redirect_uris: [this.options.ssoConfig.oidc.redirectUri],
+            response_types: ['code'],
+          });
+
+          this.oidcStrategy = new OIDCStrategy({
+            client,
+            params: { scope: 'openid profile email' },
+          }, async (tokenSet, userinfo, done) => {
+            try {
+              const user = await this.handleOidcLogin(userinfo, tokenSet);
+              done(null, user);
+            } catch (error) {
+              done(error);
+            }
+          });
+          
+          passport.use('oidc', this.oidcStrategy);
+        } catch (error) {
+          console.warn('OIDC strategy not available:', error.message);
+        }
       }
     }
 
@@ -96,36 +123,118 @@ class EnterpriseAuth extends EventEmitter {
   }
 
   /**
-   * Initialize OIDC strategy
+   * Initialize default roles
    */
-  async initializeOidcStrategy() {
-    try {
-      const { Issuer } = await import('openid-client');
-      const { Strategy: OIDCStrategy } = await import('passport-openidconnect');
+  initializeDefaultRoles() {
+    // Define role hierarchy and permissions
+    const roles = {
+      'viewer': {
+        name: 'Viewer',
+        description: 'Can view but not modify anything',
+        permissions: [
+          'system:read',
+          'agent:read',
+          'memory:read',
+          'memory:search',
+          'project:read',
+          'user:read',
+          'config:read',
+          'audit:read',
+          'security:read'
+        ],
+        inherits: []
+      },
+      'developer': {
+        name: 'Developer',
+        description: 'Can develop and execute agents',
+        permissions: [
+          'system:read',
+          'agent:read',
+          'agent:create',
+          'agent:execute',
+          'memory:read',
+          'memory:write',
+          'memory:search',
+          'project:read',
+          'project:create',
+          'user:read',
+          'config:read',
+          'audit:read',
+          'security:read'
+        ],
+        inherits: ['viewer']
+      },
+      'manager': {
+        name: 'Manager',
+        description: 'Can manage projects and teams',
+        permissions: [
+          'system:read',
+          'agent:read',
+          'agent:create',
+          'agent:update',
+          'agent:execute',
+          'memory:read',
+          'memory:write',
+          'memory:search',
+          'project:read',
+          'project:create',
+          'project:update',
+          'user:read',
+          'config:read',
+          'audit:read',
+          'security:read'
+        ],
+        inherits: ['developer', 'viewer']
+      },
+      'admin': {
+        name: 'Administrator',
+        description: 'Full administrative access',
+        permissions: [
+          'system:read',
+          'system:write',
+          'system:admin',
+          'agent:read',
+          'agent:create',
+          'agent:update',
+          'agent:delete',
+          'agent:execute',
+          'memory:read',
+          'memory:write',
+          'memory:delete',
+          'memory:search',
+          'project:read',
+          'project:create',
+          'project:update',
+          'project:delete',
+          'user:read',
+          'user:create',
+          'user:update',
+          'user:delete',
+          'config:read',
+          'config:write',
+          'config:admin',
+          'audit:read',
+          'audit:write',
+          'audit:admin',
+          'security:read',
+          'security:write',
+          'security:admin',
+          'billing:read',
+          'billing:write',
+          'billing:admin'
+        ],
+        inherits: ['manager', 'developer', 'viewer']
+      },
+      'owner': {
+        name: 'Owner',
+        description: 'Complete system access with no restrictions',
+        permissions: ['*:*'], // All permissions
+        inherits: ['admin', 'manager', 'developer', 'viewer']
+      }
+    };
 
-      const issuer = await Issuer.discover(this.options.ssoConfig.oidc.issuerUrl);
-      const client = new issuer.Client({
-        client_id: this.options.ssoConfig.oidc.clientId,
-        client_secret: this.options.ssoConfig.oidc.clientSecret,
-        redirect_uris: [this.options.ssoConfig.oidc.redirectUri],
-        response_types: ['code'],
-      });
-
-      this.oidcStrategy = new OIDCStrategy({
-        client,
-        params: { scope: 'openid profile email' },
-      }, async (tokenSet, userinfo, done) => {
-        try {
-          const user = await this.handleOidcLogin(userinfo, tokenSet);
-          done(null, user);
-        } catch (error) {
-          done(error);
-        }
-      });
-
-      passport.use('oidc', this.oidcStrategy);
-    } catch (error) {
-      console.warn('OIDC strategy not available:', error.message);
+    for (const [roleId, roleData] of Object.entries(roles)) {
+      this.roles.set(roleId, roleData);
     }
   }
 
@@ -136,7 +245,7 @@ class EnterpriseAuth extends EventEmitter {
    */
   async handleSamlLogin(profile) {
     const user = {
-      id: profile.uid || profile.nameID,
+      id: profile.uid || profile.nameID || crypto.randomUUID(),
       email: profile.email || profile.mail || profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
       firstName: profile.firstName || profile.givenName || profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/firstname'],
       lastName: profile.lastName || profile.surname || profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/lastname'],
@@ -166,7 +275,7 @@ class EnterpriseAuth extends EventEmitter {
    */
   async handleOidcLogin(userinfo, tokenSet) {
     const user = {
-      id: userinfo.sub,
+      id: userinfo.sub || crypto.randomUUID(),
       email: userinfo.email,
       firstName: userinfo.given_name,
       lastName: userinfo.family_name,
@@ -197,11 +306,11 @@ class EnterpriseAuth extends EventEmitter {
    */
   mapGroupsToRoles(groups = []) {
     const roleMappings = {
-      'admin': ['Admin', 'Administrator', 'SuperUser', 'IT Admin'],
-      'manager': ['Manager', 'Lead', 'Supervisor', 'Team Lead'],
-      'developer': ['Developer', 'Engineer', 'Coder', 'Programmer'],
-      'viewer': ['Viewer', 'Guest', 'ReadOnly', 'Auditor'],
-      'security': ['Security', 'Compliance', 'SOC', 'InfoSec']
+      'admin': ['Admin', 'Administrator', 'SuperUser', 'IT Admin', 'Admins'],
+      'manager': ['Manager', 'Lead', 'Supervisor', 'Team Lead', 'Managers'],
+      'developer': ['Developer', 'Engineer', 'Coder', 'Programmer', 'Developers'],
+      'viewer': ['Viewer', 'Guest', 'ReadOnly', 'Auditor', 'Readers'],
+      'security': ['Security', 'Compliance', 'SOC', 'InfoSec', 'SecurityTeam']
     };
 
     const roles = new Set();
@@ -213,8 +322,8 @@ class EnterpriseAuth extends EventEmitter {
       }
     }
 
-    // Add default 'user' role
-    roles.add('user');
+    // Add default 'viewer' role
+    roles.add('viewer');
     return Array.from(roles);
   }
 
@@ -328,86 +437,6 @@ class EnterpriseAuth extends EventEmitter {
   async logoutSession(sessionId) {
     this.sessions.delete(sessionId);
     this.emit('logout', { sessionId, timestamp: new Date().toISOString() });
-  }
-
-  /**
-   * Initialize default roles
-   */
-  initializeDefaultRoles() {
-    // Define role hierarchy and permissions
-    const roles = {
-      'owner': {
-        name: 'Owner',
-        description: 'Full administrative access',
-        permissions: ['*:*'], // All permissions
-        inherits: ['admin']
-      },
-      'admin': {
-        name: 'Administrator',
-        description: 'Administrative access',
-        permissions: [
-          'system:*',
-          'user:manage',
-          'org:manage',
-          'agent:manage',
-          'memory:manage',
-          'config:manage'
-        ],
-        inherits: ['manager']
-      },
-      'manager': {
-        name: 'Manager',
-        description: 'Project and team management',
-        permissions: [
-          'project:create',
-          'project:read',
-          'project:update',
-          'project:delete',
-          'team:manage',
-          'agent:read',
-          'agent:execute'
-        ],
-        inherits: ['developer']
-      },
-      'developer': {
-        name: 'Developer',
-        description: 'Development access',
-        permissions: [
-          'agent:read',
-          'agent:execute',
-          'memory:read',
-          'memory:write',
-          'code:read',
-          'code:write'
-        ],
-        inherits: ['viewer']
-      },
-      'viewer': {
-        name: 'Viewer',
-        description: 'Read-only access',
-        permissions: [
-          'project:read',
-          'agent:read',
-          'memory:read',
-          'audit:read'
-        ],
-        inherits: []
-      },
-      'auditor': {
-        name: 'Auditor',
-        description: 'Audit and compliance access',
-        permissions: [
-          'audit:read',
-          'log:read',
-          'compliance:read'
-        ],
-        inherits: []
-      }
-    };
-
-    for (const [roleId, roleData] of Object.entries(roles)) {
-      this.roles.set(roleId, roleData);
-    }
   }
 
   /**
@@ -540,70 +569,6 @@ class EnterpriseAuth extends EventEmitter {
   }
 
   /**
-   * Create an API key for a user
-   * @param {string} userId - User ID
-   * @param {object} options - API key options
-   * @returns {object} API key object
-   */
-  async createApiKey(userId, options = {}) {
-    const user = await this.getUserById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    const apiKey = {
-      id: `api_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`,
-      key: `udx_${crypto.randomBytes(32).toString('hex')}`,
-      userId,
-      name: options.name || 'Default API Key',
-      permissions: options.permissions || user.roles.flatMap(role => this.roles.get(role)?.permissions || []),
-      createdAt: new Date().toISOString(),
-      expiresAt: options.expiresAt || null,
-      lastUsedAt: null,
-      usageCount: 0,
-      isActive: true
-    };
-
-    // In production, this would be stored securely
-    if (!user.apiKeys) user.apiKeys = [];
-    user.apiKeys.push(apiKey);
-
-    return apiKey;
-  }
-
-  /**
-   * Validate an API key
-   * @param {string} key - API key
-   * @returns {object} User and API key object if valid
-   */
-  async validateApiKey(key) {
-    if (!key || typeof key !== 'string') {
-      return null;
-    }
-
-    // Find user with this API key
-    for (const [userId, user] of this.users) {
-      if (user.apiKeys) {
-        const apiKey = user.apiKeys.find(k => k.key === key && k.isActive);
-        if (apiKey) {
-          if (apiKey.expiresAt && new Date() > new Date(apiKey.expiresAt)) {
-            apiKey.isActive = false;
-            return null;
-          }
-
-          // Update usage stats
-          apiKey.lastUsedAt = new Date().toISOString();
-          apiKey.usageCount++;
-          
-          return { user, apiKey };
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /**
    * Get user's organizations
    * @param {string} userId - User ID
    * @returns {Array<object>} Organizations
@@ -633,7 +598,57 @@ class EnterpriseAuth extends EventEmitter {
   }
 
   /**
-   * Get authentication health information
+   * Get all available roles
+   * @returns {Array<string>} Array of role names
+   */
+  getAllRoles() {
+    return Array.from(this.roles.keys());
+  }
+
+  /**
+   * Get role definition
+   * @param {string} roleId - Role ID
+   * @returns {object} Role definition
+   */
+  getRole(roleId) {
+    return this.roles.get(roleId);
+  }
+
+  /**
+   * Get all permissions for a user (including inherited)
+   * @param {string} userId - User ID
+   * @returns {Array<string>} Array of permissions
+   */
+  getUserPermissions(userId) {
+    const user = this.users.get(userId);
+    if (!user) {
+      return [];
+    }
+
+    const permissions = new Set();
+
+    // Add permissions from direct roles
+    for (const roleName of user.roles) {
+      const role = this.roles.get(roleName);
+      if (role) {
+        role.permissions.forEach(perm => permissions.add(perm));
+      }
+
+      // Add permissions from inherited roles
+      const hierarchy = this.getInheritedRoles(roleName);
+      for (const inheritedRole of hierarchy) {
+        const inheritedRoleData = this.roles.get(inheritedRole);
+        if (inheritedRoleData) {
+          inheritedRoleData.permissions.forEach(perm => permissions.add(perm));
+        }
+      }
+    }
+
+    return Array.from(permissions);
+  }
+
+  /**
+   * Get system health information
    * @returns {object} Health information
    */
   getHealth() {

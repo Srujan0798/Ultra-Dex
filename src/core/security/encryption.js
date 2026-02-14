@@ -66,15 +66,15 @@ class DataEncryption {
   async encrypt(data, key = null) {
     const useKey = key || this.masterKey;
     const iv = crypto.randomBytes(IV_LENGTH);
-    
-    const cipher = crypto.createCipher(ALGORITHM, useKey);
+
+    const cipher = crypto.createCipheriv(ALGORITHM, useKey, iv);
     cipher.setAAD(Buffer.from('ultra-dex-audited-data')); // Additional Authenticated Data
-    
+
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     const authTag = cipher.getAuthTag();
-    
+
     return {
       data: encrypted,
       iv: iv.toString('hex'),
@@ -91,14 +91,14 @@ class DataEncryption {
    */
   async decrypt(encryptedData, key = null) {
     const useKey = key || this.masterKey;
-    
-    const decipher = crypto.createDecipher(ALGORITHM, useKey);
+
+    const decipher = crypto.createDecipheriv(ALGORITHM, useKey, Buffer.from(encryptedData.iv, 'hex'));
     decipher.setAAD(Buffer.from('ultra-dex-audited-data'));
     decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
-    
+
     let decrypted = decipher.update(encryptedData.data, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 
@@ -265,10 +265,6 @@ class DataEncryption {
       ivLength: IV_LENGTH,
       timestamp: new Date().toISOString(),
     };
-  }
-
-  get algorithm() {
-    return ALGORITHM;
   }
 }
 
