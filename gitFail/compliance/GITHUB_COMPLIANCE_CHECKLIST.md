@@ -44,8 +44,10 @@ and legal hygiene. It is operational guidance, not legal advice.
 
 - Full local release gate:
   `npm run gate:local`
-- Full push gate:
+- Push gate (smoke tests by default for fast safe pushes):
   `npm run gate:push`
+- Full push gate (force full tests + audit):
+  `npm run gate:push:full`
 - Manual guard run:
   `npm run guard:github`
 - Manual local-only guard run (during suspension/local workflow):
