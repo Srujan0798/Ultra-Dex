@@ -87,12 +87,17 @@ Thank you.
    `npm run guard:github`
 3. During suspension/local-only operations, run:
    `npm run guard:github:local`
-4. Pre-push hook automatically runs full push gate:
+4. Pre-push hook automatically runs push gate:
    `npm run gate:push`
    - governance file checks
    - GitHub status + remote/account checks
    - secret/risky automation scans
-   - tests + security audit
+   - smoke tests for push safety
+   - dependency audit when manifest files changed
+
+For a release-grade full gate on push path:
+
+`npm run gate:push:full`
 
 ## How Mature Teams Recover (Pattern)
 
