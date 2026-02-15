@@ -47,6 +47,12 @@ export default function Layout({ children, title = 'Ultra-Dex', description = 'A
               <Link href="/" className="text-gray-300 hover:text-white transition-colors">
                 Home
               </Link>
+              <Link href="/get-started" className="text-gray-300 hover:text-white transition-colors">
+                Get Started
+              </Link>
+              <Link href="/demo" className="text-gray-300 hover:text-white transition-colors">
+                Demo
+              </Link>
               <Link href="/features" className="text-gray-300 hover:text-white transition-colors">
                 Features
               </Link>

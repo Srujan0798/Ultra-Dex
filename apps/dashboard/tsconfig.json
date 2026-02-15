@@ -5,7 +5,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest/globals"],
     "jsx": "react-jsx"
   },
   "include": ["src"],

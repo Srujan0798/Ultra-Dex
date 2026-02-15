@@ -27,6 +27,8 @@ export const siteName = 'Ultra-Dex';
 
 export const navLinks = [
   { href: '/', label: 'Home' },
+  { href: '/get-started', label: 'Get Started' },
+  { href: '/demo', label: 'Demo' },
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/docs', label: 'Docs' },

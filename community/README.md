@@ -26,6 +26,7 @@ There are many ways to contribute to the Ultra-Dex community:
 - [Tutorials](https://ultra-dex.dev/docs/tutorial) - Step-by-step guides
 - [API Reference](https://ultra-dex.dev/api) - Complete API documentation
 - [Examples](https://github.com/ultra-dex/examples) - Code examples and use cases
+- [Discord Server Config](discord/server-config.yml) - Channel/role/bot bootstrap template
 
 ## Recognition
 

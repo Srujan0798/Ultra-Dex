@@ -1,12 +1,15 @@
-import { memo, type ErrorInfo } from 'react';
-import { Search, Wifi, WifiOff } from 'lucide-react';
+import { memo } from 'react';
+import { Wifi, WifiOff } from 'lucide-react';
+import { GlobalSearch } from './GlobalSearch';
+import { NotificationCenter } from './NotificationCenter';
+import { SettingsPanel } from './SettingsPanel';
 
 interface HeaderProps {
   title: string;
   connected?: boolean;
 }
 
-export const Header = memo(function Header({ title, connected }: HeaderProps) {
+export const Header = memo(function Header({ title, connected = false }: HeaderProps) {
   return (
     <header
       className="flex items-center justify-between border-b border-slate-800 bg-slate-950/70 px-6 py-4 backdrop-blur"
@@ -20,15 +23,10 @@ export const Header = memo(function Header({ title, connected }: HeaderProps) {
         </p>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative hidden items-center md:flex">
-          <Search className="absolute left-3 h-4 w-4 text-slate-500" aria-hidden="true" />
-          <input
-            placeholder="Search tasks, agents, logs..."
-            aria-label="Search tasks, agents, and logs"
-            className="w-64 rounded-full border border-slate-800 bg-slate-900/60 py-2 pl-9 pr-4 text-sm text-slate-200 focus:border-emerald-500/60 focus:outline-none"
-          />
-        </div>
+      <div className="flex items-center gap-3">
+        <GlobalSearch />
+        <NotificationCenter connected={connected} />
+        <SettingsPanel />
 
         <div
           className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/70 px-3 py-1 text-xs text-slate-400"
@@ -52,17 +50,3 @@ export const Header = memo(function Header({ title, connected }: HeaderProps) {
     </header>
   );
 });
-
-/**
- * Error handler for Header component failures
- * @param {Error} error - The error to handle
- * @param {Object} [errorInfo] - React error info
- */
-function handleHeaderError(error: Error, errorInfo?: ErrorInfo) {
-  try {
-    console.error(`[Header] Rendering error:`, error.message);
-    if (errorInfo) console.error('Component stack:', errorInfo.componentStack);
-  } catch (_) {
-    // Fail silently to avoid recursive errors
-  }
-}
