@@ -230,6 +230,7 @@ import { createEnhancedHelp } from '../lib/utils/help.js';
 // v3.4.3 Commands - 2026 Competitive Features
 import { registerBrowserCommand } from '../lib/commands/browser.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
+import { registerGitWorkflowCommand } from '../lib/commands/git.js';
 import { registerSearchCommand } from '../lib/commands/search.js';
 import { registerVectorSearchCommand } from '../lib/commands/vector-search.js';
 import { registerIdeCommand } from '../lib/commands/ide.js';
@@ -378,6 +379,7 @@ registerPackCommand(program);
 registerWorkflowCommand(program);
 registerPlanCommand(program);
 registerGitHubCommand(program);
+registerGitWorkflowCommand(program);
 registerBrainCommand(program);
 registerSuggestCommand(program);
 registerValidateCommand(program);

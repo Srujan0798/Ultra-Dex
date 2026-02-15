@@ -1,4 +1,6 @@
-import { memo, useState, useMemo } from 'react';
+import { memo, useMemo } from 'react';
+import { CostDashboard } from '../components/CostDashboard';
+import type { AgentSnapshot, CostPoint } from '../lib/websocket';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -270,6 +272,30 @@ function RouterStatus({ strategy, providers }: { strategy: string; providers: ty
 
 export const Analytics = memo(function Analytics() {
     const usageData = useMemo(() => generateMockUsage(), []);
+    const costSeries = useMemo<CostPoint[]>(
+        () =>
+            MOCK_PROVIDERS.map((provider, index) => ({
+                amount: provider.cost,
+                source: provider.name,
+                timestamp: new Date(Date.now() - index * 4 * 60 * 60 * 1000).toISOString(),
+            })),
+        []
+    );
+    const costAgents = useMemo<AgentSnapshot[]>(
+        () =>
+            MOCK_PROVIDERS.map((provider, index) => ({
+                id: provider.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                name: provider.name,
+                state: provider.status === 'healthy' ? 'running' : provider.status === 'degraded' ? 'idle' : 'error',
+                lastExecution: new Date(Date.now() - index * 10 * 60 * 1000).toISOString(),
+                successCount: provider.requests,
+                failureCount: Math.round(provider.requests * provider.errorRate),
+                avgDurationMs: provider.avgLatency,
+                costToday: provider.cost,
+                recentRuns: [1, 1, 1, 1, 1, 1, 1],
+            })),
+        []
+    );
     const totalRequests = MOCK_PROVIDERS.reduce((s, p) => s + p.requests, 0);
     const totalTokens = MOCK_PROVIDERS.reduce((s, p) => s + p.tokens, 0);
     const totalCost = MOCK_PROVIDERS.reduce((s, p) => s + p.cost, 0);
@@ -299,6 +325,12 @@ export const Analytics = memo(function Analytics() {
                 <BudgetTracker providers={MOCK_PROVIDERS} budget={BUDGET_LIMIT} />
                 <RouterStatus strategy={ROUTER_STRATEGY} providers={MOCK_PROVIDERS} />
             </div>
+
+            <CostDashboard
+                agents={costAgents}
+                budgets={{ daily: BUDGET_LIMIT, weekly: BUDGET_LIMIT * 5, monthly: BUDGET_LIMIT * 20 }}
+                costSeries={costSeries}
+            />
         </div>
     );
 });

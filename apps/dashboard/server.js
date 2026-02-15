@@ -6,6 +6,7 @@
 import express from 'express';
 import http from 'http';
 import socketIo from 'socket.io';
+import { WebSocketServer } from 'ws';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
@@ -35,25 +36,51 @@ const io = socketIo(server, {
   }
 });
 
+const wsClients = new Set();
+const wss = new WebSocketServer({ server, path: '/ws' });
+
+function broadcastWs(type, payload) {
+  const packet = JSON.stringify({
+    type,
+    payload,
+    timestamp: new Date().toISOString(),
+  });
+
+  for (const client of wsClients) {
+    if (client.readyState === 1) {
+      try {
+        client.send(packet);
+      } catch {
+        // Ignore transient websocket send errors
+      }
+    }
+  }
+}
+
+function emitRealtime(type, payload) {
+  io.emit(type, payload);
+  broadcastWs(type, payload);
+}
+
 // Bridge Events to Socket.IO
 agentOrchestrator.on('task:start', (data) => {
-  io.emit('live-log', { message: `🚀 Task Started: ${data.task}`, level: 'info', timestamp: new Date().toISOString() });
+  emitRealtime('live-log', { message: `🚀 Task Started: ${data.task}`, level: 'info', timestamp: new Date().toISOString() });
 });
 
 agentOrchestrator.on('task:complete', (data) => {
-  io.emit('live-log', { message: `✅ Task Completed by @${data.agentId}`, level: 'success', timestamp: new Date().toISOString() });
+  emitRealtime('live-log', { message: `✅ Task Completed by @${data.agentId}`, level: 'success', timestamp: new Date().toISOString() });
 });
 
 agentOrchestrator.on('tool:use', (data) => {
-  io.emit('live-log', { message: `🛠️  Using tool: ${data.name}`, level: 'warning', timestamp: new Date().toISOString() });
+  emitRealtime('live-log', { message: `🛠️  Using tool: ${data.name}`, level: 'warning', timestamp: new Date().toISOString() });
 });
 
 agentOrchestrator.on('tool:result', (data) => {
-  io.emit('live-log', { message: `🔧 Tool ${data.name} returned result`, level: 'info', timestamp: new Date().toISOString() });
+  emitRealtime('live-log', { message: `🔧 Tool ${data.name} returned result`, level: 'info', timestamp: new Date().toISOString() });
 });
 
 agentOrchestrator.on('error', (error) => {
-  io.emit('live-log', { message: `❌ Error: ${error.message}`, level: 'error', timestamp: new Date().toISOString() });
+  emitRealtime('live-log', { message: `❌ Error: ${error.message}`, level: 'error', timestamp: new Date().toISOString() });
 });
 
 // Middleware
@@ -152,6 +179,35 @@ async function collectRealMetrics() {
   }
 }
 
+wss.on('connection', (client) => {
+  wsClients.add(client);
+
+  // Initial snapshot for WebSocket consumers
+  try {
+    client.send(
+      JSON.stringify({
+        type: 'system-status',
+        payload: {
+          agents: agentData,
+          memory: {
+            hot: systemStats.memoryUsage,
+            warm: 0,
+            cold: 0,
+          },
+          metrics: systemStats,
+        },
+        timestamp: new Date().toISOString(),
+      })
+    );
+  } catch {
+    // Ignore initial send failures
+  }
+
+  client.on('close', () => {
+    wsClients.delete(client);
+  });
+});
+
 // API routes for metrics
 app.get('/api/metrics', async (req, res) => {
   await collectRealMetrics();
@@ -216,6 +272,8 @@ io.on('connection', (socket) => {
     await collectRealMetrics();
     socket.emit('metrics-update', systemStats);
     socket.emit('agents-update', agentData);
+    broadcastWs('metrics-update', systemStats);
+    broadcastWs('agent-status', agentData);
   }, 5000);
 
   socket.on('dashboard-command', async (data) => {
@@ -285,6 +343,7 @@ server.listen(PORT, () => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('.SIGTERM received, shutting down gracefully');
+  wss.close();
   server.close(() => {
     console.log('Process terminated');
   });
@@ -292,6 +351,7 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   console.log('.SIGINT received, shutting down gracefully');
+  wss.close();
   server.close(() => {
     console.log('Process terminated');
   });
