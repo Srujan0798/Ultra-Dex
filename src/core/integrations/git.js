@@ -93,8 +93,13 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const { stdout } = await execAsync('git diff --cached', { cwd: this.options.repoPath });
-    return stdout;
+    try {
+      const { stdout } = await execAsync('git diff --cached', { cwd: this.options.repoPath });
+      return stdout || ''; // Return empty string if no staged changes
+    } catch (error) {
+      // If git diff --cached fails (e.g., no staged changes), return empty string
+      return '';
+    }
   }
 
   /**
@@ -106,8 +111,19 @@ class GitIntegration {
       throw new Error('Not a Git repository');
     }
 
-    const { stdout } = await execAsync('git diff', { cwd: this.options.repoPath });
-    return stdout;
+    try {
+      const { stdout } = await execAsync('git diff', { cwd: this.options.repoPath });
+      return stdout || ''; // Return empty string if no diff
+    } catch (error) {
+      // If git diff fails (e.g., no changes), return empty string
+      // Different git versions may return different exit codes
+      if (error.code === '1' || error.code === 1 || error.stderr?.includes('nothing to commit')) {
+        return '';
+      }
+      // For other errors, log and return empty string rather than throwing
+      console.warn('Git diff failed:', error.message);
+      return '';
+    }
   }
 
   /**

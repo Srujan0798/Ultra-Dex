@@ -4,8 +4,7 @@
  */
 
 import passport from 'passport';
-import { Strategy as SamlStrategy } from 'passport-saml';
-import { Issuer } from 'openid-client';
+
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -38,10 +37,10 @@ class EnterpriseAuth extends EventEmitter {
     this.permissions = new Map(); // permissionId -> permissionData
     this.mfaDevices = new Map(); // userId -> mfaData
     this.backupCodes = new Map(); // userId -> [codes]
-    
+
     this.samlStrategy = null;
     this.oidcStrategy = null;
-    
+
     this.initializeAuthStrategies();
     this.initializeDefaultRoles();
   }
@@ -69,7 +68,7 @@ class EnterpriseAuth extends EventEmitter {
               done(error);
             }
           });
-          
+
           passport.use('saml', this.samlStrategy);
         } catch (error) {
           console.warn('SAML strategy not available:', error.message);
@@ -99,7 +98,7 @@ class EnterpriseAuth extends EventEmitter {
               done(error);
             }
           });
-          
+
           passport.use('oidc', this.oidcStrategy);
         } catch (error) {
           console.warn('OIDC strategy not available:', error.message);
@@ -315,7 +314,7 @@ class EnterpriseAuth extends EventEmitter {
 
     const roles = new Set();
     for (const [role, groupNames] of Object.entries(roleMappings)) {
-      if (groups.some(group => groupNames.some(name => 
+      if (groups.some(group => groupNames.some(name =>
         group.toLowerCase().includes(name.toLowerCase())
       ))) {
         roles.add(role);
@@ -473,9 +472,9 @@ class EnterpriseAuth extends EventEmitter {
           const inheritedRoles = this.getInheritedRoles(userRole);
           for (const inheritedRole of inheritedRoles) {
             const inheritedRoleData = this.roles.get(inheritedRole);
-            if (inheritedRoleData && 
-                (inheritedRoleData.permissions.includes(permission) || 
-                 inheritedRoleData.permissions.includes('*:*'))) {
+            if (inheritedRoleData &&
+              (inheritedRoleData.permissions.includes(permission) ||
+                inheritedRoleData.permissions.includes('*:*'))) {
               return true;
             }
           }

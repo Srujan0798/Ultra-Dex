@@ -4,6 +4,7 @@ import {
   MODEL_PROVIDER_MAP,
   PROVIDER_COST_TABLE,
   STRATEGY_PROVIDER_PRIORITIES,
+  PROVIDER_PRIORITY_CONFIG,
   loadRouterConfigSync,
   mergeConfig,
 } from './router-config.js';
@@ -111,6 +112,14 @@ export class SmartAIRouter {
     });
   }
 
+  sortProvidersByPriority(providers, strategy) {
+    return [...providers].sort((left, right) => {
+      const leftPriority = PROVIDER_PRIORITY_CONFIG[left]?.[strategy] ?? Number.MAX_SAFE_INTEGER;
+      const rightPriority = PROVIDER_PRIORITY_CONFIG[right]?.[strategy] ?? Number.MAX_SAFE_INTEGER;
+      return leftPriority - rightPriority;
+    });
+  }
+
   pickProviders(strategy, opts = {}) {
     const normalizedStrategy = normalizeStrategy(strategy);
 
@@ -132,6 +141,7 @@ export class SmartAIRouter {
 
     const available = configuredOrder.filter((providerName) => this.registry.getProvider(providerName));
 
+    // Apply different sorting based on strategy
     if (normalizedStrategy === 'latency') {
       return this.sortProvidersByLatency(available);
     }
@@ -140,7 +150,40 @@ export class SmartAIRouter {
       return this.sortProvidersByCost(available);
     }
 
-    return available;
+    // For quality and other strategies, use priority-based sorting
+    return this.sortProvidersByPriority(available, normalizedStrategy);
+  }
+
+  // Load balancing: distribute requests across providers based on their capacity
+  async selectProviderWithLoadBalancing(strategy, opts = {}) {
+    const providers = this.pickProviders(strategy, opts);
+    
+    // Get metrics for each provider to determine load
+    const providerLoads = providers.map(provider => {
+      const metrics = this.metrics.get(provider) || { requests: 0, errors: 0 };
+      // Calculate a load score (lower is better)
+      const loadScore = metrics.requests - metrics.errors; // Fewer requests and more errors = higher load
+      return { provider, loadScore };
+    });
+    
+    // Sort by load score (ascending - lowest load first)
+    providerLoads.sort((a, b) => a.loadScore - b.loadScore);
+    
+    return providerLoads.map(item => item.provider);
+  }
+
+  // Latency fallback: try fastest providers first, fall back to slower ones
+  async selectProviderWithLatencyFallback(opts = {}) {
+    const providers = this.pickProviders('latency', opts);
+    
+    // Sort by historical latency if available
+    return [...providers].sort((left, right) => {
+      const leftMetric = this.metrics.get(left);
+      const rightMetric = this.metrics.get(right);
+      const leftP50 = leftMetric?.latencyP50 ?? Number.MAX_SAFE_INTEGER;
+      const rightP50 = rightMetric?.latencyP50 ?? Number.MAX_SAFE_INTEGER;
+      return leftP50 - rightP50;
+    });
   }
 
   resolveModelForProvider(providerName, requestedModel) {
@@ -156,7 +199,14 @@ export class SmartAIRouter {
     await this.initialize();
 
     const normalizedStrategy = normalizeStrategy(strategy);
-    const providers = this.pickProviders(normalizedStrategy, opts);
+
+    // Use enhanced provider selection based on strategy
+    let providers = [];
+    if (normalizedStrategy === 'latency') {
+      providers = await this.selectProviderWithLatencyFallback(opts);
+    } else {
+      providers = await this.selectProviderWithLoadBalancing(normalizedStrategy, opts);
+    }
 
     if (!providers.length) {
       throw new Error('[router] No providers available for routeRequest');
@@ -164,75 +214,135 @@ export class SmartAIRouter {
 
     const attemptedProviders = [];
     let lastError = null;
+    
+    // Add timeout for the entire routing operation
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('[router] Request timeout exceeded')), opts.timeout || 120000); // 2 minute default timeout
+    });
+    
+    const routingPromise = (async () => {
+      for (let index = 0; index < providers.length; index++) {
+        const providerName = providers[index];
+        const provider = getProvider(providerName);
+        if (!provider) continue;
 
-    for (let index = 0; index < providers.length; index++) {
-      const providerName = providers[index];
-      const provider = getProvider(providerName);
-      if (!provider) continue;
+        attemptedProviders.push(providerName);
+        const startedAt = Date.now();
 
-      attemptedProviders.push(providerName);
-      const startedAt = Date.now();
+        try {
+          // Add individual provider timeout
+          const providerTimeout = opts.providerTimeout || 60000; // 1 minute default
+          
+          const resultPromise = provider.chat(messages, {
+            ...opts,
+            model: this.resolveModelForProvider(providerName, opts.model) || opts.model,
+          });
+          
+          // Race the provider call with its timeout
+          const result = await Promise.race([
+            resultPromise,
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error(`[router] Provider ${providerName} timeout`)), providerTimeout)
+            )
+          ]);
 
-      try {
-        const model = this.resolveModelForProvider(providerName, opts.model);
-        const result = await provider.chat(messages, {
-          ...opts,
-          model: model || opts.model,
-        });
+          this.updateMetrics(providerName, {
+            latencyMs: Date.now() - startedAt,
+            success: true,
+          });
 
-        this.updateMetrics(providerName, {
-          latencyMs: Date.now() - startedAt,
-          success: true,
-        });
+          return {
+            ...result,
+            provider: providerName,
+            strategy: normalizedStrategy,
+            attemptedProviders,
+          };
+        } catch (error) {
+          this.updateMetrics(providerName, {
+            success: false,
+            error,
+          });
 
-        return {
-          ...result,
-          provider: providerName,
-          strategy: normalizedStrategy,
-          attemptedProviders,
-        };
-      } catch (error) {
-        this.updateMetrics(providerName, {
-          success: false,
-          error,
-        });
+          lastError = error;
 
-        lastError = error;
-
-        const allowFallback = opts.fallback !== false || normalizedStrategy === 'fallback';
-        if (!allowFallback) {
-          break;
+          const allowFallback = opts.fallback !== false || normalizedStrategy === 'fallback';
+          if (!allowFallback) {
+            break;
+          }
+          
+          // Add small delay before trying next provider to avoid overwhelming
+          if (index < providers.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, opts.providerDelay || 100)); // 100ms default delay
+          }
         }
       }
-    }
 
-    const reason = lastError?.message || 'unknown routing failure';
-    throw new Error(`[router] Request failed after providers [${attemptedProviders.join(', ')}]: ${reason}`);
+      const reason = lastError?.message || 'unknown routing failure';
+      throw new Error(`[router] Request failed after providers [${attemptedProviders.join(', ')}]: ${reason}`);
+    })();
+
+    // Race the routing operation with the overall timeout
+    return Promise.race([routingPromise, timeoutPromise]);
   }
 
   async routeStream(messages, strategy = 'latency', opts = {}) {
     await this.initialize();
 
     const normalizedStrategy = normalizeStrategy(strategy);
-    const providers = this.pickProviders(normalizedStrategy, opts);
+
+    // Use enhanced provider selection based on strategy
+    let providers = [];
+    if (normalizedStrategy === 'latency') {
+      providers = await this.selectProviderWithLatencyFallback(opts);
+    } else {
+      providers = await this.selectProviderWithLoadBalancing(normalizedStrategy, opts);
+    }
+
     if (!providers.length) {
       throw new Error('[router] No providers available for routeStream');
     }
 
     let lastError = null;
-    for (const providerName of providers) {
-      const provider = getProvider(providerName);
-      if (!provider) continue;
+    
+    // Add timeout for the entire stream routing operation
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('[router] Stream request timeout exceeded')), opts.timeout || 120000); // 2 minute default timeout
+    });
+    
+    const routingPromise = (async () => {
+      for (const providerName of providers) {
+        const provider = getProvider(providerName);
+        if (!provider) continue;
 
-      try {
-        return await provider.stream(messages, opts);
-      } catch (error) {
-        this.updateMetrics(providerName, { success: false, error });
-        lastError = error;
+        try {
+          // Add individual provider timeout for stream initialization
+          const providerTimeout = opts.providerTimeout || 30000; // 30 seconds default for stream init
+          
+          const streamPromise = provider.stream(messages, opts);
+          
+          // Race the provider stream call with its timeout
+          const stream = await Promise.race([
+            streamPromise,
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error(`[router] Provider ${providerName} stream timeout`)), providerTimeout)
+            )
+          ]);
+
+          return stream;
+        } catch (error) {
+          this.updateMetrics(providerName, { success: false, error });
+          lastError = error;
+          
+          // Add small delay before trying next provider to avoid overwhelming
+          await new Promise(resolve => setTimeout(resolve, opts.providerDelay || 100)); // 100ms default delay
+        }
       }
-    }
 
-    throw new Error(`[router] Stream failed for all providers: ${lastError?.message || 'unknown error'}`);
+      throw new Error(`[router] Stream failed for all providers: ${lastError?.message || 'unknown error'}`);
+    })();
+
+    // Race the routing operation with the overall timeout
+    return Promise.race([routingPromise, timeoutPromise]);
   }
 }
 

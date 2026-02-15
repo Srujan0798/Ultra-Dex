@@ -6,7 +6,7 @@
 import { EventEmitter } from 'events';
 import { HealthMonitor } from '../system/health-monitor.cjs';
 import { AgentAutopsy } from './agent-autopsy.cjs';
-import { logger } from '../utils/logging.js';
+import { logger } from '../../utils/logging.js';
 
 class SelfHealingSystem extends EventEmitter {
   constructor(options = {}) {
@@ -18,7 +18,7 @@ class SelfHealingSystem extends EventEmitter {
 
   async start() {
     if (this.isOperational) return;
-    
+
     // Register core component health checks
     this.health.registerHealthCheck('memory-tier', async () => {
       // In real impl, check SQLite/Neo4j connectivity
@@ -57,14 +57,14 @@ class SelfHealingSystem extends EventEmitter {
    */
   async reportAgentError(agentId, error, context = {}) {
     const report = await this.autopsy.logFailure(agentId, error, context);
-    
+
     if (report.analysis.isRecoverable) {
       this.emit('agent:recovering', { agentId, report });
       // The autopsy system already triggers attemptRecoveryForAgent if threshold met
     } else {
       this.emit('agent:terminal-failure', { agentId, report });
     }
-    
+
     return report;
   }
 

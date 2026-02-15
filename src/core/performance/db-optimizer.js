@@ -198,6 +198,18 @@ class DatabaseOptimizer extends EventEmitter {
   }
 
   /**
+   * Create a query with tracking capabilities
+   * @param {Function} queryFn - Function that executes the query
+   * @param {string} query - Query string for tracking
+   * @returns {Function} Tracked query function
+   */
+  createQueryWithTracking(queryFn, query) {
+    return async () => {
+      return await this.executeQueryWithTracking(queryFn, query);
+    };
+  }
+
+  /**
    * Execute a query with performance tracking
    * @param {Function} queryFn - Function that executes the query
    * @param {string} query - Query string for tracking
@@ -205,7 +217,7 @@ class DatabaseOptimizer extends EventEmitter {
    */
   async executeQueryWithTracking(queryFn, query) {
     const startTime = Date.now();
-    
+
     try {
       const result = await queryFn();
       const duration = Date.now() - startTime;
@@ -214,7 +226,7 @@ class DatabaseOptimizer extends EventEmitter {
       if (!this.queryStats.has(query)) {
         this.queryStats.set(query, { count: 0, totalDuration: 0, avgDuration: 0 });
       }
-      
+
       const stats = this.queryStats.get(query);
       stats.count++;
       stats.totalDuration += duration;
@@ -242,7 +254,7 @@ class DatabaseOptimizer extends EventEmitter {
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
-      
+
       this.emit('query:failed', {
         query,
         duration,

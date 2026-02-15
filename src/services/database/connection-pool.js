@@ -1,147 +1,135 @@
 // Copyright (c) 2026 Ultra-Dex
+// Connection Pool Service for Postgres and SQLite
 
-let state = {
-  kind: null,
-  client: null,
-  config: null,
-};
+import { promisify } from 'util';
 
-async function createPostgresPool(config) {
-  const mod = await import('pg');
-  const { Pool } = mod;
-  const pool = new Pool(config);
-  return {
-    kind: 'postgres',
-    client: pool,
-  };
-}
-
-async function createSqlitePool(config) {
-  const mod = await import('better-sqlite3');
-  const Database = mod.default || mod;
-  const file = config.file || config.filename || ':memory:';
-  const db = new Database(file, {
-    readonly: !!config.readonly,
-    fileMustExist: !!config.fileMustExist,
-  });
-  return {
-    kind: 'sqlite',
-    client: db,
-  };
-}
-
-function ensureInitialized() {
-  if (!state.client || !state.kind) {
-    throw new Error('[database] pool is not initialized. Call createPool(config) first.');
-  }
-}
-
-export async function createPool(config = {}) {
-  const kind = (config.client || config.type || process.env.DB_CLIENT || 'postgres').toLowerCase();
-
-  if (kind === 'postgres' || kind === 'pg') {
-    state = {
-      ...(await createPostgresPool(config)),
-      config,
-    };
-    return state;
+class DatabaseConnectionPool {
+  constructor(config) {
+    this.config = config;
+    this.type = config.type; // 'postgres' or 'sqlite'
+    this.pool = null;
+    this.connection = null;
   }
 
-  if (kind === 'sqlite') {
-    state = {
-      ...(await createSqlitePool(config)),
-      config,
-    };
-    return state;
-  }
+  async initialize() {
+    if (this.type === 'postgres') {
+      // Dynamically import pg to avoid requiring it as a hard dependency
+      const pgModule = await import('pg');
+      const { Pool } = pgModule;
+      
+      this.pool = new Pool({
+        host: this.config.host || 'localhost',
+        port: this.config.port || 5432,
+        database: this.config.database,
+        user: this.config.user,
+        password: this.config.password,
+        min: this.config.minConnections || 2,
+        max: this.config.maxConnections || 10,
+        idleTimeoutMillis: this.config.idleTimeout || 30000,
+        connectionTimeoutMillis: this.config.connectionTimeout || 2000
+      });
 
-  throw new Error(`[database] unsupported client "${kind}". Use "postgres" or "sqlite".`);
-}
-
-export async function query(sql, params = []) {
-  ensureInitialized();
-
-  if (state.kind === 'postgres') {
-    const result = await state.client.query(sql, params);
-    return {
-      rows: result.rows,
-      rowCount: result.rowCount,
-    };
-  }
-
-  const statement = state.client.prepare(sql);
-  const upper = sql.trim().toUpperCase();
-
-  if (upper.startsWith('SELECT') || upper.startsWith('PRAGMA')) {
-    const rows = statement.all(...params);
-    return {
-      rows,
-      rowCount: rows.length,
-    };
-  }
-
-  const result = statement.run(...params);
-  return {
-    rows: [],
-    rowCount: result.changes,
-    lastInsertRowid: result.lastInsertRowid,
-  };
-}
-
-export async function transaction(fn) {
-  ensureInitialized();
-
-  if (typeof fn !== 'function') {
-    throw new Error('[database] transaction expects a callback function');
-  }
-
-  if (state.kind === 'postgres') {
-    const client = await state.client.connect();
-    try {
-      await client.query('BEGIN');
-      const tx = {
-        query: (sql, params = []) => client.query(sql, params),
-      };
-      const result = await fn(tx);
-      await client.query('COMMIT');
-      return result;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
+      // Test the connection
+      try {
+        const client = await this.pool.connect();
+        await client.query('SELECT NOW()');
+        client.release();
+        console.log('PostgreSQL pool initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize PostgreSQL pool:', error);
+        throw error;
+      }
+    } else if (this.type === 'sqlite') {
+      // Dynamically import sqlite3 to avoid requiring it as a hard dependency
+      const sqlite3Module = await import('sqlite3');
+      const sqlite3 = sqlite3Module.verbose(); // Enable verbose mode
+      
+      // For SQLite, we'll use a single connection since it's file-based
+      this.connection = new sqlite3.Database(this.config.database || './database.sqlite');
+      
+      // Promisify the database methods
+      this.connection.runAsync = promisify(this.connection.run).bind(this.connection);
+      this.connection.getAsync = promisify(this.connection.get).bind(this.connection);
+      this.connection.allAsync = promisify(this.connection.all).bind(this.connection);
+      
+      // Test the connection
+      try {
+        await this.connection.runAsync('SELECT 1');
+        console.log('SQLite connection initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize SQLite connection:', error);
+        throw error;
+      }
+    } else {
+      throw new Error(`Unsupported database type: ${this.type}`);
     }
   }
 
-  state.client.prepare('BEGIN').run();
-  try {
-    const tx = {
-      query: async (sql, params = []) => query(sql, params),
-    };
-    const result = await fn(tx);
-    state.client.prepare('COMMIT').run();
-    return result;
-  } catch (error) {
-    state.client.prepare('ROLLBACK').run();
-    throw error;
+  async getConnection() {
+    if (this.type === 'postgres') {
+      return await this.pool.connect();
+    } else if (this.type === 'sqlite') {
+      return this.connection;
+    }
+  }
+
+  async query(sql, params = []) {
+    if (this.type === 'postgres') {
+      const client = await this.pool.connect();
+      try {
+        const result = await client.query(sql, params);
+        return result.rows;
+      } finally {
+        client.release();
+      }
+    } else if (this.type === 'sqlite') {
+      return await this.connection.allAsync(sql, params);
+    }
+  }
+
+  async execute(sql, params = []) {
+    if (this.type === 'postgres') {
+      const client = await this.pool.connect();
+      try {
+        const result = await client.query(sql, params);
+        return result.rowCount;
+      } finally {
+        client.release();
+      }
+    } else if (this.type === 'sqlite') {
+      const result = await this.connection.runAsync(sql, params);
+      return result.changes;
+    }
+  }
+
+  async close() {
+    if (this.type === 'postgres') {
+      await this.pool.end();
+    } else if (this.type === 'sqlite') {
+      await new Promise((resolve, reject) => {
+        this.connection.close((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    }
+  }
+
+  async healthCheck() {
+    try {
+      if (this.type === 'postgres') {
+        const client = await this.pool.connect();
+        const result = await client.query('SELECT 1 as alive');
+        client.release();
+        return { status: 'healthy', details: result.rows[0] };
+      } else if (this.type === 'sqlite') {
+        const result = await this.connection.getAsync('SELECT 1 as alive');
+        return { status: 'healthy', details: result };
+      }
+    } catch (error) {
+      return { status: 'unhealthy', error: error.message };
+    }
   }
 }
 
-export async function healthCheck() {
-  const startedAt = Date.now();
-  try {
-    await query('SELECT 1 as ok');
-    return {
-      status: 'healthy',
-      latencyMs: Date.now() - startedAt,
-      client: state.kind,
-    };
-  } catch (error) {
-    return {
-      status: 'unhealthy',
-      latencyMs: Date.now() - startedAt,
-      client: state.kind,
-      error: error.message,
-    };
-  }
-}
+export default DatabaseConnectionPool;

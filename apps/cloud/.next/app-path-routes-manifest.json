@@ -1,0 +1,12 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/stripe/route": "/api/stripe",
+  "/dashboard/page": "/dashboard",
+  "/api-keys/page": "/api-keys",
+  "/billing/page": "/billing",
+  "/marketplace/page": "/marketplace",
+  "/teams/page": "/teams",
+  "/page": "/",
+  "/usage/page": "/usage",
+  "/enterprise/page": "/enterprise"
+}

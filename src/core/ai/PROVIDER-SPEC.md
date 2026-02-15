@@ -1,225 +1,235 @@
-# Ultra-Dex Universal Provider Interface Spec (v6.0.0)
+# Universal AI Provider Interface Specification
 
-This document defines the required contract for **all current and future AI providers** used by Ultra-Dex.
+This document defines the universal interface that all AI providers in Ultra-Dex must implement to ensure consistent behavior across different AI services.
 
-## 1. Required Interface
+## Required Methods
 
-Every provider implementation MUST expose the following async methods:
+### `chat(messages, opts)`
+Asynchronously sends a chat message to the AI provider and returns a response.
 
-```js
-class Provider {
-  constructor(config) {}
+**Parameters:**
+- `messages` (Array): Array of message objects with `role` and `content` properties
+- `opts` (Object): Options object with the following possible properties:
+  - `model` (string): Model identifier to use
+  - `temperature` (number): Temperature for response randomness (0.0-2.0)
+  - `maxTokens` (number): Maximum tokens in response
+  - `topP` (number): Top-P sampling parameter
+  - `signal` (AbortSignal): Abort signal for cancellation
+  - `timeoutMs` (number): Request timeout in milliseconds
 
-  async chat(messages, opts = {}) {}
-  async stream(messages, opts = {}) {}
-  async embed(text) {}
-  async complete(prompt, opts = {}) {}
-}
-```
-
-### 1.1 `chat(messages, opts)`
-
-- Input:
-  - `messages`: `Array<{ role: 'system'|'user'|'assistant'|'tool', content: string | object }>`
-  - `opts`: provider-specific overrides
-- Output:
-
-```js
+**Returns:**
+```javascript
 {
-  content: string,
+  content: string,           // The AI response content
   usage: {
-    inputTokens: number,
-    outputTokens: number,
-    totalCost?: number
+    inputTokens: number,     // Number of input tokens processed
+    outputTokens: number,    // Number of output tokens generated
+    totalTokens: number      // Total tokens (input + output)
   },
-  model: string,
-  latencyMs?: number
+  model: string,             // Model that generated the response
+  provider: string           // Provider identifier
 }
 ```
 
-### 1.2 `stream(messages, opts)`
+### `stream(messages, opts)`
+Asynchronously streams a chat response from the AI provider, returning an async iterable.
 
-- Input format same as `chat`
-- Output: `AsyncIterable<StreamChunk>`
+**Parameters:**
+- `messages` (Array): Array of message objects with `role` and `content` properties
+- `opts` (Object): Options object with the same properties as `chat()`
 
-### 1.3 `embed(text)`
+**Returns:**
+An async iterable that yields token chunks as they become available.
 
-- Input: `text: string`
-- Output:
+### `embed(text, opts)`
+Asynchronously generates embeddings for the provided text.
 
-```js
+**Parameters:**
+- `text` (string): Text to embed
+- `opts` (Object): Options object with the following possible properties:
+  - `model` (string): Embedding model identifier
+  - `dimensions` (number): Desired embedding dimensions (if supported)
+  - `timeoutMs` (number): Request timeout in milliseconds
+  - `signal` (AbortSignal): Abort signal for cancellation
+
+**Returns:**
+```javascript
 {
-  embedding: number[],
-  dimensions: number
-}
-```
-
-### 1.4 `complete(prompt, opts)`
-
-- Convenience wrapper over `chat`
-- Input:
-  - `prompt: string`
-  - `opts: object`
-- Output: same contract as `chat`
-
-## 2. Optional Interface
-
-Providers MAY implement the following specialized methods:
-
-```js
-async vision(image, prompt)
-async code(prompt, language)
-async reasoning(prompt, steps)
-async functionCalling(messages, tools)
-```
-
-### Optional method expectations
-
-- `vision(image, prompt)`: multimodal image+text analysis
-- `code(prompt, language)`: code generation tuned for target language
-- `reasoning(prompt, steps)`: explicit multi-step reasoning execution
-- `functionCalling(messages, tools)`: tool invocation or structured function outputs
-
-## 3. Provider Config Schema
-
-Every provider constructor MUST accept a plain object compatible with:
-
-```js
-{
-  apiKey: string,
-  baseUrl: string,
-  defaultModel: string,
-  maxRetries: number,
-  timeout: number,
-  rateLimit: {
-    rpm: number,
-    tpm: number,
-    burst?: number
+  embedding: number[],       // Array of embedding values
+  dimensions: number,        // Number of dimensions in the embedding
+  model: string,             // Model used for embedding
+  usage?: {
+    inputTokens: number,     // Number of input tokens processed
+    totalTokens: number      // Total tokens processed
   }
 }
 ```
 
-### Config rules
+## Optional Methods
 
-- `apiKey` MAY be omitted for local providers.
-- `baseUrl` SHOULD default to provider-native endpoint.
-- `defaultModel` MUST be defined (constructor or env fallback).
-- `maxRetries` default: `3`
-- `timeout` default: `45000` ms
+### `complete(prompt, opts)`
+Asynchronously completes a text prompt (non-chat format).
 
-## 4. Response Contract
+**Parameters:**
+- `prompt` (string): Text prompt to complete
+- `opts` (Object): Options object with the same properties as `chat()`
 
-All non-streaming generation methods MUST normalize to:
+**Returns:**
+Same format as `chat()` method.
 
-```js
+### `vision(image, prompt, opts)`
+Asynchronously processes an image with a text prompt (if supported).
+
+**Parameters:**
+- `image` (string|Buffer): Image data or URL
+- `prompt` (string): Text prompt describing the image task
+- `opts` (Object): Options object with the same properties as `chat()`
+
+**Returns:**
+Same format as `chat()` method.
+
+### `code(prompt, opts)`
+Asynchronously generates code based on the prompt (if supported).
+
+**Parameters:**
+- `prompt` (string): Code generation prompt
+- `opts` (Object): Options object with the same properties as `chat()`
+
+**Returns:**
+Same format as `chat()` method.
+
+### `reasoning(prompt, opts)`
+Asynchronously performs complex reasoning tasks (if supported).
+
+**Parameters:**
+- `prompt` (string): Reasoning task prompt
+- `opts` (Object): Options object with the same properties as `chat()`
+
+**Returns:**
+Same format as `chat()` method.
+
+### `functionCalling(functions, opts)`
+Asynchronously calls functions based on the input (if supported).
+
+**Parameters:**
+- `functions` (Array): Array of function definitions
+- `opts` (Object): Options object with the same properties as `chat()`
+
+**Returns:**
+```javascript
 {
-  content: string,
-  usage: {
-    inputTokens: number,
-    outputTokens: number,
-    totalCost: number
-  },
-  model: string,
-  latencyMs: number
+  content: string,           // Natural language response
+  functionCalls: Array,      // Array of function call requests
+  usage: { ... },            // Token usage information
+  model: string,             // Model that processed the request
+  provider: string           // Provider identifier
 }
 ```
 
-### Cost normalization
+## Configuration Schema
 
-- `totalCost` is computed from provider/model token rates.
-- If exact provider cost is unavailable, set `totalCost: 0` and attach telemetry warning.
+Each provider accepts a configuration object with the following properties:
 
-## 5. Error Contract
-
-Provider errors MUST normalize to:
-
-```js
+```javascript
 {
-  code: string,
-  message: string,
-  provider: string,
-  retryable: boolean,
-  retryAfterMs?: number
+  // Authentication
+  apiKey: string,                    // API key for the provider
+  baseUrl?: string,                  // Base URL for API requests
+  
+  // Model selection
+  defaultModel: string,              // Default model to use
+  embeddingModel?: string,           // Default embedding model
+  
+  // Connection settings
+  timeoutMs?: number,                // Request timeout in milliseconds
+  extraHeaders?: Object,             // Additional headers to send with requests
+  
+  // Provider-specific options
+  [providerSpecificOption: string]: any
 }
 ```
 
-### Error code guidance
+## Response Contract
 
-- `INVALID_CONFIG`
-- `AUTH_ERROR`
-- `RATE_LIMITED`
-- `HTTP_ERROR`
-- `NETWORK_ERROR`
-- `INVALID_RESPONSE`
-- `TIMEOUT`
+All provider methods must return responses in the standardized format defined above. The response should include:
 
-## 6. Streaming Protocol
+- Proper token usage accounting
+- Correct model identification
+- Consistent error handling
+- Proper metadata inclusion
 
-All `stream(...)` methods MUST return an `AsyncIterable` of:
+## Error Contract
 
-```js
+Providers must throw standardized errors with the following structure:
+
+```javascript
 {
-  type: 'text' | 'tool_call' | 'done',
-  content: string | object,
-  raw?: any
+  name: 'ProviderError',
+  message: string,                   // Human-readable error message
+  provider: string,                  // Provider identifier
+  status?: number,                   // HTTP status code if applicable
+  code: string,                      // Error code (e.g., 'RATE_LIMIT_EXCEEDED')
+  details?: Object                   // Additional error details
 }
 ```
 
-### Stream semantics
+Common error codes:
+- `AUTH_ERROR`: Authentication failure
+- `RATE_LIMIT_EXCEEDED`: Rate limit reached
+- `INVALID_REQUEST`: Malformed request
+- `MODEL_NOT_FOUND`: Requested model doesn't exist
+- `PROVIDER_UNAVAILABLE`: Service temporarily unavailable
+- `CONTENT_FILTERED`: Content was filtered by provider
 
-- `text`: partial model tokens or text deltas
-- `tool_call`: tool/function invocation chunks
-- `done`: terminal chunk emitted exactly once
+## Streaming Protocol
 
-## 7. Rate Limiting
+Streaming implementations must:
+- Yield token chunks as they become available
+- Handle connection interruptions gracefully
+- Support cancellation via AbortSignal
+- Provide progress indicators when possible
 
-Providers SHOULD implement token bucket control with configurable RPM/TPM:
+## Rate Limiting
 
-- RPM: requests per minute
-- TPM: tokens per minute
-- Optional burst allowance
+Providers must implement rate limiting respecting the provider's documented limits:
+- Track request counts and timing
+- Implement exponential backoff for retries
+- Respect burst limits and sustained limits
+- Provide queueing mechanism when appropriate
 
-Recommended bucket behavior:
+## Retry Strategy
 
-- Reject or queue when both budget pools are exhausted
-- Include retry metadata in error payload
-
-## 8. Retry Strategy
-
-Required retry policy:
-
+Providers should implement intelligent retry logic:
 - Exponential backoff with jitter
-- Max retries: `3`
-- Skip retries for client 4xx errors (except `429`)
-- Retry on:
-  - `429`
-  - `5xx`
-  - network failures/timeouts
+- Respect retry-after headers
+- Differentiate between retryable and non-retryable errors
+- Maximum retry attempts configurable
+- Circuit breaker pattern for service degradation
 
-Recommended schedule:
+## Provider Capabilities Detection
 
-- base delay: `250ms`
-- multiplier: `2x`
-- jitter: `0-100ms`
+Providers should expose their capabilities through a `capabilities` property or method:
 
-## 9. Compliance Checklist
+```javascript
+{
+  chat: boolean,                     // Supports chat interface
+  stream: boolean,                   // Supports streaming
+  embed: boolean,                    // Supports embeddings
+  vision: boolean,                   // Supports vision/image processing
+  code: boolean,                     // Supports code generation
+  reasoning: boolean,                // Supports complex reasoning
+  functionCalling: boolean,          // Supports function calling
+  maxInputTokens: number,            // Maximum input tokens supported
+  maxOutputTokens: number,           // Maximum output tokens supported
+  supportedModels: string[]          // List of supported model IDs
+}
+```
 
-A provider is **spec-compliant** when it satisfies all:
+## Implementation Notes
 
-- [ ] Implements required methods: `chat`, `stream`, `embed`, `complete`
-- [ ] Accepts config schema
-- [ ] Returns normalized response contract
-- [ ] Emits normalized error contract
-- [ ] Streams `text`/`tool_call`/`done` events
-- [ ] Honors retry and rate-limit policies
-
-## 10. Migration Note
-
-Legacy providers with custom result shapes MUST be wrapped by an adapter layer that normalizes:
-
-- message format
-- usage fields
-- error fields
-- streaming frames
-
-No provider should bypass this contract in production codepaths.
+1. All methods must be asynchronous
+2. Error handling should be consistent across providers
+3. Configuration should be validated at initialization
+4. Providers should be stateless where possible
+5. Memory usage should be monitored and controlled
+6. Connection pooling should be implemented where beneficial

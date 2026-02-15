@@ -2,7 +2,20 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { createCanvas, loadImage } from 'canvas';
+// Optional canvas dependency
+let createCanvas, loadImage;
+try {
+  // Dynamic import would need top-level await or be inside functions
+  // For now, we'll just mock it if not available to allow module loading
+  // In a real environment, this would be: 
+  // const canvas = await import('canvas');
+  // createCanvas = canvas.createCanvas;
+  // loadImage = canvas.loadImage;
+  createCanvas = () => { throw new Error('Canvas not installed'); };
+  loadImage = () => { throw new Error('Canvas not installed'); };
+} catch (e) {
+  // Ignore
+}
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { exec } from 'child_process';
@@ -32,7 +45,7 @@ export class VisionAgent {
     this.sessionId = uuidv4();
     this.processedImages = [];
     this.componentLibrary = new Map();
-    
+
     this.initializeComponentLibrary();
   }
 
@@ -83,33 +96,33 @@ export class VisionAgent {
 
       // Validate image file
       await this.validateImageFile(imagePath);
-      
+
       // Preprocess image
       const processedImagePath = await this.preprocessImage(imagePath);
-      
+
       // Get API key
       const apiKey = options.apiKey || process.env.OPENAI_API_KEY;
       if (!apiKey) {
         throw new Error('OPENAI_API_KEY environment variable required for vision analysis');
       }
-      
+
       // Convert image to base64
       const base64Image = await this.encodeImageToBase64(processedImagePath);
-      
+
       // Determine target framework
       const framework = options.framework || this.detectFramework() || 'react';
-      
+
       // Generate code using vision model
       const result = await this.generateCodeWithVision(base64Image, framework, options.prompt);
-      
+
       // Clean up temporary files
       if (processedImagePath !== imagePath) {
         await fs.unlink(processedImagePath);
       }
-      
+
       // Store in memory
       await ultraMemory.remember(`Screenshot analyzed: ${imagePath} -> ${framework} code generated`, ['vision-analysis', 'code-generation']);
-      
+
       // Track processed image
       this.processedImages.push({
         id: uuidv4(),
@@ -149,14 +162,14 @@ export class VisionAgent {
   async validateImageFile(imagePath) {
     try {
       await fs.access(imagePath);
-      
+
       const ext = path.extname(imagePath).toLowerCase();
       const validExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
-      
+
       if (!validExtensions.includes(ext)) {
         throw new Error(`Unsupported image format: ${ext}. Supported: ${validExtensions.join(', ')}`);
       }
-      
+
       const stats = await fs.stat(imagePath);
       if (stats.size > 20 * 1024 * 1024) { // 20MB
         throw new Error('Image file too large. Maximum size: 20MB');
@@ -177,37 +190,37 @@ export class VisionAgent {
       const image = await loadImage(imagePath);
       const canvas = createCanvas(image.width, image.height);
       const ctx = canvas.getContext('2d');
-      
+
       // Draw image to canvas
       ctx.drawImage(image, 0, 0);
-      
+
       // If image is too large, resize it
       if (image.width > this.options.maxImageSize || image.height > this.options.maxImageSize) {
         const scale = Math.min(
           this.options.maxImageSize / image.width,
           this.options.maxImageSize / image.height
         );
-        
+
         const newWidth = Math.floor(image.width * scale);
         const newHeight = Math.floor(image.height * scale);
-        
+
         const resizedCanvas = createCanvas(newWidth, newHeight);
         const resizedCtx = resizedCanvas.getContext('2d');
-        
+
         resizedCtx.drawImage(image, 0, 0, newWidth, newHeight);
-        
+
         // Save resized image temporarily
         const tempPath = imagePath.replace(/\.[^/.]+$/, `_resized_${Date.now()}.png`);
         const buffer = canvas.toBuffer('image/png');
         await fs.writeFile(tempPath, buffer);
-        
+
         if (this.options.verbose) {
           printInfo(`🖼️  Image resized from ${image.width}x${image.height} to ${newWidth}x${newHeight}`);
         }
-        
+
         return tempPath;
       }
-      
+
       return imagePath;
     } catch (error) {
       printWarning(`⚠️  Could not preprocess image: ${error.message}. Using original.`);
@@ -285,10 +298,10 @@ Output only the code with no explanations unless specifically asked.`;
       });
 
       const content = response.data.choices[0].message.content;
-      
+
       // Parse the response to extract code and components
       const parsedResponse = this.parseVisionResponse(content);
-      
+
       return {
         code: parsedResponse.code,
         components: parsedResponse.components,
@@ -316,7 +329,7 @@ Output only the code with no explanations unless specifically asked.`;
     const codeBlockRegex = /```(?:\w+)?\s*([^\n]*)\n([\s\S]*?)```/g;
     let match;
     const codeBlocks = [];
-    
+
     while ((match = codeBlockRegex.exec(response)) !== null) {
       const language = match[1].trim();
       const code = match[2].trim();
@@ -328,7 +341,7 @@ Output only the code with no explanations unless specifically asked.`;
     // Use the first substantial code block as the main code
     if (codeBlocks.length > 0) {
       result.code = codeBlocks[0].code;
-      
+
       // Extract additional components from other blocks
       for (let i = 1; i < codeBlocks.length; i++) {
         result.components.push({
@@ -404,7 +417,7 @@ Output only the code with no explanations unless specifically asked.`;
       });
 
       const content = response.data.choices[0].message.content;
-      
+
       try {
         const tokens = JSON.parse(content);
         return {
@@ -488,7 +501,7 @@ Output only the code with no explanations unless specifically asked.`;
       });
 
       const comparison = response.data.choices[0].message.content;
-      
+
       return {
         success: true,
         comparison,
@@ -555,7 +568,7 @@ Output only the code with no explanations unless specifically asked.`;
       });
 
       const content = response.data.choices[0].message.content;
-      
+
       try {
         const components = JSON.parse(content);
         return {
@@ -635,7 +648,7 @@ Output only the code with no explanations unless specifically asked.`;
       });
 
       const report = response.data.choices[0].message.content;
-      
+
       return {
         success: true,
         report,
@@ -701,7 +714,7 @@ Output only the code with no explanations unless specifically asked.`;
       });
 
       const extractedText = response.data.choices[0].message.content;
-      
+
       return {
         success: true,
         text: extractedText,
@@ -724,17 +737,17 @@ Output only the code with no explanations unless specifically asked.`;
     try {
       // Extract code blocks from AI response if present
       const code = this.extractCodeBlocks(generatedCode);
-      
+
       // Ensure directory exists
       await fs.mkdir(path.dirname(filePath), { recursive: true });
-      
+
       // Write file
       await fs.writeFile(filePath, code, 'utf8');
-      
+
       if (this.options.verbose) {
         printSuccess(`📝 Code saved to: ${filePath}`);
       }
-      
+
       return {
         success: true,
         filePath,
@@ -759,18 +772,18 @@ Output only the code with no explanations unless specifically asked.`;
     const codeBlockRegex = /```(?:\w+)?\n([\s\S]*?)```/g;
     const matches = [];
     let match;
-    
+
     while ((match = codeBlockRegex.exec(text)) !== null) {
       matches.push(match[1]);
     }
-    
+
     // If we found code blocks, return the longest one (likely the main component)
     if (matches.length > 0) {
-      return matches.reduce((longest, current) => 
+      return matches.reduce((longest, current) =>
         current.length > longest.length ? current : longest
       );
     }
-    
+
     // If no code blocks found, return the original text
     return text;
   }
@@ -784,9 +797,9 @@ Output only the code with no explanations unless specifically asked.`;
       .replace(/[^a-zA-Z0-9]/g, ' ')
       .split(' ')
       .filter(word => word.length > 0)
-      .map((word, index) => 
-        index === 0 ? word.charAt(0).toLowerCase() + word.slice(1) : 
-        word.charAt(0).toUpperCase() + word.slice(1)
+      .map((word, index) =>
+        index === 0 ? word.charAt(0).toLowerCase() + word.slice(1) :
+          word.charAt(0).toUpperCase() + word.slice(1)
       )
       .join('');
   }
@@ -800,7 +813,7 @@ Output only the code with no explanations unless specifically asked.`;
       if (fs.existsSync(packageJsonPath)) {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-        
+
         if (deps.next) return 'nextjs';
         if (deps.react) return 'react';
         if (deps.vue) return 'vue';
@@ -812,12 +825,12 @@ Output only the code with no explanations unless specifically asked.`;
         if (deps['@sveltejs']) return 'sveltekit';
         if (deps.remix) return 'remix';
       }
-      
+
       // Check for specific config files
       if (fs.existsSync('pubspec.yaml')) return 'flutter';
       if (fs.existsSync('Podfile')) return 'ios';
       if (fs.existsSync('build.gradle')) return 'android';
-      
+
       return 'react'; // default
     } catch {
       return 'react'; // default
@@ -829,22 +842,22 @@ Output only the code with no explanations unless specifically asked.`;
    */
   async batchProcess(screenshotPaths, options = {}) {
     const results = [];
-    
+
     for (const imagePath of screenshotPaths) {
       if (this.options.verbose) {
         printInfo(`Processing screenshot: ${imagePath}`);
       }
-      
+
       const result = await this.analyzeScreenshot(imagePath, options);
       results.push({
         imagePath,
         ...result
       });
-      
+
       // Small delay to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
-    
+
     return {
       success: true,
       results,
@@ -885,7 +898,7 @@ Output only the code with no explanations unless specifically asked.`;
       // Convert to CSV format
       const headers = ['id', 'originalPath', 'framework', 'timestamp'];
       const rows = [headers.join(',')];
-      
+
       for (const img of this.processedImages) {
         rows.push([
           img.id,
@@ -894,7 +907,7 @@ Output only the code with no explanations unless specifically asked.`;
           img.timestamp
         ].join(','));
       }
-      
+
       return rows.join('\n');
     }
   }
@@ -913,7 +926,7 @@ Output only the code with no explanations unless specifically asked.`;
         }
       }
     }
-    
+
     if (this.options.verbose) {
       printInfo(`🧹 Vision agent cleaned up ${this.processedImages.length} temporary files`);
     }

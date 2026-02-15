@@ -56,10 +56,12 @@ function buildConfigFor(name, base = {}) {
 class ProviderRegistry {
   constructor() {
     this.registry = new Map();
+    this.providerMetadata = new Map(); // Store metadata about each provider
     this.discoveryLoaded = false;
+    this.validationResults = new Map(); // Store validation results
   }
 
-  registerProvider(name, instance) {
+  registerProvider(name, instance, metadata = {}) {
     const key = normalizeProviderKey(name);
 
     if (!instance) {
@@ -77,8 +79,57 @@ class ProviderRegistry {
       );
     }
 
+    // Validate the provider interface
+    const validation = this.validateProviderInterface(instance);
+    this.validationResults.set(key, validation);
+
     this.registry.set(key, instance);
+    this.providerMetadata.set(key, {
+      name: key,
+      registeredAt: new Date().toISOString(),
+      ...metadata
+    });
+
     return instance;
+  }
+
+  validateProviderInterface(provider) {
+    const errors = [];
+    
+    // Check required methods
+    if (typeof provider.chat !== 'function') {
+      errors.push('Missing required method: chat(messages, opts)');
+    }
+    
+    if (typeof provider.stream !== 'function') {
+      errors.push('Missing required method: stream(messages, opts)');
+    }
+    
+    if (typeof provider.embed !== 'function') {
+      errors.push('Missing required method: embed(text)');
+    }
+    
+    // Check if methods have expected signatures (basic check)
+    try {
+      // Test if methods accept the expected parameters
+      if (provider.chat.constructor.name !== 'AsyncFunction') {
+        errors.push('chat method should be async');
+      }
+      if (provider.stream.constructor.name !== 'AsyncFunction') {
+        errors.push('stream method should be async');
+      }
+      if (provider.embed.constructor.name !== 'AsyncFunction') {
+        errors.push('embed method should be async');
+      }
+    } catch (e) {
+      // Ignore errors during signature inspection
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      validatedAt: new Date().toISOString()
+    };
   }
 
   getProvider(name) {
@@ -86,8 +137,59 @@ class ProviderRegistry {
     return this.registry.get(key) || null;
   }
 
+  getProviderMetadata(name) {
+    const key = normalizeProviderKey(name);
+    return this.providerMetadata.get(key) || null;
+  }
+
   listProviders() {
     return Array.from(this.registry.keys()).sort();
+  }
+
+  listProviderDetails() {
+    const details = [];
+    for (const [key, provider] of this.registry.entries()) {
+      const metadata = this.providerMetadata.get(key);
+      const validation = this.validationResults.get(key);
+      
+      details.push({
+        name: key,
+        registeredAt: metadata?.registeredAt,
+        isValid: validation?.valid,
+        validationErrors: validation?.errors,
+        capabilities: this.getProviderCapabilities(provider)
+      });
+    }
+    return details;
+  }
+
+  getProviderCapabilities(provider) {
+    const capabilities = ['chat', 'stream', 'embed'];
+    
+    // Check for optional capabilities
+    if (typeof provider.complete === 'function') {
+      capabilities.push('complete');
+    }
+    
+    if (typeof provider.vision !== 'undefined' || 
+        (provider.constructor && provider.constructor.name.includes('Vision'))) {
+      capabilities.push('vision');
+    }
+    
+    if (typeof provider.code !== 'undefined') {
+      capabilities.push('code');
+    }
+    
+    if (typeof provider.reasoning !== 'undefined') {
+      capabilities.push('reasoning');
+    }
+    
+    if (typeof provider.functionCalling !== 'undefined' || 
+        provider.supportsFunctions) {
+      capabilities.push('functionCalling');
+    }
+    
+    return capabilities;
   }
 
   resolveModel(modelId) {
@@ -130,7 +232,10 @@ class ProviderRegistry {
 
       try {
         const instance = new ProviderClass(providerConfig);
-        this.registerProvider(registryKey, instance);
+        this.registerProvider(registryKey, instance, {
+          sourceFile: file,
+          autoDiscovered: true
+        });
       } catch {
         // Some providers require strict config. Use permissive placeholder config so the registry can still load.
         const placeholderConfig = {
@@ -139,7 +244,11 @@ class ProviderRegistry {
         };
         try {
           const instance = new ProviderClass(placeholderConfig);
-          this.registerProvider(registryKey, instance);
+          this.registerProvider(registryKey, instance, {
+            sourceFile: file,
+            autoDiscovered: true,
+            requiresConfig: true
+          });
         } catch {
           // Keep discovery resilient; skip providers that cannot initialize safely.
         }
@@ -149,6 +258,25 @@ class ProviderRegistry {
     this.discoveryLoaded = true;
     return this.listProviders();
   }
+
+  // Enhanced provider registration with cost-based routing, latency fallback, and load balancing
+  async registerWithRouting(providerName, instance, routingConfig = {}) {
+    // Register the provider normally
+    this.registerProvider(providerName, instance, {
+      routingEnabled: true,
+      ...routingConfig
+    });
+
+    // Update router configuration with provider priority if needed
+    if (routingConfig.priority) {
+      // This would typically update the router config, but we'll store it here for now
+      const metadata = this.providerMetadata.get(normalizeProviderKey(providerName));
+      metadata.routingPriority = routingConfig.priority;
+      metadata.routingStrategy = routingConfig.strategy || 'quality';
+    }
+
+    return instance;
+  }
 }
 
 export const providerRegistry = new ProviderRegistry();
@@ -156,7 +284,10 @@ export const providerRegistry = new ProviderRegistry();
 export const registerProvider = (...args) => providerRegistry.registerProvider(...args);
 export const getProvider = (...args) => providerRegistry.getProvider(...args);
 export const listProviders = (...args) => providerRegistry.listProviders(...args);
+export const listProviderDetails = (...args) => providerRegistry.listProviderDetails(...args);
+export const getProviderMetadata = (...args) => providerRegistry.getProviderMetadata(...args);
 export const resolveModel = (...args) => providerRegistry.resolveModel(...args);
 export const autoDiscoverProviders = (...args) => providerRegistry.autoDiscoverProviders(...args);
+export const validateProviderInterface = (...args) => providerRegistry.validateProviderInterface(...args);
 
 export default providerRegistry;

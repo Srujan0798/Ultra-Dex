@@ -1,151 +1,148 @@
 // Copyright (c) 2026 Ultra-Dex
+// S3-Compatible Storage Adapter
 
-let s3Client = null;
-let signer = null;
-let storageConfig = {
-  region: process.env.S3_REGION || 'us-east-1',
-  endpoint: process.env.S3_ENDPOINT,
-  bucket: process.env.S3_BUCKET,
-  accessKeyId: process.env.S3_ACCESS_KEY_ID,
-  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-  forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
-};
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-async function ensureClient() {
-  if (s3Client && signer) return { s3Client, signer };
+class S3Adapter {
+  constructor(config) {
+    this.config = {
+      region: config.region || 'us-east-1',
+      accessKeyId: config.accessKeyId || process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: config.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY,
+      bucket: config.bucket || process.env.S3_BUCKET,
+      endpoint: config.endpoint, // For S3-compatible services like MinIO
+      forcePathStyle: config.forcePathStyle || !!config.endpoint, // Required for MinIO
+    };
 
-  const s3Mod = await import('@aws-sdk/client-s3');
-  const presignMod = await import('@aws-sdk/s3-request-presigner');
-
-  const {
-    S3Client,
-    PutObjectCommand,
-    GetObjectCommand,
-    DeleteObjectCommand,
-    ListObjectsV2Command,
-  } = s3Mod;
-
-  const { getSignedUrl } = presignMod;
-
-  if (!storageConfig.bucket) {
-    throw new Error('[storage] S3 bucket is required (S3_BUCKET)');
+    this.s3Client = new S3Client({
+      region: this.config.region,
+      credentials: {
+        accessKeyId: this.config.accessKeyId,
+        secretAccessKey: this.config.secretAccessKey,
+      },
+      ...(this.config.endpoint && { endpoint: this.config.endpoint }),
+      ...(this.config.forcePathStyle && { forcePathStyle: true }),
+    });
   }
 
-  s3Client = new S3Client({
-    region: storageConfig.region,
-    endpoint: storageConfig.endpoint,
-    forcePathStyle: storageConfig.forcePathStyle,
-    credentials:
-      storageConfig.accessKeyId && storageConfig.secretAccessKey
-        ? {
-            accessKeyId: storageConfig.accessKeyId,
-            secretAccessKey: storageConfig.secretAccessKey,
-          }
-        : undefined,
-  });
+  async upload(fileBuffer, fileName, options = {}) {
+    const command = new PutObjectCommand({
+      Bucket: this.config.bucket,
+      Key: fileName,
+      Body: fileBuffer,
+      ContentType: options.contentType || 'application/octet-stream',
+      Metadata: options.metadata || {},
+      ACL: options.acl || 'private', // Default to private
+    });
 
-  signer = {
-    getSignedUrl,
-    PutObjectCommand,
-    GetObjectCommand,
-    DeleteObjectCommand,
-    ListObjectsV2Command,
-  };
-
-  return { s3Client, signer };
-}
-
-function normalizeBody(body) {
-  if (typeof body === 'string' || body instanceof Uint8Array || body instanceof Buffer) {
-    return body;
-  }
-  return JSON.stringify(body);
-}
-
-export function configureStorage(config = {}) {
-  storageConfig = { ...storageConfig, ...config };
-  s3Client = null;
-  signer = null;
-}
-
-export async function upload(key, body, contentType = 'application/octet-stream') {
-  const { s3Client, signer } = await ensureClient();
-  const command = new signer.PutObjectCommand({
-    Bucket: storageConfig.bucket,
-    Key: key,
-    Body: normalizeBody(body),
-    ContentType: contentType,
-  });
-
-  await s3Client.send(command);
-  return { key, bucket: storageConfig.bucket };
-}
-
-export async function download(key) {
-  const { s3Client, signer } = await ensureClient();
-  const command = new signer.GetObjectCommand({
-    Bucket: storageConfig.bucket,
-    Key: key,
-  });
-
-  const response = await s3Client.send(command);
-  const chunks = [];
-
-  if (response.Body && response.Body[Symbol.asyncIterator]) {
-    for await (const chunk of response.Body) {
-      chunks.push(Buffer.from(chunk));
+    try {
+      const response = await this.s3Client.send(command);
+      return {
+        success: true,
+        key: fileName,
+        etag: response.ETag,
+        versionId: response.VersionId,
+      };
+    } catch (error) {
+      throw new Error(`S3 upload failed: ${error.message}`);
     }
   }
 
-  return {
-    key,
-    contentType: response.ContentType,
-    body: Buffer.concat(chunks),
-  };
+  async download(fileName) {
+    const command = new GetObjectCommand({
+      Bucket: this.config.bucket,
+      Key: fileName,
+    });
+
+    try {
+      const response = await this.s3Client.send(command);
+      const buffer = await response.Body.transformToByteArray();
+      return {
+        success: true,
+        buffer: Buffer.from(buffer),
+        contentType: response.ContentType,
+        contentLength: response.ContentLength,
+        lastModified: response.LastModified,
+      };
+    } catch (error) {
+      if (error.name === 'NoSuchKey') {
+        throw new Error(`File not found: ${fileName}`);
+      }
+      throw new Error(`S3 download failed: ${error.message}`);
+    }
+  }
+
+  async delete(fileName) {
+    const command = new DeleteObjectCommand({
+      Bucket: this.config.bucket,
+      Key: fileName,
+    });
+
+    try {
+      await this.s3Client.send(command);
+      return { success: true };
+    } catch (error) {
+      throw new Error(`S3 delete failed: ${error.message}`);
+    }
+  }
+
+  async generatePresignedUrl(fileName, expiresIn = 3600) {
+    const command = new GetObjectCommand({
+      Bucket: this.config.bucket,
+      Key: fileName,
+    });
+
+    try {
+      const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+      return { success: true, url };
+    } catch (error) {
+      throw new Error(`S3 presigned URL generation failed: ${error.message}`);
+    }
+  }
+
+  async healthCheck() {
+    try {
+      // Try to list objects (with limit 0) to check connectivity
+      const { ListObjectsV2Command } = await import('@aws-sdk/client-s3');
+      const command = new ListObjectsV2Command({
+        Bucket: this.config.bucket,
+        MaxKeys: 0,
+      });
+
+      await this.s3Client.send(command);
+      return { status: 'healthy', bucket: this.config.bucket };
+    } catch (error) {
+      return { status: 'unhealthy', error: error.message };
+    }
+  }
+
+  // Utility method to upload from a local file path
+  async uploadFromFile(filePath, fileName, options = {}) {
+    const fs = await import('fs');
+    const fsPromises = fs.promises;
+
+    try {
+      const fileBuffer = await fsPromises.readFile(filePath);
+      return await this.upload(fileBuffer, fileName, options);
+    } catch (error) {
+      throw new Error(`Upload from file failed: ${error.message}`);
+    }
+  }
+
+  // Utility method to download to a local file path
+  async downloadToFile(fileName, filePath) {
+    try {
+      const result = await this.download(fileName);
+      const fs = await import('fs');
+      const fsPromises = fs.promises;
+
+      await fsPromises.writeFile(filePath, result.buffer);
+      return { success: true, path: filePath };
+    } catch (error) {
+      throw new Error(`Download to file failed: ${error.message}`);
+    }
+  }
 }
 
-export async function deleteObject(key) {
-  const { s3Client, signer } = await ensureClient();
-  const command = new signer.DeleteObjectCommand({
-    Bucket: storageConfig.bucket,
-    Key: key,
-  });
-  await s3Client.send(command);
-  return { deleted: true, key };
-}
-
-export async function listObjects(prefix = '') {
-  const { s3Client, signer } = await ensureClient();
-  const command = new signer.ListObjectsV2Command({
-    Bucket: storageConfig.bucket,
-    Prefix: prefix,
-  });
-
-  const response = await s3Client.send(command);
-  return {
-    items: (response.Contents || []).map((entry) => ({
-      key: entry.Key,
-      size: entry.Size,
-      lastModified: entry.LastModified,
-      etag: entry.ETag,
-    })),
-  };
-}
-
-export async function getSignedUrl(key, expiresIn = 3600) {
-  const { s3Client, signer } = await ensureClient();
-  const command = new signer.GetObjectCommand({
-    Bucket: storageConfig.bucket,
-    Key: key,
-  });
-
-  const url = await signer.getSignedUrl(s3Client, command, {
-    expiresIn,
-  });
-
-  return {
-    key,
-    expiresIn,
-    url,
-  };
-}
+export default S3Adapter;
