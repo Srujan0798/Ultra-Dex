@@ -69,6 +69,16 @@ Branch: `main`
   - `package.json` scripts: `test:e2e`, `test:load`
 - Final sprint gap report added:
   - `K.i.M.i/FINAL_SPRINT_GAP_REPORT.md`
+- Post-merge launch evidence captured:
+  - `gitFail/compliance/status/launch-evidence-2026-02-15.md`
+- Dashboard Hologram chunk reduction pass applied:
+  - `apps/dashboard/src/pages/Hologram.tsx`
+  - `apps/dashboard/vite.config.ts`
+  - Size reduced from ~987 kB to ~846 kB
+- E2E stabilization shipped:
+  - `tests/e2e/dashboard.spec.js` migrated to ESM, auto-start server, onboarding modal bypass
+- Full gate non-hanging fix shipped:
+  - `package.json` test scripts now include `--test-force-exit`
 
 ## Validation Snapshot
 
@@ -78,18 +88,21 @@ Branch: `main`
 - `npm run test:a11y -w apps/dashboard` -> pass ✅
 - `npm run build -w apps/website` -> pass ✅
 - `node --test tests/cli/comprehensive.test.js` -> pass ✅
+- `npm run test:e2e` -> pass ✅
+- `npm run test:load` -> executed, failed with `ECONNREFUSED` (target API not running) ⚠️
+- `npm run gate:push:full` -> deterministic fail at audit stage (no hang) ⚠️
 
 ## Current Blockers
 
-1. Dashboard still exceeds bundle-size target due heavy `Hologram` chunk.
-2. Cross-browser QA evidence is not yet published.
-3. `main` still has heavy multi-agent divergence; remaining large changes need batched, domain-wise merges.
+1. Dashboard still exceeds strict bundle-size target due heavy `Hologram` chunk (despite reduction pass).
+2. Full security audit is failing on dependency backlog.
+3. Load-test harness is not bringing up required API target before Artillery run.
 4. External launch ops still manual: GitHub Marketplace publish, Discord live rollout, Vercel production deployment, npm publish.
 
 ## Next Execution Queue
 
-1. Complete Alpha QA closure: publish dashboard coverage/perf report and cross-browser checklist.
-2. Reduce dashboard large chunk risk (`Hologram`) with deeper split/defer strategy.
-3. Complete Delta final content polish: testimonials, screenshots, and launch copy QA.
-4. Publish QA evidence pack (coverage, browser matrix, load, security).
+1. Complete Hologram phase-2 split/defer strategy (feature-toggle + secondary lazy boundary).
+2. Build a deterministic load-test harness (boot API + health-check gate before Artillery).
+3. Run security remediation wave for audit high/critical paths.
+4. Complete Delta final content polish: testimonials, screenshots, and launch copy QA.
 5. Execute external launch ops (Marketplace, Discord, Vercel, npm) with production credentials.

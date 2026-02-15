@@ -1,7 +1,6 @@
-import React, { useRef, useState, useMemo, memo, useEffect } from 'react';
+import React, { useRef, useState, memo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Stars, Grid } from '@react-three/drei';
-import * as THREE from 'three';
+import type { Mesh } from 'three';
 import { useWebSocket } from '../hooks/useWebSocket';
 
 interface BuildingData {
@@ -83,10 +82,11 @@ interface BuildingProps {
     color: string;
     name: string;
     complexity?: number;
+    onHover?: (name: string | null) => void;
 }
 
-const Building = ({ position, height, color, name }: BuildingProps) => {
-    const mesh = useRef<THREE.Mesh>(null);
+const Building = ({ position, height, color, name, onHover }: BuildingProps) => {
+    const mesh = useRef<Mesh>(null);
     const [hovered, setHover] = useState(false);
     const [active, setActive] = useState(false);
 
@@ -104,8 +104,14 @@ const Building = ({ position, height, color, name }: BuildingProps) => {
                 position={[0, height / 2, 0]}
                 scale={active ? 1.2 : 1}
                 onClick={() => setActive(!active)}
-                onPointerOver={() => setHover(true)}
-                onPointerOut={() => setHover(false)}
+                onPointerOver={() => {
+                    setHover(true);
+                    onHover?.(name);
+                }}
+                onPointerOut={() => {
+                    setHover(false);
+                    onHover?.(null);
+                }}
                 aria-label={`File: ${name}`}
             >
                 <boxGeometry args={[1, height, 1]} />
@@ -115,21 +121,23 @@ const Building = ({ position, height, color, name }: BuildingProps) => {
                     roughness={0.2}
                 />
             </mesh>
-
-            {/* Label on Hover */}
-            {hovered && (
-                <Text
-                    position={[0, height + 1, 0]}
-                    fontSize={0.5}
-                    color="white"
-                    anchorX="center"
-                    anchorY="middle"
-                >
-                    {name}
-                </Text>
-            )}
         </group>
     );
+};
+
+const CameraDrift = () => {
+    const angleRef = useRef(0);
+
+    useFrame((state, delta) => {
+        angleRef.current += delta * 0.12;
+        const radius = 16;
+        state.camera.position.x = Math.cos(angleRef.current) * radius;
+        state.camera.position.z = Math.sin(angleRef.current) * radius;
+        state.camera.position.y = 10;
+        state.camera.lookAt(0, 2, 0);
+    });
+
+    return null;
 };
 
 /**
@@ -138,6 +146,7 @@ const Building = ({ position, height, color, name }: BuildingProps) => {
  */
 const Hologram = memo(() => {
     const [cityData, setCityData] = useState<BuildingData[]>(() => generateCityData(60));
+    const [hoveredFile, setHoveredFile] = useState<string | null>(null);
     const socketUrl =
         (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ULTRA_DEX_WS) ||
         'ws://localhost:3002/ws';
@@ -185,8 +194,8 @@ const Hologram = memo(() => {
                     <spotLight position={[-10, 10, -10]} angle={0.3} penumbra={1} intensity={2} />
 
                     {/* Environment */}
-                    <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-                    <Grid infiniteGrid fadeDistance={50} sectionColor="#4f4f4f" cellColor="#2f2f2f" />
+                    <gridHelper args={[60, 60, '#4f4f4f', '#2f2f2f']} />
+                    <CameraDrift />
 
                     {/* City */}
                     <group>
@@ -198,18 +207,11 @@ const Hologram = memo(() => {
                                 color={building.color}
                                 name={building.name}
                                 complexity={building.complexity}
+                                onHover={setHoveredFile}
                             />
                         ))}
                     </group>
 
-                    {/* Controls */}
-                    <OrbitControls
-                        enablePan={true}
-                        enableZoom={true}
-                        enableRotate={true}
-                        autoRotate={true}
-                        autoRotateSpeed={0.5}
-                    />
                 </Canvas>
 
                 <div
@@ -217,8 +219,16 @@ const Hologram = memo(() => {
                     role="contentinfo"
                     aria-label="Navigation Controls"
                 >
-                    <p>Left Click: Inspect | Right Click: Pan | Scroll: Zoom</p>
+                    <p>Auto-orbit enabled | Click building to inspect</p>
                 </div>
+                {hoveredFile && (
+                    <div
+                        className="absolute top-4 right-4 bg-black/60 px-3 py-2 rounded text-xs"
+                        aria-live="polite"
+                    >
+                        {hoveredFile}
+                    </div>
+                )}
             </div>
         </main>
     );
