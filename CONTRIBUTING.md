@@ -1,59 +1,73 @@
 # Contributing to Ultra-Dex
 
-Thanks for helping improve Ultra-Dex. This guide keeps changes consistent and reviewable.
+Thank you for your interest in contributing to Ultra-Dex! We appreciate your help in making AI orchestration better for everyone.
 
-## Quick Start
+## Code of Conduct
 
-1. Fork and clone the repo.
-2. Install dependencies: `npm install` (or `pnpm install`).
-3. Enable local Git hooks: `git config core.hooksPath .husky`.
-4. Run CLI tests: `npm run test` (root) or `cd cli && npm test`.
+Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our community welcoming and inclusive.
 
-## How To Add a New Agent
+## How to Contribute
 
-1. Create a markdown prompt in `agents/` under the correct tier.
-2. Follow the agent formatting style: responsibilities, constraints, and output format.
-3. Add the agent to the registry or index file if one exists.
-4. Update docs that list agents.
+### Reporting Bugs
 
-## How To Add a New CLI Command
+1. Search the [issues](https://github.com/ultra-dex/ultra-dex/issues) to see if the bug has already been reported
+2. If not, create a new issue with:
+   - A clear title and description
+   - Steps to reproduce the issue
+   - Expected vs actual behavior
+   - Environment information (OS, Node.js version, etc.)
 
-1. Create `cli/lib/commands/<command>.js`.
-2. Export a `register<Command>Command(program)` function.
-3. Register it in `cli/bin/ultra-dex.js`.
-4. Add at least one test in `cli/test/`.
+### Suggesting Features
+
+1. Check if the feature has already been suggested in the issues
+2. If not, create a new issue with:
+   - Clear description of the feature
+   - Use cases for the feature
+   - Potential implementation approaches
+
+### Pull Requests
+
+1. Fork the repository
+2. Create a new branch for your feature or bug fix
+3. Make your changes following the code style
+4. Add tests if applicable
+5. Update documentation if needed
+6. Submit a pull request with a clear description
+
+## Development Setup
+
+1. Clone your fork:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/ultra-dex.git
+   cd ultra-dex
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run tests to ensure everything works:
+   ```bash
+   npm test
+   ```
 
 ## Code Style
 
-- JavaScript: 2-space indentation.
-- Use ESM `import`/`export`.
-- Prefer `async/await`.
-- Avoid `console.log` in production paths (use `printInfo/printSuccess` helpers).
+- Use TypeScript for type safety
+- Follow the existing code style
+- Write clear, descriptive variable and function names
+- Add comments for complex logic
+- Keep functions focused and small
 
-## Tests
+## Testing
 
-- Unit tests: `cli/test/unit/`
-- Integration tests: `cli/test/integration/`
-- Full CLI suite: `cd cli && npm test`
+- Write tests for new features
+- Update existing tests if needed
+- Run tests before submitting PRs: `npm test`
 
-## Pull Requests
+## Questions?
 
-- Keep PRs focused and atomic.
-- Include test coverage for new commands.
-- Update docs if behavior changes.
-- Use clear commit messages.
+If you have any questions, feel free to ask in our [Discord community](https://discord.gg/ultra-dex) or open an issue.
 
-## Security
-
-If you find a security issue, please email the maintainer instead of opening a public issue.
-
-## Legal and Ethical Rules
-
-- Follow `CODE_OF_CONDUCT.md` in all project spaces.
-- Read `SECURITY.md` before reporting vulnerabilities.
-- Complete `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md` before every commit/PR.
-- Run `npm run gate:local` before release-sensitive operations.
-- Run `npm run guard:github` before push/release operations.
-- If account is suspended but local work continues, run `npm run guard:github:local`.
-- Do not commit secrets, private keys, tokens, or sensitive personal data.
-- Do not submit code/content that violates GitHub Terms or Acceptable Use Policies.
+Thank you for contributing to Ultra-Dex!

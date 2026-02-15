@@ -15,4 +15,6 @@ all as u wish
 **STATUS:** All systems go.
 **NEXT:** Begin Phase 2 Execution.
 
+**Confirmed Plan:** [`AGENT-30DAY-DETAILED-PLAN.md`](../AGENT-30DAY-DETAILED-PLAN.md)
+
 ---

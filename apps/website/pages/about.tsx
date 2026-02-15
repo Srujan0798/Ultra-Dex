@@ -1,312 +1,123 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { FiUsers, FiCode, FiZap, FiShield, FiGlobe, FiHeart, FiAward, FiStar, FiGitBranch, FiDatabase, FiBarChart3, FiClock, FiCpu, FiLayers, FiTerminal, FiCheck, FiArrowRight } from 'react-icons/fi';
 
-export default function AboutPage() {
-  const teamMembers = [
-    {
-      name: 'Srujan Sai Karna',
-      role: 'Founder & CEO',
-      bio: 'Former AI researcher at OpenAI, architect of large-scale ML systems',
-      avatar: '/avatars/srujan.jpg',
-      linkedin: 'https://linkedin.com/in/srujan-karna',
-      twitter: 'https://twitter.com/srujan_karna'
-    },
-    {
-      name: 'Roshwin Ram',
-      role: 'CTO & Lead Engineer',
-      bio: 'Ex-Netflix engineer, specializes in distributed systems and AI infrastructure',
-      avatar: '/avatars/roshwin.jpg',
-      linkedin: 'https://linkedin.com/in/roshwin-ram',
-      twitter: 'https://twitter.com/roshwin_ram'
-    },
-    {
-      name: 'Sai Karthik',
-      role: 'Head of AI Research',
-      bio: 'PhD in Machine Learning, former researcher at Anthropic',
-      avatar: '/avatars/sai.jpg',
-      linkedin: 'https://linkedin.com/in/sai-karthik',
-      twitter: 'https://twitter.com/sai_karthik'
-    },
-    {
-      name: 'Srujan Reddy',
-      role: 'VP of Engineering',
-      bio: 'Ex-Google engineer, built infrastructure for millions of users',
-      avatar: '/avatars/srujan-reddy.jpg',
-      linkedin: 'https://linkedin.com/in/srujan-reddy',
-      twitter: 'https://twitter.com/srujan_reddy'
-    }
-  ];
-
-  const milestones = [
-    { year: '2024', event: 'Initial concept and architecture design' },
-    { year: '2025', event: 'Alpha release to select enterprise partners' },
-    { year: '2026', event: 'Beta release with full feature set' },
-    { year: '2026', event: 'Public launch and Series A funding' },
-    { year: '2027', event: 'Fortune 500 customer acquisition' },
-    { year: '2028', event: 'Global expansion and localization' }
-  ];
-
+export default function About() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
       <Head>
-        <title>About Us - Ultra-Dex AI Orchestration</title>
-        <meta name="description" content="Learn about the Ultra-Dex team and mission" />
+        <title>About Ultra-Dex | AI Orchestration Platform</title>
+        <meta name="description" content="Learn about Ultra-Dex and our mission to solve the AI memory crisis" />
+        <meta name="keywords" content="about Ultra-Dex, AI orchestration company, persistent memory" />
+        <link rel="canonical" href="https://ultra-dex.dev/about" />
       </Head>
 
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-gray-900 to-indigo-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
+      <section className="py-20">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Building the Future of <span className="text-indigo-300">AI Orchestration</span>
+              About <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Ultra-Dex</span>
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Ultra-Dex is the AI orchestration meta-layer that enables enterprises to build, deploy, and scale 
-              AI-powered applications with confidence.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Mission Section */}
-      <div className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              We believe that AI orchestration should be as simple as calling an API, as secure as enterprise software, 
-              and as powerful as the best human teams. Ultra-Dex eliminates the complexity of multi-agent coordination, 
-              memory management, and tool integration, letting you focus on what matters: building amazing AI applications.
+              The AI orchestration meta-layer for production software delivery
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-              <div className="text-indigo-600 mb-4 flex justify-center">
-                <FiZap className="h-10 w-10" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Simplicity</h3>
-              <p className="text-gray-600">
-                Abstract away the complexity of AI orchestration with intuitive APIs and visual tools
+          <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl border border-gray-700 p-8 mb-12">
+            <h2 className="text-3xl font-bold mb-6 text-blue-400">Our Mission</h2>
+            <p className="text-gray-300 text-lg mb-6">
+              At Ultra-Dex, we believe that the future of AI development lies not in single models or tools, 
+              but in the orchestration of multiple AI agents working together with persistent memory and 
+              intelligent routing.
+            </p>
+            <p className="text-gray-300 text-lg mb-6">
+              Our platform solves the critical problem of context loss in AI interactions, enabling 
+              developers to build production-ready AI applications that maintain state, learn from 
+              past interactions, and coordinate complex workflows.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/10 p-8 rounded-2xl border border-blue-700/30">
+              <h3 className="text-2xl font-bold mb-4 text-blue-400">The Problem</h3>
+              <p className="text-gray-300">
+                Traditional AI tools suffer from "amnesia" - each session starts fresh with no memory 
+                of previous interactions. This leads to fragmented workflows, repeated context setting, 
+                and inability to build complex, multi-step applications.
               </p>
             </div>
             
-            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-              <div className="text-indigo-600 mb-4 flex justify-center">
-                <FiShield className="h-10 w-10" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Security</h3>
-              <p className="text-gray-600">
-                Enterprise-grade security with SSO, RBAC, audit logging, and data encryption
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-              <div className="text-indigo-600 mb-4 flex justify-center">
-                <FiGlobe className="h-10 w-10" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Power</h3>
-              <p className="text-gray-600">
-                Leverage the collective intelligence of specialized AI agents working in harmony
+            <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 p-8 rounded-2xl border border-purple-700/30">
+              <h3 className="text-2xl font-bold mb-4 text-purple-400">Our Solution</h3>
+              <p className="text-gray-300">
+                Ultra-Dex provides a persistent memory layer that connects all AI interactions, 
+                enabling multi-agent coordination, intelligent routing, and production-ready 
+                orchestration for complex AI workflows.
               </p>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Team Section */}
-      <div className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Meet the Team</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Passionate engineers and researchers building the future of AI orchestration
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="text-center">
-                <div className="mx-auto mb-4">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32 mx-auto" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">{member.name}</h3>
-                <p className="text-indigo-600 font-medium">{member.role}</p>
-                <p className="text-gray-600 mt-2 text-sm">{member.bio}</p>
-                <div className="flex justify-center space-x-4 mt-4">
-                  <Link href={member.linkedin} className="text-gray-400 hover:text-indigo-600">
-                    <FiLinkedin className="h-5 w-5" />
-                  </Link>
-                  <Link href={member.twitter} className="text-gray-400 hover:text-indigo-600">
-                    <FiTwitter className="h-5 w-5" />
-                  </Link>
-                </div>
+          <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl border border-gray-700 p-8 mb-12">
+            <h2 className="text-3xl font-bold mb-6 text-purple-400">Our Values</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="text-4xl mb-4">🚀</div>
+                <h3 className="text-xl font-bold mb-2">Production First</h3>
+                <p className="text-gray-400">
+                  Built from day one for production use with enterprise-grade security, 
+                  reliability, and scalability.
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Milestones */}
-      <div className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Journey</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Key milestones in building the world's most advanced AI orchestration platform
-            </p>
-          </div>
-
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-indigo-200"></div>
-            
-            <div className="space-y-12">
-              {milestones.map((milestone, index) => (
-                <div key={index} className={`relative flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`w-5/12 ${index % 2 === 0 ? 'mr-auto' : 'ml-auto'}`}>
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-start">
-                        <div className="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full">
-                          {milestone.year}
-                        </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-semibold text-gray-900">{milestone.event}</h3>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white z-10"></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Values Section */}
-      <div className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Values</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Principles that guide everything we build and do
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="border border-gray-200 rounded-lg p-8">
-              <div className="flex items-start">
-                <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                  <FiHeart className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Customer Obsessed</h3>
-                  <p className="text-gray-600">
-                    We build what our customers need, not what we think they need. Every feature solves real problems 
-                    for real developers and enterprises.
-                  </p>
-                </div>
+              
+              <div className="text-center">
+                <div className="text-4xl mb-4">💡</div>
+                <h3 className="text-xl font-bold mb-2">Developer Delight</h3>
+                <p className="text-gray-400">
+                  We obsess over the developer experience with beautiful UIs, 
+                  delightful CLI experiences, and comprehensive documentation.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-4xl mb-4">🌐</div>
+                <h3 className="text-xl font-bold mb-2">Open by Design</h3>
+                <p className="text-gray-400">
+                  We believe in open standards and interoperability. Our platform works with 
+                  any AI model, any tool, and any workflow.
+                </p>
               </div>
             </div>
-            
-            <div className="border border-gray-200 rounded-lg p-8">
-              <div className="flex items-start">
-                <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                  <FiShield className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Security First</h3>
-                  <p className="text-gray-600">
-                    Security isn't an afterthought—it's foundational. We build with enterprise security requirements 
-                    from day one.
-                  </p>
-                </div>
+          </div>
+
+          <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl border border-gray-700 p-8">
+            <h2 className="text-3xl font-bold mb-6 text-green-400">Our Technology</h2>
+            <div className="space-y-6">
+              <div className="border-l-4 border-blue-500 pl-4 py-2 bg-gray-900/20 p-4 rounded-r-lg">
+                <h3 className="text-xl font-bold mb-2">Triple-Store Architecture</h3>
+                <p className="text-gray-300">
+                  We combine SQLite for structured data, vector databases for semantic search, 
+                  and graph databases for relationship mapping to create a comprehensive memory system.
+                </p>
               </div>
-            </div>
-            
-            <div className="border border-gray-200 rounded-lg p-8">
-              <div className="flex items-start">
-                <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                  <FiZap className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Simplicity Over Complexity</h3>
-                  <p className="text-gray-600">
-                    We believe powerful tools should be simple to use. We abstract complexity so you can focus on 
-                    building amazing things.
-                  </p>
-                </div>
+              
+              <div className="border-l-4 border-purple-500 pl-4 py-2 bg-gray-900/20 p-4 rounded-r-lg">
+                <h3 className="text-xl font-bold mb-2">Multi-Agent Orchestration</h3>
+                <p className="text-gray-300">
+                  Coordinate multiple specialized AI agents to work together on complex tasks 
+                  with seamless handoffs and intelligent task delegation.
+                </p>
               </div>
-            </div>
-            
-            <div className="border border-gray-200 rounded-lg p-8">
-              <div className="flex items-start">
-                <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                  <FiGlobe className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Open & Transparent</h3>
-                  <p className="text-gray-600">
-                    We're committed to open standards, transparent pricing, and clear communication about what 
-                    we're building and why.
-                  </p>
-                </div>
+              
+              <div className="border-l-4 border-green-500 pl-4 py-2 bg-gray-900/20 p-4 rounded-r-lg">
+                <h3 className="text-xl font-bold mb-2">Smart Routing</h3>
+                <p className="text-gray-300">
+                  Automatically route requests to the best AI provider based on cost, latency, 
+                  and quality with built-in fallback mechanisms.
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Technology Stack */}
-      <div className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Technology Stack</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Built with the best tools for performance, security, and scalability
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { name: 'Node.js', description: 'Runtime environment' },
-              { name: 'Next.js', description: 'Frontend framework' },
-              { name: 'PostgreSQL', description: 'Primary database' },
-              { name: 'Redis', description: 'Caching layer' },
-              { name: 'Docker', description: 'Containerization' },
-              { name: 'Kubernetes', description: 'Orchestration' },
-              { name: 'TypeScript', description: 'Type safety' },
-              { name: 'Tailwind CSS', description: 'Styling' }
-            ].map((tech, index) => (
-              <div key={index} className="bg-white rounded-lg shadow p-6 text-center">
-                <h3 className="font-bold text-gray-900">{tech.name}</h3>
-                <p className="text-sm text-gray-600 mt-1">{tech.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="py-20 bg-gradient-to-r from-indigo-600 to-purple-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Join Our Mission</h2>
-          <p className="text-xl text-indigo-100 max-w-2xl mx-auto mb-8">
-            Be part of building the future of AI orchestration. Start building with Ultra-Dex today.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/signup" className="bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-medium hover:bg-gray-100 flex items-center justify-center">
-              Get Started Free
-              <FiArrowRight className="ml-2" />
-            </Link>
-            <Link href="/docs" className="bg-indigo-800 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-indigo-900 flex items-center justify-center">
-              Read Documentation
-            </Link>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

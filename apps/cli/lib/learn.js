@@ -1,8 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
+import fs from 'fs';
+import path from 'path';
+import readline from 'readline';
+import { spawn } from 'child_process';
 
-const tutorialData = require('./tutorial-data.json');
+const tutorialData = JSON.parse(fs.readFileSync(new URL('./tutorial-data.json', import.meta.url), 'utf8'));
 
 class InteractiveTutorial {
   constructor() {
@@ -72,24 +73,23 @@ class InteractiveTutorial {
   async executeCommand(command) {
     console.log(`\x1b[33mExecuting:\x1b[0m ${command}`);
     console.log('--- OUTPUT ---');
-    
+
     try {
-      const { spawn } = require('child_process');
       const [cmd, ...args] = command.split(' ');
-      
+
       const child = spawn(cmd, args, { stdio: ['pipe', 'pipe', 'pipe'] });
-      
+
       // Capture output
       let output = '';
       child.stdout.on('data', (data) => {
         output += data.toString();
         process.stdout.write(data);
       });
-      
+
       child.stderr.on('data', (data) => {
         process.stderr.write(data);
       });
-      
+
       await new Promise((resolve) => {
         child.on('close', (code) => {
           console.log('--- END OUTPUT ---');
@@ -116,9 +116,9 @@ async function runTutorial() {
   await tutorial.start();
 }
 
-module.exports = { runTutorial };
+export { runTutorial };
 
 // If this file is run directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   runTutorial();
 }

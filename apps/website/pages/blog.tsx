@@ -1,217 +1,128 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { FiCalendar, FiUser, FiClock, FiTag, FiArrowRight, FiTrendingUp, FiZap, FiShield, FiGlobe, FiGitBranch } from 'react-icons/fi';
 
-export default function BlogPage() {
-  const blogPosts = [
+export default function Blog() {
+  const posts = [
     {
-      id: '1',
-      title: 'Why We Built Ultra-Dex: The Need for AI Orchestration Meta-Layers',
-      excerpt: 'Understanding the challenges of modern AI development and why traditional frameworks fall short for enterprise applications.',
-      date: '2026-02-10',
-      author: 'Srujan Sai Karna',
-      readTime: '8 min',
-      tags: ['AI', 'Orchestration', 'Enterprise'],
-      category: 'Announcements'
+      title: 'Why We Built Ultra-Dex: Solving the AI Memory Crisis',
+      excerpt: 'The fundamental problem with current AI tools isn\'t their intelligence—it\'s their amnesia. Every session starts fresh, with no memory of previous interactions or context.',
+      date: 'January 15, 2026',
+      readTime: '8 min read',
+      category: 'Product',
+      slug: 'why-we-built-ultra-dex'
     },
     {
-      id: '2',
-      title: 'Ultra-Dex vs LangChain: A Comprehensive Comparison',
-      excerpt: 'Comparing Ultra-Dex with LangChain across performance, security, and enterprise features.',
-      date: '2026-02-08',
-      author: 'Srujan Sai Karna',
-      readTime: '12 min',
-      tags: ['Comparison', 'Frameworks', 'Performance'],
-      category: 'Technical'
+      title: 'Ultra-Dex vs LangChain: A Developer\'s Comparison',
+      excerpt: 'A comprehensive comparison of Ultra-Dex and LangChain, covering architecture, performance, and use cases for each platform.',
+      date: 'January 10, 2026',
+      readTime: '12 min read',
+      category: 'Comparison',
+      slug: 'ultra-dex-vs-langchain'
     },
     {
-      id: '3',
-      title: 'Building Secure AI Workflows with Ultra-Dex',
-      excerpt: 'How Ultra-Dex implements enterprise-grade security controls for AI orchestration.',
-      date: '2026-02-05',
-      author: 'Srujan Sai Karna',
-      readTime: '10 min',
-      tags: ['Security', 'Compliance', 'Enterprise'],
-      category: 'Security'
+      title: 'Building Production AI Agents: 5 Lessons Learned',
+      excerpt: 'Our experience building production-ready AI agents and the lessons we learned along the way.',
+      date: 'January 5, 2026',
+      readTime: '10 min read',
+      category: 'Engineering',
+      slug: 'building-production-ai-agents'
     },
     {
-      id: '4',
-      title: 'Getting Started with Multi-Agent Orchestration',
-      excerpt: 'A practical guide to coordinating multiple AI agents for complex tasks.',
-      date: '2026-02-01',
-      author: 'Srujan Sai Karna',
-      readTime: '15 min',
-      tags: ['Agents', 'Orchestration', 'Tutorial'],
-      category: 'Tutorials'
+      title: 'How We Cut AI Costs by 60% with Smart Routing',
+      excerpt: 'Our approach to reducing AI costs through intelligent provider routing and optimization.',
+      date: 'December 28, 2025',
+      readTime: '7 min read',
+      category: 'Optimization',
+      slug: 'cutting-ai-costs'
     },
     {
-      id: '5',
-      title: 'Memory Management in AI Systems: Hot, Warm, Cold Tiers',
-      excerpt: 'Understanding Ultra-Dex\'s tiered memory architecture for persistent AI context.',
-      date: '2026-01-28',
-      author: 'Srujan Sai Karna',
-      readTime: '7 min',
-      tags: ['Memory', 'Architecture', 'Performance'],
-      category: 'Technical'
+      title: 'The Future of AI Orchestration: Our Vision',
+      excerpt: 'Our thoughts on where AI orchestration is heading and how Ultra-Dex is preparing for the future.',
+      date: 'December 20, 2025',
+      readTime: '9 min read',
+      category: 'Vision',
+      slug: 'future-of-ai-orchestration'
     }
   ];
 
-  const categories = [
-    { name: 'All', count: 24, active: true },
-    { name: 'Technical', count: 12, active: false },
-    { name: 'Announcements', count: 5, active: false },
-    { name: 'Security', count: 4, active: false },
-    { name: 'Tutorials', count: 8, active: false }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
       <Head>
-        <title>Blog - Ultra-Dex AI Orchestration</title>
-        <meta name="description" content="Insights, tutorials, and announcements from the Ultra-Dex team" />
+        <title>Ultra-Dex Blog | AI Orchestration Insights</title>
+        <meta name="description" content="Insights, tutorials, and updates on AI orchestration and development" />
+        <meta name="keywords" content="AI orchestration, multi-agent systems, persistent memory, AI development" />
+        <link rel="canonical" href="https://ultra-dex.dev/blog" />
       </Head>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Ultra-Dex Blog</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Insights, tutorials, and announcements from the Ultra-Dex team. 
-            Learn about AI orchestration, enterprise security, and best practices.
-          </p>
-        </div>
-
-        {/* Categories */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {categories.map((category, index) => (
-            <button
-              key={index}
-              className={`px-4 py-2 rounded-full text-sm font-medium ${
-                category.active
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-              }`}
-            >
-              {category.name} ({category.count})
-            </button>
-          ))}
-        </div>
-
-        {/* Featured Post */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-16">
-          <div className="md:flex">
-            <div className="md:flex-shrink-0 md:w-1/2 bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-              <div className="text-center text-white p-8">
-                <FiZap className="h-16 w-16 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold">Featured: Why We Built Ultra-Dex</h2>
-                <p className="mt-2 opacity-90">The need for enterprise-grade AI orchestration</p>
-              </div>
-            </div>
-            <div className="p-8 md:w-1/2">
-              <div className="flex items-center text-sm text-gray-500 mb-2">
-                <FiCalendar className="mr-1" />
-                <span>February 10, 2026</span>
-                <span className="mx-2">•</span>
-                <FiUser className="mr-1" />
-                <span>Srujan Sai Karna</span>
-                <span className="mx-2">•</span>
-                <FiClock className="mr-1" />
-                <span>8 min read</span>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Why We Built Ultra-Dex: The Need for AI Orchestration Meta-Layers
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Understanding the challenges of modern AI development and why traditional frameworks fall short for enterprise applications.
-              </p>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {['AI', 'Orchestration', 'Enterprise'].map((tag, idx) => (
-                  <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    <FiTag className="mr-1" />
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <Link href="/blog/why-we-built-ultra-dex" className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
-                Read Article
-                <FiArrowRight className="ml-2" />
-              </Link>
-            </div>
+      <section className="py-20">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              The Ultra-Dex <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Blog</span>
+            </h1>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+              Insights, tutorials, and updates on AI orchestration and development
+            </p>
           </div>
-        </div>
 
-        {/* Blog Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.slice(1).map((post) => (
-            <article key={post.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow">
-              <div className="p-6">
-                <div className="flex items-center text-sm text-gray-500 mb-3">
-                  <FiCalendar className="mr-1" />
-                  <span>{new Date(post.date).toLocaleDateString()}</span>
+          <div className="space-y-12">
+            {posts.map((post, index) => (
+              <article 
+                key={index} 
+                className={`bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl border p-8 hover:border-blue-500/50 transition-all ${
+                  index === 0 ? 'border-blue-500' : 'border-gray-700'
+                }`}
+              >
+                <div className="flex flex-wrap items-center text-sm text-gray-400 mb-4">
+                  <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full mr-4 mb-2">{post.category}</span>
+                  <span>{post.date}</span>
                   <span className="mx-2">•</span>
-                  <FiUser className="mr-1" />
-                  <span>{post.author}</span>
-                  <span className="mx-2">•</span>
-                  <FiClock className="mr-1" />
                   <span>{post.readTime}</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{post.title}</h3>
-                <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {post.tags.map((tag, idx) => (
-                    <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <Link href={`/blog/${post.id}`} className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
-                  Read More
-                  <FiArrowRight className="ml-2" />
+                <h2 className={`text-2xl md:text-3xl font-bold mb-4 ${
+                  index === 0 ? 'text-blue-400' : 'text-white'
+                }`}>{post.title}</h2>
+                <p className="text-gray-300 text-lg mb-6">{post.excerpt}</p>
+                <Link 
+                  href={`/blog/${post.slug}`} 
+                  className="inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold group"
+                >
+                  Read Article
+                  <svg 
+                    className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* Newsletter Signup */}
-        <div className="mt-16 bg-gradient-to-r from-indigo-600 to-purple-700 rounded-xl p-8 text-center text-white">
-          <h2 className="text-2xl font-bold mb-2">Stay Updated</h2>
-          <p className="mb-6 max-w-2xl mx-auto">
-            Get the latest insights on AI orchestration, enterprise security, and Ultra-Dex updates delivered to your inbox.
-          </p>
-          <div className="max-w-md mx-auto flex">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-l-lg text-gray-900 focus:outline-none"
-            />
-            <button className="bg-indigo-800 px-6 py-3 rounded-r-lg font-medium hover:bg-indigo-900">
-              Subscribe
-            </button>
-          </div>
-        </div>
-
-        {/* Popular Topics */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Topics</h2>
-          <div className="flex flex-wrap gap-4">
-            {[
-              { name: 'AI Orchestration', icon: <FiZap className="mr-2" />, count: 12 },
-              { name: 'Enterprise Security', icon: <FiShield className="mr-2" />, count: 8 },
-              { name: 'Multi-Agent Systems', icon: <FiUsers className="mr-2" />, count: 10 },
-              { name: 'Memory Management', icon: <FiDatabase className="mr-2" />, count: 7 },
-              { name: 'MCP Integration', icon: <FiGlobe className="mr-2" />, count: 5 },
-              { name: 'Performance', icon: <FiTrendingUp className="mr-2" />, count: 6 }
-            ].map((topic, idx) => (
-              <Link key={idx} href={`/blog/tag/${topic.name.toLowerCase().replace(' ', '-')}`} className="flex items-center px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 hover:shadow-sm">
-                {topic.icon}
-                <span className="font-medium text-gray-900">{topic.name}</span>
-                <span className="ml-2 text-sm text-gray-500">({topic.count})</span>
-              </Link>
+              </article>
             ))}
           </div>
+
+          {/* Newsletter Signup */}
+          <div className="mt-16 bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-2xl border border-gray-700 p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
+            <p className="text-gray-300 mb-6 max-w-md mx-auto">
+              Get the latest news, tutorials, and product updates delivered to your inbox.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="flex-grow px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+              />
+              <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold transition-all">
+                Subscribe
+              </button>
+            </div>
+            <p className="text-gray-500 text-sm mt-4">
+              No spam ever. Unsubscribe at any time.
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
