@@ -1,5 +1,7 @@
 # Ultra-Dex Meta-Layer Architecture
 
+> **Note:** For the consolidated architecture specification, see: `CONSOLIDATED-ARCHITECTURE.md`
+
 Ultra-Dex sits above coding tools and agents, orchestrating context, plans, and verification.
 
 ```

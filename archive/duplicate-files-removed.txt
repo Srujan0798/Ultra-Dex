@@ -1,0 +1,42 @@
+# Archived Duplicate/Redundant Files
+
+## Planning Documents
+- archive/planning/implementation-plan.md (redundant with docs/planning/EXECUTION_PLAN.md)
+- archive/planning/v24-implementation-plan.md (redundant with docs/planning/EXECUTION_PLAN.md)
+- archive/planning/43reviews-implementation-plan.md (redundant)
+- archive/planning/cli-enhancement-plan.md (redundant)
+- archive/planning/codex-implementation-plan.md (redundant)
+- archive/planning/launch-plan.md (redundant)
+- archive/planning/project-cleanup-plan.md (redundant)
+- archive/planning/quality-marketing-plan.md (redundant)
+
+## Reports
+- archive/reports/AGPROMPTS-AUDIT.md (redundant with docs/reports/COMPLETED_AGPROMPTS-AUDIT.md)
+- archive/reports/CLEANUP-COMPLETION-REPORT.md (redundant)
+- archive/reports/DEMO-TRANSCRIPT.txt (redundant)
+- archive/reports/ENHANCEMENT-SUMMARY.md (redundant)
+- archive/reports/FINAL-PROJECT-STRUCTURE-ANALYSIS.md (redundant)
+- archive/reports/FINAL-SUMMARY.md (redundant)
+- archive/reports/FINAL-VERIFICATION-REPORT.md (redundant with docs/reports/FINAL-VERIFICATION-REPORT.md)
+- archive/reports/FINAL-VERIFICATION.md (redundant)
+- archive/reports/PROJECT-COMPLETION-SUMMARY.md (redundant)
+- archive/reports/PROJECT-STRUCTURE.md (redundant)
+- archive/reports/REALITY-REPORT.md (redundant)
+- archive/reports/RELEASE-CANDIDATE.md (redundant)
+- archive/reports/RELEASE-CHECKLIST.md (redundant)
+- archive/reports/TRUTH-REPORT.md (redundant)
+
+## Test Artifacts
+- archive/test-artifacts/benchmark-suite.js (redundant with docs/testing/comprehensive-test.js)
+- archive/test-artifacts/benchmark.js (redundant)
+- archive/test-artifacts/test-suite.js (redundant)
+- archive/test-artifacts/verification-suite.js (redundant)
+
+## Architecture Documents
+- docs/core/ROADMAP.md (moved to archive - consolidated into CONSOLIDATED-ROADMAP.md)
+- docs/core/MASTER-IMPLEMENTATION-ROADMAP.md (moved to archive - consolidated into CONSOLIDATED-ROADMAP.md)
+- docs/architecture/META-LAYER.md (moved to archive - consolidated into CONSOLIDATED-ARCHITECTURE.md)
+- docs/specs/v6-META-LAYER.md (moved to archive - consolidated into CONSOLIDATED-ARCHITECTURE.md)
+
+## Reason for Archiving
+These files were redundant or competing versions of the same concepts. The consolidated versions in the docs/ directory represent the single source of truth for each concept.

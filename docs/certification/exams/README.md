@@ -1,192 +1,144 @@
 # 🧪 Ultra-Dex Certification Exams
 
-> **Comprehensive Exam Framework & Administration Guidelines**
+> **Exam Blueprints, Question Pools, and Evaluation Rubrics**
 > **Version:** 6.0.0 OVERPOWERED
 > **Last Updated:** 2026-02-10
 
-Framework and guidelines for exam creation, administration, grading, and certification issuance across all Ultra-Dex certification levels.
+Comprehensive resources for Ultra-Dex certification exams including blueprints, question banks, and evaluation criteria.
 
 ---
 
-## 📋 Exam Administration Framework
+## 📋 Exam Structure
 
-### Certification Levels
-- **Associate:** Entry-level professional certification
-- **Professional:** Advanced methodology and delivery
-- **Architect:** Enterprise architecture and governance
-- **Expert:** Advanced AI and cognitive systems
-- **Instructor:** Training and education specialization
+### Associate Certification Exam
+- **Duration:** 90 minutes
+- **Format:** 45 multiple-choice and scenario-based questions
+- **Passing Score:** 70% (32/45 correct)
+- **Focus Areas:**
+  - Ultra-Dex fundamentals (25%)
+  - CLI mastery (30%)
+  - Template usage (25%)
+  - Basic workflows (20%)
 
-### Exam Modalities
-- **Online Proctored:** Secure online examination with human proctoring
-- **Live Proctored:** In-person examination at authorized centers
-- **Practical Lab:** Hands-on laboratory-based assessment
-- **Project-Based:** Extended project submission and evaluation
+### Professional Certification Exam
+- **Duration:** 3 hours
+- **Format:** 50% scenario analysis, 50% practical exercises
+- **Passing Score:** 70%
+- **Focus Areas:**
+  - Advanced methodology (30%)
+  - Agent orchestration (25%)
+  - Delivery excellence (25%)
+  - Advanced features (20%)
+
+### Architect Certification Exam
+- **Duration:** 4 hours
+- **Format:** 40% written examination, 60% practical lab exercises
+- **Passing Score:** 75%
+- **Focus Areas:**
+  - Enterprise architecture (30%)
+  - Governance & compliance (25%)
+  - Security architecture (25%)
+  - Advanced operations (20%)
+
+### Expert Certification Exam
+- **Duration:** 6 hours
+- **Format:** 30% written, 70% hands-on project
+- **Passing Score:** 80%
+- **Focus Areas:**
+  - Advanced AI systems (35%)
+  - Cognitive architecture (30%)
+  - Innovation and research (20%)
+  - Mentoring and leadership (15%)
+
+### Instructor Certification Process
+- **Duration:** Multi-stage process over 2 weeks
+- **Format:** Application, curriculum design, teaching demonstration, assessment review
+- **Passing Criteria:** Comprehensive evaluation across all stages
+- **Focus Areas:**
+  - Educational design (30%)
+  - Ultra-Dex expertise (25%)
+  - Training delivery (25%)
+  - Content creation (20%)
 
 ---
 
-## 🎯 Exam Development Process
+## 🎯 Question Development
 
-### 1. Blueprint Creation
-- **Objective Setting:** Define specific learning objectives for each exam
-- **Content Outline:** Create detailed content outline with weightings
-- **Question Distribution:** Plan question types and distribution across domains
-- **Difficulty Calibration:** Establish difficulty levels and progression
+### Question Types
+- **Multiple Choice:** Single or multiple correct answers
+- **Scenario-Based:** Real-world situation analysis
+- **Hands-On Labs:** Practical implementation tasks
+- **Case Studies:** Complex problem-solving exercises
 
-### 2. Question Development
-- **Item Writing:** Create questions following established guidelines
-- **Review Process:** Subject matter expert review and validation
-- **Pilot Testing:** Statistical analysis and item performance validation
-- **Final Assembly:** Construct final exam forms with balanced content
-
-### 3. Quality Assurance
-- **Technical Review:** Verify technical accuracy and currency
-- **Bias Review:** Ensure fairness across all demographic groups
-- **Accessibility Review:** Verify accessibility compliance
-- **Security Review:** Validate exam security measures
+### Evaluation Rubrics
+- **Technical Accuracy:** Correctness of technical information
+- **Completeness:** Thoroughness of responses
+- **Appropriateness:** Relevance to certification level
+- **Clarity:** Clear and concise communication
 
 ---
 
-## 🧮 Grading & Scoring
+## 📊 Assessment Criteria
 
-### Passing Criteria
-- **Associate:** 70% (32/45 questions correct)
-- **Professional:** 70% (competency-based assessment)
-- **Architect:** 75% (higher-order thinking required)
-- **Expert:** 80% (mastery-level performance)
-- **Instructor:** Comprehensive evaluation across multiple stages
+### Scoring Guidelines
+- **Correct Answer:** Full credit for accurate responses
+- **Partially Correct:** Partial credit for partially accurate responses
+- **Incorrect:** No credit for wrong answers
+- **Incomplete:** No credit for incomplete responses
 
-### Scoring Methodologies
-- **Criterion-Referenced:** Performance measured against predetermined standards
-- **Competency-Based:** Demonstration of specific competencies
-- **Performance-Based:** Practical application of knowledge and skills
-- **Portfolio-Based:** Collection of work products and evidence
+### Competency Levels
+- **Novice:** Basic understanding and recognition
+- **Proficient:** Application of knowledge in familiar contexts
+- **Expert:** Adaptation of knowledge to novel situations
+- **Leader:** Creation of new approaches and solutions
 
-### Score Reporting
-- **Raw Scores:** Number of items answered correctly
-- **Scaled Scores:** Standardized scores for comparison
-- **Domain Scores:** Performance by knowledge area
-- **Diagnostic Feedback:** Specific strengths and improvement areas
+---
+
+## 🔄 Continuous Improvement
+
+### Item Analysis
+- **Difficulty Index:** Percentage of candidates answering correctly
+- **Discrimination Index:** Ability to distinguish between high and low performers
+- **Distractor Analysis:** Effectiveness of incorrect answer choices
+
+### Content Updates
+- **Annual Review:** Comprehensive review of all exam content
+- **Item Refresh:** Replacement of outdated questions
+- **New Item Development:** Addition of questions for new features
 
 ---
 
 ## 🔒 Security & Integrity
 
-### Exam Security Measures
-- **Item Banking:** Large pool of secure test items
-- **Form Randomization:** Randomized question and answer ordering
-- **Adaptive Testing:** Algorithmic item selection based on performance
-- **Time Limits:** Strict time constraints to prevent external assistance
-
-### Proctoring Protocols
-- **Identity Verification:** Multi-factor authentication and verification
-- **Environmental Scan:** Room and desk inspection protocols
-- **Behavior Monitoring:** AI-powered behavior analysis
-- **Human Oversight:** Live proctor monitoring and intervention
+### Exam Security
+- **Proctoring:** Supervised and online proctoring options
+- **Question Banking:** Large pool of questions to prevent memorization
+- **Randomization:** Random ordering of questions and answers
 
 ### Certification Integrity
-- **Verification System:** Digital certificates with blockchain verification
-- **Audit Trail:** Complete audit trail of exam administration
-- **Irregularity Investigation:** Process for investigating potential violations
-- **Revocation Policy:** Clear criteria and process for certification revocation
+- **Verification:** Digital certificates with verification systems
+- **Auditing:** Random audits of certified individuals
+- **Revocation:** Process for addressing violations
 
 ---
 
-## 📊 Analytics & Reporting
+## 📈 Performance Analytics
 
-### Individual Performance
-- **Score Reports:** Detailed score reports with domain breakdowns
-- **Competency Profiles:** Visualization of competency strengths/weaknesses
-- **Progress Tracking:** Longitudinal tracking of performance over time
-- **Recommendations:** Personalized learning recommendations
+### Candidate Performance
+- **Pass Rates:** Overall and by demographic group
+- **Item Performance:** Difficulty and discrimination statistics
+- **Time Analysis:** Time taken by question type
 
-### Program Analytics
-- **Pass Rates:** Overall and demographic-specific pass rates
-- **Item Performance:** Statistical analysis of individual test items
-- **Reliability Analysis:** Internal consistency and test-retest reliability
-- **Validity Evidence:** Correlation with job performance and outcomes
-
-### Continuous Improvement
-- **Item Analysis:** Regular review of item performance and fairness
-- **Cut Score Studies:** Periodic review of passing score appropriateness
-- **Content Updates:** Regular updates to reflect current practice
-- **Methodology Improvements:** Ongoing enhancement of assessment methods
+### Program Effectiveness
+- **Employer Feedback:** Satisfaction with certified professionals
+- **Career Outcomes:** Impact on career advancement
+- **Industry Recognition:** Acceptance by industry
 
 ---
 
-## 🔄 Recertification Process
-
-### Renewal Requirements
-- **Continuing Education:** Required hours of continuing education
-- **Professional Development:** Evidence of ongoing professional development
-- **Experience Verification:** Confirmation of relevant work experience
-- **Ethics Attestation:** Annual ethics and standards attestation
-
-### Renewal Process
-- **Application Submission:** Complete renewal application with evidence
-- **Fee Payment:** Pay renewal fee and any outstanding obligations
-- **Verification:** Verification of continuing education and experience
-- **Certificate Issuance:** Issue renewed certification upon approval
-
-### Lapsed Certification
-- **Grace Period:** 6-month grace period for late renewals
-- **Reinstatement:** Process for reinstating lapsed certifications
-- **Re-examination:** Requirement to retake exam after extended lapse
-- **Record Keeping:** Maintenance of certification history
-
----
-
-## 🤝 Accommodations & Accessibility
-
-### Disability Accommodations
-- **Extended Time:** Additional time for examinees with documented needs
-- **Alternative Format:** Braille, large print, or audio formats
-- **Assistive Technology:** Screen readers and other assistive tools
-- **Physical Accommodations:** Wheelchair accessibility and ergonomic setups
-
-### Language Accommodations
-- **Translation Services:** Professional translation of exam materials
-- **Language Support:** Support for non-native English speakers
-- **Cultural Sensitivity:** Culturally appropriate content and examples
-- **Multilingual Resources:** Study materials in multiple languages
-
----
-
-## 📞 Support & Appeals
-
-### Candidate Support
-- **Technical Support:** 24/7 technical support during exam administration
-- **Customer Service:** Dedicated customer service for exam-related inquiries
-- **Study Resources:** Comprehensive study materials and practice exams
-- **Accessibility Support:** Specialized support for examinees with needs
-
-### Appeals Process
-- **Score Review:** Process for requesting score verification
-- **Accommodation Appeals:** Process for accommodation disputes
-- **Irregularity Appeals:** Process for challenging irregularity findings
-- **Decision Review:** Higher-level review of adverse decisions
-
----
-
-## 📋 Administrative Procedures
-
-### Registration Process
-- **Eligibility Verification:** Verification of prerequisites and eligibility
-- **Scheduling:** Flexible scheduling options and appointment booking
-- **Confirmation:** Detailed confirmation with preparation instructions
-- **Reminders:** Automated reminders and updates
-
-### Day-of-Exam Procedures
-- **Check-In:** Secure check-in and identity verification
-- **Orientation:** Exam orientation and instructions
-- **Administration:** Secure exam administration with monitoring
-- **Check-Out:** Secure check-out and material collection
-
----
-
-**Maintained by:** Certification Administration Team
+**Maintained by:** Certification Committee
 **Next Review:** Quarterly
-**Contact:** exams@ultra-dex.ai
+**Contact:** certification@ultra-dex.ai
 
 ---
 

@@ -3,8 +3,6 @@
  * Advanced caching and performance optimization layer
  */
 
-import fs from 'fs/promises';
-import path from 'path';
 import crypto from 'crypto';
 import { EventEmitter } from 'events';
 
@@ -22,17 +20,22 @@ class PerformanceOptimizer extends EventEmitter {
       enableResponseCache: options.enableResponseCache !== false,
       enableMemoryCache: options.enableMemoryCache !== false,
       maxMemoryCacheSize: options.maxMemoryCacheSize || 500, // Max entries in memory cache
+      enableLRUCache: options.enableLRUCache !== false, // Enable LRU eviction strategy
       ...options
     };
 
     this.memoryCache = new Map(); // In-memory cache
+    this.accessOrder = []; // Track access order for LRU if enabled
     this.cacheStats = {
       hits: 0,
       misses: 0,
       evictions: 0
     };
-    
-    this.initialize();
+
+    // Initialize with error handling
+    this.initialize().catch(err => {
+      console.error('Failed to initialize PerformanceOptimizer:', err);
+    });
   }
 
   async initialize() {
@@ -41,6 +44,13 @@ class PerformanceOptimizer extends EventEmitter {
       try {
         const { createClient } = await import('redis');
         this.redisClient = createClient({ url: this.options.redisUrl });
+        
+        // Add error handlers for Redis client
+        this.redisClient.on('error', (err) => {
+          console.warn('Redis Client Error:', err.message);
+          this.options.enableRedis = false;
+        });
+        
         await this.redisClient.connect();
         console.log('✅ Redis cache connected');
       } catch (error) {
@@ -57,11 +67,15 @@ class PerformanceOptimizer extends EventEmitter {
    */
   async get(key) {
     // Try Redis first if available
-    if (this.options.enableRedis && this.redisClient) {
+    if (this.options.enableRedis && this.redisClient && this.redisClient.isOpen) {
       try {
         const value = await this.redisClient.get(key);
         if (value !== null) {
           this.cacheStats.hits++;
+          // Update access order for LRU if enabled
+          if (this.options.enableLRUCache) {
+            this.updateAccessOrder(key);
+          }
           return JSON.parse(value);
         }
       } catch (error) {
@@ -73,7 +87,21 @@ class PerformanceOptimizer extends EventEmitter {
     if (this.options.enableMemoryCache) {
       const entry = this.memoryCache.get(key);
       if (entry && (Date.now() - entry.timestamp) < (this.options.cacheTtl * 1000)) {
+        // Check if entry has expired
+        if ((Date.now() - entry.timestamp) >= (this.options.cacheTtl * 1000)) {
+          this.memoryCache.delete(key);
+          if (this.options.enableLRUCache) {
+            this.accessOrder.splice(this.accessOrder.indexOf(key), 1);
+          }
+          this.cacheStats.misses++;
+          return null;
+        }
+        
         this.cacheStats.hits++;
+        // Update access order for LRU if enabled
+        if (this.options.enableLRUCache) {
+          this.updateAccessOrder(key);
+        }
         return entry.value;
       }
     }
@@ -83,17 +111,40 @@ class PerformanceOptimizer extends EventEmitter {
   }
 
   /**
+   * Update access order for LRU strategy
+   * @param {string} key - Key that was accessed
+   */
+  updateAccessOrder(key) {
+    // Remove key from current position
+    const index = this.accessOrder.indexOf(key);
+    if (index !== -1) {
+      this.accessOrder.splice(index, 1);
+    }
+    // Add key to end (most recently used)
+    this.accessOrder.push(key);
+  }
+
+  /**
+   * Get the least recently used key for eviction
+   * @returns {string|null} Least recently used key or null if none
+   */
+  getLeastRecentlyUsedKey() {
+    if (this.accessOrder.length === 0) return null;
+    return this.accessOrder[0]; // First item is least recently used
+  }
+
+  /**
    * Set a value in cache
    * @param {string} key - Cache key
    * @param {any} value - Value to cache
    * @param {number} ttl - Time to live in seconds (optional)
    */
   async set(key, value, ttl = null) {
-    const cacheValue = JSON.stringify(value);
     const actualTtl = ttl || this.options.cacheTtl;
+    const cacheValue = JSON.stringify(value);
 
     // Set in Redis if available
-    if (this.options.enableRedis && this.redisClient) {
+    if (this.options.enableRedis && this.redisClient && this.redisClient.isOpen) {
       try {
         await this.redisClient.setEx(key, actualTtl, cacheValue);
       } catch (error) {
@@ -103,17 +154,37 @@ class PerformanceOptimizer extends EventEmitter {
 
     // Set in memory cache
     if (this.options.enableMemoryCache) {
-      // Evict oldest entries if cache is full
+      // Handle cache size limits with LRU eviction if enabled
       if (this.memoryCache.size >= this.options.maxMemoryCacheSize) {
-        const oldestKey = this.memoryCache.keys().next().value;
-        this.memoryCache.delete(oldestKey);
-        this.cacheStats.evictions++;
+        let keyToRemove;
+        if (this.options.enableLRUCache) {
+          keyToRemove = this.getLeastRecentlyUsedKey();
+        } else {
+          // Use FIFO eviction if LRU is disabled
+          keyToRemove = this.memoryCache.keys().next().value;
+        }
+        
+        if (keyToRemove) {
+          this.memoryCache.delete(keyToRemove);
+          if (this.options.enableLRUCache) {
+            const index = this.accessOrder.indexOf(keyToRemove);
+            if (index !== -1) {
+              this.accessOrder.splice(index, 1);
+            }
+          }
+          this.cacheStats.evictions++;
+        }
       }
 
       this.memoryCache.set(key, {
         value,
         timestamp: Date.now()
       });
+
+      // Update access order for LRU if enabled
+      if (this.options.enableLRUCache) {
+        this.updateAccessOrder(key);
+      }
     }
   }
 
@@ -123,7 +194,7 @@ class PerformanceOptimizer extends EventEmitter {
    */
   async del(key) {
     // Delete from Redis if available
-    if (this.options.enableRedis && this.redisClient) {
+    if (this.options.enableRedis && this.redisClient && this.redisClient.isOpen) {
       try {
         await this.redisClient.del(key);
       } catch (error) {
@@ -133,13 +204,21 @@ class PerformanceOptimizer extends EventEmitter {
 
     // Delete from memory cache
     this.memoryCache.delete(key);
+    
+    // Remove from access order if using LRU
+    if (this.options.enableLRUCache) {
+      const index = this.accessOrder.indexOf(key);
+      if (index !== -1) {
+        this.accessOrder.splice(index, 1);
+      }
+    }
   }
 
   /**
    * Clear all caches
    */
   async clear() {
-    if (this.options.enableRedis && this.redisClient) {
+    if (this.options.enableRedis && this.redisClient && this.redisClient.isOpen) {
       try {
         await this.redisClient.flushAll();
       } catch (error) {
@@ -148,6 +227,7 @@ class PerformanceOptimizer extends EventEmitter {
     }
 
     this.memoryCache.clear();
+    this.accessOrder = []; // Clear access order as well
     this.cacheStats = { hits: 0, misses: 0, evictions: 0 };
   }
 
@@ -165,7 +245,7 @@ class PerformanceOptimizer extends EventEmitter {
 
     // Create cache key from query and parameters
     const cacheKey = `query:${crypto.createHash('sha256').update(query + JSON.stringify(params)).digest('hex')}`;
-    
+
     // Try to get from cache
     let result = await this.get(cacheKey);
     if (result !== null) {
@@ -194,7 +274,7 @@ class PerformanceOptimizer extends EventEmitter {
 
     // Create cache key from endpoint and parameters
     const cacheKey = `api:${endpoint}:${crypto.createHash('sha256').update(JSON.stringify(params)).digest('hex')}`;
-    
+
     // Try to get from cache
     let result = await this.get(cacheKey);
     if (result !== null) {
@@ -222,7 +302,7 @@ class PerformanceOptimizer extends EventEmitter {
 
     // Create cache key from operation and parameters
     const cacheKey = `memory:${operation}:${crypto.createHash('sha256').update(JSON.stringify(params)).digest('hex')}`;
-    
+
     // Try to get from cache
     let result = await this.get(cacheKey);
     if (result !== null) {

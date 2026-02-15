@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 
-Ultra-Dex is a **control plane for AI-assisted engineering**. It coordinates agents, model providers, memory, and tool execution so teams can go from prompt to deployable output with stronger reliability than single-agent workflows.
+Ultra-Dex is the **connective tissue between AI models, memory, and tools**. It serves as a "Meta-Layer" that coordinates agents, model providers, memory, and tool execution so teams can go from prompt to deployable output with stronger reliability than single-agent workflows.
 
 ## What Ultra-Dex Is
 
@@ -65,8 +65,12 @@ npx ultra-dex status
 | CLI Runtime         | Large command surface for build/plan/review/ops workflows         | Ready  |
 | Dashboard & Apps    | Dashboard, cloud/web/desktop/docs app workspaces                  | Ready  |
 | SDK                 | Programmatic SDK for providers, agents, and plugins               | Ready  |
+| Performance         | Advanced caching, LRU eviction, and Redis integration             | Enhanced |
+| Resilience          | Timeout handling, fallback mechanisms, and error recovery         | Enhanced |
 
 ## Architecture Overview
+
+Ultra-Dex operates as a **Meta-Layer** that connects and orchestrates various AI components:
 
 ```mermaid
 flowchart LR
@@ -86,7 +90,20 @@ flowchart LR
 
   MCP --> TOOLS[Git / Files / Commands / Integrations]
   MEMORY --> STORES[Vector + Graph + Tiered Stores]
+  
+  style ORCH fill:#e1f5fe
+  style ROUTER fill:#e8f5e8
+  style MEMORY fill:#fff3e0
+  style MCP fill:#fce4ec
 ```
+
+## The 30-Cycle Roadmap
+
+Development follows a 30-cycle roadmap divided into three phases:
+
+- **Phase 1: Foundation** (Cycles 1-10) - Core infrastructure and basic functionality
+- **Phase 2: Growth & Ecosystem** (Cycles 11-20) - SDK, dashboard, marketplace, workflows
+- **Phase 3: Enterprise & Scale** (Cycles 21-30) - Multi-tenancy, cloud IDE, fine-tuning, deployment
 
 ## Why It Exists
 
@@ -107,6 +124,51 @@ Most AI coding stacks are strong at short sessions and weak at sustained deliver
 - `apps/cloud`, `apps/web`, `apps/desktop`, `apps/docs-site` - platform apps
 - `packages/sdk` - public JS/TS SDK
 - `packages/plugins`, `packages/extensions`, `packages/cursor-rules` - ecosystem
+
+## Project Organization
+
+This repository follows a well-organized structure to separate concerns:
+
+- `docs/` - All documentation including legal, process, planning, reports, specs, and testing guides
+  - `docs/legal/` - Legal documents (LICENSE, CODE_OF_CONDUCT.md, SECURITY.md)
+  - `docs/process/` - Process documents and quality assessments
+  - `docs/planning/` - Planning documents and launch strategies
+  - `docs/reports/` - Completion reports and certificates
+  - `docs/specs/` - Technical specifications
+  - `docs/investors/` - Investor relations materials
+  - `docs/testing/` - Test reports and testing documentation
+- `config/` - Configuration files organized by type
+  - `config/deploy/` - Deployment configurations (Dockerfile, docker-compose.yml)
+  - `config/linting/` - Linting configurations (.markdownlint.json, etc.)
+  - `config/testing/` - Testing configurations (vitest.config.js)
+  - `config/project/` - Project-specific configurations (.ultra-dex.json, mcp-config.json)
+- `scripts/` - Utility scripts
+  - `scripts/temp/` - Temporary or auxiliary scripts
+- `business/` - Business-related operations and materials
+  - `business/operations/` - Operations, strategy, team building, customer research, scaling, launch activities
+  - `business/finance/` - Financial planning, fundraising, investment preparation
+  - `business/marketing/` - Marketing, PR, press materials
+  - `business/investors/` - Investor relations and materials
+  - `business/legal/` - Legal documents and compliance
+- `logs/` - Log files and temporary logs
+  - `logs/temporary/` - Temporary log files and test outputs
+
+## Developer Experience
+
+Ultra-Dex prioritizes developer experience with interactive tutorials and comprehensive documentation:
+
+```bash
+# Interactive learning experience
+npx ultra-dex learn
+
+# Quick setup wizard
+npx ultra-dex config --wizard
+
+# Pre-built agent templates
+npx ultra-dex agents create --template=coder
+npx ultra-dex agents create --template=writer  
+npx ultra-dex agents create --template=researcher
+```
 
 ## SDK Example
 

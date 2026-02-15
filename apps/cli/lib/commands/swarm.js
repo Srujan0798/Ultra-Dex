@@ -173,7 +173,7 @@ export function registerSwarmCommand(program) {
     .option('--save-checkpoints', 'Save checkpoints for resume capability', true)
     .action(async (task, options) => {
       try {
-        if (options.nexus && task) {
+        if (options.nexus && task && !options.dryRun) {
           await nexus.execute(task);
           return;
         }

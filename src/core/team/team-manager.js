@@ -19,8 +19,26 @@ class TeamManager extends EventEmitter {
     this.cwd = cwd;
     this.teamPath = path.resolve(this.cwd, TEAM_DIR, TEAM_FILE);
     this.data = null; // Lazy loaded
-    this.billing = new BillingManager();
+    
+    // Initialize billing service with error handling
+    // Set up a default mock billing service initially
+    this.billing = {
+      getSubscription: () => ({ planId: 'free' })
+    };
+    
+    // Initialize billing service asynchronously after construction
+    this._initBillingService();
+    
     this.audit = new AuditLogger(cwd);
+  }
+  
+  async _initBillingService() {
+    try {
+      const { default: BillingManager } = await import('../billing/billing-manager.js');
+      this.billing = new BillingManager();
+    } catch (error) {
+      console.warn('Billing service not available, using default limits:', error.message);
+    }
   }
 
   async _ensureLoaded() {
@@ -104,13 +122,19 @@ class TeamManager extends EventEmitter {
       throw new Error('Member already exists');
     }
 
-    // Check Billing Limits
-    const sub = this.billing.getSubscription(teamId);
-    // Determine plan limits (default to free if not found/mocked)
-    const planLimits = sub.planId === 'pro' ? 10 : (sub.planId === 'enterprise' ? 9999 : 2);
-    
+    // Check Billing Limits (with fallback for missing billing service)
+    let planLimits = 2; // Default to free plan limit
+    try {
+      const sub = this.billing.getSubscription(teamId);
+      // Determine plan limits (default to free if not found/mocked)
+      planLimits = sub?.planId === 'pro' ? 10 : (sub?.planId === 'enterprise' ? 9999 : 2);
+    } catch (error) {
+      // If billing service is not available, use default limits
+      console.warn('Billing service not available, using default seat limits');
+    }
+
     if (this.data.members.length >= planLimits) {
-      const msg = `Seat limit reached for plan ${sub.planId} (${planLimits} seats). Upgrade required.`;
+      const msg = `Seat limit reached (${planLimits} seats). Upgrade required.`;
       await this.audit.log(AUDIT_EVENTS.LIMIT_EXCEEDED, { id: 'system' }, { teamId, limit: 'seats', current: this.data.members.length });
       throw new Error(msg);
     }
@@ -126,7 +150,7 @@ class TeamManager extends EventEmitter {
     this.data.updatedAt = new Date().toISOString();
 
     await this._save();
-    
+
     // Log member add
     await this.audit.log(AUDIT_EVENTS.MEMBER_ADDED, { id: 'system' }, { teamId, userId, role });
 

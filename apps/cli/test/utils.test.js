@@ -135,8 +135,8 @@ describe('version utility', () => {
     assert.ok(PACKAGE_NAME.length > 0, 'PACKAGE_NAME should not be empty');
   });
 
-  test('PACKAGE_NAME equals ultra-dex', () => {
-    assert.strictEqual(PACKAGE_NAME, 'ultra-dex', 'Package name should be ultra-dex');
+  test('PACKAGE_NAME equals @ultra-dex/cli', () => {
+    assert.strictEqual(PACKAGE_NAME, '@ultra-dex/cli', 'Package name should be @ultra-dex/cli');
   });
 });
 
@@ -194,21 +194,19 @@ describe('providers/index', () => {
     }
   });
 
-  test('createProvider throws for invalid provider', () => {
-    assert.throws(
-      () => {
-        createProvider('invalid-provider');
-      },
+  test('createProvider throws for invalid provider', async () => {
+    await assert.rejects(
+      () => createProvider('invalid-provider'),
       /Unknown provider|invalid-provider/i,
       'Should throw for unknown provider'
     );
   });
 
-  test('provider objects have envKey or are router', () => {
+  test('provider objects have envKey or are router/mock', () => {
     const providers = getAvailableProviders();
     for (const provider of providers) {
-      if (provider.id !== 'router') {
-        assert.ok(provider.envKey, `Provider ${provider.id} should have envKey (except router)`);
+      if (provider.id !== 'router' && provider.id !== 'mock') {
+        assert.ok(provider.envKey, `Provider ${provider.id} should have envKey (except router and mock)`);
       }
     }
   });

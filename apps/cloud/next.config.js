@@ -7,10 +7,10 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: ['localhost:3000', 'cloud.ultra-dex.ai'],
     },
-    serverComponentsExternalPackages: ['@ultra-dex/core', 'sqlite3', 'sqlite'],
   },
   // Ensure monorepo workspaces work correctly
-  transpilePackages: ['@ultra-dex/core', '@ultra-dex/agent-protocol'],
+  serverExternalPackages: ['@ultra-dex/core', 'sqlite3', 'sqlite'],
+  transpilePackages: ['@ultra-dex/agent-protocol'],
 };
 
 export default nextConfig;

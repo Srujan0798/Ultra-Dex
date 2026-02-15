@@ -10,9 +10,9 @@ import path from 'path';
 import os from 'os';
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
-import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
-import { AppError } from '../../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 
 // Queue storage directory
 const QUEUE_DIR = path.join(os.homedir(), '.ultra-dex', 'queues');

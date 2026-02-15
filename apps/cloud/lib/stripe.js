@@ -5,13 +5,20 @@
 
 import Stripe from 'stripe';
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
-export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2024-12-18.acacia',
-});
+// Initialize Stripe only if the secret key is available
+export const stripe = stripeSecretKey 
+  ? new Stripe(stripeSecretKey, {
+      apiVersion: '2024-12-18.acacia',
+    })
+  : null;
 
 export async function createCheckoutSession({ priceId, customerEmail }) {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.');
+  }
+
   if (!priceId) {
     throw new Error('priceId is required');
   }

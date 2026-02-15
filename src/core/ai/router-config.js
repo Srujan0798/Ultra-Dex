@@ -18,6 +18,24 @@ export const STRATEGY_PROVIDER_PRIORITIES = {
   fallback: ['openai', 'anthropic', 'google', 'mistral', 'cohere', 'deepseek', 'groq', 'together', 'qwen', 'kimi'],
 };
 
+// Updated provider priority configuration
+export const PROVIDER_PRIORITY_CONFIG = {
+  openai: { cost: 8, latency: 2, quality: 2, fallback: 1 },
+  anthropic: { cost: 9, latency: 9, quality: 1, fallback: 2 },
+  google: { cost: 3, latency: 3, quality: 3, fallback: 3 },
+  mistral: { cost: 6, latency: 5, quality: 5, fallback: 4 },
+  groq: { cost: 1, latency: 1, quality: 7, fallback: 5 },
+  deepseek: { cost: 2, latency: 7, quality: 6, fallback: 6 },
+  kimi: { cost: 5, latency: 8, quality: 8, fallback: 7 },
+  qwen: { cost: 4, latency: 6, quality: 9, fallback: 8 },
+  cohere: { cost: 7, latency: 4, quality: 4, fallback: 9 },
+  together: { cost: 5, latency: 6, quality: 6, fallback: 10 },
+  zhipu: { cost: 3, latency: 7, quality: 7, fallback: 11 },
+  yi: { cost: 4, latency: 5, quality: 5, fallback: 12 },
+  llama: { cost: 1, latency: 1, quality: 8, fallback: 13 },
+  openclaw: { cost: 6, latency: 8, quality: 6, fallback: 14 },
+};
+
 export const MODEL_PROVIDER_MAP = {
   // OpenAI
   'gpt-4o': 'openai',

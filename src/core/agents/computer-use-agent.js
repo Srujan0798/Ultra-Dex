@@ -3,7 +3,7 @@
 import { spawn } from 'child_process';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { createCanvas, loadImage } from 'canvas';
+
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
@@ -34,7 +34,7 @@ export class ComputerUseAgent {
     this.activeProcesses = new Map();
     this.permissions = new Map();
     this.screenshots = [];
-    
+
     this.initializePermissions();
   }
 
@@ -110,7 +110,7 @@ export class ComputerUseAgent {
       }
 
       await execAsync(command);
-      
+
       // Store screenshot reference
       this.screenshots.push({
         path: screenshotPath,
@@ -150,11 +150,11 @@ export class ComputerUseAgent {
       // This would integrate with the vision agent
       // For now, we'll simulate
       printInfo(`👁️  Analyzing screenshot: ${screenshotPath}`);
-      
+
       // In a real implementation, this would call the vision agent
       // with GPT-4 Vision or similar to analyze the image
       await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-      
+
       return {
         success: true,
         analysis: "Screenshot analysis completed (simulated). Contains UI elements that can be converted to code.",
@@ -193,7 +193,7 @@ export class ComputerUseAgent {
       }
 
       const content = await fs.readFile(fullPath, 'utf8');
-      
+
       if (this.options.verbose) {
         printSuccess(`📖 Read file: ${filePath} (${content.length} chars)`);
       }
@@ -238,9 +238,9 @@ export class ComputerUseAgent {
 
       // Ensure directory exists
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
-      
+
       await fs.writeFile(fullPath, content, 'utf8');
-      
+
       if (this.options.verbose) {
         printSuccess(`📝 Wrote file: ${filePath} (${content.length} chars)`);
       }
@@ -285,7 +285,7 @@ export class ComputerUseAgent {
       }
 
       await fs.unlink(fullPath);
-      
+
       if (this.options.verbose) {
         printSuccess(`🗑️  Deleted file: ${filePath}`);
       }
@@ -398,7 +398,7 @@ export class ComputerUseAgent {
       }
 
       await execAsync(command);
-      
+
       if (this.options.verbose) {
         printSuccess(`✅ Application opened: ${appName}`);
       }
@@ -446,7 +446,7 @@ export class ComputerUseAgent {
       }
 
       await execAsync(command);
-      
+
       if (this.options.verbose) {
         printSuccess(`✅ Application closed: ${appName}`);
       }
@@ -472,7 +472,7 @@ export class ComputerUseAgent {
   async listProcesses() {
     try {
       let command;
-      
+
       if (process.platform === 'win32') {
         command = 'tasklist';
       } else {
@@ -480,7 +480,7 @@ export class ComputerUseAgent {
       }
 
       const result = await execAsync(command);
-      
+
       if (this.options.verbose) {
         printInfo(`📋 Listed ${result.stdout.split('\n').length - 1} processes`);
       }
@@ -563,7 +563,7 @@ export class ComputerUseAgent {
       }
 
       await fs.mkdir(fullPath, { recursive: true });
-      
+
       if (this.options.verbose) {
         printSuccess(`📁 Created directory: ${dirPath}`);
       }
@@ -646,7 +646,7 @@ export class ComputerUseAgent {
       const normalizedDest = path.normalize(destPath);
 
       if (normalizedSource.includes('../') || normalizedSource.includes('..\\') ||
-          normalizedDest.includes('../') || normalizedDest.includes('..\\')) {
+        normalizedDest.includes('../') || normalizedDest.includes('..\\')) {
         throw new Error('Path traversal detected');
       }
 
@@ -658,7 +658,7 @@ export class ComputerUseAgent {
       }
 
       await fs.rename(sourceFullPath, destFullPath);
-      
+
       if (this.options.verbose) {
         printSuccess(`🔄 Moved file: ${sourcePath} -> ${destPath}`);
       }
@@ -693,7 +693,7 @@ export class ComputerUseAgent {
       const normalizedDest = path.normalize(destPath);
 
       if (normalizedSource.includes('../') || normalizedSource.includes('..\\') ||
-          normalizedDest.includes('../') || normalizedDest.includes('..\\')) {
+        normalizedDest.includes('../') || normalizedDest.includes('..\\')) {
         throw new Error('Path traversal detected');
       }
 
@@ -705,7 +705,7 @@ export class ComputerUseAgent {
       }
 
       await fs.copyFile(sourceFullPath, destFullPath);
-      
+
       if (this.options.verbose) {
         printSuccess(`📋 Copied file: ${sourcePath} -> ${destPath}`);
       }
@@ -732,10 +732,10 @@ export class ComputerUseAgent {
   async searchFiles(pattern, options = {}) {
     try {
       const { glob } = await import('glob');
-      
+
       const searchPath = options.path || process.cwd();
       const ignore = options.ignore || ['node_modules/**', '.git/**', 'dist/**', 'build/**'];
-      
+
       const files = await glob(pattern, {
         cwd: searchPath,
         ignore,
@@ -784,7 +784,7 @@ export class ComputerUseAgent {
       }
 
       const stats = await fs.stat(fullPath);
-      
+
       const fileStats = {
         size: stats.size,
         isFile: stats.isFile(),
@@ -823,7 +823,7 @@ export class ComputerUseAgent {
   async monitorFile(filePath, callback) {
     try {
       const { watch } = await import('chokidar');
-      
+
       const watcher = watch(filePath, {
         ignoreInitial: true,
         awaitWriteFinish: true
@@ -890,7 +890,7 @@ export class ComputerUseAgent {
       }
 
       const { chromium } = await import('playwright');
-      
+
       const browser = await chromium.launch({
         headless: options.headless !== false,
         ...options.browserOptions
@@ -982,7 +982,7 @@ export class ComputerUseAgent {
     // Clean up old screenshots
     for (const screenshot of this.screenshots) {
       try {
-        await fs.unlink(screenshot.path).catch(() => {});
+        await fs.unlink(screenshot.path).catch(() => { });
       } catch (error) {
         // File may have already been deleted
       }

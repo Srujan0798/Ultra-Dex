@@ -15,7 +15,7 @@ import path from 'path';
 import { homedir } from 'os';
 import { getTheme, setTheme, themes } from '../config/theme.js';
 import { setDoomsdayMode, isDoomsdayMode } from '../utils/theme-state.js';
-import { doomsdayStatusIcons } from '../../assets/art/doomsday.js';
+import { doomsdayStatusIcons } from '../assets/art/doomsday.js';
 
 const DEFAULT_COLORS = {
   primary: '#6366f1',
