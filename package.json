@@ -280,7 +280,8 @@
     }
   },
   "overrides": {
-    "tar": "7.5.7"
+    "tar": "7.5.7",
+    "@mapbox/node-pre-gyp": "2.0.3"
   },
   "config": {
     "commitizen": {
