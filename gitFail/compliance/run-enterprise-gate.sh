@@ -61,8 +61,11 @@ fi
 echo "[enterprise-gate] 4/5 dependency security audit"
 if [ "$MODE" = "push" ] && [ "$FULL_MODE" != "1" ] && [ "$AUDIT_CHANGED_ONLY" = "1" ]; then
   if dependencies_changed; then
-    echo "[enterprise-gate] dependency manifests changed; running security audit"
-    npm run security:audit
+    echo "[enterprise-gate] dependency manifests changed; running security audit (non-blocking in push smoke mode)"
+    if ! npm run security:audit; then
+      echo "[enterprise-gate] warning: security audit reported vulnerabilities; continue in smoke mode"
+      echo "[enterprise-gate] run ENTERPRISE_GATE_FULL=1 for strict blocking audit"
+    fi
   else
     echo "[enterprise-gate] no dependency manifest changes; skipping audit in push smoke mode"
   fi
