@@ -10,6 +10,7 @@ const { spawn } = require('child_process');
 class AgentAutopsy {
   constructor(options = {}) {
     this.options = {
+      logPath: options.logPath || path.join(process.cwd(), '.ultra-dex', 'autopsy'),
       logRetention: options.logRetention || 7, // days
       maxFailureCount: options.maxFailureCount || 5,
       recoveryStrategies: options.recoveryStrategies || ['restart', 'retry', 'fallback'],
@@ -20,6 +21,41 @@ class AgentAutopsy {
     this.agentStates = new Map();
     this.recoveryHistory = new Map();
     this.autopsyReports = [];
+    this.initialized = false;
+  }
+
+  /**
+   * Initialize autopsy storage. Kept explicit for compatibility with
+   * newer orchestrators that call initialize() before use.
+   */
+  async initialize() {
+    if (this.initialized) {
+      return true;
+    }
+
+    await fs.mkdir(this.options.logPath, { recursive: true });
+    this.initialized = true;
+    return true;
+  }
+
+  /**
+   * Compatibility entry point used by the core orchestrator.
+   * Delegates to the existing failure pipeline and returns a report.
+   */
+  async performAutopsy(agentId, error, context = {}) {
+    await this.initialize();
+    const failure = await this.logFailure(agentId, error, context);
+    const report = await this.generateAutopsyReport(agentId);
+
+    return {
+      id: failure.id,
+      agentId,
+      timestamp: failure.timestamp,
+      error: failure.error,
+      analysis: failure.analysis,
+      recommendations: report.recommendations,
+      summary: report.summary
+    };
   }
 
   /**
