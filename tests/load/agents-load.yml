@@ -1,0 +1,41 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 30
+      name: warmup
+    - duration: 120
+      arrivalRate: 30
+      name: sustained
+  defaults:
+    headers:
+      Content-Type: application/json
+
+scenarios:
+  - name: Agent execute flow
+    weight: 60
+    flow:
+      - post:
+          url: '/api/agents'
+          json:
+            name: 'load-agent-{{ $randomInt(1,999999) }}'
+            provider: 'openai'
+            model: 'gpt-4o-mini'
+          capture:
+            - json: '$.id'
+              as: 'agentId'
+      - post:
+          url: '/api/agents/{{ agentId }}/execute'
+          json:
+            task: 'Run load smoke task'
+
+  - name: Memory flow
+    weight: 40
+    flow:
+      - post:
+          url: '/api/memory'
+          json:
+            text: 'Load memory {{ $randomInt(1,999999) }}'
+      - get:
+          url: '/api/memory?limit=10'
