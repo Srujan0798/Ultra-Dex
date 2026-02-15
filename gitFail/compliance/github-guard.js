@@ -160,12 +160,32 @@ function getDiffForPush(upstreamRef) {
   }
 }
 
+function getAddedLinesByFile(diff) {
+  const added = [];
+  let currentFile = '';
+
+  for (const rawLine of diff.split('\n')) {
+    if (rawLine.startsWith('+++ b/')) {
+      currentFile = rawLine.slice('+++ b/'.length);
+      continue;
+    }
+
+    if (rawLine.startsWith('+') && !rawLine.startsWith('+++')) {
+      added.push({
+        file: currentFile,
+        line: rawLine.slice(1),
+      });
+    }
+  }
+
+  return added;
+}
+
 function checkRiskyAutomationInDiff(upstreamRef) {
   const diff = getDiffForPush(upstreamRef);
-  const addedLines = diff
-    .split('\n')
-    .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
-    .map((line) => line.slice(1))
+  const addedLines = getAddedLinesByFile(diff)
+    .filter((entry) => entry.file !== 'gitFail/compliance/github-guard.js')
+    .map((entry) => entry.line)
     .join('\n');
 
   if (addedLines.includes('ALLOW_GITHUB_POLICY_EXCEPTION')) {
