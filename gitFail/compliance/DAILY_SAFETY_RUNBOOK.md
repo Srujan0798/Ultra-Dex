@@ -56,7 +56,14 @@ git push origin main
 - Secret scan in push diff
 - Policy-risk automation checks
 - Remote account access check (suspension check)
-- Tests + security audit
+- Smoke test suite for push safety
+- Security audit when dependency manifests changed
+
+For full verification before major releases:
+
+```bash
+npm run gate:push:full
+```
 
 ## D) If GitHub Is Degraded (Yellow/Red)
 
