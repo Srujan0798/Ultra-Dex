@@ -10,10 +10,32 @@ export default defineConfig({
     chunkSizeWarningLimit: 650,
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
-          charts: ['recharts'],
-          three: ['three', '@react-three/fiber', '@react-three/drei'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return undefined;
+          }
+
+          if (id.includes('node_modules/react') || id.includes('node_modules/scheduler')) {
+            return 'react-vendor';
+          }
+
+          if (id.includes('node_modules/recharts')) {
+            return 'charts-vendor';
+          }
+
+          if (id.includes('node_modules/three')) {
+            return 'three-core';
+          }
+
+          if (id.includes('node_modules/@react-three/fiber')) {
+            return 'three-fiber';
+          }
+
+          if (id.includes('node_modules/@react-three/drei')) {
+            return 'three-drei';
+          }
+
+          return undefined;
         },
       },
     },
