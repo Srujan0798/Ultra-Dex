@@ -107,6 +107,7 @@ import { banner, registerBannerCommand } from '../lib/commands/banner.js';
 import { registerInitCommand } from '../lib/commands/init.js';
 import { registerAuditCommand } from '../lib/commands/audit.js';
 import { registerExamplesCommand } from '../lib/commands/examples.js';
+import { registerDemoCommand } from '../lib/commands/demo.js';
 import { registerAgentsCommand, registerPackCommand } from '../lib/commands/agents.js';
 import { registerGenerateCommand } from '../lib/commands/generate.js';
 import { registerBuildCommand } from '../lib/commands/build.js';
@@ -340,6 +341,7 @@ program
 registerInitCommand(program);
 registerAuditCommand(program);
 registerExamplesCommand(program);
+registerDemoCommand(program);
 registerAgentsCommand(program);
 registerGenerateCommand(program);
 registerBuildCommand(program);
