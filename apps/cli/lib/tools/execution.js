@@ -4,11 +4,21 @@
  */
 
 import fs from 'fs/promises';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 
 const execAsync = promisify(exec);
+
+// Helper to detect binary content
+function isBinary(buffer) {
+  // Check for null bytes or control characters in the first chunk
+  const chunk = buffer.slice(0, 1024);
+  for (let i = 0; i < chunk.length; i++) {
+    if (chunk[i] === 0) return true;
+  }
+  return false;
+}
 
 /**
  * Execute a tool based on its type and parameters
@@ -70,7 +80,17 @@ async function executeReadFile(args, projectRoot) {
   }
   
   try {
-    const content = await fs.readFile(fullPath, 'utf8');
+    const buffer = await fs.readFile(fullPath);
+
+    if (isBinary(buffer)) {
+      return {
+        success: false,
+        error: `Cannot read binary file: ${filePath}. Please use specific tools for binary files.`,
+        filePath
+      };
+    }
+
+    const content = buffer.toString('utf8');
     return {
       success: true,
       content,
@@ -163,25 +183,97 @@ async function executeSearchCode(args, projectRoot) {
 async function executeRunShell(args) {
   const { command } = args;
   
-  try {
-    // For security, we'll only allow certain safe commands in a real implementation
-    // This is a simplified version
-    const { stdout, stderr } = await execAsync(command);
+  return new Promise((resolve) => {
+    // Timeout in milliseconds (default: 30 seconds)
+    const TIMEOUT_MS = 30000;
+    // Max buffer size for output (default: 1MB)
+    const MAX_BUFFER = 1024 * 1024;
     
-    return {
-      success: true,
-      stdout,
-      stderr,
-      command
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: `Command failed: ${error.message}`,
-      stderr: error.stderr || '',
-      command
-    };
-  }
+    let stdout = '';
+    let stderr = '';
+    let timedOut = false;
+    let truncated = false;
+
+    // Using spawn via shell to allow complex commands
+    const child = spawn(command, {
+      shell: true,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    // Set up timeout
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+    }, TIMEOUT_MS);
+
+    child.stdout.on('data', (data) => {
+      if (!truncated && stdout.length < MAX_BUFFER) {
+        stdout += data.toString();
+        if (stdout.length >= MAX_BUFFER) {
+          stdout = stdout.substring(0, MAX_BUFFER) + '\n...[Output Truncated]';
+          truncated = true;
+          child.kill();
+        }
+      }
+    });
+
+    child.stderr.on('data', (data) => {
+      if (stderr.length < MAX_BUFFER) {
+        stderr += data.toString();
+        if (stderr.length >= MAX_BUFFER) {
+          stderr = stderr.substring(0, MAX_BUFFER) + '\n...[Output Truncated]';
+        }
+      }
+    });
+
+    child.on('close', (code) => {
+      clearTimeout(timeoutId);
+
+      if (timedOut) {
+        resolve({
+          success: false,
+          error: `Command timed out after ${TIMEOUT_MS}ms`,
+          stdout,
+          stderr,
+          command
+        });
+      } else if (truncated) {
+        resolve({
+          success: false,
+          error: `Output limit exceeded (truncated at ${MAX_BUFFER} bytes)`,
+          stdout,
+          stderr,
+          command
+        });
+      } else if (code === 0) {
+        resolve({
+          success: true,
+          stdout,
+          stderr,
+          command
+        });
+      } else {
+        resolve({
+          success: false,
+          error: `Command failed with exit code ${code}`,
+          stdout,
+          stderr,
+          command
+        });
+      }
+    });
+
+    child.on('error', (err) => {
+      clearTimeout(timeoutId);
+      resolve({
+        success: false,
+        error: `Command execution error: ${err.message}`,
+        stdout,
+        stderr,
+        command
+      });
+    });
+  });
 }
 
 /**
