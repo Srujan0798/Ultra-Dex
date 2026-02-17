@@ -1,12 +1,11 @@
-name: Ultra-Dex Verify
+name: Deploy to Production
 
 on:
-  pull_request:
   push:
     branches: [main]
 
 jobs:
-  verify:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,4 +13,5 @@ jobs:
         with:
           node-version: 20
       - run: npm install --legacy-peer-deps
-      - run: npx ultra-dex verify --full
+      - run: npm run build
+      - run: npx ultra-dex deploy --target production
