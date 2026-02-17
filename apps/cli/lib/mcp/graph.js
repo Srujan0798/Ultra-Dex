@@ -614,6 +614,7 @@ export class CodeGraph {
   constructor(options = {}) {
     this.nodes = new Map(); // file path -> node info
     this.edges = []; // { from, to, type }
+    this.incomingEdges = new Map(); // file path -> edge[]
     this.lastScanTime = 0;
     this.cacheTimeout = 30000; // 30 seconds cache
     this.fileHashes = new Map(); // Track file changes for selective updates
@@ -639,6 +640,7 @@ export class CodeGraph {
         this.nodes = new Map(json.nodes);
         this.edges = json.edges;
         this.lastScanTime = json.lastScanTime || 0;
+        this._rebuildIndex();
         return true;
       }
     } catch (e) {
@@ -758,7 +760,8 @@ export class CodeGraph {
       for (const [file] of this.nodes) {
         if (!currentFiles.has(file)) {
           this.nodes.delete(file);
-          this.edges = this.edges.filter((e) => e.from !== file);
+          // Remove both outgoing and incoming edges to prevent dangling references
+          this.edges = this.edges.filter((e) => e.from !== file && e.to !== file);
         }
       }
 
@@ -793,6 +796,7 @@ export class CodeGraph {
       }
 
       this.lastScanTime = now;
+      this._rebuildIndex();
 
       const scanDuration = performance.now() - scanStart;
       logger.debug(
@@ -959,6 +963,14 @@ export class CodeGraph {
 
   findReferences(fileName) {
     if (!fileName) return [];
+
+    // Use optimized index for O(1) exact match lookup
+    if (this.incomingEdges.has(fileName)) {
+      return this.incomingEdges.get(fileName);
+    }
+
+    // Fallback to partial match scan if exact match not found
+    // This maintains backward compatibility for tests relying on substring matching
     return this.edges.filter((e) => e.to.includes(fileName));
   }
 
@@ -999,7 +1011,8 @@ export class CodeGraph {
       if (visited.has(currentPath)) return;
       visited.add(currentPath);
 
-      const dependents = this.edges.filter((e) => e.to === currentPath);
+      // Use index for O(1) lookup
+      const dependents = this.incomingEdges.get(currentPath) || [];
       for (const edge of dependents) {
         if (edge.from !== filePath) {
           impact.add(edge.from);
@@ -1017,8 +1030,16 @@ export class CodeGraph {
     const updateStart = performance.now();
 
     for (const file of changedFiles) {
-      await this.analyzeFile(file);
+      // Remove old edges originating from this file
+      this.edges = this.edges.filter((e) => e.from !== file);
+
+      const { edges } = await this.analyzeFile(file);
+      if (edges && edges.length > 0) {
+        this.edges.push(...edges);
+      }
     }
+
+    this._rebuildIndex();
 
     // Resync to GraphRAG
     if (this.graphRAG && this.graphRAG.isConnected) {
@@ -1034,8 +1055,23 @@ export class CodeGraph {
   clearCache() {
     this.nodes.clear();
     this.edges = [];
+    this.incomingEdges.clear();
     this.fileHashes.clear();
     this.lastScanTime = 0;
+  }
+
+  /**
+   * Rebuild the incoming edges index for faster querying
+   * @private
+   */
+  _rebuildIndex() {
+    this.incomingEdges.clear();
+    for (const edge of this.edges) {
+      if (!this.incomingEdges.has(edge.to)) {
+        this.incomingEdges.set(edge.to, []);
+      }
+      this.incomingEdges.get(edge.to).push(edge);
+    }
   }
 
   // GraphRAG passthrough methods
@@ -1051,7 +1087,46 @@ export class CodeGraph {
     if (this.graphRAG && this.graphRAG.isConnected) {
       return await this.graphRAG.findCircularDependencies();
     }
-    return [];
+
+    // In-memory cycle detection using DFS
+    const outgoing = new Map();
+    for (const edge of this.edges) {
+      if (!outgoing.has(edge.from)) outgoing.set(edge.from, []);
+      outgoing.get(edge.from).push(edge.to);
+    }
+
+    const visited = new Set();
+    const recursionStack = new Set();
+    const cycles = [];
+
+    // Helper function for DFS
+    const detectCycle = (node, path) => {
+      visited.add(node);
+      recursionStack.add(node);
+
+      const children = outgoing.get(node) || [];
+      for (const child of children) {
+        if (!visited.has(child)) {
+          detectCycle(child, [...path, child]);
+        } else if (recursionStack.has(child)) {
+          // Cycle detected: from current node back to 'child' which is in recursion stack
+          const cycleStart = path.indexOf(child);
+          if (cycleStart !== -1) {
+            cycles.push([...path.slice(cycleStart), child]);
+          }
+        }
+      }
+
+      recursionStack.delete(node);
+    };
+
+    for (const node of this.nodes.keys()) {
+      if (!visited.has(node)) {
+        detectCycle(node, [node]);
+      }
+    }
+
+    return cycles;
   }
 
   async getCouplingMetrics() {
