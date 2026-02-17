@@ -10,6 +10,7 @@ import inquirer from 'inquirer';
 import { execSync } from 'child_process';
 import { recordError } from '../analytics/index.js';
 import { formatSmartError } from './smart-error.js';
+import { redact } from './redactor.js';
 
 // Error patterns and their solutions
 const ERROR_SOLUTIONS = {
@@ -154,34 +155,36 @@ const ERROR_SOLUTIONS = {
  */
 export async function handleError(error, context = {}) {
   const errorMessage = error.message || error.toString();
+  const safeErrorMessage = redact(errorMessage);
+  const safeContext = redact(context);
   const suggestions = getSuggestions(errorMessage);
 
   try {
     await recordError({
-      message: errorMessage,
+      message: safeErrorMessage,
       command: context.command,
-      stack: error.stack,
-      metadata: context,
+      stack: redact(error.stack),
+      metadata: safeContext,
     });
   } catch {
     // Analytics should never block error handling
   }
 
-  console.error(chalk.red('\n❌ Error:'), errorMessage);
+  console.error(chalk.red('\n❌ Error:'), safeErrorMessage);
   const smart = formatSmartError(error);
   if (smart?.summary) {
-    console.log(smart.summary);
-    console.log(smart.why);
+    console.log(redact(smart.summary));
+    console.log(redact(smart.why));
     if (smart.suggestions?.length) {
       console.log(chalk.cyan('\nSuggested fixes:'));
-      smart.suggestions.forEach((s) => console.log(`  - ${s}`));
+      smart.suggestions.forEach((s) => console.log(`  - ${redact(s)}`));
     }
   }
 
   if (suggestions.length > 0) {
     console.log(chalk.cyan('\n💡 Suggestions:'));
     suggestions.forEach((suggestion, i) => {
-      console.log(chalk.white(`  ${i + 1}. ${suggestion}`));
+      console.log(chalk.white(`  ${i + 1}. ${redact(suggestion)}`));
     });
     console.log();
   }
@@ -194,8 +197,8 @@ export async function handleError(error, context = {}) {
   // Log error for debugging
   if (process.env.DEBUG) {
     console.error(chalk.gray('\nDebug Info:'));
-    console.error(chalk.gray('  Context:'), JSON.stringify(context, null, 2));
-    console.error(chalk.gray('  Stack:'), error.stack);
+    console.error(chalk.gray('  Context:'), JSON.stringify(safeContext, null, 2));
+    console.error(chalk.gray('  Stack:'), redact(error.stack));
   }
 
   return suggestions;
@@ -269,17 +272,18 @@ export function withErrorHandling(fn, context = {}) {
  * @returns {string} Formatted error string with suggestions
  */
 export function formatError(error, command) {
+  const safeMessage = redact(error.message || error);
   const lines = [
     chalk.red.bold(`Command failed: ${command}`),
     '',
-    chalk.red('Error:') + ' ' + (error.message || error),
+    chalk.red('Error:') + ' ' + safeMessage,
     '',
   ];
 
   const suggestions = getSuggestions(error.message || error.toString());
   if (suggestions.length > 0) {
     lines.push(chalk.cyan('Try these solutions:'));
-    suggestions.forEach((s) => lines.push('  ' + chalk.white('•') + ' ' + s));
+    suggestions.forEach((s) => lines.push('  ' + chalk.white('•') + ' ' + redact(s)));
     lines.push('');
   }
 
