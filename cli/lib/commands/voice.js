@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { voiceToCodeService } from '../lib/voice/voice-service.js';
-import { printInfo, printSuccess, printError } from '../lib/utils/output.js';
+import { voiceToCodeService } from '../voice/voice-service.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 
 export function registerVoiceCommand(program) {
   const voiceCommand = program

@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { agentMarketplace } from '../lib/marketplace/index.js';
-import { printInfo, printSuccess, printError, printWarning } from '../lib/utils/output.js';
+import { agentMarketplace } from '../marketplace/index.js';
+import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
 export function registerMarketplaceCommand(program) {
   const marketplaceCommand = program
