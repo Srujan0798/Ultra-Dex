@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd apps/docs-site
-          npm ci
+          npm ci --legacy-peer-deps
 
       - name: Build website
         run: |
