@@ -23,6 +23,15 @@ inputs:
   api-key:
     description: 'Legacy input kept for compatibility'
     required: false
+  task:
+    description: 'Specific task instruction for agents'
+    required: false
+  provider:
+    description: 'AI provider to use (e.g. openai)'
+    required: false
+  model:
+    description: 'AI model to use (e.g. gpt-4o)'
+    required: false
 outputs:
   results:
     description: 'JSON summary of executed agents and checks'
