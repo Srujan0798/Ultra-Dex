@@ -220,6 +220,9 @@
     "zod": "^3.24.1",
     "zod-validation-error": "^3.4.0"
   },
+  "overrides": {
+    "react": "18.2.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
     "@playwright/test": "^1.58.2",
