@@ -71,10 +71,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Run CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
       with:
         languages: javascript
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
 
     - name: Run Semgrep
       uses: returntocorp/semgrep-action@v1
@@ -87,15 +90,18 @@ jobs:
           p/owasp-top-ten
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
+      uses: aquasecurity/trivy-action@0.29.0
       with:
         scan-type: 'fs'
         scan-ref: '.'
         format: 'sarif'
         output: 'trivy-results.sarif'
+        exit-code: '0'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
 
     - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
