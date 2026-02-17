@@ -102,7 +102,7 @@
     "publish:beta": "npm publish --tag beta",
     "version:bump": "npm version",
     "clean": "rm -rf node_modules package-lock.json && npm install",
-    "prepare": "husky install",
+    "prepare": "husky || true",
     "pre-commit": "lint-staged",
     "governance": "node scripts/pre-commit-governor.js",
     "compliance:check": "node gitFail/compliance/check-governance-files.js",
