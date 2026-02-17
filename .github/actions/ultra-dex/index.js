@@ -1,7 +1,5 @@
-#!/usr/bin/env node
-
-const { execSync } = require('node:child_process');
-const fs = require('node:fs');
+import { execSync } from 'node:child_process';
+import fs from 'node:fs';
 
 function getInput(name, fallback = '') {
   const key = `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
