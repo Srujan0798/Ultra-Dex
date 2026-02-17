@@ -7,7 +7,7 @@ branding:
 inputs:
   agents:
     description: 'Comma-separated list of agents to run (code-reviewer,security-audit,test-generator)'
-    required: true
+    required: false
     default: 'code-reviewer,security-audit'
   config-path:
     description: 'Path to Ultra-Dex config file'
@@ -22,6 +22,15 @@ inputs:
     required: false
   api-key:
     description: 'Legacy input kept for compatibility'
+    required: false
+  task:
+    description: 'AI task description'
+    required: false
+  provider:
+    description: 'AI provider (e.g. openai, anthropic)'
+    required: false
+  model:
+    description: 'AI model to use'
     required: false
 outputs:
   results:
