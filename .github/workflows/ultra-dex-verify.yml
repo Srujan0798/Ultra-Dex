@@ -13,5 +13,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps
+      - run: npm ci --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps
       - run: npx ultra-dex verify --full
