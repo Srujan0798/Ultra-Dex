@@ -23,7 +23,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install --ignore-scripts
+        run: npm install --ignore-scripts --legacy-peer-deps
 
       - name: Run Ultra-Dex security agents
         uses: ./.github/actions/ultra-dex

@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd cli
-          npm ci
+          npm install --ignore-scripts --legacy-peer-deps
 
       - name: Run tests
         run: |
@@ -65,7 +65,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd cli
-          npm ci
+          npm install --ignore-scripts --legacy-peer-deps
 
       - name: Publish to npm
         run: |
@@ -133,7 +133,7 @@ jobs:
       - name: Generate Ultra-Dex Report for Release
         run: |
           cd cli
-          npm install
+          npm install --ignore-scripts --legacy-peer-deps
           node bin/ultra-dex.js export --format json --output ../ultra-dex-release-report.json || true
 
       - name: Upload Release Assets

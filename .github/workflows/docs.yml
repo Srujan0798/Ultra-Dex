@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd apps/docs-site
-          npm install --ignore-scripts
+          npm install --ignore-scripts --legacy-peer-deps
 
       - name: Build website
         run: |

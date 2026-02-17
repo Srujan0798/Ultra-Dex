@@ -30,7 +30,7 @@ jobs:
 
       - name: Install extension dependencies
         working-directory: packages/extensions/vscode
-        run: npm install --legacy-peer-deps
+        run: npm install --legacy-peer-deps --ignore-scripts
 
       - name: Compile TypeScript
         working-directory: packages/extensions/vscode
