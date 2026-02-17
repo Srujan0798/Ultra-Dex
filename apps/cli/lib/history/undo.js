@@ -13,6 +13,7 @@ import { AppError, ValidationError } from '../utils/errors.js';
 import { ultraMemory } from '../mcp/memory.js';
 import { memex } from '../memory/memex.js';
 import { SENSITIVE_PATH_PATTERNS } from '../governance/rules.js';
+import { atomicWriteFile, safeJsonRead } from '../utils/atomic-fs.js';
 
 const HISTORY_DIR = path.resolve(process.cwd(), '.ultra', 'history');
 const HISTORY_FILE = path.join(HISTORY_DIR, 'operations.json');
@@ -42,15 +43,11 @@ export class HistoryManager {
       await fs.mkdir(HISTORY_DIR, { recursive: true });
     }
 
-    if (existsSync(HISTORY_FILE)) {
-      try {
-        const raw = await fs.readFile(HISTORY_FILE, 'utf8');
-        this.history = JSON.parse(raw) || [];
-      } catch {
-        this.history = [];
-      }
-    } else {
-      this.history = [];
+    this.history = await safeJsonRead(HISTORY_FILE, []);
+
+    // Only save if history is empty AND file didn't exist (fresh start)
+    // safeJsonRead handles the corruption case by returning [] and backing up
+    if (this.history.length === 0 && !existsSync(HISTORY_FILE)) {
       await this.save();
     }
 
@@ -61,7 +58,7 @@ export class HistoryManager {
     if (this.isSaving) return;
     this.isSaving = true;
     try {
-      await fs.writeFile(HISTORY_FILE, JSON.stringify(this.history, null, 2), 'utf8');
+      await atomicWriteFile(HISTORY_FILE, JSON.stringify(this.history, null, 2));
     } finally {
       this.isSaving = false;
     }

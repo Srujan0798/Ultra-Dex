@@ -46,7 +46,14 @@ export async function readLedger() {
     return content
       .split('\n')
       .filter(Boolean)
-      .map((line) => JSON.parse(line));
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch {
+          return null;
+        }
+      })
+      .filter((entry) => entry !== null);
   } catch {
     return [];
   }

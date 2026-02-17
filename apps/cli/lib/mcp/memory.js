@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
 import { performance } from 'perf_hooks';
+import { atomicWriteFile, safeJsonRead } from '../utils/atomic-fs.js';
 
 const MEMORY_DIR = '.ultra';
 const MEMORY_FILE = 'memory.json';
@@ -45,14 +46,16 @@ export class UltraMemory {
           await fs.mkdir(path.dirname(MEMORY_PATH), { recursive: true });
         }
 
-        if (existsSync(MEMORY_PATH)) {
-          const data = await fs.readFile(MEMORY_PATH, 'utf-8');
-          this.memory = JSON.parse(data);
-          this.stats.totalEntries = this.memory.length;
-        } else {
-          this.memory = [];
-          await this.saveToFile();
+        // Use safeJsonRead which handles corruption backup
+        this.memory = await safeJsonRead(MEMORY_PATH, []);
+        this.stats.totalEntries = this.memory.length;
+
+        // If file didn't exist, create it. If it was corrupted, safeJsonRead returned [] and backed up the bad file.
+        // We only explicitly save here if we're starting fresh, to ensure the file exists.
+        if (this.memory.length === 0 && !existsSync(MEMORY_PATH)) {
+             await this.saveToFile();
         }
+
         this.initialized = true;
         this.stats.lastUpdated = new Date();
       } catch (error) {
@@ -75,7 +78,7 @@ export class UltraMemory {
     this.isSaving = true;
     try {
       const startTime = performance.now();
-      await fs.writeFile(MEMORY_PATH, JSON.stringify(this.memory, null, 2));
+      await atomicWriteFile(MEMORY_PATH, JSON.stringify(this.memory, null, 2));
       const saveTime = performance.now() - startTime;
 
       // Update stats
