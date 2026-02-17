@@ -5,9 +5,20 @@ branding:
   icon: 'cpu'
   color: 'blue'
 inputs:
+  task:
+    description: 'Specific task description for the AI agent'
+    required: false
+  provider:
+    description: 'AI Provider to use (openai, anthropic, google)'
+    required: false
+    default: 'openai'
+  model:
+    description: 'Model to use for the selected provider'
+    required: false
+    default: 'gpt-4o'
   agents:
     description: 'Comma-separated list of agents to run (code-reviewer,security-audit,test-generator)'
-    required: true
+    required: false
     default: 'code-reviewer,security-audit'
   config-path:
     description: 'Path to Ultra-Dex config file'
