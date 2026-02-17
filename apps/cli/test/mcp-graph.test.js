@@ -15,6 +15,7 @@ describe('MCP Graph Module', () => {
   beforeEach(async () => {
     // Create a fresh temp directory for each test
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-graph-test-'));
+    projectGraph.clearCache();
   });
 
   test('projectGraph has required methods', () => {
