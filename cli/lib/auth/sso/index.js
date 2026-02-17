@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import { SSOClient } from '../sso.js';
+import { EnterpriseSSO as SSOClient } from '../sso.js';
 
 export const ssoClient = new SSOClient();
 

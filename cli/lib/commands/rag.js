@@ -6,9 +6,9 @@
  */
 
 import chalk from 'chalk';
-import { GraphRAG } from '../lib/rag/graph.js';
-import { embeddingsManager } from '../lib/rag/embeddings.js';
-import { printInfo, printSuccess, printWarning, printError } from '../lib/utils/output.js';
+import { GraphRAG } from '../rag/graph.js';
+import { embeddingsManager } from '../rag/embeddings.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
 /**
  * Register RAG commands
@@ -148,7 +148,7 @@ export function registerRagCommands(program) {
           printInfo(chalk.white('Storage: In-Memory'));
           printInfo(chalk.gray(`Indexed Files: ${nodeCount}`));
         } else {
-          const { Neo4jConnector } = await import('../lib/rag/neo4j.js');
+          const { Neo4jConnector } = await import('../rag/neo4j.js');
           const connector = new Neo4jConnector();
           await connector.connect();
           const stats = await connector.getStats();
@@ -196,7 +196,7 @@ export function registerRagCommands(program) {
 
         printInfo(chalk.yellow('\n🗑️  Clearing graph data...\n'));
 
-        const { Neo4jConnector } = await import('../lib/rag/neo4j.js');
+        const { Neo4jConnector } = await import('../rag/neo4j.js');
         const connector = new Neo4jConnector({
           dbType: options.dbType,
         });

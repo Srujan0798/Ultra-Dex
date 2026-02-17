@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { autonomousDaemon } from '../lib/daemon/autonomous-daemon.js';
-import { printInfo, printSuccess, printError, printWarning } from '../lib/utils/output.js';
+import { autonomousDaemon } from '../daemon/autonomous-daemon.js';
+import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
 export function registerDaemonCommand(program) {
   const daemonCommand = program

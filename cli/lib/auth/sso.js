@@ -108,3 +108,5 @@ export class EnterpriseSSO {
     next();
   }
 }
+
+export const ssoClient = new EnterpriseSSO();

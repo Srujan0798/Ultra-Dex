@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import fs from 'fs/promises';
 import path from 'path';
-import { visionAgent } from '../lib/vision/vision-agent.js';
-import { printInfo, printSuccess, printError, printWarning } from '../lib/utils/output.js';
+import { visionAgent } from '../vision/vision-agent.js';
+import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
 export function registerVisionCommand(program) {
   const visionCommand = program
