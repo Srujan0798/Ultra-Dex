@@ -7,6 +7,10 @@
 
 import EventEmitter from 'events';
 import { setTimeout as sleep } from 'timers/promises';
+import fs from 'fs/promises';
+import path from 'path';
+
+const STORAGE_FILE = path.join(process.cwd(), '.ultra', 'circuit-breakers.json');
 
 /**
  * Circuit Breaker Pattern
@@ -22,6 +26,7 @@ export class CircuitBreaker extends EventEmitter {
     this.failures = 0;
     this.successes = 0;
     this.lastFailureTime = null;
+    this.pendingRequests = 0;
     this.metrics = {
       totalCalls: 0,
       successfulCalls: 0,
@@ -33,6 +38,7 @@ export class CircuitBreaker extends EventEmitter {
   async execute(fn, ...args) {
     this.metrics.totalCalls++;
 
+    // Check if we can transition from OPEN to HALF_OPEN
     if (this.state === 'OPEN') {
       if (Date.now() - this.lastFailureTime > this.resetTimeout) {
         this.state = 'HALF_OPEN';
@@ -44,6 +50,16 @@ export class CircuitBreaker extends EventEmitter {
       }
     }
 
+    // Enforce concurrency limit in HALF_OPEN state
+    if (this.state === 'HALF_OPEN') {
+      if (this.pendingRequests >= this.halfOpenRequests) {
+        this.metrics.rejectedCalls++;
+        throw new Error('Circuit breaker is HALF_OPEN (max concurrency reached)');
+      }
+    }
+
+    this.pendingRequests++;
+
     try {
       const result = await fn(...args);
       this.onSuccess();
@@ -51,6 +67,8 @@ export class CircuitBreaker extends EventEmitter {
     } catch (error) {
       this.onFailure();
       throw error;
+    } finally {
+      this.pendingRequests--;
     }
   }
 
@@ -88,6 +106,7 @@ export class CircuitBreaker extends EventEmitter {
       state: this.state,
       failures: this.failures,
       successes: this.successes,
+      pending: this.pendingRequests,
       metrics: this.metrics,
       uptime: this.lastFailureTime ? Date.now() - this.lastFailureTime : null,
     };
@@ -307,6 +326,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
     this.circuitBreakers = new Map();
     this.retryStrategies = new Map();
     this.recoveryActions = new Map();
+    this.initialized = false;
     this.metrics = {
       incidents: 0,
       recoveries: 0,
@@ -315,7 +335,48 @@ export class SelfHealingOrchestrator extends EventEmitter {
     };
   }
 
+  async loadState() {
+    try {
+      const data = await fs.readFile(STORAGE_FILE, 'utf8');
+      const state = JSON.parse(data);
+      for (const [name, breakerState] of Object.entries(state)) {
+        const breaker = this.getCircuitBreaker(name);
+        breaker.state = breakerState.state;
+        breaker.failures = breakerState.failures;
+        breaker.successes = breakerState.successes;
+        breaker.lastFailureTime = breakerState.lastFailureTime;
+        breaker.metrics = breakerState.metrics;
+      }
+    } catch (error) {
+      // Ignore if file doesn't exist
+    }
+  }
+
+  async saveState() {
+    try {
+      const state = {};
+      for (const [name, breaker] of this.circuitBreakers.entries()) {
+        state[name] = {
+          state: breaker.state,
+          failures: breaker.failures,
+          successes: breaker.successes,
+          lastFailureTime: breaker.lastFailureTime,
+          metrics: breaker.metrics
+        };
+      }
+      await fs.mkdir(path.dirname(STORAGE_FILE), { recursive: true });
+      await fs.writeFile(STORAGE_FILE, JSON.stringify(state, null, 2));
+    } catch (error) {
+      console.error('Failed to save circuit breaker state:', error);
+    }
+  }
+
   async initialize() {
+    if (this.initialized) return;
+    this.initialized = true;
+
+    await this.loadState();
+
     // Register default health checks
     this.healthMonitor.register('memory', async () => {
       const usage = process.memoryUsage();
@@ -353,6 +414,10 @@ export class SelfHealingOrchestrator extends EventEmitter {
     });
 
     await this.healthMonitor.start();
+
+    // Start periodic save
+    setInterval(() => this.saveState(), 60000).unref(); // Every minute
+
     this.emit('initialized');
   }
 
@@ -428,7 +493,12 @@ export class SelfHealingOrchestrator extends EventEmitter {
     const breaker = this.getCircuitBreaker(circuitBreakerName, context.circuitBreaker);
     const retry = this.getRetryStrategy(retryStrategyName, context.retry);
 
-    return breaker.execute(() => retry.execute(fn, context));
+    // Auto-save on failure state change? No, too frequent. Rely on periodic or manual.
+    try {
+      return await breaker.execute(() => retry.execute(fn, context));
+    } finally {
+      // Consider saving if state changed, but periodic is safer for performance.
+    }
   }
 
   getHealthStatus() {
@@ -444,6 +514,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
 
   async shutdown() {
     await this.healthMonitor.stop();
+    await this.saveState();
   }
 }
 
@@ -511,10 +582,14 @@ export class ChaosEngineering extends EventEmitter {
   }
 }
 
+// Singleton instance
+export const orchestrator = new SelfHealingOrchestrator();
+
 export default {
   SelfHealingOrchestrator,
   HealthMonitor,
   CircuitBreaker,
   RetryStrategy,
   ChaosEngineering,
+  orchestrator
 };
