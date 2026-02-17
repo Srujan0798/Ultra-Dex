@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const { execSync } = require('node:child_process');
-const fs = require('node:fs');
+import { execSync } from 'node:child_process';
+import fs from 'node:fs';
 
 function getInput(name, fallback = '') {
   const key = `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
@@ -62,6 +62,11 @@ async function main() {
   const autoApprove = getInput('auto-approve', 'false') === 'true';
   const token = getInput('github-token', process.env.GITHUB_TOKEN || '');
 
+  // New inputs (currently unused but retrieved to prevent errors if logic is added)
+  const task = getInput('task', '');
+  const provider = getInput('provider', '');
+  const model = getInput('model', '');
+
   const agents = agentsInput
     .split(',')
     .map((value) => value.trim())
@@ -72,8 +77,16 @@ async function main() {
 
   try {
     // Mandatory governance gate
-    run('node gitFail/compliance/check-governance-files.js');
-    results.push({ check: 'governance', status: 'passed' });
+    try {
+        run('node gitFail/compliance/check-governance-files.js');
+        results.push({ check: 'governance', status: 'passed' });
+    } catch (e) {
+        // If the script doesn't exist or fails, log it but don't crash the whole action immediately
+        // unless it's critical. The original code would crash here.
+        // Assuming strict governance is required:
+        throw e;
+    }
+
 
     for (const agent of agents) {
       if (agent === 'security-audit') {
@@ -119,6 +132,7 @@ async function main() {
     passed,
     autoApprove,
     results,
+    metadata: { task, provider, model }
   };
 
   const bodyLines = [
