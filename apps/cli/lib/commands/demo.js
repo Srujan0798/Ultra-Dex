@@ -1,8 +1,8 @@
-import { interactiveCLI } from '../lib/interactive-cli.js';
-import { createSpinner, withLoading } from '../lib/spinner.js';
-import { colors } from '../lib/colors.js';
-import { createTable, createSummaryCard, createStatusPanel, createProgressBar } from '../lib/formatters.js';
-import { createBarChart, createGauge, formatChartTitle } from '../lib/charts.js';
+import { interactiveCLI } from '../interactive-cli.js';
+import { createSpinner, withLoading } from '../spinner.js';
+import { colors } from '../colors.js';
+import { createTable, createSummaryCard, createStatusPanel, createProgressBar } from '../formatters.js';
+import { createBarChart, createGauge, formatChartTitle } from '../charts.js';
 import fs from 'fs/promises';
 import path from 'path';
 
