@@ -13,6 +13,7 @@ import gradient from 'gradient-string';
 import fs from 'fs';
 import path from 'path';
 import { homedir } from 'os';
+import stripAnsiFn from 'strip-ansi';
 import { getTheme, setTheme, themes } from '../config/theme.js';
 import { setDoomsdayMode, isDoomsdayMode } from '../utils/theme-state.js';
 import { doomsdayStatusIcons } from '../../assets/art/doomsday.js';
@@ -64,7 +65,12 @@ export const themeColors = {
 const baseGradient = gradient([themeColors.primary, themeColors.accent || themeColors.secondary]);
 
 // Export a function that applies the gradient multiline (top to bottom)
-export const ultraGradient = (str) => baseGradient.multiline(str);
+export const ultraGradient = (str) => {
+  if (process.env.NO_COLOR || (process.stdout && !process.stdout.isTTY)) {
+    return str;
+  }
+  return baseGradient.multiline(str);
+};
 
 export const theme = {
   primary: chalk.hex(themeColors.primary),
@@ -84,19 +90,7 @@ export const theme = {
 };
 
 export function stripAnsi(str) {
-  const input = String(str ?? '');
-  let out = '';
-
-  for (let i = 0; i < input.length; i++) {
-    if (input[i] === '\u001b' && input[i + 1] === '[') {
-      i += 2;
-      while (i < input.length && input[i] !== 'm') i++;
-      continue;
-    }
-    out += input[i];
-  }
-
-  return out;
+  return stripAnsiFn(String(str ?? ''));
 }
 
 export function box(content, title = '') {
@@ -177,9 +171,13 @@ export function table(headers, rows) {
 }
 
 export function progressBar(current, total, width = 40) {
+  if (total <= 0) {
+    const empty = theme.dim('░'.repeat(width));
+    return `${empty} ${theme.secondary('0%')}`;
+  }
   const percentage = Math.round((current / total) * 100);
-  const filled = Math.round((current / total) * width);
-  const empty = width - filled;
+  const filled = Math.max(0, Math.min(width, Math.round((current / total) * width)));
+  const empty = Math.max(0, width - filled);
   const bar = theme.primary('█'.repeat(filled)) + theme.dim('░'.repeat(empty));
   return `${bar} ${theme.secondary(percentage + '%')}`;
 }

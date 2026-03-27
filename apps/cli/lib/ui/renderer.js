@@ -29,7 +29,10 @@ class Renderer {
    * Clear the screen and show the professional header
    */
   clearScreen() {
-    console.clear();
+    // Only clear screen in interactive TTY mode
+    if (process.stdout && process.stdout.isTTY && !IS_TEST) {
+      console.clear();
+    }
     this.header();
   }
 
@@ -68,7 +71,7 @@ class Renderer {
    * @param {boolean} stream - Whether to use typing effect (default: true)
    */
   async text(text, stream = true) {
-    if (IS_TEST) stream = false;
+    if (IS_TEST || (process.stdout && !process.stdout.isTTY)) stream = false;
     if (!stream) {
       console.log('  ' + this.formatMarkdown(text));
       return;
@@ -88,9 +91,11 @@ class Renderer {
   async typeLine(line) {
     // If line contains ANSI codes, typing it char-by-char is hard.
     // For simple text, we type. For formatted, we dump the line with a small delay.
-    if (line.includes('\x1b')) {
+    if ((process.stdout && !process.stdout.isTTY) || line.includes('\x1b')) {
       console.log(line);
-      await this.sleep(CONFIG.typingSpeed * 5);
+      if (process.stdout && process.stdout.isTTY) {
+        await this.sleep(CONFIG.typingSpeed * 5);
+      }
     } else {
       for (const char of line) {
         process.stdout.write(char);
@@ -173,8 +178,11 @@ class Renderer {
    * @param {string[]} steps - Array of steps to show sequentially
    */
   async thinking(header, steps) {
-    if (IS_TEST) {
+    if (IS_TEST || (process.stdout && !process.stdout.isTTY) || process.env.CI) {
       console.log(theme.dim(header));
+      for (const step of steps) {
+        console.log(theme.dim(`  ✓ ${step}`));
+      }
       return;
     }
     console.log(theme.dim('╭─ ') + theme.accent('⚡ ' + header));
