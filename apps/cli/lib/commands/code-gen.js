@@ -189,7 +189,7 @@ export async function ${endpoint.method.toLowerCase()}(request: NextRequest) {
   } else {
     // Generate Express routes
     let routesCode = `import express from 'express';
-import { prisma } from '../lib/prisma';
+import { prisma } from '../prisma';
 
 const router = express.Router();
 

@@ -1,10 +1,3 @@
-// Copyright (c) 2026 Ultra-Dex
-
-/**
- * @fileoverview Sso module
- * @module auth/sso
- */
-
 // File: cli/lib/auth/sso.js
 import jwt from 'jsonwebtoken';
 import fs from 'fs/promises';
