@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/monorepo",
-  "version": "6.0.0",
+  "version": "1.0.2",
   "private": true,
   "description": "The AI Orchestration Meta-Layer for SaaS Development - OVERPOWERED Edition (1000% Efficiency)",
   "keywords": [
@@ -219,6 +219,12 @@
     "yaml": "^2.6.1",
     "zod": "^3.24.1",
     "zod-validation-error": "^3.4.0"
+  },
+  "overrides": {
+    "react": "18.2.0"
+  },
+  "overrides": {
+    "react": "18.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
