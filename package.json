@@ -78,7 +78,7 @@
     "test:unit": "NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/*.test.js",
     "test:integration": "NODE_ENV=test node --test --test-force-exit --test-timeout=60000 tests/integration/*.test.js",
     "test:cli": "NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/cli/*.test.js",
-    "test:push:smoke": "NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js tests/core/git-integration.test.js tests/core/memory-integration.test.js",
+    "test:push:smoke": "NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js tests/core/git-integration.test.js tests/core/memory-integration.test.js tests/cli/plan.test.js tests/cli/serve.test.js tests/cli/swarm.test.js apps/cli/test/git-workflow.test.js",
     "test:performance": "NODE_ENV=test node --test --test-timeout=60000 tests/performance/*.test.js",
     "test:all": "NODE_ENV=test node --test --test-timeout=60000 tests/**/*.test.js",
     "test:watch": "NODE_ENV=test node --test --watch --test-timeout=30000 tests/core/*.test.js",
@@ -102,7 +102,6 @@
     "publish:beta": "npm publish --tag beta",
     "version:bump": "npm version",
     "clean": "rm -rf node_modules package-lock.json && npm install",
-    "prepare": "husky || true",
     "pre-commit": "lint-staged",
     "governance": "node scripts/pre-commit-governor.js",
     "compliance:check": "node gitFail/compliance/check-governance-files.js",
@@ -124,6 +123,7 @@
     "release:beta": "npm version prerelease --preid beta && npm publish --tag beta",
     "release:rc": "npm version prerelease --preid rc && npm publish --tag next",
     "release:stable": "npm version minor && npm publish",
+    "prepare": "husky install",
     "docs:serve": "cd apps/docs-site && npm run docs:dev",
     "dashboard:dev": "cd apps/dashboard && npm run dev",
     "dashboard:build": "cd apps/dashboard && npm run build",
@@ -281,8 +281,7 @@
   },
   "overrides": {
     "tar": "7.5.7",
-    "@mapbox/node-pre-gyp": "2.0.3",
-    "react": "18.2.0"
+    "@mapbox/node-pre-gyp": "2.0.3"
   },
   "config": {
     "commitizen": {
