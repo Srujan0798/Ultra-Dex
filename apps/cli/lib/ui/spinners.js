@@ -108,6 +108,10 @@ export async function runTaskList(tasks) {
 // ═══════════════════════════════════════════════════════════════
 
 export async function typeText(text, speed = 20) {
+  if (process.stdout && !process.stdout.isTTY) {
+    console.log(theme.primary(text));
+    return;
+  }
   for (const char of text) {
     process.stdout.write(theme.primary(char));
     await new Promise((r) => setTimeout(r, speed));
@@ -120,6 +124,9 @@ export async function typeText(text, speed = 20) {
 // ═══════════════════════════════════════════════════════════════
 
 export async function countdown(seconds, message) {
+  if (process.stdout && !process.stdout.isTTY) {
+    return;
+  }
   for (let i = seconds; i > 0; i--) {
     process.stdout.write(`\r  ${theme.accent(i)} ${theme.dim(message)}`);
     await new Promise((r) => setTimeout(r, 1000));
