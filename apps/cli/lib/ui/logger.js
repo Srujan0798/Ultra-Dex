@@ -3,6 +3,7 @@
 import chalk from 'chalk';
 import { theme, status } from './theme.js';
 import { isDoomsdayMode } from '../utils/theme-state.js';
+import { redact } from '../utils/redactor.js';
 
 // Enhanced agent personas with distinct voices
 const AGENT_PERSONAS = {
@@ -88,68 +89,76 @@ class Logger {
 
   info(message, detail = '') {
     if (this.quiet) return;
-    const detailText = detail ? theme.dim(` · ${detail}`) : '';
-    console.log(`  ${status.info} ${message}${detailText}`);
+    const safeDetail = redact(detail);
+    const detailText = safeDetail ? theme.dim(` · ${safeDetail}`) : '';
+    console.log(`  ${status.info} ${redact(message)}${detailText}`);
   }
 
   success(message, detail = '') {
     if (this.quiet) return;
     const persona = this.getPersona();
-    const detailText = detail ? theme.dim(` · ${detail}`) : '';
+    const safeDetail = redact(detail);
+    const detailText = safeDetail ? theme.dim(` · ${safeDetail}`) : '';
 
     // Apply persona-specific messaging
-    const personaMessage = persona.success(message);
+    const personaMessage = persona.success(redact(message));
     console.log(`  ${personaMessage}${detailText}`);
   }
 
   warn(message, detail = '') {
     if (this.quiet) return;
     const persona = this.getPersona();
-    const detailText = detail ? theme.dim(` · ${detail}`) : '';
+    const safeDetail = redact(detail);
+    const detailText = safeDetail ? theme.dim(` · ${safeDetail}`) : '';
 
     // Apply persona-specific messaging
-    const personaMessage = persona.failure(message);
+    const personaMessage = persona.failure(redact(message));
     console.log(`  ${personaMessage}${detailText}`);
   }
 
   error(message, error = null) {
     if (this.quiet) return;
     const persona = this.getPersona();
-    const personaMessage = persona.alert(message);
+    const personaMessage = persona.alert(redact(message));
     console.log(`  ${personaMessage}`);
 
-    if (error && error.message) {
-      console.log(`    ${theme.dim('→')} ${theme.dim(error.message)}`);
-    }
-    if (error && error.stack && process.env.DEBUG) {
-      console.log(
-        theme.dim(
-          error.stack
-            .split('\n')
-            .map((line) => `      ${line}`)
-            .join('\n')
-        )
-      );
+    if (error) {
+      const safeError = redact(error);
+      if (safeError.message) {
+        console.log(`    ${theme.dim('→')} ${theme.dim(safeError.message)}`);
+      }
+      if (safeError.stack && process.env.DEBUG) {
+        console.log(
+          theme.dim(
+            safeError.stack
+              .split('\n')
+              .map((line) => `      ${line}`)
+              .join('\n')
+          )
+        );
+      }
     }
   }
 
   debug(message, detail = '') {
     if (this.quiet || !process.env.DEBUG) return;
-    const detailText = detail ? theme.dim(` · ${detail}`) : '';
-    console.log(`  ${theme.dim('⚙')} ${theme.dim(message)}${detailText}`);
+    const safeDetail = redact(detail);
+    const detailText = safeDetail ? theme.dim(` · ${safeDetail}`) : '';
+    console.log(`  ${theme.dim('⚙')} ${theme.dim(redact(message))}${detailText}`);
   }
 
   step(current, total, message) {
     if (this.quiet) return;
     const stepText = theme.dim(`[${current}/${total}]`);
-    console.log(`  ${stepText} ${message}`);
+    console.log(`  ${stepText} ${redact(message)}`);
   }
 
   header(text) {
     if (this.quiet) return;
     console.log('');
-    console.log(theme.title(`  ${text}`));
-    console.log(theme.primary('  ' + '─'.repeat(Math.max(10, text.length + 4))));
+    const safeText = redact(text);
+    console.log(theme.title(`  ${safeText}`));
+    console.log(theme.primary('  ' + '─'.repeat(Math.max(10, safeText.length + 4))));
   }
 
   spacer() {
@@ -161,35 +170,35 @@ class Logger {
   thinking(message = '') {
     if (this.quiet) return;
     const persona = this.getPersona();
-    const personaMessage = persona.thinking(message);
+    const personaMessage = persona.thinking(redact(message));
     console.log(`  ${personaMessage}`);
   }
 
   waiting(message = '') {
     if (this.quiet) return;
     const persona = this.getPersona();
-    const personaMessage = persona.waiting(message);
+    const personaMessage = persona.waiting(redact(message));
     console.log(`  ${personaMessage}`);
   }
 
   completed(message = '') {
     if (this.quiet) return;
     const persona = this.getPersona();
-    const personaMessage = persona.completed(message);
+    const personaMessage = persona.completed(redact(message));
     console.log(`  ${personaMessage}`);
   }
 
   paused(message = '') {
     if (this.quiet) return;
     const persona = this.getPersona();
-    const personaMessage = persona.paused(message);
+    const personaMessage = persona.paused(redact(message));
     console.log(`  ${personaMessage}`);
   }
 
   alert(message = '') {
     if (this.quiet) return;
     const persona = this.getPersona();
-    const personaMessage = persona.alert(message);
+    const personaMessage = persona.alert(redact(message));
     console.log(`  ${personaMessage}`);
   }
 
