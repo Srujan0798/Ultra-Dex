@@ -1,4 +1,5 @@
 // Copyright (c) 2026 Ultra-Dex
+
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
 import { AgentOrchestrator } from '../../src/core/orchestration/index.js';
@@ -12,7 +13,7 @@ describe('Session-isolated TaskGraph execution', () => {
       nexusExecutor: async (objective, options, runtimeOrchestrator, executionContext) => {
         startedContexts.push(executionContext);
 
-        const taskId = executionContext.taskGraph.addTask({
+        const taskId = executionContext.addTask({
           id: `${objective}-task`,
           task: `Work on ${objective}`,
           objective,
@@ -25,13 +26,13 @@ describe('Session-isolated TaskGraph execution', () => {
         });
 
         assert.strictEqual(runtimeOrchestrator.activeSessions.has(executionContext.sessionId), true);
-        executionContext.taskGraph.markComplete(taskId);
+        executionContext.markComplete(taskId, `${objective}-done`);
 
         return {
           objective,
           sessionId: executionContext.sessionId,
-          taskIds: Array.from(executionContext.taskGraph.tasks.keys()),
-          taskObjectives: Array.from(executionContext.taskGraph.tasks.values()).map((task) => task.objective),
+          taskIds: Array.from(executionContext.tasks.tasks.keys()),
+          taskObjectives: Array.from(executionContext.tasks.tasks.values()).map((task) => task.objective),
         };
       },
     });
@@ -45,7 +46,7 @@ describe('Session-isolated TaskGraph execution', () => {
 
     assert.strictEqual(startedContexts.length, 2);
     assert.notStrictEqual(startedContexts[0], startedContexts[1]);
-    assert.notStrictEqual(startedContexts[0].taskGraph, startedContexts[1].taskGraph);
+    assert.notStrictEqual(startedContexts[0].tasks, startedContexts[1].tasks);
     assert.deepStrictEqual(
       startedContexts.map((ctx) => ctx.objective).sort(),
       ['alpha-objective', 'beta-objective']
