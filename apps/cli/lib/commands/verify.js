@@ -228,7 +228,16 @@ export async function verifyCommand(taskName, options) {
   printInfo('\n⚖️  Ultra-Dex 21-Step Verification\n');
 
   const providerId = options.provider || getDefaultProvider();
-  const provider = createProvider(providerId);
+  let provider = null;
+  try {
+    if (providerId) {
+      provider = createProvider(providerId);
+    }
+  } catch (error) {
+    printWarning(`⚠️  AI Provider initialization failed: ${error.message}`);
+    printWarning('   Continuing with automated checks only.');
+  }
+
   const state = await loadState();
   const projectDir = process.cwd();
 
@@ -239,11 +248,30 @@ export async function verifyCommand(taskName, options) {
   printInfo('');
 
   // 2. AI Review
-  printInfo(chalk.bold('2. Initiating AI Deep Review...\n'));
-  const report = await runAiReview(taskName, provider, state, automatedResults);
+  if (provider) {
+    printInfo(chalk.bold('2. Initiating AI Deep Review...\n'));
+    const report = await runAiReview(taskName, provider, state, automatedResults);
 
-  // 3. Final Verdict
-  displayFinalVerdict(report);
+    // 3. Final Verdict
+    displayFinalVerdict(report);
+  } else {
+    printWarning(chalk.yellow('\n⚠️  Skipping AI Review (No provider configured)'));
+    printInfo(chalk.gray('To run AI verification, set OPENAI_API_KEY, ANTHROPIC_API_KEY, or start Ollama.'));
+
+    // Determine verdict based on automated results only
+    const failures = Object.entries(automatedResults).filter(([_, status]) => status === 'FAIL');
+    if (failures.length > 0) {
+      printError('\n❌ Automated checks failed. Please address the issues above.');
+      // We don't exit here, but return failure so the command action can handle it
+      const err = new AppError('Verification failed (Automated checks)', {
+        code: 'VERIFICATION_FAILED',
+      });
+      err.exitCode = 1;
+      throw err;
+    } else {
+      printSuccess('\n✅ Automated verification passed (AI Review skipped).');
+    }
+  }
 }
 
 function reportBlockers(results) {

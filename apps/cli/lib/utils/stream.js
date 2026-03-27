@@ -89,13 +89,11 @@ export async function streamTextWithDisplay(options = {}) {
 
       // Call the onToken callback if provided
       if (onToken) {
-        // Keep token consumption non-blocking; callback failures route to onError.
-        Promise.resolve()
-          .then(() => onToken(token, fullResponse, tokenCount))
-          .catch((err) => {
-            if (onError) onError(err);
-            else printError(chalk.red(`Error in onToken callback: ${err.message}`));
-          });
+        // Handle asynchronously to avoid blocking the stream
+        Promise.resolve().then(() => onToken(token, fullResponse, tokenCount)).catch((err) => {
+          if (onError) onError(err);
+          else printError(chalk.red(`Error in onToken callback: ${err.message}`));
+        });
       }
 
       // Update spinner periodically
@@ -303,13 +301,11 @@ export class InterruptibleStream {
         tokenCount++;
 
         if (onToken) {
-          // Keep token consumption non-blocking; callback failures route to onError.
-          Promise.resolve()
-            .then(() => onToken(token, fullResponse, tokenCount))
-            .catch((err) => {
-              if (onError) onError(err);
-              else printError(chalk.red(`Error in onToken callback: ${err.message}`));
-            });
+          // Handle asynchronously to avoid blocking the stream
+          Promise.resolve().then(() => onToken(token, fullResponse, tokenCount)).catch((err) => {
+            if (onError) onError(err);
+            else printError(chalk.red(`Error in onToken callback: ${err.message}`));
+          });
         }
 
         if (tokenCount % 10 === 0) {
@@ -364,7 +360,7 @@ export function formatStreamOutput(text, mode = 'default') {
     case 'typing':
       // Simulate typing effect (would be used with a delay in real implementation)
       return text;
-    case 'chunked': {
+    case 'chunked':
       // Split into chunks for display
       const chunkSize = 50;
       const chunks = [];
@@ -372,7 +368,6 @@ export function formatStreamOutput(text, mode = 'default') {
         chunks.push(text.slice(i, i + chunkSize));
       }
       return chunks;
-    }
     case 'annotated':
       // Add annotations to the text
       return text

@@ -1,18 +1,14 @@
 #!/usr/bin/env node
 
-/**
- * @fileoverview Ultra Dex module
- * @module bin/ultra-dex
- */
-
 process.env.FORCE_COLOR = '3';
 
 import { Command } from 'commander';
 import updateNotifier from 'update-notifier';
+import boxen from 'boxen';
 import chalk from 'chalk';
 import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
-import { formatWarning } from '../lib/utils/status.js';
+import { formatInfo, formatWarning, formatSuccess } from '../lib/utils/status.js';
 import { recordUsageEventSync } from '../lib/enterprise/usage.js';
 import { isTelemetryEnabledSync } from '../lib/utils/telemetry.js';
 
@@ -31,7 +27,7 @@ const wantsHelp =
   process.argv.includes('-V');
 
 // Wait for initialization
-if (!wantsHelp && process.env.NODE_ENV !== 'test') {
+if (!wantsHelp) {
   try {
     await Promise.all([
       monitoring.initialize(),
@@ -41,8 +37,7 @@ if (!wantsHelp && process.env.NODE_ENV !== 'test') {
       installHistoryTracking(),
     ]);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red('Failed to initialize systems:'), message);
+    console.error(chalk.red('Failed to initialize systems:'), error.message);
   }
 }
 
@@ -107,7 +102,6 @@ import { banner, registerBannerCommand } from '../lib/commands/banner.js';
 import { registerInitCommand } from '../lib/commands/init.js';
 import { registerAuditCommand } from '../lib/commands/audit.js';
 import { registerExamplesCommand } from '../lib/commands/examples.js';
-import { registerDemoCommand } from '../lib/commands/demo.js';
 import { registerAgentsCommand, registerPackCommand } from '../lib/commands/agents.js';
 import { registerGenerateCommand } from '../lib/commands/generate.js';
 import { registerBuildCommand } from '../lib/commands/build.js';
@@ -123,13 +117,16 @@ import {
 import { registerStatusCommand } from '../lib/commands/status.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
 
+
 import { registerDashboardCommand } from '../lib/commands/dashboard.js';
 import { registerCheckCommand } from '../lib/commands/check.js';
+import { registerBatchCommand, registerPipelineCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
 import { registerVerifyCommand } from '../lib/commands/verify.js';
-import { registerQualityCommand } from '../lib/commands/quality-enhanced.js';
+import { registerQualityCommand } from '../lib/commands/quality.js';
 import { registerPluginCommand } from '../lib/commands/plugin.js';
 import { registerMarketplaceCommand } from '../lib/commands/marketplace.js';
+import { registerWorkspaceCommand } from '../lib/commands/workspace.js';
 import { registerVoiceCommand } from '../lib/commands/voice.js';
 import { registerAuthCommand } from '../lib/commands/auth.js';
 import { registerAuthSsoCommand } from '../lib/commands/auth-sso.js';
@@ -153,6 +150,7 @@ import { registerExportCommand } from '../lib/commands/export.js';
 import { registerUpgradeCommand } from '../lib/commands/upgrade.js';
 import { registerConfigCommand } from '../lib/commands/config.js';
 
+import { registerRalphCommand } from '../lib/commands/ralph.js';
 import { registerWorkflowCommand } from '../lib/commands/workflows.js';
 import { registerPlanCommand } from '../lib/commands/plan.js';
 import { registerSuggestCommand } from '../lib/commands/suggest.js';
@@ -161,7 +159,6 @@ import { registerFixCommand } from '../lib/commands/fix.js';
 import { registerHooksCommand } from '../lib/commands/hooks.js';
 import { registerFetchCommand } from '../lib/commands/fetch.js';
 import { registerSyncCommand } from '../lib/commands/sync.js';
-import { registerImportCommand } from '../lib/commands/import.js';
 import { registerTeamCommand } from '../lib/commands/team.js';
 import { registerMemoryCommand } from '../lib/commands/memory.js';
 import { registerGateCommand } from '../lib/commands/gate.js';
@@ -191,13 +188,12 @@ import { registerPrivacyCommand } from '../lib/commands/privacy.js';
 import { registerRouteCommand } from '../lib/commands/route.js';
 import { registerCommitCommand } from '../lib/commands/commit.js';
 import { registerRulesCommand } from '../lib/commands/rules.js';
-import { registerCICDCommand } from '../lib/commands/cicd.js';
+import { registerCicdCommand } from '../lib/commands/cicd.js';
 import { registerArchitectCommand } from '../lib/commands/architect.js';
 import { registerTemplateCommand } from '../lib/commands/template.js';
 import { registerDbAdvisorCommand } from '../lib/commands/db-advisor.js';
 import { registerAiAdvisorCommand } from '../lib/commands/ai-advisor.js';
 import { registerOnboardCommand } from '../lib/commands/onboard.js';
-import { registerTutorialsCommand } from '../lib/commands/tutorials.js';
 import { registerProductionReadyCommand } from '../lib/commands/production-ready.js';
 import { registerDockerCommand } from '../lib/commands/docker.js';
 import { registerK8sCommand } from '../lib/commands/k8s.js';
@@ -205,7 +201,6 @@ import { registerEnvCommand } from '../lib/commands/env.js';
 import { registerMonitorCommand } from '../lib/commands/monitor.js';
 import { registerInstallCompletionCommand } from '../lib/commands/install-completion.js';
 import { registerProfileCommand } from '../lib/commands/profile.js';
-import { registerPerfCommand } from '../lib/commands/perf.js';
 import { registerDrCheckCommand } from '../lib/commands/dr-check.js';
 import { registerSnapCommand } from '../lib/commands/snap.js';
 import { registerChallengeCommand } from '../lib/commands/challenge.js';
@@ -214,7 +209,6 @@ import { registerScaffoldPlanCommand } from '../lib/commands/scaffold-plan.js';
 import { registerDeployCommand } from '../lib/commands/deploy.js';
 import { registerTemplatesCommand } from '../lib/commands/templates.js';
 import { registerBillingCommands } from '../lib/commerce/billing.js';
-// import { registerBudgetCommands } from '../lib/commerce/budget.js'; // Handled via registerBudgetCommand to avoid duplicate wiring
 import { registerUsageCommands } from '../lib/commerce/usage.js';
 import { registerAlertCommands } from '../lib/commerce/alerts.js';
 import { registerRemoteClientCommand } from '../lib/mcp/remote/client.js';
@@ -226,14 +220,29 @@ import {
   registerDebugCommand,
 } from '../lib/commands/monitoring.js';
 import { registerBrainCommand } from '../lib/commands/brain.js';
-import { createEnhancedHelp } from '../lib/utils/help.js';
+import { registerEstimateCommand } from '../lib/commands/estimate.js';
+import { registerUndoCommand } from '../lib/commands/undo.js';
+import { startACPHost } from '../lib/acp/host.js';
+import {
+  createEnhancedHelp,
+  formatHelpSection,
+  formatUsage,
+  formatDescription,
+  formatOptions,
+} from '../lib/utils/help.js';
 
 // v3.4.3 Commands - 2026 Competitive Features
 import { registerBrowserCommand } from '../lib/commands/browser.js';
+import { registerExecCommand } from '../lib/commands/exec.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
-import { registerGitWorkflowCommand } from '../lib/commands/git.js';
 import { registerSearchCommand } from '../lib/commands/search.js';
 import { registerVectorSearchCommand } from '../lib/commands/vector-search.js';
+import { registerImpactCommand } from '../lib/commands/impact.js';
+import { registerGraphCommand } from '../lib/commands/graph.js';
+import { registerCloudCommand } from '../lib/commands/cloud.js';
+import { registerApiCommand } from '../lib/commands/api.js';
+import { registerAutonomousCommand } from '../lib/commands/autonomous.js';
+import { registerPTYCommands } from '../lib/commands/pty.js';
 import { registerIdeCommand } from '../lib/commands/ide.js';
 import { registerMobileCommand } from '../lib/commands/mobile.js';
 import { registerSSOCommand } from '../lib/commands/sso.js';
@@ -246,39 +255,35 @@ const program = new Command();
 let commandStart = null;
 program.hook('preAction', (thisCommand, actionCommand) => {
   commandStart = Date.now();
+  let user = null;
+  try {
+    user = configManager.get('user', null);
+  } catch {
+    user = null;
+  }
   if (isTelemetryEnabledSync()) {
-    try {
-      recordUsageEventSync({
-        stage: 'start',
-        command: actionCommand?.name?.(),
-        args: process.argv.slice(2),
-        user: null,
-        role: null,
-        cwd: process.cwd(),
-        pid: process.pid,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      monitoring.warn('Telemetry start event failed', { message });
-    }
+    recordUsageEventSync({
+      stage: 'start',
+      command: actionCommand?.name?.(),
+      args: process.argv.slice(2),
+      user: null,
+      role: null,
+      cwd: process.cwd(),
+      pid: process.pid,
+    });
   }
 });
 
 program.hook('postAction', (thisCommand, actionCommand) => {
   const durationMs = commandStart ? Date.now() - commandStart : null;
   if (isTelemetryEnabledSync()) {
-    try {
-      recordUsageEventSync({
-        stage: 'end',
-        command: actionCommand?.name?.(),
-        durationMs,
-        success: true,
-        cwd: process.cwd(),
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      monitoring.warn('Telemetry end event failed', { message });
-    }
+    recordUsageEventSync({
+      stage: 'end',
+      command: actionCommand?.name?.(),
+      durationMs,
+      success: true,
+      cwd: process.cwd(),
+    });
   }
   commandStart = null;
 });
@@ -341,7 +346,6 @@ program
 registerInitCommand(program);
 registerAuditCommand(program);
 registerExamplesCommand(program);
-registerDemoCommand(program);
 registerAgentsCommand(program);
 registerGenerateCommand(program);
 registerBuildCommand(program);
@@ -381,7 +385,6 @@ registerPackCommand(program);
 registerWorkflowCommand(program);
 registerPlanCommand(program);
 registerGitHubCommand(program);
-registerGitWorkflowCommand(program);
 registerBrainCommand(program);
 registerSuggestCommand(program);
 registerValidateCommand(program);
@@ -389,7 +392,6 @@ registerFixCommand(program);
 registerHooksCommand(program);
 registerFetchCommand(program);
 registerSyncCommand(program);
-registerImportCommand(program);
 registerTeamCommand(program);
 registerMemoryCommand(program);
 registerGateCommand(program);
@@ -422,13 +424,12 @@ registerPrivacyCommand(program);
 registerRouteCommand(program);
 registerCommitCommand(program);
 registerRulesCommand(program);
-registerCICDCommand(program);
+registerCicdCommand(program);
 registerArchitectCommand(program);
 registerTemplateCommand(program);
 registerDbAdvisorCommand(program);
 registerAiAdvisorCommand(program);
 registerOnboardCommand(program);
-registerTutorialsCommand(program);
 registerProductionReadyCommand(program);
 registerDockerCommand(program);
 registerK8sCommand(program);
@@ -436,7 +437,6 @@ registerEnvCommand(program);
 registerMonitorCommand(program);
 registerInstallCompletionCommand(program);
 registerProfileCommand(program);
-registerPerfCommand(program);
 registerDrCheckCommand(program);
 registerSnapCommand(program);
 registerChallengeCommand(program);
@@ -445,7 +445,6 @@ registerScaffoldPlanCommand(program);
 registerDeployCommand(program);
 registerTemplatesCommand(program);
 registerBillingCommands(program);
-// registerBudgetCommands(program); // Handled via registerBudgetCommand; keep disabled to avoid duplicate wiring
 registerUsageCommands(program);
 registerAlertCommands(program);
 registerRemoteClientCommand(program);
@@ -453,23 +452,7 @@ registerSandboxCommand(program);
 registerPluginCommand(program);
 registerMarketplaceCommand(program);
 registerVoiceCommand(program);
-import { registerGhostCommand } from '../lib/commands/ghost.js';
-registerGhostCommand(program);
-import { registerNexusCommand } from '../lib/commands/nexus.js';
-registerNexusCommand(program);
-import { registerVaultCommand } from '../lib/commands/vault.js';
-registerVaultCommand(program);
-
-// v5.1 Cognitive Core Commands
-import swarmP2PCommand from '../lib/commands/swarm-p2p.js';
-if (!program.commands.some((cmd) => cmd.name() === swarmP2PCommand.name())) {
-  program.addCommand(swarmP2PCommand);
-}
 registerAuthCommand(program);
-import { registerThinkCommand } from '../lib/commands/think.js';
-registerThinkCommand(program);
-import { registerPredictCommand } from '../lib/commands/predict.js';
-registerPredictCommand(program);
 registerAuthSsoCommand(program);
 registerSetupCommand(program);
 registerIdeCommand(program);
@@ -494,79 +477,18 @@ registerHealthCommand(program);
 registerDebugCommand(program);
 registerBannerCommand(program);
 
-// v6.0 Smart Router Command
-import { registerRouterCommand } from '../lib/commands/router-cmd.js';
-registerRouterCommand(program);
-
-// Default to REPL if no command is specified (only ultra-dex command)
-const hasCommandArg = process.argv.slice(2).some(arg =>
-  !arg.startsWith('-') &&
-  arg !== 'ultra-dex' &&
-  !arg.includes('ultra-dex.js')
-);
-
-const hasHelpOrVersion = process.argv.some(arg =>
-  ['--version', '-V', '--help', '-h', '--'].includes(arg));
-
-if (!hasCommandArg && !hasHelpOrVersion) {
-  try {
-    await startREPL({ continue: false });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red(`\n✕ Failed to start REPL: ${message}`));
-    process.exit(1);
-  }
-  try {
-    await monitoring.shutdown();
-  } catch (shutdownError) {
-    const shutdownMessage =
-      shutdownError instanceof Error ? shutdownError.message : String(shutdownError);
-    console.error(chalk.red(`\n✕ Monitoring shutdown failed: ${shutdownMessage}`));
-    process.exit(1);
-  }
-  process.exit(process.exitCode ?? 0);
+// Default to REPL if no arguments provided
+if (process.argv.length <= 2) {
+  await startREPL({ continue: false });
+  process.exit(0);
 }
 
-const LONG_RUNNING = new Set([
-  'serve',
-  'watch',
-  'daemon',
-  'cloud',
-  'ci-monitor',
-  'repl',
-  'dashboard',
-]);
+await program.parseAsync(process.argv);
+
+const LONG_RUNNING = new Set(['serve', 'watch', 'daemon', 'cloud', 'ci-monitor', 'repl', 'dashboard']);
 const isLongRunning = process.argv.some((arg) => LONG_RUNNING.has(arg));
 
-try {
-  await program.parseAsync(process.argv);
-} catch (error) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(chalk.red(`\n✕ Command failed: ${message}`));
-  if (isTelemetryEnabledSync()) {
-    recordUsageEventSync({
-      stage: 'end',
-      command: process.argv[2] || null,
-      durationMs: commandStart ? Date.now() - commandStart : null,
-      success: false,
-      error: message,
-      cwd: process.cwd(),
-    });
-  }
-  process.exitCode = 1;
-} finally {
-  if (!wantsHelp && !isLongRunning) {
-    try {
-      await monitoring.shutdown();
-    } catch (shutdownError) {
-      const shutdownMessage =
-        shutdownError instanceof Error ? shutdownError.message : String(shutdownError);
-      console.error(chalk.red(`\n✕ Monitoring shutdown failed: ${shutdownMessage}`));
-      process.exitCode = 1;
-    }
-  }
-}
-
 if (!wantsHelp && !isLongRunning) {
+  await monitoring.shutdown();
   process.exit(process.exitCode ?? 0);
 }
