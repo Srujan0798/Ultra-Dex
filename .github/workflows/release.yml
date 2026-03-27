@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd cli
-          npm ci --legacy-peer-deps
+          npm install --legacy-peer-deps
 
       - name: Run tests
         run: |
@@ -65,7 +65,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd cli
-          npm ci --legacy-peer-deps
+          npm install --legacy-peer-deps
 
       - name: Publish to npm
         run: |

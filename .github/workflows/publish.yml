@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm install --legacy-peer-deps
 
       - name: Run tests
         run: npm test
@@ -42,7 +42,7 @@ jobs:
 
       - name: Install VS Code extension dependencies
         working-directory: packages/extensions/vscode
-        run: npm ci --legacy-peer-deps
+        run: npm install --legacy-peer-deps
 
       - name: Package VS Code Extension
         working-directory: packages/extensions/vscode
