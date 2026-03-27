@@ -12,6 +12,7 @@ import { OllamaProvider } from './ollama.js';
 import { RouterProvider } from './router.js';
 import { enforceAgentExecution } from '../governance/index.js';
 import { memex } from '../memory/memex.js';
+import { printWarning } from '../utils/output.js';
 
 const PROVIDERS = {
   claude: {
@@ -127,6 +128,16 @@ export async function createProvider(providerId, options = {}) {
         `  3. Use Ollama for local AI (no key needed):\n` +
         `     ultra-dex generate "idea" --provider ollama`
     );
+  }
+
+  // Basic validation of key format (warning only)
+  if (apiKey) {
+    if (providerId === 'openai' && !apiKey.startsWith('sk-')) {
+      printWarning(`⚠️  OpenAI API key usually starts with 'sk-'. Check your configuration.`);
+    }
+    if (providerId === 'claude' && !apiKey.startsWith('sk-ant-')) {
+      printWarning(`⚠️  Anthropic API key usually starts with 'sk-ant-'. Check your configuration.`);
+    }
   }
 
   const provider = new providerConfig.class(apiKey, options);
@@ -339,4 +350,3 @@ export function createGoogleRunnable(model) {
     },
   };
 }
-
