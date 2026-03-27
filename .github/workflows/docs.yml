@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd apps/docs-site
-          npm ci --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps
+          npm install --ignore-scripts --legacy-peer-deps
 
       - name: Build website
         run: |
