@@ -18,9 +18,11 @@
  */
 
 import { EventEmitter } from 'events';
-import { readFile, writeFile, readdir, stat, mkdir } from 'fs/promises';
-import { join, resolve, relative, extname } from 'path';
-import { execSync } from 'child_process';
+import { readFile, writeFile, readdir, stat, mkdir, realpath } from 'fs/promises';
+import { join, resolve, relative, extname, dirname } from 'path';
+import { execSync, spawnSync } from 'child_process';
+import vm from 'vm';
+import { lookup } from 'dns/promises';
 
 // ───────────────────────────────────────────────────────────────────────────
 // Base MCP Server — shared protocol implementation
@@ -158,7 +160,7 @@ export class FilesystemMCPServer extends BaseMCPServer {
             description: 'Read a file (sandboxed to root dir)',
             inputSchema: { type: 'object', properties: { path: { type: 'string' } } },
             handler: async ({ path: filePath }) => {
-                const abs = this._resolve(filePath);
+                const abs = await this._resolve(filePath);
                 const content = await readFile(abs, 'utf-8');
                 return { path: filePath, content, size: content.length };
             },
@@ -169,7 +171,7 @@ export class FilesystemMCPServer extends BaseMCPServer {
             inputSchema: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } } },
             handler: async ({ path: filePath, content }) => {
                 if (!this.allowWrite) throw new Error('Write access disabled');
-                const abs = this._resolve(filePath);
+                const abs = await this._resolve(filePath);
                 await mkdir(join(abs, '..'), { recursive: true });
                 await writeFile(abs, content, 'utf-8');
                 return { path: filePath, written: content.length };
@@ -180,7 +182,7 @@ export class FilesystemMCPServer extends BaseMCPServer {
             description: 'List directory contents',
             inputSchema: { type: 'object', properties: { path: { type: 'string' }, recursive: { type: 'boolean' } } },
             handler: async ({ path: dirPath = '.', recursive = false }) => {
-                const abs = this._resolve(dirPath);
+                const abs = await this._resolve(dirPath);
                 const entries = await readdir(abs, { withFileTypes: true });
                 return entries.map(e => ({
                     name: e.name,
@@ -194,13 +196,19 @@ export class FilesystemMCPServer extends BaseMCPServer {
             description: 'Search for files by content or name pattern',
             inputSchema: { type: 'object', properties: { pattern: { type: 'string' }, path: { type: 'string' } } },
             handler: async ({ pattern, path: dirPath = '.' }) => {
-                const abs = this._resolve(dirPath);
+                const abs = await this._resolve(dirPath);
                 try {
-                    const output = execSync(
-                        `grep -rl "${pattern.replace(/"/g, '\\"')}" "${abs}" --include="*.{js,ts,json,md}" 2>/dev/null | head -20`,
-                        { encoding: 'utf-8', timeout: 5000 }
-                    );
-                    return output.trim().split('\n').filter(Boolean).map(f => relative(this.rootDir, f));
+                    // Use -e to prevent pattern being interpreted as a flag
+                    const grepArgs = ['-rl', '--include=*.{js,ts,json,md}', '-e', pattern, abs];
+                    const result = spawnSync('grep', grepArgs, {
+                        encoding: 'utf-8',
+                        timeout: 5000,
+                        maxBuffer: 1024 * 1024
+                    });
+
+                    if (result.error) return [];
+                    const output = result.stdout || '';
+                    return output.trim().split('\n').filter(Boolean).slice(0, 20).map(f => relative(this.rootDir, f));
                 } catch {
                     return [];
                 }
@@ -208,9 +216,32 @@ export class FilesystemMCPServer extends BaseMCPServer {
         });
     }
 
-    _resolve(filePath) {
+    async _resolve(filePath) {
         const abs = resolve(this.rootDir, filePath);
         if (!abs.startsWith(this.rootDir)) throw new Error('Path escapes sandbox');
+
+        // Verify no symlink escape
+        try {
+            const realRoot = await realpath(this.rootDir);
+            let current = abs;
+
+            while (current.length >= this.rootDir.length) {
+                try {
+                    const realCurrent = await realpath(current);
+                    if (!realCurrent.startsWith(realRoot)) throw new Error('Path escapes sandbox (symlink)');
+                    break; // Found valid existing ancestor
+                } catch (e) {
+                    if (e.code !== 'ENOENT') throw e;
+                    const parent = dirname(current);
+                    if (parent === current) break;
+                    current = parent;
+                }
+            }
+        } catch (e) {
+            if (e.message.includes('Path escapes sandbox')) throw e;
+            // Only throw if it's our error, otherwise ignore (e.g. rootDir not found? shouldn't happen)
+        }
+
         return abs;
     }
 }
@@ -298,6 +329,50 @@ export class WebSearchMCPServer extends BaseMCPServer {
             inputSchema: { type: 'object', properties: { url: { type: 'string' }, maxLength: { type: 'number' } } },
             handler: async ({ url, maxLength = 5000 }) => {
                 try {
+                    const parsed = new URL(url);
+                    if (!['http:', 'https:'].includes(parsed.protocol)) {
+                        throw new Error('Only HTTP/HTTPS protocols allowed');
+                    }
+
+                    // SSRF Protection: Resolve DNS and check IP
+                    const hostname = parsed.hostname;
+                    let ip;
+                    try {
+                        const lookupResult = await lookup(hostname);
+                        ip = lookupResult.address;
+                    } catch (e) {
+                        // Allow if it's an IP literal that failed lookup (unlikely) or just fail safe
+                        // But lookup handles IP literals.
+                        throw new Error(`DNS lookup failed for ${hostname}`);
+                    }
+
+                    // Private IP Checks
+                    if (ip === '::1' || ip === '0.0.0.0') throw new Error('Localhost access denied');
+
+                    // IPv4 Private Ranges
+                    if (ip.includes('.')) {
+                        const parts = ip.split('.').map(Number);
+                        if (
+                            parts[0] === 10 ||
+                            (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+                            (parts[0] === 192 && parts[1] === 168) ||
+                            parts[0] === 127 ||
+                            (parts[0] === 169 && parts[1] === 254) // Link-local
+                        ) {
+                            throw new Error('Private IP access denied');
+                        }
+                    }
+                    // IPv6 Private Ranges (Unique Local fc00::/7, Link-local fe80::/10)
+                    else if (ip.includes(':')) {
+                         const firstWord = parseInt(ip.split(':')[0], 16);
+                         if (
+                             (firstWord >= 0xfc00 && firstWord <= 0xfdff) || // fc00::/7
+                             (firstWord >= 0xfe80 && firstWord <= 0xfebf)    // fe80::/10
+                         ) {
+                             throw new Error('Private IP access denied');
+                         }
+                    }
+
                     const res = await fetch(url, {
                         headers: { 'User-Agent': 'Ultra-Dex-MCP/1.0' },
                         signal: AbortSignal.timeout(10000),
@@ -352,8 +427,8 @@ export class CodeExecMCPServer extends BaseMCPServer {
             inputSchema: { type: 'object', properties: { expression: { type: 'string' } } },
             handler: async ({ expression }) => {
                 try {
-                    const fn = new Function(`'use strict'; return (${expression})`);
-                    const result = fn();
+                    const context = Object.create(null);
+                    const result = vm.runInNewContext(`'use strict'; (${expression})`, context, { timeout: 1000 });
                     return { expression, result: String(result), type: typeof result };
                 } catch (error) {
                     return { expression, error: error.message };
@@ -364,17 +439,25 @@ export class CodeExecMCPServer extends BaseMCPServer {
 
     _execute(language, code) {
         const commands = {
-            javascript: `node -e "${code.replace(/"/g, '\\"')}"`,
-            python: `python3 -c "${code.replace(/"/g, '\\"')}"`,
+            javascript: ['node', '-e', code],
+            python: ['python3', '-c', code],
         };
 
         try {
-            const output = execSync(commands[language], {
+            const [cmd, ...args] = commands[language];
+            const result = spawnSync(cmd, args, {
                 encoding: 'utf-8',
                 timeout: this.timeoutMs,
                 stdio: ['pipe', 'pipe', 'pipe'],
             });
-            return { language, output: output.trim(), exitCode: 0 };
+
+            if (result.error) throw result.error;
+
+            if (result.status !== 0) {
+                return { language, output: result.stderr || result.stdout || 'Error', exitCode: result.status };
+            }
+
+            return { language, output: result.stdout.trim(), exitCode: 0 };
         } catch (error) {
             return { language, output: error.stderr || error.message, exitCode: error.status || 1 };
         }
