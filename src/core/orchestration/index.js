@@ -6,7 +6,6 @@
 
 import { AgentStateMachine } from './agent-state.js';
 import { AgentCommunicationBus } from './communication-bus.js';
-import { AgentScheduler } from './scheduler.js';
 import { AgentRegistry } from './registry.js';
 import chalk from 'chalk';
 import { ppmManager } from '../memory/manager.js';
@@ -25,13 +24,26 @@ class TaskGraph {
       ...task,
       dependencies: task.dependencies || [],
       status: task.status || 'pending',
+      createdAt: Date.now(),
     });
     return task.id;
   }
 
   markComplete(taskId) {
     const task = this.tasks.get(taskId);
-    if (task) task.status = 'completed';
+    if (task) {
+      task.status = 'completed';
+      task.completedAt = Date.now();
+    }
+  }
+
+  prune(maxAgeMs) {
+    const now = Date.now();
+    for (const [taskId, task] of this.tasks.entries()) {
+      if (task.status === 'completed' && task.completedAt && now - task.completedAt > maxAgeMs) {
+        this.tasks.delete(taskId);
+      }
+    }
   }
 
   getReadyTasks() {
@@ -67,22 +79,23 @@ class AgentOrchestrator extends EventEmitter {
       enableLoadBalancing: options.enableLoadBalancing !== false,
       enableDynamicAllocation: options.enableDynamicAllocation !== false,
       coordinationThreshold: options.coordinationThreshold || 0.7,
-      ...options
+      ...options,
     };
-    
+
     this.stateMachine = new AgentStateMachine();
     this.commBus = new AgentCommunicationBus();
-    this.scheduler = new AgentScheduler(this.options);
     this.registry = new AgentRegistry();
+    // NOTE: AgentScheduler removed in Milestone 1 (dead code).
+    // Re-design scheduling in Milestone 4 if priority-based task routing is needed.
     this.activeSessions = new Map();
     this.coordinationGraph = new Map();
-    
+
     this.metrics = {
       totalSessions: 0,
       successfulSessions: 0,
       failedSessions: 0,
       avgResponseTime: 0,
-      totalTokens: 0
+      totalTokens: 0,
     };
   }
 
@@ -99,10 +112,10 @@ class AgentOrchestrator extends EventEmitter {
       await this.commBus.initialize();
       await this.registry.initialize();
       await this.initializeMcpServer();
-      
+
       // Initialize Self-Healing
       await selfHealing.start();
-      
+
       console.log(chalk.green('🤖 Agent Orchestration System Initialized (Self-Healing Active)'));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -129,7 +142,9 @@ class AgentOrchestrator extends EventEmitter {
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.mcpServer = { toolsMap: new Map() };
-        console.warn(chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}`));
+        console.warn(
+          chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}`)
+        );
       }
       return;
     }
@@ -140,7 +155,9 @@ class AgentOrchestrator extends EventEmitter {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.mcpServer = { toolsMap: new Map() };
-      console.warn(chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}`));
+      console.warn(
+        chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}`)
+      );
     }
   }
 
@@ -162,10 +179,10 @@ class AgentOrchestrator extends EventEmitter {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`❌ Nexus execution failed: ${message}`));
-      
+
       // Report failure to Self-Healing
       await selfHealing.reportAgentError('nexus', error, { objective, options });
-      
+
       throw error;
     }
   }
@@ -182,7 +199,7 @@ class AgentOrchestrator extends EventEmitter {
     const startedAt = Date.now();
     const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
     this.metrics.totalSessions++;
-    
+
     this.emit('task:start', { sessionId, task: normalizedTask, options });
     console.log(chalk.blue(`  - Executing Task: ${normalizedTask}`));
     try {
@@ -191,12 +208,32 @@ class AgentOrchestrator extends EventEmitter {
       const memoryContext = await this.memory.search(normalizedTask);
       const systemPrompt = await this.registry.getAgentPrompt(agentId);
 
+      // Governance check before task execution
+      const governance = new GovernanceManager();
+      const context = {
+        agentId: agentId,
+        action: 'executeTask',
+        resource: normalizedTask.substring(0, 100), // Truncate for resource field
+        details: { task: normalizedTask, options },
+      };
+
+      const governanceResult = await governance.gate(context);
+      if (!governanceResult.allowed) {
+        throw new GovernanceDeniedException(
+          `Task execution blocked by governance policy: ${governanceResult.reason}`,
+          context
+        );
+      }
+
       // 2. Call AI Meta-Layer
       const response = await this.ai.call(
         null,
         [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Context: ${JSON.stringify(memoryContext)}\n\nTask: ${normalizedTask}` },
+          {
+            role: 'user',
+            content: `Context: ${JSON.stringify(memoryContext)}\n\nTask: ${normalizedTask}`,
+          },
         ],
         {
           metadata: {
@@ -224,10 +261,13 @@ class AgentOrchestrator extends EventEmitter {
       const message = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`❌ Task execution failed (${sessionId}): ${message}`));
       this.emit('task:error', { sessionId, task: normalizedTask, error: message });
-      
+
       // Report to Self-Healing
-      await selfHealing.reportAgentError(options.agentId || 'unknown', error, { sessionId, task: normalizedTask });
-      
+      await selfHealing.reportAgentError(options.agentId || 'unknown', error, {
+        sessionId,
+        task: normalizedTask,
+      });
+
       throw error;
     } finally {
       const elapsed = Date.now() - startedAt;
@@ -247,14 +287,17 @@ class AgentOrchestrator extends EventEmitter {
       const candidates = this.registry.findAgentsByCapabilities(options.requiredCapabilities);
       if (candidates.length > 0) return candidates[0].id;
     }
-    
+
     // Default fallback agents based on keywords
     const taskLower = task.toLowerCase();
-    if (taskLower.includes('ui') || taskLower.includes('css') || taskLower.includes('component')) return 'frontend';
-    if (taskLower.includes('api') || taskLower.includes('route') || taskLower.includes('server')) return 'backend';
-    if (taskLower.includes('db') || taskLower.includes('schema') || taskLower.includes('sql')) return 'database';
+    if (taskLower.includes('ui') || taskLower.includes('css') || taskLower.includes('component'))
+      return 'frontend';
+    if (taskLower.includes('api') || taskLower.includes('route') || taskLower.includes('server'))
+      return 'backend';
+    if (taskLower.includes('db') || taskLower.includes('schema') || taskLower.includes('sql'))
+      return 'database';
     if (taskLower.includes('test') || taskLower.includes('spec')) return 'testing';
-    
+
     return 'orchestrator';
   }
 
@@ -266,7 +309,7 @@ class AgentOrchestrator extends EventEmitter {
         tools.push({
           name: name,
           description: tool.description,
-          inputSchema: tool.schema
+          inputSchema: tool.schema,
         });
       }
     }
@@ -278,7 +321,24 @@ class AgentOrchestrator extends EventEmitter {
       this.emit('tool:use', { name, args });
       const tool = this.mcpServer.toolsMap?.get(name);
       if (!tool) throw new Error(`Tool ${name} not found`);
-      
+
+      // Governance check before tool execution
+      const governance = new GovernanceManager();
+      const context = {
+        agentId: 'orchestrator',
+        action: `tool:${name}`,
+        resource: name,
+        details: { toolName: name, args },
+      };
+
+      const governanceResult = await governance.gate(context);
+      if (!governanceResult.allowed) {
+        throw new GovernanceDeniedException(
+          `Tool execution blocked by governance policy: ${governanceResult.reason}`,
+          context
+        );
+      }
+
       // Call the tool's handler directly
       const result = await tool.handler(args);
       this.emit('tool:result', { name, result: JSON.stringify(result).substring(0, 500) });

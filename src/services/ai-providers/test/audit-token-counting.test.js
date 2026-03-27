@@ -16,10 +16,7 @@ import { OpenAIProvider } from '../openai.js';
 import { PerplexityProvider } from '../perplexity.js';
 import { TogetherProvider } from '../together.js';
 
-// Mock Router import (CJS)
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { AIProviderRouter } = require('../router.cjs');
+import { AIProviderRouter } from '../router.js';
 
 const originalFetch = global.fetch;
 

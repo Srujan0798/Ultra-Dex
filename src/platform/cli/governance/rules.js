@@ -208,7 +208,9 @@ export const CONSTITUTIONAL_RULES = [
 ];
 
 export const DESTRUCTIVE_COMMAND_PATTERNS = [
-  /\brm\s+-rf\b/i,
+  /\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)\b/i,
+  /\brm\s+--recursive\s+--force\b/i,
+  /\brm\s+--force\s+--recursive\b/i,
   /\bmkfs\b/i,
   /\bdd\s+if=/i,
   /\bshutdown\b/i,

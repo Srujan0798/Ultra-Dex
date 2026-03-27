@@ -4,10 +4,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
 import crypto from 'crypto';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError, CorruptionError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
 import { performance } from 'perf_hooks';
 import { atomicWriteFile, safeJsonRead } from '../utils/atomic-fs.js';
+import { CURRENT_SCHEMA_VERSION, schemaMigrator } from '../../../../src/core/utils/schema-migrator.js';
 
 const MEMORY_DIR = '.ultra';
 const MEMORY_FILE = 'memory.json';
@@ -46,14 +47,16 @@ export class UltraMemory {
           await fs.mkdir(path.dirname(MEMORY_PATH), { recursive: true });
         }
 
-        // Use safeJsonRead which handles corruption backup
-        this.memory = await safeJsonRead(MEMORY_PATH, []);
+        const rawMemory = await safeJsonRead(MEMORY_PATH, {
+          _version: CURRENT_SCHEMA_VERSION,
+          entries: [],
+        });
+        const migration = schemaMigrator.migrate('memory', rawMemory);
+        this.memory = migration.data.entries;
         this.stats.totalEntries = this.memory.length;
 
-        // If file didn't exist, create it. If it was corrupted, safeJsonRead returned [] and backed up the bad file.
-        // We only explicitly save here if we're starting fresh, to ensure the file exists.
-        if (this.memory.length === 0 && !existsSync(MEMORY_PATH)) {
-             await this.saveToFile();
+        if (migration.migrated || !existsSync(MEMORY_PATH)) {
+          await this.saveToFile();
         }
 
         this.initialized = true;
@@ -62,6 +65,10 @@ export class UltraMemory {
         logger.error('Failed to initialize memory', error);
         this.memory = [];
         this.initializing = null;
+        if (error instanceof CorruptionError) {
+          throw error;
+        }
+        throw error;
       }
     })();
 
@@ -78,7 +85,17 @@ export class UltraMemory {
     this.isSaving = true;
     try {
       const startTime = performance.now();
-      await atomicWriteFile(MEMORY_PATH, JSON.stringify(this.memory, null, 2));
+      await atomicWriteFile(
+        MEMORY_PATH,
+        JSON.stringify(
+          {
+            _version: CURRENT_SCHEMA_VERSION,
+            entries: this.memory,
+          },
+          null,
+          2
+        )
+      );
       const saveTime = performance.now() - startTime;
 
       // Update stats

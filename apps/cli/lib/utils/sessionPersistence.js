@@ -10,6 +10,8 @@ import sqlite3 from 'sqlite3';
 import { join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
 import { createHash } from 'crypto';
+import { CorruptionError } from './errors.js';
+import { schemaMigrator } from '../../../../src/core/utils/schema-migrator.js';
 
 class SessionPersistence {
   constructor(projectRoot) {
@@ -69,6 +71,8 @@ class SessionPersistence {
       CREATE INDEX IF NOT EXISTS idx_decisions_created ON decisions(created_at);
       CREATE INDEX IF NOT EXISTS idx_memory_keyword ON memory_index(keyword);
     `);
+
+    await schemaMigrator.migrateSqlite('session-persistence', this.db);
 
     this.initialized = true;
     console.log('[SessionPersistence] Database initialized at', this.dbPath);
@@ -132,8 +136,8 @@ class SessionPersistence {
 
     return decisions.map((d) => ({
       ...d,
-      context: JSON.parse(d.context || '{}'),
-      embedding: JSON.parse(d.embedding || '[]'),
+      context: parsePersistedJsonField(d.context, {}, 'decisions.context', d.id),
+      embedding: parsePersistedJsonField(d.embedding, [], 'decisions.embedding', d.id),
     }));
   }
 
@@ -152,8 +156,8 @@ class SessionPersistence {
 
     return decisions.map((d) => ({
       ...d,
-      context: JSON.parse(d.context || '{}'),
-      embedding: JSON.parse(d.embedding || '[]'),
+      context: parsePersistedJsonField(d.context, {}, 'decisions.context', d.id),
+      embedding: parsePersistedJsonField(d.embedding, [], 'decisions.embedding', d.id),
     }));
   }
 
@@ -309,6 +313,30 @@ export function createSessionPersistence(projectRoot) {
 }
 
 export default SessionPersistence;
+
+function parsePersistedJsonField(value, fallbackValue, fieldName, recordId) {
+  if (value === null || value === undefined || value === '') {
+    return fallbackValue;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    throw new CorruptionError(`Corrupted persisted JSON detected in ${fieldName} for record ${recordId}.`, {
+      cause: error,
+      details: {
+        fieldName,
+        recordId,
+        valuePreview: String(value).slice(0, 120),
+      },
+      suggestions: [
+        'Restore the affected SQLite row from a known-good backup.',
+        'Repair the malformed JSON payload in the database before retrying.',
+        'Re-run the original command after the persisted record has been fixed.',
+      ],
+    });
+  }
+}
 
 /**
  * Safe execution wrapper with error handling for sessionPersistence

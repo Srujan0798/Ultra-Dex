@@ -6,9 +6,9 @@
  * @version 1.0.0
  */
 
-const { EventEmitter } = require('events');
-const fs = require('fs').promises;
-const path = require('path');
+import { EventEmitter } from 'events';
+import fs from 'fs/promises';
+import path from 'path';
 
 class AgentRegistry extends EventEmitter {
   constructor(config = {}) {
@@ -539,4 +539,5 @@ class AgentRegistry extends EventEmitter {
   }
 }
 
-module.exports = { AgentRegistry };
+export { AgentRegistry };
+export default AgentRegistry;

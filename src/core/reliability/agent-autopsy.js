@@ -3,9 +3,9 @@
  * Analyzes agent failures and implements recovery strategies
  */
 
-const fs = require('fs/promises');
-const path = require('path');
-const { spawn } = require('child_process');
+import fs from 'fs/promises';
+import path from 'path';
+import { spawn } from 'child_process';
 
 class AgentAutopsy {
   constructor(options = {}) {
@@ -669,14 +669,13 @@ class AgentAutopsy {
   }
 }
 
-// Export the AgentAutopsy class
-module.exports = { AgentAutopsy };
+export { AgentAutopsy };
+export default AgentAutopsy;
 
-// Export a singleton instance if needed
 let agentAutopsyInstance = null;
-module.exports.getInstance = () => {
+export function getInstance() {
   if (!agentAutopsyInstance) {
     agentAutopsyInstance = new AgentAutopsy();
   }
   return agentAutopsyInstance;
-};
+}

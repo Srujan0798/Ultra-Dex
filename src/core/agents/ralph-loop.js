@@ -17,12 +17,14 @@ import { ArchitectSimulator } from '../ai/mcts/architect-simulator.js';
 
 const STATES = ['PLAN', 'ACT', 'VERIFY', 'RECOVER', 'COMMIT'];
 
-export async function runAutonomousTask(objective, options = {}, orchestrator = null) {
+export async function runAutonomousTask(objective, options = {}, orchestrator = null, executionContext = null) {
   const sandbox = await createDockerSandbox({ enabled: options.sandbox !== false });
   const runtimeOrchestrator = options.orchestrator || orchestrator;
   if (!runtimeOrchestrator) {
     throw new Error('Orchestrator instance is required for autonomous execution');
   }
+  const sessionContext =
+    executionContext || runtimeOrchestrator.createExecutionContext?.(objective, options) || { objective };
 
   const registry = runtimeOrchestrator.registry;
   await registry.initialize();
@@ -73,7 +75,7 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
 
     ctx.objective = objective;
     ctx.steps = response.object.steps.map(s => {
-      const taskId = runtimeOrchestrator.tasks.addTask({
+      const taskId = ctx.taskGraph.addTask({
         ...s,
         objective: objective,
         status: 'pending'
@@ -92,7 +94,7 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
   };
 
   const act = async (ctx) => {
-    const readyTasks = runtimeOrchestrator.tasks.getReadyTasks();
+    const readyTasks = ctx.taskGraph.getReadyTasks();
     let currentTask = readyTasks[0]; 
     
     if (!currentTask) {
@@ -170,7 +172,7 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
     
     if (sandboxResult.success) {
       currentStep.status = 'completed';
-      runtimeOrchestrator.tasks.markComplete(currentStep.id);
+      ctx.taskGraph.markComplete(currentStep.id);
       currentStep.result = sandboxResult.output;
       printSuccess(chalk.green(`✓ Step completed: ${currentStep.task}`));
       
@@ -190,7 +192,7 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
   };
 
   const verify = async (ctx) => {
-    if (runtimeOrchestrator.tasks.hasPending()) {
+    if (ctx.taskGraph.hasPending()) {
       printInfo(chalk.blue(`Wait, tasks still pending in the graph. Continuing ACT phase.`));
       return { ok: false, continue: true };
     }
@@ -243,15 +245,15 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
     return ctx;
   };
 
-  return await runRalphLoop({ plan, act, verify, recover, ...options });
+  return await runRalphLoop({ plan, act, verify, recover, context: sessionContext, ...options });
 }
 
 export async function runRalphLoop(options = {}) {
-  const { plan, act, verify, recover, commit, maxRetries = 3 } = options;
+  const { plan, act, verify, recover, commit, maxRetries = 3, context: initialContext = {} } = options;
 
   let state = 'PLAN';
   let retries = 0;
-  let context = {};
+  let context = initialContext;
 
   while (true) {
     switch (state) {
