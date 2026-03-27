@@ -161,10 +161,7 @@ export class MCPConnection extends EventEmitter {
       // Initialize connection
       this._sendRequest('initialize', {
         protocolVersion: '2024-11-05',
-        capabilities: {
-          roots: { listChanged: true },
-          sampling: {},
-        },
+        capabilities: {}, // Capabilities removed until implemented: roots, sampling
         clientInfo: {
           name: 'ultra-dex',
           version: VERSION,
@@ -173,6 +170,13 @@ export class MCPConnection extends EventEmitter {
         .then(async (result) => {
           clearTimeout(timeout);
           this.connected = true;
+
+          // Verify protocol version
+          if (result.protocolVersion !== '2024-11-05') {
+            logger.warn(
+              `MCP Protocol version mismatch: Client(2024-11-05) vs Server(${result.protocolVersion}). Compatibility issues may occur.`
+            );
+          }
 
           // Send initialized notification
           this._sendNotification('notifications/initialized', {});
@@ -305,6 +309,34 @@ export class MCPConnection extends EventEmitter {
   }
 
   /**
+   * Send result response (to a request)
+   */
+  _sendResult(id, result) {
+    const response = {
+      jsonrpc: '2.0',
+      id,
+      result,
+    };
+    this.process.stdin.write(JSON.stringify(response) + '\n');
+  }
+
+  /**
+   * Send error response (to a request)
+   */
+  _sendError(id, code, message, data) {
+    const response = {
+      jsonrpc: '2.0',
+      id,
+      error: {
+        code,
+        message,
+        data,
+      },
+    };
+    this.process.stdin.write(JSON.stringify(response) + '\n');
+  }
+
+  /**
    * Process incoming data buffer
    */
   _processBuffer() {
@@ -334,14 +366,27 @@ export class MCPConnection extends EventEmitter {
       this.pendingRequests.delete(message.id);
 
       if (message.error) {
-        reject(new Error(message.error.message || 'Unknown error'));
+        // Parse error code if available
+        const errorMsg = message.error.message || 'Unknown error';
+        const error = new Error(errorMsg);
+        if (message.error.code) error.code = message.error.code;
+        reject(error);
       } else {
         resolve(message.result);
       }
       return;
     }
 
-    // Notification from server
+    // Request from server (has id and method)
+    if (message.id && message.method) {
+      // We currently don't implement any server-to-client requests (sampling, roots, etc.)
+      // So we must respond with MethodNotFound (-32601) to avoid hanging the server.
+      logger.debug(`[MCP Client] Received unknown request: ${message.method} (id: ${message.id})`);
+      this._sendError(message.id, -32601, `Method '${message.method}' not found`);
+      return;
+    }
+
+    // Notification from server (no id, has method)
     if (message.method) {
       this.emit('notification', message);
     }
