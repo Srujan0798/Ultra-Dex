@@ -73,12 +73,12 @@ const HELP_TOPICS = {
 
   dashboard: {
     description: 'Open the God Mode dashboard',
-    examples: ['ultra-dex dashboard', 'ultra-dex d', 'ultra-dex dashboard --port 3005'],
+    examples: ['ultra-dex dashboard', 'ultra-dex d', 'ultra-dex dashboard --web --port 3005'],
     tips: [
-      'Dashboard shows real-time agent status',
-      'View alignment score and progress',
-      'Control agents (start/stop/view logs)',
-      'Access via browser at http://localhost:3002',
+      'Dashboard opens as an interactive terminal view by default',
+      'Use recent projects to switch context before running commands',
+      'Quick actions launch common workflows without leaving the dashboard',
+      'Use --web to expose the browser view at http://localhost:3002',
     ],
   },
 
