@@ -80,9 +80,23 @@ export async function streamWithProvider({
   });
 
   let output = '';
-  for await (const chunk of response.textStream) {
-    output += chunk;
-    if (onToken) onToken(chunk);
+  try {
+    for await (const chunk of response.textStream) {
+      output += chunk;
+      if (onToken) onToken(chunk);
+    }
+  } catch (error) {
+    if (output.length > 0) {
+      // Return partial result
+      return {
+        text: output,
+        usage: response.usage ?? null,
+        model: modelName,
+        partial: true,
+        error
+      };
+    }
+    throw error;
   }
 
   const usage = response.usage ?? null;
