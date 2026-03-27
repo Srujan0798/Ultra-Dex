@@ -6,16 +6,16 @@
  * @version 6.0.0
  */
 
-const { EventEmitter } = require('events');
-const { UnifiedMemory } = require('../memory/unified-api.cjs');
-const { AgentRegistry } = require('../agents/registry-enhanced.cjs');
-const { AgentAutopsy } = require('../reliability/agent-autopsy.cjs');
-const { AgentCoordinationProtocol } = require('../protocols/coordination.cjs');
-const { MCPServerManager } = require('../mcp/server-manager.cjs');
-const { AIProviderRouter } = require('../../services/ai-providers/router.cjs');
-const { ObservabilitySystem } = require('../system/observability.cjs');
-const { ConfigManager } = require('../system/config-manager.cjs');
-const { TokenOptimizer } = require('../performance/token-optimizer.cjs');
+import { EventEmitter } from 'events';
+import { UnifiedMemory } from '../memory/unified-api.js';
+import { AgentRegistry } from '../agents/registry-enhanced.js';
+import { AgentAutopsy } from '../reliability/agent-autopsy.js';
+import { AgentCoordinationProtocol } from '../protocols/coordination.js';
+import { MCPServerManager } from '../mcp/server-manager.js';
+import { AIProviderRouter } from '../../services/ai-providers/router.js';
+import { ObservabilitySystem } from '../system/observability.js';
+import { ConfigManager } from '../system/config-manager.js';
+import { TokenOptimizer } from '../performance/token-optimizer.js';
 
 class UltraDexCore extends EventEmitter {
   constructor(config = {}) {
@@ -690,4 +690,5 @@ class UltraDexCore extends EventEmitter {
   }
 }
 
-module.exports = { UltraDexCore };
+export { UltraDexCore };
+export default UltraDexCore;

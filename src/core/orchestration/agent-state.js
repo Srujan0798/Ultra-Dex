@@ -10,7 +10,11 @@ export class AgentStateMachine {
   constructor() {
     this.states = new Map(); // agentId -> state
     this.transitions = new Map(); // state -> allowed transitions
-    this.stateHistory = new Map(); // agentId -> state transition history
+    // Ring buffer for state transition history (last 1000 transitions)
+    this.MAX_HISTORY_SIZE = 1000;
+    this.stateHistory = new Array(this.MAX_HISTORY_SIZE);
+    this.historyIndex = 0;
+    this.historyCount = 0;
   }
 
   async initialize() {
@@ -27,29 +31,33 @@ export class AgentStateMachine {
    */
   async transition(agentId, newState) {
     const currentState = this.states.get(agentId) || 'idle';
-    
+
     if (!this.canTransition(currentState, newState)) {
       throw new Error(`Invalid state transition: ${currentState} -> ${newState}`);
     }
 
-    // Record transition in history
-    if (!this.stateHistory.has(agentId)) {
-      this.stateHistory.set(agentId, []);
-    }
-    this.stateHistory.get(agentId).push({
+    // Record transition in history (ring buffer)
+    const transitionRecord = {
+      agentId,
       from: currentState,
       to: newState,
-      timestamp: new Date().toISOString()
-    });
+      timestamp: new Date().toISOString(),
+    };
+
+    this.stateHistory[this.historyIndex] = transitionRecord;
+    this.historyIndex = (this.historyIndex + 1) % this.MAX_HISTORY_SIZE;
+    if (this.historyCount < this.MAX_HISTORY_SIZE) {
+      this.historyCount++;
+    }
 
     // Update state
     this.states.set(agentId, newState);
-    
+
     return {
       agentId,
       from: currentState,
       to: newState,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -69,10 +77,29 @@ export class AgentStateMachine {
   }
 
   /**
-   * Get state history for an agent
+   * Get state history for an agent (filtered from global ring buffer)
    */
   getHistory(agentId) {
-    return this.stateHistory.get(agentId) || [];
+    const result = [];
+    // Determine the start index and length of the used portion of the buffer
+    let start, length;
+    if (this.historyCount < this.MAX_HISTORY_SIZE) {
+      start = 0;
+      length = this.historyCount;
+    } else {
+      start = this.historyIndex;
+      length = this.MAX_HISTORY_SIZE;
+    }
+
+    // Iterate over the buffer in chronological order (oldest first)
+    for (let i = 0; i < length; i++) {
+      const index = (start + i) % this.MAX_HISTORY_SIZE;
+      const record = this.stateHistory[index];
+      if (record && record.agentId === agentId) {
+        result.push(record);
+      }
+    }
+    return result;
   }
 
   /**

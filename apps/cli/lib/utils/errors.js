@@ -43,6 +43,17 @@ export class ValidationError extends AppError {
   }
 }
 
+export class CorruptionError extends AppError {
+  constructor(message, optionsOrSuggestions) {
+    const options = normalizeOptions(optionsOrSuggestions);
+    super(message, {
+      code: 'CORRUPTION_ERROR',
+      exitCode: 1,
+      ...options,
+    });
+  }
+}
+
 export class SecurityError extends AppError {
   constructor(message, options = {}) {
     super(message, {

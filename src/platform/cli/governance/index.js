@@ -6,6 +6,7 @@
  */
 
 import path from 'path';
+import fs from 'fs';
 import {
   ROLE_DEFINITIONS,
   FILE_TYPE_DEFINITIONS,
@@ -19,7 +20,7 @@ import { AppError } from '../utils/errors.js';
 
 export class GovernanceEngine {
   constructor(projectRoot = process.cwd()) {
-    this.projectRoot = path.resolve(projectRoot);
+    this.projectRoot = fs.realpathSync(projectRoot);
     this.config = null;
     this.initialized = false;
     this.initializing = null;
@@ -114,17 +115,33 @@ export class GovernanceEngine {
     const relPath = path.isAbsolute(filePath)
       ? path.relative(this.projectRoot, filePath)
       : filePath;
-    return SENSITIVE_PATH_PATTERNS.some(
-      (pattern) => pattern.test(relPath) || pattern.test('/' + relPath)
-    );
+    const absolutePath = path.resolve(this.projectRoot, relPath);
+    try {
+      const realPath = fs.realpathSync(absolutePath);
+      const realRelPath = path.relative(this.projectRoot, realPath);
+      return SENSITIVE_PATH_PATTERNS.some(
+        (pattern) => pattern.test(realRelPath) || pattern.test('/' + realRelPath)
+      );
+    } catch (err) {
+      return SENSITIVE_PATH_PATTERNS.some(
+        (pattern) => pattern.test(relPath) || pattern.test('/' + relPath)
+      );
+    }
   }
 
   /**
    * Check if path is safe (within project root)
    */
   isPathSafe(filePath) {
-    const resolved = path.resolve(this.projectRoot, filePath);
-    return resolved.startsWith(this.projectRoot);
+    try {
+      const resolved = path.resolve(this.projectRoot, filePath);
+      const realPath = fs.realpathSync(resolved);
+      return realPath.startsWith(this.projectRoot);
+    } catch (err) {
+      // If realpathSync fails (e.g., file doesn't exist), fall back to the resolved path
+      const resolved = path.resolve(this.projectRoot, filePath);
+      return resolved.startsWith(this.projectRoot);
+    }
   }
 
   /**

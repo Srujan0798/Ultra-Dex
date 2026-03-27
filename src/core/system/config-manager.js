@@ -6,9 +6,9 @@
  * @version 1.0.0
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const { EventEmitter } = require('events');
+import fs from 'fs/promises';
+import path from 'path';
+import { EventEmitter } from 'events';
 
 class ConfigManager extends EventEmitter {
   constructor(options = {}) {
@@ -407,4 +407,5 @@ class ConfigManager extends EventEmitter {
   }
 }
 
-module.exports = { ConfigManager };
+export { ConfigManager };
+export default ConfigManager;

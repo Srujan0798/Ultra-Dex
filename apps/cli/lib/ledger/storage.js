@@ -8,6 +8,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
+import { atomicWriteFile, safeJsonlRead } from '../utils/atomic-fs.js';
+import { CURRENT_SCHEMA_VERSION, schemaMigrator } from '../../../../src/core/utils/schema-migrator.js';
 
 const LEDGER_PATH = path.resolve(process.cwd(), '.ultra', 'ledger.jsonl');
 
@@ -17,7 +19,9 @@ export function computeChecksum(entry) {
 }
 
 export async function appendEntry(entry) {
+  const existingEntries = await readLedger();
   const record = {
+    _version: CURRENT_SCHEMA_VERSION,
     id: entry.id || `led-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     block_id: entry.block_id || entry.blockId,
     task_id: entry.task_id || entry.taskId,
@@ -36,33 +40,33 @@ export async function appendEntry(entry) {
   record.checksum = computeChecksum(record);
 
   await fs.mkdir(path.dirname(LEDGER_PATH), { recursive: true });
-  await fs.appendFile(LEDGER_PATH, JSON.stringify(record) + '\n');
+  await atomicWriteFile(LEDGER_PATH, serializeLedgerEntries([...existingEntries, record]));
   return record;
 }
 
 export async function readLedger() {
-  try {
-    const content = await fs.readFile(LEDGER_PATH, 'utf8');
-    return content
-      .split('\n')
-      .filter(Boolean)
-      .map((line) => {
-        try {
-          return JSON.parse(line);
-        } catch {
-          return null;
-        }
-      })
-      .filter((entry) => entry !== null);
-  } catch {
-    return [];
+  const entries = await safeJsonlRead(LEDGER_PATH, []);
+  const migration = schemaMigrator.migrate('ledger', entries, { recomputeChecksum: computeChecksum });
+
+  if (migration.migrated) {
+    await atomicWriteFile(LEDGER_PATH, serializeLedgerEntries(migration.data));
   }
+
+  return migration.data;
 }
 
 export async function verifyLedger() {
   const entries = await readLedger();
   const invalid = entries.filter((entry) => computeChecksum(entry) !== entry.checksum);
   return { valid: invalid.length === 0, invalid };
+}
+
+function serializeLedgerEntries(entries) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return '';
+  }
+
+  return `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`;
 }
 
 export const ledgerPath = LEDGER_PATH;

@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-const { EventEmitter } = require('events');
+import { EventEmitter } from 'events';
 
 class AIProviderRouter extends EventEmitter {
   constructor(config = {}) {
@@ -436,4 +436,5 @@ class AIProviderRouter extends EventEmitter {
   }
 }
 
-module.exports = { AIProviderRouter };
+export { AIProviderRouter };
+export default AIProviderRouter;

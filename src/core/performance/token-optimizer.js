@@ -6,8 +6,8 @@
  * @version 1.0.0
  */
 
-const { EventEmitter } = require('events');
-const crypto = require('crypto');
+import { EventEmitter } from 'events';
+import crypto from 'crypto';
 
 class TokenOptimizer extends EventEmitter {
   constructor(config = {}) {
@@ -435,4 +435,5 @@ class TokenOptimizer extends EventEmitter {
   }
 }
 
-module.exports = { TokenOptimizer };
+export { TokenOptimizer };
+export default TokenOptimizer;

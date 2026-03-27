@@ -6,10 +6,10 @@
  * @version 1.0.0
  */
 
-const { EventEmitter } = require('events');
-const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs').promises;
+import { EventEmitter } from 'events';
+import { spawn } from 'child_process';
+import path from 'path';
+import fs from 'fs/promises';
 
 class MCPServerManager extends EventEmitter {
   constructor(config = {}) {
@@ -563,4 +563,5 @@ class MCPServerManager extends EventEmitter {
   }
 }
 
-module.exports = { MCPServerManager };
+export { MCPServerManager };
+export default MCPServerManager;

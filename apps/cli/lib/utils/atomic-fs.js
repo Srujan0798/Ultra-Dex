@@ -1,68 +1,182 @@
-
 import fs from 'fs/promises';
+import { existsSync, renameSync } from 'fs';
 import path from 'path';
+import { CorruptionError } from './errors.js';
+
+function backupPathFor(filepath) {
+  return `${filepath}.bak`;
+}
+
+function tempPathFor(filepath) {
+  return `${filepath}.tmp`;
+}
+
+function corruptionSnapshotPathFor(filepath) {
+  return `${filepath}.corrupted.${Date.now()}`;
+}
+
+function buildRecoverySuggestions(filepath, backupPath) {
+  return [
+    `Inspect the corrupted file at ${filepath}.`,
+    `Restore the backup at ${backupPath} if it contains the last known good state.`,
+    'Re-run the previous command after the corrupted file has been repaired or replaced.',
+  ];
+}
+
+async function snapshotCorruptedFile(filepath) {
+  const corruptionSnapshotPath = corruptionSnapshotPathFor(filepath);
+
+  try {
+    await fs.copyFile(filepath, corruptionSnapshotPath);
+    return corruptionSnapshotPath;
+  } catch {
+    return null;
+  }
+}
+
+async function tryRecoverFromBackup(filepath, parser, backupPath) {
+  if (!existsSync(backupPath)) {
+    return null;
+  }
+
+  const backupContent = await fs.readFile(backupPath, 'utf8');
+  const parsedBackup = parser(backupContent);
+  const tempPath = tempPathFor(filepath);
+
+  await fs.writeFile(tempPath, backupContent);
+  renameSync(tempPath, filepath);
+
+  return parsedBackup;
+}
+
+async function handleCorruption(filepath, parser, error, formatName) {
+  const backupPath = backupPathFor(filepath);
+  const corruptionSnapshotPath = await snapshotCorruptedFile(filepath);
+
+  try {
+    const recovered = await tryRecoverFromBackup(filepath, parser, backupPath);
+    if (recovered !== null) {
+      return recovered;
+    }
+  } catch (backupError) {
+    throw new CorruptionError(`Detected ${formatName} corruption in ${filepath} and backup recovery failed.`, {
+      cause: backupError,
+      details: {
+        filepath,
+        backupPath,
+        corruptionSnapshotPath,
+        originalError: error instanceof Error ? error.message : String(error),
+      },
+      suggestions: buildRecoverySuggestions(filepath, backupPath),
+    });
+  }
+
+  throw new CorruptionError(`Detected ${formatName} corruption in ${filepath}. No valid backup could be recovered.`, {
+    cause: error,
+    details: {
+      filepath,
+      backupPath,
+      corruptionSnapshotPath,
+    },
+    suggestions: buildRecoverySuggestions(filepath, backupPath),
+  });
+}
 
 /**
  * Write content to a file atomically by writing to a temp file first and renaming.
- * This prevents partial writes if the process crashes during write.
  *
- * @param {string} filepath - The destination file path.
- * @param {string|Buffer} content - The content to write.
+ * @param {string} filepath
+ * @param {string|Buffer} content
  * @returns {Promise<void>}
  */
 export async function atomicWriteFile(filepath, content) {
-  const tempPath = `${filepath}.tmp.${Date.now()}`;
+  const tempPath = tempPathFor(filepath);
+  const backupPath = backupPathFor(filepath);
+
   try {
-    // Ensure directory exists
     await fs.mkdir(path.dirname(filepath), { recursive: true });
 
-    // Write to temp file
-    await fs.writeFile(tempPath, content);
+    if (existsSync(filepath)) {
+      await fs.copyFile(filepath, backupPath);
+    }
 
-    // Rename temp file to target file (atomic operation on POSIX)
-    await fs.rename(tempPath, filepath);
+    await fs.writeFile(tempPath, content);
+    renameSync(tempPath, filepath);
   } catch (error) {
-    // Clean up temp file if write/rename fails
     try {
       await fs.unlink(tempPath);
     } catch {
-      // Ignore cleanup error, it might not exist
+      // Ignore cleanup failure
     }
+
     throw error;
   }
 }
 
 /**
- * Safely read a JSON file.
- * If parsing fails (SyntaxError), it backs up the corrupted file
- * (e.g., to .corrupted.<timestamp>) before returning the default value.
- * This prevents data loss on the next write cycle where the application
- * would otherwise overwrite the corrupted file with an empty state.
+ * Safely read a JSON file, attempting backup recovery on corruption.
  *
- * @param {string} filepath - The file path to read.
- * @param {any} defaultValue - The value to return if file is missing or corrupted.
- * @returns {Promise<any>} The parsed JSON or the default value.
+ * @param {string} filepath
+ * @param {any} defaultValue
+ * @returns {Promise<any>}
  */
 export async function safeJsonRead(filepath, defaultValue = null) {
-  try {
-    const content = await fs.readFile(filepath, 'utf-8');
-    return JSON.parse(content);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      return defaultValue;
-    }
+  let content;
 
-    if (error instanceof SyntaxError) {
-      const backupPath = `${filepath}.corrupted.${Date.now()}`;
-      try {
-        await fs.copyFile(filepath, backupPath);
-        console.error(`[DataIntegrity] Corrupted JSON file detected at ${filepath}. Backed up to ${backupPath}`);
-      } catch (backupError) {
-        console.error(`[DataIntegrity] Failed to backup corrupted file ${filepath}: ${backupError.message}`);
-      }
+  try {
+    content = await fs.readFile(filepath, 'utf8');
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
       return defaultValue;
     }
 
     throw error;
+  }
+
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    return handleCorruption(filepath, (rawContent) => JSON.parse(rawContent), error, 'JSON');
+  }
+}
+
+/**
+ * Safely read a JSONL file, attempting backup recovery on corruption.
+ *
+ * @param {string} filepath
+ * @param {any[]} defaultValue
+ * @returns {Promise<any[]>}
+ */
+export async function safeJsonlRead(filepath, defaultValue = []) {
+  const parseJsonl = (content) =>
+    content
+      .split('\n')
+      .filter(Boolean)
+      .map((line, index) => {
+        try {
+          return JSON.parse(line);
+        } catch (error) {
+          const lineError = new SyntaxError(`Invalid JSONL record at line ${index + 1}`);
+          lineError.cause = error;
+          throw lineError;
+        }
+      });
+
+  let content;
+
+  try {
+    content = await fs.readFile(filepath, 'utf8');
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      return defaultValue;
+    }
+
+    throw error;
+  }
+
+  try {
+    return parseJsonl(content);
+  } catch (error) {
+    return handleCorruption(filepath, parseJsonl, error, 'JSONL');
   }
 }

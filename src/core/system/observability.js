@@ -6,9 +6,9 @@
  * @version 1.0.0
  */
 
-const { EventEmitter } = require('events');
-const fs = require('fs').promises;
-const path = require('path');
+import { EventEmitter } from 'events';
+import fs from 'fs/promises';
+import path from 'path';
 
 class ObservabilitySystem extends EventEmitter {
   constructor(config = {}) {
@@ -497,4 +497,5 @@ class ObservabilitySystem extends EventEmitter {
   }
 }
 
-module.exports = { ObservabilitySystem };
+export { ObservabilitySystem };
+export default ObservabilitySystem;

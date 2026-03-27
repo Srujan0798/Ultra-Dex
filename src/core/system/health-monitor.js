@@ -3,10 +3,10 @@
  * Monitors system health and implements self-healing mechanisms
  */
 
-const EventEmitter = require('events');
-const fs = require('fs/promises');
-const path = require('path');
-const { spawn } = require('child_process');
+import { EventEmitter } from 'events';
+import fs from 'fs/promises';
+import path from 'path';
+import { spawn } from 'child_process';
 
 class HealthMonitor extends EventEmitter {
   constructor(options = {}) {
@@ -360,14 +360,13 @@ class HealthMonitor extends EventEmitter {
   }
 }
 
-// Export the HealthMonitor class
-module.exports = { HealthMonitor };
+export { HealthMonitor };
+export default HealthMonitor;
 
-// Export a singleton instance if needed
 let healthMonitorInstance = null;
-module.exports.getInstance = () => {
+export function getInstance() {
   if (!healthMonitorInstance) {
     healthMonitorInstance = new HealthMonitor();
   }
   return healthMonitorInstance;
-};
+}

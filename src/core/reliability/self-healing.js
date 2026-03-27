@@ -4,8 +4,8 @@
  */
 
 import { EventEmitter } from 'events';
-import { HealthMonitor } from '../system/health-monitor.cjs';
-import { AgentAutopsy } from './agent-autopsy.cjs';
+import { HealthMonitor } from '../system/health-monitor.js';
+import { AgentAutopsy } from './agent-autopsy.js';
 import { logger } from '../../utils/logging.js';
 
 class SelfHealingSystem extends EventEmitter {

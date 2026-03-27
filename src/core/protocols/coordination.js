@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-const { EventEmitter } = require('events');
+import { EventEmitter } from 'events';
 
 class AgentCoordinationProtocol extends EventEmitter {
   constructor(config = {}) {
@@ -584,4 +584,5 @@ class AgentCoordinationProtocol extends EventEmitter {
   }
 }
 
-module.exports = { AgentCoordinationProtocol };
+export { AgentCoordinationProtocol };
+export default AgentCoordinationProtocol;

@@ -7,9 +7,11 @@
  * @version 1.0.0
  */
 
-const { EventEmitter } = require('events');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+import { EventEmitter } from 'events';
+import sqlite3 from 'sqlite3';
+import path from 'path';
+
+const sqlite = sqlite3.verbose();
 
 class UnifiedMemory extends EventEmitter {
   constructor(config = {}) {
@@ -385,7 +387,7 @@ class UnifiedMemory extends EventEmitter {
     const dbPath = path.resolve(this.config.sqlite.database);
 
     return new Promise((resolve, reject) => {
-      this.stores.sqlite = new sqlite3.Database(dbPath, async (err) => {
+      this.stores.sqlite = new sqlite.Database(dbPath, async (err) => {
         if (err) {
           reject(err);
         } else {
@@ -658,4 +660,5 @@ class UnifiedMemory extends EventEmitter {
   }
 }
 
-module.exports = { UnifiedMemory };
+export { UnifiedMemory };
+export default UnifiedMemory;
