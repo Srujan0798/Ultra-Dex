@@ -79,7 +79,15 @@ export async function createProvider(providerId, options = {}) {
   }
 
   if (providerId === 'router') {
-    const cloudId = options.cloudProvider || getDefaultProvider();
+    let cloudId = options.cloudProvider || getDefaultProvider();
+
+    // Prevent recursive routing loop if router is the default provider
+    if (cloudId === 'router') {
+      const configured = checkConfiguredProviders();
+      const fallback = configured.find((p) => p.id !== 'router' && p.configured);
+      cloudId = fallback ? fallback.id : 'ollama';
+    }
+
     const cloudProvider = cloudId ? createProvider(cloudId, options) : null;
 
     let localProvider = null;
