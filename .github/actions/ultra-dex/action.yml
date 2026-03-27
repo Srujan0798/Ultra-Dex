@@ -5,6 +5,15 @@ branding:
   icon: 'cpu'
   color: 'blue'
 inputs:
+  task:
+    description: 'The task to be performed by the agent'
+    required: false
+  provider:
+    description: 'The AI provider to use (e.g., openai, anthropic)'
+    required: false
+  model:
+    description: 'The specific model to use'
+    required: false
   agents:
     description: 'Comma-separated list of agents to run (code-reviewer,security-audit,test-generator)'
     required: true
