@@ -7,68 +7,17 @@
 import { AgentStateMachine } from './agent-state.js';
 import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentRegistry } from './registry.js';
+import { ExecutionContext, TaskGraph } from './execution-context.js';
 import chalk from 'chalk';
 import { ppmManager } from '../memory/manager.js';
-import { aiMetaLayer } from '../ai/ai-meta-layer.js';
 import { EventEmitter } from 'events';
-import { selfHealing } from '../reliability/self-healing.js';
 
-class TaskGraph {
-  constructor() {
-    this.tasks = new Map();
-  }
-
-  addTask(task) {
-    if (!task.id) task.id = `task_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    this.tasks.set(task.id, {
-      ...task,
-      dependencies: task.dependencies || [],
-      status: task.status || 'pending',
-      createdAt: Date.now(),
-    });
-    return task.id;
-  }
-
-  markComplete(taskId) {
-    const task = this.tasks.get(taskId);
-    if (task) {
-      task.status = 'completed';
-      task.completedAt = Date.now();
-    }
-  }
-
-  prune(maxAgeMs) {
-    const now = Date.now();
-    for (const [taskId, task] of this.tasks.entries()) {
-      if (task.status === 'completed' && task.completedAt && now - task.completedAt > maxAgeMs) {
-        this.tasks.delete(taskId);
-      }
-    }
-  }
-
-  getReadyTasks() {
-    const ready = [];
-    for (const task of this.tasks.values()) {
-      if (task.status !== 'pending') continue;
-      const depsMet = task.dependencies.every((depId) => {
-        const dep = this.tasks.get(depId);
-        return dep && dep.status === 'completed';
-      });
-      if (depsMet) ready.push(task);
-    }
-    return ready;
-  }
-
-  hasPending() {
-    return Array.from(this.tasks.values()).some((task) => task.status === 'pending');
-  }
-}
-
-class AgentOrchestrator extends EventEmitter {
+export class AgentOrchestrator extends EventEmitter {
   constructor(options = {}) {
     super();
     this.memory = ppmManager;
-    this.ai = aiMetaLayer;
+    this.ai = options.ai || null;
+    this.selfHealing = options.selfHealing || null;
     this.mcpServer = this.normalizeMcpServer(options.mcpServer);
     this.mcpServerFactory = options.mcpServerFactory;
     this.nexusExecutor = options.nexusExecutor;
@@ -114,6 +63,7 @@ class AgentOrchestrator extends EventEmitter {
       await this.initializeMcpServer();
 
       // Initialize Self-Healing
+      const selfHealing = await this.getSelfHealing();
       await selfHealing.start();
 
       console.log(chalk.green('🤖 Agent Orchestration System Initialized (Self-Healing Active)'));
@@ -161,29 +111,66 @@ class AgentOrchestrator extends EventEmitter {
     }
   }
 
+  createExecutionContext(objective, options = {}) {
+    const sessionId =
+      options.sessionId || `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    return new ExecutionContext(sessionId, objective, options);
+  }
+
+  async getAiLayer() {
+    if (this.ai) {
+      return this.ai;
+    }
+
+    const { aiMetaLayer } = await import('../ai/ai-meta-layer.js');
+    this.ai = aiMetaLayer;
+    return this.ai;
+  }
+
+  async getSelfHealing() {
+    if (this.selfHealing) {
+      return this.selfHealing;
+    }
+
+    const { selfHealing } = await import('../reliability/self-healing.js');
+    this.selfHealing = selfHealing;
+    return this.selfHealing;
+  }
+
   /**
    * Execute a high-level objective using the autonomous Nexus mode
    */
   async executeNexus(objective, options = {}) {
     console.log(chalk.magenta(`\n🌌 Nexus Orchestration: ${objective}`));
+    const executionContext = this.createExecutionContext(objective, options);
+    this.activeSessions.set(executionContext.sessionId, executionContext);
+
     try {
       await this.memory.init();
 
       // Integrate with Ralph Loop for autonomous execution
       if (typeof this.nexusExecutor === 'function') {
-        return await this.nexusExecutor(objective, options, this);
+        const result = await this.nexusExecutor(objective, options, this, executionContext);
+        executionContext.status = 'completed';
+        return result;
       }
 
       const { runAutonomousTask } = await import('../agents/ralph-loop.js');
-      return await runAutonomousTask(objective, options, this);
+      const result = await runAutonomousTask(objective, options, this, executionContext);
+      executionContext.status = 'completed';
+      return result;
     } catch (error) {
+      executionContext.status = 'failed';
       const message = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`❌ Nexus execution failed: ${message}`));
 
       // Report failure to Self-Healing
+      const selfHealing = await this.getSelfHealing();
       await selfHealing.reportAgentError('nexus', error, { objective, options });
 
       throw error;
+    } finally {
+      this.activeSessions.delete(executionContext.sessionId);
     }
   }
 
@@ -203,6 +190,8 @@ class AgentOrchestrator extends EventEmitter {
     this.emit('task:start', { sessionId, task: normalizedTask, options });
     console.log(chalk.blue(`  - Executing Task: ${normalizedTask}`));
     try {
+      const ai = await this.getAiLayer();
+
       // 1. Determine Agent & Gather Context
       const agentId = options.agentId || this.selectAgentForTask(normalizedTask, options);
       const memoryContext = await this.memory.search(normalizedTask);
@@ -226,7 +215,7 @@ class AgentOrchestrator extends EventEmitter {
       }
 
       // 2. Call AI Meta-Layer
-      const response = await this.ai.call(
+      const response = await ai.call(
         null,
         [
           { role: 'system', content: systemPrompt },
@@ -263,6 +252,7 @@ class AgentOrchestrator extends EventEmitter {
       this.emit('task:error', { sessionId, task: normalizedTask, error: message });
 
       // Report to Self-Healing
+      const selfHealing = await this.getSelfHealing();
       await selfHealing.reportAgentError(options.agentId || 'unknown', error, {
         sessionId,
         task: normalizedTask,

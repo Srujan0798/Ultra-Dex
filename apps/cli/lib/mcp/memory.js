@@ -4,11 +4,19 @@ import fs from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
 import crypto from 'crypto';
-import { AppError, CorruptionError, ValidationError } from '../utils/errors.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
 import { performance } from 'perf_hooks';
-import { atomicWriteFile, safeJsonRead } from '../utils/atomic-fs.js';
-import { CURRENT_SCHEMA_VERSION, schemaMigrator } from '../../../../src/core/utils/schema-migrator.js';
+import {
+  CorruptionError,
+  atomicWriteSync,
+  safeReadJSON,
+} from '../../../../src/core/utils/safe-fs.js';
+import {
+  CURRENT_SCHEMA_VERSION,
+  detectMemoryVersion,
+  memoryMigrator,
+} from '../../../../src/core/utils/schema-migrator.js';
 
 const MEMORY_DIR = '.ultra';
 const MEMORY_FILE = 'memory.json';
@@ -47,15 +55,21 @@ export class UltraMemory {
           await fs.mkdir(path.dirname(MEMORY_PATH), { recursive: true });
         }
 
-        const rawMemory = await safeJsonRead(MEMORY_PATH, {
+        const rawMemory = safeReadJSON(MEMORY_PATH, {
           _version: CURRENT_SCHEMA_VERSION,
+          _migratedAt: new Date().toISOString(),
           entries: [],
         });
-        const migration = schemaMigrator.migrate('memory', rawMemory);
-        this.memory = migration.data.entries;
+        const version = detectMemoryVersion(rawMemory);
+        const migratedMemory =
+          version < CURRENT_SCHEMA_VERSION
+            ? memoryMigrator.migrate(rawMemory, version, CURRENT_SCHEMA_VERSION)
+            : rawMemory;
+
+        this.memory = migratedMemory.entries;
         this.stats.totalEntries = this.memory.length;
 
-        if (migration.migrated || !existsSync(MEMORY_PATH)) {
+        if (version < CURRENT_SCHEMA_VERSION || !existsSync(MEMORY_PATH)) {
           await this.saveToFile();
         }
 
@@ -85,11 +99,12 @@ export class UltraMemory {
     this.isSaving = true;
     try {
       const startTime = performance.now();
-      await atomicWriteFile(
+      atomicWriteSync(
         MEMORY_PATH,
         JSON.stringify(
           {
             _version: CURRENT_SCHEMA_VERSION,
+            _migratedAt: new Date().toISOString(),
             entries: this.memory,
           },
           null,

@@ -5,13 +5,11 @@
  * Stores agent decisions and context for long-term memory
  */
 
-import { open } from 'sqlite';
-import sqlite3 from 'sqlite3';
 import { join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
 import { createHash } from 'crypto';
 import { CorruptionError } from './errors.js';
-import { schemaMigrator } from '../../../../src/core/utils/schema-migrator.js';
+import { ensureSqliteSchemaVersion } from '../../../../src/core/utils/schema-migrator.js';
 
 class SessionPersistence {
   constructor(projectRoot) {
@@ -31,10 +29,7 @@ class SessionPersistence {
     }
 
     // Open database
-    this.db = await open({
-      filename: this.dbPath,
-      driver: sqlite3.Database,
-    });
+    this.db = await this.openDatabase();
 
     // Create tables
     await this.db.exec(`
@@ -72,10 +67,20 @@ class SessionPersistence {
       CREATE INDEX IF NOT EXISTS idx_memory_keyword ON memory_index(keyword);
     `);
 
-    await schemaMigrator.migrateSqlite('session-persistence', this.db);
+    await ensureSqliteSchemaVersion(this.db);
 
     this.initialized = true;
     console.log('[SessionPersistence] Database initialized at', this.dbPath);
+  }
+
+  async openDatabase() {
+    const [{ open }, sqlite3Module] = await Promise.all([import('sqlite'), import('sqlite3')]);
+    const sqlite3 = sqlite3Module.default || sqlite3Module;
+
+    return open({
+      filename: this.dbPath,
+      driver: sqlite3.Database,
+    });
   }
 
   async createSession(name, metadata = {}) {
@@ -97,19 +102,27 @@ class SessionPersistence {
     const id = this.generateId();
     const embedding = this.generateSimpleEmbedding(decision + ' ' + task);
 
-    await this.db.run(
-      'INSERT INTO decisions (id, session_id, agent, task, decision, context, embedding) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [id, sessionId, agent, task, decision, JSON.stringify(context), JSON.stringify(embedding)]
-    );
+    await this.db.exec('BEGIN TRANSACTION');
+    try {
+      await this.db.run(
+        'INSERT INTO decisions (id, session_id, agent, task, decision, context, embedding) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [id, sessionId, agent, task, decision, JSON.stringify(context), JSON.stringify(embedding)]
+      );
 
-    // Index keywords for search
-    const keywords = this.extractKeywords(decision + ' ' + task);
-    for (const keyword of keywords) {
-      await this.db.run('INSERT INTO memory_index (id, decision_id, keyword) VALUES (?, ?, ?)', [
-        this.generateId(),
-        id,
-        keyword,
-      ]);
+      // Index keywords for search
+      const keywords = this.extractKeywords(decision + ' ' + task);
+      for (const keyword of keywords) {
+        await this.db.run('INSERT INTO memory_index (id, decision_id, keyword) VALUES (?, ?, ?)', [
+          this.generateId(),
+          id,
+          keyword,
+        ]);
+      }
+
+      await this.db.exec('COMMIT');
+    } catch (error) {
+      await this.db.exec('ROLLBACK');
+      throw error;
     }
 
     return id;

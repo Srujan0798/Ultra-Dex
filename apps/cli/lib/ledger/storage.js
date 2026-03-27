@@ -5,11 +5,14 @@
  * @module ledger/storage
  */
 
-import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import { atomicWriteFile, safeJsonlRead } from '../utils/atomic-fs.js';
-import { CURRENT_SCHEMA_VERSION, schemaMigrator } from '../../../../src/core/utils/schema-migrator.js';
+import { atomicWriteSync, safeReadJSONL } from '../../../../src/core/utils/safe-fs.js';
+import {
+  CURRENT_SCHEMA_VERSION,
+  detectLedgerVersion,
+  ledgerMigrator,
+} from '../../../../src/core/utils/schema-migrator.js';
 
 const LEDGER_PATH = path.resolve(process.cwd(), '.ultra', 'ledger.jsonl');
 
@@ -21,7 +24,7 @@ export function computeChecksum(entry) {
 export async function appendEntry(entry) {
   const existingEntries = await readLedger();
   const record = {
-    _version: CURRENT_SCHEMA_VERSION,
+    _v: CURRENT_SCHEMA_VERSION,
     id: entry.id || `led-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     block_id: entry.block_id || entry.blockId,
     task_id: entry.task_id || entry.taskId,
@@ -39,20 +42,22 @@ export async function appendEntry(entry) {
   };
   record.checksum = computeChecksum(record);
 
-  await fs.mkdir(path.dirname(LEDGER_PATH), { recursive: true });
-  await atomicWriteFile(LEDGER_PATH, serializeLedgerEntries([...existingEntries, record]));
+  atomicWriteSync(LEDGER_PATH, serializeLedgerEntries([...existingEntries, record]));
   return record;
 }
 
 export async function readLedger() {
-  const entries = await safeJsonlRead(LEDGER_PATH, []);
-  const migration = schemaMigrator.migrate('ledger', entries, { recomputeChecksum: computeChecksum });
-
-  if (migration.migrated) {
-    await atomicWriteFile(LEDGER_PATH, serializeLedgerEntries(migration.data));
+  const entries = safeReadJSONL(LEDGER_PATH, []);
+  const version = detectLedgerVersion(entries);
+  if (version < CURRENT_SCHEMA_VERSION) {
+    const migrated = ledgerMigrator.migrate(entries, version, CURRENT_SCHEMA_VERSION, {
+      recomputeChecksum: computeChecksum,
+    });
+    atomicWriteSync(LEDGER_PATH, serializeLedgerEntries(migrated));
+    return migrated;
   }
 
-  return migration.data;
+  return entries;
 }
 
 export async function verifyLedger() {

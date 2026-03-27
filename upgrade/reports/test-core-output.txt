@@ -2,43 +2,43 @@ TAP version 13
 # Subtest: ai providers registry lists expected baseline providers
 ok 1 - ai providers registry lists expected baseline providers
   ---
-  duration_ms: 2.677209
+  duration_ms: 45.700917
   ...
 # Subtest: ai providers registry can instantiate openai provider
 ok 2 - ai providers registry can instantiate openai provider
   ---
-  duration_ms: 7.968708
+  duration_ms: 0.982166
   ...
 # Subtest: ai providers registry rejects unknown provider
 ok 3 - ai providers registry rejects unknown provider
   ---
-  duration_ms: 0.969625
+  duration_ms: 1.460625
   ...
 # Subtest: ApprovalWorkflow
     # Subtest: should create a request with correct steps
     ok 1 - should create a request with correct steps
       ---
-      duration_ms: 16.549125
+      duration_ms: 124.23425
       ...
     # Subtest: should advance step on approval
     ok 2 - should advance step on approval
       ---
-      duration_ms: 13.627167
+      duration_ms: 4.513375
       ...
     # Subtest: should complete workflow when all steps approved
     ok 3 - should complete workflow when all steps approved
       ---
-      duration_ms: 0.368333
+      duration_ms: 2.538917
       ...
     # Subtest: should reject workflow immediately on rejection
     ok 4 - should reject workflow immediately on rejection
       ---
-      duration_ms: 3.424125
+      duration_ms: 5.661333
       ...
     1..4
 ok 4 - ApprovalWorkflow
   ---
-  duration_ms: 36.313875
+  duration_ms: 159.117542
   type: 'suite'
   ...
 # Subtest: Git Integration
@@ -46,94 +46,94 @@ ok 4 - ApprovalWorkflow
         # Subtest: should detect if current directory is a Git repository
         ok 1 - should detect if current directory is a Git repository
           ---
-          duration_ms: 177.999208
+          duration_ms: 39.14275
           ...
         1..1
     ok 1 - Repository Detection
       ---
-      duration_ms: 187.124375
+      duration_ms: 41.401583
       type: 'suite'
       ...
     # Subtest: Branch Operations
         # Subtest: should get current branch name
         ok 1 - should get current branch name
           ---
-          duration_ms: 195.138333
+          duration_ms: 293.465834
           ...
         1..1
     ok 2 - Branch Operations
       ---
-      duration_ms: 212.073833
+      duration_ms: 293.999
       type: 'suite'
       ...
     # Subtest: Status Operations
         # Subtest: should get Git status
         ok 1 - should get Git status
           ---
-          duration_ms: 641.267125
+          duration_ms: 990.256458
           ...
         1..1
     ok 3 - Status Operations
       ---
-      duration_ms: 642.597958
+      duration_ms: 991.14925
       type: 'suite'
       ...
     # Subtest: Diff Operations
         # Subtest: should get working directory diff
         ok 1 - should get working directory diff
           ---
-          duration_ms: 219.120833
+          duration_ms: 195.002291
           ...
         # Subtest: should get staged diff
         ok 2 - should get staged diff
           ---
-          duration_ms: 101.825583
+          duration_ms: 99.36175
           ...
         1..2
     ok 4 - Diff Operations
       ---
-      duration_ms: 323.882
+      duration_ms: 296.523542
       type: 'suite'
       ...
     # Subtest: Commit Operations
         # Subtest: should get commit history
         ok 1 - should get commit history
           ---
-          duration_ms: 108.140792
+          duration_ms: 205.729917
           ...
         # Subtest: should get current commit hash
         ok 2 - should get current commit hash
           ---
-          duration_ms: 115.449375
+          duration_ms: 195.030125
           ...
         1..2
     ok 5 - Commit Operations
       ---
-      duration_ms: 225.925625
+      duration_ms: 401.312125
       type: 'suite'
       ...
     # Subtest: File Operations
         # Subtest: should get changed files
         ok 1 - should get changed files
           ---
-          duration_ms: 256.120458
+          duration_ms: 429.242291
           ...
         # Subtest: should get file history
         ok 2 - should get file history
           ---
-          duration_ms: 100.054333
+          duration_ms: 212.777333
           ...
         1..2
     ok 6 - File Operations
       ---
-      duration_ms: 356.663208
+      duration_ms: 642.772834
       type: 'suite'
       ...
     # Subtest: Configuration Operations
         # Subtest: should get Git configuration
         not ok 1 - should get Git configuration
           ---
-          duration_ms: 72.896916
+          duration_ms: 67.6815
           location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/git-integration.test.js:75:5'
           failureType: 'testCodeFailure'
           error: 'config is not defined'
@@ -141,6 +141,7 @@ ok 4 - ApprovalWorkflow
           name: 'ReferenceError'
           stack: |-
             TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/git-integration.test.js:79:19)
+            process.processTicksAndRejections (node:internal/process/task_queues:105:5)
             async Test.run (node:internal/test_runner/test:935:9)
             async Promise.all (index 0)
             async Suite.run (node:internal/test_runner/test:1320:7)
@@ -149,12 +150,12 @@ ok 4 - ApprovalWorkflow
         # Subtest: should get repository root
         ok 2 - should get repository root
           ---
-          duration_ms: 60.036209
+          duration_ms: 211.266375
           ...
         1..2
     not ok 7 - Configuration Operations
       ---
-      duration_ms: 133.379875
+      duration_ms: 279.494375
       type: 'suite'
       location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/git-integration.test.js:74:3'
       failureType: 'subtestsFailed'
@@ -165,30 +166,30 @@ ok 4 - ApprovalWorkflow
         # Subtest: should get comprehensive Git context
         ok 1 - should get comprehensive Git context
           ---
-          duration_ms: 313.274584
+          duration_ms: 778.8565
           ...
         1..1
     ok 8 - Git Context
       ---
-      duration_ms: 313.593875
+      duration_ms: 779.377958
       type: 'suite'
       ...
     # Subtest: Memory Integration
         # Subtest: should link memory entries to Git context
         ok 1 - should link memory entries to Git context
           ---
-          duration_ms: 365.187167
+          duration_ms: 560.957542
           ...
         1..1
     ok 9 - Memory Integration
       ---
-      duration_ms: 365.623833
+      duration_ms: 561.368708
       type: 'suite'
       ...
     1..9
 not ok 5 - Git Integration
   ---
-  duration_ms: 2763.31225
+  duration_ms: 4297.138709
   type: 'suite'
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/git-integration.test.js:5:1'
   failureType: 'subtestsFailed'
@@ -199,56 +200,56 @@ not ok 5 - Git Integration
     # Subtest: GovernanceManager should block operations based on policy
     ok 1 - GovernanceManager should block operations based on policy
       ---
-      duration_ms: 76.45725
+      duration_ms: 23.481917
       ...
     # Subtest: GovernanceManager should allow operations when no policy blocks
     ok 2 - GovernanceManager should allow operations when no policy blocks
       ---
-      duration_ms: 4.478708
+      duration_ms: 22.587541
       ...
     # Subtest: AuditTrail should record governance decisions
     ok 3 - AuditTrail should record governance decisions
       ---
-      duration_ms: 6.908791
+      duration_ms: 0.767375
       ...
     1..3
 ok 6 - Governance Integration - executeTool Basic
   ---
-  duration_ms: 90.106875
+  duration_ms: 78.921708
   type: 'suite'
   ...
 # Subtest: Governance Integration - Direct Test
     # Subtest: should block tool execution when policy denies it
     ok 1 - should block tool execution when policy denies it
       ---
-      duration_ms: 32.671625
+      duration_ms: 13.194958
       ...
     # Subtest: should allow tool execution when no policy blocks it
     ok 2 - should allow tool execution when no policy blocks it
       ---
-      duration_ms: 1.6155
+      duration_ms: 1.794167
       ...
     # Subtest: should record audit entries for governance decisions
     ok 3 - should record audit entries for governance decisions
       ---
-      duration_ms: 0.774375
+      duration_ms: 1.113333
       ...
     # Subtest: should throw GovernanceDeniedException for blocked operations in orchestrator context
     ok 4 - should throw GovernanceDeniedException for blocked operations in orchestrator context
       ---
-      duration_ms: 1.301709
+      duration_ms: 1.328167
       ...
     1..4
 ok 7 - Governance Integration - Direct Test
   ---
-  duration_ms: 38.411042
+  duration_ms: 20.326292
   type: 'suite'
   ...
 # Subtest: Governance Integration - executeTool
     # Subtest: executeTool should block denied operations via governance
     not ok 1 - executeTool should block denied operations via governance
       ---
-      duration_ms: 8.897791
+      duration_ms: 69.981458
       location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:74:3'
       failureType: 'testCodeFailure'
       error: |-
@@ -266,44 +267,15 @@ ok 7 - Governance Integration - Direct Test
         async Suite.run (node:internal/test_runner/test:1320:7)
         async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
       ...
-    # Subtest: executeTool should allow permitted operations
-    not ok 2 - executeTool should allow permitted operations
-      ---
-      duration_ms: 0.734583
-      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:91:3'
-      failureType: 'testCodeFailure'
-      error: 'mock.fn(...).mockResolvedValue is not a function'
-      code: 'ERR_TEST_FAILURE'
-      name: 'TypeError'
-      stack: |-
-        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:94:39)
-        Test.runInAsyncScope (node:async_hooks:211:14)
-        Test.run (node:internal/test_runner/test:934:25)
-        async Suite.processPendingSubtests (node:internal/test_runner/test:633:7)
-      ...
-    # Subtest: executeTool should create audit records for both allowed and blocked operations
-    not ok 3 - executeTool should create audit records for both allowed and blocked operations
-      ---
-      duration_ms: 0.568958
-      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:106:3'
-      failureType: 'testCodeFailure'
-      error: 'mock.fn(...).mockResolvedValue is not a function'
-      code: 'ERR_TEST_FAILURE'
-      name: 'TypeError'
-      stack: |-
-        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:112:42)
-        Test.runInAsyncScope (node:async_hooks:211:14)
-        Test.run (node:internal/test_runner/test:934:25)
-        async Suite.processPendingSubtests (node:internal/test_runner/test:633:7)
-      ...
-    1..3
-not ok 8 - Governance Integration - executeTool
+# Subtest: tests/core/governance-executeTool-final.test.js
+not ok 6 - tests/core/governance-executeTool-final.test.js
   ---
-  duration_ms: 11.722667
-  type: 'suite'
-  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:67:1'
-  failureType: 'subtestsFailed'
-  error: '3 subtests failed'
+  duration_ms: 2496.810417
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
   code: 'ERR_TEST_FAILURE'
   ...
 # node:internal/modules/run_main:122
@@ -326,7 +298,7 @@ not ok 8 - Governance Integration - executeTool
 # Subtest: tests/core/governance-executeTool.test.js
 not ok 7 - tests/core/governance-executeTool.test.js
   ---
-  duration_ms: 1753.299959
+  duration_ms: 2278.601917
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool.test.js:1:1'
   failureType: 'testCodeFailure'
   exitCode: 1
@@ -354,7 +326,7 @@ not ok 7 - tests/core/governance-executeTool.test.js
 # Subtest: tests/core/governance-integration.test.js
 not ok 8 - tests/core/governance-integration.test.js
   ---
-  duration_ms: 1023.776666
+  duration_ms: 1942.525125
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-integration.test.js:1:1'
   failureType: 'testCodeFailure'
   exitCode: 1
@@ -366,22 +338,22 @@ not ok 8 - tests/core/governance-integration.test.js
     # Subtest: should block tool execution when policy denies it
     ok 1 - should block tool execution when policy denies it
       ---
-      duration_ms: 11.189833
+      duration_ms: 79.9
       ...
     # Subtest: should allow tool execution when policy permits it
     ok 2 - should allow tool execution when policy permits it
       ---
-      duration_ms: 1.266584
+      duration_ms: 9.0355
       ...
     # Subtest: should record audit entries for both allowed and blocked actions
     ok 3 - should record audit entries for both allowed and blocked actions
       ---
-      duration_ms: 44.263709
+      duration_ms: 10.121667
       ...
     1..3
 ok 11 - Governance Integration - Minimal executeTool Test
   ---
-  duration_ms: 58.504708
+  duration_ms: 101.551584
   type: 'suite'
   ...
 # node:internal/modules/run_main:122
@@ -404,7 +376,7 @@ ok 11 - Governance Integration - Minimal executeTool Test
 # Subtest: tests/core/governance-simple.test.js
 not ok 10 - tests/core/governance-simple.test.js
   ---
-  duration_ms: 995.473958
+  duration_ms: 1966.651416
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-simple.test.js:1:1'
   failureType: 'testCodeFailure'
   exitCode: 1
@@ -432,7 +404,7 @@ not ok 10 - tests/core/governance-simple.test.js
 # Subtest: tests/core/governance-validation.test.js
 not ok 11 - tests/core/governance-validation.test.js
   ---
-  duration_ms: 968.432125
+  duration_ms: 1560.078541
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-validation.test.js:1:1'
   failureType: 'testCodeFailure'
   exitCode: 1
@@ -446,62 +418,62 @@ not ok 11 - tests/core/governance-validation.test.js
         # Subtest: should have memory module structure
         ok 1 - should have memory module structure
           ---
-          duration_ms: 530.947584
+          duration_ms: 816.94525
           ...
         # Subtest: should have VectorStore implementation
         ok 2 - should have VectorStore implementation
           ---
-          duration_ms: 0.695875
+          duration_ms: 1.231125
           ...
         # Subtest: should have GraphEngine implementation
         ok 3 - should have GraphEngine implementation
           ---
-          duration_ms: 0.900166
+          duration_ms: 2.383584
           ...
         1..3
     ok 1 - Memory Architecture
       ---
-      duration_ms: 535.4535
+      duration_ms: 821.694041
       type: 'suite'
       ...
     # Subtest: Mock Memory Operations
         # Subtest: should demonstrate vector similarity
         ok 1 - should demonstrate vector similarity
           ---
-          duration_ms: 0.713708
+          duration_ms: 0.725208
           ...
         # Subtest: should simulate memory tier structure
         ok 2 - should simulate memory tier structure
           ---
-          duration_ms: 0.306
+          duration_ms: 0.401375
           ...
         # Subtest: should simulate graph relationships
         ok 3 - should simulate graph relationships
           ---
-          duration_ms: 0.571167
+          duration_ms: 0.548583
           ...
         1..3
     ok 2 - Mock Memory Operations
       ---
-      duration_ms: 2.05825
+      duration_ms: 1.988042
       type: 'suite'
       ...
     # Subtest: Provider Integration
         # Subtest: should be able to import provider registry
         ok 1 - should be able to import provider registry
           ---
-          duration_ms: 233.101083
+          duration_ms: 215.938292
           ...
         1..1
     ok 3 - Provider Integration
       ---
-      duration_ms: 233.812
+      duration_ms: 220.645584
       type: 'suite'
       ...
     1..3
 ok 14 - Memory System Verification
   ---
-  duration_ms: 776.034958
+  duration_ms: 1045.658459
   type: 'suite'
   ...
 # Created index: agents_status_idx on agents.status
@@ -520,126 +492,126 @@ ok 14 - Memory System Verification
         # Subtest: should have cache module structure
         ok 1 - should have cache module structure
           ---
-          duration_ms: 14.214167
+          duration_ms: 166.996625
           ...
         # Subtest: should demonstrate caching functionality
         ok 2 - should demonstrate caching functionality
           ---
-          duration_ms: 17.547666
+          duration_ms: 9.819
           ...
         # Subtest: should handle cache misses
         ok 3 - should handle cache misses
           ---
-          duration_ms: 16.1735
+          duration_ms: 0.29675
           ...
         1..3
     ok 1 - Cache System
       ---
-      duration_ms: 54.872125
+      duration_ms: 242.913833
       type: 'suite'
       ...
     # Subtest: Performance Monitoring
         # Subtest: should have monitoring module structure
         ok 1 - should have monitoring module structure
           ---
-          duration_ms: 1.325
+          duration_ms: 0.510291
           ...
         # Subtest: should track request metrics
         ok 2 - should track request metrics
           ---
-          duration_ms: 15.459292
+          duration_ms: 43.528334
           ...
         # Subtest: should collect system metrics
         ok 3 - should collect system metrics
           ---
-          duration_ms: 1.513167
+          duration_ms: 152.330625
           ...
         1..3
     ok 2 - Performance Monitoring
       ---
-      duration_ms: 18.899334
+      duration_ms: 294.156459
       type: 'suite'
       ...
     # Subtest: Database Optimization
         # Subtest: should have database optimizer module structure
         ok 1 - should have database optimizer module structure
           ---
-          duration_ms: 0.53575
+          duration_ms: 0.697125
           ...
         # Subtest: should analyze a simple query
         ok 2 - should analyze a simple query
           ---
-          duration_ms: 0.731041
+          duration_ms: 0.791583
           ...
         # Subtest: should identify SELECT * anti-pattern
         ok 3 - should identify SELECT * anti-pattern
           ---
-          duration_ms: 1.112167
+          duration_ms: 0.518166
           ...
         1..3
     ok 3 - Database Optimization
       ---
-      duration_ms: 3.5185
+      duration_ms: 2.954417
       type: 'suite'
       ...
     1..3
 ok 15 - Performance System Verification
   ---
-  duration_ms: 78.548792
+  duration_ms: 541.381083
   type: 'suite'
   ...
 # Subtest: RBACManager
     # Subtest: should verify roles correctly
     ok 1 - should verify roles correctly
       ---
-      duration_ms: 6.737084
+      duration_ms: 7.073458
       ...
     # Subtest: should default to viewer role
     ok 2 - should default to viewer role
       ---
-      duration_ms: 0.445041
+      duration_ms: 0.444708
       ...
     # Subtest: should check permissions based on role hierarchy
     ok 3 - should check permissions based on role hierarchy
       ---
-      duration_ms: 0.371083
+      duration_ms: 7.250208
       ...
     # Subtest: should support custom roles
     ok 4 - should support custom roles
       ---
-      duration_ms: 8.027125
+      duration_ms: 0.867541
       ...
     # Subtest: should reject invalid role assignment
     ok 5 - should reject invalid role assignment
       ---
-      duration_ms: 6.542042
+      duration_ms: 31.42475
       ...
     1..5
 ok 16 - RBACManager
   ---
-  duration_ms: 86.212917
+  duration_ms: 75.953584
   type: 'suite'
   ...
 # Subtest: Schema migrator
     # Subtest: migrates v1 ledger JSONL records to v2 without data loss
     ok 1 - migrates v1 ledger JSONL records to v2 without data loss
       ---
-      duration_ms: 62.057166
+      duration_ms: 287.832584
       ...
     # Subtest: migrates v1 memory JSON payload to v2 without data loss
     ok 2 - migrates v1 memory JSON payload to v2 without data loss
       ---
-      duration_ms: 3.152833
+      duration_ms: 40.359875
       ...
     # Subtest: creates and updates sqlite schema_version for session persistence
     ok 3 - creates and updates sqlite schema_version for session persistence
       ---
-      duration_ms: 3.785583
+      duration_ms: 18.426792
       ...
     1..3
 ok 17 - Schema migrator
   ---
-  duration_ms: 89.66975
+  duration_ms: 442.730792
   type: 'suite'
   ...
 # node:internal/modules/run_main:122
@@ -662,7 +634,7 @@ ok 17 - Schema migrator
 # Subtest: tests/core/session-isolation.test.js
 not ok 16 - tests/core/session-isolation.test.js
   ---
-  duration_ms: 648.606416
+  duration_ms: 1347.259125
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/session-isolation.test.js:1:1'
   failureType: 'testCodeFailure'
   exitCode: 1
@@ -689,7 +661,7 @@ not ok 16 - tests/core/session-isolation.test.js
 # Subtest: tests/core/team-manager.test.js
 not ok 17 - tests/core/team-manager.test.js
   ---
-  duration_ms: 608.016958
+  duration_ms: 1148.511125
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/team-manager.test.js:1:1'
   failureType: 'testCodeFailure'
   exitCode: 1
@@ -716,7 +688,7 @@ not ok 17 - tests/core/team-manager.test.js
 # Subtest: tests/core/team-persistence.test.js
 not ok 18 - tests/core/team-persistence.test.js
   ---
-  duration_ms: 353.170958
+  duration_ms: 578.988541
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/team-persistence.test.js:1:1'
   failureType: 'testCodeFailure'
   exitCode: 1
@@ -743,7 +715,7 @@ not ok 18 - tests/core/team-persistence.test.js
 # Subtest: tests/core/ultra-dex-core.test.js
 not ok 19 - tests/core/ultra-dex-core.test.js
   ---
-  duration_ms: 405.124792
+  duration_ms: 655.745542
   location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/ultra-dex-core.test.js:1:1'
   failureType: 'testCodeFailure'
   exitCode: 1
@@ -752,11 +724,11 @@ not ok 19 - tests/core/ultra-dex-core.test.js
   code: 'ERR_TEST_FAILURE'
   ...
 1..21
-# tests 65
-# suites 25
+# tests 64
+# suites 24
 # pass 53
-# fail 12
+# fail 11
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 4647.616166
+# duration_ms 6324.428709

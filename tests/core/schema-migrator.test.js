@@ -25,13 +25,13 @@ async function importFresh(relativePath) {
 }
 
 describe('Schema migrator', () => {
-  test('migrates v1 ledger JSONL records to v2 without data loss', async () => {
+  test('migrates v0 ledger JSONL records to v1 without data loss', async () => {
     await withTempCwd(async () => {
       const ledgerModule = await importFresh('../../apps/cli/lib/ledger/storage.js');
       const { computeChecksum, readLedger, ledgerPath } = ledgerModule;
 
-      const v1Entry = {
-        id: 'ledger-v1',
+      const v0Entry = {
+        id: 'ledger-v0',
         block_id: 'block-1',
         task_id: 'task-1',
         timestamp: '2026-03-27T00:00:00.000Z',
@@ -44,81 +44,84 @@ describe('Schema migrator', () => {
         constraints_checked: ['schema'],
         artifacts: ['artifact.txt'],
         affected_files: ['a.js'],
-        metadata: { source: 'v1' },
+        metadata: { source: 'v0' },
       };
-      v1Entry.checksum = computeChecksum(v1Entry);
+      v0Entry.checksum = computeChecksum(v0Entry);
 
       await fs.mkdir(path.dirname(ledgerPath), { recursive: true });
-      await fs.writeFile(ledgerPath, `${JSON.stringify(v1Entry)}\n`);
+      await fs.writeFile(ledgerPath, `${JSON.stringify(v0Entry)}\n`);
 
       const entries = await readLedger();
       const migratedContent = await fs.readFile(ledgerPath, 'utf8');
       const migratedEntry = JSON.parse(migratedContent.trim());
 
       assert.strictEqual(entries.length, 1);
-      assert.strictEqual(entries[0].id, 'ledger-v1');
-      assert.strictEqual(entries[0].metadata.source, 'v1');
-      assert.strictEqual(entries[0]._version, 2);
-      assert.strictEqual(migratedEntry._version, 2);
+      assert.strictEqual(entries[0].id, 'ledger-v0');
+      assert.strictEqual(entries[0].metadata.source, 'v0');
+      assert.strictEqual(entries[0]._v, 1);
+      assert.strictEqual(migratedEntry._v, 1);
       assert.strictEqual(migratedEntry.rationale, 'keep all fields');
     });
   });
 
-  test('migrates v1 memory JSON payload to v2 without data loss', async () => {
-    const { schemaMigrator } = await importFresh('../../src/core/utils/schema-migrator.js');
-    const v1Memory = [
-      {
-        id: 'mem-v1',
-        text: 'remember this',
-        tags: ['tagged'],
-        source: 'legacy',
-        timestamp: '2026-03-27T00:00:00.000Z',
-        metadata: { origin: 'v1' },
-      },
-    ];
+  test('migrates v0 memory JSON payload to v1 and persists versioned structure', async () => {
+    await withTempCwd(async () => {
+      const { UltraMemory } = await importFresh('../../apps/cli/lib/mcp/memory.js');
+      const memoryPath = path.resolve(process.cwd(), '.ultra', 'memory.json');
 
-    const migration = schemaMigrator.migrate('memory', v1Memory);
+      await fs.mkdir(path.dirname(memoryPath), { recursive: true });
+      await fs.writeFile(memoryPath, '[]');
 
-    assert.strictEqual(migration.version, 2);
-    assert.strictEqual(migration.migrated, true);
-    assert.strictEqual(migration.data._version, 2);
-    assert.strictEqual(migration.data.entries.length, 1);
-    assert.strictEqual(migration.data.entries[0].id, 'mem-v1');
-    assert.strictEqual(migration.data.entries[0].metadata.origin, 'v1');
+      const memory = new UltraMemory();
+      await memory.init();
+
+      const migratedPayload = JSON.parse(await fs.readFile(memoryPath, 'utf8'));
+
+      assert.strictEqual(migratedPayload._version, 1);
+      assert.ok(typeof migratedPayload._migratedAt === 'string');
+      assert.deepStrictEqual(migratedPayload.entries, []);
+
+      await memory.remember('remember this', ['tagged'], 'legacy', { origin: 'v0' });
+      const savedPayload = JSON.parse(await fs.readFile(memoryPath, 'utf8'));
+
+      assert.strictEqual(savedPayload._version, 1);
+      assert.strictEqual(savedPayload.entries.length, 1);
+      assert.strictEqual(savedPayload.entries[0].text, 'remember this');
+    });
   });
 
-  test('creates and updates sqlite schema_version for session persistence', async () => {
-    const { schemaMigrator } = await importFresh('../../src/core/utils/schema-migrator.js');
+  test('sessionPersistence init ensures sqlite schema_version starts at v1', async () => {
+    const { createSessionPersistence } = await importFresh('../../apps/cli/lib/utils/sessionPersistence.js');
+    const persistence = createSessionPersistence('/tmp/ultra-dex-schema-version-test');
     const state = {
-      hasSchemaVersionTable: false,
-      rows: new Map(),
-    };
-    const db = {
-      async get(query, params = []) {
-        if (query.includes("sqlite_master")) {
-          return state.hasSchemaVersionTable ? { name: 'schema_version' } : undefined;
-        }
-        if (query.includes('SELECT version FROM schema_version')) {
-          const version = state.rows.get(params[0]);
-          return version ? { version } : undefined;
-        }
-        return undefined;
-      },
-      async exec(query) {
-        if (query.includes('CREATE TABLE IF NOT EXISTS schema_version')) {
-          state.hasSchemaVersionTable = true;
-        }
-      },
-      async run(_query, params = []) {
-        state.rows.set(params[0], params[1]);
-      },
+      execCalls: [],
+      runCalls: [],
     };
 
-    const migration = await schemaMigrator.migrateSqlite('session-persistence', db);
+    persistence.openDatabase = async () => ({
+      async exec(sql) {
+        state.execCalls.push(sql);
+      },
+      async run(sql, params = []) {
+        state.runCalls.push({ sql, params });
+      },
+      async get(sql) {
+        if (sql.includes('SELECT version FROM schema_version')) {
+          return { version: 1 };
+        }
+        return null;
+      },
+    });
 
-    assert.strictEqual(migration.version, 2);
-    assert.strictEqual(migration.migrated, true);
-    assert.strictEqual(state.hasSchemaVersionTable, true);
-    assert.strictEqual(state.rows.get('session-persistence'), 2);
+    await persistence.init();
+
+    assert.ok(state.execCalls.some((sql) => sql.includes('CREATE TABLE IF NOT EXISTS schema_version')));
+    assert.ok(
+      state.runCalls.some(
+        ({ sql }) =>
+          sql.includes('INSERT OR IGNORE INTO schema_version') &&
+          sql.includes('VALUES (1, 1)')
+      )
+    );
   });
 });

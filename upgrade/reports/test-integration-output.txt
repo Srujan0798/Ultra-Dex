@@ -3,17 +3,17 @@ TAP version 13
     # Subtest: defines expected health endpoint path
     ok 1 - defines expected health endpoint path
       ---
-      duration_ms: 1.555167
+      duration_ms: 1.440959
       ...
     # Subtest: defines expected agents endpoint prefix
     ok 2 - defines expected agents endpoint prefix
       ---
-      duration_ms: 0.261834
+      duration_ms: 0.298208
       ...
     1..2
 ok 1 - API smoke contract
   ---
-  duration_ms: 4.488709
+  duration_ms: 4.846625
   type: 'suite'
   ...
 1..1
@@ -24,4 +24,4 @@ ok 1 - API smoke contract
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 720.552625
+# duration_ms 887.925167

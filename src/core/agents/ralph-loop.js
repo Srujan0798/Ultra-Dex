@@ -75,7 +75,7 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
 
     ctx.objective = objective;
     ctx.steps = response.object.steps.map(s => {
-      const taskId = ctx.taskGraph.addTask({
+      const taskId = ctx.addTask({
         ...s,
         objective: objective,
         status: 'pending'
@@ -94,7 +94,7 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
   };
 
   const act = async (ctx) => {
-    const readyTasks = ctx.taskGraph.getReadyTasks();
+    const readyTasks = ctx.getReadyTasks();
     let currentTask = readyTasks[0]; 
     
     if (!currentTask) {
@@ -172,7 +172,7 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
     
     if (sandboxResult.success) {
       currentStep.status = 'completed';
-      ctx.taskGraph.markComplete(currentStep.id);
+      ctx.markComplete(currentStep.id, sandboxResult.output);
       currentStep.result = sandboxResult.output;
       printSuccess(chalk.green(`✓ Step completed: ${currentStep.task}`));
       
@@ -192,7 +192,7 @@ export async function runAutonomousTask(objective, options = {}, orchestrator = 
   };
 
   const verify = async (ctx) => {
-    if (ctx.taskGraph.hasPending()) {
+    if (ctx.hasPendingTasks()) {
       printInfo(chalk.blue(`Wait, tasks still pending in the graph. Continuing ACT phase.`));
       return { ok: false, continue: true };
     }
