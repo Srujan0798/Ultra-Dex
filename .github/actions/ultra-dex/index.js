@@ -17,11 +17,7 @@ function setOutput(name, value) {
 }
 
 function run(command) {
-  try {
-    execSync(command, { stdio: 'inherit' });
-  } catch (error) {
-    throw new Error(`Command failed: ${command}`);
-  }
+  execSync(command, { stdio: 'inherit' });
 }
 
 async function postPrComment(token, body) {
@@ -42,26 +38,22 @@ async function postPrComment(token, body) {
   const [owner, name] = repo.split('/');
   if (!owner || !name) return;
 
-  try {
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${name}/issues/${prNumber}/comments`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/vnd.github+json',
-          'Content-Type': 'application/json',
-          'User-Agent': 'ultra-dex-action',
-        },
-        body: JSON.stringify({ body }),
-      }
-    );
-
-    if (!response.ok) {
-      console.log(`::warning::Unable to post PR comment (status=${response.status})`);
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${name}/issues/${prNumber}/comments`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'ultra-dex-action',
+      },
+      body: JSON.stringify({ body }),
     }
-  } catch (error) {
-    console.log(`::warning::Failed to post PR comment: ${error.message}`);
+  );
+
+  if (!response.ok) {
+    console.log(`::warning::Unable to post PR comment (status=${response.status})`);
   }
 }
 
@@ -70,15 +62,10 @@ async function main() {
   const autoApprove = getInput('auto-approve', 'false') === 'true';
   const token = getInput('github-token', process.env.GITHUB_TOKEN || '');
 
-  // Log new inputs for debugging purposes, but proceed with existing logic
-  const task = getInput('task');
-  const provider = getInput('provider');
-  const model = getInput('model');
-
-  if (task) {
-    console.log(`::notice::Received task: ${task}`);
-    console.log(`::notice::Provider: ${provider}, Model: ${model}`);
-  }
+  // New inputs (currently unused but retrieved to prevent errors if logic is added)
+  const task = getInput('task', '');
+  const provider = getInput('provider', '');
+  const model = getInput('model', '');
 
   const agents = agentsInput
     .split(',')
@@ -89,14 +76,17 @@ async function main() {
   let passed = true;
 
   try {
-    // Check if the governance script exists before running it
-    if (fs.existsSync('gitFail/compliance/check-governance-files.js')) {
-      run('node gitFail/compliance/check-governance-files.js');
-      results.push({ check: 'governance', status: 'passed' });
-    } else {
-      console.log('::warning::Governance check script not found, skipping.');
-      results.push({ check: 'governance', status: 'skipped', summary: 'Script not found' });
+    // Mandatory governance gate
+    try {
+        run('node gitFail/compliance/check-governance-files.js');
+        results.push({ check: 'governance', status: 'passed' });
+    } catch (e) {
+        // If the script doesn't exist or fails, log it but don't crash the whole action immediately
+        // unless it's critical. The original code would crash here.
+        // Assuming strict governance is required:
+        throw e;
     }
+
 
     for (const agent of agents) {
       if (agent === 'security-audit') {
@@ -116,37 +106,14 @@ async function main() {
       }
 
       if (agent === 'code-reviewer') {
-        try {
-           // check if script exists in package.json
-           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-           if (pkg.scripts && pkg.scripts['test:push:smoke']) {
-             run('npm run -s test:push:smoke');
-             results.push({ agent, status: 'passed', summary: 'Push smoke suite passed' });
-           } else {
-             console.log('::warning::test:push:smoke script not found');
-             results.push({ agent, status: 'skipped', summary: 'Script not found' });
-           }
-        } catch (e) {
-           passed = false;
-           results.push({ agent, status: 'failed', summary: e.message });
-        }
+        run('npm run -s test:push:smoke');
+        results.push({ agent, status: 'passed', summary: 'Push smoke suite passed' });
         continue;
       }
 
       if (agent === 'test-generator') {
-        try {
-           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-           if (pkg.scripts && pkg.scripts['test:cli']) {
-             run('npm run -s test:cli');
-             results.push({ agent, status: 'passed', summary: 'CLI suite passed' });
-           } else {
-              console.log('::warning::test:cli script not found');
-              results.push({ agent, status: 'skipped', summary: 'Script not found' });
-           }
-        } catch (e) {
-            passed = false;
-            results.push({ agent, status: 'failed', summary: e.message });
-        }
+        run('npm run -s test:cli');
+        results.push({ agent, status: 'passed', summary: 'CLI suite passed' });
         continue;
       }
 
@@ -165,6 +132,7 @@ async function main() {
     passed,
     autoApprove,
     results,
+    metadata: { task, provider, model }
   };
 
   const bodyLines = [
