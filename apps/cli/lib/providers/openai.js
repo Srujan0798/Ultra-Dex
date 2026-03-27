@@ -190,63 +190,76 @@ export class OpenAIProvider extends BaseProvider {
         let toolCalls = []; // Track any tool calls
         let currentToolCall = null;
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6);
+                if (data === '[DONE]') continue;
 
-              try {
-                const parsed = JSON.parse(data);
+                try {
+                  const parsed = JSON.parse(data);
 
-                // Handle content delta
-                const content = parsed.choices?.[0]?.delta?.content;
-                if (content) {
-                  fullContent += content;
-                  if (onChunk) onChunk(content);
-                }
+                  // Handle content delta
+                  const content = parsed.choices?.[0]?.delta?.content;
+                  if (content) {
+                    fullContent += content;
+                    if (onChunk) onChunk(content);
+                  }
 
-                // Handle tool calls in streaming response
-                const toolCallDelta = parsed.choices?.[0]?.delta?.tool_calls?.[0];
-                if (toolCallDelta) {
-                  if (!currentToolCall) {
-                    currentToolCall = {
-                      id: toolCallDelta.id || '',
-                      type: toolCallDelta.type || 'function',
-                      function: {
-                        name: toolCallDelta.function?.name || '',
-                        arguments: toolCallDelta.function?.arguments || ''
+                  // Handle tool calls in streaming response
+                  const toolCallDelta = parsed.choices?.[0]?.delta?.tool_calls?.[0];
+                  if (toolCallDelta) {
+                    if (!currentToolCall) {
+                      currentToolCall = {
+                        id: toolCallDelta.id || '',
+                        type: toolCallDelta.type || 'function',
+                        function: {
+                          name: toolCallDelta.function?.name || '',
+                          arguments: toolCallDelta.function?.arguments || ''
+                        }
+                      };
+                    } else {
+                      // Append to existing tool call
+                      if (toolCallDelta.function?.arguments) {
+                        currentToolCall.function.arguments += toolCallDelta.function.arguments;
                       }
-                    };
-                  } else {
-                    // Append to existing tool call
-                    if (toolCallDelta.function?.arguments) {
-                      currentToolCall.function.arguments += toolCallDelta.function.arguments;
                     }
                   }
-                }
 
-                // Check if tool call is complete
-                if (parsed.choices?.[0]?.finish_reason === 'tool_calls' && currentToolCall) {
-                  toolCalls.push(currentToolCall);
-                  currentToolCall = null;
-                }
+                  // Check if tool call is complete
+                  if (parsed.choices?.[0]?.finish_reason === 'tool_calls' && currentToolCall) {
+                    toolCalls.push(currentToolCall);
+                    currentToolCall = null;
+                  }
 
-                if (parsed.usage) {
-                  usage.inputTokens = parsed.usage.prompt_tokens || 0;
-                  usage.outputTokens = parsed.usage.completion_tokens || 0;
+                  if (parsed.usage) {
+                    usage.inputTokens = parsed.usage.prompt_tokens || 0;
+                    usage.outputTokens = parsed.usage.completion_tokens || 0;
+                  }
+                } catch {
+                  // Skip malformed JSON
                 }
-              } catch {
-                // Skip malformed JSON
               }
             }
           }
+        } catch (streamError) {
+          if (fullContent.length > 0) {
+            return {
+              content: fullContent,
+              usage,
+              toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+              partial: true,
+              error: streamError
+            };
+          }
+          throw streamError;
         }
 
         return {
@@ -256,6 +269,9 @@ export class OpenAIProvider extends BaseProvider {
         };
       } catch (error) {
         lastError = error;
+
+        // If partial data was already returned (handled in inner catch), this outer block won't be reached for stream errors
+        // But if connection error happens:
 
         if (attempt < maxRetries) {
           // Exponential backoff

@@ -246,6 +246,16 @@ export class ClaudeSonnet5Provider {
         model: resolvedModel,
       };
     } catch (error) {
+      if (fullResponse.length > 0) {
+        return {
+          content: fullResponse,
+          usage,
+          model: resolvedModel,
+          partial: true,
+          error
+        };
+      }
+
       if (error.status === 401) {
         throw new AppError('Invalid Anthropic API key', { code: 'INVALID_API_KEY' });
       } else if (error.status === 403) {
@@ -255,6 +265,10 @@ export class ClaudeSonnet5Provider {
       }
       throw error;
     }
+  }
+
+  async generateStream(systemPrompt, userPrompt, onToken, options = {}) {
+    return this.stream(systemPrompt, userPrompt, onToken, options);
   }
 }
 

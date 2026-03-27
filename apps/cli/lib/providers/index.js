@@ -12,7 +12,7 @@ import { OllamaProvider } from './ollama.js';
 import { RouterProvider } from './router.js';
 import { enforceAgentExecution } from '../governance/index.js';
 import { memex } from '../memory/memex.js';
-import { printWarning } from '../utils/output.js';
+import { orchestrator } from '../resilience/self-healing.js';
 
 const PROVIDERS = {
   claude: {
@@ -73,22 +73,17 @@ export function getAvailableProviders() {
  * @returns {Promise<BaseProvider>}
  */
 export async function createProvider(providerId, options = {}) {
+  // Ensure resilience system is initialized
+  await orchestrator.initialize();
+
   const agent = options.agent;
   if (agent) {
     enforceAgentExecution({ agent, providerId });
   }
 
   if (providerId === 'router') {
-    let cloudId = options.cloudProvider || getDefaultProvider();
-
-    // Prevent recursive routing loop if router is the default provider
-    if (cloudId === 'router') {
-      const configured = checkConfiguredProviders();
-      const fallback = configured.find((p) => p.id !== 'router' && p.configured);
-      cloudId = fallback ? fallback.id : 'ollama';
-    }
-
-    const cloudProvider = cloudId ? createProvider(cloudId, options) : null;
+    const cloudId = options.cloudProvider || getDefaultProvider();
+    const cloudProvider = cloudId ? await createProvider(cloudId, options) : null;
 
     let localProvider = null;
     try {
@@ -102,7 +97,10 @@ export async function createProvider(providerId, options = {}) {
       cloudProvider,
       localProvider,
     });
-    return agent ? wrapProviderWithGovernance(routerProvider, agent) : routerProvider;
+    // Router logic might recurse, but we wrap the router itself too
+    const resilient = wrapProviderWithCircuitBreaker(routerProvider, providerId);
+    const governed = agent ? wrapProviderWithGovernance(resilient, agent) : resilient;
+    return wrapProviderWithMemex(governed, { agent });
   }
 
   const providerConfig = PROVIDERS[providerId];
@@ -117,8 +115,10 @@ export async function createProvider(providerId, options = {}) {
   if (providerId === 'mock') {
     const MockProviderClass = await providerConfig.getMockClass();
     const provider = new MockProviderClass(options);
-    const wrapped = agent ? wrapProviderWithGovernance(provider, agent) : provider;
-    return wrapProviderWithMemex(wrapped, { agent });
+
+    const resilient = wrapProviderWithCircuitBreaker(provider, providerId);
+    const governed = agent ? wrapProviderWithGovernance(resilient, agent) : resilient;
+    return wrapProviderWithMemex(governed, { agent });
   }
 
   // Get API key from options or environment (Ollama doesn't strictly need one)
@@ -138,19 +138,41 @@ export async function createProvider(providerId, options = {}) {
     );
   }
 
-  // Basic validation of key format (warning only)
-  if (apiKey) {
-    if (providerId === 'openai' && !apiKey.startsWith('sk-')) {
-      printWarning(`⚠️  OpenAI API key usually starts with 'sk-'. Check your configuration.`);
-    }
-    if (providerId === 'claude' && !apiKey.startsWith('sk-ant-')) {
-      printWarning(`⚠️  Anthropic API key usually starts with 'sk-ant-'. Check your configuration.`);
-    }
+  const provider = new providerConfig.class(apiKey, options);
+
+  const resilient = wrapProviderWithCircuitBreaker(provider, providerId);
+  const governed = agent ? wrapProviderWithGovernance(resilient, agent) : resilient;
+  return wrapProviderWithMemex(governed, { agent });
+}
+
+function wrapProviderWithCircuitBreaker(provider, providerId) {
+  if (!provider) return provider;
+
+  // Use distinct circuit breaker for each provider
+  const cbName = `provider:${providerId}`;
+
+  const baseGenerate = provider.generate?.bind(provider);
+  const baseStream = provider.generateStream?.bind(provider);
+
+  if (baseGenerate) {
+    provider.generate = async (systemPrompt, userPrompt, opts = {}) => {
+      return orchestrator.execute({
+        circuitBreakerName: cbName,
+        operation: () => baseGenerate(systemPrompt, userPrompt, opts)
+      });
+    };
   }
 
-  const provider = new providerConfig.class(apiKey, options);
-  const wrapped = agent ? wrapProviderWithGovernance(provider, agent) : provider;
-  return wrapProviderWithMemex(wrapped, { agent });
+  if (baseStream) {
+    provider.generateStream = async (systemPrompt, userPrompt, onChunk, opts = {}) => {
+      return orchestrator.execute({
+        circuitBreakerName: cbName,
+        operation: () => baseStream(systemPrompt, userPrompt, onChunk, opts)
+      });
+    };
+  }
+
+  return provider;
 }
 
 function wrapProviderWithGovernance(provider, agent) {
@@ -326,7 +348,7 @@ export { OpenAIAssistantsProvider } from './openai-assistants.js';
 export function createOpenAIRunnable(model) {
   return {
     invoke: async ({ messages }) => {
-      const provider = createProvider('openai', { model });
+      const provider = await createProvider('openai', { model });
       const systemMessage = messages.find((m) => m.role === 'system')?.content || '';
       const userMessage = messages.find((m) => m.role === 'user')?.content || '';
       const result = await provider.generate(systemMessage, userMessage);
@@ -338,7 +360,7 @@ export function createOpenAIRunnable(model) {
 export function createAnthropicRunnable(model) {
   return {
     invoke: async ({ messages }) => {
-      const provider = createProvider('claude', { model });
+      const provider = await createProvider('claude', { model });
       const systemMessage = messages.find((m) => m.role === 'system')?.content || '';
       const userMessage = messages.find((m) => m.role === 'user')?.content || '';
       const result = await provider.generate(systemMessage, userMessage);
@@ -350,7 +372,7 @@ export function createAnthropicRunnable(model) {
 export function createGoogleRunnable(model) {
   return {
     invoke: async ({ messages }) => {
-      const provider = createProvider('gemini', { model });
+      const provider = await createProvider('gemini', { model });
       const systemMessage = messages.find((m) => m.role === 'system')?.content || '';
       const userMessage = messages.find((m) => m.role === 'user')?.content || '';
       const result = await provider.generate(systemMessage, userMessage);
