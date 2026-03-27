@@ -1,35 +1,42 @@
-name: 'Ultra-Dex AI Action'
-description: 'Automate development tasks with Ultra-Dex AI agents'
+name: 'Ultra-Dex AI Orchestration'
+description: 'Run Ultra-Dex governance and agent review steps on pull requests and scheduled checks'
+author: 'Ultra-Dex Team'
+branding:
+  icon: 'cpu'
+  color: 'blue'
 inputs:
-  task:
-    description: 'The task description for the AI agents'
-    required: true
-  provider:
-    description: 'AI Provider (openai, anthropic, google)'
-    required: false
-    default: 'openai'
-  model:
-    description: 'AI Model ID'
-    required: false
-    default: 'gpt-4o'
   agents:
-    description: 'Comma-separated list of agents to activate'
+    description: 'Comma-separated list of agents to run (code-reviewer,security-audit,test-generator)'
     required: false
-    default: 'code-reviewer'
+    default: 'code-reviewer,security-audit'
   config-path:
-    description: 'Path to configuration file'
+    description: 'Path to Ultra-Dex config file'
     required: false
     default: '.ultra-dex.json'
   auto-approve:
-    description: 'Automatically approve AI changes'
+    description: 'If true, marks run as auto-approvable when all checks pass'
     required: false
     default: 'false'
   github-token:
-    description: 'GitHub Token for PR operations'
-    required: true
-  api-key:
-    description: 'AI Provider API Key'
+    description: 'GitHub token for PR comment posting'
     required: false
+  api-key:
+    description: 'Legacy input kept for compatibility'
+    required: false
+  task:
+    description: 'AI task description'
+    required: false
+  provider:
+    description: 'AI provider (e.g. openai, anthropic)'
+    required: false
+  model:
+    description: 'AI model to use'
+    required: false
+outputs:
+  results:
+    description: 'JSON summary of executed agents and checks'
+  passed:
+    description: 'Whether all checks passed'
 runs:
   using: 'node20'
   main: 'index.js'

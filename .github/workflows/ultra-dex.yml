@@ -22,9 +22,6 @@ jobs:
         with:
           api-key: ${{ secrets.ULTRA_DEX_API_KEY }}
           agents: 'code-reviewer,security-audit'
-          task: 'Code Review'
-          provider: 'openai'
-          model: 'gpt-4o'
         env:
           ULTRA_DEX_API_KEY: ${{ secrets.ULTRA_DEX_API_KEY }}
 
@@ -40,7 +37,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps --legacy-peer-deps
 
       - name: Run tests
         run: npm test
