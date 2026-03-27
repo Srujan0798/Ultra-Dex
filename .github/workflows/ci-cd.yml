@@ -34,7 +34,7 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm ci --legacy-peer-deps
+      run: npm ci
 
     - name: Run linters
       run: |
@@ -71,10 +71,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Run CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
       with:
         languages: javascript
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
 
     - name: Run Semgrep
       uses: returntocorp/semgrep-action@v1
@@ -86,8 +89,20 @@ jobs:
           p/javascript
           p/owasp-top-ten
 
-    # Removed Trivy due to failure in CI (Path does not exist: trivy-results.sarif)
-    # The scan results output seems to be causing issues with upload-sarif
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        exit-code: '0'
+
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
 
   # Build and Test
   build-and-test:
@@ -107,7 +122,7 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm ci --legacy-peer-deps
+      run: npm ci
 
     - name: Build project
       run: npm run build
@@ -244,7 +259,7 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm ci --legacy-peer-deps
+      run: npm ci
 
     - name: Run release script
       run: npm run release:stable

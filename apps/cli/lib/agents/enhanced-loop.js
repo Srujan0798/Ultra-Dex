@@ -6,15 +6,26 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import ora from 'ora';
 import path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
 import { authorizeOperation } from '../governance/index.js';
 import { verifyLinting, verifyTypeSafety, verifySecurityPatterns } from '../quality/automation.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { errorRecovery } from '../utils/error-recovery.js';
+import { executeTool, processToolCalls } from '../tools/execution.js';
 
-const execAsync = promisify(exec);
+/**
+ * Helper to safely format code blocks preventing markdown injection
+ * @param {string} content - The content to wrap in code block
+ * @returns {string} - Formatted code block
+ */
+function formatCodeBlock(content) {
+  // If content contains triple backticks, use 4 backticks, and so on
+  let fence = '```';
+  while (content.includes(fence)) {
+    fence += '`';
+  }
+  return `${fence}\n${content}\n${fence}`;
+}
 
 /**
  * Enhanced agent loop with improved tool calling support
@@ -188,8 +199,6 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     // Check if the provider returned tool calls
     if (result.toolCalls && result.toolCalls.length > 0) {
       // Process tool calls using the new tool execution system
-      const { processToolCalls } = await import('../tools/execution.js');
-      
       printInfo(chalk.cyan(`\n🔧 ${agent.name} is executing ${result.toolCalls.length} tool calls...`));
       
       try {
@@ -266,21 +275,16 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
 
       printInfo(chalk.cyan(`\n🔍 ${agent.name} is reading ${filePath}...`));
       await dashboardNotifier.sendLog(`@${agentName} is reading ${filePath}`, 'info');
-      try {
-        const fullPath = path.resolve(process.cwd(), filePath);
-        // Additional check to ensure path is within project directory
-        if (!fullPath.startsWith(process.cwd())) {
-          return await runAgentLoop(
-            agentName,
-            `${task}\n\nError reading ${filePath}: Path outside project root`,
-            provider,
-            projectContext,
-            depth + 1
-          );
-        }
 
-        const fileContent = await fs.readFile(fullPath, 'utf8');
-        const nextPrompt = `Output of READ_CODE "${filePath}":\n\`\`\`\n${fileContent}\n\`\`\`\n\nPlease proceed with your task.`;
+      const result = await executeTool({
+        function: {
+          name: 'read_file',
+          arguments: JSON.stringify({ filePath })
+        }
+      });
+
+      if (result.success) {
+        const nextPrompt = `Output of READ_CODE "${filePath}":\n${formatCodeBlock(result.content)}\n\nPlease proceed with your task.`;
         return await runAgentLoop(
           agentName,
           `${task}\n\n${nextPrompt}`,
@@ -288,10 +292,10 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
           projectContext,
           depth + 1
         );
-      } catch (e) {
+      } else {
         return await runAgentLoop(
           agentName,
-          `${task}\n\nError reading ${filePath}: ${e.message}`,
+          `${task}\n\nError reading ${filePath}: ${result.error}`,
           provider,
           projectContext,
           depth + 1
@@ -360,8 +364,16 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
           );
         }
 
-        await fs.mkdir(path.dirname(fullPath), { recursive: true });
-        await fs.writeFile(fullPath, newContent, 'utf8');
+        const writeResult = await executeTool({
+          function: {
+            name: 'write_file',
+            arguments: JSON.stringify({ filePath, content: newContent })
+          }
+        });
+
+        if (!writeResult.success) {
+          throw new Error(writeResult.error);
+        }
 
         // --- Active Verification Hook ---
         printInfo(chalk.yellow(`\n🛡️  Running Active Verification Gates...`));
@@ -432,10 +444,16 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
       }
       printInfo(chalk.yellow(`\n⚡ ${agent.name} is executing shell command: ${command}...`));
 
-      try {
-        const { stdout, stderr } = await execAsync(command);
-        const output = stdout + (stderr ? `\nSTDERR:\n${stderr}` : '');
-        const nextPrompt = `Output of RUN_SHELL "${command}":\n\`\`\`\n${output}\n\`\`\`\n\nPlease proceed with your task.`;
+      const result = await executeTool({
+        function: {
+          name: 'run_shell',
+          arguments: JSON.stringify({ command })
+        }
+      });
+
+      if (result.success) {
+        const output = result.stdout + (result.stderr ? `\nSTDERR:\n${result.stderr}` : '');
+        const nextPrompt = `Output of RUN_SHELL "${command}":\n${formatCodeBlock(output)}\n\nPlease proceed with your task.`;
         return await runAgentLoop(
           agentName,
           `${task}\n\n${nextPrompt}`,
@@ -443,10 +461,12 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
           projectContext,
           depth + 1
         );
-      } catch (e) {
+      } else {
+        const output = (result.stdout || '') + (result.stderr ? `\nSTDERR:\n${result.stderr}` : '');
+        const errorMsg = result.error || 'Unknown error';
         return await runAgentLoop(
           agentName,
-          `${task}\n\nError executing ${command}: ${e.message}`,
+          `${task}\n\nError executing ${command}: ${errorMsg}\nPartial Output:\n${formatCodeBlock(output)}`,
           provider,
           projectContext,
           depth + 1
