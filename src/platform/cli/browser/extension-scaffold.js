@@ -36,13 +36,13 @@ export async function scaffoldChromeExtension(targetDir = '.') {
   // Background Script
   const backgroundJs = `// Ultra-Dex Generated Background Script
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Extension installed');
+  logger.log('Extension installed');
 });
 `;
 
   // Content Script
   const contentJs = `// Ultra-Dex Generated Content Script
-console.log('Ultra-Dex content script loaded');
+logger.log('Ultra-Dex content script loaded');
 `;
 
   // Popup HTML
@@ -62,7 +62,7 @@ console.log('Ultra-Dex content script loaded');
 </html>`;
 
   // Popup JS
-  const popupJs = `console.log('Popup script loaded');`;
+  const popupJs = `logger.log('Popup script loaded');`;
 
   // Write files
   await fs.writeFile(path.join(root, 'manifest.json'), JSON.stringify(manifest, null, 2));
@@ -94,7 +94,7 @@ async function safeExecute(fn, context = 'extension-scaffold') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

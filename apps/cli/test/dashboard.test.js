@@ -1,359 +1,350 @@
-/**
- * Comprehensive tests for dashboard command
- * Tests: Dashboard HTML generation, HTTP server, SSE, agent controls
- */
-import { test, describe, beforeEach, afterEach } from 'node:test';
+import { afterEach, beforeEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
 
-describe('Dashboard Command', () => {
+import {
+  buildDashboardModel,
+  executeQuickAction,
+  generateDashboardHTML,
+  getQuickActions,
+  getRecentProjects,
+  getSystemStatus,
+  registerDashboardCommand,
+  renderDashboardSnapshot,
+  showInteractiveDashboard,
+} from '../lib/commands/dashboard.js';
+
+function createDashboardModel() {
+  return {
+    version: '6.0.0',
+    generatedAt: '2026-03-27T00:00:00.000Z',
+    currentProject: '/workspace/current-app',
+    systemStatus: {
+      projectName: 'current-app',
+      cwd: '/workspace/current-app',
+      health: 'healthy',
+      git: {
+        branch: 'main',
+        lastCommit: 'abc123 feat: cycle 3',
+        changedFiles: 2,
+      },
+      alignmentScore: 91,
+      phases: {
+        total: 4,
+        completed: 2,
+        inProgress: 1,
+        pending: 1,
+      },
+      checks: [
+        { label: 'package.json', status: 'ok' },
+        { label: 'implementation plan', status: 'ok' },
+      ],
+      usage: {
+        totalCommands: 12,
+        last24h: 4,
+        last7d: 9,
+        errorCount: 1,
+        topCommand: 'run',
+        topCommands: [{ name: 'run', count: 4 }],
+      },
+      config: {
+        theme: 'professional-purple',
+        mcpPort: 3001,
+        autoRefresh: true,
+        refreshInterval: 30000,
+      },
+      runtime: {
+        node: process.version,
+        platform: `${process.platform}/${process.arch}`,
+        uptimeSeconds: 1,
+      },
+    },
+    recentProjects: [
+      {
+        name: 'current-app',
+        path: '/workspace/current-app',
+        source: 'current',
+        lastSeenLabel: 'just now',
+      },
+    ],
+    quickActions: [
+      {
+        id: 'run-agent',
+        label: 'Run agent',
+        description: 'Launch an agent task from the dashboard',
+        command: 'ultra-dex run <agent> "<task>"',
+        commandName: 'run',
+      },
+    ],
+  };
+}
+
+describe('dashboard command', () => {
   let tmpDir;
-  let originalCwd;
+  let homeDir;
+  let historyPath;
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-dashboard-test-'));
-    originalCwd = process.cwd();
-    process.chdir(tmpDir);
+    homeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-dashboard-home-'));
+    historyPath = path.join(homeDir, '.ultra-dex', 'history.json');
+    await fs.mkdir(path.dirname(historyPath), { recursive: true });
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
-    if (tmpDir) {
-      await fs.rm(tmpDir, { recursive: true, force: true });
-    }
+    await fs.rm(tmpDir, { recursive: true, force: true });
+    await fs.rm(homeDir, { recursive: true, force: true });
   });
 
-  describe('Dashboard Module Exports', () => {
-    test('exports registerDashboardCommand function', async () => {
-      const dashboardModule = await import('../lib/commands/dashboard.js');
-      assert.ok(dashboardModule.registerDashboardCommand, 'Should export registerDashboardCommand');
-      assert.strictEqual(typeof dashboardModule.registerDashboardCommand, 'function');
+  test('getRecentProjects prioritizes the current project and de-duplicates history entries', async () => {
+    const currentStateDir = path.join(tmpDir, '.ultra');
+    const siblingProject = path.join(path.dirname(tmpDir), 'cycle-3-sibling');
+
+    await fs.mkdir(currentStateDir, { recursive: true });
+    await fs.writeFile(path.join(tmpDir, 'package.json'), '{"name":"current-app"}');
+    await fs.writeFile(
+      path.join(currentStateDir, 'state.json'),
+      JSON.stringify({
+        project: { name: 'current-app' },
+        updatedAt: '2026-03-27T08:00:00.000Z',
+      })
+    );
+
+    await fs.mkdir(path.join(siblingProject, '.git'), { recursive: true });
+    await fs.writeFile(path.join(siblingProject, 'package.json'), '{"name":"sibling-app"}');
+    await fs.writeFile(
+      historyPath,
+      JSON.stringify([
+        { cwd: siblingProject, timestamp: '2026-03-26T08:00:00.000Z' },
+        { cwd: tmpDir, timestamp: '2026-03-25T08:00:00.000Z' },
+      ])
+    );
+
+    const projects = await getRecentProjects({
+      cwd: tmpDir,
+      homeDir,
+      historyPath,
+      candidateRoots: [path.dirname(tmpDir)],
+      maxItems: 5,
+      scanLimit: 5,
     });
 
-    test('exports generateDashboardHTML function', async () => {
-      const dashboardModule = await import('../lib/commands/dashboard.js');
-      assert.ok(dashboardModule.generateDashboardHTML, 'Should export generateDashboardHTML');
-      assert.strictEqual(typeof dashboardModule.generateDashboardHTML, 'function');
-    });
+    assert.equal(projects[0].path, tmpDir);
+    assert.equal(projects[0].source, 'current');
+    assert.ok(projects.some((project) => project.path === siblingProject));
+    assert.equal(projects.filter((project) => project.path === tmpDir).length, 1);
   });
 
-  describe('Dashboard HTML Generation', () => {
-    test('generateDashboardHTML creates valid HTML', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test Project' },
-        phases: [
-          {
-            name: 'Phase 1',
-            status: 'in_progress',
-            steps: [
-              { task: 'Step 1', status: 'completed' },
-              { task: 'Step 2', status: 'pending' },
-            ],
-          },
+  test('getQuickActions ranks actions by recent usage', () => {
+    const actions = getQuickActions({
+      usageSummary: {
+        topCommands: [
+          { name: 'review', count: 7 },
+          { name: 'run', count: 10 },
+          { name: 'dashboard', count: 3 },
         ],
-        agents: { registry: ['backend', 'frontend'] },
-      };
+      },
+    });
 
-      const mockGitInfo = {
+    assert.equal(actions[0].commandName, 'run');
+    assert.ok(actions.some((action) => action.id === 'web-dashboard'));
+  });
+
+  test('getSystemStatus derives health, phase counts, and usage from project state', async () => {
+    await fs.mkdir(path.join(tmpDir, '.ultra'), { recursive: true });
+    await fs.writeFile(path.join(tmpDir, 'package.json'), '{"name":"status-app"}');
+    await fs.writeFile(path.join(tmpDir, 'IMPLEMENTATION-PLAN.md'), '# Plan');
+    await fs.writeFile(path.join(tmpDir, '.ultra', 'state.json'), '{}');
+
+    const status = await getSystemStatus({
+      cwd: tmpDir,
+      getGitInfoImpl: () => ({
+        branch: 'feature/cycle-3',
+        lastCommit: 'def456 feat: dashboard',
+        changedFiles: 4,
+      }),
+      loadStateImpl: async () => ({
+        project: { name: 'status-app' },
+        score: 88,
+        phases: [
+          { status: 'completed' },
+          { status: 'in_progress' },
+          { status: 'pending' },
+        ],
+      }),
+      getUsageSummaryImpl: async () => ({
+        totalCommands: 30,
+        last24h: 6,
+        last7d: 20,
+        errorCount: 2,
+        topCommands: [{ name: 'status', count: 5 }],
+      }),
+      loadConfigImpl: async () => ({
+        theme: 'doomsday',
+        mcpPort: 4004,
+        autoRefresh: false,
+        refreshInterval: 45000,
+      }),
+    });
+
+    assert.equal(status.projectName, 'status-app');
+    assert.equal(status.health, 'healthy');
+    assert.equal(status.phases.completed, 1);
+    assert.equal(status.phases.inProgress, 1);
+    assert.equal(status.phases.pending, 1);
+    assert.equal(status.usage.topCommand, 'status');
+    assert.equal(status.config.theme, 'doomsday');
+  });
+
+  test('buildDashboardModel composes system status, recent projects, and actions', async () => {
+    const model = await buildDashboardModel({
+      cwd: tmpDir,
+      getSystemStatusImpl: async () => createDashboardModel().systemStatus,
+      getRecentProjectsImpl: async () => createDashboardModel().recentProjects,
+      getQuickActionsImpl: () => createDashboardModel().quickActions,
+    });
+
+    assert.equal(model.systemStatus.projectName, 'current-app');
+    assert.equal(model.recentProjects.length, 1);
+    assert.equal(model.quickActions[0].id, 'run-agent');
+  });
+
+  test('renderDashboardSnapshot renders the current dashboard sections', () => {
+    const snapshot = renderDashboardSnapshot(createDashboardModel(), { color: false });
+
+    assert.match(snapshot, /Ultra-Dex Dashboard v6\.0\.0/);
+    assert.match(snapshot, /System Status/);
+    assert.match(snapshot, /Recent Projects/);
+    assert.match(snapshot, /Quick Actions/);
+  });
+
+  test('showInteractiveDashboard returns a single snapshot when once is enabled', async () => {
+    const logs = [];
+    const model = await showInteractiveDashboard({
+      cwd: tmpDir,
+      once: true,
+      clear: false,
+      loading: false,
+      log: (value) => logs.push(value),
+      buildDashboardModelImpl: async () => createDashboardModel(),
+    });
+
+    assert.equal(model.systemStatus.projectName, 'current-app');
+    assert.equal(logs.length, 1);
+    assert.match(logs[0], /Quick Actions/);
+  });
+
+  test('executeQuickAction launches the selected command with prompted values', async () => {
+    const calls = [];
+
+    await executeQuickAction(
+      {
+        id: 'run-agent',
+        label: 'Run agent',
+      },
+      {
+        cwd: tmpDir,
+        promptImpl: async () => ({
+          agent: 'planner',
+          task: 'repair the failing build',
+        }),
+        spawnImpl: (command, args, spawnOptions) => {
+          calls.push({ command, args, spawnOptions });
+          const child = new EventEmitter();
+          process.nextTick(() => child.emit('close', 0));
+          return child;
+        },
+      }
+    );
+
+    assert.equal(calls.length, 1);
+    assert.deepEqual(calls[0].args.slice(-3), ['run', 'planner', 'repair the failing build']);
+    assert.equal(calls[0].spawnOptions.cwd, tmpDir);
+  });
+
+  test('generateDashboardHTML includes the current project name and usage details', () => {
+    const html = generateDashboardHTML(
+      {
+        project: { name: 'html-app' },
+        score: 96,
+        phases: [{ name: 'Phase 1', status: 'completed' }],
+      },
+      {
         branch: 'main',
-        lastCommit: 'abc123 Initial commit',
-        changedFiles: 0,
-      };
+        lastCommit: 'abc123 feat: html',
+        changedFiles: 1,
+      },
+      {
+        nodes: 4,
+        edges: 9,
+      },
+      {
+        last24h: 8,
+        last7d: 12,
+        errorCount: 0,
+        topCommands: [{ name: 'dashboard' }],
+      }
+    );
 
-      const mockGraphSummary = {
-        nodeCount: 10,
-        edges: 25,
-      };
+    assert.match(html, /html-app/);
+    assert.match(html, /dashboard/i);
+    assert.match(html, /Phase 1/);
+  });
 
-      const html = generateDashboardHTML(mockState, mockGitInfo, mockGraphSummary);
-
-      assert.ok(html.includes('<!DOCTYPE html>'), 'Should be valid HTML5');
-      assert.ok(html.includes('<html'), 'Should have html tag');
-      assert.ok(html.includes('</html>'), 'Should close html tag');
-      assert.ok(html.includes('Test Project'), 'Should include project name');
-    });
-
-    test('HTML includes phase cards', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test' },
-        phases: [{ name: 'Setup', status: 'completed', steps: [] }],
-        agents: { registry: [] },
-      };
-
-      const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-
-      assert.ok(html.includes('phase-card'), 'Should have phase cards');
-      assert.ok(html.includes('Setup'), 'Should include phase name');
-    });
-
-    test('HTML includes agent cards', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test' },
-        phases: [],
-        agents: { registry: ['backend', 'frontend'] },
-      };
-
-      const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-
-      assert.ok(html.includes('agent-card'), 'Should have agent cards');
-      assert.ok(html.includes('@backend'), 'Should include backend agent');
-    });
-
-    test('HTML includes alignment score', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test' },
-        phases: [
-          {
-            name: 'Phase 1',
-            status: 'completed',
-            steps: [{ status: 'completed' }, { status: 'completed' }],
+  test('registerDashboardCommand exposes the Cycle 3 dashboard options', () => {
+    const program = {
+      commands: [],
+      command(name) {
+        const command = {
+          _name: name,
+          _aliases: [],
+          options: [],
+          name() {
+            return this._name;
           },
-        ],
-        agents: { registry: [] },
-      };
+          alias(value) {
+            this._aliases.push(value);
+            return this;
+          },
+          aliases() {
+            return [...this._aliases];
+          },
+          description() {
+            return this;
+          },
+          option(flags) {
+            this.options.push({ flags });
+            return this;
+          },
+          action() {
+            return this;
+          },
+        };
 
-      const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
+        this.commands.push(command);
+        return command;
+      },
+    };
+    registerDashboardCommand(program);
 
-      assert.ok(html.includes('100%') || html.includes('%'), 'Should show progress percentage');
-    });
+    const dashboardCommand = program.commands.find((command) => command.name() === 'dashboard');
 
-    test('HTML includes git information', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test' },
-        phases: [],
-        agents: { registry: [] },
-      };
-
-      const mockGitInfo = {
-        branch: 'feature-branch',
-        lastCommit: 'xyz789 Test commit',
-        changedFiles: 3,
-      };
-
-      const html = generateDashboardHTML(mockState, mockGitInfo, { nodeCount: 5 });
-
-      assert.ok(html.includes('feature-branch'), 'Should include branch name');
-    });
-
-    test('HTML includes graph statistics', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test' },
-        phases: [],
-        agents: { registry: [] },
-      };
-
-      const html = generateDashboardHTML(
-        mockState,
-        { branch: 'main' },
-        { nodeCount: 42, edges: 100 }
-      );
-
-      assert.ok(html.includes('42') || html.includes('100'), 'Should include graph stats');
-    });
-  });
-
-  describe('Command Registration', () => {
-    test('registers dashboard command', async () => {
-      const { registerDashboardCommand } = await import('../lib/commands/dashboard.js');
-
-      const mockProgram = {
-        command: function (name) {
-          this.commandName = name;
-          return this;
-        },
-        description: function (desc) {
-          this.commandDescription = desc;
-          return this;
-        },
-        option: function (flags, description, defaultValue) {
-          if (!this.options) this.options = [];
-          this.options.push({ flags, description, defaultValue });
-          return this;
-        },
-        action: function (fn) {
-          this.actionFn = fn;
-          return this;
-        },
-      };
-
-      registerDashboardCommand(mockProgram);
-
-      assert.strictEqual(mockProgram.commandName, 'dashboard');
-      assert.ok(
-        mockProgram.commandDescription.includes('Dashboard') ||
-          mockProgram.commandDescription.includes('God Mode')
-      );
-      assert.ok(mockProgram.options.length >= 1);
-      assert.strictEqual(typeof mockProgram.actionFn, 'function');
-    });
-
-    test('dashboard command has port option', async () => {
-      const { registerDashboardCommand } = await import('../lib/commands/dashboard.js');
-
-      const mockProgram = {
-        command: () => mockProgram,
-        description: () => mockProgram,
-        options: [],
-        option: function (flags, description, defaultValue) {
-          this.options.push({ flags, description, defaultValue });
-          return this;
-        },
-        action: () => mockProgram,
-      };
-
-      registerDashboardCommand(mockProgram);
-
-      const portOption = mockProgram.options.find(
-        (o) => o.flags.includes('--port') || o.flags.includes('-p')
-      );
-      assert.ok(portOption, 'Should have port option');
-    });
-  });
-
-  describe('Dashboard Server Features', () => {
-    test('HTTP server creation', async () => {
-      // Server should be created with http.createServer
-      assert.ok(true, 'HTTP server functionality verified in code');
-    });
-
-    test('SSE (Server-Sent Events) support', async () => {
-      // Dashboard uses SSE for real-time updates
-      assert.ok(true, 'SSE support verified in code');
-    });
-
-    test('WebSocket integration', async () => {
-      // Dashboard integrates with WebSocket server
-      assert.ok(true, 'WebSocket integration verified in code');
-    });
-
-    test('serves static dashboard HTML', async () => {
-      // Root path should serve dashboard HTML
-      assert.ok(true, 'Static HTML serving verified in code');
-    });
-  });
-
-  describe('Agent Controls', () => {
-    test('agent run buttons exist', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test' },
-        phases: [],
-        agents: { registry: ['backend'] },
-      };
-
-      const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-
-      assert.ok(html.includes('runAgent'), 'Should have run agent button/function');
-    });
-
-    test('agent stop buttons exist', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test' },
-        phases: [],
-        agents: { registry: ['backend'] },
-      };
-
-      const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-
-      assert.ok(html.includes('stopAgent'), 'Should have stop agent button/function');
-    });
-
-    test('agent logs buttons exist', async () => {
-      const { generateDashboardHTML } = await import('../lib/commands/dashboard.js');
-
-      const mockState = {
-        project: { name: 'Test' },
-        phases: [],
-        agents: { registry: ['backend'] },
-      };
-
-      const html = generateDashboardHTML(mockState, { branch: 'main' }, { nodeCount: 5 });
-
-      assert.ok(html.includes('viewAgentLogs'), 'Should have view logs button/function');
-    });
-  });
-
-  describe('Action History', () => {
-    test('action history tracking', async () => {
-      // Dashboard tracks action history with timestamps
-      assert.ok(true, 'Action history tracking verified in code');
-    });
-
-    test('action history limited to 50 entries', async () => {
-      // MAX_HISTORY = 50
-      const MAX_HISTORY = 50;
-      assert.strictEqual(MAX_HISTORY, 50);
-    });
-  });
-
-  describe('Git Integration', () => {
-    test('getGitInfo returns branch name', async () => {
-      // getGitInfo should extract branch from git
-      assert.ok(true, 'Git info extraction verified in code');
-    });
-
-    test('getGitInfo returns last commit', async () => {
-      // getGitInfo should extract last commit
-      assert.ok(true, 'Git commit extraction verified in code');
-    });
-
-    test('getGitInfo handles git errors gracefully', async () => {
-      // Should return defaults when not in git repo
-      const fallback = {
-        branch: 'unknown',
-        lastCommit: 'N/A',
-        changedFiles: 0,
-      };
-
-      assert.strictEqual(fallback.branch, 'unknown');
-    });
-  });
-
-  describe('Integration', () => {
-    test('dashboard module loads all components', async () => {
-      const dashboardModule = await import('../lib/commands/dashboard.js');
-
-      assert.ok(dashboardModule.registerDashboardCommand);
-      assert.ok(dashboardModule.generateDashboardHTML);
-    });
-
-    test('dashboard integrates with state management', async () => {
-      // Dashboard uses loadState from state.js
-      assert.ok(true, 'State integration verified in code');
-    });
-
-    test('dashboard integrates with graph', async () => {
-      // Dashboard uses buildGraph from graph.js
-      assert.ok(true, 'Graph integration verified in code');
-    });
+    assert.ok(dashboardCommand);
+    assert.ok(dashboardCommand.aliases().includes('d'));
+    assert.ok(
+      dashboardCommand.options.some((option) => option.flags.includes('--json')),
+      'expected --json option'
+    );
+    assert.ok(
+      dashboardCommand.options.some((option) => option.flags.includes('--once')),
+      'expected --once option'
+    );
+    assert.ok(
+      dashboardCommand.options.some((option) => option.flags.includes('--web')),
+      'expected --web option'
+    );
   });
 });
-
-/**
- * Error handler for dashboard.test
- * @param {Error} error - Error to handle
- */
-function handleError(error) {
-  try {
-    console.error('[dashboard.test]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
-}

@@ -467,7 +467,7 @@ export function registerProtocolCommand(program) {
 
         const result = await handleUltraProtocol(url);
         if (result) {
-          console.log(JSON.stringify(result, null, 2));
+          logger.log(JSON.stringify(result, null, 2));
         }
       } catch (error) {
         printError(`Protocol handler error: ${error.message}`);

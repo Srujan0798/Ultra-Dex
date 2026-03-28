@@ -133,7 +133,7 @@ export function registerExecCommand(program) {
         } else {
           throw new ValidationError('No execution target specified.', [
             'Provide a file: ultra-dex exec script.js',
-            'Provide inline code: ultra-dex exec -c "console.log(1)"',
+            'Provide inline code: ultra-dex exec -c "logger.log(1)"',
             'Run tests: ultra-dex exec --test',
           ]);
         }

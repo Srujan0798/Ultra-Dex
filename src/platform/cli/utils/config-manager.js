@@ -140,7 +140,7 @@ class ConfigManager {
       this.loaded = true;
       return this.config;
     } catch (error) {
-      console.warn('Failed to load configuration, using defaults:', error.message);
+      logger.warn('Failed to load configuration, using defaults:', error.message);
       return this.config;
     }
   }
@@ -162,7 +162,7 @@ class ConfigManager {
       await fs.writeFile(targetPath, JSON.stringify(config, null, 2));
       return true;
     } catch (error) {
-      console.error(`Failed to save ${type} configuration:`, error.message);
+      logger.error(`Failed to save ${type} configuration:`, error.message);
       return false;
     }
   }

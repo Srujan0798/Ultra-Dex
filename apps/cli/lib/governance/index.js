@@ -14,8 +14,9 @@ import {
   DESTRUCTIVE_COMMAND_PATTERNS,
 } from './rules.js';
 import { configManager } from '../utils/config-manager.js';
-import { logOperation } from './audit.js';
+import { initializeGovernanceAuditSink } from './audit.js';
 import { AppError } from '../utils/errors.js';
+import { logger } from '../utils/logger.js';
 
 export class GovernanceEngine {
   constructor(projectRoot = process.cwd()) {
@@ -249,6 +250,14 @@ export class GovernanceEngine {
 
 export const governance = new GovernanceEngine();
 
+function emitGovernanceOperation(entry) {
+  initializeGovernanceAuditSink();
+  void logger.event('governance.operation', entry, {
+    console: false,
+    source: 'governance',
+  });
+}
+
 export async function authorizeOperation({
   agent,
   operation,
@@ -276,18 +285,18 @@ export async function authorizeOperation({
         allowed: false,
         reason: 'AI request includes destructive command patterns.',
       };
-      void logOperation({ agent, operation, resourceType, target, ...decision, metadata });
+      emitGovernanceOperation({ agent, operation, resourceType, target, ...decision, metadata });
       return decision;
     }
     if (governance.containsSensitivePath(text)) {
       const decision = { allowed: false, reason: 'AI request references sensitive files.' };
-      void logOperation({ agent, operation, resourceType, target, ...decision, metadata });
+      emitGovernanceOperation({ agent, operation, resourceType, target, ...decision, metadata });
       return decision;
     }
   }
 
   const decision = governance.authorize(roleId, action, target);
-  void logOperation({
+  emitGovernanceOperation({
     agent,
     operation,
     resourceType,
@@ -320,7 +329,7 @@ export function enforceAgentExecution({ agent, providerId, task, systemPrompt, u
     throw new AppError('Governance blocked AI execution: blocked by configuration.');
   }
 
-  void logOperation({
+  emitGovernanceOperation({
     agent,
     operation: 'execute',
     resourceType: 'ai',

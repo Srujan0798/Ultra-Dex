@@ -265,7 +265,7 @@ export class MultiPassGenerator extends EventEmitter {
     if (!implementation.includes('try') && prompt.includes('api')) {
       implementation = implementation.replace(
         '// Implementation',
-        `try {\n    // Implementation\n  } catch (error) {\n    console.error('Error:', error);\n  }`
+        `try {\n    // Implementation\n  } catch (error) {\n    logger.error('Error:', error);\n  }`
       );
     }
 

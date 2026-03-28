@@ -15,7 +15,9 @@ import { execSync, spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { getUsageSummary } from '../enterprise/usage.js';
 import { ValidationError } from '../utils/errors.js';
+import { startSpinner } from '../utils/spinners.js';
 import { VERSION } from '../utils/version.js';
+import { logger } from '../utils/logger.js';
 
 const DEFAULT_WEB_PORT = '3002';
 const DEFAULT_MAX_RECENT_PROJECTS = 6;
@@ -68,11 +70,11 @@ function scoreColor(health) {
 }
 
 function printInfo(message) {
-  console.log(chalk.cyan(message));
+  logger.log(chalk.cyan(message));
 }
 
 function printSuccess(message) {
-  console.log(chalk.green(message));
+  logger.log(chalk.green(message));
 }
 
 async function promptWithInquirer(questions) {
@@ -217,15 +219,13 @@ export async function getRecentProjects(options = {}) {
   const fsImpl = options.fsImpl || fs;
   const homeDir = options.homeDir || os.homedir();
   const maxItems = options.maxItems || DEFAULT_MAX_RECENT_PROJECTS;
-  const candidateRoots =
-    options.candidateRoots ||
-    [
-      path.dirname(cwd),
-      path.join(homeDir, 'projects'),
-      path.join(homeDir, 'workspace'),
-      path.join(homeDir, 'code'),
-      path.join(homeDir, 'dev'),
-    ];
+  const candidateRoots = options.candidateRoots || [
+    path.dirname(cwd),
+    path.join(homeDir, 'projects'),
+    path.join(homeDir, 'workspace'),
+    path.join(homeDir, 'code'),
+    path.join(homeDir, 'dev'),
+  ];
 
   const projectMap = new Map();
 
@@ -238,8 +238,10 @@ export async function getRecentProjects(options = {}) {
       return;
     }
 
-    const existingPriority = existing.source === 'current' ? 3 : existing.source === 'history' ? 2 : 1;
-    const incomingPriority = project.source === 'current' ? 3 : project.source === 'history' ? 2 : 1;
+    const existingPriority =
+      existing.source === 'current' ? 3 : existing.source === 'history' ? 2 : 1;
+    const incomingPriority =
+      project.source === 'current' ? 3 : project.source === 'history' ? 2 : 1;
     const existingTime = new Date(existing.lastOpenedAt || 0).getTime();
     const incomingTime = new Date(project.lastOpenedAt || 0).getTime();
 
@@ -457,7 +459,9 @@ export async function getSystemStatus(options = {}) {
     total: phases.length,
     completed: phases.filter((phase) => phase.status === 'completed').length,
     inProgress: phases.filter((phase) => phase.status === 'in_progress').length,
-    pending: phases.filter((phase) => phase.status !== 'completed' && phase.status !== 'in_progress').length,
+    pending: phases.filter(
+      (phase) => phase.status !== 'completed' && phase.status !== 'in_progress'
+    ).length,
   };
 
   const checks = [
@@ -652,36 +656,64 @@ export async function executeQuickAction(action, options = {}) {
       return runCliCommand(['serve'], { ...options, cwd });
 
     case 'web-dashboard':
-      return runCliCommand(['dashboard', '--web', '--port', String(options.port || DEFAULT_WEB_PORT)], {
-        ...options,
-        cwd,
-      });
+      return runCliCommand(
+        ['dashboard', '--web', '--port', String(options.port || DEFAULT_WEB_PORT)],
+        {
+          ...options,
+          cwd,
+        }
+      );
 
     default:
       throw new ValidationError(`Unknown dashboard action: ${action.id}`);
   }
 }
 
-export async function showInteractiveDashboard(options = {}) {
-  const promptImpl = options.promptImpl || promptWithInquirer;
-  const log = options.log || console.log;
+export async function showInteractiveDashboard(promptImpl, options = {}) {
+  const prompt = promptImpl || options.promptImpl || promptWithInquirer;
   const clear = options.clear !== false ? options.clearImpl || console.clear : null;
+  const spinnerFactory = options.spinnerFactory || startSpinner;
   const once = Boolean(options.once);
   const color = options.color !== false;
   let cwd = path.resolve(options.cwd || process.cwd());
 
   while (true) {
-    const model = await (options.buildDashboardModelImpl || buildDashboardModel)({
-      ...options,
-      cwd,
-    });
+    let loadingSpinner = null;
+    try {
+      if (
+        process.stdout.isTTY &&
+        options.loading !== false &&
+        typeof spinnerFactory === 'function'
+      ) {
+        loadingSpinner = spinnerFactory('Loading dashboard context...', 'pulse');
+      }
+    } catch {
+      loadingSpinner = null;
+    }
+
+    let model;
+    try {
+      model = await (options.buildDashboardModelImpl || buildDashboardModel)({
+        ...options,
+        cwd,
+      });
+    } catch (error) {
+      if (loadingSpinner?.isSpinning) {
+        loadingSpinner.fail('Failed to load dashboard context');
+      }
+      throw error;
+    } finally {
+      if (loadingSpinner?.isSpinning) {
+        loadingSpinner.stop();
+      }
+    }
 
     if (clear) {
       clear();
     }
     log(renderDashboardSnapshot(model, { color }));
 
-    if (once || !process.stdout.isTTY && !options.promptImpl) {
+    if (once || (!process.stdout.isTTY && !options.promptImpl)) {
       return model;
     }
 
@@ -710,7 +742,11 @@ export async function showInteractiveDashboard(options = {}) {
 
     if (selection.type === 'project') {
       cwd = selection.project.path;
-      log(color ? chalk.cyan(`Switched dashboard context to ${cwd}`) : `Switched dashboard context to ${cwd}`);
+      log(
+        color
+          ? chalk.cyan(`Switched dashboard context to ${cwd}`)
+          : `Switched dashboard context to ${cwd}`
+      );
       continue;
     }
 
@@ -749,8 +785,7 @@ function renderQuickActionsHtml(quickActions) {
 function renderChecksHtml(checks) {
   return checks
     .map(
-      (check) =>
-        `<li><strong>${escapeHtml(check.label)}</strong>: ${escapeHtml(check.status)}</li>`
+      (check) => `<li><strong>${escapeHtml(check.label)}</strong>: ${escapeHtml(check.status)}</li>`
     )
     .join('');
 }
@@ -849,7 +884,12 @@ function generateInteractiveDashboardHTML(model) {
 </html>`;
 }
 
-export function generateDashboardHTML(state = null, gitInfo = null, graphSummary = null, usageSummary = null) {
+export function generateDashboardHTML(
+  state = null,
+  gitInfo = null,
+  graphSummary = null,
+  usageSummary = null
+) {
   const safeState = state || {};
   const safeGit = gitInfo || { branch: 'unknown', lastCommit: 'N/A', changedFiles: 0 };
   const safeGraph = graphSummary || { nodes: 0, edges: 0 };
@@ -915,12 +955,14 @@ export function generateDashboardHTML(state = null, gitInfo = null, graphSummary
       <section class="card">
         <h2>Phases</h2>
         <ul>
-          ${phases
-            .map(
-              (phase) =>
-                `<li>${escapeHtml(phase.name || 'Unnamed phase')} — ${escapeHtml(phase.status || 'pending')}</li>`
-            )
-            .join('') || '<li>No tracked phases.</li>'}
+          ${
+            phases
+              .map(
+                (phase) =>
+                  `<li>${escapeHtml(phase.name || 'Unnamed phase')} — ${escapeHtml(phase.status || 'pending')}</li>`
+              )
+              .join('') || '<li>No tracked phases.</li>'
+          }
         </ul>
       </section>
     </div>
@@ -987,7 +1029,7 @@ export function registerDashboardCommand(program) {
 
         if (options.json) {
           const model = await buildDashboardModel({ cwd });
-          console.log(JSON.stringify(model, null, 2));
+          logger.log(JSON.stringify(model, null, 2));
           return;
         }
 
@@ -1002,7 +1044,7 @@ export function registerDashboardCommand(program) {
         });
         return model;
       } catch (error) {
-        console.error(chalk.red(`Dashboard failed: ${error.message}`));
+        logger.error(chalk.red(`Dashboard failed: ${error.message}`));
         process.exitCode = error.exitCode || 1;
         process.exit(process.exitCode);
       }

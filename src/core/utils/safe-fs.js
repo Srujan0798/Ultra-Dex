@@ -83,7 +83,7 @@ export function safeReadJSONL(filePath, defaultValue = []) {
         validEntries.push(JSON.parse(line));
       } catch (error) {
         corruptedLines += 1;
-        console.warn(`[safe-fs] Skipping corrupt JSONL line ${index + 1} in ${filePath}: ${error.message}`);
+        logger.warn(`[safe-fs] Skipping corrupt JSONL line ${index + 1} in ${filePath}: ${error.message}`);
       }
     }
 

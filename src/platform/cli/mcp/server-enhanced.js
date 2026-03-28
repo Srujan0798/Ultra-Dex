@@ -96,7 +96,7 @@ export class MCPContextBusV2 {
   async start() {
     return new Promise((resolve) => {
       this.server.listen(this.port, () => {
-        console.log(`[MCP V2] Context Bus active on port ${this.port}`);
+        logger.log(`[MCP V2] Context Bus active on port ${this.port}`);
         resolve();
       });
     });

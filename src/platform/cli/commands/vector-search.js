@@ -141,9 +141,9 @@ export function registerVectorSearchCommand(program) {
         printInfo(`\n🔍 Vector Search Results for: "${query}"\n`);
         results.forEach((result, idx) => {
           const snippet = result.pageContent.replace(/\s+/g, ' ').slice(0, 200);
-          console.log(chalk.cyan(`${idx + 1}. ${result.metadata?.path || 'unknown'}`));
-          console.log(chalk.gray(`   ${snippet}${result.pageContent.length > 200 ? '...' : ''}`));
-          console.log('');
+          logger.log(chalk.cyan(`${idx + 1}. ${result.metadata?.path || 'unknown'}`));
+          logger.log(chalk.gray(`   ${snippet}${result.pageContent.length > 200 ? '...' : ''}`));
+          logger.log('');
         });
 
         printSuccess(`Returned ${results.length} result(s).`);

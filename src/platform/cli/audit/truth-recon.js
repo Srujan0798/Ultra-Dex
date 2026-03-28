@@ -31,10 +31,10 @@ export async function reconcileTruth() {
     }
   }
 
-  console.log(chalk.cyan.bold('\n🔍 Truth Reconciliation Report\n'));
-  console.log(`Core Engine Coverage: ${Math.round((results.real.length / results.total) * 100)}%`);
-  console.log(`Verified Real Commands: ${results.real.length}`);
-  console.log(`Remaining Stubs: ${results.stubs.length}`);
+  logger.log(chalk.cyan.bold('\n🔍 Truth Reconciliation Report\n'));
+  logger.log(`Core Engine Coverage: ${Math.round((results.real.length / results.total) * 100)}%`);
+  logger.log(`Verified Real Commands: ${results.real.length}`);
+  logger.log(`Remaining Stubs: ${results.stubs.length}`);
 
   return results;
 }

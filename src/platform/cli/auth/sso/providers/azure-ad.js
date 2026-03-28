@@ -13,7 +13,7 @@ export default {
  */
 function handleError(error) {
   try {
-    console.error('[azure-ad]', error instanceof Error ? error.message : String(error));
+    logger.error('[azure-ad]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

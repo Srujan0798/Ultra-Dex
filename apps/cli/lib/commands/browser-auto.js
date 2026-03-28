@@ -214,8 +214,8 @@ async function handleAudit(url, options) {
 
     if (result.status === 'ANALYZED') {
       spinner.succeed('Visual Audit Complete');
-      console.log(chalk.magenta('\n🔍 AI Review Results:'));
-      console.log(chalk.gray(result.message));
+      logger.log(chalk.magenta('\n🔍 AI Review Results:'));
+      logger.log(chalk.gray(result.message));
     } else {
       spinner.info(result.message);
     }
@@ -362,12 +362,12 @@ ${content.substring(0, 15000)} ... (truncated)
       await fs.writeFile(options.output, outputText);
       printSuccess(`Result saved to ${options.output}`);
     } else {
-      console.log(
+      logger.log(
         chalk.cyan(`
 --- Extraction Result ---`)
       );
-      console.log(outputText);
-      console.log(
+      logger.log(outputText);
+      logger.log(
         chalk.cyan(`-------------------------
 `)
       );
@@ -437,7 +437,7 @@ Response Format:
       spinner.fail(chalk.red('Tests Failed'));
     }
 
-    console.log(
+    logger.log(
       chalk.gray(
         `
 ` + response
@@ -518,12 +518,12 @@ Tech Stack: ${options.stack}
       await fs.writeFile(options.output, response);
       printSuccess(`Component saved to ${options.output}`);
     } else {
-      console.log(
+      logger.log(
         chalk.cyan(`
 --- Generated Code ---`)
       );
-      console.log(response);
-      console.log(
+      logger.log(response);
+      logger.log(
         chalk.cyan(`----------------------
 `)
       );

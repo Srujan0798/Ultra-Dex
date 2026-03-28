@@ -125,7 +125,7 @@ class TutorialProgress {
       progress.lastUpdated = new Date().toISOString();
       await fs.writeFile(this.progressFile, JSON.stringify(progress, null, 2));
     } catch (error) {
-      console.error('Could not save tutorial progress:', error.message);
+      logger.error('Could not save tutorial progress:', error.message);
     }
   }
 
@@ -164,20 +164,20 @@ export class InteractiveTutorial {
   async start(options = {}) {
     interactiveCLI.showWelcome();
     interactiveCLI.showTitle(this.tutorialData.title);
-    console.log(colors.info(this.tutorialData.description + '\n'));
+    logger.log(colors.info(this.tutorialData.description + '\n'));
 
     const progress = await this.progressManager.loadProgress();
     const currentStep = options.step || progress.currentStep || 0;
 
     if (currentStep === 0) {
-      console.log(colors.success('Starting fresh tutorial!'));
+      logger.log(colors.success('Starting fresh tutorial!'));
     } else {
-      console.log(colors.info(`Resuming tutorial at step ${currentStep + 1}`));
+      logger.log(colors.info(`Resuming tutorial at step ${currentStep + 1}`));
     }
 
     if (options.reset) {
       await this.progressManager.resetTutorial();
-      console.log(colors.warning('Tutorial progress reset!'));
+      logger.log(colors.warning('Tutorial progress reset!'));
       return;
     }
 
@@ -206,7 +206,7 @@ export class InteractiveTutorial {
   async showStep(stepIndex) {
     const step = this.tutorialData.steps[stepIndex];
     if (!step) {
-      console.log(colors.error('Invalid step number'));
+      logger.log(colors.error('Invalid step number'));
       return;
     }
 
@@ -214,25 +214,25 @@ export class InteractiveTutorial {
     const isCompleted = progress.completedSteps.includes(step.id);
 
     interactiveCLI.showSection(`${step.id}. ${step.title} ${isCompleted ? '✅' : '⏳'}`);
-    console.log(colors.subtle(step.description) + '\n');
+    logger.log(colors.subtle(step.description) + '\n');
 
     if (step.explanation) {
-      console.log(colors.info('💡 Explanation:'));
-      console.log(colors.subtle(step.explanation) + '\n');
+      logger.log(colors.info('💡 Explanation:'));
+      logger.log(colors.subtle(step.explanation) + '\n');
     }
 
     if (step.command) {
-      console.log(colors.info('💻 Command to try:'));
-      console.log(colors.secondary(`$ ${step.command}`) + '\n');
+      logger.log(colors.info('💻 Command to try:'));
+      logger.log(colors.secondary(`$ ${step.command}`) + '\n');
     }
 
     if (step.challenge) {
-      console.log(colors.info('🎯 Challenge:'));
-      console.log(colors.emphasis(step.challenge) + '\n');
+      logger.log(colors.info('🎯 Challenge:'));
+      logger.log(colors.emphasis(step.challenge) + '\n');
     }
 
     if (isCompleted) {
-      console.log(colors.success('✓ You have completed this step'));
+      logger.log(colors.success('✓ You have completed this step'));
     }
   }
 
@@ -249,8 +249,8 @@ export class InteractiveTutorial {
     const nextStep = currentStep + 1;
     await this.progressManager.markStepComplete(nextStep);
     
-    console.log(colors.success(`\n✓ Marked step ${currentStep + 1} as complete!`));
-    console.log(colors.info(`Moving to step ${nextStep + 1}...`));
+    logger.log(colors.success(`\n✓ Marked step ${currentStep + 1} as complete!`));
+    logger.log(colors.info(`Moving to step ${nextStep + 1}...`));
 
     // Show the next step
     await this.showStep(nextStep);
@@ -279,11 +279,11 @@ export class InteractiveTutorial {
     const totalCount = this.tutorialData.steps.length;
 
     interactiveCLI.showTitle('🎉 TUTORIAL COMPLETED! 🎉');
-    console.log(colors.success.bold(`Congratulations! You've completed the ${totalCount}-step tutorial.`));
-    console.log(colors.info(`You completed ${completedCount} out of ${totalCount} steps.`));
+    logger.log(colors.success.bold(`Congratulations! You've completed the ${totalCount}-step tutorial.`));
+    logger.log(colors.info(`You completed ${completedCount} out of ${totalCount} steps.`));
 
     // Celebration message
-    console.log('\n' + colors.brand('What you learned:') + '\n');
+    logger.log('\n' + colors.brand('What you learned:') + '\n');
     const topics = [
       'AI orchestration concepts',
       'Agent coordination',
@@ -293,14 +293,14 @@ export class InteractiveTutorial {
     ];
     
     topics.forEach(topic => {
-      console.log(colors.status.success(topic));
+      logger.log(colors.status.success(topic));
     });
 
-    console.log('\n' + colors.info('Next steps:'));
-    console.log(colors.subtle('• Try running more complex tasks'));
-    console.log(colors.subtle('• Explore the documentation'));
-    console.log(colors.subtle('• Set up your AI provider accounts'));
-    console.log(colors.subtle('• Join the community for support'));
+    logger.log('\n' + colors.info('Next steps:'));
+    logger.log(colors.subtle('• Try running more complex tasks'));
+    logger.log(colors.subtle('• Explore the documentation'));
+    logger.log(colors.subtle('• Set up your AI provider accounts'));
+    logger.log(colors.subtle('• Join the community for support'));
 
     // Update progress to mark as completed
     progress.currentStep = totalCount;
@@ -319,7 +319,7 @@ export class InteractiveTutorial {
     const totalCount = this.tutorialData.steps.length;
 
     interactiveCLI.showTitle('Tutorial Progress');
-    console.log(colors.info(`Progress: ${completedCount}/${totalCount} steps completed\n`));
+    logger.log(colors.info(`Progress: ${completedCount}/${totalCount} steps completed\n`));
 
     // Show progress bar
     const completedPercent = Math.round((completedCount / totalCount) * 100);
@@ -327,14 +327,14 @@ export class InteractiveTutorial {
     const filledLength = Math.round((completedCount / totalCount) * barLength);
     const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
     
-    console.log(`${bar} ${completedPercent}%\n`);
+    logger.log(`${bar} ${completedPercent}%\n`);
 
     // Show completed steps
-    console.log(colors.info('Completed steps:'));
+    logger.log(colors.info('Completed steps:'));
     for (const stepId of progress.completedSteps.sort((a, b) => a - b)) {
       const step = this.tutorialData.steps.find(s => s.id === stepId);
       if (step) {
-        console.log(colors.status.success(step.title));
+        logger.log(colors.status.success(step.title));
       }
     }
 
@@ -342,7 +342,7 @@ export class InteractiveTutorial {
     if (progress.currentStep < totalCount) {
       const currentStep = this.tutorialData.steps[progress.currentStep];
       if (currentStep) {
-        console.log(`\n${colors.warning('Current step:')} ${currentStep.title}`);
+        logger.log(`\n${colors.warning('Current step:')} ${currentStep.title}`);
       }
     }
 
@@ -350,7 +350,7 @@ export class InteractiveTutorial {
     if (progress.currentStep + 1 < totalCount) {
       const nextStep = this.tutorialData.steps[progress.currentStep + 1];
       if (nextStep) {
-        console.log(`${colors.info('Next step:')} ${nextStep.title}`);
+        logger.log(`${colors.info('Next step:')} ${nextStep.title}`);
       }
     }
   }

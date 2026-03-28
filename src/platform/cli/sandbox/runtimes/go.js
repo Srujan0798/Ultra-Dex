@@ -19,7 +19,7 @@ export default goRuntime;
  */
 function handleError(error) {
   try {
-    console.error('[go]', error instanceof Error ? error.message : String(error));
+    logger.error('[go]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

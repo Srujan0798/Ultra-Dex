@@ -25,17 +25,17 @@ export function showInfinityStatus() {
 }
 
 export function statusLine(icon, text) {
-  console.log(`  ${icon} ${text}`);
+  logger.log(`  ${icon} ${text}`);
 }
 
 export function header(text) {
-  console.log('');
-  console.log(chalk.bold.hex('#8b5cf6')(`  ${text}`));
-  console.log(chalk.dim('  ' + '─'.repeat(50)));
+  logger.log('');
+  logger.log(chalk.bold.hex('#8b5cf6')(`  ${text}`));
+  logger.log(chalk.dim('  ' + '─'.repeat(50)));
 }
 
 export function separator() {
-  console.log('');
+  logger.log('');
 }
 
 // Enhanced status utilities (new additions)
@@ -344,7 +344,7 @@ export default {
 function handleModuleError(error, context = 'status') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

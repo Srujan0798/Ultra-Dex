@@ -16,15 +16,15 @@ let multiBar = null;
 export function showProgress(tasks) {
    
   const _total = tasks.length;
-  console.log('');
-  console.log(gradient(['#6366f1', '#8b5cf6']).bold('  ⚡ EXECUTING TASKS...'));
-  console.log('');
+  logger.log('');
+  logger.log(gradient(['#6366f1', '#8b5cf6']).bold('  ⚡ EXECUTING TASKS...'));
+  logger.log('');
 
   tasks.forEach((task) => {
     // Simple vertical list for now
-    console.log(`  ${chalk.hex('#d946ef')('►')} ${task}`);
+    logger.log(`  ${chalk.hex('#d946ef')('►')} ${task}`);
   });
-  console.log('');
+  logger.log('');
 }
 
 export function progressBar(current, total, width = 40) {
@@ -255,7 +255,7 @@ export function showAnimatedProgress(current, total, message = 'Progress') {
   );
 
   if (current >= total) {
-    console.log(''); // New line when complete
+    logger.log(''); // New line when complete
   }
 }
 
@@ -286,7 +286,7 @@ export function showFancyProgress(current, total, options = {}) {
   process.stdout.write(`\r${output}`);
 
   if (current >= total) {
-    console.log(''); // New line when complete
+    logger.log(''); // New line when complete
   }
 }
 
@@ -411,7 +411,7 @@ export function animateCompletion(callback) {
 
   setTimeout(() => {
     clearInterval(spinner);
-    console.log(`\r${chalk.green('✓')} Completed!`);
+    logger.log(`\r${chalk.green('✓')} Completed!`);
     if (callback) callback();
   }, 1000);
 }

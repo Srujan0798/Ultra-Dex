@@ -198,3 +198,5 @@ export function keyHints(hints) {
   console.log('');
   console.log(`  ${formattedHints}`);
 }
+
+export { createGradientBanner, createStatusSpinner } from './components/banner.js';

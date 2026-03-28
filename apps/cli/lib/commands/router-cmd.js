@@ -95,24 +95,24 @@ function printStatus(router) {
     const stats = router.getAllStats();
     const providers = Object.keys(stats);
 
-    console.log();
-    console.log(chalk.bold.white('  Ultra-Dex Smart Router'));
-    console.log(chalk.gray('  ─────────────────────────────────────────────'));
-    console.log(`  Strategy     ${strategyBadge(router.strategy)}`);
-    console.log(`  Providers    ${chalk.white(providers.length)} registered`);
-    console.log(`  Total Reqs   ${chalk.white(router.totalRequests)}`);
-    console.log(`  Total Cost   ${chalk.yellowBright('$' + router.totalCost.toFixed(4))}`);
-    console.log();
+    logger.log();
+    logger.log(chalk.bold.white('  Ultra-Dex Smart Router'));
+    logger.log(chalk.gray('  ─────────────────────────────────────────────'));
+    logger.log(`  Strategy     ${strategyBadge(router.strategy)}`);
+    logger.log(`  Providers    ${chalk.white(providers.length)} registered`);
+    logger.log(`  Total Reqs   ${chalk.white(router.totalRequests)}`);
+    logger.log(`  Total Cost   ${chalk.yellowBright('$' + router.totalCost.toFixed(4))}`);
+    logger.log();
 
     // Provider table
-    console.log(chalk.gray('  ' + pad('Provider', 22) + pad('Reqs', 8) + pad('Avg', 10) + pad('P95', 10) + pad('Err%', 8) + 'Health'));
-    console.log(chalk.gray('  ' + '─'.repeat(68)));
+    logger.log(chalk.gray('  ' + pad('Provider', 22) + pad('Reqs', 8) + pad('Avg', 10) + pad('P95', 10) + pad('Err%', 8) + 'Health'));
+    logger.log(chalk.gray('  ' + '─'.repeat(68)));
 
     for (const name of providers) {
         const s = stats[name];
         const catalog = PROVIDER_CATALOG.find((p) => p.name === name);
         const label = catalog ? catalog.label : name;
-        console.log(
+        logger.log(
             '  ' +
             chalk.white(pad(label, 22)) +
             pad(s.requestCount, 8) +
@@ -122,7 +122,7 @@ function printStatus(router) {
             healthDot(s.circuitState) + ' ' + chalk.gray(s.circuitState)
         );
     }
-    console.log();
+    logger.log();
 }
 
 // ---------------------------------------------------------------------------
@@ -130,9 +130,9 @@ function printStatus(router) {
 // ---------------------------------------------------------------------------
 
 async function runBenchmark(router, rounds = 5) {
-    console.log();
-    console.log(chalk.bold.white('  Running Smart Router Benchmark'));
-    console.log(chalk.gray(`  ${rounds} rounds × ${PROVIDER_CATALOG.length} providers\n`));
+    logger.log();
+    logger.log(chalk.bold.white('  Running Smart Router Benchmark'));
+    logger.log(chalk.gray(`  ${rounds} rounds × ${PROVIDER_CATALOG.length} providers\n`));
 
     const msgs = [{ role: 'user', content: 'Hello benchmark' }];
 
@@ -140,13 +140,13 @@ async function runBenchmark(router, rounds = 5) {
         process.stdout.write(chalk.gray(`  Round ${i + 1}/${rounds}... `));
         try {
             const result = await router.route('chat', [msgs, {}]);
-            console.log(chalk.green(`✓ ${result.provider} ${result.latencyMs}ms`));
+            logger.log(chalk.green(`✓ ${result.provider} ${result.latencyMs}ms`));
         } catch (err) {
-            console.log(chalk.red(`✗ ${err.message}`));
+            logger.log(chalk.red(`✗ ${err.message}`));
         }
     }
 
-    console.log();
+    logger.log();
     printStatus(router);
 }
 
@@ -156,27 +156,27 @@ async function runBenchmark(router, rounds = 5) {
 
 function printDetailedStats(router) {
     const allStats = router.getAllStats();
-    console.log();
-    console.log(chalk.bold.white('  Detailed Provider Statistics'));
-    console.log(chalk.gray('  ─────────────────────────────────────────────'));
+    logger.log();
+    logger.log(chalk.bold.white('  Detailed Provider Statistics'));
+    logger.log(chalk.gray('  ─────────────────────────────────────────────'));
 
     for (const [name, s] of Object.entries(allStats)) {
         const catalog = PROVIDER_CATALOG.find((p) => p.name === name);
         const label = catalog ? catalog.label : name;
 
-        console.log();
-        console.log(chalk.bold.white(`  ${label}`));
-        console.log(`    Requests       ${chalk.white(s.requestCount)}`);
-        console.log(`    Errors         ${chalk.white(s.errorCount)} (${(s.errorRate * 100).toFixed(2)}%)`);
-        console.log(`    Avg Latency    ${latencyColor(s.avgLatency)}`);
-        console.log(`    P50            ${latencyColor(s.p50)}`);
-        console.log(`    P95            ${latencyColor(s.p95)}`);
-        console.log(`    P99            ${latencyColor(s.p99)}`);
-        console.log(`    Tokens         ${chalk.white(s.totalTokens.toLocaleString())}`);
-        console.log(`    Cost           ${chalk.yellowBright('$' + s.totalCost.toFixed(6))}`);
-        console.log(`    Circuit        ${healthDot(s.circuitState)} ${chalk.gray(s.circuitState)}`);
+        logger.log();
+        logger.log(chalk.bold.white(`  ${label}`));
+        logger.log(`    Requests       ${chalk.white(s.requestCount)}`);
+        logger.log(`    Errors         ${chalk.white(s.errorCount)} (${(s.errorRate * 100).toFixed(2)}%)`);
+        logger.log(`    Avg Latency    ${latencyColor(s.avgLatency)}`);
+        logger.log(`    P50            ${latencyColor(s.p50)}`);
+        logger.log(`    P95            ${latencyColor(s.p95)}`);
+        logger.log(`    P99            ${latencyColor(s.p99)}`);
+        logger.log(`    Tokens         ${chalk.white(s.totalTokens.toLocaleString())}`);
+        logger.log(`    Cost           ${chalk.yellowBright('$' + s.totalCost.toFixed(6))}`);
+        logger.log(`    Circuit        ${healthDot(s.circuitState)} ${chalk.gray(s.circuitState)}`);
     }
-    console.log();
+    logger.log();
 }
 
 // ---------------------------------------------------------------------------
@@ -202,11 +202,11 @@ export function registerRouterCommand(program) {
         .action((strategy) => {
             const valid = ['fastest', 'cheapest', 'round-robin', 'fallback-chain'];
             if (!valid.includes(strategy)) {
-                console.error(chalk.red(`\n  Invalid strategy "${strategy}". Choose: ${valid.join(', ')}\n`));
+                logger.error(chalk.red(`\n  Invalid strategy "${strategy}". Choose: ${valid.join(', ')}\n`));
                 process.exit(1);
             }
             const router = createSimRouter(strategy);
-            console.log(chalk.green(`\n  ✓ Strategy set to ${strategyBadge(strategy)}\n`));
+            logger.log(chalk.green(`\n  ✓ Strategy set to ${strategyBadge(strategy)}\n`));
             printStatus(router);
         });
 
@@ -226,7 +226,7 @@ export function registerRouterCommand(program) {
             const router = createSimRouter('fastest');
             // Warm up with a few requests for meaningful stats
             const msgs = [{ role: 'user', content: 'stats warmup' }];
-            console.log(chalk.gray('\n  Warming up (10 requests)...\n'));
+            logger.log(chalk.gray('\n  Warming up (10 requests)...\n'));
             for (let i = 0; i < 10; i++) {
                 try { await router.route('chat', [msgs, {}]); } catch { }
             }

@@ -164,14 +164,14 @@ async function searchDocs(query) {
  * Show documentation browser menu
  */
 async function showDocsBrowser() {
-  console.log(chalk.cyan('\n📖 Ultra-Dex Documentation Browser\n'));
+  logger.log(chalk.cyan('\n📖 Ultra-Dex Documentation Browser\n'));
 
   while (true) {
     try {
       const docs = await findDocs();
 
       if (docs.length === 0) {
-        console.log(chalk.yellow('No documentation files found in this project.'));
+        logger.log(chalk.yellow('No documentation files found in this project.'));
         return;
       }
 
@@ -213,7 +213,7 @@ async function showDocsBrowser() {
  * Show search interface
  */
 async function showSearchInterface() {
-  console.log(chalk.cyan('\n🔍 Search Documentation\n'));
+  logger.log(chalk.cyan('\n🔍 Search Documentation\n'));
 
   const { query } = await inquirer.prompt([
     {
@@ -224,37 +224,37 @@ async function showSearchInterface() {
     },
   ]);
 
-  console.log(chalk.yellow(`\nSearching for: "${query}"\n`));
+  logger.log(chalk.yellow(`\nSearching for: "${query}"\n`));
 
   const results = await searchDocs(query);
 
   if (results.length === 0) {
-    console.log(chalk.yellow('No matches found.'));
+    logger.log(chalk.yellow('No matches found.'));
     await inquirer.prompt([{ type: 'input', name: 'done', message: 'Press Enter to continue...' }]);
     return;
   }
 
-  console.log(chalk.green(`Found ${results.length} file(s) matching "${query}":\n`));
+  logger.log(chalk.green(`Found ${results.length} file(s) matching "${query}":\n`));
 
   for (const result of results) {
-    console.log(chalk.bold.blue(result.relativePath));
-    console.log(
+    logger.log(chalk.bold.blue(result.relativePath));
+    logger.log(
       chalk.gray(
         `Size: ${(result.size / 1024).toFixed(1)}KB | Modified: ${result.modified.toLocaleDateString()}`
       )
     );
 
     if (result.matches && result.matches.length > 0) {
-      console.log(chalk.gray('\nContext:'));
+      logger.log(chalk.gray('\nContext:'));
       for (const match of result.matches.slice(0, 5)) {
         // Show first 5 matches
-        console.log(match);
+        logger.log(match);
       }
       if (result.matches.length > 5) {
-        console.log(chalk.gray(`... and ${result.matches.length - 5} more matches`));
+        logger.log(chalk.gray(`... and ${result.matches.length - 5} more matches`));
       }
     }
-    console.log('');
+    logger.log('');
   }
 
   const { action } = await inquirer.prompt([
@@ -301,8 +301,8 @@ async function showSearchInterface() {
  */
 async function showDocContent(filePath) {
   try {
-    console.log(chalk.cyan(`\n📖 Viewing: ${path.relative(process.cwd(), filePath)}\n`));
-    console.log(chalk.gray('─'.repeat(80)));
+    logger.log(chalk.cyan(`\n📖 Viewing: ${path.relative(process.cwd(), filePath)}\n`));
+    logger.log(chalk.gray('─'.repeat(80)));
 
     const content = await readDocFile(filePath);
 
@@ -312,7 +312,7 @@ async function showDocContent(filePath) {
 
     for (let i = 0; i < lines.length; i += pageSize) {
       const page = lines.slice(i, i + pageSize);
-      console.log(page.join('\n'));
+      logger.log(page.join('\n'));
 
       if (i + pageSize < lines.length) {
         const { continueReading } = await inquirer.prompt([
@@ -328,12 +328,12 @@ async function showDocContent(filePath) {
           break;
         }
 
-        console.log(chalk.gray('─'.repeat(80)));
+        logger.log(chalk.gray('─'.repeat(80)));
       }
     }
 
-    console.log(chalk.gray('─'.repeat(80)));
-    console.log(chalk.green('\nEnd of document\n'));
+    logger.log(chalk.gray('─'.repeat(80)));
+    logger.log(chalk.green('\nEnd of document\n'));
 
     await inquirer
       .prompt([
@@ -383,27 +383,27 @@ export function registerDocsCommand(program) {
     .argument('<query>', 'Search query')
     .action(async (query) => {
       try {
-        console.log(chalk.cyan(`\n🔍 Searching documentation for: "${query}"\n`));
+        logger.log(chalk.cyan(`\n🔍 Searching documentation for: "${query}"\n`));
 
         const results = await searchDocs(query);
 
         if (results.length === 0) {
-          console.log(chalk.yellow('No matches found.'));
+          logger.log(chalk.yellow('No matches found.'));
           return;
         }
 
-        console.log(chalk.green(`Found ${results.length} result(s):\n`));
+        logger.log(chalk.green(`Found ${results.length} result(s):\n`));
 
         for (const result of results) {
-          console.log(chalk.bold.blue(result.relativePath));
-          console.log(chalk.gray(`Size: ${(result.size / 1024).toFixed(1)}KB`));
+          logger.log(chalk.bold.blue(result.relativePath));
+          logger.log(chalk.gray(`Size: ${(result.size / 1024).toFixed(1)}KB`));
 
           if (result.matches && result.matches.length > 0) {
-            console.log(chalk.gray('Sample matches:'));
+            logger.log(chalk.gray('Sample matches:'));
             for (const match of result.matches.slice(0, 3)) {
-              console.log(match);
+              logger.log(match);
             }
-            console.log('');
+            logger.log('');
           }
         }
       } catch (error) {
@@ -419,14 +419,14 @@ export function registerDocsCommand(program) {
         const docs = await findDocs();
 
         if (docs.length === 0) {
-          console.log(chalk.yellow('No documentation files found.'));
+          logger.log(chalk.yellow('No documentation files found.'));
           return;
         }
 
-        console.log(chalk.cyan(`\n📋 Found ${docs.length} documentation file(s):\n`));
+        logger.log(chalk.cyan(`\n📋 Found ${docs.length} documentation file(s):\n`));
 
         for (const doc of docs) {
-          console.log(
+          logger.log(
             `${chalk.blue(doc.relativePath)} ${chalk.gray(`(${(doc.size / 1024).toFixed(1)}KB)`)}`
           );
         }

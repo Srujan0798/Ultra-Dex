@@ -603,7 +603,7 @@ export class EnhancedPredictiveDebugger extends EventEmitter {
       },
       'empty_catch_block': {
         description: 'Add error handling or logging',
-        replacement: 'catch (error) { console.error("Error:", error); }',
+        replacement: 'catch (error) { logger.error("Error:", error); }',
       },
       'potential_null_access': {
         description: 'Add null checks or use optional chaining',

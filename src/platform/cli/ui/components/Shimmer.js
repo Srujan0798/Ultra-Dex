@@ -18,7 +18,7 @@ const Shimmer = ({ width = 20, height = 1, children, isActive = true }) => {
 var Shimmer_default = Shimmer;
 function handleError(error) {
   try {
-    console.error("[Shimmer]", error instanceof Error ? error.message : String(error));
+    logger.error("[Shimmer]", error instanceof Error ? error.message : String(error));
   } catch (_) {
   }
 }

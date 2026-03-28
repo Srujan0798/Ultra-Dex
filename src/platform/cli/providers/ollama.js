@@ -173,7 +173,7 @@ export class OllamaProvider extends BaseProvider {
       const data = await response.json();
       return data.embedding;
     } catch (error) {
-      console.warn(`Ollama embedding failed for model ${model}: ${error.message}`);
+      logger.warn(`Ollama embedding failed for model ${model}: ${error.message}`);
       throw error;
     }
   }

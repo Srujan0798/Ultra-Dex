@@ -119,7 +119,7 @@ export class ThemeHelper {
   get(name) {
     const colorFn = this.cache.get(name);
     if (!colorFn) {
-      console.warn(`[Theme] Unknown color: ${name}`);
+      logger.warn(`[Theme] Unknown color: ${name}`);
       return chalk.white;
     }
     return colorFn;
@@ -262,13 +262,13 @@ export function divider(char = '─', width = LAYOUT_CONSTANTS.defaultDividerWid
 // ============================================================================
 
 export function header(text) {
-  console.log('');
-  console.log(theme.title(`  ${text}`));
-  console.log(theme.primary('  ' + '─'.repeat(LAYOUT_CONSTANTS.headerWidth)));
+  logger.log('');
+  logger.log(theme.title(`  ${text}`));
+  logger.log(theme.primary('  ' + '─'.repeat(LAYOUT_CONSTANTS.headerWidth)));
 }
 
 export function subheader(text) {
-  console.log(theme.subtitle(`  ${text}`));
+  logger.log(theme.subtitle(`  ${text}`));
 }
 
 // ============================================================================
@@ -288,7 +288,7 @@ export const status = {
 
 export function statusLine(icon, text, detail = '') {
   const detailText = detail ? theme.dim(` · ${detail}`) : '';
-  console.log(`  ${icon} ${text}${detailText}`);
+  logger.log(`  ${icon} ${text}${detailText}`);
 }
 
 // ============================================================================
@@ -301,19 +301,19 @@ export function table(headers, rows) {
     return Math.max(h.length, maxRow) + 2;
   });
   const border = theme.dim;
-  console.log(border('  ┌' + colWidths.map((w) => '─'.repeat(w)).join('┬') + '┐'));
+  logger.log(border('  ┌' + colWidths.map((w) => '─'.repeat(w)).join('┬') + '┐'));
   const headerRow = headers
     .map((h, i) => theme.title(h.padEnd(colWidths[i] - 2)))
     .join(border(' │ '));
-  console.log(border('  │ ') + headerRow + border(' │'));
-  console.log(border('  ├' + colWidths.map((w) => '─'.repeat(w)).join('┼') + '┤'));
+  logger.log(border('  │ ') + headerRow + border(' │'));
+  logger.log(border('  ├' + colWidths.map((w) => '─'.repeat(w)).join('┼') + '┤'));
   rows.forEach((row) => {
     const rowText = row
       .map((cell, i) => String(cell || '').padEnd(colWidths[i] - 2))
       .join(border(' │ '));
-    console.log(border('  │ ') + rowText + border(' │'));
+    logger.log(border('  │ ') + rowText + border(' │'));
   });
-  console.log(border('  └' + colWidths.map((w) => '─'.repeat(w)).join('┴') + '┘'));
+  logger.log(border('  └' + colWidths.map((w) => '─'.repeat(w)).join('┴') + '┘'));
 }
 
 export function progressBar(current, total, width = 40) {
@@ -337,8 +337,8 @@ export function keyHints(hints) {
   const formattedHints = hints
     .map(([key, action]) => `${theme.highlight(` ${key} `)} ${theme.dim(action)}`)
     .join('  ');
-  console.log('');
-  console.log(`  ${formattedHints}`);
+  logger.log('');
+  logger.log(`  ${formattedHints}`);
 }
 
 // ============================================================================
@@ -348,7 +348,7 @@ export function keyHints(hints) {
 function handleModuleError(error, context = 'theme') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

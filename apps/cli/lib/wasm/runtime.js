@@ -4,6 +4,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { logger } from '../../lib/utils/logger.js';
 
 export class WasmPlugin {
     constructor(options = {}) {
@@ -27,9 +28,9 @@ export class WasmPlugin {
         const importObject = {
             env: {
                 memory: this.memory,
-                abort: () => console.error('WASM Abort called'),
+                abort: () => logger.error('WASM Abort called'),
                 log_string: (offset, length) => this.logString(offset, length),
-                console_log: (val) => console.log(`[WASM]: ${val}`),
+                console_log: (val) => logger.info(`[WASM]: ${val}`),
             },
             // Capability-based security: Only expose specific host functions
             host: {
@@ -64,7 +65,7 @@ export class WasmPlugin {
     logString(offset, length) {
         const bytes = new Uint8Array(this.memory.buffer, offset, length);
         const string = new TextDecoder('utf8').decode(bytes);
-        console.log(`[WASM Log]: ${string}`);
+        logger.info(`[WASM Log]: ${string}`);
     }
 }
 

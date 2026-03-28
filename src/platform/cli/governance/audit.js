@@ -37,7 +37,7 @@ export async function logOperation(entry) {
     await fs.appendFile(AUDIT_LOG, JSON.stringify(payload) + '\n', 'utf8');
   } catch (error) {
     // Audit logging must never break execution
-    console.warn('[Governance] Failed to write audit log:', error.message);
+    logger.warn('[Governance] Failed to write audit log:', error.message);
   }
 }
 

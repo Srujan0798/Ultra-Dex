@@ -52,7 +52,7 @@ class EnterpriseAnalytics extends EventEmitter {
       this.initializePredictiveModels();
     }
     
-    console.log('📊 Enterprise Analytics System Initialized');
+    logger.log('📊 Enterprise Analytics System Initialized');
   }
 
   initializeAnalyticsEngine() {
@@ -448,7 +448,7 @@ class EnterpriseAnalytics extends EventEmitter {
           const prediction = await this.generatePrediction(modelName, { days: 7 });
           report.predictions[modelName] = prediction;
         } catch (error) {
-          console.warn(`Failed to generate prediction for ${modelName}:`, error.message);
+          logger.warn(`Failed to generate prediction for ${modelName}:`, error.message);
         }
       }
     }
@@ -685,7 +685,7 @@ class EnterpriseAnalytics extends EventEmitter {
       }
     } catch (error) {
       if (error.code !== 'ENOENT') {
-        console.warn('Failed to load metrics:', error.message);
+        logger.warn('Failed to load metrics:', error.message);
       }
       // Directory doesn't exist yet, which is fine
     }

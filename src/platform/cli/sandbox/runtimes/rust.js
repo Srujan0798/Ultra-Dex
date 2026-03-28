@@ -19,7 +19,7 @@ export default rustRuntime;
  */
 function handleError(error) {
   try {
-    console.error('[rust]', error instanceof Error ? error.message : String(error));
+    logger.error('[rust]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

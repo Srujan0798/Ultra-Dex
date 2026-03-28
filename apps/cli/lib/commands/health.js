@@ -6,6 +6,7 @@
  */
 
 import { registerHealthCommand } from './monitoring.js';
+import { logger } from '../utils/logger.js';
 
 export { registerHealthCommand };
 
@@ -19,7 +20,7 @@ export default {
  */
 function handleError(error) {
   try {
-    console.error('[health]', error instanceof Error ? error.message : String(error));
+    logger.error('[health]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

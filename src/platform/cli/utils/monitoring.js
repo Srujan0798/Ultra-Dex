@@ -192,7 +192,7 @@ async function ensureLogDirectory() {
   try {
     await fs.mkdir(logDir, { recursive: true });
   } catch (error) {
-    console.warn(`Could not create log directory: ${error.message}`);
+    logger.warn(`Could not create log directory: ${error.message}`);
   }
 }
 
@@ -273,7 +273,7 @@ class MonitoringSystem {
         this.logger.close();
       }
     } catch (error) {
-      console.warn(`Failed to shutdown monitoring: ${error.message}`);
+      logger.warn(`Failed to shutdown monitoring: ${error.message}`);
     }
     this.initialized = false;
   }

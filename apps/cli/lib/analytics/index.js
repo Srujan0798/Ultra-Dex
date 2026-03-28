@@ -2,19 +2,77 @@
 
 /**
  * Analytics subsystem
- * Tracks command usage, agent performance, tokens, errors, and team activity.
+ * Persists analytics events from the logger spine and exposes read helpers.
  */
 
 import path from 'path';
 import fs from 'fs/promises';
 import { appendJsonl, readJsonl } from './storage.js';
 import { getUsageSummary, loadUsageEvents } from '../enterprise/usage.js';
+import { logger } from '../utils/logger.js';
 
-const ANALYTICS_DIR = path.resolve(process.cwd(), '.ultra-dex', 'analytics');
-const AGENT_LOG = path.join(ANALYTICS_DIR, 'agents.jsonl');
-const TOKEN_LOG = path.join(ANALYTICS_DIR, 'tokens.jsonl');
-const ERROR_LOG = path.join(ANALYTICS_DIR, 'errors.jsonl');
-const TEAM_ACTIVITY_LOG = path.resolve(process.cwd(), '.ultra-dex', 'team', 'activity.log');
+function getAnalyticsDir() {
+  return path.resolve(process.cwd(), '.ultra-dex', 'analytics');
+}
+
+function getAgentLogPath() {
+  return path.join(getAnalyticsDir(), 'agents.jsonl');
+}
+
+function getTokenLogPath() {
+  return path.join(getAnalyticsDir(), 'tokens.jsonl');
+}
+
+function getErrorLogPath() {
+  return path.join(getAnalyticsDir(), 'errors.jsonl');
+}
+
+function getTeamActivityLogPath() {
+  return path.resolve(process.cwd(), '.ultra-dex', 'team', 'activity.log');
+}
+
+let analyticsSinkInitialized = false;
+
+function normalizeTimestamp(event) {
+  return event.data?.timestamp || event.timestamp || new Date().toISOString();
+}
+
+export function initializeAnalyticsSink() {
+  if (analyticsSinkInitialized) return;
+
+  logger.subscribe(
+    'analytics',
+    async (event) => {
+      switch (event.type) {
+        case 'analytics.agent_performance':
+          await appendJsonl(getAgentLogPath(), {
+            timestamp: normalizeTimestamp(event),
+            ...event.data,
+          });
+          break;
+        case 'analytics.token_usage':
+          await appendJsonl(getTokenLogPath(), {
+            timestamp: normalizeTimestamp(event),
+            ...event.data,
+          });
+          break;
+        case 'analytics.error':
+          await appendJsonl(getErrorLogPath(), {
+            timestamp: normalizeTimestamp(event),
+            ...event.data,
+          });
+          break;
+        default:
+          break;
+      }
+    },
+    {
+      eventTypes: ['analytics.agent_performance', 'analytics.token_usage', 'analytics.error'],
+    }
+  );
+
+  analyticsSinkInitialized = true;
+}
 
 export async function recordAgentPerformance({
   agent,
@@ -22,7 +80,10 @@ export async function recordAgentPerformance({
   success = true,
   task,
   provider,
+  runId,
 } = {}) {
+  initializeAnalyticsSink();
+
   const payload = {
     timestamp: new Date().toISOString(),
     agent,
@@ -30,8 +91,14 @@ export async function recordAgentPerformance({
     success,
     task,
     provider,
+    runId,
   };
-  await appendJsonl(AGENT_LOG, payload);
+
+  await logger.event('analytics.agent_performance', payload, {
+    console: false,
+    source: 'compat.analytics',
+  });
+
   return payload;
 }
 
@@ -42,7 +109,10 @@ export async function recordTokenUsage({
   outputTokens = 0,
   totalTokens,
   cost,
+  runId,
 } = {}) {
+  initializeAnalyticsSink();
+
   const payload = {
     timestamp: new Date().toISOString(),
     agent,
@@ -51,20 +121,34 @@ export async function recordTokenUsage({
     outputTokens,
     totalTokens: totalTokens ?? inputTokens + outputTokens,
     cost: cost ?? null,
+    runId,
   };
-  await appendJsonl(TOKEN_LOG, payload);
+
+  await logger.event('analytics.token_usage', payload, {
+    console: false,
+    source: 'compat.analytics',
+  });
+
   return payload;
 }
 
-export async function recordError({ message, command, stack, metadata } = {}) {
+export async function recordError({ message, command, stack, metadata, runId } = {}) {
+  initializeAnalyticsSink();
+
   const payload = {
     timestamp: new Date().toISOString(),
     message,
     command,
     stack,
     metadata,
+    runId,
   };
-  await appendJsonl(ERROR_LOG, payload);
+
+  await logger.event('analytics.error', payload, {
+    console: false,
+    source: 'compat.analytics',
+  });
+
   return payload;
 }
 
@@ -73,7 +157,7 @@ export async function getUsageStats({ windowDays = 7 } = {}) {
 }
 
 export async function getAgentMetrics({ since } = {}) {
-  const events = await readJsonl(AGENT_LOG, { since });
+  const events = await readJsonl(getAgentLogPath(), { since });
   if (!events.length) return { totalRuns: 0, successRate: 0, avgDurationMs: 0, byAgent: {} };
 
   const byAgent = {};
@@ -92,13 +176,13 @@ export async function getAgentMetrics({ since } = {}) {
     if (event.success) successCount += 1;
   }
 
-  Object.values(byAgent).forEach((agent) => {
-    if (agent.durations.length) {
-      agent.avgDurationMs = Math.round(
-        agent.durations.reduce((a, b) => a + b, 0) / agent.durations.length
+  Object.values(byAgent).forEach((agentMetrics) => {
+    if (agentMetrics.durations.length) {
+      agentMetrics.avgDurationMs = Math.round(
+        agentMetrics.durations.reduce((a, b) => a + b, 0) / agentMetrics.durations.length
       );
     }
-    delete agent.durations;
+    delete agentMetrics.durations;
   });
 
   return {
@@ -110,7 +194,7 @@ export async function getAgentMetrics({ since } = {}) {
 }
 
 export async function getTokenMetrics({ since } = {}) {
-  const events = await readJsonl(TOKEN_LOG, { since });
+  const events = await readJsonl(getTokenLogPath(), { since });
   const totals = { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 };
   const byModel = {};
 
@@ -133,7 +217,7 @@ export async function getTokenMetrics({ since } = {}) {
 }
 
 export async function getErrorMetrics({ since } = {}) {
-  const errors = await readJsonl(ERROR_LOG, { since });
+  const errors = await readJsonl(getErrorLogPath(), { since });
   const usageEvents = await loadUsageEvents({ since, limit: 5000 });
   const errorRate = usageEvents.length ? Math.round((errors.length / usageEvents.length) * 100) : 0;
 
@@ -146,7 +230,7 @@ export async function getErrorMetrics({ since } = {}) {
 
 export async function getTeamActivity({ limit = 50 } = {}) {
   try {
-    const data = await fs.readFile(TEAM_ACTIVITY_LOG, 'utf8');
+    const data = await fs.readFile(getTeamActivityLogPath(), 'utf8');
     const entries = data
       .split('\n')
       .filter(Boolean)
@@ -179,8 +263,16 @@ export async function getAnalyticsSnapshot(options = {}) {
 }
 
 export const analyticsPaths = {
-  directory: ANALYTICS_DIR,
-  agentLog: AGENT_LOG,
-  tokenLog: TOKEN_LOG,
-  errorLog: ERROR_LOG,
+  get directory() {
+    return getAnalyticsDir();
+  },
+  get agentLog() {
+    return getAgentLogPath();
+  },
+  get tokenLog() {
+    return getTokenLogPath();
+  },
+  get errorLog() {
+    return getErrorLogPath();
+  },
 };

@@ -36,10 +36,10 @@ export class Neo4jConnector {
       await session.close();
 
       this.connected = true;
-      console.log(chalk.green('[Neo4j] Connected successfully'));
+      logger.log(chalk.green('[Neo4j] Connected successfully'));
       return true;
     } catch (error) {
-      console.log(chalk.red('[Neo4j] Connection failed:', error.message));
+      logger.log(chalk.red('[Neo4j] Connection failed:', error.message));
       this.connected = false;
       return false;
     }
@@ -82,7 +82,7 @@ export class Neo4jConnector {
       try {
         await this.query(constraint);
       } catch (error) {
-        console.log(chalk.yellow(`[Neo4j] Constraint warning: ${error.message}`));
+        logger.log(chalk.yellow(`[Neo4j] Constraint warning: ${error.message}`));
       }
     }
   }
@@ -101,7 +101,7 @@ export class Neo4jConnector {
       try {
         await this.query(index);
       } catch (error) {
-        console.log(chalk.yellow(`[Neo4j] Index warning: ${error.message}`));
+        logger.log(chalk.yellow(`[Neo4j] Index warning: ${error.message}`));
       }
     }
   }
@@ -112,7 +112,7 @@ export class Neo4jConnector {
   async initializeSchema() {
     await this.createConstraints();
     await this.createIndexes();
-    console.log(chalk.green('[Neo4j] Schema initialized'));
+    logger.log(chalk.green('[Neo4j] Schema initialized'));
   }
 
   /**
@@ -132,7 +132,7 @@ export class Neo4jConnector {
         relationships: relationshipCount[0]?.count?.toNumber() || 0,
       };
     } catch (error) {
-      console.log(chalk.yellow('[Neo4j] Stats error:', error.message));
+      logger.log(chalk.yellow('[Neo4j] Stats error:', error.message));
       return { files: 0, functions: 0, classes: 0, relationships: 0 };
     }
   }
@@ -143,9 +143,9 @@ export class Neo4jConnector {
   async clearAll() {
     try {
       await this.query('MATCH (n) DETACH DELETE n');
-      console.log(chalk.yellow('[Neo4j] All data cleared'));
+      logger.log(chalk.yellow('[Neo4j] All data cleared'));
     } catch (error) {
-      console.log(chalk.red('[Neo4j] Clear error:', error.message));
+      logger.log(chalk.red('[Neo4j] Clear error:', error.message));
     }
   }
 
@@ -156,7 +156,7 @@ export class Neo4jConnector {
     if (this.driver) {
       await this.driver.close();
       this.connected = false;
-      console.log(chalk.gray('[Neo4j] Connection closed'));
+      logger.log(chalk.gray('[Neo4j] Connection closed'));
     }
   }
 }

@@ -45,7 +45,7 @@ async function recordOnce(options = {}) {
 
   const stopRecording = () => {
     audioRecorder.stop();
-    console.log('\n🛑 Stopping recording...');
+    logger.log('\n🛑 Stopping recording...');
   };
 
   await new Promise((resolve, reject) => {
@@ -59,19 +59,19 @@ async function recordOnce(options = {}) {
     process.once('SIGINT', stopRecording);
   });
 
-  console.log('🔄 Transcribing...');
+  logger.log('🔄 Transcribing...');
   const text = await whisperService.transcribe(audioPath);
-  console.log(`📝 Heard: "${text}"`);
+  logger.log(`📝 Heard: "${text}"`);
 
   fs.unlinkSync(audioPath);
 
   if (!text || text.trim().length === 0) {
-    console.log('❌ No speech detected');
+    logger.log('❌ No speech detected');
     return null;
   }
 
   const { intent, confidence } = getIntentConfidence(text);
-  console.log(`🎯 Intent: ${intent} (${Math.round(confidence * 100)}%)`);
+  logger.log(`🎯 Intent: ${intent} (${Math.round(confidence * 100)}%)`);
 
   if (intent) {
     const params = extractParams(intent, text);
@@ -85,14 +85,14 @@ export async function voiceCommand(options = {}) {
   const prereqs = checkPrerequisites();
 
   if (!prereqs.ready) {
-    console.log('❌ Voice input not available');
-    console.log(prereqs.installInstructions);
+    logger.log('❌ Voice input not available');
+    logger.log(prereqs.installInstructions);
     return null;
   }
 
-  console.log('🎤 Ultra-Dex Voice Mode');
-  console.log('   Speak your command (e.g., "Create a new Next.js project")');
-  console.log('   Press Ctrl+C to stop recording if not auto-detected.\n');
+  logger.log('🎤 Ultra-Dex Voice Mode');
+  logger.log('   Speak your command (e.g., "Create a new Next.js project")');
+  logger.log('   Press Ctrl+C to stop recording if not auto-detected.\n');
 
   try {
     if (!options.continuous) {
@@ -103,7 +103,7 @@ export async function voiceCommand(options = {}) {
     const results = [];
 
     for (let i = 0; i < rounds; i += 1) {
-      console.log(`\n🔁 Listening round ${i + 1}/${rounds}`);
+      logger.log(`\n🔁 Listening round ${i + 1}/${rounds}`);
       const result = await recordOnce(options);
       if (result) {
         results.push(result);
@@ -115,7 +115,7 @@ export async function voiceCommand(options = {}) {
 
     return results;
   } catch (error) {
-    console.error(`🔇 Voice error: ${error.message}`);
+    logger.error(`🔇 Voice error: ${error.message}`);
     return null;
   }
 }

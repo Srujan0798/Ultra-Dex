@@ -29,7 +29,7 @@ export * from './workflow-rules.js';
 export * from './graph-utils.js';
 export * from './ralph-loop.js';
 
-console.log('[AGENTS] Agent system initialized with all components');
+logger.log('[AGENTS] Agent system initialized with all components');
 
 /**
  * Error handler for index
@@ -37,7 +37,7 @@ console.log('[AGENTS] Agent system initialized with all components');
  */
 function handleError(error) {
   try {
-    console.error('[index]', error instanceof Error ? error.message : String(error));
+    logger.error('[index]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

@@ -11,7 +11,7 @@ const CollapsibleDiff = ({ title, diffContent, initiallyExpanded = false }) => {
 var CollapsibleDiff_default = CollapsibleDiff;
 function handleError(error) {
   try {
-    console.error("[CollapsibleDiff]", error instanceof Error ? error.message : String(error));
+    logger.error("[CollapsibleDiff]", error instanceof Error ? error.message : String(error));
   } catch (_) {
   }
 }

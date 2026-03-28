@@ -38,7 +38,7 @@ Setting up the implementation plan.
  */
 function handleContextError(error) {
   try {
-    console.error('[context]', error instanceof Error ? error.message : String(error));
+    logger.error('[context]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

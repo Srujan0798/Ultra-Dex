@@ -153,7 +153,7 @@ Use Quick 5 for bug fixes. Use Full 21 for new features.
  */
 function handleEmbeddedError(error) {
   try {
-    console.error('[embedded]', error instanceof Error ? error.message : String(error));
+    logger.error('[embedded]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

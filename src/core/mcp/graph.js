@@ -16,7 +16,7 @@ export class ProjectGraph {
             const files = await this.walk(root);
             files.forEach(f => this.nodes.set(f, { type: 'file' }));
         } catch (error) {
-            console.warn('Graph scan failed:', error.message);
+            logger.warn('Graph scan failed:', error.message);
         }
     }
 

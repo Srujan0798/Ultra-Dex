@@ -28,10 +28,10 @@ export async function startSwarmWithCheckpoint(options = {}) {
   // Show progress in terminal
   progressReporter.onProgress((data) => {
     if (data.type === 'agent') {
-      console.log(chalk.gray(`[${data.agent}] ${data.status}: ${data.message || ''}`));
+      logger.log(chalk.gray(`[${data.agent}] ${data.status}: ${data.message || ''}`));
     } else if (data.type === 'overall') {
       const percent = Math.round((data.completedSteps / data.totalSteps) * 100);
-      console.log(chalk.cyan(`Progress: ${percent}% (${data.completedSteps}/${data.totalSteps})`));
+      logger.log(chalk.cyan(`Progress: ${percent}% (${data.completedSteps}/${data.totalSteps})`));
     }
   });
 
@@ -81,9 +81,9 @@ export async function showSwarmStatus(swarmId) {
     return;
   }
 
-  console.log(chalk.white(`Checkpoints: ${checkpoints.length}`));
+  logger.log(chalk.white(`Checkpoints: ${checkpoints.length}`));
   checkpoints.forEach((cp, i) => {
-    console.log(chalk.gray(`  ${i + 1}. ${cp.id} - ${new Date(cp.timestamp).toLocaleString()}`));
+    logger.log(chalk.gray(`  ${i + 1}. ${cp.id} - ${new Date(cp.timestamp).toLocaleString()}`));
   });
 }
 
@@ -148,7 +148,7 @@ export async function listCheckpoints() {
       ]);
     });
 
-    console.log(table.toString());
+    logger.log(table.toString());
   } catch (error) {
     printError(chalk.red(`Failed to list checkpoints: ${error.message}`));
   }
@@ -161,19 +161,19 @@ export function showCostReport(costTracker) {
   const report = costTracker.generateReport();
 
   printInfo(chalk.cyan.bold('\n💰 Cost Report\n'));
-  console.log(chalk.white(`Total Cost: ${chalk.bold(report.total)}`));
+  logger.log(chalk.white(`Total Cost: ${chalk.bold(report.total)}`));
 
   if (report.byAgent.length > 0) {
-    console.log(chalk.white('\nBy Agent:'));
+    logger.log(chalk.white('\nBy Agent:'));
     report.byAgent.forEach(({ agent, cost }) => {
-      console.log(chalk.gray(`  ${agent}: ${cost}`));
+      logger.log(chalk.gray(`  ${agent}: ${cost}`));
     });
   }
 
   if (report.byProvider.length > 0) {
-    console.log(chalk.white('\nBy Provider:'));
+    logger.log(chalk.white('\nBy Provider:'));
     report.byProvider.forEach(({ provider, costFormatted, input, output }) => {
-      console.log(
+      logger.log(
         chalk.gray(`  ${provider}: ${costFormatted} (${input} in / ${output} out tokens)`)
       );
     });

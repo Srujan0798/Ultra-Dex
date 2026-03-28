@@ -216,7 +216,7 @@ export class AutonomousEngine {
 
   async runTests() {
     try {
-      console.log(chalk.gray(`Running: ${this.testCommand}...`));
+      logger.log(chalk.gray(`Running: ${this.testCommand}...`));
       execSync(this.testCommand, { stdio: 'pipe', cwd: this.projectPath });
       return { passed: true };
     } catch (error) {

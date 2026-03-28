@@ -72,12 +72,12 @@ async function getCurrentBranch(cwd = process.cwd()) {
 
 function formatJsonOrTable(data, asJson) {
   if (asJson) {
-    console.log(JSON.stringify(data, null, 2));
+    logger.log(JSON.stringify(data, null, 2));
     return;
   }
 
   for (const [key, value] of Object.entries(data)) {
-    console.log(`${chalk.gray(key.padEnd(20))} ${chalk.white(String(value))}`);
+    logger.log(`${chalk.gray(key.padEnd(20))} ${chalk.white(String(value))}`);
   }
 }
 
@@ -108,15 +108,15 @@ async function runAnalyze(options) {
   formatJsonOrTable(analysis, Boolean(options.json));
 
   if (!options.json && commits.length > 0) {
-    console.log(chalk.cyan('\nRecent commits:'));
-    commits.slice(0, 8).forEach((line) => console.log(`  ${chalk.gray('•')} ${line}`));
+    logger.log(chalk.cyan('\nRecent commits:'));
+    commits.slice(0, 8).forEach((line) => logger.log(`  ${chalk.gray('•')} ${line}`));
   }
 }
 
 async function runSuggestCommit(options) {
   const stagedFiles = await getStagedFiles();
   if (stagedFiles.length === 0) {
-    console.log(chalk.yellow('No staged changes. Stage files first: git add <files>'));
+    logger.log(chalk.yellow('No staged changes. Stage files first: git add <files>'));
     return;
   }
 
@@ -125,11 +125,11 @@ async function runSuggestCommit(options) {
   const shortSummary = options.summary || `update ${scope} changes`;
 
   const conventional = `${type}(${scope}): ${shortSummary}`;
-  console.log(chalk.green(conventional));
+  logger.log(chalk.green(conventional));
 
   if (!options.quiet) {
-    console.log(chalk.cyan('\nStaged files used for suggestion:'));
-    stagedFiles.slice(0, 20).forEach((file) => console.log(`  ${chalk.gray('•')} ${file}`));
+    logger.log(chalk.cyan('\nStaged files used for suggestion:'));
+    stagedFiles.slice(0, 20).forEach((file) => logger.log(`  ${chalk.gray('•')} ${file}`));
   }
 }
 
@@ -139,15 +139,15 @@ async function runCleanupBranches(options) {
   const safeTargets = merged.filter((branch) => branch !== current);
 
   if (safeTargets.length === 0) {
-    console.log(chalk.green('No merged branches to clean.'));
+    logger.log(chalk.green('No merged branches to clean.'));
     return;
   }
 
-  console.log(chalk.cyan('Merged branches eligible for cleanup:'));
-  safeTargets.forEach((branch) => console.log(`  ${chalk.gray('•')} ${branch}`));
+  logger.log(chalk.cyan('Merged branches eligible for cleanup:'));
+  safeTargets.forEach((branch) => logger.log(`  ${chalk.gray('•')} ${branch}`));
 
   if (!options.apply) {
-    console.log(chalk.yellow('\nDry run mode. Re-run with --apply to delete local branches.'));
+    logger.log(chalk.yellow('\nDry run mode. Re-run with --apply to delete local branches.'));
     return;
   }
 
@@ -155,7 +155,7 @@ async function runCleanupBranches(options) {
     await runGit(['branch', '-d', branch]);
   }
 
-  console.log(chalk.green(`Deleted ${safeTargets.length} merged branch(es).`));
+  logger.log(chalk.green(`Deleted ${safeTargets.length} merged branch(es).`));
 }
 
 async function runRelease(options) {
@@ -170,12 +170,12 @@ async function runRelease(options) {
   const commitsRaw = await runGit(['log', `${lastTag}..HEAD`, '--oneline']);
   const commits = commitsRaw ? commitsRaw.split('\n').filter(Boolean) : [];
 
-  console.log(chalk.cyan(`Last tag: ${lastTag}`));
-  console.log(chalk.cyan(`Commits since ${lastTag}: ${commits.length}`));
-  commits.slice(0, 20).forEach((line) => console.log(`  ${chalk.gray('•')} ${line}`));
+  logger.log(chalk.cyan(`Last tag: ${lastTag}`));
+  logger.log(chalk.cyan(`Commits since ${lastTag}: ${commits.length}`));
+  commits.slice(0, 20).forEach((line) => logger.log(`  ${chalk.gray('•')} ${line}`));
 
   if (!options.apply) {
-    console.log(
+    logger.log(
       chalk.yellow(
         `\nDry run mode. Re-run with --apply --tag vX.Y.Z to create a local release tag (${bump} bump suggested).`
       )
@@ -188,7 +188,7 @@ async function runRelease(options) {
   }
 
   await runGit(['tag', options.tag]);
-  console.log(chalk.green(`Created local tag ${options.tag}. Push manually when ready: git push origin ${options.tag}`));
+  logger.log(chalk.green(`Created local tag ${options.tag}. Push manually when ready: git push origin ${options.tag}`));
 }
 
 export function registerGitWorkflowCommand(program) {
@@ -201,7 +201,7 @@ export function registerGitWorkflowCommand(program) {
     .option('--json', 'Print machine-readable JSON output')
     .action(async (options) => {
       if (!(await isGitRepo())) {
-        console.error(chalk.red('Current directory is not a git repository.'));
+        logger.error(chalk.red('Current directory is not a git repository.'));
         process.exitCode = 1;
         return;
       }
@@ -217,7 +217,7 @@ export function registerGitWorkflowCommand(program) {
     .option('--quiet', 'Only print the commit suggestion')
     .action(async (options) => {
       if (!(await isGitRepo())) {
-        console.error(chalk.red('Current directory is not a git repository.'));
+        logger.error(chalk.red('Current directory is not a git repository.'));
         process.exitCode = 1;
         return;
       }
@@ -230,7 +230,7 @@ export function registerGitWorkflowCommand(program) {
     .option('--apply', 'Apply deletion (default is dry-run)')
     .action(async (options) => {
       if (!(await isGitRepo())) {
-        console.error(chalk.red('Current directory is not a git repository.'));
+        logger.error(chalk.red('Current directory is not a git repository.'));
         process.exitCode = 1;
         return;
       }
@@ -246,7 +246,7 @@ export function registerGitWorkflowCommand(program) {
     .option('--allow-any-branch', 'Skip branch guard for release command')
     .action(async (options) => {
       if (!(await isGitRepo())) {
-        console.error(chalk.red('Current directory is not a git repository.'));
+        logger.error(chalk.red('Current directory is not a git repository.'));
         process.exitCode = 1;
         return;
       }
@@ -254,7 +254,7 @@ export function registerGitWorkflowCommand(program) {
       try {
         await runRelease(options);
       } catch (error) {
-        console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+        logger.error(chalk.red(error instanceof Error ? error.message : String(error)));
         process.exitCode = 1;
       }
     });

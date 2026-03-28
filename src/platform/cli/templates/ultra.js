@@ -48,7 +48,7 @@ export const ULTRA_TEMPLATE = `# ULTRA Context: {{PROJECT_NAME}}
  */
 function handleUltraError(error) {
   try {
-    console.error('[ultra]', error instanceof Error ? error.message : String(error));
+    logger.error('[ultra]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

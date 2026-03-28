@@ -15,7 +15,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { VERSION } from '../utils/version.js';
 import { printInfo, printSuccess, printError } from '../utils/output.js';
-import { monitoring } from '../utils/monitoring.js';
+import { logger } from '../utils/logger.js';
 
 // ACP Protocol Version
 const ACP_PROTOCOL_VERSION = '0.10.8';
@@ -80,9 +80,14 @@ export class ACPHost {
   async start() {
     printInfo(`\n🚀 Starting ACP Host (Agent Client Protocol) v${ACP_PROTOCOL_VERSION}...\n`);
 
-    monitoring.info('ACP Host starting', {
+    await logger.event('acp.host_start', {
       protocolVersion: ACP_PROTOCOL_VERSION,
       mode: this.options.stdio ? 'stdio' : 'http',
+    }, {
+      level: 'info',
+      message: 'ACP Host starting',
+      console: false,
+      source: 'acp-host',
     });
 
     if (this.options.stdio) {
@@ -415,7 +420,16 @@ export class ACPHost {
   }
 
   async handleUltraDexSync(_params) {
-    monitoring.info('ACP: Sync requested');
+    await logger.event(
+      'acp.sync_requested',
+      {},
+      {
+        level: 'info',
+        message: 'ACP: Sync requested',
+        console: false,
+        source: 'acp-host',
+      }
+    );
     return { status: 'synced', timestamp: new Date().toISOString() };
   }
 

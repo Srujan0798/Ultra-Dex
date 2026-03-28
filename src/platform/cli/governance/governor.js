@@ -64,8 +64,8 @@ export async function auditGovernance(targetPath = process.cwd()) {
     violations.forEach(v => {
       const color = v.enforcement === 'strict' ? chalk.red : chalk.yellow;
       const label = v.enforcement === 'strict' ? 'BLOCK' : 'WARNING';
-      console.error(color(`  [${label}] ${v.adrId}: ${v.title}`));
-      console.error(chalk.gray(`           File: ${v.file}
+      logger.error(color(`  [${label}] ${v.adrId}: ${v.title}`));
+      logger.error(chalk.gray(`           File: ${v.file}
 `));
     });
 
@@ -89,7 +89,7 @@ async function safeExecute(fn, context = 'governor') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

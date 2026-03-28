@@ -166,23 +166,23 @@ export async function handleError(error, context = {}) {
     // Analytics should never block error handling
   }
 
-  console.error(chalk.red('\n❌ Error:'), errorMessage);
+  logger.error(chalk.red('\n❌ Error:'), errorMessage);
   const smart = formatSmartError(error);
   if (smart?.summary) {
-    console.log(smart.summary);
-    console.log(smart.why);
+    logger.log(smart.summary);
+    logger.log(smart.why);
     if (smart.suggestions?.length) {
-      console.log(chalk.cyan('\nSuggested fixes:'));
-      smart.suggestions.forEach((s) => console.log(`  - ${s}`));
+      logger.log(chalk.cyan('\nSuggested fixes:'));
+      smart.suggestions.forEach((s) => logger.log(`  - ${s}`));
     }
   }
 
   if (suggestions.length > 0) {
-    console.log(chalk.cyan('\n💡 Suggestions:'));
+    logger.log(chalk.cyan('\n💡 Suggestions:'));
     suggestions.forEach((suggestion, i) => {
-      console.log(chalk.white(`  ${i + 1}. ${suggestion}`));
+      logger.log(chalk.white(`  ${i + 1}. ${suggestion}`));
     });
-    console.log();
+    logger.log();
   }
 
   // Offer Auto-Fix if relevant
@@ -192,9 +192,9 @@ export async function handleError(error, context = {}) {
 
   // Log error for debugging
   if (process.env.DEBUG) {
-    console.error(chalk.gray('\nDebug Info:'));
-    console.error(chalk.gray('  Context:'), JSON.stringify(context, null, 2));
-    console.error(chalk.gray('  Stack:'), error.stack);
+    logger.error(chalk.gray('\nDebug Info:'));
+    logger.error(chalk.gray('  Context:'), JSON.stringify(context, null, 2));
+    logger.error(chalk.gray('  Stack:'), error.stack);
   }
 
   return suggestions;
@@ -216,11 +216,11 @@ export async function offerAutoFix() {
   ]);
 
   if (confirm) {
-    console.log(chalk.green('\n🚀 Initiating Autonomous Fix...\n'));
+    logger.log(chalk.green('\n🚀 Initiating Autonomous Fix...\n'));
     try {
       execSync('npx ultra-dex autonomous --fix', { stdio: 'inherit' });
     } catch (e) {
-      console.error(chalk.red('Self-healing failed to launch.'));
+      logger.error(chalk.red('Self-healing failed to launch.'));
     }
   }
 }
@@ -313,8 +313,8 @@ export const RECOVERY_STRATEGIES = {
         const jitter = Math.random() * 0.1 * baseDelay; // 10% jitter
         const actualDelay = baseDelay + jitter;
 
-        console.log(chalk.yellow(`⚠️  Attempt ${i}/${maxAttempts} failed, retrying in ${Math.round(actualDelay)}ms...`));
-        console.log(chalk.gray(`   Error: ${error.message || error}`));
+        logger.log(chalk.yellow(`⚠️  Attempt ${i}/${maxAttempts} failed, retrying in ${Math.round(actualDelay)}ms...`));
+        logger.log(chalk.gray(`   Error: ${error.message || error}`));
 
         await sleep(actualDelay);
       }
@@ -346,8 +346,8 @@ export const RECOVERY_STRATEGIES = {
     try {
       return await primary();
     } catch (error) {
-      console.log(chalk.yellow('⚠️  Primary method failed, trying fallback...'));
-      console.log(chalk.gray(`   Original error: ${error.message || error}`));
+      logger.log(chalk.yellow('⚠️  Primary method failed, trying fallback...'));
+      logger.log(chalk.gray(`   Original error: ${error.message || error}`));
       return await fallback();
     }
   },
@@ -393,7 +393,7 @@ export const RECOVERY_STRATEGIES = {
         if (failures >= opts.threshold) {
           state = 'OPEN';
           openedAt = Date.now();
-          console.log(chalk.red(`🚨 Circuit breaker OPEN after ${failures} failures`));
+          logger.log(chalk.red(`🚨 Circuit breaker OPEN after ${failures} failures`));
         }
 
         throw error;
@@ -448,15 +448,15 @@ export const RECOVERY_STRATEGIES = {
     for (let i = 0; i < operations.length; i++) {
       try {
         const result = await operations[i]();
-        console.log(chalk.green(`✅ Approach ${i + 1} succeeded`));
+        logger.log(chalk.green(`✅ Approach ${i + 1} succeeded`));
         return result;
       } catch (error) {
         lastError = error;
-        console.log(chalk.yellow(`⚠️  Approach ${i + 1} failed, trying next...`));
+        logger.log(chalk.yellow(`⚠️  Approach ${i + 1} failed, trying next...`));
 
         if (i === operations.length - 1) {
           // Last operation failed
-          console.log(chalk.red('❌ All approaches failed'));
+          logger.log(chalk.red('❌ All approaches failed'));
           throw lastError;
         }
       }

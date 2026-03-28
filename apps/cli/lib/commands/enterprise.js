@@ -33,12 +33,12 @@ export function registerEnterpriseCommand(program) {
     .command('user')
     .description('User management')
     .action(() => {
-      console.log('Manage users with subcommands:');
-      console.log('  ultra-dex enterprise user create <email> <name>');
-      console.log('  ultra-dex enterprise user list');
-      console.log('  ultra-dex enterprise user role <userId> <role>');
-      console.log('  ultra-dex enterprise user deactivate <userId>');
-      console.log('  ultra-dex enterprise user activate <userId>');
+      logger.log('Manage users with subcommands:');
+      logger.log('  ultra-dex enterprise user create <email> <name>');
+      logger.log('  ultra-dex enterprise user list');
+      logger.log('  ultra-dex enterprise user role <userId> <role>');
+      logger.log('  ultra-dex enterprise user deactivate <userId>');
+      logger.log('  ultra-dex enterprise user activate <userId>');
     });
 
   enterpriseCommand
@@ -84,7 +84,7 @@ export function registerEnterpriseCommand(program) {
         printSuccess(`👥 ${users.length} users:`);
         users.forEach(user => {
           const status = user.isActive ? '🟢' : '🔴';
-          console.log(`  ${status} ${user.name} (${user.email}) - ${user.role} ${user.lastLogin ? `(Last: ${new Date(user.lastLogin).toLocaleDateString()})` : ''}`);
+          logger.log(`  ${status} ${user.name} (${user.email}) - ${user.role} ${user.lastLogin ? `(Last: ${new Date(user.lastLogin).toLocaleDateString()})` : ''}`);
         });
       } catch (error) {
         printError(`User list failed: ${error.message}`);
@@ -146,10 +146,10 @@ export function registerEnterpriseCommand(program) {
     .command('role')
     .description('Role management')
     .action(() => {
-      console.log('Manage roles with subcommands:');
-      console.log('  ultra-dex enterprise role create <id> <name>');
-      console.log('  ultra-dex enterprise role list');
-      console.log('  ultra-dex enterprise role permissions <roleId>');
+      logger.log('Manage roles with subcommands:');
+      logger.log('  ultra-dex enterprise role create <id> <name>');
+      logger.log('  ultra-dex enterprise role list');
+      logger.log('  ultra-dex enterprise role permissions <roleId>');
     });
 
   enterpriseCommand
@@ -191,11 +191,11 @@ export function registerEnterpriseCommand(program) {
         
         printSuccess(`🛡️  ${roles.length} roles:`);
         roles.forEach(role => {
-          console.log(`\n${role.name} (${role.id})`);
-          console.log(`   Level: ${role.level}`);
-          console.log(`   Permissions: ${role.permissions.length}`);
-          console.log(`   Inherits: ${role.inherits.join(', ') || 'None'}`);
-          console.log(`   ${role.description}`);
+          logger.log(`\n${role.name} (${role.id})`);
+          logger.log(`   Level: ${role.level}`);
+          logger.log(`   Permissions: ${role.permissions.length}`);
+          logger.log(`   Inherits: ${role.inherits.join(', ') || 'None'}`);
+          logger.log(`   ${role.description}`);
         });
       } catch (error) {
         printError(`Role list failed: ${error.message}`);
@@ -220,7 +220,7 @@ export function registerEnterpriseCommand(program) {
 
         printSuccess(`📋 Permissions for role ${roleId}:`);
         permissions.forEach(perm => {
-          console.log(`  - ${perm}`);
+          logger.log(`  - ${perm}`);
         });
       } catch (error) {
         printError(`Role permissions failed: ${error.message}`);
@@ -233,11 +233,11 @@ export function registerEnterpriseCommand(program) {
     .command('team')
     .description('Team management')
     .action(() => {
-      console.log('Manage teams with subcommands:');
-      console.log('  ultra-dex enterprise team create <name>');
-      console.log('  ultra-dex enterprise team list');
-      console.log('  ultra-dex enterprise team add <teamId> <userId>');
-      console.log('  ultra-dex enterprise team remove <teamId> <userId>');
+      logger.log('Manage teams with subcommands:');
+      logger.log('  ultra-dex enterprise team create <name>');
+      logger.log('  ultra-dex enterprise team list');
+      logger.log('  ultra-dex enterprise team add <teamId> <userId>');
+      logger.log('  ultra-dex enterprise team remove <teamId> <userId>');
     });
 
   enterpriseCommand
@@ -278,12 +278,12 @@ export function registerEnterpriseCommand(program) {
 
         printSuccess(`👥 ${teams.length} teams:`);
         teams.forEach(team => {
-          console.log(`\n${team.name} (${team.id})`);
-          console.log(`   Members: ${team.members.length}`);
-          console.log(`   Permissions: ${team.permissions.length}`);
-          console.log(`   Created: ${new Date(team.createdAt).toLocaleDateString()}`);
+          logger.log(`\n${team.name} (${team.id})`);
+          logger.log(`   Members: ${team.members.length}`);
+          logger.log(`   Permissions: ${team.permissions.length}`);
+          logger.log(`   Created: ${new Date(team.createdAt).toLocaleDateString()}`);
           if (team.description) {
-            console.log(`   ${team.description}`);
+            logger.log(`   ${team.description}`);
           }
         });
       } catch (error) {
@@ -331,10 +331,10 @@ export function registerEnterpriseCommand(program) {
     .command('audit')
     .description('Audit log management')
     .action(() => {
-      console.log('Manage audit logs with subcommands:');
-      console.log('  ultra-dex enterprise audit log');
-      console.log('  ultra-dex enterprise audit export');
-      console.log('  ultra-dex enterprise audit search <query>');
+      logger.log('Manage audit logs with subcommands:');
+      logger.log('  ultra-dex enterprise audit log');
+      logger.log('  ultra-dex enterprise audit export');
+      logger.log('  ultra-dex enterprise audit search <query>');
     });
 
   enterpriseCommand
@@ -362,9 +362,9 @@ export function registerEnterpriseCommand(program) {
 
         printSuccess(`📋 Last ${entries.length} audit entries:`);
         entries.forEach(entry => {
-          console.log(`\n[${new Date(entry.timestamp).toLocaleString()}] ${entry.action}`);
-          console.log(`  Actor: ${entry.details.actor || entry.actor}`);
-          console.log(`  Details: ${JSON.stringify(entry.details, null, 2)}`);
+          logger.log(`\n[${new Date(entry.timestamp).toLocaleString()}] ${entry.action}`);
+          logger.log(`  Actor: ${entry.details.actor || entry.actor}`);
+          logger.log(`  Details: ${JSON.stringify(entry.details, null, 2)}`);
         });
       } catch (error) {
         printError(`Audit log failed: ${error.message}`);
@@ -376,10 +376,10 @@ export function registerEnterpriseCommand(program) {
     .command('compliance')
     .description('Compliance management')
     .action(() => {
-      console.log('Manage compliance with subcommands:');
-      console.log('  ultra-dex enterprise compliance status');
-      console.log('  ultra-dex enterprise compliance report');
-      console.log('  ultra-dex enterprise compliance create <type> <standard>');
+      logger.log('Manage compliance with subcommands:');
+      logger.log('  ultra-dex enterprise compliance status');
+      logger.log('  ultra-dex enterprise compliance report');
+      logger.log('  ultra-dex enterprise compliance create <type> <standard>');
     });
 
   enterpriseCommand
@@ -392,11 +392,11 @@ export function registerEnterpriseCommand(program) {
         const status = enterpriseFeatures.getComplianceStatus();
         
         printSuccess('🛡️  Compliance Status:');
-        console.log(`  Total Records: ${status.total}`);
-        console.log(`  Active: ${status.active}`);
-        console.log(`  Expired: ${status.expired}`);
-        console.log(`  Pending: ${status.pending}`);
-        console.log(`  Compliance Rate: ${status.complianceRate.toFixed(1)}%`);
+        logger.log(`  Total Records: ${status.total}`);
+        logger.log(`  Active: ${status.active}`);
+        logger.log(`  Expired: ${status.expired}`);
+        logger.log(`  Pending: ${status.pending}`);
+        logger.log(`  Compliance Rate: ${status.complianceRate.toFixed(1)}%`);
       } catch (error) {
         printError(`Compliance status failed: ${error.message}`);
         process.exit(1);
@@ -413,22 +413,22 @@ export function registerEnterpriseCommand(program) {
         const report = await enterpriseFeatures.generateEnterpriseReport();
         
         printSuccess('📊 Enterprise Compliance Report:');
-        console.log(`\nStatistics:`);
-        console.log(`  Users: ${report.stats.users}`);
-        console.log(`  Roles: ${report.stats.roles}`);
-        console.log(`  Teams: ${report.stats.teams}`);
-        console.log(`  Audit Entries: ${report.stats.auditLogSize}`);
+        logger.log(`\nStatistics:`);
+        logger.log(`  Users: ${report.stats.users}`);
+        logger.log(`  Roles: ${report.stats.roles}`);
+        logger.log(`  Teams: ${report.stats.teams}`);
+        logger.log(`  Audit Entries: ${report.stats.auditLogSize}`);
         
-        console.log(`\nCompliance:`);
-        console.log(`  Total Records: ${report.compliance.total}`);
-        console.log(`  Active: ${report.compliance.active}`);
-        console.log(`  Compliance Rate: ${report.compliance.complianceRate.toFixed(1)}%`);
+        logger.log(`\nCompliance:`);
+        logger.log(`  Total Records: ${report.compliance.total}`);
+        logger.log(`  Active: ${report.compliance.active}`);
+        logger.log(`  Compliance Rate: ${report.compliance.complianceRate.toFixed(1)}%`);
         
-        console.log(`\nSecurity Features:`);
-        console.log(`  Password Policy: ${report.security.passwordPolicy}`);
-        console.log(`  Audit Logging: ${report.security.auditLogging}`);
-        console.log(`  RBAC: ${report.security.rbac}`);
-        console.log(`  SSO: ${report.security.sso ? 'Enabled' : 'Disabled'}`);
+        logger.log(`\nSecurity Features:`);
+        logger.log(`  Password Policy: ${report.security.passwordPolicy}`);
+        logger.log(`  Audit Logging: ${report.security.auditLogging}`);
+        logger.log(`  RBAC: ${report.security.rbac}`);
+        logger.log(`  SSO: ${report.security.sso ? 'Enabled' : 'Disabled'}`);
       } catch (error) {
         printError(`Compliance report failed: ${error.message}`);
         process.exit(1);
@@ -485,11 +485,11 @@ export function registerEnterpriseCommand(program) {
           printSuccess(`📊 Enterprise data exported to: ${result.path}`);
         }
         
-        console.log(`Records exported:`);
-        console.log(`  Users: ${result.records.users}`);
-        console.log(`  Roles: ${result.records.roles}`);
-        console.log(`  Teams: ${result.records.teams}`);
-        console.log(`  Audit Entries: ${result.records.auditEntries}`);
+        logger.log(`Records exported:`);
+        logger.log(`  Users: ${result.records.users}`);
+        logger.log(`  Roles: ${result.records.roles}`);
+        logger.log(`  Teams: ${result.records.teams}`);
+        logger.log(`  Audit Entries: ${result.records.auditEntries}`);
       } catch (error) {
         printError(`Export failed: ${error.message}`);
         process.exit(1);
@@ -507,10 +507,10 @@ export function registerEnterpriseCommand(program) {
         const result = await enterpriseFeatures.importEnterpriseData(backupPath);
         printSuccess(result.message);
         
-        console.log(`Records imported:`);
-        console.log(`  Users: ${result.records.users}`);
-        console.log(`  Roles: ${result.records.roles}`);
-        console.log(`  Teams: ${result.records.teams}`);
+        logger.log(`Records imported:`);
+        logger.log(`  Users: ${result.records.users}`);
+        logger.log(`  Roles: ${result.records.roles}`);
+        logger.log(`  Teams: ${result.records.teams}`);
       } catch (error) {
         printError(`Import failed: ${error.message}`);
         process.exit(1);
@@ -528,21 +528,21 @@ export function registerEnterpriseCommand(program) {
         const stats = enterpriseFeatures.getEnterpriseStats();
         
         printSuccess('🏢 Ultra-Dex Enterprise Status:');
-        console.log(`\nUser Management:`);
-        console.log(`  Users: ${stats.users}`);
-        console.log(`  Roles: ${stats.roles}`);
-        console.log(`  Teams: ${stats.teams}`);
+        logger.log(`\nUser Management:`);
+        logger.log(`  Users: ${stats.users}`);
+        logger.log(`  Roles: ${stats.roles}`);
+        logger.log(`  Teams: ${stats.teams}`);
         
-        console.log(`\nSecurity & Compliance:`);
-        console.log(`  Audit Log Size: ${stats.auditLogSize}`);
-        console.log(`  Compliance Records: ${stats.complianceRecords}`);
-        console.log(`  Active Compliance: ${stats.activeCompliance}`);
+        logger.log(`\nSecurity & Compliance:`);
+        logger.log(`  Audit Log Size: ${stats.auditLogSize}`);
+        logger.log(`  Compliance Records: ${stats.complianceRecords}`);
+        logger.log(`  Active Compliance: ${stats.activeCompliance}`);
         
-        console.log(`\nFeatures:`);
-        console.log(`  RBAC: Enabled`);
-        console.log(`  Audit Logging: Active`);
-        console.log(`  SSO: ${enterpriseFeatures.options.enableSSO ? 'Enabled' : 'Disabled'}`);
-        console.log(`  On-Premise: ${enterpriseFeatures.options.enableOnPremise ? 'Enabled' : 'Disabled'}`);
+        logger.log(`\nFeatures:`);
+        logger.log(`  RBAC: Enabled`);
+        logger.log(`  Audit Logging: Active`);
+        logger.log(`  SSO: ${enterpriseFeatures.options.enableSSO ? 'Enabled' : 'Disabled'}`);
+        logger.log(`  On-Premise: ${enterpriseFeatures.options.enableOnPremise ? 'Enabled' : 'Disabled'}`);
       } catch (error) {
         printError(`Status check failed: ${error.message}`);
         process.exit(1);

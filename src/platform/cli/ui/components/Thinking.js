@@ -23,7 +23,7 @@ const Thinking = ({ text = "Thinking...", dotsCount = 3, isActive = true }) => {
 var Thinking_default = Thinking;
 function handleError(error) {
   try {
-    console.error("[Thinking]", error instanceof Error ? error.message : String(error));
+    logger.error("[Thinking]", error instanceof Error ? error.message : String(error));
   } catch (_) {
   }
 }

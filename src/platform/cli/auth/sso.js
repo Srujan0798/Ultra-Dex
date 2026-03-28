@@ -18,7 +18,7 @@ export class EnterpriseSSO {
 
   async initialize() {
     // Configure SSO strategies
-    console.log('Enterprise SSO initialized');
+    logger.log('Enterprise SSO initialized');
   }
 
   async createUserOrLogin(userInfo) {

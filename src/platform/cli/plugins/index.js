@@ -43,7 +43,7 @@ class PluginRegistry {
     try {
       await fs.mkdir(this.pluginDir, { recursive: true });
     } catch (error) {
-      console.error(`Failed to create plugin directory: ${error.message}`);
+      logger.error(`Failed to create plugin directory: ${error.message}`);
     }
   }
 
@@ -69,7 +69,7 @@ class PluginRegistry {
             });
             this.installed.add(manifest.name);
           } catch (error) {
-            console.warn(`Invalid plugin manifest in ${entry.name}: ${error.message}`);
+            logger.warn(`Invalid plugin manifest in ${entry.name}: ${error.message}`);
           }
         }
       }
@@ -107,9 +107,9 @@ class PluginRegistry {
         await pluginModule.default.activate(this);
       }
 
-      console.log(chalk.green(`✓ Loaded plugin: ${plugin.name}@${plugin.version}`));
+      logger.log(chalk.green(`✓ Loaded plugin: ${plugin.name}@${plugin.version}`));
     } catch (error) {
-      console.error(chalk.red(`Failed to load plugin ${pluginName}: ${error.message}`));
+      logger.error(chalk.red(`Failed to load plugin ${pluginName}: ${error.message}`));
     }
   }
 
@@ -281,7 +281,7 @@ class PluginRegistry {
       `// ${pluginName} - Generated from GitHub: ${repo}
 export default {
   async activate(pluginManager) {
-    console.log('Plugin activated:', this.name);
+    logger.log('Plugin activated:', this.name);
   }
 };
 `
@@ -320,7 +320,7 @@ export default {
       `// ${pluginName} - Downloaded from registry
 export default {
   async activate(pluginManager) {
-    console.log('Registry plugin activated:', this.name);
+    logger.log('Registry plugin activated:', this.name);
   }
 };
 `
@@ -350,10 +350,10 @@ export default {
       this.plugins.delete(pluginName);
       this.installed.delete(pluginName);
 
-      console.log(chalk.green(`✓ Uninstalled plugin: ${pluginName}`));
+      logger.log(chalk.green(`✓ Uninstalled plugin: ${pluginName}`));
       return { success: true };
     } catch (error) {
-      console.error(chalk.red(`Failed to uninstall plugin: ${error.message}`));
+      logger.error(chalk.red(`Failed to uninstall plugin: ${error.message}`));
       return { success: false, error: error.message };
     }
   }
@@ -411,7 +411,7 @@ export default {
       try {
         result = await handler(result);
       } catch (error) {
-        console.error(`Hook ${hookName} handler failed: ${error.message}`);
+        logger.error(`Hook ${hookName} handler failed: ${error.message}`);
       }
     }
 
@@ -451,9 +451,9 @@ export default {
       throw new Error(`Cannot update local plugins directly`);
     }
 
-    console.log(chalk.blue(`Updating plugin: ${pluginName}`));
+    logger.log(chalk.blue(`Updating plugin: ${pluginName}`));
     // In a real implementation, this would fetch the latest version from the registry
-    console.log(chalk.green(`✓ Plugin updated: ${pluginName}`));
+    logger.log(chalk.green(`✓ Plugin updated: ${pluginName}`));
     return { success: true };
   }
 

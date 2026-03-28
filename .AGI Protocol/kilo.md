@@ -1,7 +1,8 @@
 # Kilo Code Platform: Deep Research & Tactical Use Guide
 
 **Document Status:** 2026 Platform Review & Operating Procedures  
-**Topic:** Kilo Code Advanced Orchestration  
+**Source:** Kilo Gateway  
+**Tool:** Kilo Code Advanced Orchestration  
 **Objective:** Maximize agentic coding efficiency, cost-effectiveness, and code accuracy by pairing specific Agent Modes with the correct Next-Gen AI Models.
 
 ---
@@ -18,81 +19,63 @@ Using the wrong model for a mode results in wasted tokens, slow execution, and h
 
 The platform enforces agent constraints through five distinct operating modes:
 
-1. **Orchestrator Mode:** 
-   * **Role:** The Manager. 
-   * **Behavior:** Coordinates complex tasks by delegating to specialized sub-agents in parallel. It breaks down prompts into step-by-step execution graphs.
-2. **Plan Mode:**
-   * **Role:** The Architect.
-   * **Behavior:** Strictly read-only reasoning. It uses tools to read the codebase and outputs architecture designs, but **disallows all edit tools**. This prevents destructive actions during the planning phase.
-3. **Debug Mode:**
-   * **Role:** The Diagnostics Specialist.
-   * **Behavior:** Follows a strict, systematic debugging methodology: Read Logs → Reproduce → Formulate Hypothesis → Test → Fix.
-4. **Code Mode:**
-   * **Role:** The Executor.
-   * **Behavior:** The default frontline agent. It possesses full read/write permissions and is optimized for quickly outputting working code files based on plans.
-5. **Ask Mode:**
-   * **Role:** The Librarian/Teacher.
-   * **Behavior:** Strictly answers questions and explains codebase mechanisms without making or suggesting immediate file changes.
+| Mode | Role | Behavior Restrictions |
+|---|---|---|
+| **Orchestrator** | The Manager | Coordinates complex tasks by delegating to specialized sub-agents in parallel based on DAG graphs. |
+| **Plan** | The Architect | Strictly read-only reasoning. Reads codebase and outputs designs. **Disallows all edit tools**. |
+| **Debug** | Diagnostics | Follows strict methodology: Read Logs → Reproduce → Formulate Hypothesis → Test → Fix. |
+| **Code** | The Executor | Default frontline agent. Full read/write permissions. Fast output based on plans. |
+| **Ask** | The Librarian | Strictly answers questions and explains codebase. Cannot make modifications. |
 
 ---
 
 ## 3. High-Performance Roster (The 2026 Models)
 
-Based on deep integration benchmarks, here is the functional reality of the models available in the Kilo Gateway:
-
-* **MiniMax M2.5:** 
-  * *Profile:* The Heavyweight Champion. (80.2% SWE-bench). 
-  * *Strengths:* Absolute peak reasoning, equaling GPT-5.2 and Claude Opus 4.6, but heavily optimized for software engineering planning.
-* **CoreThink:** 
-  * *Profile:* The Optimizer. 
-  * *Strengths:* Implements "General Symbolics" reasoning. It forces underlying reasoning steps to be verified logically before emitting answers. Unmatched for tricky logic bugs.
-* **xAI Grok Code Fast 1 Optimized:** 
-  * *Profile:* The Speed Demon. 
-  * *Strengths:* Generates 92+ tokens/sec with 256K context. Highly cached. Ideal for lightning-fast edits.
-* **StepFun Step 3.5 Flash:** 
-  * *Profile:* The Bulk Executor.
-  * *Strengths:* Uses 3-way Multi-Token Prediction (MTP-3) to write code at 350 tok/sec. 
-* **Xiaomi MiMo-V2-Pro:** 1 Trillion+ parameter generalist. Extreme nuance in system design.
-* **Xiaomi MiMo-V2-Omni:** Features unified vision/language layers. The absolute best model for converting Figma/Images into pixel-perfect UI code.
-* **NVIDIA Nemotron 3 Super:** Features a 1-Million token context window. Excellent at reviewing entire codebases at once.
-* **Arcee AI Trinity Large Preview:** 400B sparse MoE. Extremely efficient with zero-shot creative coding.
-* **Kilo Auto / Free Models Router:** Dynamic routers that switch models based on prompt complexity (useful for lazy querying, but bad for deterministic workflows).
+| Model | Profile | Strengths & Use Case |
+|---|---|---|
+| **MiniMax M2.5** | Heavyweight Champion | Peak reasoning (80.2% SWE-bench), equaling GPT-5.2 and Claude Opus 4.6. |
+| **CoreThink** | The Optimizer | "General Symbolics" reasoning. Forces logic verification before answering. Unmatched for bugs. |
+| **xAI Grok Code Fast 1** | Speed Demon | 92+ tokens/sec with 256K context. Highly cached. Instantaneous frontline edits. |
+| **StepFun 3.5 Flash** | Bulk Executor | Uses 3-way Multi-Token Prediction (MTP-3) to write code at 350 tok/sec. |
+| **Xiaomi MiMo-V2-Pro** | 1T Generalist | Extreme nuance in system design and documentation parsing. |
+| **Xiaomi MiMo-V2-Omni** | UI Multi-modal | Unified vision/language layers. Converts images/Figma into pixel-perfect UI. |
+| **Nemotron 3 Super** | Repo Reader | 1-Million token context window. Excellent for scanning the entire monorepo at once. |
+| **Arcee AI Trinity** | Creative MoE | 400B sparse MoE. Extremely efficient with zero-shot creative coding. |
+| **Kilo Auto Router** | Dynamic | Switches models based on prompt complexity (AVOID for deterministic CI workflows). |
 
 ---
 
 ## 4. Tactical Playbook: Optimal Mode-Model Combinations
 
-To achieve maximum velocity and accuracy, rigidly adhere to these pair mappings based on the task at hand:
-
-### Scenario A: Complex System Architecture & Feature Design
+### Scenario A: Complex Architecture & Design
 * **Mode:** `Plan`
-* **Model:** `MiniMax M2.5` (or `Xiaomi MiMo-V2-Pro`)
-* **Why:** You need the highest tier of "Architect Mindset" reasoning. Because `Plan` mode disables edits, the model can spend its entire token budget analyzing the codebase deeply without accidentally mangling files.
+* **Model:** `MiniMax M2.5`
+* **Why:** The "Architect Mindset". The model uses its token budget strictly analyzing the codebase without accidentally mangling files.
 
-### Scenario B: Massive Multi-File Refactoring (e.g., CJS to ESM)
+### Scenario B: Massive Multi-File Refactoring
 * **Mode:** `Orchestrator`
 * **Model:** `MiniMax M2.5`
-* **Why:** The Orchestrator manages parallel sub-agents. It requires a highly intelligent model to divide work effectively. MiniMax has the context awareness to delegate file-by-file migrations correctly.
+* **Why:** Manages parallel sub-agents and divides massive component tasks (CJS to ESM) safely.
 
-### Scenario C: Rapid Feature Implementation & Boilerplate Generation
+### Scenario C: Rapid Feature Implementation
 * **Mode:** `Code`
 * **Model:** `xAI Grok Code Fast 1` (or `StepFun 3.5 Flash`)
-* **Why:** Once a plan is established, you want raw speed. Grok Code Fast 1 outputs code nearly instantaneously. Its 256K context allows it to read the Plan and implement the files in seconds. Do not waste expensive "Pro" models on typing out boilerplate.
+* **Why:** Raw speed following the Plan. Do not waste expensive "Pro" models on printing boilerplate.
 
-### Scenario D: Hunting Stubborn, Undocumented Bugs
+### Scenario D: Hunting Stubborn Bugs
 * **Mode:** `Debug`
 * **Model:** `CoreThink`
-* **Why:** Debugging requires hypothesis testing. CoreThink's "General Symbolics" layer prevents the AI from wildly guessing; it forces the agent to read logs, map stack traces, and systematically verify the root cause.
+* **Why:** Forces agents to verify logs and map stack traces instead of wildly guessing.
 
-### Scenario E: Whole-Repository Code Reviews
+### Scenario E: Repo Security Scanning
 * **Mode:** `Ask`
 * **Model:** `NVIDIA Nemotron 3 Super`
-* **Why:** If you need to assess the entire backend for security vulnerabilities, Nemotron's 1-Million context limit can ingest the entire mono-repo in one go and highlight issues without hallucinating.
+* **Why:** Ingests the entire mono-repo (1M context) in one go to flag architectural flaws.
 
-### Scenario F: Building Frontend from UI Screenshots
+### Scenario F: UI from Screenshot
 * **Mode:** `Code`
 * **Model:** `Xiaomi MiMo-V2-Omni`
-* **Why:** Omni's native multimedia processing means it actually "sees" the screenshot accurately rather than reading a text-vector approximation. It will output perfectly aligned Tailwind/CSS.
+* **Why:** Native vision decoding generates perfect Tailwind CSS.
 
 ---
 
@@ -101,12 +84,29 @@ To achieve maximum velocity and accuracy, rigidly adhere to these pair mappings 
 When tackling a new objective using Kilo Code, execute the following sequence:
 
 1. **PHASE 1: (Plan + MiniMax M2.5)**
-   * Ask the agent to analyze the problem and output a `IMPLEMENTATION.md` file. Review this file manually.
-2. **PHASE 2: (Orchestrator) - *Optional***
-   * If the `IMPLEMENTATION.md` involves more than 5 files, switch to Orchestrator and provide the doc so it can assign sub-tasks.
+   Ask the agent to analyze the problem and output a `IMPLEMENTATION.md` file. Review this manually.
+2. **PHASE 2: (Orchestrator - Optional)**
+   If `IMPLEMENTATION.md` changes >5 files, switch to Orchestrator and provide the doc to map sub-tasks.
 3. **PHASE 3: (Code + Grok Fast 1)**
-   * Point the Code agent at the `IMPLEMENTATION.md` and tell it to execute Step 1, then Step 2, etc. Enjoy instant token generation.
+   Point the Code agent at the `IMPLEMENTATION.md` and tell it to execute tasks sequentially.
 4. **PHASE 4: (Debug + CoreThink)**
-   * Run your tests. If they fail, switch immediately to Debug mode with CoreThink. Paste the terminal error output.
+   Run your tests. If they fail, switch immediately to Debug mode with CoreThink and paste logs.
 
-By strictly utilizing this **Plan (Heavy) → Code (Fast) → Debug (Precise)** pipeline, you eliminate the common AI coding traps of infinite loops, code regressions, and expensive token waste.
+---
+
+## 6. Ultra-Dex Swarm Role & Dispatch
+
+* **Role:** High-Performance Implementation Builder
+* **Best For:** Executing massive generation and logic processing where token volume speed is paramount.
+* **Windows:** 1 IDE tab (Uses Kilo's UI).
+
+### Dispatch Templates
+
+```bash
+# Workflow Initiation (In Kilo UI)
+[Mode: Plan] [Model: MiniMax M2.5]
+"Read the github issue 442 and output IMPLEMENTATION.md with architecture changes needed for the auth service."
+
+[Mode: Code] [Model: Grok Code Fast 1]
+"Read IMPLEMENTATION.md and modify auth-service.ts based on step 1."
+```

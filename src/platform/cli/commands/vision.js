@@ -38,7 +38,7 @@ export function registerVisionCommand(program) {
           });
 
           printSuccess(comparison.message);
-          console.log(comparison.comparison);
+          logger.log(comparison.comparison);
         } else if (options.tokens) {
           // Extract design tokens
           printInfo(`🎨 Extracting design tokens from: ${imagePath}`);
@@ -47,7 +47,7 @@ export function registerVisionCommand(program) {
           });
 
           printSuccess(tokens.message);
-          console.log(JSON.stringify(tokens.tokens, null, 2));
+          logger.log(JSON.stringify(tokens.tokens, null, 2));
         } else {
           // Generate code from screenshot
           printInfo(`👁️  Analyzing screenshot: ${imagePath}`);
@@ -63,7 +63,7 @@ export function registerVisionCommand(program) {
           if (result.generatedCode) {
             if (options.verbose) {
               printInfo('\n📝 Generated Code:');
-              console.log(result.generatedCode);
+              logger.log(result.generatedCode);
             }
 
             // Determine output path
@@ -84,7 +84,7 @@ export function registerVisionCommand(program) {
       } catch (error) {
         printError(`Vision command failed: ${error.message}`);
         if (options.verbose) {
-          console.error(error.stack);
+          logger.error(error.stack);
         }
         process.exit(1);
       }
@@ -105,7 +105,7 @@ export function registerVisionCommand(program) {
         });
 
         printSuccess(result.message);
-        console.log(JSON.stringify(result.tokens, null, 2));
+        logger.log(JSON.stringify(result.tokens, null, 2));
 
         if (options.output) {
           await fs.writeFile(options.output, JSON.stringify(result.tokens, null, 2));
@@ -132,7 +132,7 @@ export function registerVisionCommand(program) {
         });
 
         printSuccess(result.message);
-        console.log(result.comparison);
+        logger.log(result.comparison);
 
         if (options.output) {
           await fs.writeFile(options.output, result.comparison);
@@ -197,7 +197,7 @@ export function registerVisionCommand(program) {
 
         const analysis = response.data.choices[0].message.content;
         printSuccess('✅ UI analysis complete');
-        console.log(analysis);
+        logger.log(analysis);
       } catch (error) {
         printError(`UI analysis failed: ${error.message}`);
         process.exit(1);

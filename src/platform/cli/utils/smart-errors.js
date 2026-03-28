@@ -16,7 +16,7 @@ export default SmartError;
  */
 function handleError(error) {
   try {
-    console.error('[smart-errors]', error instanceof Error ? error.message : String(error));
+    logger.error('[smart-errors]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

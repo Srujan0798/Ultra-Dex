@@ -25,18 +25,18 @@ export class GhostAgent {
         // Lazy init OpenAI client
         if (!this.openai) {
             if (!process.env.OPENAI_API_KEY) {
-                console.error('❌ Ghost Agent requires OPENAI_API_KEY to run.');
+                logger.error('❌ Ghost Agent requires OPENAI_API_KEY to run.');
                 return;
             }
             this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
         }
-        console.log(`👻 Ghost Agent active. Goal: "${goal}"`);
+        logger.log(`👻 Ghost Agent active. Goal: "${goal}"`);
 
         let step = 0;
         const history = [];
 
         while (step < this.maxSteps) {
-            console.log(`\n🔄 Step ${step + 1}/${this.maxSteps}`);
+            logger.log(`\n🔄 Step ${step + 1}/${this.maxSteps}`);
 
             // 1. Vision: Capture Screen
             const screenshotBase64 = await visionSystem.captureForVLM(0.5); // Downscale for speed/cost
@@ -45,12 +45,12 @@ export class GhostAgent {
             const response = await this.queryVLM(goal, screenshotBase64, history);
 
             if (!response) {
-                console.log('❌ VLM failed to respond.');
+                logger.log('❌ VLM failed to respond.');
                 break;
             }
 
-            console.log(`🧠 Thought: ${response.thought}`);
-            console.log(`👉 Planned Action: ${response.action} ${JSON.stringify(response.params)}`);
+            logger.log(`🧠 Thought: ${response.thought}`);
+            logger.log(`👉 Planned Action: ${response.action} ${JSON.stringify(response.params)}`);
 
             // 3. Safety: User Confirmation
             if (this.safetyMode) {
@@ -62,7 +62,7 @@ export class GhostAgent {
                 }]);
 
                 if (!confirm) {
-                    console.log('🛑 Action denied by user.');
+                    logger.log('🛑 Action denied by user.');
                     break;
                 }
             }
@@ -75,7 +75,7 @@ export class GhostAgent {
             });
 
             if (response.action === 'done') {
-                console.log('✅ Goal achieved!');
+                logger.log('✅ Goal achieved!');
                 return;
             }
 
@@ -128,7 +128,7 @@ export class GhostAgent {
 
             return JSON.parse(completion.choices[0].message.content);
         } catch (e) {
-            console.error('VLM Error:', e.message);
+            logger.error('VLM Error:', e.message);
             return null;
         }
     }
@@ -151,7 +151,7 @@ export class GhostAgent {
             case 'done':
                 break;
             default:
-                console.log(`Unknown action: ${action}`);
+                logger.log(`Unknown action: ${action}`);
         }
     }
 }

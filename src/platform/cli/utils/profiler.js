@@ -28,7 +28,7 @@ export function startTimer(label) {
 export function endTimer(label) {
   const startTime = activeTimers.get(label);
   if (!startTime) {
-    console.warn(chalk.yellow(`⚠️  No timer found for: ${label}`));
+    logger.warn(chalk.yellow(`⚠️  No timer found for: ${label}`));
     return 0;
   }
 
@@ -55,7 +55,7 @@ export async function timeAsync(label, fn) {
   try {
     const result = await fn();
     const duration = endTimer(label);
-    console.log(chalk.dim(`⏱️  ${label}: ${formatDuration(duration)}`));
+    logger.log(chalk.dim(`⏱️  ${label}: ${formatDuration(duration)}`));
     return result;
   } catch (error) {
     endTimer(label);
@@ -74,7 +74,7 @@ export function timeSync(label, fn) {
   try {
     const result = fn();
     const duration = endTimer(label);
-    console.log(chalk.dim(`⏱️  ${label}: ${formatDuration(duration)}`));
+    logger.log(chalk.dim(`⏱️  ${label}: ${formatDuration(duration)}`));
     return result;
   } catch (error) {
     endTimer(label);
@@ -132,15 +132,15 @@ export function showReport() {
   const labels = Object.keys(stats).sort((a, b) => stats[b].total - stats[a].total);
 
   if (labels.length === 0) {
-    console.log(chalk.yellow('\n⚠️  No performance data collected\n'));
+    logger.log(chalk.yellow('\n⚠️  No performance data collected\n'));
     return;
   }
 
-  console.log(chalk.bold('\n📊 Performance Report\n'));
-  console.log(chalk.dim('─'.repeat(80)));
+  logger.log(chalk.bold('\n📊 Performance Report\n'));
+  logger.log(chalk.dim('─'.repeat(80)));
 
   // Header
-  console.log(
+  logger.log(
     chalk.bold('Operation').padEnd(30),
     chalk.bold('Count').padStart(6),
     chalk.bold('Total').padStart(10),
@@ -148,12 +148,12 @@ export function showReport() {
     chalk.bold('Min').padStart(10),
     chalk.bold('Max').padStart(10)
   );
-  console.log(chalk.dim('─'.repeat(80)));
+  logger.log(chalk.dim('─'.repeat(80)));
 
   // Data rows
   for (const label of labels) {
     const s = stats[label];
-    console.log(
+    logger.log(
       label.substring(0, 29).padEnd(30),
       String(s.count).padStart(6),
       formatDuration(s.total).padStart(10),
@@ -163,12 +163,12 @@ export function showReport() {
     );
   }
 
-  console.log(chalk.dim('─'.repeat(80)));
+  logger.log(chalk.dim('─'.repeat(80)));
 
   // Summary
   const grandTotal = Object.values(stats).reduce((sum, s) => sum + s.total, 0);
-  console.log(chalk.bold(`\nTotal time: ${formatDuration(grandTotal)}`));
-  console.log(chalk.dim(`Operations profiled: ${labels.length}\n`));
+  logger.log(chalk.bold(`\nTotal time: ${formatDuration(grandTotal)}`));
+  logger.log(chalk.dim(`Operations profiled: ${labels.length}\n`));
 }
 
 /**
@@ -185,7 +185,7 @@ export function clearMetrics() {
  * @param {Function} commandFn - Command function to profile
  */
 export async function profileCommand(commandName, commandFn) {
-  console.log(chalk.bold(`\n🔍 Profiling: ${commandName}\n`));
+  logger.log(chalk.bold(`\n🔍 Profiling: ${commandName}\n`));
 
   const startTime = performance.now();
 
@@ -193,7 +193,7 @@ export async function profileCommand(commandName, commandFn) {
     await commandFn();
   } finally {
     const totalTime = performance.now() - startTime;
-    console.log(chalk.bold(`\n✅ Command completed in ${formatDuration(totalTime)}`));
+    logger.log(chalk.bold(`\n✅ Command completed in ${formatDuration(totalTime)}`));
 
     // Show detailed report
     showReport();
@@ -233,9 +233,9 @@ function provideSuggestions() {
   }
 
   if (suggestions.length > 0) {
-    console.log(chalk.cyan('\n💡 Optimization Suggestions:\n'));
-    suggestions.forEach((s) => console.log(s));
-    console.log();
+    logger.log(chalk.cyan('\n💡 Optimization Suggestions:\n'));
+    suggestions.forEach((s) => logger.log(s));
+    logger.log();
   }
 }
 

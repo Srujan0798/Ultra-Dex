@@ -422,7 +422,7 @@ class DockerManager {
       
       if (stdout) {
         printInfo(chalk.gray('\n📋 Container Logs:\n'));
-        console.log(stdout);
+        logger.log(stdout);
       }
       
       if (stderr) printWarning(chalk.yellow(stderr));
@@ -457,7 +457,7 @@ class DockerManager {
     try {
       const { stdout, stderr } = await execAsync(execCmd);
       
-      if (stdout) console.log(stdout);
+      if (stdout) logger.log(stdout);
       if (stderr) printWarning(chalk.yellow(stderr));
       
       return { stdout, stderr };

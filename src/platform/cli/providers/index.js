@@ -9,6 +9,7 @@ import { ClaudeSonnet5Provider } from './claude.js';
 import { OpenAIProvider } from './openai.js';
 import { GeminiProvider } from './gemini.js';
 import { OllamaProvider } from './ollama.js';
+import { NvidiaProvider } from './nvidia.js';
 import { RouterProvider } from './router.js';
 import { enforceAgentExecution } from '../governance/index.js';
 
@@ -36,18 +37,20 @@ const PROVIDERS = {
     envKey: 'OLLAMA_HOST', // Optional
     name: 'Ollama (Local)',
   },
+  nvidia: {
+    class: NvidiaProvider,
+    envKey: 'NVIDIA_API_KEY',
+    name: 'NVIDIA Nemotron (Free)',
+  },
+  nemotron: {
+    class: NvidiaProvider,
+    envKey: 'NVIDIA_API_KEY',
+    name: 'NVIDIA Nemotron (Free)',
+  },
   router: {
     class: RouterProvider,
     name: 'Semantic Router (Hybrid)',
   },
-  // Note: Mock provider would be added here in a production implementation
-  // mock: {
-  //   class: (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true')
-  //     ? MockOpenAI // Use imported MockOpenAI when testing
-  //     : OpenAIProvider, // Fallback to OpenAI in prod
-  //   envKey: null,
-  //   name: 'Mock Provider (Testing)',
-  // },
 };
 
 /**
@@ -260,6 +263,7 @@ export function getDefaultProvider() {
   if (process.env.ANTHROPIC_API_KEY) return 'claude';
   if (process.env.OPENAI_API_KEY) return 'openai';
   if (process.env.GOOGLE_AI_KEY) return 'gemini';
+  if (process.env.NVIDIA_API_KEY) return 'nvidia';
 
   // Final fallback to Ollama (local-first resilience)
   if (process.env.OLLAMA_HOST) return 'ollama';

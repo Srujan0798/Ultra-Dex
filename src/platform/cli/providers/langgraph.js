@@ -58,7 +58,7 @@ export class LangGraphExecutor {
       }
 
       // Execute node
-      console.log(`[LangGraph] Executing node: ${currentNode}`);
+      logger.log(`[LangGraph] Executing node: ${currentNode}`);
       const result = await this.runNode(currentNode, nodeAction);
 
       // Update state
@@ -110,7 +110,7 @@ async function safeExecute(fn, context = 'langgraph') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

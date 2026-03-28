@@ -132,7 +132,7 @@ export class Logger {
     const modulePrefix = this._getModulePrefix();
     const output = `${timestamp} ${modulePrefix} ${theme.dim('DEBUG')} ${message}`;
 
-    console.log(output);
+    logger.log(output);
     this._storeLog({ level: 'debug', message, metadata });
   }
 
@@ -148,7 +148,7 @@ export class Logger {
     const modulePrefix = this._getModulePrefix();
     const output = `${timestamp} ${modulePrefix} ${formatInfo(message)}`;
 
-    console.log(output);
+    logger.log(output);
     this._storeLog({ level: 'info', message, metadata });
   }
 
@@ -164,7 +164,7 @@ export class Logger {
     const modulePrefix = this._getModulePrefix();
     const output = `${timestamp} ${modulePrefix} ${formatSuccess(message)}`;
 
-    console.log(output);
+    logger.log(output);
     this._storeLog({ level: 'success', message, metadata });
   }
 
@@ -180,7 +180,7 @@ export class Logger {
     const modulePrefix = this._getModulePrefix();
     const output = `${timestamp} ${modulePrefix} ${formatWarning(message)}`;
 
-    console.log(output);
+    logger.log(output);
     this._storeLog({ level: 'warn', message, metadata });
   }
 
@@ -197,12 +197,12 @@ export class Logger {
     const modulePrefix = this._getModulePrefix();
     const output = `${timestamp} ${modulePrefix} ${formatError(message)}`;
 
-    console.log(output);
+    logger.log(output);
 
     if (error?.message) {
-      console.log(theme.dim(`  → ${error.message}`));
+      logger.log(theme.dim(`  → ${error.message}`));
       if (error.stack) {
-        console.log(theme.dim(error.stack.split('\n').slice(1).join('\n')));
+        logger.log(theme.dim(error.stack.split('\n').slice(1).join('\n')));
       }
     }
 
@@ -254,7 +254,7 @@ export class Logger {
     if (!data || typeof data !== 'object') return;
 
     Object.entries(data).forEach(([key, value]) => {
-      console.log(`  ${theme.secondary(key)}: ${theme.text(String(value))}`);
+      logger.log(`  ${theme.secondary(key)}: ${theme.text(String(value))}`);
     });
   }
 
@@ -265,7 +265,7 @@ export class Logger {
    */
   list(items, icon = '•') {
     items.forEach((item) => {
-      console.log(`  ${theme.dim(icon)} ${item}`);
+      logger.log(`  ${theme.dim(icon)} ${item}`);
     });
   }
 
@@ -278,22 +278,22 @@ export class Logger {
     const lines = code.split('\n');
     const border = theme.dim('│');
 
-    console.log(theme.dim('┌' + '─'.repeat(56) + '┐'));
+    logger.log(theme.dim('┌' + '─'.repeat(56) + '┐'));
     if (language) {
-      console.log(`${border} ${theme.code(language.toUpperCase())}`.padEnd(59) + theme.dim('│'));
-      console.log(theme.dim('├' + '─'.repeat(56) + '┤'));
+      logger.log(`${border} ${theme.code(language.toUpperCase())}`.padEnd(59) + theme.dim('│'));
+      logger.log(theme.dim('├' + '─'.repeat(56) + '┤'));
     }
     lines.forEach((line) => {
-      console.log(`${border} ${theme.code(line)}`.padEnd(59) + theme.dim('│'));
+      logger.log(`${border} ${theme.code(line)}`.padEnd(59) + theme.dim('│'));
     });
-    console.log(theme.dim('└' + '─'.repeat(56) + '┘'));
+    logger.log(theme.dim('└' + '─'.repeat(56) + '┘'));
   }
 
   /**
    * Log a horizontal divider
    */
   divider() {
-    console.log(theme.dim('  ' + '─'.repeat(56)));
+    logger.log(theme.dim('  ' + '─'.repeat(56)));
   }
 
   /**
@@ -302,7 +302,7 @@ export class Logger {
    */
   blank(count = 1) {
     for (let i = 0; i < count; i++) {
-      console.log('');
+      logger.log('');
     }
   }
 
@@ -408,7 +408,7 @@ export default logger;
 function handleModuleError(error, context = 'logger') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

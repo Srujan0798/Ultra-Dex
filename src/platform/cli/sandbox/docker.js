@@ -638,7 +638,7 @@ export function registerSandboxCommand(program) {
           printSuccess(chalk.green('\n✅ Execution completed successfully\n'));
           if (result.output) {
             printInfo(chalk.blue('Output:'));
-            console.log(result.output);
+            logger.log(result.output);
           }
         } else {
           printError(chalk.red('\n❌ Execution failed\n'));

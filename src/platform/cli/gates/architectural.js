@@ -11,7 +11,7 @@ import chalk from 'chalk';
 import { glob } from 'glob';
 
 export async function runArchitecturalGates(projectDir = process.cwd()) {
-  console.log(chalk.bold('\n🏛️  Running Architectural Gates...\n'));
+  logger.log(chalk.bold('\n🏛️  Running Architectural Gates...\n'));
 
   const files = await glob('**/*.{js,ts,py,go}', {
     ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'],
@@ -56,16 +56,16 @@ export async function runArchitecturalGates(projectDir = process.cwd()) {
   }
 
   if (violations.length > 0) {
-    console.error(chalk.red(`\n✕ Architectural violations detected (${violations.length}):`));
+    logger.error(chalk.red(`\n✕ Architectural violations detected (${violations.length}):`));
     violations.slice(0, 10).forEach((v) => {
-      console.error(chalk.red(`  • [${v.type}] ${v.file}: ${v.message}`));
+      logger.error(chalk.red(`  • [${v.type}] ${v.file}: ${v.message}`));
     });
     if (violations.length > 10)
-      console.log(chalk.gray(`    ... and ${violations.length - 10} more`));
+      logger.log(chalk.gray(`    ... and ${violations.length - 10} more`));
     return { ok: false, violations };
   }
 
-  console.log(chalk.green('\n✅ Architectural patterns verified.\n'));
+  logger.log(chalk.green('\n✅ Architectural patterns verified.\n'));
   return { ok: true };
 }
 
@@ -80,7 +80,7 @@ async function safeExecute(fn, context = 'architectural') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

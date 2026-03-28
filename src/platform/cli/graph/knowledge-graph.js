@@ -19,7 +19,7 @@ export default repoGraph;
  */
 function handleError(error) {
   try {
-    console.error('[knowledge-graph]', error instanceof Error ? error.message : String(error));
+    logger.error('[knowledge-graph]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

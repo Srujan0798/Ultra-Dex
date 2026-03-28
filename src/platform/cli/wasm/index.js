@@ -15,7 +15,7 @@ export default wasmRuntime;
  */
 function handleError(error) {
   try {
-    console.error('[index]', error instanceof Error ? error.message : String(error));
+    logger.error('[index]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

@@ -18,7 +18,10 @@
       "Bash(mv *)",
       "Bash(tee *)",
       "Bash(rm *)",
-      "Bash(npx *)"
+      "Bash(npx *)",
+      "Bash(ls *)",
+      "Bash(pkill *)",
+      "Bash(tar *)"
     ]
   },
   "$version": 3

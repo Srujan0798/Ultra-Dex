@@ -171,7 +171,7 @@ function setupRecorderHandlers(recorder, resolve, reject) {
     const stderr = data.toString();
     // Only warn about non-critical issues
     if (stderr.includes('overrun') || stderr.includes('underrun')) {
-      console.warn(`Audio recorder: ${stderr.trim()}`);
+      logger.warn(`Audio recorder: ${stderr.trim()}`);
     }
   });
 

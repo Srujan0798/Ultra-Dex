@@ -69,9 +69,9 @@ export function registerRagCommands(program) {
         } else {
           printInfo(chalk.white(`Found ${results.length} results:\n`));
           results.forEach((result, i) => {
-            console.log(chalk.blue(`${i + 1}. ${result.path}`));
+            logger.log(chalk.blue(`${i + 1}. ${result.path}`));
             if (result.symbols && result.symbols.length > 0) {
-              console.log(chalk.gray(`   Symbols: ${result.symbols.slice(0, 5).join(', ')}`));
+              logger.log(chalk.gray(`   Symbols: ${result.symbols.slice(0, 5).join(', ')}`));
             }
           });
         }
@@ -115,7 +115,7 @@ export function registerRagCommands(program) {
           printInfo(chalk.white('Dependencies:'));
           analysis.impactedFiles.forEach((f, i) => {
             const indent = '  '.repeat(f.distance - 1);
-            console.log(chalk.gray(`${indent}${i + 1}. ${f.path}`));
+            logger.log(chalk.gray(`${indent}${i + 1}. ${f.path}`));
           });
         }
 

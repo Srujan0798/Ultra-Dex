@@ -16,7 +16,7 @@ const ArrowMenu = ({ items, onSelect, initialIndex = 0 }) => {
 var ArrowMenu_default = ArrowMenu;
 function handleError(error) {
   try {
-    console.error("[ArrowMenu]", error instanceof Error ? error.message : String(error));
+    logger.error("[ArrowMenu]", error instanceof Error ? error.message : String(error));
   } catch (_) {
   }
 }

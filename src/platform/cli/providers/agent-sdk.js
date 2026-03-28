@@ -375,7 +375,7 @@ export class AutonomousAgent {
         iteration++;
 
         if (verbose) {
-          console.log(chalk.gray(`  [${this.name}] Iteration ${iteration}...`));
+          logger.log(chalk.gray(`  [${this.name}] Iteration ${iteration}...`));
         }
 
         const response = await this.provider.generateWithTools(
@@ -393,7 +393,7 @@ export class AutonomousAgent {
         if (response.toolUse && response.toolUse.length > 0) {
           for (const tool of response.toolUse) {
             if (verbose) {
-              console.log(
+              logger.log(
                 chalk.cyan(`    -> ${tool.name}(${JSON.stringify(tool.input).substring(0, 50)}...)`)
               );
             }
@@ -619,12 +619,12 @@ export class AgentOrchestrator {
     while (maxDelegations > 0) {
       const agent = this.agents.get(currentAgent);
       if (!agent) {
-        console.log(chalk.red(`Agent not found: ${currentAgent}`));
+        logger.log(chalk.red(`Agent not found: ${currentAgent}`));
         break;
       }
 
       if (verbose) {
-        console.log(chalk.cyan(`\n[${agent.name}] Starting task...`));
+        logger.log(chalk.cyan(`\n[${agent.name}] Starting task...`));
       }
 
       const result = await agent.run(currentTask, { verbose });

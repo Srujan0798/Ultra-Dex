@@ -95,7 +95,7 @@ export function registerCommands(program) {
     .option('--pg-version <ver>', 'PostgreSQL version', '16')
     .action(async (opts) => {
       const result = await deploy(opts);
-      console.log('Neon project created:', JSON.stringify(result, null, 2));
+      logger.log('Neon project created:', JSON.stringify(result, null, 2));
     });
 
   cmd
@@ -104,7 +104,7 @@ export function registerCommands(program) {
     .option('--project <id>', 'Project ID (omit for all)')
     .action(async (opts) => {
       const result = await status({ projectId: opts.project });
-      console.log(JSON.stringify(result, null, 2));
+      logger.log(JSON.stringify(result, null, 2));
     });
 
   cmd
@@ -113,7 +113,7 @@ export function registerCommands(program) {
     .requiredOption('--project <id>', 'Project ID')
     .action(async (opts) => {
       const result = await logs({ projectId: opts.project });
-      console.log(JSON.stringify(result, null, 2));
+      logger.log(JSON.stringify(result, null, 2));
     });
 
   return cmd;

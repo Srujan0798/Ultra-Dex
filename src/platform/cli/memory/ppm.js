@@ -11,7 +11,7 @@ export default ppmManager;
  */
 function handleError(error) {
   try {
-    console.error('[ppm]', error instanceof Error ? error.message : String(error));
+    logger.error('[ppm]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

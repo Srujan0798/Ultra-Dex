@@ -19,7 +19,7 @@ export default pythonRuntime;
  */
 function handleError(error) {
   try {
-    console.error('[python]', error instanceof Error ? error.message : String(error));
+    logger.error('[python]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

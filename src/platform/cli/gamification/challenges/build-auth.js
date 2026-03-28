@@ -80,7 +80,7 @@ class BuildAuthChallenge extends ChallengeEngine {
       chalk.gray(`Total Duration: ${Math.floor(this.duration / 60)}m ${this.duration % 60}s`)
     );
     printInfo(chalk.gray(`Description: ${this.description}`));
-    console.log('');
+    logger.log('');
 
     // Show stages with tasks
     printInfo(chalk.cyan('Challenge Stages:'));
@@ -96,14 +96,14 @@ class BuildAuthChallenge extends ChallengeEngine {
         printInfo(chalk.gray(`  • ${task}`));
       });
     });
-    console.log('');
+    logger.log('');
 
     if (this.bossFight) {
       printWarning(chalk.red(`💀 BOSS FIGHT: ${this.bossDescription}`));
       printInfo(
         chalk.gray('You must successfully authenticate and authorize a series of test users')
       );
-      console.log('');
+      logger.log('');
     }
 
     // Start the challenge
@@ -136,7 +136,7 @@ class BuildAuthChallenge extends ChallengeEngine {
       stage.tasks.forEach((task) => {
         printInfo(chalk.gray(`  • ${task}`));
       });
-      console.log('');
+      logger.log('');
 
       // Show stage-specific guidance
       await this.showStageGuidance(stage);
@@ -215,7 +215,7 @@ class BuildAuthChallenge extends ChallengeEngine {
     printWarning(chalk.red('\n💀 AUTHENTICATION BOSS FIGHT INITIATED!'));
     printInfo(chalk.yellow(this.bossDescription));
     printInfo(chalk.gray('You must demonstrate your auth system works correctly'));
-    console.log('');
+    logger.log('');
 
     // Simulate boss fight with authentication challenges
     const challenges = [
@@ -276,7 +276,7 @@ class BuildAuthChallenge extends ChallengeEngine {
       printInfo(chalk.gray('  ✓ Password reset functionality'));
       printInfo(chalk.gray('  ✓ Role-based access control'));
       printInfo(chalk.gray('  ✓ Security measures (rate limiting, input validation)'));
-      console.log('');
+      logger.log('');
     }
   }
 }

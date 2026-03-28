@@ -61,14 +61,17 @@ npx ultra-dex dashboard
 
 ## Interactive Features
 
-Ultra-Dex features a state-of-the-art interactive layer designed for seamless AI orchestration.
+Ultra-Dex includes a terminal-first interactive layer for orchestration and project inspection.
 
--   **Omni-Box Entry Point**: A unified TUI dashboard for project management, agent invocation, and system monitoring. Accessible via `ultra-dex dashboard` or `ultra-dex omni`.
--   **NLP Intent Router**: Communicate with the CLI using natural language. The router uses semantic similarity and fuzzy matching to translate your requests into actionable commands.
--   **System Doctor**: Automated diagnostics and self-healing for your development environment.
--   **Real-time Monitoring**: Visual feedback on agent status, token budgets, and project health.
+-   **Omni-Box Entry Point**: Launch the interactive dashboard with `npx ultra-dex dashboard`. Use `--once` for a single snapshot, `--json` for machine-readable output, or `--web` for the browser dashboard.
+-   **Natural Language Processing**: 60+ intent mappings with semantic understanding for agents, development, quality, project, and integration tasks
+-   **Interactive Terminal & Web Dashboard**: Terminal dashboard with `ultra-dex dashboard`, web dashboard with `--web --port`, and JSON output with `--json`
+-   **Themed Logger System**: JSON-capable logger with success/info/error levels
+-   **"Did you mean?" Typo Correction**: Automatic suggestion for mistyped commands like `buid` → `build"
+-   **Recent Projects and Quick Actions**: The dashboard surfaces recent workspaces, command shortcuts, and system health in one place.
+-   **System Doctor**: Run diagnostics and repair workflows from the CLI when you need a fast health check.
 
-For more details, see [docs/INTERFACE.md](docs/INTERFACE.md).
+For the implementation details and usage notes, see [docs/INTERFACE.md](docs/INTERFACE.md).
 
 ## Feature Matrix
 

@@ -19,7 +19,7 @@ export default {
  */
 function handleError(error) {
   try {
-    console.error('[pre-commit]', error instanceof Error ? error.message : String(error));
+    logger.error('[pre-commit]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

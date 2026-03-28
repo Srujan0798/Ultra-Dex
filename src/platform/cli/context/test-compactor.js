@@ -8,10 +8,10 @@
 import { ContextCompactor } from './compactor.js';
 
 async function runTests() {
-  console.log('Testing Context Compactor...');
+  logger.log('Testing Context Compactor...');
 
   // Test 1: Basic token calculation
-  console.log('\n1. Testing token calculation...');
+  logger.log('\n1. Testing token calculation...');
   const compactor = new ContextCompactor({ maxTokens: 1000, tokenThreshold: 0.95 });
 
   const testContext = {
@@ -27,18 +27,18 @@ async function runTests() {
   };
 
   const tokens = compactor.calculateTokens(testContext);
-  console.log(`Tokens in test context: ${tokens}`);
+  logger.log(`Tokens in test context: ${tokens}`);
 
   // Test 2: Sacred DNA detection
-  console.log('\n2. Testing Sacred DNA detection...');
+  logger.log('\n2. Testing Sacred DNA detection...');
   const isSacred = compactor.isSacredSection('This contains SACRED_DNA information');
-  console.log(`Is sacred section: ${isSacred}`);
+  logger.log(`Is sacred section: ${isSacred}`);
 
   const isNotSacred = compactor.isSacredSection('This is regular content');
-  console.log(`Is sacred section (should be false): ${isNotSacred}`);
+  logger.log(`Is sacred section (should be false): ${isNotSacred}`);
 
   // Test 3: Context compaction
-  console.log('\n3. Testing context compaction...');
+  logger.log('\n3. Testing context compaction...');
 
   // Create a large context to trigger compaction
   const largeContext = [
@@ -54,24 +54,24 @@ async function runTests() {
     });
   }
 
-  console.log(`Large context tokens before compaction: ${compactor.calculateTokens(largeContext)}`);
+  logger.log(`Large context tokens before compaction: ${compactor.calculateTokens(largeContext)}`);
 
   // Temporarily lower the threshold for testing
   const testCompactor = new ContextCompactor({ maxTokens: 500, tokenThreshold: 0.5 });
 
   const result = await testCompactor.compact(largeContext);
-  console.log(`Was compressed: ${result.compressed}`);
-  console.log(`Tokens before: ${result.tokensBefore}`);
-  console.log(`Tokens after: ${result.tokensAfter}`);
-  console.log(`Compression ratio: ${result.compressionRatio.toFixed(2)}`);
-  console.log(`Preserved sections: ${result.preservedSections.length}`);
+  logger.log(`Was compressed: ${result.compressed}`);
+  logger.log(`Tokens before: ${result.tokensBefore}`);
+  logger.log(`Tokens after: ${result.tokensAfter}`);
+  logger.log(`Compression ratio: ${result.compressionRatio.toFixed(2)}`);
+  logger.log(`Preserved sections: ${result.preservedSections.length}`);
 
   // Test 4: Statistics
-  console.log('\n4. Testing statistics...');
+  logger.log('\n4. Testing statistics...');
   const stats = testCompactor.getStats();
-  console.log('Statistics:', stats);
+  logger.log('Statistics:', stats);
 
-  console.log('\nAll tests completed successfully!');
+  logger.log('\nAll tests completed successfully!');
 }
 
 // Run the tests

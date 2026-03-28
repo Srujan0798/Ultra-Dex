@@ -10,7 +10,7 @@ const LoadingSpinner = ({ text = "Loading...", isActive = true }) => {
 var LoadingSpinner_default = LoadingSpinner;
 function handleError(error) {
   try {
-    console.error("[LoadingSpinner]", error instanceof Error ? error.message : String(error));
+    logger.error("[LoadingSpinner]", error instanceof Error ? error.message : String(error));
   } catch (_) {
   }
 }

@@ -63,7 +63,7 @@ export class TokenBudget {
       }
       this.initialized = true;
     } catch (e) {
-      console.error('Failed to init TokenBudget:', e);
+      logger.error('Failed to init TokenBudget:', e);
     }
   }
 
@@ -71,7 +71,7 @@ export class TokenBudget {
     try {
       await fs.writeFile(BUDGET_FILE, JSON.stringify(this.usage, null, 2));
     } catch (e) {
-      console.error('Failed to save TokenBudget:', e);
+      logger.error('Failed to save TokenBudget:', e);
     }
   }
 
@@ -140,7 +140,7 @@ export class TokenBudget {
       `${theme.dim('Time:')}           ${new Date().toLocaleString()}`,
     ].join('\n');
 
-    console.log(
+    logger.log(
       '\n' +
         boxen(content, {
           padding: 1,

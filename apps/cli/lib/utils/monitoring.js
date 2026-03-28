@@ -2,24 +2,32 @@
 
 /**
  * Ultra-Dex Monitoring and Observability System
- * Provides comprehensive logging, metrics, and health monitoring
+ * Provides metrics, health monitoring, and file-log sinks behind the logger spine.
  */
 
 import fs from 'fs/promises';
 import path from 'path';
-import { createLogger, format, transports } from 'winston';
 import os from 'os';
 import { performance } from 'perf_hooks';
+import { logger, serializeEvent } from './logger.js';
 
 // Configuration for monitoring system
 const MONITORING_CONFIG = {
   logLevel: process.env.LOG_LEVEL || 'info',
   logFile: process.env.LOG_FILE || '.ultra-dex/logs/ultra-dex.log',
   metricsEnabled: process.env.METRICS_ENABLED !== 'false',
-  healthCheckInterval: parseInt(process.env.HEALTH_CHECK_INTERVAL) || 30000, // 30 seconds
+  healthCheckInterval: parseInt(process.env.HEALTH_CHECK_INTERVAL) || 30000,
   maxLogSize: process.env.MAX_LOG_SIZE || '20m',
   maxLogFiles: parseInt(process.env.MAX_LOG_FILES) || 5,
 };
+
+function writeInternalWarning(message) {
+  try {
+    process.stderr.write(`${message}\n`);
+  } catch {
+    // ignore monitoring sink failures
+  }
+}
 
 // Metrics storage
 class MetricsCollector {
@@ -50,7 +58,6 @@ class MetricsCollector {
       metadata,
     });
 
-    // Keep only last 1000 performance records
     if (this.metrics.performance.length > 1000) {
       this.metrics.performance = this.metrics.performance.slice(-1000);
     }
@@ -76,10 +83,9 @@ class MetricsCollector {
       agentStats.failed++;
     }
 
-    // Calculate average duration
     agentStats.durations.push(duration);
     if (agentStats.durations.length > 100) {
-      agentStats.durations = agentStats.durations.slice(-100); // Keep last 100
+      agentStats.durations = agentStats.durations.slice(-100);
     }
 
     agentStats.avgDuration =
@@ -165,8 +171,7 @@ class HealthChecker {
       results.push(await this.runHealthCheck(name));
     }
 
-    // Determine overall status
-    const unhealthyChecks = results.filter((r) => r.status !== 'healthy');
+    const unhealthyChecks = results.filter((result) => result.status !== 'healthy');
     this.status = unhealthyChecks.length === 0 ? 'healthy' : 'degraded';
     this.lastCheck = new Date().toISOString();
 
@@ -186,19 +191,45 @@ class HealthChecker {
   }
 }
 
-// Create log directory if it doesn't exist
 async function ensureLogDirectory() {
   const logDir = path.dirname(MONITORING_CONFIG.logFile);
   try {
     await fs.mkdir(logDir, { recursive: true });
   } catch (error) {
-    console.warn(`Could not create log directory: ${error.message}`);
+    writeInternalWarning(`Could not create log directory: ${error.message}`);
   }
 }
 
-// Create logger
 async function createLoggerInstance() {
-  // Handle 'silent' log level - return a silent logger
+  await ensureLogDirectory();
+
+  let winston = null;
+  try {
+    winston = await import('winston');
+  } catch {
+    winston = null;
+  }
+
+  if (!winston) {
+    return {
+      transports: [],
+      async log(entry) {
+        if (MONITORING_CONFIG.logLevel === 'silent') return;
+        await fs.appendFile(
+          MONITORING_CONFIG.logFile,
+          JSON.stringify({
+            timestamp: new Date().toISOString(),
+            ...entry,
+          }) + '\n',
+          'utf8'
+        );
+      },
+      close() {},
+    };
+  }
+
+  const { createLogger, format, transports } = winston;
+
   if (MONITORING_CONFIG.logLevel === 'silent') {
     return createLogger({
       silent: true,
@@ -206,9 +237,6 @@ async function createLoggerInstance() {
     });
   }
 
-  await ensureLogDirectory();
-
-  // Only add console transport in debug mode or when explicitly requested
   const logTransports = [
     new transports.File({
       filename: MONITORING_CONFIG.logFile,
@@ -217,7 +245,6 @@ async function createLoggerInstance() {
     }),
   ];
 
-  // Add console transport only for debug mode
   if (MONITORING_CONFIG.logLevel === 'debug' || process.env.DEBUG) {
     logTransports.push(
       new transports.Console({
@@ -239,6 +266,22 @@ async function createLoggerInstance() {
   });
 }
 
+function getOperationNameForEvent(event) {
+  if (event.type === 'usage.command') {
+    return `command.${event.data?.command || 'unknown'}`;
+  }
+
+  if (event.type === 'recovery.operation') {
+    return `service.${event.data?.serviceName || 'unknown'}`;
+  }
+
+  if (event.type === 'analytics.agent_performance') {
+    return `agent.${event.data?.agent || 'unknown'}`;
+  }
+
+  return event.type;
+}
+
 // Monitoring singleton
 class MonitoringSystem {
   constructor() {
@@ -247,6 +290,7 @@ class MonitoringSystem {
     this.healthChecker = new HealthChecker();
     this.performanceMarks = new Map();
     this.initialized = false;
+    this.unsubscribeSink = null;
   }
 
   async initialize() {
@@ -254,15 +298,107 @@ class MonitoringSystem {
 
     this.logger = await createLoggerInstance();
     this.setupDefaultHealthChecks();
+    this.subscribeToSpine();
     this.initialized = true;
+  }
 
-    this.logger.info('Monitoring system initialized', {
-      config: MONITORING_CONFIG,
+  subscribeToSpine() {
+    this.unsubscribeSink?.();
+
+    this.unsubscribeSink = logger.subscribe('monitoring', async (event) => {
+      if (!this.logger) return;
+
+      const serialized = serializeEvent(event);
+      await Promise.resolve(this.logger.log({
+        level: event.level || 'info',
+        message: event.message || event.type,
+        eventType: event.type,
+        structuredEvent: serialized,
+      }));
+
+      if (MONITORING_CONFIG.metricsEnabled) {
+        this.updateMetricsFromEvent(event);
+      }
     });
   }
 
+  updateMetricsFromEvent(event) {
+    switch (event.type) {
+      case 'usage.command':
+        if (event.data?.stage === 'start') {
+          this.metrics.incrementCounter('requests');
+        }
+        if (typeof event.data?.durationMs === 'number') {
+          this.metrics.recordPerformance(getOperationNameForEvent(event), event.data.durationMs, {
+            stage: event.data.stage,
+            success: event.data.success,
+          });
+        }
+        break;
+      case 'analytics.agent_performance':
+        if (typeof event.data?.durationMs === 'number') {
+          this.metrics.recordAgentActivity(
+            event.data.agent || 'unknown',
+            event.data.durationMs,
+            event.data.success !== false
+          );
+          this.metrics.recordPerformance(getOperationNameForEvent(event), event.data.durationMs, {
+            success: event.data.success !== false,
+            provider: event.data.provider,
+          });
+        }
+        break;
+      case 'analytics.error':
+        this.metrics.incrementCounter('errors');
+        break;
+      case 'recovery.operation':
+        if (event.data?.status === 'failure') {
+          this.metrics.incrementCounter('errors');
+        }
+        if (typeof event.data?.duration === 'number') {
+          this.metrics.recordPerformance(getOperationNameForEvent(event), event.data.duration, {
+            status: event.data.status,
+            error: event.data.error,
+          });
+        }
+        break;
+      case 'monitoring.counter':
+        if (event.data?.counterName) {
+          this.metrics.incrementCounter(event.data.counterName);
+        }
+        break;
+      case 'monitoring.performance':
+        if (event.data?.operation && typeof event.data?.duration === 'number') {
+          this.metrics.recordPerformance(
+            event.data.operation,
+            event.data.duration,
+            event.data.metadata || {}
+          );
+        }
+        break;
+      case 'monitoring.agent_activity':
+        if (event.data?.agentName && typeof event.data?.duration === 'number') {
+          this.metrics.recordAgentActivity(
+            event.data.agentName,
+            event.data.duration,
+            event.data.success !== false
+          );
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
   async shutdown() {
-    if (!this.logger) return;
+    this.unsubscribeSink?.();
+    this.unsubscribeSink = null;
+
+    if (!this.logger) {
+      this.initialized = false;
+      return;
+    }
+
     try {
       for (const transport of this.logger.transports || []) {
         if (typeof transport.close === 'function') {
@@ -273,19 +409,19 @@ class MonitoringSystem {
         this.logger.close();
       }
     } catch (error) {
-      console.warn(`Failed to shutdown monitoring: ${error.message}`);
+      writeInternalWarning(`Failed to shutdown monitoring: ${error.message}`);
     }
+
+    this.logger = null;
     this.initialized = false;
   }
 
   setupDefaultHealthChecks() {
-    // System health check
     this.healthChecker.registerCheck('system', async () => {
       const start = performance.now();
       const memoryUsage = process.memoryUsage();
       const uptime = process.uptime();
-
-      const healthy = memoryUsage.heapUsed < memoryUsage.heapTotal * 0.8; // Less than 80% heap used
+      const healthy = memoryUsage.heapUsed < memoryUsage.heapTotal * 0.8;
 
       return {
         healthy,
@@ -296,14 +432,15 @@ class MonitoringSystem {
       };
     });
 
-    // Disk space check
     this.healthChecker.registerCheck('disk', async () => {
       const start = performance.now();
 
       try {
-        // This is a simplified check - in a real system, you'd use a library like 'check-disk-space'
-        const stats = { available: 1024 * 1024 * 1024, total: 1024 * 1024 * 1024 * 100 }; // 1GB available, 100GB total
-        const healthy = stats.available > 100 * 1024 * 1024; // At least 100MB available
+        const stats = {
+          available: 1024 * 1024 * 1024,
+          total: 1024 * 1024 * 1024 * 100,
+        };
+        const healthy = stats.available > 100 * 1024 * 1024;
 
         return {
           healthy,
@@ -322,47 +459,97 @@ class MonitoringSystem {
     });
   }
 
-  // Logging methods
+  // Compatibility wrappers: route legacy callers into the logger spine.
   log(level, message, meta = {}) {
-    if (!this.initialized) return;
-    this.logger[level](message, meta);
+    return logger.event('log.entry', meta, {
+      kind: 'log',
+      level,
+      message,
+      console: false,
+      source: 'compat.monitoring',
+    });
   }
 
   info(message, meta = {}) {
-    this.log('info', message, meta);
+    return logger.event('monitoring.log', meta, {
+      level: 'info',
+      message,
+      console: false,
+      source: 'compat.monitoring',
+    });
   }
 
   warn(message, meta = {}) {
-    this.log('warn', message, meta);
+    return logger.event('monitoring.log', meta, {
+      level: 'warn',
+      message,
+      console: false,
+      source: 'compat.monitoring',
+    });
   }
 
   error(message, meta = {}) {
-    this.log('error', message, meta);
-    this.metrics.incrementCounter('errors');
+    return logger.event('monitoring.log', meta, {
+      level: 'error',
+      message,
+      console: false,
+      source: 'compat.monitoring',
+    });
   }
 
   debug(message, meta = {}) {
-    this.log('debug', message, meta);
+    return logger.event('monitoring.log', meta, {
+      level: 'debug',
+      message,
+      console: false,
+      source: 'compat.monitoring',
+    });
   }
 
-  // Metrics methods
+  recordEvent(eventType, metadata = {}) {
+    return logger.event(eventType, metadata, {
+      console: false,
+      source: 'compat.monitoring',
+    });
+  }
+
   incrementCounter(counterName) {
-    this.metrics.incrementCounter(counterName);
+    return logger.event(
+      'monitoring.counter',
+      { counterName },
+      {
+        console: false,
+        source: 'compat.monitoring',
+      }
+    );
   }
 
   recordPerformance(operation, duration, metadata = {}) {
-    this.metrics.recordPerformance(operation, duration, metadata);
+    return logger.event(
+      'monitoring.performance',
+      { operation, duration, metadata },
+      {
+        console: false,
+        source: 'compat.monitoring',
+      }
+    );
   }
 
   recordAgentActivity(agentName, duration, success = true) {
-    this.metrics.recordAgentActivity(agentName, duration, success);
+    return logger.event(
+      'monitoring.agent_activity',
+      { agentName, duration, success },
+      {
+        console: false,
+        source: 'compat.monitoring',
+      }
+    );
   }
 
   getMetrics() {
     return this.metrics.getMetrics();
   }
 
-  // Health check methods
   registerHealthCheck(name, checkFn, interval) {
     this.healthChecker.registerCheck(name, checkFn, interval);
   }
@@ -379,12 +566,10 @@ class MonitoringSystem {
     return this.healthChecker.getStatus();
   }
 
-  // Alerting logic
   checkAlerts() {
     const metrics = this.getMetrics();
     const alerts = [];
 
-    // Memory alert
     if (metrics.system) {
       const usedMemPercent =
         ((metrics.system.totalMemory - metrics.system.freeMemory) / metrics.system.totalMemory) *
@@ -393,82 +578,74 @@ class MonitoringSystem {
         alerts.push({
           level: 'critical',
           type: 'memory',
-          message: `High memory usage: \${usedMemPercent.toFixed(1)}%`,
+          message: `High memory usage: ${usedMemPercent.toFixed(1)}%`,
         });
       } else if (usedMemPercent > 80) {
         alerts.push({
           level: 'warning',
           type: 'memory',
-          message: `Elevated memory usage: \${usedMemPercent.toFixed(1)}%`,
+          message: `Elevated memory usage: ${usedMemPercent.toFixed(1)}%`,
         });
       }
     }
 
-    // Error rate alert
     if (metrics.errors > 10) {
       alerts.push({
         level: 'critical',
         type: 'errors',
-        message: `High error count detected: \${metrics.errors} errors`,
+        message: `High error count detected: ${metrics.errors} errors`,
       });
     }
 
-    // Performance alert
-    const slowOps = metrics.performance.filter((p) => p.duration > 5000);
+    const slowOps = metrics.performance.filter((entry) => entry.duration > 5000);
     if (slowOps.length > 0) {
       alerts.push({
         level: 'warning',
         type: 'performance',
-        message: `\${slowOps.length} operations took longer than 5s`,
+        message: `${slowOps.length} operations took longer than 5s`,
       });
     }
 
     return alerts;
   }
 
-  // Performance timing
   markStart(operation) {
     this.performanceMarks.set(operation, performance.now());
   }
 
   markEnd(operation) {
     const start = this.performanceMarks.get(operation);
-    if (start) {
-      const duration = performance.now() - start;
-      this.performanceMarks.delete(operation);
-      this.recordPerformance(operation, duration);
-      return duration;
-    }
-    return null;
+    if (!start) return null;
+
+    const duration = performance.now() - start;
+    this.performanceMarks.delete(operation);
+    void this.recordPerformance(operation, duration);
+    return duration;
   }
 
-  // Utility methods
   async exportLogs() {
     try {
-      // Check if log file exists before trying to read it
       try {
         await fs.access(MONITORING_CONFIG.logFile);
       } catch {
-        // If log file doesn't exist, return empty content
         return '# No logs available\n';
       }
 
       const logContent = await fs.readFile(MONITORING_CONFIG.logFile, 'utf8');
       return logContent;
     } catch (error) {
-      this.error('Failed to export logs', { error: error.message });
+      writeInternalWarning(`Failed to export logs: ${error.message}`);
       return '# Error reading logs\n' + error.message;
     }
   }
 
-  async exportMetrics(format = 'json') {
+  async exportMetrics(formatName = 'json') {
     const metrics = this.getMetrics();
 
-    switch (format.toLowerCase()) {
+    switch (formatName.toLowerCase()) {
       case 'json':
         return JSON.stringify(metrics, null, 2);
       case 'csv':
-        // Simplified CSV export
         return `metric,value\nrequests,${metrics.requests}\nerrors,${metrics.errors}\nuptime,${metrics.uptime}`;
       default:
         return JSON.stringify(metrics, null, 2);

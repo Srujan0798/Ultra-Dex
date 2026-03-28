@@ -56,15 +56,15 @@ import chalk from 'chalk';
 export default {
   // Called when plugin is loaded
   async activate(pluginManager, cliProgram) {
-    console.log('My plugin activated!');
+    logger.log('My plugin activated!');
     
     // Register hooks
     pluginManager.subscribeToHook('pre-build', async (context) => {
-      console.log('About to build:', context);
+      logger.log('About to build:', context);
     });
 
     pluginManager.subscribeToHook('post-generate', async (context) => {
-      console.log('Generated:', context);
+      logger.log('Generated:', context);
       printSuccess(chalk.green('✓ Custom post-generation task completed'));
     });
     
@@ -84,7 +84,7 @@ export default {
 
   // Called when plugin is unloaded
   async deactivate() {
-    console.log('My plugin deactivated');
+    logger.log('My plugin deactivated');
   }
 };
 `;
@@ -135,7 +135,7 @@ async function safeExecute(fn, context = 'guide') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

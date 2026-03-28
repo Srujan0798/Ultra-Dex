@@ -5,7 +5,7 @@
  * Provides "Did you mean?" functionality using Levenshtein distance
  */
 
-import chalk from 'chalk';
+import chalk from '../../../../src/utils/chalk.js';
 
 /**
  * Calculates the Levenshtein distance between two strings

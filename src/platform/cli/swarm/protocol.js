@@ -726,7 +726,7 @@ export function createHandover(previousAgent, nextAgent, summary, artifacts = []
 function handleModuleError(error, context = 'protocol') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

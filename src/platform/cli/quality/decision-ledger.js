@@ -311,7 +311,7 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
       }
       
       printSuccess(chalk.green(`\n📋 Decision Details: ${decisionId}\n`));
-      console.log(match[0]);
+      logger.log(match[0]);
       
       return match[0];
     } catch (error) {

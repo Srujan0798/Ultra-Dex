@@ -35,7 +35,7 @@ export class AuditLogger {
       await fs.mkdir(this.logDir, { recursive: true });
       this.startFlushInterval();
     } catch (error) {
-      console.error(chalk.red('[Audit] Failed to initialize:', error.message));
+      logger.error(chalk.red('[Audit] Failed to initialize:', error.message));
     }
   }
 
@@ -108,7 +108,7 @@ export class AuditLogger {
       const lines = entries.map((e) => JSON.stringify(e)).join('\n') + '\n';
       await fs.appendFile(logFile, lines, 'utf8');
     } catch (error) {
-      console.error(chalk.red('[Audit] Failed to write logs:', error.message));
+      logger.error(chalk.red('[Audit] Failed to write logs:', error.message));
       // Put entries back in buffer
       this.buffer.unshift(...entries);
     }
@@ -163,7 +163,7 @@ export class AuditLogger {
 
       return results;
     } catch (error) {
-      console.error(chalk.red('[Audit] Query failed:', error.message));
+      logger.error(chalk.red('[Audit] Query failed:', error.message));
       return [];
     }
   }
@@ -231,7 +231,7 @@ export class AuditLogger {
 
       return { deleted };
     } catch (error) {
-      console.error(chalk.red('[Audit] Cleanup failed:', error.message));
+      logger.error(chalk.red('[Audit] Cleanup failed:', error.message));
       return { deleted: 0, error: error.message };
     }
   }

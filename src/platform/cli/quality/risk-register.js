@@ -67,12 +67,12 @@ export function registerRiskCommand(program) {
       const rr = new RiskRegister();
       if (options.add) {
         // In a real app, use inquirer to get details
-        console.log('Use interactive mode to add risks (Coming soon)');
+        logger.log('Use interactive mode to add risks (Coming soon)');
       } else {
         const risks = await rr.loadRisks();
         console.table(risks);
         await rr.generateReport(risks);
-        console.log('Risk register updated: RISK-REGISTER.md');
+        logger.log('Risk register updated: RISK-REGISTER.md');
       }
     });
 }

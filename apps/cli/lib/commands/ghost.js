@@ -16,7 +16,7 @@ export function registerGhostCommand(program) {
         .option('--unsafe', 'Disable user confirmation (DANGEROUS)', false)
         .option('--debug', 'Show distinct debug info', false)
         .action(async (goal, options) => {
-            console.log('👻 Initializing Ghost Agent...');
+            logger.log('👻 Initializing Ghost Agent...');
 
             // Configure agent
             ghostAgent.safetyMode = !options.unsafe;
@@ -39,7 +39,7 @@ async function safeExecute(fn, context = 'ghost') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

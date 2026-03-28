@@ -55,7 +55,7 @@ async function runAgent(providerId, agentName, task, extraContext) {
       : `Task:\n${task}`;
     return await provider.generate(systemPrompt, userPrompt);
   } catch (error) {
-    console.error(`[Agent:${agentName}] Execution error:`, error.message);
+    logger.error(`[Agent:${agentName}] Execution error:`, error.message);
     throw error;
   }
 }
@@ -70,7 +70,7 @@ async function runAgent(providerId, agentName, task, extraContext) {
  * @returns {Promise<{app: express.Application, server: http.Server, broadcast: Function, wss: WebSocketServer}>}
  * @example
  * const { server, app } = await startApiGateway({ port: 8080 });
- * console.log('Gateway running on port 8080');
+ * logger.log('Gateway running on port 8080');
  * 
  * @swagger
  * /health:
@@ -174,7 +174,7 @@ export async function startApiGateway({ port = 3000, requireAuth = true } = {}) 
       const context = await readContextFiles();
       res.json({ context });
     } catch (error) {
-      console.error('[Context] Error reading files:', error.message);
+      logger.error('[Context] Error reading files:', error.message);
       res.status(500).json({ error: 'Failed to read context' });
     }
   });
@@ -204,7 +204,7 @@ export async function startApiGateway({ port = 3000, requireAuth = true } = {}) 
       const output = await runAgent(providerId, agentName, task, context);
       res.json({ ok: true, agent: agentName, output });
     } catch (error) {
-      console.error(`[Agent:${agentName}] Error:`, error.message);
+      logger.error(`[Agent:${agentName}] Error:`, error.message);
       res.status(500).json({ ok: false, error: error.message });
     }
   });
@@ -235,7 +235,7 @@ export async function startApiGateway({ port = 3000, requireAuth = true } = {}) 
       );
       res.json({ ok: true, plan });
     } catch (error) {
-      console.error('[Planner] Error:', error.message);
+      logger.error('[Planner] Error:', error.message);
       res.status(500).json({ ok: false, error: error.message });
     }
   });

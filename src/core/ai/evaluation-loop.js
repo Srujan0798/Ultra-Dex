@@ -504,7 +504,7 @@ export function registerEvaluationLoopCommand(program) {
           printInfo(`Model used: ${result.modelUsed}`);
           printInfo(`Attempts: ${result.attempts}`);
           printInfo(`Escalated: ${result.escalated ? 'Yes' : 'No'}`);
-          console.log(`\nResult:\n${result.content}`);
+          logger.log(`\nResult:\n${result.content}`);
         } else {
           printError(`❌ Task failed to meet quality standards after all attempts`);
         }

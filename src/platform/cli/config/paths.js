@@ -16,7 +16,7 @@ export const LIVE_TEMPLATES_ROOT = path.join(ASSETS_ROOT, 'live-templates');
  */
 function handleError(error) {
   try {
-    console.error('[paths]', error instanceof Error ? error.message : String(error));
+    logger.error('[paths]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

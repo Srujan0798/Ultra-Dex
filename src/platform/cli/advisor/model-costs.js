@@ -13,7 +13,7 @@ export const MODEL_COSTS = [
  */
 function handleError(error) {
   try {
-    console.error('[model-costs]', error instanceof Error ? error.message : String(error));
+    logger.error('[model-costs]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

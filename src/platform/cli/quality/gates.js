@@ -9,7 +9,7 @@ export { formatGateTable, summarizeGateResults } from './report.js';
  */
 function handleError(error) {
   try {
-    console.error('[gates]', error instanceof Error ? error.message : String(error));
+    logger.error('[gates]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

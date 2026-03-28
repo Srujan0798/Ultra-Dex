@@ -356,7 +356,7 @@ export function registerGitHubCommand(program) {
     .option('--labels <labels>', 'Filter by labels (comma-separated)')
     .option('--draft', 'Create PR as draft')
     .action(async (options) => {
-      console.log(chalk.cyan('\n🐙 Ultra-Dex GitHub Integration\n'));
+      logger.log(chalk.cyan('\n🐙 Ultra-Dex GitHub Integration\n'));
 
       // Check GitHub CLI
       const spinner = ora('Checking GitHub CLI...').start();
@@ -364,13 +364,13 @@ export function registerGitHubCommand(program) {
 
       if (!ghStatus.installed) {
         spinner.fail('GitHub CLI (gh) not installed');
-        console.log(chalk.yellow('\nInstall: https://cli.github.com/'));
+        logger.log(chalk.yellow('\nInstall: https://cli.github.com/'));
         return;
       }
 
       if (!ghStatus.authenticated) {
         spinner.fail('Not authenticated with GitHub');
-        console.log(chalk.yellow('\nRun: gh auth login'));
+        logger.log(chalk.yellow('\nRun: gh auth login'));
         return;
       }
 
@@ -379,16 +379,16 @@ export function registerGitHubCommand(program) {
       // Get repo info
       const repo = await getRepoInfo();
       if (!repo) {
-        console.log(chalk.yellow('\n⚠️  Not in a GitHub repository'));
+        logger.log(chalk.yellow('\n⚠️  Not in a GitHub repository'));
         return;
       }
 
-      console.log(chalk.gray(`Repository: ${repo.owner.login}/${repo.name}\n`));
+      logger.log(chalk.gray(`Repository: ${repo.owner.login}/${repo.name}\n`));
 
       try {
         if (options.status) {
           // Just show status (already done above)
-          console.log(chalk.green('✅ GitHub integration active'));
+          logger.log(chalk.green('✅ GitHub integration active'));
           return;
         }
 
@@ -400,13 +400,13 @@ export function registerGitHubCommand(program) {
           spinner.succeed(`Found ${issues.length} open issues\n`);
 
           if (issues.length === 0) {
-            console.log(chalk.gray('No open issues found.'));
+            logger.log(chalk.gray('No open issues found.'));
             return;
           }
 
           for (const issue of issues) {
             const labels = (issue.labels || []).map((l) => chalk.cyan(`[${l.name}]`)).join(' ');
-            console.log(`#${chalk.bold(issue.number)} ${issue.title} ${labels}`);
+            logger.log(`#${chalk.bold(issue.number)} ${issue.title} ${labels}`);
           }
           return;
         }
@@ -418,7 +418,7 @@ export function registerGitHubCommand(program) {
           spinner.succeed(`Found ${prs.length} open PRs\n`);
 
           for (const pr of prs) {
-            console.log(
+            logger.log(
               `#${chalk.bold(pr.number)} ${pr.title} ${chalk.gray(`(${pr.headRefName})`)}`
             );
           }
@@ -432,9 +432,9 @@ export function registerGitHubCommand(program) {
           spinner.succeed(`Synced ${result.all.length} issues (${result.new.length} new)\n`);
 
           if (result.new.length > 0) {
-            console.log(chalk.bold('New tasks:'));
+            logger.log(chalk.bold('New tasks:'));
             for (const task of result.new) {
-              console.log(`  ${task.agent} #${task.issueNumber}: ${task.title}`);
+              logger.log(`  ${task.agent} #${task.issueNumber}: ${task.title}`);
             }
           }
           return;
@@ -494,7 +494,7 @@ export function registerGitHubCommand(program) {
 
         // Recurse with selected action
         if (action !== 'cancel') {
-          console.log(
+          logger.log(
             chalk.gray(
               `Re-run with --${action} to execute this action non-interactively (menu recursion disabled).`
             )

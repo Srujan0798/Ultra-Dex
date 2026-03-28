@@ -55,7 +55,7 @@ export const QUICK_START_TEMPLATE = `# {{PROJECT_NAME}} - Quick Start
  */
 function handleQuickstartError(error) {
   try {
-    console.error('[quick-start]', error instanceof Error ? error.message : String(error));
+    logger.error('[quick-start]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

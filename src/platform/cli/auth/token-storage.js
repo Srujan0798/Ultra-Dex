@@ -25,11 +25,11 @@ export class SecureTokenStorage {
     try {
       this.keytar = await import('keytar');
       this.available = true;
-      console.log(chalk.green('[TokenStorage] Secure storage initialized'));
+      logger.log(chalk.green('[TokenStorage] Secure storage initialized'));
       return true;
     } catch (error) {
-      console.log(chalk.yellow('[TokenStorage] keytar not available:', error.message));
-      console.log(chalk.gray('   Falling back to file-based storage (less secure)'));
+      logger.log(chalk.yellow('[TokenStorage] keytar not available:', error.message));
+      logger.log(chalk.gray('   Falling back to file-based storage (less secure)'));
       this.available = false;
       return false;
     }
@@ -44,7 +44,7 @@ export class SecureTokenStorage {
         await this.keytar.default.setPassword(SERVICE_NAME, account, token);
         return { success: true };
       } catch (error) {
-        console.error(chalk.red('[TokenStorage] Failed to store token:', error.message));
+        logger.error(chalk.red('[TokenStorage] Failed to store token:', error.message));
         return { success: false, error: error.message };
       }
     } else {
@@ -62,7 +62,7 @@ export class SecureTokenStorage {
         const token = await this.keytar.default.getPassword(SERVICE_NAME, account);
         return { success: true, token };
       } catch (error) {
-        console.error(chalk.red('[TokenStorage] Failed to get token:', error.message));
+        logger.error(chalk.red('[TokenStorage] Failed to get token:', error.message));
         return { success: false, error: error.message };
       }
     } else {
@@ -79,7 +79,7 @@ export class SecureTokenStorage {
         const result = await this.keytar.default.deletePassword(SERVICE_NAME, account);
         return { success: result };
       } catch (error) {
-        console.error(chalk.red('[TokenStorage] Failed to delete token:', error.message));
+        logger.error(chalk.red('[TokenStorage] Failed to delete token:', error.message));
         return { success: false, error: error.message };
       }
     } else {
@@ -99,7 +99,7 @@ export class SecureTokenStorage {
           accounts: accounts.map((a) => ({ account: a.account })), // Don't return passwords
         };
       } catch (error) {
-        console.error(chalk.red('[TokenStorage] Failed to list accounts:', error.message));
+        logger.error(chalk.red('[TokenStorage] Failed to list accounts:', error.message));
         return { success: false, error: error.message };
       }
     } else {

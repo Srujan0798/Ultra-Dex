@@ -13,6 +13,7 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { marked } from 'marked';
+import { logger } from '../utils/logger.js';
 
 // Parse IMPLEMENTATION-PLAN.md to extract structured data
 async function parseImplementationPlan(planPath) {
@@ -175,7 +176,7 @@ export async function ${endpoint.method.toLowerCase()}(request: NextRequest) {
     
     return NextResponse.json({ success: true, data: body }, { status: 200 });
   } catch (error) {
-    console.error('Error in ${endpoint.method} ${endpoint.path}:', error);
+    logger.error('Error in ${endpoint.method} ${endpoint.path}:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -207,7 +208,7 @@ router.${endpoint.method.toLowerCase()}('${endpoint.path}', async (req, res) => 
     
     res.json({ success: true, data });
   } catch (error) {
-    console.error('Error:', error);
+    logger.error('Error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -514,7 +515,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    console.error('Stripe checkout error:', error);
+    logger.error('Stripe checkout error:', error);
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }
@@ -550,7 +551,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook error:', error);
+    logger.error('Webhook error:', error);
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 400 }
@@ -597,9 +598,7 @@ export function registerCodeGenCommand(program) {
           await fs.access(planPath);
         } catch {
           spinner.fail(chalk.red(`Implementation plan not found: ${planPath}`));
-          console.log(
-            chalk.yellow('Run "npx ultra-dex init" first to create an implementation plan.')
-          );
+          logger.warn('Run "npx ultra-dex init" first to create an implementation plan.');
           process.exit(1);
         }
 
@@ -608,27 +607,27 @@ export function registerCodeGenCommand(program) {
         spinner.succeed('Parsed implementation plan');
 
         if (options.preview) {
-          console.log(chalk.blue('\n📊 Implementation Plan Analysis:'));
-          console.log(chalk.gray(`\nTech Stack:`));
-          console.log(`  Frontend: ${sections.techStack.frontend || 'Not specified'}`);
-          console.log(`  Database: ${sections.techStack.database || 'Not specified'}`);
-          console.log(`  Auth: ${sections.techStack.auth || 'Not specified'}`);
-          console.log(`  Payments: ${sections.techStack.payments || 'Not specified'}`);
+          logger.header('Implementation Plan Analysis');
+          logger.info('Tech Stack:');
+          logger.info(`  Frontend: ${sections.techStack.frontend || 'Not specified'}`);
+          logger.info(`  Database: ${sections.techStack.database || 'Not specified'}`);
+          logger.info(`  Auth: ${sections.techStack.auth || 'Not specified'}`);
+          logger.info(`  Payments: ${sections.techStack.payments || 'Not specified'}`);
 
-          console.log(chalk.gray(`\nData Models: ${sections.dataModel.length}`));
+          logger.info(`Data Models: ${sections.dataModel.length}`);
           sections.dataModel.forEach((entity) => {
-            console.log(`  - ${entity.name}`);
+            logger.info(`  - ${entity.name}`);
           });
 
-          console.log(chalk.gray(`\nAPI Endpoints: ${sections.apiBlueprint.length}`));
+          logger.info(`API Endpoints: ${sections.apiBlueprint.length}`);
           sections.apiBlueprint.slice(0, 5).forEach((api) => {
-            console.log(`  - ${api.method} ${api.path}`);
+            logger.info(`  - ${api.method} ${api.path}`);
           });
           if (sections.apiBlueprint.length > 5) {
-            console.log(`  ... and ${sections.apiBlueprint.length - 5} more`);
+            logger.info(`  ... and ${sections.apiBlueprint.length - 5} more`);
           }
 
-          console.log(chalk.yellow('\n✨ Run without --preview to create these files'));
+          logger.warn('\n✨ Run without --preview to create these files');
           return;
         }
 
@@ -679,14 +678,14 @@ export function registerCodeGenCommand(program) {
 
         generationSpinner.succeed(chalk.green('Code generated successfully!'));
 
-        console.log(chalk.blue('\n📁 Generated Files:'));
+        logger.log(chalk.blue('\n📁 Generated Files:'));
         if (
           !options.apiOnly &&
           !options.componentsOnly &&
           !options.authOnly &&
           !options.paymentsOnly
         ) {
-          console.log(chalk.gray('  - prisma/schema.prisma'));
+          logger.log(chalk.gray('  - prisma/schema.prisma'));
         }
         if (
           !options.dbOnly &&
@@ -694,10 +693,10 @@ export function registerCodeGenCommand(program) {
           !options.authOnly &&
           !options.paymentsOnly
         ) {
-          console.log(chalk.gray('  - app/api/*/route.ts'));
+          logger.log(chalk.gray('  - app/api/*/route.ts'));
         }
         if (!options.dbOnly && !options.apiOnly && !options.authOnly && !options.paymentsOnly) {
-          console.log(chalk.gray('  - app/components/*.tsx'));
+          logger.log(chalk.gray('  - app/components/*.tsx'));
         }
         if (
           !options.dbOnly &&
@@ -705,21 +704,21 @@ export function registerCodeGenCommand(program) {
           !options.componentsOnly &&
           !options.paymentsOnly
         ) {
-          console.log(chalk.gray('  - middleware.ts (auth)'));
+          logger.log(chalk.gray('  - middleware.ts (auth)'));
         }
         if (!options.dbOnly && !options.apiOnly && !options.componentsOnly && !options.authOnly) {
-          console.log(chalk.gray('  - lib/stripe.ts'));
+          logger.log(chalk.gray('  - lib/stripe.ts'));
         }
 
-        console.log(chalk.yellow('\n⚠️  Next Steps:'));
-        console.log(
+        logger.log(chalk.yellow('\n⚠️  Next Steps:'));
+        logger.log(
           chalk.gray(
             '  1. Install dependencies: npm install @prisma/client next-auth @clerk/nextjs stripe'
           )
         );
-        console.log(chalk.gray('  2. Set up environment variables in .env'));
-        console.log(chalk.gray('  3. Run migrations: npx prisma migrate dev'));
-        console.log(chalk.gray('  4. Review and customize the generated code'));
+        logger.log(chalk.gray('  2. Set up environment variables in .env'));
+        logger.log(chalk.gray('  3. Run migrations: npx prisma migrate dev'));
+        logger.log(chalk.gray('  4. Review and customize the generated code'));
       } catch (error) {
         spinner.fail(chalk.red(`Error: ${error.message}`));
         process.exit(1);

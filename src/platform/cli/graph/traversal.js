@@ -473,7 +473,7 @@ export function registerGraphTraversalCommand(program) {
               printInfo(`  - ${support.node.type}: ${support.node.content.substring(0, 100)}...`);
             }
           }
-          console.log('');
+          logger.log('');
         }
       } catch (error) {
         printError(`Graph traversal failed: ${error.message}`);

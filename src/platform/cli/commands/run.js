@@ -562,6 +562,7 @@ export function registerRunCommand(program) {
           printInfo('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude');
           printInfo('  export OPENAI_API_KEY=sk-...         # OpenAI');
           printInfo('  export GOOGLE_AI_KEY=...             # Gemini');
+          printInfo('  export NVIDIA_API_KEY=...            # NVIDIA (Free)');
           printInfo('\nOr use local AI with Ollama (no key needed):');
           printInfo('  ultra-dex run planner -t "task" --provider ollama\n');
           return;

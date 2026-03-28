@@ -30,7 +30,7 @@ export default TeamSyncManager;
  */
 function handleError(error) {
   try {
-    console.error('[sync]', error instanceof Error ? error.message : String(error));
+    logger.error('[sync]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

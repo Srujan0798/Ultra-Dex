@@ -15,7 +15,7 @@ export async function readFileSafe(filePath, label = '') {
     return { label, content };
   } catch (err) {
     if (err.code !== 'ENOENT') {
-      console.error(`[File] Error reading ${filePath}: ${err.message}`);
+      logger.error(`[File] Error reading ${filePath}: ${err.message}`);
     }
     return { label, content: '' };
   }
@@ -48,7 +48,7 @@ export function resolveAssetPath(basePath, relativePath) {
   try {
     return path.join(basePath, relativePath);
   } catch (err) {
-    console.error(`[File] Error resolving path: ${err.message}`);
+    logger.error(`[File] Error resolving path: ${err.message}`);
     return '';
   }
 }
@@ -73,7 +73,7 @@ export async function copyDirectory(sourceDir, targetDir) {
       }
     }
   } catch (err) {
-    console.error(`[File] Error copying directory ${sourceDir} to ${targetDir}: ${err.message}`);
+    logger.error(`[File] Error copying directory ${sourceDir} to ${targetDir}: ${err.message}`);
     throw err;
   }
 }

@@ -337,7 +337,7 @@ export function registerStatusCommand(program) {
 }
 
 export function registerWatchCommand(program) {
-  program.command('watch-legacy').action(() => console.log("Use 'ultra-dex watch' instead."));
+  program.command('watch-legacy').action(() => logger.log("Use 'ultra-dex watch' instead."));
 }
 
 export function registerPreCommitCommand(program) {

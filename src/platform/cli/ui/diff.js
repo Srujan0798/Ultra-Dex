@@ -7,13 +7,13 @@ import chalk from 'chalk';
 import { theme } from './theme.js';
 
 export function renderDiff(filePath, originalContent, newContent) {
-  console.log(theme.dim('╭──────────────────────────────────────────────────────────╮'));
-  console.log(
+  logger.log(theme.dim('╭──────────────────────────────────────────────────────────╮'));
+  logger.log(
     theme.dim('│ ') +
       theme.title('DIFF: ' + filePath) +
       theme.dim(' '.repeat(Math.max(0, 52 - filePath.length)) + '│')
   );
-  console.log(theme.dim('├──────────────────────────────────────────────────────────┤'));
+  logger.log(theme.dim('├──────────────────────────────────────────────────────────┤'));
 
   const originalLines = originalContent.split('\n');
   const newLines = newContent.split('\n');
@@ -30,24 +30,24 @@ export function renderDiff(filePath, originalContent, newContent) {
 
     if (oldLine === newLine) {
       // Unchanged (Context)
-      console.log(theme.dim('│ ') + chalk.gray('  ' + oldLine));
+      logger.log(theme.dim('│ ') + chalk.gray('  ' + oldLine));
       i++;
       j++;
     } else {
       // Change detected
       if (oldLine) {
-        console.log(theme.dim('│ ') + chalk.red('- ' + oldLine));
+        logger.log(theme.dim('│ ') + chalk.red('- ' + oldLine));
         i++;
       }
       if (newLine) {
-        console.log(theme.dim('│ ') + chalk.green('+ ' + newLine));
+        logger.log(theme.dim('│ ') + chalk.green('+ ' + newLine));
         j++;
       }
     }
   }
 
-  console.log(theme.dim('╰──────────────────────────────────────────────────────────╯'));
-  console.log('');
+  logger.log(theme.dim('╰──────────────────────────────────────────────────────────╯'));
+  logger.log('');
 }
 
 /**
@@ -58,7 +58,7 @@ export function renderDiff(filePath, originalContent, newContent) {
 function handleModuleError(error, context = 'diff') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

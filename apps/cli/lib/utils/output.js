@@ -1,7 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import chalk from 'chalk';
-import { formatError, formatWarning, formatInfo, formatSuccess, formatStatus } from './status.js';
+import { logger } from './logger.js';
 
 /**
  * Print an error message to the console
@@ -9,14 +8,10 @@ import { formatError, formatWarning, formatInfo, formatSuccess, formatStatus } f
  * @param {Error} [err] - Optional error object
  */
 export function printError(message, err) {
-  try {
-    console.log(formatError(message));
-    if (err?.message) {
-      console.log(chalk.gray(`  → ${err.message}`));
-    }
-  } catch (e) {
-    console.error('Failed to print error:', e);
-  }
+  logger.error(message, { 
+    error: err?.message, 
+    stack: process.env.DEBUG === 'true' ? err?.stack : undefined 
+  });
 }
 
 /**
@@ -24,11 +19,7 @@ export function printError(message, err) {
  * @param {string} message - Warning message
  */
 export function printWarning(message) {
-  try {
-    console.log(formatWarning(message));
-  } catch (e) {
-    console.error('Failed to print warning:', e);
-  }
+  logger.warn(message);
 }
 
 /**
@@ -36,11 +27,7 @@ export function printWarning(message) {
  * @param {string} message - Info message
  */
 export function printInfo(message) {
-  try {
-    console.log(formatInfo(message));
-  } catch (e) {
-    console.error('Failed to print info:', e);
-  }
+  logger.info(message);
 }
 
 /**
@@ -48,9 +35,5 @@ export function printInfo(message) {
  * @param {string} message - Success message
  */
 export function printSuccess(message) {
-  try {
-    console.log(formatSuccess(message));
-  } catch (e) {
-    console.error('Failed to print success:', e);
-  }
+  logger.success(message);
 }

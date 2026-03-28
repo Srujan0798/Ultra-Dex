@@ -217,10 +217,10 @@ export async function verifyCommand(taskName, options) {
         },
       };
 
-      console.log(JSON.stringify(result, null, 2));
+      logger.log(JSON.stringify(result, null, 2));
       return;
     } catch (error) {
-      console.log(JSON.stringify({ valid: false, error: error.message }));
+      logger.log(JSON.stringify({ valid: false, error: error.message }));
       return;
     }
   }

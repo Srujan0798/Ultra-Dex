@@ -176,7 +176,7 @@ export function registerDaemonCommand(program) {
         };
 
         printSuccess('✅ Health check completed');
-        console.log(JSON.stringify(healthReport, null, 2));
+        logger.log(JSON.stringify(healthReport, null, 2));
       } catch (error) {
         printError(`Health check failed: ${error.message}`);
         process.exit(1);

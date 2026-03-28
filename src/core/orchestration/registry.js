@@ -39,7 +39,7 @@ export class AgentRegistry {
     }
 
     this.isInitialized = true;
-    // console.log(`📋 Agent Registry initialized with ${this.agents.size} agents`);
+    // logger.log(`📋 Agent Registry initialized with ${this.agents.size} agents`);
   }
 
   /**
@@ -376,9 +376,9 @@ export class AgentRegistry {
         });
       }
 
-      console.log(`📋 Agent Registry: Discovered ${this.agents.size} agents from index`);
+      process.stdout.write(`📋 Agent Registry: Discovered ${this.agents.size} agents from index\n`);
     } catch (error) {
-      console.error(`❌ Agent Registry Discovery Failed: ${error.message}`);
+      process.stderr.write(`❌ Agent Registry Discovery Failed: ${error.message}\n`);
     }
   }
 
@@ -423,7 +423,7 @@ export class AgentRegistry {
     try {
       return await fs.readFile(agent.promptPath, 'utf8');
     } catch (error) {
-      console.error(`Error reading prompt for ${agentId}: ${error.message}`);
+      process.stderr.write(`Error reading prompt for ${agentId}: ${error.message}\n`);
       return `You are the ${agentId} agent.`;
     }
   }
@@ -433,7 +433,7 @@ export class AgentRegistry {
    */
   async loadPersistedAgents() {
     // In a real implementation, this would load agents from storage
-    console.log('💾 Loading persisted agents...');
+    process.stdout.write('💾 Loading persisted agents...\n');
   }
 
   /**

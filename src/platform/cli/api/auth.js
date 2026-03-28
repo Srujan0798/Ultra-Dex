@@ -44,7 +44,7 @@ function parseEnvKeys() {
  * @throws {Error} If unable to read config file (non-ENOENT errors)
  * @example
  * const keys = await loadApiKeys();
- * console.log(`Loaded ${keys.length} API keys`);
+ * logger.log(`Loaded ${keys.length} API keys`);
  */
 export async function loadApiKeys() {
   const now = Date.now();
@@ -70,7 +70,7 @@ export async function loadApiKeys() {
     return cachedKeys;
   } catch (error) {
     if (error.code !== 'ENOENT') {
-      console.error('[Auth] Error loading API keys:', error.message);
+      logger.error('[Auth] Error loading API keys:', error.message);
     }
     cachedKeys = [];
     cachedAt = now;
@@ -122,7 +122,7 @@ export function apiKeyAuth({ allowAnonymous = false } = {}) {
       req.apiKey = key;
       return next();
     } catch (error) {
-      console.error('[Auth] Authentication error:', error.message);
+      logger.error('[Auth] Authentication error:', error.message);
       return res.status(500).json({ error: 'Authentication failed' });
     }
   };
@@ -167,7 +167,7 @@ export function createRateLimiter(options = {}) {
 
       return next();
     } catch (error) {
-      console.error('[RateLimit] Error:', error.message);
+      logger.error('[RateLimit] Error:', error.message);
       return next();
     }
   };

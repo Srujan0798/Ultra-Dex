@@ -84,7 +84,7 @@ export function fail(spinner, text) {
 // ═══════════════════════════════════════════════════════════════
 
 export async function runTaskList(tasks) {
-  console.log('');
+  logger.log('');
 
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i];
@@ -100,7 +100,7 @@ export async function runTaskList(tasks) {
     }
   }
 
-  console.log('');
+  logger.log('');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -112,7 +112,7 @@ export async function typeText(text, speed = 20) {
     process.stdout.write(theme.primary(char));
     await new Promise((r) => setTimeout(r, speed));
   }
-  console.log('');
+  logger.log('');
 }
 
 // ═══════════════════════════════════════════════════════════════

@@ -81,7 +81,7 @@ class UltraDexMetaLayer {
   }
 
   async initialize(config = {}) {
-    console.log(`🌌 Initializing Ultra-Dex Meta-Layer v${this.version}...`);
+    logger.log(`🌌 Initializing Ultra-Dex Meta-Layer v${this.version}...`);
 
     // Core systems
     await this.memory.init();
@@ -109,7 +109,7 @@ class UltraDexMetaLayer {
 
     this.health.start();
 
-    console.log('✅ Ultra-Dex Meta-Layer initialized');
+    logger.log('✅ Ultra-Dex Meta-Layer initialized');
     return this;
   }
 
@@ -137,7 +137,7 @@ class UltraDexMetaLayer {
   }
 
   async shutdown() {
-    console.log('🛑 Shutting down Ultra-Dex...');
+    logger.log('🛑 Shutting down Ultra-Dex...');
     this.health.stop();
     if (this.streaming) this.streaming.stop?.();
     if (this.queue) await this.queue.stop();
@@ -146,7 +146,7 @@ class UltraDexMetaLayer {
         await this.plugins.unload?.(name);
       }
     }
-    console.log('👋 Ultra-Dex shut down complete');
+    logger.log('👋 Ultra-Dex shut down complete');
   }
 }
 

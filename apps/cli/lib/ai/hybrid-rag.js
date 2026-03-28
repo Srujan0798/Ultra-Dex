@@ -9,7 +9,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
 import { projectGraph } from '../mcp/graph.js';
-import { monitoring } from '../utils/monitoring.js';
+import { logger } from '../utils/logger.js';
 
 class VectorSearch {
   constructor(options = {}) {
@@ -301,9 +301,14 @@ class HybridRAG {
     await this.indexProject();
 
     this.indexed = true;
-    monitoring.info('Hybrid RAG system initialized', {
+    await logger.event('hybrid-rag.initialized', {
       filesIndexed: this.vectorSearch.documents.size,
       projectRoot: this.projectRoot,
+    }, {
+      level: 'info',
+      message: 'Hybrid RAG system initialized',
+      console: false,
+      source: 'hybrid-rag',
     });
   }
 
@@ -533,9 +538,14 @@ class HybridRAG {
     await this.indexProject();
     this.indexed = true;
 
-    monitoring.info('Project index updated', {
+    await logger.event('hybrid-rag.index_updated', {
       filesIndexed: this.vectorSearch.documents.size,
       timestamp: new Date().toISOString(),
+    }, {
+      level: 'info',
+      message: 'Project index updated',
+      console: false,
+      source: 'hybrid-rag',
     });
   }
 }

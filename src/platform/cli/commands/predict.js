@@ -66,7 +66,7 @@ async function runPredictCommand(targetPath, options) {
         spinner.succeed(`Analysis complete: ${analysis.predictions.length} findings`);
 
         if (options.json) {
-            console.log(JSON.stringify(analysis, null, 2));
+            logger.log(JSON.stringify(analysis, null, 2));
             return;
         }
 
@@ -101,10 +101,10 @@ async function runPredictCommand(targetPath, options) {
 function displayResults(analysis) {
     const { predictions, confidence } = analysis;
 
-    console.log(chalk.bold('\n📊 Analysis Results\n'));
-    console.log(chalk.gray(`Confidence: ${(confidence * 100).toFixed(1)}%`));
-    console.log(chalk.gray(`Timestamp: ${new Date(analysis.timestamp).toLocaleString()}`));
-    console.log('');
+    logger.log(chalk.bold('\n📊 Analysis Results\n'));
+    logger.log(chalk.gray(`Confidence: ${(confidence * 100).toFixed(1)}%`));
+    logger.log(chalk.gray(`Timestamp: ${new Date(analysis.timestamp).toLocaleString()}`));
+    logger.log('');
 
     if (predictions.length === 0) {
         printSuccess('✨ No potential issues detected!');
@@ -118,46 +118,46 @@ function displayResults(analysis) {
     const low = predictions.filter(p => p.riskLevel === 'low');
 
     if (critical.length > 0) {
-        console.log(chalk.red.bold(`🔴 CRITICAL (${critical.length})`));
+        logger.log(chalk.red.bold(`🔴 CRITICAL (${critical.length})`));
         critical.forEach(p => {
-            console.log(chalk.red(`   • ${p.message}`));
-            console.log(chalk.gray(`     ${path.basename(p.file)}`));
+            logger.log(chalk.red(`   • ${p.message}`));
+            logger.log(chalk.gray(`     ${path.basename(p.file)}`));
         });
-        console.log('');
+        logger.log('');
     }
 
     if (high.length > 0) {
-        console.log(chalk.yellow.bold(`🟠 HIGH (${high.length})`));
+        logger.log(chalk.yellow.bold(`🟠 HIGH (${high.length})`));
         high.forEach(p => {
-            console.log(chalk.yellow(`   • ${p.message}`));
-            console.log(chalk.gray(`     ${path.basename(p.file)}`));
+            logger.log(chalk.yellow(`   • ${p.message}`));
+            logger.log(chalk.gray(`     ${path.basename(p.file)}`));
         });
-        console.log('');
+        logger.log('');
     }
 
     if (medium.length > 0) {
-        console.log(chalk.blue.bold(`🟡 MEDIUM (${medium.length})`));
+        logger.log(chalk.blue.bold(`🟡 MEDIUM (${medium.length})`));
         medium.forEach(p => {
-            console.log(chalk.blue(`   • ${p.message}`));
-            console.log(chalk.gray(`     ${path.basename(p.file)}`));
+            logger.log(chalk.blue(`   • ${p.message}`));
+            logger.log(chalk.gray(`     ${path.basename(p.file)}`));
         });
-        console.log('');
+        logger.log('');
     }
 
     if (low.length > 0) {
-        console.log(chalk.gray.bold(`⚪ LOW (${low.length})`));
+        logger.log(chalk.gray.bold(`⚪ LOW (${low.length})`));
         low.forEach(p => {
-            console.log(chalk.gray(`   • ${p.message}`));
-            console.log(chalk.dim(`     ${path.basename(p.file)}`));
+            logger.log(chalk.gray(`   • ${p.message}`));
+            logger.log(chalk.dim(`     ${path.basename(p.file)}`));
         });
-        console.log('');
+        logger.log('');
     }
 
     // Summary
-    console.log(chalk.bold('\n📈 Summary'));
-    console.log(`   Total findings: ${predictions.length}`);
-    console.log(`   Critical: ${critical.length} | High: ${high.length} | Medium: ${medium.length} | Low: ${low.length}`);
-    console.log('');
+    logger.log(chalk.bold('\n📈 Summary'));
+    logger.log(`   Total findings: ${predictions.length}`);
+    logger.log(`   Critical: ${critical.length} | High: ${high.length} | Medium: ${medium.length} | Low: ${low.length}`);
+    logger.log('');
 }
 
 export default registerPredictCommand;

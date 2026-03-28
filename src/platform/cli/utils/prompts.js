@@ -222,7 +222,7 @@ export async function formPrompt(fields) {
 }
 
 export async function interactiveMenu(title, menuItems) {
-  console.log(chalk.bold.magenta(`\n🎯 ${title}\n`));
+  logger.log(chalk.bold.magenta(`\n🎯 ${title}\n`));
 
   const choices = menuItems.map((item, index) => ({
     name: `${item.emoji || '🔸'} ${item.label}`,
@@ -270,7 +270,7 @@ async function safeExecute(fn, context = 'prompts') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

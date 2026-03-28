@@ -54,26 +54,14 @@ opencode run -p "Your task here"
 # Restrict context to a single file (critical for saving context window)
 opencode run -f src/index.js -p "Remove all AgentScheduler imports"
 
-# Run with a specific free model
-opencode run -m opencode/gpt-5-nano -f index.js -p "Delete dead imports"
-
 # Fork a session (try multiple approaches without rebuilding context)
 opencode run -s <session-id> --fork -p "Alternative approach"
-
-# List active sessions
-opencode session list
 
 # Resume session
 opencode session resume <session-id>
 
 # Open web dashboard (real-time monitoring)
 opencode web
-
-# List all available models
-opencode models
-
-# Manage GitHub integrations
-opencode github
 
 # Start as ACP daemon (for IDE integration)
 opencode acp
@@ -85,7 +73,7 @@ opencode acp
 
 Configure in `opencode.jsonc` at your project root (or `~/.opencode/config.json` globally):
 
-```jsonc
+```json
 {
   "mcp": {
     "sqlite-reader": {
@@ -97,38 +85,25 @@ Configure in `opencode.jsonc` at your project root (or `~/.opencode/config.json`
       "type": "remote",
       "enabled": true,
       "url": "https://api.github.com/mcp"
-    },
-    "filesystem": {
-      "type": "local", 
-      "enabled": false,
-      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "./src"]
     }
   }
 }
 ```
 
-**The Power:** With `sqlite-reader` active, you can say:
-> *"Query the database to get the schema for the users table, then write a TypeScript model and CRUD service for it."*
-
-Codex will query your live database and write correct, schema-matched code without you pasting anything.
-
-**⚠️ Warning:** Every active MCP server injects tokens. Disable unused ones to avoid context limit overflow.
+>**Power Use:** With `sqlite-reader` active, OpenCode queries the live database and writes correct, schema-matched models without you pasting anything. Avoid leaving unused MCP servers active to prevent token overflow.
 
 ---
 
 ## 5. Agent Client Protocol (ACP)
 
-ACP turns OpenCode into a persistent JSON-RPC daemon that external editors can connect to.
+ACP turns OpenCode into a persistent JSON-RPC daemon that external editors connect to directly.
 
 ```bash
 # Start OpenCode as ACP daemon
 opencode acp
 ```
 
-**Supported Editors:**
-- Zed
-- JetBrains (IntelliJ, WebStorm)
-- Neovim (via `avante.nvim` or `codecompanion.nvim`)
+**Supported Editors:** Zed, JetBrains, Neovim (via avante/codecompanion).
 
 **Config for Zed (`settings.json`):**
 ```json
@@ -142,22 +117,13 @@ opencode acp
 }
 ```
 
-Once connected, your IDE sends tasks to OpenCode's full agentic engine — including all your free models and MCP tools — directly from the editor command palette.
-
 ---
 
 ## 6. Custom Plugins
 
-Plugin location: `.opencode/plugins/` (project-level) or `~/.config/opencode/plugins/` (global)
+Plugin location:(`.opencode/plugins/` project-level or `~/.config/opencode/plugins/` global)
 
-Install from npm:
-```bash
-# In your config directory
-cd ~/.config/opencode
-echo '{"dependencies": {"opencode-plugin-eslint": "latest"}}' > package.json
-```
-
-Or create a custom plugin in `.opencode/plugins/my-plugin.ts`:
+Create a custom plugin in `.opencode/plugins/my-plugin.ts`:
 ```typescript
 export default function myPlugin(ctx) {
   return {
@@ -167,31 +133,35 @@ export default function myPlugin(ctx) {
     },
     // Hook: runs before every LLM request
     beforeRequest: async ({ prompt }) => {
-      // Inject git log into every prompt
       const log = await ctx.shell`git log --oneline -10`.text();
-      return { ...prompt, system: prompt.system + `\nRecent git history:\n${log}` };
+      return { ...prompt, system: prompt.system + `\nRecent history:\n${log}` };
     }
   };
 }
 ```
 
-**Available hook events:** `beforeRequest`, `afterFileWrite`, `afterShellCommand`, `onSessionStart`, `onSessionEnd`, `onLSPDiagnostic`
-
 ---
 
-## 7. Ultra-Dex Swarm Dispatch Templates
+## 7. Ultra-Dex Swarm Role & Dispatch
+
+* **Role:** Precision Engineer
+* **Best For:** Critical architecture edits, safe refactoring, and single file manipulations relying heavily on zero-cost free models.
+* **Windows:** 1-2 Terminal Tabs.
+* **$0 Strategy:** Aggressive use of `nemotron-3-super-free` 1M context for free repo scanning.
+
+### Dispatch Templates
 
 ```bash
-# Terminal A: Precision File Surgeon (uses cheapest free model)
+# Terminal (Precision Surgeon File Edit)
 opencode run -m opencode/gpt-5-nano \
              -f src/services/compliance/compliance-service.ts \
-             -p "The dynamic require('crypto') on line 417 must be replaced with a top-level ESM import. Make only this change."
+             -p "Replace dynamic require with top-level ESM import here."
 
-# Terminal B: Full-Repo Architect (uses 1M context free model)
+# Terminal (Free 1M Context Architect)
 opencode run -m opencode/nemotron-3-super-free \
-             -p "Read every file in src/. Identify all architectural violations: missing error handling, missing input validation, console.log statements, and any types. Output as a structured markdown report."
+             -p "Read every file in src/. Identify all violations."
 
-# Terminal C: UI Screenshot to Code (uses multimodal free model)
+# Terminal (UI Screenshot Read)
 opencode run -m opencode/mimo-v2-omni-free \
-             -p "Look at the attached dashboard screenshot and convert it to a pixel-perfect React component using Tailwind CSS."
+             -p "Read dashboard.png and build the React component."
 ```

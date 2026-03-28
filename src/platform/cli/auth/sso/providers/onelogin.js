@@ -13,7 +13,7 @@ export default {
  */
 function handleError(error) {
   try {
-    console.error('[onelogin]', error instanceof Error ? error.message : String(error));
+    logger.error('[onelogin]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

@@ -27,7 +27,7 @@ class RepoKnowledgeGraph {
    * Build the knowledge graph from the codebase
    */
   async buildGraph(projectRoot = process.cwd()) {
-    console.log('🏗️  Building repository knowledge graph...');
+    logger.log('🏗️  Building repository knowledge graph...');
 
     // Clear existing graph
     this.nodes.clear();
@@ -44,7 +44,7 @@ class RepoKnowledgeGraph {
     await this.parseTypeScriptFiles(projectRoot);
     await this.parsePythonFiles(projectRoot);
 
-    console.log(`✅ Graph built: ${this.nodes.size} nodes, ${this.edges.size} edges`);
+    logger.log(`✅ Graph built: ${this.nodes.size} nodes, ${this.edges.size} edges`);
   }
 
   /**
@@ -598,13 +598,13 @@ export function registerRepoGraphCommand(program) {
     .option('-r, --root <path>', 'Project root path', process.cwd())
     .action(async (options) => {
       try {
-        console.log('🏗️  Building repository knowledge graph...');
+        logger.log('🏗️  Building repository knowledge graph...');
         await repoKnowledgeGraph.buildGraph(options.root);
-        console.log(
+        logger.log(
           `✅ Graph built with ${repoKnowledgeGraph.nodes.size} nodes and ${repoKnowledgeGraph.edges.size} edges`
         );
       } catch (error) {
-        console.error(`Error building graph: ${error.message}`);
+        logger.error(`Error building graph: ${error.message}`);
       }
     });
 
@@ -614,21 +614,21 @@ export function registerRepoGraphCommand(program) {
     .argument('<file>', 'File path to analyze')
     .action(async (file) => {
       try {
-        console.log(`🔍 Analyzing impact of changes to: ${file}`);
+        logger.log(`🔍 Analyzing impact of changes to: ${file}`);
 
         const impact = await repoKnowledgeGraph.analyzeImpact(file);
 
-        console.log(`\n📊 Impact Analysis for: ${impact.file}`);
-        console.log(`Files importing this: ${impact.importedBy.length}`);
-        console.log(`Functions in file: ${impact.functions.length}`);
-        console.log(`Total files potentially affected: ${impact.totalFilesAffected}`);
+        logger.log(`\n📊 Impact Analysis for: ${impact.file}`);
+        logger.log(`Files importing this: ${impact.importedBy.length}`);
+        logger.log(`Functions in file: ${impact.functions.length}`);
+        logger.log(`Total files potentially affected: ${impact.totalFilesAffected}`);
 
         if (impact.importedBy.length > 0) {
-          console.log(`\nFiles that would be affected:`);
-          impact.importedBy.forEach((f) => console.log(`  - ${f}`));
+          logger.log(`\nFiles that would be affected:`);
+          impact.importedBy.forEach((f) => logger.log(`  - ${f}`));
         }
       } catch (error) {
-        console.error(`Error analyzing impact: ${error.message}`);
+        logger.error(`Error analyzing impact: ${error.message}`);
       }
     });
 
@@ -638,20 +638,20 @@ export function registerRepoGraphCommand(program) {
     .argument('<file>', 'File path')
     .action(async (file) => {
       try {
-        console.log(`🔗 Dependencies of: ${file}`);
+        logger.log(`🔗 Dependencies of: ${file}`);
 
         const deps = repoKnowledgeGraph.getFileDependencies(file);
 
         if (deps.length === 0) {
-          console.log('No dependencies found');
+          logger.log('No dependencies found');
           return;
         }
 
         deps.forEach((dep) => {
-          console.log(`  - ${dep.path} (line ${dep.line})`);
+          logger.log(`  - ${dep.path} (line ${dep.line})`);
         });
       } catch (error) {
-        console.error(`Error getting dependencies: ${error.message}`);
+        logger.error(`Error getting dependencies: ${error.message}`);
       }
     });
 
@@ -661,20 +661,20 @@ export function registerRepoGraphCommand(program) {
     .argument('<file>', 'File path')
     .action(async (file) => {
       try {
-        console.log(`↩️  Dependents of: ${file}`);
+        logger.log(`↩️  Dependents of: ${file}`);
 
         const dependents = repoKnowledgeGraph.getFileDependents(file);
 
         if (dependents.length === 0) {
-          console.log('No dependents found');
+          logger.log('No dependents found');
           return;
         }
 
         dependents.forEach((dep) => {
-          console.log(`  - ${dep}`);
+          logger.log(`  - ${dep}`);
         });
       } catch (error) {
-        console.error(`Error getting dependents: ${error.message}`);
+        logger.error(`Error getting dependents: ${error.message}`);
       }
     });
 
@@ -685,18 +685,18 @@ export function registerRepoGraphCommand(program) {
     .option('-o, --output <path>', 'Output file path')
     .action(async (options) => {
       try {
-        console.log(`📤 Exporting knowledge graph in ${options.format} format...`);
+        logger.log(`📤 Exporting knowledge graph in ${options.format} format...`);
 
         const exported = repoKnowledgeGraph.export(options.format);
 
         if (options.output) {
           await fs.writeFile(options.output, exported);
-          console.log(`✅ Graph exported to: ${options.output}`);
+          logger.log(`✅ Graph exported to: ${options.output}`);
         } else {
-          console.log(exported);
+          logger.log(exported);
         }
       } catch (error) {
-        console.error(`Error exporting graph: ${error.message}`);
+        logger.error(`Error exporting graph: ${error.message}`);
       }
     });
 
