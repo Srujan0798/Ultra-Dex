@@ -1,15 +1,25 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import { sqliteProvider } from './sqlite.js';
+let sqliteProviderPromise = null;
+
+async function loadSQLiteProvider() {
+  if (!sqliteProviderPromise) {
+    sqliteProviderPromise = import('./sqlite.js').then((mod) => mod.sqliteProvider);
+  }
+  return sqliteProviderPromise;
+}
 
 export class MemoryManager {
   constructor(options = {}) {
-    this.provider = sqliteProvider;
+    this.provider = null;
     this.initialized = false;
   }
 
   async init() {
     if (this.initialized) return;
+    if (!this.provider) {
+      this.provider = await loadSQLiteProvider();
+    }
     await this.provider.init();
     this.initialized = true;
   }

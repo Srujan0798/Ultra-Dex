@@ -3,11 +3,10 @@
 import { spawn } from 'child_process';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { createCanvas, loadImage } from 'canvas';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '../../../utils/uuid.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 import { ultraMemory } from '../mcp/memory.js';
 

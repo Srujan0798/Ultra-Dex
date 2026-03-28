@@ -14,4 +14,12 @@ export function trackEvent(name, data = {}) {
     // Stub for future analytics
 }
 
-export { default as EnterpriseAnalytics } from './enterprise-analytics.js';
+export async function loadEnterpriseAnalytics() {
+    const mod = await import('./enterprise-analytics.js');
+    return mod.default;
+}
+
+export async function getEnterpriseAnalyticsInstance() {
+    const mod = await import('./enterprise-analytics.js');
+    return mod.enterpriseAnalytics;
+}

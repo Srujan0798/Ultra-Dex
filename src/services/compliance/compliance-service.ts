@@ -7,6 +7,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { auditLogger } from '../audit/audit-logger.js';
 import { encryptionService } from '../security/encryption-service.js';
 
@@ -414,7 +415,6 @@ END OF REPORT
    * Generate checksum
    */
   private generateChecksum(data: string | Buffer): string {
-    const crypto = require('crypto');
     return crypto.createHash('sha256').update(data).digest('hex');
   }
 

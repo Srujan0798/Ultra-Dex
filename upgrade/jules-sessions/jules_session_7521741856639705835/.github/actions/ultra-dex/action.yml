@@ -1,0 +1,34 @@
+name: 'Ultra-Dex AI Agent'
+description: 'Run Ultra-Dex AI agents in your GitHub workflow'
+author: 'Ultra-Dex'
+inputs:
+  task:
+    description: 'The task for the AI to perform'
+    required: true
+    default: 'Review code changes'
+  provider:
+    description: 'AI Provider to use (openai, anthropic, etc)'
+    required: false
+    default: 'openai'
+  model:
+    description: 'Model to use (e.g. gpt-4o)'
+    required: false
+    default: 'gpt-4o'
+  agents:
+    description: 'Comma-separated list of agent roles to activate'
+    required: false
+    default: 'code-reviewer'
+  config-path:
+    description: 'Path to ultra-dex.json config file'
+    required: false
+    default: '.ultra-dex.json'
+  auto-approve:
+    description: 'Automatically approve AI suggestions'
+    required: false
+    default: 'false'
+  api-key:
+    description: 'API Key for the provider (optional, uses env var by default)'
+    required: false
+runs:
+  using: 'node20'
+  main: 'index.js'

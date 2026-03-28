@@ -7,9 +7,6 @@
  */
 
 const assert = require('assert');
-const { UltraDexCore } = require('../../src/core/orchestration/ultra-dex-core.js');
-const { ConfigManager } = require('../../src/core/system/config-manager.js');
-const { TokenOptimizer } = require('../../src/core/performance/token-optimizer.js');
 
 console.log('🧪 Ultra-Dex Integration Tests\n');
 console.log('==============================\n');
@@ -31,6 +28,12 @@ async function test(name, fn) {
 
 // Test suite
 (async () => {
+  const [{ UltraDexCore }, { ConfigManager }, { TokenOptimizer }] = await Promise.all([
+    import('../../src/core/orchestration/ultra-dex-core.js'),
+    import('../../src/core/system/config-manager.js'),
+    import('../../src/core/performance/token-optimizer.js'),
+  ]);
+
   let ultra;
 
   // Setup

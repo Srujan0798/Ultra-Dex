@@ -6,6 +6,7 @@
  */
 
 import { Command } from 'commander';
+import { exec } from 'child_process';
 import { agentMarketplace } from '../marketplace/index.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
@@ -267,7 +268,6 @@ export function registerMarketplaceCommand(program) {
     .command('browse')
     .description('Open marketplace in browser')
     .action(() => {
-      const { exec } = require('child_process');
       const url = 'https://marketplace.ultra-dex.ai';
       
       let command;

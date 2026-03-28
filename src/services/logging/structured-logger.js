@@ -82,8 +82,8 @@ class StructuredLogger {
       // Append to log file
       await fs.appendFile(this.logToFile, logLine);
     } catch (error) {
-      // Fallback to console if file writing fails
-      console.error('Failed to write to log file:', error);
+      // Fallback to stderr if file writing fails
+      process.stderr.write(`[StructuredLogger] Failed to write to log file: ${error.message}\n`);
       this.outputStream.write(logLine);
     }
   }

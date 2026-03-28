@@ -1,0 +1,68 @@
+name: Dashboard Deploy
+
+on:
+  pull_request:
+    paths:
+      - 'apps/dashboard/**'
+      - '.github/workflows/dashboard-deploy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/dashboard/**'
+      - '.github/workflows/dashboard-deploy.yml'
+
+jobs:
+  dashboard-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Dashboard tests
+        run: npm run test -w apps/dashboard
+
+      - name: Dashboard accessibility smoke tests
+        run: npm run test:a11y -w apps/dashboard
+
+      - name: Dashboard build
+        run: npm run build -w apps/dashboard
+
+  dashboard-deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: dashboard-verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --ignore-scripts
+
+      - name: Build dashboard
+        run: npm run build -w apps/dashboard
+
+      - name: Deploy to Vercel
+        if: env.VERCEL_TOKEN != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npm i -g vercel@latest
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel deploy --prod --token="$VERCEL_TOKEN"

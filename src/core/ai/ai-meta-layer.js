@@ -1,10 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 // src/core/ai/ai-meta-layer.js
 
-import { openai } from '@ai-sdk/openai';
-import { anthropic } from '@ai-sdk/anthropic';
-import { google } from '@ai-sdk/google';
-import { createOpenAI } from '@ai-sdk/openai';
 import { logger } from '../../utils/logging.js';
 import { performance } from 'perf_hooks';
 
@@ -96,7 +92,8 @@ export class AIMetaLayer {
     if (this.config.providers?.openai?.enabled !== false) {
       const openaiConfig = this.config.providers?.openai || {};
       this.providers.set('openai', {
-        client: openai,
+        client: null,
+        loadClient: async () => (await import('@ai-sdk/openai')).openai,
         defaultModel: openaiConfig.defaultModel || 'gpt-4o-2024-11-20',
         apiKey: openaiConfig.apiKey || process.env.OPENAI_API_KEY,
         config: openaiConfig
@@ -107,7 +104,8 @@ export class AIMetaLayer {
     if (this.config.providers?.anthropic?.enabled !== false) {
       const anthropicConfig = this.config.providers?.anthropic || {};
       this.providers.set('anthropic', {
-        client: anthropic,
+        client: null,
+        loadClient: async () => (await import('@ai-sdk/anthropic')).anthropic,
         defaultModel: anthropicConfig.defaultModel || 'claude-3-5-sonnet-latest',
         apiKey: anthropicConfig.apiKey || process.env.ANTHROPIC_API_KEY,
         config: anthropicConfig
@@ -118,7 +116,8 @@ export class AIMetaLayer {
     if (this.config.providers?.google?.enabled !== false) {
       const googleConfig = this.config.providers?.google || {};
       this.providers.set('google', {
-        client: google,
+        client: null,
+        loadClient: async () => (await import('@ai-sdk/google')).google,
         defaultModel: googleConfig.defaultModel || 'gemini-2.0-flash-exp',
         apiKey: googleConfig.apiKey || process.env.GOOGLE_API_KEY,
         config: googleConfig
@@ -128,13 +127,15 @@ export class AIMetaLayer {
     // Ollama Provider (for local models)
     if (this.config.providers?.ollama?.enabled !== false) {
       const ollamaConfig = this.config.providers?.ollama || {};
-      const ollama = createOpenAI({
-        baseURL: ollamaConfig.baseUrl || 'http://localhost:11434/v1',
-        apiKey: ollamaConfig.apiKey || 'ollama',
-      });
-      
       this.providers.set('ollama', {
-        client: ollama,
+        client: null,
+        loadClient: async () => {
+          const { createOpenAI } = await import('@ai-sdk/openai');
+          return createOpenAI({
+            baseURL: ollamaConfig.baseUrl || 'http://localhost:11434/v1',
+            apiKey: ollamaConfig.apiKey || 'ollama',
+          });
+        },
         defaultModel: ollamaConfig.defaultModel || 'llama3.2',
         config: ollamaConfig
       });
@@ -144,14 +145,16 @@ export class AIMetaLayer {
     if (this.config.providers?.azure?.enabled !== false) {
       const azureConfig = this.config.providers?.azure || {};
       if (azureConfig.endpoint && azureConfig.apiKey) {
-        const azure = createOpenAI({
-          baseURL: `${azureConfig.endpoint}/openai/deployments/${azureConfig.deploymentName}`,
-          apiKey: azureConfig.apiKey,
-          defaultHeaders: { 'api-key': azureConfig.apiKey }
-        });
-        
         this.providers.set('azure', {
-          client: azure,
+          client: null,
+          loadClient: async () => {
+            const { createOpenAI } = await import('@ai-sdk/openai');
+            return createOpenAI({
+              baseURL: `${azureConfig.endpoint}/openai/deployments/${azureConfig.deploymentName}`,
+              apiKey: azureConfig.apiKey,
+              defaultHeaders: { 'api-key': azureConfig.apiKey }
+            });
+          },
           defaultModel: azureConfig.deploymentName,
           config: azureConfig
         });
@@ -237,15 +240,18 @@ export class AIMetaLayer {
         throw new Error('No AI provider available');
       }
 
+      const client = await this.ensureProviderClient(provider);
+      const providerModel = client(model || provider.defaultModel);
+
       // Prepare the call
       const callOptions = {
-        model: provider.client(model || provider.defaultModel),
+        model: providerModel,
         messages,
         ...options
       };
 
       // Make the call
-      const result = await provider.client(model || provider.defaultModel).call(callOptions);
+      const result = await providerModel.call(callOptions);
 
       // Cache the result
       if (this.config.enableCaching) {
@@ -296,8 +302,10 @@ export class AIMetaLayer {
     for (let i = currentIndex + 1; i < providerEntries.length; i++) {
       try {
         const [providerName, provider] = providerEntries[i];
-        const result = await provider.client(model || provider.defaultModel).call({
-          model: provider.client(model || provider.defaultModel),
+        const client = await this.ensureProviderClient(provider);
+        const providerModel = client(model || provider.defaultModel);
+        const result = await providerModel.call({
+          model: providerModel,
           messages,
           ...options
         });
@@ -334,8 +342,11 @@ export class AIMetaLayer {
     }
 
     try {
-      return provider.client(model || provider.defaultModel).stream({
-        model: provider.client(model || provider.defaultModel),
+      const client = await this.ensureProviderClient(provider);
+      const providerModel = client(model || provider.defaultModel);
+
+      return providerModel.stream({
+        model: providerModel,
         messages,
         ...options
       });
@@ -363,8 +374,11 @@ export class AIMetaLayer {
     }
 
     try {
-      return provider.client(model || provider.defaultModel).generateObject({
-        model: provider.client(model || provider.defaultModel),
+      const client = await this.ensureProviderClient(provider);
+      const providerModel = client(model || provider.defaultModel);
+
+      return providerModel.generateObject({
+        model: providerModel,
         messages,
         schema,
         ...options
@@ -393,8 +407,11 @@ export class AIMetaLayer {
     }
 
     try {
-      return provider.client(model || provider.defaultModel).generateText({
-        model: provider.client(model || provider.defaultModel),
+      const client = await this.ensureProviderClient(provider);
+      const providerModel = client(model || provider.defaultModel);
+
+      return providerModel.generateText({
+        model: providerModel,
         messages,
         tools,
         ...options
@@ -440,6 +457,19 @@ export class AIMetaLayer {
       value,
       timestamp: Date.now()
     });
+  }
+
+  async ensureProviderClient(provider) {
+    if (provider?.client) {
+      return provider.client;
+    }
+
+    if (!provider?.loadClient) {
+      throw new Error(`Provider '${provider?.defaultModel || 'unknown'}' is not configured`);
+    }
+
+    provider.client = await provider.loadClient();
+    return provider.client;
   }
 
   /**

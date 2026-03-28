@@ -110,7 +110,8 @@ export class AuditLogger {
 
     await ppmManager.init();
 
-    console.log('✓ Audit logging system initialized');
+    // Write to stderr for initialization notice (avoid structured logging during bootstrap)
+    process.stderr.write('[AUDIT] ✓ Audit logging system initialized\n');
     this.initialized = true;
   }
 
@@ -144,9 +145,9 @@ export class AuditLogger {
       },
     });
 
-    // Log to console for critical events
+    // Log to stderr for critical events (avoid self-reference)
     if (event.severity === 'critical' || event.severity === 'error') {
-      console.error(`[AUDIT ${event.severity.toUpperCase()}] ${event.action}: ${event.resource}`);
+      process.stderr.write(`[AUDIT ${event.severity.toUpperCase()}] ${event.action}: ${event.resource}\n`);
     }
 
     return auditEvent;
@@ -461,7 +462,7 @@ export class AuditLogger {
 
     // In a real implementation, this would delete old records
     // For now, we just log the action
-    console.log(`✓ Purge request for logs older than ${olderThan.toISOString()}`);
+    process.stderr.write(`[AUDIT] ✓ Purge request for logs older than ${olderThan.toISOString()}\n`);
 
     return 0;
   }

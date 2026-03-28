@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { runTutorial } = require('../lib/learn');
+import { runTutorial } from '../lib/learn.js';
 
 async function main() {
   try {

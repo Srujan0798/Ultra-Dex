@@ -25,7 +25,7 @@ describe('Governance Integration', () => {
     // Arrange: Add a tool that we'll block
     const testToolName = 'test-tool';
     const testTool = {
-      handler: mock.fn().mockResolvedValue('success'),
+      handler: mock.fn(async () => 'success'),
     };
     orchestrator.mcpServer.toolsMap.set(testToolName, testTool);
 
@@ -64,15 +64,15 @@ describe('Governance Integration', () => {
   it('executeTask should block denied operations via governance', async () => {
     // Arrange: Mock the AI layer to avoid complex setup
     const mockAi = {
-      call: mock.fn().mockResolvedValue({ text: 'task output' }),
+      call: mock.fn(async () => ({ text: 'task output' })),
     };
-    orchestrator.getAiLayer = mock.fn().mockResolvedValue(mockAi);
+    orchestrator.getAiLayer = mock.fn(async () => mockAi);
     orchestrator.memory = {
-      search: mock.fn().mockResolvedValue([]),
-      add: mock.fn().mockResolvedValue(),
+      search: mock.fn(async () => []),
+      add: mock.fn(async () => {}),
     };
     orchestrator.registry = {
-      getAgentPrompt: mock.fn().mockResolvedValue('system prompt'),
+      getAgentPrompt: mock.fn(async () => 'system prompt'),
     };
 
     // Create a governance manager and add a block policy for task execution

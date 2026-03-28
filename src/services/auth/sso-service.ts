@@ -148,7 +148,7 @@ export class SSOService {
     await ppmManager.init();
     await auditLogger.initialize();
 
-    console.log('✓ SSO service initialized');
+    process.stdout.write('✓ SSO service initialized\n');
     this.initialized = true;
   }
 
@@ -204,7 +204,7 @@ export class SSOService {
       },
     });
 
-    console.log(`✓ SAML SSO configured: ${name}`);
+    process.stdout.write(`✓ SAML SSO configured: ${name}\n`);
     return ssoConfig;
   }
 
@@ -236,7 +236,7 @@ export class SSOService {
 
     this.configs.set(ssoConfig.id, ssoConfig);
 
-    console.log(`✓ OAuth2 SSO configured: ${name}`);
+    process.stdout.write(`✓ OAuth2 SSO configured: ${name}\n`);
     return ssoConfig;
   }
 
@@ -268,7 +268,7 @@ export class SSOService {
 
     this.configs.set(ssoConfig.id, ssoConfig);
 
-    console.log(`✓ OIDC SSO configured: ${name}`);
+    process.stdout.write(`✓ OIDC SSO configured: ${name}\n`);
     return ssoConfig;
   }
 
@@ -541,7 +541,7 @@ export class SSOService {
       },
     });
 
-    console.log(`✓ SSO configuration disabled: ${config.name}`);
+    process.stdout.write(`✓ SSO configuration disabled: ${config.name}\n`);
     return true;
   }
 }

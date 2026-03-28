@@ -1,0 +1,32 @@
+name: Ultra-Dex Security Audit
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  security_audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --ignore-scripts
+
+      - name: Run Ultra-Dex security agents
+        uses: ./.github/actions/ultra-dex
+        with:
+          agents: 'security-audit'
+          github-token: ${{ secrets.GITHUB_TOKEN }}

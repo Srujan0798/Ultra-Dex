@@ -10,24 +10,24 @@ import assert from 'node:assert';
 // Mock the AI meta layer to avoid dependency issues
 mock('../src/core/ai/ai-meta-layer.js', () => ({
   aiMetaLayer: {
-    call: mock.fn().mockResolvedValue({ text: 'mock response' }),
+    call: mock.fn(async () => ({ text: 'mock response' })),
   },
 }));
 
 // Mock the self healing module
 mock('../src/core/reliability/self-healing.js', () => ({
   selfHealing: {
-    start: mock.fn().mockResolvedValue(),
-    reportAgentError: mock.fn().mockResolvedValue(),
+    start: mock.fn(async () => {}),
+    reportAgentError: mock.fn(async () => {}),
   },
 }));
 
 // Mock the memory manager
 mock('../src/core/memory/manager.js', () => ({
   ppmManager: {
-    init: mock.fn().mockResolvedValue(),
-    search: mock.fn().mockResolvedValue([]),
-    add: mock.fn().mockResolvedValue(),
+    init: mock.fn(async () => {}),
+    search: mock.fn(async () => []),
+    add: mock.fn(async () => {}),
   },
 }));
 
@@ -49,7 +49,7 @@ describe('Governance Integration - executeTool', () => {
   it('executeTool should call governance.authorize() before tool.handler()', async () => {
     // Arrange: Add a tool that we'll allow
     const testToolName = 'test-tool';
-    const testToolHandler = mock.fn().mockResolvedValue('tool success');
+    const testToolHandler = mock.fn(async () => 'tool success');
     const testTool = { handler: testToolHandler };
     orchestrator.mcpServer.toolsMap.set(testToolName, testTool);
 

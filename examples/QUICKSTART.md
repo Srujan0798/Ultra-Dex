@@ -21,7 +21,7 @@ node test-validation.cjs
 ### 1. Initialize Ultra-Dex
 
 ```javascript
-const { UltraDex } = require('./sdk.cjs');
+import { UltraDex } from './sdk.js';
 
 async function main() {
   // Create instance
@@ -154,7 +154,7 @@ console.log('Components:', status.components);
 ## Complete Example
 
 ```javascript
-const { UltraDex } = require('./sdk.cjs');
+import { UltraDex } from './sdk.js';
 
 async function main() {
   console.log('🚀 Starting Ultra-Dex Demo\n');
@@ -395,9 +395,9 @@ observability.generateReport(traceId);
 **1. Module not found**
 
 ```bash
-# Make sure to use .cjs extension
-const { UltraDex } = require('./sdk.cjs')  // ✅
-const { UltraDex } = require('./sdk')      // ❌
+# Make sure to use the ESM entrypoint
+import { UltraDex } from './sdk.js'  # ✅
+import { UltraDex } from './sdk'     # ❌
 ```
 
 **2. Port already in use**

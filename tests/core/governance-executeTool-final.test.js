@@ -91,7 +91,7 @@ describe('Governance Integration - executeTool', () => {
   it('executeTool should allow permitted operations', async () => {
     // Arrange: Add a tool that we'll allow
     const testToolName = 'read_file';
-    const testToolHandler = mock.fn().mockResolvedValue({ content: 'file data' });
+    const testToolHandler = mock.fn(async () => ({ content: 'file data' }));
     const testTool = { handler: testToolHandler };
     orchestrator.mcpServer.toolsMap.set(testToolName, testTool);
 
@@ -108,8 +108,8 @@ describe('Governance Integration - executeTool', () => {
     const blockedToolName = 'delete_database';
     const allowedToolName = 'read_file';
 
-    const blockedToolHandler = mock.fn();
-    const allowedToolHandler = mock.fn().mockResolvedValue({ content: 'file data' });
+    const blockedToolHandler = mock.fn(async () => {});
+    const allowedToolHandler = mock.fn(async () => ({ content: 'file data' }));
 
     orchestrator.mcpServer.toolsMap.set(blockedToolName, { handler: blockedToolHandler });
     orchestrator.mcpServer.toolsMap.set(allowedToolName, { handler: allowedToolHandler });

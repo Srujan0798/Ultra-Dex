@@ -8,10 +8,7 @@
  */
 
 import { EventEmitter } from 'events';
-import sqlite3 from 'sqlite3';
 import path from 'path';
-
-const sqlite = sqlite3.verbose();
 
 class UnifiedMemory extends EventEmitter {
   constructor(config = {}) {
@@ -35,6 +32,16 @@ class UnifiedMemory extends EventEmitter {
     };
 
     this.initialized = false;
+  }
+
+  async _loadSQLiteDriver() {
+    if (this.sqliteDriver) {
+      return this.sqliteDriver;
+    }
+
+    const sqlite3 = await import('sqlite3');
+    this.sqliteDriver = sqlite3.default.verbose();
+    return this.sqliteDriver;
   }
 
   /**
@@ -385,6 +392,7 @@ class UnifiedMemory extends EventEmitter {
 
   async _initSQLite() {
     const dbPath = path.resolve(this.config.sqlite.database);
+    const sqlite = await this._loadSQLiteDriver();
 
     return new Promise((resolve, reject) => {
       this.stores.sqlite = new sqlite.Database(dbPath, async (err) => {

@@ -8,9 +8,9 @@
  * 4. Observability and monitoring
  */
 
-const { UltraDexCore } = require('../src/core/orchestration/ultra-dex-core.cjs');
-
 async function main() {
+  const { UltraDexCore } = await import('../src/core/orchestration/ultra-dex-core.js');
+
   console.log('🚀 Ultra-Dex Cross-Model Memory Demo');
   console.log('=====================================\n');
 

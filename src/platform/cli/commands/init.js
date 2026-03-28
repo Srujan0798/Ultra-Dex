@@ -22,6 +22,7 @@ import { AppError, ValidationError } from '../utils/errors.js';
 import { runAutoContext } from '../auto-context/index.js';
 import { ensureTelemetryConsent, recordTelemetryEvent } from '../utils/telemetry.js';
 import { sqliteProvider } from '../memory/sqlite.js';
+import { createCommandLogger } from '../ui/logger.js';
 
 const LIVE_STACKS = {
   'next15-saas': 'Next.js 15 SaaS (Clerk + Stripe + Prisma + Admin)',
@@ -44,6 +45,9 @@ const __dirname = path.dirname(__filename);
 const TEMPLATE_ROOT = path.resolve(__dirname, '../../templates');
 const TEMPLATE_FALLBACK = path.join(ROOT_FALLBACK, 'cli', 'templates');
 const SYSTEM_DIRS = new Set(['.ultra-dex', '.ultra', '.DS_Store']);
+
+// Create logger for init command
+const logger = createCommandLogger('init');
 
 function filterNonSystemEntries(entries) {
   return entries.filter((entry) => !SYSTEM_DIRS.has(entry));
@@ -110,16 +114,17 @@ export function registerInitCommand(program) {
  * @returns {void}
  */
 function handlePreview() {
-  process.stdout.write(chalk.bold.cyan('\n📋 PREVIEW MODE: ARCHITECTURAL BLUEPRINT\n'));
-  process.stdout.write(chalk.dim('Planned files:\n'));
-  process.stdout.write('  ├── QUICK-START.md        (Foundation)\n');
-  process.stdout.write('  ├── CONTEXT.md            (Project Memory)\n');
-  process.stdout.write('  ├── ULTRA.md              (Agent Synchronization)\n');
-  process.stdout.write('  ├── IMPLEMENTATION-PLAN.md (Execution Path)\n');
-  process.stdout.write('  ├── docs/CHECKLIST.md     (21-Step Verification)\n');
-  process.stdout.write('  └── docs/AI-PROMPTS.md    (Agent Instructions)\n');
-  process.stdout.write('\n');
-  printSuccess('  ✓ Blueprint Validated. Ready to Execute.');
+  logger.info(chalk.bold.cyan('\n📋 PREVIEW MODE: ARCHITECTURAL BLUEPRINT\n'));
+  logger.list([
+    'QUICK-START.md        (Foundation)',
+    'CONTEXT.md            (Project Memory)',
+    'ULTRA.md              (Agent Synchronization)',
+    'IMPLEMENTATION-PLAN.md (Execution Path)',
+    'docs/CHECKLIST.md     (21-Step Verification)',
+    'docs/AI-PROMPTS.md    (Agent Instructions)',
+  ], chalk.dim('→'));
+  logger.blank();
+  logger.success('  ✓ Blueprint Validated. Ready to Execute.');
 }
 
 /**
@@ -161,11 +166,13 @@ async function handleTemplateInit(options) {
   if (options.enterprise) {
     await applyEnterprisePreset(outputDir);
   }
-  printSuccess(`\n✅ Template "${templateName}" deployed to ${outputDir}\n`);
-  printInfo(chalk.gray('Next steps:'));
-  printInfo(chalk.cyan(`  1. cd ${outputDir}`));
-  printInfo(chalk.cyan('  2. npm install'));
-  printInfo(chalk.cyan('  3. npm run dev'));
+  logger.success(`✅ Template "${templateName}" deployed to ${outputDir}\n`);
+  logger.info(chalk.gray('Next steps:'));
+  logger.list([
+    `cd ${outputDir}`,
+    'npm install',
+    'npm run dev',
+  ], chalk.cyan(''));
   await maybePromptTelemetry({
     mode: 'template',
     template: templateName,
@@ -235,16 +242,17 @@ async function handleLiveScaffold(options) {
 
     try {
       await runAutoContext(outputDir);
-      printSuccess(chalk.green('✅ Auto-context generated.'));
+      logger.success(chalk.green('✅ Auto-context generated.'));
     } catch (autoError) {
-      printError(chalk.yellow(`⚠️  Auto-context failed: ${autoError.message}`));
+      logger.error(chalk.yellow(`⚠️  Auto-context failed: ${autoError.message}`));
     }
 
-    printInfo(`\nStack: ${preset}`);
-    process.stdout.write(chalk.gray(`Next steps:`) + '\n');
-    process.stdout.write(chalk.cyan(`  1. cd ${outputDir}`) + '\n');
-    process.stdout.write(chalk.cyan('  2. npm install') + '\n');
-    process.stdout.write(chalk.cyan('  3. npm run dev\n') + '\n');
+    logger.info(`\nStack: ${preset}`);
+    logger.list([
+      `cd ${outputDir}`,
+      'npm install',
+      'npm run dev',
+    ], chalk.cyan(''));
     await maybePromptTelemetry({ mode: 'live', stack: preset, enterprise: options.enterprise });
   } catch (error) {
     spinner.fail(chalk.red('Infrastructure deployment failed'));
@@ -353,9 +361,9 @@ async function handleInteractiveInit(options) {
 
     try {
       await runAutoContext(outputDir);
-      printSuccess(chalk.green('✅ Auto-context generated.'));
+      logger.success(chalk.green('✅ Auto-context generated.'));
     } catch (autoError) {
-      printError(chalk.yellow(`⚠️  Auto-context failed: ${autoError.message}`));
+      logger.error(chalk.yellow(`⚠️  Auto-context failed: ${autoError.message}`));
     }
 
     spinner.succeed(chalk.green('Protocol initialization complete.'));
@@ -472,10 +480,10 @@ async function scaffoldProject(outputDir, answers) {
     const ProjectSQLiteProvider = sqliteProvider.constructor;
     const projectDb = new ProjectSQLiteProvider(dbPath);
     await projectDb.init();
-    printSuccess(chalk.gray('  ✓ Relational Memory initialized.'));
+    logger.success(chalk.gray('  ✓ Relational Memory initialized.'));
   } catch (memoryError) {
     // Relational memory should not block project initialization; surface as a soft warning
-    printError(chalk.yellow(`  ⚠️  Relational Memory initialization skipped: ${memoryError.message}`));
+    logger.error(chalk.yellow(`  ⚠️  Relational Memory initialization skipped: ${memoryError.message}`));
   }
 
   const replacements = {
@@ -587,10 +595,10 @@ async function deployCursorRules(outputDir) {
       await fs.mkdir(dotGithub, { recursive: true });
       await fs.writeFile(path.join(dotGithub, 'copilot-instructions.md'), coreContent);
     } catch (coreError) {
-      printWarning('⚠️  Could not deploy core rule file: ' + coreError.message);
+      logger.warn('⚠️  Could not deploy core rule file: ' + coreError.message);
     }
   } catch (error) {
-    printWarning('⚠️  Could not deploy cursor rules: ' + error.message);
+    logger.warn('⚠️  Could not deploy cursor rules: ' + error.message);
   }
 }
 
@@ -609,7 +617,7 @@ async function deployMasterPlan(outputDir) {
       path.join(outputDir, 'docs', 'MASTER-PLAN.md')
     );
   } catch (error) {
-    printWarning('⚠️  Could not deploy master plan template: ' + error.message);
+    logger.warn('⚠️  Could not deploy master plan template: ' + error.message);
   }
 }
 
@@ -630,7 +638,7 @@ async function deployDocs(outputDir) {
       path.join(outputDir, 'docs', 'AI-PROMPTS.md')
     );
   } catch (error) {
-    printWarning('⚠️  Could not deploy documentation files: ' + error.message);
+    logger.warn('⚠️  Could not deploy documentation files: ' + error.message);
   }
 }
 
@@ -673,7 +681,7 @@ async function deployAgents(outputDir) {
     );
     await fs.copyFile(path.join(sourceRoot, 'README.md'), path.join(agentsDir, 'README.md'));
   } catch (error) {
-    printWarning('⚠️  Could not deploy agent configurations: ' + error.message);
+    logger.warn('⚠️  Could not deploy agent configurations: ' + error.message);
   }
 }
 
@@ -683,29 +691,35 @@ async function deployAgents(outputDir) {
  * @param {Object} answers - User choices
  */
 function showFinalInstructions(outputDir, answers) {
-  process.stdout.write('\n' + chalk.bold('Artifacts deployed to:') + '\n');
-  process.stdout.write(chalk.gray(`  ${outputDir}/`) + '\n');
-  process.stdout.write(chalk.gray('  ├── QUICK-START.md') + '\n');
-  process.stdout.write(chalk.gray('  ├── CONTEXT.md') + '\n');
-  process.stdout.write(chalk.gray('  ├── ULTRA.md') + '\n');
-  process.stdout.write(chalk.gray('  ├── IMPLEMENTATION-PLAN.md') + '\n');
+  logger.blank();
+  logger.info(chalk.bold('Artifacts deployed to:'));
+  logger.list([
+    `${outputDir}/`,
+    'QUICK-START.md',
+    'CONTEXT.md',
+    'ULTRA.md',
+    'IMPLEMENTATION-PLAN.md',
+  ], chalk.gray('  ├── '));
+  
   if (answers.includeFullTemplate) {
-    process.stdout.write(chalk.gray('  ├── docs/MASTER-PLAN.md') + '\n');
+    logger.list(['docs/MASTER-PLAN.md'], chalk.gray('  ├── '));
   }
   if (answers.includeDocs) {
-    process.stdout.write(chalk.gray('  ├── docs/CHECKLIST.md') + '\n');
-    process.stdout.write(chalk.gray('  ├── docs/AI-PROMPTS.md') + '\n');
+    logger.list(['docs/CHECKLIST.md', 'docs/AI-PROMPTS.md'], chalk.gray('  ├── '));
   }
   if (answers.includeCursorRules) {
-    process.stdout.write(chalk.gray('  ├── .cursor/rules/') + '\n');
+    logger.list(['.cursor/rules/'], chalk.gray('  ├── '));
   }
 
-  process.stdout.write('\n' + chalk.bold('Mission Directives:') + '\n');
-  process.stdout.write(chalk.cyan(`  1. cd ${answers.projectName}`) + '\n');
-  process.stdout.write(chalk.cyan('  2. Open QUICK-START.md') + '\n');
-  process.stdout.write(chalk.cyan('  3. ultra-dex swarm "Analyze requirements"') + '\n');
+  logger.blank();
+  logger.info(chalk.bold('Mission Directives:'));
+  logger.list([
+    `cd ${answers.projectName}`,
+    'Open QUICK-START.md',
+    'ultra-dex swarm "Analyze requirements"',
+  ], chalk.cyan('  '));
 
-  printSuccess('\n  ✓ SYSTEM ONLINE.\n');
+  logger.success('\n  ✓ SYSTEM ONLINE.\n');
 }
 
 /**
@@ -736,24 +750,27 @@ async function generateNext15SaaSStack(outputDir, options = {}) {
     spinner.succeed(chalk.green('Next.js 15 SaaS infrastructure deployed!'));
 
     // Show instructions
-    printInfo('\n📦 Stack: Next.js 15 + Clerk + Stripe + Prisma');
-    printInfo('\n✨ Features included:');
-    process.stdout.write(chalk.gray('  • Clerk authentication with middleware\n'));
-    process.stdout.write(chalk.gray('  • Stripe payments with checkout & webhooks\n'));
-    process.stdout.write(
-      chalk.gray('  • Prisma ORM with User, Subscription, Invoice, Feature, Usage models\n')
-    );
-    process.stdout.write(chalk.gray('  • Email integration with Resend\n'));
-    process.stdout.write(chalk.gray('  • S3 file upload utilities\n'));
-    process.stdout.write(chalk.gray('  • Tailwind CSS styling\n'));
+    logger.info('\n📦 Stack: Next.js 15 + Clerk + Stripe + Prisma');
+    logger.info('\n✨ Features included:');
+    logger.list([
+      'Clerk authentication with middleware',
+      'Stripe payments with checkout & webhooks',
+      'Prisma ORM with User, Subscription, Invoice, Feature, Usage models',
+      'Email integration with Resend',
+      'S3 file upload utilities',
+      'Tailwind CSS styling',
+    ], chalk.gray('  • '));
 
-    process.stdout.write('\n' + chalk.bold('Next steps:') + '\n');
-    process.stdout.write(chalk.cyan('  1. cd ' + outputDir) + '\n');
-    process.stdout.write(chalk.cyan('  2. npm install') + '\n');
-    process.stdout.write(chalk.cyan('  3. cp .env.example .env.local') + '\n');
-    process.stdout.write(chalk.cyan('  4. # Add your API keys to .env.local') + '\n');
-    process.stdout.write(chalk.cyan('  5. npx prisma migrate dev') + '\n');
-    process.stdout.write(chalk.cyan('  6. npm run dev\n') + '\n');
+    logger.blank();
+    logger.info(chalk.bold('Next steps:'));
+    logger.list([
+      `cd ${outputDir}`,
+      'npm install',
+      'cp .env.example .env.local',
+      '# Add your API keys to .env.local',
+      'npx prisma migrate dev',
+      'npm run dev',
+    ], chalk.cyan('  '));
   } catch (error) {
     spinner.fail(chalk.red('Failed to generate SaaS infrastructure'));
     throw error;

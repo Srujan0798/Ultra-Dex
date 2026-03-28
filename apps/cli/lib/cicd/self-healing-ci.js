@@ -1,5 +1,6 @@
 import { exec } from "child_process";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, readdirSync, statSync } from "fs";
+import path from "path";
 import { promisify } from "util";
 const execPromise = promisify(exec);
 class SelfHealingCI {
@@ -380,12 +381,10 @@ Auto-fixes applied where possible.`;
     const files = [];
     if (existsSync("./src")) {
       const walk = (dir) => {
-        const fs = require("fs");
-        const path = require("path");
-        const items = fs.readdirSync(dir);
+        const items = readdirSync(dir);
         for (const item of items) {
           const fullPath = path.join(dir, item);
-          const stat = fs.statSync(fullPath);
+          const stat = statSync(fullPath);
           if (stat.isDirectory()) {
             walk(fullPath);
           } else if (fullPath.match(/\.(js|ts|jsx|tsx)$/)) {

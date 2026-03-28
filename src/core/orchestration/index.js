@@ -8,9 +8,10 @@ import { AgentStateMachine } from './agent-state.js';
 import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentRegistry } from './registry.js';
 import { ExecutionContext, TaskGraph } from './execution-context.js';
-import chalk from 'chalk';
+import chalk from '../../utils/chalk.js';
 import { ppmManager } from '../memory/manager.js';
 import { EventEmitter } from 'events';
+import { GovernanceManager, GovernanceDeniedException } from '../governance/governance-manager.js';
 
 export class AgentOrchestrator extends EventEmitter {
   constructor(options = {}) {
@@ -36,6 +37,7 @@ export class AgentOrchestrator extends EventEmitter {
     this.registry = new AgentRegistry();
     // NOTE: AgentScheduler removed in Milestone 1 (dead code).
     // Re-design scheduling in Milestone 4 if priority-based task routing is needed.
+    this.governance = new GovernanceManager();
     this.activeSessions = new Map();
     this.coordinationGraph = new Map();
 
@@ -66,10 +68,10 @@ export class AgentOrchestrator extends EventEmitter {
       const selfHealing = await this.getSelfHealing();
       await selfHealing.start();
 
-      console.log(chalk.green('🤖 Agent Orchestration System Initialized (Self-Healing Active)'));
+      process.stdout.write(chalk.green('🤖 Agent Orchestration System Initialized (Self-Healing Active)\n'));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`❌ Agent Orchestration initialization failed: ${message}`));
+      process.stderr.write(chalk.red(`❌ Agent Orchestration initialization failed: ${message}\n`));
       throw error;
     }
   }
@@ -92,8 +94,8 @@ export class AgentOrchestrator extends EventEmitter {
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.mcpServer = { toolsMap: new Map() };
-        console.warn(
-          chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}`)
+        process.stderr.write(
+          chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}\n`)
         );
       }
       return;
@@ -105,8 +107,8 @@ export class AgentOrchestrator extends EventEmitter {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.mcpServer = { toolsMap: new Map() };
-      console.warn(
-        chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}`)
+      process.stderr.write(
+        chalk.yellow(`⚠ MCP tools unavailable; continuing without tool registry: ${message}\n`)
       );
     }
   }
@@ -141,7 +143,10 @@ export class AgentOrchestrator extends EventEmitter {
    * Execute a high-level objective using the autonomous Nexus mode
    */
   async executeNexus(objective, options = {}) {
-    console.log(chalk.magenta(`\n🌌 Nexus Orchestration: ${objective}`));
+    // Prune completed tasks older than 5 minutes to prevent memory leaks
+    this.tasks.prune();
+
+    process.stdout.write(chalk.magenta(`\n🌌 Nexus Orchestration: ${objective}\n`));
     const executionContext = this.createExecutionContext(objective, options);
     this.activeSessions.set(executionContext.sessionId, executionContext);
 
@@ -162,7 +167,7 @@ export class AgentOrchestrator extends EventEmitter {
     } catch (error) {
       executionContext.status = 'failed';
       const message = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`❌ Nexus execution failed: ${message}`));
+      process.stderr.write(chalk.red(`❌ Nexus execution failed: ${message}\n`));
 
       // Report failure to Self-Healing
       const selfHealing = await this.getSelfHealing();
@@ -187,26 +192,26 @@ export class AgentOrchestrator extends EventEmitter {
     const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
     this.metrics.totalSessions++;
 
+    // Governance context
+    const agentId = options.agentId || this.selectAgentForTask(normalizedTask, options);
+    const context = {
+      agentId: agentId,
+      action: 'executeTask',
+      resource: normalizedTask.substring(0, 100), // Truncate for resource field
+      details: { task: normalizedTask, options },
+    };
+
     this.emit('task:start', { sessionId, task: normalizedTask, options });
-    console.log(chalk.blue(`  - Executing Task: ${normalizedTask}`));
+    process.stdout.write(chalk.blue(`  - Executing Task: ${normalizedTask}\n`));
     try {
       const ai = await this.getAiLayer();
 
       // 1. Determine Agent & Gather Context
-      const agentId = options.agentId || this.selectAgentForTask(normalizedTask, options);
       const memoryContext = await this.memory.search(normalizedTask);
       const systemPrompt = await this.registry.getAgentPrompt(agentId);
 
       // Governance check before task execution
-      const governance = new GovernanceManager();
-      const context = {
-        agentId: agentId,
-        action: 'executeTask',
-        resource: normalizedTask.substring(0, 100), // Truncate for resource field
-        details: { task: normalizedTask, options },
-      };
-
-      const governanceResult = await governance.gate(context);
+      const governanceResult = await this.governance.gate(context);
       if (!governanceResult.allowed) {
         throw new GovernanceDeniedException(
           `Task execution blocked by governance policy: ${governanceResult.reason}`,
@@ -242,13 +247,31 @@ export class AgentOrchestrator extends EventEmitter {
         metadata: { agentId, sessionId },
       });
 
+      // Audit successful execution
+      await this.governance.audit.record({
+        action: 'task_execution',
+        task: normalizedTask,
+        result: 'success',
+        agentId: context.agentId,
+        details: { options },
+      });
+
       this.metrics.successfulSessions++;
       this.emit('task:complete', { sessionId, agentId, output: output.substring(0, 500) });
       return { status: 'COMPLETE', output, agentId };
     } catch (error) {
+      // Audit failed execution
+      await this.governance.audit.record({
+        action: 'task_execution',
+        task: normalizedTask,
+        result: 'failure',
+        agentId: context.agentId,
+        details: { options, error: error.message },
+      });
+
       this.metrics.failedSessions++;
       const message = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`❌ Task execution failed (${sessionId}): ${message}`));
+      process.stderr.write(chalk.red(`❌ Task execution failed (${sessionId}): ${message}\n`));
       this.emit('task:error', { sessionId, task: normalizedTask, error: message });
 
       // Report to Self-Healing
@@ -307,21 +330,21 @@ export class AgentOrchestrator extends EventEmitter {
   }
 
   async executeTool(name, args) {
+    // Governance context
+    const context = {
+      agentId: 'orchestrator',
+      action: `tool:${name}`,
+      resource: name,
+      details: { toolName: name, args },
+    };
+
     try {
       this.emit('tool:use', { name, args });
       const tool = this.mcpServer.toolsMap?.get(name);
       if (!tool) throw new Error(`Tool ${name} not found`);
 
       // Governance check before tool execution
-      const governance = new GovernanceManager();
-      const context = {
-        agentId: 'orchestrator',
-        action: `tool:${name}`,
-        resource: name,
-        details: { toolName: name, args },
-      };
-
-      const governanceResult = await governance.gate(context);
+      const governanceResult = await this.governance.gate(context);
       if (!governanceResult.allowed) {
         throw new GovernanceDeniedException(
           `Tool execution blocked by governance policy: ${governanceResult.reason}`,
@@ -331,11 +354,32 @@ export class AgentOrchestrator extends EventEmitter {
 
       // Call the tool's handler directly
       const result = await tool.handler(args);
+
+      // Audit successful execution
+      await this.governance.audit.record({
+        action: 'tool_execution',
+        tool: name,
+        args,
+        result: 'success',
+        agentId: context.agentId,
+        details: { toolName: name },
+      });
+
       this.emit('tool:result', { name, result: JSON.stringify(result).substring(0, 500) });
       return result;
     } catch (error) {
+      // Audit failed execution
+      await this.governance.audit.record({
+        action: 'tool_execution',
+        tool: name,
+        args,
+        result: 'failure',
+        agentId: context.agentId,
+        details: { toolName: name, error: error.message },
+      });
+
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`❌ Internal Tool Error (${name}): ${message}`);
+      process.stderr.write(`❌ Internal Tool Error (${name}): ${message}\n`);
       throw error;
     }
   }

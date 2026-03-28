@@ -24,7 +24,7 @@ describe('Governance Integration - executeTool', () => {
     // Arrange: Add a tool that we'll block
     const testToolName = 'test-tool';
     const testTool = {
-      handler: mock.fn().mockResolvedValue('success'),
+      handler: mock.fn(async () => 'success'),
     };
     orchestrator.mcpServer.toolsMap.set(testToolName, testTool);
 
@@ -63,7 +63,7 @@ describe('Governance Integration - executeTool', () => {
     // Arrange: Add a tool that we'll allow
     const testToolName = 'allowed-tool';
     const testTool = {
-      handler: mock.fn().mockResolvedValue('success'),
+      handler: mock.fn(async () => 'success'),
     };
     orchestrator.mcpServer.toolsMap.set(testToolName, testTool);
 

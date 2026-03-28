@@ -176,7 +176,9 @@ module.exports = nextConfig;
    */
   async createTailwindConfig(baseDir) {
     const tailwindConfig = `/** @type {import('tailwindcss').Config} */
-module.exports = {
+import tailwindcssAnimate from "tailwindcss-animate";
+
+export default {
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
@@ -249,7 +251,7 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 }
 `;
 

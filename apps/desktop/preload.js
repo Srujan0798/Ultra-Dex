@@ -3,7 +3,7 @@
  * @module desktop/preload
  */
 
-const { contextBridge, ipcRenderer } = require('electron');
+import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('ultraDex', {
     runCommand: (command) => ipcRenderer.invoke('run-command', command),

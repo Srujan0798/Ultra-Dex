@@ -1,6 +1,7 @@
 // src/monitoring/SystemMonitor.js
 import { EventEmitter } from 'events';
 import { performance } from 'perf_hooks';
+import os from 'os';
 import { UltraDex } from '../UltraDex.js';
 
 class SystemMonitor extends EventEmitter {
@@ -200,7 +201,7 @@ class SystemMonitor extends EventEmitter {
   }
 
   getCPUUsage() {
-    const cpus = require('os').cpus();
+    const cpus = os.cpus();
     let totalIdle = 0;
     let totalTick = 0;
 

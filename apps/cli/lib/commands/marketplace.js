@@ -266,8 +266,8 @@ export function registerMarketplaceCommand(program) {
   marketplaceCommand
     .command('browse')
     .description('Open marketplace in browser')
-    .action(() => {
-      const { exec } = require('child_process');
+    .action(async () => {
+      const { exec } = await import('child_process');
       const url = 'https://marketplace.ultra-dex.ai';
       
       let command;

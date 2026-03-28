@@ -103,9 +103,10 @@ cmd_start() {
     
     # Start in background
     nohup $NODE_CMD -e "
-        const { UltraDex } = require('./sdk.cjs');
-        const ultra = new UltraDex();
-        ultra.initialize().then(() => ultra.start()).then(() => {
+        import('./sdk.js').then(({ UltraDex }) => {
+            const ultra = new UltraDex();
+            return ultra.initialize().then(() => ultra.start());
+        }).then(() => {
             console.log('Ultra-Dex started successfully');
             console.log('Press Ctrl+C to stop');
         }).catch(err => {
@@ -163,10 +164,10 @@ cmd_health() {
     echo -e "${BLUE}Running health check...${NC}"
     
     $NODE_CMD -e "
-        const { UltraDex } = require('./sdk.cjs');
-        const ultra = new UltraDex();
-        ultra.initialize().then(() => {
-            const health = ultra.health();
+        import('./sdk.js').then(({ UltraDex }) => {
+            const ultra = new UltraDex();
+            return ultra.initialize().then(() => ({ ultra, health: ultra.health() }));
+        }).then(({ health }) => {
             console.log(JSON.stringify(health, null, 2));
             process.exit(health.healthy ? 0 : 1);
         }).catch(err => {
@@ -215,9 +216,10 @@ cmd_config() {
         validate)
             echo -e "${BLUE}Validating configuration...${NC}"
             $NODE_CMD -e "
-                const { ConfigManager } = require('./src/core/system/config-manager.cjs');
-                const config = new ConfigManager();
-                config.initialize().then(() => {
+                import('./src/core/system/config-manager.js').then(({ ConfigManager }) => {
+                    const config = new ConfigManager();
+                    return config.initialize().then(() => config);
+                }).then((config) => {
                     console.log('Configuration is valid');
                     console.log(JSON.stringify(config.getAll(), null, 2));
                 }).catch(err => {
@@ -307,52 +309,56 @@ cmd_monitor() {
     echo -e "${BLUE}Starting monitoring dashboard...${NC}"
     
     $NODE_CMD -e "
-        const { UltraDex } = require('./sdk.cjs');
-        const ultra = new UltraDex();
-        
-        async function displayDashboard() {
-            await ultra.initialize();
+        import('./sdk.js').then(({ UltraDex }) => {
+            const ultra = new UltraDex();
             
-            console.clear();
-            console.log('╔════════════════════════════════════════════════════════╗');
-            console.log('║         Ultra-Dex Real-Time Monitoring                 ║');
-            console.log('╚════════════════════════════════════════════════════════╝');
-            console.log();
-            
-            const status = ultra.getStatus();
-            console.log('Status:', status.status);
-            console.log('Version:', status.version);
-            console.log('Uptime:', Math.floor(status.uptime / 1000), 'seconds');
-            console.log();
-            
-            const health = ultra.health();
-            console.log('Health:', health.healthy ? '✅ Healthy' : '❌ Unhealthy');
-            console.log();
-            
-            if (ultra.tokenOptimizer) {
-                const stats = ultra.tokenOptimizer.getStats();
-                console.log('Token Usage:');
-                console.log('  Total tokens:', stats.totalTokens.toLocaleString());
-                console.log('  Total cost: $', stats.totalCost.toFixed(2));
-                console.log('  Today cost: $', stats.todayCost.toFixed(2));
-                console.log('  Cache hit rate:', (stats.cacheHitRate * 100).toFixed(1) + '%');
+            async function displayDashboard() {
+                if (!ultra.core.initialized) {
+                    await ultra.initialize();
+                }
+                
+                console.clear();
+                console.log('╔════════════════════════════════════════════════════════╗');
+                console.log('║         Ultra-Dex Real-Time Monitoring                 ║');
+                console.log('╚════════════════════════════════════════════════════════╝');
                 console.log();
+                
+                const status = ultra.getStatus();
+                console.log('Status:', status.status);
+                console.log('Version:', status.version);
+                console.log('Uptime:', Math.floor(status.uptime / 1000), 'seconds');
+                console.log();
+                
+                const health = ultra.health();
+                console.log('Health:', health.healthy ? '✅ Healthy' : '❌ Unhealthy');
+                console.log();
+                
+                if (ultra.tokenOptimizer) {
+                    const stats = ultra.tokenOptimizer.getStats();
+                    console.log('Token Usage:');
+                    console.log('  Total tokens:', stats.totalTokens.toLocaleString());
+                    console.log('  Total cost: $', stats.totalCost.toFixed(2));
+                    console.log('  Today cost: $', stats.todayCost.toFixed(2));
+                    console.log('  Cache hit rate:', (stats.cacheHitRate * 100).toFixed(1) + '%');
+                    console.log();
+                }
+                
+                const suggestions = ultra.tokenOptimizer?.getSuggestions();
+                if (suggestions && suggestions.length > 0) {
+                    console.log('Optimization Suggestions:');
+                    suggestions.forEach(s => console.log('  •', s.message));
+                    console.log();
+                }
+                
+                console.log('Press Ctrl+C to exit');
             }
             
-            const suggestions = ultra.tokenOptimizer?.getSuggestions();
-            if (suggestions && suggestions.length > 0) {
-                console.log('Optimization Suggestions:');
-                suggestions.forEach(s => console.log('  •', s.message));
-                console.log();
-            }
-            
-            console.log('Press Ctrl+C to exit');
-        }
-        
-        displayDashboard();
-        
-        // Refresh every 5 seconds
-        setInterval(displayDashboard, 5000);
+            displayDashboard();
+            setInterval(displayDashboard, 5000);
+        }).catch(err => {
+            console.error('Monitoring failed:', err.message);
+            process.exit(1);
+        });
     "
 }
 
@@ -360,10 +366,10 @@ cmd_optimize() {
     echo -e "${BLUE}Running optimization analysis...${NC}"
     
     $NODE_CMD -e "
-        const { UltraDex } = require('./sdk.cjs');
-        const ultra = new UltraDex();
-        
-        ultra.initialize().then(() => {
+        import('./sdk.js').then(({ UltraDex }) => {
+            const ultra = new UltraDex();
+            return ultra.initialize().then(() => ultra);
+        }).then((ultra) => {
             console.log('╔════════════════════════════════════════════════════════╗');
             console.log('║         Ultra-Dex Optimization Report                  ║');
             console.log('╚════════════════════════════════════════════════════════╝');
