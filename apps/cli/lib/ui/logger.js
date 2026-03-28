@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import chalk from 'chalk';
 import { theme, status } from './theme.js';
 import { isDoomsdayMode } from '../utils/theme-state.js';
 import { redact } from '../utils/redactor.js';
@@ -247,7 +246,7 @@ export function printTable(data) {
  */
 function handleError(error) {
   try {
-    console.error('[logger]', error instanceof Error ? error.message : String(error));
+    process.stderr.write(`[logger] ${error instanceof Error ? error.message : String(error)}\n`);
   } catch (_) {
     // Fail silently
   }

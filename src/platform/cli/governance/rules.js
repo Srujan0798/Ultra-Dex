@@ -208,17 +208,17 @@ export const CONSTITUTIONAL_RULES = [
 ];
 
 export const DESTRUCTIVE_COMMAND_PATTERNS = [
-  /\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)\b/i,
-  /\brm\s+--recursive\s+--force\b/i,
-  /\brm\s+--force\s+--recursive\b/i,
-  /\bmkfs\b/i,
-  /\bdd\s+if=/i,
-  /\bshutdown\b/i,
-  /\breboot\b/i,
-  /\b:(){:|:&};:\b/,
-  /\bchown\s+-R\b/i,
-  /\bchmod\s+-R\s+777\b/i,
-  /\b>\s*\/dev\/sd[a-z]/i,
+  /\brm\s+.*-[a-z]*r[a-z]*f/i, // rm -rf, rm -rf /, rm -rfi
+  /\brm\s+.*-[a-z]*f[a-z]*r/i, // rm -fr, rm -fr /
+  /\brm\s+.*--recursive/i, // rm --recursive
+  /\brm\s+.*--force/i, // rm --force
+  /\brm\s+-r\s+-f/i, // rm -r -f
+  /\brm\s+-f\s+-r/i, // rm -f -r
+  /\bmkfs\b/i, // format filesystem
+  /\bdd\s+if=/i, // dd (disk destroyer)
+  /\b:\(\)\{.*\|.*&\s*\}\s*;/, // fork bomb
+  /\bchmod\s+-R\s+777/i, // open permissions
+  /\bchown\s+-R/i, // recursive ownership change on sensitive paths
 ];
 
 /**

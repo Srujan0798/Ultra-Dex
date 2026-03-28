@@ -7,6 +7,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import axios from "axios";
+import { readFileSync, writeFileSync } from "fs";
 class LangGraphIntegration {
   graph;
   nodes;
@@ -410,15 +411,13 @@ class LangGraphIntegration {
       edges: this.edges,
       state: this.state
     };
-    const fs = require("fs");
-    fs.writeFileSync(filePath, JSON.stringify(graphData, null, 2));
+    writeFileSync(filePath, JSON.stringify(graphData, null, 2));
   }
   /**
    * Load graph from file
    */
   loadGraph(filePath) {
-    const fs = require("fs");
-    const graphData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    const graphData = JSON.parse(readFileSync(filePath, "utf8"));
     this.nodes.clear();
     for (const node of graphData.nodes) {
       this.nodes.set(node.id, node);

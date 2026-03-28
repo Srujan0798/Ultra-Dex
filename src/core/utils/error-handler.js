@@ -5,8 +5,7 @@
  * Provides helpful fixes when commands fail
  */
 
-import chalk from 'chalk';
-import inquirer from 'inquirer';
+import chalk from '../../utils/chalk.js';
 import { execSync } from 'child_process';
 import { recordError } from '../analytics/index.js';
 import { formatSmartError } from './smart-error.js';
@@ -206,6 +205,7 @@ export async function handleError(error, context = {}) {
  * @returns {Promise<void>} Resolves when the fix cycle completes
  */
 export async function offerAutoFix() {
+  const { default: inquirer } = await import('inquirer');
   const { confirm } = await inquirer.prompt([
     {
       type: 'confirm',

@@ -3,8 +3,12 @@
  * @module src/main
  */
 
-const { app, BrowserWindow, ipcMain, Menu, dialog, shell } = require('electron');
-const path = require('path');
+import { app, BrowserWindow, ipcMain, Menu, dialog, shell } from 'electron';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Check if we're in development mode
 const isDev = process.env.NODE_ENV === 'development';

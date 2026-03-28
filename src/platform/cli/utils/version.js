@@ -5,9 +5,9 @@
  * All files should import VERSION from here
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const pkg = require('../../package.json');
+import { readFileSync } from 'fs';
+
+const pkg = JSON.parse(readFileSync(new URL('../../../../package.json', import.meta.url), 'utf8'));
 
 export const VERSION = pkg.version;
 export const PACKAGE_NAME = pkg.name;

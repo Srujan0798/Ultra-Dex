@@ -61,7 +61,7 @@ class EnterpriseSecurity {
       this.ssoProviders.set('oidc', await this.initializeOIDCProvider(ssoConfig.oidc));
     }
 
-    console.log('✅ Enterprise SSO providers configured');
+    process.stdout.write('✅ Enterprise SSO providers configured\n');
   }
 
   async initializeSAMLProvider(config) {
@@ -194,7 +194,7 @@ class EnterpriseSecurity {
   async createUserOrUpdate(user) {
     // Create or update user in the database
     // This would typically involve database operations
-    console.log(`Processing user: ${user.email}`);
+    process.stdout.write(`Processing user: ${user.email}\n`);
   }
 
   async initializeRBAC() {
@@ -273,7 +273,7 @@ class EnterpriseSecurity {
       await this.createRole(roleId, roleData);
     }
 
-    console.log('✅ RBAC system initialized');
+    process.stdout.write('✅ RBAC system initialized\n');
   }
 
   async createRole(roleId, roleData) {
@@ -398,7 +398,7 @@ class EnterpriseSecurity {
     };
 
     this.complianceFrameworks = complianceFrameworks;
-    console.log('✅ Compliance framework established');
+    process.stdout.write('✅ Compliance framework established\n');
   }
 
   async getSOC2Controls() {
@@ -480,7 +480,7 @@ class EnterpriseSecurity {
     };
 
     this.auditConfig = auditConfig;
-    console.log('✅ Audit logging configured');
+    process.stdout.write('✅ Audit logging configured\n');
   }
 
   async implementSecurityControls() {
@@ -534,7 +534,7 @@ class EnterpriseSecurity {
     };
 
     this.securityControls = securityControls;
-    console.log('✅ Security controls implemented');
+    process.stdout.write('✅ Security controls implemented\n');
   }
 
   async validateCompliance(complianceType) {

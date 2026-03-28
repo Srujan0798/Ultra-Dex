@@ -43,6 +43,14 @@ export class TaskGraph {
   hasPending() {
     return Array.from(this.tasks.values()).some((task) => task.status === 'pending');
   }
+
+  prune() {
+    for (const [taskId, task] of this.tasks.entries()) {
+      if (task.status === 'completed') {
+        this.tasks.delete(taskId);
+      }
+    }
+  }
 }
 
 export class ExecutionContext {

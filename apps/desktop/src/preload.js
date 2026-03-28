@@ -3,8 +3,8 @@
  * @module src/preload
  */
 
-const { contextBridge } = require('electron');
-const { exec } = require('child_process');
+import { contextBridge } from 'electron';
+import { exec } from 'child_process';
 
 contextBridge.exposeInMainWorld('ultraDex', {
   run: (command) =>

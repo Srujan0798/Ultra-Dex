@@ -1,0 +1,32 @@
+name: 'Ultra-Dex AI Action'
+description: 'Run Ultra-Dex AI agents in your workflow'
+inputs:
+  task:
+    description: 'The task for the AI to perform'
+    required: false
+  provider:
+    description: 'AI provider to use (openai, anthropic, etc.)'
+    required: false
+  model:
+    description: 'Specific model to use'
+    required: false
+  agents:
+    description: 'Comma-separated list of agents to run'
+    required: false
+  config-path:
+    description: 'Path to configuration file'
+    required: false
+    default: '.ultra-dex.json'
+  auto-approve:
+    description: 'Automatically approve changes'
+    required: false
+    default: 'false'
+  github-token:
+    description: 'GitHub Token'
+    required: false
+  api-key:
+    description: 'AI Provider API Key'
+    required: false
+runs:
+  using: 'node20'
+  main: 'index.js'

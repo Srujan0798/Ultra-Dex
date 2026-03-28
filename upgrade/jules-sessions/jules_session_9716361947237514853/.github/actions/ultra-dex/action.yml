@@ -1,0 +1,36 @@
+name: 'Ultra-Dex AI Automation'
+description: 'Automate development tasks using Ultra-Dex AI agents'
+inputs:
+  task:
+    description: 'The task description for the AI agents'
+    required: true
+    default: 'Review the code'
+  provider:
+    description: 'AI Provider to use (openai, anthropic, etc)'
+    required: false
+    default: 'openai'
+  model:
+    description: 'Model ID to use'
+    required: false
+    default: 'gpt-4o'
+  agents:
+    description: 'Comma-separated list of agents to involve'
+    required: false
+    default: 'code-reviewer'
+  config-path:
+    description: 'Path to Ultra-Dex configuration file'
+    required: false
+    default: '.ultra-dex.json'
+  auto-approve:
+    description: 'Whether to auto-approve AI changes'
+    required: false
+    default: 'false'
+  github-token:
+    description: 'GitHub Token for PR comments/reviews'
+    required: false
+  api-key:
+    description: 'API Key for the AI provider'
+    required: false
+runs:
+  using: 'node20'
+  main: 'index.cjs'

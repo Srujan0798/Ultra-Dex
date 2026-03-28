@@ -8,12 +8,12 @@
 // Ultra-Dex CLI — Red to Purple (Vertical)
 // Clean Red-to-Purple top-to-bottom transition
 
-import chalk from 'chalk';
-import gradient from 'gradient-string';
+import chalk from '../../../../src/utils/chalk.js';
+import gradient from '../../../../src/utils/gradient-string.js';
 import fs from 'fs';
 import path from 'path';
 import { homedir } from 'os';
-import stripAnsiFn from 'strip-ansi';
+import stripAnsiFn from '../../../../src/utils/strip-ansi.js';
 import { getTheme, setTheme, themes } from '../config/theme.js';
 import { setDoomsdayMode, isDoomsdayMode } from '../utils/theme-state.js';
 import { doomsdayStatusIcons } from '../../assets/art/doomsday.js';

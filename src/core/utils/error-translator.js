@@ -7,7 +7,7 @@ import { logger } from './logging.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import chalk from 'chalk';
+import chalk from '../../utils/chalk.js';
 import { colors, gradients } from '../../../apps/cli/lib/colors.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

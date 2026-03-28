@@ -8,10 +8,10 @@
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { v4 as uuidv4 } from 'uuid';
-import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
-import chalk from 'chalk';
-import { AppError } from '../../utils/errors.js';
+import { uuidv4 } from '../../../utils/uuid.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import chalk from '../../../utils/chalk.js';
+import { AppError } from '../utils/errors.js';
 
 // Checkpoint storage directory
 const CHECKPOINT_DIR = path.join(os.homedir(), '.ultra-dex', 'checkpoints');

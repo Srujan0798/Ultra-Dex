@@ -43,7 +43,7 @@ describe('Governance Validation - Blocklist Policy', () => {
     // 2. ADD THE TOOL TO THE ORCHESTRATOR
     const testToolName = 'delete_database';
     const testTool = {
-      handler: mock.fn().mockResolvedValue({ success: true, deleted: true }),
+      handler: mock.fn(async () => ({ success: true, deleted: true })),
     };
     orchestrator.mcpServer.toolsMap.set(testToolName, testTool);
 
@@ -82,7 +82,7 @@ describe('Governance Validation - Blocklist Policy', () => {
     // Add a tool that should be allowed
     const testToolName = 'read_file';
     const testTool = {
-      handler: mock.fn().mockResolvedValue({ content: 'file content' }),
+      handler: mock.fn(async () => ({ content: 'file content' })),
     };
     orchestrator.mcpServer.toolsMap.set(testToolName, testTool);
 

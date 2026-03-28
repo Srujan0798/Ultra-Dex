@@ -11,17 +11,55 @@ import { aiMetaLayer } from './ai/ai-meta-layer.js';
 import { agentOrchestrator } from './orchestration/index.js';
 import { ppmManager } from './memory/manager.js';
 
-// ── Sprint 8: Infrastructure Modules ────────────────────────────────────
-import { StreamPipeline, StreamTransform, StreamBuffer } from './streaming/pipeline.js';
-import { WebhookManager, WebhookEndpoint, WebhookDelivery } from './webhooks/webhook-manager.js';
-import { PluginManager, Plugin } from './plugins/lifecycle-manager.js';
-import { RateLimiter, SlidingWindow, TokenBucket } from './rate-limiting/rate-limiter.js';
-
-// ── Sprint 9: Production-Critical Modules ───────────────────────────────
-import { CircuitBreaker, CircuitBreakerRegistry } from './reliability/circuit-breaker.js';
-import { ProviderFallback } from './reliability/provider-fallback.js';
-import { QueueProcessor, Job } from './queue/queue-processor.js';
 import { HealthService, HealthCheck } from './system/health-service.js';
+
+// ── Compatibility Fallbacks ─────────────────────────────────────────────
+// Several legacy infrastructure modules referenced by this entrypoint no longer
+// have JS implementations in src/core. Keep the public surface loadable with
+// minimal no-op shims until those modules are restored or intentionally removed.
+class NoopSubsystem {
+  constructor(config = {}) {
+    this.config = config;
+  }
+
+  getStats() {
+    return null;
+  }
+
+  getDashboard() {
+    return null;
+  }
+
+  async stop() {}
+}
+
+class StreamPipeline extends NoopSubsystem {}
+class StreamTransform {}
+class StreamBuffer {}
+class WebhookManager extends NoopSubsystem {}
+class WebhookEndpoint {}
+class WebhookDelivery {}
+class PluginManager extends NoopSubsystem {
+  constructor(config = {}) {
+    super(config);
+    this.plugins = new Map();
+  }
+
+  async unload() {}
+}
+class Plugin {}
+class RateLimiter extends NoopSubsystem {}
+class SlidingWindow {}
+class TokenBucket {}
+class CircuitBreaker {}
+class CircuitBreakerRegistry {
+  getDashboard() {
+    return { breakers: 0 };
+  }
+}
+class ProviderFallback extends NoopSubsystem {}
+class QueueProcessor extends NoopSubsystem {}
+class Job {}
 
 // ── Ultra-Dex Meta-Layer ────────────────────────────────────────────────
 class UltraDexMetaLayer {
@@ -114,6 +152,7 @@ class UltraDexMetaLayer {
 
 export const ultraDex = new UltraDexMetaLayer();
 export default ultraDex;
+export { UltraDexMetaLayer };
 
 // ── Named Exports ───────────────────────────────────────────────────────
 // Core

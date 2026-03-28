@@ -5,7 +5,7 @@
  * @module agents/workflow-rules
  */
 
-import chalk from 'chalk';
+import chalk from '../../../utils/chalk.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { printWarning, printInfo } from '../utils/output.js';

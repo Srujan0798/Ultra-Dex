@@ -1,0 +1,818 @@
+TAP version 13
+# Subtest: ai providers registry lists expected baseline providers
+ok 1 - ai providers registry lists expected baseline providers
+  ---
+  duration_ms: 323.901958
+  ...
+# Subtest: ai providers registry can instantiate openai provider
+ok 2 - ai providers registry can instantiate openai provider
+  ---
+  duration_ms: 0.698542
+  ...
+# Subtest: ai providers registry rejects unknown provider
+ok 3 - ai providers registry rejects unknown provider
+  ---
+  duration_ms: 1.212708
+  ...
+# Subtest: ApprovalWorkflow
+    # Subtest: should create a request with correct steps
+    ok 1 - should create a request with correct steps
+      ---
+      duration_ms: 35.109958
+      ...
+    # Subtest: should advance step on approval
+    ok 2 - should advance step on approval
+      ---
+      duration_ms: 8.333417
+      ...
+    # Subtest: should complete workflow when all steps approved
+    ok 3 - should complete workflow when all steps approved
+      ---
+      duration_ms: 1.15325
+      ...
+    # Subtest: should reject workflow immediately on rejection
+    ok 4 - should reject workflow immediately on rejection
+      ---
+      duration_ms: 0.8815
+      ...
+    1..4
+ok 4 - ApprovalWorkflow
+  ---
+  duration_ms: 64.749542
+  type: 'suite'
+  ...
+# Subtest: Git Integration
+    # Subtest: Repository Detection
+        # Subtest: should detect if current directory is a Git repository
+        ok 1 - should detect if current directory is a Git repository
+          ---
+          duration_ms: 40.584584
+          ...
+        1..1
+    ok 1 - Repository Detection
+      ---
+      duration_ms: 49.323125
+      type: 'suite'
+      ...
+    # Subtest: Branch Operations
+        # Subtest: should get current branch name
+        ok 1 - should get current branch name
+          ---
+          duration_ms: 491.680125
+          ...
+        1..1
+    ok 2 - Branch Operations
+      ---
+      duration_ms: 502.95225
+      type: 'suite'
+      ...
+    # Subtest: Status Operations
+        # Subtest: should get Git status
+        ok 1 - should get Git status
+          ---
+          duration_ms: 2285.516334
+          ...
+        1..1
+    ok 3 - Status Operations
+      ---
+      duration_ms: 2290.246208
+      type: 'suite'
+      ...
+    # Subtest: Diff Operations
+        # Subtest: should get working directory diff
+        ok 1 - should get working directory diff
+          ---
+          duration_ms: 2231.614834
+          ...
+        # Subtest: should get staged diff
+        ok 2 - should get staged diff
+          ---
+          duration_ms: 1664.071125
+          ...
+        1..2
+    ok 4 - Diff Operations
+      ---
+      duration_ms: 3917.732083
+      type: 'suite'
+      ...
+    # Subtest: Commit Operations
+        # Subtest: should get commit history
+        ok 1 - should get commit history
+          ---
+          duration_ms: 1545.705125
+          ...
+        # Subtest: should get current commit hash
+        ok 2 - should get current commit hash
+          ---
+          duration_ms: 802.546417
+          ...
+        1..2
+    ok 5 - Commit Operations
+      ---
+      duration_ms: 2349.894541
+      type: 'suite'
+      ...
+    # Subtest: File Operations
+        # Subtest: should get changed files
+        ok 1 - should get changed files
+          ---
+          duration_ms: 2313.037625
+          ...
+        # Subtest: should get file history
+        ok 2 - should get file history
+          ---
+          duration_ms: 1586.240125
+          ...
+        1..2
+    ok 6 - File Operations
+      ---
+      duration_ms: 3901.57425
+      type: 'suite'
+      ...
+    # Subtest: Configuration Operations
+        # Subtest: should get Git configuration
+        not ok 1 - should get Git configuration
+          ---
+          duration_ms: 856.451917
+          location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/git-integration.test.js:75:5'
+          failureType: 'testCodeFailure'
+          error: 'config is not defined'
+          code: 'ERR_TEST_FAILURE'
+          name: 'ReferenceError'
+          stack: |-
+            TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/git-integration.test.js:79:19)
+            process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+            async Test.run (node:internal/test_runner/test:935:9)
+            async Promise.all (index 0)
+            async Suite.run (node:internal/test_runner/test:1320:7)
+            async Suite.processPendingSubtests (node:internal/test_runner/test:633:7)
+          ...
+        # Subtest: should get repository root
+        ok 2 - should get repository root
+          ---
+          duration_ms: 590.582208
+          ...
+        1..2
+    not ok 7 - Configuration Operations
+      ---
+      duration_ms: 1463.623333
+      type: 'suite'
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/git-integration.test.js:74:3'
+      failureType: 'subtestsFailed'
+      error: '1 subtest failed'
+      code: 'ERR_TEST_FAILURE'
+      ...
+    # Subtest: Git Context
+        # Subtest: should get comprehensive Git context
+        ok 1 - should get comprehensive Git context
+          ---
+          duration_ms: 1783.944
+          ...
+        1..1
+    ok 8 - Git Context
+      ---
+      duration_ms: 1792.445958
+      type: 'suite'
+      ...
+    # Subtest: Memory Integration
+        # Subtest: should link memory entries to Git context
+        ok 1 - should link memory entries to Git context
+          ---
+          duration_ms: 2112.643625
+          ...
+        1..1
+    ok 9 - Memory Integration
+      ---
+      duration_ms: 2114.996708
+      type: 'suite'
+      ...
+    1..9
+not ok 5 - Git Integration
+  ---
+  duration_ms: 18395.09925
+  type: 'suite'
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/git-integration.test.js:5:1'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: Governance Integration - executeTool Basic
+    # Subtest: GovernanceManager should block operations based on policy
+    ok 1 - GovernanceManager should block operations based on policy
+      ---
+      duration_ms: 26.980792
+      ...
+    # Subtest: GovernanceManager should allow operations when no policy blocks
+    ok 2 - GovernanceManager should allow operations when no policy blocks
+      ---
+      duration_ms: 6.682
+      ...
+    # Subtest: AuditTrail should record governance decisions
+    ok 3 - AuditTrail should record governance decisions
+      ---
+      duration_ms: 9.809709
+      ...
+    1..3
+ok 6 - Governance Integration - executeTool Basic
+  ---
+  duration_ms: 64.103167
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - Direct Test
+    # Subtest: should block tool execution when policy denies it
+    ok 1 - should block tool execution when policy denies it
+      ---
+      duration_ms: 12.270917
+      ...
+    # Subtest: should allow tool execution when no policy blocks it
+    ok 2 - should allow tool execution when no policy blocks it
+      ---
+      duration_ms: 5.927542
+      ...
+    # Subtest: should record audit entries for governance decisions
+    ok 3 - should record audit entries for governance decisions
+      ---
+      duration_ms: 1.674542
+      ...
+    # Subtest: should throw GovernanceDeniedException for blocked operations in orchestrator context
+    ok 4 - should throw GovernanceDeniedException for blocked operations in orchestrator context
+      ---
+      duration_ms: 231.560542
+      ...
+    1..4
+ok 7 - Governance Integration - Direct Test
+  ---
+  duration_ms: 261.884375
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - executeTool
+    # Subtest: executeTool should block denied operations via governance
+    not ok 1 - executeTool should block denied operations via governance
+      ---
+      duration_ms: 131.627208
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:74:3'
+      failureType: 'testCodeFailure'
+      error: |-
+        The error is expected to be an instance of "GovernanceDeniedException". Received "TypeError"
+        
+        Error message:
+        
+        Cannot read properties of undefined (reading 'substring')
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      stack: |-
+        async TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:82:5)
+        async Test.run (node:internal/test_runner/test:935:9)
+        async Promise.all (index 0)
+        async Suite.run (node:internal/test_runner/test:1320:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: executeTool should allow permitted operations
+    not ok 2 - executeTool should allow permitted operations
+      ---
+      duration_ms: 2.488625
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:91:3'
+      failureType: 'testCodeFailure'
+      error: |-
+        Expected values to be strictly equal:
+        + actual - expected
+        
+        + [Function: callCount]
+        - 1
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      stack: |-
+        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:102:12)
+        async Test.run (node:internal/test_runner/test:935:9)
+        async Suite.processPendingSubtests (node:internal/test_runner/test:633:7)
+      ...
+# Subtest: tests/core/governance-executeTool-final.test.js
+not ok 6 - tests/core/governance-executeTool-final.test.js
+  ---
+  duration_ms: 5200.935125
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool-final.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool.test.js:11
+# mock('../src/core/ai/ai-meta-layer.js', () => ({
+# ^
+# TypeError: mock is not a function
+#     at file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool.test.js:11:1
+#     at ModuleJob.run (node:internal/modules/esm/module_job:268:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:543:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)
+# Node.js v22.11.0
+# Subtest: tests/core/governance-executeTool.test.js
+not ok 7 - tests/core/governance-executeTool.test.js
+  ---
+  duration_ms: 4496.121542
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-executeTool.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: Governance Integration
+    # Subtest: executeTool should block denied operations via governance
+    not ok 1 - executeTool should block denied operations via governance
+      ---
+      duration_ms: 356.243417
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-integration.test.js:24:3'
+      failureType: 'testCodeFailure'
+      error: 'mock is not a function'
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-integration.test.js:47:5)
+        Test.runInAsyncScope (node:async_hooks:211:14)
+        Test.run (node:internal/test_runner/test:934:25)
+        async Promise.all (index 0)
+        async Suite.run (node:internal/test_runner/test:1320:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: executeTask should block denied operations via governance
+    not ok 2 - executeTask should block denied operations via governance
+      ---
+      duration_ms: 7.558542
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-integration.test.js:64:3'
+      failureType: 'testCodeFailure'
+      error: 'mock is not a function'
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-integration.test.js:90:5)
+        Test.runInAsyncScope (node:async_hooks:211:14)
+        Test.run (node:internal/test_runner/test:934:25)
+        async Suite.processPendingSubtests (node:internal/test_runner/test:633:7)
+      ...
+    1..2
+not ok 10 - Governance Integration
+  ---
+  duration_ms: 507.085625
+  type: 'suite'
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-integration.test.js:13:1'
+  failureType: 'subtestsFailed'
+  error: '2 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: Governance Integration - Minimal executeTool Test
+    # Subtest: should block tool execution when policy denies it
+    ok 1 - should block tool execution when policy denies it
+      ---
+      duration_ms: 52.518625
+      ...
+    # Subtest: should allow tool execution when policy permits it
+    ok 2 - should allow tool execution when policy permits it
+      ---
+      duration_ms: 39.3025
+      ...
+    # Subtest: should record audit entries for both allowed and blocked actions
+    ok 3 - should record audit entries for both allowed and blocked actions
+      ---
+      duration_ms: 8.136625
+      ...
+    1..3
+ok 11 - Governance Integration - Minimal executeTool Test
+  ---
+  duration_ms: 122.259625
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - executeTool
+    # Subtest: executeTool should block denied operations via governance
+    not ok 1 - executeTool should block denied operations via governance
+      ---
+      duration_ms: 61.208083
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-simple.test.js:23:3'
+      failureType: 'testCodeFailure'
+      error: 'mock is not a function'
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-simple.test.js:45:5)
+        Test.runInAsyncScope (node:async_hooks:211:14)
+        Test.run (node:internal/test_runner/test:934:25)
+        async Promise.all (index 0)
+        async Suite.run (node:internal/test_runner/test:1320:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: executeTool should allow permitted operations
+    not ok 2 - executeTool should allow permitted operations
+      ---
+      duration_ms: 51.524042
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-simple.test.js:62:3'
+      failureType: 'testCodeFailure'
+      error: 'mock is not a function'
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-simple.test.js:77:5)
+        Test.runInAsyncScope (node:async_hooks:211:14)
+        Test.run (node:internal/test_runner/test:934:25)
+        async Suite.processPendingSubtests (node:internal/test_runner/test:633:7)
+      ...
+    1..2
+not ok 12 - Governance Integration - executeTool
+  ---
+  duration_ms: 202.346833
+  type: 'suite'
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-simple.test.js:12:1'
+  failureType: 'subtestsFailed'
+  error: '2 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: Governance Validation - Blocklist Policy
+    # Subtest: should define a blocklist policy and reject blocked tool execution
+    not ok 1 - should define a blocklist policy and reject blocked tool execution
+      ---
+      duration_ms: 60.689917
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-validation.test.js:32:3'
+      failureType: 'testCodeFailure'
+      error: 'mock is not a function'
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-validation.test.js:52:5)
+        Test.runInAsyncScope (node:async_hooks:211:14)
+        Test.run (node:internal/test_runner/test:934:25)
+        async Promise.all (index 0)
+        async Suite.run (node:internal/test_runner/test:1320:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: should allow execution of non-blocked tools
+    not ok 2 - should allow execution of non-blocked tools
+      ---
+      duration_ms: 35.720792
+      location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-validation.test.js:72:3'
+      failureType: 'testCodeFailure'
+      error: 'mock is not a function'
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (file:///Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-validation.test.js:91:5)
+        Test.runInAsyncScope (node:async_hooks:211:14)
+        Test.run (node:internal/test_runner/test:934:25)
+        async Suite.processPendingSubtests (node:internal/test_runner/test:633:7)
+      ...
+    1..2
+not ok 13 - Governance Validation - Blocklist Policy
+  ---
+  duration_ms: 189.012584
+  type: 'suite'
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/governance-validation.test.js:17:1'
+  failureType: 'subtestsFailed'
+  error: '2 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Memory System Verification Tests Loaded
+# Memory exports: [
+#   'ColdTier',
+#   'ColdTierMemory',
+#   'ContextManager',
+#   'GraphEngine',
+#   'HotTier',
+#   'HotTierMemory',
+#   'HotWarmColdManager',
+#   'Memex',
+#   'MemoryManager',
+#   'MemorySchema',
+#   'MultiTierMemory',
+#   'PersistentMemoryStore',
+#   'ProjectMind',
+#   'TitansMemory',
+#   'VectorDB',
+#   'VectorStore',
+#   'WarmTier',
+#   'WarmTierMemory',
+#   'coldTier',
+#   'compactHistory',
+#   'compressEntries',
+#   'default',
+#   'demoteEntry',
+#   'deserializeMemory',
+#   'embedText',
+#   'getEnhancedMemorySystem',
+#   'hotTier',
+#   'loadEnhancedMemorySystemModule',
+#   'memex',
+#   'memoryGraph',
+#   'multiTierMemory',
+#   'ppmManager',
+#   'promoteEntry',
+#   'serializeMemory',
+#   'summarizeMemory',
+#   'summarizeOutput',
+#   'tieredMemoryPath',
+#   'titansMemory',
+#   'warmTier'
+# ]
+# Subtest: Memory System Verification
+    # Subtest: Memory Architecture
+        # Subtest: should have memory module structure
+        ok 1 - should have memory module structure
+          ---
+          duration_ms: 5552.229042
+          ...
+        # Subtest: should have VectorStore implementation
+        ok 2 - should have VectorStore implementation
+          ---
+          duration_ms: 31.332708
+          ...
+        # Subtest: should have GraphEngine implementation
+        ok 3 - should have GraphEngine implementation
+          ---
+          duration_ms: 10.792792
+          ...
+        1..3
+    ok 1 - Memory Architecture
+      ---
+      duration_ms: 5599.47925
+      type: 'suite'
+      ...
+    # Subtest: Mock Memory Operations
+        # Subtest: should demonstrate vector similarity
+        ok 1 - should demonstrate vector similarity
+          ---
+          duration_ms: 4.010458
+          ...
+        # Subtest: should simulate memory tier structure
+        ok 2 - should simulate memory tier structure
+          ---
+          duration_ms: 0.462875
+          ...
+        # Subtest: should simulate graph relationships
+        ok 3 - should simulate graph relationships
+          ---
+          duration_ms: 9.351791
+          ...
+        1..3
+    ok 2 - Mock Memory Operations
+      ---
+      duration_ms: 14.433708
+      type: 'suite'
+      ...
+    # Subtest: Provider Integration
+        # Subtest: should be able to import provider registry
+        ok 1 - should be able to import provider registry
+          ---
+          duration_ms: 105.111166
+          ...
+        1..1
+    ok 3 - Provider Integration
+      ---
+      duration_ms: 106.170334
+      type: 'suite'
+      ...
+    1..3
+ok 14 - Memory System Verification
+  ---
+  duration_ms: 5721.45975
+  type: 'suite'
+  ...
+# Created index: agents_status_idx on agents.status
+# Created index: agents_createdAt_idx on agents.createdAt
+# Created index: memory_type_idx on memory.type
+# Created index: memory_timestamp_idx on memory.timestamp
+# Created index: memory_importance_idx on memory.importance
+# Created index: tasks_status_idx on tasks.status
+# Created index: tasks_priority_idx on tasks.priority
+# Created index: tasks_createdAt_idx on tasks.createdAt
+# Created index: logs_timestamp_idx on logs.timestamp
+# Created index: logs_level_idx on logs.level
+# Created index: logs_source_idx on logs.source
+# Subtest: Performance System Verification
+    # Subtest: Cache System
+        # Subtest: should have cache module structure
+        ok 1 - should have cache module structure
+          ---
+          duration_ms: 685.285542
+          ...
+        # Subtest: should demonstrate caching functionality
+        ok 2 - should demonstrate caching functionality
+          ---
+          duration_ms: 22.772208
+          ...
+        # Subtest: should handle cache misses
+        ok 3 - should handle cache misses
+          ---
+          duration_ms: 18.844709
+          ...
+        1..3
+    ok 1 - Cache System
+      ---
+      duration_ms: 764.505667
+      type: 'suite'
+      ...
+    # Subtest: Performance Monitoring
+        # Subtest: should have monitoring module structure
+        ok 1 - should have monitoring module structure
+          ---
+          duration_ms: 2.635333
+          ...
+        # Subtest: should track request metrics
+        ok 2 - should track request metrics
+          ---
+          duration_ms: 212.722375
+          ...
+        # Subtest: should collect system metrics
+        ok 3 - should collect system metrics
+          ---
+          duration_ms: 193.901834
+          ...
+        1..3
+    ok 2 - Performance Monitoring
+      ---
+      duration_ms: 672.875
+      type: 'suite'
+      ...
+    # Subtest: Database Optimization
+        # Subtest: should have database optimizer module structure
+        ok 1 - should have database optimizer module structure
+          ---
+          duration_ms: 1.254375
+          ...
+        # Subtest: should analyze a simple query
+        ok 2 - should analyze a simple query
+          ---
+          duration_ms: 2.409916
+          ...
+        # Subtest: should identify SELECT * anti-pattern
+        ok 3 - should identify SELECT * anti-pattern
+          ---
+          duration_ms: 1.888875
+          ...
+        1..3
+    ok 3 - Database Optimization
+      ---
+      duration_ms: 32.210541
+      type: 'suite'
+      ...
+    1..3
+ok 15 - Performance System Verification
+  ---
+  duration_ms: 1475.090833
+  type: 'suite'
+  ...
+# Subtest: RBACManager
+    # Subtest: should verify roles correctly
+    ok 1 - should verify roles correctly
+      ---
+      duration_ms: 111.641
+      ...
+    # Subtest: should default to viewer role
+    ok 2 - should default to viewer role
+      ---
+      duration_ms: 217.746125
+      ...
+    # Subtest: should check permissions based on role hierarchy
+    ok 3 - should check permissions based on role hierarchy
+      ---
+      duration_ms: 0.770625
+      ...
+    # Subtest: should support custom roles
+    ok 4 - should support custom roles
+      ---
+      duration_ms: 5.182042
+      ...
+    # Subtest: should reject invalid role assignment
+    ok 5 - should reject invalid role assignment
+      ---
+      duration_ms: 170.26925
+      ...
+    1..5
+ok 16 - RBACManager
+  ---
+  duration_ms: 509.870792
+  type: 'suite'
+  ...
+# Subtest: Schema migrator
+    # Subtest: migrates v0 ledger JSONL records to v1 without data loss
+    ok 1 - migrates v0 ledger JSONL records to v1 without data loss
+      ---
+      duration_ms: 1130.15925
+      ...
+    # Subtest: migrates v0 memory JSON payload to v1 and persists versioned structure
+    ok 2 - migrates v0 memory JSON payload to v1 and persists versioned structure
+      ---
+      duration_ms: 2235.941292
+      ...
+# [SessionPersistence] Database initialized at /tmp/ultra-dex-schema-version-test/.ultra/memory/sessions.db
+    # Subtest: sessionPersistence init ensures sqlite schema_version starts at v1
+    ok 3 - sessionPersistence init ensures sqlite schema_version starts at v1
+      ---
+      duration_ms: 25.600416
+      ...
+    1..3
+ok 17 - Schema migrator
+  ---
+  duration_ms: 3412.515459
+  type: 'suite'
+  ...
+# 🌌 Nexus Orchestration: alpha-objective
+# 🌌 Nexus Orchestration: beta-objective
+# Subtest: Session-isolated TaskGraph execution
+    # Subtest: executeNexus creates an isolated ExecutionContext per concurrent session
+    ok 1 - executeNexus creates an isolated ExecutionContext per concurrent session
+      ---
+      duration_ms: 62.702125
+      ...
+    1..1
+ok 18 - Session-isolated TaskGraph execution
+  ---
+  duration_ms: 74.976167
+  type: 'suite'
+  ...
+# node:internal/modules/esm/resolve:204
+#   const resolvedOption = FSLegacyMainResolve(pkgPath, packageConfig.main, baseStringified);
+#                          ^
+# Error: Cannot find package '/Users/srujansai/Desktop/Ultra-Dex/node_modules/stripe/index.js' imported from /Users/srujansai/Desktop/Ultra-Dex/src/core/billing/billing-manager.js
+#     at legacyMainResolve (node:internal/modules/esm/resolve:204:26)
+#     at packageResolve (node:internal/modules/esm/resolve:827:14)
+#     at moduleResolve (node:internal/modules/esm/resolve:907:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:1037:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:650:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:599:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:582:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:241:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:132:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.11.0
+# Subtest: tests/core/team-manager.test.js
+not ok 17 - tests/core/team-manager.test.js
+  ---
+  duration_ms: 4230.082959
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/team-manager.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# node:internal/modules/esm/resolve:204
+#   const resolvedOption = FSLegacyMainResolve(pkgPath, packageConfig.main, baseStringified);
+#                          ^
+# Error: Cannot find package '/Users/srujansai/Desktop/Ultra-Dex/node_modules/stripe/index.js' imported from /Users/srujansai/Desktop/Ultra-Dex/src/core/billing/billing-manager.js
+#     at legacyMainResolve (node:internal/modules/esm/resolve:204:26)
+#     at packageResolve (node:internal/modules/esm/resolve:827:14)
+#     at moduleResolve (node:internal/modules/esm/resolve:907:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:1037:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:650:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:599:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:582:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:241:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:132:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.11.0
+# Subtest: tests/core/team-persistence.test.js
+not ok 18 - tests/core/team-persistence.test.js
+  ---
+  duration_ms: 3704.281375
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/team-persistence.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# node:internal/modules/esm/resolve:257
+#     throw new ERR_MODULE_NOT_FOUND(
+#           ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/srujansai/Desktop/Ultra-Dex/node_modules/@modelcontextprotocol/sdk/server/index.js' imported from /Users/srujansai/Desktop/Ultra-Dex/src/core/mcp/server-enhanced.js
+#     at finalizeResolution (node:internal/modules/esm/resolve:257:11)
+#     at moduleResolve (node:internal/modules/esm/resolve:913:10)
+#     at defaultResolve (node:internal/modules/esm/resolve:1037:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:650:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:599:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:582:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:241:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:132:49) {
+#   code: 'ERR_MODULE_NOT_FOUND',
+#   url: 'file:///Users/srujansai/Desktop/Ultra-Dex/node_modules/@modelcontextprotocol/sdk/server/index.js'
+# }
+# Node.js v22.11.0
+# Subtest: tests/core/ultra-dex-core.test.js
+not ok 19 - tests/core/ultra-dex-core.test.js
+  ---
+  duration_ms: 4214.385583
+  location: '/Users/srujansai/Desktop/Ultra-Dex/tests/core/ultra-dex-core.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..21
+# tests 68
+# suites 28
+# pass 54
+# fail 14
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23634.201958

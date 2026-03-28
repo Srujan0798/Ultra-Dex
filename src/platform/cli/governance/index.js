@@ -14,6 +14,20 @@ import {
   FILE_ACCESS_RULES,
   DESTRUCTIVE_COMMAND_PATTERNS,
 } from './rules.js';
+
+/**
+ * Resolves a path to its real path, handling symlinks
+ * @param {string} targetPath - The target path to resolve
+ * @returns {string} The resolved real path
+ */
+function resolveRealPath(targetPath) {
+  try {
+    return fs.realpathSync(targetPath);
+  } catch {
+    // File doesn't exist yet — resolve normally
+    return path.resolve(targetPath);
+  }
+}
 import { configManager } from '../utils/config-manager.js';
 import { logOperation } from './audit.js';
 import { AppError } from '../utils/errors.js';
@@ -115,10 +129,9 @@ export class GovernanceEngine {
     const relPath = path.isAbsolute(filePath)
       ? path.relative(this.projectRoot, filePath)
       : filePath;
-    const absolutePath = path.resolve(this.projectRoot, relPath);
+    const absolutePath = resolveRealPath(path.resolve(this.projectRoot, relPath));
     try {
-      const realPath = fs.realpathSync(absolutePath);
-      const realRelPath = path.relative(this.projectRoot, realPath);
+      const realRelPath = path.relative(this.projectRoot, absolutePath);
       return SENSITIVE_PATH_PATTERNS.some(
         (pattern) => pattern.test(realRelPath) || pattern.test('/' + realRelPath)
       );

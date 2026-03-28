@@ -1,7 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 
 import chalk from 'chalk';
-import { doomsdayTheme } from '../themes/doomsday.js';
 
 export const themes = {
   default: {
@@ -41,9 +40,9 @@ export const themes = {
     dim: '#475569',
   },
   doomsday: {
-    primary: doomsdayTheme.primary,
-    secondary: doomsdayTheme.secondary,
-    accent: doomsdayTheme.accent,
+    primary: '#dc2626',
+    secondary: '#7c3aed',
+    accent: '#f59e0b',
     success: '#f59e0b',
     warning: '#f97316',
     error: '#dc2626',

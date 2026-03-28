@@ -5,7 +5,7 @@
  * @module agents/ralph-loop
  */
 
-import chalk from 'chalk';
+import chalk from '../../../utils/chalk.js';
 import { printInfo, printWarning, printSuccess } from '../utils/output.js';
 
 const STATES = ['PLAN', 'ACT', 'VERIFY', 'RECOVER', 'COMMIT'];

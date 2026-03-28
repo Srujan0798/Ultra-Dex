@@ -6,9 +6,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
+import { EventEmitter } from 'events';
 
-class AgentAutopsy {
+class AgentAutopsy extends EventEmitter {
   constructor(options = {}) {
+    super();
     this.options = {
       logPath: options.logPath || path.join(process.cwd(), '.ultra-dex', 'autopsy'),
       logRetention: options.logRetention || 7, // days
@@ -21,6 +23,7 @@ class AgentAutopsy {
     this.agentStates = new Map();
     this.recoveryHistory = new Map();
     this.autopsyReports = [];
+    this.monitoredAgents = new Map();
     this.initialized = false;
   }
 
@@ -35,7 +38,41 @@ class AgentAutopsy {
 
     await fs.mkdir(this.options.logPath, { recursive: true });
     this.initialized = true;
+    this.emit('initialized');
     return true;
+  }
+
+  monitor(agentId, config = {}) {
+    this.monitoredAgents.set(agentId, {
+      agentId,
+      maxResponseTime: config.maxResponseTime || 30000,
+      maxFailures: config.maxFailures || this.options.maxFailureCount,
+      lastHeartbeat: null,
+      status: 'healthy',
+    });
+    return this.monitoredAgents.get(agentId);
+  }
+
+  heartbeat(agentId, status = {}) {
+    const monitored = this.monitoredAgents.get(agentId) || this.monitor(agentId);
+    monitored.lastHeartbeat = new Date().toISOString();
+    monitored.status = status.status || 'healthy';
+    this.monitoredAgents.set(agentId, monitored);
+    this.emit('heartbeat', { agentId, ...monitored });
+    return monitored;
+  }
+
+  checkHealth(agentId) {
+    const monitored = this.monitoredAgents.get(agentId);
+    if (!monitored) {
+      return { healthy: true, status: 'unknown', agentId };
+    }
+    return {
+      healthy: monitored.status !== 'error',
+      status: monitored.status,
+      lastHeartbeat: monitored.lastHeartbeat,
+      agentId,
+    };
   }
 
   /**
@@ -93,6 +130,7 @@ class AgentAutopsy {
     this.failureLog.set(agentId, recentFailures);
     
     console.log(`💀 Agent ${agentId} failure logged: ${error.message}`);
+    this.emit('failure:logged', { agentId, failure });
     
     // Check if we need to take action based on failure count
     await this.evaluateFailurePattern(agentId);

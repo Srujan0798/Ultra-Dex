@@ -14,6 +14,10 @@ import { printError, printInfo, printSuccess, printWarning } from '../utils/outp
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import perfMonitor from '../performance/monitor.js';
+import { createCommandLogger } from '../ui/logger.js';
+
+// Create logger for monitoring commands
+const logger = createCommandLogger('monitoring');
 
 // ============================================================================
 // STATUS COMMAND
@@ -97,7 +101,7 @@ export async function configCommand(options) {
       const saved = await configManager.save();
 
       if (saved) {
-        printSuccess(`✅ Configuration ${key} set to ${JSON.stringify(parsedValue)}`);
+        logger.success(`✅ Configuration ${key} set to ${JSON.stringify(parsedValue)}`);
       } else {
         throw new AppError('Failed to save configuration file');
       }
@@ -142,7 +146,7 @@ export async function metricsCommand(options) {
       return runEnhancedMetricsWatcher();
     }
 
-    printInfo(chalk.bold('\n📈 Ultra-Dex Enhanced Metrics\n'));
+    logger.info(chalk.bold('\n📈 Ultra-Dex Enhanced Metrics\n'));
 
     // Show basic metrics
     interactiveMode.showMetrics();
@@ -150,7 +154,7 @@ export async function metricsCommand(options) {
     // Show enhanced performance insights
     const insights = perfMonitor.getInsights();
     if (insights && insights.insights.length > 0) {
-      printInfo(chalk.bold('\n💡 Performance Insights:\n'));
+      logger.info(chalk.bold('\n💡 Performance Insights:\n'));
       insights.insights.forEach(insight => {
         const color = insight.type === 'alert' ? chalk.red : chalk.yellow;
         console.log(`  ${color('•')} ${insight.message}`);
@@ -166,7 +170,7 @@ export async function metricsCommand(options) {
       } else {
         metrics = await monitoring.exportMetrics(format);
       }
-      printInfo(chalk.bold('\n📊 Exported Metrics:\n'));
+      logger.info(chalk.bold('\n📊 Exported Metrics:\n'));
       console.log(JSON.stringify(metrics, null, 2));
     }
   } catch (error) {
@@ -176,11 +180,11 @@ export async function metricsCommand(options) {
 
 function runEnhancedMetricsWatcher({ singleShot = false } = {}) {
   console.clear();
-  printInfo(chalk.bold('\n🚀 Ultra-Dex Enhanced Real-Time Metrics (Press Ctrl+C to stop)\n'));
+  logger.info(chalk.bold('\n🚀 Ultra-Dex Enhanced Real-Time Metrics (Press Ctrl+C to stop)\n'));
 
   const render = () => {
     console.clear();
-    printInfo(chalk.bold('\n🚀 Ultra-Dex Enhanced Real-Time Metrics (Press Ctrl+C to stop)\n'));
+    logger.info(chalk.bold('\n🚀 Ultra-Dex Enhanced Real-Time Metrics (Press Ctrl+C to stop)\n'));
 
     // Show basic metrics
     interactiveMode.showMetrics();
@@ -188,7 +192,7 @@ function runEnhancedMetricsWatcher({ singleShot = false } = {}) {
     // Show enhanced performance insights
     const insights = perfMonitor.getInsights();
     if (insights && insights.insights.length > 0) {
-      printInfo(chalk.bold('\n💡 Performance Insights:\n'));
+      logger.info(chalk.bold('\n💡 Performance Insights:\n'));
       insights.insights.forEach(insight => {
         const color = insight.type === 'alert' ? chalk.red : chalk.yellow;
         console.log(`  ${color('•')} ${insight.message}`);
@@ -198,7 +202,7 @@ function runEnhancedMetricsWatcher({ singleShot = false } = {}) {
     // Show recent alerts
     const recentAlerts = perfMonitor.getRecentAlerts(1); // Last hour
     if (recentAlerts.length > 0) {
-      printInfo(chalk.bold('\n🚨 Recent Alerts:\n'));
+      logger.info(chalk.bold('\n🚨 Recent Alerts:\n'));
       recentAlerts.slice(-5).reverse().forEach(alert => { // Show last 5 alerts
         const color = alert.severity === 'error' ? chalk.red : chalk.yellow;
         console.log(`  ${color('•')} [${alert.severity.toUpperCase()}] ${alert.message}`);
@@ -259,11 +263,11 @@ export function registerMetricsCommand(program) {
 
 export async function healthCommand(options) {
   try {
-    printInfo(chalk.bold('\n🏥 Ultra-Dex Health Status\n'));
+    logger.info(chalk.bold('\n🏥 Ultra-Dex Health Status\n'));
     interactiveMode.showHealthStatus();
 
     if (options.check) {
-      printInfo(chalk.bold('\n🔍 Detailed Health Check Results:\n'));
+      logger.info(chalk.bold('\n🔍 Detailed Health Check Results:\n'));
       // In a real implementation, these would perform actual pings/checks
       const checks = [
         { name: 'MCP Server', status: 'PASS', message: 'Running on port 3001' },

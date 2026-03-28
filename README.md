@@ -53,6 +53,23 @@ npx ultra-dex verify --live
 npx ultra-dex status
 ```
 
+### 6) Open Interactive Dashboard
+
+```bash
+npx ultra-dex dashboard
+```
+
+## Interactive Features
+
+Ultra-Dex features a state-of-the-art interactive layer designed for seamless AI orchestration.
+
+-   **Omni-Box Entry Point**: A unified TUI dashboard for project management, agent invocation, and system monitoring. Accessible via `ultra-dex dashboard` or `ultra-dex omni`.
+-   **NLP Intent Router**: Communicate with the CLI using natural language. The router uses semantic similarity and fuzzy matching to translate your requests into actionable commands.
+-   **System Doctor**: Automated diagnostics and self-healing for your development environment.
+-   **Real-time Monitoring**: Visual feedback on agent status, token budgets, and project health.
+
+For more details, see [docs/INTERFACE.md](docs/INTERFACE.md).
+
 ## Feature Matrix
 
 | Capability          | What it does                                                      | Status |

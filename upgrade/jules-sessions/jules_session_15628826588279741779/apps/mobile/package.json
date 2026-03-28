@@ -1,0 +1,22 @@
+{
+  "name": "@ultra-dex/mobile",
+  "version": "6.0.0",
+  "private": true,
+  "main": "App.tsx",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "^54.0.33",
+    "lucide-react-native": "^0.460.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0"
+  },
+  "devDependencies": {
+    "@types/react": "~18.2.0",
+    "typescript": "^5.7.0"
+  }
+}

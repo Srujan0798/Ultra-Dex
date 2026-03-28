@@ -253,7 +253,7 @@ import { theme, ultraGradient } from '../lib/ui/theme.js';
 const program = new Command();
 
 let commandStart = null;
-program.hook('preAction', (thisCommand, actionCommand) => {
+program.hook('preAction', async (thisCommand, actionCommand) => {
   commandStart = Date.now();
   let user = null;
   try {
@@ -261,6 +261,35 @@ program.hook('preAction', (thisCommand, actionCommand) => {
   } catch {
     user = null;
   }
+  
+  // NLP Intent Analysis Hook - Log intent mismatches for training
+  const rawInput = process.argv.slice(2).join(' ');
+  try {
+    const { routeIntent } = await import('../lib/nlp/router.js');
+    const intent = routeIntent(rawInput);
+    
+    if (intent && intent !== actionCommand?.name?.()) {
+      // Log intent mismatch for analytics and improvement
+      monitoring.recordEvent('nlp_intent_mismatch', {
+        parsed: actionCommand?.name?.(),
+        detected: intent,
+        input: rawInput,
+        timestamp: Date.now(),
+      });
+    }
+    
+    // Log successful NLP match
+    if (intent && intent === actionCommand?.name?.()) {
+      monitoring.recordEvent('nlp_intent_match', {
+        command: actionCommand?.name?.(),
+        input: rawInput,
+        timestamp: Date.now(),
+      });
+    }
+  } catch (error) {
+    // Silently ignore NLP errors in pre-action
+  }
+  
   if (isTelemetryEnabledSync()) {
     recordUsageEventSync({
       stage: 'start',
@@ -476,6 +505,41 @@ registerMetricsCommand(program);
 registerHealthCommand(program);
 registerDebugCommand(program);
 registerBannerCommand(program);
+
+// Command Not Found Handler with NLP Intent Suggestion
+program.on('command:*', () => {
+  const rawInput = process.argv.slice(2).join(' ');
+  
+  // Dynamically import NLP router
+  import('../lib/nlp/router.js').then(({ routeIntent, getAllIntents }) => {
+    const intent = routeIntent(rawInput);
+    
+    if (intent) {
+      console.log(chalk.yellow(`\n⚠️  Unknown command: ${process.argv.join(' ')}`));
+      console.log(chalk.green(`\n💡 Did you mean: ultra-dex ${intent}?`));
+      console.log(chalk.gray(`   Original input: "${rawInput}"`));
+      console.log(chalk.gray(`   Detected intent: "${intent}"\n`));
+      
+      // Show alternative suggestions
+      const alternatives = getAllIntents(rawInput, 3);
+      if (alternatives.length > 1) {
+        console.log(chalk.gray('   Other suggestions:'));
+        alternatives.slice(0, 3).forEach((alt) => {
+          console.log(chalk.gray(`     - ultra-dex ${alt.intent} (confidence: ${(alt.confidence * 100).toFixed(0)}%)`));
+        });
+        console.log();
+      }
+    } else {
+      console.error(chalk.red(`\n✕ Unknown command: ${process.argv.join(' ')}`));
+      console.log(chalk.gray('\n   Run "ultra-dex --help" for available commands.\n'));
+    }
+  }).catch(() => {
+    console.error(chalk.red(`\n✕ Unknown command: ${process.argv.join(' ')}`));
+    console.log(chalk.gray('\n   Run "ultra-dex --help" for available commands.\n'));
+  });
+  
+  process.exit(1);
+});
 
 // Default to REPL if no arguments provided
 if (process.argv.length <= 2) {

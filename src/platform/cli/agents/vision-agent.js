@@ -2,15 +2,23 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { createCanvas, loadImage } from 'canvas';
-import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '../../../utils/uuid.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { ultraMemory } from '../mcp/memory.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
 const execAsync = promisify(exec);
+
+async function callVisionApi(apiKey, payload) {
+  const { default: axios } = await import('axios');
+  return axios.post('https://api.openai.com/v1/chat/completions', payload, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+}
 
 /**
  * Vision Agent - Screenshot-to-Code Conversion
@@ -174,6 +182,7 @@ export class VisionAgent {
    */
   async preprocessImage(imagePath) {
     try {
+      const { createCanvas, loadImage } = await import('canvas');
       const image = await loadImage(imagePath);
       const canvas = createCanvas(image.width, image.height);
       const ctx = canvas.getContext('2d');
@@ -251,7 +260,7 @@ Output only the code with no explanations unless specifically asked.`;
     const userPrompt = customPrompt || `Convert this UI screenshot into ${framework} code. Generate the complete component with proper structure, styling, and functionality. Focus on clean, maintainable code that follows ${framework} best practices.`;
 
     try {
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      const response = await callVisionApi(apiKey, {
         model: this.options.defaultModel,
         messages: [
           {
@@ -277,11 +286,6 @@ Output only the code with no explanations unless specifically asked.`;
         ],
         max_tokens: 4000,
         temperature: 0.3
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       const content = response.data.choices[0].message.content;
@@ -374,7 +378,7 @@ Output only the code with no explanations unless specifically asked.`;
 
       Return as a structured JSON object with organized design tokens.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      const response = await callVisionApi(apiKey, {
         model: this.options.defaultModel,
         messages: [
           {
@@ -396,11 +400,6 @@ Output only the code with no explanations unless specifically asked.`;
         ],
         max_tokens: 2000,
         temperature: 0.2
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       const content = response.data.choices[0].message.content;
@@ -451,7 +450,7 @@ Output only the code with no explanations unless specifically asked.`;
 
       Focus on actionable insights for developers.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      const response = await callVisionApi(apiKey, {
         model: this.options.defaultModel,
         messages: [
           {
@@ -480,11 +479,6 @@ Output only the code with no explanations unless specifically asked.`;
         ],
         max_tokens: 3000,
         temperature: 0.3
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       const comparison = response.data.choices[0].message.content;
@@ -525,7 +519,7 @@ Output only the code with no explanations unless specifically asked.`;
 
       Return as structured JSON with component information.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      const response = await callVisionApi(apiKey, {
         model: this.options.defaultModel,
         messages: [
           {
@@ -547,11 +541,6 @@ Output only the code with no explanations unless specifically asked.`;
         ],
         max_tokens: 2500,
         temperature: 0.2
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       const content = response.data.choices[0].message.content;
@@ -605,7 +594,7 @@ Output only the code with no explanations unless specifically asked.`;
 
       Provide specific recommendations with code examples where applicable.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      const response = await callVisionApi(apiKey, {
         model: this.options.defaultModel,
         messages: [
           {
@@ -627,11 +616,6 @@ Output only the code with no explanations unless specifically asked.`;
         ],
         max_tokens: 2000,
         temperature: 0.2
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       const report = response.data.choices[0].message.content;
@@ -671,7 +655,7 @@ Output only the code with no explanations unless specifically asked.`;
 
       const prompt = `Extract all readable text from this image. Return only the text content, preserving the structure and hierarchy of the text elements. Include any labels, buttons, headings, paragraphs, and other text elements.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      const response = await callVisionApi(apiKey, {
         model: this.options.defaultModel,
         messages: [
           {
@@ -693,11 +677,6 @@ Output only the code with no explanations unless specifically asked.`;
         ],
         max_tokens: 1500,
         temperature: 0.1
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       const extractedText = response.data.choices[0].message.content;

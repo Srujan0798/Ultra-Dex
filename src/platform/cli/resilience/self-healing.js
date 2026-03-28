@@ -7,6 +7,7 @@
 
 import EventEmitter from 'events';
 import { setTimeout as sleep } from 'timers/promises';
+import { getHeapStatistics } from 'v8';
 
 /**
  * Circuit Breaker Pattern
@@ -321,7 +322,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
       const usage = process.memoryUsage();
       const threshold = 0.9; // 90%
       const total = usage.heapTotal + usage.external;
-      const limit = require('v8').getHeapStatistics().heap_size_limit;
+      const limit = getHeapStatistics().heap_size_limit;
 
       if (total / limit > threshold) {
         throw new Error(`Memory usage critical: ${((total / limit) * 100).toFixed(2)}%`);
