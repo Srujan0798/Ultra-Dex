@@ -384,7 +384,7 @@ export function registerAgentsCommand(program) {
         } else {
           spinner.fail(chalk.red(`${errors.length} agents have issues:`));
           errors.forEach((e) => {
-            console.log(`  ${chalk.yellow('@' + e.agent)}: ${chalk.gray(e.error)}`);
+            logger.log(`  ${chalk.yellow('@' + e.agent)}: ${chalk.gray(e.error)}`);
           });
         }
       } catch (error) {
@@ -461,9 +461,9 @@ export function registerAgentsCommand(program) {
       try {
         const agent = findBuiltInAgent(name);
         if (agent) {
-          console.log(chalk.green(`✅ Agent @${name} is valid (built-in).`));
+          logger.log(chalk.green(`✅ Agent @${name} is valid (built-in).`));
         } else {
-          console.log(chalk.yellow(`⚠️ Agent @${name} is not a built-in agent.`));
+          logger.log(chalk.yellow(`⚠️ Agent @${name} is not a built-in agent.`));
         }
       } catch (error) {
         printError(chalk.red(`Validation failed: ${error.message}`));
@@ -479,7 +479,7 @@ export function registerAgentsCommand(program) {
     .option('--json', 'Output search results as JSON')
     .action(async (query, options) => {
       try {
-        console.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
+        logger.log(chalk.cyan(`\n🔍 Searching for "${query}"...\n`));
 
         const lowerQuery = query.toLowerCase();
         const builtinResults = SEARCHABLE_AGENTS.filter((a) => a.searchStr.includes(lowerQuery));
@@ -518,17 +518,17 @@ export function registerAgentsCommand(program) {
         }
 
         if (results.length === 0) {
-          console.log(chalk.yellow('No agents found matching your query.'));
+          logger.log(chalk.yellow('No agents found matching your query.'));
         } else {
-          console.log(chalk.bold(`Found ${results.length} agent(s):\n`));
+          logger.log(chalk.bold(`Found ${results.length} agent(s):\n`));
           pageData.items.forEach((a) => {
             const badge =
               a.source === 'builtin' ? chalk.blue('[built-in]') : chalk.yellow('[marketplace]');
             const name = a.name.startsWith('@') ? a.name : `@${a.name}`;
-            console.log(`  ${chalk.green(name)} ${badge}`);
-            if (a.version) console.log(`    ${chalk.gray(`v${a.version}`)}`);
-            if (a.rating) console.log(`    ${chalk.gray(`Rating: ${a.rating}`)}`);
-            console.log(`    ${chalk.gray(a.description)}\n`);
+            logger.log(`  ${chalk.green(name)} ${badge}`);
+            if (a.version) logger.log(`    ${chalk.gray(`v${a.version}`)}`);
+            if (a.rating) logger.log(`    ${chalk.gray(`Rating: ${a.rating}`)}`);
+            logger.log(`    ${chalk.gray(a.description)}\n`);
           });
           printPaginationSummary(pageData);
         }
@@ -549,12 +549,12 @@ export function registerAgentsCommand(program) {
       try {
         const validation = validateSafePath(name, 'Agent name');
         if (validation !== true) {
-          console.log(chalk.red(validation));
+          logger.log(chalk.red(validation));
           return;
         }
 
         if (findBuiltInAgent(name)) {
-          console.log(chalk.red(`\n❌ "${name}" conflicts with a built-in agent.\n`));
+          logger.log(chalk.red(`\n❌ "${name}" conflicts with a built-in agent.\n`));
           return;
         }
 
@@ -623,7 +623,7 @@ ${answers.prompt}
         const outputPath = path.join(CUSTOM_AGENTS_DIR, `${name.toLowerCase()}.md`);
         await fs.writeFile(outputPath, agentContent);
 
-        console.log(chalk.green(`\n✅ Custom agent created: ${name.toLowerCase()}\n`));
+        logger.log(chalk.green(`\n✅ Custom agent created: ${name.toLowerCase()}\n`));
       } catch (error) {
         printError(chalk.red(`Failed to create agent: ${error.message}`));
       }
@@ -637,7 +637,7 @@ ${answers.prompt}
       try {
         const filePath = await getCustomAgentPath(name);
         if (!filePath) {
-          console.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
+          logger.log(chalk.red(`\n❌ Custom agent "${name}" not found.\n`));
           return;
         }
 
@@ -652,7 +652,7 @@ ${answers.prompt}
 
         if (confirmDelete) {
           await fs.unlink(filePath);
-          console.log(chalk.green(`\n✅ Deleted custom agent "${name}".\n`));
+          logger.log(chalk.green(`\n✅ Deleted custom agent "${name}".\n`));
         }
       } catch (error) {
         printError(chalk.red(`Failed to delete agent: ${error.message}`));
@@ -669,9 +669,9 @@ ${answers.prompt}
 
       try {
         await fs.unlink(agentFile);
-        console.log(chalk.green(`\n✅ Uninstalled agent: ${name}\n`));
+        logger.log(chalk.green(`\n✅ Uninstalled agent: ${name}\n`));
       } catch {
-        console.log(chalk.red(`\n❌ Agent "${name}" not found in marketplace installs.\n`));
+        logger.log(chalk.red(`\n❌ Agent "${name}" not found in marketplace installs.\n`));
       }
     });
 
@@ -681,10 +681,10 @@ ${answers.prompt}
     .description('Publish an agent to the marketplace')
     .action(async (name) => {
       try {
-        console.log(chalk.cyan(`\n🚀 Preparing to publish agent: ${name}...`));
+        logger.log(chalk.cyan(`\n🚀 Preparing to publish agent: ${name}...`));
         const agentPath = await getCustomAgentPath(name);
         if (!agentPath) {
-          console.log(
+          logger.log(
             chalk.yellow(
               `\n⚠️ Custom agent "${name}" not found. Create it first with: ultra-dex agents create ${name}\n`
             )
@@ -727,7 +727,7 @@ ${answers.prompt}
         const agent = await marketplaceClient.getAgent(name.toLowerCase());
         if (!agent) {
           spinner.fail(`Agent "${name}" not found in marketplace`);
-          console.log(
+          logger.log(
             chalk.gray('\nUse `ultra-dex agents list --marketplace` to see available agents')
           );
           return;
@@ -758,9 +758,9 @@ ${answers.prompt}
 
 async function showMarketplace({ page = 1, limit = DEFAULT_PAGE_SIZE, json = false } = {}) {
   try {
-    console.log(chalk.cyan('\n🏪 Ultra-Dex Agent Marketplace\n'));
-    console.log(chalk.bold('Available Community Agents:'));
-    console.log(chalk.gray('─'.repeat(50)));
+    logger.log(chalk.cyan('\n🏪 Ultra-Dex Agent Marketplace\n'));
+    logger.log(chalk.bold('Available Community Agents:'));
+    logger.log(chalk.gray('─'.repeat(50)));
     const agents = await marketplaceClient.listAgents();
     const pageData = paginate(agents, page, limit);
 
@@ -782,13 +782,13 @@ async function showMarketplace({ page = 1, limit = DEFAULT_PAGE_SIZE, json = fal
 
     for (const agent of pageData.items) {
       const name = agent.name.startsWith('@') ? agent.name : `@${agent.name}`;
-      console.log(`  ${chalk.yellow(name)} ${chalk.gray(`v${agent.version}`)}`);
-      console.log(`    ${chalk.white(agent.description)}`);
-      if (agent.rating) console.log(`    ${chalk.gray(`★ ${agent.rating}`)}`);
-      console.log(`    ${chalk.gray(`↓ ${agent.downloads || 0} downloads`)}\n`);
+      logger.log(`  ${chalk.yellow(name)} ${chalk.gray(`v${agent.version}`)}`);
+      logger.log(`    ${chalk.white(agent.description)}`);
+      if (agent.rating) logger.log(`    ${chalk.gray(`★ ${agent.rating}`)}`);
+      logger.log(`    ${chalk.gray(`↓ ${agent.downloads || 0} downloads`)}\n`);
     }
     printPaginationSummary(pageData);
-    console.log(chalk.gray('Install with: ultra-dex agents install <name>\n'));
+    logger.log(chalk.gray('Install with: ultra-dex agents install <name>\n'));
   } catch (error) {
     printError(chalk.red(`Marketplace listing failed: ${error.message}`));
   }
@@ -830,7 +830,7 @@ async function listAgents({
     const customAgents = builtinOnly ? [] : await listCustomAgents();
     const totalAgents = AGENTS.length + customAgents.length;
     const header = builtinOnly ? 'Built-in Agents' : `Ultra-Dex AI Agents (${totalAgents} Total)`;
-    console.log(chalk.bold(`\n🤖 ${header}\n`));
+    logger.log(chalk.bold(`\n🤖 ${header}\n`));
 
     const candidateNames = [...AGENTS.map((agent) => agent.name), ...customAgents];
 
@@ -908,22 +908,22 @@ async function listAgents({
     printPaginationSummary(pageData);
 
     if (restrictedAgents.length > 0) {
-      console.log(
+      logger.log(
         chalk.yellow(`\n🔒 Role-based access (${role}) hides ${restrictedAgents.length} agent(s).`)
       );
     }
 
-    console.log(chalk.gray('\nAgent paths:'));
+    logger.log(chalk.gray('\nAgent paths:'));
     pageData.items.forEach((item) => {
       const filePath = item.file ? `agents/${item.file}` : 'custom';
-      console.log(chalk.gray(`  @${item.name}: ${filePath}`));
+      logger.log(chalk.gray(`  @${item.name}: ${filePath}`));
     });
 
-    console.log('\n' + chalk.bold('Usage:'));
-    console.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
-    console.log(chalk.gray('  ultra-dex pack <name>           Package agent + context'));
+    logger.log('\n' + chalk.bold('Usage:'));
+    logger.log(chalk.gray('  ultra-dex agent show <name>     Show agent prompt'));
+    logger.log(chalk.gray('  ultra-dex pack <name>           Package agent + context'));
 
-    console.log(`\n${chalk.gray(`Agent Index: ${githubBlobUrl('agents/00-AGENT_INDEX.md')}\n`)}`);
+    logger.log(`\n${chalk.gray(`Agent Index: ${githubBlobUrl('agents/00-AGENT_INDEX.md')}\n`)}`);
   } catch (error) {
     printError(chalk.red(`Failed to list agents: ${error.message}`));
   }
@@ -932,7 +932,7 @@ async function listAgents({
 async function showAgent(name) {
   const access = await authorizeAgentAccess(name);
   if (!access.allowed) {
-    console.log(chalk.red(`\n❌ Access denied: Role "${access.role}" cannot use @${name}.`));
+    logger.log(chalk.red(`\n❌ Access denied: Role "${access.role}" cannot use @${name}.`));
     return;
   }
 
@@ -941,23 +941,23 @@ async function showAgent(name) {
     const custom = await getCustomAgentPath(name);
     if (custom) {
       const content = await fs.readFile(custom, 'utf-8');
-      console.log(chalk.bold(`\n🤖 Custom Agent: ${name}\n`));
-      console.log(content);
+      logger.log(chalk.bold(`\n🤖 Custom Agent: ${name}\n`));
+      logger.log(content);
       return;
     }
-    console.log(chalk.red(`\n❌ Agent "${name}" not found.`));
+    logger.log(chalk.red(`\n❌ Agent "${name}" not found.`));
     return;
   }
 
   try {
     const prompt = await readAgentPrompt(agent);
-    console.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent (${agent.tier})\n`));
-    console.log(chalk.gray(agent.description) + '\n');
-    console.log(chalk.gray('─'.repeat(60)));
-    console.log(prompt);
-    console.log(chalk.gray('─'.repeat(60)));
+    logger.log(chalk.bold(`\n🤖 ${agent.name.toUpperCase()} Agent (${agent.tier})\n`));
+    logger.log(chalk.gray(agent.description) + '\n');
+    logger.log(chalk.gray('─'.repeat(60)));
+    logger.log(prompt);
+    logger.log(chalk.gray('─'.repeat(60)));
   } catch (err) {
-    console.log(chalk.red(`\n❌ Could not read prompt for ${agent.name}`));
+    logger.log(chalk.red(`\n❌ Could not read prompt for ${agent.name}`));
   }
 }
 
@@ -1017,7 +1017,7 @@ export function registerPackCommand(program) {
     .action(async (agentName, options) => {
       const agent = AGENTS.find((a) => a.name.toLowerCase() === agentName.toLowerCase());
       if (!agent) {
-        console.log(chalk.red(`\n❌ Agent "${agentName}" not found.\n`));
+        logger.log(chalk.red(`\n❌ Agent "${agentName}" not found.\n`));
         return;
       }
 
@@ -1045,15 +1045,15 @@ export function registerPackCommand(program) {
         output += '# IMPLEMENTATION PLAN\n\n*No IMPLEMENTATION-PLAN.md found.*\n';
       }
 
-      console.log(chalk.bold(`\n📦 Packed context for @${agent.name}\n`));
-      console.log(output);
+      logger.log(chalk.bold(`\n📦 Packed context for @${agent.name}\n`));
+      logger.log(output);
 
       if (options.clipboard) {
         try {
           await copyToClipboard(output);
-          console.log(chalk.green('\n✅ Copied to clipboard!\n'));
+          logger.log(chalk.green('\n✅ Copied to clipboard!\n'));
         } catch (err) {
-          console.log(
+          logger.log(
             chalk.yellow(
               '\n⚠️  Could not copy to clipboard. Ensure pbcopy, xclip, or xsel is installed.'
             )

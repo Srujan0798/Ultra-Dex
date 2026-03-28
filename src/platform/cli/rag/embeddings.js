@@ -26,11 +26,11 @@ export class EmbeddingsManager {
       // Use Xenova Transformers for embeddings
       const { pipeline } = await import('@xenova/transformers');
       this.embedder = await pipeline('feature-extraction', this.model);
-      console.log(chalk.green('[Embeddings] Model loaded:', this.model));
+      logger.log(chalk.green('[Embeddings] Model loaded:', this.model));
       return true;
     } catch (error) {
-      console.log(chalk.yellow('[Embeddings] Failed to load model:', error.message));
-      console.log(chalk.yellow('[Embeddings] Run: npm install @xenova/transformers'));
+      logger.log(chalk.yellow('[Embeddings] Failed to load model:', error.message));
+      logger.log(chalk.yellow('[Embeddings] Run: npm install @xenova/transformers'));
       return false;
     }
   }
@@ -74,7 +74,7 @@ export class EmbeddingsManager {
         const embedding = await this.embed(text);
         embeddings.push(embedding);
       } catch (error) {
-        console.log(chalk.yellow(`[Embeddings] Failed to embed: ${error.message}`));
+        logger.log(chalk.yellow(`[Embeddings] Failed to embed: ${error.message}`));
         embeddings.push(null);
       }
     }
@@ -133,7 +133,7 @@ export class EmbeddingsManager {
    */
   clearCache() {
     this.cache.clear();
-    console.log(chalk.gray('[Embeddings] Cache cleared'));
+    logger.log(chalk.gray('[Embeddings] Cache cleared'));
   }
 }
 
@@ -145,11 +145,11 @@ export async function generateCodebaseEmbeddings(rootDir = process.cwd()) {
   const initialized = await manager.initialize();
 
   if (!initialized) {
-    console.log(chalk.red('Failed to initialize embeddings model'));
+    logger.log(chalk.red('Failed to initialize embeddings model'));
     return null;
   }
 
-  console.log(chalk.blue('[Embeddings] Generating codebase embeddings...'));
+  logger.log(chalk.blue('[Embeddings] Generating codebase embeddings...'));
 
   // This would scan the codebase and generate embeddings
   // For now, return the manager instance

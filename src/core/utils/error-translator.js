@@ -49,7 +49,7 @@ export class ErrorTranslator {
         return { ...DEFAULT_ERROR_PATTERNS, ...flattened };
       }
     } catch (error) {
-      console.error('Failed to load error messages JSON:', error.message);
+      logger.error('Failed to load error messages JSON:', error.message);
     }
     return DEFAULT_ERROR_PATTERNS;
   }

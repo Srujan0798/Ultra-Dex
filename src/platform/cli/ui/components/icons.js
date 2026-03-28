@@ -8,7 +8,7 @@ var icons_default = {
 };
 function handleError(error) {
   try {
-    console.error("[icons]", error instanceof Error ? error.message : String(error));
+    logger.error("[icons]", error instanceof Error ? error.message : String(error));
   } catch (_) {
   }
 }

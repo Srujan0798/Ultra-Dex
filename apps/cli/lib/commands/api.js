@@ -134,7 +134,7 @@ export async function listIntegrations() {
         `  Status: ${isConfigured ? chalk.green('CONFIGURED') : chalk.red('NOT CONFIGURED')}`
       )
     );
-    console.log('');
+    logger.log('');
   }
 }
 
@@ -236,7 +236,7 @@ export async function showApiStatus() {
         printError(chalk.red(`  Error checking status: ${error.message}`));
       }
     }
-    console.log('');
+    logger.log('');
   }
 
   // Show general API statistics

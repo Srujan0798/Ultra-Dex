@@ -20,10 +20,10 @@ export function registerVaultCommand(program) {
         .action((text) => {
             try {
                 const encrypted = vault.encrypt(text);
-                console.log(chalk.green('🔒 Encrypted (AES-256-GCM):'));
-                console.log(chalk.cyan(encrypted));
+                logger.log(chalk.green('🔒 Encrypted (AES-256-GCM):'));
+                logger.log(chalk.cyan(encrypted));
             } catch (error) {
-                console.error(chalk.red(`Encryption failed: ${error.message}`));
+                logger.error(chalk.red(`Encryption failed: ${error.message}`));
             }
         });
 
@@ -33,10 +33,10 @@ export function registerVaultCommand(program) {
         .action((cipher) => {
             try {
                 const decrypted = vault.decrypt(cipher);
-                console.log(chalk.green('🔓 Decrypted:'));
-                console.log(decrypted);
+                logger.log(chalk.green('🔓 Decrypted:'));
+                logger.log(decrypted);
             } catch (error) {
-                console.error(chalk.red(`Decryption failed: ${error.message}`));
+                logger.error(chalk.red(`Decryption failed: ${error.message}`));
             }
         });
 }

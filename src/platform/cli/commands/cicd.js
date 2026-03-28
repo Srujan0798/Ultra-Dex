@@ -88,12 +88,12 @@ export function registerCICDCommand(program) {
         const status = await selfHealingCICD.getPipelineStatus();
 
         printInfo('📊 Pipeline Status:');
-        console.log(`  Running: ${status.running ? 'Yes' : 'No'}`);
-        console.log(`  Last Run: ${status.lastRun}`);
-        console.log(`  Success Rate: ${(status.successRate * 100).toFixed(1)}%`);
-        console.log(`  Avg Duration: ${status.avgDuration}`);
-        console.log(`  Pending Jobs: ${status.pendingJobs}`);
-        console.log(`  Failed Jobs: ${status.failedJobs}`);
+        logger.log(`  Running: ${status.running ? 'Yes' : 'No'}`);
+        logger.log(`  Last Run: ${status.lastRun}`);
+        logger.log(`  Success Rate: ${(status.successRate * 100).toFixed(1)}%`);
+        logger.log(`  Avg Duration: ${status.avgDuration}`);
+        logger.log(`  Pending Jobs: ${status.pendingJobs}`);
+        logger.log(`  Failed Jobs: ${status.failedJobs}`);
       } catch (error) {
         printError(`Status check failed: ${error.message}`);
         process.exit(1);
@@ -110,7 +110,7 @@ export function registerCICDCommand(program) {
 
         printSuccess(`📋 ${rules.length} healing rules loaded:`);
         rules.forEach(([pattern, rule]) => {
-          console.log(`  ${pattern}: ${rule.description} (${rule.priority})`);
+          logger.log(`  ${pattern}: ${rule.description} (${rule.priority})`);
         });
       } catch (error) {
         printError(`Rules check failed: ${error.message}`);
@@ -153,12 +153,12 @@ export function registerCICDCommand(program) {
         const stats = selfHealingCICD.getHealingStats();
 
         printSuccess('🔧 Self-Healing Statistics:');
-        console.log(`  Total Fixes: ${stats.totalFixes}`);
-        console.log(`  Success Rate: ${(stats.successRate * 100).toFixed(1)}%`);
-        console.log(`  Active Rules: ${stats.rulesCount}`);
-        console.log(`  Active Monitors: ${stats.activeMonitors}`);
+        logger.log(`  Total Fixes: ${stats.totalFixes}`);
+        logger.log(`  Success Rate: ${(stats.successRate * 100).toFixed(1)}%`);
+        logger.log(`  Active Rules: ${stats.rulesCount}`);
+        logger.log(`  Active Monitors: ${stats.activeMonitors}`);
         if (stats.lastFix) {
-          console.log(`  Last Fix: ${stats.lastFix.description}`);
+          logger.log(`  Last Fix: ${stats.lastFix.description}`);
         }
       } catch (error) {
         printError(`Stats retrieval failed: ${error.message}`);
@@ -180,7 +180,7 @@ export function registerCICDCommand(program) {
           await fs.writeFile(options.output, report);
           printSuccess(`📊 Report saved to: ${options.output}`);
         } else {
-          console.log(report);
+          logger.log(report);
         }
       } catch (error) {
         printError(`Report generation failed: ${error.message}`);
@@ -223,7 +223,7 @@ export function registerCICDCommand(program) {
 
         printSuccess(`📋 Last ${history.length} fixes:`);
         history.forEach((entry) => {
-          console.log(
+          logger.log(
             `  ${entry.timestamp}: ${entry.description} (${entry.success ? 'SUCCESS' : 'FAILED'})`
           );
         });

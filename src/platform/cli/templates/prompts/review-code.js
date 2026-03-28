@@ -63,7 +63,7 @@ export default {
  */
 function handleReviewcodeError(error) {
   try {
-    console.error('[review-code]', error instanceof Error ? error.message : String(error));
+    logger.error('[review-code]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

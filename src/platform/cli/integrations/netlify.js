@@ -68,7 +68,7 @@ export function registerCommands(program) {
     .option('--site <id>', 'Site ID')
     .option('-m, --message <msg>', 'Deploy message')
     .action((opts) => {
-      console.log(deploy(opts));
+      logger.log(deploy(opts));
     });
 
   cmd
@@ -76,7 +76,7 @@ export function registerCommands(program) {
     .description('Check Netlify site status')
     .option('--json', 'Output as JSON')
     .action((opts) => {
-      console.log(status(opts));
+      logger.log(status(opts));
     });
 
   cmd
@@ -84,7 +84,7 @@ export function registerCommands(program) {
     .description('View recent deploy logs')
     .option('--site <id>', 'Site ID')
     .action((opts) => {
-      console.log(logs(opts));
+      logger.log(logs(opts));
     });
 
   return cmd;

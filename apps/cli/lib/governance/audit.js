@@ -2,15 +2,22 @@
 
 /**
  * Governance audit trail
- * Enterprise-grade logging for agent operations
+ * Enterprise-grade logging for agent operations via the logger spine.
  */
 
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
+import { appendJsonl } from '../analytics/storage.js';
+import { logger } from '../utils/logger.js';
 
-const AUDIT_DIR = path.resolve(process.cwd(), '.ultra-dex', 'audit');
-const AUDIT_LOG = path.join(AUDIT_DIR, 'agent-ops.jsonl');
+function getAuditDir() {
+  return path.resolve(process.cwd(), '.ultra-dex', 'audit');
+}
+
+function getAuditLogPath() {
+  return path.join(getAuditDir(), 'agent-ops.jsonl');
+}
 
 function toIso(ts) {
   return new Date(ts || Date.now()).toISOString();
@@ -21,29 +28,52 @@ function hashContent(content) {
   return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
 }
 
-export async function logOperation(entry) {
-  try {
-    await fs.mkdir(AUDIT_DIR, { recursive: true });
-    const payload = {
-      timestamp: toIso(),
-      ...entry,
-    };
+function buildAuditPayload(entry = {}, timestamp = toIso()) {
+  const payload = {
+    timestamp,
+    ...entry,
+  };
 
-    if (payload.content && !payload.contentHash) {
-      payload.contentHash = hashContent(payload.content);
-      delete payload.content;
-    }
-
-    await fs.appendFile(AUDIT_LOG, JSON.stringify(payload) + '\n', 'utf8');
-  } catch (error) {
-    // Audit logging must never break execution
-    console.warn('[Governance] Failed to write audit log:', error.message);
+  if (payload.content && !payload.contentHash) {
+    payload.contentHash = hashContent(payload.content);
+    delete payload.content;
   }
+
+  return payload;
+}
+
+let auditSinkInitialized = false;
+
+export function initializeGovernanceAuditSink() {
+  if (auditSinkInitialized) return;
+
+  logger.subscribe(
+    'governance-audit',
+    async (event) => {
+      const payload = buildAuditPayload(event.data, event.timestamp);
+      await appendJsonl(getAuditLogPath(), payload);
+    },
+    {
+      eventTypes: ['governance.operation'],
+    }
+  );
+
+  auditSinkInitialized = true;
+}
+
+export async function logOperation(entry) {
+  initializeGovernanceAuditSink();
+
+  const payload = buildAuditPayload(entry);
+  await logger.event('governance.operation', payload, {
+    console: false,
+    source: 'compat.governance',
+  });
 }
 
 export async function readAuditLog() {
   try {
-    const data = await fs.readFile(AUDIT_LOG, 'utf8');
+    const data = await fs.readFile(getAuditLogPath(), 'utf8');
     return data
       .split('\n')
       .filter(Boolean)
@@ -81,8 +111,8 @@ export async function generateComplianceReport({ since, until, writeToFile = fal
     },
     totals: {
       events: filtered.length,
-      allowed: filtered.filter((e) => e.allowed).length,
-      blocked: filtered.filter((e) => !e.allowed).length,
+      allowed: filtered.filter((event) => event.allowed).length,
+      blocked: filtered.filter((event) => !event.allowed).length,
     },
     byAgent: {},
     byOperation: {},
@@ -95,10 +125,10 @@ export async function generateComplianceReport({ since, until, writeToFile = fal
     summary.byAgent[agentId].total += 1;
     if (!event.allowed) summary.byAgent[agentId].blocked += 1;
 
-    const op = event.operation || 'unknown';
-    summary.byOperation[op] = summary.byOperation[op] || { total: 0, blocked: 0 };
-    summary.byOperation[op].total += 1;
-    if (!event.allowed) summary.byOperation[op].blocked += 1;
+    const operation = event.operation || 'unknown';
+    summary.byOperation[operation] = summary.byOperation[operation] || { total: 0, blocked: 0 };
+    summary.byOperation[operation].total += 1;
+    if (!event.allowed) summary.byOperation[operation].blocked += 1;
 
     if (!event.allowed) {
       const reason = event.reason || 'unspecified';
@@ -107,7 +137,7 @@ export async function generateComplianceReport({ since, until, writeToFile = fal
   }
 
   if (writeToFile) {
-    const reportPath = path.join(AUDIT_DIR, `compliance-report-${Date.now()}.json`);
+    const reportPath = path.join(getAuditDir(), `compliance-report-${Date.now()}.json`);
     await fs.writeFile(reportPath, JSON.stringify(summary, null, 2), 'utf8');
     summary.reportPath = reportPath;
   }
@@ -126,10 +156,12 @@ function toCsv(rows) {
     }
     return str;
   };
+
   const lines = [headers.join(',')];
   for (const row of rows) {
-    lines.push(headers.map((h) => escape(row[h])).join(','));
+    lines.push(headers.map((header) => escape(row[header])).join(','));
   }
+
   return lines.join('\n');
 }
 

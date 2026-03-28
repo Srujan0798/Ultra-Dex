@@ -43,7 +43,7 @@ export class VisionScanner {
     const outputPath = path.join(outputDir, filename);
 
     try {
-      console.log(chalk.cyan(`\n📸 Capturing ${type} UI: ${target}...`));
+      logger.log(chalk.cyan(`\n📸 Capturing ${type} UI: ${target}...`));
       await page.goto(target, { waitUntil: 'networkidle' });
       await page.screenshot({ path: outputPath, fullPage: true });
       await browser.close();
@@ -61,7 +61,7 @@ export class VisionScanner {
     await this.ensureDirs();
     const baselinePath = path.join(this.baselineDir, `${name}.png`);
     await fs.copyFile(currentPath, baselinePath);
-    console.log(chalk.green(`\n✅ Promoted snapshot to baseline: ${baselinePath}`));
+    logger.log(chalk.green(`\n✅ Promoted snapshot to baseline: ${baselinePath}`));
     return baselinePath;
   }
 
@@ -73,7 +73,7 @@ export class VisionScanner {
     const baselinePath = path.join(this.baselineDir, `${name}.png`);
 
     if (!existsSync(baselinePath)) {
-      console.log(
+      logger.log(
         chalk.yellow(`\n⚠️  No baseline found for "${name}". Treating this as the first run.`)
       );
       return {
@@ -91,7 +91,7 @@ export class VisionScanner {
     }
 
     try {
-      console.log(chalk.magenta('🧠 Performing AI Visual Regression Analysis...'));
+      logger.log(chalk.magenta('🧠 Performing AI Visual Regression Analysis...'));
 
       // Note: Most providers handle multi-image via separate messages or array of contents.
       // For simplicity in this v3.5 implementation, we assume the provider SDK can handle
@@ -148,12 +148,12 @@ Return a verdict: [PASS] or [FAIL] followed by a concise explanation.
     const provider = getProvider();
 
     if (!provider || !provider.analyzeImage) {
-      console.log(chalk.yellow('\n⚠️ Current AI provider does not support Vision analysis.'));
+      logger.log(chalk.yellow('\n⚠️ Current AI provider does not support Vision analysis.'));
       return 'Vision analysis skipped: Provider not supported.';
     }
 
     try {
-      console.log(chalk.magenta('🧠 Analyzing UI with Vision LLM...'));
+      logger.log(chalk.magenta('🧠 Analyzing UI with Vision LLM...'));
       const imageBuffer = await fs.readFile(screenshotPath);
       const result = await provider.analyzeImage(imageBuffer, prompt);
       return result;

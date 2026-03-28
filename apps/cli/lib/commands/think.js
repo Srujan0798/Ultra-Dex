@@ -56,7 +56,7 @@ export function registerThinkCommand(program) {
         .argument('<goal>', 'The goal to think about')
         .description('Simulate planning using MCTS (Neuro-Symbolic Planner)')
         .action(async (goal) => {
-            console.log(chalk.blue(`🧠 Neuro-Symbolic Planner: Thinking about "${goal}"...`));
+            logger.log(chalk.blue(`🧠 Neuro-Symbolic Planner: Thinking about "${goal}"...`));
 
             const simulator = new PlanningSimulator(goal);
             const rootState = { plan: [], isTerminal: false };
@@ -74,9 +74,9 @@ export function registerThinkCommand(program) {
             mcts.run(iterations);
 
             clearInterval(interval);
-            console.log('\n');
+            logger.log('\n');
 
-            console.log(chalk.green('✨ Optimal Plan Discovered:'));
+            logger.log(chalk.green('✨ Optimal Plan Discovered:'));
 
             // Reconstruct best path
             let node = mcts.root;
@@ -85,7 +85,7 @@ export function registerThinkCommand(program) {
                 // Pick best child
                 let bestChild = node.children.reduce((prev, current) => (prev.visits > current.visits) ? prev : current);
                 if (bestChild) {
-                    console.log(chalk.white(`${stepCount}. ${bestChild.action} `) + chalk.dim(`(Visits: ${bestChild.visits}, Value: ${bestChild.value.toFixed(1)})`));
+                    logger.log(chalk.white(`${stepCount}. ${bestChild.action} `) + chalk.dim(`(Visits: ${bestChild.visits}, Value: ${bestChild.value.toFixed(1)})`));
                     node = bestChild;
                     stepCount++;
                 } else {
@@ -93,9 +93,9 @@ export function registerThinkCommand(program) {
                 }
             }
 
-            console.log(chalk.dim('\nProcess Trace:'));
-            console.log(chalk.dim(`- Simulated ${iterations} distinct futures.`));
-            console.log(chalk.dim(`- Explored ${mcts.root.visits} nodes.`));
+            logger.log(chalk.dim('\nProcess Trace:'));
+            logger.log(chalk.dim(`- Simulated ${iterations} distinct futures.`));
+            logger.log(chalk.dim(`- Explored ${mcts.root.visits} nodes.`));
         });
 }
 
@@ -110,7 +110,7 @@ async function safeExecute(fn, context = 'think') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

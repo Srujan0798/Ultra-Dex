@@ -152,10 +152,10 @@ export class DeepGraphRAG {
       try {
         this.falkor = new FalkorDBClient();
         await this.falkor.connect();
-        console.log(chalk.green('[DeepGraphRAG] FalkorDB connected'));
+        logger.log(chalk.green('[DeepGraphRAG] FalkorDB connected'));
       } catch (error) {
-        console.log(chalk.yellow(`[DeepGraphRAG] FalkorDB unavailable: ${error.message}`));
-        console.log(chalk.yellow('[DeepGraphRAG] Falling back to in-memory graph'));
+        logger.log(chalk.yellow(`[DeepGraphRAG] FalkorDB unavailable: ${error.message}`));
+        logger.log(chalk.yellow('[DeepGraphRAG] Falling back to in-memory graph'));
         this.useInMemory = true;
       }
     }

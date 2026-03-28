@@ -10,12 +10,12 @@ import { formatError, formatWarning, formatInfo, formatSuccess, formatStatus } f
  */
 export function printError(message, err) {
   try {
-    console.log(formatError(message));
+    logger.log(formatError(message));
     if (err?.message) {
-      console.log(chalk.gray(`  → ${err.message}`));
+      logger.log(chalk.gray(`  → ${err.message}`));
     }
   } catch (e) {
-    console.error('Failed to print error:', e);
+    logger.error('Failed to print error:', e);
   }
 }
 
@@ -25,9 +25,9 @@ export function printError(message, err) {
  */
 export function printWarning(message) {
   try {
-    console.log(formatWarning(message));
+    logger.log(formatWarning(message));
   } catch (e) {
-    console.error('Failed to print warning:', e);
+    logger.error('Failed to print warning:', e);
   }
 }
 
@@ -37,9 +37,9 @@ export function printWarning(message) {
  */
 export function printInfo(message) {
   try {
-    console.log(formatInfo(message));
+    logger.log(formatInfo(message));
   } catch (e) {
-    console.error('Failed to print info:', e);
+    logger.error('Failed to print info:', e);
   }
 }
 
@@ -49,8 +49,8 @@ export function printInfo(message) {
  */
 export function printSuccess(message) {
   try {
-    console.log(formatSuccess(message));
+    logger.log(formatSuccess(message));
   } catch (e) {
-    console.error('Failed to print success:', e);
+    logger.error('Failed to print success:', e);
   }
 }

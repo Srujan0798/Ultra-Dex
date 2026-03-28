@@ -20,49 +20,49 @@ import { formatHelpSection } from './help.js';
  * Print success message with styled format
  */
 export function printSuccess(message) {
-  console.log(formatSuccess(message));
+  logger.log(formatSuccess(message));
 }
 
 /**
  * Print error message with styled format
  */
 export function printError(message) {
-  console.error(formatError(message));
+  logger.error(formatError(message));
 }
 
 /**
  * Print warning message with styled format
  */
 export function printWarning(message) {
-  console.log(formatWarning(message));
+  logger.log(formatWarning(message));
 }
 
 /**
  * Print info message with styled format
  */
 export function printInfo(message) {
-  console.log(formatInfo(message));
+  logger.log(formatInfo(message));
 }
 
 /**
  * Print loading message with styled format
  */
 export function printLoading(message) {
-  console.log(formatLoading(message));
+  logger.log(formatLoading(message));
 }
 
 /**
  * Print a status card
  */
 export function printStatusCard(title, message, type = 'info') {
-  console.log(formatStatusCard(title, message, type));
+  logger.log(formatStatusCard(title, message, type));
 }
 
 /**
  * Print a formatted help section
  */
 export function printHelpSection(title, content, options = {}) {
-  console.log(formatHelpSection(title, content, options));
+  logger.log(formatHelpSection(title, content, options));
 }
 
 export default {
@@ -83,7 +83,7 @@ export default {
 function handleModuleError(error, context = 'enhanced-output') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

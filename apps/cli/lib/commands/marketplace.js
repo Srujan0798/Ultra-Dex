@@ -62,11 +62,11 @@ export function registerMarketplaceCommand(program) {
 
         printSuccess(`🔍 Found ${results.length} agents:`);
         results.forEach(agent => {
-          console.log(`\n${agent.name} v${agent.version}`);
-          console.log(`   ${agent.description}`);
-          console.log(`   🏷️  ${agent.tags?.join(', ') || 'No tags'}`);
-          console.log(`   📥 ${agent.downloads || 0} downloads`);
-          console.log(`   ⭐ ${agent.rating || 'N/A'} rating`);
+          logger.log(`\n${agent.name} v${agent.version}`);
+          logger.log(`   ${agent.description}`);
+          logger.log(`   🏷️  ${agent.tags?.join(', ') || 'No tags'}`);
+          logger.log(`   📥 ${agent.downloads || 0} downloads`);
+          logger.log(`   ⭐ ${agent.rating || 'N/A'} rating`);
         });
       } catch (error) {
         printError(`Search failed: ${error.message}`);
@@ -92,12 +92,12 @@ export function registerMarketplaceCommand(program) {
 
         printSuccess(`📦 ${agents.length} installed agents:`);
         agents.forEach(agent => {
-          console.log(`\n${agent.name} v${agent.version}`);
-          console.log(`   ${agent.description}`);
+          logger.log(`\n${agent.name} v${agent.version}`);
+          logger.log(`   ${agent.description}`);
           if (options.all) {
-            console.log(`   📁 ${agent.path}`);
-            console.log(`   🏷️  ${agent.tags?.join(', ') || 'No tags'}`);
-            console.log(`   🛠️  ${agent.capabilities?.join(', ') || 'No capabilities'}`);
+            logger.log(`   📁 ${agent.path}`);
+            logger.log(`   🏷️  ${agent.tags?.join(', ') || 'No tags'}`);
+            logger.log(`   🛠️  ${agent.capabilities?.join(', ') || 'No capabilities'}`);
           }
         });
       } catch (error) {
@@ -242,19 +242,19 @@ export function registerMarketplaceCommand(program) {
         }
 
         printSuccess(`${agent.name} v${agent.version}`);
-        console.log(`\n${agent.description}`);
-        console.log(`\n👤 Author: ${agent.author}`);
-        console.log(`📋 Type: ${agent.type}`);
-        console.log(`🏷️  Tags: ${agent.tags?.join(', ') || 'None'}`);
-        console.log(`🛠️  Capabilities: ${agent.capabilities?.join(', ') || 'None'}`);
-        console.log(`🔑 Permissions: ${agent.permissions?.join(', ') || 'None'}`);
+        logger.log(`\n${agent.description}`);
+        logger.log(`\n👤 Author: ${agent.author}`);
+        logger.log(`📋 Type: ${agent.type}`);
+        logger.log(`🏷️  Tags: ${agent.tags?.join(', ') || 'None'}`);
+        logger.log(`🛠️  Capabilities: ${agent.capabilities?.join(', ') || 'None'}`);
+        logger.log(`🔑 Permissions: ${agent.permissions?.join(', ') || 'None'}`);
         
         if (agent.downloads) {
-          console.log(`📥 Downloads: ${agent.downloads}`);
+          logger.log(`📥 Downloads: ${agent.downloads}`);
         }
         
         if (agent.rating) {
-          console.log(`⭐ Rating: ${agent.rating}/5`);
+          logger.log(`⭐ Rating: ${agent.rating}/5`);
         }
       } catch (error) {
         printError(`Info retrieval failed: ${error.message}`);

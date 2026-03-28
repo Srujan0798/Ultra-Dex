@@ -46,7 +46,7 @@ process.stdin.on('data', (chunk) => {
             const message = JSON.parse(rawMessage);
             handleMessage(message);
         } catch (e) {
-            console.error('Failed to parse message', e);
+            logger.error('Failed to parse message', e);
         }
     }
 });
@@ -86,4 +86,4 @@ function sendResponse(id, result) {
     process.stdout.write(headers + json);
 }
 
-console.error('UltraLSP Server Started');
+logger.error('UltraLSP Server Started');

@@ -28,51 +28,51 @@ export function registerCheckCommand(program) {
     .command('doctor')
     .description('System health check and diagnostic')
     .action(async () => {
-      console.log(chalk.cyan.bold('\n👨‍⚕️ Ultra-Dex System Doctor\n'));
+      logger.log(chalk.cyan.bold('\n👨‍⚕️ Ultra-Dex System Doctor\n'));
       
       // 1. Check Docker
       const dockerOk = await checkDocker();
       if (dockerOk) {
-        console.log(chalk.green('✅ Docker: Operational'));
+        logger.log(chalk.green('✅ Docker: Operational'));
       } else {
-        console.log(chalk.red('❌ Docker: Not found or not running. Sandbox disabled.'));
+        logger.log(chalk.red('❌ Docker: Not found or not running. Sandbox disabled.'));
       }
 
       // 2. Check SQLite
       try {
         await sqliteProvider.init();
-        console.log(chalk.green('✅ Memory (SQLite): Operational'));
+        logger.log(chalk.green('✅ Memory (SQLite): Operational'));
       } catch (e) {
-        console.log(chalk.red(`❌ Memory (SQLite): Failed -> ${e.message}`));
+        logger.log(chalk.red(`❌ Memory (SQLite): Failed -> ${e.message}`));
       }
 
       // 3. Check Nexus
       if (nexus) {
-        console.log(chalk.green('✅ Nexus Orchestrator: Initialized'));
+        logger.log(chalk.green('✅ Nexus Orchestrator: Initialized'));
       }
 
       // 4. Check Security Validator
       if (codeValidator) {
-        console.log(chalk.green('✅ Security: Code Validator (AST-enabled) Operational'));
+        logger.log(chalk.green('✅ Security: Code Validator (AST-enabled) Operational'));
       }
 
       // 5. Check Agents
       const agentDir = path.join(process.cwd(), '.ultra-dex', 'agents');
       try {
         const tiers = await fs.readdir(agentDir);
-        console.log(chalk.green(`✅ Agents: ${tiers.length} tiers found in .ultra-dex/agents`));
+        logger.log(chalk.green(`✅ Agents: ${tiers.length} tiers found in .ultra-dex/agents`));
       } catch (e) {
-        console.log(chalk.red('❌ Agents: .ultra-dex/agents directory missing!'));
+        logger.log(chalk.red('❌ Agents: .ultra-dex/agents directory missing!'));
       }
 
-      console.log(chalk.cyan('\nDiagnostic Complete.\n'));
+      logger.log(chalk.cyan('\nDiagnostic Complete.\n'));
     });
 
   check
     .command('security [file]')
     .description('Run a security scan on a file or the whole project')
     .action(async (file) => {
-      console.log(chalk.cyan.bold('\n🛡️  Ultra-Dex Security Scan\n'));
+      logger.log(chalk.cyan.bold('\n🛡️  Ultra-Dex Security Scan\n'));
       
       if (file) {
         try {
@@ -80,10 +80,10 @@ export function registerCheckCommand(program) {
           const result = codeValidator.validate(content, path.extname(file).slice(1));
           codeValidator.report(result);
         } catch (e) {
-          console.log(chalk.red(`❌ Error reading file: ${e.message}`));
+          logger.log(chalk.red(`❌ Error reading file: ${e.message}`));
         }
       } else {
-        console.log(chalk.gray('Scanning project files for critical risks...'));
+        logger.log(chalk.gray('Scanning project files for critical risks...'));
         // Project-wide scan logic (simplified)
         const { glob } = await import('glob');
         const files = await glob('**/*.{js,ts}', { ignore: 'node_modules/**' });
@@ -93,19 +93,19 @@ export function registerCheckCommand(program) {
           const content = await fs.readFile(f, 'utf8');
           const result = codeValidator.validate(content, path.extname(f).slice(1));
           if (!result.safe) {
-            console.log(chalk.bold(`\n📄 File: ${f}`));
+            logger.log(chalk.bold(`\n📄 File: ${f}`));
             codeValidator.report(result);
             totalFindings++;
           }
         }
         
         if (totalFindings === 0) {
-          console.log(chalk.green('\n✅ Project-wide scan complete. No critical risks found.'));
+          logger.log(chalk.green('\n✅ Project-wide scan complete. No critical risks found.'));
         } else {
-          console.log(chalk.red(`\n❌ Project-wide scan complete. Found risks in ${totalFindings} files.`));
+          logger.log(chalk.red(`\n❌ Project-wide scan complete. Found risks in ${totalFindings} files.`));
         }
       }
-      console.log('');
+      logger.log('');
     });
 
   check
@@ -114,12 +114,12 @@ export function registerCheckCommand(program) {
     .action(async () => {
       const result = await runA11yCheck({ rootDir: process.cwd() });
       if (result.passed) {
-        console.log(chalk.green('✅ Accessibility check passed.'));
+        logger.log(chalk.green('✅ Accessibility check passed.'));
         return;
       }
-      console.log(chalk.yellow(`⚠️  Accessibility issues found: ${result.issues.length}`));
+      logger.log(chalk.yellow(`⚠️  Accessibility issues found: ${result.issues.length}`));
       result.issues.slice(0, 20).forEach((issue) => {
-        console.log(chalk.gray(`- ${issue.file}: ${issue.issue}`));
+        logger.log(chalk.gray(`- ${issue.file}: ${issue.issue}`));
       });
     });
 
@@ -148,11 +148,11 @@ Examples:
           const compliancePath = path.resolve(process.cwd(), 'docs', 'COMPLIANCE.md');
           const complianceExists = await fileExists(compliancePath);
           if (!options.json) {
-            console.log(chalk.cyan.bold('\n🛡️  Compliance Checklist\n'));
+            logger.log(chalk.cyan.bold('\n🛡️  Compliance Checklist\n'));
             if (complianceExists) {
-              console.log(chalk.gray(`Review: ${compliancePath}\n`));
+              logger.log(chalk.gray(`Review: ${compliancePath}\n`));
             } else {
-              console.log(
+              logger.log(
                 chalk.yellow(
                   'COMPLIANCE.md not found. Add one or generate from templates to proceed.\n'
                 )
@@ -160,7 +160,7 @@ Examples:
             }
           }
           if (options.json) {
-            console.log(
+            logger.log(
               JSON.stringify(
                 {
                   compliance: complianceExists ? 'available' : 'missing',
@@ -175,7 +175,7 @@ Examples:
         }
 
         if (!options.json) {
-          console.log(chalk.cyan.bold('\n🔍 Ultra-Dex Completeness Check\n'));
+          logger.log(chalk.cyan.bold('\n🔍 Ultra-Dex Completeness Check\n'));
         }
 
         // Load implementation plan
@@ -184,8 +184,8 @@ Examples:
         try {
           planContent = await fs.readFile(planPath, 'utf8');
         } catch {
-          console.log(chalk.red('❌ IMPLEMENTATION-PLAN.md not found'));
-          console.log(chalk.gray('   Run: ultra-dex init to create one\n'));
+          logger.log(chalk.red('❌ IMPLEMENTATION-PLAN.md not found'));
+          logger.log(chalk.gray('   Run: ultra-dex init to create one\n'));
           return;
         }
 
@@ -204,8 +204,8 @@ Examples:
           if (contextContent.trim().length < 50) {
             contextValid = false;
             if (!silent) {
-              console.log(chalk.yellow('⚠️  CONTEXT.md is nearly empty'));
-              console.log(chalk.gray('   Run: ultra-dex init to regenerate it\n'));
+              logger.log(chalk.yellow('⚠️  CONTEXT.md is nearly empty'));
+              logger.log(chalk.gray('   Run: ultra-dex init to regenerate it\n'));
             }
           } else {
             const freshness = await checkContextFreshness(contextPath);
@@ -215,13 +215,13 @@ Examples:
 
             if (!silent) {
               if (freshness.fresh) {
-                console.log(chalk.green('✅ CONTEXT.md is up to date\n'));
+                logger.log(chalk.green('✅ CONTEXT.md is up to date\n'));
               } else {
-                console.log(chalk.yellow('⚠️  CONTEXT.md may be stale'));
+                logger.log(chalk.yellow('⚠️  CONTEXT.md may be stale'));
                 freshness.staleRefs.forEach((ref) => {
-                  console.log(chalk.gray(`   • Newer change detected in ${ref}`));
+                  logger.log(chalk.gray(`   • Newer change detected in ${ref}`));
                 });
-                console.log(chalk.gray('   Run: ultra-dex sync --brain or ultra-dex init\n'));
+                logger.log(chalk.gray('   Run: ultra-dex sync --brain or ultra-dex init\n'));
               }
             }
           }
@@ -230,8 +230,8 @@ Examples:
           contextFresh = false;
           contextDetails.exists = false;
           if (!silent) {
-            console.log(chalk.red('❌ CONTEXT.md not found'));
-            console.log(chalk.gray('   Run: ultra-dex init to create one\n'));
+            logger.log(chalk.red('❌ CONTEXT.md not found'));
+            logger.log(chalk.gray('   Run: ultra-dex init to create one\n'));
           }
         }
 
@@ -282,13 +282,13 @@ Examples:
             await fs.writeFile(planPath, nextPlan);
             fixApplied = true;
             if (!silent) {
-              console.log(
+              logger.log(
                 chalk.green('\n✅ Auto-fill suggestions added to IMPLEMENTATION-PLAN.md')
               );
-              console.log(chalk.gray('   Review and refine the suggested content.\n'));
+              logger.log(chalk.gray('   Review and refine the suggested content.\n'));
             }
           } else if (!silent) {
-            console.log(chalk.gray('\nℹ️  No sections required auto-fill suggestions.\n'));
+            logger.log(chalk.gray('\nℹ️  No sections required auto-fill suggestions.\n'));
           }
         }
 
@@ -308,7 +308,7 @@ Examples:
         };
 
         if (options.json) {
-          console.log(JSON.stringify(reportData, null, 2));
+          logger.log(JSON.stringify(reportData, null, 2));
           return;
         }
 
@@ -316,7 +316,7 @@ Examples:
         if (options.report) {
           await generateCheckReport(options.report, reportData, results, criticalMissing);
           if (!silent) {
-            console.log(chalk.green(`\n✅ Report saved to ${options.report}`));
+            logger.log(chalk.green(`\n✅ Report saved to ${options.report}`));
           }
         }
 
@@ -352,54 +352,54 @@ Examples:
           ]);
         });
 
-        console.log(table.toString());
+        logger.log(table.toString());
 
         // Summary
         const totalPercentage = Math.round((completeCount / sectionsToCheck.length) * 100);
-        console.log(chalk.bold('\n📊 Summary:'));
-        console.log(`  Total Sections Checked: ${sectionsToCheck.length}`);
-        console.log(chalk.green(`  Complete: ${completeCount}`));
-        console.log(chalk.yellow(`  Partial: ${partialCount}`));
-        console.log(chalk.red(`  Missing: ${missingCount}`));
-        console.log(chalk.cyan(`  Overall Plan Score: ${totalPercentage}%`));
+        logger.log(chalk.bold('\n📊 Summary:'));
+        logger.log(`  Total Sections Checked: ${sectionsToCheck.length}`);
+        logger.log(chalk.green(`  Complete: ${completeCount}`));
+        logger.log(chalk.yellow(`  Partial: ${partialCount}`));
+        logger.log(chalk.red(`  Missing: ${missingCount}`));
+        logger.log(chalk.cyan(`  Overall Plan Score: ${totalPercentage}%`));
 
         if (!contextFresh) {
-          console.log(chalk.yellow(`  CONTEXT.md: stale (see warnings above)`));
+          logger.log(chalk.yellow(`  CONTEXT.md: stale (see warnings above)`));
         }
 
         // Critical warnings
         if (criticalMissing.length > 0) {
-          console.log(chalk.red.bold('\n⚠️  Critical P0 Sections Incomplete/Missing:'));
+          logger.log(chalk.red.bold('\n⚠️  Critical P0 Sections Incomplete/Missing:'));
           criticalMissing.forEach((msg) => {
-            console.log(chalk.red(`  • ${msg}`));
+            logger.log(chalk.red(`  • ${msg}`));
           });
-          console.log(chalk.yellow('\nThese 11 sections are required for a Production-Ready plan.\n'));
+          logger.log(chalk.yellow('\nThese 11 sections are required for a Production-Ready plan.\n'));
         } else {
-          console.log(chalk.green('\n✅ All 11 critical P0 sections are complete!\n'));
+          logger.log(chalk.green('\n✅ All 11 critical P0 sections are complete!\n'));
         }
 
         // Tech stack validation
         const techStackValid = await validateTechStack(planContent);
         if (techStackValid.valid) {
-          console.log(chalk.green('✅ Tech stack choices match package.json\n'));
+          logger.log(chalk.green('✅ Tech stack choices match package.json\n'));
         } else {
-          console.log(chalk.red('❌ Issues with tech stack choices:'));
+          logger.log(chalk.red('❌ Issues with tech stack choices:'));
           techStackValid.issues.forEach((issue) => {
-            console.log(chalk.red(`  • ${issue}`));
+            logger.log(chalk.red(`  • ${issue}`));
           });
-          console.log('');
+          logger.log('');
         }
 
         // Acceptance criteria check
         const missingCriteria = results.filter((r) => !r.checks.hasAcceptanceCriteria);
         if (missingCriteria.length > 0) {
-          console.log(
+          logger.log(
             chalk.red(`❌ Missing acceptance criteria in ${missingCriteria.length} sections:`)
           );
           missingCriteria.forEach((r) => {
-            console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
+            logger.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
           });
-          console.log('');
+          logger.log('');
         }
 
         // Atomic task breakdown check
@@ -407,13 +407,13 @@ Examples:
           (r) => [16, 20].includes(r.number) && !r.checks.hasAtomicTasks
         );
         if (missingBreakdown.length > 0) {
-          console.log(
+          logger.log(
             chalk.red(`❌ Missing atomic task breakdown in ${missingBreakdown.length} sections:`)
           );
           missingBreakdown.forEach((r) => {
-            console.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
+            logger.log(chalk.red(`  • Section ${r.number}: ${r.title}`));
           });
-          console.log(chalk.gray('   Tasks must be broken into 4-9 hour chunks.\n'));
+          logger.log(chalk.gray('   Tasks must be broken into 4-9 hour chunks.\n'));
         }
 
         // Strict mode
@@ -425,12 +425,12 @@ Examples:
             !contextFresh ||
             criticalMissing.length > 0;
           if (hasFailures) {
-            console.log(chalk.red('\n❌ Strict mode: validation failed.'));
+            logger.log(chalk.red('\n❌ Strict mode: validation failed.'));
             process.exitCode = 1;
           }
         }
       } catch (error) {
-        console.error(chalk.red('Error:'), error.message);
+        logger.error(chalk.red('Error:'), error.message);
       }
     });
 }

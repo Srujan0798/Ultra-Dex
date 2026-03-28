@@ -105,11 +105,11 @@ debugCommand
           low: chalk.gray,
         }[prediction.severity];
 
-        console.log(`${severityColor(`[${prediction.severity.toUpperCase()}]`)} ${prediction.description}`);
+        logger.log(`${severityColor(`[${prediction.severity.toUpperCase()}]`)} ${prediction.description}`);
 
         if (prediction.fix) {
-          console.log(chalk.gray(`  Fix: ${prediction.fix.description}`));
-          console.log(chalk.gray(`  Code: ${prediction.fix.replacement}\n`));
+          logger.log(chalk.gray(`  Fix: ${prediction.fix.description}`));
+          logger.log(chalk.gray(`  Code: ${prediction.fix.replacement}\n`));
         }
       }
     }
@@ -139,7 +139,7 @@ debugCommand
       await fs.writeFile(options.output, JSON.stringify(report, null, 2));
       printSuccess(`Report saved to ${chalk.cyan(options.output)}`);
     } else {
-      console.log(JSON.stringify(report, null, 2));
+      logger.log(JSON.stringify(report, null, 2));
     }
 
     await debugInstance.stop();
@@ -147,7 +147,7 @@ debugCommand
 
 // Helper function for warnings
 function printWarning(message) {
-  console.log(chalk.yellow(`⚠️  ${message}`));
+  logger.log(chalk.yellow(`⚠️  ${message}`));
 }
 
 export default debugCommand;

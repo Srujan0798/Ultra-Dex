@@ -323,7 +323,7 @@ class HybridRAG {
         await this.keywordSearch.indexFile(file, content);
       } catch (error) {
         // Skip files that can't be read
-        console.warn(`⚠️  Could not index ${file}: ${error.message}`);
+        logger.warn(`⚠️  Could not index ${file}: ${error.message}`);
       }
     }
   }

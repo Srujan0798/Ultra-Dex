@@ -9,8 +9,13 @@ import chalk from 'chalk';
 import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
 import { formatInfo, formatWarning, formatSuccess } from '../lib/utils/status.js';
-import { recordUsageEventSync } from '../lib/enterprise/usage.js';
+import { initializeUsageSink } from '../lib/enterprise/usage.js';
 import { isTelemetryEnabledSync } from '../lib/utils/telemetry.js';
+import { formatSuggestion } from '../lib/utils/suggestion.js';
+import { analyzeCliInput, getProgramCommandNames } from '../lib/utils/command-routing.js';
+import { logger } from '../lib/utils/logger.js';
+import { initializeAnalyticsSink } from '../lib/analytics/index.js';
+import { initializeGovernanceAuditSink } from '../lib/governance/audit.js';
 
 // Initialize monitoring and configuration systems
 import { monitoring } from '../lib/utils/monitoring.js';
@@ -29,6 +34,9 @@ const wantsHelp =
 // Wait for initialization
 if (!wantsHelp) {
   try {
+    initializeAnalyticsSink();
+    initializeUsageSink();
+    initializeGovernanceAuditSink();
     await Promise.all([
       monitoring.initialize(),
       configManager.load(),
@@ -37,17 +45,28 @@ if (!wantsHelp) {
       installHistoryTracking(),
     ]);
   } catch (error) {
-    console.error(chalk.red('Failed to initialize systems:'), error.message);
+    process.stderr.write(chalk.red(`Failed to initialize systems: ${error.message}\n`));
   }
 }
 
 // Log startup
-monitoring.info('Ultra-Dex CLI starting', {
-  version: VERSION,
-  pid: process.pid,
-  nodeVersion: process.version,
-  platform: process.platform,
-});
+if (!wantsHelp) {
+  await logger.event(
+    'cli.startup',
+    {
+      version: VERSION,
+      pid: process.pid,
+      nodeVersion: process.version,
+      platform: process.platform,
+    },
+    {
+      level: 'info',
+      message: 'Ultra-Dex CLI starting',
+      console: false,
+      source: 'cli',
+    }
+  );
+}
 
 // Check for doomsday flag early
 if (process.argv.includes('--doomsday')) {
@@ -118,7 +137,7 @@ import { registerStatusCommand } from '../lib/commands/status.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
 
 
-import { registerDashboardCommand } from '../lib/commands/dashboard.js';
+import { registerDashboardCommand, showInteractiveDashboard } from '../lib/commands/dashboard.js';
 import { registerCheckCommand } from '../lib/commands/check.js';
 import { registerBatchCommand, registerPipelineCommand } from '../lib/commands/advanced.js';
 import { registerServeCommand } from '../lib/commands/serve.js';
@@ -188,7 +207,7 @@ import { registerPrivacyCommand } from '../lib/commands/privacy.js';
 import { registerRouteCommand } from '../lib/commands/route.js';
 import { registerCommitCommand } from '../lib/commands/commit.js';
 import { registerRulesCommand } from '../lib/commands/rules.js';
-import { registerCicdCommand } from '../lib/commands/cicd.js';
+import { registerCICDCommand } from '../lib/commands/cicd.js';
 import { registerArchitectCommand } from '../lib/commands/architect.js';
 import { registerTemplateCommand } from '../lib/commands/template.js';
 import { registerDbAdvisorCommand } from '../lib/commands/db-advisor.js';
@@ -251,6 +270,7 @@ import { startREPL } from '../lib/repl/index.js';
 import { theme, ultraGradient } from '../lib/ui/theme.js';
 
 const program = new Command();
+let originalCliInput = null;
 
 let commandStart = null;
 program.hook('preAction', async (thisCommand, actionCommand) => {
@@ -263,27 +283,32 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
   }
   
   // NLP Intent Analysis Hook - Log intent mismatches for training
-  const rawInput = process.argv.slice(2).join(' ');
+  const rawInput = originalCliInput || process.argv.slice(2).join(' ');
   try {
     const { routeIntent } = await import('../lib/nlp/router.js');
     const intent = routeIntent(rawInput);
     
     if (intent && intent !== actionCommand?.name?.()) {
-      // Log intent mismatch for analytics and improvement
-      monitoring.recordEvent('nlp_intent_mismatch', {
+      await logger.event('nlp.intent_mismatch', {
         parsed: actionCommand?.name?.(),
         detected: intent,
         input: rawInput,
         timestamp: Date.now(),
+      }, {
+        console: false,
+        source: 'cli',
       });
     }
     
     // Log successful NLP match
     if (intent && intent === actionCommand?.name?.()) {
-      monitoring.recordEvent('nlp_intent_match', {
+      await logger.event('nlp.intent_match', {
         command: actionCommand?.name?.(),
         input: rawInput,
         timestamp: Date.now(),
+      }, {
+        console: false,
+        source: 'cli',
       });
     }
   } catch (error) {
@@ -291,7 +316,7 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
   }
   
   if (isTelemetryEnabledSync()) {
-    recordUsageEventSync({
+    await logger.event('usage.command', {
       stage: 'start',
       command: actionCommand?.name?.(),
       args: process.argv.slice(2),
@@ -299,19 +324,25 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
       role: null,
       cwd: process.cwd(),
       pid: process.pid,
+    }, {
+      console: false,
+      source: 'cli',
     });
   }
 });
 
-program.hook('postAction', (thisCommand, actionCommand) => {
+program.hook('postAction', async (thisCommand, actionCommand) => {
   const durationMs = commandStart ? Date.now() - commandStart : null;
   if (isTelemetryEnabledSync()) {
-    recordUsageEventSync({
+    await logger.event('usage.command', {
       stage: 'end',
       command: actionCommand?.name?.(),
       durationMs,
       success: true,
       cwd: process.cwd(),
+    }, {
+      console: false,
+      source: 'cli',
     });
   }
   commandStart = null;
@@ -453,7 +484,7 @@ registerPrivacyCommand(program);
 registerRouteCommand(program);
 registerCommitCommand(program);
 registerRulesCommand(program);
-registerCicdCommand(program);
+registerCICDCommand(program);
 registerArchitectCommand(program);
 registerTemplateCommand(program);
 registerDbAdvisorCommand(program);
@@ -506,44 +537,58 @@ registerHealthCommand(program);
 registerDebugCommand(program);
 registerBannerCommand(program);
 
+const commandNames = getProgramCommandNames(program);
+
 // Command Not Found Handler with NLP Intent Suggestion
 program.on('command:*', () => {
-  const rawInput = process.argv.slice(2).join(' ');
-  
-  // Dynamically import NLP router
-  import('../lib/nlp/router.js').then(({ routeIntent, getAllIntents }) => {
-    const intent = routeIntent(rawInput);
-    
-    if (intent) {
-      console.log(chalk.yellow(`\n⚠️  Unknown command: ${process.argv.join(' ')}`));
-      console.log(chalk.green(`\n💡 Did you mean: ultra-dex ${intent}?`));
-      console.log(chalk.gray(`   Original input: "${rawInput}"`));
-      console.log(chalk.gray(`   Detected intent: "${intent}"\n`));
-      
-      // Show alternative suggestions
-      const alternatives = getAllIntents(rawInput, 3);
-      if (alternatives.length > 1) {
-        console.log(chalk.gray('   Other suggestions:'));
-        alternatives.slice(0, 3).forEach((alt) => {
-          console.log(chalk.gray(`     - ultra-dex ${alt.intent} (confidence: ${(alt.confidence * 100).toFixed(0)}%)`));
-        });
-        console.log();
+  const resolution = analyzeCliInput(process.argv.slice(2), commandNames);
+  const displayInput = resolution.rawInput || process.argv.slice(2).join(' ');
+
+  console.error(chalk.red(`\n✕ Unknown command: ${displayInput}`));
+
+  if (resolution.typoSuggestion) {
+    process.stderr.write(formatSuggestion(`ultra-dex ${resolution.typoSuggestion}`));
+  } else if (resolution.intent) {
+    const suggestedCommand = resolution.translatedCommand || `ultra-dex ${resolution.intent}`;
+    console.log(chalk.green(`\n💡 Intent match: ${suggestedCommand}`));
+    console.log(
+      chalk.gray(
+        `   Confidence: ${(resolution.confidence * 100).toFixed(0)}% (${resolution.matchType || 'semantic'})`
+      )
+    );
+
+    if (resolution.alternatives?.length) {
+      console.log(chalk.gray('\n   Other suggestions:'));
+      for (const alt of resolution.alternatives) {
+        console.log(
+          chalk.gray(`     - ultra-dex ${alt.intent} (${(alt.confidence * 100).toFixed(0)}%)`)
+        );
       }
-    } else {
-      console.error(chalk.red(`\n✕ Unknown command: ${process.argv.join(' ')}`));
-      console.log(chalk.gray('\n   Run "ultra-dex --help" for available commands.\n'));
     }
-  }).catch(() => {
-    console.error(chalk.red(`\n✕ Unknown command: ${process.argv.join(' ')}`));
+
+    console.log('');
+  } else {
     console.log(chalk.gray('\n   Run "ultra-dex --help" for available commands.\n'));
-  });
-  
+  }
+
   process.exit(1);
 });
 
-// Default to REPL if no arguments provided
+const initialArgs = process.argv.slice(2);
+const initialResolution = analyzeCliInput(initialArgs, commandNames);
+
+if (initialResolution.type === 'rewrite') {
+  originalCliInput = initialResolution.rawInput;
+  console.log(formatInfo(`Routing "${initialResolution.rawInput}" to ${initialResolution.translatedCommand}`));
+  process.argv = [process.argv[0], process.argv[1], ...initialResolution.translatedArgs];
+}
+
+// Default to the dashboard when no arguments are provided.
 if (process.argv.length <= 2) {
-  await startREPL({ continue: false });
+  await showInteractiveDashboard({
+    cwd: process.cwd(),
+  });
+  await monitoring.shutdown();
   process.exit(0);
 }
 

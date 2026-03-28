@@ -13,7 +13,7 @@ export { default } from './token-forecast.js';
  */
 function handleError(error) {
   try {
-    console.error('[token-budget]', error instanceof Error ? error.message : String(error));
+    logger.error('[token-budget]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

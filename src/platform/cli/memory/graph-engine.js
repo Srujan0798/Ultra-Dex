@@ -100,7 +100,7 @@ export default {
  */
 function handleError(error) {
   try {
-    console.error('[graph-engine]', error instanceof Error ? error.message : String(error));
+    logger.error('[graph-engine]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

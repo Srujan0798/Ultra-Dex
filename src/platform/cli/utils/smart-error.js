@@ -17,7 +17,7 @@ const ERROR_CATEGORIES = {
     suggestedFix: 'Run `npm install [package-name]` to install the missing module',
     interactiveFix: async () => {
       // In a real implementation, this would offer to install the missing package
-      console.log(chalk.yellow('Offering to install missing packages...'));
+      logger.log(chalk.yellow('Offering to install missing packages...'));
     },
   },
   SYNTAX_ERROR: {
@@ -26,7 +26,7 @@ const ERROR_CATEGORIES = {
     why: 'Invalid JavaScript/TypeScript syntax',
     suggestedFix: 'Check the file and line number for syntax issues',
     interactiveFix: async () => {
-      console.log(chalk.yellow('Opening file in editor for syntax correction...'));
+      logger.log(chalk.yellow('Opening file in editor for syntax correction...'));
     },
   },
   TYPE_ERROR: {
@@ -35,7 +35,7 @@ const ERROR_CATEGORIES = {
     why: 'Variables or functions are used with incompatible types',
     suggestedFix: 'Check TypeScript definitions and fix type mismatches',
     interactiveFix: async () => {
-      console.log(chalk.yellow('Running TypeScript compiler for detailed errors...'));
+      logger.log(chalk.yellow('Running TypeScript compiler for detailed errors...'));
     },
   },
   NETWORK_ERROR: {
@@ -44,7 +44,7 @@ const ERROR_CATEGORIES = {
     why: 'Network connectivity issues or service unavailable',
     suggestedFix: 'Check your internet connection and service availability',
     interactiveFix: async () => {
-      console.log(chalk.yellow('Testing network connectivity...'));
+      logger.log(chalk.yellow('Testing network connectivity...'));
     },
   },
   PERMISSION_DENIED: {
@@ -53,7 +53,7 @@ const ERROR_CATEGORIES = {
     why: 'Insufficient permissions to access the file or directory',
     suggestedFix: 'Check file permissions and run with appropriate privileges',
     interactiveFix: async () => {
-      console.log(chalk.yellow('Checking file permissions...'));
+      logger.log(chalk.yellow('Checking file permissions...'));
     },
   },
   FILE_NOT_FOUND: {
@@ -62,7 +62,7 @@ const ERROR_CATEGORIES = {
     why: 'The file path is incorrect or the file does not exist',
     suggestedFix: 'Verify the file path and ensure the file exists',
     interactiveFix: async () => {
-      console.log(chalk.yellow('Searching for similar files...'));
+      logger.log(chalk.yellow('Searching for similar files...'));
     },
   },
   CONFIG_ERROR: {
@@ -71,7 +71,7 @@ const ERROR_CATEGORIES = {
     why: 'Configuration files are missing or contain invalid values',
     suggestedFix: 'Check configuration files and ensure they are properly formatted',
     interactiveFix: async () => {
-      console.log(chalk.yellow('Validating configuration files...'));
+      logger.log(chalk.yellow('Validating configuration files...'));
     },
   },
   ENVIRONMENT_ERROR: {
@@ -80,7 +80,7 @@ const ERROR_CATEGORIES = {
     why: 'Required environment variables are not set',
     suggestedFix: 'Set the required environment variables',
     interactiveFix: async () => {
-      console.log(chalk.yellow('Checking environment variables...'));
+      logger.log(chalk.yellow('Checking environment variables...'));
     },
   },
 };
@@ -138,7 +138,7 @@ function classifyError(errorMessage) {
     why: 'Something went wrong during execution',
     suggestedFix: 'Check the error details and try again',
     interactiveFix: async () => {
-      console.log(chalk.yellow('No specific fix available for this error type.'));
+      logger.log(chalk.yellow('No specific fix available for this error type.'));
     },
   };
 }
@@ -172,7 +172,7 @@ export function formatSmartError(error) {
  */
 export async function handleSmartError(error, context = {}) {
   const formattedError = formatSmartError(error);
-  console.error(formattedError);
+  logger.error(formattedError);
 
   // Offer interactive fix if available
   const errorCategory = classifyError(error.message || error.toString());
@@ -341,7 +341,7 @@ export function registerSmartErrorCommand(program) {
         const error = new SmartError(message, { context });
         const formatted = error.format();
 
-        console.log(formatted);
+        logger.log(formatted);
 
         if (options.suggest) {
           const errorCategory = classifyError(message);

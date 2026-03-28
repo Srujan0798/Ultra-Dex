@@ -42,7 +42,7 @@ export function startWebSocketServer(server, { path = '/ws' } = {}) {
         }
       });
     } catch (error) {
-      console.error('[WebSocket] Broadcast error:', error.message);
+      logger.error('[WebSocket] Broadcast error:', error.message);
     }
   }
 
@@ -54,14 +54,14 @@ export function startWebSocketServer(server, { path = '/ws' } = {}) {
           const text = message.toString();
           broadcast({ type: 'message', payload: text });
         } catch (error) {
-          console.error('[WebSocket] Message handling error:', error.message);
+          logger.error('[WebSocket] Message handling error:', error.message);
         }
       });
       ws.on('error', (error) => {
-        console.error('[WebSocket] Client error:', error.message);
+        logger.error('[WebSocket] Client error:', error.message);
       });
     } catch (error) {
-      console.error('[WebSocket] Connection error:', error.message);
+      logger.error('[WebSocket] Connection error:', error.message);
     }
   });
 

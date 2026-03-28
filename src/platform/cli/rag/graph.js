@@ -58,7 +58,7 @@ export class GraphRAG {
    */
   async initialize() {
     if (this.useInMemory) {
-      console.log(chalk.yellow('[GraphRAG] Using in-memory graph storage'));
+      logger.log(chalk.yellow('[GraphRAG] Using in-memory graph storage'));
       return true;
     }
 
@@ -75,19 +75,19 @@ export class GraphRAG {
         await session.run('RETURN 1');
         await session.close();
 
-        console.log(chalk.green('[GraphRAG] Connected to Neo4j'));
+        logger.log(chalk.green('[GraphRAG] Connected to Neo4j'));
         await this.initializeSchema();
         return true;
       } else if (this.dbType === 'falkordb') {
-        console.log(
+        logger.log(
           chalk.yellow('[GraphRAG] FalkorDB not configured. Falling back to in-memory graph.')
         );
         this.useInMemory = true;
         return true;
       }
     } catch (error) {
-      console.log(chalk.yellow(`[GraphRAG] Failed to connect to ${this.dbType}: ${error.message}`));
-      console.log(chalk.yellow('[GraphRAG] Falling back to in-memory graph storage'));
+      logger.log(chalk.yellow(`[GraphRAG] Failed to connect to ${this.dbType}: ${error.message}`));
+      logger.log(chalk.yellow('[GraphRAG] Falling back to in-memory graph storage'));
       this.useInMemory = true;
       return true;
     }
@@ -123,9 +123,9 @@ export class GraphRAG {
         FOR (fn:Function) ON (fn.name)
       `);
 
-      console.log(chalk.gray('[GraphRAG] Schema initialized'));
+      logger.log(chalk.gray('[GraphRAG] Schema initialized'));
     } catch (error) {
-      console.log(chalk.yellow(`[GraphRAG] Schema initialization warning: ${error.message}`));
+      logger.log(chalk.yellow(`[GraphRAG] Schema initialization warning: ${error.message}`));
     } finally {
       await session.close();
     }
@@ -135,7 +135,7 @@ export class GraphRAG {
    * Parse codebase and build graph
    */
   async indexCodebase(rootDir = process.cwd()) {
-    console.log(chalk.blue('[GraphRAG] Indexing codebase...'));
+    logger.log(chalk.blue('[GraphRAG] Indexing codebase...'));
 
     const files = await glob('**/*.{js,ts,jsx,tsx}', {
       cwd: rootDir,
@@ -151,11 +151,11 @@ export class GraphRAG {
       processed += batch.length;
 
       if (processed % 100 === 0) {
-        console.log(chalk.gray(`[GraphRAG] Indexed ${processed}/${files.length} files...`));
+        logger.log(chalk.gray(`[GraphRAG] Indexed ${processed}/${files.length} files...`));
       }
     }
 
-    console.log(chalk.green(`[GraphRAG] Indexed ${processed} files`));
+    logger.log(chalk.green(`[GraphRAG] Indexed ${processed} files`));
     return { totalFiles: files.length, indexed: processed };
   }
 
@@ -198,7 +198,7 @@ export class GraphRAG {
         await this.saveToDatabase(fileNode, imports, functions, classes);
       }
     } catch (error) {
-      console.log(chalk.yellow(`[GraphRAG] Failed to index ${filePath}: ${error.message}`));
+      logger.log(chalk.yellow(`[GraphRAG] Failed to index ${filePath}: ${error.message}`));
     }
   }
 
@@ -533,7 +533,7 @@ export class GraphRAG {
   async close() {
     if (this.driver) {
       await this.driver.close();
-      console.log(chalk.gray('[GraphRAG] Database connection closed'));
+      logger.log(chalk.gray('[GraphRAG] Database connection closed'));
     }
   }
 }

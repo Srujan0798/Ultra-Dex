@@ -14,6 +14,8 @@ import {
   progressBar,
   themeColors,
   ultraGradient,
+  createGradientBanner,
+  createStatusSpinner,
 } from '../lib/ui/theme.js';
 
 describe('theme utilities', () => {
@@ -254,6 +256,90 @@ describe('theme utilities', () => {
     test('handles edge case of 0 total', () => {
       const result = progressBar(0, 0);
       assert.strictEqual(typeof result, 'string');
+    });
+  });
+
+  describe('createGradientBanner function', () => {
+    test('is a function', () => {
+      assert.strictEqual(typeof createGradientBanner, 'function');
+    });
+
+    test('returns string for valid input', () => {
+      const result = createGradientBanner('Hello World');
+      assert.strictEqual(typeof result, 'string');
+      assert.ok(result.includes('Hello World'), 'Should contain original text');
+    });
+
+    test('handles empty string', () => {
+      const result = createGradientBanner('');
+      assert.strictEqual(typeof result, 'string');
+    });
+
+    test('handles multiline string', () => {
+      const result = createGradientBanner('Line 1\nLine 2\nLine 3');
+      assert.strictEqual(typeof result, 'string');
+      assert.ok(result.includes('Line 1'), 'Should contain first line');
+      assert.ok(result.includes('Line 2'), 'Should contain second line');
+      assert.ok(result.includes('Line 3'), 'Should contain third line');
+    });
+
+    test('uses professional gradient by default', () => {
+      const result = createGradientBanner('Test');
+      assert.strictEqual(typeof result, 'string');
+      assert.ok(result.length > 0, 'Should return non-empty string');
+    });
+
+    test('supports different gradient types', () => {
+      const types = ['professional', 'success', 'warning', 'error', 'info'];
+      types.forEach((type) => {
+        const result = createGradientBanner('Test', type);
+        assert.strictEqual(typeof result, 'string');
+        assert.ok(result.length > 0, `Should return non-empty string for ${type}`);
+      });
+    });
+
+    test('falls back to professional for unknown type', () => {
+      const result = createGradientBanner('Test', 'unknown');
+      assert.strictEqual(typeof result, 'string');
+      assert.ok(result.length > 0, 'Should return non-empty string');
+    });
+  });
+
+  describe('createStatusSpinner function', () => {
+    test('is a function', () => {
+      assert.strictEqual(typeof createStatusSpinner, 'function');
+    });
+
+    test('returns string for valid input', () => {
+      const result = createStatusSpinner('thinking');
+      assert.strictEqual(typeof result, 'string');
+      assert.ok(result.includes('Thinking...'), 'Should contain status text');
+    });
+
+    test('uses thinking type by default', () => {
+      const result = createStatusSpinner();
+      assert.strictEqual(typeof result, 'string');
+      assert.ok(result.includes('Thinking...'), 'Should contain thinking text');
+    });
+
+    test('supports different spinner types', () => {
+      const types = ['thinking', 'building', 'analyzing', 'deploying', 'syncing'];
+      types.forEach((type) => {
+        const result = createStatusSpinner(type);
+        assert.strictEqual(typeof result, 'string');
+        assert.ok(result.length > 0, `Should return non-empty string for ${type}`);
+      });
+    });
+
+    test('falls back to thinking for unknown type', () => {
+      const result = createStatusSpinner('unknown');
+      assert.strictEqual(typeof result, 'string');
+      assert.ok(result.includes('Thinking...'), 'Should fall back to thinking');
+    });
+
+    test('includes emoji icon', () => {
+      const result = createStatusSpinner('thinking');
+      assert.ok(result.includes('🧠'), 'Should contain thinking emoji');
     });
   });
 });

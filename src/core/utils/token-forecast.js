@@ -229,7 +229,7 @@ export default {
 function handleModuleError(error, context = 'token-forecast') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

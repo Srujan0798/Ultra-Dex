@@ -81,8 +81,8 @@ export class BrowserAutomation {
 
       return true;
     } catch (err) {
-      console.log(chalk.yellow(`Browser launch failed: ${err.message}`));
-      console.log(chalk.gray('Install Playwright: npm install playwright'));
+      logger.log(chalk.yellow(`Browser launch failed: ${err.message}`));
+      logger.log(chalk.gray('Install Playwright: npm install playwright'));
       return false;
     }
   }

@@ -30,7 +30,7 @@ export function showVersionCard() {
     titleAlignment: 'center',
   });
 
-  console.log(card);
+  logger.log(card);
 }
 
 export default showVersionCard;
@@ -43,7 +43,7 @@ export default showVersionCard;
 function handleModuleError(error, context = 'version-display') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

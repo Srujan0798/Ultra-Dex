@@ -15,7 +15,7 @@ export { default } from './voice-service.js';
  */
 function handleWhisperserviceError(error) {
   try {
-    console.error('[whisper-service]', error instanceof Error ? error.message : String(error));
+    logger.error('[whisper-service]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

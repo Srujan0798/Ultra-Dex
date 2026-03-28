@@ -57,15 +57,15 @@ export function showHeader(options = {}) {
 
   if (showBanner) {
     const gradientBanner = ultraGradient(banner);
-    console.log(gradientBanner);
-    console.log('');
+    logger.log(gradientBanner);
+    logger.log('');
   }
 
   if (title) {
     const padding = Math.max(0, 30 - Math.floor(title.length / 2));
-    console.log(' '.repeat(padding) + theme.title(title.toUpperCase()));
-    console.log(' '.repeat(padding) + theme.primary('─'.repeat(title.length)));
-    console.log('');
+    logger.log(' '.repeat(padding) + theme.title(title.toUpperCase()));
+    logger.log(' '.repeat(padding) + theme.primary('─'.repeat(title.length)));
+    logger.log('');
   }
 }
 
@@ -74,10 +74,10 @@ export function showHeader(options = {}) {
  * @param {string} title - Section title
  */
 export function showMinimalHeader(title) {
-  console.log('');
-  console.log(theme.title(`  ${title.toUpperCase()}`));
-  console.log(theme.primary('  ' + '─'.repeat(LAYOUT_WIDTHS.headerDivider)));
-  console.log('');
+  logger.log('');
+  logger.log(theme.title(`  ${title.toUpperCase()}`));
+  logger.log(theme.primary('  ' + '─'.repeat(LAYOUT_WIDTHS.headerDivider)));
+  logger.log('');
 }
 
 /**
@@ -85,9 +85,9 @@ export function showMinimalHeader(title) {
  * @param {string} section - Section name
  */
 export function showSectionHeader(section) {
-  console.log('');
-  console.log(theme.subtitle(`  ${section.toUpperCase()}`));
-  console.log('');
+  logger.log('');
+  logger.log(theme.subtitle(`  ${section.toUpperCase()}`));
+  logger.log('');
 }
 
 // ============================================================================
@@ -105,10 +105,10 @@ export function showFooter(options = {}) {
     showTagline = LAYOUT_STYLES.footer.showTagline,
   } = options;
 
-  console.log('');
+  logger.log('');
 
   if (showDivider) {
-    console.log(divider('─', LAYOUT_WIDTHS.footerDivider));
+    logger.log(divider('─', LAYOUT_WIDTHS.footerDivider));
   }
 
   const versionText = showVersion ? `Ultra-Dex v${VERSION}` : '';
@@ -119,18 +119,18 @@ export function showFooter(options = {}) {
   if (taglineText) parts.push(theme.dim('•'));
   if (taglineText) parts.push(theme.subtitle(taglineText));
 
-  console.log(`  ${parts.join(' ')}`);
-  console.log('');
+  logger.log(`  ${parts.join(' ')}`);
+  logger.log('');
 }
 
 /**
  * Show compact footer for help screens
  */
 export function showHelpFooter() {
-  console.log('');
-  console.log(divider('─', LAYOUT_WIDTHS.footerDivider));
-  console.log(theme.dim('  Type "h" for help, "q" to quit.'));
-  console.log('');
+  logger.log('');
+  logger.log(divider('─', LAYOUT_WIDTHS.footerDivider));
+  logger.log(theme.dim('  Type "h" for help, "q" to quit.'));
+  logger.log('');
 }
 
 /**
@@ -138,11 +138,11 @@ export function showHelpFooter() {
  * @param {string[]} actions - List of available actions
  */
 export function showActionFooter(actions) {
-  console.log('');
-  console.log(divider('─', LAYOUT_WIDTHS.footerDivider));
-  console.log(theme.dim('  Available actions:'));
-  console.log(theme.dim(`    ${actions.join('  •  ')}`));
-  console.log('');
+  logger.log('');
+  logger.log(divider('─', LAYOUT_WIDTHS.footerDivider));
+  logger.log(theme.dim('  Available actions:'));
+  logger.log(theme.dim(`    ${actions.join('  •  ')}`));
+  logger.log('');
 }
 
 // ============================================================================
@@ -171,8 +171,8 @@ export function renderPage(options) {
  * @param {string} content - Content to render
  */
 export function renderSection(content) {
-  console.log(content);
-  console.log('');
+  logger.log(content);
+  logger.log('');
 }
 
 // ============================================================================
@@ -188,18 +188,18 @@ export function renderCard(title, content) {
   const width = 60;
   const border = theme.primary;
 
-  console.log(border('╭' + '─'.repeat(width - 2) + '╮'));
-  console.log(border('│') + ' '.repeat(2) + theme.title(title) + ' '.repeat(width - 4 - title.length) + border('│'));
-  console.log(border('├' + '─'.repeat(width - 2) + '┤'));
+  logger.log(border('╭' + '─'.repeat(width - 2) + '╮'));
+  logger.log(border('│') + ' '.repeat(2) + theme.title(title) + ' '.repeat(width - 4 - title.length) + border('│'));
+  logger.log(border('├' + '─'.repeat(width - 2) + '┤'));
 
   const lines = content.split('\n');
   lines.forEach((line) => {
     const padding = width - 4 - line.replace(/\x1b\[[0-9;]*m/g, '').length;
-    console.log(border('│') + ' ' + line + ' '.repeat(Math.max(0, padding)) + ' ' + border('│'));
+    logger.log(border('│') + ' ' + line + ' '.repeat(Math.max(0, padding)) + ' ' + border('│'));
   });
 
-  console.log(border('╰' + '─'.repeat(width - 2) + '╯'));
-  console.log('');
+  logger.log(border('╰' + '─'.repeat(width - 2) + '╯'));
+  logger.log('');
 }
 
 // ============================================================================
@@ -212,22 +212,22 @@ export function renderCard(title, content) {
  * @param {string[]} [suggestions] - Optional suggestions
  */
 export function showErrorLayout(message, suggestions = []) {
-  console.log('');
-  console.log(theme.error('  ╭' + '─'.repeat(56) + '╮'));
-  console.log(theme.error('  │') + ' ' + theme.error.bold('ERROR') + ' '.repeat(50) + theme.error('│'));
-  console.log(theme.error('  ├' + '─'.repeat(56) + '┤'));
-  console.log(theme.error('  │') + ' ' + message.padEnd(54) + theme.error('│'));
+  logger.log('');
+  logger.log(theme.error('  ╭' + '─'.repeat(56) + '╮'));
+  logger.log(theme.error('  │') + ' ' + theme.error.bold('ERROR') + ' '.repeat(50) + theme.error('│'));
+  logger.log(theme.error('  ├' + '─'.repeat(56) + '┤'));
+  logger.log(theme.error('  │') + ' ' + message.padEnd(54) + theme.error('│'));
 
   if (suggestions.length > 0) {
-    console.log(theme.error('  │') + ' '.repeat(56) + theme.error('│'));
-    console.log(theme.error('  │') + ' ' + theme.error.bold('Suggestions:').padEnd(54) + theme.error('│'));
+    logger.log(theme.error('  │') + ' '.repeat(56) + theme.error('│'));
+    logger.log(theme.error('  │') + ' ' + theme.error.bold('Suggestions:').padEnd(54) + theme.error('│'));
     suggestions.forEach((suggestion) => {
-      console.log(theme.error('  │') + ('  • ' + suggestion).padEnd(54) + theme.error('│'));
+      logger.log(theme.error('  │') + ('  • ' + suggestion).padEnd(54) + theme.error('│'));
     });
   }
 
-  console.log(theme.error('  ╰' + '─'.repeat(56) + '╯'));
-  console.log('');
+  logger.log(theme.error('  ╰' + '─'.repeat(56) + '╯'));
+  logger.log('');
 }
 
 // ============================================================================
@@ -239,9 +239,9 @@ export function showErrorLayout(message, suggestions = []) {
  * @param {string} message - Success message
  */
 export function showSuccessLayout(message) {
-  console.log('');
-  console.log(theme.success('  ✓ ' + message));
-  console.log('');
+  logger.log('');
+  logger.log(theme.success('  ✓ ' + message));
+  logger.log('');
 }
 
 // ============================================================================
@@ -274,7 +274,7 @@ export default {
 function handleModuleError(error, context = 'layout') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

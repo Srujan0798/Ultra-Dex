@@ -22,19 +22,19 @@ export function registerNexusCommand(program) {
         .argument('<file>', 'Path to .wasm file')
         .action(async (file) => {
             const absolutePath = path.resolve(process.cwd(), file);
-            console.log(chalk.blue(`🔗 Loading Nexus core...`));
-            console.log(chalk.dim(`   Target: ${absolutePath}`));
+            logger.log(chalk.blue(`🔗 Loading Nexus core...`));
+            logger.log(chalk.dim(`   Target: ${absolutePath}`));
 
             try {
                 const plugin = await wasmRuntime.load(absolutePath);
-                console.log(chalk.green('✅ Plugin loaded successfully.'));
-                console.log(chalk.yellow('▶️ Executing plugin...'));
+                logger.log(chalk.green('✅ Plugin loaded successfully.'));
+                logger.log(chalk.yellow('▶️ Executing plugin...'));
 
                 const result = plugin.run();
 
-                console.log(chalk.green(`\n✨ Execution complete. Result: ${result}`));
+                logger.log(chalk.green(`\n✨ Execution complete. Result: ${result}`));
             } catch (error) {
-                console.error(chalk.red(`❌ Nexus Error: ${error.message}`));
+                logger.error(chalk.red(`❌ Nexus Error: ${error.message}`));
                 process.exit(1);
             }
         });
@@ -47,17 +47,17 @@ export function registerNexusCommand(program) {
             const plugins = pluginRegistry.getInstalledPlugins();
 
             if (!plugins.length) {
-                console.log('No Nexus plugins installed yet.');
+                logger.log('No Nexus plugins installed yet.');
                 return;
             }
 
-            console.log(chalk.cyan('\nInstalled Nexus Plugins:\n'));
+            logger.log(chalk.cyan('\nInstalled Nexus Plugins:\n'));
             plugins.forEach((plugin) => {
                 if (!plugin) return;
                 const name = plugin.name || 'unknown-plugin';
                 const version = plugin.version ? `@${plugin.version}` : '';
                 const location = plugin.local ? 'local' : 'registry';
-                console.log(`- ${name}${version} (${location})`);
+                logger.log(`- ${name}${version} (${location})`);
             });
         });
 }

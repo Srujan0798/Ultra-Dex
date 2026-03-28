@@ -247,7 +247,7 @@ class MetricsCollector {
 
       return metricsPath;
     } catch (error) {
-      console.error('Failed to export metrics:', error);
+      logger.error('Failed to export metrics:', error);
       throw error;
     }
   }
@@ -462,7 +462,7 @@ class PerformanceProfiler {
       await fs.writeFile(profilingPath, JSON.stringify(data, null, 2));
       return profilingPath;
     } catch (error) {
-      console.error('Failed to export profiling data:', error);
+      logger.error('Failed to export profiling data:', error);
       throw error;
     }
   }
@@ -551,7 +551,7 @@ class AlertManager {
       try {
         callback(alert);
       } catch (error) {
-        console.error(`Error in alert callback for ${type}:`, error);
+        logger.error(`Error in alert callback for ${type}:`, error);
       }
     }
   }
@@ -751,7 +751,7 @@ class UltraDexPerformanceMonitor {
 
   tripCircuit(taskName, error) {
     // Trip the circuit for this task
-    console.warn(`Tripped circuit breaker for ${taskName}:`, error.message);
+    logger.warn(`Tripped circuit breaker for ${taskName}:`, error.message);
   }
 
   resetCircuit(taskName) {

@@ -22,7 +22,7 @@ export function showFooter() {
   console.log('');
   console.log(theme.dim('  ' + '─'.repeat(56)));
   console.log(
-    `  \${theme.dim('Ultra-Dex v' + VERSION)} \${theme.dim('•')} \${theme.subtitle('Professional AI Orchestration')}`
+    `  ${theme.dim('Ultra-Dex v' + VERSION)} ${theme.dim('•')} ${theme.subtitle('Professional AI Orchestration')}`
   );
   console.log('');
 }

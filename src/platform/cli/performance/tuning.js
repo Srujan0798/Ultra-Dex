@@ -140,7 +140,7 @@ class PerformanceOptimizer {
   async initialize() {
     if (this.isOptimized) return;
     
-    console.log('🚀 Initializing Ultra-Dex Performance Optimizer...');
+    logger.log('🚀 Initializing Ultra-Dex Performance Optimizer...');
     
     // Apply system-level optimizations
     this.optimizeSystemSettings();
@@ -155,7 +155,7 @@ class PerformanceOptimizer {
     this.optimizeNetwork();
     
     this.isOptimized = true;
-    console.log('✅ Performance optimizations applied');
+    logger.log('✅ Performance optimizations applied');
   }
   
   // Optimize system settings
@@ -166,7 +166,7 @@ class PerformanceOptimizer {
     // Optimize V8 settings for performance
     if (typeof global.gc === 'function') {
       // Enable garbage collection if exposed
-      console.log('🧹 GC enabled for optimal memory management');
+      logger.log('🧹 GC enabled for optimal memory management');
     }
     
     // Set optimal process settings
@@ -182,7 +182,7 @@ class PerformanceOptimizer {
       
       if (heapUsedPercent > PERFORMANCE_CONFIG.memoryThreshold && typeof global.gc === 'function') {
         global.gc();
-        console.log('🧹 Forced garbage collection triggered');
+        logger.log('🧹 Forced garbage collection triggered');
       }
     }, 30000); // Check every 30 seconds
     interval.unref?.();
@@ -192,12 +192,12 @@ class PerformanceOptimizer {
   optimizeIO() {
     // Set optimal file descriptor limits
     // This is handled by the system, but we can optimize our usage
-    console.log(`⚡ I/O concurrency set to ${PERFORMANCE_CONFIG.ioConcurrency}`);
+    logger.log(`⚡ I/O concurrency set to ${PERFORMANCE_CONFIG.ioConcurrency}`);
   }
   
   // Optimize network settings
   optimizeNetwork() {
-    console.log(`🌐 Network timeout set to ${PERFORMANCE_CONFIG.networkTimeout}ms`);
+    logger.log(`🌐 Network timeout set to ${PERFORMANCE_CONFIG.networkTimeout}ms`);
   }
   
   // Optimize agent execution
@@ -227,7 +227,7 @@ class PerformanceOptimizer {
   
   // Run performance benchmark
   async runBenchmark() {
-    console.log('\n🏃 Running Performance Benchmark...');
+    logger.log('\n🏃 Running Performance Benchmark...');
     
     const start = performance.now();
     const results = [];
@@ -249,9 +249,9 @@ class PerformanceOptimizer {
     const totalTime = performance.now() - start;
     const avgTime = results.reduce((a, b) => a + b, 0) / results.length;
     
-    console.log(`✅ Benchmark completed in ${totalTime.toFixed(2)}ms`);
-    console.log(`📊 Average operation time: ${avgTime.toFixed(2)}ms`);
-    console.log(`📈 Operations per second: ${(100 / (totalTime / 1000)).toFixed(2)}`);
+    logger.log(`✅ Benchmark completed in ${totalTime.toFixed(2)}ms`);
+    logger.log(`📊 Average operation time: ${avgTime.toFixed(2)}ms`);
+    logger.log(`📈 Operations per second: ${(100 / (totalTime / 1000)).toFixed(2)}`);
     
     return {
       totalTime,
@@ -291,7 +291,7 @@ class PerformanceOptimizer {
         });
     }
     
-    console.log(`⚙️  Optimized for ${workloadType} workload`);
+    logger.log(`⚙️  Optimized for ${workloadType} workload`);
   }
 }
 

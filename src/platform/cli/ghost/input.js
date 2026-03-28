@@ -11,11 +11,11 @@ try {
     robot = {
         setMouseDelay: () => { },
         setKeyboardDelay: () => { },
-        moveMouse: () => console.warn('robotjs not found: moveMouse'),
-        mouseClick: () => console.warn('robotjs not found: mouseClick'),
-        typeString: () => console.warn('robotjs not found: typeString'),
-        keyTap: () => console.warn('robotjs not found: keyTap'),
-        scrollMouse: () => console.warn('robotjs not found: scrollMouse'),
+        moveMouse: () => logger.warn('robotjs not found: moveMouse'),
+        mouseClick: () => logger.warn('robotjs not found: mouseClick'),
+        typeString: () => logger.warn('robotjs not found: typeString'),
+        keyTap: () => logger.warn('robotjs not found: keyTap'),
+        scrollMouse: () => logger.warn('robotjs not found: scrollMouse'),
         getScreenSize: () => ({ width: 1920, height: 1080 })
     };
 }

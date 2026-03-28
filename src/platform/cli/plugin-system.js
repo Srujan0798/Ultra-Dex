@@ -35,7 +35,7 @@ export class PluginManager {
     try {
       await fs.mkdir(this.pluginDir, { recursive: true });
     } catch (error) {
-      console.error(`Failed to create plugin directory: ${error.message}`);
+      logger.error(`Failed to create plugin directory: ${error.message}`);
     }
   }
 
@@ -51,7 +51,7 @@ export class PluginManager {
         }
       }
     } catch (error) {
-      console.error(`Failed to load plugins: ${error.message}`);
+      logger.error(`Failed to load plugins: ${error.message}`);
     }
   }
 
@@ -64,13 +64,13 @@ export class PluginManager {
       const plugin = pluginModule.default || pluginModule;
 
       if (!plugin.name || !plugin.version) {
-        console.warn(`Plugin at ${pluginPath} missing required fields (name, version)`);
+        logger.warn(`Plugin at ${pluginPath} missing required fields (name, version)`);
         return;
       }
 
       // Validate plugin structure
       if (typeof plugin.activate !== 'function') {
-        console.warn(`Plugin ${plugin.name} missing activate function`);
+        logger.warn(`Plugin ${plugin.name} missing activate function`);
         return;
       }
 
@@ -81,9 +81,9 @@ export class PluginManager {
       });
 
       this.installedPlugins.add(plugin.name);
-      console.log(`Loaded plugin: ${plugin.name} v${plugin.version}`);
+      logger.log(`Loaded plugin: ${plugin.name} v${plugin.version}`);
     } catch (error) {
-      console.error(`Failed to load plugin ${pluginPath}: ${error.message}`);
+      logger.error(`Failed to load plugin ${pluginPath}: ${error.message}`);
     }
   }
 
@@ -131,7 +131,7 @@ export class PluginManager {
           }
         }
       } catch (error) {
-        console.error(`Hook ${hookName} failed in plugin ${hook.pluginName}: ${error.message}`);
+        logger.error(`Hook ${hookName} failed in plugin ${hook.pluginName}: ${error.message}`);
       }
     }
 
@@ -173,10 +173,10 @@ export class PluginManager {
       // Load the newly installed plugin
       await this.loadPlugin(targetPath);
 
-      console.log(`Plugin installed: ${fileName}`);
+      logger.log(`Plugin installed: ${fileName}`);
       return { success: true, path: targetPath };
     } catch (error) {
-      console.error(`Failed to install plugin: ${error.message}`);
+      logger.error(`Failed to install plugin: ${error.message}`);
       return { success: false, error: error.message };
     }
   }
@@ -197,10 +197,10 @@ export class PluginManager {
     // Remove plugin file
     try {
       await fs.unlink(plugin.path);
-      console.log(`Plugin uninstalled: ${pluginName}`);
+      logger.log(`Plugin uninstalled: ${pluginName}`);
       return { success: true };
     } catch (error) {
-      console.error(`Failed to remove plugin file: ${error.message}`);
+      logger.error(`Failed to remove plugin file: ${error.message}`);
       return { success: false, error: error.message };
     }
   }
@@ -233,10 +233,10 @@ export class PluginManager {
       try {
         if (typeof plugin.activate === 'function') {
           await plugin.activate(this, cliProgram);
-          console.log(`Activated plugin: ${name}`);
+          logger.log(`Activated plugin: ${name}`);
         }
       } catch (error) {
-        console.error(`Failed to activate plugin ${name}: ${error.message}`);
+        logger.error(`Failed to activate plugin ${name}: ${error.message}`);
       }
     }
   }

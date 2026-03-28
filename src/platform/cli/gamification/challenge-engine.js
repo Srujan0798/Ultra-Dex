@@ -106,7 +106,7 @@ class ChallengeEngine {
       chalk.gray(`Duration: ${Math.floor(challenge.duration / 60)}m ${challenge.duration % 60}s`)
     );
     printInfo(chalk.gray(`Description: ${challenge.description}`));
-    console.log('');
+    logger.log('');
 
     // Show stages
     printInfo(chalk.cyan('Stages:'));
@@ -117,11 +117,11 @@ class ChallengeEngine {
         )
       );
     });
-    console.log('');
+    logger.log('');
 
     if (challenge.bossFight) {
       printWarning(chalk.yellow(`💀 BOSS FIGHT: ${challenge.bossDescription}`));
-      console.log('');
+      logger.log('');
     }
 
     // Start the challenge
@@ -152,7 +152,7 @@ class ChallengeEngine {
       printInfo(
         chalk.gray(`Duration: ${Math.floor(stage.duration / 60)}m ${stage.duration % 60}s`)
       );
-      console.log('');
+      logger.log('');
 
       // Wait for stage duration or until interrupted
       await this.waitForStageCompletion(stage.duration);
@@ -208,7 +208,7 @@ class ChallengeEngine {
   async bossFight(challenge) {
     printWarning(chalk.red('\n💀 BOSS FIGHT INITIATED!'));
     printInfo(chalk.yellow(challenge.bossDescription));
-    console.log('');
+    logger.log('');
 
     // Simulate boss fight
     const { success } = await inquirer.prompt([
@@ -262,9 +262,9 @@ class ChallengeEngine {
     this.rank = this.calculateRank(this.score);
 
     // Display results
-    console.log('\n');
+    logger.log('\n');
     printSuccess(chalk.green('🏆 CHALLENGE COMPLETED! 🏆'));
-    console.log('');
+    logger.log('');
     printInfo(chalk.cyan(`Challenge: ${this.activeChallenge.name}`));
     printInfo(chalk.cyan(`Final Score: ${this.score}`));
     printInfo(chalk.cyan(`Rank: ${this.rank}`));
@@ -274,7 +274,7 @@ class ChallengeEngine {
     printInfo(
       chalk.cyan(`Stages Completed: ${this.currentStage + 1}/${this.activeChallenge.stages.length}`)
     );
-    console.log('');
+    logger.log('');
 
     // Show rank description
     this.showRankDescription(this.rank);
@@ -436,7 +436,7 @@ export function registerChallengeCommand(program) {
         if (challenge.bossFight) {
           printInfo(chalk.red('  💀 Boss Fight Included'));
         }
-        console.log('');
+        logger.log('');
       }
     });
 

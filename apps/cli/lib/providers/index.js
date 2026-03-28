@@ -9,6 +9,7 @@ import { ClaudeSonnet5Provider } from './claude.js';
 import { OpenAIProvider } from './openai.js';
 import { GeminiProvider } from './gemini.js';
 import { OllamaProvider } from './ollama.js';
+import { NVIDIAProvider } from './nvidia.js';
 import { RouterProvider } from './router.js';
 import { enforceAgentExecution } from '../governance/index.js';
 import { memex } from '../memory/memex.js';
@@ -29,6 +30,11 @@ const PROVIDERS = {
     class: GeminiProvider,
     envKey: 'GOOGLE_AI_KEY',
     name: 'Google Gemini',
+  },
+  nvidia: {
+    class: NVIDIAProvider,
+    envKey: 'NVIDIA_API_KEY',
+    name: 'NVIDIA (Nemotron)',
   },
   ollama: {
     class: OllamaProvider,
@@ -299,6 +305,7 @@ export function getDefaultProvider() {
 
   // Check environment variables in order of preference
   if (process.env.ANTHROPIC_API_KEY) return 'claude';
+  if (process.env.NVIDIA_API_KEY) return 'nvidia';
   if (process.env.OPENAI_API_KEY) return 'openai';
   if (process.env.GOOGLE_AI_KEY) return 'gemini';
 
@@ -336,7 +343,7 @@ export function getProvider() {
 }
 
 // Core providers
-export { ClaudeSonnet5Provider, OpenAIProvider, GeminiProvider, OllamaProvider, RouterProvider };
+export { ClaudeSonnet5Provider, OpenAIProvider, GeminiProvider, OllamaProvider, NVIDIAProvider, RouterProvider };
 
 // Ecosystem adapters
 export { LangChainAdapter } from './langchain.js';

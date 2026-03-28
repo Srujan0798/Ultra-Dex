@@ -16,8 +16,8 @@ import ora from 'ora';
 import { execSync } from 'child_process';
 
 export async function brainCommand(options) {
-  console.log(chalk.bold.blue('\n🧠 Ultra-Dex Brain Sync\n'));
-  console.log('Synchronizing project context with codebase...\n');
+  logger.log(chalk.bold.blue('\n🧠 Ultra-Dex Brain Sync\n'));
+  logger.log('Synchronizing project context with codebase...\n');
 
   const spinner = ora('Scanning project for context updates...').start();
 
@@ -76,36 +76,36 @@ Setting up the implementation plan.
 
     spinner.succeed('Context synchronized with project state');
 
-    console.log(chalk.green('✅ CONTEXT.md updated with current project information'));
-    console.log(chalk.gray(`  - Files analyzed: ${graphSummary.nodeCount}`));
-    console.log(chalk.gray(`  - Dependencies mapped: ${graphSummary.edgeCount}`));
-    console.log(chalk.gray(`  - Project phases: ${state?.phases?.length || 0}`));
+    logger.log(chalk.green('✅ CONTEXT.md updated with current project information'));
+    logger.log(chalk.gray(`  - Files analyzed: ${graphSummary.nodeCount}`));
+    logger.log(chalk.gray(`  - Dependencies mapped: ${graphSummary.edgeCount}`));
+    logger.log(chalk.gray(`  - Project phases: ${state?.phases?.length || 0}`));
 
     if (options.commit) {
-      console.log(chalk.cyan('\n committing changes...'));
+      logger.log(chalk.cyan('\n committing changes...'));
       try {
         const { execSync } = await import('child_process');
         execSync('git add CONTEXT.md');
         execSync('git commit -m "feat: sync CONTEXT.md with brain"');
-        console.log(chalk.green('✅ Changes committed to git'));
+        logger.log(chalk.green('✅ Changes committed to git'));
       } catch (gitError) {
-        console.log(chalk.yellow('⚠️  Git commit failed (not in git repo or no changes)'));
+        logger.log(chalk.yellow('⚠️  Git commit failed (not in git repo or no changes)'));
       }
     }
 
     if (options.push) {
-      console.log(chalk.cyan(' pushing to remote...'));
+      logger.log(chalk.cyan(' pushing to remote...'));
       try {
         const { execSync } = await import('child_process');
         execSync('git push');
-        console.log(chalk.green('✅ Changes pushed to remote'));
+        logger.log(chalk.green('✅ Changes pushed to remote'));
       } catch (gitError) {
-        console.log(chalk.yellow('⚠️  Git push failed'));
+        logger.log(chalk.yellow('⚠️  Git push failed'));
       }
     }
   } catch (error) {
     spinner.fail('Context sync failed');
-    console.error(chalk.red(`❌ ${error.message}`));
+    logger.error(chalk.red(`❌ ${error.message}`));
     throw error;
   }
 }

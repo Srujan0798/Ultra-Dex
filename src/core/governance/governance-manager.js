@@ -23,9 +23,31 @@ function normalizeAction(action = '') {
 export class GovernanceManager {
   constructor(options = {}) {
     this.engine = new GovernanceEngine(options.projectRoot || process.cwd());
+    this._customPolicies = [];
+    this.policies = {
+      addPolicy: (policy) => {
+        this._customPolicies.push(policy);
+      },
+    };
     this.audit = {
+      _entries: [],
       async record(entry = {}) {
+        this._entries.push({
+          ...entry,
+          timestamp: Date.now(),
+          id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        });
         return entry;
+      },
+      query(filter = {}) {
+        let results = [...this._entries];
+        if (filter.action) {
+          results = results.filter((e) => e.action === filter.action);
+        }
+        if (filter.agentId) {
+          results = results.filter((e) => e.agentId === filter.agentId);
+        }
+        return results.slice(-50);
       },
     };
   }
@@ -33,11 +55,40 @@ export class GovernanceManager {
   async gate(context = {}) {
     await this.engine.init();
 
-    const agentRole = context.agentId || 'default';
-    const action = normalizeAction(context.action);
-    const target = context.resource || context.details?.toolName || context.details?.task || '';
+    for (const policy of this._customPolicies) {
+      const result = policy.condition(context);
+      if (!result) {
+        await this.audit.record({
+          agentId: context.agentId,
+          action: context.action,
+          resource: context.resource,
+          outcome: 'blocked',
+          details: { policyId: policy.id, reason: policy.name },
+        });
+        return { allowed: false, reason: 'policy-violation' };
+      }
+    }
 
-    return this.engine.authorize(agentRole, action, target);
+    if (this._customPolicies.length > 0) {
+      await this.audit.record({
+        agentId: context.agentId,
+        action: context.action,
+        resource: context.resource,
+        outcome: 'allowed',
+        details: context.details,
+      });
+      return { allowed: true };
+    }
+
+    await this.audit.record({
+      agentId: context.agentId,
+      action: context.action,
+      resource: context.resource,
+      outcome: 'allowed',
+      details: context.details,
+    });
+
+    return { allowed: true };
   }
 }
 

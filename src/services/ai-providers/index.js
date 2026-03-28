@@ -19,6 +19,9 @@ export { Gemini25Provider } from './gemini25.js';
 export { Llama4Provider } from './llama4.js';
 export { Grok3Provider } from './grok3.js';
 
+// NVIDIA
+export { nemotronProvider, createNemotronClient, chatWithNemotron, streamWithNemotron, NEMOTRON_MODELS } from './nemotron.js';
+
 const providerMap = {
   openai: () => import('./openai.js').then((m) => m.OpenAIProvider),
   anthropic: () => import('./anthropic.js').then((m) => m.AnthropicProvider),
@@ -36,6 +39,9 @@ const providerMap = {
   'gemini-2.5': () => import('./gemini25.js').then((m) => m.Gemini25Provider),
   llama4: () => import('./llama4.js').then((m) => m.Llama4Provider),
   grok3: () => import('./grok3.js').then((m) => m.Grok3Provider),
+  // NVIDIA
+  nvidia: () => import('./nemotron.js').then((m) => m.nemotronProvider),
+  nemotron: () => import('./nemotron.js').then((m) => m.nemotronProvider),
 };
 
 export function listProviders() {

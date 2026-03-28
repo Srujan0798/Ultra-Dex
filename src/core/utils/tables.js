@@ -146,7 +146,7 @@ export function showAgentsTable(agents) {
     a.status === 'ready' ? chalk.greenBright('● READY') : chalk.yellowBright('○ PENDING'),
     chalk.gray(Array.isArray(a.capabilities) ? a.capabilities.slice(0, 2).join(', ') : 'N/A'),
   ]);
-  console.log(createStyledTable(headers, rows, { style: 'HIGHLIGHT' }));
+  logger.log(createStyledTable(headers, rows, { style: 'HIGHLIGHT' }));
 }
 
 export function showCommandsTable(commands) {
@@ -156,7 +156,7 @@ export function showCommandsTable(commands) {
     chalk.dim(c.description),
     chalk.magenta(c.category || 'General'),
   ]);
-  console.log(createStyledTable(headers, rows, { style: 'MINIMAL' }));
+  logger.log(createStyledTable(headers, rows, { style: 'MINIMAL' }));
 }
 
 export function showStatusTable(statusData) {
@@ -166,12 +166,12 @@ export function showStatusTable(statusData) {
     data.status === 'healthy' ? chalk.greenBright('● HEALTHY') : chalk.redBright('■ ERROR'),
     chalk.dim(data.details || 'N/A'),
   ]);
-  console.log(createStyledTable(headers, rows, { style: 'BORDERED' }));
+  logger.log(createStyledTable(headers, rows, { style: 'BORDERED' }));
 }
 
 export function showDataTable(data, title = 'Data Table') {
   if (!data || data.length === 0) {
-    console.log(chalk.yellow('No data to display'));
+    logger.log(chalk.yellow('No data to display'));
     return;
   }
 
@@ -182,8 +182,8 @@ export function showDataTable(data, title = 'Data Table') {
 
   const rows = data.map((item) => Object.values(item).map((value) => String(value)));
 
-  console.log(chalk.bold.magenta(`\n📊 ${title}\n`));
-  console.log(
+  logger.log(chalk.bold.magenta(`\n📊 ${title}\n`));
+  logger.log(
     createStyledTable(headers, rows, {
       style: 'BORDERED',
       colWidths: headers.map(() => 20), // Adjust column widths as needed
@@ -199,7 +199,7 @@ export function showDataTable(data, title = 'Data Table') {
 function handleModuleError(error, context = 'tables') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

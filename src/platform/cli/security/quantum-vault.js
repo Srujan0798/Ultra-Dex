@@ -89,7 +89,7 @@ export class QuantumVault {
         const newKey = crypto.randomBytes(32);
         // 2. In a real DB, fetch all secrets, decrypt with old key, encrypt with new key.
         // 3. Update storage.
-        console.log('Key rotation logic would execute here. New key generated.');
+        logger.log('Key rotation logic would execute here. New key generated.');
         return newKey;
     }
 }
@@ -106,7 +106,7 @@ export default vault;
  */
 function handleError(error) {
   try {
-    console.error('[quantum-vault]', error instanceof Error ? error.message : String(error));
+    logger.error('[quantum-vault]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

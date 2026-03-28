@@ -51,7 +51,7 @@ export function registerCommands(program) {
     .command('${name}')
     .description('A custom plugin command')
     .action(async (options) => {
-      console.log('Plugin ${name} executed');
+      logger.log('Plugin ${name} executed');
     });
 }
 
@@ -95,8 +95,8 @@ export function registerCommands(program) {
     .description('Execute ${name} functionality')
     .option('--option <value>', 'An example option')
     .action(async (task, options) => {
-      console.log('Executing ${name} for task:', task);
-      console.log('Options:', options);
+      logger.log('Executing ${name} for task:', task);
+      logger.log('Options:', options);
     });
 }
 

@@ -1,8 +1,9 @@
 # Amp Code CLI: Official Deep Feature Playbook
 
 **Document Status:** 2026 Official Documentation Verified  
-**Topic:** Amp CLI by Sourcegraph (Multi-Model Agentic Coding Agent)  
-**Objective:** Extract maximum autonomous coding performance from the `amp` binary.
+**Source:** Sourcegraph (ampcode.com)  
+**Tool:** Amp CLI by Sourcegraph  
+**Objective:** Extract maximum autonomous coding performance from the `amp` binary using unconstrained token generation.
 
 ---
 
@@ -74,9 +75,19 @@ amp --mode deep "Analyze the race condition in scheduler.js"
 
 ---
 
-## 7. Swarm Role Assignment
+## 7. Ultra-Dex Swarm Role & Dispatch
 
 * **Role:** Autonomous Deep-Reasoning Builder
-* **Best For:** Complex multi-file implementations, deep architectural analysis (`deep` mode), and rapid boilerplate generation (`rush` mode).
-* **Windows:** 1–3 (CLI supports parallelized lightweight tasks natively)
-* **$0 Strategy:** Free tier available. The CLI parallelizes lightweight tasks efficiently — use `rush` mode for bulk operations to save quota.
+* **Best For:** Complex multi-file implementations, deep architectural analysis, and rapid boilerplate.
+* **Windows:** 1–3 tabs
+* **$0 Strategy:** Use `rush` mode for bulk operations to save quota.
+
+### Dispatch Templates
+
+```bash
+# Terminal (Complex Blueprint Translation)
+amp --mode deep "Read the architecture specs in /specs and implement the core orchestrator loop"
+
+# Terminal (Rapid Generation)
+amp --mode rush "Generate unit tests globally for all files ending in -service.js"
+```

@@ -90,12 +90,12 @@ User Query: ${query}`;
   const response = await runAgentLoop(persona.agent, task, providerFactory, context);
   
   // Formatting output
-  console.log('');
-  console.log(chalk.bold(`${persona.title} Response:`));
-  console.log(chalk.gray('─'.repeat(50)));
-  console.log(response);
-  console.log(chalk.gray('─'.repeat(50)));
-  console.log('');
+  logger.log('');
+  logger.log(chalk.bold(`${persona.title} Response:`));
+  logger.log(chalk.gray('─'.repeat(50)));
+  logger.log(response);
+  logger.log(chalk.gray('─'.repeat(50)));
+  logger.log('');
 }
 
 export function registerChatCommand(program) {

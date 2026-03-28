@@ -45,7 +45,7 @@ class CommandHistory {
 
       await fs.writeFile(HISTORY_FILE, JSON.stringify(this.history, null, 2));
     } catch (error) {
-      console.error('Failed to save history:', error.message);
+      logger.error('Failed to save history:', error.message);
     }
   }
 
@@ -105,19 +105,19 @@ class CommandHistory {
     const commandLine = `ultra-dex ${entry.command} ${entry.args.join(' ')}`;
 
     if (dryRun) {
-      console.log(chalk.cyan('Would replay:'));
-      console.log(chalk.white(commandLine));
-      console.log(chalk.gray(`  From: ${entry.timestamp}`));
-      console.log(chalk.gray(`  In: ${entry.cwd}`));
+      logger.log(chalk.cyan('Would replay:'));
+      logger.log(chalk.white(commandLine));
+      logger.log(chalk.gray(`  From: ${entry.timestamp}`));
+      logger.log(chalk.gray(`  In: ${entry.cwd}`));
       return;
     }
 
-    console.log(chalk.cyan('Replaying:'), commandLine);
-    console.log(chalk.gray(`  Original: ${entry.timestamp}`));
+    logger.log(chalk.cyan('Replaying:'), commandLine);
+    logger.log(chalk.gray(`  Original: ${entry.timestamp}`));
 
     // Change to original directory if different
     if (entry.cwd !== process.cwd()) {
-      console.log(chalk.yellow(`  Changing to: ${entry.cwd}`));
+      logger.log(chalk.yellow(`  Changing to: ${entry.cwd}`));
       process.chdir(entry.cwd);
     }
 
@@ -202,7 +202,7 @@ export async function registerHistoryCommand(program) {
       const entries = await history.list(parseInt(options.limit), filter);
 
       if (entries.length === 0) {
-        console.log(chalk.yellow('No history entries found'));
+        logger.log(chalk.yellow('No history entries found'));
         return;
       }
 
@@ -231,8 +231,8 @@ export async function registerHistoryCommand(program) {
         ]);
       });
 
-      console.log(table.toString());
-      console.log(chalk.gray(`\nTotal: ${entries.length} entries`));
+      logger.log(table.toString());
+      logger.log(chalk.gray(`\nTotal: ${entries.length} entries`));
     });
 
   historyCmd
@@ -243,7 +243,7 @@ export async function registerHistoryCommand(program) {
       try {
         await history.replay(id, options.dryRun);
       } catch (error) {
-        console.error(chalk.red('Replay failed:'), error.message);
+        logger.error(chalk.red('Replay failed:'), error.message);
       }
     });
 
@@ -254,17 +254,17 @@ export async function registerHistoryCommand(program) {
       const results = await history.search(query);
 
       if (results.length === 0) {
-        console.log(chalk.yellow(`No results for "${query}"`));
+        logger.log(chalk.yellow(`No results for "${query}"`));
         return;
       }
 
-      console.log(chalk.cyan(`\nFound ${results.length} results:\n`));
+      logger.log(chalk.cyan(`\nFound ${results.length} results:\n`));
 
       results.forEach((e) => {
-        console.log(
+        logger.log(
           chalk.white(`${e.id.substring(0, 8)} [${new Date(e.timestamp).toLocaleString()}]`)
         );
-        console.log(chalk.gray(`  ultra-dex ${e.command} ${e.args.join(' ')}`));
+        logger.log(chalk.gray(`  ultra-dex ${e.command} ${e.args.join(' ')}`));
       });
     });
 
@@ -274,23 +274,23 @@ export async function registerHistoryCommand(program) {
     .action(async () => {
       const stats = await history.stats();
 
-      console.log(chalk.cyan.bold('\n📊 Command History Statistics\n'));
-      console.log(`Total commands: ${chalk.white(stats.total)}`);
-      console.log(`Successful: ${chalk.green(stats.successful)}`);
-      console.log(`Failed: ${chalk.red(stats.failed)}`);
+      logger.log(chalk.cyan.bold('\n📊 Command History Statistics\n'));
+      logger.log(`Total commands: ${chalk.white(stats.total)}`);
+      logger.log(`Successful: ${chalk.green(stats.successful)}`);
+      logger.log(`Failed: ${chalk.red(stats.failed)}`);
 
       if (Object.keys(stats.byCommand).length > 0) {
-        console.log(chalk.cyan('\nCommands by frequency:'));
+        logger.log(chalk.cyan('\nCommands by frequency:'));
         const sorted = Object.entries(stats.byCommand)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 10);
 
         sorted.forEach(([cmd, count]) => {
-          console.log(`  ${chalk.white(cmd.padEnd(15))} ${chalk.gray(count)}`);
+          logger.log(`  ${chalk.white(cmd.padEnd(15))} ${chalk.gray(count)}`);
         });
       }
 
-      console.log();
+      logger.log();
     });
 
   historyCmd
@@ -299,12 +299,12 @@ export async function registerHistoryCommand(program) {
     .option('--force', 'Skip confirmation')
     .action(async (options) => {
       if (!options.force) {
-        console.log(chalk.yellow('⚠️  This will clear all history'));
-        console.log(chalk.gray('Use --force to confirm\n'));
+        logger.log(chalk.yellow('⚠️  This will clear all history'));
+        logger.log(chalk.gray('Use --force to confirm\n'));
         return;
       }
 
       await history.clear();
-      console.log(chalk.green('✅ History cleared'));
+      logger.log(chalk.green('✅ History cleared'));
     });
 }

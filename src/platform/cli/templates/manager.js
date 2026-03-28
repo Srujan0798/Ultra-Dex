@@ -485,7 +485,7 @@ export function registerTemplateCommand(program) {
               )
             );
           }
-          console.log('');
+          logger.log('');
         }
       } catch (error) {
         printError(chalk.red(`Template listing failed: ${error.message}`));
@@ -514,7 +514,7 @@ export function registerTemplateCommand(program) {
           printInfo(
             chalk.gray(`  Installed: ${new Date(template.installedAt).toLocaleDateString()}`)
           );
-          console.log('');
+          logger.log('');
         }
       } catch (error) {
         printError(chalk.red(`Installed templates listing failed: ${error.message}`));
@@ -542,7 +542,7 @@ export function registerTemplateCommand(program) {
         if (details.dependencies && details.dependencies.length > 0) {
           printInfo(chalk.gray(`Dependencies: ${details.dependencies.join(', ')}`));
         }
-        console.log('');
+        logger.log('');
       } catch (error) {
         printError(chalk.red(`Template info retrieval failed: ${error.message}`));
       }

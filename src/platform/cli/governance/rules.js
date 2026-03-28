@@ -227,7 +227,7 @@ export const DESTRUCTIVE_COMMAND_PATTERNS = [
  */
 function handleError(error) {
   try {
-    console.error('[rules]', error instanceof Error ? error.message : String(error));
+    logger.error('[rules]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

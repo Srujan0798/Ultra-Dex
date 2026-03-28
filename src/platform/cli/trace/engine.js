@@ -21,7 +21,7 @@ export default Trace;
  */
 function handleError(error) {
   try {
-    console.error('[engine]', error instanceof Error ? error.message : String(error));
+    logger.error('[engine]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

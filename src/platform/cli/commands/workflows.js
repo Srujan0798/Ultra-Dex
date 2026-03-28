@@ -261,7 +261,7 @@ export function visualizeWorkflow(workflow) {
       if (!isLast) printInfo(`  ${chalk.gray('│')}`);
     });
   }
-  console.log('');
+  logger.log('');
 }
 
 /**

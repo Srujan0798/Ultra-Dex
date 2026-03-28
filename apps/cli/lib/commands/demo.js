@@ -41,7 +41,7 @@ const DEMO_SCENARIOS = [
     id: 'debugging',
     title: 'Bug Detection',
     description: 'Find issues in sample code',
-    task: 'Find and fix issues in this code: let x = 5; if (x = 5) { console.log("Equal"); }',
+    task: 'Find and fix issues in this code: let x = 5; if (x = 5) { logger.log("Equal"); }',
     duration: '2 min',
     difficulty: 'Intermediate',
     expected: 'Bug identification and fix'
@@ -107,7 +107,7 @@ export class InteractiveDemo {
     interactiveCLI.showWelcome();
     interactiveCLI.showTitle('Ultra-Dex Demo Mode');
     
-    console.log(colors.info('Experience Ultra-Dex capabilities without any setup!\n'));
+    logger.log(colors.info('Experience Ultra-Dex capabilities without any setup!\n'));
 
     if (options.list) {
       await this.listScenarios();
@@ -117,7 +117,7 @@ export class InteractiveDemo {
     if (options.scenario) {
       const scenario = this.scenarios.find(s => s.id === options.scenario);
       if (!scenario) {
-        console.log(colors.error(`Demo scenario '${options.scenario}' not found.`));
+        logger.log(colors.error(`Demo scenario '${options.scenario}' not found.`));
         await this.listScenarios();
         return;
       }
@@ -140,7 +140,7 @@ export class InteractiveDemo {
    * Show demo overview
    */
   async showOverview() {
-    console.log(colors.accent.bold('Available Demo Scenarios:\n'));
+    logger.log(colors.accent.bold('Available Demo Scenarios:\n'));
     
     // Create a table of scenarios
     const headers = ['ID', 'Title', 'Difficulty', 'Duration', 'Description'];
@@ -152,17 +152,17 @@ export class InteractiveDemo {
       colors.subtle(scenario.description)
     ]);
 
-    console.log(createTable(headers, rows));
+    logger.log(createTable(headers, rows));
     
-    console.log('\n' + colors.info('Run a specific demo: ultra-dex demo --scenario <id>'));
-    console.log(colors.info('List all demos: ultra-dex demo --list'));
+    logger.log('\n' + colors.info('Run a specific demo: ultra-dex demo --scenario <id>'));
+    logger.log(colors.info('List all demos: ultra-dex demo --list'));
   }
 
   /**
    * List all scenarios
    */
   async listScenarios() {
-    console.log(colors.accent.bold('Ultra-Dex Demo Scenarios:\n'));
+    logger.log(colors.accent.bold('Ultra-Dex Demo Scenarios:\n'));
     
     const headers = ['ID', 'Title', 'Difficulty', 'Duration', 'Expected Result'];
     const rows = this.scenarios.map(scenario => [
@@ -173,7 +173,7 @@ export class InteractiveDemo {
       colors.subtle(scenario.expected)
     ]);
 
-    console.log(createTable(headers, rows));
+    logger.log(createTable(headers, rows));
   }
 
   /**
@@ -191,7 +191,7 @@ export class InteractiveDemo {
       const selected = await interactiveCLI.promptList('Choose a demo scenario:', choices);
       return selected;
     } catch (error) {
-      console.log(colors.error('Demo selection cancelled.'));
+      logger.log(colors.error('Demo selection cancelled.'));
       return null;
     }
   }
@@ -201,8 +201,8 @@ export class InteractiveDemo {
    * @param {object} scenario - Scenario to run
    */
   async runScenario(scenario) {
-    console.log('\n' + colors.accent.bold(`🚀 Running Demo: ${scenario.title}`));
-    console.log(colors.subtle(scenario.description) + '\n');
+    logger.log('\n' + colors.accent.bold(`🚀 Running Demo: ${scenario.title}`));
+    logger.log(colors.subtle(scenario.description) + '\n');
 
     // Show scenario details
     const details = [
@@ -212,7 +212,7 @@ export class InteractiveDemo {
       { key: 'Task', value: scenario.task }
     ];
 
-    console.log(createSummaryCard('Scenario Details', details));
+    logger.log(createSummaryCard('Scenario Details', details));
 
     // Ask for confirmation
     const confirmed = await interactiveCLI.promptConfirm(
@@ -221,7 +221,7 @@ export class InteractiveDemo {
     );
 
     if (!confirmed) {
-      console.log(colors.info('Demo cancelled.'));
+      logger.log(colors.info('Demo cancelled.'));
       return;
     }
 
@@ -248,7 +248,7 @@ export class InteractiveDemo {
     spinner.succeed('Demo environment ready!');
 
     // Show execution steps
-    console.log('\n' + colors.info('Executing task: ') + colors.bold(scenario.task) + '\n');
+    logger.log('\n' + colors.info('Executing task: ') + colors.bold(scenario.task) + '\n');
 
     // Simulate progress
     const steps = [
@@ -262,7 +262,7 @@ export class InteractiveDemo {
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
       const progress = createProgressBar(i + 1, steps.length, `Step ${i + 1}/${steps.length}: ${step}`);
-      console.log(progress);
+      logger.log(progress);
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
@@ -291,7 +291,7 @@ export class InteractiveDemo {
    * @param {object} scenario - Scenario that was run
    */
   async showDemoResults(scenario) {
-    console.log('\n' + colors.success.bold('✅ Demo Results:\n'));
+    logger.log('\n' + colors.success.bold('✅ Demo Results:\n'));
 
     // Get demo output based on scenario
     let output;
@@ -307,8 +307,8 @@ export class InteractiveDemo {
     }
 
     // Show the output in a formatted way
-    console.log(colors.bold('Generated Output:'));
-    console.log(colors.subtle(output) + '\n');
+    logger.log(colors.bold('Generated Output:'));
+    logger.log(colors.subtle(output) + '\n');
   }
 
   /**
@@ -316,7 +316,7 @@ export class InteractiveDemo {
    * @param {object} scenario - Scenario that was run
    */
   async showDemoMetrics(scenario) {
-    console.log(colors.accent.bold('📊 Performance Metrics:\n'));
+    logger.log(colors.accent.bold('📊 Performance Metrics:\n'));
 
     // Sample metrics (in a real implementation, these would come from the actual execution)
     const metrics = {
@@ -334,19 +334,19 @@ export class InteractiveDemo {
       { key: 'Agents Used', value: metrics.agentsUsed.join(', ') }
     ];
 
-    console.log(createSummaryCard('Execution Metrics', metricItems));
+    logger.log(createSummaryCard('Execution Metrics', metricItems));
 
     // Show confidence gauge
-    console.log(formatChartTitle('AI Confidence'));
-    console.log(createGauge(Math.round(metrics.confidence * 100), 100, 'Overall Confidence', { showValues: true }));
+    logger.log(formatChartTitle('AI Confidence'));
+    logger.log(createGauge(Math.round(metrics.confidence * 100), 100, 'Overall Confidence', { showValues: true }));
 
     // Show token usage chart
-    console.log(formatChartTitle('Resource Usage'));
+    logger.log(formatChartTitle('Resource Usage'));
     const resourceData = [
       { label: 'Tokens', value: metrics.tokens },
       { label: 'Time (ms)', value: metrics.time / 10 }
     ];
-    console.log(createBarChart(resourceData, { width: 30 }));
+    logger.log(createBarChart(resourceData, { width: 30 }));
   }
 
   /**
@@ -371,7 +371,7 @@ export class InteractiveDemo {
    * Show demo statistics
    */
   async showStats() {
-    console.log(colors.accent.bold('📈 Demo Statistics:\n'));
+    logger.log(colors.accent.bold('📈 Demo Statistics:\n'));
 
     const stats = [
       { status: 'success', message: 'Hello World Demo', details: 'Simple greeting generation' },
@@ -380,7 +380,7 @@ export class InteractiveDemo {
       { status: 'success', message: 'Architecture Demo', details: 'Microservices planning' }
     ];
 
-    console.log(createStatusPanel(stats));
+    logger.log(createStatusPanel(stats));
   }
 }
 

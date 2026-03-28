@@ -129,7 +129,7 @@ class AgentAutopsy extends EventEmitter {
     const recentFailures = agentFailures.filter(f => new Date(f.timestamp) > cutoffDate);
     this.failureLog.set(agentId, recentFailures);
     
-    console.log(`💀 Agent ${agentId} failure logged: ${error.message}`);
+    logger.log(`💀 Agent ${agentId} failure logged: ${error.message}`);
     this.emit('failure:logged', { agentId, failure });
     
     // Check if we need to take action based on failure count
@@ -214,7 +214,7 @@ class AgentAutopsy extends EventEmitter {
     });
 
     if (recentFailures.length >= this.options.maxFailureCount) {
-      console.log(`🚨 Agent ${agentId} showing concerning failure pattern (${recentFailures.length} recent failures)`);
+      logger.log(`🚨 Agent ${agentId} showing concerning failure pattern (${recentFailures.length} recent failures)`);
       
       // Mark agent as unstable
       this.agentStates.set(agentId, {
@@ -237,21 +237,21 @@ class AgentAutopsy extends EventEmitter {
   async attemptRecoveryForAgent(agentId) {
     const agentState = this.agentStates.get(agentId);
     if (!agentState) {
-      console.log(`No state found for agent ${agentId}`);
+      logger.log(`No state found for agent ${agentId}`);
       return { success: false, reason: 'no_state_found' };
     }
 
     const lastFailure = agentState.lastFailure;
     const analysis = lastFailure.analysis;
 
-    console.log(`Attempting recovery for agent ${agentId} (type: ${analysis.type})`);
+    logger.log(`Attempting recovery for agent ${agentId} (type: ${analysis.type})`);
 
     // Try different recovery strategies based on failure analysis
     for (const strategy of this.options.recoveryStrategies) {
       const recoveryResult = await this.executeRecoveryStrategy(strategy, agentId, analysis);
       
       if (recoveryResult.success) {
-        console.log(`✅ Recovery successful for agent ${agentId} using strategy: ${strategy}`);
+        logger.log(`✅ Recovery successful for agent ${agentId} using strategy: ${strategy}`);
         
         // Update agent state
         this.agentStates.set(agentId, {
@@ -277,11 +277,11 @@ class AgentAutopsy extends EventEmitter {
         
         return recoveryResult;
       } else {
-        console.log(`Recovery strategy ${strategy} failed for agent ${agentId}:`, recoveryResult.error);
+        logger.log(`Recovery strategy ${strategy} failed for agent ${agentId}:`, recoveryResult.error);
       }
     }
 
-    console.log(`❌ All recovery strategies failed for agent ${agentId}`);
+    logger.log(`❌ All recovery strategies failed for agent ${agentId}`);
     return { success: false, reason: 'all_strategies_failed' };
   }
 
@@ -316,7 +316,7 @@ class AgentAutopsy extends EventEmitter {
    */
   async restartAgent(agentId) {
     try {
-      console.log(`🔄 Restarting agent: ${agentId}`);
+      logger.log(`🔄 Restarting agent: ${agentId}`);
       
       // In a real implementation, this would restart the agent process
       // For now, we'll just update the state
@@ -356,7 +356,7 @@ class AgentAutopsy extends EventEmitter {
    */
   async retryAgent(agentId, analysis) {
     try {
-      console.log(`🔄 Retrying agent: ${agentId}`);
+      logger.log(`🔄 Retrying agent: ${agentId}`);
       
       // Update agent state
       this.agentStates.set(agentId, {
@@ -367,10 +367,10 @@ class AgentAutopsy extends EventEmitter {
       // Apply any specific retry logic based on analysis
       if (analysis.type === 'timeout') {
         // For timeout errors, we might want to increase timeout
-        console.log(`Increasing timeout for agent ${agentId}`);
+        logger.log(`Increasing timeout for agent ${agentId}`);
       } else if (analysis.type === 'resource_exhaustion') {
         // For resource exhaustion, we might want to reduce workload
-        console.log(`Reducing workload for agent ${agentId}`);
+        logger.log(`Reducing workload for agent ${agentId}`);
       }
       
       // Simulate retry process
@@ -404,7 +404,7 @@ class AgentAutopsy extends EventEmitter {
    */
   async fallbackAgent(agentId, analysis) {
     try {
-      console.log(`🔄 Falling back from agent: ${agentId}`);
+      logger.log(`🔄 Falling back from agent: ${agentId}`);
       
       // Find an alternative agent
       const alternativeAgent = await this.findAlternativeAgent(agentId, analysis);
@@ -417,7 +417,7 @@ class AgentAutopsy extends EventEmitter {
         };
       }
       
-      console.log(`Using alternative agent: ${alternativeAgent}`);
+      logger.log(`Using alternative agent: ${alternativeAgent}`);
       
       // Update agent state
       this.agentStates.set(agentId, {
@@ -448,7 +448,7 @@ class AgentAutopsy extends EventEmitter {
    */
   async throttleAgent(agentId) {
     try {
-      console.log(`⏳ Throttling agent: ${agentId}`);
+      logger.log(`⏳ Throttling agent: ${agentId}`);
       
       // Update agent state to throttled
       this.agentStates.set(agentId, {
@@ -478,7 +478,7 @@ class AgentAutopsy extends EventEmitter {
    */
   async resetAgent(agentId) {
     try {
-      console.log(`🔄 Resetting agent: ${agentId}`);
+      logger.log(`🔄 Resetting agent: ${agentId}`);
       
       // Reset agent state completely
       this.agentStates.set(agentId, {
@@ -523,7 +523,7 @@ class AgentAutopsy extends EventEmitter {
   async clearAgentState(agentId) {
     // In a real implementation, this would clear any cached state
     // associated with the agent
-    console.log(`🧹 Cleared state for agent: ${agentId}`);
+    logger.log(`🧹 Cleared state for agent: ${agentId}`);
   }
 
   /**
@@ -703,7 +703,7 @@ class AgentAutopsy extends EventEmitter {
     this.recoveryHistory.clear();
     this.autopsyReports = [];
     
-    console.log('🧹 All agent autopsy logs cleared');
+    logger.log('🧹 All agent autopsy logs cleared');
   }
 }
 

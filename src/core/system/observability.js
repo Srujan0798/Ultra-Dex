@@ -240,7 +240,7 @@ class ObservabilitySystem extends EventEmitter {
         error: '\x1b[31m',
       };
 
-      console.log(
+      logger.log(
         `${colors[level] || ''}[${entry.timestamp}] ${level.toUpperCase()}: ${message}\x1b[0m`
       );
     }

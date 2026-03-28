@@ -25,7 +25,7 @@ export class WebIDE {
     this.app.use('/api', this.createAPIRoutes());
     
     this.server = this.app.listen(this.port, () => {
-      console.log(`Web IDE running on http://localhost:${this.port}`);
+      logger.log(`Web IDE running on http://localhost:${this.port}`);
     });
     
     this.wss = new WebSocketServer({ server: this.server });
@@ -95,7 +95,7 @@ export class WebIDE {
 
   setupSocketHandlers() {
     this.wss.on('connection', (ws) => {
-      console.log('IDE client connected');
+      logger.log('IDE client connected');
       
       ws.on('message', async (message) => {
         try {
@@ -130,7 +130,7 @@ export class WebIDE {
             }
           }
         } catch (e) {
-          console.error('Failed to parse message', e);
+          logger.error('Failed to parse message', e);
         }
       });
     });

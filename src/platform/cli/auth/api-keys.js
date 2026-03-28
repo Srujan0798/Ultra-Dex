@@ -210,10 +210,10 @@ export async function manageAPIKeys() {
 
       printSuccess(chalk.green('\n✅ API Key created successfully!'));
       printInfo(chalk.yellow('\n⚠️  Copy your API key now - it will not be shown again!\n'));
-      console.log(chalk.cyan(key.key));
-      console.log(chalk.gray(`\nKey ID: ${key.id}`));
-      console.log(chalk.gray(`Name: ${key.name}`));
-      console.log(chalk.gray(`Permissions: ${key.permissions?.join(', ') || 'read'}`));
+      logger.log(chalk.cyan(key.key));
+      logger.log(chalk.gray(`\nKey ID: ${key.id}`));
+      logger.log(chalk.gray(`Name: ${key.name}`));
+      logger.log(chalk.gray(`Permissions: ${key.permissions?.join(', ') || 'read'}`));
       break;
     }
 
@@ -225,12 +225,12 @@ export async function manageAPIKeys() {
         printInfo(chalk.white(`\n📋 API Keys (${keys.length} total):\n`));
         keys.forEach((key) => {
           const status = key.enabled ? chalk.green('✓') : chalk.red('✗');
-          console.log(`${status} ${key.name} (${key.prefix}...)`);
-          console.log(chalk.gray(`   ID: ${key.id}`));
-          console.log(chalk.gray(`   Created: ${key.createdAt}`));
-          console.log(chalk.gray(`   Last used: ${key.lastUsed || 'Never'}`));
-          console.log(chalk.gray(`   Usage count: ${key.usageCount}`));
-          console.log('');
+          logger.log(`${status} ${key.name} (${key.prefix}...)`);
+          logger.log(chalk.gray(`   ID: ${key.id}`));
+          logger.log(chalk.gray(`   Created: ${key.createdAt}`));
+          logger.log(chalk.gray(`   Last used: ${key.lastUsed || 'Never'}`));
+          logger.log(chalk.gray(`   Usage count: ${key.usageCount}`));
+          logger.log('');
         });
       }
       break;
@@ -295,7 +295,7 @@ async function safeExecute(fn, context = 'api-keys') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

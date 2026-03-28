@@ -19,7 +19,7 @@ export function registerOnboardCommand(program) {
         const onboarding = new OnboardingSystem();
         await onboarding.start();
       } catch (error) {
-        console.error(chalk.red('❌ Onboarding failed:'), error.message);
+        logger.error(chalk.red('❌ Onboarding failed:'), error.message);
         process.exit(1);
       }
     });

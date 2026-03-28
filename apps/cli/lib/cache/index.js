@@ -9,8 +9,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { createHash } from 'crypto';
-import pkg from 'lru-cache';
-const { LRUCache } = pkg;
+import { LRUCache } from 'lru-cache';
 
 class UltraDexCache {
   constructor(options = {}) {

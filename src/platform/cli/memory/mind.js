@@ -14,7 +14,7 @@ export class ProjectMind {
   }
 
   async query(text) {
-    console.log(`[Mind] Recalling context for: "${text}"`);
+    logger.log(`[Mind] Recalling context for: "${text}"`);
     // Placeholder for actual vector search
     // In production, this would call ChromaDB/Pinecone
     return {

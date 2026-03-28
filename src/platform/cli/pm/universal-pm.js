@@ -801,7 +801,7 @@ export function registerPackageManagerCommand(program) {
       try {
         const result = await packageManager.audit(options);
         if (options.json) {
-          console.log(JSON.stringify(result, null, 2));
+          logger.log(JSON.stringify(result, null, 2));
         }
       } catch (error) {
         printError(chalk.red(`Audit failed: ${error.message}`));
@@ -817,9 +817,9 @@ export function registerPackageManagerCommand(program) {
       try {
         const result = await packageManager.checkOutdated(options);
         if (options.json) {
-          console.log(JSON.stringify(result, null, 2));
+          logger.log(JSON.stringify(result, null, 2));
         } else {
-          console.log(result);
+          logger.log(result);
         }
       } catch (error) {
         printError(chalk.red(`Check outdated failed: ${error.message}`));

@@ -45,8 +45,8 @@ class Renderer {
   ╚██████╔╝███████╗██║   ██║  ██║██║  ██║
    ╚═════╝ ╚══════╝╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝`;
 
-    console.log(ultraGradient(logo));
-    console.log('');
+    logger.log(ultraGradient(logo));
+    logger.log('');
     this.divider();
   }
 
@@ -54,12 +54,12 @@ class Renderer {
    * Render a section divider
    */
   divider() {
-    console.log(
+    logger.log(
       theme.dim(
         '  ' + '─'.repeat(process.stdout.columns ? Math.min(60, process.stdout.columns - 4) : 60)
       )
     );
-    console.log('');
+    logger.log('');
   }
 
   /**
@@ -70,7 +70,7 @@ class Renderer {
   async text(text, stream = true) {
     if (IS_TEST) stream = false;
     if (!stream) {
-      console.log('  ' + this.formatMarkdown(text));
+      logger.log('  ' + this.formatMarkdown(text));
       return;
     }
 
@@ -79,7 +79,7 @@ class Renderer {
       const formatted = this.formatMarkdown(line);
       await this.typeLine('  ' + formatted);
     }
-    console.log('');
+    logger.log('');
   }
 
   /**
@@ -89,7 +89,7 @@ class Renderer {
     // If line contains ANSI codes, typing it char-by-char is hard.
     // For simple text, we type. For formatted, we dump the line with a small delay.
     if (line.includes('\x1b')) {
-      console.log(line);
+      logger.log(line);
       await this.sleep(CONFIG.typingSpeed * 5);
     } else {
       for (const char of line) {
@@ -106,7 +106,7 @@ class Renderer {
    */
   startSpinner(message) {
     if (IS_TEST) {
-      console.log(theme.dim(message));
+      logger.log(theme.dim(message));
       return;
     }
     if (this.spinner) this.spinner.stop();
@@ -126,7 +126,7 @@ class Renderer {
       this.spinner.succeed(theme.success(message));
       this.spinner = null;
     } else {
-      console.log(theme.success('  ✓ ' + message));
+      logger.log(theme.success('  ✓ ' + message));
     }
   }
 
@@ -139,7 +139,7 @@ class Renderer {
       this.spinner.fail(theme.error(message));
       this.spinner = null;
     } else {
-      console.log(theme.error('  ✖ ' + message));
+      logger.log(theme.error('  ✖ ' + message));
     }
   }
 
@@ -154,7 +154,7 @@ class Renderer {
     if (style === 'error') borderColor = '#dc2626'; // Red
     if (style === 'success') borderColor = '#22c55e'; // Green
 
-    console.log(
+    logger.log(
       boxen(content, {
         padding: 1,
         margin: 1,
@@ -174,10 +174,10 @@ class Renderer {
    */
   async thinking(header, steps) {
     if (IS_TEST) {
-      console.log(theme.dim(header));
+      logger.log(theme.dim(header));
       return;
     }
-    console.log(theme.dim('╭─ ') + theme.accent('⚡ ' + header));
+    logger.log(theme.dim('╭─ ') + theme.accent('⚡ ' + header));
 
     for (const step of steps) {
       const spinner = ora({
@@ -196,8 +196,8 @@ class Renderer {
       });
     }
 
-    console.log(theme.dim('╰─ ') + theme.success('Done'));
-    console.log('');
+    logger.log(theme.dim('╰─ ') + theme.success('Done'));
+    logger.log('');
   }
 
   /**
@@ -239,7 +239,7 @@ async function safeExecute(fn, context = 'renderer') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

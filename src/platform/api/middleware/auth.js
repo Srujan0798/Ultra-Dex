@@ -114,7 +114,7 @@ class RBACMiddleware {
 
         next();
       } catch (error) {
-        console.error('Authorization error:', error);
+        logger.error('Authorization error:', error);
         return res.status(500).json({
           error: 'Internal server error during authorization'
         });

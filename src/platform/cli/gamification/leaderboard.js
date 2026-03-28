@@ -352,7 +352,7 @@ export function registerLeaderboardCommand(program) {
       try {
         await leaderboardSystem.initialize();
         const board = leaderboardSystem.renderASCIIBoard(parseInt(options.limit));
-        console.log(board);
+        logger.log(board);
       } catch (error) {
         printError(chalk.red(`Leaderboard display failed: ${error.message}`));
       }
@@ -367,7 +367,7 @@ export function registerLeaderboardCommand(program) {
       try {
         await leaderboardSystem.initialize();
         const board = leaderboardSystem.renderChallengeBoard(challenge, parseInt(options.limit));
-        console.log(board);
+        logger.log(board);
       } catch (error) {
         printError(chalk.red(`Challenge leaderboard failed: ${error.message}`));
       }

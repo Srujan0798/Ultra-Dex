@@ -5,7 +5,7 @@
  * Provides comprehensive error handling, recovery, and circuit breaker patterns
  */
 
-import { monitoring } from './monitoring.js';
+import { logger } from './logger.js';
 
 // Circuit breaker states
 const CIRCUIT_STATES = {
@@ -23,6 +23,15 @@ const RECOVERY_STRATEGIES = {
   DEGRADED_MODE: 'degraded-mode',
 };
 
+function emitRecoveryEvent(type, level, message, payload = {}) {
+  void logger.event(type, payload, {
+    level,
+    message,
+    console: false,
+    source: 'error-recovery',
+  });
+}
+
 class CircuitBreaker {
   constructor(options = {}) {
     this.failureThreshold = options.failureThreshold || 5;
@@ -39,12 +48,12 @@ class CircuitBreaker {
     if (this.state === CIRCUIT_STATES.OPEN) {
       if (Date.now() >= this.nextAttemptTime) {
         this.state = CIRCUIT_STATES.HALF_OPEN;
-        monitoring.info(`Circuit breaker ${this.name} entering half-open state`, {
+        emitRecoveryEvent('recovery.circuit', 'info', `Circuit breaker ${this.name} entering half-open state`, {
           circuit: this.name,
           state: this.state,
         });
       } else {
-        monitoring.warn(`Circuit breaker ${this.name} is open, rejecting request`, {
+        emitRecoveryEvent('recovery.circuit', 'warn', `Circuit breaker ${this.name} is open, rejecting request`, {
           circuit: this.name,
           state: this.state,
         });
@@ -57,7 +66,7 @@ class CircuitBreaker {
 
       if (this.state === CIRCUIT_STATES.HALF_OPEN) {
         this.close(); // Success in half-open state closes the circuit
-        monitoring.info(`Circuit breaker ${this.name} closed after successful call`, {
+        emitRecoveryEvent('recovery.circuit', 'info', `Circuit breaker ${this.name} closed after successful call`, {
           circuit: this.name,
           state: this.state,
         });
@@ -76,7 +85,7 @@ class CircuitBreaker {
 
     if (this.failureCount >= this.failureThreshold) {
       this.open();
-      monitoring.error(`Circuit breaker ${this.name} opened due to failures`, {
+      emitRecoveryEvent('recovery.circuit', 'error', `Circuit breaker ${this.name} opened due to failures`, {
         circuit: this.name,
         state: this.state,
         failureCount: this.failureCount,
@@ -175,9 +184,10 @@ class ErrorRecoveryManager {
     if (recoveryOptions.circuitBreaker) {
       const circuitBreaker = this.getCircuitBreaker(serviceName);
       if (circuitBreaker && circuitBreaker.getStatus().state === CIRCUIT_STATES.OPEN) {
-        monitoring.warn(`Operation blocked by open circuit breaker: ${serviceName}`, {
+        emitRecoveryEvent('recovery.operation', 'warn', `Operation blocked by open circuit breaker: ${serviceName}`, {
           service: serviceName,
           strategy: recoveryOptions.strategy,
+          status: 'blocked',
         });
 
         // Try fallback if available
@@ -185,7 +195,7 @@ class ErrorRecoveryManager {
         if (fallback) {
           try {
             const result = await fallback();
-            monitoring.info(`Fallback executed for ${serviceName}`, {
+            emitRecoveryEvent('recovery.fallback', 'info', `Fallback executed for ${serviceName}`, {
               service: serviceName,
               strategy: 'fallback',
             });
@@ -239,7 +249,9 @@ class ErrorRecoveryManager {
             ? recoveryOptions.retryDelay * Math.pow(2, retryCount - 1)
             : recoveryOptions.retryDelay;
 
-          monitoring.warn(
+          emitRecoveryEvent(
+            'recovery.retry',
+            'warn',
             `Operation failed, retrying (${retryCount}/${recoveryOptions.maxRetries}): ${serviceName}`,
             {
               service: serviceName,
@@ -259,13 +271,13 @@ class ErrorRecoveryManager {
     if (fallback) {
       try {
         const result = await fallback();
-        monitoring.info(`Fallback executed after retries failed: ${serviceName}`, {
+        emitRecoveryEvent('recovery.fallback', 'info', `Fallback executed after retries failed: ${serviceName}`, {
           service: serviceName,
           retries: retryCount - 1,
         });
         return result;
       } catch (fallbackError) {
-        monitoring.error(`Both operation and fallback failed: ${serviceName}`, {
+        emitRecoveryEvent('recovery.fallback', 'error', `Both operation and fallback failed: ${serviceName}`, {
           service: serviceName,
           originalError: lastError.message,
           fallbackError: fallbackError.message,
@@ -287,7 +299,7 @@ class ErrorRecoveryManager {
         fallback: degradedOperation,
       });
     } catch (error) {
-      monitoring.error(`Degraded mode operation failed: ${serviceName}`, {
+      emitRecoveryEvent('recovery.degraded_mode', 'error', `Degraded mode operation failed: ${serviceName}`, {
         service: serviceName,
         error: error.message,
       });
@@ -320,7 +332,7 @@ class ErrorRecoveryManager {
     const circuitBreaker = this.circuitBreakers.get(serviceName);
     if (circuitBreaker) {
       circuitBreaker.reset();
-      monitoring.info(`Circuit breaker reset: ${serviceName}`, {
+      emitRecoveryEvent('recovery.circuit', 'info', `Circuit breaker reset: ${serviceName}`, {
         service: serviceName,
       });
     }
@@ -332,12 +344,12 @@ class ErrorRecoveryManager {
   setDegradedMode(serviceName, degraded = true) {
     if (degraded) {
       this.degradedServices.add(serviceName);
-      monitoring.warn(`Service set to degraded mode: ${serviceName}`, {
+      emitRecoveryEvent('recovery.degraded_mode', 'warn', `Service set to degraded mode: ${serviceName}`, {
         service: serviceName,
       });
     } else {
       this.degradedServices.delete(serviceName);
-      monitoring.info(`Service restored from degraded mode: ${serviceName}`, {
+      emitRecoveryEvent('recovery.degraded_mode', 'info', `Service restored from degraded mode: ${serviceName}`, {
         service: serviceName,
       });
     }
@@ -369,12 +381,12 @@ class ErrorRecoveryManager {
       this.errorHistory = this.errorHistory.slice(-this.maxErrorHistory);
     }
 
-    // Update metrics
-    if (status === 'failure') {
-      monitoring.incrementCounter('errors');
-    }
-
-    monitoring.recordPerformance(`service.${serviceName}`, duration, { status });
+    emitRecoveryEvent('recovery.operation', status === 'failure' ? 'error' : 'info', `Recovery operation ${status}: ${serviceName}`, {
+      serviceName,
+      status,
+      duration,
+      error: error ? error.message : null,
+    });
   }
 
   /**
@@ -445,7 +457,11 @@ class ErrorRecoveryManager {
     }
 
     this.degradedServices.clear();
-    monitoring.warn('Emergency reset performed - all circuits reset and degraded mode cleared');
+    emitRecoveryEvent(
+      'recovery.emergency_reset',
+      'warn',
+      'Emergency reset performed - all circuits reset and degraded mode cleared'
+    );
   }
 }
 

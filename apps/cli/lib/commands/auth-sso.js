@@ -42,7 +42,7 @@ export function registerAuthSsoCommand(program) {
             return;
           }
           printSuccess(chalk.green('SSO configuration loaded:'));
-          console.log(JSON.stringify(config.sso, null, 2));
+          logger.log(JSON.stringify(config.sso, null, 2));
           return;
         }
 

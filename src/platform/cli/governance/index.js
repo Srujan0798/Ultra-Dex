@@ -126,16 +126,25 @@ export class GovernanceEngine {
    * Check if path is sensitive
    */
   isSensitivePath(filePath) {
-    const relPath = path.isAbsolute(filePath)
-      ? path.relative(this.projectRoot, filePath)
-      : filePath;
-    const absolutePath = resolveRealPath(path.resolve(this.projectRoot, relPath));
+    // Convert to absolute path first (handles both absolute and relative inputs)
+    const absolutePath = path.isAbsolute(filePath)
+      ? filePath
+      : path.resolve(this.projectRoot, filePath);
+
+    // Now make it relative to project root
+    const relPath = path.relative(this.projectRoot, absolutePath);
+
+    // Resolve symlinks to get the real path
+    const realAbsolutePath = resolveRealPath(absolutePath);
+    const realRelPath = path.relative(this.projectRoot, realAbsolutePath);
+
+    // Check against patterns
     try {
-      const realRelPath = path.relative(this.projectRoot, absolutePath);
       return SENSITIVE_PATH_PATTERNS.some(
         (pattern) => pattern.test(realRelPath) || pattern.test('/' + realRelPath)
       );
     } catch (err) {
+      // If resolving symlinks fails, fall back to the original path
       return SENSITIVE_PATH_PATTERNS.some(
         (pattern) => pattern.test(relPath) || pattern.test('/' + relPath)
       );
@@ -373,7 +382,7 @@ async function safeExecute(fn, context = 'index') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

@@ -1,7 +1,8 @@
 # GitHub Copilot CLI: Official Deep Feature Playbook
 
 **Document Status:** 2026 Official Documentation Verified  
-**Topic:** Copilot CLI (Agentic Terminal Agent, Multi-Model, Parallel Fleet)  
+**Source:** GitHub (`gh copilot`)  
+**Tool:** Copilot CLI (Agentic Terminal Agent, Multi-Model)  
 **Objective:** Extract maximum autonomous coding performance from the `copilot` binary.
 
 ---
@@ -19,12 +20,12 @@ Copilot CLI is GitHub's autonomous coding agent that runs entirely in the termin
 | Command | Purpose |
 |---|---|
 | `copilot` | Launch full interactive agentic session |
-| `copilot init` | Bootstrap custom instructions (`.github/copilot-instructions.md`) in current repo |
-| `copilot login` / `copilot logout` | Authenticate with GitHub |
+| `copilot init` | Bootstrap custom instructions in current repo |
+| `copilot login` / `logout` | Authenticate with GitHub |
 | `copilot update` | Download & install the latest version |
 | `copilot version` | Show current version |
 | `copilot plugin` | Manage installed plugins |
-| `copilot help [topic]` | Help on config, commands, environment, logging, permissions |
+| `copilot help` | Help on config, commands, environment |
 
 ---
 
@@ -81,9 +82,22 @@ These agents can run **in parallel** via `/fleet`.
 
 ---
 
-## 7. Swarm Role Assignment
+## 7. Ultra-Dex Swarm Role & Dispatch
 
 * **Role:** Autonomous GitHub-Integrated Builder
-* **Best For:** PR workflows, code reviews, GitHub Actions automation, and fleet-based parallel task execution.
-* **Windows:** 1–3 (Use `/fleet` for internal parallelism)
-* **$0 Strategy:** Included with your GitHub Copilot subscription. No additional API costs.
+* **Best For:** PR workflows, code reviews, and fleet-based parallel task execution.
+* **Windows:** 1–3 tabs (Use `/fleet` for internal parallelism).
+* **$0 Strategy:** Included with GitHub Copilot subscription. No additional API costs.
+
+### Dispatch Templates
+
+```bash
+# General Session
+copilot
+
+# Inside session, trigger parallel fleet
+> /fleet "Create unit tests for auth.js and refactor user.js schema simultaneously"
+
+# Inside session, run review
+> /review
+```

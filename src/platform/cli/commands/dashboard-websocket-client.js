@@ -24,7 +24,7 @@ class DashboardWebSocket {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        console.log('[WebSocket] Connected to Ultra-Dex server');
+        logger.log('[WebSocket] Connected to Ultra-Dex server');
         this.isConnected = true;
         this.reconnectAttempts = 0;
 
@@ -43,12 +43,12 @@ class DashboardWebSocket {
           const data = JSON.parse(event.data);
           this.handleMessage(data);
         } catch (e) {
-          console.error('[WebSocket] Failed to parse message:', e);
+          logger.error('[WebSocket] Failed to parse message:', e);
         }
       };
 
       this.ws.onclose = (event) => {
-        console.log('[WebSocket] Disconnected:', event.code, event.reason);
+        logger.log('[WebSocket] Disconnected:', event.code, event.reason);
         this.isConnected = false;
         showConnectionStatus('disconnected');
 
@@ -59,11 +59,11 @@ class DashboardWebSocket {
       };
 
       this.ws.onerror = (error) => {
-        console.error('[WebSocket] Error:', error);
+        logger.error('[WebSocket] Error:', error);
         this.emit('error', error);
       };
     } catch (error) {
-      console.error('[WebSocket] Failed to connect:', error);
+      logger.error('[WebSocket] Failed to connect:', error);
       this.attemptReconnect();
     }
   }
@@ -107,7 +107,7 @@ class DashboardWebSocket {
         break;
 
       case 'connected':
-        console.log('[WebSocket] Server says:', data.message);
+        logger.log('[WebSocket] Server says:', data.message);
         break;
 
       case 'pong':
@@ -115,7 +115,7 @@ class DashboardWebSocket {
         break;
 
       default:
-        console.log('[WebSocket] Unknown message type:', data.type);
+        logger.log('[WebSocket] Unknown message type:', data.type);
     }
   }
 
@@ -141,7 +141,7 @@ class DashboardWebSocket {
 
   attemptReconnect() {
     this.reconnectAttempts++;
-    console.log(
+    logger.log(
       `[WebSocket] Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
     );
     showConnectionStatus('reconnecting', this.reconnectAttempts);

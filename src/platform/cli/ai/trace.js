@@ -24,7 +24,7 @@ class TraceabilityLogger {
     try {
       await fs.mkdir(this.logDir, { recursive: true });
     } catch (error) {
-      console.error(`Traceability Logger: Error creating log directory: ${error.message}`);
+      logger.error(`Traceability Logger: Error creating log directory: ${error.message}`);
     }
   }
 
@@ -80,7 +80,7 @@ class TraceabilityLogger {
     try {
       await fs.appendFile(filePath, logLine);
     } catch (error) {
-      console.error(`Traceability Logger: Error writing log: ${error.message}`);
+      logger.error(`Traceability Logger: Error writing log: ${error.message}`);
     }
   }
 
@@ -444,28 +444,28 @@ export function registerTraceabilityCommand(program) {
     .option('-co, --constraint <constraint:result>', 'Constraint check in format constraint:result')
     .action(async (agent, task, reasoning, options) => {
       try {
-        console.log(`📝 Logging traceability for ${agent} on task: ${task}`);
+        logger.log(`📝 Logging traceability for ${agent} on task: ${task}`);
 
         if (options.change) {
           const [file, changeDesc] = options.change.split(':');
           await logCodeChange(agent, task, file, changeDesc, reasoning);
-          console.log(`✅ Logged code change: ${file}`);
+          logger.log(`✅ Logged code change: ${file}`);
         } else if (options.decision) {
           await logDecision(agent, task, options.decision, reasoning);
-          console.log(`✅ Logged decision: ${options.decision}`);
+          logger.log(`✅ Logged decision: ${options.decision}`);
         } else if (options.constraint) {
           const [constraint, resultStr] = options.constraint.split(':');
           const result = resultStr === 'pass' || resultStr === 'true';
           await logConstraintCheck(agent, task, constraint, result, reasoning);
-          console.log(`✅ Logged constraint check: ${constraint} = ${result}`);
+          logger.log(`✅ Logged constraint check: ${constraint} = ${result}`);
         } else {
           await logReasoning(agent, task, reasoning);
-          console.log(`✅ Logged reasoning`);
+          logger.log(`✅ Logged reasoning`);
         }
 
-        console.log('📋 Traceability log updated');
+        logger.log('📋 Traceability log updated');
       } catch (error) {
-        console.error(`Error logging traceability: ${error.message}`);
+        logger.error(`Error logging traceability: ${error.message}`);
       }
     });
 
@@ -475,32 +475,32 @@ export function registerTraceabilityCommand(program) {
     .argument('<query>', 'Search query')
     .action(async (query) => {
       try {
-        console.log(`🔍 Searching traceability logs for: ${query}`);
+        logger.log(`🔍 Searching traceability logs for: ${query}`);
 
         const results = await searchTraceabilityLogs(query);
 
         if (results.length === 0) {
-          console.log('No results found');
+          logger.log('No results found');
           return;
         }
 
-        console.log(`Found ${results.length} matching entries:\n`);
+        logger.log(`Found ${results.length} matching entries:\n`);
 
         for (const result of results.slice(0, 10)) {
           // Show top 10
-          console.log(`ID: ${result.id}`);
-          console.log(`Agent: ${result.agent}`);
-          console.log(`Task: ${result.task}`);
-          console.log(`Type: ${result.activityType}`);
-          console.log(`Reasoning: ${result.reasoning.substring(0, 100)}...`);
-          console.log('---');
+          logger.log(`ID: ${result.id}`);
+          logger.log(`Agent: ${result.agent}`);
+          logger.log(`Task: ${result.task}`);
+          logger.log(`Type: ${result.activityType}`);
+          logger.log(`Reasoning: ${result.reasoning.substring(0, 100)}...`);
+          logger.log('---');
         }
 
         if (results.length > 10) {
-          console.log(`... and ${results.length - 10} more`);
+          logger.log(`... and ${results.length - 10} more`);
         }
       } catch (error) {
-        console.error(`Error searching traceability logs: ${error.message}`);
+        logger.error(`Error searching traceability logs: ${error.message}`);
       }
     });
 
@@ -513,7 +513,7 @@ export function registerTraceabilityCommand(program) {
     .option('-f, --format <format>', 'Output format (json, csv, markdown)', 'json')
     .action(async (options) => {
       try {
-        console.log('📊 Generating traceability report...');
+        logger.log('📊 Generating traceability report...');
 
         const filters = {};
         if (options.agent) filters.agent = options.agent;
@@ -523,13 +523,13 @@ export function registerTraceabilityCommand(program) {
         const report = await generateTraceabilityReport(filters);
 
         if (options.format === 'json') {
-          console.log(JSON.stringify(report, null, 2));
+          logger.log(JSON.stringify(report, null, 2));
         } else {
           const exportData = await traceabilityLogger.exportLogs(options.format, filters);
-          console.log(exportData);
+          logger.log(exportData);
         }
       } catch (error) {
-        console.error(`Error generating traceability report: ${error.message}`);
+        logger.error(`Error generating traceability report: ${error.message}`);
       }
     });
 

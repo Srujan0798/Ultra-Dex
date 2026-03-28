@@ -6,6 +6,7 @@
  */
 
 import { registerStatusCommand as register } from './state.js';
+import { logger } from '../utils/logger.js';
 
 export function registerStatusCommand(program) {
   return register(program);
@@ -21,7 +22,7 @@ export default { registerStatusCommand };
 function handleModuleError(error, context = 'status') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

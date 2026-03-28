@@ -39,7 +39,7 @@ export default classifyTask;
 function handleModuleError(error, context = 'classifier') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

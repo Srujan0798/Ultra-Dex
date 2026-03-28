@@ -298,7 +298,7 @@ export function registerMemoryCommand(program) {
         const results = await memex.search(query, limit);
 
         if (options.json) {
-          console.log(JSON.stringify(results, null, 2));
+          logger.log(JSON.stringify(results, null, 2));
           return;
         }
 

@@ -16,7 +16,7 @@ export class AgentCommunicationBus {
 
   async initialize() {
     this.isConnected = true;
-    console.log('📡 Agent Communication Bus initialized');
+    process.stdout.write('📡 Agent Communication Bus initialized\n');
   }
 
   /**
@@ -72,7 +72,7 @@ export class AgentCommunicationBus {
         try {
           await handler(envelope);
         } catch (error) {
-          console.error(`Error in subscriber handler for channel ${channel}:`, error);
+          process.stderr.write(`Error in subscriber handler for channel ${channel}: ${error.message}\n`);
         }
       }
     }

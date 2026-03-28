@@ -14,6 +14,7 @@ import { runAgentLoop } from './run.js';
 import { loadState } from './plan.js';
 import { projectGraph } from '../mcp/graph.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { logger } from '../utils/logger.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { buildDiffSummary, applyDiffSummary } from './brain.js';
@@ -81,7 +82,10 @@ export function registerVerifyCommand(program) {
     .option('--live', 'Run active verification (automated gates only)')
     .option('--pre-push', 'Run pre-push checks (update CONTEXT.md + live gates)')
     .option('--full', 'Run full 21-step verification')
-    .option('--phase <name>', 'Run only a specific verification phase (Planning|Implementation|Quality|Security|Documentation|Final)')
+    .option(
+      '--phase <name>',
+      'Run only a specific verification phase (Planning|Implementation|Quality|Security|Documentation|Final)'
+    )
     .action(async (task, options) => {
       try {
         const taskId = options.task || task;
@@ -217,10 +221,10 @@ export async function verifyCommand(taskName, options) {
         },
       };
 
-      console.log(JSON.stringify(result, null, 2));
+      logger.info(JSON.stringify(result, null, 2));
       return;
     } catch (error) {
-      console.log(JSON.stringify({ valid: false, error: error.message }));
+      logger.error(JSON.stringify({ valid: false, error: error.message }));
       return;
     }
   }
@@ -256,7 +260,9 @@ export async function verifyCommand(taskName, options) {
     displayFinalVerdict(report);
   } else {
     printWarning(chalk.yellow('\n⚠️  Skipping AI Review (No provider configured)'));
-    printInfo(chalk.gray('To run AI verification, set OPENAI_API_KEY, ANTHROPIC_API_KEY, or start Ollama.'));
+    printInfo(
+      chalk.gray('To run AI verification, set OPENAI_API_KEY, ANTHROPIC_API_KEY, or start Ollama.')
+    );
 
     // Determine verdict based on automated results only
     const failures = Object.entries(automatedResults).filter(([_, status]) => status === 'FAIL');
@@ -379,7 +385,8 @@ async function runComplexityAnalysis(projectDir) {
     // Check for complex code patterns
     const complexityScore = await analyzeCodeComplexity(projectDir);
 
-    if (complexityScore > 10) { // Threshold for high complexity
+    if (complexityScore > 10) {
+      // Threshold for high complexity
       return { status: 'FAIL', message: `Code complexity too high: ${complexityScore}` };
     }
 

@@ -22,7 +22,7 @@ export default CiHealer;
  */
 function handleError(error) {
   try {
-    console.error('[healer]', error instanceof Error ? error.message : String(error));
+    logger.error('[healer]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

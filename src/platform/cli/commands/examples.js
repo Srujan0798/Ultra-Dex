@@ -96,7 +96,7 @@ export function registerExamplesCommand(program) {
       );
       await fs.writeFile(
         path.join(projectDir, 'src', 'index.js'),
-        `console.log('Welcome to ${example.name}');\n`
+        `logger.log('Welcome to ${example.name}');\n`
       );
 
       printSuccess(chalk.green(`Initialized ${example.name} in ${projectName}`));
@@ -138,7 +138,7 @@ export function registerExamplesCommand(program) {
 
         const content = await fs.readFile(path.join(SNIPPETS_DIR, match), 'utf8');
         printInfo(chalk.bold(`\n📝 Snippet: ${name}\n`));
-        console.log(content);
+        logger.log(content);
         printSuccess(chalk.green('\n✅ Copied to clipboard (simulated).'));
       } catch (error) {
         printError(chalk.red(`Failed to get snippet: ${error.message}`));

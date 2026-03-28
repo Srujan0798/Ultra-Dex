@@ -13,7 +13,7 @@ export default {
  */
 function handleError(error) {
   try {
-    console.error('[auth0]', error instanceof Error ? error.message : String(error));
+    logger.error('[auth0]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

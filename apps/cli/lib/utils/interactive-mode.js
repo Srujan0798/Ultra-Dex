@@ -9,7 +9,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import Table from 'cli-table3';
-import { monitoring } from './monitoring.js';
+import { logger } from './logger.js';
 import { configManager } from './config-manager.js';
 import { errorRecovery } from './error-recovery.js';
 
@@ -41,7 +41,16 @@ class InteractiveMode {
         answers[name] = answer[name];
         this.responses.set(name, answer[name]);
       } catch (error) {
-        monitoring.error(`Interactive question failed: ${name}`, { error: error.message });
+        await logger.event(
+          'interactive.question_error',
+          { name, error: error.message },
+          {
+            level: 'error',
+            message: `Interactive question failed: ${name}`,
+            console: false,
+            source: 'interactive-mode',
+          }
+        );
         throw error;
       }
     }
@@ -65,7 +74,16 @@ class InteractiveMode {
    */
   showSuccess(message) {
     console.log(chalk.green('✅ ' + message));
-    monitoring.info(message, { type: 'success' });
+    void logger.event(
+      'interactive.feedback',
+      { type: 'success' },
+      {
+        level: 'info',
+        message,
+        console: false,
+        source: 'interactive-mode',
+      }
+    );
   }
 
   /**
@@ -73,7 +91,16 @@ class InteractiveMode {
    */
   showWarning(message) {
     console.log(chalk.yellow('⚠️  ' + message));
-    monitoring.warn(message, { type: 'warning' });
+    void logger.event(
+      'interactive.feedback',
+      { type: 'warning' },
+      {
+        level: 'warn',
+        message,
+        console: false,
+        source: 'interactive-mode',
+      }
+    );
   }
 
   /**
@@ -81,7 +108,16 @@ class InteractiveMode {
    */
   showError(message) {
     console.log(chalk.red('❌ ' + message));
-    monitoring.error(message, { type: 'error' });
+    void logger.event(
+      'interactive.feedback',
+      { type: 'error' },
+      {
+        level: 'error',
+        message,
+        console: false,
+        source: 'interactive-mode',
+      }
+    );
   }
 
   /**
@@ -89,7 +125,16 @@ class InteractiveMode {
    */
   showInfo(message) {
     console.log(chalk.blue('ℹ️  ' + message));
-    monitoring.info(message, { type: 'info' });
+    void logger.event(
+      'interactive.feedback',
+      { type: 'info' },
+      {
+        level: 'info',
+        message,
+        console: false,
+        source: 'interactive-mode',
+      }
+    );
   }
 
   /**

@@ -69,7 +69,7 @@ export class NetworkError extends AppError {
  */
 function handleError(error) {
   try {
-    console.error('[errors]', error instanceof Error ? error.message : String(error));
+    logger.error('[errors]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

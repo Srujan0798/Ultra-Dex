@@ -26,7 +26,7 @@ export function registerTutorialsCommand(program) {
       try {
         await runTutorialSystem('list', options);
       } catch (error) {
-        console.error(chalk.red(`Error listing tutorials: ${error.message}`));
+        logger.error(chalk.red(`Error listing tutorials: ${error.message}`));
       }
     });
 
@@ -45,7 +45,7 @@ export function registerTutorialsCommand(program) {
         };
         await runTutorialSystem('recommended', { profile: mockProfile });
       } catch (error) {
-        console.error(chalk.red(`Error showing recommendations: ${error.message}`));
+        logger.error(chalk.red(`Error showing recommendations: ${error.message}`));
       }
     });
 
@@ -57,7 +57,7 @@ export function registerTutorialsCommand(program) {
       try {
         await runTutorialSystem('search', { query });
       } catch (error) {
-        console.error(chalk.red(`Error searching tutorials: ${error.message}`));
+        logger.error(chalk.red(`Error searching tutorials: ${error.message}`));
       }
     });
 
@@ -69,7 +69,7 @@ export function registerTutorialsCommand(program) {
       try {
         await runTutorialSystem('by-level', { level });
       } catch (error) {
-        console.error(chalk.red(`Error filtering by level: ${error.message}`));
+        logger.error(chalk.red(`Error filtering by level: ${error.message}`));
       }
     });
 
@@ -81,7 +81,7 @@ export function registerTutorialsCommand(program) {
       try {
         await runTutorialSystem('by-tag', { tag });
       } catch (error) {
-        console.error(chalk.red(`Error filtering by tag: ${error.message}`));
+        logger.error(chalk.red(`Error filtering by tag: ${error.message}`));
       }
     });
 
@@ -97,7 +97,7 @@ export function registerTutorialsCommand(program) {
           // Interactive mode to select tutorials
           const system = new VideoTutorialSystem();
 
-          console.log(chalk.cyan('\n🎯 CREATE CUSTOM TUTORIAL PLAYLIST\n'));
+          logger.log(chalk.cyan('\n🎯 CREATE CUSTOM TUTORIAL PLAYLIST\n'));
 
           // Show all tutorials for selection
           const allTutorials = system.tutorials;
@@ -117,7 +117,7 @@ export function registerTutorialsCommand(program) {
           ]);
 
           if (selectedIds.length === 0) {
-            console.log(chalk.yellow('No tutorials selected. Playlist creation cancelled.'));
+            logger.log(chalk.yellow('No tutorials selected. Playlist creation cancelled.'));
             return;
           }
 
@@ -142,7 +142,7 @@ export function registerTutorialsCommand(program) {
           });
         }
       } catch (error) {
-        console.error(chalk.red(`Error creating playlist: ${error.message}`));
+        logger.error(chalk.red(`Error creating playlist: ${error.message}`));
       }
     });
 
@@ -155,7 +155,7 @@ export function registerTutorialsCommand(program) {
       try {
         const system = new VideoTutorialSystem();
 
-        console.log(chalk.cyan('\n🎓 ULTRA-DEX INTERACTIVE TUTORIAL SELECTOR\n'));
+        logger.log(chalk.cyan('\n🎓 ULTRA-DEX INTERACTIVE TUTORIAL SELECTOR\n'));
 
         const actionChoices = [
           { name: 'Browse All Tutorials', value: 'browse' },
@@ -248,7 +248,7 @@ export function registerTutorialsCommand(program) {
             ]);
 
             if (selectedIds.length === 0) {
-              console.log(chalk.yellow('No tutorials selected. Playlist creation cancelled.'));
+              logger.log(chalk.yellow('No tutorials selected. Playlist creation cancelled.'));
               return;
             }
 
@@ -276,7 +276,7 @@ export function registerTutorialsCommand(program) {
           }
         }
       } catch (error) {
-        console.error(chalk.red(`Error in interactive mode: ${error.message}`));
+        logger.error(chalk.red(`Error in interactive mode: ${error.message}`));
       }
     });
 
@@ -284,13 +284,13 @@ export function registerTutorialsCommand(program) {
   tutorialsCmd.action(async () => {
     try {
       await runTutorialSystem('recommended');
-      console.log(
+      logger.log(
         chalk.gray(
           '\n💡 Tip: Use "ultra-dex tutorials interactive" for the full tutorial experience'
         )
       );
     } catch (error) {
-      console.error(chalk.red(`Error: ${error.message}`));
+      logger.error(chalk.red(`Error: ${error.message}`));
     }
   });
 }

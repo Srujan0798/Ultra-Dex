@@ -528,8 +528,8 @@ class SecurityAuditor {
 
   async implementSecurityRecommendation(rec) {
     // Implement specific security recommendation
-    console.log(`Implementing security recommendation: ${rec.recommendation}`);
-    
+    process.stdout.write(`Implementing security recommendation: ${rec.recommendation}\n`);
+
     switch (rec.category) {
       case 'authentication':
         await this.implementAdaptiveAuthentication();
@@ -547,37 +547,37 @@ class SecurityAuditor {
         await this.addRuntimeProtection();
         break;
       default:
-        console.log(`Unknown security category: ${rec.category}`);
+        process.stdout.write(`Unknown security category: ${rec.category}\n`);
     }
   }
 
   async implementAdaptiveAuthentication() {
     // Implement adaptive authentication
-    console.log('Implementing adaptive authentication...');
+    process.stdout.write('Implementing adaptive authentication...\n');
     // This would involve adding risk-based authentication logic
   }
 
   async implementEndToEndEncryption() {
     // Implement end-to-end encryption
-    console.log('Implementing end-to-end encryption...');
+    process.stdout.write('Implementing end-to-end encryption...\n');
     // This would involve adding encryption layers
   }
 
   async enhanceSecurityMonitoring() {
     // Enhance security monitoring
-    console.log('Enhancing security monitoring...');
+    process.stdout.write('Enhancing security monitoring...\n');
     // This would involve adding ML-based anomaly detection
   }
 
   async implementZeroTrustArchitecture() {
     // Implement zero-trust architecture
-    console.log('Implementing zero-trust architecture...');
+    process.stdout.write('Implementing zero-trust architecture...\n');
     // This would involve network reconfiguration
   }
 
   async addRuntimeProtection() {
     // Add runtime application protection
-    console.log('Adding runtime application protection...');
+    process.stdout.write('Adding runtime application protection...\n');
     // This would involve adding RASP capabilities
   }
 
@@ -641,7 +641,7 @@ class SecurityAuditor {
       
       // Check for security degradation
       if (await this.detectSecurityDegradation(currentMetrics)) {
-        console.warn('Security degradation detected!');
+        process.stderr.write('Security degradation detected!\n');
         // Trigger security audit
         await this.conductSecurityAudit();
       }
@@ -676,8 +676,8 @@ class SecurityAuditor {
 
   async runPenetrationTest() {
     // Run penetration testing
-    console.log('Running penetration test...');
-    
+    process.stdout.write('Running penetration test...\n');
+
     // This would involve actual penetration testing
     // For now, return mock results
     return {
@@ -704,8 +704,8 @@ class SecurityAuditor {
 
   async conductSecurityTraining() {
     // Conduct security training for team
-    console.log('Conducting security training...');
-    
+    process.stdout.write('Conducting security training...\n');
+
     const trainingModules = [
       'secure_coding_practices',
       'threat_modeling',
@@ -713,9 +713,9 @@ class SecurityAuditor {
       'data_protection',
       'authentication_best_practices'
     ];
-    
+
     for (const module of trainingModules) {
-      console.log(`Completed training module: ${module}`);
+      process.stdout.write(`Completed training module: ${module}\n`);
     }
     
     return {

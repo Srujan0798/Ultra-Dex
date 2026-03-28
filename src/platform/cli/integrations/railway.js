@@ -68,7 +68,7 @@ export function registerCommands(program) {
     .option('--service <name>', 'Service name')
     .option('--environment <env>', 'Target environment')
     .action((opts) => {
-      console.log(deploy(opts));
+      logger.log(deploy(opts));
     });
 
   cmd
@@ -76,7 +76,7 @@ export function registerCommands(program) {
     .description('Check Railway project status')
     .option('--json', 'Output as JSON')
     .action((opts) => {
-      console.log(status(opts));
+      logger.log(status(opts));
     });
 
   cmd
@@ -85,7 +85,7 @@ export function registerCommands(program) {
     .option('--lines <n>', 'Number of lines', '100')
     .option('--service <name>', 'Service name')
     .action((opts) => {
-      console.log(logs(opts));
+      logger.log(logs(opts));
     });
 
   return cmd;

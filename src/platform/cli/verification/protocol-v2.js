@@ -16,7 +16,7 @@ export class VerificationProtocolV2 {
   }
 
   async run(projectPath = process.cwd()) {
-    console.log(chalk.cyan.bold('\n🛡️  Executing Protocol 21 (V2.0)\n'));
+    logger.log(chalk.cyan.bold('\n🛡️  Executing Protocol 21 (V2.0)\n'));
 
     const steps = [
       { id: 1, name: 'Context Alignment', check: () => this.checkFile(projectPath, 'CONTEXT.md') },
@@ -40,10 +40,10 @@ export class VerificationProtocolV2 {
       process.stdout.write(`Step ${step.id}: ${step.name.padEnd(25)} `);
       try {
         await step.check();
-        console.log(chalk.green('✅ PASS'));
+        logger.log(chalk.green('✅ PASS'));
         this.results.push({ ...step, status: 'PASS' });
       } catch (e) {
-        console.log(chalk.red('❌ FAIL'));
+        logger.log(chalk.red('❌ FAIL'));
         this.results.push({ ...step, status: 'FAIL', error: e.message });
       }
     }

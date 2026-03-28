@@ -1,6 +1,7 @@
 # NLP Intent Router - Dependency Map & Implementation Guide
 
-**Generated:** March 27, 2026  
+**Generated:** March 27, 2026
+**Cycle 3 Update:** March 28, 2026
 **Ultra-Dex Version:** 6.0.0  
 **Report Location:** `upgrade/reports/nlp-dependency-map.md`
 
@@ -16,7 +17,16 @@ This report provides a comprehensive mapping of all CLI command entry points in 
 2. **Existing NLP Infrastructure:** `apps/cli/lib/nlp/router.js` with `routeIntent()` function
 3. **150+ Registered Commands** across multiple command modules
 4. **Multiple Router Systems:** NLP intent router, model router, semantic router
-5. **Best Hook Point:** REPL layer and pre-action middleware
+5. **Best Hook Point:** pre-parse command routing in `apps/cli/bin/ultra-dex.js`, plus pre-action telemetry and the REPL layer
+
+### Cycle 3 Implementation Update
+
+The current repository no longer uses a REPL-first default path:
+
+- running `ultra-dex` with no arguments now launches the terminal dashboard
+- high-confidence natural-language input is rewritten before Commander parses commands
+- typo handling and intent suggestions are handled synchronously through `apps/cli/lib/utils/command-routing.js`
+- dashboard snapshots exit cleanly in non-interactive environments for automation and tests
 
 ---
 
@@ -75,7 +85,8 @@ This report provides a comprehensive mapping of all CLI command entry points in 
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  ARGUMENT PARSING                                                │
-│  - If no args: Start REPL (default)                             │
+│  - If no args: Start terminal dashboard (default)               │
+│  - If NLP match: Rewrite argv before Commander parses           │
 │  - If args: program.parseAsync(process.argv)                    │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -83,13 +94,23 @@ This report provides a comprehensive mapping of all CLI command entry points in 
               │                               │
               ▼                               ▼
 ┌─────────────────────────┐     ┌─────────────────────────┐
-│      REPL MODE          │     │    COMMAND MODE         │
+│    DASHBOARD MODE       │     │    COMMAND MODE         │
 │  (no arguments)         │     │  (with arguments)       │
-│  - readline interface   │     │  - Execute registered   │
-│  - Session persistence  │     │    command action       │
-│  - Slash commands       │     │  - Run pre/post hooks   │
+│  - interactive snapshot │     │  - Execute registered   │
+│  - recent projects      │     │    command action       │
+│  - quick actions        │     │  - Run pre/post hooks   │
 └─────────────────────────┘     └─────────────────────────┘
 ```
+
+### 1.3 Current Hook Points
+
+The active NLP entry sequence now looks like this:
+
+1. `apps/cli/bin/ultra-dex.js` builds the registered command list.
+2. `apps/cli/lib/utils/command-routing.js` inspects raw argv.
+3. High-confidence natural language is translated to a concrete command before `program.parseAsync(...)`.
+4. Unknown commands fall back to typo suggestions or intent suggestions.
+5. `preAction` telemetry still records intent matches and mismatches.
 
 ---
 

@@ -76,7 +76,7 @@ export class MCTSNode {
  */
 function handleError(error) {
   try {
-    console.error('[node]', error instanceof Error ? error.message : String(error));
+    logger.error('[node]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

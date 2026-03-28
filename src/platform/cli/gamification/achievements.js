@@ -385,11 +385,11 @@ class AchievementsSystem {
   showUnlockNotification(achievement) {
     const color = RARITY_COLORS[achievement.rarity] || chalk.white;
 
-    console.log('');
+    logger.log('');
     printSuccess(color(`🎉 ACHIEVEMENT UNLOCKED: ${achievement.icon} ${achievement.name}!`));
     printInfo(color(`   ${achievement.description}`));
     printInfo(chalk.gray(`   Rarity: ${achievement.rarity.toUpperCase()}`));
-    console.log('');
+    logger.log('');
   }
 
   /**
@@ -541,7 +541,7 @@ export function registerAchievementsCommand(program) {
       try {
         await achievementsSystem.initialize();
         const display = achievementsSystem.renderAchievementsDisplay();
-        console.log(display);
+        logger.log(display);
       } catch (error) {
         printError(chalk.red(`Achievements display failed: ${error.message}`));
       }
@@ -581,7 +581,7 @@ export function registerAchievementsCommand(program) {
             `  Condition: ${def.unlockCondition.type} - ${def.unlockCondition.count || def.unlockCondition.threshold || def.unlockCondition.subtype || 'varies'}`
           )
         );
-        console.log('');
+        logger.log('');
       }
     });
 

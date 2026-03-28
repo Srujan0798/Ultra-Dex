@@ -143,7 +143,7 @@ class PersistentMemorySystem {
         )
       );
     } catch (error) {
-      console.error(`Failed to persist ${tier} memory for key ${key}:`, error.message);
+      logger.error(`Failed to persist ${tier} memory for key ${key}:`, error.message);
     }
   }
 
@@ -172,7 +172,7 @@ class PersistentMemorySystem {
         }
       }
     } catch (error) {
-      console.error(`Failed to load ${tier} memory from disk:`, error.message);
+      logger.error(`Failed to load ${tier} memory from disk:`, error.message);
     }
   }
 
@@ -200,7 +200,7 @@ class PersistentMemorySystem {
       await this.setHot('recent-commits', commitList);
       return commitList;
     } catch (error) {
-      console.warn('Git not available or no commits found:', error.message);
+      logger.warn('Git not available or no commits found:', error.message);
       return [];
     }
   }
@@ -234,7 +234,7 @@ class PersistentMemorySystem {
       await this.setHot('active-files', recentFiles);
       return recentFiles;
     } catch (error) {
-      console.error('Failed to index active files:', error.message);
+      logger.error('Failed to index active files:', error.message);
       return [];
     }
   }
@@ -269,7 +269,7 @@ class PersistentMemorySystem {
       await this.setWarm('pr-summaries', summaries);
       return summaries;
     } catch (error) {
-      console.error('Failed to index PR summaries:', error.message);
+      logger.error('Failed to index PR summaries:', error.message);
       return [];
     }
   }
@@ -298,7 +298,7 @@ class PersistentMemorySystem {
       await this.setWarm('architectural-decisions', decisions);
       return decisions;
     } catch (error) {
-      console.error('Failed to index architectural decisions:', error.message);
+      logger.error('Failed to index architectural decisions:', error.message);
       return [];
     }
   }
@@ -344,7 +344,7 @@ class PersistentMemorySystem {
         sampleSize: Math.min(100, fileStats.length),
       };
     } catch (error) {
-      console.error('Failed to index repo history:', error.message);
+      logger.error('Failed to index repo history:', error.message);
       return { totalFiles: 0, sampleSize: 0 };
     }
   }
@@ -440,7 +440,7 @@ class PersistentMemorySystem {
 
   // Index the entire project for all memory tiers
   async indexProject() {
-    console.log('🧠 Indexing project for multi-tier memory...');
+    logger.log('🧠 Indexing project for multi-tier memory...');
 
     // Hot tier: recent activity
     await this.indexRecentCommits();
@@ -453,7 +453,7 @@ class PersistentMemorySystem {
     // Cold tier: full project history
     await this.indexRepoHistory();
 
-    console.log('✅ Project indexed across all memory tiers');
+    logger.log('✅ Project indexed across all memory tiers');
   }
 }
 

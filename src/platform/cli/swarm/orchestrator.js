@@ -450,7 +450,7 @@ export class ProgressReporter {
       try {
         cb(data);
       } catch (error) {
-        console.error('Progress callback error:', error);
+        logger.error('Progress callback error:', error);
       }
     });
   }

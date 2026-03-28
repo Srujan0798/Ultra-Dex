@@ -82,11 +82,11 @@ async function checkVibe() {
   
   printInfo(chalk.bold(`Detected Aesthetic: ${chalk.magenta(detectedVibe)}`));
   
-  console.log('');
-  praises.forEach(p => console.log(chalk.green(`  ✓ ${p}`)));
-  issues.forEach(i => console.log(chalk.yellow(`  ⚠️  ${i}`)));
+  logger.log('');
+  praises.forEach(p => logger.log(chalk.green(`  ✓ ${p}`)));
+  issues.forEach(i => logger.log(chalk.yellow(`  ⚠️  ${i}`)));
   
-  console.log('');
+  logger.log('');
   const scoreColor = score >= 8 ? chalk.green : score >= 5 ? chalk.yellow : chalk.red;
   printSuccess(`Vibe Score: ${scoreColor(score + '/10')}`);
   

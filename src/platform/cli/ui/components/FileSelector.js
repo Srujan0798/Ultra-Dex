@@ -12,7 +12,7 @@ const FileSelector = ({ files, onSelect, title = "Select a file:" }) => {
 var FileSelector_default = FileSelector;
 function handleError(error) {
   try {
-    console.error("[FileSelector]", error instanceof Error ? error.message : String(error));
+    logger.error("[FileSelector]", error instanceof Error ? error.message : String(error));
   } catch (_) {
   }
 }

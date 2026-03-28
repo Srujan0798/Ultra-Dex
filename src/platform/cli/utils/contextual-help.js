@@ -216,7 +216,7 @@ export function getCommandHelp(command) {
  * Show contextual help
  */
 export function showHelp(command) {
-  console.log(getCommandHelp(command));
+  logger.log(getCommandHelp(command));
 }
 
 /**
@@ -261,7 +261,7 @@ export default {
 function handleModuleError(error, context = 'contextual-help') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

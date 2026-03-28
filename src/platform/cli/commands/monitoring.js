@@ -25,7 +25,7 @@ const logger = createCommandLogger('monitoring');
 
 export async function statusCommand(options) {
   try {
-    printInfo(chalk.bold('\n📊 Ultra-Dex System Status\n'));
+    logger.info(chalk.bold('\n📊 Ultra-Dex System Status\n'));
 
     if (options.metrics) {
       interactiveMode.showMetrics();
@@ -83,7 +83,7 @@ export async function configCommand(options) {
       if (value === undefined) {
         throw new ValidationError(`Configuration key not found: ${options.get}`);
       }
-      console.log(`${chalk.bold(options.get)}: ${JSON.stringify(value, null, 2)}`);
+      logger.log(`${chalk.bold(options.get)}: ${JSON.stringify(value, null, 2)}`);
     } else if (options.set) {
       const [key, value] = options.set.split('=');
       if (!key || value === undefined) {
@@ -157,8 +157,8 @@ export async function metricsCommand(options) {
       logger.info(chalk.bold('\n💡 Performance Insights:\n'));
       insights.insights.forEach(insight => {
         const color = insight.type === 'alert' ? chalk.red : chalk.yellow;
-        console.log(`  ${color('•')} ${insight.message}`);
-        console.log(`    ${chalk.gray(insight.recommendation)}`);
+        logger.log(`  ${color('•')} ${insight.message}`);
+        logger.log(`    ${chalk.gray(insight.recommendation)}`);
       });
     }
 
@@ -171,7 +171,7 @@ export async function metricsCommand(options) {
         metrics = await monitoring.exportMetrics(format);
       }
       logger.info(chalk.bold('\n📊 Exported Metrics:\n'));
-      console.log(JSON.stringify(metrics, null, 2));
+      logger.log(JSON.stringify(metrics, null, 2));
     }
   } catch (error) {
     await handleError(error, { command: 'metrics', options });
@@ -195,7 +195,7 @@ function runEnhancedMetricsWatcher({ singleShot = false } = {}) {
       logger.info(chalk.bold('\n💡 Performance Insights:\n'));
       insights.insights.forEach(insight => {
         const color = insight.type === 'alert' ? chalk.red : chalk.yellow;
-        console.log(`  ${color('•')} ${insight.message}`);
+        logger.log(`  ${color('•')} ${insight.message}`);
       });
     }
 
@@ -205,7 +205,7 @@ function runEnhancedMetricsWatcher({ singleShot = false } = {}) {
       logger.info(chalk.bold('\n🚨 Recent Alerts:\n'));
       recentAlerts.slice(-5).reverse().forEach(alert => { // Show last 5 alerts
         const color = alert.severity === 'error' ? chalk.red : chalk.yellow;
-        console.log(`  ${color('•')} [${alert.severity.toUpperCase()}] ${alert.message}`);
+        logger.log(`  ${color('•')} [${alert.severity.toUpperCase()}] ${alert.message}`);
       });
     }
 
@@ -215,15 +215,15 @@ function runEnhancedMetricsWatcher({ singleShot = false } = {}) {
         ((metrics.system.totalMemory - metrics.system.freeMemory) / metrics.system.totalMemory) *
         100;
       if (usedMemPercent > 90) {
-        console.log(chalk.bgRed.white.bold('\n⚠️  ALERT: High Memory Usage (>90%) '));
+        logger.log(chalk.bgRed.white.bold('\n⚠️  ALERT: High Memory Usage (>90%) '));
       }
       if (metrics.errors > 10) {
-        console.log(
+        logger.log(
           chalk.bgRed.white.bold(`\n⚠️  ALERT: High Error Rate (${metrics.errors} errors) `)
         );
       }
     }
-    console.log(chalk.gray(`\nLast updated: ${new Date().toLocaleTimeString()}`));
+    logger.log(chalk.gray(`\nLast updated: ${new Date().toLocaleTimeString()}`));
   };
 
   render();
@@ -278,7 +278,7 @@ export async function healthCommand(options) {
 
       checks.forEach((check) => {
         const icon = check.status === 'PASS' ? chalk.green('✅') : chalk.red('❌');
-        console.log(
+        logger.log(
           `  ${icon} ${chalk.white(check.name.padEnd(20))} [${check.status}] ${chalk.gray(check.message)}`
         );
       });
@@ -302,21 +302,21 @@ export function registerHealthCommand(program) {
 
 export async function debugCommand(options) {
   try {
-    printInfo(chalk.bold('\n🐞 Ultra-Dex Debug Information\n'));
+    logger.info(chalk.bold('\n🐞 Ultra-Dex Debug Information\n'));
 
     const metrics = monitoring.getMetrics();
-    printInfo(chalk.bold('System Summary:'));
-    console.log(`  Version: ${metrics.version}`);
-    console.log(`  Platform: ${metrics.system.platform} (${metrics.system.arch})`);
-    console.log(`  Uptime: ${interactiveMode.formatDuration(metrics.uptime)}`);
-    console.log(`  Total Requests: ${metrics.requests}`);
-    console.log(`  Total Errors: ${metrics.errors}`);
+    logger.info(chalk.bold('System Summary:'));
+    logger.log(`  Version: ${metrics.version}`);
+    logger.log(`  Platform: ${metrics.system.platform} (${metrics.system.arch})`);
+    logger.log(`  Uptime: ${interactiveMode.formatDuration(metrics.uptime)}`);
+    logger.log(`  Total Requests: ${metrics.requests}`);
+    logger.log(`  Total Errors: ${metrics.errors}`);
 
     if (options.logs) {
-      printInfo(chalk.bold('\nRecent Logs:'));
+      logger.info(chalk.bold('\nRecent Logs:'));
       const logs = await monitoring.exportLogs();
       if (logs) {
-        console.log(chalk.gray(logs.substring(0, 500) + '...'));
+        logger.log(chalk.gray(logs.substring(0, 500) + '...'));
       }
     }
   } catch (error) {

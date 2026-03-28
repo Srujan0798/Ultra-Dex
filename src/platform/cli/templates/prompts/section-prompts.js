@@ -282,7 +282,7 @@ export default {
  */
 function handleSectionpromptsError(error) {
   try {
-    console.error('[section-prompts]', error instanceof Error ? error.message : String(error));
+    logger.error('[section-prompts]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

@@ -39,7 +39,7 @@ export function registerHelpCommand(program) {
       }
 
       // Interactive Mode
-      console.log(
+      logger.log(
         boxen(chalk.bold('🤖 Ultra-Dex AI Assistant'), {
           padding: 1,
           margin: 1,
@@ -105,7 +105,7 @@ async function safeExecute(fn, context = 'help') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

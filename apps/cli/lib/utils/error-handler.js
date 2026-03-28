@@ -7,9 +7,10 @@
 
 import chalk from 'chalk';
 import { execSync } from 'child_process';
-import { recordError } from '../analytics/index.js';
+import { initializeAnalyticsSink } from '../analytics/index.js';
 import { formatSmartError } from './smart-error.js';
 import { redact } from './redactor.js';
+import { logger } from './logger.js';
 
 // Error patterns and their solutions
 const ERROR_SOLUTIONS = {
@@ -159,11 +160,15 @@ export async function handleError(error, context = {}) {
   const suggestions = getSuggestions(errorMessage);
 
   try {
-    await recordError({
+    initializeAnalyticsSink();
+    await logger.event('analytics.error', {
       message: safeErrorMessage,
       command: context.command,
       stack: redact(error.stack),
       metadata: safeContext,
+    }, {
+      console: false,
+      source: 'error-handler',
     });
   } catch {
     // Analytics should never block error handling

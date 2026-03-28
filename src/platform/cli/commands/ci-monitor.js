@@ -35,8 +35,8 @@ export function registerCiMonitorCommand(program) {
       const port = parseInt(options.port);
       const notifyEvents = options.notifyOn.split(',').map((e) => e.trim());
 
-      console.log(chalk.cyan('\n🛡️  Ultra-Dex Self-Healing CI Monitor\n'));
-      console.log(chalk.gray(`Listening for GitHub Webhooks on port \${port}...`));
+      logger.log(chalk.cyan('\n🛡️  Ultra-Dex Self-Healing CI Monitor\n'));
+      logger.log(chalk.gray(`Listening for GitHub Webhooks on port \${port}...`));
 
       const server = http.createServer(async (req, res) => {
         if (req.method === 'POST') {
@@ -59,7 +59,7 @@ export function registerCiMonitorCommand(program) {
 
                   // 2. Process handleBuildFailure asynchronously (fire & forget)
                   handleBuildFailure(payload, options, notifyEvents).catch((err) => {
-                    console.error('Background task failed:', err);
+                    logger.error('Background task failed:', err);
                   });
                   return;
                 } else if (
@@ -72,7 +72,7 @@ export function registerCiMonitorCommand(program) {
 
                   // Process notification in background (fire & forget)
                   notifySuccess(payload, options).catch((err) => {
-                    console.error('Background notification failed:', err);
+                    logger.error('Background notification failed:', err);
                   });
                   return;
                 }
@@ -81,7 +81,7 @@ export function registerCiMonitorCommand(program) {
               res.writeHead(200);
               res.end('Received');
             } catch (e) {
-              console.error(chalk.red('Webhook Error:'), e.message);
+              logger.error(chalk.red('Webhook Error:'), e.message);
               res.writeHead(400);
               res.end('Bad Request');
             }
@@ -93,7 +93,7 @@ export function registerCiMonitorCommand(program) {
       });
 
       server.listen(port, () => {
-        console.log(chalk.green(`✅ Monitor Active: http://localhost:${port}`));
+        logger.log(chalk.green(`✅ Monitor Active: http://localhost:${port}`));
       });
     });
 }
@@ -141,8 +141,8 @@ async function handleBuildFailure(payload, options, notifyEvents) {
   const logs = await fetchGithubLogs(repo, job.id);
   const healer = new CiHealer({ maxAttempts: parseInt(options.maxAttempts, 10) || 3 });
   const analysis = healer.analyze(logs);
-  console.log(chalk.red(`\n🚨 Build Failed: ${job.name} in ${repo}`));
-  console.log(chalk.yellow('   Initiating Self-Healing Protocol...'));
+  logger.log(chalk.red(`\n🚨 Build Failed: ${job.name} in ${repo}`));
+  logger.log(chalk.yellow('   Initiating Self-Healing Protocol...'));
 
   const providerId = options.provider || getDefaultProvider() || 'router';
   const provider = createProvider(providerId);
@@ -196,7 +196,7 @@ async function notifySuccess(payload, options) {
     duration: payload.workflow_job.duration || 'unknown',
   };
 
-  console.log(chalk.green(`\n✅ Build Success: ${notification.title}`));
+  logger.log(chalk.green(`\n✅ Build Success: ${notification.title}`));
 
   if (options.slackWebhook) {
     await sendSlackNotification(options.slackWebhook, notification, 'success');
@@ -262,20 +262,20 @@ async function sendSlackNotification(webhookUrl, data, type) {
 
     const req = https.request(options, (res) => {
       if (res.statusCode === 200) {
-        console.log(chalk.green('   📱 Slack notification sent'));
+        logger.log(chalk.green('   📱 Slack notification sent'));
       } else {
-        console.log(chalk.yellow(`   ⚠️ Slack notification failed: ${res.statusCode}`));
+        logger.log(chalk.yellow(`   ⚠️ Slack notification failed: ${res.statusCode}`));
       }
     });
 
     req.on('error', (e) => {
-      console.log(chalk.red(`   ❌ Slack webhook error: ${e.message}`));
+      logger.log(chalk.red(`   ❌ Slack webhook error: ${e.message}`));
     });
 
     req.write(postData);
     req.end();
   } catch (error) {
-    console.log(chalk.red(`   ❌ Failed to send Slack notification: ${error.message}`));
+    logger.log(chalk.red(`   ❌ Failed to send Slack notification: ${error.message}`));
   }
 }
 
@@ -343,19 +343,19 @@ async function sendDiscordNotification(webhookUrl, data, type) {
 
     const req = https.request(options, (res) => {
       if (res.statusCode === 204) {
-        console.log(chalk.green('   💬 Discord notification sent'));
+        logger.log(chalk.green('   💬 Discord notification sent'));
       } else {
-        console.log(chalk.yellow(`   ⚠️ Discord notification failed: ${res.statusCode}`));
+        logger.log(chalk.yellow(`   ⚠️ Discord notification failed: ${res.statusCode}`));
       }
     });
 
     req.on('error', (e) => {
-      console.log(chalk.red(`   ❌ Discord webhook error: ${e.message}`));
+      logger.log(chalk.red(`   ❌ Discord webhook error: ${e.message}`));
     });
 
     req.write(postData);
     req.end();
   } catch (error) {
-    console.log(chalk.red(`   ❌ Failed to send Discord notification: ${error.message}`));
+    logger.log(chalk.red(`   ❌ Failed to send Discord notification: ${error.message}`));
   }
 }

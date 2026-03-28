@@ -6,7 +6,7 @@
 export function recordError(error, context = {}) {
     // Stub — logs to console until enterprise analytics is wired up
     if (process.env.NODE_ENV !== 'test') {
-        console.error('[analytics:error]', error?.message || error, context);
+        logger.error('[analytics:error]', error?.message || error, context);
     }
 }
 

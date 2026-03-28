@@ -46,7 +46,7 @@ export function showHelp() {
     chalk.gray(doomsdayTheme.message),
   ].join('\n');
 
-  console.log(
+  logger.log(
     boxen(content, {
       padding: 1,
       margin: 1,
@@ -58,13 +58,13 @@ export function showHelp() {
 
 export function showSwarmAssemble(activeAgents = []) {
   const header = renderGradient('⚡ ASSEMBLING THE AVENGERS', 'doomsday');
-  console.log(header);
+  logger.log(header);
   if (!activeAgents.length) return;
   activeAgents.forEach((agent) => {
     const label = agent?.name ? agent.name.toUpperCase() : 'AGENT';
-    console.log(renderGradient(`  ${label}`, 'doomsday'));
+    logger.log(renderGradient(`  ${label}`, 'doomsday'));
   });
-  console.log('');
+  logger.log('');
 }
 
 export default {
@@ -82,7 +82,7 @@ export default {
 function handleModuleError(error, context = 'doomsday') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

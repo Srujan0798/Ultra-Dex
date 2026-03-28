@@ -65,11 +65,11 @@ class SystemMonitor extends EventEmitter {
   }
 
   async startMonitoring() {
-    console.log('🚀 Starting system monitoring...');
-    
+    process.stdout.write('🚀 Starting system monitoring...\n');
+
     // Initialize health checks
     await this.initializeHealthChecks();
-    
+
     // Start monitoring interval
     this.monitoringInterval = setInterval(async () => {
       try {
@@ -77,12 +77,12 @@ class SystemMonitor extends EventEmitter {
         await this.checkHealth();
         await this.evaluateAlerts();
       } catch (error) {
-        console.error('Monitoring error:', error);
+        process.stderr.write('Monitoring error: ' + error.message + '\n');
         this.emit('monitoring_error', error);
       }
     }, this.config.checkInterval);
-    
-    console.log('✅ System monitoring started');
+
+    process.stdout.write('✅ System monitoring started\n');
     return this.monitoringInterval;
   }
 
@@ -605,8 +605,8 @@ class SystemMonitor extends EventEmitter {
 
   async sendCriticalAlert(alert) {
     // Send critical alert notifications
-    console.error(`🚨 CRITICAL ALERT: ${alert.message}`);
-    
+    process.stderr.write(`🚨 CRITICAL ALERT: ${alert.message}\n`);
+
     // In a real implementation, send to:
     // - PagerDuty/Slack for on-call team
     // - Email to executives
@@ -615,8 +615,8 @@ class SystemMonitor extends EventEmitter {
 
   async sendWarningAlert(alert) {
     // Send warning alert notifications
-    console.warn(`⚠️ WARNING: ${alert.message}`);
-    
+    process.stderr.write(`⚠️ WARNING: ${alert.message}\n`);
+
     // In a real implementation, send to:
     // - Slack channel
     // - Email to relevant teams

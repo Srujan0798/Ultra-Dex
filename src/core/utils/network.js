@@ -19,13 +19,13 @@ export async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 4
       }
       return response;
     } catch (err) {
-      console.warn(`[Network] Attempt ${attempt + 1}/${retries + 1} failed for ${url}: ${err.message}`);
+      logger.warn(`[Network] Attempt ${attempt + 1}/${retries + 1} failed for ${url}: ${err.message}`);
       lastError = err;
       if (attempt < retries) {
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
   }
-  console.error(`[Network] All ${retries + 1} attempts failed for ${url}`);
+  logger.error(`[Network] All ${retries + 1} attempts failed for ${url}`);
   throw lastError;
 }

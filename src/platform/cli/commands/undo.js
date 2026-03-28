@@ -27,7 +27,7 @@ export function registerUndoCommand(program) {
 
         const result = await historyManager.undo(steps);
         if (options.json) {
-          console.log(JSON.stringify(result, null, 2));
+          logger.log(JSON.stringify(result, null, 2));
           return;
         }
 
@@ -56,7 +56,7 @@ export function registerUndoCommand(program) {
         const list = await historyManager.list(limit);
 
         if (options.json) {
-          console.log(JSON.stringify(list, null, 2));
+          logger.log(JSON.stringify(list, null, 2));
           return;
         }
 
@@ -103,7 +103,7 @@ export function registerUndoCommand(program) {
         });
 
         if (options.json) {
-          console.log(JSON.stringify(result, null, 2));
+          logger.log(JSON.stringify(result, null, 2));
           return;
         }
 

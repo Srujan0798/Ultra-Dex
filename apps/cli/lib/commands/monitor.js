@@ -92,7 +92,7 @@ async function renderDashboard() {
 
   console.clear();
   printInfo(chalk.bold('🖥️  Ultra-Dex System Monitor (Real-time)\n'));
-  console.log(metrics.table.toString());
+  logger.log(metrics.table.toString());
   printInfo(chalk.gray('\nPress Ctrl+C to exit...'));
 }
 

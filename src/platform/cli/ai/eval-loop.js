@@ -11,7 +11,7 @@ export default evaluationLoop;
  */
 function handleError(error) {
   try {
-    console.error('[eval-loop]', error instanceof Error ? error.message : String(error));
+    logger.error('[eval-loop]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

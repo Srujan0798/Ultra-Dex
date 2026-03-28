@@ -17,20 +17,20 @@ class SelfHealingCI {
    */
   async start() {
     this.isRunning = true;
-    console.log("\u{1F916} Self-Healing CI/CD System activated");
+    logger.log("\u{1F916} Self-Healing CI/CD System activated");
     if (this.config.webhookUrl) {
       this.setupWebhookListener();
     }
     this.startHealthMonitoring();
     this.monitorPullRequests();
-    console.log("\u2705 Self-Healing CI/CD is now monitoring");
+    logger.log("\u2705 Self-Healing CI/CD is now monitoring");
   }
   /**
    * Stop the system
    */
   async stop() {
     this.isRunning = false;
-    console.log("\u{1F6D1} Self-Healing CI/CD system stopped");
+    logger.log("\u{1F6D1} Self-Healing CI/CD system stopped");
   }
   /**
    * Run tests and detect issues
@@ -173,11 +173,11 @@ class SelfHealingCI {
         const success = await this.applyFix(report);
         if (success) {
           fixesApplied++;
-          console.log(`\u2705 Applied fix for: ${report.title}`);
+          logger.log(`\u2705 Applied fix for: ${report.title}`);
         }
       }
     }
-    console.log(`Applied ${fixesApplied} automatic fixes`);
+    logger.log(`Applied ${fixesApplied} automatic fixes`);
     return fixesApplied > 0;
   }
   /**
@@ -209,7 +209,7 @@ class SelfHealingCI {
       writeFileSync(report.file, lines.join("\n"));
       return true;
     } catch (error) {
-      console.error(`Failed to apply fix:`, error.message);
+      logger.error(`Failed to apply fix:`, error.message);
       return false;
     }
   }
@@ -232,14 +232,14 @@ class SelfHealingCI {
    * Run the full CI pipeline
    */
   async runCIPipeline() {
-    console.log("\u{1F504} Starting CI pipeline...");
+    logger.log("\u{1F504} Starting CI pipeline...");
     const testResult = await this.runTests();
-    console.log(`\u{1F9EA} Tests: ${testResult.passed ? "PASSED" : "FAILED"} (${testResult.issues.length} issues, ${testResult.coverage}% coverage)`);
+    logger.log(`\u{1F9EA} Tests: ${testResult.passed ? "PASSED" : "FAILED"} (${testResult.issues.length} issues, ${testResult.coverage}% coverage)`);
     const staticAnalysisReports = await this.runStaticAnalysis();
-    console.log(`\u{1F50D} Static Analysis: ${staticAnalysisReports.length} issues found`);
+    logger.log(`\u{1F50D} Static Analysis: ${staticAnalysisReports.length} issues found`);
     const allReports = [...staticAnalysisReports];
     if (allReports.length > 0) {
-      console.log("\u{1F527} Attempting auto-fixes...");
+      logger.log("\u{1F527} Attempting auto-fixes...");
       await this.attemptAutoFix(allReports);
     }
     const success = testResult.passed && allReports.filter((r) => r.severity === "critical").length === 0;
@@ -249,7 +249,7 @@ class SelfHealingCI {
    * Setup webhook listener for CI triggers
    */
   setupWebhookListener() {
-    console.log(`\u{1F4E1} Listening for webhooks at: ${this.config.webhookUrl}`);
+    logger.log(`\u{1F4E1} Listening for webhooks at: ${this.config.webhookUrl}`);
   }
   /**
    * Start health monitoring
@@ -259,13 +259,13 @@ class SelfHealingCI {
       if (!this.isRunning) return;
       try {
         const result = await this.runCIPipeline();
-        console.log(`\u{1F4CA} Health check: ${result.success ? "HEALTHY" : "UNHEALTHY"}`);
+        logger.log(`\u{1F4CA} Health check: ${result.success ? "HEALTHY" : "UNHEALTHY"}`);
         if (!result.success) {
-          console.log("\u{1F6A8} Health check failed, initiating recovery...");
+          logger.log("\u{1F6A8} Health check failed, initiating recovery...");
           await this.initiateRecovery(result.reports);
         }
       } catch (error) {
-        console.error("Health check failed:", error.message);
+        logger.error("Health check failed:", error.message);
       }
     }, 3e5);
   }
@@ -278,11 +278,11 @@ class SelfHealingCI {
       try {
         const prs = await this.fetchOpenPRs();
         for (const pr of prs) {
-          console.log(`\u{1F50D} Analyzing PR #${pr.number}: ${pr.title}`);
+          logger.log(`\u{1F50D} Analyzing PR #${pr.number}: ${pr.title}`);
           await this.analyzePR(pr);
         }
       } catch (error) {
-        console.error("PR monitoring failed:", error.message);
+        logger.error("PR monitoring failed:", error.message);
       }
     }, 6e4);
   }
@@ -306,7 +306,7 @@ class SelfHealingCI {
    */
   async commentOnPR(prNumber, reports) {
     const comment = this.generatePRComment(reports);
-    console.log(`\u{1F4AC} Commenting on PR #${prNumber}: ${comment}`);
+    logger.log(`\u{1F4AC} Commenting on PR #${prNumber}: ${comment}`);
   }
   /**
    * Generate PR comment from bug reports
@@ -327,14 +327,14 @@ Auto-fixes applied where possible.`;
    * Initiate recovery from issues
    */
   async initiateRecovery(reports) {
-    console.log("\u{1F504} Initiating recovery process...");
+    logger.log("\u{1F504} Initiating recovery process...");
     await this.attemptAutoFix(reports);
     const testResult = await this.runTests();
     if (testResult.passed) {
-      console.log("\u2705 Recovery successful!");
+      logger.log("\u2705 Recovery successful!");
       await this.createRecoveryCommit(reports);
     } else {
-      console.log("\u274C Recovery failed, manual intervention required");
+      logger.log("\u274C Recovery failed, manual intervention required");
     }
   }
   /**
@@ -350,9 +350,9 @@ Auto-fixes applied where possible.`;
 - Resolved security concerns`;
       await execPromise(`git commit -m "${commitMsg}"`);
       await execPromise("git push");
-      console.log("\u2705 Recovery commit created and pushed");
+      logger.log("\u2705 Recovery commit created and pushed");
     } catch (error) {
-      console.error("Failed to create recovery commit:", error.message);
+      logger.error("Failed to create recovery commit:", error.message);
     }
   }
   /**

@@ -44,7 +44,7 @@ export const avengersAgents = agents;
  */
 function handleError(error) {
   try {
-    console.error('[agents]', error instanceof Error ? error.message : String(error));
+    logger.error('[agents]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

@@ -403,8 +403,8 @@ export class AutonomousAgent {
     }
 
     if (this.verbose) {
-      console.log(chalk.cyan(`\n🤖 ${this.type.toUpperCase()} Agent starting...`));
-      console.log(chalk.gray(`Task: ${task}\n`));
+      logger.log(chalk.cyan(`\n🤖 ${this.type.toUpperCase()} Agent starting...`));
+      logger.log(chalk.gray(`Task: ${task}\n`));
     }
 
     const messages = [{ role: 'user', content: task }];
@@ -416,7 +416,7 @@ export class AutonomousAgent {
       turn++;
 
       if (this.verbose) {
-        console.log(chalk.gray(`--- Turn ${turn}/${this.maxTurns} ---`));
+        logger.log(chalk.gray(`--- Turn ${turn}/${this.maxTurns} ---`));
       }
 
       // Call the model
@@ -429,7 +429,7 @@ export class AutonomousAgent {
 
         for (const toolCall of response.toolCalls) {
           if (this.verbose) {
-            console.log(
+            logger.log(
               chalk.yellow(
                 `  🔧 ${toolCall.name}(${JSON.stringify(toolCall.input).slice(0, 50)}...)`
               )
@@ -473,7 +473,7 @@ export class AutonomousAgent {
         finalResult = response.content;
 
         if (this.verbose) {
-          console.log(chalk.green(`\n✅ Agent completed`));
+          logger.log(chalk.green(`\n✅ Agent completed`));
         }
 
         break;
@@ -521,8 +521,8 @@ export class AutonomousAgent {
 export async function runAutonomousSwarm(task, options = {}) {
   const { provider, workdir = process.cwd(), verbose = false } = options;
 
-  console.log(chalk.cyan('\n🐝 Ultra-Dex Autonomous Swarm\n'));
-  console.log(chalk.bold(`Task: ${task}\n`));
+  logger.log(chalk.cyan('\n🐝 Ultra-Dex Autonomous Swarm\n'));
+  logger.log(chalk.bold(`Task: ${task}\n`));
 
   // Start with orchestrator
   const orchestrator = new AutonomousAgent('orchestrator', {
@@ -532,10 +532,10 @@ export async function runAutonomousSwarm(task, options = {}) {
 
   const result = await orchestrator.run(task, { provider, workdir });
 
-  console.log(chalk.cyan('\n📊 Swarm Summary:'));
-  console.log(`  Turns: ${result.turns}`);
-  console.log(`  Tools used: ${result.toolsUsed}`);
-  console.log(chalk.green(`\n✅ Swarm completed`));
+  logger.log(chalk.cyan('\n📊 Swarm Summary:'));
+  logger.log(`  Turns: ${result.turns}`);
+  logger.log(`  Tools used: ${result.toolsUsed}`);
+  logger.log(chalk.green(`\n✅ Swarm completed`));
 
   return result;
 }

@@ -19,7 +19,7 @@ export default {
  */
 function handleError(error) {
   try {
-    console.error('[workflow]', error instanceof Error ? error.message : String(error));
+    logger.error('[workflow]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

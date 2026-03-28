@@ -24,7 +24,7 @@ export function registerGateCommand(program) {
       const summary = summarizeGateResults(results);
 
       if (options.json) {
-        console.log(JSON.stringify({ summary, results }, null, 2));
+        logger.log(JSON.stringify({ summary, results }, null, 2));
         return;
       }
 
@@ -79,7 +79,7 @@ async function safeExecute(fn, context = 'gate') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

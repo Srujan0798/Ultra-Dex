@@ -4,6 +4,7 @@
 **Generated:** 2026-03-27  
 **Scan Tool:** Qwen CLI (Experimental LSP)  
 **Scope:** `src/`, `apps/`, `apps/cli/` directories
+**Cycle 3 Update:** 2026-03-28
 
 ---
 
@@ -19,6 +20,19 @@
 
 ---
 
+## Cycle 3 Implementation Update
+
+The repository now has a concrete CLI-side migration baseline in place:
+
+- `apps/cli/lib/utils/logger.js` was extended into the active structured CLI logger with redaction, JSON mode, history tracking, debug override support, and graceful fallback behavior for optional terminal deps.
+- `apps/cli/lib/commands/status.js`, `apps/cli/lib/commands/health.js`, and `apps/cli/lib/commands/monitoring.js` were migrated off direct command-level `console.*` usage.
+- `apps/cli/bin/ultra-dex.js` now uses routing/suggestion helpers instead of ad hoc unknown-command logging.
+- `apps/cli/lib/commands/dashboard.js` uses a reusable spinner-based loading path instead of raw status prints during dashboard model construction.
+
+This means the CLI migration is no longer only theoretical: the logger is actively used in the command surface and the report should be read as "remaining work after the Cycle 3 baseline," not as a purely untouched backlog.
+
+---
+
 ## 1. Existing Logger Infrastructure
 
 The codebase already has **multiple Logger implementations** available for migration:
@@ -27,6 +41,7 @@ The codebase already has **multiple Logger implementations** available for migra
 |--------|----------|----------|
 | **Logger** | `src/platform/cli/ui/logger.js` | Persona-based (professional/fun/doomsday/assistant/robot), theming, quiet mode |
 | **Logger** | `apps/cli/lib/ui/logger.js` | Same as above + PII redaction |
+| **Structured CLI Logger** | `apps/cli/lib/utils/logger.js` | Theme-aware output, JSON mode, redaction, history, debug override, child loggers |
 | **StructuredLogger** | `src/services/logging/structured-logger.js` | JSON output, file rotation, child loggers, correlation IDs |
 | **logger (winston)** | `src/utils/logging.js` | Winston-based, file transports, performance metrics |
 | **AuditLogger** | `src/services/audit/audit-logger.ts` | Audit trail, compliance reporting, PPM storage |

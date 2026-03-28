@@ -122,7 +122,7 @@ describe('Governance Integration - Direct Test', () => {
     assert.strictEqual(governanceResult.allowed, false);
 
     // Act & Assert: Should throw GovernanceDeniedException when not allowed
-    assert.rejects(() => {
+    await assert.rejects(async () => {
       throw new GovernanceDeniedException(
         `Tool execution blocked by governance policy: ${governanceResult.reason}`,
         context

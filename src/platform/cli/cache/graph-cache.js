@@ -31,7 +31,7 @@ export class GraphCache {
  */
 function handleError(error) {
   try {
-    console.error('[graph-cache]', error instanceof Error ? error.message : String(error));
+    logger.error('[graph-cache]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

@@ -113,9 +113,9 @@ export function registerAuthCommand(program) {
       try {
         const globalConfig = await configManager.loadGlobal();
         if (globalConfig?.user?.username) {
-          console.log(`Logged in as: ${chalk.bold.green(globalConfig.user.username)}`);
-          console.log(`Role: ${chalk.cyan(globalConfig.user.role || 'member')}`);
-          console.log(`Last session: ${chalk.gray(globalConfig.user.lastLogin)}`);
+          logger.log(`Logged in as: ${chalk.bold.green(globalConfig.user.username)}`);
+          logger.log(`Role: ${chalk.cyan(globalConfig.user.role || 'member')}`);
+          logger.log(`Last session: ${chalk.gray(globalConfig.user.lastLogin)}`);
         } else {
           printWarning(
             chalk.yellow('Not logged in. Run `ultra-dex auth login` to set up identity.')
@@ -195,8 +195,8 @@ export function registerAuthCommand(program) {
 
           printSuccess(chalk.green('\n✅ API Key created successfully!'));
           printWarning(chalk.yellow('\n⚠️  Copy your API key now - it will not be shown again!\n'));
-          console.log(chalk.cyan(key.key));
-          console.log(chalk.gray(`\nKey ID: ${key.id}`));
+          logger.log(chalk.cyan(key.key));
+          logger.log(chalk.gray(`\nKey ID: ${key.id}`));
         }
 
         if (options.list) {
@@ -219,7 +219,7 @@ export function registerAuthCommand(program) {
               ]);
             });
 
-            console.log(table.toString());
+            logger.log(table.toString());
           }
         }
 
@@ -250,22 +250,22 @@ export function registerAuthCommand(program) {
 
           Object.entries(ROLES).forEach(([key, role]) => {
             const definition = getRoleDefinition(role);
-            console.log(chalk.white.bold(`${key}:`));
-            console.log(chalk.gray(`  Role: ${role}`));
-            console.log(chalk.gray(`  Permissions (${definition.permissions.length}):`));
+            logger.log(chalk.white.bold(`${key}:`));
+            logger.log(chalk.gray(`  Role: ${role}`));
+            logger.log(chalk.gray(`  Permissions (${definition.permissions.length}):`));
             definition.permissions.forEach((perm) => {
-              console.log(chalk.gray(`    • ${perm}`));
+              logger.log(chalk.gray(`    • ${perm}`));
             });
-            console.log('');
+            logger.log('');
           });
         }
 
         if (options.check) {
           const definition = getRoleDefinition(options.check);
           printInfo(chalk.cyan.bold(`\n🔍 Role: ${options.check}\n`));
-          console.log(chalk.white('Permissions:'));
+          logger.log(chalk.white('Permissions:'));
           definition.permissions.forEach((perm) => {
-            console.log(chalk.gray(`  ✓ ${perm}`));
+            logger.log(chalk.gray(`  ✓ ${perm}`));
           });
         }
 
@@ -316,22 +316,22 @@ export function registerAuthCommand(program) {
           const stats = await auditLogger.getStats(parseInt(options.days));
 
           printInfo(chalk.cyan.bold(`\n📊 Audit Statistics (Last ${options.days} days)\n`));
-          console.log(chalk.white(`Total Actions: ${stats.totalActions}`));
+          logger.log(chalk.white(`Total Actions: ${stats.totalActions}`));
 
           if (Object.keys(stats.byAction).length > 0) {
-            console.log(chalk.white('\nBy Action:'));
+            logger.log(chalk.white('\nBy Action:'));
             Object.entries(stats.byAction)
               .sort((a, b) => b[1] - a[1])
               .forEach(([action, count]) => {
-                console.log(chalk.gray(`  ${action}: ${count}`));
+                logger.log(chalk.gray(`  ${action}: ${count}`));
               });
           }
 
           if (Object.keys(stats.byStatus).length > 0) {
-            console.log(chalk.white('\nBy Status:'));
+            logger.log(chalk.white('\nBy Status:'));
             Object.entries(stats.byStatus).forEach(([status, count]) => {
               const color = status === 'success' ? 'green' : 'red';
-              console.log(chalk[color](`  ${status}: ${count}`));
+              logger.log(chalk[color](`  ${status}: ${count}`));
             });
           }
         }
@@ -370,7 +370,7 @@ export function registerAuthCommand(program) {
               ]);
             });
 
-            console.log(table.toString());
+            logger.log(table.toString());
           }
         }
 
@@ -402,7 +402,7 @@ export function registerAuthCommand(program) {
           if (result.success && result.accounts.length > 0) {
             printInfo(chalk.cyan.bold('\n🔐 Stored Accounts\n'));
             result.accounts.forEach((acc) => {
-              console.log(chalk.white(`  • ${acc.account}`));
+              logger.log(chalk.white(`  • ${acc.account}`));
             });
           } else {
             printInfo(chalk.gray('No accounts stored'));

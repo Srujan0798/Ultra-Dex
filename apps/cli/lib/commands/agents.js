@@ -14,6 +14,7 @@ import { validateSafePath } from '../utils/validation.js';
 import { marketplaceClient } from '../marketplace/client.js';
 import { authorizeAgentAccess, filterAgentsByAccess } from '../enterprise/agent-access.js';
 import { printError, printInfo, printWarning } from '../utils/output.js';
+import { logger } from '../utils/logger.js';
 import { registerAgentGenerator } from './agent-gen.js';
 
 export const AGENTS = [
@@ -830,7 +831,7 @@ async function listAgents({
     const customAgents = builtinOnly ? [] : await listCustomAgents();
     const totalAgents = AGENTS.length + customAgents.length;
     const header = builtinOnly ? 'Built-in Agents' : `Ultra-Dex AI Agents (${totalAgents} Total)`;
-    console.log(chalk.bold(`\n🤖 ${header}\n`));
+    logger.info(chalk.bold(`\n🤖 ${header}\n`));
 
     const candidateNames = [...AGENTS.map((agent) => agent.name), ...customAgents];
 

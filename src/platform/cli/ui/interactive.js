@@ -38,10 +38,10 @@ export async function startInteractiveMode() {
   await renderer.text(`**Welcome, User.**\n${stackInfo} ${gitInfo}`);
 
   // Display Status Dashboard
-  console.log(theme.dim('  ┌' + '─'.repeat(56) + '┐'));
+  logger.log(theme.dim('  ┌' + '─'.repeat(56) + '┐'));
   const statusLine = (label, val) => {
     const padding = 54 - label.length - stripAnsi(val).length;
-    console.log(`  │ ${theme.subtitle(label)} ${' '.repeat(Math.max(0, padding))} ${val} │`);
+    logger.log(`  │ ${theme.subtitle(label)} ${' '.repeat(Math.max(0, padding))} ${val} │`);
   };
 
   const budget = tokenBudget.getStatusBarData();
@@ -51,11 +51,11 @@ export async function startInteractiveMode() {
   statusLine('CHANGES', `${ctx.git.modifiedFiles || 0} files`);
   statusLine('AGENTS', theme.success('17 Online'));
   statusLine(budget.label, budget.value);
-  console.log(theme.dim('  └' + '─'.repeat(56) + '┘'));
-  console.log('');
+  logger.log(theme.dim('  └' + '─'.repeat(56) + '┘'));
+  logger.log('');
 
-  console.log(theme.dim('  (Type a command, ask a question, or use the menu below)'));
-  console.log('');
+  logger.log(theme.dim('  (Type a command, ask a question, or use the menu below)'));
+  logger.log('');
 
   const choices = [
     { name: `${theme.primary('🚀')}  Start New Project`, value: 'init' },
@@ -105,7 +105,7 @@ export async function startInteractiveMode() {
         }
       } else {
         renderer.fail(`I didn't quite catch that. Try "init", "build", or "help".`);
-        console.log(theme.dim(`  Your input: "${action}"\n`));
+        logger.log(theme.dim(`  Your input: "${action}"\n`));
       }
     }
   }
@@ -131,5 +131,5 @@ async function executeCommand(cmd, originalInput = '') {
     renderer.fail(`Command execution failed: ${e.message}`);
   }
 
-  console.log('');
+  logger.log('');
 }

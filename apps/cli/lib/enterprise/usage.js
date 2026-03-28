@@ -2,15 +2,21 @@
 
 /**
  * Enterprise Usage Analytics
- * Tracks command usage and builds lightweight summaries for dashboards.
+ * Persists command usage from the logger spine and builds lightweight summaries.
  */
 
-import fs from 'fs';
 import fsPromises from 'fs/promises';
 import path from 'path';
+import { appendJsonl } from '../analytics/storage.js';
+import { logger } from '../utils/logger.js';
 
-const ANALYTICS_DIR = path.resolve(process.cwd(), '.ultra-dex', 'analytics');
-const USAGE_LOG = path.join(ANALYTICS_DIR, 'usage.jsonl');
+function getAnalyticsDir() {
+  return path.resolve(process.cwd(), '.ultra-dex', 'analytics');
+}
+
+function getUsageLogPath() {
+  return path.join(getAnalyticsDir(), 'usage.jsonl');
+}
 
 function safeJsonParse(line) {
   try {
@@ -25,37 +31,63 @@ function normalizeCommandName(command) {
   return String(command).trim();
 }
 
+let usageSinkInitialized = false;
+
+export function initializeUsageSink() {
+  if (usageSinkInitialized) return;
+
+  logger.subscribe(
+    'usage',
+    async (event) => {
+      const payload = {
+        timestamp: event.data?.timestamp || event.timestamp || new Date().toISOString(),
+        ...event.data,
+        command: normalizeCommandName(event.data?.command),
+      };
+
+      await appendJsonl(getUsageLogPath(), payload);
+    },
+    {
+      eventTypes: ['usage.command'],
+    }
+  );
+
+  usageSinkInitialized = true;
+}
+
 export function recordUsageEventSync(event = {}) {
-  try {
-    fs.mkdirSync(ANALYTICS_DIR, { recursive: true });
-    const payload = {
-      timestamp: new Date().toISOString(),
-      ...event,
-      command: normalizeCommandName(event.command),
-    };
-    fs.appendFileSync(USAGE_LOG, JSON.stringify(payload) + '\n', 'utf8');
-  } catch {
-    // Usage tracking should never block CLI execution
-  }
+  initializeUsageSink();
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    ...event,
+    command: normalizeCommandName(event.command),
+  };
+
+  void logger.event('usage.command', payload, {
+    console: false,
+    source: 'compat.usage',
+  });
 }
 
 export async function recordUsageEvent(event = {}) {
-  try {
-    await fsPromises.mkdir(ANALYTICS_DIR, { recursive: true });
-    const payload = {
-      timestamp: new Date().toISOString(),
-      ...event,
-      command: normalizeCommandName(event.command),
-    };
-    await fsPromises.appendFile(USAGE_LOG, JSON.stringify(payload) + '\n', 'utf8');
-  } catch {
-    // Usage tracking should never block CLI execution
-  }
+  initializeUsageSink();
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    ...event,
+    command: normalizeCommandName(event.command),
+  };
+
+  await logger.event('usage.command', payload, {
+    console: false,
+    source: 'compat.usage',
+  });
 }
 
 export async function loadUsageEvents({ since, limit } = {}) {
   try {
-    const data = await fsPromises.readFile(USAGE_LOG, 'utf8');
+    const data = await fsPromises.readFile(getUsageLogPath(), 'utf8');
     let events = data.split('\n').filter(Boolean).map(safeJsonParse).filter(Boolean);
 
     if (since) {
@@ -138,4 +170,11 @@ export async function getUsageSummary({ windowDays = 7, limit = 2000 } = {}) {
   return summarizeUsage(events);
 }
 
-export const usageLogPath = USAGE_LOG;
+export const usageLogPath = {
+  toString() {
+    return getUsageLogPath();
+  },
+  valueOf() {
+    return getUsageLogPath();
+  },
+};

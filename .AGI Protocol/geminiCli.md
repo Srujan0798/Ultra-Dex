@@ -1,9 +1,9 @@
 # Gemini CLI: Official Deep Feature Playbook
 
 **Document Status:** 2026 Official Documentation Verified  
-**Source:** google-gemini/gemini-cli GitHub + developers.google.com/gemini-cli  
-**Tool:** `gemini` CLI binary (open-source, by Google DeepMind)  
-**Objective:** Stop treating Gemini CLI as a chat interface. Configure it as an automated, heavily firewalled, headless background swarm daemon.
+**Source:** google-gemini/gemini-cli GitHub  
+**Tool:** `gemini` CLI binary (by Google DeepMind)  
+**Objective:** Configure the Gemini CLI as an automated, heavily firewalled, headless background swarm daemon.
 
 ---
 
@@ -20,11 +20,11 @@ gemini auth
 gemini --version
 ```
 
-**Free Tier:** Authenticated via your Google account, you get:
-- **Gemini 2.5 Pro** (the default, most powerful model)
-- **1 million token context window** per request
-- **60 requests per minute**
-- **$0 cost** as long as you stay within the quota
+**Free Tier Limits:**
+*   **Model:** Gemini 2.5 Pro (default)
+*   **Context:** 1 million tokens
+*   **Rate Limit:** 60 requests / minute
+*   **Cost:** $0
 
 ---
 
@@ -36,7 +36,7 @@ gemini --version
 | `gemini-2.5-flash` | 1M tokens | Fast | Rapid generation, TDD loops, boilerplate |
 | `gemini-2.0-flash-exp` | 1M tokens | Fastest | Background daemons, repetitive scanning |
 
-Switch models by setting `model` in `~/.gemini/settings.json`:
+**Switch models via config:** (`~/.gemini/settings.json`)
 ```json
 { "model": "gemini-2.5-flash" }
 ```
@@ -45,7 +45,7 @@ Switch models by setting `model` in `~/.gemini/settings.json`:
 
 ## 3. Headless Execution (The Primary Swarm Mode)
 
-Never use Gemini as a chatbot in interactive mode when you can run it headless.
+Never use Gemini interactively when you can run it headless directly from the shell.
 
 ```bash
 # One-shot headless execution
@@ -54,7 +54,7 @@ gemini -p "Run npm test and output a summary of failures"
 # YOLO mode: executes tool calls (file edits, shell commands) without asking
 gemini -y -p "Fix all failing tests in tests/core/"
 
-# Load a prompt from a markdown file (perfect for complex dispatch files)
+# Load a prompt from a markdown file (complex dispatch)
 gemini -p "$(cat dispatch_task.md)"
 
 # Resume last crashed session
@@ -65,7 +65,7 @@ gemini -r latest
 
 ## 4. Safety Firewalls: The Policy Engine
 
-The Policy Engine is a firewall that intercepts every single tool call before the LLM executes it. **You must configure this before running YOLO mode.**
+The Policy Engine intercepts every single tool call before the LLM executes it. **You must configure this before running `-y` (YOLO) mode.**
 
 **Location:** `~/.gemini/settings.json`
 
@@ -82,16 +82,17 @@ The Policy Engine is a firewall that intercepts every single tool call before th
   }
 }
 ```
-
-- `permit` — Agent executes silently
-- `deny` — Agent is blocked and told the action is forbidden
-- `confirm` — Agent must wait for your keypress approval
+*   `permit` — Agent executes silently
+*   `deny` — Agent is blocked
+*   `confirm` — Agent waits for human keypress
 
 ---
 
-## 5. Lifecycle Hooks (`settings.json`)
+## 5. Lifecycle Hooks
 
-Hooks are scripts that fire synchronously at defined points in the agentic loop. The CLI waits for them to finish before proceeding. This is how you inject live context without bloating your prompt.
+Hooks fire synchronously at defined points. The CLI waits for them to finish before proceeding. This injects dynamic context.
+
+**Location:** `~/.gemini/settings.json`
 
 ```json
 {
@@ -103,24 +104,20 @@ Hooks are scripts that fire synchronously at defined points in the agentic loop.
 }
 ```
 
-**The Play:** Create `scripts/inject-git-log.sh` that outputs the last 10 Git commit messages. Gemini will automatically read this output and know exactly what changed before it edits any file.
-
 ---
 
 ## 6. Agent Skills (`SKILL.md`)
 
-Skills are folders containing `SKILL.md` + supporting scripts. Gemini auto-discovers them from:
-- Project-level: `.gemini/skills/`
-- User-level: `~/.gemini/skills/`
+Gemini auto-discovers custom logic folders from `.gemini/skills/` (Project) or `~/.gemini/skills/` (User).
 
-**Example Skill Structure:**
-```
+**Skill Folder Structure:**
+```text
 .gemini/skills/run-tests/
   SKILL.md          ← Instructions for the agent
-  run_tests.sh      ← Helper script
+  run_tests.sh      ← Helper script executed by SKILL.md rules
 ```
 
-`SKILL.md` format:
+**`SKILL.md` format:**
 ```markdown
 ---
 name: run-tests
@@ -130,37 +127,34 @@ Execute `npm test` using the run_tests.sh script.
 Parse the output and return a JSON object with: { passed, failed, errors[] }
 ```
 
-Once installed, just tell the agent: *"Use the run-tests skill to validate the test suite."*
-
 ---
 
-## 7. Proxy Routing (For API Key Management)
+## 7. Proxy Routing (LiteLLM)
 
-If you need to centralize authentication across multiple engineers, route Gemini CLI through **LiteLLM Proxy**:
-
+For enterprise/centralized Auth:
 ```bash
-# Set the proxy in settings.json
-# { "apiEndpoint": "http://localhost:4000" }
-
-# Or via environment variable
+# Export proxy URL and run task
 GEMINI_API_ENDPOINT=http://localhost:4000 gemini -p "task"
 ```
 
-LiteLLM intercepts all requests, provides centralized logging, and allows budget caps per user.
-
 ---
 
-## 8. Ultra-Dex Swarm Dispatch Templates
+## 8. Ultra-Dex Swarm Role & Dispatch
 
-Copy-paste these into your terminal tabs for parallel execution:
+* **Role:** Parallel Worker & Peripheral Process
+* **Best For:** TDD loops, documentation generation, shell auditing, and massive parallel background extraction tasks.
+* **Windows:** 3-5 Terminal Tabs.
+* **$0 Strategy:** YOLO Mode (`-y`) relying entirely on the Policy Engine Firewall to ensure isolation.
+
+### Dispatch Templates
 
 ```bash
-# Terminal A: TDD Daemon (loops until tests pass)
-gemini -y -p "Run npm test in tests/core/. For each failing test, read the test file and the source file it's testing. Fix the source file. Loop until all tests pass. Output a summary when done."
+# Terminal (TDD Daemon)
+gemini -y -p "Run tests in /core/. Fix the source file of failing tests. Loop until pass."
 
-# Terminal B: Documentation Generator
-gemini -y -p "Read all files in src/services/. For each exported class and function with no JSDoc comment, write proper JSDoc documentation. Do not change any logic."
+# Terminal (Docs Generator)
+gemini -y -p "Read /src/services/. Write proper JSDoc for exports missing them. Do not change logic."
 
-# Terminal C: Security Audit
-gemini -p "Scan the entire src/ directory. List every location where user input is passed to a database query, shell command, or eval() without sanitization. Output as a markdown table."
+# Terminal (Security Audit)
+gemini -p "Scan src/. Find eval() usage without sanitization. Output markdown."
 ```

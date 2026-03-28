@@ -6,7 +6,7 @@
  */
 
 import { estimateTokens, forecastCost } from '../utils/token-forecast.js';
-import { monitoring } from '../utils/monitoring.js';
+import { logger } from '../utils/logger.js';
 import { CostOptimizer } from './cost-optimizer.js';
 import { loadBenchmarks, selectBestModel } from './benchmarks.js';
 
@@ -135,7 +135,14 @@ export class SmartModelRouter {
       }
     }
 
-    monitoring.incrementCounter('router_requests');
+    void logger.event(
+      'monitoring.counter',
+      { counterName: 'router_requests' },
+      {
+        console: false,
+        source: 'model-router',
+      }
+    );
 
     return {
       provider,

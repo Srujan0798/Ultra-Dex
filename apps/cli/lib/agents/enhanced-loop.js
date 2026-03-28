@@ -12,6 +12,8 @@ import { verifyLinting, verifyTypeSafety, verifySecurityPatterns } from '../qual
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { errorRecovery } from '../utils/error-recovery.js';
 import { executeTool, processToolCalls } from '../tools/execution.js';
+import { logger } from '../utils/logger.js';
+import { initializeAnalyticsSink } from '../analytics/index.js';
 
 /**
  * Helper to safely format code blocks preventing markdown injection
@@ -601,11 +603,19 @@ async function authorizeAgentAccess(agentId) {
 }
 
 async function recordAgentPerformance(performanceData) {
-  // Placeholder implementation
+  initializeAnalyticsSink();
+  await logger.event('analytics.agent_performance', performanceData, {
+    console: false,
+    source: 'enhanced-loop',
+  });
 }
 
 async function recordTokenUsage(tokenData) {
-  // Placeholder implementation
+  initializeAnalyticsSink();
+  await logger.event('analytics.token_usage', tokenData, {
+    console: false,
+    source: 'enhanced-loop',
+  });
 }
 
 function estimateTokens(text) {
@@ -613,7 +623,11 @@ function estimateTokens(text) {
 }
 
 async function recordError(errorData) {
-  // Placeholder implementation
+  initializeAnalyticsSink();
+  await logger.event('analytics.error', errorData, {
+    console: false,
+    source: 'enhanced-loop',
+  });
 }
 
 export default { runAgentLoop };

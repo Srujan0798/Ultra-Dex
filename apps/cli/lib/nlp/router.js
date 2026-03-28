@@ -483,7 +483,7 @@ export function routeIntent(input) {
 
   // Priority 3: Contextual phrase matching
   if (text.includes('how do i') || text.includes('how to')) return 'help';
-  if (text.includes('is it working') || text.includes('ready')) return 'doctor';
+  if (text.includes('is it working') || text.includes('ready') || text.includes('system health') || text.includes('check health')) return 'doctor';
   if (text.includes('what are you') || text.includes('who are you')) return 'help';
   if (text.includes('build') && (text.includes('fail') || text.includes('fix') || text.includes('broken'))) return 'fix';
   if (text.includes('new saas') || text.includes('new app')) return 'init';
@@ -559,12 +559,12 @@ export function extractParams(intent, input) {
   // Enhanced named entity patterns - 15+ parameter types
   const patterns = {
     projectName: /(?:called|named|project\s+(?:called\s+)?|app\s+(?:called\s+)?|create\s+(?:project\s+)?)([a-z0-9-_]+)/i,
-    stack: /(?:using|with|stack|framework)\s+([a-z0-9-]+)/i,
+    stack: /(?:stack|framework|with)\s+([a-z0-9-]+)|using\s+(?!model|provider|ai|agent|bot)([a-z0-9-]+)/i,
     file: /(?:file|in)\s+([a-z0-9./-]+\.[a-z]+)/i,
     component: /(?:component|page|api)\s+([A-Za-z0-9]+)/i,
     directory: /(?:dir|directory|folder|path)\s+([a-z0-9./_-]+)/i,
     branch: /(?:branch)\s+([a-z0-9._/-]+)/i,
-    provider: /(?:provider|model|ai)\s+([a-z0-9-]+)|([a-z0-9-]+)\s+(?:provider|model|ai)/i,
+    provider: /(?:provider|model|ai)\s+([a-z0-9.-]+)|(\b(?!(?:using|with|stack|framework|and|the|for|from)\b)[a-z0-9.-]+)\s+(?:provider|model|ai)/i,
     port: /(?:port)\s*(\d+)/i,
     url: /(?:url|endpoint|api)\s+(https?:\/\/[^\s]+)/i,
     count: /(?:count|number|limit|max)\s*(\d+)/i,
@@ -756,11 +756,16 @@ export function needsClarification(input, threshold = 0.6) {
  * Generate clarification question for ambiguous input
  */
 function generateClarificationQuestion(primaryIntent, alternatives) {
-  if (alternatives.length === 0) {
-    return `Did you mean "ultra-dex ${primaryIntent}"?`;
+  const options = [primaryIntent, ...alternatives.slice(0, 2).map((a) => a.intent)].filter(Boolean);
+
+  if (options.length === 0) {
+    return 'I could not confidently map that request. Could you rephrase it or use a command name?';
   }
-  
-  const options = [primaryIntent, ...alternatives.slice(0, 2).map((a) => a.intent)];
+
+  if (options.length === 1) {
+    return `Did you mean "ultra-dex ${options[0]}"?`;
+  }
+
   return `Did you mean: ${options.map((o) => `"ultra-dex ${o}"`).join(' or ')}?`;
 }
 
@@ -955,6 +960,8 @@ export function translateToCommand(input) {
   // Special phrase matching for common natural language requests
   if (text.includes('build') && (text.includes('fail') || text.includes('fix') || text.includes('broken'))) {
     command = 'ultra-dex fix --build';
+  } else if (text.includes('system health') || (text.includes('check') && text.includes('health'))) {
+    command = 'ultra-dex doctor';
   } else {
     // General mapping based on intent
     switch (intent) {

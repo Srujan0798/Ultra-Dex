@@ -22,7 +22,7 @@ export const banner = asciiLogo;
 export function showBanner(version = VERSION) {
   const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
 
-  console.log(ultraGradient.multiline(asciiLogo));
+  logger.log(ultraGradient.multiline(asciiLogo));
 
   const info = [
     '',
@@ -37,7 +37,7 @@ export function showBanner(version = VERSION) {
     `${chalk.italic.dim('"Perfectly balanced, as all code should be."')}`,
   ].join('\n');
 
-  console.log(
+  logger.log(
     boxen(info, {
       padding: 1,
       margin: { top: 1, bottom: 1 },
@@ -52,7 +52,7 @@ export function showBanner(version = VERSION) {
 
 export function showCompactBanner() {
   const shortGradient = gradient(['#6366f1', '#d946ef']);
-  console.log(`  ${shortGradient.bold('⚡ Ultra-Dex')} ${chalk.dim(`v${VERSION}`)}`);
+  logger.log(`  ${shortGradient.bold('⚡ Ultra-Dex')} ${chalk.dim(`v${VERSION}`)}`);
 }
 
 export function registerBannerCommand(program) {
@@ -79,7 +79,7 @@ export default {
 function handleModuleError(error, context = 'banner') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

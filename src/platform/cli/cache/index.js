@@ -44,7 +44,7 @@ class UltraDexCache {
     try {
       await fs.mkdir(this.cacheDir, { recursive: true });
     } catch (error) {
-      console.error('Failed to create cache directory:', error.message);
+      logger.error('Failed to create cache directory:', error.message);
     }
   }
 
@@ -189,7 +189,7 @@ class UltraDexCache {
       await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2));
       this.lruCache.set(key, cacheData);
     } catch (error) {
-      console.error('Failed to write cache:', error.message);
+      logger.error('Failed to write cache:', error.message);
     }
   }
 
@@ -269,7 +269,7 @@ class UltraDexCache {
       this.lruCache.clear();
       this.costMetrics = { hits: 0, misses: 0, estimatedSavings: 0 };
     } catch (error) {
-      console.error('Failed to clear cache:', error.message);
+      logger.error('Failed to clear cache:', error.message);
     }
   }
 }

@@ -17,26 +17,39 @@ import {
   getDefaultProvider,
   checkConfiguredProviders,
 } from '../providers/index.js';
+import { ensureExecutionTrace } from '../analytics/execution-trace.js';
+import { initializeAnalyticsSink } from '../analytics/index.js';
+import { writeRunArtifacts } from '../analytics/run-artifacts.js';
 import { projectGraph } from '../mcp/graph.js';
+import { ultraMemory } from '../mcp/memory.js';
 import { errorRecovery } from '../utils/error-recovery.js';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
 import { authorizeOperation } from '../governance/index.js';
 import { verifyLinting, verifyTypeSafety, verifySecurityPatterns } from '../quality/automation.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { AppError, ValidationError } from '../utils/errors.js';
-import { getCache } from '../cache/index.js';
 import { authorizeAgentAccess } from '../enterprise/agent-access.js';
-import { recordAgentPerformance, recordTokenUsage, recordError } from '../analytics/index.js';
 import { estimateTokens } from '../utils/token-forecast.js';
+import { logger } from '../utils/logger.js';
+import {
+  buildPromptContextSection,
+  createInteractionSummary,
+  extractDecision,
+  stripDecisionLine,
+  truncateText,
+} from './run-context.js';
 
 const execAsync = promisify(exec);
+const MAX_RUNTIME_HISTORY = 12;
+const MAX_MEMORY_RESULTS = 5;
+const DEFAULT_MAX_STEPS = 10;
+const MAX_DELEGATION_DEPTH = 5;
+let runtimeStateLock = null;
 
 const AGENTS = {
   planner: {
     name: '@Planner',
     role: 'Task Breakdown Specialist',
     systemPrompt: `You are @Planner. Break down features into atomic tasks.
-Use >> SEARCH_CODE: "query" to find existing patterns.
 Output format:
 ## Task Breakdown
 ### Task 1: [Name]
@@ -57,7 +70,6 @@ Use >> READ_CODE: "path/to/file" to review existing architecture.`,
 Available commands:
 >> READ_CODE: "path" - Read a file
 >> WRITE_CODE: "path" "content" - Create/Update a file
->> SEARCH_CODE: "query" - Search codebase
 >> DELEGATE: @AgentName "Task" - Delegate work`,
   },
   frontend: {
@@ -66,8 +78,7 @@ Available commands:
     systemPrompt: `You are @Frontend. Build React/Next.js components.
 Available commands:
 >> READ_CODE: "path"
->> WRITE_CODE: "path" "content"
->> SEARCH_CODE: "query"`,
+>> WRITE_CODE: "path" "content"`,
   },
   database: {
     name: '@Database',
@@ -90,8 +101,7 @@ Available commands:
     role: 'Code Review Specialist',
     systemPrompt: `You are @Reviewer. Audit code.
 Available commands:
->> READ_CODE: "path"
->> SEARCH_CODE: "query"`,
+>> READ_CODE: "path"`,
   },
   debugger: {
     name: '@Debugger',
@@ -99,7 +109,6 @@ Available commands:
     systemPrompt: `You are @Debugger. Analyze logs and code to identify and fix bugs.
 Available commands:
 >> READ_CODE: "path"
->> SEARCH_CODE: "query"
 >> WRITE_CODE: "path" "content"`,
   },
   devops: {
@@ -109,8 +118,7 @@ Available commands:
 Available commands:
 >> RUN_SHELL: "command"
 >> READ_CODE: "path"
->> WRITE_CODE: "path" "content"
->> SEARCH_CODE: "query"`,
+>> WRITE_CODE: "path" "content"`,
   },
 };
 
@@ -152,370 +160,1068 @@ async function readProjectContext() {
   context.context = ctx;
   context.state = state;
   context.graph = graph;
+  context.interactionHistory = Array.isArray(state?.runtime?.recentSteps)
+    ? [...state.runtime.recentSteps]
+    : [];
 
   return context;
 }
 
-export async function runAgentLoop(agentName, task, provider, projectContext, depth = 0) {
-  if (depth > 5) return `[System]: Max delegation depth reached.`;
+async function acquireRuntimeStateLock() {
+  if (runtimeStateLock) {
+    return await new Promise((resolve) => {
+      const waitForRelease = () => {
+        if (!runtimeStateLock) {
+          resolve(acquireRuntimeStateLock());
+          return;
+        }
 
-  const agentId = agentName.toLowerCase();
-  const agent = AGENTS[agentId];
-  if (!agent) return `[System]: Unknown agent @${agentName}`;
+        setTimeout(waitForRelease, 10);
+      };
 
-  const startedAt = Date.now();
-
-  const access = await authorizeAgentAccess(agentId);
-  if (!access.allowed) {
-    return `[Access]: Role "${access.role}" cannot run @${agentName}`;
+      waitForRelease();
+    });
   }
 
-  const spinner = ora(`\${agent.name} is working...`).start();
+  const lockId = Math.random().toString(36).slice(2, 15);
+  runtimeStateLock = lockId;
+  return lockId;
+}
 
-  // Notify Dashboard
-  await dashboardNotifier.sendAgentStatus(agentName, 'working', task.substring(0, 50));
+function releaseRuntimeStateLock(lockId) {
+  if (runtimeStateLock === lockId) {
+    runtimeStateLock = null;
+  }
+}
 
-  const graphInfo = projectContext.graph
-    ? `## Codebase Graph\n- Files: ${projectContext.graph.nodeCount}\n- Dependencies: ${projectContext.graph.edgeCount}\n`
-    : '';
-
-  const historySection = projectContext.history
-    ? `## Execution History\n${projectContext.history}\n\n`
-    : '';
-  const contextSection = projectContext.context
-    ? `## Context\n${projectContext.context.slice(0, 3000)}\n\n${graphInfo}${historySection}`
-    : '';
-  const prompt = `${contextSection}## Task\n${task}\n\nYou can use tools by outputting:
->> READ_CODE: "filePath"
->> WRITE_CODE: "filePath" "fullContent"
->> SEARCH_CODE: "query"
->> RUN_SHELL: "command"
->> DELEGATE: @AgentName "Task"`;
-
-  const agentContext = buildAgentContext(agentId, agent);
-  const providerInstance = typeof provider === 'function' ? await provider(agentId) : provider;
+async function withRuntimeStateLock(callback) {
+  const lockId = await acquireRuntimeStateLock();
 
   try {
-    const executionDecision = await authorizeOperation({
-      agent: agentContext,
-      operation: 'execute',
-      resourceType: 'ai',
-      metadata: { task, agentTitle: agent.role },
+    return await callback();
+  } finally {
+    releaseRuntimeStateLock(lockId);
+  }
+}
+
+async function loadRuntimeState() {
+  try {
+    const content = await fs.readFile(path.resolve(process.cwd(), '.ultra/state.json'), 'utf8');
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
+async function saveRuntimeState(state) {
+  const ultraDir = path.resolve(process.cwd(), '.ultra');
+  const statePath = path.resolve(ultraDir, 'state.json');
+  const tempPath = path.resolve(
+    ultraDir,
+    `state.json.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 11)}`
+  );
+
+  try {
+    await fs.mkdir(ultraDir, { recursive: true });
+    await fs.writeFile(tempPath, JSON.stringify(state, null, 2));
+    await fs.rename(tempPath, statePath);
+    return true;
+  } catch {
+    await fs.unlink(tempPath).catch(() => {});
+    return false;
+  }
+}
+
+async function ensureTraceStarted(projectContext, agentId, task) {
+  const trace = ensureExecutionTrace(projectContext, { rootAgent: agentId, task });
+  if (!trace.started) {
+    trace.started = true;
+    await trace.record({
+      agent: agentId,
+      action: 'RUN_START',
+      input: task,
+      output: 'Agent execution started',
+      status: 'success',
     });
-    if (!executionDecision.allowed) {
-      spinner.fail(`${agent.name} blocked: ${executionDecision.reason}`);
-      return `[Governance]: ${executionDecision.reason}`;
+  }
+  return trace;
+}
+
+async function emitAnalyticsEvent(type, payload) {
+  initializeAnalyticsSink();
+  await logger.event(type, payload, {
+    console: false,
+    source: 'run',
+  });
+}
+
+function serializeRuntimeValue(value) {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string') return value;
+  if (value instanceof Error) return value.stack || value.message;
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function cloneRuntimeState(state) {
+  if (!state || typeof state !== 'object') return {};
+
+  try {
+    return JSON.parse(JSON.stringify(state));
+  } catch {
+    return { ...state };
+  }
+}
+
+function getInteractionHistory(projectContext) {
+  if (!Array.isArray(projectContext.interactionHistory)) {
+    projectContext.interactionHistory = Array.isArray(projectContext.state?.runtime?.recentSteps)
+      ? [...projectContext.state.runtime.recentSteps]
+      : [];
+  }
+
+  return projectContext.interactionHistory;
+}
+
+async function loadRelevantMemories(task, agentId) {
+  const memoryQuery = truncateText(task, 400) || String(task || '');
+
+  try {
+    return await ultraMemory.contextualSearch(
+      memoryQuery,
+      [agentId, 'run-context'],
+      MAX_MEMORY_RESULTS
+    );
+  } catch (error) {
+    try {
+      await logger.event(
+        'run.memory.lookup_failed',
+        {
+          agent: agentId,
+          message: error.message,
+        },
+        {
+          console: false,
+          source: 'run',
+        }
+      );
+    } catch {
+      // ignore logging failures for memory lookups
     }
 
-    const result = await errorRecovery.executeWithRecovery(
-      'ai-provider',
-      async () => {
-        return await providerInstance.generate(agent.systemPrompt, prompt);
-      },
+    return [];
+  }
+}
+
+async function persistRunContext(projectContext, trace, payload) {
+  const {
+    agentId,
+    task,
+    decision,
+    action,
+    input,
+    output,
+    status,
+    depth,
+    step,
+  } = payload;
+  const serializedInput = truncateText(serializeRuntimeValue(input), 200);
+  const serializedOutput = truncateText(serializeRuntimeValue(output), 280);
+  const summary = {
+    ...createInteractionSummary({
+      agent: agentId,
+      decision,
+      action,
+      status,
+      output: serializedOutput,
+    }),
+    input: serializedInput,
+    runId: trace.runId,
+    step: typeof step === 'number' ? step : null,
+    depth,
+    task: truncateText(task, 180),
+  };
+
+  const interactionHistory = [...getInteractionHistory(projectContext), summary].slice(
+    -MAX_RUNTIME_HISTORY
+  );
+  projectContext.interactionHistory = interactionHistory;
+
+  try {
+    const persistedState = await withRuntimeStateLock(async () => {
+      const loadedState = await loadRuntimeState();
+      const nextState = loadedState || cloneRuntimeState(projectContext.state);
+
+      nextState.updatedAt = summary.timestamp;
+      nextState.project = nextState.project || {
+        name: path.basename(process.cwd()),
+        mode: 'ULTRA_MODE',
+      };
+      nextState.runtime = {
+        ...(nextState.runtime || {}),
+        lastRun: {
+          runId: trace.runId,
+          agent: agentId,
+          task: truncateText(task, 180),
+          decision: summary.decision,
+          action,
+          status,
+          step: summary.step,
+          updatedAt: summary.timestamp,
+        },
+        recentSteps: interactionHistory,
+      };
+
+      const saved = await saveRuntimeState(nextState);
+      if (!saved) {
+        throw new Error('Failed to save runtime state');
+      }
+
+      return nextState;
+    });
+
+    projectContext.state = persistedState;
+
+    const memoryText = `Run ${trace.runId} step ${summary.step ?? '?'}: ${agentId} decided "${summary.decision}" and ${action} [${status}]. Output: ${serializedOutput}`;
+    await ultraMemory.remember(
+      memoryText,
+      [agentId, String(action).toLowerCase(), String(status).toLowerCase(), 'run-context'],
+      'run-agent-loop',
       {
-        maxRetries: 2,
-        retryDelay: 2000,
+        runId: trace.runId,
+        step: summary.step,
+        task: truncateText(task, 180),
+        input: serializedInput,
+        depth,
       }
     );
 
+    await trace.record({
+      agent: agentId,
+      action: 'MEMORY_UPDATE',
+      input: `${action}:${status}`,
+      output: memoryText,
+      status: 'success',
+      depth,
+      stepReference: summary.step,
+    });
+  } catch (error) {
+    await trace.record({
+      agent: agentId,
+      action: 'MEMORY_UPDATE',
+      input: `${action}:${status}`,
+      output: error.message,
+      status: 'error',
+      depth,
+      stepReference: summary.step,
+    });
+  }
+
+  return summary;
+}
+
+async function recordActionOutcome(trace, projectContext, payload, metadata = {}) {
+  const entry = await trace.record({
+    agent: payload.agentId,
+    action: payload.action,
+    input: payload.input,
+    output: payload.output,
+    status: payload.status,
+    depth: payload.depth,
+    ...metadata,
+  });
+
+  await persistRunContext(projectContext, trace, {
+    ...payload,
+    step: entry.step,
+  });
+
+  return entry;
+}
+
+export async function runAgentLoop(
+  agentName,
+  task,
+  provider,
+  projectContext,
+  depth = 0,
+  maxSteps = DEFAULT_MAX_STEPS
+) {
+  projectContext = projectContext && typeof projectContext === 'object' ? projectContext : {};
+
+  if (depth > MAX_DELEGATION_DEPTH) {
+    return `[System]: Max delegation depth reached.`;
+  }
+
+  const boundedMaxSteps = Math.max(1, Number.parseInt(maxSteps, 10) || DEFAULT_MAX_STEPS);
+  const agentId = agentName.toLowerCase();
+  const trace = await ensureTraceStarted(projectContext, agentId, task);
+  const agent = AGENTS[agentId];
+  if (!agent) {
+    await trace.record({
+      agent: agentId,
+      action: 'AGENT_RESOLUTION',
+      input: task,
+      output: `Unknown agent @${agentName}`,
+      status: 'error',
+      depth,
+    });
+    return `[System]: Unknown agent @${agentName}`;
+  }
+
+  const access = await authorizeAgentAccess(agentId);
+  if (!access.allowed) {
+    await trace.record({
+      agent: agentId,
+      action: 'ACCESS_CHECK',
+      input: task,
+      output: `Role "${access.role}" cannot run @${agentName}`,
+      status: 'blocked',
+      depth,
+    });
+    return `[Access]: Role "${access.role}" cannot run @${agentName}`;
+  }
+
+  const agentContext = buildAgentContext(agentId, agent);
+  const providerInstance = typeof provider === 'function' ? await provider(agentId) : provider;
+  let currentTask = task;
+
+  for (let stepIndex = 1; stepIndex <= boundedMaxSteps; stepIndex += 1) {
+    const startedAt = Date.now();
+    const spinner = ora(`${agent.name} is working... (${stepIndex}/${boundedMaxSteps})`).start();
+
+    await dashboardNotifier.sendAgentStatus(
+      agentName,
+      'working',
+      truncateText(currentTask, 50)
+    );
+
+    const relevantMemories = await loadRelevantMemories(currentTask, agentId);
+    const contextSection = buildPromptContextSection({
+      contextMarkdown: projectContext.context,
+      planMarkdown: projectContext.plan,
+      state: projectContext.state,
+      graph: projectContext.graph,
+      memories: relevantMemories,
+      interactionHistory: getInteractionHistory(projectContext),
+      history: projectContext.history,
+    });
+    await trace.record({
+      agent: agentId,
+      action: 'PROMPT_CONTEXT',
+      input: currentTask,
+      output: contextSection || 'No additional project context available.',
+      status: 'success',
+      depth,
+      loopStep: stepIndex,
+      maxSteps: boundedMaxSteps,
+    });
+
+    const prompt = `${contextSection}## Task\n${currentTask}\n\nUse the context above to choose the next action. Before acting, write one line exactly in this format:\nDECISION: <what you will do next and why, grounded in the context above>\n\nThen either provide the final answer or output exactly one tool command:\n>> READ_CODE: "filePath"\n>> WRITE_CODE: "filePath" "fullContent"\n>> RUN_SHELL: "command"\n>> DELEGATE: @AgentName "Task"`;
+
     try {
-      const durationMs = Date.now() - startedAt;
-      await recordAgentPerformance({
-        agent: agentId,
-        durationMs,
-        success: true,
-        task,
-        provider: providerInstance?.getName?.() || 'provider',
-      });
-
-      const inputTokens = result?.usage?.inputTokens ?? estimateTokens(agent.systemPrompt + prompt);
-      const outputTokens = result?.usage?.outputTokens ?? estimateTokens(result?.content || '');
-      await recordTokenUsage({
-        agent: agentId,
-        model: result?.model || providerInstance?.model || null,
-        inputTokens,
-        outputTokens,
-      });
-    } catch {
-      // analytics should not block execution
-    }
-
-    spinner.succeed(`\${agent.name} completed.`);
-    await dashboardNotifier.sendAgentStatus(agentName, 'completed', 'Task finished');
-
-    let content = result.content;
-
-    // Tool Execution Logic (God Mode)
-    const readMatch = content.match(/>>\s*READ_CODE:\s*["'](.+?)["']/);
-    const writeMatch = content.match(/>>\s*WRITE_CODE:\s*["'](.+?)["']\s*["']([\s\S]+?)["']/);
-    const _searchMatch = content.match(/>>\s*SEARCH_CODE:\s*["'](.+?)["']/);
-    const runShellMatch = content.match(/>>\s*RUN_SHELL:\s*["'](.+?)["']/);
-    const delegateMatch = content.match(/>>\s*DELEGATE:\s*@(\w+)\s*["'](.+?)["']/);
-
-    if (readMatch) {
-      let filePath = readMatch[1];
-      // Sanitize file path to prevent directory traversal
-      filePath = path.normalize(filePath);
-      if (filePath.includes('../') || filePath.includes('..\\')) {
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\nError reading ${filePath}: Path traversal detected`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      }
-
-      const readDecision = await authorizeOperation({
-        agent: agentContext,
-        operation: 'read',
-        filePath,
-        metadata: { agentTitle: agent.role },
-      });
-      if (!readDecision.allowed) {
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\nGovernance blocked READ_CODE on ${filePath}: ${readDecision.reason}`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      }
-
-      printInfo(chalk.cyan(`\n🔍 \${agent.name} is reading \${filePath}...`));
-      await dashboardNotifier.sendLog(`@\${agentName} is reading \${filePath}`, 'info');
-      try {
-        const fullPath = path.resolve(process.cwd(), filePath);
-        // Additional check to ensure path is within project directory
-        if (!fullPath.startsWith(process.cwd())) {
-          return await runAgentLoop(
-            agentName,
-            `${task}\n\nError reading ${filePath}: Path outside project root`,
-            provider,
-            projectContext,
-            depth + 1
-          );
-        }
-
-        const fileContent = await fs.readFile(fullPath, 'utf8');
-        const nextPrompt = `Output of READ_CODE "${filePath}":\n\`\`\`\n${fileContent}\n\`\`\`\n\nPlease proceed with your task.`;
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\n${nextPrompt}`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      } catch (e) {
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\nError reading ${filePath}: ${e.message}`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      }
-    }
-
-    if (writeMatch) {
-      let filePath = writeMatch[1];
-      const newContent = writeMatch[2];
-
-      // Sanitize file path to prevent directory traversal
-      filePath = path.normalize(filePath);
-      if (filePath.includes('../') || filePath.includes('..\\')) {
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\nError writing ${filePath}: Path traversal detected`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      }
-
-      const writeDecision = await authorizeOperation({
-        agent: agentContext,
-        operation: 'write',
-        filePath,
-        content: newContent,
-        metadata: { agentTitle: agent.role },
-      });
-      if (!writeDecision.allowed) {
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\nGovernance blocked WRITE_CODE on ${filePath}: ${writeDecision.reason}`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      }
-
-      printInfo(chalk.green(`\n💾 \${agent.name} is writing to \${filePath}...`));
-      await dashboardNotifier.sendLog(`@\${agentName} is writing to \${filePath}`, 'success');
-      try {
-        const fullPath = path.resolve(process.cwd(), filePath);
-        // Additional check to ensure path is within project directory
-        if (!fullPath.startsWith(process.cwd())) {
-          return await runAgentLoop(
-            agentName,
-            `${task}\n\nError writing ${filePath}: Path outside project root`,
-            provider,
-            projectContext,
-            depth + 1
-          );
-        }
-
-        // Prevent writing to sensitive files
-        const forbiddenPaths = ['.git', 'node_modules', '.env', 'package-lock.json'];
-        const pathParts = fullPath.split(path.sep);
-        if (pathParts.some((part) => forbiddenPaths.includes(part))) {
-          return await runAgentLoop(
-            agentName,
-            `${task}\n\nError writing ${filePath}: Cannot write to sensitive file`,
-            provider,
-            projectContext,
-            depth + 1
-          );
-        }
-
-        await fs.mkdir(path.dirname(fullPath), { recursive: true });
-        await fs.writeFile(fullPath, newContent, 'utf8');
-
-        // --- Active Verification Hook ---
-        printInfo(chalk.yellow(`\n🛡️  Running Active Verification Gates...`));
-        const projectDir = process.cwd();
-        const lintRes = await verifyLinting(projectDir);
-        const typeRes = await verifyTypeSafety(projectDir);
-        const secRes = await verifySecurityPatterns(projectDir);
-
-        const failures = [];
-        if (lintRes.status === 'FAIL') failures.push(`Linting Failed: ${lintRes.message}`);
-        if (typeRes.status === 'FAIL') failures.push(`Type Safety Failed: ${typeRes.message}`);
-        if (secRes.status === 'FAIL') failures.push(`Security Check Failed: ${secRes.message}`);
-
-        if (failures.length > 0) {
-          printError(`\n❌ Verification Failed!`);
-          failures.forEach((f) => printError(`  - ${f}`));
-
-          // Return failure to agent so it can fix it
-          const errorMsg = `Code written to ${filePath}, BUT verification failed. YOU MUST FIX THIS:\n${failures.join('\n')}`;
-          return await runAgentLoop(
-            agentName,
-            `${task}\n\n${errorMsg}`,
-            provider,
-            projectContext,
-            depth + 1
-          );
-        }
-
-        printSuccess(`\n✅ Verification Passed`);
-        // --------------------------------
-
-        const nextPrompt = `Successfully wrote ${filePath} and passed verification. Please proceed or delegate verification.`;
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\n${nextPrompt}`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      } catch (e) {
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\nError writing ${filePath}: ${e.message}`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      }
-    }
-
-    if (runShellMatch) {
-      const command = runShellMatch[1];
-      const execDecision = await authorizeOperation({
+      const executionDecision = await authorizeOperation({
         agent: agentContext,
         operation: 'execute',
-        resourceType: 'shell',
-        command,
-        metadata: { agentTitle: agent.role },
+        resourceType: 'ai',
+        metadata: {
+          task: currentTask,
+          agentTitle: agent.role,
+          loopStep: stepIndex,
+          maxSteps: boundedMaxSteps,
+        },
       });
-      if (!execDecision.allowed) {
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\nGovernance blocked RUN_SHELL "${command}": ${execDecision.reason}`,
-          provider,
+      if (!executionDecision.allowed) {
+        await recordActionOutcome(
+          trace,
           projectContext,
-          depth + 1
+          {
+            agentId,
+            task: currentTask,
+            decision: 'Execution blocked before model call.',
+            action: 'AI_EXECUTE',
+            input: currentTask,
+            output: executionDecision.reason,
+            status: 'blocked',
+            depth,
+          },
+          {
+            loopStep: stepIndex,
+            maxSteps: boundedMaxSteps,
+          }
         );
+        spinner.fail(`${agent.name} blocked: ${executionDecision.reason}`);
+        return `[Governance]: ${executionDecision.reason}`;
       }
-      printInfo(chalk.yellow(`\n⚡ ${agent.name} is executing shell command: ${command}...`));
+
+      const result = await errorRecovery.executeWithRecovery(
+        'ai-provider',
+        async () => {
+          return await providerInstance.generate(agent.systemPrompt, prompt);
+        },
+        {
+          maxRetries: 2,
+          retryDelay: 2000,
+        }
+      );
+
+      let content =
+        typeof result?.content === 'string' ? result.content : String(result?.content ?? '');
+
+      await trace.record({
+        agent: agentId,
+        action: 'MODEL_RESPONSE',
+        input: prompt,
+        output: content,
+        status: 'success',
+        depth,
+        loopStep: stepIndex,
+        maxSteps: boundedMaxSteps,
+        model: result?.model || providerInstance?.model || null,
+        usage: result?.usage || null,
+      });
+      const decision = extractDecision(content);
+      await trace.record({
+        agent: agentId,
+        action: 'DECISION',
+        input: currentTask,
+        output: decision,
+        status: 'success',
+        depth,
+        loopStep: stepIndex,
+        maxSteps: boundedMaxSteps,
+      });
+      content = stripDecisionLine(content) || content;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
-        const output = stdout + (stderr ? `\nSTDERR:\n${stderr}` : '');
-        const nextPrompt = `Output of RUN_SHELL "${command}":\n\`\`\`\n${output}\n\`\`\`\n\nPlease proceed with your task.`;
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\n${nextPrompt}`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      } catch (e) {
-        return await runAgentLoop(
-          agentName,
-          `${task}\n\nError executing ${command}: ${e.message}`,
-          provider,
-          projectContext,
-          depth + 1
-        );
-      }
-    }
+        const durationMs = Date.now() - startedAt;
+        await emitAnalyticsEvent('analytics.agent_performance', {
+          agent: agentId,
+          durationMs,
+          success: true,
+          task: currentTask,
+          provider: providerInstance?.getName?.() || 'provider',
+          runId: trace.runId,
+          loopStep: stepIndex,
+        });
 
-    if (delegateMatch) {
-      const nextAgent = delegateMatch[1];
-      const nextTask = delegateMatch[2];
-      const delegateDecision = await authorizeOperation({
-        agent: agentContext,
-        operation: 'delegate',
-        metadata: { to: nextAgent, agentTitle: agent.role },
-      });
-      if (!delegateDecision.allowed) {
-        return `${content}\n\n[Governance]: Delegation blocked - ${delegateDecision.reason}`;
+        const inputTokens =
+          result?.usage?.inputTokens ?? estimateTokens(agent.systemPrompt + prompt);
+        const outputTokens =
+          result?.usage?.outputTokens ?? estimateTokens(result?.content || '');
+        await emitAnalyticsEvent('analytics.token_usage', {
+          agent: agentId,
+          model: result?.model || providerInstance?.model || null,
+          inputTokens,
+          outputTokens,
+          runId: trace.runId,
+          loopStep: stepIndex,
+        });
+      } catch {
+        // analytics should not block execution
       }
-      printInfo(chalk.cyan(`\n↪️  ${agent.name} is delegating to @${nextAgent}: "${nextTask}"`));
-      const subResult = await runAgentLoop(
-        nextAgent,
-        nextTask,
-        provider,
+
+      spinner.succeed(`${agent.name} completed step ${stepIndex}.`);
+      await dashboardNotifier.sendAgentStatus(agentName, 'completed', `Step ${stepIndex} finished`);
+
+      const readMatch = content.match(/>>\s*READ_CODE:\s*["'](.+?)["']/);
+      const writeMatch = content.match(/>>\s*WRITE_CODE:\s*["'](.+?)["']\s*["']([\s\S]+?)["']/);
+      const runShellMatch = content.match(/>>\s*RUN_SHELL:\s*["'](.+?)["']/);
+      const delegateMatch = content.match(/>>\s*DELEGATE:\s*@(\w+)\s*["'](.+?)["']/);
+
+      if (readMatch) {
+        let filePath = path.normalize(readMatch[1]);
+        if (filePath.includes('../') || filePath.includes('..\\')) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'READ_CODE',
+              input: filePath,
+              output: 'Path traversal detected',
+              status: 'error',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nError reading ${filePath}: Path traversal detected`;
+          continue;
+        }
+
+        const readDecision = await authorizeOperation({
+          agent: agentContext,
+          operation: 'read',
+          filePath,
+          metadata: {
+            agentTitle: agent.role,
+            loopStep: stepIndex,
+            maxSteps: boundedMaxSteps,
+          },
+        });
+        if (!readDecision.allowed) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'READ_CODE',
+              input: filePath,
+              output: readDecision.reason,
+              status: 'blocked',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nGovernance blocked READ_CODE on ${filePath}: ${readDecision.reason}`;
+          continue;
+        }
+
+        printInfo(chalk.cyan(`\n🔍 ${agent.name} is reading ${filePath}...`));
+        await dashboardNotifier.sendLog(`@${agentName} is reading ${filePath}`, 'info');
+
+        try {
+          const fullPath = path.resolve(process.cwd(), filePath);
+          if (!fullPath.startsWith(process.cwd())) {
+            await recordActionOutcome(
+              trace,
+              projectContext,
+              {
+                agentId,
+                task: currentTask,
+                decision,
+                action: 'READ_CODE',
+                input: filePath,
+                output: 'Path outside project root',
+                status: 'error',
+                depth,
+              },
+              {
+                loopStep: stepIndex,
+                maxSteps: boundedMaxSteps,
+              }
+            );
+            currentTask = `${currentTask}\n\nError reading ${filePath}: Path outside project root`;
+            continue;
+          }
+
+          const fileContent = await fs.readFile(fullPath, 'utf8');
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'READ_CODE',
+              input: filePath,
+              output: fileContent,
+              status: 'success',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nOutput of READ_CODE "${filePath}":\n\`\`\`\n${fileContent}\n\`\`\`\n\nPlease proceed with your task.`;
+          continue;
+        } catch (error) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'READ_CODE',
+              input: filePath,
+              output: error.message,
+              status: 'error',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nError reading ${filePath}: ${error.message}`;
+          continue;
+        }
+      }
+
+      if (writeMatch) {
+        let filePath = path.normalize(writeMatch[1]);
+        const newContent = writeMatch[2];
+
+        if (filePath.includes('../') || filePath.includes('..\\')) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'WRITE_CODE',
+              input: { filePath, content: newContent },
+              output: 'Path traversal detected',
+              status: 'error',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nError writing ${filePath}: Path traversal detected`;
+          continue;
+        }
+
+        const writeDecision = await authorizeOperation({
+          agent: agentContext,
+          operation: 'write',
+          filePath,
+          content: newContent,
+          metadata: {
+            agentTitle: agent.role,
+            loopStep: stepIndex,
+            maxSteps: boundedMaxSteps,
+          },
+        });
+        if (!writeDecision.allowed) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'WRITE_CODE',
+              input: { filePath, content: newContent },
+              output: writeDecision.reason,
+              status: 'blocked',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nGovernance blocked WRITE_CODE on ${filePath}: ${writeDecision.reason}`;
+          continue;
+        }
+
+        printInfo(chalk.green(`\n💾 ${agent.name} is writing to ${filePath}...`));
+        await dashboardNotifier.sendLog(`@${agentName} is writing to ${filePath}`, 'success');
+
+        try {
+          const fullPath = path.resolve(process.cwd(), filePath);
+          if (!fullPath.startsWith(process.cwd())) {
+            await recordActionOutcome(
+              trace,
+              projectContext,
+              {
+                agentId,
+                task: currentTask,
+                decision,
+                action: 'WRITE_CODE',
+                input: { filePath, content: newContent },
+                output: 'Path outside project root',
+                status: 'error',
+                depth,
+              },
+              {
+                loopStep: stepIndex,
+                maxSteps: boundedMaxSteps,
+              }
+            );
+            currentTask = `${currentTask}\n\nError writing ${filePath}: Path outside project root`;
+            continue;
+          }
+
+          const forbiddenPaths = ['.git', 'node_modules', '.env', 'package-lock.json'];
+          const pathParts = fullPath.split(path.sep);
+          if (pathParts.some((part) => forbiddenPaths.includes(part))) {
+            await recordActionOutcome(
+              trace,
+              projectContext,
+              {
+                agentId,
+                task: currentTask,
+                decision,
+                action: 'WRITE_CODE',
+                input: { filePath, content: newContent },
+                output: 'Cannot write to sensitive file',
+                status: 'blocked',
+                depth,
+              },
+              {
+                loopStep: stepIndex,
+                maxSteps: boundedMaxSteps,
+              }
+            );
+            currentTask = `${currentTask}\n\nError writing ${filePath}: Cannot write to sensitive file`;
+            continue;
+          }
+
+          await fs.mkdir(path.dirname(fullPath), { recursive: true });
+          await fs.writeFile(fullPath, newContent, 'utf8');
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'WRITE_CODE',
+              input: { filePath, content: newContent },
+              output: `Wrote ${filePath}`,
+              status: 'success',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+
+          printInfo(chalk.yellow(`\n🛡️  Running Active Verification Gates...`));
+          const projectDir = process.cwd();
+          const lintRes = await verifyLinting(projectDir);
+          const typeRes = await verifyTypeSafety(projectDir);
+          const secRes = await verifySecurityPatterns(projectDir);
+
+          const failures = [];
+          if (lintRes.status === 'FAIL') failures.push(`Linting Failed: ${lintRes.message}`);
+          if (typeRes.status === 'FAIL') failures.push(`Type Safety Failed: ${typeRes.message}`);
+          if (secRes.status === 'FAIL') failures.push(`Security Check Failed: ${secRes.message}`);
+
+          if (failures.length > 0) {
+            await recordActionOutcome(
+              trace,
+              projectContext,
+              {
+                agentId,
+                task: currentTask,
+                decision,
+                action: 'VERIFY_CODE',
+                input: filePath,
+                output: failures.join('\n'),
+                status: 'failed',
+                depth,
+              },
+              {
+                loopStep: stepIndex,
+                maxSteps: boundedMaxSteps,
+                lint: lintRes,
+                typeSafety: typeRes,
+                security: secRes,
+              }
+            );
+            printError(`\n❌ Verification Failed!`);
+            failures.forEach((failure) => printError(`  - ${failure}`));
+            currentTask = `${currentTask}\n\nCode written to ${filePath}, BUT verification failed. YOU MUST FIX THIS:\n${failures.join('\n')}`;
+            continue;
+          }
+
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'VERIFY_CODE',
+              input: filePath,
+              output: 'Verification Passed',
+              status: 'success',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+              lint: lintRes,
+              typeSafety: typeRes,
+              security: secRes,
+            }
+          );
+          printSuccess(`\n✅ Verification Passed`);
+          currentTask = `${currentTask}\n\nSuccessfully wrote ${filePath} and passed verification. Please proceed or delegate verification.`;
+          continue;
+        } catch (error) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'WRITE_CODE',
+              input: { filePath, content: newContent },
+              output: error.message,
+              status: 'error',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nError writing ${filePath}: ${error.message}`;
+          continue;
+        }
+      }
+
+      if (runShellMatch) {
+        const command = runShellMatch[1];
+        const execDecision = await authorizeOperation({
+          agent: agentContext,
+          operation: 'execute',
+          resourceType: 'shell',
+          command,
+          metadata: {
+            agentTitle: agent.role,
+            loopStep: stepIndex,
+            maxSteps: boundedMaxSteps,
+          },
+        });
+        if (!execDecision.allowed) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'RUN_SHELL',
+              input: command,
+              output: execDecision.reason,
+              status: 'blocked',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nGovernance blocked RUN_SHELL "${command}": ${execDecision.reason}`;
+          continue;
+        }
+
+        printInfo(chalk.yellow(`\n⚡ ${agent.name} is executing shell command: ${command}...`));
+
+        try {
+          const { stdout, stderr } = await execAsync(command);
+          const output = stdout + (stderr ? `\nSTDERR:\n${stderr}` : '');
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'RUN_SHELL',
+              input: command,
+              output,
+              status: 'success',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nOutput of RUN_SHELL "${command}":\n\`\`\`\n${output}\n\`\`\`\n\nPlease proceed with your task.`;
+          continue;
+        } catch (error) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'RUN_SHELL',
+              input: command,
+              output: error.message,
+              status: 'error',
+              depth,
+            },
+            {
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          currentTask = `${currentTask}\n\nError executing ${command}: ${error.message}`;
+          continue;
+        }
+      }
+
+      if (delegateMatch) {
+        const nextAgent = delegateMatch[1];
+        const nextTask = delegateMatch[2];
+        const delegateDecision = await authorizeOperation({
+          agent: agentContext,
+          operation: 'delegate',
+          metadata: {
+            to: nextAgent,
+            agentTitle: agent.role,
+            loopStep: stepIndex,
+            maxSteps: boundedMaxSteps,
+          },
+        });
+        if (!delegateDecision.allowed) {
+          await recordActionOutcome(
+            trace,
+            projectContext,
+            {
+              agentId,
+              task: currentTask,
+              decision,
+              action: 'DELEGATE',
+              input: nextTask,
+              output: delegateDecision.reason,
+              status: 'blocked',
+              depth,
+            },
+            {
+              to: nextAgent,
+              loopStep: stepIndex,
+              maxSteps: boundedMaxSteps,
+            }
+          );
+          return `${content}\n\n[Governance]: Delegation blocked - ${delegateDecision.reason}`;
+        }
+
+        printInfo(chalk.cyan(`\n↪️  ${agent.name} is delegating to @${nextAgent}: "${nextTask}"`));
+        const subResult = await runAgentLoop(
+          nextAgent,
+          nextTask,
+          provider,
+          projectContext,
+          depth + 1,
+          boundedMaxSteps
+        );
+        await recordActionOutcome(
+          trace,
+          projectContext,
+          {
+            agentId,
+            task: currentTask,
+            decision,
+            action: 'DELEGATE',
+            input: nextTask,
+            output: subResult,
+            status: 'success',
+            depth,
+          },
+          {
+            to: nextAgent,
+            loopStep: stepIndex,
+            maxSteps: boundedMaxSteps,
+          }
+        );
+        return `${content}\n\n---\n\n## Delegated Result from @${nextAgent}\n${subResult}`;
+      }
+
+      await recordActionOutcome(
+        trace,
         projectContext,
-        depth + 1
+        {
+          agentId,
+          task: currentTask,
+          decision,
+          action: 'FINAL_RESPONSE',
+          input: currentTask,
+          output: content,
+          status: 'success',
+          depth,
+        },
+        {
+          loopStep: stepIndex,
+          maxSteps: boundedMaxSteps,
+        }
       );
-      return `${content}\n\n---\n\n## Delegated Result from @${nextAgent}\n${subResult}`;
-    }
+      return content;
+    } catch (error) {
+      spinner.fail(`${agent.name} failed: ${error.message}`);
+      await recordActionOutcome(
+        trace,
+        projectContext,
+        {
+          agentId,
+          task: currentTask,
+          decision: 'Execution failed.',
+          action: 'ERROR',
+          input: currentTask,
+          output: error.message,
+          status: 'error',
+          depth,
+        },
+        {
+          loopStep: stepIndex,
+          maxSteps: boundedMaxSteps,
+        }
+      );
 
-    return content;
-  } catch (err) {
-    spinner.fail(`${agent.name} failed: ${err.message}`);
-    try {
-      await recordAgentPerformance({
-        agent: agentId,
-        durationMs: Date.now() - startedAt,
-        success: false,
-        task,
-        provider: providerInstance?.getName?.() || 'provider',
-      });
-      await recordError({
-        message: err.message,
-        command: 'run',
-        stack: err.stack,
-        metadata: { agent: agentId },
-      });
-    } catch {
-      // ignore analytics failures
+      try {
+        await emitAnalyticsEvent('analytics.agent_performance', {
+          agent: agentId,
+          durationMs: Date.now() - startedAt,
+          success: false,
+          task: currentTask,
+          provider: providerInstance?.getName?.() || 'provider',
+          runId: trace.runId,
+          loopStep: stepIndex,
+        });
+        await emitAnalyticsEvent('analytics.error', {
+          message: error.message,
+          command: 'run',
+          stack: error.stack,
+          metadata: { agent: agentId, loopStep: stepIndex },
+          runId: trace.runId,
+        });
+      } catch {
+        // ignore analytics failures
+      }
+
+      return `[Error]: ${error.message}`;
     }
-    return `[Error]: ${err.message}`;
   }
+
+  const limitMessage = `Max steps reached (${boundedMaxSteps}) for @${agentName}.`;
+  await recordActionOutcome(
+    trace,
+    projectContext,
+    {
+      agentId,
+      task: currentTask,
+      decision: `Stop after reaching max_steps=${boundedMaxSteps}.`,
+      action: 'STEP_LIMIT',
+      input: currentTask,
+      output: limitMessage,
+      status: 'blocked',
+      depth,
+    },
+    {
+      maxSteps: boundedMaxSteps,
+    }
+  );
+  return `[System]: ${limitMessage}`;
 }
 
 function buildAgentContext(agentId, agent) {
@@ -525,6 +1231,32 @@ function buildAgentContext(agentId, agent) {
     roleId: agentId,
     title: agent?.role,
   };
+}
+
+function resolveMaxSteps(value) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_STEPS;
+}
+
+async function persistAndPrintRunArtifacts({ trace, command, agent, task, result }) {
+  const artifactBundle = await writeRunArtifacts({
+    runId: trace.runId,
+    command,
+    agent,
+    task,
+    result,
+    traceFile: trace.traceFile,
+  });
+
+  printSuccess(`\nResult artifact: ${artifactBundle.paths.result}`);
+  printInfo(`Trace artifact: ${artifactBundle.paths.trace}`);
+  printInfo(`Summary artifact: ${artifactBundle.paths.summary}`);
+
+  const visibleResult = String(result || '').trim() || '[No result returned]';
+  printInfo(chalk.bold('\nResult\n'));
+  printInfo(visibleResult);
+
+  return artifactBundle;
 }
 
 async function createAgentProviderFactory(providerId, options = {}) {
@@ -548,10 +1280,13 @@ export function registerRunCommand(program) {
     .option('-p, --provider <provider>', 'AI provider')
     .option('-k, --key <apiKey>', 'API key')
     .option('-o, --output <file>', 'Output file')
-    .option('--stream', 'Stream output in real-time')
-    .option('--no-stream', 'Disable streaming')
+    .option('--max-steps <steps>', 'Maximum bounded execution steps per agent loop')
     .option('--cache', 'Use response caching to reduce API costs')
     .action(async (agentName, options) => {
+      let task = options.task;
+      let trace = null;
+      let finalOutput = '';
+
       try {
         const configured = checkConfiguredProviders();
         const hasProvider = configured.some((p) => p.configured) || options.key;
@@ -567,7 +1302,6 @@ export function registerRunCommand(program) {
           return;
         }
 
-        let task = options.task;
         if (!task) {
           const { taskInput } = await inquirer.prompt([
             {
@@ -580,19 +1314,50 @@ export function registerRunCommand(program) {
         }
 
         const context = await readProjectContext();
+        trace = ensureExecutionTrace(context, {
+          command: 'run',
+          rootAgent: agentName,
+          task,
+        });
+        printInfo(`Execution trace run_id: ${trace.runId}`);
+        const maxSteps = resolveMaxSteps(options.maxSteps);
         const providerId = options.provider || getDefaultProvider();
         const providerFactory = await createAgentProviderFactory(providerId, {
           apiKey: options.key,
           maxTokens: 8000,
         });
 
-        const finalOutput = await runAgentLoop(agentName, task, providerFactory, context);
+        finalOutput = await runAgentLoop(
+          agentName,
+          task,
+          providerFactory,
+          context,
+          0,
+          maxSteps
+        );
+        await persistAndPrintRunArtifacts({
+          trace,
+          command: 'run',
+          agent: agentName,
+          task,
+          result: finalOutput,
+        });
 
         if (options.output) {
           await fs.writeFile(options.output, finalOutput);
           printSuccess(`\n✅ Saved to ${options.output}`);
         }
       } catch (error) {
+        if (trace) {
+          finalOutput = finalOutput || `[Error]: ${error.message}`;
+          await persistAndPrintRunArtifacts({
+            trace,
+            command: 'run',
+            agent: agentName,
+            task: task || '',
+            result: finalOutput,
+          }).catch(() => {});
+        }
         printError(`Error in run command: ${error.message}`);
         process.exit(1);
       }
@@ -605,10 +1370,21 @@ export function registerSwarmCommand(program) {
     .description('Run a full agent swarm for a feature')
     .option('-p, --provider <provider>', 'AI provider')
     .option('-k, --key <apiKey>', 'API key')
+    .option('--max-steps <steps>', 'Maximum bounded execution steps per agent loop')
     .action(async (feature, options) => {
+      let trace = null;
+      let swarmResult = '';
+
       try {
         printInfo(chalk.cyan('\n🐝 Ultra-Dex Agent Swarm\n'));
         const context = await readProjectContext();
+        trace = ensureExecutionTrace(context, {
+          command: 'swarm',
+          rootAgent: 'planner',
+          task: feature,
+        });
+        printInfo(`Execution trace run_id: ${trace.runId}`);
+        const maxSteps = resolveMaxSteps(options.maxSteps);
         const providerId = options.provider || getDefaultProvider();
         const providerFactory = await createAgentProviderFactory(providerId, {
           apiKey: options.key,
@@ -616,11 +1392,37 @@ export function registerSwarmCommand(program) {
         });
 
         printInfo(chalk.bold('Step 1: 📋 @Planner breaking down feature...'));
-        const plan = await runAgentLoop('planner', feature, providerFactory, context);
+        const plan = await runAgentLoop('planner', feature, providerFactory, context, 0, maxSteps);
 
         printInfo(chalk.bold('\nStep 2: 🏗️  @CTO reviewing architecture...'));
-        await runAgentLoop('cto', `Review plan:\n${plan}`, providerFactory, context);
+        const architectureReview = await runAgentLoop(
+          'cto',
+          `Review plan:\n${plan}`,
+          providerFactory,
+          context,
+          0,
+          maxSteps
+        );
+        swarmResult = `## Planner\n${plan}\n\n## CTO\n${architectureReview}`;
+
+        await persistAndPrintRunArtifacts({
+          trace,
+          command: 'swarm',
+          agent: 'planner',
+          task: feature,
+          result: swarmResult,
+        });
       } catch (error) {
+        if (trace) {
+          swarmResult = swarmResult || `[Error]: ${error.message}`;
+          await persistAndPrintRunArtifacts({
+            trace,
+            command: 'swarm',
+            agent: 'planner',
+            task: feature,
+            result: swarmResult,
+          }).catch(() => {});
+        }
         printError(`Error in swarm command: ${error.message}`);
         process.exit(1);
       }

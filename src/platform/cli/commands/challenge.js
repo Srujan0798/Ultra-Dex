@@ -119,7 +119,7 @@ export function registerChallengeCommand(program) {
         }
 
         printInfo('\nLeaderboard:');
-        console.log(leaderboard.renderASCIIBoard(5));
+        logger.log(leaderboard.renderASCIIBoard(5));
       } catch (error) {
         printError(chalk.red(`Challenge failed: ${error.message}`));
       }

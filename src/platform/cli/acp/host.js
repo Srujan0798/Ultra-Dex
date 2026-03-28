@@ -440,7 +440,7 @@ export async function startACPHost(options = {}) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   startACPHost().catch((err) => {
-    console.error(chalk.red('Fatal error in ACP Host:'), err);
+    logger.error(chalk.red('Fatal error in ACP Host:'), err);
     process.exit(1);
   });
 }

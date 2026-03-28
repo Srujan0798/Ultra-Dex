@@ -349,12 +349,12 @@ export function registerMemorySchemaCommand(program) {
     .alias('mem-schema')
     .description('Memory entry schema and validation')
     .action(() => {
-      console.log('🧠 Memory Entry Schema:');
-      console.log('Required fields: id, content, type');
-      console.log(
+      logger.log('🧠 Memory Entry Schema:');
+      logger.log('Required fields: id, content, type');
+      logger.log(
         'Optional fields: embedding, createdAt, author, tags, supersedes, relatesTo, metadata'
       );
-      console.log('Valid types:', MEMORY_TYPES.join(', '));
+      logger.log('Valid types:', MEMORY_TYPES.join(', '));
     });
 }
 

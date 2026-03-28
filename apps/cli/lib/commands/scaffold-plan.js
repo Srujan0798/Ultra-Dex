@@ -421,7 +421,7 @@ export default async function handler(req, res) {
         res.status(405).end(\`Method \${req.method} Not Allowed\`);
     }
   } catch (error) {
-    console.error('API Route Error:', error);
+    logger.error('API Route Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }

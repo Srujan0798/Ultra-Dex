@@ -44,9 +44,11 @@ export class TaskGraph {
     return Array.from(this.tasks.values()).some((task) => task.status === 'pending');
   }
 
-  prune() {
+  prune(maxAgeMs = 300000) {
+    // 5 minutes default
+    const cutoff = Date.now() - maxAgeMs;
     for (const [taskId, task] of this.tasks.entries()) {
-      if (task.status === 'completed') {
+      if (task.status === 'completed' && task.completedAt < cutoff) {
         this.tasks.delete(taskId);
       }
     }

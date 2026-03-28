@@ -320,7 +320,7 @@ export class BackgroundLLM extends EventEmitter {
     const fixes = {
       'Empty catch block': {
         description: 'Add error logging or handling',
-        replacement: 'catch (error) { console.error("Error:", error); }',
+        replacement: 'catch (error) { logger.error("Error:", error); }',
       },
       'Console statement in production code': {
         description: 'Use a logging library like winston or pino',

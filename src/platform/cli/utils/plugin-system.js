@@ -53,7 +53,7 @@ export class PluginManager {
 
       // Validate manifest
       if (!manifest.name || !manifest.version) {
-        console.warn(chalk.yellow(`Invalid plugin manifest: ${pluginPath}`));
+        logger.warn(chalk.yellow(`Invalid plugin manifest: ${pluginPath}`));
         return;
       }
 
@@ -75,9 +75,9 @@ export class PluginManager {
         await pluginModule.default.activate(this);
       }
 
-      console.log(chalk.green(`✓ Loaded plugin: ${manifest.name} v${manifest.version}`));
+      logger.log(chalk.green(`✓ Loaded plugin: ${manifest.name} v${manifest.version}`));
     } catch (error) {
-      console.warn(chalk.yellow(`Failed to load plugin ${pluginPath}:`), error.message);
+      logger.warn(chalk.yellow(`Failed to load plugin ${pluginPath}:`), error.message);
     }
   }
 
@@ -103,7 +103,7 @@ export class PluginManager {
         const result = await hook(context);
         results.push(result);
       } catch (error) {
-        console.warn(chalk.yellow(`Hook ${name} failed:`), error.message);
+        logger.warn(chalk.yellow(`Hook ${name} failed:`), error.message);
       }
     }
 
@@ -131,7 +131,7 @@ export class PluginManager {
     // Ensure plugin directory exists
     await fs.mkdir(pluginDir, { recursive: true });
 
-    console.log(chalk.blue(`Installing plugin from ${source}...`));
+    logger.log(chalk.blue(`Installing plugin from ${source}...`));
 
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-plugin-'));
     let pluginSourceDir = null;
@@ -194,8 +194,8 @@ export class PluginManager {
 
     await this.loadPlugin(targetPath);
 
-    console.log(chalk.green(`✓ Plugin installed: ${manifest.name}`));
-    console.log(chalk.gray('Restart Ultra-Dex to reload plugins if already running'));
+    logger.log(chalk.green(`✓ Plugin installed: ${manifest.name}`));
+    logger.log(chalk.gray('Restart Ultra-Dex to reload plugins if already running'));
   }
 
   /**
@@ -216,7 +216,7 @@ export class PluginManager {
     await fs.rm(plugin.path, { recursive: true });
     this.plugins.delete(name);
 
-    console.log(chalk.green(`✓ Uninstalled plugin: ${name}`));
+    logger.log(chalk.green(`✓ Uninstalled plugin: ${name}`));
   }
 }
 
@@ -247,27 +247,27 @@ export const PLUGIN_EXAMPLE = `
 export default {
   // Called when plugin is loaded
   async activate(pluginManager) {
-    console.log('My plugin activated!');
+    logger.log('My plugin activated!');
     
     // Register hooks
     pluginManager.registerHook('pre-init', async (context) => {
-      console.log('About to init:', context);
+      logger.log('About to init:', context);
     });
     
     pluginManager.registerHook('post-generate', async (context) => {
-      console.log('Generated:', context);
+      logger.log('Generated:', context);
     });
   },
   
   // Called when plugin is unloaded
   async deactivate() {
-    console.log('My plugin deactivated');
+    logger.log('My plugin deactivated');
   },
   
   // Custom commands
   commands: {
     'my-command': async (args, options) => {
-      console.log('Running my custom command');
+      logger.log('Running my custom command');
     }
   }
 };
