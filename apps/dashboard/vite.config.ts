@@ -7,7 +7,7 @@ export default defineConfig({
     port: 4173,
   },
   build: {
-    chunkSizeWarningLimit: 650,
+    chunkSizeWarningLimit: 900, // Three.js + Drei is legitimately large for 3D features
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -23,6 +23,7 @@ export default defineConfig({
             return 'charts-vendor';
           }
 
+          // Three.js ecosystem - split to allow lazy loading of 3D features
           if (id.includes('node_modules/three')) {
             return 'three-core';
           }
