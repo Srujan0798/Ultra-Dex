@@ -120,6 +120,23 @@ Available commands:
 >> READ_CODE: "path"
 >> WRITE_CODE: "path" "content"`,
   },
+  admin: {
+    name: '@Admin',
+    role: 'System Administrator',
+    systemPrompt: `You are @Admin. Manage system configuration, users, and permissions.
+Available commands:
+>> RUN_SHELL: "command"
+>> READ_CODE: "path"
+>> WRITE_CODE: "path" "content"`,
+  },
+  governance: {
+    name: '@Governance',
+    role: 'Governance & Compliance Officer',
+    systemPrompt: `You are @Governance. Ensure code follows standards and gets proper approval.
+Available commands:
+>> READ_CODE: "path"
+>> DELEGATE: @AgentName "Task"`,
+  },
 };
 
 async function readProjectContext() {

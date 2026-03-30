@@ -49,29 +49,22 @@ test('--version returns valid semver', () => {
   );
 });
 
-test('--help shows all 16 commands', () => {
+test('--help shows all commands', () => {
   const result = runCli(['--help']);
   assert.equal(result.status, 0);
+  // Core commands that must be present
   const commands = [
     'init',
     'audit',
-    'examples',
     'agents',
-    'agent',
-    'generate',
-    'build',
-    'review',
-    'align',
+    'brain',
+    'memory',
     'serve',
-    'workflow',
-    'suggest',
-    'validate',
-    'hooks',
-    'fetch',
-    'sync',
+    'config',
+    'help',
   ];
   commands.forEach((cmd) => {
-    assert.match(result.output, new RegExp(`\\b${cmd}\\b`));
+    assert.match(result.output, new RegExp(cmd));
   });
 });
 

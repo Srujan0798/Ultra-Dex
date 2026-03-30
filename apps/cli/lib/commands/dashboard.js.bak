@@ -1,0 +1,1046 @@
+// Copyright (c) 2026 Ultra-Dex
+
+/**
+ * Interactive dashboard command.
+ * Default mode is a terminal dashboard; `--web` keeps browser-based access.
+ */
+
+import chalk from '../../../../src/utils/chalk.js';
+import fs from 'fs/promises';
+import http from 'http';
+import os from 'os';
+import path from 'path';
+import process from 'process';
+import { execSync, spawn } from 'child_process';
+import { fileURLToPath } from 'url';
+import { getUsageSummary } from '../enterprise/usage.js';
+import { ValidationError } from '../utils/errors.js';
+import { startSpinner } from '../utils/spinners.js';
+import { VERSION } from '../utils/version.js';
+import { logger } from '../utils/logger.js';
+
+const DEFAULT_WEB_PORT = '3002';
+const DEFAULT_MAX_RECENT_PROJECTS = 6;
+const DEFAULT_SCAN_LIMIT = 12;
+const COMMANDS_DIR = path.dirname(fileURLToPath(import.meta.url));
+const CLI_ENTRYPOINT = path.resolve(COMMANDS_DIR, '../../bin/ultra-dex.js');
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function formatRelativeTime(timestamp) {
+  if (!timestamp) return 'unknown';
+
+  const deltaMs = Date.now() - new Date(timestamp).getTime();
+  if (!Number.isFinite(deltaMs)) return 'unknown';
+
+  const deltaMinutes = Math.floor(deltaMs / 60000);
+  if (deltaMinutes < 1) return 'just now';
+  if (deltaMinutes < 60) return `${deltaMinutes}m ago`;
+
+  const deltaHours = Math.floor(deltaMinutes / 60);
+  if (deltaHours < 24) return `${deltaHours}h ago`;
+
+  const deltaDays = Math.floor(deltaHours / 24);
+  if (deltaDays < 30) return `${deltaDays}d ago`;
+
+  const deltaMonths = Math.floor(deltaDays / 30);
+  if (deltaMonths < 12) return `${deltaMonths}mo ago`;
+
+  return `${Math.floor(deltaMonths / 12)}y ago`;
+}
+
+function calculateHealth(checks = []) {
+  const failingChecks = checks.filter((check) => check.status === 'missing');
+  if (failingChecks.length === 0) return 'healthy';
+  if (failingChecks.length === 1) return 'warning';
+  return 'degraded';
+}
+
+function scoreColor(health) {
+  if (health === 'healthy') return chalk.green;
+  if (health === 'warning') return chalk.yellow;
+  return chalk.red;
+}
+
+function printInfo(message) {
+  logger.log(chalk.cyan(message));
+}
+
+function printSuccess(message) {
+  logger.log(chalk.green(message));
+}
+
+async function promptWithInquirer(questions) {
+  const mod = await import('inquirer');
+  const promptApi = mod.default ?? mod;
+  return promptApi.prompt(questions);
+}
+
+async function pathExists(targetPath, fsImpl = fs) {
+  try {
+    await fsImpl.access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readJsonFile(targetPath, fallback = null, fsImpl = fs) {
+  try {
+    const content = await fsImpl.readFile(targetPath, 'utf8');
+    return JSON.parse(content);
+  } catch {
+    return fallback;
+  }
+}
+
+async function loadProjectState(cwd, fsImpl = fs) {
+  return readJsonFile(path.join(cwd, '.ultra', 'state.json'), null, fsImpl);
+}
+
+function normalizeDate(value) {
+  if (!value) return null;
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) ? new Date(time).toISOString() : null;
+}
+
+async function detectProject(targetPath, options = {}) {
+  const fsImpl = options.fsImpl || fs;
+  const resolvedPath = path.resolve(targetPath);
+  const packageJsonPath = path.join(resolvedPath, 'package.json');
+  const gitPath = path.join(resolvedPath, '.git');
+  const statePath = path.join(resolvedPath, '.ultra', 'state.json');
+  const ultraConfigPath = path.join(resolvedPath, '.ultra-dex', 'config.json');
+  const planPath = path.join(resolvedPath, 'IMPLEMENTATION-PLAN.md');
+
+  const [hasPackageJson, hasGit, hasState, hasConfig, hasPlan] = await Promise.all([
+    pathExists(packageJsonPath, fsImpl),
+    pathExists(gitPath, fsImpl),
+    pathExists(statePath, fsImpl),
+    pathExists(ultraConfigPath, fsImpl),
+    pathExists(planPath, fsImpl),
+  ]);
+
+  if (!hasPackageJson && !hasGit && !hasState && !hasConfig && !hasPlan) {
+    return null;
+  }
+
+  let stat = null;
+  try {
+    stat = await fsImpl.stat(resolvedPath);
+  } catch {
+    return null;
+  }
+
+  const state = hasState ? await readJsonFile(statePath, null, fsImpl) : null;
+  const alignmentScore = typeof state?.score === 'number' ? state.score : null;
+  const lastOpenedAt =
+    normalizeDate(options.lastOpenedAt) ||
+    normalizeDate(state?.updatedAt) ||
+    normalizeDate(stat.mtime) ||
+    new Date().toISOString();
+
+  return {
+    name: state?.project?.name || path.basename(resolvedPath),
+    path: resolvedPath,
+    source: options.source || 'scan',
+    alignmentScore,
+    lastOpenedAt,
+    lastSeenLabel: formatRelativeTime(lastOpenedAt),
+    markers: {
+      packageJson: hasPackageJson,
+      git: hasGit,
+      state: hasState,
+      config: hasConfig,
+      plan: hasPlan,
+    },
+  };
+}
+
+async function readRecentProjectHistory(options = {}) {
+  const fsImpl = options.fsImpl || fs;
+  const homeDir = options.homeDir || os.homedir();
+  const historyPath = options.historyPath || path.join(homeDir, '.ultra-dex', 'history.json');
+  const historyEntries = await readJsonFile(historyPath, [], fsImpl);
+
+  if (!Array.isArray(historyEntries)) {
+    return [];
+  }
+
+  return historyEntries
+    .filter((entry) => typeof entry?.cwd === 'string' && entry.cwd.trim())
+    .sort((left, right) => {
+      const leftTime = new Date(left.timestamp || 0).getTime();
+      const rightTime = new Date(right.timestamp || 0).getTime();
+      return rightTime - leftTime;
+    });
+}
+
+async function scanProjectRoots(options = {}) {
+  const fsImpl = options.fsImpl || fs;
+  const candidateRoots = options.candidateRoots || [];
+  const scanLimit = options.scanLimit || DEFAULT_SCAN_LIMIT;
+  const discovered = [];
+
+  for (const root of candidateRoots) {
+    if (!root) continue;
+
+    let entries = [];
+    try {
+      entries = await fsImpl.readdir(root, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+
+    const directories = entries.filter((entry) => entry.isDirectory()).slice(0, scanLimit);
+    for (const entry of directories) {
+      const project = await detectProject(path.join(root, entry.name), {
+        fsImpl,
+        source: 'scan',
+      });
+      if (project) {
+        discovered.push(project);
+      }
+    }
+  }
+
+  return discovered;
+}
+
+export async function getRecentProjects(options = {}) {
+  const cwd = path.resolve(options.cwd || process.cwd());
+  const fsImpl = options.fsImpl || fs;
+  const homeDir = options.homeDir || os.homedir();
+  const maxItems = options.maxItems || DEFAULT_MAX_RECENT_PROJECTS;
+  const candidateRoots =
+    options.candidateRoots ||
+    [
+      path.dirname(cwd),
+      path.join(homeDir, 'projects'),
+      path.join(homeDir, 'workspace'),
+      path.join(homeDir, 'code'),
+      path.join(homeDir, 'dev'),
+    ];
+
+  const projectMap = new Map();
+
+  const upsert = (project) => {
+    if (!project?.path) return;
+
+    const existing = projectMap.get(project.path);
+    if (!existing) {
+      projectMap.set(project.path, project);
+      return;
+    }
+
+    const existingPriority = existing.source === 'current' ? 3 : existing.source === 'history' ? 2 : 1;
+    const incomingPriority = project.source === 'current' ? 3 : project.source === 'history' ? 2 : 1;
+    const existingTime = new Date(existing.lastOpenedAt || 0).getTime();
+    const incomingTime = new Date(project.lastOpenedAt || 0).getTime();
+
+    if (incomingPriority > existingPriority || incomingTime > existingTime) {
+      projectMap.set(project.path, { ...existing, ...project });
+      return;
+    }
+
+    projectMap.set(project.path, {
+      ...project,
+      ...existing,
+      markers: {
+        ...existing.markers,
+        ...project.markers,
+      },
+    });
+  };
+
+  const currentProject = await detectProject(cwd, {
+    fsImpl,
+    source: 'current',
+    lastOpenedAt: new Date().toISOString(),
+  });
+  if (currentProject) {
+    upsert(currentProject);
+  }
+
+  const historyEntries = await readRecentProjectHistory({
+    fsImpl,
+    homeDir,
+    historyPath: options.historyPath,
+  });
+
+  for (const entry of historyEntries.slice(0, maxItems * 3)) {
+    const project = await detectProject(entry.cwd, {
+      fsImpl,
+      source: 'history',
+      lastOpenedAt: entry.timestamp,
+    });
+    if (project) {
+      upsert(project);
+    }
+  }
+
+  const scannedProjects = await scanProjectRoots({
+    fsImpl,
+    candidateRoots,
+    scanLimit: options.scanLimit,
+  });
+  scannedProjects.forEach(upsert);
+
+  return Array.from(projectMap.values())
+    .sort((left, right) => {
+      const leftPriority = left.source === 'current' ? 3 : left.source === 'history' ? 2 : 1;
+      const rightPriority = right.source === 'current' ? 3 : right.source === 'history' ? 2 : 1;
+      if (leftPriority !== rightPriority) {
+        return rightPriority - leftPriority;
+      }
+
+      const leftTime = new Date(left.lastOpenedAt || 0).getTime();
+      const rightTime = new Date(right.lastOpenedAt || 0).getTime();
+      return rightTime - leftTime;
+    })
+    .slice(0, maxItems);
+}
+
+function commandWeight(usageSummary, commandName) {
+  const topCommands = usageSummary?.topCommands || [];
+  const hit = topCommands.find((entry) => entry.name === commandName);
+  return hit?.count || 0;
+}
+
+export function getQuickActions(options = {}) {
+  const usageSummary = options.usageSummary || null;
+
+  const actions = [
+    {
+      id: 'run-agent',
+      label: 'Run agent',
+      description: 'Launch an agent task from the dashboard',
+      command: 'ultra-dex run <agent> "<task>"',
+      commandName: 'run',
+    },
+    {
+      id: 'status',
+      label: 'Project status',
+      description: 'Inspect the current project state',
+      command: 'ultra-dex status',
+      commandName: 'status',
+    },
+    {
+      id: 'align',
+      label: 'Alignment check',
+      description: 'Recompute plan/code alignment',
+      command: 'ultra-dex align',
+      commandName: 'align',
+    },
+    {
+      id: 'review',
+      label: 'Code review',
+      description: 'Run the review workflow',
+      command: 'ultra-dex review',
+      commandName: 'review',
+    },
+    {
+      id: 'serve',
+      label: 'Serve portal',
+      description: 'Start the MCP portal and API endpoints',
+      command: 'ultra-dex serve',
+      commandName: 'serve',
+    },
+    {
+      id: 'web-dashboard',
+      label: 'Web dashboard',
+      description: 'Start the browser dashboard on localhost',
+      command: 'ultra-dex dashboard --web --port 3002',
+      commandName: 'dashboard',
+    },
+  ];
+
+  return actions
+    .map((action) => ({
+      ...action,
+      usageWeight: commandWeight(usageSummary, action.commandName),
+    }))
+    .sort((left, right) => {
+      if (left.usageWeight !== right.usageWeight) {
+        return right.usageWeight - left.usageWeight;
+      }
+      return left.label.localeCompare(right.label);
+    });
+}
+
+export function getGitInfo(cwd = process.cwd()) {
+  try {
+    const branch = execSync('git branch --show-current', {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    const lastCommit = execSync('git log -1 --format="%h %s"', {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    const status = execSync('git status --porcelain', {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+
+    return {
+      branch: branch || 'unknown',
+      lastCommit: lastCommit || 'N/A',
+      changedFiles: status.split('\n').filter(Boolean).length,
+    };
+  } catch {
+    return { branch: 'unknown', lastCommit: 'N/A', changedFiles: 0 };
+  }
+}
+
+async function loadDashboardConfig(loadConfigImpl) {
+  if (loadConfigImpl) {
+    return loadConfigImpl();
+  }
+
+  const configModule = await import('../utils/config-manager.js');
+  const manager =
+    configModule.configManager ||
+    configModule.default ||
+    (configModule.ConfigManager ? new configModule.ConfigManager() : null);
+
+  if (!manager || typeof manager.get !== 'function') {
+    return {
+      theme: 'professional-purple',
+      mcpPort: 3001,
+      autoRefresh: true,
+      refreshInterval: 30000,
+    };
+  }
+
+  if (typeof manager.load === 'function') {
+    await manager.load();
+  }
+
+  return {
+    theme: manager.get('ui.theme', 'professional-purple'),
+    mcpPort: manager.get('mcp.port', 3001),
+    autoRefresh: manager.get('ui.autoRefresh', true),
+    refreshInterval: manager.get('ui.refreshInterval', 30000),
+  };
+}
+
+export async function getSystemStatus(options = {}) {
+  const cwd = path.resolve(options.cwd || process.cwd());
+  const fsImpl = options.fsImpl || fs;
+  const getGitInfoImpl = options.getGitInfoImpl || getGitInfo;
+  const loadStateImpl = options.loadStateImpl || ((inputCwd) => loadProjectState(inputCwd, fsImpl));
+  const getUsageSummaryImpl = options.getUsageSummaryImpl || getUsageSummary;
+  const config = await loadDashboardConfig(options.loadConfigImpl);
+
+  const [state, usageSummary] = await Promise.all([
+    loadStateImpl(cwd),
+    getUsageSummaryImpl({ windowDays: 7 }),
+  ]);
+
+  const gitInfo = await Promise.resolve(getGitInfoImpl(cwd));
+  const packageJsonExists = await pathExists(path.join(cwd, 'package.json'), fsImpl);
+  const planExists = await pathExists(path.join(cwd, 'IMPLEMENTATION-PLAN.md'), fsImpl);
+  const stateExists = await pathExists(path.join(cwd, '.ultra', 'state.json'), fsImpl);
+  const projectName = state?.project?.name || path.basename(cwd);
+
+  const phases = Array.isArray(state?.phases) ? state.phases : [];
+  const phaseCounts = {
+    total: phases.length,
+    completed: phases.filter((phase) => phase.status === 'completed').length,
+    inProgress: phases.filter((phase) => phase.status === 'in_progress').length,
+    pending: phases.filter((phase) => phase.status !== 'completed' && phase.status !== 'in_progress').length,
+  };
+
+  const checks = [
+    { label: 'package.json', status: packageJsonExists ? 'ok' : 'missing' },
+    { label: 'implementation plan', status: planExists ? 'ok' : 'missing' },
+    { label: 'state file', status: stateExists ? 'ok' : 'missing' },
+  ];
+
+  return {
+    projectName,
+    cwd,
+    health: calculateHealth(checks),
+    git: gitInfo,
+    alignmentScore: typeof state?.score === 'number' ? state.score : null,
+    phases: phaseCounts,
+    checks,
+    usage: {
+      totalCommands: usageSummary?.totalCommands || 0,
+      last24h: usageSummary?.last24h || 0,
+      last7d: usageSummary?.last7d || 0,
+      errorCount: usageSummary?.errorCount || 0,
+      topCommand: usageSummary?.topCommands?.[0]?.name || 'n/a',
+      topCommands: usageSummary?.topCommands || [],
+    },
+    config: {
+      theme: config?.theme || 'professional-purple',
+      mcpPort: config?.mcpPort || 3001,
+      autoRefresh: Boolean(config?.autoRefresh),
+      refreshInterval: config?.refreshInterval || 30000,
+    },
+    runtime: {
+      node: process.version,
+      platform: `${process.platform}/${process.arch}`,
+      uptimeSeconds: Math.round(process.uptime()),
+    },
+  };
+}
+
+export async function buildDashboardModel(options = {}) {
+  const cwd = path.resolve(options.cwd || process.cwd());
+  const systemStatus = await (options.getSystemStatusImpl || getSystemStatus)({
+    cwd,
+    fsImpl: options.fsImpl,
+    getGitInfoImpl: options.getGitInfoImpl,
+    loadStateImpl: options.loadStateImpl,
+    getUsageSummaryImpl: options.getUsageSummaryImpl,
+    loadConfigImpl: options.loadConfigImpl,
+  });
+
+  const recentProjects = await (options.getRecentProjectsImpl || getRecentProjects)({
+    cwd,
+    fsImpl: options.fsImpl,
+    homeDir: options.homeDir,
+    historyPath: options.historyPath,
+    candidateRoots: options.candidateRoots,
+    maxItems: options.maxItems,
+    scanLimit: options.scanLimit,
+  });
+
+  const quickActions = (options.getQuickActionsImpl || getQuickActions)({
+    usageSummary: systemStatus.usage,
+  });
+
+  return {
+    version: VERSION,
+    generatedAt: new Date().toISOString(),
+    currentProject: cwd,
+    systemStatus,
+    recentProjects,
+    quickActions,
+  };
+}
+
+export function renderDashboardSnapshot(model, options = {}) {
+  const color = options.color !== false;
+  const paint = (formatter, value) => (color ? formatter(value) : value);
+  const { systemStatus, recentProjects, quickActions } = model;
+  const healthFormatter = scoreColor(systemStatus.health);
+  const lines = [
+    paint(chalk.bold.cyan, `Ultra-Dex Dashboard v${model.version}`),
+    `${systemStatus.projectName}  ${paint(healthFormatter, `[${systemStatus.health}]`)}`,
+    systemStatus.cwd,
+    '',
+    'System Status',
+    `- git: ${systemStatus.git.branch} (${systemStatus.git.changedFiles} changed files)`,
+    `- alignment: ${systemStatus.alignmentScore ?? 'n/a'}`,
+    `- phases: ${systemStatus.phases.completed}/${systemStatus.phases.total} completed`,
+    `- usage: ${systemStatus.usage.last24h} commands in 24h, ${systemStatus.usage.errorCount} errors`,
+    `- config: theme=${systemStatus.config.theme}, mcp=${systemStatus.config.mcpPort}`,
+    '',
+    'Recent Projects',
+    ...(recentProjects.length
+      ? recentProjects.map(
+          (project, index) =>
+            `${index + 1}. ${project.name} [${project.source}] ${project.lastSeenLabel} ${project.path}`
+        )
+      : ['(none)']),
+    '',
+    'Quick Actions',
+    ...quickActions.map((action, index) => `${index + 1}. ${action.label} -> ${action.command}`),
+  ];
+
+  return lines.join('\n');
+}
+
+function buildSelectionChoices(model) {
+  const choices = [{ name: 'Recent projects', value: null, disabled: true }];
+
+  if (model.recentProjects.length === 0) {
+    choices.push({ name: '  No recent projects found', value: null, disabled: true });
+  } else {
+    for (const project of model.recentProjects) {
+      choices.push({
+        name: `  ${project.name} (${project.source}, ${project.lastSeenLabel})`,
+        value: { type: 'project', project },
+      });
+    }
+  }
+
+  choices.push({ name: 'Quick actions', value: null, disabled: true });
+  for (const action of model.quickActions) {
+    choices.push({
+      name: `  ${action.label} — ${action.description}`,
+      value: { type: 'action', action },
+    });
+  }
+
+  choices.push({ name: 'Controls', value: null, disabled: true });
+  choices.push({ name: '  Refresh dashboard', value: { type: 'refresh' } });
+  choices.push({ name: '  Exit', value: { type: 'exit' } });
+
+  return choices;
+}
+
+function runCliCommand(args, options = {}) {
+  const spawnImpl = options.spawnImpl || spawn;
+  const cwd = options.cwd || process.cwd();
+
+  return new Promise((resolve, reject) => {
+    const child = spawnImpl(process.execPath, [CLI_ENTRYPOINT, ...args], {
+      cwd,
+      stdio: 'inherit',
+    });
+
+    child.once('error', reject);
+    child.once('close', (code) => {
+      if (code === 0) {
+        resolve({ code });
+        return;
+      }
+
+      reject(new Error(`ultra-dex ${args.join(' ')} exited with code ${code}`));
+    });
+  });
+}
+
+export async function executeQuickAction(action, options = {}) {
+  const promptImpl = options.promptImpl || promptWithInquirer;
+  const cwd = options.cwd || process.cwd();
+
+  switch (action.id) {
+    case 'run-agent': {
+      const answers = await promptImpl([
+        {
+          type: 'input',
+          name: 'agent',
+          message: 'Agent name',
+          default: 'planner',
+          validate: (value) => value.trim().length > 0 || 'Agent name is required',
+        },
+        {
+          type: 'input',
+          name: 'task',
+          message: 'Task',
+          validate: (value) => value.trim().length > 0 || 'Task is required',
+        },
+      ]);
+
+      return runCliCommand(['run', answers.agent.trim(), answers.task.trim()], options);
+    }
+
+    case 'status':
+      return runCliCommand(['status'], { ...options, cwd });
+
+    case 'align':
+      return runCliCommand(['align'], { ...options, cwd });
+
+    case 'review':
+      return runCliCommand(['review'], { ...options, cwd });
+
+    case 'serve':
+      return runCliCommand(['serve'], { ...options, cwd });
+
+    case 'web-dashboard':
+      return runCliCommand(['dashboard', '--web', '--port', String(options.port || DEFAULT_WEB_PORT)], {
+        ...options,
+        cwd,
+      });
+
+    default:
+      throw new ValidationError(`Unknown dashboard action: ${action.id}`);
+  }
+}
+
+export async function showInteractiveDashboard(, options = {}) {
+   const promptImpl = options.promptImpl || promptWithInquirer;
+   const clear = options.clear !== false ? options.clearImpl || console.clear : null;
+   const spinnerFactory = options.spinnerFactory || startSpinner;
+   const once = Boolean(options.once);
+   const color = options.color !== false;
+   let cwd = path.resolve(options.cwd || process.cwd());
+
+  while (true) {
+    let loadingSpinner = null;
+    try {
+      if (process.stdout.isTTY && options.loading !== false && typeof spinnerFactory === 'function') {
+        loadingSpinner = spinnerFactory('Loading dashboard context...', 'pulse');
+      }
+    } catch {
+      loadingSpinner = null;
+    }
+
+    let model;
+    try {
+      model = await (options.buildDashboardModelImpl || buildDashboardModel)({
+        ...options,
+        cwd,
+      });
+    } catch (error) {
+      if (loadingSpinner?.isSpinning) {
+        loadingSpinner.fail('Failed to load dashboard context');
+      }
+      throw error;
+    } finally {
+      if (loadingSpinner?.isSpinning) {
+        loadingSpinner.stop();
+      }
+    }
+
+    if (clear) {
+      clear();
+    }
+    log(renderDashboardSnapshot(model, { color }));
+
+    if (once || !process.stdout.isTTY && !options.promptImpl) {
+      return model;
+    }
+
+    const answers = await promptImpl([
+      {
+        type: 'list',
+        name: 'selection',
+        message: 'Dashboard',
+        pageSize: 18,
+        choices: buildSelectionChoices(model),
+      },
+    ]);
+
+    const selection = answers.selection;
+    if (!selection) {
+      continue;
+    }
+
+    if (selection.type === 'exit') {
+      return model;
+    }
+
+    if (selection.type === 'refresh') {
+      continue;
+    }
+
+    if (selection.type === 'project') {
+      cwd = selection.project.path;
+      log(color ? chalk.cyan(`Switched dashboard context to ${cwd}`) : `Switched dashboard context to ${cwd}`);
+      continue;
+    }
+
+    if (selection.type === 'action') {
+      await (options.executeQuickActionImpl || executeQuickAction)(selection.action, {
+        ...options,
+        cwd,
+        promptImpl,
+      });
+    }
+  }
+}
+
+function renderRecentProjectsHtml(recentProjects) {
+  if (!recentProjects.length) {
+    return '<li>No recent projects found.</li>';
+  }
+
+  return recentProjects
+    .map(
+      (project) =>
+        `<li><strong>${escapeHtml(project.name)}</strong><br><span>${escapeHtml(project.path)}</span><br><small>${escapeHtml(project.source)} • ${escapeHtml(project.lastSeenLabel)}</small></li>`
+    )
+    .join('');
+}
+
+function renderQuickActionsHtml(quickActions) {
+  return quickActions
+    .map(
+      (action) =>
+        `<li><strong>${escapeHtml(action.label)}</strong><br><span>${escapeHtml(action.description)}</span><br><code>${escapeHtml(action.command)}</code></li>`
+    )
+    .join('');
+}
+
+function renderChecksHtml(checks) {
+  return checks
+    .map(
+      (check) =>
+        `<li><strong>${escapeHtml(check.label)}</strong>: ${escapeHtml(check.status)}</li>`
+    )
+    .join('');
+}
+
+function generateInteractiveDashboardHTML(model) {
+  const { systemStatus, recentProjects, quickActions } = model;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ultra-Dex Dashboard</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08111f;
+        --card: rgba(15, 23, 42, 0.88);
+        --line: rgba(148, 163, 184, 0.18);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --good: #22c55e;
+        --warn: #f59e0b;
+        --bad: #ef4444;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, rgba(56, 189, 248, 0.15), transparent 38%), var(--bg);
+        color: var(--text);
+        padding: 32px;
+      }
+      h1, h2, h3, p, ul { margin: 0; }
+      .shell { max-width: 1120px; margin: 0 auto; }
+      .hero { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 24px; }
+      .hero h1 { font-size: 2.25rem; letter-spacing: -0.04em; }
+      .muted { color: var(--muted); }
+      .status { color: ${systemStatus.health === 'healthy' ? 'var(--good)' : systemStatus.health === 'warning' ? 'var(--warn)' : 'var(--bad)'}; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 20px;
+        backdrop-filter: blur(12px);
+      }
+      .metric { font-size: 2rem; font-weight: 700; }
+      ul { list-style: none; padding: 0; margin-top: 16px; display: grid; gap: 12px; }
+      li { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(15, 23, 42, 0.55); }
+      code { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="hero">
+        <div>
+          <h1>${escapeHtml(systemStatus.projectName)}</h1>
+          <p class="muted">${escapeHtml(systemStatus.cwd)}</p>
+        </div>
+        <div>
+          <div class="metric status">${escapeHtml(systemStatus.health)}</div>
+          <p class="muted">dashboard v${escapeHtml(model.version)}</p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h2>System status</h2>
+          <ul>
+            <li>git: ${escapeHtml(systemStatus.git.branch)} (${escapeHtml(String(systemStatus.git.changedFiles))} changed)</li>
+            <li>alignment: ${escapeHtml(String(systemStatus.alignmentScore ?? 'n/a'))}</li>
+            <li>usage: ${escapeHtml(String(systemStatus.usage.last24h))} commands in 24h</li>
+            <li>config: ${escapeHtml(systemStatus.config.theme)} / MCP ${escapeHtml(String(systemStatus.config.mcpPort))}</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2>Recent projects</h2>
+          <ul>${renderRecentProjectsHtml(recentProjects)}</ul>
+        </section>
+
+        <section class="card">
+          <h2>Quick actions</h2>
+          <ul>${renderQuickActionsHtml(quickActions)}</ul>
+        </section>
+
+        <section class="card">
+          <h2>Health checks</h2>
+          <ul>${renderChecksHtml(systemStatus.checks)}</ul>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>`;
+}
+
+export function generateDashboardHTML(state = null, gitInfo = null, graphSummary = null, usageSummary = null) {
+  const safeState = state || {};
+  const safeGit = gitInfo || { branch: 'unknown', lastCommit: 'N/A', changedFiles: 0 };
+  const safeGraph = graphSummary || { nodes: 0, edges: 0 };
+  const safeUsage = usageSummary || {
+    totalCommands: 0,
+    last24h: 0,
+    last7d: 0,
+    errorCount: 0,
+    topCommands: [],
+  };
+  const phases = Array.isArray(safeState.phases) ? safeState.phases : [];
+  const projectName = safeState.project?.name || path.basename(process.cwd());
+  const alignmentScore = typeof safeState.score === 'number' ? safeState.score : 'n/a';
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ultra-Dex • ${escapeHtml(projectName)}</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        background: #08111f;
+        color: #e2e8f0;
+        padding: 32px;
+      }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+      .card { border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 16px; padding: 20px; background: rgba(15, 23, 42, 0.88); }
+      ul { padding-left: 18px; }
+      code { color: #38bdf8; }
+    </style>
+  </head>
+  <body>
+    <h1>${escapeHtml(projectName)}</h1>
+    <p>Alignment score: <strong>${escapeHtml(String(alignmentScore))}</strong></p>
+    <div class="grid">
+      <section class="card">
+        <h2>Git</h2>
+        <ul>
+          <li>branch: ${escapeHtml(safeGit.branch)}</li>
+          <li>last commit: ${escapeHtml(safeGit.lastCommit)}</li>
+          <li>changed files: ${escapeHtml(String(safeGit.changedFiles))}</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>Graph</h2>
+        <ul>
+          <li>nodes: ${escapeHtml(String(safeGraph.nodes || 0))}</li>
+          <li>edges: ${escapeHtml(String(safeGraph.edges || 0))}</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>Usage</h2>
+        <ul>
+          <li>commands 24h: ${escapeHtml(String(safeUsage.last24h || 0))}</li>
+          <li>commands 7d: ${escapeHtml(String(safeUsage.last7d || 0))}</li>
+          <li>errors: ${escapeHtml(String(safeUsage.errorCount || 0))}</li>
+          <li>top command: ${escapeHtml(safeUsage.topCommands?.[0]?.name || 'n/a')}</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>Phases</h2>
+        <ul>
+          ${phases
+            .map(
+              (phase) =>
+                `<li>${escapeHtml(phase.name || 'Unnamed phase')} — ${escapeHtml(phase.status || 'pending')}</li>`
+            )
+            .join('') || '<li>No tracked phases.</li>'}
+        </ul>
+      </section>
+    </div>
+  </body>
+</html>`;
+}
+
+export async function startDashboardWebServer(options = {}) {
+  const port = Number.parseInt(String(options.port || DEFAULT_WEB_PORT), 10);
+  if (Number.isNaN(port) || port < 1 || port > 65535) {
+    throw new ValidationError(`Invalid port: ${options.port || DEFAULT_WEB_PORT}`);
+  }
+
+  const server = (options.serverFactory || http.createServer)(async (_req, res) => {
+    const model = await (options.buildDashboardModelImpl || buildDashboardModel)({
+      ...options,
+      maxItems: options.maxItems || DEFAULT_MAX_RECENT_PROJECTS,
+    });
+
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(generateInteractiveDashboardHTML(model));
+  });
+
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(port, resolve);
+  });
+
+  if (!options.quiet) {
+    printSuccess(`Dashboard available at http://localhost:${port}`);
+    printInfo('Press Ctrl+C to stop the dashboard server.');
+  }
+
+  return {
+    server,
+    port,
+    url: `http://localhost:${port}`,
+    close: () =>
+      new Promise((resolve, reject) => {
+        server.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve();
+        });
+      }),
+  };
+}
+
+export function registerDashboardCommand(program) {
+  program
+    .command('dashboard')
+    .alias('d')
+    .description('Interactive dashboard with recent projects, quick actions, and system status')
+    .option('--web', 'Start the browser dashboard instead of the terminal dashboard', false)
+    .option('-p, --port <port>', 'Port for browser dashboard mode', DEFAULT_WEB_PORT)
+    .option('--json', 'Print dashboard data as JSON and exit', false)
+    .option('--once', 'Render one terminal snapshot and exit', false)
+    .option('--cwd <path>', 'Project root to inspect', process.cwd())
+    .action(async (options) => {
+      try {
+        const cwd = path.resolve(options.cwd || process.cwd());
+
+        if (options.json) {
+          const model = await buildDashboardModel({ cwd });
+          logger.log(JSON.stringify(model, null, 2));
+          return;
+        }
+
+        if (options.web) {
+          await startDashboardWebServer({ cwd, port: options.port });
+          return;
+        }
+
+        const model = await showInteractiveDashboard({
+          cwd,
+          once: options.once,
+        });
+        return model;
+      } catch (error) {
+        logger.error(chalk.red(`Dashboard failed: ${error.message}`));
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
+      }
+    });
+}
+
+export default {
+  buildDashboardModel,
+  executeQuickAction,
+  generateDashboardHTML,
+  getQuickActions,
+  getRecentProjects,
+  getSystemStatus,
+  registerDashboardCommand,
+  renderDashboardSnapshot,
+  showInteractiveDashboard,
+  startDashboardWebServer,
+};

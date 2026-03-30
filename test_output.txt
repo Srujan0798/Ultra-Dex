@@ -1,0 +1,970 @@
+
+> @ultra-dex/monorepo@6.0.0 test
+> NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/*.test.js tests/integration/*.test.js tests/cli/*.test.js
+
+TAP version 13
+# [safe-fs] Skipping corrupt JSONL line 51 in /private/var/folders/qs/6cjjv3kx74971shdl6zbnyww0000gn/T/ultra-dex-atomic-oTdut7/.ultra/ledger.jsonl: Expected ',' or '}' after property value in JSON at position 14 (line 1 column 15)
+# Subtest: Atomic writes and corruption recovery
+    # Subtest: ledger partially recovers JSONL when one line is corrupted
+    ok 1 - ledger partially recovers JSONL when one line is corrupted
+      ---
+      duration_ms: 111.066875
+      ...
+    # Subtest: memory recovers from backup instead of returning empty state on corruption
+    ok 2 - memory recovers from backup instead of returning empty state on corruption
+      ---
+      duration_ms: 632.601209
+      ...
+#   🚨 Failed to initialize memory
+#     → Data corruption detected in /private/var/folders/qs/6cjjv3kx74971shdl6zbnyww0000gn/T/ultra-dex-atomic-CPWyIS/.ultra/memory.json. Backup recovery was attempted. Manual recovery may be needed.
+    # Subtest: memory throws CorruptionError when corruption cannot be recovered
+    ok 3 - memory throws CorruptionError when corruption cannot be recovered
+      ---
+      duration_ms: 119.599584
+      ...
+    # Subtest: sessionPersistence wraps decision saves in a transaction and rolls back on failure
+    ok 4 - sessionPersistence wraps decision saves in a transaction and rolls back on failure
+      ---
+      duration_ms: 39.001208
+      ...
+    1..4
+ok 1 - Atomic writes and corruption recovery
+  ---
+  duration_ms: 905.148708
+  type: 'suite'
+  ...
+# Subtest: CLI Command: dashboard
+    # Subtest: getRecentProjects prioritizes current project and recent history
+    ok 1 - getRecentProjects prioritizes current project and recent history
+      ---
+      duration_ms: 510.128458
+      ...
+    # Subtest: getSystemStatus returns project, usage, and config summary
+    ok 2 - getSystemStatus returns project, usage, and config summary
+      ---
+      duration_ms: 141.754583
+      ...
+    # Subtest: showInteractiveDashboard switches project context and dispatches quick actions
+    ok 3 - showInteractiveDashboard switches project context and dispatches quick actions
+      ---
+      duration_ms: 15.432708
+      ...
+    # Subtest: startDashboardWebServer serves dashboard HTML
+    ok 4 - startDashboardWebServer serves dashboard HTML
+      ---
+      duration_ms: 41.710458
+      ...
+    1..4
+ok 2 - CLI Command: dashboard
+  ---
+  duration_ms: 717.173167
+  type: 'suite'
+  ...
+# Subtest: Logger class
+    # Subtest: should respect log levels
+    ok 1 - should respect log levels
+      ---
+      duration_ms: 29.879666
+      ...
+    # Subtest: should support debug logging when DEBUG env is set
+    ok 2 - should support debug logging when DEBUG env is set
+      ---
+      duration_ms: 2.333625
+      ...
+    # Subtest: should not log debug when DEBUG env is not set
+    ok 3 - should not log debug when DEBUG env is not set
+      ---
+      duration_ms: 1.05425
+      ...
+    # Subtest: should support different themes
+    ok 4 - should support different themes
+      ---
+      duration_ms: 1.984542
+      ...
+    # Subtest: should support custom themes
+    ok 5 - should support custom themes
+      ---
+      duration_ms: 2.215083
+      ...
+    # Subtest: should format messages with prefix and timestamps
+    ok 6 - should format messages with prefix and timestamps
+      ---
+      duration_ms: 1.99525
+      ...
+    # Subtest: should handle metadata (detail and context)
+    ok 7 - should handle metadata (detail and context)
+      ---
+      duration_ms: 1.004667
+      ...
+    # Subtest: should support success() logging
+    ok 8 - should support success() logging
+      ---
+      duration_ms: 1.970792
+      ...
+    # Subtest: should support step() logging
+    ok 9 - should support step() logging
+      ---
+      duration_ms: 1.581666
+      ...
+    # Subtest: should support header() logging
+    ok 10 - should support header() logging
+      ---
+      duration_ms: 2.03925
+      ...
+    # Subtest: should support table() logging
+    ok 11 - should support table() logging
+      ---
+      duration_ms: 0.958292
+      ...
+    # Subtest: child() should inherit options and allow overrides
+    ok 12 - child() should inherit options and allow overrides
+      ---
+      duration_ms: 0.934042
+      ...
+    1..12
+ok 3 - Logger class
+  ---
+  duration_ms: 79.22875
+  type: 'suite'
+  ...
+# [safe-fs] Skipping corrupt JSONL line 1 in /private/var/folders/qs/6cjjv3kx74971shdl6zbnyww0000gn/T/ultra-dex-persist-1RBpeL/.ultra/ledger.jsonl: Expected ',' or '}' after property value in JSON at position 21 (line 1 column 22)
+# Subtest: Persistence corruption handling
+    # Subtest: ledger recovers from backup instead of silently wiping corrupted JSONL
+    ok 1 - ledger recovers from backup instead of silently wiping corrupted JSONL
+      ---
+      duration_ms: 146.086709
+      ...
+# [safe-fs] Skipping corrupt JSONL line 1 in /private/var/folders/qs/6cjjv3kx74971shdl6zbnyww0000gn/T/ultra-dex-persist-NEcTTY/.ultra/ledger.jsonl: Expected ',' or '}' after property value in JSON at position 21 (line 1 column 22)
+    # Subtest: ledger throws CorruptionError when no backup can be recovered
+    ok 2 - ledger throws CorruptionError when no backup can be recovered
+      ---
+      duration_ms: 34.451458
+      ...
+    1..2
+ok 4 - Persistence corruption handling
+  ---
+  duration_ms: 185.5895
+  type: 'suite'
+  ...
+# Subtest: CLI Command: plan
+    # Subtest: estimateDuration calculation
+    ok 1 - estimateDuration calculation
+      ---
+      duration_ms: 0.942208
+      ...
+    # Subtest: parsePlanFromMarkdown processes file correctly
+    ok 2 - parsePlanFromMarkdown processes file correctly
+      ---
+      duration_ms: 362.453792
+      ...
+    1..2
+ok 5 - CLI Command: plan
+  ---
+  duration_ms: 368.071667
+  type: 'suite'
+  ...
+# (node:86076) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# [2026-03-30T07:07:21.940Z] ℹ 
+# 🚀 Opening Multiverse Portal (Infinity Kernel)...
+# [2026-03-30T07:07:21.941Z] ℹ "Orchestrating High-Dimension Vectors..."
+# [2026-03-30T07:07:21.941Z] ℹ 🧠 Linking Neural Interface (Code Graph)...
+#   ℹ [GraphRAG] Running in IN-MEMORY mode (set NEO4J_ENABLED=true for Neo4j)
+# [2026-03-30T07:07:26.999Z] ⚠ ⚠️ Graph alignment failed: Graph scan timed out
+#   ℹ [WebSocket] Ultra-Dex WebSocket server running on ws://localhost:40670/ws
+# [2026-03-30T07:07:27.248Z] ℹ WebSocket server listening on port 40670
+# [2026-03-30T07:07:27.253Z] ✔ ✅ Portal Stabilized at http://localhost:40669
+# [2026-03-30T07:07:27.253Z] ℹ    • Dashboard: http://localhost:40669/
+# [2026-03-30T07:07:27.254Z] ℹ    • MCP SSE:   http://localhost:40669/sse
+# [2026-03-30T07:07:27.254Z] ℹ 
+# 🔌 Weapon Integration (IDE):
+# [2026-03-30T07:07:27.254Z] ℹ    Cursor IDE: 
+# [2026-03-30T07:07:27.255Z] ℹ      Connect via MCP to http://localhost:40669/sse
+# [2026-03-30T07:07:27.256Z] ℹ    Claude Desktop:
+# [2026-03-30T07:07:27.256Z] ℹ      Run "ultra-dex config --mcp" to register.
+# [2026-03-30T07:07:28.275Z] ℹ 
+# Closing Multiverse Portal...
+#   ℹ [WebSocket] Server stopped
+# Subtest: CLI Command: serve
+    # Subtest: startUnifiedKernel initializes server components in test mode
+    ok 1 - startUnifiedKernel initializes server components in test mode
+      ---
+      duration_ms: 8240.040834
+      ...
+    # Subtest: validates invalid port
+    ok 2 - validates invalid port
+      ---
+      duration_ms: 8.50775
+      ...
+    1..2
+ok 6 - CLI Command: serve
+  ---
+  duration_ms: 8339.630458
+  type: 'suite'
+  ...
+# (node:86077) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+#   ██╗   ██╗██╗  ████████╗██████╗  █████╗ 
+#   ██║   ██║██║  ╚══██╔══╝██╔══██╗██╔══██╗
+#   ██║   ██║██║     ██║   ██████╔╝███████║
+#   ██║   ██║██║     ██║   ██╔══██╗██╔══██║
+#   ╚██████╔╝███████╗██║   ██║  ██║██║  ██║
+#    ╚═════╝ ╚══════╝╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝
+#   ────────────────────────────────────────────────────────────
+#   🐝 Ultra-Dex Swarm Mode
+# Task: "Test functionality"
+# [2026-03-30T07:07:19.644Z] ✔ 📂 State loaded from: /Users/srujansai/Desktop/Ultra-Dex/.ultra-dex/state-machine.json
+# [2026-03-30T07:07:19.663Z] ✔ 💾 State saved to: /Users/srujansai/Desktop/Ultra-Dex/.ultra-dex/state-machine.json
+#    ╭ Dry Run Pipeline ───────────────────────────────╮
+#    │                                                 │
+#    │   1. @planner - Break down task into steps      │
+#    │   2. @cto - Define architecture                 │
+#    │   3. @auth - Security & authentication review   │
+#    │   4. @database - Design schema                  │
+#    │   5. @backend - Implement API                   │
+#    │   6. @frontend - Build UI                       │
+#    │   7. @testing - Write tests                     │
+#    │   8. @reviewer - Code review                    │
+#    │                                                 │
+#    ╰─────────────────────────────────────────────────╯
+# Subtest: CLI Command: swarm
+    # Subtest: swarmCommand executes dryRun successfully
+    ok 1 - swarmCommand executes dryRun successfully
+      ---
+      duration_ms: 240.473916
+      ...
+    # Subtest: swarmCommand executes dryRun with parallel option
+    ok 2 - swarmCommand executes dryRun with parallel option # SKIP Flaky in Node test-runner IPC serialization for parallel dry-run path
+      ---
+      duration_ms: 0.671125
+      ...
+    1..2
+ok 7 - CLI Command: swarm
+  ---
+  duration_ms: 243.769875
+  type: 'suite'
+  ...
+# (node:86080) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: ai providers registry lists expected baseline providers
+ok 8 - ai providers registry lists expected baseline providers
+  ---
+  duration_ms: 150.050458
+  ...
+# Subtest: ai providers registry can instantiate openai provider
+ok 9 - ai providers registry can instantiate openai provider
+  ---
+  duration_ms: 2.746959
+  ...
+# Subtest: ai providers registry rejects unknown provider
+ok 10 - ai providers registry rejects unknown provider
+  ---
+  duration_ms: 0.818375
+  ...
+# Subtest: ApprovalWorkflow
+    # Subtest: should create a request with correct steps
+    ok 1 - should create a request with correct steps
+      ---
+      duration_ms: 18.255375
+      ...
+    # Subtest: should advance step on approval
+    ok 2 - should advance step on approval
+      ---
+      duration_ms: 1.011292
+      ...
+    # Subtest: should complete workflow when all steps approved
+    ok 3 - should complete workflow when all steps approved
+      ---
+      duration_ms: 1.259084
+      ...
+    # Subtest: should reject workflow immediately on rejection
+    ok 4 - should reject workflow immediately on rejection
+      ---
+      duration_ms: 0.822
+      ...
+    1..4
+ok 11 - ApprovalWorkflow
+  ---
+  duration_ms: 101.009916
+  type: 'suite'
+  ...
+# Subtest: Git Integration
+    # Subtest: Repository Detection
+        # Subtest: should detect if current directory is a Git repository
+        ok 1 - should detect if current directory is a Git repository
+          ---
+          duration_ms: 164.885458
+          ...
+        1..1
+    ok 1 - Repository Detection
+      ---
+      duration_ms: 179.259834
+      type: 'suite'
+      ...
+    # Subtest: Branch Operations
+        # Subtest: should get current branch name
+        ok 1 - should get current branch name
+          ---
+          duration_ms: 81.042625
+          ...
+        1..1
+    ok 2 - Branch Operations
+      ---
+      duration_ms: 81.288042
+      type: 'suite'
+      ...
+    # Subtest: Status Operations
+        # Subtest: should get Git status
+        ok 1 - should get Git status
+          ---
+          duration_ms: 580.394083
+          ...
+        1..1
+    ok 3 - Status Operations
+      ---
+      duration_ms: 581.700209
+      type: 'suite'
+      ...
+    # Subtest: Diff Operations
+        # Subtest: should get working directory diff
+        ok 1 - should get working directory diff
+          ---
+          duration_ms: 455.947291
+          ...
+        # Subtest: should get staged diff
+        ok 2 - should get staged diff
+          ---
+          duration_ms: 160.185208
+          ...
+        1..2
+    ok 4 - Diff Operations
+      ---
+      duration_ms: 619.489667
+      type: 'suite'
+      ...
+    # Subtest: Commit Operations
+        # Subtest: should get commit history
+        ok 1 - should get commit history
+          ---
+          duration_ms: 131.772916
+          ...
+        # Subtest: should get current commit hash
+        ok 2 - should get current commit hash
+          ---
+          duration_ms: 68.521417
+          ...
+        1..2
+    ok 5 - Commit Operations
+      ---
+      duration_ms: 200.620958
+      type: 'suite'
+      ...
+    # Subtest: File Operations
+        # Subtest: should get changed files
+        ok 1 - should get changed files
+          ---
+          duration_ms: 104.36825
+          ...
+        # Subtest: should get file history
+        ok 2 - should get file history
+          ---
+          duration_ms: 110.07
+          ...
+        1..2
+    ok 6 - File Operations
+      ---
+      duration_ms: 215.056958
+      type: 'suite'
+      ...
+    # Subtest: Configuration Operations
+        # Subtest: should get Git configuration
+        ok 1 - should get Git configuration
+          ---
+          duration_ms: 92.94825
+          ...
+        # Subtest: should get repository root
+        ok 2 - should get repository root
+          ---
+          duration_ms: 69.355125
+          ...
+        1..2
+    ok 7 - Configuration Operations
+      ---
+      duration_ms: 162.613042
+      type: 'suite'
+      ...
+    # Subtest: Git Context
+        # Subtest: should get comprehensive Git context
+        ok 1 - should get comprehensive Git context
+          ---
+          duration_ms: 333.987875
+          ...
+        1..1
+    ok 8 - Git Context
+      ---
+      duration_ms: 335.050375
+      type: 'suite'
+      ...
+    # Subtest: Memory Integration
+        # Subtest: should link memory entries to Git context
+        ok 1 - should link memory entries to Git context
+          ---
+          duration_ms: 456.404625
+          ...
+        1..1
+    ok 9 - Memory Integration
+      ---
+      duration_ms: 456.78575
+      type: 'suite'
+      ...
+    1..9
+ok 12 - Git Integration
+  ---
+  duration_ms: 2836.691917
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - executeTool Basic
+    # Subtest: GovernanceManager should block operations based on policy
+    ok 1 - GovernanceManager should block operations based on policy
+      ---
+      duration_ms: 35.268
+      ...
+    # Subtest: GovernanceManager should allow operations when no policy blocks
+    ok 2 - GovernanceManager should allow operations when no policy blocks
+      ---
+      duration_ms: 3.404875
+      ...
+    # Subtest: AuditTrail should record governance decisions
+    ok 3 - AuditTrail should record governance decisions
+      ---
+      duration_ms: 2.550334
+      ...
+    1..3
+ok 13 - Governance Integration - executeTool Basic
+  ---
+  duration_ms: 50.580208
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - Direct Test
+    # Subtest: should block tool execution when policy denies it
+    ok 1 - should block tool execution when policy denies it
+      ---
+      duration_ms: 20.81975
+      ...
+    # Subtest: should allow tool execution when no policy blocks it
+    ok 2 - should allow tool execution when no policy blocks it
+      ---
+      duration_ms: 5.074291
+      ...
+    # Subtest: should record audit entries for governance decisions
+    ok 3 - should record audit entries for governance decisions
+      ---
+      duration_ms: 4.084917
+      ...
+    # Subtest: should throw GovernanceDeniedException for blocked operations in orchestrator context
+    ok 4 - should throw GovernanceDeniedException for blocked operations in orchestrator context
+      ---
+      duration_ms: 245.863375
+      ...
+    1..4
+ok 14 - Governance Integration - Direct Test
+  ---
+  duration_ms: 279.847833
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - executeTool Basic
+    # Subtest: should allow operations by default
+    ok 1 - should allow operations by default
+      ---
+      duration_ms: 86.713167
+      ...
+    # Subtest: should block operations with blocking policy
+    ok 2 - should block operations with blocking policy
+      ---
+      duration_ms: 13.723333
+      ...
+    # Subtest: should handle context properly
+    ok 3 - should handle context properly
+      ---
+      duration_ms: 44.646458
+      ...
+    1..3
+ok 15 - Governance Integration - executeTool Basic
+  ---
+  duration_ms: 155.641709
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - executeTool
+    # Subtest: executeTool should block denied operations via governance
+    ok 1 - executeTool should block denied operations via governance
+      ---
+      duration_ms: 81.335833
+      ...
+    # Subtest: executeTool should allow permitted operations
+    ok 2 - executeTool should allow permitted operations
+      ---
+      duration_ms: 9.9165
+      ...
+    # Subtest: should record audit entries for blocked actions
+    ok 3 - should record audit entries for blocked actions
+      ---
+      duration_ms: 7.566208
+      ...
+    # Subtest: should handle context with details
+    ok 4 - should handle context with details
+      ---
+      duration_ms: 97.802125
+      ...
+    1..4
+ok 16 - Governance Integration - executeTool
+  ---
+  duration_ms: 223.415125
+  type: 'suite'
+  ...
+# Subtest: Governance Integration
+    # Subtest: should gate operations correctly
+    ok 1 - should gate operations correctly
+      ---
+      duration_ms: 18.567625
+      ...
+    # Subtest: should handle multiple policies
+    ok 2 - should handle multiple policies
+      ---
+      duration_ms: 9.86525
+      ...
+    # Subtest: should track audit records
+    ok 3 - should track audit records
+      ---
+      duration_ms: 5.385041
+      ...
+    1..3
+ok 17 - Governance Integration
+  ---
+  duration_ms: 35.927833
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - Minimal executeTool Test
+    # Subtest: should block tool execution when policy denies it
+    ok 1 - should block tool execution when policy denies it
+      ---
+      duration_ms: 115.436917
+      ...
+    # Subtest: should allow tool execution when policy permits it
+    ok 2 - should allow tool execution when policy permits it
+      ---
+      duration_ms: 5.915625
+      ...
+    # Subtest: should record audit entries for both allowed and blocked actions
+    ok 3 - should record audit entries for both allowed and blocked actions
+      ---
+      duration_ms: 5.132416
+      ...
+    1..3
+ok 18 - Governance Integration - Minimal executeTool Test
+  ---
+  duration_ms: 129.59525
+  type: 'suite'
+  ...
+# Subtest: Governance Integration - executeTool
+    # Subtest: executeTool should block denied operations via governance
+    ok 1 - executeTool should block denied operations via governance
+      ---
+      duration_ms: 72.055875
+      ...
+    # Subtest: executeTool should allow permitted operations
+    ok 2 - executeTool should allow permitted operations
+      ---
+      duration_ms: 16.241625
+      ...
+    # Subtest: should record audit entries
+    ok 3 - should record audit entries
+      ---
+      duration_ms: 17.874042
+      ...
+    1..3
+ok 19 - Governance Integration - executeTool
+  ---
+  duration_ms: 108.412334
+  type: 'suite'
+  ...
+# Subtest: Governance Validation
+    # Subtest: should initialize with default settings
+    ok 1 - should initialize with default settings
+      ---
+      duration_ms: 11.094625
+      ...
+    # Subtest: should add custom policies
+    ok 2 - should add custom policies
+      ---
+      duration_ms: 57.398834
+      ...
+    # Subtest: should block when policy condition fails
+    ok 3 - should block when policy condition fails
+      ---
+      duration_ms: 4.500625
+      ...
+    # Subtest: should record audit entries
+    ok 4 - should record audit entries
+      ---
+      duration_ms: 3.182666
+      ...
+    # Subtest: should query audit by action
+    ok 5 - should query audit by action
+      ---
+      duration_ms: 57.71175
+      ...
+    # Subtest: should query audit by agentId
+    ok 6 - should query audit by agentId
+      ---
+      duration_ms: 35.824375
+      ...
+    1..6
+ok 20 - Governance Validation
+  ---
+  duration_ms: 199.959541
+  type: 'suite'
+  ...
+# Memory System Verification Tests Loaded
+# Memory exports: [ 'MemoryManager', 'UnifiedMemory', 'ppmManager' ]
+# Subtest: Memory System Verification
+    # Subtest: Memory Architecture
+        # Subtest: should have memory module structure
+        ok 1 - should have memory module structure
+          ---
+          duration_ms: 29.801459
+          ...
+        # Subtest: should have VectorStore implementation
+        ok 2 - should have VectorStore implementation
+          ---
+          duration_ms: 0.788
+          ...
+        # Subtest: should have GraphEngine implementation
+        ok 3 - should have GraphEngine implementation
+          ---
+          duration_ms: 0.629458
+          ...
+        1..3
+    ok 1 - Memory Architecture
+      ---
+      duration_ms: 38.968334
+      type: 'suite'
+      ...
+    # Subtest: Real VectorStore Operations
+        # Subtest: should perform real vector similarity search
+        ok 1 - should perform real vector similarity search
+          ---
+          duration_ms: 3.544042
+          ...
+        # Subtest: should store and retrieve vectors
+        ok 2 - should store and retrieve vectors
+          ---
+          duration_ms: 2.257459
+          ...
+        1..2
+    ok 2 - Real VectorStore Operations
+      ---
+      duration_ms: 7.741875
+      type: 'suite'
+      ...
+    # Subtest: Real GraphEngine Operations
+        # Subtest: should create and query graph relationships
+        ok 1 - should create and query graph relationships
+          ---
+          duration_ms: 3.06225
+          ...
+        # Subtest: should find paths in graph
+        ok 2 - should find paths in graph
+          ---
+          duration_ms: 1.3605
+          ...
+        1..2
+    ok 3 - Real GraphEngine Operations
+      ---
+      duration_ms: 5.304125
+      type: 'suite'
+      ...
+    # Subtest: Memory Tier Structure
+        # Subtest: should demonstrate memory tier structure
+        ok 1 - should demonstrate memory tier structure
+          ---
+          duration_ms: 0.302166
+          ...
+        # Subtest: should simulate graph relationships
+        ok 2 - should simulate graph relationships
+          ---
+          duration_ms: 0.371958
+          ...
+        1..2
+    ok 4 - Memory Tier Structure
+      ---
+      duration_ms: 1.288666
+      type: 'suite'
+      ...
+    # Subtest: Provider Integration
+        # Subtest: should be able to import provider registry
+        ok 1 - should be able to import provider registry
+          ---
+          duration_ms: 197.233166
+          ...
+        1..1
+    ok 5 - Provider Integration
+      ---
+      duration_ms: 197.530917
+      type: 'suite'
+      ...
+    1..5
+ok 21 - Memory System Verification
+  ---
+  duration_ms: 254.558042
+  type: 'suite'
+  ...
+# Subtest: Performance System Verification
+    # Subtest: Cache System
+        # Subtest: should have cache module structure
+        ok 1 - should have cache module structure
+          ---
+          duration_ms: 7.382583
+          ...
+        # Subtest: should demonstrate caching functionality
+        ok 2 - should demonstrate caching functionality
+          ---
+          duration_ms: 0.5125
+          ...
+        # Subtest: should handle cache misses
+        ok 3 - should handle cache misses
+          ---
+          duration_ms: 0.17375
+          ...
+        1..3
+    ok 1 - Cache System
+      ---
+      duration_ms: 14.768917
+      type: 'suite'
+      ...
+    # Subtest: Performance Monitoring
+        # Subtest: should have monitoring module structure
+        ok 1 - should have monitoring module structure
+          ---
+          duration_ms: 0.545125
+          ...
+        # Subtest: should track request metrics
+        ok 2 - should track request metrics
+          ---
+          duration_ms: 90.304833
+          ...
+        # Subtest: should collect system metrics
+        ok 3 - should collect system metrics
+          ---
+          duration_ms: 0.776917
+          ...
+        1..3
+    ok 2 - Performance Monitoring
+      ---
+      duration_ms: 92.644708
+      type: 'suite'
+      ...
+    # Subtest: Database Optimization
+# Subtest: RBACManager
+    # Subtest: should verify roles correctly
+    ok 1 - should verify roles correctly
+      ---
+      duration_ms: 192.315458
+      ...
+    # Subtest: should default to viewer role
+    ok 2 - should default to viewer role
+      ---
+      duration_ms: 5.018583
+      ...
+    # Subtest: should check permissions based on role hierarchy
+    ok 3 - should check permissions based on role hierarchy
+      ---
+      duration_ms: 0.605625
+      ...
+    # Subtest: should support custom roles
+    ok 4 - should support custom roles
+      ---
+      duration_ms: 1.059792
+      ...
+    # Subtest: should reject invalid role assignment
+    ok 5 - should reject invalid role assignment
+      ---
+      duration_ms: 1.862542
+      ...
+    1..5
+ok 22 - RBACManager
+  ---
+  duration_ms: 203.70075
+  type: 'suite'
+  ...
+# Subtest: Schema migrator
+    # Subtest: migrates v0 ledger JSONL records to v1 without data loss
+    ok 1 - migrates v0 ledger JSONL records to v1 without data loss
+      ---
+      duration_ms: 125.564791
+      ...
+    # Subtest: migrates v0 memory JSON payload to v1 and persists versioned structure
+    ok 2 - migrates v0 memory JSON payload to v1 and persists versioned structure
+      ---
+      duration_ms: 555.173125
+      ...
+# [SessionPersistence] Database initialized at /tmp/ultra-dex-schema-version-test/.ultra/memory/sessions.db
+    # Subtest: sessionPersistence init ensures sqlite schema_version starts at v1
+    ok 3 - sessionPersistence init ensures sqlite schema_version starts at v1
+      ---
+      duration_ms: 4.399042
+      ...
+    1..3
+ok 23 - Schema migrator
+  ---
+  duration_ms: 686.980375
+  type: 'suite'
+  ...
+# 🌌 Nexus Orchestration: alpha-objective
+# 🌌 Nexus Orchestration: beta-objective
+# Subtest: Session-isolated TaskGraph execution
+    # Subtest: executeNexus creates an isolated ExecutionContext per concurrent session
+    ok 1 - executeNexus creates an isolated ExecutionContext per concurrent session
+      ---
+      duration_ms: 146.138375
+      ...
+    1..1
+ok 24 - Session-isolated TaskGraph execution
+  ---
+  duration_ms: 148.156916
+  type: 'suite'
+  ...
+# Subtest: Symlink Path Traversal Protection
+    # Subtest: isPathSafe should allow files within project root
+    ok 1 - isPathSafe should allow files within project root
+      ---
+      duration_ms: 11.240834
+      ...
+    # Subtest: isPathSafe should block path traversal via ..
+    ok 2 - isPathSafe should block path traversal via ..
+      ---
+      duration_ms: 2.90925
+      ...
+    # Subtest: isPathSafe should detect symlink escape (WAVE 2)
+    ok 3 - isPathSafe should detect symlink escape (WAVE 2)
+      ---
+      duration_ms: 175.497834
+      ...
+    # Subtest: isSensitivePath should detect symlink to sensitive file (WAVE 2)
+    ok 4 - isSensitivePath should detect symlink to sensitive file (WAVE 2)
+      ---
+      duration_ms: 10.1355
+      ...
+    1..4
+ok 25 - Symlink Path Traversal Protection
+  ---
+  duration_ms: 201.968958
+  type: 'suite'
+  ...
+# Subtest: TeamManager
+    # Subtest: should create a team successfully
+    ok 1 - should create a team successfully
+      ---
+      duration_ms: 364.571041
+      ...
+    # Subtest: should add the owner as a member upon creation
+    ok 2 - should add the owner as a member upon creation
+      ---
+      duration_ms: 36.584958
+      ...
+    # Subtest: should allow adding new members
+    ok 3 - should allow adding new members
+      ---
+      duration_ms: 175.497333
+      ...
+    # Subtest: should throw error when adding member to non-existent team
+    ok 4 - should throw error when adding member to non-existent team
+      ---
+      duration_ms: 39.660167
+      ...
+    1..4
+ok 26 - TeamManager
+  ---
+  duration_ms: 711.91125
+  type: 'suite'
+  ...
+# Subtest: TeamManager Persistence
+    # Subtest: should save team to disk upon creation
+    ok 1 - should save team to disk upon creation
+      ---
+      duration_ms: 412.689792
+      ...
+    # Subtest: should load team from disk
+    ok 2 - should load team from disk
+      ---
+      duration_ms: 58.804834
+      ...
+    # Subtest: should persist member additions
+    ok 3 - should persist member additions
+      ---
+      duration_ms: 221.646667
+      ...
+    1..3
+ok 27 - TeamManager Persistence
+  ---
+  duration_ms: 703.338792
+  type: 'suite'
+  ...
+# 📡 Agent Communication Bus initialized
+# 💾 Loading persisted agents...
+# Subtest: Ultra-Dex Meta-Layer Core Verification
+    # Subtest: Memory Manager: Persistence and Retrieval
+    ok 1 - Memory Manager: Persistence and Retrieval
+      ---
+      duration_ms: 88.28375
+      ...
+# 📋 Agent Registry: Discovered 16 agents from index
+# 🤖 Agent Orchestration System Initialized (Self-Healing Active)
+# [2026-03-30T07:07:24.140Z] ℹ 🚀 Automating Protocol 21 for: Test Objective
+# [2026-03-30T07:07:27.176Z] ✔ ✓ Unit Tests: Automated check passed
+    # Subtest: Nexus Orchestrator: Initialization and Session Management
+    ok 2 - Nexus Orchestrator: Initialization and Session Management
+      ---
+      duration_ms: 2296.286167
+      ...
+    # Subtest: Protocol 21: Automated Verification Logic
+    ok 3 - Protocol 21: Automated Verification Logic
+      ---
+      duration_ms: 3051.150334
+      ...
+    # Subtest: MCP Server: Capability Registration
+    ok 4 - MCP Server: Capability Registration
+      ---
+      duration_ms: 0.721166
+      ...
+    1..4
+ok 28 - Ultra-Dex Meta-Layer Core Verification
+  ---
+  duration_ms: 5442.6845
+  type: 'suite'
+  ...
+# Subtest: API smoke contract
+    # Subtest: defines expected health endpoint path
+    ok 1 - defines expected health endpoint path
+      ---
+      duration_ms: 1.290458
+      ...
+    # Subtest: defines expected agents endpoint prefix
+    ok 2 - defines expected agents endpoint prefix
+      ---
+      duration_ms: 0.217042
+      ...
+    1..2
+ok 29 - API smoke contract
+  ---
+  duration_ms: 3.69975
+  type: 'suite'
+  ...
+1..29
+# tests 119
+# suites 42
+# pass 118
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 20980.22675

@@ -5,6 +5,10 @@
 
 **Classification:** NOT PRODUCTION READY — 4 KNOWN GAPS
 
+**Version:** v1.0-foundation (NOT v2.0)
+
+**Single Source of Truth:** SYSTEM_REALITY.json
+
 ---
 
 ## ✅ FINAL VERIFICATION RESULTS
@@ -190,6 +194,8 @@ CLASSIFICATION: ✅ STABLE BASELINE ACHIEVED
 **Foundation Status:** ✅ **READY FOR V2.0 PREPARATION**
 
 **Next Session:** ⏳ **CARRY-FORWARD FIXES ONLY (NO v2.0 FEATURES)**
+
+**Version:** v1.0-foundation
 
 **Generated:** March 30, 2026  
 **Validator:** Truthful (no masking, no compromises)
