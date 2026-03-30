@@ -42,6 +42,16 @@ export class GraphRAG {
     if (this.connecting) return this.connecting;
 
     this.connecting = (async () => {
+      // Check if Neo4j is explicitly enabled
+      const neo4jEnabled = process.env.NEO4J_ENABLED === 'true' || !!process.env.NEO4J_URI;
+      
+      if (!neo4jEnabled) {
+        logger.debug('[GraphRAG] Neo4j not configured - using in-memory graph (set NEO4J_ENABLED=true to enable)');
+        this.isConnected = false;
+        this.connecting = null;
+        return false;
+      }
+
       try {
         this.driver = neo4j.driver(this.uri, neo4j.auth.basic(this.user, this.password));
         await this.driver.verifyConnectivity();
