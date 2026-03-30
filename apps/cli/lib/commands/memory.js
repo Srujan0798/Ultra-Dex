@@ -8,7 +8,7 @@
 import chalk from 'chalk';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { configManager } from '../utils/config-manager.js';
-import { memoryManager } from '../../../../src/core/agents/memory-manager.js';
+import { ppmManager as memoryManager } from '../memory/manager.js';
 import { memex } from '../memory/memex.js';
 
 export async function showMemoryStatus(options = {}) {

@@ -7,7 +7,7 @@ export default defineConfig({
     port: 4173,
   },
   build: {
-    chunkSizeWarningLimit: 900, // Three.js + Drei is legitimately large for 3D features
+    chunkSizeWarningLimit: 900, // Three.js + Drei for 3D Hologram feature
     rollupOptions: {
       output: {
         manualChunks(id) {

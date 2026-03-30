@@ -63,34 +63,79 @@ describe('Memory System Verification', () => {
     });
   });
 
-  describe('Mock Memory Operations', () => {
-    it('should demonstrate vector similarity', () => {
-      const vec1 = mockEmbed('machine learning');
-      const vec2 = mockEmbed('artificial intelligence');
-      const vec3 = mockEmbed('weather forecast');
+  describe('Real VectorStore Operations', () => {
+    it('should perform real vector similarity search', async () => {
+      const { VectorStore } = await import('../../src/core/memory/vector-store.js');
+      const store = new VectorStore({ dimension: 128 });
 
-      // Calculate cosine similarity
-      const similarity = (a, b) => {
-        let dot = 0,
-          normA = 0,
-          normB = 0;
-        for (let i = 0; i < a.length; i++) {
-          dot += a[i] * b[i];
-          normA += a[i] * a[i];
-          normB += b[i] * b[i];
-        }
-        return dot / (Math.sqrt(normA) * Math.sqrt(normB) || 1);
-      };
+      // Index real documents
+      await store.index('machine learning algorithms', { type: 'ml' });
+      await store.index('artificial intelligence systems', { type: 'ai' });
+      await store.index('weather forecasting models', { type: 'weather' });
 
-      const sim12 = similarity(vec1, vec2);
-      const sim13 = similarity(vec1, vec3);
-
-      // ML and AI should be more similar than ML and weather
-      assert.ok(sim12 > 0, 'ML and AI should have some similarity');
-      assert.ok(sim13 >= 0, 'ML and weather should have some similarity');
+      // Search for ML-related content
+      const results = await store.search('machine learning', 3);
+      
+      assert.ok(results.length > 0, 'Should find similar documents');
+      assert.ok(results[0].similarity >= 0, 'Should have similarity score');
+      assert.ok(results[0].text, 'Should return text content');
     });
 
-    it('should simulate memory tier structure', () => {
+    it('should store and retrieve vectors', async () => {
+      const { VectorStore } = await import('../../src/core/memory/vector-store.js');
+      const store = new VectorStore({ dimension: 64 });
+
+      const result = await store.index('test document', { category: 'test' });
+      assert.ok(result.id, 'Should return document ID');
+
+      const retrieved = await store.get(result.id);
+      assert.ok(retrieved, 'Should retrieve document');
+      assert.ok(retrieved.text === 'test document', 'Should have correct text');
+    });
+  });
+
+  describe('Real GraphEngine Operations', () => {
+    it('should create and query graph relationships', async () => {
+      const { GraphEngine } = await import('../../src/core/memory/graph-engine.js');
+      const graph = new GraphEngine();
+
+      // Create nodes
+      await graph.addNode('user-1', { type: 'User', name: 'Alice' });
+      await graph.addNode('file-1', { type: 'File', path: '/src/app.js' });
+      await graph.addNode('file-2', { type: 'File', path: '/src/utils.js' });
+
+      // Create relationships
+      await graph.addEdge('user-1', 'file-1', 'created');
+      await graph.addEdge('file-1', 'file-2', 'imports');
+
+      // Verify node count
+      assert.strictEqual(graph.size(), 3, 'Should have 3 nodes');
+      assert.strictEqual(graph.edgeCount(), 2, 'Should have 2 edges');
+
+      // Query by type
+      const fileResult = await graph.query({ type: 'File' });
+      assert.ok(fileResult.nodes.length === 2, 'Should find 2 file nodes');
+    });
+
+    it('should find paths in graph', async () => {
+      const { GraphEngine } = await import('../../src/core/memory/graph-engine.js');
+      const graph = new GraphEngine();
+
+      await graph.addNode('A');
+      await graph.addNode('B');
+      await graph.addNode('C');
+      
+      await graph.addEdge('A', 'B', 'connects');
+      await graph.addEdge('B', 'C', 'connects');
+
+      const path = await graph.findPath('A', 'C');
+      assert.ok(path !== null, 'Should find path');
+      assert.ok(path.includes('A') && path.includes('C'), 'Path should include start and end');
+    });
+  });
+
+  describe('Memory Tier Structure', () => {
+    it('should demonstrate memory tier structure', () => {
       const tiers = {
         hot: [],
         warm: [],
