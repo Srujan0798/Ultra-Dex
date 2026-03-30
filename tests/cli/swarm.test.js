@@ -18,9 +18,6 @@ describe('CLI Command: swarm', () => {
 
   test(
     'swarmCommand executes dryRun with parallel option',
-    {
-      skip: 'Flaky in Node test-runner IPC serialization for parallel dry-run path',
-    },
     async () => {
       const task = 'Test parallel';
       const options = { dryRun: true, parallel: true };

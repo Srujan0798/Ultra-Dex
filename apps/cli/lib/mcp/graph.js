@@ -44,9 +44,9 @@ export class GraphRAG {
     this.connecting = (async () => {
       // Check if Neo4j is explicitly enabled
       const neo4jEnabled = process.env.NEO4J_ENABLED === 'true' || !!process.env.NEO4J_URI;
-      
+
       if (!neo4jEnabled) {
-        // Explicit in-memory mode - not a silent fallback
+        // Default: in-memory mode (Neo4j is optional)
         logger.info('[GraphRAG] Running in IN-MEMORY mode (set NEO4J_ENABLED=true for Neo4j)');
         this.isConnected = false;
         this.connecting = null;
@@ -61,8 +61,8 @@ export class GraphRAG {
         await this.initializeSchema();
         return true;
       } catch (error) {
-        logger.error(`[GraphRAG] Failed to connect to Neo4j: ${error.message}`);
-        logger.error('[GraphRAG] GraphRAG DISABLED - Neo4j connection failed');
+        logger.warn(`[GraphRAG] Neo4j unavailable: ${error.message}`);
+        logger.warn('[GraphRAG] Falling back to in-memory mode');
         this.isConnected = false;
         this.connecting = null;
         return false;

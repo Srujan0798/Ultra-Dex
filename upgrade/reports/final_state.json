@@ -1,0 +1,8 @@
+{
+  "core_tests": "48/62 pass",
+  "cli_tests": "4/9 pass",
+  "integration_tests": "2/2 pass",
+  "npm_install": "failed",
+  "node_modules": "corrupted",
+  "status": "DEPENDENCY_BROKEN"
+}

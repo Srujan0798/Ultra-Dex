@@ -126,6 +126,12 @@ export class SelfHealingOrchestrator extends EventEmitter {
     this.circuitBreakers.set(name, { state: 'closed', failures: 0 });
   }
 
+  async reportAgentError(agentId, error, details = {}) {
+    const name = `agent:${agentId}`;
+    this.recordFailure(name);
+    this.emit('agent-error', { agentId, error, ...details });
+  }
+
   getCircuitState(name) {
     return this.circuitBreakers.get(name) || { state: 'closed', failures: 0 };
   }
