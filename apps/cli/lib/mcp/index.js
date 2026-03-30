@@ -9,7 +9,7 @@ export * from './server.js';
 export { registerResources } from './resources.js';
 export { registerTools } from './tools.js';
 export { projectGraph } from './graph.js';
-export { ultraMemory } from './memory.js';
+export { ultraMemory } from '../../../../src/core/memory/manager.js';
 
 /**
  * Error handler for index

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryGraph } from '../MemoryGraph';
 import { sampleMemory } from '../__fixtures__/dashboard';
+import '@testing-library/jest-dom';
 
 describe('MemoryGraph', () => {
   it('renders graph controls and counters', () => {

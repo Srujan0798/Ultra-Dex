@@ -33,7 +33,7 @@ export class TeamManager {
 
   async createTeam(name, ownerId, options = {}) {
     await this.ensureTeamDir();
-    
+
     const team = {
       id: uuidv4(),
       name,
@@ -43,7 +43,7 @@ export class TeamManager {
         {
           userId: ownerId,
           email: null,
-          role: 'admin',
+          role: 'owner',
           joinedAt: new Date().toISOString(),
         },
       ],
@@ -70,15 +70,15 @@ export class TeamManager {
     return team;
   }
 
-  async addMember(teamId, email, role = 'member') {
+  async addMember(teamId, userId, role = 'member') {
     const team = await this.getTeam();
-    if (!team) {
-      throw new Error('Team not initialized');
+    if (!team || team.id !== teamId) {
+      throw new Error('Team not found');
     }
 
     // Check if member already exists
     const existingMember = team.members.find(
-      (m) => m.email === email || m.userId === email
+      (m) => m.userId === userId
     );
 
     if (existingMember) {
@@ -86,8 +86,8 @@ export class TeamManager {
     }
 
     team.members.push({
-      userId: null,
-      email,
+      userId,
+      email: null,
       role,
       joinedAt: new Date().toISOString(),
     });

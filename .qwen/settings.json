@@ -21,7 +21,10 @@
       "Bash(npx *)",
       "Bash(ls *)",
       "Bash(pkill *)",
-      "Bash(tar *)"
+      "Bash(tar *)",
+      "Bash(claude *)",
+      "Bash(openrouter-chat)",
+      "Bash(eof)"
     ]
   },
   "$version": 3

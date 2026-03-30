@@ -3,6 +3,7 @@ import { aiMetaLayer } from '../../src/core/ai/ai-meta-layer.js';
 import { interactiveCLI } from '../lib/interactive-cli.js';
 import { createSpinner } from '../lib/spinner.js';
 import { colors } from '../lib/colors.js';
+import { logger } from '../lib/utils/logger.js';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -43,12 +44,16 @@ Generate only the commit message, nothing else:`;
     const response = await aiMetaLayer.call(
       null,
       [
-        { role: 'system', content: 'You are an expert at writing semantic commit messages following the Conventional Commits specification.' },
-        { role: 'user', content: prompt }
+        {
+          role: 'system',
+          content:
+            'You are an expert at writing semantic commit messages following the Conventional Commits specification.',
+        },
+        { role: 'user', content: prompt },
       ],
       {
         temperature: 0.3,
-        maxTokens: 100
+        maxTokens: 100,
       }
     );
 
@@ -87,18 +92,24 @@ export async function commitCommand(options = {}) {
 
     // Get Git status
     const status = await gitIntegration.getStatus();
-    
+
     if (status.files.length === 0) {
       console.log(colors.info('Nothing to commit. Working directory clean.'));
       return;
     }
 
     console.log(colors.info(`Found ${status.files.length} changed files:`));
-    status.files.forEach(file => {
-      const statusSymbol = file.index === '?' ? '.untracked' : 
-                          file.index === 'A' ? 'added' : 
-                          file.index === 'M' ? 'modified' : 
-                          file.index === 'D' ? 'deleted' : 'changed';
+    status.files.forEach((file) => {
+      const statusSymbol =
+        file.index === '?'
+          ? '.untracked'
+          : file.index === 'A'
+            ? 'added'
+            : file.index === 'M'
+              ? 'modified'
+              : file.index === 'D'
+                ? 'deleted'
+                : 'changed';
       console.log(`  ${colors.subtle(file.index)} ${file.path} (${statusSymbol})`);
     });
 
@@ -109,7 +120,10 @@ export async function commitCommand(options = {}) {
     let commitMessage = options.message;
     if (!commitMessage) {
       if (options.ai || options.semantic) {
-        commitMessage = await generateCommitMessage(status.files.map(f => f.path), diffSummary);
+        commitMessage = await generateCommitMessage(
+          status.files.map((f) => f.path),
+          diffSummary
+        );
       } else {
         // Ask user for commit message
         commitMessage = await interactiveCLI.promptInput('Enter commit message:', '');
@@ -144,23 +158,23 @@ export async function commitCommand(options = {}) {
     try {
       const result = await gitIntegration.commitChanges(commitMessage);
       spinner.succeed(`Changes committed: ${result.commit}`);
-      
+
       // Show commit result
-      console.log(colors.success(`✓ Successfully committed ${status.files.length} files`));
-      console.log(colors.subtle(`Commit: ${result.commit}`));
-      
+      logger.success(`Successfully committed ${status.files.length} files`);
+      logger.debug(`Commit: ${result.commit}`);
+
       // Push if requested
       if (options.push) {
-        console.log(colors.info('Pushing changes...'));
+        logger.info('Pushing changes...');
         await gitIntegration.pushChanges();
-        console.log(colors.success('✓ Changes pushed successfully'));
+        logger.success('Changes pushed successfully');
       }
     } catch (error) {
       spinner.fail('Commit failed');
       throw error;
     }
   } catch (error) {
-    console.error(colors.error(`Commit failed: ${error.message}`));
+    logger.error(`Commit failed: ${error.message}`);
     process.exit(1);
   }
 }

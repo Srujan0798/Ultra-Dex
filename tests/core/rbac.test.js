@@ -1,7 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import RBACManager from '../../src/core/auth/rbac-manager.js';
-import { ROLES, PERMISSIONS } from '../../src/core/team/permissions.js';
+import RBACManager, { ROLES, PERMISSIONS } from '../../src/core/auth/rbac-manager.js';
 
 describe('RBACManager', () => {
   let rbac;
@@ -26,11 +25,11 @@ describe('RBACManager', () => {
 
     // Admin has everything
     assert.strictEqual(rbac.checkPermission('admin-1', PERMISSIONS.PROJECT_DELETE), true);
-    
+
     // Editor has limited permissions
     assert.strictEqual(rbac.checkPermission('dev-1', PERMISSIONS.PROJECT_CREATE), true);
     assert.strictEqual(rbac.checkPermission('dev-1', PERMISSIONS.PROJECT_DELETE), false);
-    
+
     // Viewer has read-only
     assert.strictEqual(rbac.checkPermission('viewer-1', PERMISSIONS.PROJECT_READ), true);
     assert.strictEqual(rbac.checkPermission('viewer-1', PERMISSIONS.PROJECT_UPDATE), false);

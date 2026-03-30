@@ -13,10 +13,11 @@ import http from 'node:http';
 
 // Use import.meta.url to get correct path regardless of cwd
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
-const cliPath = path.resolve(__dirname, '..', 'bin', 'ultra-dex.js');
+const cliPath = path.resolve(__dirname, '..', 'bin', 'ultra-dex-cli.js');
+const bootstrapPath = path.resolve(__dirname, '..', 'bin', 'ultra-dex.js');
 
 function runCli(args, options = {}) {
-  const result = spawnSync(process.execPath, [cliPath, ...args], {
+  const result = spawnSync(process.execPath, ['--import', bootstrapPath, cliPath, ...args], {
     cwd: options.cwd ?? process.cwd(),
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',
@@ -53,7 +54,7 @@ describe('serve command', () => {
 
   test('serve --stdio starts MCP server mode', async () => {
     // This test starts the server briefly then kills it
-    const result = spawnSync(process.execPath, [cliPath, 'serve', '--stdio'], {
+    const result = spawnSync(process.execPath, ['--import', bootstrapPath, cliPath, 'serve', '--stdio'], {
       env: { ...process.env, FORCE_COLOR: '0' },
       encoding: 'utf8',
       timeout: 2000, // Kill after 2 seconds
@@ -72,7 +73,7 @@ describe('serve command', () => {
 
   test('serve accepts custom port', () => {
     // Just verify the command accepts the option
-    const result = spawnSync(process.execPath, [cliPath, 'serve', '--port', '9999'], {
+    const result = spawnSync(process.execPath, ['--import', bootstrapPath, cliPath, 'serve', '--port', '9999'], {
       env: { ...process.env, FORCE_COLOR: '0' },
       encoding: 'utf8',
       timeout: 1000, // Kill quickly

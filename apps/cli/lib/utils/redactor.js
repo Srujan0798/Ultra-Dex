@@ -7,17 +7,17 @@
 // Patterns for known API key formats
 const KEY_PATTERNS = [
   // OpenAI (sk-...) - usually 48+ chars, but sk-proj is variable
-  /\b(sk-[a-zA-Z0-9\-\_]{20,})\b/g,
+  /\b(sk-[a-zA-Z0-9_-]{20,})\b/g,
   // Anthropic (sk-ant-...)
-  /\b(sk-ant-[a-zA-Z0-9\-\_]{20,})\b/g,
+  /\b(sk-ant-[a-zA-Z0-9_-]{20,})\b/g,
   // GitHub (ghp_, gho_, etc.)
   /\b(gh[pousr]-[a-zA-Z0-9]{36})\b/g,
   // Slack (xoxb-...)
-  /\b(xox[baprs]-[a-zA-Z0-9\-\_]{10,})\b/g,
+  /\b(xox[baprs]-[a-zA-Z0-9_-]{10,})\b/g,
   // Google (AIza...)
-  /\b(AIza[0-9A-Za-z\-\_]{35})\b/g,
+  /\b(AIza[0-9A-Za-z_-]{35})\b/g,
   // Generic Bearer token (Bearer ...)
-  /Bearer\s+([a-zA-Z0-9\-\.\_\~\+\/]{20,})/gi,
+  /Bearer\s+([a-zA-Z0-9_.~+/ -]{20,})/gi,
 ];
 
 // Sensitive property names (case-insensitive partial match)

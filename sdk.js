@@ -6,7 +6,7 @@
 
 import UltraDexCore from './src/core/orchestration/ultra-dex-core.js';
 import UnifiedMemory from './src/core/memory/unified-api.js';
-import AgentRegistry from './src/core/agents/registry-enhanced.js';
+import { UnifiedRegistry as AgentRegistry } from './src/core/agents/unified-registry.js';
 import AgentAutopsy from './src/core/reliability/agent-autopsy.js';
 import AgentCoordinationProtocol from './src/core/protocols/coordination.js';
 import MCPServerManager from './src/core/mcp/server-manager.js';

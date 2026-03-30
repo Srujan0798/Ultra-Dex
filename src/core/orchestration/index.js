@@ -9,7 +9,7 @@ import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentRegistry } from './registry.js';
 import { ExecutionContext, TaskGraph } from './execution-context.js';
 import chalk from '../../utils/chalk.js';
-import { ppmManager } from '../memory/manager.js';
+import { ppmManager } from '../memory/index.js';
 import { EventEmitter } from 'events';
 import { GovernanceManager, GovernanceDeniedException } from '../governance/governance-manager.js';
 
@@ -66,7 +66,7 @@ export class AgentOrchestrator extends EventEmitter {
 
       // Initialize Self-Healing
       const selfHealing = await this.getSelfHealing();
-      await selfHealing.start();
+      await selfHealing.initialize();
 
       process.stdout.write(chalk.green('🤖 Agent Orchestration System Initialized (Self-Healing Active)\n'));
     } catch (error) {
@@ -134,8 +134,8 @@ export class AgentOrchestrator extends EventEmitter {
       return this.selfHealing;
     }
 
-    const { selfHealing } = await import('../reliability/self-healing.js');
-    this.selfHealing = selfHealing;
+    const { SelfHealingOrchestrator } = await import('../reliability/self-healing.js');
+    this.selfHealing = new SelfHealingOrchestrator();
     return this.selfHealing;
   }
 

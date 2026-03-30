@@ -232,7 +232,15 @@ export class GovernanceEngine {
 
     let typeId = 'unknown';
     if (action === 'execute') {
-      if (target && ['ai', 'shell', 'tests'].includes(target)) {
+      const aiProviders = [
+        'ai', 'anthropic', 'openai', 'google', 'groq', 'mistral', 'together', 
+        'llama', 'cohere', 'zhipu', 'qwen', 'deepseek', 'deepseekr1', 
+        'kimi', 'yi', 'openclaw', 'nvidia', 'mock'
+      ];
+      
+      if (target && aiProviders.includes(target.toLowerCase())) {
+        typeId = 'ai';
+      } else if (target && ['shell', 'tests'].includes(target)) {
         typeId = target;
       } else {
         typeId = 'shell'; // Default for execute unless specifically classified

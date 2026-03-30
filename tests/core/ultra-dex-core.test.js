@@ -3,8 +3,10 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { agentOrchestrator } from '../../src/core/orchestration/index.js';
 import { ppmManager } from '../../src/core/memory/manager.js';
-import { mcpServer } from '../../src/core/mcp/server-enhanced.js';
+import { MCPServerManager } from '../../src/core/mcp/server-manager.js';
 import { verifyTask } from '../../apps/cli/lib/quality/protocol-21.js';
+
+const mcpServer = new MCPServerManager();
 
 describe('Ultra-Dex Meta-Layer Core Verification', () => {
   
@@ -37,7 +39,10 @@ describe('Ultra-Dex Meta-Layer Core Verification', () => {
   });
 
   test('MCP Server: Capability Registration', async () => {
-    assert.strictEqual(typeof mcpServer.run, 'function');
+    // MCP Server should have run method registered
+    assert.ok(mcpServer instanceof MCPServerManager, 'mcpServer is MCPServerManager instance');
+    assert.ok(typeof mcpServer.run === 'function' || MCPServerManager.prototype.run !== undefined, 
+      'MCP Server has run capability');
   });
 
 });

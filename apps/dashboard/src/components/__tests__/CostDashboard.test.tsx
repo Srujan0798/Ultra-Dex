@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { CostDashboard } from '../CostDashboard';
 import { sampleAgents, sampleCostSeries } from '../__fixtures__/dashboard';
+import '@testing-library/jest-dom';
 
 describe('CostDashboard', () => {
   it('renders spend summary and table rows', () => {

@@ -100,6 +100,18 @@ class AIProviderRouter extends EventEmitter {
    * @returns {Promise<Object>} Completion result
    */
   async chat(messages, options = {}) {
+    if (process.env.MOCK_AI === 'true') {
+      return {
+        text: 'MOCK RESPONSE: Task processed successfully.',
+        content: 'MOCK RESPONSE: Task processed successfully.',
+        model: 'mock-model',
+        provider: 'mock-provider',
+        usage: { inputTokens: 10, outputTokens: 20 },
+        latency: 10,
+        cost: 0,
+      };
+    }
+
     this._ensureInitialized();
 
     const {

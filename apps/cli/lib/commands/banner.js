@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import gradient from 'gradient-string';
 import { VERSION } from '../utils/version.js';
 import { theme } from '../ui/theme.js';
+import { logger } from '../utils/logger.js';
 
 const asciiLogo = `
 ██╗   ██╗██╗  ████████╗██████╗  █████╗       ██████╗ ███████╗██╗  ██╗
@@ -22,7 +23,7 @@ export const banner = asciiLogo;
 export function showBanner(version = VERSION) {
   const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
 
-  logger.log(ultraGradient.multiline(asciiLogo));
+  logger.print(ultraGradient.multiline(asciiLogo));
 
   const info = [
     '',
@@ -37,7 +38,7 @@ export function showBanner(version = VERSION) {
     `${chalk.italic.dim('"Perfectly balanced, as all code should be."')}`,
   ].join('\n');
 
-  logger.log(
+  logger.print(
     boxen(info, {
       padding: 1,
       margin: { top: 1, bottom: 1 },
@@ -52,7 +53,7 @@ export function showBanner(version = VERSION) {
 
 export function showCompactBanner() {
   const shortGradient = gradient(['#6366f1', '#d946ef']);
-  logger.log(`  ${shortGradient.bold('⚡ Ultra-Dex')} ${chalk.dim(`v${VERSION}`)}`);
+  logger.print(`  ${shortGradient.bold('⚡ Ultra-Dex')} ${chalk.dim(`v${VERSION}`)}`);
 }
 
 export function registerBannerCommand(program) {

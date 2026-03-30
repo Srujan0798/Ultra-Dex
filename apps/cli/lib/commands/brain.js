@@ -14,10 +14,11 @@ import { projectGraph } from '../mcp/graph.js';
 // import { hybridRAG } from '../ai/hybrid-rag.js';
 import ora from 'ora';
 import { execSync } from 'child_process';
+import { logger } from '../utils/logger.js';
 
 export async function brainCommand(options) {
-  logger.log(chalk.bold.blue('\n🧠 Ultra-Dex Brain Sync\n'));
-  logger.log('Synchronizing project context with codebase...\n');
+  logger.print(chalk.bold.blue('\n🧠 Ultra-Dex Brain Sync\n'));
+  logger.print('Synchronizing project context with codebase...\n');
 
   const spinner = ora('Scanning project for context updates...').start();
 
@@ -76,31 +77,31 @@ Setting up the implementation plan.
 
     spinner.succeed('Context synchronized with project state');
 
-    logger.log(chalk.green('✅ CONTEXT.md updated with current project information'));
-    logger.log(chalk.gray(`  - Files analyzed: ${graphSummary.nodeCount}`));
-    logger.log(chalk.gray(`  - Dependencies mapped: ${graphSummary.edgeCount}`));
-    logger.log(chalk.gray(`  - Project phases: ${state?.phases?.length || 0}`));
+    logger.print(chalk.green('✅ CONTEXT.md updated with current project information'));
+    logger.print(chalk.gray(`  - Files analyzed: ${graphSummary.nodeCount}`));
+    logger.print(chalk.gray(`  - Dependencies mapped: ${graphSummary.edgeCount}`));
+    logger.print(chalk.gray(`  - Project phases: ${state?.phases?.length || 0}`));
 
     if (options.commit) {
-      logger.log(chalk.cyan('\n committing changes...'));
+      logger.print(chalk.cyan('\n committing changes...'));
       try {
         const { execSync } = await import('child_process');
         execSync('git add CONTEXT.md');
         execSync('git commit -m "feat: sync CONTEXT.md with brain"');
-        logger.log(chalk.green('✅ Changes committed to git'));
+        logger.print(chalk.green('✅ Changes committed to git'));
       } catch (gitError) {
-        logger.log(chalk.yellow('⚠️  Git commit failed (not in git repo or no changes)'));
+        logger.print(chalk.yellow('⚠️  Git commit failed (not in git repo or no changes)'));
       }
     }
 
     if (options.push) {
-      logger.log(chalk.cyan(' pushing to remote...'));
+      logger.print(chalk.cyan(' pushing to remote...'));
       try {
         const { execSync } = await import('child_process');
         execSync('git push');
-        logger.log(chalk.green('✅ Changes pushed to remote'));
+        logger.print(chalk.green('✅ Changes pushed to remote'));
       } catch (gitError) {
-        logger.log(chalk.yellow('⚠️  Git push failed'));
+        logger.print(chalk.yellow('⚠️  Git push failed'));
       }
     }
   } catch (error) {

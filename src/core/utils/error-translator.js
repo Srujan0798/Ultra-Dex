@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chalk from '../../utils/chalk.js';
-import { colors, gradients } from '../../../apps/cli/lib/colors.js';
+import { colors, gradients } from '../../utils/colors.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MESSAGES_PATH = path.join(__dirname, 'error-messages.json');

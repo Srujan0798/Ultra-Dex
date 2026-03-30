@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { AgentCard } from '../AgentCard';
 import { sampleAgent } from '../__fixtures__/dashboard';
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 describe('AgentCard', () => {
   it('renders agent identity and status', () => {

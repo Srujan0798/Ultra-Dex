@@ -8,7 +8,7 @@
 
 import { EventEmitter } from 'events';
 import { UnifiedMemory } from '../memory/unified-api.js';
-import { AgentRegistry } from '../agents/registry-enhanced.js';
+import { UnifiedRegistry as AgentRegistry } from '../agents/unified-registry.js';
 import { AgentAutopsy } from '../reliability/agent-autopsy.js';
 import { AgentCoordinationProtocol } from '../protocols/coordination.js';
 import { MCPServerManager } from '../mcp/server-manager.js';

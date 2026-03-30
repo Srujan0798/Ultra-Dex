@@ -6,17 +6,10 @@
  */
 
 import chalk from 'chalk';
-import fs from 'fs/promises';
-import path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { configManager } from '../utils/config-manager.js';
-import { loadTieredMemory, saveTieredMemory } from '../memory/hot-warm-cold.js';
+import { memoryManager } from '../../../../src/core/agents/memory-manager.js';
 import { memex } from '../memory/memex.js';
-
-const execAsync = promisify(exec);
 
 export async function showMemoryStatus(options = {}) {
   printInfo(chalk.cyan('\n🧠 Ultra-Dex Memory Status\n'));
@@ -26,37 +19,17 @@ export async function showMemoryStatus(options = {}) {
     await configManager.load();
   }
 
-  const maxTokens =
-    configManager.get('contextPruning.maxContextTokens') ||
-    configManager.get('memory.maxContextTokens') ||
-    8192;
-  const autoPrune =
-    configManager.get('contextPruning.autoPrune') || configManager.get('memory.autoPrune') || true;
-  const pruneThreshold =
-    configManager.get('contextPruning.pruneThreshold') ||
-    configManager.get('memory.pruneThreshold') ||
-    0.8;
+  await memoryManager.initialize();
 
-  // Calculate current memory usage
-  const state = await loadTieredMemory();
-  const hotItems = state.hot || [];
-  const warmItems = state.warm || [];
-  const coldItems = state.cold || [];
+  const maxTokens = configManager.get('contextPruning.maxContextTokens') || configManager.get('memory.maxContextTokens') || 8192;
+  const autoPrune = configManager.get('contextPruning.autoPrune') || configManager.get('memory.autoPrune') || true;
+  const pruneThreshold = configManager.get('contextPruning.pruneThreshold') || configManager.get('memory.pruneThreshold') || 0.8;
 
-  let hotTokens = 0;
-  for (const item of hotItems) {
-    hotTokens += item.tokens || Math.ceil(item.content.length / 4);
-  }
-
-  let warmTokens = 0;
-  for (const item of warmItems) {
-    warmTokens += item.tokens || Math.ceil(item.content.length / 4);
-  }
-
-  let coldTokens = 0;
-  for (const item of coldItems) {
-    coldTokens += item.tokens || Math.ceil(item.content.length / 4);
-  }
+  // Calculate current memory usage from memoryManager
+  const stats = await memoryManager.getTierStats();
+  const hotTokens = stats.hot.tokens;
+  const warmTokens = stats.warm.tokens;
+  const coldTokens = stats.cold.tokens;
 
   const totalTokens = hotTokens + warmTokens + coldTokens;
   const hotPercentage = (hotTokens / maxTokens) * 100;
@@ -65,9 +38,7 @@ export async function showMemoryStatus(options = {}) {
   // Show memory status
   printSuccess(chalk.green(`📊 Memory Usage Summary:`));
   printInfo(chalk.gray(`Max Context Tokens: ${maxTokens}`));
-  printInfo(
-    chalk.gray(`Auto Prune: ${autoPrune ? chalk.green('ENABLED') : chalk.red('DISABLED')}`)
-  );
+  printInfo(chalk.gray(`Auto Prune: ${autoPrune ? chalk.green('ENABLED') : chalk.red('DISABLED')}`));
   printInfo(chalk.gray(`Prune Threshold: ${(pruneThreshold * 100).toFixed(0)}%\n`));
 
   // Show visual token usage bar if requested
@@ -82,34 +53,22 @@ export async function showMemoryStatus(options = {}) {
     printInfo(`Total Mem:  ${totalBar}`);
 
     printInfo(chalk.gray(`\nHot Tokens: ${hotTokens}/${maxTokens} (${hotPercentage.toFixed(1)}%)`));
-    printInfo(
-      chalk.gray(`Total Tokens: ${totalTokens}/${maxTokens} (${totalPercentage.toFixed(1)}%)`)
-    );
+    printInfo(chalk.gray(`Total Tokens: ${totalTokens}/${maxTokens} (${totalPercentage.toFixed(1)}%)`));
 
     // Show pruning status
     if (hotPercentage > pruneThreshold * 100) {
-      printWarning(
-        chalk.yellow(
-          `⚠️  Hot memory usage (${hotPercentage.toFixed(1)}%) exceeds prune threshold (${(pruneThreshold * 100).toFixed(0)}%)`
-        )
-      );
+      printWarning(chalk.yellow(`⚠️  Hot memory usage (${hotPercentage.toFixed(1)}%) exceeds prune threshold (${(pruneThreshold * 100).toFixed(0)}%)`));
       printInfo(chalk.gray('Auto-consolidation will trigger soon'));
     } else {
-      const remaining = pruneThreshold * maxTokens - hotTokens;
-      printSuccess(
-        chalk.green(`✅ ${Math.round(remaining)} tokens remaining before auto-prune threshold`)
-      );
+      const remaining = (pruneThreshold * maxTokens) - hotTokens;
+      printSuccess(chalk.green(`✅ ${Math.round(remaining)} tokens remaining before auto-prune threshold`));
     }
   } else {
     // Show simple status
-    printInfo(
-      chalk.gray(`Hot Memory: ${hotTokens} tokens (${hotPercentage.toFixed(1)}% of limit)`)
-    );
+    printInfo(chalk.gray(`Hot Memory: ${hotTokens} tokens (${hotPercentage.toFixed(1)}% of limit)`));
     printInfo(chalk.gray(`Warm Memory: ${warmTokens} tokens`));
     printInfo(chalk.gray(`Cold Memory: ${coldTokens} tokens`));
-    printInfo(
-      chalk.gray(`Total Memory: ${totalTokens} tokens (${totalPercentage.toFixed(1)}% of limit)`)
-    );
+    printInfo(chalk.gray(`Total Memory: ${totalTokens} tokens (${totalPercentage.toFixed(1)}% of limit)`));
 
     if (hotPercentage > pruneThreshold * 100) {
       printWarning(chalk.yellow(`⚠️  Hot memory usage exceeds threshold. Auto-prune recommended.`));
@@ -120,9 +79,9 @@ export async function showMemoryStatus(options = {}) {
 
   // Show memory tier statistics
   printInfo(chalk.cyan('\nMemory Tiers:'));
-  printInfo(chalk.gray(`  Hot: ${hotItems.length} items (${hotTokens} tokens)`));
-  printInfo(chalk.gray(`  Warm: ${warmItems.length} items (${warmTokens} tokens)`));
-  printInfo(chalk.gray(`  Cold: ${coldItems.length} items (${coldTokens} tokens)`));
+  printInfo(chalk.gray(`  Hot: ${stats.hot.count} items (${hotTokens} tokens)`));
+  printInfo(chalk.gray(`  Warm: ${stats.warm.count} items (${warmTokens} tokens)`));
+  printInfo(chalk.gray(`  Cold: ${stats.cold.count} items (${coldTokens} tokens)`));
 }
 
 /**
@@ -161,97 +120,23 @@ function createTokenBar(usedTokens, maxTokens, label) {
  */
 export async function pruneMemory(options = {}) {
   printInfo(chalk.yellow('\n✂️  Initiating memory pruning...\n'));
+  await memoryManager.initialize();
+  
+  const stats = await memoryManager.getTierStats();
 
-  const state = await loadTieredMemory();
-
-  if (!state.hot || state.hot.length === 0) {
+  if (stats.hot.count === 0) {
     printInfo(chalk.gray('No hot memory entries to prune.'));
     return;
   }
 
-  // Load configuration
-  if (!configManager.loaded) {
-    await configManager.load();
+  const success = await memoryManager.prune('hot', 'warm');
+
+  if (success) {
+    printSuccess(chalk.green(`✅ Pruned hot memory tier`));
+    printInfo(chalk.gray('Moved to warm memory tier'));
+  } else {
+    printInfo(chalk.gray('Pruning skipped or within limits.'));
   }
-
-  const maxTokens =
-    configManager.get('contextPruning.maxContextTokens') ||
-    configManager.get('memory.maxContextTokens') ||
-    8192;
-  const pruneThreshold =
-    configManager.get('contextPruning.pruneThreshold') ||
-    configManager.get('memory.pruneThreshold') ||
-    0.8;
-
-  let currentTokens = 0;
-  for (const item of state.hot) {
-    currentTokens += item.tokens || Math.ceil(item.content.length / 4);
-  }
-
-  if (currentTokens <= maxTokens * pruneThreshold && !options.force) {
-    printInfo(chalk.gray('Memory usage is within limits. Use --force to prune anyway.'));
-    return;
-  }
-
-  // Calculate how many tokens need to be pruned
-  const targetTokens = maxTokens * pruneThreshold * 0.8; // Target 80% of threshold
-  const excessTokens = currentTokens - targetTokens;
-
-  printInfo(chalk.gray(`Current tokens: ${currentTokens}, Target: ${Math.round(targetTokens)}`));
-  printInfo(chalk.gray(`Need to prune ~${Math.round(excessTokens)} tokens`));
-
-  // Sort hot items by age (oldest first) and move to warm
-  const sortedHot = [...state.hot].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-  let prunedTokens = 0;
-  const itemsToMove = [];
-
-  for (const item of sortedHot) {
-    const itemTokens = item.tokens || Math.ceil(item.content.length / 4);
-
-    if (prunedTokens < excessTokens) {
-      itemsToMove.push(item);
-      prunedTokens += itemTokens;
-    } else {
-      break;
-    }
-  }
-
-  if (itemsToMove.length === 0) {
-    printInfo(chalk.gray('No items to prune.'));
-    return;
-  }
-
-  // Confirm with user before pruning
-  if (!options.force) {
-    const { confirm } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'confirm',
-        message: chalk.cyan(
-          `Prune ${itemsToMove.length} items (~${Math.round(prunedTokens)} tokens)?`
-        ),
-        default: true,
-      },
-    ]);
-
-    if (!confirm) {
-      printInfo(chalk.gray('Pruning cancelled by user.'));
-      return;
-    }
-  }
-
-  // Move items from hot to warm
-  state.warm = state.warm || [];
-  state.hot = state.hot.filter((item) => !itemsToMove.some((moveItem) => moveItem.id === item.id));
-  state.warm.push(...itemsToMove);
-
-  await saveTieredMemory(state);
-
-  printSuccess(
-    chalk.green(`✅ Pruned ${itemsToMove.length} items (~${Math.round(prunedTokens)} tokens)`)
-  );
-  printInfo(chalk.gray('Moved to warm memory tier'));
 }
 
 export function registerMemoryCommand(program) {
@@ -311,7 +196,11 @@ export function registerMemoryCommand(program) {
         results.forEach((hit, index) => {
           const preview =
             typeof hit.text === 'string' ? hit.text.slice(0, 180).replace(/\s+/g, ' ') : '';
-          printInfo(chalk.gray(`${index + 1}.`) + ' ' + chalk.white(preview || '[no content]'));
+          printInfo(
+            chalk.gray(`${index + 1}.`) +
+            ' ' +
+            chalk.white(preview || '[no content]')
+          );
           if (hit.metadata) {
             printInfo(chalk.dim(`   • metadata: ${JSON.stringify(hit.metadata)}`));
           }
@@ -327,15 +216,12 @@ export function registerMemoryCommand(program) {
     { command: 'ultra-dex memory status --visual', description: 'Show visual token usage bar' },
     { command: 'ultra-dex memory prune', description: 'Prune memory if exceeding limits' },
     { command: 'ultra-dex memory prune --force', description: 'Force memory pruning' },
-    {
-      command: 'ultra-dex memory search "auth decisions"',
-      description: 'Search persistent memory',
-    },
+    { command: 'ultra-dex memory search "auth decisions"', description: 'Search persistent memory' }
   ];
 }
 
 export default {
   showMemoryStatus,
   pruneMemory,
-  registerMemoryCommand,
+  registerMemoryCommand
 };

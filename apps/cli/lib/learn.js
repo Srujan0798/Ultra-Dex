@@ -2,14 +2,17 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import { spawn } from 'child_process';
+import { logger } from './utils/logger.js';
 
-const tutorialData = JSON.parse(fs.readFileSync(new URL('./tutorial-data.json', import.meta.url), 'utf8'));
+const tutorialData = JSON.parse(
+  fs.readFileSync(new URL('./tutorial-data.json', import.meta.url), 'utf8')
+);
 
 class InteractiveTutorial {
   constructor() {
     this.rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
     this.currentStep = 0;
   }
@@ -27,10 +30,10 @@ class InteractiveTutorial {
     }
 
     console.log('');
-    
+
     for (this.currentStep = 0; this.currentStep < tutorialData.steps.length; this.currentStep++) {
       await this.showStep(tutorialData.steps[this.currentStep]);
-      
+
       if (this.currentStep < tutorialData.steps.length - 1) {
         await this.askQuestion('Press Enter to continue to the next step...');
         console.log('');
@@ -46,27 +49,29 @@ class InteractiveTutorial {
     console.log(`\x1b[33mStep ${step.id}/${tutorialData.steps.length}: ${step.title}\x1b[0m`);
     console.log(step.description);
     console.log('');
-    
+
     if (step.explanation) {
       console.log(`💡 \x1b[36mExplanation:\x1b[0m ${step.explanation}`);
     }
-    
+
     if (step.command) {
       console.log(`💻 \x1b[36mCommand:\x1b[0m \x1b[35m${step.command}\x1b[0m`);
     }
-    
+
     if (step.challenge) {
       console.log(`🎯 \x1b[36mChallenge:\x1b[0m ${step.challenge}`);
-      
+
       // If there's a command, suggest running it
       if (step.command) {
-        const runCommand = await this.askQuestion(`Would you like to run this command now? (y/N): `);
+        const runCommand = await this.askQuestion(
+          `Would you like to run this command now? (y/N): `
+        );
         if (runCommand.toLowerCase().startsWith('y')) {
           await this.executeCommand(step.command);
         }
       }
     }
-    
+
     console.log('');
   }
 

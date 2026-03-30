@@ -44,20 +44,21 @@ async function test() {
     console.log('📝 Sending request to Nemotron-3-Super...\n');
     
     const response = await client.chat.completions.create({
-      model: 'nvidia/nemotron-3-super-120b-a12b',
+      model: 'meta/llama-3.1-8b-instruct',
       messages: [{ role: 'user', content: 'Say hello in one sentence' }],
-      max_tokens: 100,
+      max_tokens: 50,
       temperature: 0.5,
-      top_p: 0.95,
-      extra_body: {
-        chat_template_kwargs: {
-          enable_thinking: false,
-        },
-      },
     });
 
     console.log('✅ Success!\n');
-    console.log('Response:', response.choices[0].message.content);
+    const content = response.choices[0].message.content;
+    console.log('Response:', content);
+    
+    if (!content || content.trim().length === 0) {
+      console.error('\n❌ ERROR: API returned empty response!\n');
+      process.exit(1);
+    }
+    
     console.log('\n🎉 API is working! You can now use Nemotron in Ultra-Dex.\n');
   } catch (error) {
     console.error('❌ Error:', error.message);

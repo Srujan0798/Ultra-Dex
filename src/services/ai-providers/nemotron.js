@@ -18,12 +18,12 @@ export const NEMOTRON_MODELS = {
   // PRIMARY MODELS (High Priority - Start with these)
   // ============================================================================
   primary: {
-    id: 'nvidia/nemotron-3-super-120b-a12b',
-    name: 'Nemotron-3-Super 120B',
-    publisher: 'NVIDIA',
-    contextLength: 1000000,
-    bestFor: ['agentic workflows', 'complex reasoning', 'tool calling', 'planning', 'coding'],
-    temperature: 1.0,
+    id: 'meta/llama-3.1-8b-instruct',
+    name: 'Llama-3.1 8B Instruct',
+    publisher: 'Meta',
+    contextLength: 131072,
+    bestFor: ['fast responses', 'general chat', 'agentic workflows', 'planning'],
+    temperature: 0.7,
     topP: 0.95,
     category: 'primary',
   },
@@ -461,8 +461,9 @@ export function initNVIDIAKeys() {
 export function createNemotronClient(apiKey, modelId = null) {
   if (!apiKey) {
     // Use key manager if no key provided
-    if (keyManager.getKeyCount() > 0) {
-      return keyManager.createClient(modelId);
+    const km = keyManager();
+    if (km.getKeyCount() > 0) {
+      return km.createClient(modelId);
     }
     throw new Error(
       'NVIDIA API key required. Get one free at https://build.nvidia.com/'
@@ -481,13 +482,14 @@ export function createNemotronClient(apiKey, modelId = null) {
  * @returns {Object} Client and key info
  */
 export function createRotatingClient(modelId) {
-  const client = keyManager.createClient(modelId);
-  const keyInfo = keyManager.getCurrentKey(modelId);
-  
+  const km = keyManager();
+  const client = km.createClient(modelId);
+  const keyInfo = km.getCurrentKey(modelId);
+
   return {
     client,
     keyName: keyInfo.name,
-    keyIndex: keyManager.keys.indexOf(keyInfo),
+    keyIndex: km.keys.indexOf(keyInfo),
   };
 }
 

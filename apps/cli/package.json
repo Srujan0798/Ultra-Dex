@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/Srujan0798/Ultra-Dex",
   "bin": {
-    "ultra-dex": "./bin/ultra-dex.js"
+    "ultra-dex": "./bin/ultra-dex-wrapper.js"
   },
   "main": "./bin/ultra-dex.js",
   "files": [
@@ -105,7 +105,7 @@
     "dotenv": "^16.4.7",
     "keytar": "^7.9.0",
     "openai": "^4.70.0",
-    "playwright": "^1.49.1"
+    "playwright": "^1.58.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.10",

@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import TeamManager from '../../src/core/team/team-manager.js';
+import { TeamManager } from '../../src/core/team/team-manager.js';
 
 describe('TeamManager', () => {
   let teamManager;

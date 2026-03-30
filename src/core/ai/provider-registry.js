@@ -4,6 +4,7 @@ import { readdir } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { MODEL_PROVIDER_MAP } from './router-config.js';
+import { MockProvider } from './providers/mock.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -133,6 +134,14 @@ class ProviderRegistry {
   }
 
   getProvider(name) {
+    if (process.env.MOCK_AI_PROVIDERS === 'true') {
+      const key = 'mock';
+      if (!this.registry.has(key)) {
+        this.registry.set(key, new MockProvider());
+      }
+      return this.registry.get(key);
+    }
+
     const key = normalizeProviderKey(name);
     return this.registry.get(key) || null;
   }

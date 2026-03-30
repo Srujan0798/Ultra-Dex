@@ -94,6 +94,8 @@ Each tool file in this directory contains the verified, official deep-feature do
 | `qwenCli.md` | `--experimental-lsp` (AST/compiler parsing), `--checkpointing` (disaster rollback) |
 | `copilotCli.md` | Multi-model (`/model`), `/fleet` parallel sub-agents, `/delegate` auto-PR |
 | `ampCli.md` | 3 Modes (`smart`/`rush`/`deep`), Thread sharing, Custom toolboxes |
+| `Nvidia.md` | Nvidia Nemotron AI integration (`ultra-dex nemotron`), 30+ optimized endpoints |
+| **Dashboard** | Local interactive UI via `ultra-dex dashboard --web` and terminal UI via `ultra-dex dashboard` |
 
 ---
 

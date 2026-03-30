@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { MetricsPanel } from '../MetricsPanel';
 import { sampleAgents, sampleCostSeries, sampleMetrics } from '../__fixtures__/dashboard';
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 vi.mock('../Chart', () => ({
   Chart: () => <div data-testid="mock-chart">chart</div>,
