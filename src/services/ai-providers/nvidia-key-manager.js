@@ -204,16 +204,27 @@ class NVIDIAKeyManager {
   }
 }
 
-// Create singleton instance
-export const keyManager = new NVIDIAKeyManager();
+// Lazy singleton instance - created on first access
+let _keyManagerInstance = null;
+
+function getKeyManager() {
+  if (!_keyManagerInstance) {
+    _keyManagerInstance = new NVIDIAKeyManager();
+  }
+  return _keyManagerInstance;
+}
+
+// Export getter instead of instance for lazy initialization
+export { getKeyManager as keyManager };
 
 /**
  * Initialize key manager from environment variables
  * Supports: NVIDIA_API_KEY, NVIDIA_API_KEY_1, NVIDIA_API_KEY_2, etc.
  */
 export function initializeKeyManager() {
+  const km = getKeyManager();
   const keys = [];
-  
+
   // Check for primary key
   if (process.env.NVIDIA_API_KEY) {
     keys.push({
@@ -236,12 +247,12 @@ export function initializeKeyManager() {
 
   // Add all keys
   keys.forEach(({ key, name, priority }) => {
-    keyManager.addKey(key, { name, priority });
+    km.addKey(key, { name, priority });
   });
 
-  console.log(`🔑 Initialized ${keyManager.getKeyCount()} API key(s)`);
-  
-  return keyManager;
+  console.log(`🔑 Initialized ${km.getKeyCount()} API key(s)`);
+
+  return km;
 }
 
 export default NVIDIAKeyManager;

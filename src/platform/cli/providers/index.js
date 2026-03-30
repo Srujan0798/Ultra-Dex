@@ -74,6 +74,11 @@ export function getAvailableProviders() {
  * @returns {Promise<BaseProvider>}
  */
 export async function createProvider(providerId, options = {}) {
+  // Global Mock Override
+  if (process.env.MOCK_AI === 'true') {
+    providerId = 'mock';
+  }
+
   const agent = options.agent;
   if (agent) {
     enforceAgentExecution({ agent, providerId });
@@ -81,7 +86,7 @@ export async function createProvider(providerId, options = {}) {
 
   if (providerId === 'router') {
     const cloudId = options.cloudProvider || getDefaultProvider();
-    const cloudProvider = cloudId ? createProvider(cloudId, options) : null;
+    const cloudProvider = cloudId ? await createProvider(cloudId, options) : null;
 
     let localProvider = null;
     try {
@@ -110,7 +115,7 @@ export async function createProvider(providerId, options = {}) {
   let ProviderClass = providerConfig.class;
   if (providerId === 'mock') {
     // For mock provider, dynamically determine the class based on environment
-    ProviderClass = (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true')
+    ProviderClass = (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true' || process.env.MOCK_AI === 'true')
       ? MockOpenAI
       : OpenAIProvider;
   }

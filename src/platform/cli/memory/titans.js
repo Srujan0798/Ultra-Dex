@@ -1,139 +1,67 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import { loadTieredMemory, saveTieredMemory, promoteEntry, demoteEntry } from './hot-warm-cold.js';
+import { memoryManager } from '../../../core/agents/memory-manager.js';
 import { summarizeMemory } from './compression.js';
-import { configManager } from '../utils/config-manager.js';
 import chalk from 'chalk';
 import { printInfo, printSuccess } from '../utils/output.js';
 
 export class TitansMemory {
-  constructor() {
-    this.tiers = {
-      hot: [],
-      warm: [],
-      cold: []
-    };
+  async initialize() {
+    await memoryManager.initialize();
   }
 
   async add(content, tier = 'hot') {
-    const state = await loadTieredMemory();
-    const entry = {
-      id: `mem-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      content,
-      createdAt: new Date().toISOString(),
-      tokens: Math.ceil(content.length / 4), // Simple estimate
-    };
-    state[tier] = state[tier] || [];
-    state[tier].unshift(entry);
-    await saveTieredMemory(state);
-
-    // Auto-prune if enabled (v4.0.2)
-    if (tier === 'hot') {
-      await this.checkAndPrune();
-    }
-
-    return entry;
+    return await memoryManager.store(tier, `mem-${Date.now()}`, content);
   }
 
   /**
    * Check if pruning is needed based on token threshold
    */
   async checkAndPrune() {
-    // Load configuration
-    if (!configManager.loaded) {
-      await configManager.load();
-    }
-
-    const maxTokens = configManager.get('contextPruning.maxContextTokens') || configManager.get('memory.maxContextTokens') || 8192;
-    const autoPrune = configManager.get('contextPruning.autoPrune') || configManager.get('memory.autoPrune') || true;
-    const pruneThreshold = configManager.get('contextPruning.pruneThreshold') || configManager.get('memory.pruneThreshold') || 0.8;
-
-    if (!autoPrune) {
-      return false;
-    }
-
-    const state = await loadTieredMemory();
-    const hotItems = state.hot || [];
-
-    // Calculate current token usage
-    let currentTokens = 0;
-    for (const item of hotItems) {
-      currentTokens += item.tokens || Math.ceil(item.content.length / 4);
-    }
-
-    const thresholdTokens = maxTokens * pruneThreshold;
-
-    if (currentTokens > thresholdTokens) {
-      printInfo(chalk.yellow(`⚠️  Context token usage (${currentTokens}/${maxTokens}) exceeds threshold. Initiating consolidation...`));
-      await this.consolidate();
-      printSuccess(chalk.green('✅ Context consolidated to reduce token usage'));
-      return true;
-    }
-
-    return false;
+    return await memoryManager.checkAndPrune();
   }
 
   async getTier(tier) {
-    const state = await loadTieredMemory();
-    return state[tier] || [];
+    const results = await memoryManager.retrieve('', { tags: [tier], limit: 1000 });
+    return results.items.map(item => ({
+      id: item.id,
+      content: item.content.text,
+      tokens: item.content.tokens,
+      createdAt: item.createdAt,
+      ...item.content.metadata
+    }));
   }
 
   async consolidate() {
-    const state = await loadTieredMemory();
-    const summary = summarizeMemory(state.warm || []);
+    // Legacy consolidate logic could be moved to memoryManager
+    const warmItems = await this.getTier('warm');
+    const summary = summarizeMemory(warmItems);
     if (summary) {
-      state.cold = state.cold || [];
-      state.cold.unshift({
-        id: `cold-${Date.now()}`,
-        summary,
-        createdAt: new Date().toISOString(),
-      });
-      state.warm = [];
+      await memoryManager.store('cold', `cold-${Date.now()}`, summary);
+      // In a real implementation, we would mark warm items as consolidated/deleted
     }
-    await saveTieredMemory(state);
-    return state;
   }
 
   async promote(entryId) {
-    const state = await loadTieredMemory();
-    promoteEntry(state, entryId);
-    await saveTieredMemory(state);
-    return state;
+    return await memoryManager.promote(entryId, 'hot');
   }
 
   async demote(entryId) {
-    const state = await loadTieredMemory();
-    demoteEntry(state, entryId);
-    await saveTieredMemory(state);
-    return state;
+    return await memoryManager.demote(entryId, 'warm');
   }
 
   async stats() {
-    const state = await loadTieredMemory();
+    const stats = await memoryManager.getTierStats();
     return {
-      hot: state.hot?.length || 0,
-      warm: state.warm?.length || 0,
-      cold: state.cold?.length || 0,
-      updatedAt: state.updatedAt,
+      hot: stats.hot.count,
+      warm: stats.warm.count,
+      cold: stats.cold.count,
+      updatedAt: new Date().toISOString()
     };
   }
 }
 
 export const titansMemory = new TitansMemory();
-export default titansMemory;
+titansMemory.initialize().catch(console.error);
 
-/**
- * Safe execution wrapper with error handling for titans
- * @param {Function} fn - Async function to execute
- * @param {string} [context='titans'] - Error context
- * @returns {Promise<*>} Result or null on error
- */
-async function safeExecute(fn, context = 'titans') {
-  try {
-    return await fn();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    logger.error(`[${context}] Error: ${message}`);
-    return null;
-  }
-}
+export default titansMemory;

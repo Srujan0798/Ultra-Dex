@@ -1,5 +1,7 @@
+// Copyright (c) 2026 Ultra-Dex
+
 /**
  * Memory MCP Shim
- * Re-exports the memory system from the platform layer
+ * Re-exports the memory system from the core layer
  */
-export * from '../../platform/cli/mcp/memory.js';
+export * from '../memory/ultra-memory.js';

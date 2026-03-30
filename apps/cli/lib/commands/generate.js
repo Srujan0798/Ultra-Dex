@@ -114,7 +114,7 @@ export function registerGenerateCommand(program) {
         // Create provider instance
         let provider;
         try {
-          provider = createProvider(providerId, {
+          provider = await createProvider(providerId, {
             apiKey: options.key,
             model: options.model,
             maxTokens: 16000, // Large output for full plan

@@ -1,6 +1,31 @@
 #!/usr/bin/env node
 
+// Load environment variables using CommonJS require() BEFORE any ES imports
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, '..', '..');
+const envLocalPath = path.join(projectRoot, '.env.local');
+const envPath = path.join(projectRoot, '.env');
+
+// Load dotenv using CommonJS require (executes immediately, not hoisted)
+const dotenv = require('dotenv');
+
+// Load .env.local if exists (override shell env), otherwise .env
+if (fs.existsSync(envLocalPath)) {
+  dotenv.config({ path: envLocalPath, override: true });
+} else {
+  dotenv.config({ path: envPath, override: true });
+}
+
 process.env.FORCE_COLOR = '3';
+
+// Now safe to use ES imports - environment is loaded
 
 import { Command } from 'commander';
 import updateNotifier from 'update-notifier';

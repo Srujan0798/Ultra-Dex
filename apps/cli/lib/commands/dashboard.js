@@ -19,6 +19,9 @@ import { startSpinner } from '../utils/spinners.js';
 import { VERSION } from '../utils/version.js';
 import { logger } from '../utils/logger.js';
 
+// Helper function for logging
+const log = (message) => logger.log(message);
+
 const DEFAULT_WEB_PORT = '3002';
 const DEFAULT_MAX_RECENT_PROJECTS = 6;
 const DEFAULT_SCAN_LIMIT = 12;
@@ -669,8 +672,8 @@ export async function executeQuickAction(action, options = {}) {
   }
 }
 
-export async function showInteractiveDashboard(promptImpl, options = {}) {
-  const prompt = promptImpl || options.promptImpl || promptWithInquirer;
+export async function showInteractiveDashboard(options = {}) {
+  const prompt = options.promptImpl || promptWithInquirer;
   const clear = options.clear !== false ? options.clearImpl || console.clear : null;
   const spinnerFactory = options.spinnerFactory || startSpinner;
   const once = Boolean(options.once);
@@ -711,13 +714,13 @@ export async function showInteractiveDashboard(promptImpl, options = {}) {
     if (clear) {
       clear();
     }
-    log(renderDashboardSnapshot(model, { color }));
+    logger.log(renderDashboardSnapshot(model, { color }));
 
     if (once || (!process.stdout.isTTY && !options.promptImpl)) {
       return model;
     }
 
-    const answers = await promptImpl([
+    const answers = await prompt([
       {
         type: 'list',
         name: 'selection',
@@ -742,7 +745,7 @@ export async function showInteractiveDashboard(promptImpl, options = {}) {
 
     if (selection.type === 'project') {
       cwd = selection.project.path;
-      log(
+      logger.log(
         color
           ? chalk.cyan(`Switched dashboard context to ${cwd}`)
           : `Switched dashboard context to ${cwd}`
@@ -754,7 +757,7 @@ export async function showInteractiveDashboard(promptImpl, options = {}) {
       await (options.executeQuickActionImpl || executeQuickAction)(selection.action, {
         ...options,
         cwd,
-        promptImpl,
+        promptImpl: prompt,
       });
     }
   }

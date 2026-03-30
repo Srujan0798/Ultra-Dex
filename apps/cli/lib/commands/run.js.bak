@@ -1,0 +1,864 @@
+// Copyright (c) 2026 Ultra-Dex
+
+/**
+ * ultra-dex run command
+ * Execute agent tasks automatically (the "swarm" approach)
+ */
+
+import chalk from 'chalk';
+import ora from 'ora';
+import inquirer from 'inquirer';
+import fs from 'fs/promises';
+import path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import {
+  createProvider,
+  getDefaultProvider,
+  checkConfiguredProviders,
+} from '../providers/index.js';
+import { ensureExecutionTrace } from '../analytics/execution-trace.js';
+import { projectGraph } from '../mcp/graph.js';
+import { errorRecovery } from '../utils/error-recovery.js';
+import { dashboardNotifier } from '../utils/dashboard-notifier.js';
+import { authorizeOperation } from '../governance/index.js';
+import { verifyLinting, verifyTypeSafety, verifySecurityPatterns } from '../quality/automation.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { authorizeAgentAccess } from '../enterprise/agent-access.js';
+import { recordAgentPerformance, recordTokenUsage, recordError } from '../analytics/index.js';
+import { estimateTokens } from '../utils/token-forecast.js';
+
+const execAsync = promisify(exec);
+
+const AGENTS = {
+  planner: {
+    name: '@Planner',
+    role: 'Task Breakdown Specialist',
+    systemPrompt: `You are @Planner. Break down features into atomic tasks.
+Use >> SEARCH_CODE: "query" to find existing patterns.
+Output format:
+## Task Breakdown
+### Task 1: [Name]
+- Agent: @Backend | @Frontend | ...
+- Description: ...
+`,
+  },
+  cto: {
+    name: '@CTO',
+    role: 'Technical Architecture Lead',
+    systemPrompt: `You are @CTO. Make tech decisions, design architecture, set standards.
+Use >> READ_CODE: "path/to/file" to review existing architecture.`,
+  },
+  backend: {
+    name: '@Backend',
+    role: 'API & Business Logic Developer',
+    systemPrompt: `You are @Backend. Write API/Service code.
+Available commands:
+>> READ_CODE: "path" - Read a file
+>> WRITE_CODE: "path" "content" - Create/Update a file
+>> SEARCH_CODE: "query" - Search codebase
+>> DELEGATE: @AgentName "Task" - Delegate work`,
+  },
+  frontend: {
+    name: '@Frontend',
+    role: 'UI/UX Developer',
+    systemPrompt: `You are @Frontend. Build React/Next.js components.
+Available commands:
+>> READ_CODE: "path"
+>> WRITE_CODE: "path" "content"
+>> SEARCH_CODE: "query"`,
+  },
+  database: {
+    name: '@Database',
+    role: 'Database Architect',
+    systemPrompt: `You are @Database. Design schemas.
+Available commands:
+>> READ_CODE: "path"
+>> WRITE_CODE: "path" "content"`,
+  },
+  testing: {
+    name: '@Testing',
+    role: 'QA Engineer',
+    systemPrompt: `You are @Testing. Write tests.
+Available commands:
+>> READ_CODE: "path"
+>> WRITE_CODE: "path" "content"`,
+  },
+  reviewer: {
+    name: '@Reviewer',
+    role: 'Code Review Specialist',
+    systemPrompt: `You are @Reviewer. Audit code.
+Available commands:
+>> READ_CODE: "path"
+>> SEARCH_CODE: "query"`,
+  },
+  debugger: {
+    name: '@Debugger',
+    role: 'Bug Fixing Specialist',
+    systemPrompt: `You are @Debugger. Analyze logs and code to identify and fix bugs.
+Available commands:
+>> READ_CODE: "path"
+>> SEARCH_CODE: "query"
+>> WRITE_CODE: "path" "content"`,
+  },
+  devops: {
+    name: '@DevOps',
+    role: 'CI/CD & Infrastructure Specialist',
+    systemPrompt: `You are @DevOps. Manage deployment, infrastructure, and git operations.
+Available commands:
+>> RUN_SHELL: "command"
+>> READ_CODE: "path"
+>> WRITE_CODE: "path" "content"
+>> SEARCH_CODE: "query"`,
+  },
+};
+
+async function readProjectContext() {
+  const context = {};
+
+  const planPromise = fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => null);
+  const contextPromise = fs.readFile('CONTEXT.md', 'utf8').catch(() => null);
+  const statePromise = (async () => {
+    try {
+      return JSON.parse(await fs.readFile('.ultra/state.json', 'utf8'));
+    } catch {
+      try {
+        return JSON.parse(await fs.readFile('.ultra-dex/state.json', 'utf8'));
+      } catch {
+        return null;
+      }
+    }
+  })();
+
+  // Graph Scan (God Mode)
+  const graphPromise = (async () => {
+    try {
+      await projectGraph.scan();
+      return projectGraph.getSummary();
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const [plan, ctx, state, graph] = await Promise.all([
+    planPromise,
+    contextPromise,
+    statePromise,
+    graphPromise,
+  ]);
+
+  context.plan = plan;
+  context.context = ctx;
+  context.state = state;
+  context.graph = graph;
+
+  return context;
+}
+
+async function ensureTraceStarted(projectContext, agentId, task) {
+  const trace = ensureExecutionTrace(projectContext, { rootAgent: agentId, task });
+  if (!trace.started) {
+    trace.started = true;
+    await trace.record({
+      agent: agentId,
+      action: 'RUN_START',
+      input: task,
+      output: 'Agent execution started',
+      status: 'success',
+    });
+  }
+  return trace;
+}
+
+export async function runAgentLoop(agentName, task, provider, projectContext, depth = 0) {
+  projectContext = projectContext && typeof projectContext === 'object' ? projectContext : {};
+
+  if (depth > 5) return `[System]: Max delegation depth reached.`;
+
+  const agentId = agentName.toLowerCase();
+  const trace = await ensureTraceStarted(projectContext, agentId, task);
+  const agent = AGENTS[agentId];
+  if (!agent) {
+    await trace.record({
+      agent: agentId,
+      action: 'AGENT_RESOLUTION',
+      input: task,
+      output: `Unknown agent @${agentName}`,
+      status: 'error',
+      depth,
+    });
+    return `[System]: Unknown agent @${agentName}`;
+  }
+
+  const startedAt = Date.now();
+
+  const access = await authorizeAgentAccess(agentId);
+  if (!access.allowed) {
+    await trace.record({
+      agent: agentId,
+      action: 'ACCESS_CHECK',
+      input: task,
+      output: `Role "${access.role}" cannot run @${agentName}`,
+      status: 'blocked',
+      depth,
+    });
+    return `[Access]: Role "${access.role}" cannot run @${agentName}`;
+  }
+
+  const spinner = ora(`\${agent.name} is working...`).start();
+
+  // Notify Dashboard
+  await dashboardNotifier.sendAgentStatus(agentName, 'working', task.substring(0, 50));
+
+  const graphInfo = projectContext.graph
+    ? `## Codebase Graph\n- Files: ${projectContext.graph.nodeCount}\n- Dependencies: ${projectContext.graph.edgeCount}\n`
+    : '';
+
+  const historySection = projectContext.history
+    ? `## Execution History\n${projectContext.history}\n\n`
+    : '';
+  const contextSection = projectContext.context
+    ? `## Context\n${projectContext.context.slice(0, 3000)}\n\n${graphInfo}${historySection}`
+    : '';
+  const prompt = `${contextSection}## Task\n${task}\n\nYou can use tools by outputting:
+>> READ_CODE: "filePath"
+>> WRITE_CODE: "filePath" "fullContent"
+>> SEARCH_CODE: "query"
+>> RUN_SHELL: "command"
+>> DELEGATE: @AgentName "Task"`;
+
+  const agentContext = buildAgentContext(agentId, agent);
+  const providerInstance = typeof provider === 'function' ? await provider(agentId) : provider;
+
+  try {
+    const executionDecision = await authorizeOperation({
+      agent: agentContext,
+      operation: 'execute',
+      resourceType: 'ai',
+      metadata: { task, agentTitle: agent.role },
+    });
+    if (!executionDecision.allowed) {
+      await trace.record({
+        agent: agentId,
+        action: 'AI_EXECUTE',
+        input: task,
+        output: executionDecision.reason,
+        status: 'blocked',
+        depth,
+      });
+      spinner.fail(`${agent.name} blocked: ${executionDecision.reason}`);
+      return `[Governance]: ${executionDecision.reason}`;
+    }
+
+    const result = await errorRecovery.executeWithRecovery(
+      'ai-provider',
+      async () => {
+        return await providerInstance.generate(agent.systemPrompt, prompt);
+      },
+      {
+        maxRetries: 2,
+        retryDelay: 2000,
+      }
+    );
+
+    let content = typeof result?.content === 'string' ? result.content : String(result?.content ?? '');
+
+    await trace.record({
+      agent: agentId,
+      action: 'MODEL_RESPONSE',
+      input: prompt,
+      output: content,
+      status: 'success',
+      depth,
+      model: result?.model || providerInstance?.model || null,
+      usage: result?.usage || null,
+    });
+
+    try {
+      const durationMs = Date.now() - startedAt;
+      await recordAgentPerformance({
+        agent: agentId,
+        durationMs,
+        success: true,
+        task,
+        provider: providerInstance?.getName?.() || 'provider',
+      });
+
+      const inputTokens = result?.usage?.inputTokens ?? estimateTokens(agent.systemPrompt + prompt);
+      const outputTokens = result?.usage?.outputTokens ?? estimateTokens(result?.content || '');
+      await recordTokenUsage({
+        agent: agentId,
+        model: result?.model || providerInstance?.model || null,
+        inputTokens,
+        outputTokens,
+      });
+    } catch {
+      // analytics should not block execution
+    }
+
+    spinner.succeed(`\${agent.name} completed.`);
+    await dashboardNotifier.sendAgentStatus(agentName, 'completed', 'Task finished');
+
+    // Tool Execution Logic (God Mode)
+    const readMatch = content.match(/>>\s*READ_CODE:\s*["'](.+?)["']/);
+    const writeMatch = content.match(/>>\s*WRITE_CODE:\s*["'](.+?)["']\s*["']([\s\S]+?)["']/);
+    const _searchMatch = content.match(/>>\s*SEARCH_CODE:\s*["'](.+?)["']/);
+    const runShellMatch = content.match(/>>\s*RUN_SHELL:\s*["'](.+?)["']/);
+    const delegateMatch = content.match(/>>\s*DELEGATE:\s*@(\w+)\s*["'](.+?)["']/);
+
+    if (readMatch) {
+      let filePath = readMatch[1];
+      // Sanitize file path to prevent directory traversal
+      filePath = path.normalize(filePath);
+      if (filePath.includes('../') || filePath.includes('..\\')) {
+        await trace.record({
+          agent: agentId,
+          action: 'READ_CODE',
+          input: filePath,
+          output: 'Path traversal detected',
+          status: 'error',
+          depth,
+        });
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError reading ${filePath}: Path traversal detected`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      }
+
+      const readDecision = await authorizeOperation({
+        agent: agentContext,
+        operation: 'read',
+        filePath,
+        metadata: { agentTitle: agent.role },
+      });
+      if (!readDecision.allowed) {
+        await trace.record({
+          agent: agentId,
+          action: 'READ_CODE',
+          input: filePath,
+          output: readDecision.reason,
+          status: 'blocked',
+          depth,
+        });
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nGovernance blocked READ_CODE on ${filePath}: ${readDecision.reason}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      }
+
+      printInfo(chalk.cyan(`\n🔍 \${agent.name} is reading \${filePath}...`));
+      await dashboardNotifier.sendLog(`@\${agentName} is reading \${filePath}`, 'info');
+      try {
+        const fullPath = path.resolve(process.cwd(), filePath);
+        // Additional check to ensure path is within project directory
+        if (!fullPath.startsWith(process.cwd())) {
+          await trace.record({
+            agent: agentId,
+            action: 'READ_CODE',
+            input: filePath,
+            output: 'Path outside project root',
+            status: 'error',
+            depth,
+          });
+          return await runAgentLoop(
+            agentName,
+            `${task}\n\nError reading ${filePath}: Path outside project root`,
+            provider,
+            projectContext,
+            depth + 1
+          );
+        }
+
+        const fileContent = await fs.readFile(fullPath, 'utf8');
+        await trace.record({
+          agent: agentId,
+          action: 'READ_CODE',
+          input: filePath,
+          output: fileContent,
+          status: 'success',
+          depth,
+        });
+        const nextPrompt = `Output of READ_CODE "${filePath}":\n\`\`\`\n${fileContent}\n\`\`\`\n\nPlease proceed with your task.`;
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\n${nextPrompt}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      } catch (e) {
+        await trace.record({
+          agent: agentId,
+          action: 'READ_CODE',
+          input: filePath,
+          output: e.message,
+          status: 'error',
+          depth,
+        });
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError reading ${filePath}: ${e.message}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      }
+    }
+
+    if (writeMatch) {
+      let filePath = writeMatch[1];
+      const newContent = writeMatch[2];
+
+      // Sanitize file path to prevent directory traversal
+      filePath = path.normalize(filePath);
+      if (filePath.includes('../') || filePath.includes('..\\')) {
+        await trace.record({
+          agent: agentId,
+          action: 'WRITE_CODE',
+          input: { filePath, content: newContent },
+          output: 'Path traversal detected',
+          status: 'error',
+          depth,
+        });
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError writing ${filePath}: Path traversal detected`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      }
+
+      const writeDecision = await authorizeOperation({
+        agent: agentContext,
+        operation: 'write',
+        filePath,
+        content: newContent,
+        metadata: { agentTitle: agent.role },
+      });
+      if (!writeDecision.allowed) {
+        await trace.record({
+          agent: agentId,
+          action: 'WRITE_CODE',
+          input: { filePath, content: newContent },
+          output: writeDecision.reason,
+          status: 'blocked',
+          depth,
+        });
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nGovernance blocked WRITE_CODE on ${filePath}: ${writeDecision.reason}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      }
+
+      printInfo(chalk.green(`\n💾 \${agent.name} is writing to \${filePath}...`));
+      await dashboardNotifier.sendLog(`@\${agentName} is writing to \${filePath}`, 'success');
+      try {
+        const fullPath = path.resolve(process.cwd(), filePath);
+        // Additional check to ensure path is within project directory
+        if (!fullPath.startsWith(process.cwd())) {
+          await trace.record({
+            agent: agentId,
+            action: 'WRITE_CODE',
+            input: { filePath, content: newContent },
+            output: 'Path outside project root',
+            status: 'error',
+            depth,
+          });
+          return await runAgentLoop(
+            agentName,
+            `${task}\n\nError writing ${filePath}: Path outside project root`,
+            provider,
+            projectContext,
+            depth + 1
+          );
+        }
+
+        // Prevent writing to sensitive files
+        const forbiddenPaths = ['.git', 'node_modules', '.env', 'package-lock.json'];
+        const pathParts = fullPath.split(path.sep);
+        if (pathParts.some((part) => forbiddenPaths.includes(part))) {
+          await trace.record({
+            agent: agentId,
+            action: 'WRITE_CODE',
+            input: { filePath, content: newContent },
+            output: 'Cannot write to sensitive file',
+            status: 'blocked',
+            depth,
+          });
+          return await runAgentLoop(
+            agentName,
+            `${task}\n\nError writing ${filePath}: Cannot write to sensitive file`,
+            provider,
+            projectContext,
+            depth + 1
+          );
+        }
+
+        await fs.mkdir(path.dirname(fullPath), { recursive: true });
+        await fs.writeFile(fullPath, newContent, 'utf8');
+        await trace.record({
+          agent: agentId,
+          action: 'WRITE_CODE',
+          input: { filePath, content: newContent },
+          output: `Wrote ${filePath}`,
+          status: 'success',
+          depth,
+        });
+
+        // --- Active Verification Hook ---
+        printInfo(chalk.yellow(`\n🛡️  Running Active Verification Gates...`));
+        const projectDir = process.cwd();
+        const lintRes = await verifyLinting(projectDir);
+        const typeRes = await verifyTypeSafety(projectDir);
+        const secRes = await verifySecurityPatterns(projectDir);
+
+        const failures = [];
+        if (lintRes.status === 'FAIL') failures.push(`Linting Failed: ${lintRes.message}`);
+        if (typeRes.status === 'FAIL') failures.push(`Type Safety Failed: ${typeRes.message}`);
+        if (secRes.status === 'FAIL') failures.push(`Security Check Failed: ${secRes.message}`);
+
+        if (failures.length > 0) {
+          await trace.record({
+            agent: agentId,
+            action: 'VERIFY_CODE',
+            input: filePath,
+            output: failures.join('\n'),
+            status: 'failed',
+            depth,
+            lint: lintRes,
+            typeSafety: typeRes,
+            security: secRes,
+          });
+          printError(`\n❌ Verification Failed!`);
+          failures.forEach((f) => printError(`  - ${f}`));
+
+          // Return failure to agent so it can fix it
+          const errorMsg = `Code written to ${filePath}, BUT verification failed. YOU MUST FIX THIS:\n${failures.join('\n')}`;
+          return await runAgentLoop(
+            agentName,
+            `${task}\n\n${errorMsg}`,
+            provider,
+            projectContext,
+            depth + 1
+          );
+        }
+
+        await trace.record({
+          agent: agentId,
+          action: 'VERIFY_CODE',
+          input: filePath,
+          output: 'Verification Passed',
+          status: 'success',
+          depth,
+          lint: lintRes,
+          typeSafety: typeRes,
+          security: secRes,
+        });
+        printSuccess(`\n✅ Verification Passed`);
+        // --------------------------------
+
+        const nextPrompt = `Successfully wrote ${filePath} and passed verification. Please proceed or delegate verification.`;
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\n${nextPrompt}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      } catch (e) {
+        await trace.record({
+          agent: agentId,
+          action: 'WRITE_CODE',
+          input: { filePath, content: newContent },
+          output: e.message,
+          status: 'error',
+          depth,
+        });
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError writing ${filePath}: ${e.message}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      }
+    }
+
+    if (runShellMatch) {
+      const command = runShellMatch[1];
+      const execDecision = await authorizeOperation({
+        agent: agentContext,
+        operation: 'execute',
+        resourceType: 'shell',
+        command,
+        metadata: { agentTitle: agent.role },
+      });
+      if (!execDecision.allowed) {
+        await trace.record({
+          agent: agentId,
+          action: 'RUN_SHELL',
+          input: command,
+          output: execDecision.reason,
+          status: 'blocked',
+          depth,
+        });
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nGovernance blocked RUN_SHELL "${command}": ${execDecision.reason}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      }
+      printInfo(chalk.yellow(`\n⚡ ${agent.name} is executing shell command: ${command}...`));
+
+      try {
+        const { stdout, stderr } = await execAsync(command);
+        const output = stdout + (stderr ? `\nSTDERR:\n${stderr}` : '');
+        await trace.record({
+          agent: agentId,
+          action: 'RUN_SHELL',
+          input: command,
+          output,
+          status: 'success',
+          depth,
+        });
+        const nextPrompt = `Output of RUN_SHELL "${command}":\n\`\`\`\n${output}\n\`\`\`\n\nPlease proceed with your task.`;
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\n${nextPrompt}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      } catch (e) {
+        await trace.record({
+          agent: agentId,
+          action: 'RUN_SHELL',
+          input: command,
+          output: e.message,
+          status: 'error',
+          depth,
+        });
+        return await runAgentLoop(
+          agentName,
+          `${task}\n\nError executing ${command}: ${e.message}`,
+          provider,
+          projectContext,
+          depth + 1
+        );
+      }
+    }
+
+    if (delegateMatch) {
+      const nextAgent = delegateMatch[1];
+      const nextTask = delegateMatch[2];
+      const delegateDecision = await authorizeOperation({
+        agent: agentContext,
+        operation: 'delegate',
+        metadata: { to: nextAgent, agentTitle: agent.role },
+      });
+      if (!delegateDecision.allowed) {
+        await trace.record({
+          agent: agentId,
+          action: 'DELEGATE',
+          input: nextTask,
+          output: delegateDecision.reason,
+          status: 'blocked',
+          depth,
+          to: nextAgent,
+        });
+        return `${content}\n\n[Governance]: Delegation blocked - ${delegateDecision.reason}`;
+      }
+      printInfo(chalk.cyan(`\n↪️  ${agent.name} is delegating to @${nextAgent}: "${nextTask}"`));
+      const subResult = await runAgentLoop(
+        nextAgent,
+        nextTask,
+        provider,
+        projectContext,
+        depth + 1
+      );
+      await trace.record({
+        agent: agentId,
+        action: 'DELEGATE',
+        input: nextTask,
+        output: subResult,
+        status: 'success',
+        depth,
+        to: nextAgent,
+      });
+      return `${content}\n\n---\n\n## Delegated Result from @${nextAgent}\n${subResult}`;
+    }
+
+    await trace.record({
+      agent: agentId,
+      action: 'FINAL_RESPONSE',
+      input: task,
+      output: content,
+      status: 'success',
+      depth,
+    });
+    return content;
+  } catch (err) {
+    spinner.fail(`${agent.name} failed: ${err.message}`);
+    await trace.record({
+      agent: agentId,
+      action: 'ERROR',
+      input: task,
+      output: err.message,
+      status: 'error',
+      depth,
+    });
+    try {
+      await recordAgentPerformance({
+        agent: agentId,
+        durationMs: Date.now() - startedAt,
+        success: false,
+        task,
+        provider: providerInstance?.getName?.() || 'provider',
+      });
+      await recordError({
+        message: err.message,
+        command: 'run',
+        stack: err.stack,
+        metadata: { agent: agentId },
+      });
+    } catch {
+      // ignore analytics failures
+    }
+    return `[Error]: ${err.message}`;
+  }
+}
+
+function buildAgentContext(agentId, agent) {
+  return {
+    id: agentId,
+    name: agent?.name || agentId,
+    roleId: agentId,
+    title: agent?.role,
+  };
+}
+
+async function createAgentProviderFactory(providerId, options = {}) {
+  const cache = new Map();
+  return async (agentId) => {
+    const key = agentId.toLowerCase();
+    if (cache.has(key)) return cache.get(key);
+    const agent = AGENTS[key];
+    const agentContext = buildAgentContext(key, agent);
+    const provider = await createProvider(providerId, { ...options, agent: agentContext });
+    cache.set(key, provider);
+    return provider;
+  };
+}
+
+export function registerRunCommand(program) {
+  program
+    .command('run <agent>')
+    .description('Execute an agent task automatically')
+    .option('-t, --task <task>', 'Task to execute')
+    .option('-p, --provider <provider>', 'AI provider')
+    .option('-k, --key <apiKey>', 'API key')
+    .option('-o, --output <file>', 'Output file')
+    .option('--stream', 'Stream output in real-time')
+    .option('--no-stream', 'Disable streaming')
+    .option('--cache', 'Use response caching to reduce API costs')
+    .action(async (agentName, options) => {
+      try {
+        const configured = checkConfiguredProviders();
+        const hasProvider = configured.some((p) => p.configured) || options.key;
+
+        if (!hasProvider) {
+          printWarning('\n⚠️  No AI provider configured.\n');
+          printInfo('To use AI agents, configure one of these:');
+          printInfo('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude');
+          printInfo('  export OPENAI_API_KEY=sk-...         # OpenAI');
+          printInfo('  export GOOGLE_AI_KEY=...             # Gemini');
+          printInfo('\nOr use local AI with Ollama (no key needed):');
+          printInfo('  ultra-dex run planner -t "task" --provider ollama\n');
+          return;
+        }
+
+        let task = options.task;
+        if (!task) {
+          const { taskInput } = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'taskInput',
+              message: `Task for ${agentName}?`,
+            },
+          ]);
+          task = taskInput;
+        }
+
+        const context = await readProjectContext();
+        const trace = ensureExecutionTrace(context, {
+          command: 'run',
+          rootAgent: agentName,
+          task,
+        });
+        printInfo(`Execution trace run_id: ${trace.runId}`);
+        const providerId = options.provider || getDefaultProvider();
+        const providerFactory = await createAgentProviderFactory(providerId, {
+          apiKey: options.key,
+          maxTokens: 8000,
+        });
+
+        const finalOutput = await runAgentLoop(agentName, task, providerFactory, context);
+
+        if (options.output) {
+          await fs.writeFile(options.output, finalOutput);
+          printSuccess(`\n✅ Saved to ${options.output}`);
+        }
+      } catch (error) {
+        printError(`Error in run command: ${error.message}`);
+        process.exit(1);
+      }
+    });
+}
+
+export function registerSwarmCommand(program) {
+  program
+    .command('swarm <feature>')
+    .description('Run a full agent swarm for a feature')
+    .option('-p, --provider <provider>', 'AI provider')
+    .option('-k, --key <apiKey>', 'API key')
+    .action(async (feature, options) => {
+      try {
+        printInfo(chalk.cyan('\n🐝 Ultra-Dex Agent Swarm\n'));
+        const context = await readProjectContext();
+        const trace = ensureExecutionTrace(context, {
+          command: 'swarm',
+          rootAgent: 'planner',
+          task: feature,
+        });
+        printInfo(`Execution trace run_id: ${trace.runId}`);
+        const providerId = options.provider || getDefaultProvider();
+        const providerFactory = await createAgentProviderFactory(providerId, {
+          apiKey: options.key,
+          maxTokens: 8000,
+        });
+
+        printInfo(chalk.bold('Step 1: 📋 @Planner breaking down feature...'));
+        const plan = await runAgentLoop('planner', feature, providerFactory, context);
+
+        printInfo(chalk.bold('\nStep 2: 🏗️  @CTO reviewing architecture...'));
+        await runAgentLoop('cto', `Review plan:\n${plan}`, providerFactory, context);
+      } catch (error) {
+        printError(`Error in swarm command: ${error.message}`);
+        process.exit(1);
+      }
+    });
+}
+
+export default { registerRunCommand, registerSwarmCommand };

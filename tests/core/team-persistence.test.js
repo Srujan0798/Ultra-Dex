@@ -2,7 +2,7 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
 import fs from 'fs/promises';
 import path from 'path';
-import TeamManager from '../../src/core/team/team-manager.js';
+import { TeamManager } from '../../src/core/team/team-manager.js';
 
 describe('TeamManager Persistence', () => {
   let teamManager;

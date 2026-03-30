@@ -9,10 +9,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
-const cliPath = path.resolve(process.cwd(), 'cli/bin/ultra-dex.js');
+const cliPath = path.resolve(process.cwd(), 'bin/ultra-dex-cli.js');
+const bootstrapPath = path.resolve(process.cwd(), 'bin/ultra-dex.js');
 
 function runCli(args, options = {}) {
-  const result = spawnSync(process.execPath, [cliPath, ...args], {
+  const result = spawnSync(process.execPath, ['--import', bootstrapPath, cliPath, ...args], {
     cwd: options.cwd ?? process.cwd(),
     env: { ...process.env, FORCE_COLOR: '0', LOG_LEVEL: 'silent', ...options.env },
     encoding: 'utf8',

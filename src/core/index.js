@@ -9,7 +9,7 @@
 // ── Original Core ───────────────────────────────────────────────────────
 import { aiMetaLayer } from './ai/ai-meta-layer.js';
 import { agentOrchestrator } from './orchestration/index.js';
-import { ppmManager } from './memory/manager.js';
+import { ppmManager } from './memory/index.js';
 
 import { HealthService, HealthCheck } from './system/health-service.js';
 

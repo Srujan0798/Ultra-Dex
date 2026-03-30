@@ -125,8 +125,15 @@ Available commands:
 async function readProjectContext() {
   const context = {};
 
-  const planPromise = fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => null);
-  const contextPromise = fs.readFile('CONTEXT.md', 'utf8').catch(() => null);
+  // Fast path for mock mode - skip heavy operations
+  const isMockMode = process.env.MOCK_AI_PROVIDERS === 'true' || process.env.MOCK_AI === 'true';
+  
+  const planPromise = isMockMode 
+    ? Promise.resolve(null) 
+    : fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => null);
+  const contextPromise = isMockMode
+    ? Promise.resolve(null)
+    : fs.readFile('CONTEXT.md', 'utf8').catch(() => null);
   const statePromise = (async () => {
     try {
       return JSON.parse(await fs.readFile('.ultra/state.json', 'utf8'));
@@ -139,15 +146,19 @@ async function readProjectContext() {
     }
   })();
 
-  // Graph Scan (God Mode)
-  const graphPromise = (async () => {
-    try {
-      await projectGraph.scan();
-      return projectGraph.getSummary();
-    } catch (e) {
-      return null;
-    }
-  })();
+  // Graph Scan (God Mode) - skip in mock mode for speed
+  const graphPromise = isMockMode
+    ? Promise.resolve(null)
+    : (async () => {
+        try {
+          // Race graph scan against a 2s timeout to prevent blocking
+          const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 2000));
+          const scan = projectGraph.scan().then(() => projectGraph.getSummary());
+          return await Promise.race([scan, timeout]);
+        } catch (e) {
+          return null;
+        }
+      })();
 
   const [plan, ctx, state, graph] = await Promise.all([
     planPromise,
@@ -564,8 +575,9 @@ export async function runAgentLoop(
           return await providerInstance.generate(agent.systemPrompt, prompt);
         },
         {
-          maxRetries: 2,
+          maxRetries: process.env.MOCK_AI === 'true' ? 0 : 2,
           retryDelay: 2000,
+          timeout: process.env.MOCK_AI === 'true' ? 5000 : 30000,
         }
       );
 

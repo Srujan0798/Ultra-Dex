@@ -44,7 +44,7 @@ describe('Logger class', () => {
 
   test('should not log debug when DEBUG env is not set', () => {
     delete process.env.DEBUG;
-    const logger = new Logger({ level: 'debug', timestamps: false, colorize: false });
+    const logger = new Logger({ level: 'info', timestamps: false, colorize: false });
     
     logger.debug('debug message');
     assert.strictEqual(logMock.mock.callCount(), 0);

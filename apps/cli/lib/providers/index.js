@@ -47,11 +47,8 @@ const PROVIDERS = {
   },
   mock: {
     getMockClass: async () => {
-      if (process.env.NODE_ENV === 'test' || process.env.MOCK_AI_PROVIDERS === 'true') {
-        const mockModule = await import('./mock.js');
-        return mockModule.MockOpenAI;
-      }
-      return OpenAIProvider; // Fallback to OpenAI in prod
+      const mockModule = await import('./mock.js');
+      return mockModule.MockOpenAI;
     },
     envKey: null,
     name: 'Mock Provider (Testing)',
@@ -79,6 +76,11 @@ export function getAvailableProviders() {
  * @returns {Promise<BaseProvider>}
  */
 export async function createProvider(providerId, options = {}) {
+  // Global Mock Override
+  if (process.env.MOCK_AI === 'true') {
+    providerId = 'mock';
+  }
+
   // Ensure resilience system is initialized
   await orchestrator.initialize();
 

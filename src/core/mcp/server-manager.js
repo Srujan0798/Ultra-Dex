@@ -561,6 +561,27 @@ class MCPServerManager extends EventEmitter {
   _generateRequestId() {
     return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
+
+  /**
+   * Run a tool on the MCP server
+   * @param {string} toolName - Tool name to run
+   * @param {Object} args - Tool arguments
+   * @returns {Promise<Object>} Tool execution result
+   */
+  async run(toolName, args = {}) {
+    const tool = this.tools.get(toolName);
+    if (!tool) {
+      throw new Error(`Tool '${toolName}' not found`);
+    }
+    
+    this.metrics.toolCalls++;
+    
+    if (typeof tool.handler === 'function') {
+      return await tool.handler(args);
+    }
+    
+    return { result: 'Tool executed', tool: toolName, args };
+  }
 }
 
 export { MCPServerManager };

@@ -166,6 +166,15 @@ class ErrorRecoveryManager {
    */
   async executeWithRecovery(serviceName, operation, options = {}) {
     const startTime = Date.now();
+
+    // Global MOCK_AI override for recovery logic
+    if (process.env.MOCK_AI === 'true') {
+      options.maxRetries = 0;
+      if (!options.timeout || options.timeout > 5000) {
+        options.timeout = 5000;
+      }
+    }
+
     const recoveryOptions = {
       strategy: options.strategy || RECOVERY_STRATEGIES.RETRY,
       maxRetries: options.maxRetries || 3,

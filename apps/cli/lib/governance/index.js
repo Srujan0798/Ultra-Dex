@@ -5,6 +5,7 @@
  * Enforces security, role-based access, and constitutional AI rules
  */
 
+import fs from 'fs';
 import path from 'path';
 import {
   ROLE_DEFINITIONS,
@@ -112,20 +113,45 @@ export class GovernanceEngine {
    * Check if path is sensitive
    */
   isSensitivePath(filePath) {
-    const relPath = path.isAbsolute(filePath)
-      ? path.relative(this.projectRoot, filePath)
-      : filePath;
-    return SENSITIVE_PATH_PATTERNS.some(
-      (pattern) => pattern.test(relPath) || pattern.test('/' + relPath)
-    );
+    try {
+      const resolved = path.resolve(this.projectRoot, filePath);
+      // Resolve symlinks to their real path
+      const realPath = fs.existsSync(resolved) ? fs.realpathSync(resolved) : resolved;
+      const relPath = path.isAbsolute(realPath)
+        ? path.relative(this.projectRoot, realPath)
+        : realPath;
+      return SENSITIVE_PATH_PATTERNS.some(
+        (pattern) => pattern.test(relPath) || pattern.test('/' + relPath)
+      );
+    } catch {
+      // If realpathSync fails, fall back to normal path check
+      const relPath = path.isAbsolute(filePath)
+        ? path.relative(this.projectRoot, filePath)
+        : filePath;
+      return SENSITIVE_PATH_PATTERNS.some(
+        (pattern) => pattern.test(relPath) || pattern.test('/' + relPath)
+      );
+    }
   }
 
   /**
    * Check if path is safe (within project root)
    */
   isPathSafe(filePath) {
-    const resolved = path.resolve(this.projectRoot, filePath);
-    return resolved.startsWith(this.projectRoot);
+    try {
+      const resolved = path.resolve(this.projectRoot, filePath);
+      // Get real project root path
+      const realProjectRoot = fs.existsSync(this.projectRoot) 
+        ? fs.realpathSync(this.projectRoot) 
+        : this.projectRoot;
+      // Resolve symlinks to their real path
+      const realPath = fs.existsSync(resolved) ? fs.realpathSync(resolved) : resolved;
+      return realPath.startsWith(realProjectRoot);
+    } catch {
+      // If realpathSync fails (e.g., file doesn't exist), fall back to path resolution
+      const resolved = path.resolve(this.projectRoot, filePath);
+      return resolved.startsWith(this.projectRoot);
+    }
   }
 
   /**
@@ -311,7 +337,8 @@ export async function authorizeOperation({
 
 export function enforceAgentExecution({ agent, providerId, task, systemPrompt, userPrompt } = {}) {
   const roleId = agent?.roleId || agent?.id || 'default';
-  const target = providerId || 'ai';
+  // All AI providers are authorized under 'ai' execution target
+  const target = 'ai';
 
   const decision = governance.authorize(roleId, 'execute', target);
   if (!decision.allowed) {

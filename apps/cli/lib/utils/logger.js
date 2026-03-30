@@ -205,18 +205,22 @@ class Logger {
    */
   formatMessage(level, message, meta = {}) {
     const theme = this.getTheme();
-    const colorFn = theme[level] || chalk.white;
+    // Use theme function if it's a custom theme OR if colorize is true.
+    // If colorize is false and it's a standard theme, use identity to avoid ANSI codes.
+    const useStyling = this._customTheme || this.colorize;
+    const colorFn = (useStyling && theme[level]) ? theme[level] : (val) => val;
     const icon = LEVEL_ICONS[level] || '';
     const safeMeta = normalizeMeta(meta);
     const parts = [];
 
     if (this.timestamps) {
       const timestamp = new Date().toISOString();
-      parts.push(theme.muted(`[${timestamp}]`));
+      const ts = `[${timestamp}]`;
+      parts.push(this.colorize ? theme.muted(ts) : ts);
     }
 
     if (this.prefix) {
-      parts.push(theme.muted(this.prefix));
+      parts.push(this.colorize ? theme.muted(this.prefix) : this.prefix);
     }
 
     if (icon && this.colorize) {
@@ -226,11 +230,13 @@ class Logger {
     parts.push(colorFn(message));
 
     if (safeMeta.detail) {
-      parts.push(theme.muted(`· ${safeMeta.detail}`));
+      const detailStr = `· ${safeMeta.detail}`;
+      parts.push(this.colorize ? theme.muted(detailStr) : detailStr);
     }
 
-    if (safeMeta.context && this.colorize) {
-      parts.push(theme.muted(`(${safeMeta.context})`));
+    if (safeMeta.context) {
+      const contextStr = `(${safeMeta.context})`;
+      parts.push(this.colorize ? theme.muted(contextStr) : contextStr);
     }
 
     const extraMeta = { ...safeMeta };
@@ -238,7 +244,8 @@ class Logger {
     delete extraMeta.context;
 
     if (Object.keys(extraMeta).length > 0) {
-      parts.push(theme.dim(JSON.stringify(extraMeta)));
+      const extraStr = JSON.stringify(extraMeta);
+      parts.push(this.colorize ? theme.dim(extraStr) : extraStr);
     }
 
     return parts.join(' ');
@@ -512,6 +519,14 @@ class Logger {
   }
 
   /**
+   * Print raw output without level formatting (bypasses log level filtering)
+   */
+  print(message) {
+    console.log(message);
+    return { message, printed: true };
+  }
+
+  /**
    * Log data in a simple table format
    */
   table(data) {
@@ -577,17 +592,20 @@ class Logger {
     const prefixParts = [];
 
     if (this.timestamps) {
-      prefixParts.push(theme.muted(`[${event.timestamp}]`));
+      const ts = `[${event.timestamp}]`;
+      prefixParts.push(this.colorize ? theme.muted(ts) : ts);
     }
 
     if (this.prefix) {
-      prefixParts.push(theme.muted(this.prefix));
+      prefixParts.push(this.colorize ? theme.muted(this.prefix) : this.prefix);
     }
 
-    let output = [...prefixParts, icon, theme.success(event.message || '')].join(' ');
+    const message = event.message || '';
+    let output = [...prefixParts, icon, this.colorize ? theme.success(message) : message].join(' ');
 
     if (event.data?.detail) {
-      output += ' ' + theme.muted(`· ${event.data.detail}`);
+      const detailStr = `· ${event.data.detail}`;
+      output += ' ' + (this.colorize ? theme.muted(detailStr) : detailStr);
     }
 
     console.log(output);
@@ -595,7 +613,9 @@ class Logger {
 
   _writeStepConsoleEvent(event) {
     const theme = this.getTheme();
-    console.log(`  ${theme.muted(`[${event.data?.step}/${event.data?.total}]`)} ${event.message || ''}`);
+    const stepInfo = `[${event.data?.step}/${event.data?.total}]`;
+    const stepStr = this.colorize ? theme.muted(stepInfo) : stepInfo;
+    console.log(`  ${stepStr} ${event.message || ''}`);
   }
 
   _writeHeaderConsoleEvent(event) {

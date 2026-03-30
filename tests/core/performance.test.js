@@ -57,13 +57,13 @@ describe('Performance System Verification', () => {
     });
 
     it('should analyze a simple query', async () => {
-      const result = databaseOptimizer.optimizeQuery('SELECT * FROM agents WHERE status = "active"');
+      const result = await databaseOptimizer.optimizeQuery('SELECT * FROM agents WHERE status = "active"');
       assert.ok(result.analysis, 'Should have analysis result');
       assert.ok(Array.isArray(result.analysis.suggestions), 'Should have suggestions array');
     });
 
     it('should identify SELECT * anti-pattern', async () => {
-      const result = databaseOptimizer.optimizeQuery('SELECT * FROM memory');
+      const result = await databaseOptimizer.optimizeQuery('SELECT * FROM memory');
       const hasSelectAllSuggestion = result.analysis.suggestions.some(
         s => s.appliesTo === 'selectAll'
       );

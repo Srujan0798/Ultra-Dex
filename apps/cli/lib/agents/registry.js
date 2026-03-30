@@ -1,32 +1,17 @@
-// Copyright (c) 2026 Ultra-Dex
-
-import { AGENTS } from '../commands/agents.js';
-
 /**
- * Get a copy of all registered agents
- * @returns {Array<Object>} Array of agent definitions
+ * Registry Re-export (Backward Compatibility)
  */
-export function listAgents() {
-  return AGENTS.slice();
-}
 
-/**
- * Get names of all registered agents
- * @returns {Array<string>} Array of agent names
- */
-export function listAgentNames() {
-  return AGENTS.map((agent) => agent.name);
-}
+import { registry } from '../../../../src/core/agents/unified-registry.js';
+import { AGENTS as BUILTIN_AGENTS } from '../commands/agents.js';
 
-/**
- * Look up an agent by name (case-insensitive)
- * @param {string} name - Agent name to search for
- * @returns {Object|null} Agent definition or null if not found
- */
-export function getAgentByName(name) {
-  if (!name) return null;
-  return AGENTS.find((agent) => agent.name.toLowerCase() === name.toLowerCase()) || null;
-}
+// Initialize with built-in agents
+registry.initialize(BUILTIN_AGENTS);
+
+export const listAgents = () => registry.list();
+export const listAgentNames = () => registry.listAgentNames();
+export const getAgentByName = (name) => registry.get(name);
+export const AGENTS = BUILTIN_AGENTS;
 
 export default {
   listAgents,
@@ -34,17 +19,3 @@ export default {
   getAgentByName,
   AGENTS,
 };
-
-/**
- * Handle errors in registry module
- * @param {Error} error - The error to handle
- * @param {string} [context='registry'] - Error context
- */
-function handleModuleError(error, context = 'registry') {
-  try {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
-  } catch (_) {
-    // Fail silently
-  }
-}

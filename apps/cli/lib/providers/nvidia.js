@@ -62,14 +62,9 @@ export class NVIDIAProvider {
       const res = await client.chat.completions.create({
         model,
         messages,
-        temperature: options.temperature || this.options.temperature || 1.0,
+        temperature: options.temperature || this.options.temperature || 0.7,
         top_p: options.topP || this.options.topP || 0.95,
-        max_tokens: options.maxTokens || this.options.maxTokens || 4096,
-        extra_body: {
-          chat_template_kwargs: {
-            enable_thinking: options.enableThinking ?? true,
-          },
-        },
+        max_tokens: options.maxTokens || this.options.maxTokens || 1024,
       });
 
       return {
