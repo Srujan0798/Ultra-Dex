@@ -5,6 +5,8 @@
  * All providers (Claude, OpenAI, Gemini) must implement this interface
  */
 
+import { logger } from '../utils/logger.js';
+
 export class BaseProvider {
   constructor(apiKey, options = {}) {
     if (new.target === BaseProvider) {
@@ -141,7 +143,12 @@ async function safeExecute(fn, context = 'base') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error('providers.base.safe_execute_failed', {
+      run_id: process.env.ULTRA_DEX_RUN_ID,
+      module: 'providers.base',
+      context,
+      detail: message,
+    });
     return null;
   }
 }

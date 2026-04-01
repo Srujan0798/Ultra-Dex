@@ -70,7 +70,6 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
   const prompt = `${contextSection}## Task\n${task}\n\nYou can use tools by outputting:
 >> READ_CODE: "filePath"
 >> WRITE_CODE: "filePath" "fullContent"
->> SEARCH_CODE: "query"
 >> RUN_SHELL: "command"
 >> DELEGATE: @AgentName "Task"`;
 
@@ -241,7 +240,6 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     // Legacy parsing for backward compatibility
     const readMatch = content.match(/>>\s*READ_CODE:\s*["'](.+?)["']/);
     const writeMatch = content.match(/>>\s*WRITE_CODE:\s*["'](.+?)["']\s*["']([\s\S]+?)["']/);
-    const _searchMatch = content.match(/>>\s*SEARCH_CODE:\s*["'](.+?)["']/);
     const runShellMatch = content.match(/>>\s*RUN_SHELL:\s*["'](.+?)["']/);
     const delegateMatch = content.match(/>>\s*DELEGATE:\s*@(\w+)\s*["'](.+?)["']/);
 

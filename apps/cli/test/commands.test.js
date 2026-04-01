@@ -528,10 +528,12 @@ describe('agents marketplace (v3.4)', () => {
 // v3.4 STREAMING & RUN OPTIONS
 // ===============================
 describe('run command options (v3.4)', () => {
-  test('run --help shows stream option', () => {
+  test('run --help omits inactive flags', () => {
     const result = runCli(['run', '--help']);
     assert.equal(result.status, 0);
-    assert.match(result.output, /--stream/i);
+    assert.doesNotMatch(result.output, /--stream/i);
+    assert.doesNotMatch(result.output, /--cache/i);
+    assert.match(result.output, /--max-steps/i);
   });
 
   test('run command shows provider configuration notice', () => {

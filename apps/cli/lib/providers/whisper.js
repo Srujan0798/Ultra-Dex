@@ -7,6 +7,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { logger } from '../utils/logger.js';
 
 export class WhisperProvider {
   constructor(apiKey) {
@@ -53,7 +54,12 @@ async function safeExecute(fn, context = 'whisper') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error('providers.whisper.safe_execute_failed', {
+      run_id: process.env.ULTRA_DEX_RUN_ID,
+      module: 'providers.whisper',
+      context,
+      detail: message,
+    });
     return null;
   }
 }

@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 
-const TOOL_PATTERN = />>\s*(READ_CODE|WRITE_CODE|SEARCH_CODE|RUN_SHELL|DELEGATE)\s*:/i;
+const TOOL_PATTERN = />>\s*(READ_CODE|WRITE_CODE|RUN_SHELL|DELEGATE)\s*:/i;
 
 export function truncateText(value, maxChars = 600) {
   if (value === undefined || value === null) return '';

@@ -24,11 +24,12 @@ const RECOVERY_STRATEGIES = {
 };
 
 function emitRecoveryEvent(type, level, message, payload = {}) {
-  void logger.event(type, payload, {
-    level,
-    message,
-    console: false,
-    source: 'error-recovery',
+  const writer = typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
+  writer(type, {
+    run_id: process.env.ULTRA_DEX_RUN_ID,
+    module: 'error-recovery',
+    detail: message,
+    ...payload,
   });
 }
 

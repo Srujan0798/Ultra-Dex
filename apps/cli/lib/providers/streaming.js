@@ -9,6 +9,7 @@ import { streamText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { logger } from '../utils/logger.js';
 
 const PROVIDER_MAP = {
   openai: {
@@ -126,7 +127,12 @@ async function safeExecute(fn, context = 'streaming') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error('providers.streaming.safe_execute_failed', {
+      run_id: process.env.ULTRA_DEX_RUN_ID,
+      module: 'providers.streaming',
+      context,
+      detail: message,
+    });
     return null;
   }
 }

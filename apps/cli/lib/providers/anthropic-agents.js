@@ -6,9 +6,17 @@
  * This is the future of AI-powered development
  */
 
-import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
+import { logger } from '../utils/logger.js';
+
+function logProvider(level, event, metadata = {}) {
+  const writer = typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
+  writer(event, {
+    run_id: process.env.ULTRA_DEX_RUN_ID,
+    ...metadata,
+  });
+}
 
 // ============================================================================
 // AGENT SDK CONFIGURATION
@@ -403,8 +411,11 @@ export class AutonomousAgent {
     }
 
     if (this.verbose) {
-      console.log(chalk.cyan(`\n🤖 ${this.type.toUpperCase()} Agent starting...`));
-      console.log(chalk.gray(`Task: ${task}\n`));
+      logProvider('info', 'providers.anthropic_agents.start', {
+        agent: this.type,
+        module: 'providers.anthropic-agents',
+        task: String(task || '').slice(0, 160),
+      });
     }
 
     const messages = [{ role: 'user', content: task }];
@@ -416,7 +427,12 @@ export class AutonomousAgent {
       turn++;
 
       if (this.verbose) {
-        console.log(chalk.gray(`--- Turn ${turn}/${this.maxTurns} ---`));
+        logProvider('info', 'providers.anthropic_agents.turn', {
+          agent: this.type,
+          step: turn,
+          module: 'providers.anthropic-agents',
+          max_turns: this.maxTurns,
+        });
       }
 
       // Call the model
@@ -429,11 +445,12 @@ export class AutonomousAgent {
 
         for (const toolCall of response.toolCalls) {
           if (this.verbose) {
-            console.log(
-              chalk.yellow(
-                `  🔧 ${toolCall.name}(${JSON.stringify(toolCall.input).slice(0, 50)}...)`
-              )
-            );
+            logProvider('info', 'providers.anthropic_agents.tool_call', {
+              agent: this.type,
+              step: turn,
+              module: 'providers.anthropic-agents',
+              tool: toolCall.name,
+            });
           }
 
           const result = await executeTool(toolCall.name, toolCall.input, { workdir });
@@ -473,7 +490,11 @@ export class AutonomousAgent {
         finalResult = response.content;
 
         if (this.verbose) {
-          console.log(chalk.green(`\n✅ Agent completed`));
+          logProvider('info', 'providers.anthropic_agents.completed', {
+            agent: this.type,
+            step: turn,
+            module: 'providers.anthropic-agents',
+          });
         }
 
         break;
@@ -521,8 +542,11 @@ export class AutonomousAgent {
 export async function runAutonomousSwarm(task, options = {}) {
   const { provider, workdir = process.cwd(), verbose = false } = options;
 
-  console.log(chalk.cyan('\n🐝 Ultra-Dex Autonomous Swarm\n'));
-  console.log(chalk.bold(`Task: ${task}\n`));
+  logProvider('info', 'providers.anthropic_agents.swarm_start', {
+    agent: 'orchestrator',
+    module: 'providers.anthropic-agents',
+    task: String(task || '').slice(0, 160),
+  });
 
   // Start with orchestrator
   const orchestrator = new AutonomousAgent('orchestrator', {
@@ -532,10 +556,12 @@ export async function runAutonomousSwarm(task, options = {}) {
 
   const result = await orchestrator.run(task, { provider, workdir });
 
-  console.log(chalk.cyan('\n📊 Swarm Summary:'));
-  console.log(`  Turns: ${result.turns}`);
-  console.log(`  Tools used: ${result.toolsUsed}`);
-  console.log(chalk.green(`\n✅ Swarm completed`));
+  logProvider('info', 'providers.anthropic_agents.swarm_summary', {
+    agent: 'orchestrator',
+    module: 'providers.anthropic-agents',
+    turns: result.turns,
+    tools_used: result.toolsUsed,
+  });
 
   return result;
 }

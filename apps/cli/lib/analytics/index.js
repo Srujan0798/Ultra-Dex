@@ -37,13 +37,28 @@ function normalizeTimestamp(event) {
   return event.data?.timestamp || event.timestamp || new Date().toISOString();
 }
 
+function getAnalyticsEventType(event) {
+  if (event.type === 'analytics.agent_performance') return event.type;
+  if (event.type === 'analytics.token_usage') return event.type;
+  if (event.type === 'analytics.error') return event.type;
+
+  if (event.type === 'log.entry' && typeof event.message === 'string') {
+    if (event.message === 'analytics.agent_performance') return event.message;
+    if (event.message === 'analytics.token_usage') return event.message;
+    if (event.message === 'analytics.error') return event.message;
+  }
+
+  return null;
+}
+
 export function initializeAnalyticsSink() {
   if (analyticsSinkInitialized) return;
 
   logger.subscribe(
     'analytics',
     async (event) => {
-      switch (event.type) {
+      const analyticsEventType = getAnalyticsEventType(event);
+      switch (analyticsEventType) {
         case 'analytics.agent_performance':
           await appendJsonl(getAgentLogPath(), {
             timestamp: normalizeTimestamp(event),
@@ -67,7 +82,7 @@ export function initializeAnalyticsSink() {
       }
     },
     {
-      eventTypes: ['analytics.agent_performance', 'analytics.token_usage', 'analytics.error'],
+      filter: (event) => Boolean(getAnalyticsEventType(event)),
     }
   );
 

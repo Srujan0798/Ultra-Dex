@@ -6,6 +6,7 @@
  */
 
 import { BaseProvider } from './base.js';
+import { logger } from '../utils/logger.js';
 
 class MockProviderBase extends BaseProvider {
   constructor(providerName, options = {}) {
@@ -131,7 +132,12 @@ async function safeExecute(fn, context = 'mock') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error('providers.mock.safe_execute_failed', {
+      run_id: process.env.ULTRA_DEX_RUN_ID,
+      module: 'providers.mock',
+      context,
+      detail: message,
+    });
     return null;
   }
 }
