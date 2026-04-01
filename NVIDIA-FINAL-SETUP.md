@@ -289,3 +289,4 @@ cat .env.local
 **Total models available**: 40+  
 **Publishers**: 12+  
 **One API key = Access to everything!** 🚀
+
