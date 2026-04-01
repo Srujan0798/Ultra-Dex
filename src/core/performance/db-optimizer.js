@@ -146,8 +146,8 @@ export class DatabaseOptimizer {
     // Simple optimizations
     for (const suggestion of analysis.suggestions) {
       if (suggestion.appliesTo === 'selectAll') {
-        // Can't auto-fix without schema, just note it
-        optimized += ' -- TODO: Specify columns instead of SELECT *';
+        // Can't auto-fix without schema knowledge, add warning comment
+        optimized += ' -- WARNING: Consider specifying explicit columns';
       }
     }
 
