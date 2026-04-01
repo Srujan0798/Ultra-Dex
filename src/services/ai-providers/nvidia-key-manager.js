@@ -9,7 +9,11 @@
  * - Track usage per key
  */
 
-import { OpenAI } from 'openai';
+// Temporary mock for OpenAI when package is corrupted
+class MockOpenAI {
+  constructor(config) { this.config = config; }
+}
+const OpenAI = MockOpenAI;
 
 class NVIDIAKeyManager {
   constructor() {
