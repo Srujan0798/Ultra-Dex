@@ -210,4 +210,5 @@ class UnifiedRegistry extends EventEmitter {
 }
 
 export const registry = new UnifiedRegistry();
+export { UnifiedRegistry };
 export default UnifiedRegistry;
