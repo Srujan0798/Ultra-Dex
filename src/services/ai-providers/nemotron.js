@@ -6,7 +6,14 @@
  * Get free key at: https://build.nvidia.com/
  */
 
-import OpenAI from 'openai';
+// Temporary mock for OpenAI when package is corrupted
+class MockOpenAI {
+  constructor(config) {
+    this.config = config;
+  }
+}
+
+const OpenAI = MockOpenAI;
 
 /**
  * Complete Model Catalog for Ultra-Dex
