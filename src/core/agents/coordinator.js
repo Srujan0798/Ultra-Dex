@@ -2,7 +2,7 @@
 // Coordinator - Multi-agent coordination and orchestration
 
 import { EventEmitter } from 'events';
-import BaseAgent from './base-agent.js';
+import { BaseAgent } from './base-agent.js';
 
 export class Coordinator extends BaseAgent {
     constructor(options = {}) {
