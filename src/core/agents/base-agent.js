@@ -69,6 +69,13 @@ export class BaseAgent extends EventEmitter {
   /**
    * Get agent status
    */
+  get status() {
+    return this.state;
+  }
+
+  /**
+   * Get agent status
+   */
   getStatus() {
     return {
       id: this.id,
