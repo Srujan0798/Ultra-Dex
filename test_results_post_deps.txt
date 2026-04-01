@@ -1,0 +1,35 @@
+
+> @ultra-dex/monorepo@6.0.0 test
+> NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/*.test.js tests/integration/*.test.js tests/cli/*.test.js
+
+TAP version 13
+# [safe-fs] Skipping corrupt JSONL line 51 in /private/var/folders/qs/6cjjv3kx74971shdl6zbnyww0000gn/T/ultra-dex-atomic-nq1SLG/.ultra/ledger.jsonl: Expected ',' or '}' after property value in JSON at position 14 (line 1 column 15)
+# Subtest: Atomic writes and corruption recovery
+    # Subtest: ledger partially recovers JSONL when one line is corrupted
+    ok 1 - ledger partially recovers JSONL when one line is corrupted
+      ---
+      duration_ms: 27.370417
+      ...
+    # Subtest: memory recovers from backup instead of returning empty state on corruption
+    ok 2 - memory recovers from backup instead of returning empty state on corruption
+      ---
+      duration_ms: 63.461417
+      ...
+#   🚨 Failed to initialize memory
+#     → Data corruption detected in /private/var/folders/qs/6cjjv3kx74971shdl6zbnyww0000gn/T/ultra-dex-atomic-TCBitp/.ultra/memory.json. Backup recovery was attempted. Manual recovery may be needed.
+    # Subtest: memory throws CorruptionError when corruption cannot be recovered
+    ok 3 - memory throws CorruptionError when corruption cannot be recovered
+      ---
+      duration_ms: 8.034833
+      ...
+    # Subtest: sessionPersistence wraps decision saves in a transaction and rolls back on failure
+    ok 4 - sessionPersistence wraps decision saves in a transaction and rolls back on failure
+      ---
+      duration_ms: 3.381875
+      ...
+    1..4
+ok 1 - Atomic writes and corruption recovery
+  ---
+  duration_ms: 103.574375
+  type: 'suite'
+  ...
