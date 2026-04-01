@@ -19,7 +19,9 @@ describe('Autonomous Integration Tests', () => {
     before(async () => {
         // Initialize components
         coordinator = new Coordinator();
-        agent = new BaseAgent({ name: 'test-autonomous-agent' });
+        agent = new BaseAgent('test-autonomous-agent', { 
+            capabilities: ['test'] // Add test capability
+        });
         memoryManager = new MemoryManager();
         
         await coordinator.initialize();
@@ -51,8 +53,8 @@ describe('Autonomous Integration Tests', () => {
             data: { test: true }
         };
 
-        // Mock the process method for testing
-        agent.process = async (task) => {
+        // Override the onExecute method for testing
+        agent.onExecute = async (task) => {
             return { success: true, task: task.id, result: 'processed' };
         };
 
@@ -62,7 +64,7 @@ describe('Autonomous Integration Tests', () => {
     });
 
     it('should coordinate multiple agents', async () => {
-        const agent2 = new BaseAgent({ name: 'test-agent-2' });
+        const agent2 = new BaseAgent('test-agent-2', { capabilities: ['test'] });
         await agent2.initialize();
         
         coordinator.registerAgent(agent2);
