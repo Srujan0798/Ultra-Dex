@@ -1,249 +1,460 @@
-/**
- * Planning Engine
- * AI-powered goal decomposition into structured task plans
- * @module autonomous/planning-engine
- */
+// Copyright (c) 2026 Ultra-Dex
+// Planning Engine - AI-powered goal decomposition for autonomous loops
 
 import { EventEmitter } from 'events';
+import { createProvider } from '../providers/index.js';
 
 /**
- * Planning Engine for autonomous task decomposition
+ * @typedef {Object} PlanTask
+ * @property {string} id - Unique task identifier
+ * @property {string} description - Human-readable task description
+ * @property {string[]} dependencies - Array of task IDs this task depends on
+ * @property {number} priority - Priority score (1-10, higher = more urgent)
+ * @property {string} complexity - Complexity level: 'low' | 'medium' | 'high' | 'critical'
+ * @property {string} [assignedLane] - Suggested execution lane
+ * @property {Object} [metadata] - Additional task metadata
+ */
+
+/**
+ * @typedef {Object} Plan
+ * @property {string} id - Unique plan identifier
+ * @property {string} goal - Original goal description
+ * @property {PlanTask[]} tasks - Decomposed tasks
+ * @property {Date} createdAt - Plan creation timestamp
+ * @property {Object} metadata - Plan metadata (model, tokens, etc.)
+ */
+
+/**
+ * PlanningEngine - AI-powered planning for autonomous agent loops
+ *
+ * Accepts a goal description and uses AI providers to decompose it into
+ * structured, executable tasks with dependencies and priorities.
+ *
  * @extends EventEmitter
+ * @example
+ * const engine = new PlanningEngine({ provider: 'claude' });
+ * const plan = await engine.generatePlan('Refactor authentication module');
  */
 export class PlanningEngine extends EventEmitter {
   /**
-   * @param {object} options - Engine options
-   * @param {object} options.provider - AI provider instance
-   * @param {number} options.maxRetries - Max retry attempts (default: 3)
-   * @param {number} options.retryDelay - Base delay between retries in ms (default: 1000)
+   * Create a new PlanningEngine
+   * @param {Object} [options={}] - Configuration options
+   * @param {string} [options.provider='claude'] - AI provider to use
+   * @param {string} [options.model] - Specific model override
+   * @param {number} [options.maxRetries=3] - Maximum retry attempts
+   * @param {number} [options.baseDelay=1000] - Base delay for exponential backoff (ms)
+   * @param {number} [options.maxTasks=20] - Maximum tasks per plan
+   * @param {Object} [options.providerInstance] - Pre-initialized provider instance
    */
   constructor(options = {}) {
     super();
-    this.provider = options.provider || null;
-    this.maxRetries = options.maxRetries || 3;
-    this.retryDelay = options.retryDelay || 1000;
-    this.planHistory = [];
+    this.options = {
+      provider: options.provider || 'claude',
+      model: options.model,
+      maxRetries: options.maxRetries ?? 3,
+      baseDelay: options.baseDelay ?? 1000,
+      maxTasks: options.maxTasks ?? 20,
+      providerInstance: options.providerInstance,
+      ...options,
+    };
+
+    this.metrics = {
+      plansGenerated: 0,
+      totalTasks: 0,
+      avgTasksPerPlan: 0,
+      failures: 0,
+      retries: 0,
+    };
+
+    this._provider = null;
   }
 
   /**
-   * Generate a structured plan from a goal description
-   * @param {string} goal - Goal description
-   * @param {object} context - Additional context
-   * @returns {Promise<object>} Structured plan
+   * Initialize the AI provider (lazy loading)
+   * @private
+   * @returns {Promise<Object>} Provider instance
    */
-  async plan(goal, context = {}) {
-    this.emit('plan:start', { goal, context });
-
-    const prompt = this.buildPlanningPrompt(goal, context);
-    let lastError = null;
-
-    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-      try {
-        const response = await this.callProvider(prompt);
-        const plan = this.parsePlanResponse(response, goal);
-        
-        this.planHistory.push({
-          goal,
-          plan,
-          timestamp: new Date().toISOString(),
-          attempts: attempt
-        });
-
-        this.emit('plan:complete', plan);
-        return plan;
-      } catch (error) {
-        lastError = error;
-        this.emit('plan:retry', { attempt, error: error.message });
-        
-        if (attempt < this.maxRetries) {
-          await this.delay(this.retryDelay * Math.pow(2, attempt - 1));
-        }
-      }
+  async _getProvider() {
+    // Use custom provider instance if provided
+    if (this.options.providerInstance) {
+      this._provider = this.options.providerInstance;
+      return this._provider;
     }
 
-    this.emit('plan:error', lastError);
-    throw new Error(`Planning failed after ${this.maxRetries} attempts: ${lastError.message}`);
+    if (!this._provider) {
+      try {
+        this._provider = await createProvider(this.options.provider);
+        this.emit('provider:initialized', { provider: this.options.provider });
+      } catch (error) {
+        this.emit('provider:error', { error: error.message });
+        throw new Error(`Failed to initialize provider: ${error.message}`);
+      }
+    }
+    return this._provider;
   }
 
   /**
-   * Build the planning prompt
+   * Initialize the AI provider (lazy loading)
+   * @private
+   * @returns {Promise<Object>} Provider instance
+   */
+  async _getProvider() {
+    if (!this._provider) {
+      // Use custom provider instance if provided
+      if (this.options.providerInstance) {
+        this._provider = this.options.providerInstance;
+        return this._provider;
+      }
+
+      try {
+        this._provider = await createProvider(this.options.provider);
+        this.emit('provider:initialized', { provider: this.options.provider });
+      } catch (error) {
+        this.emit('provider:error', { error: error.message });
+        throw new Error(`Failed to initialize provider: ${error.message}`);
+      }
+    }
+    return this._provider;
+  }
+
+  /**
+   * Generate a unique plan ID
+   * @private
+   * @returns {string} UUID-like identifier
+   */
+  _generatePlanId() {
+    return `plan_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  }
+
+  /**
+   * Sanitize ID to prevent path traversal attacks
+   * @private
+   * @param {string} inputId - Raw ID from AI response
+   * @returns {string} Sanitized ID
+   * @throws {Error} If ID is empty after sanitization
+   */
+  _sanitizeId(inputId) {
+    if (!inputId || typeof inputId !== 'string') {
+      throw new Error('Invalid ID: must be a non-empty string');
+    }
+
+    // Strip path traversal patterns
+    let sanitized = inputId
+      .replace(/\./g, '_') // Replace dots
+      .replace(/[/\\]/g, '_') // Replace path separators
+      .replace(/[<>:"|?*]/g, '_') // Replace unsafe filename chars
+      .replace(/\s+/g, '_') // Replace whitespace
+      .replace(/_{2,}/g, '_') // Collapse multiple underscores
+      .replace(/^_+|_+$/g, ''); // Trim leading/trailing underscores
+
+    // Limit length
+    sanitized = sanitized.substring(0, 64);
+
+    // Throw if empty after sanitization
+    if (!sanitized) {
+      throw new Error(`ID becomes empty after sanitization: "${inputId}"`);
+    }
+
+    return sanitized;
+  }
+
+  /**
+   * Generate a unique task ID
+   * @private
+   * @param {number} index - Task index
+   * @returns {string} Task identifier
+   */
+  _generateTaskId(index) {
+    return `task_${index + 1}_${Math.random().toString(36).substring(2, 6)}`;
+  }
+
+  /**
+   * Build the planning prompt for the AI
+   * @private
    * @param {string} goal - Goal description
-   * @param {object} context - Additional context
+   * @param {Object} [context={}] - Additional context
    * @returns {string} Formatted prompt
    */
-  buildPlanningPrompt(goal, context) {
-    const contextStr = context.history 
-      ? `\n\nPrevious context:\n${JSON.stringify(context.history, null, 2)}`
+  _buildPlanningPrompt(goal, context = {}) {
+    const contextStr = context.projectType ? `\nProject Type: ${context.projectType}` : '';
+    const constraintsStr = context.constraints?.length
+      ? `\nConstraints: ${context.constraints.join(', ')}`
       : '';
-    
-    return `You are a planning engine. Break down the following goal into atomic, executable tasks.
+    const existingFilesStr = context.existingFiles?.length
+      ? `\nExisting Files: ${context.existingFiles.slice(0, 10).join(', ')}`
+      : '';
+
+    return `You are an expert software architect and project planner. Decompose the following goal into atomic, executable tasks.
 
 GOAL: ${goal}
-${contextStr}
+${contextStr}${constraintsStr}${existingFilesStr}
 
-Return a JSON object with this structure:
+OUTPUT FORMAT (respond with ONLY valid JSON, no markdown):
 {
   "tasks": [
     {
-      "id": "task-1",
-      "description": "Clear description of what to do",
+      "description": "Clear, actionable task description",
       "dependencies": [],
-      "priority": 1-10,
-      "estimatedComplexity": "low|medium|high",
-      "type": "code|research|test|doc|config"
+      "priority": 8,
+      "complexity": "medium",
+      "assignedLane": "gemini",
+      "rationale": "Why this task is needed"
     }
   ],
   "summary": "Brief plan summary",
-  "estimatedDuration": "time estimate"
+  "estimatedEffort": "low|medium|high",
+  "risks": ["potential risk 1"]
 }
 
-Rules:
-- Tasks must be atomic (single action)
-- Dependencies reference other task IDs
-- Higher priority = more important (10 is highest)
-- Order tasks logically
-
-Return ONLY valid JSON.`;
+RULES:
+1. Each task must be atomic (completable in one session)
+2. Dependencies reference task indices (0-based)
+3. Priority: 1-10 (10 = critical/blocking)
+4. Complexity: low, medium, high, critical
+5. Lane suggestions: claude (complex), codex (implementation), gemini (utilities), qwen (repetitive)
+6. Maximum ${this.options.maxTasks} tasks
+7. Order tasks logically (dependencies come first)`;
   }
 
   /**
-   * Call the AI provider
-   * @param {string} prompt - Prompt to send
-   * @returns {Promise<string>} Provider response
-   */
-  async callProvider(prompt) {
-    if (!this.provider) {
-      // Return mock response for testing without provider
-      return JSON.stringify({
-        tasks: [
-          {
-            id: 'task-1',
-            description: 'Analyze requirements',
-            dependencies: [],
-            priority: 10,
-            estimatedComplexity: 'low',
-            type: 'research'
-          },
-          {
-            id: 'task-2',
-            description: 'Implement solution',
-            dependencies: ['task-1'],
-            priority: 8,
-            estimatedComplexity: 'high',
-            type: 'code'
-          },
-          {
-            id: 'task-3',
-            description: 'Write tests',
-            dependencies: ['task-2'],
-            priority: 7,
-            estimatedComplexity: 'medium',
-            type: 'test'
-          }
-        ],
-        summary: 'Standard implementation workflow',
-        estimatedDuration: '2-4 hours'
-      });
-    }
-
-    // Real provider call
-    if (typeof this.provider.complete === 'function') {
-      return await this.provider.complete(prompt);
-    } else if (typeof this.provider.chat === 'function') {
-      const response = await this.provider.chat([{ role: 'user', content: prompt }]);
-      return response.content || response.message?.content || JSON.stringify(response);
-    } else if (typeof this.provider.generate === 'function') {
-      return await this.provider.generate(prompt);
-    }
-
-    throw new Error('Provider does not have a compatible interface');
-  }
-
-  /**
-   * Parse and validate plan response
-   * @param {string} response - Raw response
+   * Parse AI response into structured plan
+   * @private
+   * @param {string} response - Raw AI response
    * @param {string} goal - Original goal
-   * @returns {object} Validated plan
+   * @returns {Plan} Parsed plan object
    */
-  parsePlanResponse(response, goal) {
+  _parseResponse(response, goal) {
+    // Clean response - remove markdown code blocks if present
+    let cleaned = response.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    }
+
     let parsed;
-    
     try {
+      parsed = JSON.parse(cleaned);
+    } catch (e) {
       // Try to extract JSON from response
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         parsed = JSON.parse(jsonMatch[0]);
       } else {
-        parsed = JSON.parse(response);
+        throw new Error('Failed to parse planning response as JSON');
       }
-    } catch (error) {
-      throw new Error(`Failed to parse plan response: ${error.message}`);
     }
 
-    // Validate required fields
     if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
-      throw new Error('Plan must contain tasks array');
+      throw new Error('Invalid plan format: missing tasks array');
     }
 
-    // Enrich with metadata
-    return {
-      id: `plan-${Date.now()}`,
-      goal,
-      tasks: parsed.tasks.map((task, index) => ({
-        id: task.id || `task-${index + 1}`,
-        description: task.description || 'No description',
-        dependencies: task.dependencies || [],
-        priority: task.priority || 5,
-        estimatedComplexity: task.estimatedComplexity || 'medium',
-        type: task.type || 'code',
-        status: 'pending'
-      })),
-      summary: parsed.summary || 'No summary provided',
-      estimatedDuration: parsed.estimatedDuration || 'Unknown',
-      createdAt: new Date().toISOString(),
+    // Transform tasks with IDs
+    const tasks = parsed.tasks.slice(0, this.options.maxTasks).map((task, index) => ({
+      id: this._generateTaskId(index),
+      description: task.description || `Task ${index + 1}`,
+      dependencies: (task.dependencies || []).map((depIdx) =>
+        typeof depIdx === 'number' ? this._generateTaskId(depIdx) : this._sanitizeId(depIdx)
+      ),
+      priority: Math.min(10, Math.max(1, task.priority || 5)),
+      complexity: ['low', 'medium', 'high', 'critical'].includes(task.complexity)
+        ? task.complexity
+        : 'medium',
+      assignedLane: task.assignedLane || 'gemini',
       metadata: {
-        taskCount: parsed.tasks.length,
-        hasParallelizable: this.hasParallelizableTasks(parsed.tasks)
-      }
+        rationale: task.rationale,
+        originalIndex: index,
+      },
+    }));
+
+    // Fix task ID references in dependencies (convert indices to actual IDs)
+    const taskIds = tasks.map((t) => t.id);
+    tasks.forEach((task) => {
+      task.dependencies = task.dependencies.filter((depId) => taskIds.includes(depId));
+    });
+
+    return {
+      id: this._generatePlanId(),
+      goal,
+      tasks,
+      createdAt: new Date(),
+      metadata: {
+        summary: parsed.summary || '',
+        estimatedEffort: parsed.estimatedEffort || 'medium',
+        risks: parsed.risks || [],
+        model: this.options.model || this.options.provider,
+        taskCount: tasks.length,
+      },
     };
   }
 
   /**
-   * Check if plan has parallelizable tasks
-   * @param {Array} tasks - Task list
-   * @returns {boolean}
+   * Sleep for exponential backoff
+   * @private
+   * @param {number} attempt - Current attempt number (0-based)
+   * @returns {Promise<void>}
    */
-  hasParallelizableTasks(tasks) {
-    const taskIds = new Set(tasks.map(t => t.id));
-    return tasks.some(task => 
-      task.dependencies.length === 0 || 
-      task.dependencies.every(dep => !taskIds.has(dep))
+  async _backoff(attempt) {
+    const delay = this.options.baseDelay * Math.pow(2, attempt);
+    const jitter = Math.random() * 0.3 * delay;
+    await new Promise((resolve) => setTimeout(resolve, delay + jitter));
+  }
+
+  /**
+   * Generate a structured plan from a goal description
+   *
+   * @param {string} goal - Goal to decompose into tasks
+   * @param {Object} [context={}] - Additional context for planning
+   * @param {string} [context.projectType] - Type of project
+   * @param {string[]} [context.constraints] - Constraints to consider
+   * @param {string[]} [context.existingFiles] - Existing files in project
+   * @returns {Promise<Plan>} Generated plan with tasks
+   * @throws {Error} If planning fails after all retries
+   *
+   * @example
+   * const plan = await engine.generatePlan('Add user authentication', {
+   *   projectType: 'Node.js API',
+   *   constraints: ['Use JWT', 'No external auth providers']
+   * });
+   */
+  async generatePlan(goal, context = {}) {
+    if (!goal || typeof goal !== 'string') {
+      throw new Error('Goal must be a non-empty string');
+    }
+
+    this.emit('planning:start', { goal, context });
+
+    const prompt = this._buildPlanningPrompt(goal, context);
+    let lastError = null;
+
+    for (let attempt = 0; attempt <= this.options.maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          this.metrics.retries++;
+          this.emit('planning:retry', { attempt, goal });
+          await this._backoff(attempt - 1);
+        }
+
+        const provider = await this._getProvider();
+
+        // Call provider with structured prompt
+        const response = await provider.generate({
+          systemPrompt: 'You are a precise planning assistant. Output only valid JSON.',
+          userPrompt: prompt,
+          options: {
+            temperature: 0.3, // Lower temperature for structured output
+            maxTokens: 2000,
+          },
+        });
+
+        const content =
+          typeof response === 'string'
+            ? response
+            : response?.content || response?.text || JSON.stringify(response);
+
+        const plan = this._parseResponse(content, goal);
+
+        // Update metrics
+        this.metrics.plansGenerated++;
+        this.metrics.totalTasks += plan.tasks.length;
+        this.metrics.avgTasksPerPlan = this.metrics.totalTasks / this.metrics.plansGenerated;
+
+        this.emit('planning:complete', { plan });
+        return plan;
+      } catch (error) {
+        lastError = error;
+        this.emit('planning:error', {
+          attempt,
+          error: error.message,
+          willRetry: attempt < this.options.maxRetries,
+        });
+      }
+    }
+
+    this.metrics.failures++;
+    throw new Error(
+      `Planning failed after ${this.options.maxRetries + 1} attempts: ${lastError?.message}`
     );
   }
 
   /**
-   * Delay helper for retries
-   * @param {number} ms - Milliseconds to wait
-   * @returns {Promise<void>}
+   * Validate an existing plan structure
+   *
+   * @param {Plan} plan - Plan to validate
+   * @returns {{valid: boolean, errors: string[]}} Validation result
    */
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  validatePlan(plan) {
+    const errors = [];
+
+    if (!plan?.id) errors.push('Missing plan ID');
+    if (!plan?.goal) errors.push('Missing goal');
+    if (!Array.isArray(plan?.tasks)) errors.push('Tasks must be an array');
+
+    if (plan?.tasks) {
+      const taskIds = new Set(plan.tasks.map((t) => t.id));
+
+      plan.tasks.forEach((task, index) => {
+        if (!task.id) errors.push(`Task ${index}: missing ID`);
+        if (!task.description) errors.push(`Task ${index}: missing description`);
+
+        // Check for invalid dependencies
+        task.dependencies?.forEach((dep) => {
+          if (!taskIds.has(dep)) {
+            errors.push(`Task ${task.id}: invalid dependency "${dep}"`);
+          }
+        });
+      });
+
+      // Check for circular dependencies
+      const visited = new Set();
+      const recursionStack = new Set();
+
+      const hasCycle = (taskId) => {
+        if (recursionStack.has(taskId)) return true;
+        if (visited.has(taskId)) return false;
+
+        visited.add(taskId);
+        recursionStack.add(taskId);
+
+        const task = plan.tasks.find((t) => t.id === taskId);
+        for (const dep of task?.dependencies || []) {
+          if (hasCycle(dep)) return true;
+        }
+
+        recursionStack.delete(taskId);
+        return false;
+      };
+
+      for (const task of plan.tasks) {
+        if (hasCycle(task.id)) {
+          errors.push(`Circular dependency detected involving task ${task.id}`);
+          break;
+        }
+      }
+    }
+
+    return { valid: errors.length === 0, errors };
   }
 
   /**
-   * Get planning history
-   * @returns {Array} Plan history
+   * Get current planning metrics
+   * @returns {Object} Metrics object
    */
-  getHistory() {
-    return [...this.planHistory];
+  getMetrics() {
+    return { ...this.metrics };
   }
 
   /**
-   * Clear planning history
+   * Reset metrics counters
    */
-  clearHistory() {
-    this.planHistory = [];
+  resetMetrics() {
+    this.metrics = {
+      plansGenerated: 0,
+      totalTasks: 0,
+      avgTasksPerPlan: 0,
+      failures: 0,
+      retries: 0,
+    };
   }
 }
 
 export default PlanningEngine;
+
