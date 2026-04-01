@@ -15,6 +15,7 @@ const envPath = path.join(projectRoot, '.env');
 
 // Load dotenv using CommonJS require (executes immediately, not hoisted)
 const dotenv = require('dotenv');
+const { randomUUID } = require('crypto');
 
 // Load .env.local if exists (override shell env), otherwise .env
 if (fs.existsSync(envLocalPath)) {
@@ -24,6 +25,8 @@ if (fs.existsSync(envLocalPath)) {
 }
 
 process.env.FORCE_COLOR = '3';
+process.env.ULTRA_DEX_RUN_ID =
+  process.env.ULTRA_DEX_RUN_ID || `run_${Date.now()}_${randomUUID().slice(0, 8)}`;
 
 // Now safe to use ES imports - environment is loaded
 
@@ -33,10 +36,8 @@ import boxen from 'boxen';
 import chalk from 'chalk';
 import { setDoomsdayMode } from '../lib/utils/theme-state.js';
 import { VERSION, PACKAGE_NAME } from '../lib/utils/version.js';
-import { formatInfo, formatWarning, formatSuccess } from '../lib/utils/status.js';
 import { initializeUsageSink } from '../lib/enterprise/usage.js';
 import { isTelemetryEnabledSync } from '../lib/utils/telemetry.js';
-import { formatSuggestion } from '../lib/utils/suggestion.js';
 import { analyzeCliInput, getProgramCommandNames } from '../lib/utils/command-routing.js';
 import { logger } from '../lib/utils/logger.js';
 import { initializeAnalyticsSink } from '../lib/analytics/index.js';
@@ -56,6 +57,15 @@ const wantsHelp =
   process.argv.includes('--version') ||
   process.argv.includes('-V');
 
+function logCli(level, event, metadata = {}) {
+  const writer = typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
+  writer(event, {
+    run_id: process.env.ULTRA_DEX_RUN_ID,
+    module: 'cli',
+    ...metadata,
+  });
+}
+
 // Wait for initialization
 if (!wantsHelp) {
   try {
@@ -70,27 +80,20 @@ if (!wantsHelp) {
       installHistoryTracking(),
     ]);
   } catch (error) {
-    process.stderr.write(chalk.red(`Failed to initialize systems: ${error.message}\n`));
+    logCli('error', 'cli.init_failed', {
+      detail: error.message,
+    });
   }
 }
 
 // Log startup
 if (!wantsHelp) {
-  await logger.event(
-    'cli.startup',
-    {
-      version: VERSION,
-      pid: process.pid,
-      nodeVersion: process.version,
-      platform: process.platform,
-    },
-    {
-      level: 'info',
-      message: 'Ultra-Dex CLI starting',
-      console: false,
-      source: 'cli',
-    }
-  );
+  logCli('info', 'cli.startup', {
+    version: VERSION,
+    pid: process.pid,
+    node_version: process.version,
+    platform: process.platform,
+  });
 }
 
 // Check for doomsday flag early
@@ -120,7 +123,11 @@ if (isAcpMode) {
         port: acpPort ? parseInt(acpPort, 10) : 3002,
       });
     } catch (error) {
-      console.error(chalk.red('\n✕ Failed to start ACP Host:'), error.message);
+      logCli('error', 'cli.acp_start_failed', {
+        detail: error.message,
+        acp_http: acpHttp,
+        acp_port: acpPort ? parseInt(acpPort, 10) : 3002,
+      });
       process.exit(1);
     }
   })();
@@ -134,12 +141,11 @@ const pkg = { name: PACKAGE_NAME, version: VERSION };
 const notifier = updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 });
 
 if (notifier.update) {
-  console.log(
-    formatWarning(
-      `Update available! ${notifier.update.current} → ${notifier.update.latest}\n` +
-      `Run ${chalk.cyan('npm install -g ultra-dex')} to update`
-    )
-  );
+  logCli('warn', 'cli.update_available', {
+    current_version: notifier.update.current,
+    latest_version: notifier.update.latest,
+    install_command: 'npm install -g ultra-dex',
+  });
 }
 
 import { banner, registerBannerCommand } from '../lib/commands/banner.js';
@@ -314,26 +320,21 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
     const intent = routeIntent(rawInput);
     
     if (intent && intent !== actionCommand?.name?.()) {
-      await logger.event('nlp.intent_mismatch', {
+      logCli('info', 'nlp.intent_mismatch', {
         parsed: actionCommand?.name?.(),
         detected: intent,
         input: rawInput,
+        command: actionCommand?.name?.(),
         timestamp: Date.now(),
-      }, {
-        console: false,
-        source: 'cli',
       });
     }
     
     // Log successful NLP match
     if (intent && intent === actionCommand?.name?.()) {
-      await logger.event('nlp.intent_match', {
+      logCli('info', 'nlp.intent_match', {
         command: actionCommand?.name?.(),
         input: rawInput,
         timestamp: Date.now(),
-      }, {
-        console: false,
-        source: 'cli',
       });
     }
   } catch (error) {
@@ -341,7 +342,7 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
   }
   
   if (isTelemetryEnabledSync()) {
-    await logger.event('usage.command', {
+    logCli('info', 'usage.command', {
       stage: 'start',
       command: actionCommand?.name?.(),
       args: process.argv.slice(2),
@@ -349,9 +350,7 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
       role: null,
       cwd: process.cwd(),
       pid: process.pid,
-    }, {
-      console: false,
-      source: 'cli',
+      module: 'cli.usage',
     });
   }
 });
@@ -359,15 +358,13 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
 program.hook('postAction', async (thisCommand, actionCommand) => {
   const durationMs = commandStart ? Date.now() - commandStart : null;
   if (isTelemetryEnabledSync()) {
-    await logger.event('usage.command', {
+    logCli('info', 'usage.command', {
       stage: 'end',
       command: actionCommand?.name?.(),
       durationMs,
       success: true,
       cwd: process.cwd(),
-    }, {
-      console: false,
-      source: 'cli',
+      module: 'cli.usage',
     });
   }
   commandStart = null;
@@ -569,31 +566,29 @@ program.on('command:*', () => {
   const resolution = analyzeCliInput(process.argv.slice(2), commandNames);
   const displayInput = resolution.rawInput || process.argv.slice(2).join(' ');
 
-  console.error(chalk.red(`\n✕ Unknown command: ${displayInput}`));
+  logCli('error', 'cli.unknown_command', {
+    input: displayInput,
+  });
 
   if (resolution.typoSuggestion) {
-    process.stderr.write(formatSuggestion(`ultra-dex ${resolution.typoSuggestion}`));
+    logCli('info', 'cli.command_suggestion', {
+      suggestion: `ultra-dex ${resolution.typoSuggestion}`,
+    });
   } else if (resolution.intent) {
     const suggestedCommand = resolution.translatedCommand || `ultra-dex ${resolution.intent}`;
-    console.log(chalk.green(`\n💡 Intent match: ${suggestedCommand}`));
-    console.log(
-      chalk.gray(
-        `   Confidence: ${(resolution.confidence * 100).toFixed(0)}% (${resolution.matchType || 'semantic'})`
-      )
-    );
-
-    if (resolution.alternatives?.length) {
-      console.log(chalk.gray('\n   Other suggestions:'));
-      for (const alt of resolution.alternatives) {
-        console.log(
-          chalk.gray(`     - ultra-dex ${alt.intent} (${(alt.confidence * 100).toFixed(0)}%)`)
-        );
-      }
-    }
-
-    console.log('');
+    logCli('info', 'cli.intent_match_suggestion', {
+      suggested_command: suggestedCommand,
+      confidence: Number((resolution.confidence * 100).toFixed(0)),
+      match_type: resolution.matchType || 'semantic',
+      alternatives: (resolution.alternatives || []).map((alt) => ({
+        intent: alt.intent,
+        confidence: Number((alt.confidence * 100).toFixed(0)),
+      })),
+    });
   } else {
-    console.log(chalk.gray('\n   Run "ultra-dex --help" for available commands.\n'));
+    logCli('info', 'cli.help_hint', {
+      suggestion: 'ultra-dex --help',
+    });
   }
 
   process.exit(1);
@@ -604,7 +599,10 @@ const initialResolution = analyzeCliInput(initialArgs, commandNames);
 
 if (initialResolution.type === 'rewrite') {
   originalCliInput = initialResolution.rawInput;
-  console.log(formatInfo(`Routing "${initialResolution.rawInput}" to ${initialResolution.translatedCommand}`));
+  logCli('info', 'cli.command_rewrite', {
+    input: initialResolution.rawInput,
+    translated_command: initialResolution.translatedCommand,
+  });
   process.argv = [process.argv[0], process.argv[1], ...initialResolution.translatedArgs];
 }
 

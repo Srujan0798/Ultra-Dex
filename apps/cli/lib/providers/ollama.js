@@ -6,6 +6,7 @@
  */
 
 import { BaseProvider } from './base.js';
+import { logger } from '../utils/logger.js';
 
 const MODELS = [
   { id: 'llama3:8b', name: 'Llama 3 (8B)', maxTokens: 8192, default: true },
@@ -173,7 +174,12 @@ export class OllamaProvider extends BaseProvider {
       const data = await response.json();
       return data.embedding;
     } catch (error) {
-      console.warn(`Ollama embedding failed for model ${model}: ${error.message}`);
+      logger.warn('providers.ollama.embedding_failed', {
+        run_id: process.env.ULTRA_DEX_RUN_ID,
+        module: 'providers.ollama',
+        detail: error.message,
+        model,
+      });
       throw error;
     }
   }

@@ -33,6 +33,10 @@ function normalizeCommandName(command) {
 
 let usageSinkInitialized = false;
 
+function isUsageEvent(event) {
+  return event.type === 'usage.command' || (event.type === 'log.entry' && event.message === 'usage.command');
+}
+
 export function initializeUsageSink() {
   if (usageSinkInitialized) return;
 
@@ -48,7 +52,7 @@ export function initializeUsageSink() {
       await appendJsonl(getUsageLogPath(), payload);
     },
     {
-      eventTypes: ['usage.command'],
+      filter: (event) => isUsageEvent(event),
     }
   );
 

@@ -616,7 +616,6 @@ ${answers.prompt}
 ## Available Commands
 - >> READ_CODE: "filePath"
 - >> WRITE_CODE: "filePath" "content"
-- >> SEARCH_CODE: "query"
 - >> DELEGATE: @AgentName "Task"
 `;
 

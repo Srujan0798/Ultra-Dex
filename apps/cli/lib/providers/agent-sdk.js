@@ -6,9 +6,17 @@
  * This transforms Ultra-Dex swarm from prompt-based to SDK-based agents
  */
 
-import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
+import { logger } from '../utils/logger.js';
+
+function logProvider(level, event, metadata = {}) {
+  const writer = typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
+  writer(event, {
+    run_id: process.env.ULTRA_DEX_RUN_ID,
+    ...metadata,
+  });
+}
 
 // ============================================================================
 // AGENT SDK CONFIGURATION
@@ -375,7 +383,11 @@ export class AutonomousAgent {
         iteration++;
 
         if (verbose) {
-          console.log(chalk.gray(`  [${this.name}] Iteration ${iteration}...`));
+          logProvider('info', 'providers.agent_sdk.iteration', {
+            agent: this.name,
+            step: iteration,
+            module: 'providers.agent-sdk',
+          });
         }
 
         const response = await this.provider.generateWithTools(
@@ -393,9 +405,12 @@ export class AutonomousAgent {
         if (response.toolUse && response.toolUse.length > 0) {
           for (const tool of response.toolUse) {
             if (verbose) {
-              console.log(
-                chalk.cyan(`    -> ${tool.name}(${JSON.stringify(tool.input).substring(0, 50)}...)`)
-              );
+              logProvider('info', 'providers.agent_sdk.tool_call', {
+                agent: this.name,
+                step: iteration,
+                module: 'providers.agent-sdk',
+                tool: tool.name,
+              });
             }
 
             const result = await this.executeTool(tool.name, tool.input);
@@ -619,12 +634,19 @@ export class AgentOrchestrator {
     while (maxDelegations > 0) {
       const agent = this.agents.get(currentAgent);
       if (!agent) {
-        console.log(chalk.red(`Agent not found: ${currentAgent}`));
+        logProvider('error', 'providers.agent_sdk.agent_not_found', {
+          agent: currentAgent,
+          module: 'providers.agent-sdk',
+        });
         break;
       }
 
       if (verbose) {
-        console.log(chalk.cyan(`\n[${agent.name}] Starting task...`));
+        logProvider('info', 'providers.agent_sdk.agent_start', {
+          agent: agent.name,
+          module: 'providers.agent-sdk',
+          task: String(currentTask || '').slice(0, 160),
+        });
       }
 
       const result = await agent.run(currentTask, { verbose });

@@ -6,6 +6,7 @@
  */
 
 import { LangChainAdapter } from './langchain.js';
+import { logger } from '../utils/logger.js';
 
 export class LangGraphExecutor {
   constructor(options = {}) {
@@ -58,7 +59,12 @@ export class LangGraphExecutor {
       }
 
       // Execute node
-      console.log(`[LangGraph] Executing node: ${currentNode}`);
+      logger.info('providers.langgraph.node_execute', {
+        run_id: process.env.ULTRA_DEX_RUN_ID,
+        step: iterations,
+        module: 'providers.langgraph',
+        node: currentNode,
+      });
       const result = await this.runNode(currentNode, nodeAction);
 
       // Update state
@@ -110,7 +116,12 @@ async function safeExecute(fn, context = 'langgraph') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error('providers.langgraph.safe_execute_failed', {
+      run_id: process.env.ULTRA_DEX_RUN_ID,
+      module: 'providers.langgraph',
+      context,
+      detail: message,
+    });
     return null;
   }
 }

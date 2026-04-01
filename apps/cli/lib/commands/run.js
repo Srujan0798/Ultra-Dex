@@ -45,6 +45,30 @@ const DEFAULT_MAX_STEPS = 10;
 const MAX_DELEGATION_DEPTH = 5;
 let runtimeStateLock = null;
 
+function getActiveRunId(trace = null) {
+  return trace?.runId || process.env.ULTRA_DEX_RUN_ID || null;
+}
+
+function syncActiveRunId(runId) {
+  if (runId) {
+    process.env.ULTRA_DEX_RUN_ID = runId;
+  }
+  return runId;
+}
+
+function logRun(level, event, metadata = {}) {
+  const writer = typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
+  const { trace = null, run_id, agent, step, module = 'run', ...rest } = metadata;
+
+  writer(event, {
+    run_id: run_id || getActiveRunId(trace),
+    agent,
+    step,
+    module,
+    ...rest,
+  });
+}
+
 const AGENTS = {
   planner: {
     name: '@Planner',
@@ -261,7 +285,12 @@ async function saveRuntimeState(state) {
 }
 
 async function ensureTraceStarted(projectContext, agentId, task) {
-  const trace = ensureExecutionTrace(projectContext, { rootAgent: agentId, task });
+  const trace = ensureExecutionTrace(projectContext, {
+    runId: process.env.ULTRA_DEX_RUN_ID,
+    rootAgent: agentId,
+    task,
+  });
+  syncActiveRunId(trace.runId);
   if (!trace.started) {
     trace.started = true;
     await trace.record({
@@ -277,9 +306,13 @@ async function ensureTraceStarted(projectContext, agentId, task) {
 
 async function emitAnalyticsEvent(type, payload) {
   initializeAnalyticsSink();
-  await logger.event(type, payload, {
-    console: false,
-    source: 'run',
+  const { runId, loopStep, agent, ...rest } = payload || {};
+  logRun(type === 'analytics.error' ? 'error' : 'info', type, {
+    run_id: runId,
+    agent,
+    step: loopStep,
+    module: 'run.analytics',
+    ...rest,
   });
 }
 
@@ -326,17 +359,11 @@ async function loadRelevantMemories(task, agentId) {
     );
   } catch (error) {
     try {
-      await logger.event(
-        'run.memory.lookup_failed',
-        {
-          agent: agentId,
-          message: error.message,
-        },
-        {
-          console: false,
-          source: 'run',
-        }
-      );
+      logRun('warn', 'run.memory.lookup_failed', {
+        agent: agentId,
+        module: 'run.memory',
+        detail: error.message,
+      });
     } catch {
       // ignore logging failures for memory lookups
     }
@@ -1310,7 +1337,6 @@ export function registerRunCommand(program) {
     .option('-k, --key <apiKey>', 'API key')
     .option('-o, --output <file>', 'Output file')
     .option('--max-steps <steps>', 'Maximum bounded execution steps per agent loop')
-    .option('--cache', 'Use response caching to reduce API costs')
     .action(async (agentName, options) => {
       let task = options.task;
       let trace = null;
@@ -1344,10 +1370,12 @@ export function registerRunCommand(program) {
 
         const context = await readProjectContext();
         trace = ensureExecutionTrace(context, {
+          runId: process.env.ULTRA_DEX_RUN_ID,
           command: 'run',
           rootAgent: agentName,
           task,
         });
+        syncActiveRunId(trace.runId);
         printInfo(`Execution trace run_id: ${trace.runId}`);
         const maxSteps = resolveMaxSteps(options.maxSteps);
         const providerId = options.provider || getDefaultProvider();
@@ -1408,10 +1436,12 @@ export function registerSwarmCommand(program) {
         printInfo(chalk.cyan('\n🐝 Ultra-Dex Agent Swarm\n'));
         const context = await readProjectContext();
         trace = ensureExecutionTrace(context, {
+          runId: process.env.ULTRA_DEX_RUN_ID,
           command: 'swarm',
           rootAgent: 'planner',
           task: feature,
         });
+        syncActiveRunId(trace.runId);
         printInfo(`Execution trace run_id: ${trace.runId}`);
         const maxSteps = resolveMaxSteps(options.maxSteps);
         const providerId = options.provider || getDefaultProvider();
