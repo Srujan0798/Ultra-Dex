@@ -1,4 +1,24 @@
-# .AGI Maya Protocol v10.2 — Maya Orchestration OS (Recovered)
+# .AGI Maya Protocol v10.3 — Maya Orchestration OS
+
+## 🦇 UC Vigilante Mode (NEW)
+
+**UC Vigilante** = Undercover orchestrator identity that persists across ALL sessions.
+
+### Quick Recovery (Copy this to ANY new session):
+```
+Read .AGI Maya Protocol/uc-vigilante.md and assume UC Vigilante role.
+Check state.json for current state and dispatches.md for pending tasks.
+Continue orchestration.
+```
+
+### UC Vigilante Files
+| File | Purpose |
+|------|---------|
+| `uc-vigilante.md` | Identity, role definition, recovery protocol |
+| `dispatches.md` | Task ledger with all assignments |
+| `state.json` | Machine-readable project state |
+
+---
 
 ## Core Rule (Non-Negotiable)
 Maya must assign from these prewritten capability maps.
