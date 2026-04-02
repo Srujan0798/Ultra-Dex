@@ -10,6 +10,7 @@ import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
+import { logger } from '../utils/logger.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { ConfigManager } from '../utils/config-manager.js';
 
@@ -17,7 +18,9 @@ import { ConfigManager } from '../utils/config-manager.js';
  * Show interactive dashboard menu
  */
 async function showDashboard() {
-  console.log(
+  const dashboardLogger = logger.child({ prefix: '[Dashboard]' });
+
+  dashboardLogger.print(
     chalk.magenta(
       `
 ███╗   ██╗██╗   ████████╗██████╗  ██████╗       ██████╗ ███████╗██╗  ██╗
@@ -30,9 +33,9 @@ async function showDashboard() {
     )
   );
 
-  console.log(chalk.yellow('AI Orchestration Meta-Layer for SaaS Development'));
-  console.log(chalk.gray('Version: 3.7.4'));
-  console.log('');
+  dashboardLogger.print(chalk.yellow('AI Orchestration Meta-Layer for SaaS Development'));
+  dashboardLogger.print(chalk.gray('Version: 3.7.4'));
+  dashboardLogger.print('');
 
   while (true) {
     try {
@@ -73,16 +76,16 @@ async function showDashboard() {
           await handleHelp();
           break;
         case 'exit':
-          console.log(chalk.green('\n👋 Thank you for using Ultra-Dex!'));
+          dashboardLogger.print(chalk.green('\n👋 Thank you using Ultra-Dex!'));
           return;
         default:
-          console.log(chalk.yellow('Unknown option selected.'));
+          dashboardLogger.print(chalk.yellow('Unknown option selected.'));
       }
 
       // Pause before showing menu again
       await pauseBeforeMenu();
     } catch (error) {
-      console.error(chalk.red(`Error in dashboard: ${error.message}`));
+      logger.error(chalk.red(`Error in dashboard: ${error.message}`));
       break;
     }
   }
@@ -92,7 +95,8 @@ async function showDashboard() {
  * Handle project initialization
  */
 async function handleInitProject() {
-  console.log(chalk.cyan('\n🚀 Starting new project setup...\n'));
+  const initLogger = logger.child({ prefix: '[Dashboard]' });
+  initLogger.print(chalk.cyan('\n🚀 Starting new project setup...\n'));
 
   const { projectName, template } = await inquirer.prompt([
     {
@@ -114,20 +118,23 @@ async function handleInitProject() {
     },
   ]);
 
-  console.log(chalk.yellow(`\nSetting up project: ${projectName} with ${template} template...`));
+  initLogger.print(
+    chalk.yellow(`\nSetting up project: ${projectName} with ${template} template...`)
+  );
 
   // Simulate project creation
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  console.log(chalk.green(`\n✅ Project ${projectName} created successfully!`));
-  console.log(chalk.gray(`📁 Directory: ${path.join(process.cwd(), projectName)}`));
+  initLogger.print(chalk.green(`\n✅ Project ${projectName} created successfully!`));
+  initLogger.print(chalk.gray(`📁 Directory: ${path.join(process.cwd(), projectName)}`));
 }
 
 /**
  * Handle running an agent
  */
 async function handleRunAgent() {
-  console.log(chalk.cyan('\n🤖 Select an agent to run:\n'));
+  const agentLogger = logger.child({ prefix: '[Dashboard]' });
+  agentLogger.print(chalk.cyan('\n🤖 Select an agent to run:\n'));
 
   const { agent } = await inquirer.prompt([
     {
@@ -156,39 +163,41 @@ async function handleRunAgent() {
       },
     ]);
 
-    console.log(chalk.yellow(`\nRunning custom task: ${task}`));
+    agentLogger.print(chalk.yellow(`\nRunning custom task: ${task}`));
   } else {
-    console.log(chalk.yellow(`\nRunning ${agent} agent...`));
+    agentLogger.print(chalk.yellow(`\nRunning ${agent} agent...`));
   }
 
   // Simulate agent execution
   await new Promise((resolve) => setTimeout(resolve, 2500));
 
-  console.log(chalk.green('✅ Agent task completed!'));
+  agentLogger.print(chalk.green('✅ Agent task completed!'));
 }
 
 /**
  * Handle system status
  */
 async function handleSystemStatus() {
-  console.log(chalk.cyan('\n📊 Checking system status...\n'));
+  const statusLogger = logger.child({ prefix: '[Dashboard]' });
+  statusLogger.print(chalk.cyan('\n📊 Checking system status...\n'));
 
   // Simulate status checks
   await new Promise((resolve) => setTimeout(resolve, 1500));
 
-  console.log(chalk.green('✅ All systems operational!'));
-  console.log(chalk.gray('- CLI: Running'));
-  console.log(chalk.gray('- MCP Server: Connected'));
-  console.log(chalk.gray('- Memory: Active'));
-  console.log(chalk.gray('- Graph Indexer: Synced'));
-  console.log(chalk.gray('- Context Bus: Online'));
+  statusLogger.print(chalk.green('✅ All systems operational!'));
+  statusLogger.print(chalk.gray('- CLI: Running'));
+  statusLogger.print(chalk.gray('- MCP Server: Connected'));
+  statusLogger.print(chalk.gray('- Memory: Active'));
+  statusLogger.print(chalk.gray('- Graph Indexer: Synced'));
+  statusLogger.print(chalk.gray('- Context Bus: Online'));
 }
 
 /**
  * Handle searching projects
  */
 async function handleSearchProjects() {
-  console.log(chalk.cyan('\n🔍 Searching for projects...\n'));
+  const searchLogger = logger.child({ prefix: '[Dashboard]' });
+  searchLogger.print(chalk.cyan('\n🔍 Searching for projects...\n'));
 
   // Look for recent projects
   const homeDir = process.env.HOME || process.env.USERPROFILE;
@@ -211,13 +220,13 @@ async function handleSearchProjects() {
         },
       ]);
 
-      console.log(chalk.green(`\nSelected project: ${selectedProject}`));
-      console.log(chalk.gray(`📁 Path: ${path.join(projectsDir, selectedProject)}`));
+      searchLogger.print(chalk.green(`\nSelected project: ${selectedProject}`));
+      searchLogger.print(chalk.gray(`📁 Path: ${path.join(projectsDir, selectedProject)}`));
     } else {
-      console.log(chalk.yellow('No projects found in ~/projects'));
+      searchLogger.print(chalk.yellow('No projects found in ~/projects'));
     }
   } catch (error) {
-    console.log(chalk.yellow('Could not access projects directory'));
+    searchLogger.print(chalk.yellow('Could not access projects directory'));
   }
 }
 
@@ -225,7 +234,8 @@ async function handleSearchProjects() {
  * Handle settings
  */
 async function handleSettings() {
-  console.log(chalk.cyan('\n⚙️  Ultra-Dex Settings\n'));
+  const settingsLogger = logger.child({ prefix: '[Dashboard]' });
+  settingsLogger.print(chalk.cyan('\n⚙️  Ultra-Dex Settings\n'));
 
   const configManager = new ConfigManager();
   await configManager.load();
@@ -300,7 +310,9 @@ async function handleSettings() {
         default: String(configManager.get('ai.maxTokens', 8192)),
         validate: (input) => {
           const value = Number(input);
-          return Number.isFinite(value) && value > 0 ? true : 'Max tokens must be a positive number.';
+          return Number.isFinite(value) && value > 0
+            ? true
+            : 'Max tokens must be a positive number.';
         },
       },
       {
@@ -352,21 +364,22 @@ async function handleSettings() {
  * Handle help
  */
 async function handleHelp() {
-  console.log(chalk.cyan('\n❓ Ultra-Dex Help\n'));
+  const helpLogger = logger.child({ prefix: '[Dashboard]' });
+  helpLogger.print(chalk.cyan('\n❓ Ultra-Dex Help\n'));
 
-  console.log(chalk.bold('Available Commands:'));
-  console.log(chalk.gray('  ultra-dex init ............ Initialize new project'));
-  console.log(chalk.gray('  ultra-dex generate ........ Generate implementation plan'));
-  console.log(chalk.gray('  ultra-dex build ........... Auto-pilot build process'));
-  console.log(chalk.gray('  ultra-dex agents .......... List available AI agents'));
-  console.log(chalk.gray('  ultra-dex verify .......... Run 21-step verification'));
-  console.log(chalk.gray('  ultra-dex sync ............ Synchronize project state'));
-  console.log('');
+  helpLogger.print(chalk.bold('Available Commands:'));
+  helpLogger.print(chalk.gray('  ultra-dex init ............ Initialize new project'));
+  helpLogger.print(chalk.gray('  ultra-dex generate ........ Generate implementation plan'));
+  helpLogger.print(chalk.gray('  ultra-dex build ........... Auto-pilot build process'));
+  helpLogger.print(chalk.gray('  ultra-dex agents .......... List available AI agents'));
+  helpLogger.print(chalk.gray('  ultra-dex verify .......... Run 21-step verification'));
+  helpLogger.print(chalk.gray('  ultra-dex sync ............ Synchronize project state'));
+  helpLogger.print('');
 
-  console.log(chalk.bold('Need more help?'));
-  console.log(chalk.gray('  Visit: https://github.com/Srujan0798/Ultra-Dex'));
-  console.log(chalk.gray('  Discord: https://discord.gg/ultradex'));
-  console.log('');
+  helpLogger.print(chalk.bold('Need more help?'));
+  helpLogger.print(chalk.gray('  Visit: https://github.com/Srujan0798/Ultra-Dex'));
+  helpLogger.print(chalk.gray('  Discord: https://discord.gg/ultradex'));
+  helpLogger.print('');
 
   await inquirer.prompt([{ type: 'input', name: 'done', message: 'Press Enter to continue...' }]);
 }

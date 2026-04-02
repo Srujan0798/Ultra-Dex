@@ -1,0 +1,82 @@
+# .dockerignore for Ultra-Dex
+
+# Node.js
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build artifacts
+dist
+build
+.next
+out
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and editor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+docs/_build
+docs/.docusaurus
+
+# Tests
+tests
+*.test.js
+*.spec.js
+coverage
+.nyc_output
+
+# Temporary files
+tmp
+temp
+*.tmp
+*.temp
+
+# Logs
+logs
+*.log
+
+# Configuration
+*.config.js
+*.config.ts
+
+# Source maps
+*.map
+
+# Local development
+.ultra-dex
+.ultra
+.cache
+.husky
+
+# Docker compose
+docker-compose.override.yml
+
+# Exceptions (keep these)
+!docs/API.md
+!LICENSE
+!README.md
+!package.json
+!package-lock.json
