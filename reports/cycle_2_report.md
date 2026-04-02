@@ -140,7 +140,7 @@ Existing functionality preserved:
 
 ## 6. Next Steps
 
-Based on the .AGI Protocol and the IMPLEMENTATION-PLAN.md, the next cycle should focus on:
+Based on the .AGI Maya Protocol and the IMPLEMENTATION-PLAN.md, the next cycle should focus on:
 
 **Cycle 3: Developer Experience & Interactive Interface**
 
