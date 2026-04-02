@@ -1,40 +1,44 @@
 // Copyright (c) 2026 Ultra-Dex
 
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ prefix: 'Gates' });
+
 export const AUTONOMOUS_GATES = {
-  architecture: { 
-    id: 'architecture', 
+  architecture: {
+    id: 'architecture',
     description: 'Architecture approval required',
     blocking: true,
-    check: (result) => result && !result.error
+    check: (result) => result && !result.error,
   },
-  security: { 
-    id: 'security', 
+  security: {
+    id: 'security',
     description: 'Security review required',
     blocking: true,
     check: (result) => {
       const str = JSON.stringify(result).toLowerCase();
       return !str.includes('password') && !str.includes('secret') && !str.includes('api_key');
     },
-    failReason: 'Result may contain sensitive data'
+    failReason: 'Result may contain sensitive data',
   },
-  deploy: { 
-    id: 'deploy', 
+  deploy: {
+    id: 'deploy',
     description: 'Deploy confirmation required',
     blocking: true,
-    check: () => true
+    check: () => true,
   },
   quality: {
     id: 'quality',
     description: 'Quality standards check',
     blocking: false,
-    check: (result) => result && result.success !== false
+    check: (result) => result && result.success !== false,
   },
   testing: {
     id: 'testing',
     description: 'Test coverage verification',
     blocking: false,
-    check: (result) => result && result.testsPassed !== false
-  }
+    check: (result) => result && result.testsPassed !== false,
+  },
 };
 
 /**
@@ -111,7 +115,7 @@ export function requireGateApproval(gateId, approvals = []) {
 function handleModuleError(error, context = 'gates') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

@@ -11,6 +11,9 @@ import { EventEmitter } from 'events';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { glob } from 'glob';
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ prefix: 'ContextBus' });
 
 // Context bus singleton
 class ContextBus extends EventEmitter {
@@ -81,7 +84,7 @@ class ContextBus extends EventEmitter {
       });
     }
 
-    console.log(`Context bus: Published ${key}`);
+    logger.info(`Published ${key}`);
   }
 
   /**
@@ -116,7 +119,7 @@ class ContextBus extends EventEmitter {
    */
   async startServer(port = null) {
     if (this.server) {
-      console.log('Context bus server already running');
+      logger.warn('Server already running');
       return;
     }
 
@@ -126,7 +129,7 @@ class ContextBus extends EventEmitter {
     this.wss = new WebSocketServer({ server: this.server });
 
     this.wss.on('connection', (ws) => {
-      console.log('Context bus: New MCP client connected');
+      logger.info('New MCP client connected');
 
       // Send current context to new client
       const currentContext = this.getAll();
@@ -156,17 +159,17 @@ class ContextBus extends EventEmitter {
             this.publish(data.key, data.value, data.metadata);
           }
         } catch (error) {
-          console.error('Context bus: Error processing message:', error.message);
+          logger.error(`Error processing message: ${error.message}`);
         }
       });
 
       ws.on('close', () => {
-        console.log('Context bus: MCP client disconnected');
+        logger.info('MCP client disconnected');
       });
     });
 
     this.server.listen(this.port, () => {
-      console.log(`Context bus server running on port ${this.port}`);
+      logger.info(`Server running on port ${this.port}`);
     });
   }
 
@@ -184,7 +187,7 @@ class ContextBus extends EventEmitter {
       this.server = null;
     }
 
-    console.log('Context bus server stopped');
+    logger.info('Server stopped');
   }
 
   /**
@@ -291,12 +294,12 @@ class ContextBus extends EventEmitter {
     );
 
     watcher.on('change', async (filePath) => {
-      console.log(`Context bus: Detected change in ${filePath}`);
+      logger.info(`Detected change in ${filePath}`);
 
       try {
         await this.syncWithExternalTools();
       } catch (error) {
-        console.error(`Context bus: Error syncing after change: ${error.message}`);
+        logger.error(`Error syncing after change: ${error.message}`);
       }
     });
 
@@ -322,7 +325,7 @@ class ContextBus extends EventEmitter {
       });
     } catch (error) {
       // Avoid crashing server on duplicate registration
-      console.warn(`Context bus resource registration skipped: ${error.message}`);
+      logger.warn(`Resource registration skipped: ${error.message}`);
     }
   }
 }
@@ -345,13 +348,13 @@ export function registerContextBusCommand(program) {
     .option('-p, --port <port>', 'Port to run server on', '3003')
     .action(async (options) => {
       try {
-        console.log('🚀 Starting MCP Context Bus server...');
+        logger.info('Starting MCP Context Bus server...');
         await contextBus.startServer(parseInt(options.port));
 
         // Keep process alive
         await new Promise(() => {});
       } catch (error) {
-        console.error(`Error starting context bus: ${error.message}`);
+        logger.error(`Error starting context bus: ${error.message}`);
       }
     });
 
@@ -369,9 +372,9 @@ export function registerContextBusCommand(program) {
         }
 
         contextBus.publish(key, value, metadata);
-        console.log(`✅ Published to context bus: ${key}`);
+        logger.success(`Published to context bus: ${key}`);
       } catch (error) {
-        console.error(`Error publishing to context bus: ${error.message}`);
+        logger.error(`Error publishing to context bus: ${error.message}`);
       }
     });
 
@@ -383,12 +386,12 @@ export function registerContextBusCommand(program) {
       try {
         const value = contextBus.get(key);
         if (value) {
-          console.log(JSON.stringify(value, null, 2));
+          logger.info(JSON.stringify(value, null, 2));
         } else {
-          console.log(`Context key '${key}' not found`);
+          logger.info(`Context key '${key}' not found`);
         }
       } catch (error) {
-        console.error(`Error getting context: ${error.message}`);
+        logger.error(`Error getting context: ${error.message}`);
       }
     });
 
@@ -398,12 +401,12 @@ export function registerContextBusCommand(program) {
     .action(() => {
       try {
         const allContext = contextBus.getAll();
-        console.log('Context keys:');
+        logger.info('Context keys:');
         for (const [key] of Object.entries(allContext)) {
-          console.log(`- ${key}`);
+          logger.info(`- ${key}`);
         }
       } catch (error) {
-        console.error(`Error listing context: ${error.message}`);
+        logger.error(`Error listing context: ${error.message}`);
       }
     });
 
@@ -412,11 +415,11 @@ export function registerContextBusCommand(program) {
     .description('Sync context with external files')
     .action(async () => {
       try {
-        console.log('🔄 Syncing context with external files...');
+        logger.info('Syncing context with external files...');
         await contextBus.syncWithExternalTools();
-        console.log('✅ Context sync complete');
+        logger.success('Context sync complete');
       } catch (error) {
-        console.error(`Error syncing context: ${error.message}`);
+        logger.error(`Error syncing context: ${error.message}`);
       }
     });
 
@@ -425,13 +428,13 @@ export function registerContextBusCommand(program) {
     .description('Watch for context changes')
     .action(async () => {
       try {
-        console.log('👀 Watching for context changes...');
+        logger.info('Watching for context changes...');
         await contextBus.startWatching();
 
         // Keep process alive
         await new Promise(() => {});
       } catch (error) {
-        console.error(`Error watching context: ${error.message}`);
+        logger.error(`Error watching context: ${error.message}`);
       }
     });
 

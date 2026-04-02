@@ -3,14 +3,14 @@
 
 // Core autonomous components
 export { AutonomousAgent } from './agent.js';
-export { ApprovalGates, AUTONOMOUS_GATES } from './gates.js';
+export { ApprovalGates, AUTONOMOUS_GATES, requireGateApproval } from './gates.js';
 export { AutonomousPipeline } from './pipeline.js';
 
 // New autonomous loop components (Maya Cycle 1)
 export { PlanningEngine } from './planning-engine.js';
 export { TaskDecomposer } from './task-decomposer.js';
 export { ExecutionController } from './execution-controller.js';
-export { ValidationLayer } from './validation-layer.js';
+export { ValidationLayer, STRICTNESS } from './validation-layer.js';
 export { MemoryBridge } from './memory-bridge.js';
 
 // Overnight / autonomous-mode re-export

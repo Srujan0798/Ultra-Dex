@@ -8,6 +8,9 @@
 import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ prefix: 'MCP' });
 
 // Default MCP server templates
 const MCP_TEMPLATES = {
@@ -111,18 +114,18 @@ export async function runWizard(options = {}) {
     mcpServers: {},
   };
 
-  console.log('\n🔧 Ultra-Dex MCP Configuration Wizard\n');
-  console.log('This wizard will help you configure MCP (Model Context Protocol) servers.\n');
+  logger.info('\n🔧 Ultra-Dex MCP Configuration Wizard\n');
+  logger.info('This wizard will help you configure MCP (Model Context Protocol) servers.\n');
 
   // Show available templates
-  console.log('Available MCP server templates:\n');
+  logger.info('Available MCP server templates:\n');
   const templateKeys = Object.keys(MCP_TEMPLATES);
   templateKeys.forEach((key, i) => {
     const t = MCP_TEMPLATES[key];
-    console.log(`  ${i + 1}. ${t.name.padEnd(15)} - ${t.description}`);
+    logger.info(`  ${i + 1}. ${t.name.padEnd(15)} - ${t.description}`);
   });
-  console.log(`  ${templateKeys.length + 1}. Custom server`);
-  console.log('');
+  logger.info(`  ${templateKeys.length + 1}. Custom server`);
+  logger.info('');
 
   let addMore = true;
 
@@ -134,7 +137,7 @@ export async function runWizard(options = {}) {
       const templateKey = templateKeys[choiceNum];
       const template = MCP_TEMPLATES[templateKey];
 
-      console.log(`\nConfiguring ${template.name}...\n`);
+      logger.info(`\nConfiguring ${template.name}...\n`);
 
       const serverName = await ask(rl, 'Server name/alias', templateKey);
       const serverConfig = {
@@ -167,10 +170,10 @@ export async function runWizard(options = {}) {
       }
 
       config.mcpServers[serverName] = serverConfig;
-      console.log(`✅ Added ${serverName}\n`);
+      logger.success(`Added ${serverName}\n`);
     } else if (choiceNum === templateKeys.length) {
       // Custom server
-      console.log('\nConfiguring custom server...\n');
+      logger.info('\nConfiguring custom server...\n');
 
       const serverName = await ask(rl, 'Server name');
       const command = await ask(rl, 'Command (e.g., npx, node)', 'npx');
@@ -182,7 +185,7 @@ export async function runWizard(options = {}) {
         env: {},
       };
 
-      console.log(`✅ Added ${serverName}\n`);
+      logger.success(`Added ${serverName}\n`);
     }
 
     const more = await ask(rl, 'Add another server? (y/n)', 'n');
@@ -212,13 +215,13 @@ export async function runWizard(options = {}) {
   };
 
   fs.writeFileSync(configPath, JSON.stringify(finalConfig, null, 2));
-  console.log(`\n✅ Configuration saved to ${configPath}\n`);
+  logger.success(`Configuration saved to ${configPath}\n`);
 
   // Show next steps
-  console.log('Next steps:');
-  console.log('  1. Copy this config to your Claude Desktop or Cursor settings');
-  console.log('  2. Restart your AI tool to load the new MCP servers');
-  console.log('  3. The servers will be available as tools in your AI conversations\n');
+  logger.info('Next steps:');
+  logger.info('  1. Copy this config to your Claude Desktop or Cursor settings');
+  logger.info('  2. Restart your AI tool to load the new MCP servers');
+  logger.info('  3. The servers will be available as tools in your AI conversations\n');
 
   rl.close();
   return finalConfig;

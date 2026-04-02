@@ -5,6 +5,10 @@
  * @module adapters/claude
  */
 
+import { Logger } from '../../utils/logger.js';
+
+const logger = new Logger({ prefix: 'Claude' });
+
 export function createClaudeAdapter() {
   return {
     name: 'claude-desktop',
@@ -22,7 +26,7 @@ export function createClaudeAdapter() {
 function handleModuleError(error, context = 'claude') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }
