@@ -18,13 +18,15 @@ Maya is model-agnostic: whichever orchestrator you assign as Maya must follow th
 - OpenCode/NVIDIA: provider-router + API supply for resilience and fallback.
 
 ## Capability Database (Read First)
-- `claude-code.md`
-- `codex.md`
-- `gemini-cli.md`
-- `qwen-cli.md`
-- `copilot-cli.md`
-- `open-code.md`
-- `nvidia.md`
+| File | Lane | Windows | Role |
+|------|------|---------|------|
+| `claude-code.md` | Premium | 1 max | Dense critical tasks (Opus/Sonnet) |
+| `codex.md` | Premium | 1 max | High-performance builder/review |
+| `gemini-cli.md` | Worker | 4-6 | Parallel support, TDD, docs |
+| `qwen-cli.md` | Labor | 6-10 | High-volume repetitive tasks |
+| `copilot-cli.md` | Governance | 0-2 | PR/review/fleet coordination |
+| `open-code.md` | Router | N/A | Provider fallback infrastructure |
+| `nvidia.md` | API Supply | N/A | Model catalog for fallbacks |
 
 ## Assignment Algorithm (Maya Must Follow)
 1. Parse user goal into atomic tasks.

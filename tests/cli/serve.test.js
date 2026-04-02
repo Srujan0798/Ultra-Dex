@@ -13,15 +13,28 @@ describe('CLI Command: serve', () => {
 
       assert.ok(server instanceof http.Server, 'Server should be an instance of http.Server');
 
-      // Allow slight delay for listen
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Wait for server to be ready with timeout
+      await Promise.race([
+        new Promise((resolve) => {
+          if (server.listening) resolve();
+          else server.on('listening', resolve);
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Server start timeout')), 2000))
+      ]);
 
       assert.strictEqual(server.listening, true, 'Server should be listening');
       assert.ok(wss, 'WebSocket server should be initialized');
 
-      // Cleanup
-      close();
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Allow close to complete
+      // Cleanup with timeout
+      await Promise.race([
+        new Promise((resolve) => {
+          close();
+          if (!server.listening) resolve();
+          else server.on('close', resolve);
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Server close timeout')), 2000))
+      ]);
+
       assert.strictEqual(server.listening, false, 'Server should stop listening after close()');
     } catch (error) {
       assert.fail(`Test failed with error: ${error.message}`);
