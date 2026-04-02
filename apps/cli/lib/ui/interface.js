@@ -5,6 +5,7 @@
 
 import { theme, header, status, table, keyHints, statusLine, progressBar } from './theme.js';
 import { VERSION } from '../utils/version.js';
+import logger from '../utils/logger.js';
 
 // ═══════════════════════════════════════════════════════════════
 // STARTUP BANNER (Like Gemini CLI's clean intro)
@@ -26,14 +27,14 @@ const logo = `
 
 export function showStartup(version = VERSION) {
   console.clear();
-  console.log(theme.primary(logo));
-  console.log('');
-  console.log(theme.dim('  ─────────────────────────────────────────────────────────'));
-  console.log(
+  logger.print(theme.primary(logo));
+  logger.print('');
+  logger.print(theme.dim('  ─────────────────────────────────────────────────────────'));
+  logger.print(
     `  ${theme.title('ULTRA-DEX')} ${theme.dim('v' + version)} ${theme.dim('•')} ${theme.subtitle('AI Orchestration Meta-Layer')}`
   );
-  console.log(theme.dim('  ─────────────────────────────────────────────────────────'));
-  console.log('');
+  logger.print(theme.dim('  ─────────────────────────────────────────────────────────'));
+  logger.print('');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -43,8 +44,8 @@ export function showStartup(version = VERSION) {
 export function showMainInterface() {
   showStartup();
 
-  console.log(theme.subtitle('  What would you like to do?'));
-  console.log('');
+  logger.print(theme.subtitle('  What would you like to do?'));
+  logger.print('');
 
   const options = [
     [theme.primary('1'), 'generate', 'Create implementation plan from idea'],
@@ -56,10 +57,10 @@ export function showMainInterface() {
   ];
 
   options.forEach(([num, cmd, desc]) => {
-    console.log(`  ${num}  ${theme.accent(cmd.padEnd(12))} ${theme.dim(desc)}`);
+    logger.print(`  ${num}  ${theme.accent(cmd.padEnd(12))} ${theme.dim(desc)}`);
   });
 
-  console.log('');
+  logger.print('');
   keyHints([
     ['q', 'quit'],
     ['h', 'help'],
@@ -73,17 +74,17 @@ export function showMainInterface() {
 
 export function showStatus(projectData) {
   header('Project Status');
-  console.log('');
+  logger.print('');
 
   // Project info
   statusLine(status.info, theme.title(projectData.name || 'Ultra-Dex Project'));
-  console.log('');
+  logger.print('');
 
   // Alignment score with bar
   const score = projectData.score || 0;
   const _scoreColor = score >= 80 ? theme.success : score >= 50 ? theme.warning : theme.error;
-  console.log(`  ${theme.dim('Alignment')}  ${progressBar(score, 100)}`);
-  console.log('');
+  logger.print(`  ${theme.dim('Alignment')}  ${progressBar(score, 100)}`);
+  logger.print('');
 
   // Quick stats
   table(
@@ -100,7 +101,7 @@ export function showStatus(projectData) {
     ]
   );
 
-  console.log('');
+  logger.print('');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -109,7 +110,7 @@ export function showStatus(projectData) {
 
 export function showAgentsList() {
   header('Agents');
-  console.log('');
+  logger.print('');
 
   const agents = [
     {
@@ -158,12 +159,12 @@ export function showAgentsList() {
   ];
 
   agents.forEach((tier) => {
-    console.log(`  ${theme.dim(tier.tier)}`);
+    logger.print(`  ${theme.dim(tier.tier)}`);
     tier.agents.forEach((agent) => {
       const statusIcon = agent.status === 'ready' ? theme.success('●') : theme.dim('○');
-      console.log(`    ${statusIcon} ${agent.icon} ${theme.accent(agent.name)}`);
+      logger.print(`    ${statusIcon} ${agent.icon} ${theme.accent(agent.name)}`);
     });
-    console.log('');
+    logger.print('');
   });
 
   keyHints([
@@ -178,9 +179,9 @@ export function showAgentsList() {
 
 export function showSwarmPipeline(task, agents, currentIdx = -1) {
   header('Agent Swarm');
-  console.log('');
-  console.log(`  ${theme.dim('Task:')} ${theme.title(task)}`);
-  console.log('');
+  logger.print('');
+  logger.print(`  ${theme.dim('Task:')} ${theme.title(task)}`);
+  logger.print('');
 
   agents.forEach((agent, idx) => {
     let icon, color;
@@ -197,16 +198,16 @@ export function showSwarmPipeline(task, agents, currentIdx = -1) {
     }
 
     const line = idx < agents.length - 1 ? theme.dim('│') : ' ';
-    console.log(`  ${icon} ${color(agent.name)}`);
-    console.log(`  ${line}`);
+    logger.print(`  ${icon} ${color(agent.name)}`);
+    logger.print(`  ${line}`);
   });
 
   if (currentIdx >= agents.length) {
-    console.log('');
-    console.log(`  ${theme.success.bold('✓ Pipeline complete')}`);
+    logger.print('');
+    logger.print(`  ${theme.success.bold('✓ Pipeline complete')}`);
   }
 
-  console.log('');
+  logger.print('');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -215,7 +216,7 @@ export function showSwarmPipeline(task, agents, currentIdx = -1) {
 
 export function showHelp() {
   header('Commands');
-  console.log('');
+  logger.print('');
 
   const commands = [
     [
@@ -253,11 +254,11 @@ export function showHelp() {
   ];
 
   commands.forEach(([section, cmds]) => {
-    console.log(`  ${theme.subtitle(section)}`);
+    logger.print(`  ${theme.subtitle(section)}`);
     cmds.forEach(([cmd, desc]) => {
-      console.log(`    ${theme.accent(cmd.padEnd(18))} ${theme.dim(desc)}`);
+      logger.print(`    ${theme.accent(cmd.padEnd(18))} ${theme.dim(desc)}`);
     });
-    console.log('');
+    logger.print('');
   });
 }
 
@@ -282,7 +283,7 @@ export default {
 function handleModuleError(error, context = 'interface') {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
     // Fail silently
   }

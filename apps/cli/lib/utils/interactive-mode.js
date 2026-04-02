@@ -73,7 +73,7 @@ class InteractiveMode {
    * Show success message
    */
   showSuccess(message) {
-    console.log(chalk.green('✅ ' + message));
+    logger.print(chalk.green('✅ ' + message));
     void logger.event(
       'interactive.feedback',
       { type: 'success' },
@@ -90,7 +90,7 @@ class InteractiveMode {
    * Show warning message
    */
   showWarning(message) {
-    console.log(chalk.yellow('⚠️  ' + message));
+    logger.print(chalk.yellow('⚠️  ' + message));
     void logger.event(
       'interactive.feedback',
       { type: 'warning' },
@@ -107,7 +107,7 @@ class InteractiveMode {
    * Show error message
    */
   showError(message) {
-    console.log(chalk.red('❌ ' + message));
+    logger.print(chalk.red('❌ ' + message));
     void logger.event(
       'interactive.feedback',
       { type: 'error' },
@@ -124,7 +124,7 @@ class InteractiveMode {
    * Show info message
    */
   showInfo(message) {
-    console.log(chalk.blue('ℹ️  ' + message));
+    logger.print(chalk.blue('ℹ️  ' + message));
     void logger.event(
       'interactive.feedback',
       { type: 'info' },
@@ -206,7 +206,7 @@ class InteractiveMode {
       ]);
     }
 
-    console.log(table.toString());
+    logger.print(table.toString());
   }
 
   /**
@@ -227,12 +227,12 @@ class InteractiveMode {
         ['Platform', metrics.system.platform]
       );
 
-      console.log(chalk.bold('\n📊 System Metrics\n'));
-      console.log(table.toString());
+      logger.print(chalk.bold('\n📊 System Metrics\n'));
+      logger.print(table.toString());
 
       // Show recent performance
       if (metrics.performance.length > 0) {
-        console.log(chalk.bold('\n⏱️  Recent Performance\n'));
+        logger.print(chalk.bold('\n⏱️  Recent Performance\n'));
         const perfTable = this.createTable(['Operation', 'Duration (ms)', 'Timestamp']);
 
         const recentPerf = metrics.performance.slice(-5).reverse();
@@ -244,7 +244,7 @@ class InteractiveMode {
           ]);
         }
 
-        console.log(perfTable.toString());
+        logger.print(perfTable.toString());
       }
     } catch (error) {
       this.showError(`Failed to show metrics: ${error.message}`);
@@ -258,7 +258,7 @@ class InteractiveMode {
     try {
       const health = errorRecovery.getStatus();
 
-      console.log(chalk.bold('\n🏥 Health Status\n'));
+      logger.print(chalk.bold('\n🏥 Health Status\n'));
 
       // Overall status
       const overallStatus =
@@ -267,11 +267,11 @@ class InteractiveMode {
           ? chalk.green('✅ Healthy')
           : chalk.red('⚠️  Degraded');
 
-      console.log(`Overall Status: ${overallStatus}`);
+      logger.print(`Overall Status: ${overallStatus}`);
 
       // Circuit breaker status
       if (health.circuitBreakers && Object.keys(health.circuitBreakers).length > 0) {
-        console.log(chalk.bold('\n🔌 Circuit Breakers\n'));
+        logger.print(chalk.bold('\n🔌 Circuit Breakers\n'));
         const cbTable = this.createTable(['Service', 'State', 'Failures', 'Can Try']);
 
         for (const [name, status] of Object.entries(health.circuitBreakers)) {
@@ -290,14 +290,14 @@ class InteractiveMode {
           ]);
         }
 
-        console.log(cbTable.toString());
+        logger.print(cbTable.toString());
       }
 
       // Degraded services
       if (health.degradedServices.length > 0) {
-        console.log(chalk.bold('\n⚠️  Degraded Services\n'));
+        logger.print(chalk.bold('\n⚠️  Degraded Services\n'));
         for (const service of health.degradedServices) {
-          console.log(`- ${chalk.yellow(service)}`);
+          logger.print(`- ${chalk.yellow(service)}`);
         }
       }
     } catch (error) {
@@ -322,7 +322,7 @@ class InteractiveMode {
     try {
       const config = configManager.getConfig();
 
-      console.log(chalk.bold('\n⚙️  Configuration\n'));
+      logger.print(chalk.bold('\n⚙️  Configuration\n'));
 
       const configTable = this.createTable(['Section', 'Setting', 'Value']);
 
@@ -336,7 +336,7 @@ class InteractiveMode {
         ['Logging', 'Level', config.logging.level]
       );
 
-      console.log(configTable.toString());
+      logger.print(configTable.toString());
     } catch (error) {
       this.showError(`Failed to show configuration: ${error.message}`);
     }
@@ -405,7 +405,7 @@ class InteractiveMode {
    * Show help with all available commands
    */
   showHelp() {
-    console.log(chalk.bold('\n📖 Ultra-Dex Help\n'));
+    logger.print(chalk.bold('\n📖 Ultra-Dex Help\n'));
 
     const helpTable = this.createTable(['Command', 'Description', 'Example']);
 
@@ -422,20 +422,20 @@ class InteractiveMode {
       ['ultra-dex status', 'Show system status', 'ultra-dex status']
     );
 
-    console.log(helpTable.toString());
+    logger.print(helpTable.toString());
 
-    console.log(chalk.bold('\n💡 Tips:\n'));
-    console.log(`• Use ${chalk.cyan('--help')} with any command for detailed options`);
-    console.log(`• Configuration can be managed with ${chalk.cyan('ultra-dex config')}`);
-    console.log(`• Monitor system health with ${chalk.cyan('ultra-dex status')}`);
-    console.log(`• View metrics with ${chalk.cyan('ultra-dex metrics')}`);
+    logger.print(chalk.bold('\n💡 Tips:\n'));
+    logger.print(`• Use ${chalk.cyan('--help')} with any command for detailed options`);
+    logger.print(`• Configuration can be managed with ${chalk.cyan('ultra-dex config')}`);
+    logger.print(`• Monitor system health with ${chalk.cyan('ultra-dex status')}`);
+    logger.print(`• View metrics with ${chalk.cyan('ultra-dex metrics')}`);
   }
 
   /**
    * Show system status overview
    */
   showSystemStatus() {
-    console.log(chalk.bold.blue('\n🚀 Ultra-Dex System Status\n'));
+    logger.print(chalk.bold.blue('\n🚀 Ultra-Dex System Status\n'));
 
     // Show basic status
     const statusTable = this.createTable(['Component', 'Status', 'Details']);
@@ -448,11 +448,11 @@ class InteractiveMode {
       ['AI Providers', chalk.green('Configured'), 'Ready for use']
     );
 
-    console.log(statusTable.toString());
+    logger.print(statusTable.toString());
 
     // Show recent activity
     const recentMetrics = monitoring.getMetrics();
-    console.log(chalk.bold('\n📊 Recent Activity\n'));
+    logger.print(chalk.bold('\n📊 Recent Activity\n'));
 
     const activityTable = this.createTable(['Metric', 'Count']);
     activityTable.push(
@@ -461,7 +461,7 @@ class InteractiveMode {
       ['Performance Samples', recentMetrics.performance.length]
     );
 
-    console.log(activityTable.toString());
+    logger.print(activityTable.toString());
   }
 }
 

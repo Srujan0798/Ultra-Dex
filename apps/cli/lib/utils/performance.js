@@ -10,6 +10,7 @@ import fs from 'fs';
 import { join } from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import { logger } from './logger.js';
 
 const PERF_DIR = '.ultra-dex';
 const PERF_FILE = 'performance.json';
@@ -200,15 +201,15 @@ export function registerPerformanceCommand(program) {
     .option('--clear', 'Clear performance history')
     .option('--compare', 'Compare current vs previous runs')
     .action(async (options) => {
-      console.log(chalk.cyan.bold('\n⚡ Ultra-Dex Performance Monitor\n'));
+      logger.print(chalk.cyan.bold('\n⚡ Ultra-Dex Performance Monitor\n'));
 
       if (options.clear) {
         const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
         if (fs.existsSync(perfPath)) {
           fs.unlinkSync(perfPath);
-          console.log(chalk.green('✅ Performance history cleared'));
+          logger.print(chalk.green('✅ Performance history cleared'));
         } else {
-          console.log(chalk.gray('No performance data to clear'));
+          logger.print(chalk.gray('No performance data to clear'));
         }
         return;
       }
@@ -216,7 +217,7 @@ export function registerPerformanceCommand(program) {
       if (options.export) {
         const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
         if (!fs.existsSync(perfPath)) {
-          console.log(chalk.yellow('No performance data found'));
+          logger.print(chalk.yellow('No performance data found'));
           return;
         }
 
@@ -226,7 +227,7 @@ export function registerPerformanceCommand(program) {
           : data;
 
         fs.writeFileSync(options.export, JSON.stringify(exportData, null, 2));
-        console.log(chalk.green(`✅ Exported ${exportData.length} metrics to ${options.export}`));
+        logger.print(chalk.green(`✅ Exported ${exportData.length} metrics to ${options.export}`));
         return;
       }
 
@@ -235,13 +236,13 @@ export function registerPerformanceCommand(program) {
         const summary = globalTracker.getSummary(days);
 
         if (!summary) {
-          console.log(chalk.yellow(`No performance data found for the last ${days} days`));
-          console.log(chalk.gray('Run some commands first to generate metrics\n'));
+          logger.print(chalk.yellow(`No performance data found for the last ${days} days`));
+          logger.print(chalk.gray('Run some commands first to generate metrics\n'));
           return;
         }
 
-        console.log(chalk.white.bold(`📊 Summary (Last ${summary.period})\n`));
-        console.log(chalk.gray(`Total Operations: ${summary.totalOperations}\n`));
+        logger.print(chalk.white.bold(`📊 Summary (Last ${summary.period})\n`));
+        logger.print(chalk.gray(`Total Operations: ${summary.totalOperations}\n`));
 
         const ops = Object.entries(summary.operations).sort((a, b) => b[1].count - a[1].count);
 
@@ -249,35 +250,37 @@ export function registerPerformanceCommand(program) {
           const color =
             stats.successRate >= 90 ? 'green' : stats.successRate >= 70 ? 'yellow' : 'red';
 
-          console.log(chalk.cyan.bold(`${name}`));
-          console.log(`  Runs: ${stats.count} | Success: ${chalk[color](stats.successRate + '%')}`);
-          console.log(
+          logger.print(chalk.cyan.bold(`${name}`));
+          logger.print(
+            `  Runs: ${stats.count} | Success: ${chalk[color](stats.successRate + '%')}`
+          );
+          logger.print(
             `  Avg: ${chalk.white(stats.avgDuration + 'ms')} | Min: ${stats.minDuration}ms | Max: ${stats.maxDuration}ms`
           );
-          console.log(chalk.gray(`  Last: ${new Date(stats.lastRun).toLocaleString()}`));
-          console.log();
+          logger.print(chalk.gray(`  Last: ${new Date(stats.lastRun).toLocaleString()}`));
+          logger.print();
         });
 
         // Show recommendations
         const slowOps = ops.filter(([_, s]) => s.avgDuration > 5000);
         if (slowOps.length > 0) {
-          console.log(chalk.yellow.bold('⚠️  Slow Operations (>5s):'));
-          slowOps.forEach(([name, _]) => console.log(chalk.yellow(`  • ${name}`)));
-          console.log();
+          logger.print(chalk.yellow.bold('⚠️  Slow Operations (>5s):'));
+          slowOps.forEach(([name, _]) => logger.print(chalk.yellow(`  • ${name}`)));
+          logger.print();
         }
 
         const failingOps = ops.filter(([_, s]) => s.successRate < 70);
         if (failingOps.length > 0) {
-          console.log(chalk.red.bold('❌ Unreliable Operations (<70% success):'));
-          failingOps.forEach(([name, _]) => console.log(chalk.red(`  • ${name}`)));
-          console.log();
+          logger.print(chalk.red.bold('❌ Unreliable Operations (<70% success):'));
+          failingOps.forEach(([name, _]) => logger.print(chalk.red(`  • ${name}`)));
+          logger.print();
         }
       }
 
       if (options.operation) {
         const perfPath = join(process.cwd(), PERF_DIR, PERF_FILE);
         if (!fs.existsSync(perfPath)) {
-          console.log(chalk.yellow('No performance data found'));
+          logger.print(chalk.yellow('No performance data found'));
           return;
         }
 
@@ -285,34 +288,34 @@ export function registerPerformanceCommand(program) {
         const filtered = data.filter((d) => d.operation === options.operation).slice(-20);
 
         if (filtered.length === 0) {
-          console.log(chalk.yellow(`No data found for operation: ${options.operation}`));
+          logger.print(chalk.yellow(`No data found for operation: ${options.operation}`));
           return;
         }
 
-        console.log(chalk.white.bold(`📈 Recent runs of: ${options.operation}\n`));
+        logger.print(chalk.white.bold(`📈 Recent runs of: ${options.operation}\n`));
 
         filtered.reverse().forEach((m) => {
           const time = new Date(m.timestamp).toLocaleTimeString();
           const icon = m.result === 'success' ? chalk.green('✓') : chalk.red('✗');
           const duration = chalk.cyan(m.durationFormatted);
-          console.log(`  ${icon} ${chalk.gray(time)} ${duration}`);
+          logger.print(`  ${icon} ${chalk.gray(time)} ${duration}`);
           if (m.error) {
-            console.log(chalk.red(`     Error: ${m.error}`));
+            logger.print(chalk.red(`     Error: ${m.error}`));
           }
         });
-        console.log();
+        logger.print();
       }
 
       if (options.compare) {
         // Compare current session vs average
-        console.log(chalk.white.bold('📊 Performance Comparison\n'));
-        console.log(chalk.gray('Comparison feature coming in next update...\n'));
+        logger.print(chalk.white.bold('📊 Performance Comparison\n'));
+        logger.print(chalk.gray('Comparison feature coming in next update...\n'));
       }
 
-      console.log(chalk.gray('💡 Tips:'));
-      console.log(chalk.gray("  • Use --days 1 for today's metrics"));
-      console.log(chalk.gray('  • Use --operation <name> to see specific command history'));
-      console.log(chalk.gray('  • Use --export metrics.json to analyze externally\n'));
+      logger.print(chalk.gray('💡 Tips:'));
+      logger.print(chalk.gray("  • Use --days 1 for today's metrics"));
+      logger.print(chalk.gray('  • Use --operation <name> to see specific command history'));
+      logger.print(chalk.gray('  • Use --export metrics.json to analyze externally\n'));
     });
 }
 
