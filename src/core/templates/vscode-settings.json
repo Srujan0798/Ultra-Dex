@@ -1,0 +1,73 @@
+{
+  // Ultra-Dex VS Code Settings Template
+  // Copy this to your project's .vscode/settings.json
+
+  // Editor Settings
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  // TypeScript
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // File Associations
+  "files.associations": {
+    "*.md": "markdown",
+    ".ultra-dex.json": "json",
+    ".cursorrules": "markdown"
+  },
+
+  // Search Exclusions
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.next": true,
+    "**/.ultra": false // Include Ultra-Dex state files in search
+  },
+
+  // File Exclusions from Explorer
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/.next": true
+  },
+
+  // Terminal
+  "terminal.integrated.env.osx": {
+    "ULTRA_DEX_PROJECT": "${workspaceFolder}"
+  },
+  "terminal.integrated.env.linux": {
+    "ULTRA_DEX_PROJECT": "${workspaceFolder}"
+  },
+  "terminal.integrated.env.windows": {
+    "ULTRA_DEX_PROJECT": "${workspaceFolder}"
+  },
+
+  // Tasks - Ultra-Dex Commands
+  "tasks.version": "2.0.0",
+
+  // Copilot Settings (if using GitHub Copilot)
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true
+  },
+
+  // Markdown Preview
+  "markdown.preview.breaks": true
+
+  // Recommended Extensions (add to .vscode/extensions.json)
+  // "recommendations": [
+  //   "esbenp.prettier-vscode",
+  //   "dbaeumer.vscode-eslint",
+  //   "bradlc.vscode-tailwindcss",
+  //   "prisma.prisma",
+  //   "github.copilot"
+  // ]
+}

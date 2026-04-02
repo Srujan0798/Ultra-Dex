@@ -1,0 +1,7 @@
+{
+  "phase": "runtime_failed",
+  "issue": "dependency_resolution_conflict",
+  "install_attempts": "multiple_failed",
+  "system_runnable": false,
+  "next_action": "fresh_clean_install_next_session"
+}
