@@ -83,4 +83,4 @@
 
 ## **Cycle 3 is 80% COMPLETE.** Core features implemented, migration in progress.
 
-_Report generated following .AGI Protocol v1.0_
+_Report generated following .AGI Maya Protocol v1.0_

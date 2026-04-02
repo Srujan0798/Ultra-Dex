@@ -2,7 +2,7 @@
 
 ## Developer Experience & Interactive Interface
 
-Based on .AGI Protocol and IMPLEMENTATION-PLAN.md
+Based on .AGI Maya Protocol and IMPLEMENTATION-PLAN.md
 
 ---
 
@@ -87,4 +87,4 @@ gemini -y -p "Implement 'Did you mean?' typo correction for CLI commands. Add lo
 
 ---
 
-_Dispatch generated following .AGI Protocol v1.0_
+_Dispatch generated following .AGI Maya Protocol v1.0_

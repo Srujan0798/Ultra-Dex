@@ -2,7 +2,7 @@
 
 **Generated:** 2026-03-30T16:35:00Z  
 **Auditor:** MAYA (Claude Opus 4.5 via Copilot CLI)  
-**Protocol:** .AGI Protocol v10.1
+**Protocol:** .AGI Maya Protocol v10.1
 
 ---
 
@@ -623,5 +623,5 @@ codex -m gpt-5.4 -c model_reasoning_effort="high" --sandbox workspace-write
 
 ---
 
-*Report generated following .AGI Protocol v10.1 mandatory cycle report requirements*
+*Report generated following .AGI Maya Protocol v10.1 mandatory cycle report requirements*
 
