@@ -4,6 +4,10 @@
  * MCP Module Index
  */
 
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ prefix: 'MCP' });
+
 export * from './wizard.js';
 export * from './server.js';
 export { registerResources } from './resources.js';
@@ -17,7 +21,7 @@ export { ultraMemory } from '../../../../src/core/memory/manager.js';
  */
 function handleError(error) {
   try {
-    console.error('[index]', error instanceof Error ? error.message : String(error));
+    logger.error('[index]', error instanceof Error ? error.message : String(error));
   } catch (_) {
     // Fail silently
   }

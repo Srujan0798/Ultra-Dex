@@ -1,6 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
 
 import { AUTONOMOUS_GATES, requireGateApproval } from './gates.js';
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ prefix: 'Pipeline' });
 
 export class AutonomousPipeline {
   constructor(options = {}) {
@@ -41,7 +44,7 @@ async function safeExecute(fn, context = 'pipeline') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

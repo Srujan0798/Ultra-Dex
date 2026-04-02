@@ -10,9 +10,11 @@ import { Server } from 'socket.io';
 import crypto from 'crypto';
 import { promisify } from 'util';
 import { deflate, inflate } from 'zlib';
+import { Logger } from '../utils/logger.js';
 
 const deflateAsync = promisify(deflate);
 const inflateAsync = promisify(inflate);
+const logger = new Logger({ prefix: 'MCP' });
 
 /**
  * MCP Context Bus V2
@@ -30,9 +32,9 @@ export class MCPContextBusV2 {
     this.server = createServer(this.app);
     this.io = new Server(this.server, {
       cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      }
+        origin: '*',
+        methods: ['GET', 'POST'],
+      },
     });
 
     this.contexts = new Map();
@@ -47,7 +49,7 @@ export class MCPContextBusV2 {
     this.app.use(helmet());
     const limiter = rateLimit({
       windowMs: 15 * 60 * 1000,
-      max: 1000
+      max: 1000,
     });
     this.app.use(limiter);
     if (this.compressionEnabled) this.app.use(compression());
@@ -60,7 +62,7 @@ export class MCPContextBusV2 {
       res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        clients: this.io.engine.clientsCount
+        clients: this.io.engine.clientsCount,
       });
     });
 
@@ -86,7 +88,7 @@ export class MCPContextBusV2 {
         const { projectId, context } = data;
         this.contexts.set(projectId, {
           ...context,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         });
         socket.to(`project:${projectId}`).emit('sync', context);
       });
@@ -96,7 +98,7 @@ export class MCPContextBusV2 {
   async start() {
     return new Promise((resolve) => {
       this.server.listen(this.port, () => {
-        console.log(`[MCP V2] Context Bus active on port ${this.port}`);
+        logger.info(`[MCP V2] Context Bus active on port ${this.port}`);
         resolve();
       });
     });

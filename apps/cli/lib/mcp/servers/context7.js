@@ -4,7 +4,9 @@
  * Context7 MCP server adaptor
  */
 
-import { fetchContext7Docs } from '../../docs/context7.js';
+import { Logger } from '../../utils/logger.js';
+
+const logger = new Logger({ prefix: 'Context7' });
 
 export async function handleContext7Request(params) {
   const { package: pkg, version } = params || {};
@@ -27,7 +29,7 @@ async function safeExecute(fn, context = 'context7') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

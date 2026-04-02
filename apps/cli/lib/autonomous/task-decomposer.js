@@ -284,6 +284,32 @@ export class TaskDecomposer {
 
     return criticalPath;
   }
+
+  /**
+   * Get tasks that are ready to execute (all dependencies complete)
+   * @param {Object} plan - Original plan
+   * @param {Set<string>} completedTaskIds - Set of completed task IDs
+   * @returns {Array} Tasks ready for execution
+   */
+  getReadyTasks(plan, completedTaskIds) {
+    if (!plan?.tasks) return [];
+
+    return plan.tasks.filter((task) => {
+      if (completedTaskIds.has(task.id)) return false;
+      return (task.dependencies || []).every((dep) => completedTaskIds.has(dep));
+    });
+  }
+
+  /**
+   * Check if all tasks in a plan are complete
+   * @param {Object} plan - Original plan
+   * @param {Set<string>} completedTaskIds - Set of completed task IDs
+   * @returns {boolean} True if all tasks complete
+   */
+  isComplete(plan, completedTaskIds) {
+    if (!plan?.tasks) return true;
+    return plan.tasks.every((task) => completedTaskIds.has(task.id));
+  }
 }
 
 export default TaskDecomposer;

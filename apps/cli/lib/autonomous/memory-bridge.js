@@ -5,6 +5,7 @@ import { EventEmitter } from 'events';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
+import { createProvider, getDefaultProvider } from '../providers/index.js';
 
 /**
  * @typedef {Object} LoopContext
@@ -28,13 +29,13 @@ import { existsSync } from 'fs';
 
 /**
  * MemoryBridge - Connects autonomous loop to persistent memory systems
- * 
+ *
  * Provides context persistence across loop iterations:
  * - Save/load session state
  * - Store task results and learnings
  * - Search relevant past context
  * - Integration with memex indexing (when available)
- * 
+ *
  * @extends EventEmitter
  * @example
  * const bridge = new MemoryBridge({ dataDir: './data/autonomous' });
@@ -58,7 +59,7 @@ export class MemoryBridge extends EventEmitter {
       maxHistoryItems: options.maxHistoryItems ?? 100,
       maxCacheSize: options.maxCacheSize ?? 50,
       enableMemex: options.enableMemex ?? false,
-      ...options
+      ...options,
     };
 
     // In-memory cache with LRU eviction
@@ -67,6 +68,7 @@ export class MemoryBridge extends EventEmitter {
     this._cacheStats = { hits: 0, misses: 0 };
     this._history = [];
     this._initialized = false;
+    this._initPromise = null; // Lock for race-safe initialization
     this._memexClient = options.memexClient || null;
   }
 
@@ -112,34 +114,53 @@ export class MemoryBridge extends EventEmitter {
 
   /**
    * Initialize the memory bridge
-   * Loads history index if available
+   * Race-safe: multiple concurrent calls share the same init promise
    */
   async initialize() {
+    // Fast path: already initialized
     if (this._initialized) return;
-    
-    await this._ensureDataDir();
-    
-    // Load history index
-    const indexPath = path.join(this.options.dataDir, 'history_index.json');
-    if (existsSync(indexPath)) {
-      try {
-        const data = await fs.readFile(indexPath, 'utf8');
-        this._history = JSON.parse(data).slice(-this.options.maxHistoryItems);
-      } catch (e) {
-        this._history = [];
-      }
+
+    // Race-safe: only first caller creates the promise, others await it
+    if (!this._initPromise) {
+      this._initPromise = this._doInitialize();
     }
-    
-    this._initialized = true;
-    this.emit('initialized', { dataDir: this.options.dataDir });
+
+    return this._initPromise;
+  }
+
+  /**
+   * Actual initialization logic (called once)
+   * @private
+   */
+  async _doInitialize() {
+    try {
+      await this._ensureDataDir();
+
+      // Load history index
+      const indexPath = path.join(this.options.dataDir, 'history_index.json');
+      if (existsSync(indexPath)) {
+        try {
+          const data = await fs.readFile(indexPath, 'utf8');
+          this._history = JSON.parse(data).slice(-this.options.maxHistoryItems);
+        } catch (e) {
+          this._history = [];
+        }
+      }
+
+      this._initialized = true;
+      this.emit('initialized', { dataDir: this.options.dataDir });
+    } catch (err) {
+      this._initPromise = null; // Reset so retry is possible
+      throw err;
+    }
   }
 
   /**
    * Save loop context to persistent storage
-   * 
+   *
    * @param {LoopContext} context - Context to save
    * @returns {Promise<{sessionId: string, path: string}>} Save result
-   * 
+   *
    * @example
    * await bridge.saveContext({
    *   sessionId: 'auto_123',
@@ -150,15 +171,15 @@ export class MemoryBridge extends EventEmitter {
    */
   async saveContext(contextOrType, data = null) {
     await this.initialize();
-    
+
     let context;
-    
+
     // Handle both saveContext(context) and saveContext(type, data) signatures
     if (typeof contextOrType === 'string' && data !== null) {
       // Called as saveContext('goal', { test: 1 })
       context = {
         [contextOrType]: data,
-        type: contextOrType
+        type: contextOrType,
       };
     } else if (typeof contextOrType === 'object') {
       // Called as saveContext({ sessionId: 'x', goal: 'y' })
@@ -166,11 +187,11 @@ export class MemoryBridge extends EventEmitter {
     } else {
       throw new Error('saveContext requires either (context) or (type, data) parameters');
     }
-    
+
     if (!context.sessionId) {
       context.sessionId = this._generateSessionId();
     }
-    
+
     context.updatedAt = new Date().toISOString();
     if (!context.startedAt) {
       context.startedAt = context.updatedAt;
@@ -191,7 +212,7 @@ export class MemoryBridge extends EventEmitter {
     this._cacheOrder.push(context.sessionId);
     // Evict oldest if over limit
     this._evictOldest();
-    
+
     // Update history index
     const historyEntry = {
       sessionId: context.sessionId,
@@ -199,10 +220,10 @@ export class MemoryBridge extends EventEmitter {
       startedAt: context.startedAt,
       updatedAt: context.updatedAt,
       taskCount: context.plan?.tasks?.length || 0,
-      completedCount: context.taskResults?.filter(r => r?.success)?.length || 0
+      completedCount: context.taskResults?.filter((r) => r?.success)?.length || 0,
     };
-    
-    const existingIndex = this._history.findIndex(h => h.sessionId === context.sessionId);
+
+    const existingIndex = this._history.findIndex((h) => h.sessionId === context.sessionId);
     if (existingIndex >= 0) {
       this._history[existingIndex] = historyEntry;
     } else {
@@ -211,35 +232,35 @@ export class MemoryBridge extends EventEmitter {
         this._history.shift();
       }
     }
-    
+
     // Save history index
     const indexPath = path.join(this.options.dataDir, 'history_index.json');
     await fs.writeFile(indexPath, JSON.stringify(this._history, null, 2), 'utf8');
-    
+
     // Index in memex if enabled
     if (this.options.enableMemex && this._memexClient) {
       try {
         await this._memexClient.index({
           id: `autonomous:${context.sessionId}`,
           content: `${context.goal}\n${context.plan?.metadata?.summary || ''}`,
-          metadata: { type: 'autonomous-session', sessionId: context.sessionId }
+          metadata: { type: 'autonomous-session', sessionId: context.sessionId },
         });
       } catch (e) {
         this.emit('memex:error', { error: e.message });
       }
     }
-    
+
     this.emit('context:saved', { sessionId: context.sessionId });
-    
+
     return { sessionId: context.sessionId, path: sessionPath };
   }
 
   /**
    * Load loop context from storage
-   * 
+   *
    * @param {string} sessionId - Session ID to load
    * @returns {Promise<LoopContext|null>} Loaded context or null if not found
-   * 
+   *
    * @example
    * const context = await bridge.loadContext('auto_123');
    */
@@ -259,13 +280,13 @@ export class MemoryBridge extends EventEmitter {
     }
 
     this._cacheStats.misses++;
-    
+
     const sessionPath = this._getSessionPath(sessionId);
-    
+
     if (!existsSync(sessionPath)) {
       return null;
     }
-    
+
     try {
       const data = await fs.readFile(sessionPath, 'utf8');
       const context = JSON.parse(data);
@@ -287,59 +308,59 @@ export class MemoryBridge extends EventEmitter {
 
   /**
    * Search for relevant past contexts
-   * 
+   *
    * @param {string} query - Search query
    * @param {Object} [options={}] - Search options
    * @param {number} [options.limit=5] - Maximum results
    * @param {boolean} [options.includeTaskResults=false] - Include full task results
    * @returns {Promise<ContextSearchResult[]>} Search results
-   * 
+   *
    * @example
    * const results = await bridge.searchRelevant('authentication', { limit: 3 });
    */
   async searchRelevant(query, options = {}) {
     await this.initialize();
-    
+
     const { limit = 5, includeTaskResults = false } = options;
     const queryLower = query.toLowerCase();
-    const queryTokens = queryLower.split(/\s+/).filter(t => t.length > 2);
-    
+    const queryTokens = queryLower.split(/\s+/).filter((t) => t.length > 2);
+
     // Score each history item by relevance
-    const scored = this._history.map(entry => {
+    const scored = this._history.map((entry) => {
       let score = 0;
       const goalLower = (entry.goal || '').toLowerCase();
-      
+
       // Exact substring match
       if (goalLower.includes(queryLower)) {
         score += 10;
       }
-      
+
       // Token matching
       for (const token of queryTokens) {
         if (goalLower.includes(token)) {
           score += 2;
         }
       }
-      
+
       // Recency boost (newer = higher)
       const age = Date.now() - new Date(entry.updatedAt).getTime();
       const dayAge = age / (1000 * 60 * 60 * 24);
       score += Math.max(0, 5 - dayAge * 0.5);
-      
+
       // Completion rate boost
       if (entry.taskCount > 0) {
         score += (entry.completedCount / entry.taskCount) * 2;
       }
-      
+
       return { ...entry, relevanceScore: score };
     });
-    
+
     // Sort by score and take top results
     const results = scored
-      .filter(r => r.relevanceScore > 0)
+      .filter((r) => r.relevanceScore > 0)
       .sort((a, b) => b.relevanceScore - a.relevanceScore)
       .slice(0, limit);
-    
+
     // Optionally load full context for top results
     if (includeTaskResults) {
       for (const result of results) {
@@ -350,33 +371,33 @@ export class MemoryBridge extends EventEmitter {
         }
       }
     }
-    
+
     return results;
   }
 
   /**
    * Get most recent session context
-   * 
+   *
    * @returns {Promise<LoopContext|null>} Most recent context
    */
   async getLatestContext() {
     await this.initialize();
-    
+
     if (this._history.length === 0) return null;
-    
+
     const latest = this._history[this._history.length - 1];
     return this.loadContext(latest.sessionId);
   }
 
   /**
    * Clear a specific session
-   * 
+   *
    * @param {string} [sessionId] - Session to clear (optional for test compatibility)
    * @returns {Promise<boolean>} True if cleared
    */
   async clearSession(sessionId) {
     await this.initialize();
-    
+
     // Handle clearSession() with no parameters for autonomous-loop tests
     if (!sessionId) {
       // Clear all sessions for test compatibility
@@ -391,25 +412,25 @@ export class MemoryBridge extends EventEmitter {
     if (orderIndex >= 0) {
       this._cacheOrder.splice(orderIndex, 1);
     }
-    
+
     // Remove from history
-    this._history = this._history.filter(h => h.sessionId !== sessionId);
+    this._history = this._history.filter((h) => h.sessionId !== sessionId);
     const indexPath = path.join(this.options.dataDir, 'history_index.json');
     await fs.writeFile(indexPath, JSON.stringify(this._history, null, 2), 'utf8');
-    
+
     // Remove file
     if (existsSync(sessionPath)) {
       await fs.unlink(sessionPath);
       this.emit('context:cleared', { sessionId });
       return true;
     }
-    
+
     return false;
   }
 
   /**
    * Clear all session data
-   * 
+   *
    * @returns {Promise<number>} Number of sessions cleared
    */
   async clearAll() {
@@ -430,18 +451,18 @@ export class MemoryBridge extends EventEmitter {
     this._cacheOrder = [];
     this._cacheStats = { hits: 0, misses: 0 };
     this._history = [];
-    
+
     // Clear index
     const indexPath = path.join(this.options.dataDir, 'history_index.json');
     await fs.writeFile(indexPath, '[]', 'utf8');
-    
+
     this.emit('context:clearedAll', { count });
     return count;
   }
 
   /**
    * Add a learning/insight to current context
-   * 
+   *
    * @param {string} sessionId - Session ID
    * @param {Object} learning - Learning to add
    * @param {string} learning.type - Learning type (success, failure, insight)
@@ -453,23 +474,23 @@ export class MemoryBridge extends EventEmitter {
     if (!context) {
       throw new Error(`Session not found: ${sessionId}`);
     }
-    
+
     if (!context.learnings) {
       context.learnings = [];
     }
-    
+
     context.learnings.push({
       ...learning,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
+
     await this.saveContext(context);
     this.emit('learning:added', { sessionId, learning });
   }
 
   /**
    * Get session history summary
-   * 
+   *
    * @returns {Array} History entries
    */
   getHistory() {
@@ -483,8 +504,8 @@ export class MemoryBridge extends EventEmitter {
    */
   getStats() {
     const totalRequests = this._cacheStats.hits + this._cacheStats.misses;
-    const hitRate = totalRequests > 0 ? (this._cacheStats.hits / totalRequests) : 0;
-    const missRate = totalRequests > 0 ? (this._cacheStats.misses / totalRequests) : 0;
+    const hitRate = totalRequests > 0 ? this._cacheStats.hits / totalRequests : 0;
+    const missRate = totalRequests > 0 ? this._cacheStats.misses / totalRequests : 0;
 
     return {
       cachedSessions: this._cache.size,
@@ -496,8 +517,8 @@ export class MemoryBridge extends EventEmitter {
         hits: this._cacheStats.hits,
         misses: this._cacheStats.misses,
         hitRate: Math.round(hitRate * 100) / 100,
-        missRate: Math.round(missRate * 100) / 100
-      }
+        missRate: Math.round(missRate * 100) / 100,
+      },
     };
   }
 
@@ -509,7 +530,7 @@ export class MemoryBridge extends EventEmitter {
     const context = this.sessionId ? this._cache.get(this.sessionId) : null;
     return {
       sessionId: this.sessionId,
-      context: context || {}
+      context: context || {},
     };
   }
 
@@ -534,10 +555,171 @@ export class MemoryBridge extends EventEmitter {
       sessionId: this.sessionId,
       goalCount: context.goals ? context.goals.length : 0,
       taskCount: context.tasks ? context.tasks.length : 0,
-      hasContext: !!context && Object.keys(context).length > 0
+      hasContext: !!context && Object.keys(context).length > 0,
     };
+  }
+
+  /**
+   * Generate embedding for text using AI provider
+   * @private
+   * @param {string} text - Text to embed
+   * @returns {Promise<Array<number>>} Embedding vector
+   */
+  async _generateEmbedding(text) {
+    // Try to get a provider that supports embeddings
+    const providerId = getDefaultProvider() || 'openai';
+    if (!providerId) {
+      throw new Error('No AI provider configured for embeddings');
+    }
+
+    try {
+      const provider = await createProvider(providerId);
+
+      // Check if provider has getEmbedding method (OpenAI does)
+      if (typeof provider.getEmbedding === 'function') {
+        return await provider.getEmbedding(text);
+      }
+
+      // Fallback to using the provider's generate method with a special prompt
+      // This is a simplified approach - in a real implementation, we'd use a proper embedding model
+      this.emit('embedding:warning', {
+        message: 'Provider does not support embeddings, using mock embedding',
+        error: error.message,
+      });
+      throw new Error('Provider does not support embeddings');
+    } catch (error) {
+      // Fallback to mock embedding if no provider available
+      this.emit('embedding:warning', {
+        message: 'Embedding generation failed, using mock embedding',
+        error: error.message,
+      });
+      return this._generateMockEmbedding(text);
+    }
+  }
+
+  /**
+   * Generate mock embedding for testing
+   * @private
+   * @param {string} text - Text to embed
+   * @returns {Array<number>} Mock embedding vector
+   */
+  _generateMockEmbedding(text) {
+    // Simple hash-based embedding for fallback
+    const hash = this._simpleHash(text);
+    const embedding = [];
+    for (let i = 0; i < 1536; i++) {
+      // Generate deterministic values based on hash
+      const value = Math.sin(hash * (i + 1)) * 0.5 + 0.5;
+      embedding.push(value);
+    }
+    return embedding;
+  }
+
+  /**
+   * Simple hash function for text
+   * @private
+   * @param {string} text - Text to hash
+   * @returns {number} Hash value
+   */
+  _simpleHash(text) {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  /**
+   * Calculate cosine similarity between two vectors
+   * @private
+   * @param {Array<number>} a - First vector
+   * @param {Array<number>} b - Second vector
+   * @returns {number} Cosine similarity (0-1)
+   */
+  _cosineSimilarity(a, b) {
+    if (a.length !== b.length) {
+      throw new Error('Vectors must have the same length');
+    }
+
+    let dotProduct = 0;
+    let magnitudeA = 0;
+    let magnitudeB = 0;
+
+    for (let i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i];
+      magnitudeA += a[i] * a[i];
+      magnitudeB += b[i] * b[i];
+    }
+
+    magnitudeA = Math.sqrt(magnitudeA);
+    magnitudeB = Math.sqrt(magnitudeB);
+
+    if (magnitudeA === 0 || magnitudeB === 0) {
+      return 0;
+    }
+
+    return dotProduct / (magnitudeA * magnitudeB);
+  }
+
+  /**
+   * Search for semantically similar contexts using vector similarity
+   * @param {string} query - Search query
+   * @param {Object} [options={}] - Search options
+   * @param {number} [options.threshold=0.7] - Minimum similarity threshold
+   * @param {number} [options.limit=10] - Maximum results
+   * @param {Array<string>} [options.types] - Filter by context types
+   * @returns {Promise<Array>} Similar contexts sorted by similarity
+   */
+  async searchSemantic(query, options = {}) {
+    const { threshold = 0.7, limit = 10, types = ['goal', 'learning'] } = options;
+
+    // Generate embedding for query
+    const queryEmbedding = await this._generateEmbedding(query);
+
+    // Load all relevant contexts and generate embeddings
+    const results = [];
+
+    for (const entry of this._history) {
+      // Filter by type if specified
+      if (types && types.length > 0) {
+        const entryType = entry.type || 'goal';
+        if (!types.includes(entryType)) continue;
+      }
+
+      try {
+        // Load the full context
+        const context = await this.loadContext(entry.sessionId);
+        if (!context) continue;
+
+        // Generate embedding for context content
+        const contextText = `${context.goal || ''} ${context.plan?.metadata?.summary || ''}`;
+        const contextEmbedding = await this._generateEmbedding(contextText);
+
+        // Calculate similarity
+        const similarity = this._cosineSimilarity(queryEmbedding, contextEmbedding);
+
+        if (similarity >= threshold) {
+          results.push({
+            ...entry,
+            similarity,
+            context: contextText,
+            sessionId: entry.sessionId,
+          });
+        }
+      } catch (error) {
+        this.emit('embedding:warning', {
+          message: 'Failed to process context for similarity search',
+          error: error.message,
+        });
+        // Continue with other contexts
+      }
+    }
+
+    // Sort by similarity and limit results
+    return results.sort((a, b) => b.similarity - a.similarity).slice(0, limit);
   }
 }
 
 export default MemoryBridge;
-

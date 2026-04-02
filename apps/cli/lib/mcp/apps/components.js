@@ -2,12 +2,15 @@
 
 /**
  * MCP Apps - Interactive UI Components for AI Tools
- * Provides UI components that can be rendered in MCP-compatible tools like Cursor, Claude Desktop
+ * Provides UI components that can be rendered in MCP-compatible tools
  */
 
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
 import { AppError } from '../utils/errors.js';
+import { Logger } from '../../utils/logger.js';
+
+const logger = new Logger({ prefix: 'Components' });
 
 // Supported component types
 const SUPPORTED_COMPONENTS = [
@@ -507,7 +510,7 @@ async function safeExecute(fn, context = 'components') {
     return await fn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
     return null;
   }
 }

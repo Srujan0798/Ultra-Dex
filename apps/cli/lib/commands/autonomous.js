@@ -216,7 +216,7 @@ export class AutonomousEngine {
 
   async runTests() {
     try {
-      logger.log(chalk.gray(`Running: ${this.testCommand}...`));
+      printInfo(chalk.gray(`Running: ${this.testCommand}...`));
       execSync(this.testCommand, { stdio: 'pipe', cwd: this.projectPath });
       return { passed: true };
     } catch (error) {
@@ -329,11 +329,74 @@ export class AutonomousEngine {
 }
 
 import { agentOrchestrator as nexus } from '../../../../src/core/orchestration/index.js';
+import { AutonomousAgent } from '../autonomous/agent.js';
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ prefix: 'Autonomous' });
 
 export function registerAutonomousCommand(program) {
-  program
-    .command('autonomous [objective]')
-    .description('Run in autonomous mode with self-healing capabilities')
+  // Main autonomous command with subcommands
+  const autoCmd = program
+    .command('autonomous')
+    .description('Run in autonomous mode with self-healing capabilities');
+  
+  // Subcommand: autonomous run "goal"
+  autoCmd
+    .command('run <goal>')
+    .description('Execute autonomous goal-driven loop')
+    .option('--dry-run', 'Show plan without execution')
+    .option('--max-iterations <n>', 'Maximum planning iterations', '5')
+    .option('--approval <mode>', 'Approval mode: auto|manual|prompt', 'prompt')
+    .option('--provider <provider>', 'AI provider to use')
+    .action(async (goal, options) => {
+      try {
+        logger.info(chalk.bold.cyan('\n🤖 Ultra-Dex Autonomous Loop\n'));
+        logger.info(`Goal: ${chalk.yellow(goal)}`);
+        
+        const agent = new AutonomousAgent({
+          maxIterations: parseInt(options.maxIterations) || 5,
+          requireApproval: options.approval !== 'auto',
+          providerId: options.provider
+        });
+        
+        // Event listeners for progress
+        agent.on('phase:start', ({ phase }) => {
+          logger.info(`Phase: ${chalk.blue(phase)}`);
+        });
+        
+        agent.on('task:complete', ({ task }) => {
+          logger.success(`✓ ${task.name || task.id}`);
+        });
+        
+        agent.on('validation:failed', ({ reason }) => {
+          logger.warn(`Validation: ${reason}`);
+        });
+        
+        if (options.dryRun) {
+          logger.info(chalk.gray('\n[Dry Run Mode]'));
+          const plan = await agent.plan(goal);
+          logger.info(JSON.stringify(plan, null, 2));
+          return;
+        }
+        
+        const result = await agent.run(goal);
+        
+        if (result.success) {
+          logger.success(chalk.green('\n✅ Goal achieved!'));
+          logger.info(`Tasks completed: ${result.tasksCompleted}`);
+        } else {
+          logger.error(chalk.red('\n❌ Goal not fully achieved'));
+          logger.info(`Reason: ${result.reason || 'Unknown'}`);
+        }
+      } catch (error) {
+        logger.error(`Error: ${error.message}`);
+        process.exitCode = 1;
+      }
+    });
+  
+  // Legacy command: autonomous [objective]
+  autoCmd
+    .argument('[objective]', 'High-level objective for Nexus orchestrator')
     .option('--no-fix', 'Disable auto-fixing')
     .option('--heal', 'Enable AI self-healing', true)
     .option('--no-heal', 'Disable AI self-healing')
