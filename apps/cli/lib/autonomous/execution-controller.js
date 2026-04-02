@@ -70,14 +70,28 @@ export class ExecutionController extends EventEmitter {
       circuitThreshold: options.circuitThreshold ?? 3,
       circuitResetTime: options.circuitResetTime ?? 30000,
       useSwarm: options.useSwarm ?? true,
+      maxConcurrency: options.maxConcurrency ?? 4,
+      taskTimeout: options.taskTimeout ?? 60000,
       ...options
     };
+    
+    // Test compatibility properties
+    this.maxConcurrency = this.options.maxConcurrency;
+    this.taskTimeout = this.options.taskTimeout;
 
     // Circuit breaker state
     this._circuitState = CIRCUIT_STATES.CLOSED;
     this._circuitFailures = 0;
     this._circuitLastFailure = null;
     this._circuitLock = Promise.resolve();
+    
+    // Circuit breaker proxy for tests
+    const self = this;
+    this.circuitBreaker = {
+      get isOpen() { return self._circuitState === CIRCUIT_STATES.OPEN; },
+      get failures() { return self._circuitFailures; },
+      get state() { return self._circuitState; }
+    };
     
     // Execution tracking
     this._provider = null;
@@ -93,6 +107,57 @@ export class ExecutionController extends EventEmitter {
       avgDuration: 0,
       circuitBreaks: 0
     };
+  }
+
+  /**
+   * Initialize metrics - for test compatibility
+   * @returns {Object} Metrics object
+   */
+  initMetrics() {
+    this.metrics = {
+      totalTasks: 0,
+      completed: 0,
+      failed: 0,
+      totalRetries: 0,
+      avgDuration: 0,
+      circuitBreaks: 0
+    };
+    return this.metrics;
+  }
+
+  /**
+   * Chunk an array into smaller arrays - for test compatibility
+   * @param {Array} array - Array to chunk
+   * @param {number} size - Chunk size
+   * @returns {Array[]} Array of chunks
+   */
+  chunkArray(array, size) {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  /**
+   * Get circuit breaker state - for test compatibility
+   * @returns {Object} Circuit breaker state
+   */
+  getCircuitState() {
+    return {
+      isOpen: this._circuitState === CIRCUIT_STATES.OPEN,
+      state: this._circuitState,
+      failures: this._circuitFailures,
+      lastFailure: this._circuitLastFailure
+    };
+  }
+
+  /**
+   * Get execution metrics - for test compatibility
+   * @returns {Object} Current metrics
+   */
+  getMetrics() {
+    return { ...this.metrics };
   }
 
   /**
@@ -546,6 +611,7 @@ export class ExecutionController extends EventEmitter {
     const executionResult = {
       executionId,
       success,
+      status: success, // Test compatibility
       results,
       metrics: {
         totalTasks: results.length,
