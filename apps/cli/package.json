@@ -27,10 +27,6 @@
   },
   "homepage": "https://github.com/Srujan0798/Ultra-Dex",
   "bin": {
-    "ultra-dex": "./bin/ultra-dex-wrapper.js"
-  },
-  "main": "dist/ultra-dex.js",
-  "bin": {
     "ultra-dex": "dist/ultra-dex.js"
   },
   "files": [
@@ -51,7 +47,6 @@
     "@langchain/openai": "^0.3.15",
     "@modelcontextprotocol/sdk": "^1.25.3",
     "@notionhq/client": "^2.3.0",
-    "@ultra-dex/core": "*",
     "acorn": "^8.15.0",
     "acorn-walk": "^8.3.4",
     "ai": "^6.0.0",
@@ -77,13 +72,10 @@
     "marked": "^15.0.6",
     "neo4j-driver": "^5.28.1",
     "node-fetch": "^3.3.2",
-    "node-pty": "^1.1.0",
     "octokit": "^4.1.0",
     "ora": "^8.1.1",
-    "puppeteer": "^23.10.1",
     "socket.io": "^4.8.1",
     "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
     "strip-ansi": "^7.1.2",
     "terminal-link": "^3.0.0",
     "update-notifier": "^7.3.1",
@@ -105,8 +97,11 @@
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.4.7",
     "keytar": "^7.9.0",
+    "node-pty": "^1.1.0",
     "openai": "^4.70.0",
-    "playwright": "^1.58.2"
+    "playwright": "^1.58.2",
+    "puppeteer": "^23.10.1",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/node": "^22.10.10",

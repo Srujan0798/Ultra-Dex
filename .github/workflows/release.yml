@@ -19,7 +19,7 @@ jobs:
       - name: Install CLI dependencies
         run: |
           cd apps/cli
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps --ignore-scripts --omit=optional
 
       - name: Run CLI tests (non-blocking)
         run: |
