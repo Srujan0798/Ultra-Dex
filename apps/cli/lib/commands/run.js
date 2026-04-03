@@ -37,7 +37,7 @@ import {
   stripDecisionLine,
   truncateText,
 } from './run-context.js';
-import { DistributedCoordinator } from '../../../core/orchestration/distributed-coordinator.js';
+import { DistributedCoordinator } from '../../../../src/core/orchestration/distributed-coordinator.js';
 
 const execAsync = promisify(exec);
 const MAX_RUNTIME_HISTORY = 12;
