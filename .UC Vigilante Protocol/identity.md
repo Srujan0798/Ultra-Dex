@@ -92,6 +92,26 @@ Complete what's incomplete without interfering with official work.
 
 ---
 
+## Orphaned-Gap Criteria (Strict Gate)
+
+Shadow lane can act **only when all conditions pass**:
+
+1. No active official dispatch owns the gap.
+2. No agent is currently assigned/in-progress on that item.
+3. Impact is measurable (test failure, security risk, release blocker, broken UX path).
+4. The fix can complete in one clean cycle (detect → patch → verify).
+5. A verification command is defined before action.
+
+Shadow lane must **not act** if any of these are true:
+
+- Official dispatch is marked `ASSIGNED` or `IN_PROGRESS`.
+- Scope is ambiguous and may fork architecture.
+- Fix requires introducing new protocol surfaces/folders.
+
+Decision rule: **When uncertain, watch — do not intervene.**
+
+---
+
 *The shadows complete what the light forgets.*
 
 ---

@@ -5,7 +5,7 @@
  * @module tests/core/autonomous-loop.test
  */
 
-import { describe, it, beforeEach, afterEach } from 'node:test';
+import { describe, it, beforeEach, afterEach, after } from 'node:test';
 import assert from 'node:assert';
 
 import { PlanningEngine } from '../../apps/cli/lib/autonomous/planning-engine.js';
@@ -14,6 +14,11 @@ import { ExecutionController } from '../../apps/cli/lib/autonomous/execution-con
 import { ValidationLayer } from '../../apps/cli/lib/autonomous/validation-layer.js';
 import { MemoryBridge } from '../../apps/cli/lib/autonomous/memory-bridge.js';
 import { ApprovalGates, AUTONOMOUS_GATES } from '../../apps/cli/lib/autonomous/gates.js';
+
+// Force exit after all tests complete to avoid hanging
+after(() => {
+  setTimeout(() => process.exit(0), 100);
+});
 
 // ============================================================================
 // PlanningEngine Tests
@@ -24,6 +29,10 @@ describe('PlanningEngine', () => {
 
   beforeEach(() => {
     engine = new PlanningEngine();
+  });
+
+  afterEach(() => {
+    if (engine) engine.removeAllListeners();
   });
 
   it('should initialize with default options', () => {

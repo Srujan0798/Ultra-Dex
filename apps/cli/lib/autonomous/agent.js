@@ -387,6 +387,81 @@ export class AutonomousAgent extends EventEmitter {
       isRunning: this._isRunning,
     };
   }
+
+  /**
+   * Save current state as checkpoint
+   * @returns {Promise<string>} Checkpoint ID
+   */
+  async saveCheckpoint() {
+    const fs = await import('fs/promises');
+    const pathMod = await import('path');
+    
+    const checkpointDir = pathMod.join(process.cwd(), '.ultra', 'checkpoints');
+    await fs.mkdir(checkpointDir, { recursive: true });
+    
+    const checkpointId = `chk_${Date.now()}`;
+    const checkpoint = {
+      id: checkpointId,
+      sessionId: this._sessionId,
+      goal: this._currentGoal,
+      plan: this._currentPlan,
+      completedTasks: this._completedTasks || [],
+      pendingTasks: this._pendingTasks || [],
+      learnings: this._learnings || [],
+      createdAt: new Date().toISOString()
+    };
+    
+    const filePath = pathMod.join(checkpointDir, `${checkpointId}.json`);
+    await fs.writeFile(filePath, JSON.stringify(checkpoint, null, 2));
+    
+    this.emit('checkpoint:saved', { id: checkpointId, path: filePath });
+    return checkpointId;
+  }
+
+  /**
+   * Resume from checkpoint
+   * @param {string} checkpointId - Checkpoint to resume from
+   * @returns {Promise<AutonomousAgent>} New agent with restored state
+   */
+  static async resumeFromCheckpoint(checkpointId) {
+    const fs = await import('fs/promises');
+    const pathMod = await import('path');
+    
+    const filePath = pathMod.join(process.cwd(), '.ultra', 'checkpoints', `${checkpointId}.json`);
+    const data = JSON.parse(await fs.readFile(filePath, 'utf8'));
+    
+    const agent = new AutonomousAgent();
+    agent._sessionId = data.sessionId;
+    agent._currentGoal = data.goal;
+    agent._currentPlan = data.plan;
+    agent._completedTasks = data.completedTasks;
+    agent._pendingTasks = data.pendingTasks;
+    agent._learnings = data.learnings;
+    
+    return agent;
+  }
+
+  /**
+   * List available checkpoints
+   * @returns {Promise<Array>} List of checkpoints
+   */
+  static async listCheckpoints() {
+    const fs = await import('fs/promises');
+    const pathMod = await import('path');
+    
+    const checkpointDir = pathMod.join(process.cwd(), '.ultra', 'checkpoints');
+    try {
+      const files = await fs.readdir(checkpointDir);
+      const checkpoints = [];
+      for (const file of files.filter(f => f.endsWith('.json'))) {
+        const data = JSON.parse(await fs.readFile(pathMod.join(checkpointDir, file), 'utf8'));
+        checkpoints.push({ id: data.id, goal: data.goal, createdAt: data.createdAt });
+      }
+      return checkpoints.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } catch {
+      return [];
+    }
+  }
 }
 
 export default AutonomousAgent;

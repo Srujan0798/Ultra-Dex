@@ -1,7 +1,7 @@
 {
   "protocol": "UC Vigilante Shadow Ops",
-  "version": "1.1",
-  "lastUpdated": "2026-04-02T17:06:00Z",
+  "version": "1.2",
+  "lastUpdated": "2026-04-02T17:55:00Z",
   
   "mode": "SHADOW",
   "rule": "Never interfere with official work",
@@ -12,11 +12,13 @@
   },
   
   "health": {
-    "tests": { "pass": 199, "total": 201, "percentage": 99.1 },
+    "tests": { "pass": 142, "total": 151, "percentage": 94.0 },
+    "unit": { "pass": 123, "total": 125, "note": "1 fail, 1 cancelled (timeout window)" },
+    "integration": { "pass": 7, "total": 7, "percentage": 100.0 },
     "lint": "PASSING",
     "build": "PASSING",
     "consoleLogs": 795,
-    "lastCheck": "2026-04-02T17:00:00Z"
+    "lastCheck": "2026-04-02T17:55:00Z"
   },
   
   "officialWork": {
@@ -39,6 +41,28 @@
   "handoffs": {
     "active": [],
     "completed": []
+  },
+
+  "orphanCriteria": {
+    "allMustPass": [
+      "No active official dispatch owns the gap",
+      "No explicit owner is currently working it",
+      "Impact is measurable (test, security, or release blocker)",
+      "Can be finished in one clean cycle",
+      "Verification command exists before acting"
+    ],
+    "doNotActIfAny": [
+      "Official lane marked IN_PROGRESS",
+      "Scope is ambiguous and could fork architecture",
+      "Fix requires creating new protocol surfaces"
+    ]
+  },
+
+  "operatorChecklist": {
+    "restraint": true,
+    "prioritization": true,
+    "closureBeforeScope": true,
+    "communicationCompression": true
   },
   
   "recovery": "Read .UC Vigilante Protocol/identity.md. Check this file. Continue."

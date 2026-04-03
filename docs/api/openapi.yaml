@@ -1,0 +1,99 @@
+openapi: 3.0.0
+info:
+  title: Ultra-Dex Health Check API
+  version: 1.0.0
+  description: OpenAPI specification for Ultra-Dex health check endpoint
+servers:
+  - url: http://localhost:3002
+    description: Local development server
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the Ultra-Dex system
+      responses:
+        '200':
+          description: System healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Healthy system
+                  value:
+                    status: healthy
+                    uptime: 3600
+                    memory:
+                      used: 128
+                      total: 512
+                    providers:
+                      openai: connected
+                    sessions:
+                      active: 3
+                    timestamp: 2026-04-02T21:12:00Z
+        '503':
+          description: System unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                unhealthy:
+                  summary: Unhealthy system due to high memory usage
+                  value:
+                    status: unhealthy
+                    uptime: 7200
+                    memory:
+                      used: 900
+                      total: 1024
+                    providers:
+                      openai: error
+                    sessions:
+                      active: 0
+                    timestamp: 2026-04-02T21:12:00Z
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: Overall system health status
+        uptime:
+          type: integer
+          description: System uptime in seconds
+          example: 3600
+        memory:
+          type: object
+          properties:
+            used:
+              type: integer
+              description: Memory used in MB
+              example: 128
+            total:
+              type: integer
+              description: Total memory in MB
+              example: 512
+        providers:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [connected, error]
+          description: Status of AI providers
+          example:
+            openai: connected
+            anthropic: connected
+        sessions:
+          type: object
+          properties:
+            active:
+              type: integer
+              description: Number of active sessions
+              example: 3
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of health check in ISO8601 format
+          example: 2026-04-02T21:12:00Z
