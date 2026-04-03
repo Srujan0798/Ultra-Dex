@@ -25,19 +25,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --ignore-scripts --legacy-peer-deps
+        run: npm ci
 
-      - name: Run type checking
-        run: npm run type-check
+      - name: Run comprehensive tests
+        run: ./scripts/test.sh
 
-      - name: Run linting
-        run: npm run lint
-
-      - name: Run tests
-        run: npm test
-
-      - name: Security audit
-        run: npm audit --audit-level moderate
-
-      - name: Check formatting
-        run: npm run format:check
+      - name: Build all components
+        run: ./scripts/build.sh

@@ -202,8 +202,10 @@ describe('Rate Limiter Tests', () => {
   });
 
   it('Tokens refill over time', async () => {
-    // Mock task execution
+    // Mock task execution but preserve rate limiting
+    const originalExecuteTask = controller._executeTask.bind(controller);
     controller._executeTask = async (task) => {
+      await controller._checkRateLimit();
       return {
         taskId: task.id,
         success: true,
@@ -243,5 +245,8 @@ describe('Rate Limiter Tests', () => {
     // Should have had exactly one waiting event
     assert.equal(waitingEvents, 1, 'Should have had one waiting event');
     assert.ok(waitStarted, 'Task should have eventually started');
+
+    // Restore original method
+    controller._executeTask = originalExecuteTask;
   });
 });

@@ -1,19 +1,12 @@
 /**
  * NVIDIA Nemotron Provider
  * Free tier API integration for Ultra-Dex
- * 
+ *
  * Access 220+ models with ONE API key from NVIDIA
  * Get free key at: https://build.nvidia.com/
  */
 
-// Temporary mock for OpenAI when package is corrupted
-class MockOpenAI {
-  constructor(config) {
-    this.config = config;
-  }
-}
-
-const OpenAI = MockOpenAI;
+import OpenAI from 'openai';
 
 /**
  * Complete Model Catalog for Ultra-Dex
@@ -44,7 +37,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'primary',
   },
-  
+
   // ============================================================================
   // META LLAMA MODELS
   // ============================================================================
@@ -88,7 +81,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'llama',
   },
-  
+
   // ============================================================================
   // MISTRAL AI MODELS
   // ============================================================================
@@ -122,7 +115,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'mistral',
   },
-  
+
   // ============================================================================
   // MICROSOFT MODELS
   // ============================================================================
@@ -156,7 +149,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'microsoft',
   },
-  
+
   // ============================================================================
   // GOOGLE MODELS
   // ============================================================================
@@ -180,7 +173,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'google',
   },
-  
+
   // ============================================================================
   // QWEN (ALIBABA) MODELS
   // ============================================================================
@@ -224,7 +217,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'qwen',
   },
-  
+
   // ============================================================================
   // DEEPSEEK MODELS
   // ============================================================================
@@ -268,7 +261,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'deepseek',
   },
-  
+
   // ============================================================================
   // MOONSHOT AI (KIMI) MODELS
   // ============================================================================
@@ -302,7 +295,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'moonshot',
   },
-  
+
   // ============================================================================
   // Z.AI (GLM) MODELS
   // ============================================================================
@@ -326,7 +319,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'glm',
   },
-  
+
   // ============================================================================
   // STEPFUN MODELS
   // ============================================================================
@@ -340,7 +333,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'stepfun',
   },
-  
+
   // ============================================================================
   // MINIMAX MODELS
   // ============================================================================
@@ -354,7 +347,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'minimax',
   },
-  
+
   // ============================================================================
   // OPENAI MODELS
   // ============================================================================
@@ -378,7 +371,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'openai',
   },
-  
+
   // ============================================================================
   // VISION MODELS (Medium Priority)
   // ============================================================================
@@ -392,7 +385,7 @@ export const NEMOTRON_MODELS = {
     topP: 0.95,
     category: 'vision',
   },
-  
+
   // ============================================================================
   // EMBEDDING MODELS (Medium Priority)
   // ============================================================================
@@ -414,7 +407,7 @@ export const NEMOTRON_MODELS = {
     type: 'embedding',
     category: 'embedding',
   },
-  
+
   // ============================================================================
   // SPECIALIZED MODELS
   // ============================================================================
@@ -472,9 +465,7 @@ export function createNemotronClient(apiKey, modelId = null) {
     if (km.getKeyCount() > 0) {
       return km.createClient(modelId);
     }
-    throw new Error(
-      'NVIDIA API key required. Get one free at https://build.nvidia.com/'
-    );
+    throw new Error('NVIDIA API key required. Get one free at https://build.nvidia.com/');
   }
 
   return new OpenAI({
@@ -575,12 +566,7 @@ export async function createChatCompletion(client, model, messages, options = {}
  * @param {Function} options.onChunk - Callback for each stream chunk
  * @returns {Promise<string>} Full accumulated response
  */
-export async function streamWithNemotron({
-  client,
-  messages,
-  enableThinking = true,
-  onChunk,
-}) {
+export async function streamWithNemotron({ client, messages, enableThinking = true, onChunk }) {
   const extraBody = {
     chat_template_kwargs: {
       enable_thinking: enableThinking,
@@ -624,4 +610,3 @@ export const nemotronProvider = {
 };
 
 export default nemotronProvider;
-

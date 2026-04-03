@@ -11,6 +11,7 @@ import { HealthChecker } from '../../services/monitoring/health-checker.js';
 import { AgentCoordinationProtocol } from '../protocols/coordination.js';
 import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentRegistry } from './registry.js';
+import { PerformanceMetrics } from '../../benchmarks/performance-metrics.js';
 
 /**
  * DistributedCoordinator v1.0.0
@@ -34,6 +35,7 @@ export class DistributedCoordinator extends EventEmitter {
       enableDiscovery: options.enableDiscovery !== false,
       enableFailover: options.enableFailover !== false,
       enableLoadBalancing: options.enableLoadBalancing !== false,
+      enablePerformanceMetrics: options.enablePerformanceMetrics !== false,
       ...options,
     };
 
@@ -44,6 +46,11 @@ export class DistributedCoordinator extends EventEmitter {
     this.registry = options.agentRegistry || new AgentRegistry();
     this.orchestrator = options.orchestrator;
     this.executionEngine = options.executionEngine;
+
+    // Performance metrics
+    if (this.options.enablePerformanceMetrics) {
+      this.performanceMetrics = options.performanceMetrics || new PerformanceMetrics();
+    }
 
     // Instance state
     this.instanceId = this.options.instanceId;
@@ -89,6 +96,9 @@ export class DistributedCoordinator extends EventEmitter {
       await this.coordinationProtocol.initialize();
       await this.commBus.initialize();
       await this.registry.initialize();
+      if (this.performanceMetrics && typeof this.performanceMetrics.startCollection === 'function') {
+        this.performanceMetrics.startCollection();
+      }
 
       // Setup health checks
       this.setupHealthChecks();
@@ -900,6 +910,12 @@ export class DistributedCoordinator extends EventEmitter {
    */
   async submitTask(task, options = {}) {
     const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const submitStartTime = Date.now();
+
+    // Record task submission metrics
+    if (this.performanceMetrics) {
+      this.performanceMetrics.recordMetric('coordinator.tasks_submitted', 1);
+    }
 
     if (this.activeTasks.size < this.options.maxConcurrentTasks) {
       // Handle locally
@@ -919,16 +935,38 @@ export class DistributedCoordinator extends EventEmitter {
         const responseTime = Date.now() - this.activeTasks.get(taskId)?.startedAt || 0;
         this.updateAverageResponseTime(responseTime);
 
+        // Record successful local execution metrics
+        if (this.performanceMetrics) {
+          this.performanceMetrics.recordLatency('coordinator.local_execution', responseTime, {
+            taskId,
+            success: true,
+          });
+          this.performanceMetrics.recordMetric('coordinator.tasks_completed_locally', 1);
+        }
+
         return { taskId, result, success: true };
       } catch (error) {
         this.activeTasks.delete(taskId);
         this.metrics.tasksFailed++;
+
+        // Record failed local execution metrics
+        if (this.performanceMetrics) {
+          const responseTime = Date.now() - submitStartTime;
+          this.performanceMetrics.recordLatency('coordinator.local_execution', responseTime, {
+            taskId,
+            success: false,
+            error: error.message.substring(0, 100),
+          });
+          this.performanceMetrics.recordMetric('coordinator.tasks_failed_locally', 1);
+        }
+
         throw error;
       }
     } else if (this.options.enableLoadBalancing) {
       // Delegate to peer
       const targetPeer = this.selectPeerForTask(task);
       if (targetPeer) {
+        const delegationStartTime = Date.now();
         await this.delegateTaskToPeer(targetPeer.id, { taskId, task, priority: options.priority || 1 });
         this.activeTasks.set(taskId, {
           id: taskId,
@@ -936,6 +974,16 @@ export class DistributedCoordinator extends EventEmitter {
           assignedPeer: targetPeer.id,
           startedAt: Date.now(),
         });
+
+        // Record delegation metrics
+        if (this.performanceMetrics) {
+          const delegationTime = Date.now() - delegationStartTime;
+          this.performanceMetrics.recordLatency('coordinator.task_delegation', delegationTime, {
+            taskId,
+            targetPeer: targetPeer.id,
+          });
+          this.performanceMetrics.recordMetric('coordinator.tasks_delegated', 1);
+        }
 
         // Wait for result (simplified - in real implementation, use promises/futures)
         return new Promise((resolve, reject) => {

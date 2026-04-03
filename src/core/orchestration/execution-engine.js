@@ -6,6 +6,7 @@ import { ObservabilitySystem } from '../system/observability.js';
 import { SmartAIRouter } from '../ai/router.js';
 import { AgentRegistry } from './registry.js';
 import { ExecutionTrace } from '../../platform/cli/swarm/protocol.js';
+import { PerformanceMetrics } from '../../benchmarks/performance-metrics.js';
 
 /**
  * ExecutionTask represents a task to be executed by the engine
@@ -30,6 +31,7 @@ export class ExecutionEngine {
     this.options = {
       enableTracing: options.enableTracing !== false,
       maxRetries: options.maxRetries || 3,
+      enablePerformanceMetrics: options.enablePerformanceMetrics !== false,
       ...options,
     };
 
@@ -37,6 +39,11 @@ export class ExecutionEngine {
     this.agentRegistry = options.agentRegistry || new AgentRegistry();
     this.observability = options.observability || new ObservabilitySystem();
     this.mcpServer = options.mcpServer;
+
+    // Performance metrics
+    if (this.options.enablePerformanceMetrics) {
+      this.performanceMetrics = options.performanceMetrics || new PerformanceMetrics();
+    }
   }
 
   async initialize() {
@@ -49,6 +56,9 @@ export class ExecutionEngine {
     if (this.observability && typeof this.observability.initialize === 'function') {
       await this.observability.initialize();
     }
+    if (this.performanceMetrics && typeof this.performanceMetrics.startCollection === 'function') {
+      this.performanceMetrics.startCollection();
+    }
     return this;
   }
 
@@ -59,6 +69,7 @@ export class ExecutionEngine {
    */
   async execute(task) {
     const trace = this.options.enableTracing ? new ExecutionTrace(task.id, task.input) : null;
+    const executionStartTime = Date.now();
 
     try {
       if (trace) {
@@ -72,6 +83,12 @@ export class ExecutionEngine {
 
       logger.info('Starting task execution', { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
       task.status = 'running';
+
+      // Record execution start metrics
+      if (this.performanceMetrics) {
+        this.performanceMetrics.recordMetric('execution.tasks_started', 1);
+        this.performanceMetrics.recordMetric('execution.active_tasks', 1, { operation: 'increment' });
+      }
 
       for (let i = 0; i < task.steps.length; i++) {
         const step = task.steps[i];
@@ -230,8 +247,18 @@ export class ExecutionEngine {
         yield stepStartProgress;
 
         try {
-          const result = await this.executeStep(step, task, cancellationToken);
+          const result = await this.executeStep(step, task);
           const duration = Date.now() - startTime;
+
+          // Record step execution metrics
+          if (this.performanceMetrics) {
+            this.performanceMetrics.recordLatency(`execution.step.${step.type}`, duration, {
+              taskId: task.id,
+              stepId,
+              agent: task.agent,
+            });
+          }
+
           task.results[stepId] = result;
 
           if (trace) {
@@ -571,8 +598,16 @@ export class ExecutionEngine {
           logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
         } catch (error) {
           const duration = Date.now() - startTime;
-          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message, duration });
+          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
           task.errors.push({ stepId, error: error.message });
+
+          // Record step error metrics
+          if (this.performanceMetrics) {
+            this.performanceMetrics.recordMetric('execution.step_errors', 1, {
+              stepType: step.type,
+              error: error.message.substring(0, 100), // Truncate long error messages
+            });
+          }
 
           if (trace) {
             try {
