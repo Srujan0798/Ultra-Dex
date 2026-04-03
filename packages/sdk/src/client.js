@@ -273,12 +273,25 @@ export class UltraDex {
    * @param {Function} options.onProgress - Callback for progress updates
    * @param {boolean} options.trace - Enable tracing
    * @param {string} options.mode - Execution mode ('simple', 'detailed', 'iterative', 'distributed')
+   * @param {AbortSignal} options.cancellationToken - Cancellation token for aborting execution
    * @returns {AsyncGenerator} Streaming results with progress updates
    */
   async *executeStream(task, options = {}) {
-    const { onProgress, trace: enableTrace = false, mode = 'simple', provider, agents } = options;
+    const {
+      onProgress,
+      trace: enableTrace = false,
+      mode = 'simple',
+      provider,
+      agents,
+      cancellationToken,
+    } = options;
 
     try {
+      // Check for cancellation before starting
+      if (cancellationToken?.aborted) {
+        throw new Error('Execution cancelled');
+      }
+
       if (mode === 'distributed') {
         // Initialize distributed coordinator if not already
         if (!this.distributedCoordinator) {
@@ -289,6 +302,11 @@ export class UltraDex {
             executionEngine: this.executionEngine,
           });
           await this.distributedCoordinator.initialize();
+        }
+
+        // Check for cancellation after initialization
+        if (cancellationToken?.aborted) {
+          throw new Error('Execution cancelled');
         }
 
         // For distributed streaming, we need to handle peer communication
@@ -306,49 +324,83 @@ export class UltraDex {
         if (onProgress) onProgress(initialProgress);
         yield initialProgress;
 
-        // For now, delegate to peer and simulate streaming
-        // In a full implementation, this would use WebSocket streaming between peers
-        if (this.distributedCoordinator.peers.size > 0) {
-          const targetPeer = this.distributedCoordinator.selectPeerForTask(task);
-          if (targetPeer) {
-            // Simulate streaming by yielding progress updates
+        // Set up cancellation handler
+        const abortHandler = () => {
+          throw new Error('Execution cancelled');
+        };
+        if (cancellationToken) {
+          cancellationToken.addEventListener('abort', abortHandler);
+        }
+
+        try {
+          // For now, delegate to peer and simulate streaming
+          // In a full implementation, this would use WebSocket streaming between peers
+          if (this.distributedCoordinator.peers.size > 0) {
+            const targetPeer = this.distributedCoordinator.selectPeerForTask(task);
+            if (targetPeer) {
+              // Check for cancellation before delegating
+              if (cancellationToken?.aborted) {
+                throw new Error('Execution cancelled');
+              }
+
+              // Simulate streaming by yielding progress updates
+              yield {
+                type: 'peer_selected',
+                taskId,
+                peerId: targetPeer.id,
+                status: 'delegating',
+              };
+
+              // Execute locally for now - full distributed streaming would require WebSocket upgrades
+              const streamGenerator = this.distributedCoordinator.executeTaskLocallyStream(task, {
+                ...options,
+                onProgress,
+                cancellationToken,
+              });
+
+              for await (const progress of streamGenerator) {
+                // Check for cancellation during iteration
+                if (cancellationToken?.aborted) {
+                  throw new Error('Execution cancelled');
+                }
+                yield {
+                  ...progress,
+                  distributed: true,
+                  peerId: targetPeer.id,
+                };
+              }
+            } else {
+              throw new Error('No available peers for distributed streaming');
+            }
+          } else {
+            // Check for cancellation before fallback
+            if (cancellationToken?.aborted) {
+              throw new Error('Execution cancelled');
+            }
+
+            // Fall back to local streaming if no peers
             yield {
-              type: 'peer_selected',
+              type: 'fallback_to_local',
               taskId,
-              peerId: targetPeer.id,
-              status: 'delegating',
+              status: 'executing_locally',
             };
 
-            // Execute locally for now - full distributed streaming would require WebSocket upgrades
-            const streamGenerator = this.distributedCoordinator.executeTaskLocallyStream(task, {
+            const streamGenerator = this.executeStreamLocal(task, {
               ...options,
-              onProgress,
+              mode: 'simple',
+              cancellationToken,
             });
-
             for await (const progress of streamGenerator) {
               yield {
                 ...progress,
-                distributed: true,
-                peerId: targetPeer.id,
+                distributed: false,
               };
             }
-          } else {
-            throw new Error('No available peers for distributed streaming');
           }
-        } else {
-          // Fall back to local streaming if no peers
-          yield {
-            type: 'fallback_to_local',
-            taskId,
-            status: 'executing_locally',
-          };
-
-          const streamGenerator = this.executeStreamLocal(task, { ...options, mode: 'simple' });
-          for await (const progress of streamGenerator) {
-            yield {
-              ...progress,
-              distributed: false,
-            };
+        } finally {
+          // Clean up cancellation handler
+          if (cancellationToken) {
+            cancellationToken.removeEventListener('abort', abortHandler);
           }
         }
 
@@ -384,29 +436,69 @@ export class UltraDex {
    * Execute task locally with streaming
    */
   async *executeStreamLocal(task, options = {}) {
-    const { onProgress, trace: enableTrace = false, provider, agents, mode = 'simple' } = options;
+    const {
+      onProgress,
+      trace: enableTrace = false,
+      provider,
+      agents,
+      mode = 'simple',
+      cancellationToken,
+    } = options;
+
+    // Check for cancellation before orchestration
+    if (cancellationToken?.aborted) {
+      throw new Error('Execution cancelled');
+    }
 
     // Orchestrate the task using v2.0 Orchestrator
     const executionTask = await this.orchestrator.orchestrate(task, mode, { provider, agents });
 
-    // Execute the task using ExecutionEngine with streaming
-    const streamGenerator = this.executionEngine.executeStream(executionTask, { onProgress });
+    // Check for cancellation after orchestration
+    if (cancellationToken?.aborted) {
+      throw new Error('Execution cancelled');
+    }
 
-    for await (const progress of streamGenerator) {
-      // Add observability logging if tracing enabled
-      if (enableTrace && progress.type === 'complete') {
-        this.observability.log('stream_execution_completed', {
-          taskId: progress.run_id,
-          results: progress.results,
-          duration: progress.duration,
-        });
+    // Set up cancellation handler
+    const abortHandler = () => {
+      throw new Error('Execution cancelled');
+    };
+    if (cancellationToken) {
+      cancellationToken.addEventListener('abort', abortHandler);
+    }
+
+    try {
+      // Execute the task using ExecutionEngine with streaming
+      const streamGenerator = this.executionEngine.executeStream(executionTask, {
+        onProgress,
+        cancellationToken,
+      });
+
+      for await (const progress of streamGenerator) {
+        // Check for cancellation during iteration
+        if (cancellationToken?.aborted) {
+          throw new Error('Execution cancelled');
+        }
+
+        // Add observability logging if tracing enabled
+        if (enableTrace && progress.type === 'complete') {
+          this.observability.log('stream_execution_completed', {
+            taskId: progress.run_id,
+            results: progress.results,
+            duration: progress.duration,
+          });
+        }
+
+        yield {
+          ...progress,
+          trace: enableTrace ? progress.trace : undefined,
+          distributed: false,
+        };
       }
-
-      yield {
-        ...progress,
-        trace: enableTrace ? progress.trace : undefined,
-        distributed: false,
-      };
+    } finally {
+      // Clean up cancellation handler
+      if (cancellationToken) {
+        cancellationToken.removeEventListener('abort', abortHandler);
+      }
     }
   }
 
