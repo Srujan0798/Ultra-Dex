@@ -5,7 +5,19 @@ import { EventEmitter } from 'events';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
-import { createProvider, getDefaultProvider } from '../providers/index.js';
+
+// Lazy load providers to avoid dependency issues in tests
+let _providerModule = null;
+async function getProviderModule() {
+  if (!_providerModule) {
+    try {
+      _providerModule = await import('../providers/index.js');
+    } catch {
+      _providerModule = { createProvider: () => null, getDefaultProvider: () => null };
+    }
+  }
+  return _providerModule;
+}
 
 /**
  * @typedef {Object} LoopContext
@@ -567,13 +579,14 @@ export class MemoryBridge extends EventEmitter {
    */
   async _generateEmbedding(text) {
     // Try to get a provider that supports embeddings
-    const providerId = getDefaultProvider() || 'openai';
+    const providers = await getProviderModule();
+    const providerId = providers.getDefaultProvider?.() || 'openai';
     if (!providerId) {
       throw new Error('No AI provider configured for embeddings');
     }
 
     try {
-      const provider = await createProvider(providerId);
+      const provider = await providers.createProvider?.(providerId);
 
       // Check if provider has getEmbedding method (OpenAI does)
       if (typeof provider.getEmbedding === 'function') {

@@ -3,6 +3,9 @@ import { BaseProvider, assertProviderContract } from './provider.js';
 import { PluginLoader } from './plugin.js';
 import { SmartRouter } from './router.js';
 import { MiddlewarePipeline } from './middleware.js';
+import { Orchestrator } from '../../../src/core/orchestration/orchestrator.js';
+import { ExecutionEngine } from '../../../src/core/orchestration/execution-engine.js';
+import { ObservabilitySystem } from '../../../src/core/system/observability.js';
 
 export class UltraDex {
   constructor(config = {}) {
@@ -24,6 +27,11 @@ export class UltraDex {
     this.plugins = new PluginLoader();
     this.router = null;
     this.middleware = new MiddlewarePipeline();
+
+    // Initialize v2.0 components
+    this.orchestrator = new Orchestrator();
+    this.executionEngine = new ExecutionEngine();
+    this.observability = new ObservabilitySystem();
   }
 
   // -----------------------------------------------------------------------
@@ -140,6 +148,39 @@ export class UltraDex {
       status: 'completed',
       result,
       timestamp: new Date().toISOString(),
+    };
+  }
+
+  async execute(task, options = {}) {
+    const { provider, agents, trace: enableTrace = false, mode = 'simple' } = options;
+
+    // Orchestrate the task using v2.0 Orchestrator
+    const executionTask = await this.orchestrator.orchestrate(task, mode, { provider, agents });
+
+    // Execute the task using ExecutionEngine
+    const result = await this.executionEngine.execute(executionTask);
+
+    // Handle tracing with ObservabilitySystem if enabled
+    let traceData = result.trace;
+    if (enableTrace) {
+      this.observability.log('execution_completed', {
+        taskId: result.run_id,
+        results: result.results,
+        duration: result.duration,
+      });
+      // Additional trace data can be retrieved from observability if needed
+    }
+
+    // Support for distributed coordination (placeholder for future implementation)
+    if (mode === 'distributed') {
+      // Implement distributed coordination logic here
+      this.observability.log('distributed_execution', { taskId: result.run_id });
+    }
+
+    return {
+      ...result,
+      trace: enableTrace ? traceData : undefined,
+      distributed: mode === 'distributed',
     };
   }
 

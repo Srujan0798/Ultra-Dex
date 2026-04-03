@@ -1,151 +1,155 @@
 // Copyright (c) 2026 Ultra-Dex
 // src/core/orchestration/scheduler.js
 
+import { AgentRegistry } from './registry.js';
+import TraceCollector from '../observability/trace-collector.js';
+
 /**
- * Agent Scheduler
- * Manages agent execution scheduling and resource allocation
+ * Scheduler
+ * Deterministically assigns task steps to agents based on capabilities
  */
 
-export class AgentScheduler {
-  constructor(options = {}) {
+export class Scheduler {
+  constructor(agentRegistry, traceCollector, options = {}) {
+    this.registry = agentRegistry;
+    this.traceCollector = traceCollector;
     this.options = {
-      maxConcurrentAgents: options.maxConcurrentAgents || 8,
-      queueSize: options.queueSize || 100,
-      retryAttempts: options.retryAttempts || 3,
-      retryDelay: options.retryDelay || 1000,
-      enablePrioritization: options.enablePrioritization !== false,
       enableLoadBalancing: options.enableLoadBalancing !== false,
-      ...options
+      maxConcurrentTasksPerAgent: options.maxConcurrentTasksPerAgent || 5,
+      ...options,
     };
 
-    this.agentQueues = new Map(); // agentId -> queue of tasks
-    this.runningTasks = new Map(); // taskId -> { agentId, startTime, promise }
-    this.agentLoad = new Map(); // agentId -> current load
-    this.taskQueue = []; // Priority queue for tasks
-    this.isRunning = false;
+    this.agentLoad = new Map(); // agentId -> current load count
+    this.assignmentHistory = []; // For deterministic round-robin if needed
   }
 
   /**
-   * Schedule a task for an agent
+   * Assign a step to an agent based on requirements
+   * @param {Array<string>} requirements - Array of capability requirements (e.g., ["nodejs", "api"])
+   * @param {Object} context - Additional context for assignment
+   * @returns {Object} - Assigned agent info
+   * @throws {Error} - If no agent matches the requirements
    */
-  async schedule(agentId, task, options = {}) {
-    // Check if agent is available
-    const currentLoad = this.getAgentLoad(agentId);
-    if (currentLoad >= this.options.maxConcurrentAgents) {
-      // Add to queue if agent is busy
-      if (!this.agentQueues.has(agentId)) {
-        this.agentQueues.set(agentId, []);
-      }
+  async assignStep(requirements, context = {}) {
+    const traceId =
+      context.traceId ||
+      this.traceCollector?.startTrace({
+        agentId: 'scheduler',
+        task: `Assign step with requirements: ${requirements.join(', ')}`,
+        metadata: { requirements, context },
+      });
 
-      const queue = this.agentQueues.get(agentId);
-      if (queue.length >= this.options.queueSize) {
-        throw new Error(`Agent ${agentId} queue is full (${this.options.queueSize})`);
-      }
-
-      const taskId = this.generateTaskId();
-      const queuedTask = {
-        id: taskId,
-        agentId,
-        task,
-        options,
-        priority: options.priority || 5,
-        scheduledAt: Date.now(),
-        retries: 0
-      };
-
-      // Insert in priority order (higher priority first)
-      const insertIndex = queue.findIndex(qt => qt.priority < queuedTask.priority);
-      if (insertIndex === -1) {
-        queue.push(queuedTask); // Add to end if no lower priority tasks
-      } else {
-        queue.splice(insertIndex, 0, queuedTask); // Insert at correct position
-      }
-
-      return {
-        taskId,
-        status: 'queued',
-        queuePosition: queue.indexOf(queuedTask)
-      };
-    }
-
-    // Execute immediately if agent is available
-    return await this.executeTask(agentId, task, options);
-  }
-
-  /**
-   * Execute a task with an agent
-   */
-  async executeTask(agentId, task, options = {}) {
-    const taskId = this.generateTaskId();
-    const startTime = Date.now();
-
-    // Track running task
-    const taskPromise = this.runTask(agentId, task, options, taskId);
-    this.runningTasks.set(taskId, {
-      agentId,
-      startTime,
-      promise: taskPromise,
-      options
+    const spanId = this.traceCollector?.startSpan({
+      traceId,
+      operation: 'agent_assignment',
+      agentId: 'scheduler',
+      metadata: { requirements, stepCount: context.stepCount },
     });
 
-    // Update agent load
-    this.incrementAgentLoad(agentId);
-
     try {
-      const result = await taskPromise;
-      
-      // Update metrics
-      const executionTime = Date.now() - startTime;
-      this.decrementAgentLoad(agentId);
-      this.runningTasks.delete(taskId);
+      // Find agents matching all requirements
+      const matchingAgents = this.registry.findAgentsByCapabilities(requirements);
 
-      return {
-        taskId,
-        status: 'completed',
-        result,
-        executionTime,
-        agentId
-      };
-    } catch (error) {
-      this.decrementAgentLoad(agentId);
-      this.runningTasks.delete(taskId);
-
-      // Handle retry logic
-      if (options.retryAttempts === undefined || options.retryAttempts > 0) {
-        const remainingRetries = options.retryAttempts - 1;
-        if (remainingRetries > 0) {
-          // Retry with exponential backoff
-          const delay = this.options.retryDelay * Math.pow(2, options.retryAttempts - remainingRetries);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          
-          return await this.executeTask(agentId, task, { ...options, retryAttempts: remainingRetries });
-        }
+      if (matchingAgents.length === 0) {
+        const error = new Error(
+          `No agent found with required capabilities: ${requirements.join(', ')}`
+        );
+        this.traceCollector?.failSpan(traceId, spanId, error);
+        throw error;
       }
 
+      // Filter agents that are active
+      const activeAgents = matchingAgents.filter((agent) => agent.status === 'active');
+
+      if (activeAgents.length === 0) {
+        const error = new Error(
+          `No active agents found with required capabilities: ${requirements.join(', ')}`
+        );
+        this.traceCollector?.failSpan(traceId, spanId, error);
+        throw error;
+      }
+
+      // Sort agents deterministically for consistent assignment
+      const sortedAgents = activeAgents.sort((a, b) => a.id.localeCompare(b.id));
+
+      // Apply load balancing if enabled
+      let selectedAgent;
+      if (this.options.enableLoadBalancing) {
+        selectedAgent = this.selectLeastLoadedAgent(sortedAgents);
+      } else {
+        // Deterministic assignment: use hash of requirements for consistent selection
+        const hash = this.hashRequirements(requirements);
+        const index = hash % sortedAgents.length;
+        selectedAgent = sortedAgents[index];
+      }
+
+      // Check agent availability
+      const currentLoad = this.getAgentLoad(selectedAgent.id);
+      if (currentLoad >= this.options.maxConcurrentTasksPerAgent) {
+        const error = new Error(
+          `Agent ${selectedAgent.id} is at maximum load (${currentLoad}/${this.options.maxConcurrentTasksPerAgent})`
+        );
+        this.traceCollector?.failSpan(traceId, spanId, error);
+        throw error;
+      }
+
+      // Increment load
+      this.incrementAgentLoad(selectedAgent.id);
+
+      // Log assignment
+      this.traceCollector?.addEvent(traceId, spanId, 'agent_assigned', {
+        agentId: selectedAgent.id,
+        requirements,
+        loadAfter: this.getAgentLoad(selectedAgent.id),
+      });
+
+      this.traceCollector?.endSpan(traceId, spanId);
+
+      return {
+        agentId: selectedAgent.id,
+        agent: selectedAgent,
+        requirements,
+        assignedAt: Date.now(),
+        traceId,
+      };
+    } catch (error) {
+      if (spanId) this.traceCollector?.failSpan(traceId, spanId, error);
       throw error;
     }
   }
 
   /**
-   * Internal task runner
+   * Release load for an agent after task completion
+   * @param {string} agentId - The agent ID
    */
-  async runTask(agentId, task, options, taskId) {
-    // This would typically call the agent execution system
-    // For now, we'll simulate execution
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simulate task execution
-        resolve({
-          success: true,
-          output: `Task executed by agent ${agentId}`,
-          taskId
-        });
-      }, 100 + Math.random() * 200); // Random delay between 100-300ms
-    });
+  releaseAgentLoad(agentId) {
+    this.decrementAgentLoad(agentId);
+  }
+
+  /**
+   * Select the least loaded agent from candidates
+   * @param {Array} agents - Array of agent objects
+   * @returns {Object} - Selected agent
+   */
+  selectLeastLoadedAgent(agents) {
+    let minLoad = Infinity;
+    let selectedAgent = agents[0];
+
+    for (const agent of agents) {
+      const load = this.getAgentLoad(agent.id);
+      if (load < minLoad) {
+        minLoad = load;
+        selectedAgent = agent;
+      }
+    }
+
+    return selectedAgent;
   }
 
   /**
    * Get current load for an agent
+   * @param {string} agentId - The agent ID
+   * @returns {number} - Current load count
    */
   getAgentLoad(agentId) {
     return this.agentLoad.get(agentId) || 0;
@@ -153,6 +157,7 @@ export class AgentScheduler {
 
   /**
    * Increment agent load counter
+   * @param {string} agentId - The agent ID
    */
   incrementAgentLoad(agentId) {
     const current = this.getAgentLoad(agentId);
@@ -161,6 +166,7 @@ export class AgentScheduler {
 
   /**
    * Decrement agent load counter
+   * @param {string} agentId - The agent ID
    */
   decrementAgentLoad(agentId) {
     const current = this.getAgentLoad(agentId);
@@ -172,75 +178,41 @@ export class AgentScheduler {
   }
 
   /**
-   * Get agent utilization metrics
+   * Generate a simple hash for deterministic selection
+   * @param {Array<string>} requirements - Array of requirements
+   * @returns {number} - Hash value
    */
-  getAgentUtilization(agentId) {
-    const load = this.getAgentLoad(agentId);
-    const maxLoad = this.options.maxConcurrentAgents;
-    return {
-      currentLoad: load,
-      maxLoad,
-      utilization: maxLoad > 0 ? (load / maxLoad) * 100 : 0
-    };
+  hashRequirements(requirements) {
+    const str = requirements.sort().join(',');
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
   }
 
   /**
    * Get scheduler metrics
+   * @returns {Object} - Metrics object
    */
   getMetrics() {
+    const totalLoad = Array.from(this.agentLoad.values()).reduce((sum, load) => sum + load, 0);
+    const agentCount = this.agentLoad.size;
+
     return {
-      totalRunningTasks: this.runningTasks.size,
-      totalQueuedTasks: Array.from(this.agentQueues.values()).reduce((acc, queue) => acc + queue.length, 0),
-      agentUtilization: Object.fromEntries(
-        Array.from(this.agentLoad.entries()).map(([id, load]) => [
-          id, 
-          this.getAgentUtilization(id)
-        ])
-      )
+      totalAgentLoad: totalLoad,
+      averageLoadPerAgent: agentCount > 0 ? totalLoad / agentCount : 0,
+      agentLoads: Object.fromEntries(this.agentLoad.entries()),
+      maxConcurrentTasksPerAgent: this.options.maxConcurrentTasksPerAgent,
     };
   }
 
   /**
-   * Generate a unique task ID
+   * Reset all agent loads (useful for testing or restarts)
    */
-  generateTaskId() {
-    return `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  /**
-   * Process queued tasks
-   */
-  async processQueue() {
-    if (!this.isRunning) return;
-
-    // Process queues for each agent
-    for (const [agentId, queue] of this.agentQueues) {
-      if (queue.length > 0 && this.getAgentLoad(agentId) < this.options.maxConcurrentAgents) {
-        const task = queue.shift(); // Get highest priority task
-        if (task) {
-          // Execute the queued task
-          this.executeTask(agentId, task.task, { ...task.options, retryAttempts: task.retries });
-        }
-      }
-    }
-
-    // Continue processing
-    setTimeout(() => this.processQueue(), 100); // Check every 100ms
-  }
-
-  /**
-   * Start the scheduler
-   */
-  async start() {
-    if (this.isRunning) return;
-    this.isRunning = true;
-    this.processQueue();
-  }
-
-  /**
-   * Stop the scheduler
-   */
-  async stop() {
-    this.isRunning = false;
+  resetLoads() {
+    this.agentLoad.clear();
   }
 }

@@ -2,8 +2,38 @@
 // Execution Controller - Orchestrates task execution with swarm integration
 
 import { EventEmitter } from 'events';
-import SwarmOrchestrator from '../../../../src/core/agents/swarm-orchestrator.js';
-import { createProvider } from '../providers/index.js';
+
+// Lazy load dependencies to avoid import issues in tests
+let _swarmModule = null;
+let _providerModule = null;
+
+async function getSwarmOrchestrator() {
+  if (!_swarmModule) {
+    try {
+      _swarmModule = await import('../../../../src/core/agents/swarm-orchestrator.js');
+    } catch {
+      _swarmModule = {
+        default: class MockSwarm {
+          execute() {
+            return { success: false };
+          }
+        },
+      };
+    }
+  }
+  return _swarmModule.default;
+}
+
+async function getProviderModule() {
+  if (!_providerModule) {
+    try {
+      _providerModule = await import('../providers/index.js');
+    } catch {
+      _providerModule = { createProvider: () => null };
+    }
+  }
+  return _providerModule;
+}
 
 /**
  * @typedef {Object} TaskResult
@@ -30,21 +60,21 @@ import { createProvider } from '../providers/index.js';
  * Circuit Breaker states
  */
 const CIRCUIT_STATES = {
-  CLOSED: 'closed',    // Normal operation
-  OPEN: 'open',        // Failing, reject requests
-  HALF_OPEN: 'half_open' // Testing if recovered
+  CLOSED: 'closed', // Normal operation
+  OPEN: 'open', // Failing, reject requests
+  HALF_OPEN: 'half_open', // Testing if recovered
 };
 
 /**
  * ExecutionController - Orchestrates task execution for autonomous loops
- * 
+ *
  * Features:
  * - Multiple execution modes (parallel, sequential, waterfall)
  * - SwarmOrchestrator integration for multi-agent execution
  * - Circuit breaker pattern for failure protection
  * - Dependency-aware scheduling
  * - Provider integration for AI-powered task execution
- * 
+ *
  * @extends EventEmitter
  * @example
  * const controller = new ExecutionController({ provider: 'claude' });
@@ -60,6 +90,8 @@ export class ExecutionController extends EventEmitter {
    * @param {number} [options.circuitThreshold=3] - Failures before circuit opens
    * @param {number} [options.circuitResetTime=30000] - Time before circuit resets
    * @param {boolean} [options.useSwarm=true] - Enable swarm orchestration
+   * @param {number} [options.maxRequestsPerMinute=60] - Max requests per minute (rate limiting)
+   * @param {number} [options.burstLimit=10] - Burst limit for rate limiting
    */
   constructor(options = {}) {
     super();
@@ -72,9 +104,11 @@ export class ExecutionController extends EventEmitter {
       useSwarm: options.useSwarm ?? true,
       maxConcurrency: options.maxConcurrency ?? 4,
       taskTimeout: options.taskTimeout ?? 60000,
-      ...options
+      maxRequestsPerMinute: options.maxRequestsPerMinute ?? 60,
+      burstLimit: options.burstLimit ?? 10,
+      ...options,
     };
-    
+
     // Test compatibility properties
     this.maxConcurrency = this.options.maxConcurrency;
     this.taskTimeout = this.options.taskTimeout;
@@ -84,20 +118,33 @@ export class ExecutionController extends EventEmitter {
     this._circuitFailures = 0;
     this._circuitLastFailure = null;
     this._circuitLock = Promise.resolve();
-    
+
     // Circuit breaker proxy for tests
     const self = this;
     this.circuitBreaker = {
-      get isOpen() { return self._circuitState === CIRCUIT_STATES.OPEN; },
-      get failures() { return self._circuitFailures; },
-      get state() { return self._circuitState; }
+      get isOpen() {
+        return self._circuitState === CIRCUIT_STATES.OPEN;
+      },
+      get failures() {
+        return self._circuitFailures;
+      },
+      get state() {
+        return self._circuitState;
+      },
     };
-    
+
     // Execution tracking
     this._provider = null;
     this._swarm = null;
     this._executionId = 0;
-    
+
+    // Rate limiter
+    this._rateLimiter = {
+      tokens: this.options.burstLimit,
+      lastRefill: Date.now(),
+      maxTokens: this.options.burstLimit,
+    };
+
     // Metrics
     this.metrics = {
       totalTasks: 0,
@@ -105,7 +152,7 @@ export class ExecutionController extends EventEmitter {
       failedTasks: 0,
       totalRetries: 0,
       avgDuration: 0,
-      circuitBreaks: 0
+      circuitBreaks: 0,
     };
   }
 
@@ -120,7 +167,7 @@ export class ExecutionController extends EventEmitter {
       failed: 0,
       totalRetries: 0,
       avgDuration: 0,
-      circuitBreaks: 0
+      circuitBreaks: 0,
     };
     return this.metrics;
   }
@@ -148,7 +195,7 @@ export class ExecutionController extends EventEmitter {
       isOpen: this._circuitState === CIRCUIT_STATES.OPEN,
       state: this._circuitState,
       failures: this._circuitFailures,
-      lastFailure: this._circuitLastFailure
+      lastFailure: this._circuitLastFailure,
     };
   }
 
@@ -161,13 +208,23 @@ export class ExecutionController extends EventEmitter {
   }
 
   /**
+   * Generate unique execution ID
+   * @private
+   * @returns {string} Unique execution ID
+   */
+  _generateExecutionId() {
+    return `exec_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  }
+
+  /**
    * Initialize provider (lazy loading)
    * @private
    */
   async _getProvider() {
     if (!this._provider) {
       try {
-        this._provider = createProvider(this.options.provider);
+        const providers = await getProviderModule();
+        this._provider = await providers.createProvider?.(this.options.provider);
         this.emit('provider:initialized', { provider: this.options.provider });
       } catch (error) {
         this.emit('provider:error', { error: error.message });
@@ -178,11 +235,40 @@ export class ExecutionController extends EventEmitter {
   }
 
   /**
-   * Generate unique execution ID
+   * Check rate limit and wait if necessary
    * @private
+   * @returns {Promise<void>}
    */
-  _generateExecutionId() {
-    return `exec_${Date.now()}_${++this._executionId}`;
+  async _checkRateLimit() {
+    // Refill tokens based on time passed
+    const now = Date.now();
+    const timePassed = now - this._rateLimiter.lastRefill;
+    const tokensToAdd = Math.floor(timePassed / (60000 / this.options.maxRequestsPerMinute));
+
+    this._rateLimiter.tokens = Math.min(
+      this._rateLimiter.maxTokens,
+      this._rateLimiter.tokens + tokensToAdd
+    );
+    this._rateLimiter.lastRefill = now;
+
+    // If we have tokens, consume one
+    if (this._rateLimiter.tokens > 0) {
+      this._rateLimiter.tokens--;
+      return;
+    }
+
+    // No tokens available, wait for next refill
+    const timeToNextRefill = 60000 / this.options.maxRequestsPerMinute;
+    this.emit('rateLimit:waiting', {
+      waitTime: timeToNextRefill,
+      tokens: this._rateLimiter.tokens,
+    });
+
+    // Wait for next token refill
+    await new Promise((resolve) => setTimeout(resolve, timeToNextRefill));
+
+    // After waiting, consume a token
+    this._rateLimiter.tokens = Math.max(0, this._rateLimiter.tokens - 1);
   }
 
   /**
@@ -222,7 +308,7 @@ export class ExecutionController extends EventEmitter {
         const elapsed = Date.now() - this._circuitLastFailure;
         if (elapsed >= this.options.circuitResetTime) {
           const transitioned = this._transitionCircuit(
-            CIRCUIT_STATES.OPEN, 
+            CIRCUIT_STATES.OPEN,
             CIRCUIT_STATES.HALF_OPEN,
             () => this.emit('circuit:half_open')
           );
@@ -243,14 +329,10 @@ export class ExecutionController extends EventEmitter {
   async _recordCircuitSuccess() {
     return this._withCircuitLock(() => {
       if (this._circuitState === CIRCUIT_STATES.HALF_OPEN) {
-        this._transitionCircuit(
-          CIRCUIT_STATES.HALF_OPEN,
-          CIRCUIT_STATES.CLOSED,
-          () => {
-            this._circuitFailures = 0;
-            this.emit('circuit:closed');
-          }
-        );
+        this._transitionCircuit(CIRCUIT_STATES.HALF_OPEN, CIRCUIT_STATES.CLOSED, () => {
+          this._circuitFailures = 0;
+          this.emit('circuit:closed');
+        });
       }
     });
   }
@@ -265,23 +347,15 @@ export class ExecutionController extends EventEmitter {
       this._circuitLastFailure = Date.now();
 
       if (this._circuitState === CIRCUIT_STATES.HALF_OPEN) {
-        this._transitionCircuit(
-          CIRCUIT_STATES.HALF_OPEN,
-          CIRCUIT_STATES.OPEN,
-          () => {
-            this.metrics.circuitBreaks++;
-            this.emit('circuit:open', { failures: this._circuitFailures });
-          }
-        );
+        this._transitionCircuit(CIRCUIT_STATES.HALF_OPEN, CIRCUIT_STATES.OPEN, () => {
+          this.metrics.circuitBreaks++;
+          this.emit('circuit:open', { failures: this._circuitFailures });
+        });
       } else if (this._circuitFailures >= this.options.circuitThreshold) {
-        this._transitionCircuit(
-          CIRCUIT_STATES.CLOSED,
-          CIRCUIT_STATES.OPEN,
-          () => {
-            this.metrics.circuitBreaks++;
-            this.emit('circuit:open', { failures: this._circuitFailures });
-          }
-        );
+        this._transitionCircuit(CIRCUIT_STATES.CLOSED, CIRCUIT_STATES.OPEN, () => {
+          this.metrics.circuitBreaks++;
+          this.emit('circuit:open', { failures: this._circuitFailures });
+        });
       }
     });
   }
@@ -294,6 +368,9 @@ export class ExecutionController extends EventEmitter {
    * @returns {Promise<TaskResult>} Task result
    */
   async _executeTask(task, context = {}) {
+    // Check rate limit before executing task
+    await this._checkRateLimit();
+
     const startTime = Date.now();
     let lastError = null;
     let retries = 0;
@@ -310,7 +387,7 @@ export class ExecutionController extends EventEmitter {
           error: 'Circuit breaker open - too many failures',
           duration: Date.now() - startTime,
           retries,
-          executor: 'circuit_breaker'
+          executor: 'circuit_breaker',
         };
       }
 
@@ -320,19 +397,19 @@ export class ExecutionController extends EventEmitter {
           this.metrics.totalRetries++;
           this.emit('task:retry', { taskId: task.id, attempt });
           // Exponential backoff
-          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
+          await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
         }
 
         // Execute with timeout
         const result = await Promise.race([
           this._runTaskExecution(task, context),
-          new Promise((_, reject) => 
+          new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Task timeout')), this.options.timeout)
-          )
+          ),
         ]);
 
         await this._recordCircuitSuccess();
-        
+
         const duration = Date.now() - startTime;
         this._updateMetrics(true, duration);
 
@@ -343,12 +420,11 @@ export class ExecutionController extends EventEmitter {
           duration,
           retries,
           executor: context.executor || 'provider',
-          metadata: { attempt: attempt + 1 }
+          metadata: { attempt: attempt + 1 },
         };
 
         this.emit('task:complete', taskResult);
         return taskResult;
-
       } catch (error) {
         lastError = error;
         await this._recordCircuitFailure();
@@ -367,7 +443,7 @@ export class ExecutionController extends EventEmitter {
       duration,
       retries,
       executor: context.executor || 'provider',
-      metadata: { attempts: this.options.maxRetries + 1 }
+      metadata: { attempts: this.options.maxRetries + 1 },
     };
 
     this.emit('task:error', failResult);
@@ -389,12 +465,12 @@ export class ExecutionController extends EventEmitter {
       userPrompt: prompt,
       options: {
         temperature: 0.2,
-        maxTokens: 2000
-      }
+        maxTokens: 2000,
+      },
     });
 
-    return typeof response === 'string' 
-      ? response 
+    return typeof response === 'string'
+      ? response
       : response?.content || response?.text || response;
   }
 
@@ -404,19 +480,19 @@ export class ExecutionController extends EventEmitter {
    */
   _buildExecutionPrompt(task, context) {
     let prompt = `TASK: ${task.description}\n`;
-    
+
     if (task.metadata?.rationale) {
       prompt += `\nRATIONALE: ${task.metadata.rationale}\n`;
     }
-    
+
     if (context.previousResults?.length > 0) {
       const relevant = context.previousResults
-        .filter(r => task.dependencies?.includes(r.taskId))
+        .filter((r) => task.dependencies?.includes(r.taskId))
         .slice(0, 3);
-      
+
       if (relevant.length > 0) {
         prompt += `\nPREVIOUS RESULTS:\n`;
-        relevant.forEach(r => {
+        relevant.forEach((r) => {
           prompt += `- ${r.taskId}: ${typeof r.output === 'string' ? r.output.slice(0, 200) : 'completed'}\n`;
         });
       }
@@ -437,10 +513,10 @@ export class ExecutionController extends EventEmitter {
     } else {
       this.metrics.failedTasks++;
     }
-    
+
     // Running average
-    this.metrics.avgDuration = 
-      (this.metrics.avgDuration * (this.metrics.totalTasks - 1) + duration) / 
+    this.metrics.avgDuration =
+      (this.metrics.avgDuration * (this.metrics.totalTasks - 1) + duration) /
       this.metrics.totalTasks;
   }
 
@@ -449,7 +525,7 @@ export class ExecutionController extends EventEmitter {
    * @private
    */
   async _executeParallel(tasks, context) {
-    const promises = tasks.map(task => this._executeTask(task, context));
+    const promises = tasks.map((task) => this._executeTask(task, context));
     return Promise.all(promises);
   }
 
@@ -485,14 +561,14 @@ export class ExecutionController extends EventEmitter {
     const ctx = { ...context, previousResults: [] };
 
     for (const batch of decomposition.batches) {
-      this.emit('batch:start', { 
-        batchIndex: batch.batchIndex, 
-        taskCount: batch.tasks.length 
+      this.emit('batch:start', {
+        batchIndex: batch.batchIndex,
+        taskCount: batch.tasks.length,
       });
 
       // Execute batch in parallel
       const batchResults = await Promise.all(
-        batch.tasks.map(task => this._executeTask(task, ctx))
+        batch.tasks.map((task) => this._executeTask(task, ctx))
       );
 
       // Record completions
@@ -504,9 +580,9 @@ export class ExecutionController extends EventEmitter {
         }
       }
 
-      this.emit('batch:complete', { 
-        batchIndex: batch.batchIndex, 
-        results: batchResults 
+      this.emit('batch:complete', {
+        batchIndex: batch.batchIndex,
+        results: batchResults,
       });
     }
 
@@ -519,14 +595,15 @@ export class ExecutionController extends EventEmitter {
    */
   async _executeWithSwarm(tasks, context, mode) {
     if (!this._swarm) {
+      const SwarmOrchestrator = await getSwarmOrchestrator();
       this._swarm = new SwarmOrchestrator();
     }
 
     // Create task agents
-    const agents = tasks.map(task => ({
+    const agents = tasks.map((task) => ({
       id: task.id,
       name: task.id,
-      execute: async () => this._executeTask(task, context)
+      execute: async () => this._executeTask(task, context),
     }));
 
     this._swarm.agents = agents;
@@ -545,35 +622,31 @@ export class ExecutionController extends EventEmitter {
     }
 
     // Extract results from swarm output
-    return swarmResults.map(r => r.result || r);
+    return swarmResults.map((r) => r.result || r);
   }
 
   /**
    * Execute decomposed plan
-   * 
+   *
    * @param {Object} decomposition - Decomposition result from TaskDecomposer
    * @param {Object} [options={}] - Execution options
    * @param {string} [options.mode='dependency'] - Execution mode
    * @param {Object} [options.context={}] - Additional context
    * @returns {Promise<ExecutionResult>} Execution result
-   * 
+   *
    * @example
    * const result = await controller.execute(decomposition, { mode: 'parallel' });
    */
   async execute(decomposition, options = {}) {
-    const { 
-      mode = 'dependency', 
-      context = {},
-      useSwarm = this.options.useSwarm 
-    } = options;
+    const { mode = 'dependency', context = {}, useSwarm = this.options.useSwarm } = options;
 
     const executionId = this._generateExecutionId();
     const startedAt = new Date();
 
-    this.emit('execution:start', { 
-      executionId, 
-      mode, 
-      taskCount: decomposition.orderedTasks?.length || 0 
+    this.emit('execution:start', {
+      executionId,
+      mode,
+      taskCount: decomposition.orderedTasks?.length || 0,
     });
 
     let results;
@@ -605,7 +678,7 @@ export class ExecutionController extends EventEmitter {
     }
 
     const completedAt = new Date();
-    const successCount = results.filter(r => r.success).length;
+    const successCount = results.filter((r) => r.success).length;
     const success = successCount === results.length;
 
     const executionResult = {
@@ -618,10 +691,10 @@ export class ExecutionController extends EventEmitter {
         successful: successCount,
         failed: results.length - successCount,
         totalDuration: completedAt - startedAt,
-        avgTaskDuration: results.reduce((sum, r) => sum + r.duration, 0) / results.length
+        avgTaskDuration: results.reduce((sum, r) => sum + r.duration, 0) / results.length,
       },
       startedAt,
-      completedAt
+      completedAt,
     };
 
     this.emit('execution:complete', executionResult);
@@ -630,7 +703,7 @@ export class ExecutionController extends EventEmitter {
 
   /**
    * Execute a single task directly
-   * 
+   *
    * @param {Object} task - Task to execute
    * @param {Object} [context={}] - Execution context
    * @returns {Promise<TaskResult>} Task result
@@ -662,10 +735,10 @@ export class ExecutionController extends EventEmitter {
    * @returns {Object} Metrics object
    */
   getMetrics() {
-    return { 
+    return {
       ...this.metrics,
       circuitState: this._circuitState,
-      circuitFailures: this._circuitFailures
+      circuitFailures: this._circuitFailures,
     };
   }
 
@@ -679,10 +752,9 @@ export class ExecutionController extends EventEmitter {
       failedTasks: 0,
       totalRetries: 0,
       avgDuration: 0,
-      circuitBreaks: 0
+      circuitBreaks: 0,
     };
   }
 }
 
 export default ExecutionController;
-

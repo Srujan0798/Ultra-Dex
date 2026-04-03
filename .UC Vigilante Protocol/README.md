@@ -67,4 +67,18 @@ Complete what's incomplete without interfering with official work.
 
 ---
 
+## Operator Training Checklist (Daily)
+
+Run this checklist before any intervention:
+
+- [ ] **Restraint:** I am not creating new scope while active work is running.
+- [ ] **Prioritization:** This action has measurable impact (quality/security/release).
+- [ ] **Closure:** I can finish and verify this in one clean cycle.
+- [ ] **Compression:** My dispatch/handoff is concise (max 5 bullets).
+- [ ] **Non-Interference:** No official lane conflict exists.
+
+If any box is unchecked, switch to **watch mode**.
+
+---
+
 *The shadows protect what the light misses.*

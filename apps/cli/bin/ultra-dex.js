@@ -58,7 +58,8 @@ const wantsHelp =
   process.argv.includes('-V');
 
 function logCli(level, event, metadata = {}) {
-  const writer = typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
+  const writer =
+    typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
   writer(event, {
     run_id: process.env.ULTRA_DEX_RUN_ID,
     module: 'cli',
@@ -133,7 +134,20 @@ if (isAcpMode) {
   })();
 
   // ACP mode takes over completely - don't process other commands
-  await new Promise(() => { });
+  await new Promise(() => {});
+}
+
+// Check for aliases and command shortcuts
+const args = process.argv.slice(2);
+if (args.length > 0) {
+  // Handle aliases
+  if (args[0] === 'auto') {
+    args[0] = 'autonomous';
+    process.argv = [process.argv[0], process.argv[1], ...args];
+  } else if (args[0] === 'chk') {
+    args[0] = 'checkpoint';
+    process.argv = [process.argv[0], process.argv[1], ...args];
+  }
 }
 
 // Check for updates
@@ -166,7 +180,6 @@ import {
 } from '../lib/commands/state.js';
 import { registerStatusCommand } from '../lib/commands/status.js';
 import { registerDoctorCommand } from '../lib/commands/doctor.js';
-
 
 import { registerDashboardCommand, showInteractiveDashboard } from '../lib/commands/dashboard.js';
 import { registerCheckCommand } from '../lib/commands/check.js';
@@ -312,13 +325,13 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
   } catch {
     user = null;
   }
-  
+
   // NLP Intent Analysis Hook - Log intent mismatches for training
   const rawInput = originalCliInput || process.argv.slice(2).join(' ');
   try {
     const { routeIntent } = await import('../lib/nlp/router.js');
     const intent = routeIntent(rawInput);
-    
+
     if (intent && intent !== actionCommand?.name?.()) {
       logCli('info', 'nlp.intent_mismatch', {
         parsed: actionCommand?.name?.(),
@@ -328,7 +341,7 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
         timestamp: Date.now(),
       });
     }
-    
+
     // Log successful NLP match
     if (intent && intent === actionCommand?.name?.()) {
       logCli('info', 'nlp.intent_match', {
@@ -340,7 +353,7 @@ program.hook('preAction', async (thisCommand, actionCommand) => {
   } catch (error) {
     // Silently ignore NLP errors in pre-action
   }
-  
+
   if (isTelemetryEnabledSync()) {
     logCli('info', 'usage.command', {
       stage: 'start',
@@ -617,7 +630,15 @@ if (process.argv.length <= 2) {
 
 await program.parseAsync(process.argv);
 
-const LONG_RUNNING = new Set(['serve', 'watch', 'daemon', 'cloud', 'ci-monitor', 'repl', 'dashboard']);
+const LONG_RUNNING = new Set([
+  'serve',
+  'watch',
+  'daemon',
+  'cloud',
+  'ci-monitor',
+  'repl',
+  'dashboard',
+]);
 const isLongRunning = process.argv.some((arg) => LONG_RUNNING.has(arg));
 
 if (!wantsHelp && !isLongRunning) {

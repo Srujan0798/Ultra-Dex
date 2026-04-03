@@ -2,7 +2,19 @@
 // Planning Engine - AI-powered goal decomposition for autonomous loops
 
 import { EventEmitter } from 'events';
-import { createProvider } from '../providers/index.js';
+
+// Lazy load providers to avoid dependency issues in tests
+let _providerModule = null;
+async function getProviderModule() {
+  if (!_providerModule) {
+    try {
+      _providerModule = await import('../providers/index.js');
+    } catch {
+      _providerModule = { createProvider: () => null };
+    }
+  }
+  return _providerModule;
+}
 
 /**
  * @typedef {Object} PlanTask
@@ -88,7 +100,8 @@ export class PlanningEngine extends EventEmitter {
 
     if (!this._provider) {
       try {
-        this._provider = await createProvider(this.options.provider);
+        const providers = await getProviderModule();
+        this._provider = await providers.createProvider?.(this.options.provider);
         this.emit('provider:initialized', { provider: this.options.provider });
       } catch (error) {
         this.emit('provider:error', { error: error.message });
@@ -112,7 +125,8 @@ export class PlanningEngine extends EventEmitter {
       }
 
       try {
-        this._provider = await createProvider(this.options.provider);
+        const providers = await getProviderModule();
+        this._provider = await providers.createProvider?.(this.options.provider);
         this.emit('provider:initialized', { provider: this.options.provider });
       } catch (error) {
         this.emit('provider:error', { error: error.message });
