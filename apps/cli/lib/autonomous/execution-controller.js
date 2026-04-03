@@ -27,7 +27,17 @@ async function getSwarmOrchestrator() {
 async function getProviderModule() {
   if (!_providerModule) {
     try {
-      _providerModule = await import('../providers/index.js');
+      // Try multiple approaches
+      try {
+        // Approach 1: Direct import
+        _providerModule = await import('../providers/index.js');
+      } catch (err1) {
+        console.error('Provider import failed (relative):', err1.message);
+        // Approach 2: Absolute path
+        const path = await import('path');
+        const providerPath = path.resolve(process.cwd(), 'apps/cli/lib/providers/index.js');
+        _providerModule = await import('file://' + providerPath);
+      }
     } catch {
       _providerModule = { createProvider: () => null };
     }
@@ -713,14 +723,6 @@ export class ExecutionController extends EventEmitter {
   }
 
   /**
-   * Get circuit breaker state
-   * @returns {string} Current circuit state
-   */
-  getCircuitState() {
-    return this._circuitState;
-  }
-
-  /**
    * Reset circuit breaker
    */
   resetCircuit() {
@@ -728,18 +730,6 @@ export class ExecutionController extends EventEmitter {
     this._circuitFailures = 0;
     this._circuitLastFailure = null;
     this.emit('circuit:reset');
-  }
-
-  /**
-   * Get execution metrics
-   * @returns {Object} Metrics object
-   */
-  getMetrics() {
-    return {
-      ...this.metrics,
-      circuitState: this._circuitState,
-      circuitFailures: this._circuitFailures,
-    };
   }
 
   /**
