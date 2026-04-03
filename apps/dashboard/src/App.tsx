@@ -34,8 +34,9 @@ const HologramPage = lazy(() => import('./pages/Hologram'));
 const TracesPage = lazy(() =>
   import('./pages/Traces').then((module) => ({ default: module.Traces }))
 );
-const LoginPage = lazy(() => import('./pages/Login').then((module) => ({ default: module.Login })));
-const HologramPage = lazy(() => import('./pages/Hologram'));
+const MarketplacePage = lazy(() =>
+  import('./pages/Marketplace').then((module) => ({ default: module.Marketplace }))
+);
 const LoginPage = lazy(() => import('./pages/Login').then((module) => ({ default: module.Login })));
 
 function RouteTracker() {
@@ -101,6 +102,7 @@ function AppShell() {
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/providers" element={<ProvidersPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/marketplace" element={<MarketplacePage />} />
                 <Route path="/traces" element={<TracesPage />} />
                 <Route path="/hologram" element={<HologramPage />} />
               </Routes>

@@ -8,9 +8,14 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
+import axios from 'axios';
 import { ppmManager } from '../../core/memory/manager.js';
 import { auditLogger } from '../audit/audit-logger.js';
 import { errorHandler } from '../../../apps/cli/lib/utils/error-handler.js';
+import { jwtService } from './jwt-service.js';
+import { userService } from './user-service.js';
+import { sessionService } from './session-service.js';
+import { mfaService } from './mfa-service.js';
 
 /**
  * SSO provider types
@@ -236,6 +241,30 @@ export class SSOService {
 
     this.configs.set(ssoConfig.id, ssoConfig);
 
+    await ppmManager.add({
+      content: `OAuth2 SSO configured: ${name}`,
+      type: 'sso-configured',
+      importance: 8,
+      metadata: {
+        configId: ssoConfig.id,
+        organizationId,
+        providerType: 'oauth2',
+      },
+    });
+
+    await auditLogger.log({
+      type: 'security.alert',
+      severity: 'info',
+      action: 'SSO_CONFIGURED',
+      resource: 'sso',
+      resourceId: ssoConfig.id,
+      details: {
+        providerType: 'oauth2',
+        organizationId,
+        name,
+      },
+    });
+
     process.stdout.write(`✓ OAuth2 SSO configured: ${name}\n`);
     return ssoConfig;
   }
@@ -268,8 +297,434 @@ export class SSOService {
 
     this.configs.set(ssoConfig.id, ssoConfig);
 
+    await ppmManager.add({
+      content: `OIDC SSO configured: ${name}`,
+      type: 'sso-configured',
+      importance: 8,
+      metadata: {
+        configId: ssoConfig.id,
+        organizationId,
+        providerType: 'oidc',
+      },
+    });
+
+    await auditLogger.log({
+      type: 'security.alert',
+      severity: 'info',
+      action: 'SSO_CONFIGURED',
+      resource: 'sso',
+      resourceId: ssoConfig.id,
+      details: {
+        providerType: 'oidc',
+        organizationId,
+        name,
+      },
+    });
+
     process.stdout.write(`✓ OIDC SSO configured: ${name}\n`);
     return ssoConfig;
+  }
+
+  /**
+   * Generate OIDC authorization URL
+   */
+  async generateOIDCAuthUrl(configId: string, state?: string): Promise<string> {
+    await this.initialize();
+
+    const config = this.configs.get(configId);
+    if (!config || config.providerType !== 'oidc') {
+      throw errorHandler.createError('RESOURCE_NOT_FOUND', 'OIDC configuration not found');
+    }
+
+    const oidcConfig = config.config as OIDCConfig;
+    const authState = state || uuidv4();
+
+    // Store state for validation
+    await ppmManager.add({
+      content: `OIDC state: ${authState}`,
+      type: 'oidc-state',
+      importance: 4,
+      metadata: {
+        state: authState,
+        configId,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      },
+    });
+
+    const params = new URLSearchParams({
+      client_id: oidcConfig.clientId,
+      redirect_uri: oidcConfig.callbackUrl,
+      scope: oidcConfig.scope.join(' '),
+      response_type: 'code',
+      state: authState,
+      nonce: uuidv4(), // For replay attack prevention
+    });
+
+    return `${oidcConfig.authorizationEndpoint}?${params.toString()}`;
+  }
+
+  /**
+   * Process OIDC callback
+   */
+  async processOIDCCallback(
+    configId: string,
+    code: string,
+    state: string,
+    ipAddress: string,
+    userAgent: string
+  ): Promise<SSOAuthResult> {
+    await this.initialize();
+
+    const config = this.configs.get(configId);
+    if (!config || config.providerType !== 'oidc') {
+      return { success: false, error: 'Invalid OIDC configuration' };
+    }
+
+    try {
+      // Validate state
+      const stateResult = await ppmManager.search(`oidc-state:${state}`);
+      if (!stateResult || stateResult.length === 0) {
+        return { success: false, error: 'Invalid state parameter' };
+      }
+
+      // Exchange code for tokens
+      const oidcConfig = config.config as OIDCConfig;
+      const tokenResponse = await axios.post(
+        oidcConfig.tokenEndpoint,
+        {
+          client_id: oidcConfig.clientId,
+          client_secret: oidcConfig.clientSecret,
+          code,
+          grant_type: 'authorization_code',
+          redirect_uri: oidcConfig.callbackUrl,
+        },
+        {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        }
+      );
+
+      const { access_token, refresh_token, id_token } = tokenResponse.data;
+
+      // Verify ID token
+      const idTokenPayload = this.verifyOIDCToken(id_token, oidcConfig);
+
+      // Get additional user info if needed
+      let userInfo = idTokenPayload;
+      if (oidcConfig.userinfoEndpoint) {
+        const userResponse = await axios.get(oidcConfig.userinfoEndpoint, {
+          headers: { Authorization: `Bearer ${access_token}` },
+        });
+        userInfo = { ...idTokenPayload, ...userResponse.data };
+      }
+
+      // Extract user attributes
+      const user = this.extractUserFromOAuth(userInfo, config.mappings);
+
+      if (!user.email) {
+        return { success: false, error: 'Email not found in OIDC response' };
+      }
+
+      // Create or update user
+      const userId = await this.findOrCreateUser(user);
+
+      // Check MFA requirement
+      const org = await userService.getOrganization(config.organizationId);
+      if (org?.settings.mfaRequired) {
+        const mfaStatus = await mfaService.getMFAStatus(userId);
+        if (mfaStatus !== 'enabled') {
+          return {
+            success: false,
+            error: 'MFA required but not configured',
+            redirectUrl: `/auth/mfa/setup?userId=${userId}`,
+          };
+        }
+      }
+
+      // Create session
+      const session = await sessionService.createSession(
+        userId,
+        config.organizationId,
+        ipAddress,
+        userAgent
+      );
+
+      // Generate JWT tokens
+      const tokenPair = await jwtService.generateTokenPair(
+        userId,
+        config.organizationId,
+        [user.role || 'member'],
+        (await userService.userHasPermission(userId, '')) ? [] : [], // Get permissions
+        session.id
+      );
+
+      await auditLogger.log({
+        type: 'user.login',
+        severity: 'info',
+        action: 'SSO_LOGIN_SUCCESS',
+        userId,
+        resource: 'authentication',
+        resourceId: configId,
+        details: {
+          providerType: 'oidc',
+          email: user.email,
+        },
+      });
+
+      return {
+        success: true,
+        user: { id: userId, ...user },
+        session,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'OIDC processing failed';
+
+      await auditLogger.log({
+        type: 'security.alert',
+        severity: 'warning',
+        action: 'SSO_LOGIN_FAILED',
+        resource: 'authentication',
+        resourceId: configId,
+        details: {
+          providerType: 'oidc',
+          error: errorMessage,
+        },
+      });
+
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  /**
+   * Verify OIDC ID token
+   */
+  private verifyOIDCToken(idToken: string, config: OIDCConfig): any {
+    // Simplified verification - real implementation would:
+    // 1. Decode token
+    // 2. Verify signature using JWKS
+    // 3. Check issuer, audience, expiration
+    // 4. Validate nonce
+
+    const parts = idToken.split('.');
+    if (parts.length !== 3) {
+      throw new Error('Invalid ID token format');
+    }
+
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+
+    // Basic validation
+    if (payload.iss !== config.issuer) {
+      throw new Error('Invalid token issuer');
+    }
+
+    if (!payload.aud.includes(config.clientId)) {
+      throw new Error('Invalid token audience');
+    }
+
+    if (payload.exp < Date.now() / 1000) {
+      throw new Error('Token expired');
+    }
+
+    return payload;
+  }
+
+  /**
+   * Generate OAuth2 authorization URL
+   */
+  async generateOAuth2AuthUrl(configId: string, state?: string): Promise<string> {
+    await this.initialize();
+
+    const config = this.configs.get(configId);
+    if (!config || config.providerType !== 'oauth2') {
+      throw errorHandler.createError('RESOURCE_NOT_FOUND', 'OAuth2 configuration not found');
+    }
+
+    const oauthConfig = config.config as OAuth2Config;
+    const authState = state || uuidv4();
+
+    // Store state for validation
+    await ppmManager.add({
+      content: `OAuth2 state: ${authState}`,
+      type: 'oauth2-state',
+      importance: 4,
+      metadata: {
+        state: authState,
+        configId,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      },
+    });
+
+    const params = new URLSearchParams({
+      client_id: oauthConfig.clientId,
+      redirect_uri: oauthConfig.callbackUrl,
+      scope: oauthConfig.scope.join(' '),
+      response_type: 'code',
+      state: authState,
+    });
+
+    return `${oauthConfig.authorizationURL}?${params.toString()}`;
+  }
+
+  /**
+   * Process OAuth2 callback
+   */
+  async processOAuth2Callback(
+    configId: string,
+    code: string,
+    state: string,
+    ipAddress: string,
+    userAgent: string
+  ): Promise<SSOAuthResult> {
+    await this.initialize();
+
+    const config = this.configs.get(configId);
+    if (!config || config.providerType !== 'oauth2') {
+      return { success: false, error: 'Invalid OAuth2 configuration' };
+    }
+
+    try {
+      // Validate state
+      const stateResult = await ppmManager.search(`oauth2-state:${state}`);
+      if (!stateResult || stateResult.length === 0) {
+        return { success: false, error: 'Invalid state parameter' };
+      }
+
+      const stateData = stateResult[0].metadata;
+      if (new Date() > stateData.expiresAt) {
+        return { success: false, error: 'State expired' };
+      }
+
+      // Exchange code for tokens
+      const oauthConfig = config.config as OAuth2Config;
+      const tokenResponse = await axios.post(
+        oauthConfig.tokenURL,
+        {
+          client_id: oauthConfig.clientId,
+          client_secret: oauthConfig.clientSecret,
+          code,
+          grant_type: 'authorization_code',
+          redirect_uri: oauthConfig.callbackUrl,
+        },
+        {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        }
+      );
+
+      const { access_token, refresh_token, id_token } = tokenResponse.data;
+
+      // Get user info
+      let userInfo = {};
+      if (oauthConfig.userInfoURL) {
+        const userResponse = await axios.get(oauthConfig.userInfoURL, {
+          headers: { Authorization: `Bearer ${access_token}` },
+        });
+        userInfo = userResponse.data;
+      } else if (id_token) {
+        // Decode ID token for OIDC
+        const payload = JSON.parse(Buffer.from(id_token.split('.')[1], 'base64').toString());
+        userInfo = payload;
+      }
+
+      // Extract user attributes
+      const user = this.extractUserFromOAuth(userInfo, config.mappings);
+
+      if (!user.email) {
+        return { success: false, error: 'Email not found in OAuth response' };
+      }
+
+      // Create or update user
+      const userId = await this.findOrCreateUser(user);
+
+      // Check MFA requirement
+      const org = await userService.getOrganization(config.organizationId);
+      if (org?.settings.mfaRequired) {
+        const mfaStatus = await mfaService.getMFAStatus(userId);
+        if (mfaStatus !== 'enabled') {
+          return {
+            success: false,
+            error: 'MFA required but not configured',
+            redirectUrl: `/auth/mfa/setup?userId=${userId}`,
+          };
+        }
+      }
+
+      // Create session
+      const session = await sessionService.createSession(
+        userId,
+        config.organizationId,
+        ipAddress,
+        userAgent
+      );
+
+      // Generate JWT tokens
+      const tokenPair = await jwtService.generateTokenPair(
+        userId,
+        config.organizationId,
+        [user.role || 'member'],
+        (await userService.userHasPermission(userId, '')) ? [] : [], // Get permissions
+        session.id
+      );
+
+      await auditLogger.log({
+        type: 'user.login',
+        severity: 'info',
+        action: 'SSO_LOGIN_SUCCESS',
+        userId,
+        resource: 'authentication',
+        resourceId: configId,
+        details: {
+          providerType: 'oauth2',
+          email: user.email,
+        },
+      });
+
+      return {
+        success: true,
+        user: { id: userId, ...user },
+        session,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'OAuth2 processing failed';
+
+      await auditLogger.log({
+        type: 'security.alert',
+        severity: 'warning',
+        action: 'SSO_LOGIN_FAILED',
+        resource: 'authentication',
+        resourceId: configId,
+        details: {
+          providerType: 'oauth2',
+          error: errorMessage,
+        },
+      });
+
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  /**
+   * Extract user from OAuth response
+   */
+  private extractUserFromOAuth(
+    userInfo: any,
+    mappings: AttributeMappings
+  ): { email: string; firstName?: string; lastName?: string; groups?: string[]; role?: string } {
+    const email = userInfo[mappings.email] || userInfo.email || '';
+    const firstName = mappings.firstName
+      ? userInfo[mappings.firstName]
+      : userInfo.given_name || userInfo.firstName;
+    const lastName = mappings.lastName
+      ? userInfo[mappings.lastName]
+      : userInfo.family_name || userInfo.lastName;
+    const groupsStr = mappings.groups ? userInfo[mappings.groups] : userInfo.groups;
+    const role = mappings.role ? userInfo[mappings.role] : userInfo.role;
+
+    return {
+      email,
+      firstName,
+      lastName,
+      groups: Array.isArray(groupsStr) ? groupsStr : groupsStr ? groupsStr.split(',') : undefined,
+      role,
+    };
   }
 
   /**
@@ -334,21 +789,42 @@ export class SSOService {
       // Create or update user
       const userId = await this.findOrCreateUser(user);
 
-      // Create session
-      const session = await this.createSession(
+      // Check MFA requirement
+      const org = await userService.getOrganization(config.organizationId);
+      if (org?.settings.mfaRequired) {
+        const mfaStatus = await mfaService.getMFAStatus(userId);
+        if (mfaStatus !== 'enabled') {
+          return {
+            success: false,
+            error: 'MFA required but not configured',
+            redirectUrl: `/auth/mfa/setup?userId=${userId}`,
+          };
+        }
+      }
+
+      // Create session (we need ipAddress and userAgent, so this method signature needs updating)
+      // For now, create session with empty values
+      const session = await sessionService.createSession(
         userId,
         config.organizationId,
-        configId,
-        'saml',
-        user.email,
-        user
+        '', // ipAddress - would come from request
+        '' // userAgent - would come from request
+      );
+
+      // Generate JWT tokens
+      const tokenPair = await jwtService.generateTokenPair(
+        userId,
+        config.organizationId,
+        [user.role || 'member'],
+        (await userService.userHasPermission(userId, '')) ? [] : [], // Get permissions
+        session.id
       );
 
       await auditLogger.log({
         type: 'user.login',
         severity: 'info',
-        userId,
         action: 'SSO_LOGIN_SUCCESS',
+        userId,
         resource: 'authentication',
         resourceId: configId,
         details: {

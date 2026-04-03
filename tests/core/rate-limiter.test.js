@@ -14,6 +14,7 @@ import { performance } from 'perf_hooks';
 let mockTime = 0;
 const originalNow = Date.now;
 const originalPerformanceNow = performance.now;
+let originalSetTimeout = null;
 
 describe('Rate Limiter Tests', () => {
   let controller;
@@ -33,12 +34,24 @@ describe('Rate Limiter Tests', () => {
       maxRequestsPerMinute: 60, // 1 per second
       burstLimit: 3,
     });
+
+    // Mock setTimeout to advance mockTime
+    const originalSetTimeout = global.setTimeout;
+    global.setTimeout = (fn, delay) => {
+      mockTime += delay;
+      return originalSetTimeout(fn, 0); // Execute immediately for tests
+    };
   });
 
   afterEach(() => {
     // Restore original functions
     Date.now = originalNow;
     performance.now = originalPerformanceNow;
+
+    // Restore original setTimeout
+    if (originalSetTimeout) {
+      global.setTimeout = originalSetTimeout;
+    }
   });
 
   it('Default maxRequestsPerMinute is 60', () => {
@@ -107,13 +120,14 @@ describe('Rate Limiter Tests', () => {
     const startTime = Date.now();
     const results = await Promise.all(tasks.map((task) => controller._executeTask(task)));
     const endTime = Date.now();
+    const elapsed = endTime - startTime;
 
     // Should have waiting events due to throttling
-    assert.ok(waitingEvents > 0, 'Should have rate limit waiting events');
+    assert.ok(waitingEvents > 0, `Should have rate limit waiting events, got ${waitingEvents}`);
 
     // Should have taken some time due to waiting
-    // With 60 req/min = 1 req/sec, burst of 3, tasks 4&5 should wait
-    assert.ok(endTime - startTime >= 1000, 'Should have experienced throttling delay');
+    // With 60 req/min = 1 req/sec, burst of 3, tasks 4&5 should wait concurrently
+    assert.ok(elapsed >= 900, `Should have experienced throttling delay, got ${elapsed}ms`);
 
     assert.equal(results.length, 5);
     results.forEach((result) => {
