@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  ultradex-instance-1:
+    build: .
+    container_name: ultradex-1
+    ports:
+      - '8081:8080' # HTTP/WebSocket port
+      - '3001:3000' # Dashboard port
+    environment:
+      - NODE_ENV=production
+      - ULTRA_DEX_INSTANCE_ID=instance-1
+      - ULTRA_DEX_COORDINATOR_PORT=8080
+      - ULTRA_DEX_DISCOVERY_URLS=http://ultradex-2:8080,http://ultradex-3:8080
+      - ULTRA_DEX_ENABLE_LOAD_BALANCING=true
+      - ULTRA_DEX_ENABLE_DISCOVERY=true
+      - ULTRA_DEX_MAX_CONCURRENT_TASKS=5
+    volumes:
+      - ./logs:/app/logs
+      - ./.env.local:/app/.env.local:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  ultradex-instance-2:
+    build: .
+    container_name: ultradex-2
+    ports:
+      - '8082:8080'
+      - '3002:3000'
+    environment:
+      - NODE_ENV=production
+      - ULTRA_DEX_INSTANCE_ID=instance-2
+      - ULTRA_DEX_COORDINATOR_PORT=8080
+      - ULTRA_DEX_DISCOVERY_URLS=http://ultradex-1:8080,http://ultradex-3:8080
+      - ULTRA_DEX_ENABLE_LOAD_BALANCING=true
+      - ULTRA_DEX_ENABLE_DISCOVERY=true
+      - ULTRA_DEX_MAX_CONCURRENT_TASKS=5
+    volumes:
+      - ./logs:/app/logs
+      - ./.env.local:/app/.env.local:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  ultradex-instance-3:
+    build: .
+    container_name: ultradex-3
+    ports:
+      - '8083:8080'
+      - '3003:3000'
+    environment:
+      - NODE_ENV=production
+      - ULTRA_DEX_INSTANCE_ID=instance-3
+      - ULTRA_DEX_COORDINATOR_PORT=8080
+      - ULTRA_DEX_DISCOVERY_URLS=http://ultradex-1:8080,http://ultradex-2:8080
+      - ULTRA_DEX_ENABLE_LOAD_BALANCING=true
+      - ULTRA_DEX_ENABLE_DISCOVERY=true
+      - ULTRA_DEX_MAX_CONCURRENT_TASKS=5
+    volumes:
+      - ./logs:/app/logs
+      - ./.env.local:/app/.env.local:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Nginx load balancer for dashboard
+  nginx-lb:
+    image: nginx:alpine
+    container_name: ultradex-nginx
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ultradex-instance-1
+      - ultradex-instance-2
+      - ultradex-instance-3
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge

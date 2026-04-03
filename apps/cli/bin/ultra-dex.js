@@ -170,7 +170,7 @@ import { registerAgentsCommand, registerPackCommand } from '../lib/commands/agen
 import { registerGenerateCommand } from '../lib/commands/generate.js';
 import { registerBuildCommand } from '../lib/commands/build.js';
 import { registerReviewCommand } from '../lib/commands/review.js';
-import { registerRunCommand } from '../lib/commands/run.js';
+import { registerRunCommand, registerDistributedCommand } from '../lib/commands/run.js';
 import { registerAutoImplementCommand } from '../lib/commands/auto-implement.js';
 import { registerCiMonitorCommand } from '../lib/commands/ci-monitor.js';
 import {
@@ -446,6 +446,7 @@ registerGenerateCommand(program);
 registerBuildCommand(program);
 registerReviewCommand(program);
 registerRunCommand(program);
+registerDistributedCommand(program);
 
 // v3.0 Commands
 registerSwarmCommand(program);

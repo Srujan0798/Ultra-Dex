@@ -1,8 +1,8 @@
-# Ultra-Dex v6.0.0
+# Ultra-Dex v2.0.0
 
 > The AI orchestration meta-layer for production software delivery.
 
-[![Version](https://img.shields.io/badge/version-6.0.0-blue.svg)](https://github.com/Srujan0798/Ultra-Dex)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/Srujan0798/Ultra-Dex)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 
@@ -63,58 +63,101 @@ npx ultra-dex dashboard
 
 Ultra-Dex includes a terminal-first interactive layer for orchestration and project inspection.
 
--   **Omni-Box Entry Point**: Launch the interactive dashboard with `npx ultra-dex dashboard`. Use `--once` for a single snapshot, `--json` for machine-readable output, or `--web` for the browser dashboard.
--   **Natural Language Processing**: 60+ intent mappings with semantic understanding for agents, development, quality, project, and integration tasks
--   **Interactive Terminal & Web Dashboard**: Terminal dashboard with `ultra-dex dashboard`, web dashboard with `--web --port`, and JSON output with `--json`
--   **Themed Logger System**: JSON-capable logger with success/info/error levels
--   **"Did you mean?" Typo Correction**: Automatic suggestion for mistyped commands like `buid` → `build"
--   **Recent Projects and Quick Actions**: The dashboard surfaces recent workspaces, command shortcuts, and system health in one place.
--   **System Doctor**: Run diagnostics and repair workflows from the CLI when you need a fast health check.
+- **Omni-Box Entry Point**: Launch the interactive dashboard with `npx ultra-dex dashboard`. Use `--once` for a single snapshot, `--json` for machine-readable output, or `--web` for the browser dashboard.
+- **Natural Language Processing**: 60+ intent mappings with semantic understanding for agents, development, quality, project, and integration tasks
+- **Interactive Terminal & Web Dashboard**: Terminal dashboard with `ultra-dex dashboard`, web dashboard with `--web --port`, and JSON output with `--json`
+- **Themed Logger System**: JSON-capable logger with success/info/error levels
+- **"Did you mean?" Typo Correction**: Automatic suggestion for mistyped commands like `buid` → `build"
+- **Recent Projects and Quick Actions**: The dashboard surfaces recent workspaces, command shortcuts, and system health in one place.
+- **System Doctor**: Run diagnostics and repair workflows from the CLI when you need a fast health check.
 
 For the implementation details and usage notes, see [docs/INTERFACE.md](docs/INTERFACE.md).
 
 ## Feature Matrix
 
-| Capability          | What it does                                                      | Status |
-| ------------------- | ----------------------------------------------------------------- | ------ |
-| Agent Orchestration | Multi-agent execution with delegated tasks and sequencing         | Ready  |
-| AI Routing          | Strategy-based provider selection (cost/latency/quality/fallback) | Ready  |
-| Provider Layer      | Unified adapters for major hosted/local model providers           | Ready  |
-| Memory              | Tiered memory + retrieval utilities for persistent context        | Ready  |
-| MCP                 | MCP server mode with memory + agent status tools                  | Ready  |
-| CLI Runtime         | Large command surface for build/plan/review/ops workflows         | Ready  |
-| Dashboard & Apps    | Dashboard, cloud/web/desktop/docs app workspaces                  | Ready  |
-| SDK                 | Programmatic SDK for providers, agents, and plugins               | Ready  |
+| Capability          | What it does                                                      | Status   |
+| ------------------- | ----------------------------------------------------------------- | -------- |
+| Agent Orchestration | Multi-agent execution with delegated tasks and sequencing         | Ready    |
+| AI Routing          | Strategy-based provider selection (cost/latency/quality/fallback) | Ready    |
+| Provider Layer      | Unified adapters for major hosted/local model providers           | Ready    |
+| Memory              | Tiered memory + retrieval utilities for persistent context        | Ready    |
+| MCP                 | MCP server mode with memory + agent status tools                  | Ready    |
+| CLI Runtime         | Large command surface for build/plan/review/ops workflows         | Ready    |
+| Dashboard & Apps    | Dashboard, cloud/web/desktop/docs app workspaces                  | Ready    |
+| SDK                 | Programmatic SDK for providers, agents, and plugins               | Ready    |
 | Performance         | Advanced caching, LRU eviction, and Redis integration             | Enhanced |
 | Resilience          | Timeout handling, fallback mechanisms, and error recovery         | Enhanced |
 
-## Architecture Overview
+## v2.0 Architecture Overview
 
-Ultra-Dex operates as a **Meta-Layer** that connects and orchestrates various AI components:
+Ultra-Dex v2.0 introduces a distributed orchestration platform with enhanced scalability, multi-tenancy, and enterprise-grade resilience:
 
 ```mermaid
-flowchart LR
-  U[User / CI / IDE] --> CLI[CLI + API + Apps]
+flowchart TB
+  subgraph "User Layer"
+    U[Users / CI / IDEs]
+    SDK[SDK Clients]
+    API[REST/WebSocket APIs]
+  end
 
-  CLI --> ORCH[Orchestration Layer]
-  ORCH --> ROUTER[AI Router]
-  ORCH --> MEMORY[Memory System]
-  ORCH --> MCP[MCP Server]
-  ORCH --> TEMPLATES[Template Engine]
+  subgraph "Orchestration Layer v2.0"
+    ORCH[Distributed Orchestrator]
+    ROUTER[Smart AI Router]
+    MEMORY[Multi-Tier Memory]
+    MCP[MCP Server Cluster]
+    TEMPLATES[Template Engine]
+  end
 
-  ROUTER --> PROVIDERS[Provider Adapters]
-  PROVIDERS --> OPENAI[OpenAI]
-  PROVIDERS --> ANTHROPIC[Anthropic]
-  PROVIDERS --> GOOGLE[Google]
-  PROVIDERS --> OTHERS[Other Providers]
+  subgraph "Execution Layer"
+    AGENTS[Agent Swarm]
+    WORKERS[Worker Nodes]
+    CONTAINERS[Docker/K8s Containers]
+  end
 
-  MCP --> TOOLS[Git / Files / Commands / Integrations]
-  MEMORY --> STORES[Vector + Graph + Tiered Stores]
-  
+  subgraph "Provider Layer"
+    PROVIDERS[Provider Adapters]
+    OPENAI[OpenAI]
+    ANTHROPIC[Anthropic]
+    GOOGLE[Google/Gemini]
+    OTHERS[NVIDIA/Mistral/etc]
+  end
+
+  subgraph "Infrastructure"
+    REDIS[(Redis Cache)]
+    DB[(Database)]
+    STORAGE[(Object Storage)]
+    QUEUE[(Message Queue)]
+  end
+
+  U --> ORCH
+  SDK --> ORCH
+  API --> ORCH
+
+  ORCH --> ROUTER
+  ORCH --> MEMORY
+  ORCH --> MCP
+  ORCH --> TEMPLATES
+
+  ORCH --> AGENTS
+  AGENTS --> WORKERS
+  WORKERS --> CONTAINERS
+
+  ROUTER --> PROVIDERS
+  PROVIDERS --> OPENAI
+  PROVIDERS --> ANTHROPIC
+  PROVIDERS --> GOOGLE
+  PROVIDERS --> OTHERS
+
+  MEMORY --> REDIS
+  ORCH --> DB
+  ORCH --> STORAGE
+  ORCH --> QUEUE
+
   style ORCH fill:#e1f5fe
   style ROUTER fill:#e8f5e8
   style MEMORY fill:#fff3e0
   style MCP fill:#fce4ec
+  style AGENTS fill:#f3e5f5
 ```
 
 ## The 30-Cycle Roadmap
@@ -186,7 +229,7 @@ npx ultra-dex config --wizard
 
 # Pre-built agent templates
 npx ultra-dex agents create --template=coder
-npx ultra-dex agents create --template=writer  
+npx ultra-dex agents create --template=writer
 npx ultra-dex agents create --template=researcher
 ```
 

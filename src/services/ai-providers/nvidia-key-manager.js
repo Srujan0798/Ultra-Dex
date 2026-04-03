@@ -1,7 +1,7 @@
 /**
  * NVIDIA API Key Manager
  * Support for multiple API keys with rotation and load balancing
- * 
+ *
  * Benefits:
  * - Avoid rate limits by rotating keys
  * - Use different keys for different models
@@ -11,7 +11,9 @@
 
 // Temporary mock for OpenAI when package is corrupted
 class MockOpenAI {
-  constructor(config) { this.config = config; }
+  constructor(config) {
+    this.config = config;
+  }
 }
 const OpenAI = MockOpenAI;
 
@@ -124,7 +126,7 @@ class NVIDIAKeyManager {
    */
   createClient(modelId = null) {
     const keyConfig = this.getCurrentKey(modelId);
-    
+
     return new OpenAI({
       baseURL: 'https://integrate.api.nvidia.com/v1',
       apiKey: keyConfig.key,
@@ -138,7 +140,7 @@ class NVIDIAKeyManager {
   recordSuccess(key) {
     const usage = this.keyUsage.get(key) || 0;
     this.keyUsage.set(key, usage + 1);
-    
+
     // Reset failure count on success
     this.keyFailures.set(key, 0);
   }
@@ -150,7 +152,7 @@ class NVIDIAKeyManager {
   recordFailure(key) {
     const failures = this.keyFailures.get(key) || 0;
     this.keyFailures.set(key, failures + 1);
-    
+
     // Auto-rotate on failure
     this.rotateKey();
   }
@@ -260,4 +262,3 @@ export function initializeKeyManager() {
 }
 
 export default NVIDIAKeyManager;
-

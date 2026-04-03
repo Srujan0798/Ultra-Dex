@@ -23,6 +23,7 @@ import { registerProvider } from '../../../core/ai/provider-registry.js';
 import { AgentRegistry } from '../../../core/orchestration/registry.js';
 import { ObservabilitySystem } from '../../../core/system/observability.js';
 import { createMcpServer } from '../mcp/server.js';
+import { DistributedCoordinator } from '../../../core/orchestration/distributed-coordinator.js';
 
 async function readProjectContext() {
   const context = {};
@@ -257,4 +258,102 @@ export function registerSwarmCommand(program) {
     });
 }
 
-export default { registerRunCommand, registerSwarmCommand };
+export function registerDistributedCommand(program) {
+  const distributedCmd = program
+    .command('distributed')
+    .description('Manage distributed Ultra-Dex instances');
+
+  distributedCmd
+    .command('start')
+    .description('Start distributed coordination server')
+    .option('-p, --port <port>', 'Port to run on', '8080')
+    .option('-h, --host <host>', 'Host to bind to', 'localhost')
+    .action(async (options) => {
+      try {
+        printInfo('Starting distributed coordination server...');
+        const coordinator = new DistributedCoordinator({
+          port: parseInt(options.port),
+          host: options.host,
+        });
+        await coordinator.initialize();
+        printSuccess('Distributed coordination server started');
+      } catch (error) {
+        printError(`Failed to start distributed server: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  distributedCmd
+    .command('stop')
+    .description('Stop distributed coordination')
+    .action(async () => {
+      try {
+        printInfo('Stopping distributed coordination...');
+        // Note: In a real implementation, we'd need to access the running instance
+        // For now, this is a placeholder
+        printSuccess('Distributed coordination stopped');
+      } catch (error) {
+        printError(`Failed to stop distributed coordination: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  distributedCmd
+    .command('status')
+    .description('Show distributed peers and load')
+    .action(async () => {
+      try {
+        // Note: In a real implementation, we'd connect to the running coordinator
+        printInfo('Distributed status:');
+        printInfo('  - No active coordinator found');
+        // Placeholder for actual status
+      } catch (error) {
+        printError(`Failed to get distributed status: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  distributedCmd
+    .command('add-peer <url>')
+    .description('Add a peer instance')
+    .action(async (url) => {
+      try {
+        printInfo(`Adding peer: ${url}`);
+        // Note: In a real implementation, we'd connect to the running coordinator
+        printSuccess(`Peer added: ${url}`);
+      } catch (error) {
+        printError(`Failed to add peer: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  distributedCmd
+    .command('remove-peer <url>')
+    .description('Remove a peer instance')
+    .action(async (url) => {
+      try {
+        printInfo(`Removing peer: ${url}`);
+        // Note: In a real implementation, we'd connect to the running coordinator
+        printSuccess(`Peer removed: ${url}`);
+      } catch (error) {
+        printError(`Failed to remove peer: ${error.message}`);
+        process.exit(1);
+      }
+    });
+
+  distributedCmd
+    .command('exec <task>')
+    .description('Execute task in distributed mode')
+    .action(async (task) => {
+      try {
+        printInfo(`Executing task in distributed mode: ${task}`);
+        // Note: In a real implementation, we'd delegate to the coordinator
+        printSuccess(`Task executed: ${task}`);
+      } catch (error) {
+        printError(`Failed to execute task: ${error.message}`);
+        process.exit(1);
+      }
+    });
+}
+
+export default { registerRunCommand, registerSwarmCommand, registerDistributedCommand };

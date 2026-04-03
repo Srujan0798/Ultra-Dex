@@ -182,5 +182,5 @@ async function createLogger() {
 
 const logger = await createLogger();
 
-export { logger };
+export { logger, createLogger };
 export default logger;

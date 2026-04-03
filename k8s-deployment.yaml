@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ultradex-distributed
+  labels:
+    app: ultradex
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ultradex
+  template:
+    metadata:
+      labels:
+        app: ultradex
+    spec:
+      containers:
+        - name: ultradex
+          image: ultradex:latest
+          ports:
+            - containerPort: 8080
+              name: coordinator
+            - containerPort: 3000
+              name: dashboard
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: ULTRA_DEX_INSTANCE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ULTRA_DEX_COORDINATOR_PORT
+              value: '8080'
+            - name: ULTRA_DEX_DISCOVERY_URLS
+              value: 'http://ultradex-service:8080'
+            - name: ULTRA_DEX_ENABLE_LOAD_BALANCING
+              value: 'true'
+            - name: ULTRA_DEX_ENABLE_DISCOVERY
+              value: 'true'
+            - name: ULTRA_DEX_MAX_CONCURRENT_TASKS
+              value: '5'
+          resources:
+            limits:
+              memory: '1Gi'
+              cpu: '500m'
+            requests:
+              memory: '512Mi'
+              cpu: '250m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: coordinator
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: coordinator
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: config
+              mountPath: /app/.env.local
+              subPath: .env.local
+              readOnly: true
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: ultradex-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ultradex-service
+spec:
+  selector:
+    app: ultradex
+  ports:
+    - name: coordinator
+      port: 8080
+      targetPort: coordinator
+    - name: dashboard
+      port: 3000
+      targetPort: dashboard
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ultradex-config
+data:
+  .env.local: |
+    # Ultra-Dex distributed configuration
+    ULTRA_DEX_MODE=distributed
+    LOG_LEVEL=info
+    # Add your API keys and secrets here
+    # OPENAI_API_KEY=your_key
+    # ANTHROPIC_API_KEY=your_key
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ultradex-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: ultradex.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ultradex-service
+                port:
+                  number: 3000
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ultradex-service
+                port:
+                  number: 8080
