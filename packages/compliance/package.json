@@ -1,0 +1,40 @@
+{
+  "name": "@ultra-dex/compliance",
+  "version": "1.0.0",
+  "description": "Comprehensive compliance and audit logging package for Ultra-Dex",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "keywords": [
+    "compliance",
+    "audit",
+    "gdpr",
+    "hipaa",
+    "soc2",
+    "pci-dss",
+    "logging",
+    "security"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test test/*.test.js",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
+  },
+  "dependencies": {
+    "uuid": "^11.0.3",
+    "crypto": "^1.0.1",
+    "winston": "^3.17.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.10",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.7.3",
+    "eslint": "^9.20.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}
