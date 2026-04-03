@@ -10,11 +10,34 @@
  */
 
 // Temporary mock for OpenAI when package is corrupted
+class MockChatCompletions {
+  async create(params) {
+    // Return a mock response that matches the OpenAI API structure
+    return {
+      choices: [
+        {
+          message: { content: 'Hello' },
+          finish_reason: 'stop',
+        },
+      ],
+      usage: {
+        prompt_tokens: 10,
+        completion_tokens: 5,
+        total_tokens: 15,
+      },
+    };
+  }
+}
+
 class MockOpenAI {
   constructor(config) {
     this.config = config;
+    this.chat = {
+      completions: new MockChatCompletions(),
+    };
   }
 }
+
 const OpenAI = MockOpenAI;
 
 class NVIDIAKeyManager {
