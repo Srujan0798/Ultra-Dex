@@ -1,0 +1,23 @@
+{
+  "name": "my-awesome-plugin",
+  "version": "1.0.0",
+  "description": "A brief description of what your plugin does",
+  "main": "index.js",
+  "author": "Your Name",
+  "license": "MIT",
+  "ultra-dex": {
+    "category": "tool",
+    "tags": ["utility", "automation"],
+    "hooks": ["pre-init", "post-generate"],
+    "commands": [
+      {
+        "name": "my-command",
+        "description": "Custom command provided by this plugin"
+      }
+    ],
+    "dependencies": {
+      "ultra-dex": ">=3.0.0"
+    }
+  }
+}</content>
+<parameter name="filePath">packages/marketplace/templates/plugin-manifest.json

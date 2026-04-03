@@ -11,6 +11,7 @@ import {
   Box,
   BarChart3,
   Activity,
+  Package,
 } from 'lucide-react';
 
 const navItems = [
@@ -19,6 +20,7 @@ const navItems = [
   { path: '/agents', label: 'Agents', icon: Bot },
   { path: '/tasks', label: 'Tasks', icon: ListTodo },
   { path: '/integrations', label: 'Integrations', icon: Plug },
+  { path: '/marketplace', label: 'Marketplace', icon: Package },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/traces', label: 'Traces', icon: Activity },
   { path: '/settings', label: 'Settings', icon: SettingsIcon },
