@@ -59,10 +59,11 @@ class MockProvider {
   }
 }
 
+import * as providers from '../../../../apps/cli/lib/providers/index.js';
+
 // Mock the provider creation
-const originalCreateProvider =
-  require('../../../../apps/cli/lib/providers/index.js').createProvider;
-require('../../../../apps/cli/lib/providers/index.js').createProvider = async () => {
+const originalCreateProvider = providers.createProvider;
+providers.createProvider = async () => {
   return new MockProvider();
 };
 
