@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, memo, useEffect } from 'react';
+import React, { Suspense, lazy, memo, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { OnboardingTour } from './components/OnboardingTour';
 import { useWebSocket } from './hooks/useWebSocket';
 import { trackPageView } from './lib/analytics';
+import { isAuthenticated, hasRole, getCurrentUser } from './lib/api';
 
 const OverviewPage = lazy(() =>
   import('./pages/Overview').then((module) => ({ default: module.Overview }))
@@ -16,9 +17,7 @@ const MemoryPage = lazy(() =>
 const AgentsPage = lazy(() =>
   import('./pages/Agents').then((module) => ({ default: module.Agents }))
 );
-const TasksPage = lazy(() =>
-  import('./pages/Tasks').then((module) => ({ default: module.Tasks }))
-);
+const TasksPage = lazy(() => import('./pages/Tasks').then((module) => ({ default: module.Tasks })));
 const IntegrationsPage = lazy(() =>
   import('./pages/Integrations').then((module) => ({ default: module.Integrations }))
 );
@@ -32,6 +31,12 @@ const AnalyticsPage = lazy(() =>
   import('./pages/Analytics').then((module) => ({ default: module.Analytics }))
 );
 const HologramPage = lazy(() => import('./pages/Hologram'));
+const TracesPage = lazy(() =>
+  import('./pages/Traces').then((module) => ({ default: module.Traces }))
+);
+const LoginPage = lazy(() => import('./pages/Login').then((module) => ({ default: module.Login })));
+const HologramPage = lazy(() => import('./pages/Hologram'));
+const LoginPage = lazy(() => import('./pages/Login').then((module) => ({ default: module.Login })));
 
 function RouteTracker() {
   const location = useLocation();
@@ -53,10 +58,24 @@ function RouteFallback() {
 }
 
 function AppShell() {
+  const [authenticated, setAuthenticated] = useState(isAuthenticated());
+
+  useEffect(() => {
+    setAuthenticated(isAuthenticated());
+  }, []);
+
   const socketUrl =
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ULTRA_DEX_WS) ||
     'ws://localhost:3002/ws';
   const { connected } = useWebSocket(socketUrl);
+
+  if (!authenticated) {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <LoginPage />
+      </Suspense>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
@@ -72,11 +91,17 @@ function AppShell() {
                 <Route path="/" element={<OverviewPage />} />
                 <Route path="/memory" element={<MemoryPage />} />
                 <Route path="/agents" element={<AgentsPage />} />
-                <Route path="/tasks" element={<TasksPage />} />
+                <Route
+                  path="/tasks"
+                  element={
+                    hasRole('admin') || hasRole('user') ? <TasksPage /> : <div>Access Denied</div>
+                  }
+                />
                 <Route path="/integrations" element={<IntegrationsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/providers" element={<ProvidersPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/traces" element={<TracesPage />} />
                 <Route path="/hologram" element={<HologramPage />} />
               </Routes>
             </Suspense>

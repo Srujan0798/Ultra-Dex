@@ -10,6 +10,7 @@ import {
   Zap,
   Box,
   BarChart3,
+  Activity,
 } from 'lucide-react';
 
 const navItems = [
@@ -19,6 +20,7 @@ const navItems = [
   { path: '/tasks', label: 'Tasks', icon: ListTodo },
   { path: '/integrations', label: 'Integrations', icon: Plug },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { path: '/traces', label: 'Traces', icon: Activity },
   { path: '/settings', label: 'Settings', icon: SettingsIcon },
   { path: '/hologram', label: 'Hologram', icon: Box },
 ];
@@ -35,12 +37,8 @@ export const Sidebar = memo(function Sidebar() {
           <Zap className="h-5 w-5 text-emerald-400" aria-hidden="true" />
         </div>
         <div>
-          <div className="text-lg font-semibold tracking-wide text-slate-100">
-            Ultra-Dex
-          </div>
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
-            Control Room
-          </div>
+          <div className="text-lg font-semibold tracking-wide text-slate-100">Ultra-Dex</div>
+          <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Control Room</div>
         </div>
       </div>
 
@@ -51,9 +49,10 @@ export const Sidebar = memo(function Sidebar() {
             to={path}
             aria-label={`Navigate to ${label}`}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${isActive
-                ? 'bg-emerald-500/10 text-emerald-200'
-                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'
+              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                isActive
+                  ? 'bg-emerald-500/10 text-emerald-200'
+                  : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'
               }`
             }
           >

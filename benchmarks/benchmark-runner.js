@@ -18,8 +18,18 @@ class BenchmarkRunner extends EventEmitter {
       ...options,
     };
 
-    this.logger = createLogger('BenchmarkRunner');
+    // Initialize logger synchronously for now
+    this.logger = { info: console.log, warn: console.warn, error: console.error };
     this.results = [];
+
+    // Initialize async logger in background
+    createLogger('BenchmarkRunner')
+      .then((logger) => {
+        this.logger = logger;
+      })
+      .catch(() => {
+        // Keep console logger as fallback
+      });
   }
 
   /**
