@@ -16,14 +16,15 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install root dependencies
-        run: npm install --legacy-peer-deps
-
       - name: Install CLI dependencies
-        run: cd apps/cli && npm install --legacy-peer-deps
+        run: |
+          cd apps/cli
+          npm install --legacy-peer-deps
 
       - name: Run CLI tests (non-blocking)
-        run: cd apps/cli && npm test || true
+        run: |
+          cd apps/cli
+          npm test || echo "Tests completed with some failures - continuing"
         continue-on-error: true
 
       - name: Install esbuild
@@ -47,7 +48,8 @@ jobs:
             --external:playwright \
             --external:libsodium-wrappers \
             --external:ink \
-            --external:ink-spinner
+            --external:ink-spinner \
+            --external:@modelcontextprotocol/sdk
 
       - name: Verify bundle
         run: |
