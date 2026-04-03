@@ -9,9 +9,9 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
@@ -20,12 +20,7 @@ jobs:
         run: |
           cd apps/cli
           npm install --legacy-peer-deps --ignore-scripts --omit=optional
-
-      - name: Run CLI tests (non-blocking)
-        run: |
-          cd apps/cli
-          npm test || echo "Tests completed with some failures - continuing"
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Install esbuild
         run: npm install esbuild
@@ -49,24 +44,30 @@ jobs:
             --external:libsodium-wrappers \
             --external:ink \
             --external:ink-spinner \
-            --external:@modelcontextprotocol/sdk
+            --external:@modelcontextprotocol/sdk \
+            --external:neo4j-driver
 
-      - name: Verify bundle
+      - name: Verify bundle exists
         run: |
+          if [ ! -f apps/cli/dist/ultra-dex.js ]; then
+            echo "ERROR: Bundle not created!"
+            exit 1
+          fi
           ls -lh apps/cli/dist/ultra-dex.js
-          echo "Bundle size: $(du -sh apps/cli/dist/ultra-dex.js | cut -f1)"
+          echo "SUCCESS: Bundle created"
 
       - name: Publish CLI to npm
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           cd apps/cli
+          echo "Publishing version: $(node -p "require('./package.json').version")"
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: Ultra-Dex ${{ github.ref_name }}
           generate_release_notes: true
