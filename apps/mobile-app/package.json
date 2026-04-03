@@ -1,0 +1,55 @@
+{
+  "name": "@ultra-dex/mobile-app",
+  "version": "1.0.0",
+  "description": "Ultra-Dex Mobile Companion App",
+  "main": "index.js",
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "build:android": "cd android && ./gradlew assembleRelease",
+    "build:ios": "react-native build-ios",
+    "test": "jest",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultra-dex/mobile-sdk": "*",
+    "@react-navigation/native": "^6.1.9",
+    "@react-navigation/stack": "^6.3.20",
+    "react": "18.2.0",
+    "react-native": "0.72.6",
+    "react-native-screens": "^3.27.0",
+    "react-native-safe-area-context": "^4.7.4",
+    "react-native-gesture-handler": "^2.13.4",
+    "react-native-vector-icons": "^10.0.0",
+    "react-native-paper": "^5.11.3",
+    "@react-native-async-storage/async-storage": "^1.19.3",
+    "react-native-push-notification": "^8.1.1",
+    "@react-native-community/push-notification-ios": "^1.11.0",
+    "@react-native-community/netinfo": "^9.4.1",
+    "@react-native-community/voice": "^1.1.9",
+    "@react-native-community/biometrics": "^3.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/runtime": "^7.20.0",
+    "@react-native/eslint-config": "^0.72.2",
+    "@react-native/metro-config": "^0.72.11",
+    "@tsconfig/react-native": "^3.0.0",
+    "@types/react": "^18.0.28",
+    "@types/react-test-renderer": "^18.0.0",
+    "babel-jest": "^29.2.1",
+    "eslint": "^8.19.0",
+    "jest": "^29.2.1",
+    "metro-react-native-babel-preset": "^0.76.8",
+    "prettier": "^2.4.1",
+    "react-test-renderer": "18.2.0",
+    "typescript": "^4.8.4"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
