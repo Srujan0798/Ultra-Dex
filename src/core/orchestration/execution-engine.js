@@ -51,7 +51,6 @@ export class ExecutionEngine {
     }
     return this;
   }
-  }
 
   /**
    * Execute a task deterministically
@@ -62,6 +61,643 @@ export class ExecutionEngine {
     const trace = this.options.enableTracing ? new ExecutionTrace(task.id, task.input) : null;
 
     try {
+      if (trace) {
+        trace.start();
+        // Add all steps to pipeline
+        task.steps.forEach((step, i) => {
+          const stepId = step.id || `step_${i}`;
+          trace.addStep(stepId, task.agent, step.type, []);
+        });
+      }
+
+      logger.info('Starting task execution', { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
+      task.status = 'running';
+
+      for (let i = 0; i < task.steps.length; i++) {
+        const step = task.steps[i];
+        const stepId = step.id || `step_${i}`;
+
+        if (trace) {
+          try {
+            trace.startStep(stepId);
+          } catch (traceError) {
+            logger.warn('Failed to start step in trace', { taskId: task.id, stepId, error: traceError.message });
+          }
+        }
+
+        logger.info('Executing step', { taskId: task.id, stepId, type: step.type, agent: task.agent });
+        const startTime = Date.now();
+
+        try {
+          const result = await this.executeStep(step, task);
+          const duration = Date.now() - startTime;
+          task.results[stepId] = result;
+
+          if (trace) {
+            try {
+              trace.recordResult(task.agent, { stepId, result, duration }, true);
+            } catch (traceError) {
+              logger.warn('Failed to record step result in trace', { taskId: task.id, stepId, error: traceError.message });
+            }
+          }
+
+          logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
+          task.errors.push({ stepId, error: error.message });
+
+          if (trace) {
+            try {
+              trace.recordResult(task.agent, { stepId, error: error.message, duration }, false);
+            } catch (traceError) {
+              logger.warn('Failed to record step error in trace', { taskId: task.id, stepId, error: traceError.message });
+            }
+          }
+
+          // For now, fail fast on error. Could implement retry logic later
+          throw error;
+        }
+      }
+
+      task.status = 'completed';
+      logger.info('Task execution completed', { taskId: task.id, duration: trace?.getDurationFormatted() });
+
+      if (trace) {
+        trace.complete(true);
+      }
+
+      return {
+        status: 'completed',
+        results: task.results,
+        trace: trace ? trace.toJSON() : null,
+        run_id: trace?.taskId,
+        agents: trace ? trace.pipeline.map(s => s.agent) : [task.agent],
+        steps: task.steps.map((s, i) => s.id || `step_${i}`),
+        duration: trace?.getDuration()
+      };
+    } catch (error) {
+      task.status = 'failed';
+      logger.error('Task execution failed', { taskId: task.id, error: error.message, duration: trace?.getDurationFormatted() });
+
+      if (trace) {
+        try {
+          trace.complete(false);
+        } catch (traceError) {
+          logger.warn('Failed to complete trace on error', { taskId: task.id, error: traceError.message });
+        }
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Execute a task with streaming progress updates
+   * @param {ExecutionTask} task - The task to execute
+   * @param {Object} options - Streaming options
+   * @param {Function} options.onProgress - Progress callback
+   * @returns {AsyncGenerator} Generator yielding progress updates
+   */
+  async* executeStream(task, options = {}) {
+    const { onProgress } = options;
+    const trace = this.options.enableTracing ? new ExecutionTrace(task.id, task.input) : null;
+
+    try {
+      if (trace) {
+        trace.start();
+        // Add all steps to pipeline
+        task.steps.forEach((step, i) => {
+          const stepId = step.id || `step_${i}`;
+          trace.addStep(stepId, task.agent, step.type, []);
+        });
+      }
+
+      logger.info('Starting streaming task execution', { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
+      task.status = 'running';
+
+      // Yield initial progress
+      const initialProgress = {
+        type: 'start',
+        taskId: task.id,
+        totalSteps: task.steps.length,
+        completedSteps: 0,
+        status: 'running',
+        trace: trace ? trace.toJSON() : null,
+      };
+      if (onProgress) onProgress(initialProgress);
+      yield initialProgress;
+
+      for (let i = 0; i < task.steps.length; i++) {
+        const step = task.steps[i];
+        const stepId = step.id || `step_${i}`;
+
+        if (trace) {
+          try {
+            trace.startStep(stepId);
+          } catch (traceError) {
+            logger.warn('Failed to start step in trace', { taskId: task.id, stepId, error: traceError.message });
+          }
+        }
+
+        logger.info('Executing step', { taskId: task.id, stepId, type: step.type, agent: task.agent });
+        const startTime = Date.now();
+
+        try {
+          // Yield step start progress
+          const stepStartProgress = {
+            type: 'step_start',
+            taskId: task.id,
+            stepId,
+            stepIndex: i,
+            totalSteps: task.steps.length,
+            stepType: step.type,
+            agent: task.agent,
+            status: 'running',
+          };
+          if (onProgress) onProgress(stepStartProgress);
+          yield stepStartProgress;
+
+          const result = await this.executeStep(step, task);
+          const duration = Date.now() - startTime;
+          task.results[stepId] = result;
+
+          if (trace) {
+            try {
+              trace.recordResult(task.agent, { stepId, result, duration }, true);
+            } catch (traceError) {
+              logger.warn('Failed to record step result in trace', { taskId: task.id, stepId, error: traceError.message });
+            }
+          }
+
+          // Yield step completion progress
+          const stepCompleteProgress = {
+            type: 'step_complete',
+            taskId: task.id,
+            stepId,
+            stepIndex: i,
+            totalSteps: task.steps.length,
+            result,
+            duration,
+            status: 'running',
+            trace: trace ? trace.toJSON() : null,
+          };
+          if (onProgress) onProgress(stepCompleteProgress);
+          yield stepCompleteProgress;
+
+          logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
+          task.errors.push({ stepId, error: error.message });
+
+          if (trace) {
+            try {
+              trace.recordResult(task.agent, { stepId, error: error.message, duration }, false);
+            } catch (traceError) {
+              logger.warn('Failed to record step error in trace', { taskId: task.id, stepId, error: traceError.message });
+            }
+          }
+
+          // Yield step error progress
+          const stepErrorProgress = {
+            type: 'step_error',
+            taskId: task.id,
+            stepId,
+            stepIndex: i,
+            totalSteps: task.steps.length,
+            error: error.message,
+            duration,
+            status: 'running',
+          };
+          if (onProgress) onProgress(stepErrorProgress);
+          yield stepErrorProgress;
+
+          // For streaming, continue with other steps unless critical
+          if (step.type === 'delegate' || step.type === 'generate') {
+            // Yield error but continue
+            logger.warn('Continuing execution despite step error', { taskId: task.id, stepId });
+          } else {
+            // Critical step failed, abort execution
+            throw error;
+          }
+        }
+      }
+
+      task.status = 'completed';
+      logger.info('Task execution completed', { taskId: task.id, duration: trace?.getDurationFormatted() });
+
+      if (trace) {
+        trace.complete(true);
+      }
+
+      // Yield final result
+      const finalResult = {
+        type: 'complete',
+        status: 'completed',
+        results: task.results,
+        trace: trace ? trace.toJSON() : null,
+        run_id: trace?.taskId,
+        agents: trace ? trace.pipeline.map(s => s.agent) : [task.agent],
+        steps: task.steps.map((s, i) => s.id || `step_${i}`),
+        duration: trace?.getDuration(),
+        errors: task.errors,
+      };
+      if (onProgress) onProgress(finalResult);
+      yield finalResult;
+
+      return finalResult;
+    } catch (error) {
+      task.status = 'failed';
+      logger.error('Task execution failed', { taskId: task.id, error: error.message, duration: trace?.getDurationFormatted() });
+
+      if (trace) {
+        try {
+          trace.complete(false);
+        } catch (traceError) {
+          logger.warn('Failed to complete trace on error', { taskId: task.id, error: traceError.message });
+        }
+      }
+
+      // Yield error result
+      const errorResult = {
+        type: 'error',
+        status: 'failed',
+        error: error.message,
+        trace: trace ? trace.toJSON() : null,
+        run_id: trace?.taskId,
+      };
+      if (onProgress) onProgress(errorResult);
+      yield errorResult;
+
+      throw error;
+    }
+  }
+
+  /**
+   * Execute a task with streaming progress updates
+   * @param {ExecutionTask} task - The task to execute
+   * @param {Object} options - Streaming options
+   * @param {Function} options.onProgress - Progress callback
+   * @returns {AsyncGenerator} Generator yielding progress updates
+   */
+  async* executeStream(task, options = {}) {
+    const { onProgress } = options;
+    const trace = this.options.enableTracing ? new ExecutionTrace(task.id, task.input) : null;
+
+    try {
+      if (trace) {
+        trace.start();
+        // Add all steps to pipeline
+        task.steps.forEach((step, i) => {
+          const stepId = step.id || `step_${i}`;
+          trace.addStep(stepId, task.agent, step.type, []);
+        });
+      }
+
+      logger.info('Starting streaming task execution', { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
+      task.status = 'running';
+
+      // Yield initial progress
+      const initialProgress = {
+        type: 'start',
+        taskId: task.id,
+        totalSteps: task.steps.length,
+        completedSteps: 0,
+        status: 'running',
+        trace: trace ? trace.toJSON() : null,
+      };
+      if (onProgress) onProgress(initialProgress);
+      yield initialProgress;
+
+      for (let i = 0; i < task.steps.length; i++) {
+        const step = task.steps[i];
+        const stepId = step.id || `step_${i}`;
+
+        if (trace) {
+          try {
+            trace.startStep(stepId);
+          } catch (traceError) {
+            logger.warn('Failed to start step in trace', { taskId: task.id, stepId, error: traceError.message });
+          }
+        }
+
+        logger.info('Executing step', { taskId: task.id, stepId, type: step.type, agent: task.agent });
+        const startTime = Date.now();
+
+        // Yield step start progress
+        const stepStartProgress = {
+          type: 'step_start',
+          taskId: task.id,
+          stepId,
+          stepIndex: i,
+          totalSteps: task.steps.length,
+          stepType: step.type,
+          agent: task.agent,
+          status: 'running',
+        };
+        if (onProgress) onProgress(stepStartProgress);
+        yield stepStartProgress;
+
+        try {
+          const result = await this.executeStep(step, task);
+          const duration = Date.now() - startTime;
+          task.results[stepId] = result;
+
+          if (trace) {
+            try {
+              trace.recordResult(task.agent, { stepId, result, duration }, true);
+            } catch (traceError) {
+              logger.warn('Failed to record step result in trace', { taskId: task.id, stepId, error: traceError.message });
+            }
+          }
+
+          // Yield step completion progress
+          const stepCompleteProgress = {
+            type: 'step_complete',
+            taskId: task.id,
+            stepId,
+            stepIndex: i,
+            totalSteps: task.steps.length,
+            result,
+            duration,
+            status: 'running',
+            trace: trace ? trace.toJSON() : null,
+          };
+          if (onProgress) onProgress(stepCompleteProgress);
+          yield stepCompleteProgress;
+
+          logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
+          task.errors.push({ stepId, error: error.message });
+
+          if (trace) {
+            try {
+              trace.recordResult(task.agent, { stepId, error: error.message, duration }, false);
+            } catch (traceError) {
+              logger.warn('Failed to record step error in trace', { taskId: task.id, stepId, error: traceError.message });
+            }
+          }
+
+          // Yield step error progress
+          const stepErrorProgress = {
+            type: 'step_error',
+            taskId: task.id,
+            stepId,
+            stepIndex: i,
+            totalSteps: task.steps.length,
+            error: error.message,
+            duration,
+            status: 'running',
+          };
+          if (onProgress) onProgress(stepErrorProgress);
+          yield stepErrorProgress;
+
+          // For streaming, continue with other steps unless critical
+          if (step.type === 'delegate' || step.type === 'generate') {
+            // Yield error but continue
+            logger.warn('Continuing execution despite step error', { taskId: task.id, stepId });
+          } else {
+            // Critical step failed, abort execution
+            throw error;
+          }
+        }
+      }
+
+      task.status = 'completed';
+      logger.info('Task execution completed', { taskId: task.id, duration: trace?.getDurationFormatted() });
+
+      if (trace) {
+        trace.complete(true);
+      }
+
+      // Yield final result
+      const finalResult = {
+        type: 'complete',
+        status: 'completed',
+        results: task.results,
+        trace: trace ? trace.toJSON() : null,
+        run_id: trace?.taskId,
+        agents: trace ? trace.pipeline.map(s => s.agent) : [task.agent],
+        steps: task.steps.map((s, i) => s.id || `step_${i}`),
+        duration: trace?.getDuration(),
+        errors: task.errors,
+      };
+      if (onProgress) onProgress(finalResult);
+      yield finalResult;
+
+      return finalResult;
+    } catch (error) {
+      task.status = 'failed';
+      logger.error('Task execution failed', { taskId: task.id, error: error.message, duration: trace?.getDurationFormatted() });
+
+      if (trace) {
+        try {
+          trace.complete(false);
+        } catch (traceError) {
+          logger.warn('Failed to complete trace on error', { taskId: task.id, error: traceError.message });
+        }
+      }
+
+      // Yield error result
+      const errorResult = {
+        type: 'error',
+        status: 'failed',
+        error: error.message,
+        trace: trace ? trace.toJSON() : null,
+        run_id: trace?.taskId,
+      };
+      if (onProgress) onProgress(errorResult);
+      yield errorResult;
+
+      throw error;
+    }
+  }
+
+  /**
+   * Execute a task with progress updates (non-streaming version)
+   * @param {ExecutionTask} task - The task to execute
+   * @param {Object} options - Options
+   * @returns {Object} Execution result
+   */
+  async executeWithProgress(task, options = {}) {
+    const { onProgress } = options;
+    const trace = this.options.enableTracing ? new ExecutionTrace(task.id, task.input) : null;
+
+    try {
+      if (trace) {
+        trace.start();
+        // Add all steps to pipeline
+        task.steps.forEach((step, i) => {
+          const stepId = step.id || `step_${i}`;
+          trace.addStep(stepId, task.agent, step.type, []);
+        });
+      }
+
+      logger.info('Starting task execution', { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
+      task.status = 'running';
+
+      // Send initial progress
+      if (onProgress) {
+        onProgress({
+          type: 'start',
+          taskId: task.id,
+          totalSteps: task.steps.length,
+          completedSteps: 0,
+          status: 'running',
+          trace: trace ? trace.toJSON() : null,
+        });
+      }
+
+      for (let i = 0; i < task.steps.length; i++) {
+        const step = task.steps[i];
+        const stepId = step.id || `step_${i}`;
+
+        if (trace) {
+          try {
+            trace.startStep(stepId);
+          } catch (traceError) {
+            logger.warn('Failed to start step in trace', { taskId: task.id, stepId, error: traceError.message });
+          }
+        }
+
+        logger.info('Executing step', { taskId: task.id, stepId, type: step.type, agent: task.agent });
+        const startTime = Date.now();
+
+        // Send step start progress
+        if (onProgress) {
+          onProgress({
+            type: 'step_start',
+            taskId: task.id,
+            stepId,
+            stepIndex: i,
+            totalSteps: task.steps.length,
+            stepType: step.type,
+            agent: task.agent,
+            status: 'running',
+          });
+        }
+
+        try {
+          const result = await this.executeStep(step, task);
+          const duration = Date.now() - startTime;
+          task.results[stepId] = result;
+
+          if (trace) {
+            try {
+              trace.recordResult(task.agent, { stepId, result, duration }, true);
+            } catch (traceError) {
+              logger.warn('Failed to record step result in trace', { taskId: task.id, stepId, error: traceError.message });
+            }
+          }
+
+          // Send step completion progress
+          if (onProgress) {
+            onProgress({
+              type: 'step_complete',
+              taskId: task.id,
+              stepId,
+              stepIndex: i,
+              totalSteps: task.steps.length,
+              result,
+              duration,
+              status: 'running',
+              trace: trace ? trace.toJSON() : null,
+            });
+          }
+
+          logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
+          task.errors.push({ stepId, error: error.message });
+
+          if (trace) {
+            try {
+              trace.recordResult(task.agent, { stepId, error: error.message, duration }, false);
+            } catch (traceError) {
+              logger.warn('Failed to record step error in trace', { taskId: task.id, stepId, error: traceError.message });
+            }
+          }
+
+          // Send step error progress
+          if (onProgress) {
+            onProgress({
+              type: 'step_error',
+              taskId: task.id,
+              stepId,
+              stepIndex: i,
+              totalSteps: task.steps.length,
+              error: error.message,
+              duration,
+              status: 'running',
+            });
+          }
+
+          // For now, fail fast on error. Could implement retry logic later
+          throw error;
+        }
+      }
+
+      task.status = 'completed';
+      logger.info('Task execution completed', { taskId: task.id, duration: trace?.getDurationFormatted() });
+
+      if (trace) {
+        trace.complete(true);
+      }
+
+      // Send final progress
+      if (onProgress) {
+        onProgress({
+          type: 'complete',
+          status: 'completed',
+          results: task.results,
+          trace: trace ? trace.toJSON() : null,
+          run_id: trace?.taskId,
+          agents: trace ? trace.pipeline.map(s => s.agent) : [task.agent],
+          steps: task.steps.map((s, i) => s.id || `step_${i}`),
+          duration: trace?.getDuration(),
+          errors: task.errors,
+        });
+      }
+
+      return {
+        status: 'completed',
+        results: task.results,
+        trace: trace ? trace.toJSON() : null,
+        run_id: trace?.taskId,
+        agents: trace ? trace.pipeline.map(s => s.agent) : [task.agent],
+        steps: task.steps.map((s, i) => s.id || `step_${i}`),
+        duration: trace?.getDuration()
+      };
+    } catch (error) {
+      task.status = 'failed';
+      logger.error('Task execution failed', { taskId: task.id, error: error.message, duration: trace?.getDurationFormatted() });
+
+      if (trace) {
+        try {
+          trace.complete(false);
+        } catch (traceError) {
+          logger.warn('Failed to complete trace on error', { taskId: task.id, error: traceError.message });
+        }
+      }
+
+      // Send error progress
+      if (onProgress) {
+        onProgress({
+          type: 'error',
+          status: 'failed',
+          error: error.message,
+          trace: trace ? trace.toJSON() : null,
+          run_id: trace?.taskId,
+        });
+      }
+
+      throw error;
+    }
+  }
       if (trace) {
         trace.start();
         // Add all steps to pipeline
