@@ -64,12 +64,6 @@
     "x64",
     "arm64"
   ],
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "packages/extensions/*",
-    "src/*"
-  ],
   "packageManager": "npm@10.8.2",
   "scripts": {
     "start": "node apps/cli/bin/ultra-dex.js",
