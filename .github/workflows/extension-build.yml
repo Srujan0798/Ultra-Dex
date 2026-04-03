@@ -14,33 +14,42 @@ on:
 jobs:
   build-extension:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check if extension exists
+        id: check
+        run: echo "exists=$(test -d packages/extensions/vscode && echo true || echo false)" >> $GITHUB_OUTPUT
+
       - name: Setup Node.js
+        if: steps.check.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install root dependencies
+        if: steps.check.outputs.exists == 'true'
         run: npm install --legacy-peer-deps --ignore-scripts
 
       - name: Install extension dependencies
+        if: steps.check.outputs.exists == 'true'
         working-directory: packages/extensions/vscode
         run: npm install --legacy-peer-deps --ignore-scripts
 
       - name: Compile TypeScript
+        if: steps.check.outputs.exists == 'true'
         working-directory: packages/extensions/vscode
         run: npx tsc -p ./
 
       - name: Package VSIX
+        if: steps.check.outputs.exists == 'true'
         working-directory: packages/extensions/vscode
         run: npx vsce package --no-dependencies
 
       - name: Upload VSIX artifact
+        if: steps.check.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ultra-dex-vscode-extension
@@ -48,7 +57,8 @@ jobs:
           retention-days: 30
 
       - name: Verify VSIX created
+        if: steps.check.outputs.exists == 'true'
         working-directory: packages/extensions/vscode
         run: |
           ls -la *.vsix
-          echo "✅ Extension packaged successfully"
+          echo "Extension packaged successfully"

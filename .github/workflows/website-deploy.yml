@@ -2,9 +2,9 @@ name: Deploy Ultra-Dex Website
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
@@ -13,22 +13,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check if website exists
+        id: check
+        run: echo "exists=$(test -d apps/website && echo true || echo false)" >> $GITHUB_OUTPUT
+
       - name: Setup Node.js
+        if: steps.check.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies
+        if: steps.check.outputs.exists == 'true'
         run: |
           cd apps/website
           npm ci --legacy-peer-deps
 
       - name: Build website
+        if: steps.check.outputs.exists == 'true'
         run: |
           cd apps/website
           npm run build
 
       - name: Deploy to Vercel
+        if: steps.check.outputs.exists == 'true' && env.VERCEL_TOKEN != ''
         run: |
           npm install -g vercel
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

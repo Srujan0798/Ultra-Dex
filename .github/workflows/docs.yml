@@ -21,30 +21,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check if docs exist
+        id: check
+        run: echo "exists=$(test -d apps/docs-site && echo true || echo false)" >> $GITHUB_OUTPUT
+
       - name: Setup Node.js
+        if: steps.check.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.check.outputs.exists == 'true'
         run: |
           cd apps/docs-site
           npm install --ignore-scripts --legacy-peer-deps
 
       - name: Build website
+        if: steps.check.outputs.exists == 'true'
         run: |
           cd apps/docs-site
           npm run docs:build
 
       - name: Setup Pages
+        if: steps.check.outputs.exists == 'true'
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
+        if: steps.check.outputs.exists == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'apps/docs-site/docs/.vitepress/dist'
 
       - name: Deploy to GitHub Pages
+        if: steps.check.outputs.exists == 'true'
         id: deployment
         uses: actions/deploy-pages@v4

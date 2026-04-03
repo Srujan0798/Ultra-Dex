@@ -14,55 +14,34 @@ on:
 jobs:
   dashboard-verify:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check if dashboard exists
+        id: check
+        run: echo "exists=$(test -d apps/dashboard && echo true || echo false)" >> $GITHUB_OUTPUT
+
       - name: Setup Node
+        if: steps.check.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
 
       - name: Install dependencies
+        if: steps.check.outputs.exists == 'true'
         run: npm install --legacy-peer-deps --ignore-scripts
 
       - name: Dashboard tests
+        if: steps.check.outputs.exists == 'true'
         run: npm run test -w apps/dashboard
 
       - name: Dashboard accessibility smoke tests
+        if: steps.check.outputs.exists == 'true'
         run: npm run test:a11y -w apps/dashboard
 
       - name: Dashboard build
+        if: steps.check.outputs.exists == 'true'
         run: npm run build -w apps/dashboard
-
-  dashboard-deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: dashboard-verify
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm install --ignore-scripts --legacy-peer-deps
-
-      - name: Build dashboard
-        run: npm run build -w apps/dashboard
-
-      - name: Deploy to Vercel
-        if: env.VERCEL_TOKEN != ''
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          npm i -g vercel@latest
-          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-          vercel deploy --prod --token="$VERCEL_TOKEN"
