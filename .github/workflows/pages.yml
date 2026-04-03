@@ -1,0 +1,18 @@
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: [main]
+    paths: ['website/**']
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: website
+      - uses: actions/deploy-pages@v4

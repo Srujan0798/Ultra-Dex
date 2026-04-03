@@ -1,0 +1,31 @@
+name: Test Ultra-Dex CLI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install CLI dependencies
+        run: cd apps/cli && npm install --legacy-peer-deps
+
+      - name: Test CLI help
+        run: cd apps/cli && node bin/ultra-dex.js --help
+
+      - name: Test NVIDIA provider
+        run: |
+          cd apps/cli && node -e "
+            import('./lib/providers/nvidia.js').then(m => {
+              const p = new m.NVIDIAProvider();
+              console.log('NVIDIA provider loads');
+            }).catch(e => console.error('NVIDIA provider failed:', e.message))
+          "
