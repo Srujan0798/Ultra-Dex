@@ -16,30 +16,43 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install root dependencies
+        run: npm install --legacy-peer-deps
+
       - name: Install CLI dependencies
         run: cd apps/cli && npm install --legacy-peer-deps
 
-      - name: Run CLI tests
+      - name: Run CLI tests (non-blocking)
         run: cd apps/cli && npm test || true
+        continue-on-error: true
+
+      - name: Install esbuild
+        run: npm install esbuild
 
       - name: Create dist directory
-        run: mkdir -p dist
+        run: mkdir -p apps/cli/dist
 
       - name: Bundle into one file
         run: |
           npx esbuild apps/cli/bin/ultra-dex.js \
             --bundle \
             --platform=node \
-            --outfile=dist/ultra-dex.js \
+            --outfile=apps/cli/dist/ultra-dex.js \
             --format=esm \
             --external:node-pty \
             --external:puppeteer \
             --external:sharp \
             --external:keytar \
-            --external:sqlite3
+            --external:sqlite3 \
+            --external:playwright \
+            --external:libsodium-wrappers \
+            --external:ink \
+            --external:ink-spinner
 
-      - name: Copy bundled file to CLI package
-        run: cp dist/ultra-dex.js apps/cli/dist/ultra-dex.js
+      - name: Verify bundle
+        run: |
+          ls -lh apps/cli/dist/ultra-dex.js
+          echo "Bundle size: $(du -sh apps/cli/dist/ultra-dex.js | cut -f1)"
 
       - name: Publish CLI to npm
         if: startsWith(github.ref, 'refs/tags/v')
