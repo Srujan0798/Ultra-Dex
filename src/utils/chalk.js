@@ -25,13 +25,12 @@ const passthrough = new Proxy(identity, {
   },
 });
 
-let chalk = passthrough;
-
-try {
-  const mod = await import('chalk');
-  chalk = mod.default ?? mod;
-} catch {
-  chalk = passthrough;
-}
+// Ensure all common chalk properties return the passthrough proxy
+const chalk = new Proxy(passthrough, {
+  get(target, prop) {
+    if (prop === 'default') return chalk;
+    return passthrough;
+  },
+});
 
 export default chalk;

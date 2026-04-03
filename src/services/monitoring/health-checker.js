@@ -41,7 +41,7 @@ class HealthChecker {
 
       try {
         // Run check with timeout
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Health check timeout')), check.timeout)
         );
 
@@ -130,7 +130,7 @@ class HealthChecker {
     try {
       const health = await this.runHealthChecks();
       const statusCode = health.status === 'healthy' ? 200 : 503;
-      
+
       res.status(statusCode).json({
         status: health.status,
         timestamp: health.timestamp,
@@ -161,7 +161,7 @@ class HealthChecker {
         }
       };
 
-      const overallStatus = Object.values(basicChecks).every(check => 
+      const overallStatus = Object.values(basicChecks).every(check =>
         check.status === 'healthy' || check.status === 'warning'
       ) ? 'healthy' : 'unhealthy';
 
@@ -185,7 +185,7 @@ class HealthChecker {
   async metricsHandler(req, res) {
     try {
       const metrics = await this.getSystemMetrics();
-      
+
       // Format as Prometheus-style metrics if requested
       if (req.headers.accept && req.headers.accept.includes('text/plain')) {
         res.setHeader('Content-Type', 'text/plain; version=0.0.4');
@@ -239,7 +239,7 @@ class HealthChecker {
     this.registerCheck('memory', async () => {
       const memory = process.memoryUsage();
       const heapUsedPercent = (memory.heapUsed / memory.heapTotal) * 100;
-      
+
       return {
         status: heapUsedPercent < 80 ? 'healthy' : 'warning',
         details: {
@@ -276,4 +276,5 @@ class HealthChecker {
 const healthChecker = new HealthChecker();
 healthChecker.initialize();
 
+export { HealthChecker };
 export default healthChecker;

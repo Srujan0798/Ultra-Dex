@@ -2,6 +2,28 @@
 
 Thank you for your interest in contributing to Ultra-Dex! We appreciate your help in making AI orchestration better for everyone.
 
+## What You Can Contribute
+
+### 1. AI Agent Prompts
+
+Create new agents or improve existing ones in `.agents/` directory.
+
+### 2. Workflow Examples
+
+Share real-world workflows showing how to build features using agents.
+
+### 3. Documentation
+
+Improve guides, add examples, fix typos, or translate to other languages.
+
+### 4. Bug Fixes
+
+Fix issues in CLI commands, agent prompts, or documentation.
+
+### 5. Feature Requests
+
+Suggest new commands, agents, or improvements to existing functionality.
+
 ## Code of Conduct
 
 Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our community welcoming and inclusive.
@@ -37,12 +59,14 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our com
 ## Development Setup
 
 1. Clone your fork:
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/ultra-dex.git
    cd ultra-dex
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```

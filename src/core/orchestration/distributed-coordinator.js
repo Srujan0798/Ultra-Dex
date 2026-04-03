@@ -1111,4 +1111,3 @@ export class DistributedCoordinator extends EventEmitter {
 }
 
 export default DistributedCoordinator;
-<parameter name="filePath">src/core/orchestration/distributed-coordinator.js

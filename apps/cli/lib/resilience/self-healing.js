@@ -9,7 +9,6 @@ import EventEmitter from 'events';
 import { setTimeout as sleep } from 'timers/promises';
 import fs from 'fs/promises';
 import path from 'path';
-import v8 from 'v8';
 
 const STORAGE_FILE = path.join(process.cwd(), '.ultra', 'circuit-breakers.json');
 
@@ -377,13 +376,13 @@ export class SelfHealingOrchestrator extends EventEmitter {
     this.initialized = true;
 
     await this.loadState();
-
+    
     // Register default health checks
     this.healthMonitor.register('memory', async () => {
       const usage = process.memoryUsage();
       const threshold = 0.9; // 90%
       const total = usage.heapTotal + usage.external;
-      const limit = v8.getHeapStatistics().heap_size_limit;
+      const limit = require('v8').getHeapStatistics().heap_size_limit;
 
       if (total / limit > threshold) {
         throw new Error(`Memory usage critical: ${((total / limit) * 100).toFixed(2)}%`);
