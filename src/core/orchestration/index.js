@@ -8,6 +8,7 @@ import { AgentStateMachine } from './agent-state.js';
 import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentRegistry } from './registry.js';
 import { ExecutionContext, TaskGraph } from './execution-context.js';
+import { DistributedCoordinator } from './distributed-coordinator.js';
 import chalk from '../../utils/chalk.js';
 import { ppmManager } from '../memory/index.js';
 import { EventEmitter } from 'events';
@@ -68,7 +69,9 @@ export class AgentOrchestrator extends EventEmitter {
       const selfHealing = await this.getSelfHealing();
       await selfHealing.initialize();
 
-      process.stdout.write(chalk.green('🤖 Agent Orchestration System Initialized (Self-Healing Active)\n'));
+      process.stdout.write(
+        chalk.green('🤖 Agent Orchestration System Initialized (Self-Healing Active)\n')
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       process.stderr.write(chalk.red(`❌ Agent Orchestration initialization failed: ${message}\n`));
@@ -395,4 +398,5 @@ export class AgentOrchestrator extends EventEmitter {
 
 export const agentOrchestrator = new AgentOrchestrator();
 export const nexus = agentOrchestrator;
+export { DistributedCoordinator };
 export default agentOrchestrator;
