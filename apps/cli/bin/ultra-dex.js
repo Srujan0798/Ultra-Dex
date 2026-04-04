@@ -298,8 +298,14 @@ import {
 import { registerBrowserCommand } from '../lib/commands/browser.js';
 import { registerExecCommand } from '../lib/commands/exec.js';
 import { registerGitHubCommand } from '../lib/commands/github.js';
-import { registerSearchCommand } from '../lib/commands/search.js';
-import { registerVectorSearchCommand } from '../lib/commands/vector-search.js';
+// Lazy imports for commands with optional heavy dependencies
+let registerSearchCommand, registerVectorSearchCommand;
+try {
+  ({ registerSearchCommand } = await import('../lib/commands/search.js'));
+  ({ registerVectorSearchCommand } = await import('../lib/commands/vector-search.js'));
+} catch {
+  // langchain not installed - search commands will be unavailable
+}
 import { registerImpactCommand } from '../lib/commands/impact.js';
 import { registerGraphCommand } from '../lib/commands/graph.js';
 import { registerCloudCommand } from '../lib/commands/cloud.js';
@@ -502,8 +508,8 @@ registerMcpHostCommand(program);
 registerBotCommand(program);
 registerBudgetCommand(program);
 registerDocsCommand(program);
-registerSearchCommand(program);
-registerVectorSearchCommand(program);
+if (registerSearchCommand) registerSearchCommand(program);
+if (registerVectorSearchCommand) registerVectorSearchCommand(program);
 registerBrowseCommand(program);
 registerBrowserCommand(program);
 registerChromeAgentCommand(program);
