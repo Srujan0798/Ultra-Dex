@@ -13,21 +13,23 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
+    env:
+      ULTRA_DEX_API_KEY: ${{ secrets.ULTRA_DEX_API_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Run Ultra-Dex Review
-        if: ${{ secrets.ULTRA_DEX_API_KEY != '' }}
+        if: ${{ env.ULTRA_DEX_API_KEY != '' }}
         uses: ./.github/actions/ultra-dex
         with:
-          api-key: ${{ secrets.ULTRA_DEX_API_KEY }}
+          api-key: ${{ env.ULTRA_DEX_API_KEY }}
           agents: 'code-reviewer,security-audit'
         env:
-          ULTRA_DEX_API_KEY: ${{ secrets.ULTRA_DEX_API_KEY }}
+          ULTRA_DEX_API_KEY: ${{ env.ULTRA_DEX_API_KEY }}
 
       - name: Skip Ultra-Dex Review (missing secret)
-        if: ${{ secrets.ULTRA_DEX_API_KEY == '' }}
+        if: ${{ env.ULTRA_DEX_API_KEY == '' }}
         run: echo "Skipping Ultra-Dex review: ULTRA_DEX_API_KEY is not configured."
 
   test:
