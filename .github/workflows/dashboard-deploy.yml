@@ -25,7 +25,9 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --ignore-scripts
+        run: |
+          npm install --legacy-peer-deps --ignore-scripts
+          npm --prefix apps/dashboard install --legacy-peer-deps --ignore-scripts
 
       - name: Dashboard tests
         run: npm --prefix apps/dashboard run test
@@ -51,7 +53,9 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install --ignore-scripts --legacy-peer-deps
+        run: |
+          npm install --ignore-scripts --legacy-peer-deps
+          npm --prefix apps/dashboard install --legacy-peer-deps --ignore-scripts
 
       - name: Build dashboard
         run: npm --prefix apps/dashboard run build
