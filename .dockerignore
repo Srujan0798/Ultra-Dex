@@ -1,82 +1,124 @@
-# .dockerignore for Ultra-Dex
+# Ultra-Dex .dockerignore
 
-# Node.js
+# Dependencies (installed in container)
 node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+**/node_modules
 
 # Build artifacts
 dist
-build
+**/dist
 .next
-out
-*.tsbuildinfo
+**/.next
+.docusaurus
+**/.docusaurus
+*.vsix
+**/out
+**/*.tsbuildinfo
 
 # Environment files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
-# IDE and editor
-.vscode
-.idea
-*.swp
-*.swo
-*~
+# Runtime data
+.ultra
+.ultra-dex
+**/.ultra
+**/.ultra-dex
+data/memory.db
+data/autopsy
+data/observability
 
-# OS files
-.DS_Store
-Thumbs.db
+# Logs
+*.log
+**/*.log
+logs
+**/logs
 
 # Git
 .git
 .gitignore
 .gitattributes
 
-# Documentation
-docs/_build
-docs/.docusaurus
+# IDE and editors
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.cursor
 
-# Tests
+# OS files
+.DS_Store
+Thumbs.db
+
+# Tests (not needed in production)
 tests
+**/tests
 *.test.js
 *.spec.js
+*.test.ts
+*.spec.ts
 coverage
 .nyc_output
+
+# Documentation (not needed in production)
+docs
+**/docs
+*.md
+!README.md
+
+# Development tools
+.husky
+.kilo
+upgrade
+
+# Backup files
+*-bak
+**/*-bak
+*.bak
+**/*.bak
+
+# Duplicate directories
+* 2
+**/* 2
+* 2.*
+**/* 2.*
 
 # Temporary files
 tmp
 temp
-*.tmp
-*.temp
-
-# Logs
-logs
-*.log
-
-# Configuration
-*.config.js
-*.config.ts
-
-# Source maps
-*.map
-
-# Local development
-.ultra-dex
-.ultra
 .cache
-.husky
+**/.cache
 
-# Docker compose
+# Reports and archives
+*-report.json
+archive
+**/archive
+reports
+**/reports
+benchmarks
+**/benchmarks
+benchmark-results
+**/benchmark-results
+
+# Business and marketing (not needed in production)
+business
+marketing
+community
+
+# Examples
+examples
+**/examples
+
+# Docker files
 docker-compose.override.yml
+Dockerfile*
+.dockerignore
 
-# Exceptions (keep these)
-!docs/API.md
-!LICENSE
-!README.md
-!package.json
+# Jupyter sessions
+jules-sessions-*
+
+# Package lock variants
+package-lock*.json
 !package-lock.json
