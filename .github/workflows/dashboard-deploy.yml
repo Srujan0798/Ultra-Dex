@@ -28,13 +28,13 @@ jobs:
         run: npm install --legacy-peer-deps --ignore-scripts
 
       - name: Dashboard tests
-        run: npm run test -w apps/dashboard
+        run: npm --prefix apps/dashboard run test
 
       - name: Dashboard accessibility smoke tests
-        run: npm run test:a11y -w apps/dashboard
+        run: npm --prefix apps/dashboard run test:a11y
 
       - name: Dashboard build
-        run: npm run build -w apps/dashboard
+        run: npm --prefix apps/dashboard run build
 
   dashboard-deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -54,7 +54,7 @@ jobs:
         run: npm install --ignore-scripts --legacy-peer-deps
 
       - name: Build dashboard
-        run: npm run build -w apps/dashboard
+        run: npm --prefix apps/dashboard run build
 
       - name: Deploy to Vercel
         if: env.VERCEL_TOKEN != ''

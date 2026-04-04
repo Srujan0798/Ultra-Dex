@@ -208,7 +208,7 @@ export function Memory() {
               <div className="mt-2 h-3 bg-gray-700 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-purple-500 transition-all"
-                  style={{ width: `${tokens / max * 100}%` }}
+                  style={ { width: `${tokens / max * 100}%` } }
                 />
               </div>
             </div>
