@@ -9,17 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check if deploy script exists
+        id: check
+        run: echo "exists=$(test -f scripts/deploy.sh && echo true || echo false)" >> $GITHUB_OUTPUT
       - uses: actions/setup-node@v4
+        if: steps.check.outputs.exists == 'true'
         with:
           node-version: 20
           cache: 'npm'
       - name: Login to Container Registry
+        if: steps.check.outputs.exists == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy
+        if: steps.check.outputs.exists == 'true'
         run: ./scripts/deploy.sh
         env:
           DOCKER_REGISTRY: ghcr.io

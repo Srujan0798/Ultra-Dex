@@ -6,13 +6,17 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
+      - name: Check if website directory exists
+        id: check
+        run: echo "exists=$(test -d website && echo true || echo false)" >> $GITHUB_OUTPUT
       - uses: actions/configure-pages@v4
+        if: steps.check.outputs.exists == 'true'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.check.outputs.exists == 'true'
         with:
           path: website
       - uses: actions/deploy-pages@v4
+        if: steps.check.outputs.exists == 'true'
