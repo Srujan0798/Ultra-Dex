@@ -1,5 +1,5 @@
 # Dockerfile for Ultra-Dex distributed instances
-FROM nvidia/cuda:12.2-base-ubuntu22.04
+FROM nvidia/cuda:12.2.2-base-ubuntu22.04
 
 # Install Node.js
 RUN apt-get update && apt-get install -y \
