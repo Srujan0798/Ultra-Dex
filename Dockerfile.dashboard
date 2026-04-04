@@ -1,0 +1,36 @@
+# Ultra-Dex Dashboard Dockerfile
+
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY apps/dashboard/package.json ./apps/dashboard/
+
+RUN npm ci --legacy-peer-deps --ignore-scripts --omit=optional
+
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN npm run build:dashboard
+
+FROM node:20-alpine AS production
+
+LABEL org.opencontainers.image.title="Ultra-Dex Dashboard"
+LABEL org.opencontainers.image.description="Ultra-Dex Monitoring Dashboard"
+
+WORKDIR /app
+
+COPY --from=builder /app/apps/dashboard/dist ./dist
+COPY apps/dashboard/package.json ./
+
+RUN npm ci --production --legacy-peer-deps --ignore-scripts
+
+ENV NODE_ENV=production
+EXPOSE 3000
+
+CMD ["node", "server.js"]

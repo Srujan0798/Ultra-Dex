@@ -1,113 +1,109 @@
-version: '3.8'
+# Ultra-Dex Docker Compose
+# Usage:
+#   Development: docker compose -f docker-compose.yml --profile dev up
+#   Production:  docker compose -f docker-compose.yml --profile prod up
 
 services:
-  ultradex-instance-1:
-    build: .
-    container_name: ultradex-1
+  # ==========================================================================
+  # CLI Service (Production)
+  # ==========================================================================
+  ultra-dex:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: ultra-dex:latest
+    container_name: ultra-dex
+    restart: unless-stopped
     ports:
-      - '8081:8080' # HTTP/WebSocket port
-      - '3001:3000' # Dashboard port
+      - "3000:3000"
+      - "3001:3001"
+      - "8080:8080"
+    volumes:
+      - ultra-dex-data:/app/.ultra-dex
+      - ultra-dex-logs:/app/logs
     environment:
       - NODE_ENV=production
-      - ULTRA_DEX_INSTANCE_ID=instance-1
-      - ULTRA_DEX_COORDINATOR_PORT=8080
-      - ULTRA_DEX_DISCOVERY_URLS=http://ultradex-2:8080,http://ultradex-3:8080
-      - ULTRA_DEX_ENABLE_LOAD_BALANCING=true
-      - ULTRA_DEX_ENABLE_DISCOVERY=true
-      - ULTRA_DEX_MAX_CONCURRENT_TASKS=5
-    volumes:
-      - ./logs:/app/logs
-      - ./.env.local:/app/.env.local:ro
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+    profiles:
+      - prod
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      test: ["CMD", "node", "bin/ultra-dex.js", "--version"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
 
-  ultradex-instance-2:
-    build: .
-    container_name: ultradex-2
+  # ==========================================================================
+  # CLI Service (Development)
+  # ==========================================================================
+  ultra-dex-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    image: ultra-dex:dev
+    container_name: ultra-dex-dev
+    restart: unless-stopped
     ports:
-      - '8082:8080'
-      - '3002:3000'
+      - "3000:3000"
+      - "3001:3001"
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ultra-dex-data:/app/.ultra-dex
+    environment:
+      - NODE_ENV=development
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+    command: ["node", "apps/cli/bin/ultra-dex.js", "serve"]
+    profiles:
+      - dev
+
+  # ==========================================================================
+  # Dashboard Service
+  # ==========================================================================
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+      target: production
+    image: ultra-dex-dashboard:latest
+    container_name: ultra-dex-dashboard
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
     environment:
       - NODE_ENV=production
-      - ULTRA_DEX_INSTANCE_ID=instance-2
-      - ULTRA_DEX_COORDINATOR_PORT=8080
-      - ULTRA_DEX_DISCOVERY_URLS=http://ultradex-1:8080,http://ultradex-3:8080
-      - ULTRA_DEX_ENABLE_LOAD_BALANCING=true
-      - ULTRA_DEX_ENABLE_DISCOVERY=true
-      - ULTRA_DEX_MAX_CONCURRENT_TASKS=5
-    volumes:
-      - ./logs:/app/logs
-      - ./.env.local:/app/.env.local:ro
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  ultradex-instance-3:
-    build: .
-    container_name: ultradex-3
-    ports:
-      - '8083:8080'
-      - '3003:3000'
-    environment:
-      - NODE_ENV=production
-      - ULTRA_DEX_INSTANCE_ID=instance-3
-      - ULTRA_DEX_COORDINATOR_PORT=8080
-      - ULTRA_DEX_DISCOVERY_URLS=http://ultradex-1:8080,http://ultradex-2:8080
-      - ULTRA_DEX_ENABLE_LOAD_BALANCING=true
-      - ULTRA_DEX_ENABLE_DISCOVERY=true
-      - ULTRA_DEX_MAX_CONCURRENT_TASKS=5
-    volumes:
-      - ./logs:/app/logs
-      - ./.env.local:/app/.env.local:ro
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Optional: Nginx load balancer for dashboard
-  nginx-lb:
-    image: nginx:alpine
-    container_name: ultradex-nginx
-    ports:
-      - '80:80'
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - API_URL=http://ultra-dex:3001
+    profiles:
+      - prod
+      - dev
     depends_on:
-      - ultradex-instance-1
-      - ultradex-instance-2
-      - ultradex-instance-3
-    restart: unless-stopped
+      - ultra-dex
 
-networks:
-  default:
-    driver: bridge
+  # ==========================================================================
+  # Documentation Service
+  # ==========================================================================
+  docs:
+    build:
+      context: ./apps/docs-site
+      dockerfile: Dockerfile
+    image: ultra-dex-docs:latest
+    container_name: ultra-dex-docs
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    profiles:
+      - dev
+
+volumes:
+  ultra-dex-data:
+    driver: local
+  ultra-dex-logs:
+    driver: local
