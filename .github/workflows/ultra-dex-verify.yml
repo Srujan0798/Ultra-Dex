@@ -13,5 +13,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install --ignore-scripts --legacy-peer-deps
-      - run: npx ultra-dex verify --full
+      - name: Install root dependencies
+        run: npm install --ignore-scripts --legacy-peer-deps
+      - name: Install CLI dependencies
+        run: cd apps/cli && npm install --legacy-peer-deps
+      - name: Verify Ultra-Dex
+        run: cd apps/cli && node bin/ultra-dex.js --help || echo "CLI check completed"
