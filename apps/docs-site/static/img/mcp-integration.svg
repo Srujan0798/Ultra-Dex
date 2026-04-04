@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="MCP Integration">
+  <rect width="320" height="200" rx="16" fill="#111827"/>
+  <rect x="24" y="52" width="88" height="96" rx="12" fill="#1d4ed8"/>
+  <rect x="208" y="52" width="88" height="96" rx="12" fill="#7c3aed"/>
+  <rect x="128" y="78" width="64" height="44" rx="8" fill="#059669"/>
+  <path d="M112 100h16M192 100h16" stroke="#e5e7eb" stroke-width="8" stroke-linecap="round"/>
+</svg>

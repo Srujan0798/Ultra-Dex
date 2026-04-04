@@ -5,7 +5,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 const config = {
   title: 'Ultra-Dex',
   tagline: 'The AI Orchestration Meta-Layer — A Skeleton, Not a Cage',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/logo.svg',
 
   url: 'https://ultra-dex.dev',
   baseUrl: '/',
@@ -42,7 +42,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/ultra-dex-social.jpg',
+      image: 'img/logo.svg',
       navbar: {
         title: 'Ultra-Dex',
         logo: {
