@@ -12,6 +12,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
+// Mock the provider module globally before imports
+globalThis.__providerMockModule = {
+  createProvider: () => new MockProvider(),
+};
+
 // Simple mock provider class
 class MockProvider {
   constructor() {

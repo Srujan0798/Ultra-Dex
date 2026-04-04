@@ -1,10 +1,12 @@
 {
   "protocol": "UC Vigilante Shadow Ops",
-  "version": "1.2",
-  "lastUpdated": "2026-04-02T17:55:00Z",
+  "version": "1.3",
+  "charterVersion": "mission-guardian-v1",
+  "lastUpdated": "2026-04-03T20:40:00Z",
   
   "mode": "SHADOW",
   "rule": "Never interfere with official work",
+  "stalledThresholdHours": 24,
   
   "project": {
     "name": "Ultra-Dex",
@@ -19,6 +21,12 @@
     "build": "PASSING",
     "consoleLogs": 795,
     "lastCheck": "2026-04-02T17:55:00Z"
+  },
+  "missionHealth": {
+    "truthfulness": "required",
+    "noiseLevel": "low",
+    "closurePriority": "high",
+    "interventionPolicy": "only on measurable stalled gaps"
   },
   
   "officialWork": {
@@ -47,6 +55,7 @@
     "allMustPass": [
       "No active official dispatch owns the gap",
       "No explicit owner is currently working it",
+      "24 hours without meaningful progress in official lane",
       "Impact is measurable (test, security, or release blocker)",
       "Can be finished in one clean cycle",
       "Verification command exists before acting"
