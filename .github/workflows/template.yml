@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Ultra-Dex AI Code Review
+        if: ${{ secrets.OPENAI_API_KEY != '' }}
         uses: ./.github/actions/ultra-dex
         with:
           # task: 'Review the code changes in this pull request and suggest improvements focusing on security, performance, and maintainability'
@@ -27,6 +28,10 @@ jobs:
           agents: 'code-reviewer,security-audit'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Skip AI Code Review (missing secret)
+        if: ${{ secrets.OPENAI_API_KEY == '' }}
+        run: echo "Skipping AI code review: OPENAI_API_KEY is not configured."
 
       # - name: Ultra-Dex Implementation
       #   uses: ./.github/actions/ultra-dex
