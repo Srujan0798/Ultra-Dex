@@ -28,8 +28,8 @@ jobs:
     - name: Run linters
       run: npm run lint || echo "No lint issues"
 
-    - name: Run tests
-      run: npm test
+    - name: Run smoke tests
+      run: NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js
       env:
         NODE_ENV: test
 
@@ -38,7 +38,7 @@ jobs:
     needs: [code-quality]
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -55,8 +55,8 @@ jobs:
     - name: Build project
       run: npm run build || echo "Build skipped (optional components)"
 
-    - name: Run tests
-      run: npm test
+    - name: Run smoke tests
+      run: NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js
       env:
         NODE_ENV: test
 

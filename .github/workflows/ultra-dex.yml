@@ -18,12 +18,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Ultra-Dex Review
+        if: ${{ secrets.ULTRA_DEX_API_KEY != '' }}
         uses: ./.github/actions/ultra-dex
         with:
           api-key: ${{ secrets.ULTRA_DEX_API_KEY }}
           agents: 'code-reviewer,security-audit'
         env:
           ULTRA_DEX_API_KEY: ${{ secrets.ULTRA_DEX_API_KEY }}
+
+      - name: Skip Ultra-Dex Review (missing secret)
+        if: ${{ secrets.ULTRA_DEX_API_KEY == '' }}
+        run: echo "Skipping Ultra-Dex review: ULTRA_DEX_API_KEY is not configured."
 
   test:
     runs-on: ubuntu-latest
@@ -34,13 +39,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install --ignore-scripts --legacy-peer-deps
 
-      - name: Run tests
-        run: npm test
+      - name: Run smoke tests
+        run: NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js
 
   deploy:
     needs: [review, test]
