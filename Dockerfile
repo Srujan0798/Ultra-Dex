@@ -28,8 +28,8 @@ COPY package*.json ./
 COPY apps/cli/package*.json ./apps/cli/
 COPY packages/sdk/package*.json ./packages/sdk/
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (tolerate lock drift from non-release edits in main)
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Copy source code
 COPY . .
