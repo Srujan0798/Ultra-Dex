@@ -4,7 +4,7 @@ set -e
 echo "Building all components..."
 
 # Install dependencies
-npm ci
+npm install --legacy-peer-deps
 
 # Build core components
 echo "Building core..."

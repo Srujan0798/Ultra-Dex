@@ -35,7 +35,7 @@ jobs:
       - name: Build website
         run: |
           cd apps/docs-site
-          npm run docs:build
+          npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
