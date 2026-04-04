@@ -33,7 +33,8 @@ jobs:
 
       - name: Skip AI Code Review (missing secret)
         if: ${{ env.OPENAI_API_KEY == '' }}
-        run: echo "Skipping AI code review: OPENAI_API_KEY is not configured."
+        run: |
+          echo "Skipping AI code review: OPENAI_API_KEY is not configured."
 
       # - name: Ultra-Dex Implementation
       #   uses: ./.github/actions/ultra-dex

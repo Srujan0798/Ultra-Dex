@@ -43,4 +43,5 @@ jobs:
 
       - name: Skip Vercel deploy (missing secrets)
         if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
-        run: echo "Skipping deploy: VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID not configured."
+        run: |
+          echo "Skipping deploy: VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID not configured."

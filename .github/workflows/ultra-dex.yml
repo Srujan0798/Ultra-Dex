@@ -30,7 +30,8 @@ jobs:
 
       - name: Skip Ultra-Dex Review (missing secret)
         if: ${{ env.ULTRA_DEX_API_KEY == '' }}
-        run: echo "Skipping Ultra-Dex review: ULTRA_DEX_API_KEY is not configured."
+        run: |
+          echo "Skipping Ultra-Dex review: ULTRA_DEX_API_KEY is not configured."
 
   test:
     runs-on: ubuntu-latest
