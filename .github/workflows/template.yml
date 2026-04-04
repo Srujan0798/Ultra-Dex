@@ -19,24 +19,28 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check if ultra-dex action exists
-        id: check
-        run: echo "exists=$(test -d .github/actions/ultra-dex && echo true || echo false)" >> $GITHUB_OUTPUT
+        id: check-action
+        run: echo "exists=$(test -f .github/actions/ultra-dex/action.yml && echo true || echo false)" >> $GITHUB_OUTPUT
 
       - name: Ultra-Dex AI Code Review
-        if: steps.check.outputs.exists == 'true'
+        if: steps.check-action.outputs.exists == 'true'
         uses: ./.github/actions/ultra-dex
         with:
           agents: 'code-reviewer,security-audit'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+      - name: Action not ready
+        if: steps.check-action.outputs.exists == 'false'
+        run: echo "Ultra-Dex action not yet created - pipeline ready for when it is"
+
   ai-deployment:
+    needs: ai-development
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Production
-        run: |
-          echo "Deploying to production..."
+      - name: Deploy placeholder
+        run: echo "Deployment step ready - add deployment commands here"

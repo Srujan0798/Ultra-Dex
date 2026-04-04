@@ -1,22 +1,36 @@
 name: Deploy to GitHub Pages
+
 on:
   push:
     branches: [main]
-    paths: ['website/**']
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
-      - name: Check if website directory exists
+
+      - name: Check if website folder exists
         id: check
         run: echo "exists=$(test -d website && echo true || echo false)" >> $GITHUB_OUTPUT
-      - uses: actions/configure-pages@v4
+
+      - name: Configure Pages
         if: steps.check.outputs.exists == 'true'
-      - uses: actions/upload-pages-artifact@v3
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
         if: steps.check.outputs.exists == 'true'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: website
-      - uses: actions/deploy-pages@v4
+
+      - name: Deploy to Pages
         if: steps.check.outputs.exists == 'true'
+        uses: actions/deploy-pages@v4
+
+      - name: Website folder not found
+        if: steps.check.outputs.exists == 'false'
+        run: echo "No website/ folder found - skipping pages deploy"
