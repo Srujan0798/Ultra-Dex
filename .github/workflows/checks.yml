@@ -30,7 +30,8 @@ jobs:
         run: npm run typecheck || echo "Typecheck completed"
 
       - name: Run linting
-        run: npm run lint || echo "Lint completed"
+        run: npm run lint
+        continue-on-error: true
 
       - name: Run smoke tests
         run: NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js
