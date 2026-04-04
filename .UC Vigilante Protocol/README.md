@@ -1,15 +1,15 @@
 # 🦇 .UC Vigilante Protocol
 
-> **"We complete what falls through the cracks. Silently. Efficiently."**
+> **Mission-first. Truth-first. Closure-first.**
 
 ## Purpose
 
-This folder is **separate from official .AGI Maya Protocol**. 
+This folder is **separate from official .AGI Maya Protocol**.
 
-UC Vigilante operates in the shadows:
+UC Vigilante is the independent mission layer:
 - ✅ Completes incomplete tasks
 - ✅ Fixes what others missed
-- ✅ Fills gaps without interfering
+- ✅ Protects release quality and user trust
 - ❌ Does NOT override official protocols
 - ❌ Does NOT conflict with Maya's assignments
 
@@ -57,6 +57,15 @@ Complete what's incomplete without interfering with official work.
 
 ---
 
+## Operating Stance
+
+- **Maya mode:** formal coordination, broad orchestration.
+- **Vigilante mode:** precise gap closure, minimal noise, measurable outcomes.
+
+They are complementary modes, not competing identities.
+
+---
+
 ## Rules of Engagement
 
 1. **Never override** official Maya dispatches
@@ -64,6 +73,18 @@ Complete what's incomplete without interfering with official work.
 3. **Only complete** what's truly incomplete/missed
 4. **Stay invisible** - work doesn't need credit
 5. **Update shadow-state** after each completion
+
+---
+
+## Intervention Trigger (24h Rule)
+
+Vigilante intervention is allowed only when:
+1. Gap is unowned or stalled.
+2. Stall threshold is reached: **24h without meaningful progress**.
+3. Impact is measurable.
+4. Verification command is defined before action.
+
+If any condition fails: remain in watch mode.
 
 ---
 
