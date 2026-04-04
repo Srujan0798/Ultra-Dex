@@ -17,22 +17,44 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install CLI dependencies
-        run: cd apps/cli && npm install --legacy-peer-deps --ignore-scripts --omit=optional
-
-      - name: Run CLI tests (non-blocking)
-        run: cd apps/cli && npm test || echo "Tests completed - continuing"
-        continue-on-error: true
-
-      - name: Bundle CLI into single file
         run: |
           cd apps/cli
-          npx esbuild bin/ultra-dex.js \
+          npm install --legacy-peer-deps --ignore-scripts --omit=optional
+        continue-on-error: false
+
+      - name: Install esbuild
+        run: npm install esbuild
+
+      - name: Create dist directory
+        run: mkdir -p apps/cli/dist
+
+      - name: Bundle into one file
+        run: |
+          npx esbuild apps/cli/bin/ultra-dex.js \
             --bundle \
             --platform=node \
-            --outfile=dist/ultra-dex.js \
-            --external:fsevents \
-            --external:cpu-features \
-            || echo "Bundle step completed"
+            --outfile=apps/cli/dist/ultra-dex.js \
+            --format=esm \
+            --external:node-pty \
+            --external:puppeteer \
+            --external:sharp \
+            --external:keytar \
+            --external:sqlite3 \
+            --external:playwright \
+            --external:libsodium-wrappers \
+            --external:ink \
+            --external:ink-spinner \
+            --external:@modelcontextprotocol/sdk \
+            --external:neo4j-driver
+
+      - name: Verify bundle exists
+        run: |
+          if [ ! -f apps/cli/dist/ultra-dex.js ]; then
+            echo "ERROR: Bundle not created!"
+            exit 1
+          fi
+          ls -lh apps/cli/dist/ultra-dex.js
+          echo "SUCCESS: Bundle created"
 
       - name: Publish CLI to npm
         if: startsWith(github.ref, 'refs/tags/v')
