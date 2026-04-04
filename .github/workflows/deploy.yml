@@ -23,4 +23,4 @@ jobs:
         run: ./scripts/deploy.sh
         env:
           DOCKER_REGISTRY: ghcr.io
-          DOCKER_REPO: ${{ github.repository }}
+          DOCKER_REPO: srujan0798/ultra-dex
