@@ -38,8 +38,8 @@ COPY . .
 RUN npm run build
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S ultradex -u 1001
+RUN groupadd -g 1001 nodejs && \
+    useradd -m -u 1001 -g nodejs -s /bin/bash ultradex
 
 # Change ownership of app directory
 RUN chown -R ultradex:nodejs /app
