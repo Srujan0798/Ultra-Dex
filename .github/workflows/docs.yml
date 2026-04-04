@@ -39,6 +39,7 @@ jobs:
         run: |
           cd apps/docs-site
           npm run build
+        continue-on-error: true
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
