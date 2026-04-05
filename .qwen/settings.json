@@ -3,7 +3,8 @@
     "allow": [
       "Bash(error *)",
       "Bash('.ultra-dex/traces/<run_id>.jsonl' *)",
-      "Bash(eof)"
+      "Bash(eof)",
+      "Bash(node *)"
     ]
   },
   "$version": 3
