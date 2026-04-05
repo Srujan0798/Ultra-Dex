@@ -2,7 +2,7 @@
 
 // cli/lib/commands/export.js
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs';
 import { join, basename, resolve, dirname } from 'path';
 import yaml from 'js-yaml';

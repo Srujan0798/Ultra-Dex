@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { agents as AGENTS_MAP } from '../utils/agents.js';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { context as contextScanner } from '../kernel/context.js';

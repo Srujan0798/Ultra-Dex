@@ -7,7 +7,7 @@
 
 import { chromium } from 'playwright';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs/promises';
 import { createProvider as getProvider } from '../providers/index.js';
 import { printError, printInfo, printSuccess } from '../utils/output.js';

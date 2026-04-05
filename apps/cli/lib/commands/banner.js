@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import boxen from 'boxen';
+import boxen from '../utils/boxen.js';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
 import { VERSION } from '../utils/version.js';

@@ -5,7 +5,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { execSync } from 'child_process';

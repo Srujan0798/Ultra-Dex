@@ -11,7 +11,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from './ora.js';
 
 /**
  * Create appropriate provider based on configuration

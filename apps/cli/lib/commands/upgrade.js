@@ -7,7 +7,7 @@
 
 // cli/lib/commands/upgrade.js
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';

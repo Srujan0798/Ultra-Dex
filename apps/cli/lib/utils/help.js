@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import boxen from 'boxen';
+import boxen from './boxen.js';
 import { theme } from '../ui/theme.js';
 
 /**

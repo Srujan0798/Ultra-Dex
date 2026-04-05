@@ -185,7 +185,7 @@ function generateVSCodeConfig() {
 
 function showConfig() {
   printInfo(chalk.cyan.bold('\n⚙️  Ultra-Dex Configuration\n'));
-  const envVars = ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_AI_KEY'];
+  const envVars = ['ANTHROPIC_API_KEY', 'NVIDIA_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_AI_KEY'];
   envVars.forEach((key) => {
     const value = process.env[key];
     const status = value ? chalk.green('✓ Set') : chalk.gray('Not set');
@@ -204,6 +204,7 @@ async function runConfigWizard() {
       message: 'Default AI provider:',
       choices: [
         { name: 'Claude (Anthropic)', value: 'claude' },
+        { name: 'NVIDIA (Nemotron)', value: 'nvidia' },
         { name: 'OpenAI', value: 'openai' },
         { name: 'Google Gemini', value: 'google' },
         { name: 'Local (Ollama)', value: 'ollama' },

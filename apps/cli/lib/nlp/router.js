@@ -15,7 +15,6 @@ const synonymMap = {
   check: ['verify', 'validate', 'test', 'inspect', 'review'],
   agent: ['bot', 'assistant', 'ai', 'specialist', 'expert'],
   project: ['app', 'application', 'repo', 'codebase', 'workspace'],
-  deploy: ['publish', 'ship', 'release', 'push'],
   monitor: ['watch', 'observe', 'track', 'dashboard'],
   test: ['testing', 'tests', 'spec', 'specs', 'jest', 'vitest'],
   install: ['add', 'get', 'download', 'fetch', 'npm install'],

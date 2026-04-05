@@ -12,7 +12,7 @@ import { loadState } from './state.js';
 import { projectGraph } from '../mcp/graph.js';
 // hybridRAG imported for future use with advanced brain features
 // import { hybridRAG } from '../ai/hybrid-rag.js';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { execSync } from 'child_process';
 import { logger } from '../utils/logger.js';
 

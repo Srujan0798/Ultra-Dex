@@ -2,7 +2,7 @@
 
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -557,6 +557,7 @@ async function ensureProviderConfig(outputDir) {
 
 function detectProviderFromEnv() {
   if (process.env.ANTHROPIC_API_KEY) return 'claude';
+  if (process.env.NVIDIA_API_KEY) return 'nvidia';
   if (process.env.OPENAI_API_KEY) return 'openai';
   if (process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY) return 'google';
   return null;

@@ -1,4 +1,4 @@
-import ora from 'ora';
+import ora from './utils/ora.js';
 import chalk from 'chalk';
 import { gradients, colors } from './colors.js';
 

@@ -8,7 +8,7 @@
 import { streamTextWithDisplay, streamWithRetry } from '../utils/stream.js';
 import { printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 
 /**
  * Stream text with real-time display

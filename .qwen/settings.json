@@ -53,7 +53,8 @@
       "Bash(4.)",
       "Bash(latest *)",
       "Bash(the *)",
-      "Bash(these *)"
+      "Bash(these *)",
+      "Bash(python3 *)"
     ]
   },
   "$version": 3

@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import ora from '../utils/ora.js';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
 import { VERSION } from '../utils/version.js';
@@ -410,9 +411,7 @@ fi
         const state = await loadState();
 
         if (options.ai) {
-          const spinner = (await import('ora'))
-            .default('🤖 AI Quality Review: Analyzing staged changes...')
-            .start();
+          const spinner = ora('🤖 AI Quality Review: Analyzing staged changes...').start();
           try {
             const { execSync } = await import('child_process');
             const staged = execSync('git diff --cached --name-only', { encoding: 'utf8' })
