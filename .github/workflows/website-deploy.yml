@@ -35,7 +35,7 @@ jobs:
       - name: Deploy to Vercel
         if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
         run: |
-          npx vercel@latest --cwd apps/website --prod --yes
+          npx vercel@latest --prod --yes
         env:
           VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
