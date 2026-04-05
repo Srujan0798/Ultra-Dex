@@ -16,6 +16,7 @@ import {
   createProvider,
   getDefaultProvider,
   checkConfiguredProviders,
+  canUseProviderWithoutApiKey,
 } from '../providers/index.js';
 import { ensureExecutionTrace } from '../analytics/execution-trace.js';
 import { initializeAnalyticsSink } from '../analytics/index.js';
@@ -1337,7 +1338,11 @@ export function registerRunCommand(program) {
 
       try {
         const configured = checkConfiguredProviders();
-        const hasProvider = configured.some((p) => p.configured) || options.key;
+        const selectedProviderId = options.provider || getDefaultProvider();
+        const hasProvider =
+          configured.some((p) => p.configured) ||
+          Boolean(options.key) ||
+          canUseProviderWithoutApiKey(selectedProviderId);
 
         if (!hasProvider) {
           printWarning('\n⚠️  No AI provider configured.\n');
@@ -1346,8 +1351,7 @@ export function registerRunCommand(program) {
           printInfo('  export NVIDIA_API_KEY=nvapi-...      # NVIDIA Nemotron');
           printInfo('  export OPENAI_API_KEY=sk-...         # OpenAI');
           printInfo('  export GOOGLE_AI_KEY=...             # Gemini');
-          printInfo('\nOr use local AI with Ollama (no key needed):');
-          printInfo('  ultra-dex run planner -t "task" --provider ollama\n');
+          process.stdout.write('\n');
           return;
         }
 
@@ -1372,7 +1376,7 @@ export function registerRunCommand(program) {
         syncActiveRunId(trace.runId);
         printInfo(`Execution trace run_id: ${trace.runId}`);
         const maxSteps = resolveMaxSteps(options.maxSteps);
-        const providerId = options.provider || getDefaultProvider();
+        const providerId = selectedProviderId;
         const providerFactory = await createAgentProviderFactory(providerId, {
           apiKey: options.key,
           maxTokens: 8000,

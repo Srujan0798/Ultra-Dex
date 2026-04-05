@@ -15,6 +15,9 @@ import { enforceAgentExecution } from '../governance/index.js';
 import { memex } from '../memory/memex.js';
 import { orchestrator } from '../resilience/self-healing.js';
 
+const NO_KEY_PROVIDERS = new Set(['ollama']);
+const LOCAL_ONLY_PROVIDERS = new Set(['ollama']);
+
 const PROVIDERS = {
   claude: {
     class: ClaudeSonnet5Provider,
@@ -60,11 +63,24 @@ const PROVIDERS = {
  * @returns {Array<{id: string, name: string, envKey: string}>}
  */
 export function getAvailableProviders() {
-  return Object.entries(PROVIDERS).map(([id, config]) => ({
+  return Object.entries(PROVIDERS)
+    .filter(([id]) => !LOCAL_ONLY_PROVIDERS.has(id) || isLocalProviderEnabled())
+    .map(([id, config]) => ({
     id,
     name: config.name,
     envKey: config.envKey,
-  }));
+    }));
+}
+
+export function canUseProviderWithoutApiKey(providerId) {
+  const normalized = String(providerId || '').toLowerCase();
+  if (!NO_KEY_PROVIDERS.has(normalized)) return false;
+  if (LOCAL_ONLY_PROVIDERS.has(normalized)) return isLocalProviderEnabled();
+  return true;
+}
+
+function isLocalProviderEnabled() {
+  return process.env.ULTRA_DEX_ENABLE_LOCAL_PROVIDERS === '1';
 }
 
 /**
@@ -111,11 +127,21 @@ export async function createProvider(providerId, options = {}) {
     return wrapProviderWithMemex(governed, { agent });
   }
 
+  const resolvedOptions = { ...options };
+
   const providerConfig = PROVIDERS[providerId];
 
   if (!providerConfig) {
     throw new Error(
       `Unknown provider: ${providerId}. Available: ${Object.keys(PROVIDERS).join(', ')}`
+    );
+  }
+
+  if (LOCAL_ONLY_PROVIDERS.has(providerId) && !isLocalProviderEnabled()) {
+    throw new Error(
+      `Provider "${providerId}" is disabled in cloud-only mode.\n\n` +
+        `To enable local providers intentionally, set:\n` +
+        `  export ULTRA_DEX_ENABLE_LOCAL_PROVIDERS=1`
     );
   }
 
@@ -131,22 +157,20 @@ export async function createProvider(providerId, options = {}) {
 
   // Get API key from options or environment (Ollama doesn't strictly need one)
   const apiKey =
-    options.apiKey || (providerConfig.envKey ? process.env[providerConfig.envKey] : null);
+    resolvedOptions.apiKey || (providerConfig.envKey ? process.env[providerConfig.envKey] : null);
 
-  if (!apiKey && providerId !== 'ollama') {
+  if (!apiKey && !canUseProviderWithoutApiKey(providerId)) {
     throw new Error(
       `API key not found for ${providerConfig.name}.\n\n` +
         `To fix this, either:\n` +
         `  1. Set ${providerConfig.envKey} environment variable:\n` +
         `     export ${providerConfig.envKey}=your-key-here\n\n` +
         `  2. Pass the key directly:\n` +
-        `     ultra-dex generate "idea" --key your-key-here\n\n` +
-        `  3. Use Ollama for local AI (no key needed):\n` +
-        `     ultra-dex generate "idea" --provider ollama`
+        `     ultra-dex generate "idea" --key your-key-here`
     );
   }
 
-  const provider = new providerConfig.class(apiKey, options);
+  const provider = new providerConfig.class(apiKey, resolvedOptions);
 
   const resilient = wrapProviderWithCircuitBreaker(provider, providerId);
   const governed = agent ? wrapProviderWithGovernance(resilient, agent) : resilient;
@@ -311,9 +335,6 @@ export function getDefaultProvider() {
   if (process.env.OPENAI_API_KEY) return 'openai';
   if (process.env.GOOGLE_AI_KEY) return 'gemini';
 
-  // Final fallback to Ollama (local-first resilience)
-  if (process.env.OLLAMA_HOST) return 'ollama';
-
   return null;
 }
 
@@ -322,12 +343,14 @@ export function getDefaultProvider() {
  * @returns {Array<{id: string, name: string, configured: boolean}>}
  */
 export function checkConfiguredProviders() {
-  return Object.entries(PROVIDERS).map(([id, config]) => ({
+  return Object.entries(PROVIDERS)
+    .filter(([id]) => !LOCAL_ONLY_PROVIDERS.has(id) || isLocalProviderEnabled())
+    .map(([id, config]) => ({
     id,
     name: config.name,
     envKey: config.envKey,
     configured: !!process.env[config.envKey],
-  }));
+    }));
 }
 
 /**
