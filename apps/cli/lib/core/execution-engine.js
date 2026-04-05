@@ -132,6 +132,19 @@ export class ExecutionEngine {
    * @private
    */
   async _executeWithRetry(agent, task, { runId, trace }) {
+    // Guard: agent must have a .run() method
+    if (typeof agent?.run !== 'function') {
+      const agentType = agent === null ? 'null' : typeof agent;
+      const availableMethods = agent && typeof agent === 'object'
+        ? Object.keys(agent).filter((k) => typeof agent[k] === 'function')
+        : [];
+      throw new Error(
+        `Agent executor missing or invalid: expected .run() method but got ${agentType}. ` +
+        `Available methods: [${availableMethods.join(', ')}]. ` +
+        `Ensure the agent definition includes a callable run function.`
+      );
+    }
+
     let lastError;
 
     for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {

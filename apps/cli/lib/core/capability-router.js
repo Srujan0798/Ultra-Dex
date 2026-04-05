@@ -83,13 +83,23 @@ export class CapabilityRouter {
       return this._fallbackRoute(taskDescription);
     }
 
-    // Find best match
+    // Find best match with deterministic tie-break:
+    // 1. Highest score wins
+    // 2. If tied, highest priority wins
+    // 3. If still tied, lowest id (alphabetical) wins
     let bestId = null;
     let bestScore = 0;
+    let bestPriority = -Infinity;
 
-    for (const [id, { score }] of scores) {
-      if (score > bestScore) {
+    for (const [id, { score, capability }] of scores) {
+      const priority = capability.priority ?? 1;
+      if (
+        score > bestScore ||
+        (score === bestScore && priority > bestPriority) ||
+        (score === bestScore && priority === bestPriority && (bestId === null || id < bestId))
+      ) {
         bestScore = score;
+        bestPriority = priority;
         bestId = id;
       }
     }
