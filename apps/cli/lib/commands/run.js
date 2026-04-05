@@ -38,6 +38,9 @@ import {
   truncateText,
 } from './run-context.js';
 
+// V2 Core orchestration (entry-only, does not replace existing logic)
+import { createOrchestrationStack } from '../core/index.js';
+
 const execAsync = promisify(exec);
 const MAX_RUNTIME_HISTORY = 12;
 const MAX_MEMORY_RESULTS = 5;
@@ -1371,6 +1374,13 @@ export function registerRunCommand(program) {
         const providerFactory = await createAgentProviderFactory(providerId, {
           apiKey: options.key,
           maxTokens: 8000,
+        });
+
+        // V2: Initialize orchestration stack (entry-only, does not replace existing flow)
+        const v2Provider = await providerFactory(agentName);
+        const orchestration = createOrchestrationStack({
+          provider: v2Provider,
+          agents: AGENTS,
         });
 
         finalOutput = await runAgentLoop(agentName, task, providerFactory, context, 0, maxSteps);

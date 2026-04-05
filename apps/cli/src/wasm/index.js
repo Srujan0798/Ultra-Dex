@@ -43,7 +43,7 @@ export default {
  */
 function handleIndexError(error) {
   try {
-    console.error('[index]', error instanceof Error ? error.message : String(error));
+    process.stderr.write(`[index] ${error instanceof Error ? error.message : String(error)}\n`);
   } catch (_) {
     // Fail silently
   }

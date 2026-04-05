@@ -27,7 +27,7 @@ FORBIDDEN UNTIL EXECUTION WORKS:
   - git commit / git push
 
 SUCCESS CONDITION:
-  npx ultra-dex run planner -t "hello" --provider nvidia
+  node apps/cli/bin/ultra-dex.js run planner -t "hello" --provider nvidia
   → returns real model output
 ```
 
@@ -184,9 +184,9 @@ console.log(`steps: ${stepCount} | status: ${status}`);
 
 ```
 apps/cli/lib/commands/commit.js
-apps/cli/lib/commands/learn.js
-src/wasm/index.js
-src/wasm/runtime.js
+apps/cli/lib/learn.js
+apps/cli/src/wasm/index.js
+apps/cli/src/wasm/runtime.js
 ```
 
 **Replacements:**
@@ -240,7 +240,7 @@ Log with: `logger.info("step complete", { run_id, step: stepCount, agent: agentI
 ## PHASE 11 — FINAL EXECUTION TEST
 
 ```bash
-npx ultra-dex run planner -t "Write a hello world function in JS" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "Write a hello world function in JS" --provider nvidia
 ```
 
 **OR if CLI not on PATH:**
@@ -296,12 +296,25 @@ src/core/performance/*
 After any registry / swarm / memory unification, verify:
 
 ```bash
-# 1. Registry called only once
-grep -r "registry.initialize" apps/ src/ | wc -l
-# Must be 1
+# 1. Registry initialization ownership (expected split)
+grep -n "registry.initialize" apps/cli/lib/agents/registry.js
+grep -r "registry.initialize" src/core/orchestration/
+# Expected:
+# - CLI agents registry: 1 initialize
+# - Core orchestration registries: up to 2 initialize calls
 
-# 2. No duplicate memory managers
-find . -name "manager.js" | grep -i memory
+# 2. Memory manager ownership (BOTH exist, STRICT boundary)
+find apps/cli/lib/memory src/core/memory -name "manager.js"
+# Expected:
+# - apps/cli/lib/memory/manager.js  → OWNED BY CLI. Used only by apps/cli/*
+# - src/core/memory/manager.js      → OWNED BY CORE. Used only by src/core/*, packages/*
+
+# MEMORY BOUNDARY RULE (NON-NEGOTIABLE):
+# - src/core/memory/manager.js MUST NOT import from apps/cli/*
+# - apps/cli/lib/memory/manager.js MUST NOT be imported by src/core/*
+# - Each boundary owns its own memory. No cross-boundary imports. EVER.
+# - If core needs CLI context → define interface in src/core/, CLI implements it.
+# - If CLI needs core memory → import src/core/memory/manager.js (one-way allowed)
 
 # 3. Architecture direction correct
 # core → MUST NOT import from apps/cli
@@ -343,7 +356,7 @@ Agents will claim completion. These claims are INVALID unless proven by executio
 **Valid completion signal (only this):**
 
 ```bash
-npx ultra-dex run planner -t "build a REST API" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "build a REST API" --provider nvidia
 → returns real, usable model output
 ```
 
@@ -404,7 +417,7 @@ if (process.env.MOCK_AI === "true") {
 Then test:
 
 ```bash
-MOCK_AI=true npx ultra-dex run planner -t "hello"
+MOCK_AI=true node apps/cli/bin/ultra-dex.js run planner -t "hello"
 ```
 
 **Expected:** full flow executes, output prints, no crash.
@@ -441,16 +454,16 @@ Run all of these in sequence. All must pass:
 node apps/cli/bin/ultra-dex.js --help
 
 # 2. Mock execution
-MOCK_AI=true npx ultra-dex run planner -t "hello"
+MOCK_AI=true node apps/cli/bin/ultra-dex.js run planner -t "hello"
 
 # 3. Real execution
-npx ultra-dex run planner -t "hello" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "hello" --provider nvidia
 
 # 4. Full workflow
-npx ultra-dex init
-npx ultra-dex agents list
-npx ultra-dex run planner -t "build simple api"
-npx ultra-dex brain
+node apps/cli/bin/ultra-dex.js init
+node apps/cli/bin/ultra-dex.js agents list
+node apps/cli/bin/ultra-dex.js run planner -t "build simple api"
+node apps/cli/bin/ultra-dex.js brain
 ```
 
 **Session closes ONLY when #2 and #3 both produce real output.**
@@ -534,8 +547,8 @@ CRITICAL RULES:
 - DO NOT use fake/stub implementations
 
 SUCCESS CONDITION:
-MOCK_AI=true npx ultra-dex run planner -t "hello"  →  works
-npx ultra-dex run planner -t "hello" --provider nvidia  →  works
+MOCK_AI=true node apps/cli/bin/ultra-dex.js run planner -t "hello"  →  works
+node apps/cli/bin/ultra-dex.js run planner -t "hello" --provider nvidia  →  works
 
 OUTPUT FORMAT:
 1. execution_path (exact files)
@@ -634,8 +647,8 @@ Run commands. Report real output. No opinions.
 
 COMMANDS TO RUN (in order):
 1. node apps/cli/bin/ultra-dex.js --help
-2. MOCK_AI=true npx ultra-dex run planner -t "hello"
-3. npx ultra-dex run planner -t "hello" --provider nvidia
+2. MOCK_AI=true node apps/cli/bin/ultra-dex.js run planner -t "hello"
+3. node apps/cli/bin/ultra-dex.js run planner -t "hello" --provider nvidia
 4. npm test
 
 REPORT FORMAT per command:
@@ -984,7 +997,7 @@ const provider = createProvider(providerId);
 ## CRITICAL TEST (Run This First)
 
 ```bash
-npx ultra-dex run planner -t "hello" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "hello" --provider nvidia
 ```
 
 If this doesn't work → nothing else matters.
@@ -1023,7 +1036,7 @@ Output
 ## SUCCESS = ONLY ONE THING
 
 ```bash
-npx ultra-dex run planner -t "complex task" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "complex task" --provider nvidia
 → returns real, deterministic, usable output
 ```
 

@@ -65,7 +65,7 @@ NON-CRITICAL: [list]
 
 Ensure this command works:
 ```bash
-npx ultra-dex run planner -t "hello" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "hello" --provider nvidia
 ```
 
 ### Requirements:
@@ -144,10 +144,10 @@ Run these tests:
 node -e "import('./apps/cli/lib/providers/nvidia.js').then(async m => { const p = new m.NVIDIAProvider(); console.log('OK'); })"
 
 # 2. CLI execution
-npx ultra-dex run planner -t "hello" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "hello" --provider nvidia
 
 # 3. Multi-step
-npx ultra-dex run planner -t "Create a function that adds two numbers" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "Create a function that adds two numbers" --provider nvidia
 ```
 
 ### Check:
@@ -249,7 +249,7 @@ DO NOT:
 
 Ultra-Dex runs reliably using:
 ```bash
-npx ultra-dex run planner -t "complex task" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "complex task" --provider nvidia
 ```
 
 AND produces:
@@ -270,7 +270,7 @@ CODE COMPILES ≠ SYSTEM RUNS
 
 The only proof of completion:
 ```bash
-npx ultra-dex run planner -t "hello" --provider nvidia
+node apps/cli/bin/ultra-dex.js run planner -t "hello" --provider nvidia
 → returns real model output
 ```
 

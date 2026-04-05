@@ -101,8 +101,6 @@ benchmarks
 **/benchmarks
 benchmark-results
 **/benchmark-results
-!src/benchmarks
-!src/benchmarks/performance-metrics.js
 
 # Business and marketing (not needed in production)
 business

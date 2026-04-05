@@ -35,13 +35,6 @@ npx ultra-dex init "Build a SaaS backend with auth + billing"
 npx ultra-dex config --wizard
 ```
 
-Fast path (NVIDIA Nemotron):
-
-```bash
-export NVIDIA_API_KEY=nvapi-your-key
-export ULTRA_DEX_DEFAULT_PROVIDER=nvidia
-```
-
 ### 3) Run an orchestrated workflow
 
 ```bash

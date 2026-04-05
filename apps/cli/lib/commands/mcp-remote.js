@@ -6,6 +6,9 @@
  */
 
 import chalk from 'chalk';
+import { startRemoteServer } from '../mcp/remote/server.js';
+import { RemoteMCPClient } from '../mcp/remote/client.js';
+import { generateApiKey } from '../mcp/remote/auth.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { configManager } from '../utils/config-manager.js';
 
@@ -18,7 +21,6 @@ export function registerMcpRemoteCommand(program) {
     .option('--port <port>', 'Port', '4000')
     .action(async (options) => {
       const port = parseInt(options.port, 10) || 4000;
-      const { startRemoteServer } = await import('../mcp/remote/server.js');
       startRemoteServer({ port });
       printSuccess(chalk.green(`✅ Remote MCP server started on port ${port}`));
     });
@@ -28,7 +30,6 @@ export function registerMcpRemoteCommand(program) {
     .description('Generate API key for remote MCP')
     .option('--label <label>', 'Key label', 'remote')
     .action(async (options) => {
-      const { generateApiKey } = await import('../mcp/remote/auth.js');
       const key = await generateApiKey(options.label);
       printSuccess(chalk.green(`\n✅ API Key: ${key}\n`));
     });
@@ -39,7 +40,6 @@ export function registerMcpRemoteCommand(program) {
     .option('--key <key>', 'API key')
     .action(async (url, options) => {
       try {
-        const { RemoteMCPClient } = await import('../mcp/remote/client.js');
         const apiKey = options.key || process.env.ULTRA_DEX_REMOTE_KEY;
         if (!apiKey) {
           printError(chalk.red('API key required (--key or ULTRA_DEX_REMOTE_KEY).'));
@@ -90,7 +90,6 @@ export function registerMcpRemoteCommand(program) {
         printWarning(chalk.yellow('No remote connection configured.'));
         return;
       }
-      const { RemoteMCPClient } = await import('../mcp/remote/client.js');
       const client = new RemoteMCPClient({ url: config.remote.url, apiKey: config.remote.apiKey });
       await client.connect();
       await client.pushContext();
