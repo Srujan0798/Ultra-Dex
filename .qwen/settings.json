@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(error *)",
+      "Bash('.ultra-dex/traces/<run_id>.jsonl' *)",
+      "Bash(eof)"
+    ]
+  },
+  "$version": 3
+}
