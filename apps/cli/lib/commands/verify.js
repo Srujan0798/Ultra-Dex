@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
@@ -261,7 +261,9 @@ export async function verifyCommand(taskName, options) {
   } else {
     printWarning(chalk.yellow('\n⚠️  Skipping AI Review (No provider configured)'));
     printInfo(
-      chalk.gray('To run AI verification, set OPENAI_API_KEY, ANTHROPIC_API_KEY, or start Ollama.')
+      chalk.gray(
+        'To run AI verification, set NVIDIA_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_AI_KEY, or start Ollama.'
+      )
     );
 
     // Determine verdict based on automated results only

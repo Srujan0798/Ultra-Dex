@@ -1,13 +1,31 @@
 // Copyright (c) 2026 Ultra-Dex
 
 import chalk from 'chalk';
-import { execa } from 'execa';
+import { spawn } from 'child_process';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+
+function runProcess(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+    });
+
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Command failed with exit code ${code}`));
+      }
+    });
+  });
+}
 
 async function runTask(label, command, args) {
   try {
     printInfo(chalk.cyan(`\n▶ ${label}`));
-    await execa(command, args, { stdio: 'inherit' });
+    await runProcess(command, args);
     printSuccess(chalk.green(`✓ ${label} passed`));
     return true;
   } catch (error) {

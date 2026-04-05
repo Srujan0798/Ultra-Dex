@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 // import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
@@ -199,7 +199,11 @@ ${graph.edges
         if (!hasProvider) {
           printWarning(chalk.yellow('\n⚠️  No AI provider configured for full review.\n'));
           printInfo(chalk.white('Options:'));
-          printInfo(chalk.gray('  1. Set API key: export ANTHROPIC_API_KEY=your-key'));
+          printInfo(
+            chalk.gray(
+              '  1. Set API key: export NVIDIA_API_KEY=nvapi-... (or ANTHROPIC_API_KEY/OPENAI_API_KEY/GOOGLE_AI_KEY)'
+            )
+          );
           printInfo(chalk.gray('  2. Use --quick for structure-only review'));
           printInfo(chalk.gray('  3. Use --key option: npx ultra-dex review --key sk-...\n'));
           return;

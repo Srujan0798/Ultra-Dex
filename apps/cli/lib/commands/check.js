@@ -14,11 +14,6 @@ import Table from 'cli-table3';
 
 import { runA11yCheck } from '../quality/a11y-check.js';
 
-import { checkDocker } from '../sandbox/docker.js';
-import { sqliteProvider } from '../memory/sqlite.js';
-import { agentOrchestrator as nexus } from '../../../../src/core/orchestration/index.js';
-import { codeValidator } from '../../../../src/services/security/validators.js';
-
 export function registerCheckCommand(program) {
   const check = program
     .command('check')
@@ -28,6 +23,19 @@ export function registerCheckCommand(program) {
     .command('doctor')
     .description('System health check and diagnostic')
     .action(async () => {
+      const [{ checkDocker }, { sqliteProvider }, { codeValidator }] = await Promise.all([
+        import('../sandbox/docker.js'),
+        import('../memory/sqlite.js'),
+        import('../../../../src/services/security/validators.js'),
+      ]);
+
+      let nexus = null;
+      try {
+        ({ agentOrchestrator: nexus } = await import('../../../../src/core/orchestration/index.js'));
+      } catch {
+        nexus = null;
+      }
+
       logger.log(chalk.cyan.bold('\n👨‍⚕️ Ultra-Dex System Doctor\n'));
       
       // 1. Check Docker
@@ -72,6 +80,7 @@ export function registerCheckCommand(program) {
     .command('security [file]')
     .description('Run a security scan on a file or the whole project')
     .action(async (file) => {
+      const { codeValidator } = await import('../../../../src/services/security/validators.js');
       logger.log(chalk.cyan.bold('\n🛡️  Ultra-Dex Security Scan\n'));
       
       if (file) {

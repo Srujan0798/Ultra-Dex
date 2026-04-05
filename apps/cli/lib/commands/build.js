@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs/promises';
 import { loadState } from './plan.js';
 import { runAgentLoop } from './run.js';
@@ -141,7 +141,9 @@ async function validateEnvironment(options) {
   if (!hasAnyConfigured && !options.dryRun && options.provider !== 'ollama') {
     throw new ValidationError('No AI provider keys detected.', [
       'export ANTHROPIC_API_KEY=sk-ant-...',
+      'export NVIDIA_API_KEY=nvapi-...',
       'export OPENAI_API_KEY=sk-...',
+      'export GOOGLE_AI_KEY=...',
       'Run "ultra-dex setup" to configure providers.',
     ]);
   }

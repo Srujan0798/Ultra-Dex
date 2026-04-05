@@ -1,2 +1,2 @@
 // Compatibility shim: keep legacy imports working after governance code moved.
-export * from '../../../../apps/cli/lib/governance/index.js';
+export * from '../../../cli/lib/governance/index.js';
