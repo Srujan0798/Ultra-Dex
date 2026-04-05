@@ -162,7 +162,15 @@ export async function writeRunArtifacts({
 
   let events = [];
   if (traceFile) {
-    await fs.copyFile(traceFile, artifactPaths.trace);
+    // Ensure source trace file exists before copying (handles timing issues)
+    try {
+      await fs.access(traceFile);
+      await fs.copyFile(traceFile, artifactPaths.trace);
+    } catch (accessError) {
+      // Source trace not yet available — create empty trace file to prevent downstream errors
+      console.warn(`Trace file not yet available: ${traceFile}, creating empty trace`);
+      await fs.writeFile(artifactPaths.trace, '', 'utf8');
+    }
     events = await readJsonl(artifactPaths.trace);
   } else {
     await fs.writeFile(artifactPaths.trace, '', 'utf8');
