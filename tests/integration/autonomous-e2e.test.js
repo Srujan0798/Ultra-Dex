@@ -64,7 +64,7 @@ class MockProvider {
   }
 }
 
-import * as providers from '../../../../apps/cli/lib/providers/index.js';
+import * as providers from '../../apps/cli/lib/providers/index.js';
 
 // Mock the provider creation
 const originalCreateProvider = providers.createProvider;
@@ -92,7 +92,7 @@ describe('Autonomous Loop End-to-End Tests', () => {
 
   afterEach(async () => {
     // Restore original provider
-    require('../../../../apps/cli/lib/providers/index.js').createProvider = originalCreateProvider;
+    providers.createProvider = originalCreateProvider;
 
     // Clean up test directory
     try {

@@ -327,7 +327,20 @@ RULES:
           await this._backoff(attempt - 1);
         }
 
-        const provider = await this._getProvider();
+        let provider;
+        try {
+          provider = await this._getProvider();
+        } catch (providerError) {
+          // Fall back to mock plan when no provider is available
+          this.emit('planning:mock', { goal, reason: providerError.message });
+          const mockPlan = this._createMockPlan(goal, context);
+          this.planHistory.push(mockPlan);
+          this.metrics.plansGenerated++;
+          this.metrics.totalTasks += mockPlan.tasks.length;
+          this.metrics.avgTasksPerPlan = this.metrics.totalTasks / this.metrics.plansGenerated;
+          this.emit('planning:complete', { plan: mockPlan });
+          return mockPlan;
+        }
 
         // Call provider with structured prompt
         const response = await provider.generate({

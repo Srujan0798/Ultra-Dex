@@ -110,10 +110,12 @@ export async function createProvider(providerId, options = {}) {
     const cloudProvider = cloudId ? await createProvider(cloudId, options) : null;
 
     let localProvider = null;
-    try {
-      localProvider = new OllamaProvider(null, options);
-    } catch (e) {
-      // Local not available
+    if (isLocalProviderEnabled()) {
+      try {
+        localProvider = new OllamaProvider(null, options);
+      } catch {
+        // Local not available
+      }
     }
 
     const routerProvider = new RouterProvider(null, {

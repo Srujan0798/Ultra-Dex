@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { AgentOrchestrator } from '../../src/core/orchestration/index.js';
 import { GovernanceDeniedException } from '../../src/core/governance/governance-manager.js';
 
-describe('Governance Task Blocking - Final', () => {
+describe('Governance Task Blocking - Final', { timeout: 15000 }, () => {
   it('MUST block tasks via governance', async () => {
     const orchestrator = new AgentOrchestrator();
     

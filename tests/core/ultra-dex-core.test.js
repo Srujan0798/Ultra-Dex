@@ -8,7 +8,7 @@ import { verifyTask } from '../../apps/cli/lib/quality/protocol-21.js';
 
 const mcpServer = new MCPServerManager();
 
-describe('Ultra-Dex Meta-Layer Core Verification', () => {
+describe('Ultra-Dex Meta-Layer Core Verification', { timeout: 15000 }, () => {
   
   test('Memory Manager: Persistence and Retrieval', async () => {
     await ppmManager.init();

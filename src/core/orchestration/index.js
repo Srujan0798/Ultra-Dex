@@ -207,13 +207,7 @@ export class AgentOrchestrator extends EventEmitter {
     this.emit('task:start', { sessionId, task: normalizedTask, options });
     process.stdout.write(chalk.blue(`  - Executing Task: ${normalizedTask}\n`));
     try {
-      const ai = await this.getAiLayer();
-
-      // 1. Determine Agent & Gather Context
-      const memoryContext = await this.memory.search(normalizedTask);
-      const systemPrompt = await this.registry.getAgentPrompt(agentId);
-
-      // Governance check before task execution
+      // Governance check FIRST (before loading AI or gathering context)
       const governanceResult = await this.governance.gate(context);
       if (!governanceResult.allowed) {
         throw new GovernanceDeniedException(
@@ -221,6 +215,12 @@ export class AgentOrchestrator extends EventEmitter {
           context
         );
       }
+
+      const ai = await this.getAiLayer();
+
+      // 1. Determine Agent & Gather Context
+      const memoryContext = await this.memory.search(normalizedTask);
+      const systemPrompt = await this.registry.getAgentPrompt(agentId);
 
       // 2. Call AI Meta-Layer
       const response = await ai.call(

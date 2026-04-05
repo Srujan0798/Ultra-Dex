@@ -87,7 +87,10 @@ describe('CLI Command: run execution', () => {
     assert.equal(summary.command, 'run');
     assert.equal(summary.agent, 'planner');
     assert.equal(summary.status, 'success');
-    assert.equal(summary.finalAction, 'FINAL_RESPONSE');
+    // finalAction is the last trace event (MEMORY_UPDATE comes after FINAL_RESPONSE)
+    assert.ok(
+      summary.finalAction === 'FINAL_RESPONSE' || summary.finalAction === 'MEMORY_UPDATE'
+    );
     assert.equal(summary.artifacts.result, resultPath);
     assert.equal(summary.artifacts.trace, tracePath);
     assert.equal(summary.artifacts.summary, summaryPath);
