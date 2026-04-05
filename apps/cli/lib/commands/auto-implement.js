@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs/promises';
 import { updateStateFile, loadState } from './state.js';
 import { projectGraph } from '../mcp/graph.js';

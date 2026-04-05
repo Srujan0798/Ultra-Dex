@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs/promises';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';

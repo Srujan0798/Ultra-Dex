@@ -13,7 +13,7 @@ import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 

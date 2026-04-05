@@ -6,7 +6,6 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import { join, basename, dirname } from 'path';
 import { glob } from 'glob';
-import { projectGraph } from '../mcp/graph.js';
 import { updateStateFile, loadState, saveState } from './state.js';
 import { agents } from '../utils/agents.js';
 import { isDoomsdayMode } from '../utils/theme-state.js';
@@ -156,8 +155,6 @@ async function clearCheckpoint() {
 /**
  * Register swarm command with Commander
  */
-import { agentOrchestrator as nexus } from '../../../../src/core/orchestration/index.js';
-
 export function registerSwarmCommand(program) {
   const swarm = program
     .command('swarm [task]')
@@ -174,6 +171,9 @@ export function registerSwarmCommand(program) {
     .action(async (task, options) => {
       try {
         if (options.nexus && task && !options.dryRun) {
+          const { agentOrchestrator: nexus } = await import(
+            '../../../../src/core/orchestration/index.js'
+          );
           await nexus.execute(task);
           return;
         }
@@ -249,7 +249,9 @@ export function showSwarmAssemble(activeAgents) {
  */
 async function runAgent(agent, task, context, previousOutput, provider) {
   if (!provider) {
-    throw new ValidationError('No AI provider configured. Set your API keys first.');
+    throw new ValidationError(
+      'No AI provider configured. Set ANTHROPIC_API_KEY, NVIDIA_API_KEY, OPENAI_API_KEY, GOOGLE_AI_KEY, or use --provider ollama.'
+    );
   }
 
   const agentPrompt = await loadAgentPrompt(agent.name);
@@ -483,7 +485,9 @@ Task: "${task}"`);
   if (!provider) {
     throw new ValidationError('No AI provider configured.', [
       'export ANTHROPIC_API_KEY=sk-ant-...',
+      'export NVIDIA_API_KEY=nvapi-...',
       'export OPENAI_API_KEY=sk-...',
+      'export GOOGLE_AI_KEY=...',
       'npx ultra-dex setup',
     ]);
   }
@@ -621,6 +625,7 @@ async function gatherSwarmContext() {
 
   renderer.startSpinner('Scanning Codebase Graph...');
   try {
+    const { projectGraph } = await import('../mcp/graph.js');
     const graphSummary = await projectGraph.scan();
     context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n`;
     renderer.succeed(`Codebase mapped: ${graphSummary.nodeCount} nodes`);

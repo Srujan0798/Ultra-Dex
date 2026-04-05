@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import boxen from 'boxen';
+import boxen from '../utils/boxen.js';
 import inquirer from 'inquirer';
 import { printInfo } from '../utils/output.js';
 

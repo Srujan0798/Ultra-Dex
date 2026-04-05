@@ -1,4 +1,0 @@
-FROM rust:1.76-alpine
-RUN adduser -D appuser
-USER appuser
-WORKDIR /workspace

@@ -67,6 +67,7 @@
   "packageManager": "npm@10.8.2",
   "scripts": {
     "start": "node apps/cli/bin/ultra-dex.js",
+    "ultra-dex": "node apps/cli/bin/ultra-dex.js",
     "dev": "node --watch apps/cli/bin/ultra-dex.js",
     "nemotron": "node nemotron-cli.js",
     "nemotron:example": "node nemotron-example.js",

@@ -8,6 +8,7 @@
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
+import ora from '../utils/ora.js';
 import { loadState, saveState } from './state.js';
 import { buildGraph } from '../utils/graph.js';
 import { snapshotContext } from '../utils/sync.js';
@@ -362,7 +363,7 @@ export async function startContextAutoSyncWatcher(projectDir, debounceMs = 800) 
 }
 
 async function handlePush(projectDir, target) {
-  const spinner = (await import('ora')).default('Pushing state to sync target...').start();
+  const spinner = ora('Pushing state to sync target...').start();
   try {
     // Note: loadState/saveState should be directory-aware.
     // Assuming loadState uses process.cwd(), we should change cwd temporarily or update loadState
@@ -388,7 +389,7 @@ async function handlePush(projectDir, target) {
 }
 
 async function handlePull(projectDir, target) {
-  const spinner = (await import('ora')).default('Pulling state from sync target...').start();
+  const spinner = ora('Pulling state from sync target...').start();
   try {
     const bundleContent = await fs.readFile(path.join(target, 'sync-bundle.json'), 'utf8');
     const bundle = JSON.parse(bundleContent);
@@ -407,8 +408,6 @@ async function handlePull(projectDir, target) {
  * This eliminates the human-as-middleware anti-pattern
  */
 async function handleBrainSync(projectDir) {
-  const ora = (await import('ora')).default;
-
   printInfo(chalk.magenta.bold('🧠 Brain Sync: Autonomous Context Update\n'));
 
   // Step 1: Build Code Property Graph

@@ -2,7 +2,7 @@
 // Predictive Debugging CLI Command
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import path from 'path';
 import { glob } from 'glob';
 import { PredictiveDebugger } from '../predictive/debugger.js';

@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Ultra-Dex
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import fs from 'fs';
 import { resolve, basename, join } from 'path';
 import yaml from 'js-yaml';

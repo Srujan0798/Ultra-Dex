@@ -4,7 +4,7 @@
 
 import chalk from 'chalk';
 import fs from 'fs/promises';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import path from 'path';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
 import { authorizeOperation } from '../governance/index.js';

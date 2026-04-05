@@ -16,7 +16,7 @@
 
 import { program } from 'commander';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../lib/utils/ora.js';
 import inquirer from 'inquirer';
 import figlet from 'figlet';
 import gradient from 'gradient-string';

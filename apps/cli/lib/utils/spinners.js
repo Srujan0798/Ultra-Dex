@@ -1,44 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
 
 import gradient from '../../../../src/utils/gradient-string.js';
+import ora from './ora.js';
 
 const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
-
-function createFallbackSpinner(options = {}) {
-  return {
-    text: options.text || '',
-    spinner: options.spinner,
-    isSpinning: false,
-    start() {
-      this.isSpinning = true;
-      return this;
-    },
-    stop() {
-      this.isSpinning = false;
-      return this;
-    },
-    succeed(message) {
-      if (message) this.text = message;
-      this.isSpinning = false;
-      return this;
-    },
-    fail(message) {
-      if (message) this.text = message;
-      this.isSpinning = false;
-      return this;
-    },
-  };
-}
-
-let oraFactory = (options) => createFallbackSpinner(options);
-
-try {
-  const mod = await import('ora');
-  const resolvedOra = mod.default ?? mod;
-  oraFactory = (options) => resolvedOra(options);
-} catch {
-  oraFactory = (options) => createFallbackSpinner(options);
-}
 
 /**
  * Enhanced Ultra-Dex Spinners
@@ -64,7 +29,7 @@ export const SPINNERS = {
  * @param {string} type - Spinner type from SPINNERS
  */
 export function createSpinner(text, type = 'quantum') {
-  return oraFactory({
+  return ora({
     text,
     spinner: SPINNERS[type] || SPINNERS.quantum,
   });

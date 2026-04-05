@@ -9,7 +9,7 @@
 // Professional loading states like Gemini CLI
 
 // import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { theme } from './theme.js';
 import { createQuantumSpinner } from './spinner.js';
 

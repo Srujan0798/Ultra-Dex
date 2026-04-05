@@ -7,7 +7,7 @@
 
 import chalk from 'chalk';
 import gradient from 'gradient-string';
-import ora from 'ora';
+import ora from './ora.js';
 import cliProgress from 'cli-progress';
 
 // MultiBar progress tracker

@@ -12,7 +12,7 @@ import { execSync } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 

@@ -6,8 +6,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
-import { runPipeline } from '../nl-pipeline/index.js';
+import ora from '../utils/ora.js';
 import { printError, printInfo, printSuccess } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
@@ -25,6 +24,7 @@ export function registerForgeCommand(program) {
         const spinner = ora('Initializing NL-to-Code pipeline...').start();
 
         // Execute the full pipeline
+        const { runPipeline } = await import('../nl-pipeline/index.js');
         const result = await runPipeline(request);
 
         spinner.succeed('Pipeline execution complete!');

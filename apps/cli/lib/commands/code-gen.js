@@ -11,7 +11,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { marked } from 'marked';
 import { logger } from '../utils/logger.js';
 

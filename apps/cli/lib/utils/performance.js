@@ -9,7 +9,7 @@ import { performance } from 'perf_hooks';
 import fs from 'fs';
 import { join } from 'path';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from './ora.js';
 import { logger } from './logger.js';
 
 const PERF_DIR = '.ultra-dex';

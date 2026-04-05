@@ -5,7 +5,7 @@
  * @module ui/spinner
  */
 
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { theme } from './theme.js';
 
 const quantumSpinner = {

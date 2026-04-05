@@ -11,7 +11,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { execSync } from 'child_process';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';

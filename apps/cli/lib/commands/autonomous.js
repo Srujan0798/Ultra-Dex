@@ -12,7 +12,7 @@ import { watch, existsSync } from 'fs';
 import path from 'path';
 import http from 'http';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import { execSync } from 'child_process';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { runAgentLoop } from './run.js';

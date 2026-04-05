@@ -4,8 +4,8 @@
 // Handles streaming, markdown, and high-fidelity UI output
 
 import chalk from 'chalk';
-import boxen from 'boxen';
-import ora from 'ora';
+import boxen from '../utils/boxen.js';
+import ora from '../utils/ora.js';
 import { theme, ultraGradient } from './theme.js';
 
 // Configuration

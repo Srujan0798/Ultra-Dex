@@ -1,12 +1,9 @@
 // Copyright (c) 2026 Ultra-Dex
 
-let stripAnsi = (value) => String(value ?? '');
+import ansiRegex from 'ansi-regex';
 
-try {
-  const mod = await import('strip-ansi');
-  stripAnsi = mod.default ?? mod;
-} catch {
-  stripAnsi = (value) => String(value ?? '');
+const ANSI_PATTERN = ansiRegex();
+
+export default function stripAnsi(value) {
+  return String(value ?? '').replace(ANSI_PATTERN, '');
 }
-
-export default stripAnsi;

@@ -6,7 +6,7 @@
 # ============================================================================
 FROM node:20-alpine AS deps
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 py3-setuptools make g++
 
 WORKDIR /app
 
@@ -14,14 +14,14 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies with legacy peer deps (required for this project)
-RUN npm ci --legacy-peer-deps --ignore-scripts --omit=optional
+RUN npm ci --legacy-peer-deps
 
 # ============================================================================
 # Stage 2: Builder
 # ============================================================================
 FROM node:20-alpine AS builder
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 py3-setuptools make g++
 
 WORKDIR /app
 
@@ -32,6 +32,7 @@ COPY . .
 RUN npx esbuild apps/cli/bin/ultra-dex.js \
     --bundle \
     --platform=node \
+    --packages=external \
     --outfile=dist/ultra-dex.js \
     --format=esm \
     --external:node-pty \
@@ -63,8 +64,8 @@ RUN apk add --no-cache git openssh-client
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install production dependencies only
-RUN npm ci --legacy-peer-deps --ignore-scripts --omit=dev --omit=optional
+# Reuse built dependencies from builder stage to avoid native rebuild issues.
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy bundled CLI
 COPY --from=builder /app/dist/ultra-dex.js ./dist/ultra-dex.js
