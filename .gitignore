@@ -97,6 +97,9 @@ archive/
 # Cursor rules (local overrides)
 .cursor/
 
+# Qwen Code settings
+.qwen/
+
 # Jupyter sessions
 jules-sessions-*/
 
