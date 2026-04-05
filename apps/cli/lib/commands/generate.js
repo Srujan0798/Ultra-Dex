@@ -15,6 +15,7 @@ import {
   createProvider,
   getDefaultProvider,
   checkConfiguredProviders,
+  canUseProviderWithoutApiKey,
 } from '../providers/index.js';
 import { streamWithProvider, getStreamingProviders } from '../providers/streaming.js';
 import { recordAndTranscribe } from '../input/voice.js';
@@ -36,7 +37,7 @@ export function registerGenerateCommand(program) {
   program
     .command('generate [idea]')
     .description('Create the plan (Thanos style) - AI Generates Full Plan')
-    .option('-p, --provider <provider>', 'AI provider (claude, openai, gemini)')
+    .option('-p, --provider <provider>', 'AI provider (claude, openai, gemini, nvidia)')
     .option('-m, --model <model>', 'Specific model to use')
     .option('-o, --output <directory>', 'Output directory', '.')
     .option('-k, --key <apiKey>', 'API key (or use environment variable)')
@@ -64,16 +65,22 @@ export function registerGenerateCommand(program) {
 
         // Check configured providers
         const configured = checkConfiguredProviders();
-        const hasProvider = configured.some((p) => p.configured) || options.key;
+        const selectedProviderId = options.provider || getDefaultProvider();
+        const hasProvider =
+          configured.some((p) => p.configured) ||
+          Boolean(options.key) ||
+          canUseProviderWithoutApiKey(selectedProviderId);
 
         if (!hasProvider) {
           printWarning(chalk.yellow('⚠️  No Infinity Stones (AI Keys) configured.\n'));
           printInfo(chalk.white('Set one of these environment variables:'));
-          configured.forEach((p) => {
+          configured.filter((p) => p.envKey).forEach((p) => {
             process.stdout.write(chalk.gray(`  export ${p.envKey}=your-key-here\n`));
           });
           printInfo(chalk.white('\nOr use --key option:'));
-          process.stdout.write(chalk.gray('  npx ultra-dex generate "your idea" --key sk-...\n'));
+          process.stdout.write(
+            chalk.gray('  node apps/cli/bin/ultra-dex.js generate "your idea" --key sk-...\n')
+          );
           return;
         }
 
@@ -98,7 +105,7 @@ export function registerGenerateCommand(program) {
         }
 
         // Select provider
-        const providerId = options.provider || getDefaultProvider();
+        const providerId = selectedProviderId;
         if (!providerId) {
           printError(chalk.red('No provider available. Set an API key.'));
           return;
