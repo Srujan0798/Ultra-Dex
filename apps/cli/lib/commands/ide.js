@@ -12,7 +12,6 @@ import { printInfo, printSuccess, printError } from '../utils/output.js';
 export async function registerIdeCommand(program) {
   const ideCmd = program
     .command('ide')
-    .alias('cloud')
     .description('Cloud IDE integration');
 
   ideCmd
