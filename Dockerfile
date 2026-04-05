@@ -14,7 +14,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies with legacy peer deps (required for this project)
-RUN npm ci --legacy-peer-deps --ignore-scripts --omit=optional
+RUN npm ci --legacy-peer-deps
 
 # ============================================================================
 # Stage 2: Builder
@@ -64,7 +64,7 @@ RUN apk add --no-cache git openssh-client
 COPY package.json package-lock.json ./
 
 # Install production dependencies only
-RUN npm ci --legacy-peer-deps --ignore-scripts --omit=dev --omit=optional
+RUN npm ci --legacy-peer-deps --omit=dev --omit=optional
 
 # Copy bundled CLI
 COPY --from=builder /app/dist/ultra-dex.js ./dist/ultra-dex.js
