@@ -1,95 +1,89 @@
-# 📘 Ultra-Dex Guides
+# Ultra-Dex Guides
 
-> **User Guides by Topic**  
-> **Version:** 6.0.0  
-> **Last Updated:** 2026-02-10
+This directory contains comprehensive guides to help developers get started with Ultra-Dex and implement real-world applications.
 
-Welcome to the Ultra-Dex guides section. Here you'll find comprehensive documentation organized by topic and skill level.
+## Quick Start
 
----
+- **[Getting Started](./getting-started.md)** - Complete setup guide for your first Ultra-Dex project
+- **[SDK Usage (TypeScript)](./sdk-usage-typescript.md)** - Advanced TypeScript SDK usage with routing, middleware, and distributed execution
+- **[SDK Usage (JavaScript)](./sdk-usage-javascript.md)** - JavaScript SDK guide with practical examples and patterns
 
-## 🗂️ Guide Categories
+## Integration Guides
 
-### 🟢 [Basics](./basics/)
+- **[MCP Server Setup](./mcp-server-setup.md)** - Integrate Ultra-Dex with IDEs using Model Context Protocol
+- **[Distributed Deployment](./distributed-deployment.md)** - Scale Ultra-Dex across multiple servers and cloud providers
 
-_Getting started with Ultra-Dex_
+## Real-World Applications
 
-- [Getting Started](./basics/GETTING_STARTED.md) — Installation and first steps
-- [User Guide](./basics/USER-GUIDE.md) — Comprehensive user manual
+- **[Use Cases](./real-world-use-cases.md)** - Complete examples for API development and data processing pipelines
 
-### 🔴 [Advanced](./advanced/)
+## Examples Directory
 
-_Power user features_
+The [`../examples/`](../examples/) directory contains runnable sample projects demonstrating:
 
-- [Advanced Workflows](./advanced/ADVANCED-WORKFLOWS.md) — Complex orchestration patterns
-- [Performance Tuning](./advanced/PERFORMANCE.md) — Optimization techniques
+- **SDK Integration**: Basic chatbot, multi-agent workflows, and plugin systems
+- **API Development**: Full-stack applications with authentication and databases
+- **Data Processing**: ETL pipelines, analytics, and AI-powered transformations
+- **Deployment Examples**: Docker, Kubernetes, and cloud-native configurations
 
-### 🤖 [AI Systems](./ai/)
+## Learning Path
 
-_Working with AI agents_
+### Beginner
 
-- [Model Selection](./ai/AI-MODEL-SELECTION.md) — Choose the right AI model
-- [Custom Agents](./ai/CUSTOM-AGENTS-GUIDE.md) — Create custom agents
-- [Project Orchestration](./ai/PROJECT-ORCHESTRATION.md) — End-to-end workflows
+1. Start with [Getting Started](./getting-started.md)
+2. Explore basic examples in `../examples/chatbot/`
+3. Try the [JavaScript SDK guide](./sdk-usage-javascript.md)
 
-### 🛠️ [Development](./dev/)
+### Intermediate
 
-_Extending Ultra-Dex_
+1. Learn [TypeScript SDK usage](./sdk-usage-typescript.md)
+2. Study [MCP server integration](./mcp-server-setup.md)
+3. Build from examples in `../examples/api-platform/`
 
-- [Plugin Development](./dev/PLUGIN-DEV.md) — Build plugins
-- [Testing Guide](./dev/TESTING_GUIDE.md) — Testing strategies
+### Advanced
 
-### 🚢 [Deployment](./deployment/)
+1. Master [distributed deployment](./distributed-deployment.md)
+2. Implement [real-world use cases](./real-world-use-cases.md)
+3. Create custom plugins and extensions
 
-_Production deployment_
+## Key Features Covered
 
-- [Production Guide](./deployment/PRODUCTION_DEPLOYMENT_GUIDE.md) — Deploy to production
+### Core Functionality
 
-### ⚡ [Operations](./ops/)
+- Multi-provider AI orchestration (OpenAI, Anthropic, Google, etc.)
+- Intelligent routing and failover
+- Middleware system for logging, caching, retries
+- Agent-based task execution
 
-_Running in production_
+### Advanced Capabilities
 
-- Operational guides and best practices
+- Distributed coordination across multiple instances
+- Real-time streaming responses
+- Plugin architecture for extensibility
+- Comprehensive error handling and resilience
 
-### 📋 [Templates](./templates/)
+### Integration Options
 
-_Starter templates and examples_
+- MCP server for IDE integration
+- REST APIs for web applications
+- SDK for custom implementations
+- Docker/Kubernetes for production deployment
 
-- Ready-to-use templates for common scenarios
+## Support
 
----
+- **Documentation**: https://docs.ultra-dex.ai
+- **GitHub Issues**: https://github.com/Srujan0798/Ultra-Dex/issues
+- **Community**: https://discord.gg/ultra-dex
+- **Examples**: Explore the `../examples/` directory for runnable code
 
-## 🎯 Quick Navigation
+## Contributing
 
-### By Experience Level
+Found an issue or want to improve these guides? Please:
 
-**Beginner:**
+1. Check existing issues and pull requests
+2. Create a new issue for bugs or feature requests
+3. Submit a pull request with improvements
+4. Test your changes with the provided examples
 
-1. [Getting Started](./basics/GETTING_STARTED.md)
-2. [User Guide](./basics/USER-GUIDE.md)
-3. [Quick Start](../api/reference/01-QUICK-START.md)
-
-**Intermediate:**
-
-1. [Advanced Workflows](./advanced/ADVANCED-WORKFLOWS.md)
-2. [Custom Agents](./ai/CUSTOM-AGENTS-GUIDE.md)
-3. [CI/CD Guide](./CICD-GUIDE.md)
-
-**Advanced:**
-
-1. [Performance Tuning](./advanced/PERFORMANCE.md)
-2. [Plugin Development](./dev/PLUGIN-DEV.md)
-3. [Architecture](../architecture/)
-
----
-
-## 📚 Related Documentation
-
-- [API Reference](../api/) — Technical API documentation
-- [Architecture](../architecture/) — System design docs
-- [AgPrompts](../AgPrompts/) — AI agent prompts
-- [Troubleshooting](../api/reference/TROUBLESHOOTING.md) — Common issues
-
----
-
-_Last Updated: 2026-02-10_
+Happy coding with Ultra-Dex! 🚀</content>
+<parameter name="filePath">guides/README.md
