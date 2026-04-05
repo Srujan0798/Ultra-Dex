@@ -92,9 +92,13 @@ describe('CLI Command: run execution', () => {
     assert.ok(
       summary.finalAction === 'FINAL_RESPONSE' || summary.finalAction === 'MEMORY_UPDATE'
     );
-    assert.equal(summary.artifacts.result, resultPath);
-    assert.equal(summary.artifacts.trace, tracePath);
-    assert.equal(summary.artifacts.summary, summaryPath);
+    // Use realpath to handle macOS /private/var vs /var symlink difference
+    const realResultPath = await fs.realpath(resultPath);
+    const realTracePath = await fs.realpath(tracePath);
+    const realSummaryPath = await fs.realpath(summaryPath);
+    assert.equal(summary.artifacts.result, realResultPath);
+    assert.equal(summary.artifacts.trace, realTracePath);
+    assert.equal(summary.artifacts.summary, realSummaryPath);
 
     const promptContextEvent = traceEvents.find((event) => event.action === 'PROMPT_CONTEXT');
     assert.ok(promptContextEvent);
