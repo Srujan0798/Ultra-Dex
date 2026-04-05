@@ -1208,7 +1208,9 @@ export async function runAgentLoop(
       );
       return content;
     } catch (error) {
-      spinner.fail(`${agent.name} failed: ${error.message}`);
+      // Enhanced error reporting with more context
+      const errorMessage = error.message || 'Unknown error';
+      spinner.fail(`${agent.name} failed: ${errorMessage}`);
       await recordActionOutcome(
         trace,
         projectContext,
@@ -1218,7 +1220,7 @@ export async function runAgentLoop(
           decision: 'Execution failed.',
           action: 'ERROR',
           input: currentTask,
-          output: error.message,
+          output: errorMessage,
           status: 'error',
           depth,
         },
@@ -1239,9 +1241,9 @@ export async function runAgentLoop(
           loopStep: stepIndex,
         });
         await emitAnalyticsEvent('analytics.error', {
-          message: error.message,
+          message: errorMessage,
           command: 'run',
-          stack: error.stack,
+          stack: error.stack || '',
           metadata: { agent: agentId, loopStep: stepIndex },
           runId: trace.runId,
         });
@@ -1249,7 +1251,7 @@ export async function runAgentLoop(
         // ignore analytics failures
       }
 
-      return `[Error]: ${error.message}`;
+      return `[Error]: ${errorMessage}`;
     }
   }
 
@@ -1298,12 +1300,12 @@ async function persistAndPrintRunArtifacts({ trace, command, agent, task, result
     traceFile: trace.traceFile,
   });
 
-  printSuccess(`\nResult artifact: ${artifactBundle.paths.result}`);
-  printInfo(`Trace artifact: ${artifactBundle.paths.trace}`);
-  printInfo(`Summary artifact: ${artifactBundle.paths.summary}`);
+  printSuccess(`\n✅ Result artifact: ${artifactBundle.paths.result}`);
+  printInfo(`📋 Trace artifact: ${artifactBundle.paths.trace}`);
+  printInfo(`📄 Summary artifact: ${artifactBundle.paths.summary}`);
 
   const visibleResult = String(result || '').trim() || '[No result returned]';
-  printInfo(chalk.bold('\nResult\n'));
+  printInfo(chalk.bold('\n📊 Result\n'));
   printInfo(visibleResult);
 
   return artifactBundle;
@@ -1325,12 +1327,15 @@ async function createAgentProviderFactory(providerId, options = {}) {
 export function registerRunCommand(program) {
   program
     .command('run <agent>')
-    .description('Execute an agent task automatically')
-    .option('-t, --task <task>', 'Task to execute')
-    .option('-p, --provider <provider>', 'AI provider')
-    .option('-k, --key <apiKey>', 'API key')
-    .option('-o, --output <file>', 'Output file')
-    .option('--max-steps <steps>', 'Maximum bounded execution steps per agent loop')
+    .description('Execute an agent task automatically with AI provider routing')
+    .option('-t, --task <task>', 'Task to execute (will prompt if not provided)')
+    .option(
+      '-p, --provider <provider>',
+      'AI provider to use (e.g., openai, anthropic, google, ollama)'
+    )
+    .option('-k, --key <apiKey>', 'API key for the provider (overrides environment variables)')
+    .option('-o, --output <file>', 'Save result to specified file')
+    .option('--max-steps <steps>', 'Maximum bounded execution steps per agent loop (default: 10)')
     .action(async (agentName, options) => {
       let task = options.task;
       let trace = null;
@@ -1345,12 +1350,16 @@ export function registerRunCommand(program) {
           canUseProviderWithoutApiKey(selectedProviderId);
 
         if (!hasProvider) {
-          printWarning('\n⚠️  No AI provider configured.\n');
-          printInfo('To use AI agents, configure one of these:');
-          printInfo('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude');
-          printInfo('  export NVIDIA_API_KEY=nvapi-...      # NVIDIA Nemotron');
-          printInfo('  export OPENAI_API_KEY=sk-...         # OpenAI');
-          printInfo('  export GOOGLE_AI_KEY=...             # Gemini');
+          printError('\n❌ No AI provider configured or available.');
+          printInfo('\nTo fix this, either:');
+          printInfo('  1. Configure an API key for one of these providers:');
+          printInfo('     export ANTHROPIC_API_KEY=sk-ant-...  # Claude');
+          printInfo('     export NVIDIA_API_KEY=nvapi-...      # NVIDIA Nemotron');
+          printInfo('     export OPENAI_API_KEY=sk-...         # OpenAI');
+          printInfo('     export GOOGLE_AI_KEY=...             # Gemini');
+          printInfo('  2. Or use a local provider (requires setup):');
+          printInfo('     export ULTRA_DEX_ENABLE_LOCAL_PROVIDERS=1');
+          printInfo('     # Then ensure Ollama is running with a model installed');
           process.stdout.write('\n');
           return;
         }
@@ -1393,7 +1402,9 @@ export function registerRunCommand(program) {
 
           // Step 1: Route task to best capability
           const routing = router.route(task);
-          printInfo(`V2 routed to: ${routing.agent} (confidence: ${routing.confidence.toFixed(2)})`);
+          printInfo(
+            `V2 routed to: ${routing.agent} (confidence: ${routing.confidence.toFixed(2)})`
+          );
           printInfo(`V2 reason: ${routing.reason}`);
 
           // Step 2: Create task for scheduler
@@ -1445,7 +1456,7 @@ export function registerRunCommand(program) {
             result: finalOutput,
           }).catch(() => {});
         }
-        printError(`Error in run command: ${error.message}`);
+        printError(`\n❌ Error in run command: ${error.message}\n`);
         process.exit(1);
       }
     });
@@ -1531,9 +1542,8 @@ export function registerDistributedCommand(program) {
     .action(async (options) => {
       try {
         printInfo('Starting distributed coordination server...');
-        const { DistributedCoordinator } = await import(
-          '../../../../src/core/orchestration/distributed-coordinator.js'
-        );
+        const { DistributedCoordinator } =
+          await import('../../../../src/core/orchestration/distributed-coordinator.js');
         const coordinator = new DistributedCoordinator({
           port: parseInt(options.port),
           host: options.host,
