@@ -191,15 +191,33 @@ export class Scheduler {
    */
   _resolveDependencies() {
     const visited = new Set();
+    const visiting = new Set(); // For cycle detection
     const order = [];
     const blocked = new Set();
+    const cycles = [];
 
-    const visit = (taskId) => {
+    const visit = (taskId, path = []) => {
       if (visited.has(taskId)) return;
       if (blocked.has(taskId)) return;
 
+      // Cycle detection: if we're already visiting this node, we found a cycle
+      if (visiting.has(taskId)) {
+        const cycleStart = path.indexOf(taskId);
+        const cycle = [...path.slice(cycleStart), taskId];
+        cycles.push(cycle);
+        const task = this.tasks.get(taskId);
+        if (task) {
+          task.status = TASK_STATUS.BLOCKED;
+          task.error = `Circular dependency detected: ${cycle.join(' → ')}`;
+        }
+        blocked.add(taskId);
+        return;
+      }
+
       const task = this.tasks.get(taskId);
       if (!task) return;
+
+      visiting.add(taskId);
 
       // Check dependencies
       for (const depId of task.dependencies) {
@@ -207,18 +225,19 @@ export class Scheduler {
           logger.warn(`Task ${taskId} depends on unknown task ${depId}`);
           task.status = TASK_STATUS.BLOCKED;
           blocked.add(taskId);
-          return;
+          continue;
         }
 
         if (this.failed.has(depId)) {
           task.status = TASK_STATUS.BLOCKED;
           blocked.add(taskId);
-          return;
+          continue;
         }
 
-        visit(depId);
+        visit(depId, [...path, taskId]);
       }
 
+      visiting.delete(taskId);
       visited.add(taskId);
       order.push(taskId);
     };
@@ -229,7 +248,13 @@ export class Scheduler {
     );
 
     for (const [id] of sorted) {
-      visit(id);
+      visit(id, []);
+    }
+
+    if (cycles.length > 0) {
+      const cycleMsg = cycles.map((c) => c.join(' → ')).join('; ');
+      logger.error(`Circular dependencies detected: ${cycleMsg}`);
+      throw new Error(`Circular dependency detected in task scheduler: ${cycleMsg}`);
     }
 
     return order;
