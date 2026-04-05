@@ -32,6 +32,7 @@ COPY . .
 RUN npx esbuild apps/cli/bin/ultra-dex.js \
     --bundle \
     --platform=node \
+    --packages=external \
     --outfile=dist/ultra-dex.js \
     --format=esm \
     --external:node-pty \
