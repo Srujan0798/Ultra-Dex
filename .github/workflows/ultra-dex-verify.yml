@@ -18,8 +18,8 @@ jobs:
           cache: npm
       - name: Clean install root dependencies
         run: npm ci --legacy-peer-deps --ignore-scripts --omit=optional
-      - name: Clean install CLI dependencies
-        run: cd apps/cli && npm ci --legacy-peer-deps --ignore-scripts --omit=optional
+      - name: Install CLI dependencies
+        run: cd apps/cli && npm install --legacy-peer-deps --ignore-scripts --omit=optional
       - name: Verify fast-path CLI commands
         run: |
           set -euo pipefail
