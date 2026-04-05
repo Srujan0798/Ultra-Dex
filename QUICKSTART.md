@@ -137,9 +137,9 @@ cat .agents/reviewer.md | pbcopy
 
 ---
 
-## ✅ CLI Commands (Ready)
+## 🚧 CLI Commands (Coming Soon)
 
-Use the CLI directly:
+Once npm dependencies are fixed, you'll be able to:
 
 ```bash
 # List all agents
@@ -156,14 +156,10 @@ ultra-dex generate "Task management SaaS"
 
 # Review code
 ultra-dex review ./src
-
-# Run planner with NVIDIA
-export NVIDIA_API_KEY=nvapi-your-key
-ultra-dex run planner -t "Build auth API" --provider nvidia
 ```
 
-**Current Status:** ✅ Available  
-**Note:** AI-powered commands need a configured provider key (or Ollama for local).
+**Current Status:** ⏸️ Blocked by npm dependency timeout  
+**Workaround:** Use copy-paste method above (works perfectly!)
 
 ---
 
@@ -190,8 +186,8 @@ A: Ultra-Dex agents provide structured thinking frameworks, quality checklists, 
 **Q: Can I customize the agents?**  
 A: Yes! Modify the `.md` files in `.agents/` for your team's needs.
 
-**Q: Why do AI commands say no provider configured?**  
-A: Set one key first (for example `NVIDIA_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `GOOGLE_AI_KEY`), or run with `--provider ollama`.
+**Q: When will CLI commands work?**  
+A: Once npm dependency timeout is resolved. See `STATUS.md` for details.
 
 ---
 

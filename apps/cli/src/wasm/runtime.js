@@ -85,7 +85,7 @@ export default WasmRuntime;
  */
 function handleRuntimeError(error) {
   try {
-    console.error('[runtime]', error instanceof Error ? error.message : String(error));
+    process.stderr.write(`[runtime] ${error instanceof Error ? error.message : String(error)}\n`);
   } catch (_) {
     // Fail silently
   }
