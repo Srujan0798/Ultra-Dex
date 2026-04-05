@@ -8,6 +8,10 @@
 
 Ultra-Dex is the **connective tissue between AI models, memory, and tools**. It serves as a "Meta-Layer" that coordinates agents, model providers, memory, and tool execution so teams can go from prompt to deployable output with stronger reliability than single-agent workflows.
 
+Canonical references:
+- `docs/PROJECT_STRUCTURE.md`
+- `docs/AGENT_INTEGRATION_GUIDE.md`
+
 ## What Ultra-Dex Is
 
 - **Provider-agnostic orchestration**: route requests across OpenAI, Anthropic, Google, Mistral, Groq, DeepSeek, Cohere, Together, Fireworks, Perplexity, and more.
