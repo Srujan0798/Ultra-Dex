@@ -21,7 +21,8 @@ export { CapabilityRouter, createCapabilityRouter };
  * @returns {{ engine: ExecutionEngine, scheduler: Scheduler, router: CapabilityRouter }}
  */
 export function createOrchestrationStack({ provider, agents }) {
-  const router = createCapabilityRouter();
+  const availableAgentNames = new Set(Object.keys(agents || {}));
+  const router = createCapabilityRouter({ availableAgents: availableAgentNames });
   const engine = createExecutionEngine({ provider, agents });
   const scheduler = createScheduler();
 

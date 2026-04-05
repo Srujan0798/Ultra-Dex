@@ -39,7 +39,7 @@ export class CapabilityRouter {
     this.defaultConfidence = options.defaultConfidence ?? 0.5;
     /** @type {Map<string, Capability>} */
     this.capabilities = new Map();
-    this._registerDefaults();
+    this._registerDefaults(options.availableAgents ?? null);
   }
 
   /**
@@ -201,23 +201,16 @@ export class CapabilityRouter {
   /**
    * Register default capabilities
    * @private
+   * @param {Set<string>} [availableAgents] - If provided, only register capabilities for these agents
    */
-  _registerDefaults() {
-    this.registerAll([
+  _registerDefaults(availableAgents = null) {
+    const allCapabilities = [
       {
         id: 'planner',
         name: 'Task Planner',
         description: 'Break down features into atomic tasks and create implementation plans',
         keywords: ['plan', 'break down', 'implement', 'build', 'create', 'feature', 'task'],
         agent: 'planner',
-        priority: 1,
-      },
-      {
-        id: 'executor',
-        name: 'Code Executor',
-        description: 'Write, modify, and refactor code based on specifications',
-        keywords: ['write', 'code', 'implement', 'function', 'class', 'component', 'refactor'],
-        agent: 'executor',
         priority: 1,
       },
       {
@@ -244,7 +237,14 @@ export class CapabilityRouter {
         agent: 'architect',
         priority: 1,
       },
-    ]);
+    ];
+
+    // Only register capabilities for agents that actually exist
+    const filtered = availableAgents
+      ? allCapabilities.filter((cap) => availableAgents.has(cap.agent))
+      : allCapabilities;
+
+    this.registerAll(filtered);
   }
 }
 
