@@ -1,0 +1,22 @@
+{
+  "worktrees": {},
+  "sessions": {
+    "ses_2ad71b3f8ffe942aDz1KqiFuiE": {
+      "worktreeId": null,
+      "createdAt": "2026-04-03T08:55:52.532Z"
+    },
+    "ses_2ad70d6b4ffefBHVeoPlVHqs8o": {
+      "worktreeId": null,
+      "createdAt": "2026-04-03T08:56:47.184Z"
+    },
+    "ses_2ad6f93c3ffeRsD7ndMBg14Cg6": {
+      "worktreeId": null,
+      "createdAt": "2026-04-03T08:58:09.866Z"
+    },
+    "ses_2ad6e8ab4ffeaMC9tu8iFIB02D": {
+      "worktreeId": null,
+      "createdAt": "2026-04-03T08:59:17.735Z"
+    }
+  },
+  "sessionsCollapsed": true
+}
