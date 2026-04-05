@@ -53,6 +53,7 @@ describe('CLI Command: run execution', () => {
           NODE_ENV: 'test',
           NO_COLOR: '',
           ULTRA_DEX_SKIP_UPDATE_CHECK: 'true',
+          ULTRA_DEX_V2_ROUTING: '', // Disable V2 routing for this test (uses original trace path)
         },
         maxBuffer: 4 * 1024 * 1024,
       }

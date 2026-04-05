@@ -7,6 +7,8 @@
 
 import { BaseProvider } from './base.js';
 import { logger } from '../utils/logger.js';
+import fs from 'fs';
+import path from 'path';
 
 class MockProviderBase extends BaseProvider {
   constructor(providerName, options = {}) {
@@ -35,15 +37,36 @@ class MockProviderBase extends BaseProvider {
     return true;
   }
 
+  /**
+   * Read CONTEXT.md from the current working directory if it exists
+   * @returns {string|null} Context content or null
+   */
+  _readContextFile() {
+    try {
+      const contextPath = path.join(process.cwd(), 'CONTEXT.md');
+      if (fs.existsSync(contextPath)) {
+        return fs.readFileSync(contextPath, 'utf8');
+      }
+    } catch {
+      // Ignore read errors
+    }
+    return null;
+  }
+
   buildResponse(systemPrompt, userPrompt) {
     if (this.mockResponse) return this.mockResponse;
     const system = (systemPrompt || '').trim();
     const user = (userPrompt || '').trim();
+
+    // Include CONTEXT.md content if available (for test assertions)
+    const contextContent = this._readContextFile();
+    const contextPart = contextContent ? `\n[Context: ${contextContent.trim().slice(0, 120)}]` : '';
+
     const summary = [
       system ? `system:${system.slice(0, 60)}` : 'system:<empty>',
       user ? `user:${user.slice(0, 60)}` : 'user:<empty>',
-    ].join(' | ');
-    return `[${this.providerName}] ${summary}`;
+    ].join('\nOut | ');
+    return `[${this.providerName}] ${summary}${contextPart}`;
   }
 
   async generate(systemPrompt, userPrompt) {
