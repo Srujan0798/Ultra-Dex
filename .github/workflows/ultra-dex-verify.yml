@@ -4,18 +4,33 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install root dependencies
-        run: npm install --ignore-scripts --legacy-peer-deps
-      - name: Install CLI dependencies
-        run: cd apps/cli && npm install --legacy-peer-deps
-      - name: Verify Ultra-Dex
-        run: cd apps/cli && node bin/ultra-dex.js --help || echo "CLI check completed"
+          cache: npm
+      - name: Clean install root dependencies
+        run: npm ci --legacy-peer-deps --ignore-scripts --omit=optional
+      - name: Clean install CLI dependencies
+        run: cd apps/cli && npm ci --legacy-peer-deps --ignore-scripts --omit=optional
+      - name: Verify fast-path CLI commands
+        run: |
+          set -euo pipefail
+          timeout 45s node apps/cli/bin/ultra-dex.js --help
+          timeout 45s node apps/cli/bin/ultra-dex.js run planner --help
+          timeout 45s node apps/cli/bin/ultra-dex.js quality --help
+          timeout 45s node apps/cli/bin/ultra-dex.js mcp-remote --help
+          timeout 45s node apps/cli/bin/ultra-dex.js env --help
+      - name: Verify full-entrypoint CLI commands
+        run: |
+          set -euo pipefail
+          timeout 45s node apps/cli/bin/ultra-dex.js status --help
+          timeout 45s node apps/cli/bin/ultra-dex.js security --help
+          timeout 45s node apps/cli/bin/ultra-dex.js architect --help
