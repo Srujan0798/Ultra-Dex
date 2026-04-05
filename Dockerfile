@@ -63,8 +63,8 @@ RUN apk add --no-cache git openssh-client
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install production dependencies only
-RUN npm ci --legacy-peer-deps --omit=dev --omit=optional
+# Reuse built dependencies from builder stage to avoid native rebuild issues.
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy bundled CLI
 COPY --from=builder /app/dist/ultra-dex.js ./dist/ultra-dex.js
