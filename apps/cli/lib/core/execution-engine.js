@@ -80,12 +80,36 @@ export class ExecutionEngine {
         }
       }, trace);
 
-      // Step 3: Initialize agent
+      // Step 3: Initialize agent or use provider directly
       const agent = await this._traceStep('initialize_agent', async () => {
         const agentDef = this.agents[agentName];
-        return typeof agentDef.create === 'function'
-          ? agentDef.create({ provider: this.provider, runId })
-          : agentDef;
+        // If agent def has a create function, use it; otherwise use the provider directly
+        if (typeof agentDef?.create === 'function') {
+          return agentDef.create({ provider: this.provider, runId });
+        }
+        // Fallback: return the agent config + provider for direct execution
+        return {
+          config: agentDef || {},
+          provider: this.provider,
+          run: async (taskText) => {
+            // Direct provider call using agent's system prompt
+            const systemPrompt = agentDef?.systemPrompt || `You are an AI assistant.`;
+            // Use provider.generate() if available, otherwise try .complete()
+            if (typeof this.provider.generate === 'function') {
+              const response = await this.provider.generate(systemPrompt, taskText, { maxTokens: 4096 });
+              return response?.text || response?.content || response?.output || JSON.stringify(response) || 'No response';
+            }
+            if (typeof this.provider.complete === 'function') {
+              const messages = [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: taskText },
+              ];
+              const response = await this.provider.complete(messages, { maxTokens: 4096 });
+              return response?.text || response?.content || JSON.stringify(response) || 'No response';
+            }
+            return `[Provider has no callable generate/complete method]`;
+          },
+        };
       }, trace);
 
       // Step 4: Execute with retries
@@ -165,9 +189,6 @@ export class ExecutionEngine {
           ),
         ]);
 
-        // Recovery check
-        await errorRecovery.recordSuccess('execution-engine', { agent: agent.name, attempt });
-
         return result;
       } catch (error) {
         lastError = error;
@@ -175,8 +196,6 @@ export class ExecutionEngine {
           runId,
           attempt,
         });
-
-        await errorRecovery.recordFailure('execution-engine', error, { agent: agent.name, attempt });
 
         if (attempt < this.config.maxRetries) {
           const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 10_000);

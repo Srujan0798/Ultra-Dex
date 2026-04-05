@@ -38,8 +38,10 @@ import {
   truncateText,
 } from './run-context.js';
 
-// V2 Core orchestration (entry-only, does not replace existing logic)
+// V2 Core orchestration (feature-flagged, default OFF)
 import { createOrchestrationStack } from '../core/index.js';
+
+const USE_V2_ROUTING = process.env.ULTRA_DEX_V2_ROUTING === '1';
 
 const execAsync = promisify(exec);
 const MAX_RUNTIME_HISTORY = 12;
@@ -1376,14 +1378,46 @@ export function registerRunCommand(program) {
           maxTokens: 8000,
         });
 
-        // V2: Initialize orchestration stack (entry-only, does not replace existing flow)
-        const v2Provider = await providerFactory(agentName);
-        const orchestration = createOrchestrationStack({
-          provider: v2Provider,
-          agents: AGENTS,
-        });
+        // V2 routing path (feature-flagged, default OFF)
+        if (USE_V2_ROUTING) {
+          printInfo(chalk.yellow('\n🔧 V2 routing path active (ULTRA_DEX_V2_ROUTING=1)\n'));
+          const v2Provider = await providerFactory(agentName);
+          const { router, scheduler, engine } = createOrchestrationStack({
+            provider: v2Provider,
+            agents: AGENTS,
+          });
 
-        finalOutput = await runAgentLoop(agentName, task, providerFactory, context, 0, maxSteps);
+          // Step 1: Route task to best capability
+          const routing = router.route(task);
+          printInfo(`V2 routed to: ${routing.agent} (confidence: ${routing.confidence.toFixed(2)})`);
+          printInfo(`V2 reason: ${routing.reason}`);
+
+          // Step 2: Create task for scheduler
+          const selectedAgent = routing.agent;
+          scheduler.addTask({
+            agent: selectedAgent,
+            task,
+            priority: 1,
+            dependencies: [],
+          });
+
+          // Step 3: Execute via engine (engine uses provider directly, not AGENTS config)
+          const engineResult = await engine.execute(selectedAgent, task, {
+            runId: trace.runId,
+          });
+
+          finalOutput = engineResult.output || 'V2 execution completed';
+          logger.info('V2 routing execution complete', {
+            runId: trace.runId,
+            agent: selectedAgent,
+            confidence: routing.confidence,
+            status: engineResult.status,
+          });
+        } else {
+          // OFF path: existing behavior unchanged
+          finalOutput = await runAgentLoop(agentName, task, providerFactory, context, 0, maxSteps);
+        }
+
         await persistAndPrintRunArtifacts({
           trace,
           command: 'run',
