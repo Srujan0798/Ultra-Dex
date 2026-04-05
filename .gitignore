@@ -88,6 +88,9 @@ gitFail/backups/*.bundle
 # Upgrade archives
 upgrade/
 
+# Archive (historical WIP, session dumps, old reports)
+archive/
+
 # Kilo worktrees
 .kilo/
 

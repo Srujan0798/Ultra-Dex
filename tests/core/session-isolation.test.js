@@ -4,7 +4,7 @@ import assert from 'node:assert';
 import { describe, test } from 'node:test';
 import { AgentOrchestrator } from '../../src/core/orchestration/index.js';
 
-describe('Session-isolated TaskGraph execution', () => {
+describe('Session-isolated TaskGraph execution', { timeout: 15000 }, () => {
   test('executeNexus creates an isolated ExecutionContext per concurrent session', async () => {
     const startedContexts = [];
     const releaseByObjective = new Map();

@@ -9,7 +9,7 @@ import { AgentOrchestrator } from '../../src/core/orchestration/index.js';
 import { GovernanceManager } from '../../src/core/governance/governance-manager.js';
 import { GovernanceDeniedException } from '../../src/core/governance/governance-manager.js';
 
-describe('Governance Bypass Prevention', () => {
+describe('Governance Bypass Prevention', { timeout: 15000 }, () => {
   let orchestrator;
 
   beforeEach(() => {
