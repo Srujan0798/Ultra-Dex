@@ -6,7 +6,7 @@
 # ============================================================================
 FROM node:20-alpine AS deps
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 py3-setuptools make g++
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN npm ci --legacy-peer-deps
 # ============================================================================
 FROM node:20-alpine AS builder
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 py3-setuptools make g++
 
 WORKDIR /app
 
