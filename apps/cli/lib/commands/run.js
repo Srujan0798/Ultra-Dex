@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import ora from 'ora';
+import ora from '../utils/ora.js';
 import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
@@ -37,7 +37,6 @@ import {
   stripDecisionLine,
   truncateText,
 } from './run-context.js';
-import { DistributedCoordinator } from '../../../../src/core/orchestration/distributed-coordinator.js';
 
 const execAsync = promisify(exec);
 const MAX_RUNTIME_HISTORY = 12;
@@ -189,19 +188,21 @@ async function readProjectContext() {
     }
   })();
 
-  // Graph Scan (God Mode) - skip in mock mode for speed
-  const graphPromise = isMockMode
-    ? Promise.resolve(null)
-    : (async () => {
+  // Graph scans can saturate fs operations and stall run command startup.
+  // Keep this opt-in for now.
+  const shouldScanGraph = !isMockMode && process.env.ULTRA_DEX_ENABLE_GRAPH_SCAN === 'true';
+  const graphPromise = shouldScanGraph
+    ? (async () => {
         try {
-          // Race graph scan against a 2s timeout to prevent blocking
+          // Race graph scan against a 2s timeout to reduce startup delay.
           const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 2000));
           const scan = projectGraph.scan().then(() => projectGraph.getSummary());
           return await Promise.race([scan, timeout]);
         } catch (e) {
           return null;
         }
-      })();
+      })()
+    : Promise.resolve(null);
 
   const [plan, ctx, state, graph] = await Promise.all([
     planPromise,
@@ -1337,6 +1338,7 @@ export function registerRunCommand(program) {
           printWarning('\n⚠️  No AI provider configured.\n');
           printInfo('To use AI agents, configure one of these:');
           printInfo('  export ANTHROPIC_API_KEY=sk-ant-...  # Claude');
+          printInfo('  export NVIDIA_API_KEY=nvapi-...      # NVIDIA Nemotron');
           printInfo('  export OPENAI_API_KEY=sk-...         # OpenAI');
           printInfo('  export GOOGLE_AI_KEY=...             # Gemini');
           printInfo('\nOr use local AI with Ollama (no key needed):');
@@ -1481,6 +1483,9 @@ export function registerDistributedCommand(program) {
     .action(async (options) => {
       try {
         printInfo('Starting distributed coordination server...');
+        const { DistributedCoordinator } = await import(
+          '../../../../src/core/orchestration/distributed-coordinator.js'
+        );
         const coordinator = new DistributedCoordinator({
           port: parseInt(options.port),
           host: options.host,

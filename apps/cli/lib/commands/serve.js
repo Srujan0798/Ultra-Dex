@@ -4,12 +4,6 @@ import chalk from 'chalk';
 import http from 'http';
 import fs from 'fs/promises';
 import { loadState, generateMarkdown } from './plan.js';
-import { createMcpServer, startStdioServer } from '../mcp/server.js';
-import { initializeMcpHost } from '../mcp/host.js';
-import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
-import { projectGraph } from '../mcp/graph.js';
-import { webSocketServer } from '../mcp/websocket.js';
-import { swarmCommand } from './swarm.js';
 import { execSync } from 'child_process';
 import { getRandomMessage } from '../utils/messages.js';
 import { VERSION } from '../utils/version.js';
@@ -51,6 +45,7 @@ export function registerServeCommand(program) {
  */
 async function handleStdioServer(options = {}) {
   try {
+    const { startStdioServer } = await import('../mcp/server.js');
     printInfo('Starting MCP Stdio server...');
     await startStdioServer({
       hostMode: options.host,
@@ -87,6 +82,7 @@ async function getGitInfo() {
  * Generate dashboard HTML
  */
 async function getDashboardHTML() {
+  const { projectGraph } = await import('../mcp/graph.js');
   const { generateDashboardHTML } = await import('./dashboard.js');
   const state = await loadState();
   const gitInfo = await getGitInfo();
@@ -103,6 +99,15 @@ async function getDashboardHTML() {
  * @param {string} portStr Port to listen on
  */
 export async function startUnifiedKernel(portStr, options = {}) {
+  const [{ createMcpServer }, { projectGraph }, { webSocketServer }, { SSEServerTransport }] =
+    await Promise.all([
+      import('../mcp/server.js'),
+      import('../mcp/graph.js'),
+      import('../mcp/websocket.js'),
+      import('@modelcontextprotocol/sdk/server/sse.js'),
+    ]);
+  const { swarmCommand } = await import('./swarm.js');
+
   const port = Number.parseInt(portStr, 10);
   if (isNaN(port) || port < 1 || port > 65535) {
     throw new ValidationError(`Invalid port: ${portStr}. Port must be between 1 and 65535.`);
@@ -126,6 +131,7 @@ export async function startUnifiedKernel(portStr, options = {}) {
 
   // Initialize MCP Host connections if requested
   if (options.host) {
+    const { initializeMcpHost } = await import('../mcp/host.js');
     const servers = options.mcpServers
       ? options.mcpServers
           .split(',')
@@ -208,7 +214,8 @@ export async function startUnifiedKernel(portStr, options = {}) {
       }
 
       // API Routes
-      if (handleApiRoutes(req, res, pathname, url)) return;
+      if (handleApiRoutes(req, res, pathname, url, { projectGraph, webSocketServer, swarmCommand }))
+        return;
 
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Not found in this timeline' }));
@@ -324,7 +331,8 @@ export async function startUnifiedKernel(portStr, options = {}) {
 /**
  * Handle API routes separately for cleaner code
  */
-function handleApiRoutes(req, res, pathname, url) {
+function handleApiRoutes(req, res, pathname, url, dependencies) {
+  const { projectGraph, webSocketServer, swarmCommand } = dependencies;
   // Endpoint: /api/info
   if (pathname === '/api/info') {
     res.writeHead(200, { 'Content-Type': 'application/json' });

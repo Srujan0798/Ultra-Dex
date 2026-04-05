@@ -178,7 +178,7 @@ export function registerDoctorCommand(program) {
           checks.push({
             name: 'AI Providers',
             status: 'warn',
-            detail: 'Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY',
+            detail: 'Set ANTHROPIC_API_KEY, NVIDIA_API_KEY, OPENAI_API_KEY, or GOOGLE_AI_KEY',
           });
         }
 
@@ -413,7 +413,13 @@ export function registerDoctorCommand(program) {
         // Check 16: Environment
         const envSpinner = createSpinner('Checking Environment...');
         envSpinner.start();
-        const envKeys = ['NODE_ENV', 'ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_AI_KEY'];
+        const envKeys = [
+          'NODE_ENV',
+          'ANTHROPIC_API_KEY',
+          'NVIDIA_API_KEY',
+          'OPENAI_API_KEY',
+          'GOOGLE_AI_KEY',
+        ];
         const setCount = envKeys.filter((key) => Boolean(process.env[key])).length;
         envSpinner.succeed(`Environment variables checked (${setCount}/${envKeys.length} set)`);
         checks.push({
@@ -480,8 +486,9 @@ export function registerDoctorCommand(program) {
         if (configuredProviders.length === 0) {
           printInfo(chalk.cyan('💡 To configure AI providers, set an API key:'));
           printInfo(chalk.gray('   export ANTHROPIC_API_KEY=sk-ant-...'));
+          printInfo(chalk.gray('   export NVIDIA_API_KEY=nvapi-...'));
           printInfo(chalk.gray('   export OPENAI_API_KEY=sk-...'));
-          printInfo(chalk.gray('   export GEMINI_API_KEY=...\n'));
+          printInfo(chalk.gray('   export GOOGLE_AI_KEY=...\n'));
         }
 
         if (foundRequired.length === 0) {
