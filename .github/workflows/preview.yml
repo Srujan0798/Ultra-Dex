@@ -23,7 +23,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install --ignore-scripts --legacy-peer-deps
+        run: npm install --ignore-scripts
 
       - name: Build website preview
         run: npm run build -w apps/website

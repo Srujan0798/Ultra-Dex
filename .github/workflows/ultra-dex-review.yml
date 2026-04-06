@@ -22,7 +22,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install --ignore-scripts --legacy-peer-deps
+        run: npm install --ignore-scripts
 
       - name: Run Ultra-Dex Action
         uses: ./.github/actions/ultra-dex

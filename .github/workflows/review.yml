@@ -17,7 +17,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --ignore-scripts --omit=optional
+        run: npm install --ignore-scripts --omit=optional
 
       - name: Run tests on PR
         run: npm test || echo "Tests completed"

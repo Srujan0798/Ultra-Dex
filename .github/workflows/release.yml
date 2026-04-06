@@ -19,7 +19,7 @@ jobs:
       - name: Install CLI dependencies
         run: |
           cd apps/cli
-          npm install --legacy-peer-deps --ignore-scripts --omit=optional
+          npm install --ignore-scripts --omit=optional
         continue-on-error: false
 
       - name: Install esbuild
