@@ -6,6 +6,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { EventEmitter } from 'events';
+import { logger } from '../utils/logging.js';
 
 class EnterpriseAnalytics extends EventEmitter {
   constructor(options = {}) {
@@ -28,11 +29,15 @@ class EnterpriseAnalytics extends EventEmitter {
     this.predictiveModels = new Map();
     this.alerts = new Map();
     this.dashboards = new Map();
-    
-    this.initialize();
+
+    this.initializationPromise = this.initialize();
   }
 
   async initialize() {
+    if (this.initialized) {
+      return;
+    }
+
     // Ensure analytics directory exists
     await fs.mkdir(this.options.metricsStoragePath, { recursive: true });
     await fs.mkdir(path.join(this.options.metricsStoragePath, 'metrics'), { recursive: true });
@@ -51,8 +56,17 @@ class EnterpriseAnalytics extends EventEmitter {
     if (this.options.enablePredictiveAnalytics) {
       this.initializePredictiveModels();
     }
-    
-    logger.log('📊 Enterprise Analytics System Initialized');
+
+    this.initialized = true;
+    logger.info('Enterprise Analytics System Initialized');
+  }
+
+  async ensureInitialized() {
+    if (this.initialized) {
+      return;
+    }
+
+    await this.initializationPromise;
   }
 
   initializeAnalyticsEngine() {
@@ -213,6 +227,8 @@ class EnterpriseAnalytics extends EventEmitter {
    * @param {object} metadata - Additional metadata
    */
   async trackMetric(name, value, tags = {}, metadata = {}) {
+    await this.ensureInitialized();
+
     // Apply sampling rate
     if (Math.random() > this.options.samplingRate) {
       return; // Skip this metric based on sampling rate
@@ -385,6 +401,8 @@ class EnterpriseAnalytics extends EventEmitter {
    * @returns {object} Analytics report
    */
   async generateReport(options = {}) {
+    await this.ensureInitialized();
+
     const startTime = options.startTime || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(); // Last 24 hours
     const endTime = options.endTime || new Date().toISOString();
     const metrics = options.metrics || Array.from(this.metrics.keys());
@@ -426,7 +444,7 @@ class EnterpriseAnalytics extends EventEmitter {
         };
         
         // Check for anomalies in this metric's history
-        if (this.options.enableAnomalyDetection) {
+        if (this.options.enableAnomalyDetection && this.anomalyDetector?.detectAnomalies) {
           for (const entry of history) {
             if (this.anomalyDetector.detectAnomalies(metricName, entry.value)) {
               report.anomalies.push({

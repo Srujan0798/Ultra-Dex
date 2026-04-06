@@ -1,0 +1,17 @@
+name: Ultra-Dex PR Review
+
+on:
+  pull_request:
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx ultra-dex check --p0-only
+      - run: node cli/lib/ci/pr-reviewer.js

@@ -109,6 +109,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
   }
 
   recordFailure(name) {
+    this.failureCounts.set(name, (this.failureCounts.get(name) || 0) + 1);
     const breaker = this.circuitBreakers.get(name) || { state: 'closed', failures: 0 };
     breaker.failures++;
 
@@ -123,6 +124,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
   }
 
   resetFailureCount(name) {
+    this.failureCounts.set(name, 0);
     this.circuitBreakers.set(name, { state: 'closed', failures: 0 });
   }
 
@@ -130,6 +132,55 @@ export class SelfHealingOrchestrator extends EventEmitter {
     const name = `agent:${agentId}`;
     this.recordFailure(name);
     this.emit('agent-error', { agentId, error, ...details });
+  }
+
+  classifyRecoveryStrategy(error, details = {}) {
+    const message = (error?.message || String(error)).toLowerCase();
+
+    if (details.requiresFallback || message.includes('permission') || message.includes('access')) {
+      return 'fallback';
+    }
+
+    if (
+      message.includes('memory') ||
+      message.includes('resource') ||
+      message.includes('oom') ||
+      message.includes('heap')
+    ) {
+      return 'restart';
+    }
+
+    return 'retry';
+  }
+
+  async recoverAgentFailure(agentId, error, details = {}) {
+    const circuitBreakerName = `agent:${agentId}`;
+    await this.reportAgentError(agentId, error, details);
+
+    const strategy = this.classifyRecoveryStrategy(error, details);
+    const diagnostics = {
+      agentId,
+      strategy,
+      phase: details.phase || 'unknown',
+      iteration: details.iteration || null,
+      recoverable: strategy !== 'fallback' || Boolean(details.fallbackAvailable),
+      circuitState: this.getCircuitState(circuitBreakerName),
+      error: {
+        name: error?.name || 'Error',
+        message: error?.message || String(error),
+      },
+    };
+
+    const recovery = {
+      agentId,
+      recovered: false,
+      strategy,
+      timestamp: new Date().toISOString(),
+      diagnostics,
+    };
+
+    this.emit('agent-recovery', recovery);
+    return recovery;
   }
 
   getCircuitState(name) {

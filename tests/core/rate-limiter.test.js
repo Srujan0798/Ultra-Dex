@@ -9,6 +9,8 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
 import { ExecutionController } from '../../apps/cli/lib/autonomous/execution-controller.js';
 import { performance } from 'perf_hooks';
+import { AIMetaLayer } from '../../src/core/ai/ai-meta-layer.js';
+import { RateLimiter as InfrastructureRateLimiter } from '../../src/core/infrastructure/rate-limiter.js';
 
 // Mock time for consistent testing
 let mockTime = 0;
@@ -262,5 +264,75 @@ describe('Rate Limiter Tests', () => {
 
     // Restore original method
     controller._executeTask = originalExecuteTask;
+  });
+});
+
+describe('Infrastructure RateLimiter', () => {
+  it('acquires and releases provider permits', async () => {
+    const limiter = new InfrastructureRateLimiter({
+      defaultTokensPerSecond: 5,
+      defaultCapacity: 2,
+      defaultBurstMaxRequests: 10,
+    });
+
+    const lease = await limiter.acquire('openai', { wait: false });
+    const during = limiter.getStats('openai');
+    assert.equal(during.inFlight, 1);
+
+    limiter.release(lease);
+    const after = limiter.getStats('openai');
+    assert.equal(after.inFlight, 0);
+    assert.ok(after.tokenBucket.totalConsumed >= 1);
+  });
+
+  it('enforces provider-specific burst and token limits', async () => {
+    const limiter = new InfrastructureRateLimiter({
+      defaultAcquireTimeoutMs: 5,
+    });
+    limiter.setLimit('anthropic', {
+      tokensPerSecond: 0.1,
+      capacity: 1,
+      burstMaxRequests: 1,
+      burstWindowMs: 60000,
+    });
+
+    const lease = await limiter.acquire('anthropic', { wait: false });
+    limiter.release(lease);
+
+    await assert.rejects(
+      () => limiter.acquire('anthropic', { wait: false }),
+      /Rate limit exceeded/
+    );
+  });
+
+  it('checks rate limit before AIMetaLayer provider calls', async () => {
+    const limiter = new InfrastructureRateLimiter({
+      defaultAcquireTimeoutMs: 5,
+    });
+    limiter.setLimit('mock', {
+      tokensPerSecond: 0.1,
+      capacity: 1,
+      burstMaxRequests: 1,
+      burstWindowMs: 60000,
+    });
+
+    const ai = new AIMetaLayer({
+      mockMode: true,
+      enableCaching: false,
+      enableFallback: false,
+      rateLimiter: limiter,
+    });
+
+    await ai.call(null, [{ role: 'user', content: 'first call' }], {
+      rateLimitWait: false,
+    });
+
+    await assert.rejects(
+      () =>
+        ai.call(null, [{ role: 'user', content: 'second call' }], {
+          rateLimitWait: false,
+        }),
+      /Rate limit exceeded/
+    );
   });
 });

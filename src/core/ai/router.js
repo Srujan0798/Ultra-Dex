@@ -14,6 +14,7 @@ import providerRegistry, {
   resolveModel as resolveProviderByModel,
 } from './provider-registry.js';
 import { ModelRouter } from './model-router.js';
+import { ProviderFallback } from '../infrastructure/provider-fallback.js';
 
 function toProviderName(modelId) {
   if (!modelId) return null;
@@ -54,6 +55,10 @@ export class SmartAIRouter {
     this.metrics = new Map();
     this.initialized = false;
     this.registry = providerRegistry;
+    this.providerFallback =
+      config.providerFallback instanceof ProviderFallback
+        ? config.providerFallback
+        : new ProviderFallback(config.providerFallbackConfig || {});
   }
 
   async initialize() {
@@ -89,6 +94,11 @@ export class SmartAIRouter {
       metric.errors += 1;
       metric.lastError = error?.message || String(error);
     }
+  }
+
+  setProviderFallback(providerFallback) {
+    this.providerFallback = providerFallback;
+    return this;
   }
 
   getAvailableProviders() {
@@ -255,6 +265,52 @@ export class SmartAIRouter {
     return null;
   }
 
+  configureProviderFallback(providerNames, messages, opts = {}, stream = false) {
+    const providerConfigs = [];
+
+    for (let index = 0; index < providerNames.length; index++) {
+      const providerName = providerNames[index];
+      const provider = getProvider(providerName);
+      if (!provider) {
+        continue;
+      }
+
+      providerConfigs.push({
+        name: providerName,
+        priority: index + 1,
+        costPer1kTokens: PROVIDER_COST_TABLE[providerName]?.input ?? Number.MAX_SAFE_INTEGER,
+        enabled: true,
+        execute: async () => {
+          const providerTimeout = opts.providerTimeout || (stream ? 30000 : 60000);
+          const operation = stream
+            ? provider.stream(messages, opts)
+            : provider.chat(messages, {
+                ...opts,
+                model: this.resolveModelForProvider(providerName, opts.model) || opts.model,
+              });
+
+          return await Promise.race([
+            operation,
+            new Promise((_, reject) =>
+              setTimeout(
+                () =>
+                  reject(
+                    new Error(
+                      `[router] Provider ${providerName} ${stream ? 'stream ' : ''}timeout`
+                    )
+                  ),
+                providerTimeout
+              )
+            ),
+          ]);
+        },
+      });
+    }
+
+    this.providerFallback.syncProviders(providerConfigs);
+    return providerConfigs.map((provider) => provider.name);
+  }
+
   async routeRequest(messages, strategy = 'quality', opts = {}) {
     await this.initialize();
 
@@ -272,9 +328,6 @@ export class SmartAIRouter {
       throw new Error('[router] No providers available for routeRequest');
     }
 
-    const attemptedProviders = [];
-    let lastError = null;
-
     // Add timeout for the entire routing operation
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(
@@ -287,75 +340,35 @@ export class SmartAIRouter {
       if (providers.length === 0) {
         throw new Error('[router] No providers available for routeRequest');
       }
+      const allowFallback = opts.fallback !== false || normalizedStrategy === 'fallback';
+      const providerOrder = allowFallback ? providers : providers.slice(0, 1);
+      this.configureProviderFallback(providerOrder, messages, opts, false);
 
-      for (let index = 0; index < providers.length; index++) {
-        const providerName = providers[index];
-        const provider = getProvider(providerName);
-        if (!provider) continue;
-
-        attemptedProviders.push(providerName);
-        const startedAt = Date.now();
-
-        try {
-          // Add individual provider timeout
-          const providerTimeout = opts.providerTimeout || 60000; // 1 minute default
-
-          const resultPromise = provider.chat(messages, {
-            ...opts,
-            model: this.resolveModelForProvider(providerName, opts.model) || opts.model,
-          });
-
-          // Race the provider call with its timeout
-          const result = await Promise.race([
-            resultPromise,
-            new Promise((_, reject) =>
-              setTimeout(
-                () => reject(new Error(`[router] Provider ${providerName} timeout`)),
-                providerTimeout
-              )
-            ),
-          ]);
-
-          this.updateMetrics(providerName, {
-            latencyMs: Date.now() - startedAt,
-            success: true,
-          });
-
-          return {
-            ...result,
-            provider: providerName,
-            strategy: normalizedStrategy,
-            attemptedProviders,
-          };
-        } catch (error) {
-          this.updateMetrics(providerName, {
-            success: false,
-            error,
-          });
-
-          lastError = error;
-
-          const allowFallback = opts.fallback !== false || normalizedStrategy === 'fallback';
-          if (!allowFallback) {
-            break;
-          }
-
-          // Add small delay before trying next provider to avoid overwhelming
-          if (index < providers.length - 1) {
-            await new Promise((resolve) => setTimeout(resolve, opts.providerDelay || 100)); // 100ms default delay
-          }
+      const result = await this.providerFallback.execute(
+        { messages, opts },
+        {
+          providerOrder,
+          onProviderSuccess: ({ provider, latencyMs }) => {
+            this.updateMetrics(provider, {
+              latencyMs,
+              success: true,
+            });
+          },
+          onProviderFailure: ({ provider, error }) => {
+            this.updateMetrics(provider, {
+              success: false,
+              error,
+            });
+          },
         }
-      }
+      );
 
-      // If we've exhausted all providers or fallback was disallowed, throw explicit error
-      if (lastError) {
-        const reason = lastError?.message || 'unknown routing failure';
-        throw new Error(
-          `[router] All providers failed [${attemptedProviders.join(', ')}]: ${reason}`
-        );
-      } else {
-        throw new Error(`[router] No valid providers found [${providers.join(', ')}]`);
-      }
+      return {
+        ...result.result,
+        provider: result.provider,
+        strategy: normalizedStrategy,
+        attemptedProviders: result.attemptedProviders,
+      };
     })();
 
     // Race the routing operation with the overall timeout
@@ -379,8 +392,6 @@ export class SmartAIRouter {
       throw new Error('[router] No providers available for routeStream');
     }
 
-    let lastError = null;
-
     // Add timeout for the entire stream routing operation
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(
@@ -393,46 +404,18 @@ export class SmartAIRouter {
       if (providers.length === 0) {
         throw new Error('[router] No providers available for routeStream');
       }
-
-      for (const providerName of providers) {
-        const provider = getProvider(providerName);
-        if (!provider) continue;
-
-        try {
-          // Add individual provider timeout for stream initialization
-          const providerTimeout = opts.providerTimeout || 30000; // 30 seconds default for stream init
-
-          const streamPromise = provider.stream(messages, opts);
-
-          // Race the provider stream call with its timeout
-          const stream = await Promise.race([
-            streamPromise,
-            new Promise((_, reject) =>
-              setTimeout(
-                () => reject(new Error(`[router] Provider ${providerName} stream timeout`)),
-                providerTimeout
-              )
-            ),
-          ]);
-
-          return stream;
-        } catch (error) {
-          this.updateMetrics(providerName, { success: false, error });
-          lastError = error;
-
-          // Add small delay before trying next provider to avoid overwhelming
-          await new Promise((resolve) => setTimeout(resolve, opts.providerDelay || 100)); // 100ms default delay
+      this.configureProviderFallback(providers, messages, opts, true);
+      const result = await this.providerFallback.execute(
+        { messages, opts },
+        {
+          providerOrder: providers,
+          onProviderFailure: ({ provider, error }) => {
+            this.updateMetrics(provider, { success: false, error });
+          },
         }
-      }
+      );
 
-      // If we've exhausted all providers, throw explicit error
-      if (lastError) {
-        throw new Error(
-          `[router] Stream failed for all providers [${providers.join(', ')}]: ${lastError?.message || 'unknown error'}`
-        );
-      } else {
-        throw new Error(`[router] No valid providers found for stream [${providers.join(', ')}]`);
-      }
+      return result.result;
     })();
 
     // Race the routing operation with the overall timeout

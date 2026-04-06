@@ -3,6 +3,8 @@
 
 import { logger } from '../../utils/logging.js';
 import { performance } from 'perf_hooks';
+import { RateLimiter } from '../infrastructure/rate-limiter.js';
+import { StreamPipeline } from '../infrastructure/stream-pipeline.js';
 
 /**
  * AI Provider Abstraction Layer
@@ -34,6 +36,18 @@ export class AIMetaLayer {
     this.cache = new Map();
     this.cacheExpiry = config.cacheExpiry || 300000; // 5 minutes
     this.mockMode = config.mockMode || process.env.MOCK_AI === 'true';
+    this.rateLimiter =
+      config.rateLimiter instanceof RateLimiter
+        ? config.rateLimiter
+        : config.rateLimiter
+          ? new RateLimiter(config.rateLimiter)
+          : null;
+    this.streamPipeline =
+      config.streamPipeline instanceof StreamPipeline
+        ? config.streamPipeline
+        : config.streamPipeline
+          ? new StreamPipeline(config.streamPipeline)
+          : null;
     
     this.initializeProviders();
   }
@@ -210,6 +224,51 @@ export class AIMetaLayer {
     return this.activeProvider;
   }
 
+  setRateLimiter(rateLimiter) {
+    this.rateLimiter = rateLimiter;
+    return this;
+  }
+
+  setStreamPipeline(streamPipeline) {
+    this.streamPipeline = streamPipeline;
+    return this;
+  }
+
+  getProviderName(providerInstance) {
+    for (const [name, provider] of this.providers.entries()) {
+      if (provider === providerInstance) {
+        return name;
+      }
+    }
+
+    return null;
+  }
+
+  async executeProviderCall(providerName, provider, model, messages, options = {}) {
+    const lease = this.rateLimiter
+      ? await this.rateLimiter.acquire(providerName, {
+          wait: options.rateLimitWait !== false,
+          timeoutMs: options.rateLimitTimeoutMs,
+        })
+      : null;
+
+    try {
+      const client = await this.ensureProviderClient(provider);
+      const providerModel = client(model || provider.defaultModel);
+      const { rateLimitWait, rateLimitTimeoutMs, ...providerOptions } = options;
+
+      return await providerModel.call({
+        model: providerModel,
+        messages,
+        ...providerOptions,
+      });
+    } finally {
+      if (lease) {
+        this.rateLimiter.release(lease);
+      }
+    }
+  }
+
   /**
    * Main method to call AI providers with unified interface
    */
@@ -240,18 +299,8 @@ export class AIMetaLayer {
         throw new Error('No AI provider available');
       }
 
-      const client = await this.ensureProviderClient(provider);
-      const providerModel = client(model || provider.defaultModel);
-
-      // Prepare the call
-      const callOptions = {
-        model: providerModel,
-        messages,
-        ...options
-      };
-
-      // Make the call
-      const result = await providerModel.call(callOptions);
+      const providerName = this.getProviderName(provider) || this.config.defaultProvider;
+      const result = await this.executeProviderCall(providerName, provider, model, messages, options);
 
       // Cache the result
       if (this.config.enableCaching) {
@@ -297,18 +346,19 @@ export class AIMetaLayer {
       ...options,
       metadata: { ...(options.metadata || {}), model, messages },
     });
-    const currentIndex = providerEntries.findIndex(([, provider]) => provider === currentProvider);
+    const currentProviderName = this.getProviderName(currentProvider);
+    const currentIndex = providerEntries.findIndex(([name]) => name === currentProviderName);
 
     for (let i = currentIndex + 1; i < providerEntries.length; i++) {
       try {
         const [providerName, provider] = providerEntries[i];
-        const client = await this.ensureProviderClient(provider);
-        const providerModel = client(model || provider.defaultModel);
-        const result = await providerModel.call({
-          model: providerModel,
+        const result = await this.executeProviderCall(
+          providerName,
+          provider,
+          model,
           messages,
-          ...options
-        });
+          options
+        );
 
         if (this.config.enableMonitoring) {
           logger.info(`Fallback succeeded with provider: ${providerName}`);
@@ -344,11 +394,20 @@ export class AIMetaLayer {
     try {
       const client = await this.ensureProviderClient(provider);
       const providerModel = client(model || provider.defaultModel);
-
-      return providerModel.stream({
+      const rawStream = await providerModel.stream({
         model: providerModel,
         messages,
         ...options
+      });
+
+      if (!this.streamPipeline || options.streamPipeline === false) {
+        return rawStream;
+      }
+
+      return this.streamPipeline.pipe(rawStream, {
+        provider: this.getProviderName(provider) || this.config.defaultProvider,
+        model: model || provider.defaultModel,
+        messageCount: messages.length,
       });
     } catch (error) {
       if (this.config.enableMonitoring) {
