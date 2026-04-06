@@ -2,22 +2,40 @@
 set -e
 
 # Block common secret patterns in staged additions.
-SECRET_PATTERN='ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{60,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+SECRET_PATTERN='nvapi-|ghp_[A-Za-z0-9]{36}|ghs_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{60,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
 DIFF_OUTPUT="$(git diff --cached --no-color --unified=0)"
 
 if command -v rg >/dev/null 2>&1; then
   printf "%s" "$DIFF_OUTPUT" | rg -n "^\+.*($SECRET_PATTERN)" >/dev/null && {
+    echo "SECRET DETECTED — commit blocked"
     echo "Potential secret found in staged changes. Remove it before commit."
     exit 1
   }
 else
   printf "%s" "$DIFF_OUTPUT" | grep -E -n "^\+.*($SECRET_PATTERN)" >/dev/null && {
+    echo "SECRET DETECTED — commit blocked"
     echo "Potential secret found in staged changes. Remove it before commit."
     exit 1
   }
 fi
 
-node gitFail/compliance/check-governance-files.js
+# Additional check: scan .env files directly for secrets
+if git diff --cached --name-only | grep -qE '\.env'; then
+  ENV_FILES=$(git diff --cached --name-only | grep -E '\.env' || true)
+  for env_file in $ENV_FILES; do
+    if [ -f "$env_file" ]; then
+      if grep -qE '(nvapi-|sk-|AKIA|ghp_|ghs_)' "$env_file" 2>/dev/null; then
+        echo "SECRET DETECTED — commit blocked"
+        echo "Secret pattern found in $env_file. Remove it before commit."
+        exit 1
+      fi
+    fi
+  done
+fi
+
+if [ -f "gitFail/compliance/check-governance-files.js" ]; then
+  node gitFail/compliance/check-governance-files.js
+fi
 echo "Compliance reminder: review CODE_OF_CONDUCT.md, SECURITY.md, and gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md before commit."
 
 if command -v lint-staged >/dev/null 2>&1; then
