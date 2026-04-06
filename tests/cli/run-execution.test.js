@@ -48,8 +48,8 @@ describe('CLI Command: run execution', () => {
         env: {
           ...process.env,
           DEBUG: '',
-          MOCK_AI: '',
-          MOCK_AI_PROVIDERS: '',
+          MOCK_AI: 'true',
+          MOCK_AI_PROVIDERS: 'true',
           NODE_ENV: 'test',
           NO_COLOR: '',
           ULTRA_DEX_SKIP_UPDATE_CHECK: 'true',
