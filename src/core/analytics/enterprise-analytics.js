@@ -7,8 +7,14 @@ import fs from 'fs/promises';
 import path from 'path';
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logging.js';
+import {
+  registerAlias,
+  registerSingleton,
+  resolveFromContainer,
+} from '../di/container.js';
+import { DI_TOKENS } from '../di/tokens.js';
 
-class EnterpriseAnalytics extends EventEmitter {
+export class EnterpriseAnalytics extends EventEmitter {
   constructor(options = {}) {
     super();
     this.options = {
@@ -768,8 +774,10 @@ class EnterpriseAnalytics extends EventEmitter {
   }
 }
 
-// Export singleton instance
-export const enterpriseAnalytics = new EnterpriseAnalytics();
+registerSingleton(EnterpriseAnalytics, () => new EnterpriseAnalytics());
+registerAlias(DI_TOKENS.telemetryService, EnterpriseAnalytics);
+
+export const enterpriseAnalytics = resolveFromContainer(EnterpriseAnalytics);
 
 // Export class for instantiation with custom options
 export default EnterpriseAnalytics;

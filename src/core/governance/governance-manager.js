@@ -38,17 +38,24 @@ export class GovernanceManager {
 
     this.audit = {
       /**
+       * Initialize the audit store and expose the underlying mode.
+       * @returns {Promise<AuditDatabase|Object>} The initialized audit backend
+       */
+      async init() {
+        return this._db.init();
+      },
+
+      /**
        * Record an audit entry to the database
        * @param {Object} entry - Audit entry
        */
       async record(entry = {}) {
         const auditEntry = {
           ...entry,
-          timestamp: Date.now(),
+          timestamp: entry.timestamp || Date.now(),
           id: entry.id || `audit-${uuidv4()}`,
         };
-        await this._db.insert(auditEntry);
-        return auditEntry;
+        return this._db.insert(auditEntry);
       },
 
       /**
@@ -58,6 +65,10 @@ export class GovernanceManager {
        */
       async query(filter = {}) {
         return this._db.query(filter);
+      },
+
+      get memoryMode() {
+        return this._db.memoryMode;
       },
 
       // Reference to the database instance for internal use

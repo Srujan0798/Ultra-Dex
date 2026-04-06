@@ -11,7 +11,10 @@ test('CapabilityRouter', async (t) => {
   let router;
 
   t.beforeEach(async () => {
-    registry = new AgentRegistry();
+    registry = new AgentRegistry({
+      autoDiscover: false,
+      enablePersistence: false,
+    });
     await registry.initialize();
 
     // Register some test agents

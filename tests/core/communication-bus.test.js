@@ -5,9 +5,11 @@ import { AgentCommunicationBus } from '../../src/core/orchestration/communicatio
 
 describe('AgentCommunicationBus', () => {
   let bus;
+  let namespace;
 
   beforeEach(() => {
-    bus = new AgentCommunicationBus();
+    namespace = `comm-bus-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    bus = new AgentCommunicationBus({ namespace, mesh: true, busType: 'memory' });
   });
 
   it('should initialize and connect', async () => {
@@ -77,5 +79,56 @@ describe('AgentCommunicationBus', () => {
     // This should not throw
     const msgId = await bus.publish('ch', 'msg');
     assert.ok(msgId);
+  });
+
+  it('discovers agents across the mesh', async () => {
+    await bus.initialize();
+
+    const remoteBus = new AgentCommunicationBus({
+      namespace,
+      mesh: true,
+      busType: 'memory',
+      nodeId: 'remote-node',
+    });
+    await remoteBus.initialize();
+
+    await remoteBus.publish('agent.online', {
+      id: 'backend',
+      name: 'Backend Agent',
+      capabilities: ['api', 'database'],
+      status: 'active',
+      nodeId: 'remote-node',
+    });
+
+    const discovered = bus.discoverAgents();
+    assert.strictEqual(discovered.length, 1);
+    assert.strictEqual(discovered[0].id, 'backend');
+    assert.deepStrictEqual(discovered[0].capabilities, ['api', 'database']);
+
+    await remoteBus.shutdown();
+  });
+
+  it('routes tasks directly to an agent channel', async () => {
+    await bus.initialize();
+
+    const workerBus = new AgentCommunicationBus({
+      namespace,
+      mesh: true,
+      busType: 'memory',
+      nodeId: 'worker-node',
+    });
+    await workerBus.initialize();
+
+    let routedTask = null;
+    workerBus.subscribe('agent.worker-1.task', (envelope) => {
+      routedTask = envelope.message.task;
+    });
+
+    const route = await bus.routeTask({ id: 'task-1', objective: 'Ship fix' }, 'worker-1');
+    assert.strictEqual(route.agentId, 'worker-1');
+    assert.strictEqual(route.channel, 'agent.worker-1.task');
+    assert.deepStrictEqual(routedTask, { id: 'task-1', objective: 'Ship fix' });
+
+    await workerBus.shutdown();
   });
 });

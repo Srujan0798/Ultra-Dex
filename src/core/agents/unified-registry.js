@@ -4,6 +4,12 @@
  */
 
 import { EventEmitter } from 'events';
+import {
+  registerAlias,
+  registerSingleton,
+  resolveFromContainer,
+} from '../di/container.js';
+import { DI_TOKENS } from '../di/tokens.js';
 
 class UnifiedRegistry extends EventEmitter {
   constructor(config = {}) {
@@ -209,6 +215,9 @@ class UnifiedRegistry extends EventEmitter {
   }
 }
 
-export const registry = new UnifiedRegistry();
+registerSingleton(UnifiedRegistry, () => new UnifiedRegistry());
+registerAlias(DI_TOKENS.unifiedRegistry, UnifiedRegistry);
+
+export const registry = resolveFromContainer(UnifiedRegistry);
 export { UnifiedRegistry };
 export default UnifiedRegistry;

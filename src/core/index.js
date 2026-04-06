@@ -9,7 +9,7 @@
 // ── Original Core ───────────────────────────────────────────────────────
 import { aiMetaLayer } from './ai/ai-meta-layer.js';
 import { smartRouter } from './ai/router.js';
-import { agentOrchestrator } from './orchestration/index.js';
+import { AgentOrchestrator, agentOrchestrator } from './orchestration/index.js';
 import { ppmManager } from './memory/index.js';
 
 import { HealthService, HealthCheck } from './system/health-service.js';
@@ -29,14 +29,20 @@ import {
 } from './infrastructure/webhook-manager.js';
 import { logger } from './utils/logging.js';
 import { enterpriseAnalytics } from './analytics/enterprise-analytics.js';
+import {
+  registerSingleton,
+  resolveFromContainer,
+} from './di/container.js';
+import { DI_TOKENS } from './di/tokens.js';
 
 // ── Ultra-Dex Meta-Layer ────────────────────────────────────────────────
 class UltraDexMetaLayer {
-  constructor() {
-    this.brain = agentOrchestrator;
-    this.memory = ppmManager;
-    this.ai = aiMetaLayer;
-    this.version = '2.1.0';
+  constructor(options = {}) {
+    this.brain = options.orchestrator || agentOrchestrator;
+    this.memory = options.memory || ppmManager;
+    this.ai = options.ai || aiMetaLayer;
+    this.telemetry = options.telemetry || enterpriseAnalytics;
+    this.version = options.version || '2.1.0';
 
     // Infrastructure singletons
     this.streaming = null;
@@ -178,7 +184,18 @@ class UltraDexMetaLayer {
   }
 }
 
-export const ultraDex = new UltraDexMetaLayer();
+registerSingleton(
+  UltraDexMetaLayer,
+  (scopedContainer) =>
+    new UltraDexMetaLayer({
+      orchestrator: scopedContainer.resolve(AgentOrchestrator),
+      memory: scopedContainer.resolve(DI_TOKENS.memoryManager),
+      ai: scopedContainer.resolve(DI_TOKENS.aiMetaLayer),
+      telemetry: scopedContainer.resolve(DI_TOKENS.telemetryService),
+    })
+);
+
+export const ultraDex = resolveFromContainer(UltraDexMetaLayer);
 export default ultraDex;
 export { UltraDexMetaLayer };
 

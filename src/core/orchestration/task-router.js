@@ -1,13 +1,16 @@
 // Copyright (c) 2026 Ultra-Dex
 /**
- * Task Router - Semantic routing for agent selection
- * Uses TF-IDF and cosine similarity to match tasks to agent capabilities
+ * Task Router - semantic routing for agent selection
+ * Uses a hybrid vector router with a lexical fallback for low-confidence matches.
  */
 
 import { encode } from 'gpt-tokenizer';
+import { getAgentProfile } from '../routing/agent-profiles.js';
+import { HybridRouter, SemanticRouter } from '../routing/semantic-router.js';
 
 /**
- * Calculate TF-IDF vectors for documents
+ * Calculate TF-IDF vectors for documents.
+ * Preserved for compatibility with existing tests and legacy scoring.
  */
 export class TfIdfVectorizer {
   constructor() {
@@ -16,35 +19,24 @@ export class TfIdfVectorizer {
     this.idf = new Map();
   }
 
-  /**
-   * Tokenize text using gpt-tokenizer
-   */
   tokenize(text) {
     if (!text || typeof text !== 'string') return [];
-    // Convert to lowercase and tokenize
     const normalized = text.toLowerCase();
-    // Use gpt-tokenizer to get tokens, then convert back to strings
-    const tokenIds = encode(normalized);
-    // Simple word tokenization as fallback for interpretability
-    const words = normalized
+    encode(normalized);
+    return normalized
       .replace(/[^a-z0-9\s]/g, ' ')
       .split(/\s+/)
-      .filter(w => w.length > 1);
-    return [...new Set(words)]; // Unique tokens
+      .filter((word) => word.length > 1);
   }
 
-  /**
-   * Fit the vectorizer on a corpus of documents
-   */
   fit(documents) {
     this.documents = documents.map((doc, idx) => ({
       id: doc.id || idx,
       text: doc.text || doc.capabilities?.join(' ') || '',
       original: doc,
-      tokens: this.tokenize(doc.text || doc.capabilities?.join(' ') || ''),
+      tokens: [...new Set(this.tokenize(doc.text || doc.capabilities?.join(' ') || ''))],
     }));
 
-    // Build vocabulary
     const docFrequency = new Map();
     for (const doc of this.documents) {
       const uniqueTokens = new Set(doc.tokens);
@@ -53,31 +45,26 @@ export class TfIdfVectorizer {
       }
     }
 
-    // Calculate IDF
-    const n = this.documents.length;
-    for (const [token, df] of docFrequency) {
-      this.idf.set(token, Math.log(n / (df + 1)) + 1);
+    const count = this.documents.length || 1;
+    for (const [token, frequency] of docFrequency) {
+      this.idf.set(token, Math.log(count / (frequency + 1)) + 1);
     }
 
     this.vocabulary = docFrequency;
     return this;
   }
 
-  /**
-   * Transform a document to TF-IDF vector
-   */
   transform(text) {
     const tokens = this.tokenize(text);
     const tf = new Map();
-    
+
     for (const token of tokens) {
       tf.set(token, (tf.get(token) || 0) + 1);
     }
 
-    // Normalize term frequency
     const maxFreq = Math.max(...tf.values(), 1);
     const vector = new Map();
-    
+
     for (const [token, count] of tf) {
       const tfNorm = count / maxFreq;
       const idf = this.idf.get(token) || 1;
@@ -87,162 +74,176 @@ export class TfIdfVectorizer {
     return vector;
   }
 
-  /**
-   * Calculate cosine similarity between two vectors
-   */
   cosineSimilarity(vecA, vecB) {
     let dotProduct = 0;
     let normA = 0;
     let normB = 0;
-
-    // Calculate dot product and norms
     const allKeys = new Set([...vecA.keys(), ...vecB.keys()]);
-    
+
     for (const key of allKeys) {
       const a = vecA.get(key) || 0;
       const b = vecB.get(key) || 0;
       dotProduct += a * b;
     }
 
-    for (const val of vecA.values()) {
-      normA += val * val;
+    for (const value of vecA.values()) {
+      normA += value * value;
     }
 
-    for (const val of vecB.values()) {
-      normB += val * val;
+    for (const value of vecB.values()) {
+      normB += value * value;
     }
 
-    normA = Math.sqrt(normA);
-    normB = Math.sqrt(normB);
+    if (normA === 0 || normB === 0) {
+      return 0;
+    }
 
-    if (normA === 0 || normB === 0) return 0;
-    return dotProduct / (normA * normB);
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 }
 
-/**
- * Task Router - Routes tasks to agents based on semantic similarity
- */
 export class TaskRouter {
   constructor(options = {}) {
     this.vectorizer = new TfIdfVectorizer();
     this.agents = new Map();
     this.similarityThreshold = options.similarityThreshold || 0.3;
+    this.minimumSemanticConfidence = options.minimumSemanticConfidence || 0.6;
     this.fallbackRouter = options.fallbackRouter || this.keywordFallback;
+    this.semanticRouter =
+      options.semanticRouter ||
+      new SemanticRouter({
+        backend: options.embeddingBackend || (process.env.NODE_ENV === 'test' ? 'hashed' : 'hashed'),
+      });
+    this.hybridRouter =
+      options.hybridRouter ||
+      new HybridRouter({
+        semanticRouter: this.semanticRouter,
+        minimumSemanticConfidence: this.minimumSemanticConfidence,
+      });
     this.isFitted = false;
   }
 
-  /**
-   * Register an agent with its capabilities
-   */
   registerAgent(agentId, capabilities = [], metadata = {}) {
+    const defaultProfile = getAgentProfile(agentId);
+    const normalizedCapabilities = [
+      ...new Set([...(defaultProfile?.capabilities || []), ...(Array.isArray(capabilities) ? capabilities : [capabilities])]),
+    ];
+    const examples = [
+      ...new Set([...(defaultProfile?.examples || []), ...((Array.isArray(metadata.examples) && metadata.examples) || [])]),
+    ];
+
     this.agents.set(agentId, {
       id: agentId,
-      capabilities: Array.isArray(capabilities) ? capabilities : [capabilities],
+      capabilities: normalizedCapabilities,
       metadata,
-      capabilityText: Array.isArray(capabilities) ? capabilities.join(' ') : capabilities,
+      examples,
+      capabilityText: [...normalizedCapabilities, ...examples].join(' '),
     });
-    this.isFitted = false; // Need to refit
+    this.isFitted = false;
   }
 
-  /**
-   * Fit the router on all registered agents
-   */
   fit() {
-    const agentDocs = Array.from(this.agents.values()).map(agent => ({
+    const agentDocs = Array.from(this.agents.values()).map((agent) => ({
       id: agent.id,
       text: agent.capabilityText,
       capabilities: agent.capabilities,
     }));
 
     this.vectorizer.fit(agentDocs);
-    
-    // Pre-compute vectors for all agents
+
     for (const agent of this.agents.values()) {
       agent.vector = this.vectorizer.transform(agent.capabilityText);
     }
+
+    this.hybridRouter.retrainSync(
+      Array.from(this.agents.values()).map((agent) => ({
+        agentId: agent.id,
+        capabilities: agent.capabilities,
+        examples: agent.examples,
+        metadata: agent.metadata,
+      }))
+    );
 
     this.isFitted = true;
     return this;
   }
 
-  /**
-   * Route a task to the best matching agent
-   */
   route(task, options = {}) {
     if (!this.isFitted) {
       this.fit();
     }
 
     const taskText = typeof task === 'string' ? task : JSON.stringify(task);
-    const taskVector = this.vectorizer.transform(taskText);
-
-    // Score all agents
-    const scores = [];
-    for (const [agentId, agent] of this.agents) {
-      const similarity = this.vectorizer.cosineSimilarity(taskVector, agent.vector);
-      scores.push({
-        agentId,
-        similarity,
-        agent,
-      });
-    }
-
-    // Sort by similarity descending
-    scores.sort((a, b) => b.similarity - a.similarity);
-
-    // Check if best score meets threshold
-    if (scores.length === 0 || scores[0].similarity < this.similarityThreshold) {
-      // Fall back to keyword matching
+    if (!taskText.trim() || this.agents.size === 0) {
       return this.fallbackRouter(taskText, options);
     }
 
+    const decision = this.hybridRouter.routeSync(taskText, options.requiredCapabilities || []);
+
+    if (
+      !decision.agentId ||
+      decision.confidence < this.similarityThreshold
+    ) {
+      const fallback = this.fallbackRouter(taskText, options);
+      return {
+        ...fallback,
+        semanticConfidence: decision.semanticConfidence,
+        capabilityScore: decision.capabilityScore,
+      };
+    }
+
     return {
-      agentId: scores[0].agentId,
-      confidence: scores[0].similarity,
-      alternatives: scores.slice(1, 4).map(s => ({
-        agentId: s.agentId,
-        confidence: s.similarity,
-      })),
-      method: 'semantic',
+      agentId: decision.agentId,
+      confidence: decision.confidence,
+      similarity: decision.similarity,
+      alternatives: decision.alternatives,
+      semanticConfidence: decision.semanticConfidence,
+      capabilityScore: decision.capabilityScore,
+      method: decision.method === 'capability-fallback' ? 'fallback' : 'semantic',
     };
   }
 
-  /**
-   * Get scores for all agents for a given task
-   */
   getScores(task) {
     if (!this.isFitted) {
       this.fit();
     }
 
     const taskText = typeof task === 'string' ? task : JSON.stringify(task);
-    const taskVector = this.vectorizer.transform(taskText);
+    const decision = this.hybridRouter.routeSync(taskText);
+    const alternatives = [
+      {
+        agentId: decision.agentId,
+        similarity: decision.similarity ?? decision.semanticConfidence ?? 0,
+        confidence: decision.confidence,
+      },
+      ...decision.alternatives.map((alternative) => ({
+        agentId: alternative.agentId,
+        similarity: alternative.similarity ?? alternative.confidence,
+        confidence: alternative.confidence,
+      })),
+    ];
 
-    const scores = [];
-    for (const [agentId, agent] of this.agents) {
-      const similarity = this.vectorizer.cosineSimilarity(taskVector, agent.vector);
-      scores.push({
-        agentId,
-        similarity,
-        capabilities: agent.capabilities,
-      });
-    }
+    const byId = new Map(alternatives.map((entry) => [entry.agentId, entry]));
 
-    return scores.sort((a, b) => b.similarity - a.similarity);
+    return Array.from(this.agents.keys())
+      .map((agentId) => {
+        const score = byId.get(agentId);
+        return {
+          agentId,
+          similarity: score?.similarity || 0,
+          confidence: score?.confidence || 0,
+          capabilities: this.agents.get(agentId)?.capabilities || [],
+        };
+      })
+      .sort((left, right) => right.similarity - left.similarity);
   }
 
-  /**
-   * Keyword-based fallback router
-   */
-  keywordFallback(task, options = {}) {
-    const taskLower = task.toLowerCase();
-    
-    // Keyword matching rules
+  keywordFallback(task, _options = {}) {
+    const taskLower = String(task || '').toLowerCase();
     const keywords = {
-      frontend: ['ui', 'css', 'component', 'react', 'html', 'dom', 'style', 'layout'],
-      backend: ['api', 'route', 'server', 'endpoint', 'middleware', 'controller'],
-      database: ['db', 'schema', 'sql', 'query', 'migration', 'model', 'table'],
+      frontend: ['ui', 'css', 'component', 'react', 'html', 'dom', 'style', 'layout', 'button'],
+      backend: ['api', 'route', 'server', 'endpoint', 'middleware', 'controller', 'query'],
+      database: ['db', 'schema', 'sql', 'migration', 'model', 'table', 'index'],
       testing: ['test', 'spec', 'jest', 'vitest', 'coverage', 'mock'],
       devops: ['docker', 'k8s', 'deploy', 'ci', 'cd', 'pipeline', 'infra'],
       security: ['auth', 'encrypt', 'hash', 'jwt', 'permission', 'governance'],
@@ -250,19 +251,18 @@ export class TaskRouter {
 
     const scores = {};
     for (const [agent, words] of Object.entries(keywords)) {
-      scores[agent] = words.reduce((score, word) => {
-        return score + (taskLower.includes(word) ? 1 : 0);
-      }, 0);
+      scores[agent] = words.reduce(
+        (score, word) => score + (taskLower.includes(word) ? 1 : 0),
+        0
+      );
     }
 
-    // Find best match
     let bestAgent = 'orchestrator';
     let bestScore = 0;
-
     for (const [agent, score] of Object.entries(scores)) {
       if (score > bestScore) {
-        bestScore = score;
         bestAgent = agent;
+        bestScore = score;
       }
     }
 
@@ -274,16 +274,10 @@ export class TaskRouter {
     };
   }
 
-  /**
-   * Get all registered agents
-   */
   getAgents() {
     return Array.from(this.agents.keys());
   }
 
-  /**
-   * Clear all registered agents
-   */
   clear() {
     this.agents.clear();
     this.isFitted = false;
