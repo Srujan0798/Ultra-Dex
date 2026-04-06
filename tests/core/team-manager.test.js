@@ -1,13 +1,22 @@
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
 import { TeamManager } from '../../src/core/team/team-manager.js';
 
 describe('TeamManager', () => {
   let teamManager;
+  let testDir;
   const ownerId = 'user-123';
 
-  beforeEach(() => {
-    teamManager = new TeamManager();
+  beforeEach(async () => {
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-team-'));
+    teamManager = new TeamManager(testDir);
+  });
+
+  afterEach(async () => {
+    await fs.rm(testDir, { recursive: true, force: true });
   });
 
   it('should create a team successfully', async () => {

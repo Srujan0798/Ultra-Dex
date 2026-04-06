@@ -454,7 +454,7 @@ export class MemoryBridge extends EventEmitter {
     for (const entry of this._history) {
       const sessionPath = this._getSessionPath(entry.sessionId);
       if (existsSync(sessionPath)) {
-        await fs.unlink(sessionPath);
+        await fs.rm(sessionPath, { force: true });
       }
     }
 

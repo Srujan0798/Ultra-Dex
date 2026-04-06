@@ -44,6 +44,7 @@ class MockProvider {
 describe('Checkpoint Feature Tests', () => {
   let agent;
   let testDir;
+  const originalCwd = process.cwd();
 
   beforeEach(async () => {
     // Create unique test directory
@@ -63,7 +64,7 @@ describe('Checkpoint Feature Tests', () => {
   afterEach(async () => {
     // Clean up test directory
     try {
-      process.chdir(os.homedir());
+      process.chdir(originalCwd);
       await fs.rm(testDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
