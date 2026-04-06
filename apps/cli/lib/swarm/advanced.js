@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { listCheckpoints as listNamedCheckpoints, loadCheckpoint as loadNamedCheckpoint } from '../swarm/checkpoint.js';
+import { listCheckpoints as listNamedCheckpoints, loadCheckpoint as loadNamedCheckpoint } from './checkpoint.js';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const LEGACY_CHECKPOINT = path.join(process.cwd(), '.ultra-dex', 'swarm-checkpoint.json');
@@ -89,7 +89,7 @@ export async function resumeSwarm(checkpointId) {
   }
 
   printSuccess(`Resuming swarm for task: ${checkpoint.task}`);
-  const { swarmCommand } = await import('./swarm.js');
+  const { swarmCommand } = await import('../commands/swarm.js');
   return swarmCommand(checkpoint.task, {
     ...(checkpoint.options || {}),
     resume: true,

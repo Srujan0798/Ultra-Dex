@@ -195,7 +195,7 @@ export function registerSwarmCommand(program) {
     .description('Show swarm status and checkpoints')
     .action(async (swarmId) => {
       try {
-        const { showSwarmStatus } = await import('./swarm-advanced.js');
+        const { showSwarmStatus } = await import('../swarm/advanced.js');
         await showSwarmStatus(swarmId);
       } catch (error) {
         await handleError(error, { command: 'swarm:status' });
@@ -207,7 +207,7 @@ export function registerSwarmCommand(program) {
     .description('Resume swarm from a specific checkpoint')
     .action(async (checkpointId) => {
       try {
-        const { resumeSwarm } = await import('./swarm-advanced.js');
+        const { resumeSwarm } = await import('../swarm/advanced.js');
         await resumeSwarm(checkpointId);
       } catch (error) {
         await handleError(error, { command: 'swarm:resume', checkpointId });
@@ -219,7 +219,7 @@ export function registerSwarmCommand(program) {
     .description('List all saved checkpoints')
     .action(async () => {
       try {
-        const { listCheckpoints } = await import('./swarm-advanced.js');
+        const { listCheckpoints } = await import('../swarm/advanced.js');
         await listCheckpoints();
       } catch (error) {
         await handleError(error, { command: 'swarm:checkpoints' });

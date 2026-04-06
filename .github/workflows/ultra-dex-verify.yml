@@ -25,13 +25,12 @@ jobs:
         run: |
           for i in 1 2 3; do
             echo "Attempt $i..."
-            npm install --force --ignore-scripts && break || sleep 15
+            npm install --force --legacy-peer-deps && break || sleep 15
           done
       - name: Install CLI dependencies
-        run: cd apps/cli && npm install --force --ignore-scripts
+        run: cd apps/cli && npm install --force --legacy-peer-deps
       - name: Rebuild native modules (sqlite3)
-        run: npm rebuild sqlite3
-        continue-on-error: true
+        run: npm rebuild sqlite3 || true
       - name: Verify fast-path CLI commands
         run: |
           set -euo pipefail

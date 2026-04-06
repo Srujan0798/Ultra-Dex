@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm cache clean --force
-          npm install --force --ignore-scripts --legacy-peer-deps
+          npm install --force --legacy-peer-deps
 
       - name: Dashboard tests
         run: cd apps/dashboard && npm run test
@@ -68,7 +68,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm cache clean --force
-          npm install --force --ignore-scripts --legacy-peer-deps
+          npm install --force --legacy-peer-deps
 
       - name: Build dashboard
         run: cd apps/dashboard && npm run build
