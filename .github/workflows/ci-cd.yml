@@ -23,7 +23,7 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm install --ignore-scripts --legacy-peer-deps
+      run: npm install --ignore-scripts
 
     - name: Run linters
       run: npm run lint || echo "No lint issues"
@@ -50,7 +50,7 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm install --ignore-scripts --legacy-peer-deps
+      run: npm install --ignore-scripts
 
     - name: Build project
       run: npm run build || echo "Build skipped (optional components)"
@@ -76,7 +76,7 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
 
     - name: Install dependencies
-      run: npm install --ignore-scripts --legacy-peer-deps
+      run: npm install --ignore-scripts
 
     - name: Build CLI bundle
       run: npx esbuild apps/cli/bin/ultra-dex.js --bundle --platform=node --outfile=dist/ultra-dex.js --external:chokidar --external:fsevents || echo "esbuild not available"
