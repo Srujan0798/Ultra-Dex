@@ -13,6 +13,7 @@ import providerRegistry, {
   getProvider,
   resolveModel as resolveProviderByModel,
 } from './provider-registry.js';
+import { ModelRouter } from './model-router.js';
 
 function toProviderName(modelId) {
   if (!modelId) return null;
@@ -134,6 +135,11 @@ export class SmartAIRouter {
       }
     }
 
+    // Task-aware strategy: use ModelRouter to classify task and select provider
+    if (normalizedStrategy === 'task-aware' && opts.task) {
+      return this.pickProvidersByTask(opts.task, opts);
+    }
+
     const configuredOrder =
       this.config?.strategies?.[normalizedStrategy]?.providerPriority ||
       STRATEGY_PROVIDER_PRIORITIES[normalizedStrategy] ||
@@ -154,6 +160,47 @@ export class SmartAIRouter {
 
     // For quality and other strategies, use priority-based sorting
     return this.sortProvidersByPriority(available, normalizedStrategy);
+  }
+
+  /**
+   * Pick providers based on task classification using ModelRouter
+   * @param {string} taskDescription - Task description for classification
+   * @param {Object} opts - Options
+   * @returns {string[]} Ordered list of provider names
+   */
+  pickProvidersByTask(taskDescription, opts = {}) {
+    const modelRouter = new ModelRouter();
+    const result = modelRouter.determineModel(taskDescription, opts);
+    
+    // Map model to provider
+    const primaryProvider = toProviderName(result.model);
+    if (!primaryProvider) {
+      // Fallback to quality strategy if model not recognized
+      return this.sortProvidersByPriority(
+        STRATEGY_PROVIDER_PRIORITIES.quality.filter((name) => this.registry.getProvider(name)),
+        'quality'
+      );
+    }
+
+    // Build provider list: preferred model's provider first, then fallbacks
+    const providers = [primaryProvider];
+    
+    // Add fallback models' providers
+    for (const fallbackModel of result.routingConfig.fallbacks || []) {
+      const fallbackProvider = toProviderName(fallbackModel);
+      if (fallbackProvider && !providers.includes(fallbackProvider)) {
+        providers.push(fallbackProvider);
+      }
+    }
+
+    // Add remaining providers from quality strategy as ultimate fallback
+    for (const provider of STRATEGY_PROVIDER_PRIORITIES.quality) {
+      if (!providers.includes(provider) && this.registry.getProvider(provider)) {
+        providers.push(provider);
+      }
+    }
+
+    return providers.filter((name) => this.registry.getProvider(name));
   }
 
   // Load balancing: distribute requests across providers based on their capacity

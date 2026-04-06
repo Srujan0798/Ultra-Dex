@@ -238,7 +238,7 @@ const DEFAULT_CONFIG = {
 /**
  * AI Model Router — selects the optimal model for a given task
  */
-class ModelRouter {
+export class ModelRouter {
   /**
    * Create a new ModelRouter
    * @param {Object} [config={}] - Router configuration overrides
@@ -530,7 +530,7 @@ class ModelRouter {
 }
 
 // Global instance
-const modelRouter = new ModelRouter();
+export const modelRouter = new ModelRouter();
 
 /**
  * Register model router CLI command with Commander
