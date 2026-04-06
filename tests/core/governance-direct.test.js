@@ -12,17 +12,22 @@ import path from 'path';
 import { GovernanceManager } from '../../src/core/governance/governance-manager.js';
 import { GovernanceDeniedException } from '../../src/core/governance/governance-manager.js';
 
-const TEST_DB_PATH = path.join(process.cwd(), '.ultra-dex', 'audit', 'governance.db');
+const TEST_DB_PATH = path.join('/tmp', '.ultra-dex-test', 'audit', 'governance-direct.db');
+
+function safeCleanup(filePath) {
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.rmSync(filePath, { force: true });
+    }
+  } catch { /* ignore cleanup errors */ }
+}
 
 describe('Governance Integration - Direct Test', () => {
   let governance;
 
   beforeEach(async () => {
-    // Clean up database before each test to ensure isolation
-    if (fs.existsSync(TEST_DB_PATH)) {
-      fs.rmSync(TEST_DB_PATH, { force: true });
-    }
-    governance = new GovernanceManager();
+    safeCleanup(TEST_DB_PATH);
+    governance = new GovernanceManager({ auditDbPath: TEST_DB_PATH });
   });
 
   it('should block tool execution when policy denies it', async () => {

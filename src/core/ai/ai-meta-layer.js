@@ -5,6 +5,12 @@ import { logger } from '../../utils/logging.js';
 import { performance } from 'perf_hooks';
 import { RateLimiter } from '../infrastructure/rate-limiter.js';
 import { StreamPipeline } from '../infrastructure/stream-pipeline.js';
+import {
+  registerAlias,
+  registerSingleton,
+  resolveFromContainer,
+} from '../di/container.js';
+import { DI_TOKENS } from '../di/tokens.js';
 
 /**
  * AI Provider Abstraction Layer
@@ -606,8 +612,10 @@ export class AIMetaLayer {
   }
 }
 
-// Export singleton instance
-export const aiMetaLayer = new AIMetaLayer();
+registerSingleton(AIMetaLayer, () => new AIMetaLayer());
+registerAlias(DI_TOKENS.aiMetaLayer, AIMetaLayer);
+
+export const aiMetaLayer = resolveFromContainer(AIMetaLayer);
 
 // Export for direct import
 export default aiMetaLayer;

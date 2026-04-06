@@ -30,6 +30,8 @@
     "apps/cloud/ide/src/**/*.ts",
     "apps/cloud/ide/src/**/*.tsx",
     "apps/cli/lib/**/*.ts",
+    "src/core/interfaces/**/*.ts",
+    "src/core/routing/**/*.ts",
     "src/core/memory/**/*.ts",
     "src/core/utils/**/*.ts",
     "src/core/templates/**/*.ts",

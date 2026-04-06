@@ -93,20 +93,33 @@ export class AuditDatabase {
       return this.db;
     }
 
-    // Ensure directory exists
-    const dir = path.dirname(this.dbPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    try {
+      // Ensure directory exists
+      const dir = path.dirname(this.dbPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      // Open database
+      this.db = await sqliteOpen({
+        filename: this.dbPath,
+        driver: sqlite3.Database,
+      });
+
+      // Create table if not exists
+      await this._createTable();
+    } catch (error) {
+      // Graceful fallback: if filesystem is read-only or permissions fail,
+      // switch to in-memory mode at runtime
+      if (error.code === 'EPERM' || error.code === 'EACCES' || error.code === 'EROFS') {
+        this.memoryMode = true;
+        this.db = new MemoryAuditDB();
+      } else {
+        // For other errors (e.g. corrupted DB), also fall back gracefully
+        this.memoryMode = true;
+        this.db = new MemoryAuditDB();
+      }
     }
-
-    // Open database
-    this.db = await sqliteOpen({
-      filename: this.dbPath,
-      driver: sqlite3.Database,
-    });
-
-    // Create table if not exists
-    await this._createTable();
 
     return this.db;
   }

@@ -116,4 +116,40 @@ describe('AgentRegistry', () => {
     assert.ok(caps.includes('architecture'));
     assert.ok(caps.includes('general'));
   });
+
+  it('broadcasts registered agents across the mesh', async () => {
+    const namespace = `agent-mesh-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const registryA = new AgentRegistry({
+      autoDiscover: false,
+      enablePersistence: false,
+      enableMesh: true,
+      busType: 'memory',
+      meshNamespace: namespace,
+    });
+    const registryB = new AgentRegistry({
+      autoDiscover: false,
+      enablePersistence: false,
+      enableMesh: true,
+      busType: 'memory',
+      meshNamespace: namespace,
+    });
+
+    await registryA.initialize();
+    await registryB.initialize();
+    await registryA.registerAgent('mesh-agent', {
+      name: 'Mesh Agent',
+      description: 'Cross-node worker',
+      capabilities: ['mesh', 'routing'],
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    const remoteAgents = registryB.getMeshAgents();
+
+    assert.strictEqual(remoteAgents.length, 1);
+    assert.strictEqual(remoteAgents[0].id, 'mesh-agent');
+    assert.deepStrictEqual(remoteAgents[0].capabilities, ['mesh', 'routing']);
+
+    await registryA.shutdown();
+    await registryB.shutdown();
+  });
 });

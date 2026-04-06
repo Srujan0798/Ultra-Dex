@@ -11,6 +11,7 @@ export class RALPHLoop extends EventEmitter {
   constructor(options = {}) {
     super();
     this.selfHealing = options.selfHealing || null;
+    this.initialContext = Array.isArray(options.initialContext) ? options.initialContext : [];
     this.config = {
       maxIterations: options.maxIterations || 10,
       feedbackThreshold: options.feedbackThreshold || 0.7,
@@ -29,6 +30,25 @@ export class RALPHLoop extends EventEmitter {
     this.state = 'executing';
     let iteration = 0;
     let currentHypothesis = null;
+    const initialContext = Array.isArray(context.initialContext)
+      ? context.initialContext
+      : this.initialContext;
+
+    if (initialContext.length > 0) {
+      const hydrationStartedAt = Date.now();
+      context.prefetchedMemory = initialContext;
+      context.memory = initialContext;
+      const durationMs = Date.now() - hydrationStartedAt;
+      const payload = {
+        count: initialContext.length,
+        durationMs,
+        context: initialContext,
+      };
+      process.stdout.write(
+        `Context pre-hydrated with ${initialContext.length} memories in ${durationMs}ms\n`
+      );
+      this.emit('ralph.context-prehydrated', payload);
+    }
 
     this.emit('ralph-loop.started', { problem });
 
@@ -279,6 +299,7 @@ export async function runAutonomousTask(
 ) {
   const loop = new RALPHLoop({
     ...options,
+    initialContext: options.context?.initialContext || options.initialContext || [],
     selfHealing: options.selfHealing || orchestrator?.selfHealing || null,
   });
 

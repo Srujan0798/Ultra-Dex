@@ -10,17 +10,28 @@ import { AgentRegistry } from './registry.js';
 import { ExecutionContext, TaskGraph } from './execution-context.js';
 import { DistributedCoordinator } from './distributed-coordinator.js';
 import { TaskRouter } from './task-router.js';
+import { AGENT_PROFILES } from '../routing/agent-profiles.js';
 import chalk from '../../utils/chalk.js';
 import { ppmManager } from '../memory/index.js';
+import { MemoryManager } from '../memory/manager.js';
+import { AIMetaLayer } from '../ai/ai-meta-layer.js';
 import { EventEmitter } from 'events';
 import { GovernanceManager, GovernanceDeniedException } from '../governance/governance-manager.js';
-import { enterpriseAnalytics } from '../analytics/enterprise-analytics.js';
+import { EnterpriseAnalytics, enterpriseAnalytics } from '../analytics/enterprise-analytics.js';
+import {
+  registerAlias,
+  registerScoped,
+  resolveFromContainer,
+} from '../di/container.js';
+import { DI_TOKENS } from '../di/tokens.js';
 
 export class AgentOrchestrator extends EventEmitter {
   constructor(options = {}) {
     super();
-    this.memory = ppmManager;
+    this.sessionId = options.sessionId || null;
+    this.memory = options.memory || ppmManager;
     this.ai = options.ai || null;
+    this.telemetry = options.telemetry || enterpriseAnalytics;
     this.selfHealing = options.selfHealing || null;
     this.autopsy = options.autopsy || null;
     this.performanceTracker = options.performanceTracker || null;
@@ -36,20 +47,33 @@ export class AgentOrchestrator extends EventEmitter {
       enableDynamicAllocation: options.enableDynamicAllocation !== false,
       coordinationThreshold: options.coordinationThreshold || 0.7,
       ...options,
+      predictiveMemory: {
+        enabled: options.predictiveMemory?.enabled !== false,
+        timeout: options.predictiveMemory?.timeout || 5000,
+        cacheTtl: options.predictiveMemory?.cacheTtl || 300000,
+      },
     };
 
     this.stateMachine = new AgentStateMachine();
     this.commBus = new AgentCommunicationBus();
-    this.registry = new AgentRegistry();
+    this.registry =
+      options.registry ||
+      new AgentRegistry({
+        autoDiscover: options.autoDiscover,
+        enablePersistence: options.enablePersistence,
+        maxAgents: options.maxAgents,
+        agentsPath: options.agentsPath,
+      });
     // NOTE: AgentScheduler removed in Milestone 1 (dead code).
     // Re-design scheduling in Milestone 4 if priority-based task routing is needed.
-    this.governance = new GovernanceManager();
+    this.governance = options.governance || new GovernanceManager();
     this.taskRouter = new TaskRouter({ similarityThreshold: 0.3 });
     this.initializeTaskRouter();
     this.activeSessions = new Map();
     this.coordinationGraph = new Map();
     this.activeTaskCount = 0;
     this.taskQueueInitialized = false;
+    this.predictiveEngine = options.predictiveEngine || null;
 
     this.metrics = {
       totalSessions: 0,
@@ -58,6 +82,9 @@ export class AgentOrchestrator extends EventEmitter {
       avgResponseTime: 0,
       totalTokens: 0,
       lastTaskDurationMs: 0,
+      lastPrefetchTimeMs: 0,
+      prefetchHitRate: 0,
+      timeToFirstTokenMs: 0,
     };
   }
 
@@ -128,8 +155,18 @@ export class AgentOrchestrator extends EventEmitter {
 
   createExecutionContext(objective, options = {}) {
     const sessionId =
-      options.sessionId || `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      options.sessionId ||
+      this.sessionId ||
+      `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     return new ExecutionContext(sessionId, objective, options);
+  }
+
+  async trackMetric(name, value, tags = {}, metadata = {}) {
+    if (!this.telemetry?.trackMetric) {
+      return;
+    }
+
+    await this.telemetry.trackMetric(name, value, tags, metadata);
   }
 
   async getAiLayer() {
@@ -189,6 +226,27 @@ export class AgentOrchestrator extends EventEmitter {
     return this.autopsy;
   }
 
+  async getPredictiveEngine() {
+    if (this.options.predictiveMemory?.enabled === false) {
+      return null;
+    }
+
+    if (this.predictiveEngine) {
+      return this.predictiveEngine;
+    }
+
+    try {
+      const { predictiveEngine } = await import('../memory/predictive-engine.js');
+      predictiveEngine.memory = this.memory;
+      predictiveEngine.cacheTtl = this.options.predictiveMemory?.cacheTtl || predictiveEngine.cacheTtl;
+      this.predictiveEngine = predictiveEngine;
+    } catch {
+      this.predictiveEngine = null;
+    }
+
+    return this.predictiveEngine;
+  }
+
   setQueueProcessor(queueProcessor) {
     this.queueProcessor = queueProcessor;
 
@@ -224,19 +282,59 @@ export class AgentOrchestrator extends EventEmitter {
     process.stdout.write(chalk.magenta(`\n🌌 Nexus Orchestration: ${objective}\n`));
     const executionContext = this.createExecutionContext(objective, options);
     this.activeSessions.set(executionContext.sessionId, executionContext);
+    const predictiveEngine = await this.getPredictiveEngine();
+    if (predictiveEngine) {
+      predictiveEngine.spawnBackgroundPrefetch(executionContext.sessionId, objective, {
+        cacheTtl: this.options.predictiveMemory?.cacheTtl,
+      });
+    }
 
     try {
       await this.memory.init();
+      const prefetchedContext = predictiveEngine
+        ? await predictiveEngine.awaitPrefetch(
+            executionContext.sessionId,
+            this.options.predictiveMemory?.timeout
+          )
+        : null;
+      if (prefetchedContext?.items?.length) {
+        predictiveEngine.recordUsage(executionContext.sessionId, true);
+        this.metrics.lastPrefetchTimeMs = prefetchedContext.metrics.durationMs;
+      }
 
       // Integrate with Ralph Loop for autonomous execution
       if (typeof this.nexusExecutor === 'function') {
-        const result = await this.nexusExecutor(objective, options, this, executionContext);
+        const result = await this.nexusExecutor(
+          objective,
+          {
+            ...options,
+            context: {
+              ...options.context,
+              initialContext: prefetchedContext?.items || options.context?.initialContext || [],
+              predictivePrefetch: prefetchedContext,
+            },
+          },
+          this,
+          executionContext
+        );
         executionContext.status = 'completed';
         return result;
       }
 
       const { runAutonomousTask } = await import('../agents/ralph-loop.js');
-      const result = await runAutonomousTask(objective, options, this, executionContext);
+      const result = await runAutonomousTask(
+        objective,
+        {
+          ...options,
+          context: {
+            ...options.context,
+            initialContext: prefetchedContext?.items || options.context?.initialContext || [],
+            predictivePrefetch: prefetchedContext,
+          },
+        },
+        this,
+        executionContext
+      );
       executionContext.status = 'completed';
       return result;
     } catch (error) {
@@ -318,9 +416,16 @@ export class AgentOrchestrator extends EventEmitter {
     const sessionId = `session_${Date.now()}`;
     const startedAt = Date.now();
     const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
+    const predictiveEngine = await this.getPredictiveEngine();
+    this.metrics.lastPrefetchTimeMs = 0;
+    if (predictiveEngine) {
+      predictiveEngine.spawnBackgroundPrefetch(sessionId, normalizedTask, {
+        cacheTtl: this.options.predictiveMemory?.cacheTtl,
+      });
+    }
     
     // Analytics: Track task start
-    await enterpriseAnalytics.trackMetric('execution.tasks_started', 1, { 
+    await this.trackMetric('execution.tasks_started', 1, { 
       sessionId, 
       taskType: options.taskType || 'coding' 
     });
@@ -367,10 +472,27 @@ export class AgentOrchestrator extends EventEmitter {
       const ai = await this.getAiLayer();
 
       // 1. Determine Agent & Gather Context
-      const memoryContext = await this.memory.search(normalizedTask);
+      const prefetchedContext = predictiveEngine
+        ? await predictiveEngine.awaitPrefetch(sessionId, this.options.predictiveMemory?.timeout)
+        : null;
+      let memoryContext = prefetchedContext?.items || null;
+      if (Array.isArray(memoryContext) && memoryContext.length > 0) {
+        predictiveEngine.recordUsage(sessionId, true);
+        this.metrics.lastPrefetchTimeMs = prefetchedContext.metrics?.durationMs || 0;
+      } else {
+        if (predictiveEngine) {
+          predictiveEngine.recordUsage(sessionId, false);
+        }
+        memoryContext = await this.memory.search(normalizedTask);
+      }
+      const predictiveStats = predictiveEngine?.getStats?.() || null;
+      if (predictiveStats) {
+        this.metrics.prefetchHitRate = predictiveStats.prefetchHitRate;
+      }
       const systemPrompt = await this.registry.getAgentPrompt(agentId);
 
       // 2. Call AI Meta-Layer
+      const firstTokenStartedAt = Date.now();
       const response = await ai.call( 
         null, 
         [ 
@@ -387,6 +509,15 @@ export class AgentOrchestrator extends EventEmitter {
           }, 
         } 
       );
+      this.metrics.timeToFirstTokenMs = Date.now() - firstTokenStartedAt;
+      await this.trackMetric('execution.prefetch_time_ms', this.metrics.lastPrefetchTimeMs, {
+        sessionId,
+        agentId,
+      });
+      await this.trackMetric('execution.prefetch_hit_rate', this.metrics.prefetchHitRate, {
+        sessionId,
+        agentId,
+      });
 
       const output = response.text || response.content || JSON.stringify(response);
 
@@ -408,7 +539,7 @@ export class AgentOrchestrator extends EventEmitter {
       });
 
       // Analytics: Track task completion
-      await enterpriseAnalytics.trackMetric('execution.tasks_completed', 1, { 
+      await this.trackMetric('execution.tasks_completed', 1, { 
         sessionId, 
         agentId, 
         duration: Date.now() - startedAt 
@@ -424,7 +555,7 @@ export class AgentOrchestrator extends EventEmitter {
       taskErrorMessage = message;
 
       // Analytics: Track task failure
-      await enterpriseAnalytics.trackMetric('execution.tasks_failed', 1, { 
+      await this.trackMetric('execution.tasks_failed', 1, { 
         sessionId, 
         error: message 
       });
@@ -535,86 +666,11 @@ export class AgentOrchestrator extends EventEmitter {
   }
 
   initializeTaskRouter() {
-    // Register agents with their capabilities for semantic routing
-    this.taskRouter.registerAgent('frontend', [
-      'react',
-      'component',
-      'ui',
-      'css',
-      'styling',
-      'dom',
-      'html',
-      'javascript',
-      'typescript',
-      'jsx',
-      'tsx',
-      'frontend',
-    ]);
-    this.taskRouter.registerAgent('backend', [
-      'api',
-      'server',
-      'database',
-      'endpoint',
-      'middleware',
-      'controller',
-      'rest',
-      'graphql',
-      'backend',
-      'node',
-      'express',
-    ]);
-    this.taskRouter.registerAgent('database', [
-      'sql',
-      'schema',
-      'migration',
-      'query',
-      'table',
-      'index',
-      'postgresql',
-      'mysql',
-      'sqlite',
-      'nosql',
-      'mongodb',
-    ]);
-    this.taskRouter.registerAgent('testing', [
-      'jest',
-      'vitest',
-      'test',
-      'spec',
-      'coverage',
-      'mock',
-      'e2e',
-      'unit',
-      'integration',
-    ]);
-    this.taskRouter.registerAgent('devops', [
-      'docker',
-      'kubernetes',
-      'deploy',
-      'ci',
-      'cd',
-      'pipeline',
-      'infra',
-      'nginx',
-      'aws',
-    ]);
-    this.taskRouter.registerAgent('security', [
-      'auth',
-      'encrypt',
-      'hash',
-      'jwt',
-      'permission',
-      'governance',
-      'audit',
-      'security',
-    ]);
-    this.taskRouter.registerAgent('orchestrator', [
-      'coordinate',
-      'manage',
-      'orchestrate',
-      'workflow',
-      'multi-agent',
-    ]);
+    for (const profile of AGENT_PROFILES) {
+      this.taskRouter.registerAgent(profile.agentId, profile.capabilities, {
+        examples: profile.examples,
+      });
+    }
   }
 
   selectAgentForTask(task, options = {}) {
@@ -710,7 +766,30 @@ export class AgentOrchestrator extends EventEmitter {
   }
 }
 
-export const agentOrchestrator = new AgentOrchestrator();
+registerScoped(
+  AgentOrchestrator,
+  (scopedContainer) =>
+    new AgentOrchestrator({
+      memory: scopedContainer.isRegistered(DI_TOKENS.memoryManager, true)
+        ? scopedContainer.resolve(DI_TOKENS.memoryManager)
+        : scopedContainer.resolve(MemoryManager),
+      registry: scopedContainer.isRegistered(DI_TOKENS.agentRegistry, true)
+        ? scopedContainer.resolve(DI_TOKENS.agentRegistry)
+        : scopedContainer.resolve(AgentRegistry),
+      ai: scopedContainer.isRegistered(DI_TOKENS.aiMetaLayer, true)
+        ? scopedContainer.resolve(DI_TOKENS.aiMetaLayer)
+        : scopedContainer.resolve(AIMetaLayer),
+      telemetry: scopedContainer.isRegistered(DI_TOKENS.telemetryService, true)
+        ? scopedContainer.resolve(DI_TOKENS.telemetryService)
+        : scopedContainer.resolve(EnterpriseAnalytics),
+      sessionId: scopedContainer.isRegistered(DI_TOKENS.sessionId, true)
+        ? scopedContainer.resolve(DI_TOKENS.sessionId)
+        : null,
+    })
+);
+registerAlias(DI_TOKENS.executionEngine, AgentOrchestrator);
+
+export const agentOrchestrator = resolveFromContainer(AgentOrchestrator);
 export const nexus = agentOrchestrator;
 export { DistributedCoordinator };
 export default agentOrchestrator;

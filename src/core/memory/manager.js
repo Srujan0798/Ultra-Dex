@@ -4,6 +4,12 @@
  */
 
 import { UnifiedMemory } from './unified-api.js';
+import {
+  registerAlias,
+  registerSingleton,
+  resolveFromContainer,
+} from '../di/container.js';
+import { DI_TOKENS } from '../di/tokens.js';
 
 export class MemoryManager {
   constructor(options = {}) {
@@ -105,7 +111,10 @@ export class MemoryManager {
   }
 }
 
-export const ppmManager = new MemoryManager();
+registerSingleton(MemoryManager, () => new MemoryManager());
+registerAlias(DI_TOKENS.memoryManager, MemoryManager);
+
+export const ppmManager = resolveFromContainer(MemoryManager);
 export default MemoryManager;
 
 // Re-export VectorStore and GraphEngine for tests

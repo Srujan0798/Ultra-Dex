@@ -3,6 +3,13 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { randomUUID } from 'crypto';
+import { createBus } from '../mesh/index.js';
+import {
+  registerAlias,
+  registerSingleton,
+} from '../di/container.js';
+import { DI_TOKENS } from '../di/tokens.js';
 
 /**
  * Agent Registry
@@ -14,6 +21,10 @@ export class AgentRegistry {
     this.options = {
       autoDiscover: options.autoDiscover !== false,
       enablePersistence: options.enablePersistence !== false,
+      enableMesh: options.enableMesh === true || options.mesh === true,
+      busType: options.busType || 'memory',
+      meshNamespace: options.meshNamespace || 'ultra-dex-agent-mesh',
+      meshRefreshIntervalMs: options.meshRefreshIntervalMs || 15000,
       maxAgents: options.maxAgents || 100,
       agentsPath: options.agentsPath || path.join(process.cwd(), 'apps', 'cli', 'assets', 'agents'),
       ...options,
@@ -22,7 +33,11 @@ export class AgentRegistry {
     this.agents = new Map(); // agentId -> agent definition
     this.agentCapabilities = new Map(); // capability -> Set of agentIds
     this.agentMetadata = new Map(); // agentId -> metadata
+    this.meshAgents = new Map(); // remote agent cache
     this.isInitialized = false;
+    this.meshNodeId = this.options.nodeId || `agent-registry-${randomUUID().slice(0, 8)}`;
+    this.messageBus = options.messageBus || null;
+    this.meshRefreshTimer = null;
   }
 
   async initialize() {
@@ -38,8 +53,104 @@ export class AgentRegistry {
       await this.discoverAgents();
     }
 
+    if (this.options.enableMesh) {
+      await this.initializeMesh();
+      await this.broadcastAgentSnapshot();
+    }
+
     this.isInitialized = true;
     // logger.log(`📋 Agent Registry initialized with ${this.agents.size} agents`);
+  }
+
+  async initializeMesh() {
+    if (!this.messageBus) {
+      this.messageBus = createBus(this.options.busType, {
+        namespace: this.options.meshNamespace,
+        nodeId: this.meshNodeId,
+      });
+    }
+
+    await this.messageBus.connect();
+
+    await this.messageBus.subscribe('agent.online', async (envelope) => {
+      const agent = envelope.message?.id ? envelope.message : envelope.message?.agent;
+      if (!agent?.id || agent.nodeId === this.meshNodeId) {
+        return;
+      }
+      this.meshAgents.set(agent.id, {
+        ...agent,
+        meshStatus: 'online',
+        lastSeenAt: envelope.timestamp,
+      });
+    });
+
+    await this.messageBus.subscribe('agent.offline', async (envelope) => {
+      const agent = envelope.message?.id ? envelope.message : envelope.message?.agent;
+      if (!agent?.id || agent.nodeId === this.meshNodeId) {
+        return;
+      }
+      const existing = this.meshAgents.get(agent.id) || { id: agent.id };
+      this.meshAgents.set(agent.id, {
+        ...existing,
+        ...agent,
+        meshStatus: 'offline',
+        lastSeenAt: envelope.timestamp,
+      });
+    });
+
+    await this.messageBus.subscribe('mesh.agents.snapshot', async (envelope) => {
+      const payload = envelope.message;
+      if (!Array.isArray(payload?.agents) || payload.nodeId === this.meshNodeId) {
+        return;
+      }
+      for (const agent of payload.agents) {
+        this.meshAgents.set(agent.id, {
+          ...agent,
+          meshStatus: agent.status || 'online',
+          nodeId: payload.nodeId,
+          lastSeenAt: envelope.timestamp,
+        });
+      }
+    });
+
+    this.meshRefreshTimer = setInterval(() => {
+      void this.broadcastAgentSnapshot();
+    }, this.options.meshRefreshIntervalMs);
+    this.meshRefreshTimer.unref?.();
+  }
+
+  buildMeshAgent(agent) {
+    return {
+      id: agent.id,
+      name: agent.name,
+      description: agent.description,
+      capabilities: agent.capabilities,
+      status: agent.status,
+      promptPath: agent.promptPath,
+      nodeId: this.meshNodeId,
+      registeredAt: agent.registeredAt,
+      lastUpdated: agent.lastUpdated,
+    };
+  }
+
+  async broadcastAgentStatus(event, agent) {
+    if (!this.options.enableMesh || !this.messageBus || !agent) {
+      return;
+    }
+
+    await this.messageBus.publish(event, this.buildMeshAgent(agent));
+  }
+
+  async broadcastAgentSnapshot() {
+    if (!this.options.enableMesh || !this.messageBus) {
+      return;
+    }
+
+    await this.messageBus.publish('mesh.agents.snapshot', {
+      nodeId: this.meshNodeId,
+      agents: this.getAllAgents().map((agent) => this.buildMeshAgent(agent)),
+      timestamp: new Date().toISOString(),
+    });
   }
 
   /**
@@ -78,7 +189,11 @@ export class AgentRegistry {
       executionCount: 0,
       avgResponseTime: 0,
       totalTokens: 0,
+      registeredAt: new Date().toISOString(),
     });
+
+    await this.broadcastAgentStatus('agent.online', this.agents.get(agentId));
+    await this.broadcastAgentSnapshot();
 
     return {
       id: agentId,
@@ -205,6 +320,8 @@ export class AgentRegistry {
       lastUpdated: new Date().toISOString(),
     });
 
+    await this.broadcastAgentSnapshot();
+
     return {
       id: agentId,
       status: 'updated',
@@ -235,8 +352,17 @@ export class AgentRegistry {
     }
 
     // Remove from registry
+    const removedAgent = this.agents.get(agentId);
     this.agents.delete(agentId);
     this.agentMetadata.delete(agentId);
+
+    await this.broadcastAgentStatus('agent.offline', {
+      ...(removedAgent || { id: agentId }),
+      id: agentId,
+      status: 'offline',
+      lastUpdated: new Date().toISOString(),
+    });
+    await this.broadcastAgentSnapshot();
 
     return {
       id: agentId,
@@ -442,6 +568,7 @@ export class AgentRegistry {
   getMetrics() {
     return {
       totalAgents: this.agents.size,
+      remoteAgents: this.meshAgents.size,
       activeAgents: Array.from(this.agents.values()).filter((a) => a.status === 'active').length,
       capabilityIndexSize: this.agentCapabilities.size,
       totalExecutions: Array.from(this.agentMetadata.values()).reduce(
@@ -449,6 +576,14 @@ export class AgentRegistry {
         0
       ),
     };
+  }
+
+  getMeshAgents() {
+    return Array.from(this.meshAgents.values());
+  }
+
+  discoverMeshAgents() {
+    return [...this.getAllAgents(), ...this.getMeshAgents()];
   }
 
   /**
@@ -460,8 +595,17 @@ export class AgentRegistry {
 
   async shutdown() {
     // Cleanup resources if needed
+    if (this.meshRefreshTimer) {
+      clearInterval(this.meshRefreshTimer);
+      this.meshRefreshTimer = null;
+    }
+    await this.messageBus?.disconnect?.();
     this.agents.clear();
     this.agentCapabilities.clear();
     this.agentMetadata.clear();
+    this.meshAgents.clear();
   }
 }
+
+registerSingleton(AgentRegistry, () => new AgentRegistry());
+registerAlias(DI_TOKENS.agentRegistry, AgentRegistry);

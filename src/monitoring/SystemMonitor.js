@@ -5,8 +5,14 @@ import { HealthChecker } from './HealthChecker.js';
 import { AlertManager } from './AlertManager.js';
 import { MetricsReporter } from './MetricsReporter.js';
 import { EngagementTracker } from './EngagementTracker.js';
+import {
+  registerAlias,
+  registerSingleton,
+  resolveFromContainer,
+} from '../core/di/container.js';
+import { DI_TOKENS } from '../core/di/tokens.js';
 
-class SystemMonitor extends EventEmitter {
+export class SystemMonitor extends EventEmitter {
   constructor(config = {}) {
     super();
     this.config = {
@@ -16,6 +22,7 @@ class SystemMonitor extends EventEmitter {
       performanceSampling: config.performanceSampling || 0.1,
       ...config
     };
+    this.telemetry = config.telemetry || null;
     this.ultraDex = new UltraDex(config.ultraDex);
     this.monitoringInterval = null;
 
@@ -56,6 +63,12 @@ class SystemMonitor extends EventEmitter {
         await this.alertManager.evaluateAlerts();
       } catch (error) {
         process.stderr.write('Monitoring error: ' + error.message + '\n');
+        void this.telemetry?.trackMetric?.(
+          'monitoring.errors',
+          1,
+          { source: 'SystemMonitor' },
+          { error: error.message }
+        );
         this.emit('monitoring_error', error);
       }
     }, this.config.checkInterval);
@@ -193,5 +206,14 @@ class SystemMonitor extends EventEmitter {
   }
 }
 
-export const systemMonitor = new SystemMonitor();
+registerSingleton(
+  SystemMonitor,
+  (scopedContainer) =>
+    new SystemMonitor({
+      telemetry: scopedContainer.resolve(DI_TOKENS.telemetryService),
+    })
+);
+registerAlias(DI_TOKENS.systemMonitor, SystemMonitor);
+
+export const systemMonitor = resolveFromContainer(SystemMonitor);
 export default SystemMonitor;

@@ -1,16 +1,17 @@
 // Copyright (c) 2026 Ultra-Dex
 // src/index.js
 
+import 'reflect-metadata';
+
 /**
  * Ultra-Dex Meta-Layer - Main Entry Point
  * The AI Orchestration Meta-Layer for SaaS Development
  */
 
 // Core components
-import { UltraDexMetaLayer, ultraDex } from './core/index.js';
+import { UltraDexMetaLayer, ultraDex, agentOrchestrator } from './core/index.js';
 import { aiMetaLayer } from './core/ai/ai-meta-layer.js';
-import { agentMetaOrchestrator } from './core/agents/agent-meta-orchestrator.js';
-import { contextMetaManager } from './core/memory/context-meta-manager.js';
+import { ppmManager } from './core/memory/index.js';
 
 // Performance components
 import { advancedPerfOptimizer } from './core/performance/advanced-optimizer.js';
@@ -20,6 +21,8 @@ import { systemHealthChecker } from './core/system/health-checker.js';
 // Utilities
 import { logger } from './utils/logging.js';
 import { configLoader } from './utils/config-loader.js';
+import { container, createSessionContainer } from './core/di/container.js';
+import { createSessionScope, resolveSessionOrchestrator } from './core/di/session-scope.js';
 
 // Export the main instance
 export { UltraDexMetaLayer, ultraDex };
@@ -28,21 +31,25 @@ export default ultraDex;
 // Export core components individually
 export { 
   aiMetaLayer, 
-  agentMetaOrchestrator, 
-  contextMetaManager,
+  agentOrchestrator, 
+  ppmManager,
   advancedPerfOptimizer,
   perfDashboard,
   systemHealthChecker,
   logger,
-  configLoader
+  configLoader,
+  container,
+  createSessionContainer,
+  createSessionScope,
+  resolveSessionOrchestrator
 };
 
 // Export enhanced system with all optimizations
 export const ultraDexEnhanced = {
   core: ultraDex,
   ai: aiMetaLayer,
-  agents: agentMetaOrchestrator,
-  memory: contextMetaManager,
+  agents: agentOrchestrator,
+  memory: ppmManager,
   performance: advancedPerfOptimizer,
   monitoring: perfDashboard,
   health: systemHealthChecker,

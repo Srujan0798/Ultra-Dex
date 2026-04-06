@@ -341,6 +341,17 @@ RULES:
           return mockPlan;
         }
 
+        // If provider is null, fall back to mock plan
+        if (!provider) {
+          this.emit('planning:mock', { goal, reason: 'No provider available' });
+          const mockPlan = this._createMockPlan(goal, context);
+          this.metrics.plansGenerated++;
+          this.metrics.totalTasks += mockPlan.tasks.length;
+          this.metrics.avgTasksPerPlan = this.metrics.totalTasks / this.metrics.plansGenerated;
+          this.emit('planning:complete', { plan: mockPlan });
+          return mockPlan;
+        }
+
         // Call provider with structured prompt
         const response = await provider.generate({
           systemPrompt: 'You are a precise planning assistant. Output only valid JSON.',

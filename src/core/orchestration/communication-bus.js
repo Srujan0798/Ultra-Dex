@@ -1,44 +1,181 @@
 // Copyright (c) 2026 Ultra-Dex
 // src/core/orchestration/communication-bus.js
 
+import { randomUUID } from 'crypto';
+import { createBus, getBusHealth } from '../mesh/index.js';
+
 /**
  * Agent Communication Bus
- * Facilitates communication between agents in the swarm
+ * Facilitates communication between agents in the swarm and across a mesh.
  */
 
 export class AgentCommunicationBus {
-  constructor() {
-    this.channels = new Map(); // channelName -> Set of subscribers
-    this.messages = []; // message history
-    this.maxHistory = 1000; // maximum messages to keep in history
+  constructor(config = {}) {
+    this.config = {
+      mesh: config.mesh !== false,
+      busType: config.mesh === false ? 'memory' : config.busType || 'memory',
+      namespace: config.namespace || 'ultra-dex-agent-mesh',
+      maxHistory: config.maxHistory || 1000,
+      nodeId: config.nodeId || `mesh-node-${randomUUID().slice(0, 8)}`,
+      ...config,
+    };
+    this.localSubscribers = new Map();
+    this.channelBindings = new Map();
+    this.messages = [];
+    this.maxHistory = this.config.maxHistory;
     this.isConnected = false;
+    this.messageBus = config.messageBus || null;
+    this.meshAgents = new Map();
+    this.pendingChannelSubscriptions = new Map();
+    this.stats = {
+      published: 0,
+      delivered: 0,
+      errors: 0,
+      lastLatencyMs: 0,
+    };
   }
 
   async initialize() {
+    if (!this.messageBus) {
+      this.messageBus = createBus(this.config.busType, this.config);
+    }
+
+    await this.messageBus.connect();
     this.isConnected = true;
-    process.stdout.write('📡 Agent Communication Bus initialized\n');
+
+    await this.ensureChannelSubscription('agent.online');
+    await this.ensureChannelSubscription('agent.offline');
+    await this.ensureChannelSubscription('mesh.agents.snapshot');
+
+    process.stdout.write(
+      `📡 Agent Communication Bus initialized (${this.config.busType}${this.config.mesh === false ? ', local' : ', mesh'})\n`
+    );
+  }
+
+  async ensureChannelSubscription(channel) {
+    if (!this.isConnected || this.channelBindings.has(channel)) {
+      return;
+    }
+    if (this.pendingChannelSubscriptions.has(channel)) {
+      await this.pendingChannelSubscriptions.get(channel);
+      return;
+    }
+
+    const subscriptionPromise = this.messageBus.subscribe(channel, async (transportEnvelope) => {
+      const startedAt = Date.now();
+      const envelope =
+        transportEnvelope?.message?.channel && transportEnvelope?.message?.id
+          ? transportEnvelope.message
+          : {
+              id: transportEnvelope?.id || randomUUID(),
+              channel,
+              message: transportEnvelope?.message ?? transportEnvelope,
+              metadata: transportEnvelope?.metadata || {},
+              timestamp: transportEnvelope?.timestamp || new Date().toISOString(),
+              originNode: transportEnvelope?.nodeId || null,
+            };
+
+      this.messages.push(envelope);
+      if (this.messages.length > this.maxHistory) {
+        this.messages.shift();
+      }
+
+      if (channel === 'agent.online') {
+        this.recordAgentOnline(envelope.message);
+      } else if (channel === 'agent.offline') {
+        this.recordAgentOffline(envelope.message);
+      } else if (channel === 'mesh.agents.snapshot') {
+        this.recordAgentSnapshot(envelope.message);
+      }
+
+      const subscribers = this.localSubscribers.get(channel);
+      if (!subscribers) {
+        return;
+      }
+
+      for (const handler of subscribers) {
+        try {
+          await handler(envelope);
+          this.stats.delivered++;
+          this.stats.lastLatencyMs = Date.now() - startedAt;
+        } catch (error) {
+          this.stats.errors++;
+          process.stderr.write(
+            `Error in subscriber handler for channel ${channel}: ${error.message}\n`
+          );
+        }
+      }
+    });
+
+    this.pendingChannelSubscriptions.set(channel, subscriptionPromise);
+    try {
+      const unsubscribe = await subscriptionPromise;
+      this.channelBindings.set(channel, unsubscribe);
+    } finally {
+      this.pendingChannelSubscriptions.delete(channel);
+    }
+  }
+
+  recordAgentOnline(agent) {
+    if (!agent?.id) {
+      return;
+    }
+
+    this.meshAgents.set(agent.id, {
+      ...agent,
+      status: agent.status || 'online',
+      lastSeenAt: agent.timestamp || new Date().toISOString(),
+    });
+  }
+
+  recordAgentOffline(agent) {
+    if (!agent?.id) {
+      return;
+    }
+
+    const existing = this.meshAgents.get(agent.id) || { id: agent.id };
+    this.meshAgents.set(agent.id, {
+      ...existing,
+      ...agent,
+      status: 'offline',
+      lastSeenAt: agent.timestamp || new Date().toISOString(),
+    });
+  }
+
+  recordAgentSnapshot(snapshot) {
+    if (!Array.isArray(snapshot?.agents)) {
+      return;
+    }
+
+    for (const agent of snapshot.agents) {
+      this.recordAgentOnline({
+        ...agent,
+        nodeId: snapshot.nodeId || agent.nodeId,
+      });
+    }
   }
 
   /**
    * Subscribe to a channel
    */
   subscribe(channel, handler) {
-    if (!this.channels.has(channel)) {
-      this.channels.set(channel, new Set());
+    if (!this.localSubscribers.has(channel)) {
+      this.localSubscribers.set(channel, new Set());
     }
-    this.channels.get(channel).add(handler);
-    return () => this.unsubscribe(channel, handler); // Return unsubscribe function
+    this.localSubscribers.get(channel).add(handler);
+    void this.ensureChannelSubscription(channel);
+    return () => this.unsubscribe(channel, handler);
   }
 
   /**
    * Unsubscribe from a channel
    */
   unsubscribe(channel, handler) {
-    const subscribers = this.channels.get(channel);
+    const subscribers = this.localSubscribers.get(channel);
     if (subscribers) {
       subscribers.delete(handler);
       if (subscribers.size === 0) {
-        this.channels.delete(channel);
+        this.localSubscribers.delete(channel);
       }
     }
   }
@@ -51,62 +188,90 @@ export class AgentCommunicationBus {
       throw new Error('Communication bus is not connected');
     }
 
+    await this.ensureChannelSubscription(channel);
+
     const envelope = {
-      id: Date.now() + Math.random().toString(36).substr(2, 9),
+      id: randomUUID(),
       channel,
       message,
       metadata,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      originNode: this.config.nodeId,
     };
 
-    // Add to message history
-    this.messages.push(envelope);
-    if (this.messages.length > this.maxHistory) {
-      this.messages.shift(); // Remove oldest message
-    }
-
-    // Notify all subscribers
-    const subscribers = this.channels.get(channel);
-    if (subscribers) {
-      for (const handler of subscribers) {
-        try {
-          await handler(envelope);
-        } catch (error) {
-          process.stderr.write(`Error in subscriber handler for channel ${channel}: ${error.message}\n`);
-        }
-      }
-    }
-
+    const startedAt = Date.now();
+    await this.messageBus.publish(channel, envelope);
+    this.stats.published++;
+    this.stats.lastLatencyMs = Date.now() - startedAt;
     return envelope.id;
+  }
+
+  async routeTask(task, agentId, metadata = {}) {
+    const taskEnvelope = {
+      agentId,
+      task,
+      metadata,
+      routedAt: new Date().toISOString(),
+    };
+    const messageId = await this.publish(`agent.${agentId}.task`, taskEnvelope, {
+      route: 'direct',
+      agentId,
+      ...metadata,
+    });
+
+    return {
+      messageId,
+      channel: `agent.${agentId}.task`,
+      agentId,
+    };
+  }
+
+  discoverAgents() {
+    return Array.from(this.meshAgents.values());
   }
 
   /**
    * Get message history for a channel
    */
   getChannelHistory(channel, limit = 50) {
-    return this.messages
-      .filter(msg => msg.channel === channel)
-      .slice(-limit);
+    return this.messages.filter((msg) => msg.channel === channel).slice(-limit);
   }
 
   /**
    * Get all channels
    */
   getChannels() {
-    return Array.from(this.channels.keys());
+    return Array.from(
+      new Set([...this.localSubscribers.keys(), ...this.channelBindings.keys()])
+    );
   }
 
   /**
    * Get subscriber count for a channel
    */
   getSubscriberCount(channel) {
-    const subscribers = this.channels.get(channel);
+    const subscribers = this.localSubscribers.get(channel);
     return subscribers ? subscribers.size : 0;
+  }
+
+  getMeshStats() {
+    return {
+      knownAgents: this.meshAgents.size,
+      messageLatencyMs: this.stats.lastLatencyMs,
+      localChannels: this.getChannels().length,
+      ...getBusHealth(this.messageBus),
+    };
   }
 
   async shutdown() {
     this.isConnected = false;
-    this.channels.clear();
+    for (const unsubscribe of this.channelBindings.values()) {
+      await unsubscribe?.();
+    }
+    this.channelBindings.clear();
+    this.localSubscribers.clear();
     this.messages = [];
+    this.meshAgents.clear();
+    await this.messageBus?.disconnect?.();
   }
 }
