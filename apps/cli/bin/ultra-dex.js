@@ -29,7 +29,6 @@ const fastCommandSet = new Set([
   'doctor',
   'quality',
   'mcp-remote',
-  'env',
 ]);
 
 const wantsVersion = args.length > 0 && args.every((arg) => versionFlags.has(arg));
@@ -76,7 +75,6 @@ if (wantsTopLevelHelp || (args.length > 0 && fastCommandSet.has(args[0]))) {
       import('../lib/commands/mcp-remote.js').then(({ registerMcpRemoteCommand }) =>
         registerMcpRemoteCommand(program)
       ),
-      import('../lib/commands/env.js').then(({ registerEnvCommand }) => registerEnvCommand(program)),
     ]);
   } else if (new Set(['run', 'swarm', 'distributed']).has(args[0])) {
     await registerRunBundle();
@@ -92,9 +90,6 @@ if (wantsTopLevelHelp || (args.length > 0 && fastCommandSet.has(args[0]))) {
   } else if (args[0] === 'mcp-remote') {
     const { registerMcpRemoteCommand } = await import('../lib/commands/mcp-remote.js');
     registerMcpRemoteCommand(program);
-  } else if (args[0] === 'env') {
-    const { registerEnvCommand } = await import('../lib/commands/env.js');
-    registerEnvCommand(program);
   }
 
   const argv = wantsTopLevelHelp && args.length === 0 ? [...process.argv, '--help'] : process.argv;

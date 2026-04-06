@@ -23,7 +23,7 @@ jobs:
         continue-on-error: false
 
       - name: Install esbuild
-        run: npm install --force esbuild
+        run: npm install --force --ignore-scripts esbuild
 
       - name: Create dist directory
         run: mkdir -p apps/cli/dist
