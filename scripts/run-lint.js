@@ -6,6 +6,7 @@ import { transform } from 'esbuild';
 
 const ROOTS = ['src', 'packages/sdk', 'apps/dashboard/src', 'apps/cli/lib'];
 const EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
+const ESLINT_TIMEOUT_MS = 60_000;
 const IGNORE_DIRS = new Set([
   'node_modules',
   '.git',
@@ -95,15 +96,26 @@ async function runSyntaxFallback(files, reason) {
 async function runEslint(files) {
   const childScript = `
     const files = JSON.parse(process.env.ULTRA_DEX_LINT_FILES || '[]');
-    import('eslint').then(async ({ ESLint }) => {
+    const { ESLint } = require('eslint');
+    (async () => {
       const eslint = new ESLint({ overrideConfigFile: 'eslint.config.js' });
       const results = await eslint.lintFiles(files);
       const formatter = await eslint.loadFormatter('stylish');
       const output = formatter.format(results);
       const errorCount = results.reduce((sum, result) => sum + result.errorCount, 0);
       const warningCount = results.reduce((sum, result) => sum + result.warningCount, 0);
-      process.stdout.write(JSON.stringify({ output, errorCount, warningCount, resultsLength: results.length }));
-    }).catch((error) => {
+      process.stdout.write(
+        JSON.stringify({ output, errorCount, warningCount, resultsLength: results.length }),
+        (writeError) => {
+          if (writeError) {
+            console.error(writeError.message);
+            process.exit(1);
+            return;
+          }
+          process.exit(0);
+        }
+      );
+    })().catch((error) => {
       console.error(error.message);
       process.exit(1);
     });
@@ -115,7 +127,7 @@ async function runEslint(files) {
       ...process.env,
       ULTRA_DEX_LINT_FILES: JSON.stringify(files),
     },
-    timeout: 15000,
+    timeout: ESLINT_TIMEOUT_MS,
     maxBuffer: 10 * 1024 * 1024,
   });
 
@@ -128,6 +140,16 @@ async function runEslint(files) {
     `ESLint completed: ${result.resultsLength} files, ${result.errorCount} errors, ${result.warningCount} warnings.`
   );
   process.exitCode = result.errorCount > 0 ? 1 : 0;
+}
+
+function formatLintError(error) {
+  const parts = [error?.message];
+
+  if (typeof error?.stderr === 'string' && error.stderr.trim()) {
+    parts.push(error.stderr.trim());
+  }
+
+  return parts.filter(Boolean).join('\n');
 }
 
 async function main() {
@@ -146,7 +168,7 @@ async function main() {
   try {
     await runEslint(files);
   } catch (error) {
-    await runSyntaxFallback(files, error.message);
+    await runSyntaxFallback(files, formatLintError(error));
   }
 }
 

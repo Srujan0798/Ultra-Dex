@@ -2,16 +2,17 @@ import fs from 'fs';
 import js from '@eslint/js';
 
 async function loadTypeScriptEslintModule(specifier, fallbackSpecifier) {
-  for (const candidate of [fallbackSpecifier, specifier]) {
-    if (!candidate) continue;
+  try {
+    const mod = await import(specifier);
+    return mod.default ?? mod;
+  } catch {
     try {
-      const mod = await import(candidate);
+      const mod = await import(fallbackSpecifier);
       return mod.default ?? mod;
     } catch {
-      // Try the next candidate.
+      return null;
     }
   }
-  return null;
 }
 
 function hasLocalPackage(relativePath) {
@@ -19,9 +20,9 @@ function hasLocalPackage(relativePath) {
 }
 
 const hasTypeScriptEslintRuntime =
-  hasLocalPackage('./node_modules/@typescript-eslint/parser/dist/index.js') &&
-  hasLocalPackage('./node_modules/@typescript-eslint/eslint-plugin/dist/index.js') &&
-  hasLocalPackage('./node_modules/@typescript-eslint/scope-manager/dist/index.js');
+  hasLocalPackage('./node_modules/@typescript-eslint/parser/package.json') &&
+  hasLocalPackage('./node_modules/@typescript-eslint/eslint-plugin/package.json') &&
+  hasLocalPackage('./node_modules/@typescript-eslint/scope-manager/package.json');
 
 const tsParser = hasTypeScriptEslintRuntime
   ? await loadTypeScriptEslintModule(

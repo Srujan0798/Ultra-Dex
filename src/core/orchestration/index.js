@@ -21,6 +21,7 @@ export class AgentOrchestrator extends EventEmitter {
     this.memory = ppmManager;
     this.ai = options.ai || null;
     this.selfHealing = options.selfHealing || null;
+    this.performanceTracker = options.performanceTracker || null;
     this.mcpServer = this.normalizeMcpServer(options.mcpServer);
     this.mcpServerFactory = options.mcpServerFactory;
     this.nexusExecutor = options.nexusExecutor;
@@ -51,6 +52,7 @@ export class AgentOrchestrator extends EventEmitter {
       failedSessions: 0,
       avgResponseTime: 0,
       totalTokens: 0,
+      lastTaskDurationMs: 0,
     };
   }
 
@@ -145,6 +147,25 @@ export class AgentOrchestrator extends EventEmitter {
     return this.selfHealing;
   }
 
+  async getPerformanceTracker() {
+    if (this.options.enablePerformanceTracking === false) {
+      return null;
+    }
+
+    if (this.performanceTracker) {
+      return this.performanceTracker;
+    }
+
+    try {
+      const { performanceMonitor } = await import('../performance/monitor.js');
+      this.performanceTracker = performanceMonitor;
+    } catch {
+      this.performanceTracker = null;
+    }
+
+    return this.performanceTracker;
+  }
+
   /**
    * Execute a high-level objective using the autonomous Nexus mode
    */
@@ -206,8 +227,23 @@ export class AgentOrchestrator extends EventEmitter {
       resource: normalizedTask.substring(0, 100), // Truncate for resource field
       details: { task: normalizedTask, options },
     };
+    const performanceTracker = await this.getPerformanceTracker();
+    const performanceStart =
+      typeof performanceTracker?.startTimer === 'function'
+        ? performanceTracker.startTimer()
+        : Date.now();
+    let taskSucceeded = false;
+    let taskErrorMessage = null;
 
     this.emit('task:start', { sessionId, task: normalizedTask, options });
+    if (performanceTracker) {
+      this.emit('task:performance:start', {
+        sessionId,
+        agentId,
+        task: normalizedTask,
+        taskType: options.taskType || 'coding',
+      });
+    }
     process.stdout.write(chalk.blue(`  - Executing Task: ${normalizedTask}\n`));
     try {
       // Governance check FIRST (before loading AI or gathering context)
@@ -263,6 +299,7 @@ export class AgentOrchestrator extends EventEmitter {
       });
 
       this.metrics.successfulSessions++;
+      taskSucceeded = true;
       this.emit('task:complete', { sessionId, agentId, output: output.substring(0, 500) });
       return { status: 'COMPLETE', output, agentId };
     } catch (error) {
@@ -277,6 +314,7 @@ export class AgentOrchestrator extends EventEmitter {
 
       this.metrics.failedSessions++;
       const message = error instanceof Error ? error.message : String(error);
+      taskErrorMessage = message;
       process.stderr.write(chalk.red(`❌ Task execution failed (${sessionId}): ${message}\n`));
       this.emit('task:error', { sessionId, task: normalizedTask, error: message });
 
@@ -290,10 +328,35 @@ export class AgentOrchestrator extends EventEmitter {
       throw error;
     } finally {
       const elapsed = Date.now() - startedAt;
+      this.metrics.lastTaskDurationMs = elapsed;
       const completedSessions = this.metrics.successfulSessions + this.metrics.failedSessions;
       if (completedSessions > 0) {
         this.metrics.avgResponseTime =
           (this.metrics.avgResponseTime * (completedSessions - 1) + elapsed) / completedSessions;
+      }
+
+      if (performanceTracker) {
+        const requestInfo = {
+          endpoint: 'executeTask',
+          method: 'TASK',
+          statusCode: taskSucceeded ? 200 : 500,
+          agentId,
+          taskType: options.taskType || 'coding',
+        };
+        const entry =
+          typeof performanceTracker.endTimer === 'function'
+            ? performanceTracker.endTimer(performanceStart, requestInfo)
+            : performanceTracker.trackRequest?.(requestInfo, elapsed);
+        this.emit('task:performance:end', {
+          sessionId,
+          agentId,
+          task: normalizedTask,
+          taskType: requestInfo.taskType,
+          durationMs: entry?.durationMs ?? elapsed,
+          success: taskSucceeded,
+          statusCode: requestInfo.statusCode,
+          error: taskErrorMessage,
+        });
       }
     }
   }
