@@ -35,7 +35,7 @@ export async function restorePostRevision(
  * Error handler for revisions
  * @param {Error} error - Error to handle
  */
-function handleRevisionsError(error) {
+function handleRevisionsError(error: Error | unknown) {
   try {
     console.error('[revisions]', error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -66,7 +66,7 @@ describe('Governance Integration - executeTool', () => {
     });
 
     // Assert: Audit entry should be recorded
-    const auditEntries = governance.audit.query({ agentId: 'test-agent' });
+    const auditEntries = await governance.audit.query({ agentId: 'test-agent' });
     assert.ok(auditEntries.length >= 0); // At least queried successfully
   });
 });

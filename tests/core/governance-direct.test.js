@@ -6,14 +6,22 @@
 
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
+import fs from 'fs';
+import path from 'path';
 
 import { GovernanceManager } from '../../src/core/governance/governance-manager.js';
 import { GovernanceDeniedException } from '../../src/core/governance/governance-manager.js';
 
+const TEST_DB_PATH = path.join(process.cwd(), '.ultra-dex', 'audit', 'governance.db');
+
 describe('Governance Integration - Direct Test', () => {
   let governance;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Clean up database before each test to ensure isolation
+    if (fs.existsSync(TEST_DB_PATH)) {
+      fs.unlinkSync(TEST_DB_PATH);
+    }
     governance = new GovernanceManager();
   });
 
@@ -86,12 +94,12 @@ describe('Governance Integration - Direct Test', () => {
     await governance.gate(allowedContext);
 
     // Assert: Audit log should have both entries
-    const blockedAudit = governance.audit.query({ action: 'tool:delete_database' });
+    const blockedAudit = await governance.audit.query({ action: 'tool:delete_database' });
     assert.strictEqual(blockedAudit.length, 1);
     assert.strictEqual(blockedAudit[0].outcome, 'blocked');
     assert.strictEqual(blockedAudit[0].agentId, 'orchestrator');
 
-    const allowedAudit = governance.audit.query({ action: 'tool:read_file' });
+    const allowedAudit = await governance.audit.query({ action: 'tool:read_file' });
     assert.strictEqual(allowedAudit.length, 1);
     assert.strictEqual(allowedAudit[0].outcome, 'allowed');
     assert.strictEqual(allowedAudit[0].agentId, 'orchestrator');

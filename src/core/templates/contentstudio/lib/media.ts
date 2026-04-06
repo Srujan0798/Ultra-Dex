@@ -4,6 +4,7 @@
  */
 
 import { prisma } from './prisma';
+import type { Media } from './types';
 import crypto from 'crypto';
 
 const SUPPORTED_MEDIA = [
@@ -145,7 +146,7 @@ export async function listMedia(
   };
 }
 
-export async function getMedia(mediaId: string, ownerId: string) {
+export async function getMedia(mediaId: string, ownerId: string): Promise<Media> {
   if (!mediaId?.trim() || !ownerId?.trim()) {
     throw new MediaValidationError('mediaId and ownerId are required');
   }
