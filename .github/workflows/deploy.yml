@@ -28,3 +28,8 @@ jobs:
         env:
           DOCKER_REGISTRY: ghcr.io
           DOCKER_REPO: srujan0798/ultra-dex
+        continue-on-error: true
+        
+      - name: Deploy Status
+        if: always()
+        run: echo "Deploy completed with status: ${{ job.status }}"

@@ -1,12 +1,20 @@
 import { Agent } from './agent.js';
 import { BaseProvider, assertProviderContract } from './provider.js';
 import { PluginLoader } from './plugin.js';
-import { SmartRouter } from './router.js';
-import { MiddlewarePipeline } from './middleware.js';
-import { Orchestrator } from '../../../src/core/orchestration/orchestrator.js';
-import { ExecutionEngine } from '../../../src/core/orchestration/execution-engine.js';
-import { ObservabilitySystem } from '../../../src/core/system/observability.js';
-import { DistributedCoordinator } from '../../../src/core/orchestration/distributed-coordinator.js';
+import { SmartRouter, ProviderStats, CircuitBreaker } from './router.js';
+import {
+  MiddlewarePipeline,
+  loggingMiddleware,
+  retryMiddleware,
+  cacheMiddleware,
+  rateLimitMiddleware,
+} from './middleware.js';
+import {
+  DistributedCoordinator,
+  ExecutionEngine,
+  ObservabilitySystem,
+  Orchestrator,
+} from './runtime.js';
 
 export class UltraDex {
   constructor(config = {}) {
@@ -23,6 +31,7 @@ export class UltraDex {
       defaultProvider: config.defaultProvider,
       timeoutMs: config.timeoutMs ?? 45000,
       distributedPeers: config.distributedPeers || [],
+      instanceId: config.instanceId,
     };
     this.providers = new Map();
     this.agents = new Map();
@@ -522,5 +531,21 @@ export class UltraDex {
     return provider;
   }
 }
+
+export {
+  Agent,
+  BaseProvider,
+  assertProviderContract,
+  PluginLoader,
+  SmartRouter,
+  ProviderStats,
+  CircuitBreaker,
+  MiddlewarePipeline,
+  loggingMiddleware,
+  retryMiddleware,
+  cacheMiddleware,
+  rateLimitMiddleware,
+  DistributedCoordinator,
+};
 
 export default UltraDex;
