@@ -20,6 +20,7 @@ jobs:
         run: |
           rm -rf apps/desktop
           node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
+          node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
 
       - name: Install root dependencies
         run: |

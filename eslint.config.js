@@ -1,6 +1,23 @@
 import js from '@eslint/js';
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
+
+async function loadTypeScriptEslintModule(specifier, fallbackSpecifier) {
+  try {
+    const mod = await import(specifier);
+    return mod.default ?? mod;
+  } catch {
+    const mod = await import(fallbackSpecifier);
+    return mod.default ?? mod;
+  }
+}
+
+const tsParser = await loadTypeScriptEslintModule(
+  '@typescript-eslint/parser',
+  './node_modules/@typescript-eslint/parser/dist/index.js'
+);
+const tsPlugin = await loadTypeScriptEslintModule(
+  '@typescript-eslint/eslint-plugin',
+  './node_modules/@typescript-eslint/eslint-plugin/dist/index.js'
+);
 
 export default [
   js.configs.recommended,
