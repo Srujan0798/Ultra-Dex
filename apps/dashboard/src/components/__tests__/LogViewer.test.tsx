@@ -1,3 +1,5 @@
+/// <reference types="vitest/globals" />
+
 import { fireEvent, render, screen } from '@testing-library/react';
 import { LogViewer } from '../LogViewer';
 import { sampleLogs } from '../__fixtures__/dashboard';

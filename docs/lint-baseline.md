@@ -1,44 +1,26 @@
-# Lint Baseline
+# ESLint Expansion Baseline
 
-Generated: 2026-04-06
+**Date:** 2026-04-06
+**Objective:** Expand ESLint to full codebase and enable TypeScript rules.
 
-## Configuration
-- ESLint v9.x with flat config
-- Coverage: src/, packages/sdk/, apps/dashboard/src/, apps/cli/lib/
+## Configured Paths
+- `src/`
+- `packages/sdk/src/`
+- `apps/dashboard/src/`
+- `apps/cli/lib/`
 
-## Rules Enabled
+## Statistics
+- **Total Files Scanned (JS/TS/TSX):** 1073
+- **Baseline Error Count:** [PENDING] (Blocked by `ERR_REQUIRE_ESM` in `node_modules/p-locate`)
+- **Baseline Warning Count:** [PENDING]
 
-### JavaScript
-- `no-unused-vars`: error
-- `no-undef`: error
-- `no-console`: off
-- `no-empty`: warn
+## Status
+The `eslint.config.js` has been successfully updated to include all source directories and enable `@typescript-eslint` rules. 
+`no-unused-vars` and `no-undef` are now set to `error`.
 
-### TypeScript
-- `@typescript-eslint/no-explicit-any`: warn
-- `@typescript-eslint/explicit-function-return-type`: warn
+Current environment has a broken `node_modules` state (`p-locate` v6+ conflict with CommonJS `eslint` execution). 
+The config is valid but the runner is crashing on dependency resolution.
 
-## Baseline Counts
-
-| Directory | Errors | Warnings |
-|-----------|--------|----------|
-| src/core | TBD | TBD |
-| src/services | TBD | TBD |
-| packages/sdk | TBD | TBD |
-| apps/dashboard | TBD | TBD |
-| apps/cli/lib | TBD | TBD |
-
-## Commands
-
-```bash
-# Run linting
-npm run lint
-
-# Fix auto-fixable issues
-npm run lint:fix
-```
-
-## Notes
-
-- Run `npm run lint 2>&1 > lint-report.txt` to generate full report
-- Update this file with actual counts after ESLint module issues resolved
+### Action Plan
+1. Fix `node_modules` (re-install dependencies).
+2. Run `npm run lint` to populate actual error counts.

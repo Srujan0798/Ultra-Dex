@@ -1,3 +1,5 @@
+/// <reference types="vitest/globals" />
+
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryGraph } from '../MemoryGraph';
 import { sampleMemory } from '../__fixtures__/dashboard';

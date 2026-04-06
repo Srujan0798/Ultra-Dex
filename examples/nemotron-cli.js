@@ -10,7 +10,7 @@
  *   node nemotron-cli.js --no-thinking "Quick question?"
  */
 
-import { createNemotronClient, chatWithNemotron, streamWithNemotron } from './src/services/ai-providers/nemotron.js';
+import { createNemotronClient, chatWithNemotron, streamWithNemotron } from '../src/services/ai-providers/nemotron.js';
 import dotenv from 'dotenv';
 import chalk from 'chalk';
 import { spawn } from 'child_process';

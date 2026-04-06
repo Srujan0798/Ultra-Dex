@@ -125,7 +125,9 @@ export default [
   },
   {
     ignores: [
-      'node_modules/**',
+      '**/node_modules/**',
+      '**/.git/**',
+      '**/*.node',
       '**/dist/**',
       '**/build/**',
       '**/.next/**',
@@ -138,6 +140,15 @@ export default [
       'examples/**',
       'packages/extensions/vscode/out/**',
       'apps/mobile/**',
+      '**/.ultra-dex/**',
+      '**/.ultra/**',
+      '**/.claude/**',
+      '**/.cursor/**',
+      '**/.husky/**',
+      '**/.vscode/**',
+      '**/.npmignore',
+      '**/.prettierignore',
+      '**/package-lock.json',
     ],
   },
 ];

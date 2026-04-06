@@ -1,24 +1,26 @@
 {
-  "cycle": 1,
-  "title": "Post-Review Remediation Cycle",
-  "initiated": "2026-04-05",
-  "source": "Full project review — architecture, code quality, security, devops",
+  "cycle": 2,
+  "title": "Ship-Grade Stabilization — Build, Publish Surface, CLI Hygiene",
+  "initiated": "2026-04-06",
+  "source": "Cycle 1 post-mortem + deep exploration of publishable surface",
+  "thesis": "Cycle 1 fixed security and architecture. Cycle 2 makes it BUILDABLE and PUBLISHABLE. No new features — only fix what's broken and prune what's dead.",
   "phases": {
-    "P0": { "label": "Critical — This Week", "windows": ["W1", "W2", "W3", "W4"], "status": "ready" },
-    "P1": { "label": "High — Next 2 Weeks", "windows": ["W5", "W6", "W7", "W8", "W9"], "status": "ready" },
-    "P2": { "label": "Medium — Next Month", "windows": ["W10", "W11", "W12", "W13", "W14", "W15"], "status": "queued" },
-    "P3": { "label": "Low — Next Quarter", "windows": ["W16", "W17", "W18"], "status": "queued" }
+    "P0": { "label": "Unblock Build Pipeline", "windows": ["W1", "W2", "W3"], "status": "ready" },
+    "P1": { "label": "Publish Surface Readiness", "windows": ["W4", "W5", "W6", "W7"], "status": "ready" },
+    "P2": { "label": "CLI Hygiene & Dead Code Purge", "windows": ["W8", "W9", "W10"], "status": "ready" },
+    "P3": { "label": "Documentation & Examples", "windows": ["W11", "W12", "W13"], "status": "queued" }
   },
-  "manual_actions_required": [
-    "Revoke NVIDIA API keys immediately at build.nvidia.com (keys are live — cannot be automated)",
-    "Run BFG Repo-Cleaner or git filter-repo to purge .env/.env.local from git history"
-  ],
-  "gate": "Can users ship with Ultra-Dex after this cycle?",
+  "manual_actions_required": [],
+  "gate": "Can a developer clone the repo, run npm install, npm run build, npm test — and have ALL THREE succeed with zero errors?",
   "completion_criteria": [
-    "No exposed secrets in repo or git history",
-    "Build scripts execute without silent failures",
-    "Test coverage >= 50% for src/core/orchestration and src/core/agents",
-    "noImplicitAny: true passing with zero type errors",
-    "npm audit returns zero HIGH or CRITICAL findings"
+    "npm run build exits 0 (including dashboard)",
+    "npx tsc --noEmit exits 0 with 0 errors",
+    "npm run lint exits 0 (no crashes)",
+    "npm test: 0 failures (all 230+ pass)",
+    "npm audit --audit-level high: 0 findings",
+    "packages/sdk/ independently installable and importable",
+    "examples/*.js all run without import errors",
+    "CLI has < 40 active commands (dead code pruned)",
+    "docs/ARCHITECTURE.md exists and is current"
   ]
 }

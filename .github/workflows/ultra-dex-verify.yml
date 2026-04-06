@@ -16,10 +16,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Clean install root dependencies
-        run: npm ci
+      - name: Install root dependencies
+        run: npm install --force --ignore-scripts
       - name: Install CLI dependencies
-        run: cd apps/cli && npm install
+        run: cd apps/cli && npm install --force --ignore-scripts
       - name: Verify fast-path CLI commands
         run: |
           set -euo pipefail

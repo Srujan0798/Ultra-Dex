@@ -1,3 +1,5 @@
+/// <reference types="vitest/globals" />
+
 import { render, screen } from '@testing-library/react';
 import { CostDashboard } from '../CostDashboard';
 import { sampleAgents, sampleCostSeries } from '../__fixtures__/dashboard';

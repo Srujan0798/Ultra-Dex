@@ -1,3 +1,5 @@
+/// <reference types="vitest/globals" />
+
 import { render } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { MemoryRouter } from 'react-router-dom';
