@@ -40,7 +40,7 @@ const commandRegistrars = [
   { path: '../lib/commands/integrate.js', register: 'registerIntegrateCommand' },
   { path: '../lib/commands/suggest.js', register: 'registerSuggestCommand' },
   { path: '../lib/commands/predict.js', register: 'registerPredictCommand' },
-  { path: '../lib/commands/autonomous.js', register: 'registerAutonomousCommand' },
+  // autonomous.js excluded: top-level import of src/core/orchestration causes synchronous CJS deadlock via express
   { path: '../lib/commands/pipeline.js', register: 'registerPipelineCommand' },
   { path: '../lib/commands/ralph.js', register: 'registerRalphCommand' },
   { path: '../lib/commands/search.js', register: 'registerSearchCommand' },
@@ -54,17 +54,9 @@ const commandRegistrars = [
   { path: '../lib/commands/enterprise.js', register: 'registerEnterpriseCommand' },
 ];
 
-const importWithTimeout = (modPath, ms = 4000) =>
-  Promise.race([
-    import(modPath),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`Import timeout after ${ms}ms`)), ms)
-    ),
-  ]);
-
 for (const { path: cmdPath, register: fnName } of commandRegistrars) {
   try {
-    const mod = await importWithTimeout(cmdPath);
+    const mod = await import(cmdPath);
     const fn = mod[fnName];
     if (typeof fn === 'function') {
       fn(program);
