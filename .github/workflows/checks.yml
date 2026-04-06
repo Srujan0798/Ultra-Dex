@@ -33,6 +33,7 @@ jobs:
         run: |
           npm cache clean --force
           rm -rf node_modules apps/*/node_modules packages/*/node_modules
+          rm -f package-lock.json
 
       - name: Check npm version
         run: npm --version

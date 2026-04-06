@@ -13,12 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Remove desktop app from workspaces
+
+      - name: Remove desktop app
         run: |
           rm -rf apps/desktop
           node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
-          node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
 
       - uses: actions/setup-node@v4
         with:
@@ -30,13 +29,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Deploy
         run: ./scripts/deploy.sh
         env:
           DOCKER_REGISTRY: ghcr.io
           DOCKER_REPO: srujan0798/ultra-dex
         continue-on-error: true
-        
+
       - name: Deploy Status
         if: always()
-        run: echo "Deploy completed with status: ${{ job.status }}"
+        run: echo "Deploy completed"
