@@ -4,16 +4,16 @@
  * Provides easy access to core Ultra-Dex subsystems from ESM consumers.
  */
 
-import UltraDexCore from './src/core/orchestration/ultra-dex-core.js';
-import UnifiedMemory from './src/core/memory/unified-api.js';
-import { UnifiedRegistry as AgentRegistry } from './src/core/agents/unified-registry.js';
-import AgentAutopsy from './src/core/reliability/agent-autopsy.js';
-import AgentCoordinationProtocol from './src/core/protocols/coordination.js';
-import MCPServerManager from './src/core/mcp/server-manager.js';
-import AIProviderRouter from './src/services/ai-providers/router.js';
-import ObservabilitySystem from './src/core/system/observability.js';
-import ConfigManager from './src/core/system/config-manager.js';
-import TokenOptimizer from './src/core/performance/token-optimizer.js';
+import UltraDexCore from '../src/core/orchestration/ultra-dex-core.js';
+import UnifiedMemory from '../src/core/memory/unified-api.js';
+import { UnifiedRegistry as AgentRegistry } from '../src/core/agents/unified-registry.js';
+import AgentAutopsy from '../src/core/reliability/agent-autopsy.js';
+import AgentCoordinationProtocol from '../src/core/protocols/coordination.js';
+import MCPServerManager from '../src/core/mcp/server-manager.js';
+import AIProviderRouter from '../src/services/ai-providers/router.js';
+import ObservabilitySystem from '../src/core/system/observability.js';
+import ConfigManager from '../src/core/system/config-manager.js';
+import TokenOptimizer from '../src/core/performance/token-optimizer.js';
 
 class UltraDex {
   constructor(config = {}) {

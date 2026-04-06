@@ -19,11 +19,11 @@ jobs:
       - name: Install CLI dependencies
         run: |
           cd apps/cli
-          npm install --ignore-scripts --omit=optional
+          npm install --force --ignore-scripts --omit=optional
         continue-on-error: false
 
       - name: Install esbuild
-        run: npm install esbuild
+        run: npm install --force esbuild
 
       - name: Create dist directory
         run: mkdir -p apps/cli/dist

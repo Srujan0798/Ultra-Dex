@@ -86,7 +86,7 @@ interface BuildingProps {
 }
 
 const Building = ({ position, height, color, name, onHover }: BuildingProps) => {
-    const mesh = useRef<Mesh>(null);
+    const mesh = useRef<Mesh | null>(null);
     const [hovered, setHover] = useState(false);
     const [active, setActive] = useState(false);
 

@@ -1,3 +1,5 @@
+/// <reference types="vitest/globals" />
+
 import { fireEvent, render, screen } from '@testing-library/react';
 import { AgentCard } from '../AgentCard';
 import { sampleAgent } from '../__fixtures__/dashboard';

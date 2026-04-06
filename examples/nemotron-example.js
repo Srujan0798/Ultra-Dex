@@ -4,7 +4,7 @@
  * Usage: node nemotron-example.js
  */
 
-import { createNemotronClient } from './src/services/ai-providers/nemotron.js';
+import { createNemotronClient } from '../src/services/ai-providers/nemotron.js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';

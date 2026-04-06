@@ -4,9 +4,9 @@ set -e
 echo "Building all components..."
 
 # Install dependencies
-npm install --legacy-peer-deps
-npm --prefix apps/dashboard install --legacy-peer-deps --ignore-scripts
-npm --prefix apps/docs-site install --legacy-peer-deps --ignore-scripts
+npm install --force --ignore-scripts
+npm --prefix apps/dashboard install --force --ignore-scripts
+npm --prefix apps/docs-site install --force --ignore-scripts
 
 # Build core components
 echo "Building core..."

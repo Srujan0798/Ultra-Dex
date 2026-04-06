@@ -11,15 +11,19 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
+import { createRequire } from 'module';
 import { checkConfiguredProviders } from '../providers/index.js';
 import { icons, header, statusLine } from '../utils/status.js';
 import { createSpinner } from '../utils/spinners.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
+const require = createRequire(import.meta.url);
+const { version: cliVersion } = require('../../package.json');
+
 // Default configuration
 const DEFAULT_CONFIG = {
-  version: '2.4.0',
+  version: cliVersion,
   provider: 'claude',
   model: null, // Use provider default
   minScore: 70,

@@ -26,8 +26,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install --ignore-scripts
-          npm --prefix apps/dashboard install --ignore-scripts
+          npm install --force --ignore-scripts
+          npm --prefix apps/dashboard install --force --ignore-scripts
 
       - name: Dashboard tests
         run: npm --prefix apps/dashboard run test

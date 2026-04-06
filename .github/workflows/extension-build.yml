@@ -26,11 +26,11 @@ jobs:
           cache: 'npm'
 
       - name: Install root dependencies
-        run: npm install --ignore-scripts
+        run: npm install --force --ignore-scripts
 
       - name: Install extension dependencies
         working-directory: packages/extensions/vscode
-        run: npm install --ignore-scripts
+        run: npm install --force --ignore-scripts
 
       - name: Compile TypeScript
         working-directory: packages/extensions/vscode

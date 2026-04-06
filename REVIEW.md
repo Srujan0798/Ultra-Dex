@@ -1,222 +1,196 @@
-# Ultra-Dex v2.0 — Full Project Review
+# Ultra-Dex — Strategic Review & Diamond-State Roadmap
 
-**Date:** April 5, 2026
-**Reviewer:** Claude (commissioned by Srujan Karna)
-**Scope:** Architecture, Code Quality, Security, DevOps, Dependencies
-
----
-
-## Overall Assessment: 6.8/10
-
-A sophisticated AI orchestration platform with strong architectural bones and enterprise-grade ambitions. However, it's undermined by exposed secrets, broken build scripts, ~15% test coverage, and significant hygiene debt. The gap between the README's promises and the implementation's maturity is the core risk.
+**Date:** April 6, 2026
+**Author:** Claude (commissioned by Srujan Karna)
+**Scope:** Post-Cycle 1 assessment + Cycle 2 strategy + path to diamond state
 
 ---
 
-## 1. CRITICAL — Fix Immediately
+## 1. Where You Are Now (Post-Cycle 1 Ground Truth)
 
-### 1.1 Exposed API Keys in Repository
-- `.env` and `.env.local` contain **4 live NVIDIA API keys** (nvapi-...) committed to git.
-- **Action:** Revoke keys now. Scrub git history with BFG Repo-Cleaner. Add pre-commit hook to block `.env` commits.
+### What's Verified Working
+- **Security posture**: No exposed secrets, pre-commit hooks active, CodeQL in CI, tar patched, K8s RBAC added.
+- **TypeScript strict mode**: `strict: true` with all sub-flags enabled. 210+ files type-safe.
+- **Core architecture**: SystemMonitor refactored (197 LOC facade), Ralph Loop timeouts, governance audit persisted to SQLite, MCP graceful degradation.
+- **Integration tests**: 44/44 pass. Orchestration flow, memory retrieval, AI routing all covered.
+- **Dead code purge**: 0 `.bak` files, 0 `" 2.js"` duplicates.
 
-### 1.2 Default Credentials in Production Config
-- `docker-compose.prod.yml` uses fallback passwords: `ultra_password`, `ultra_redis_pass`.
-- `NEXTAUTH_SECRET=your-secret-here` placeholder in `.env.example`.
-- **Action:** Remove all default credentials. Require explicit env vars; fail loudly if missing.
+### What's Still Broken
+- **Dashboard build**: Rollup native module architecture mismatch crashes `npm run build`.
+- **64 TypeScript errors**: Almost entirely in `apps/dashboard/` — missing `@types/three`, `@react-three/fiber`, vitest globals.
+- **15 unit test failures**: 11 from `better-sqlite3` native load, 3 from missing API keys in CLI tests, 1 from file permissions.
+- **ESLint crashes**: System error -35 during config loading. Likely `@typescript-eslint` v7 incompatible with ESLint v9.
+- **SDK**: Types mature but version mismatch (6.0.0 vs 2.0.0), minimal implementation, needs validation for npm publish.
+- **Examples**: All import paths broken (use `./src/` instead of `../src/`).
+- **CLI bloat**: ~150 command files, ~20 active, ~130 abandoned with broken imports.
+- **Docs**: 50+ directories with no index. `ARCHITECTURE.md` referenced but doesn't exist.
 
 ---
 
-## 2. Architecture
+## 2. Cycle 2 Strategy: Ship-Grade Stabilization
 
-### 2.1 What's Working Well
-- **Hub-spoke orchestration** — Clean layering: Core singleton → Orchestrator → Agents → Providers. Memory is a proper leaf dependency (no back-imports).
-- **Provider abstraction** — 15+ AI providers behind `AIMetaLayer` with strategy-based routing (cost/latency/quality/fallback). Config-driven via `router-config.js`.
-- **Governance gates** — Injected at two critical points (task execution + tool execution). Audit trail exists.
-- **CLI two-stage loading** — Fast path for common commands, deferred full load. Good DX.
-- **Tiered memory** — SQLite (relational) + vector store + Neo4j (graph). Architecturally sound.
+### Thesis
+Cycle 1 fixed security and architecture. Cycle 2 makes it **buildable and publishable**. No new features — only fix what's broken and prune what's dead.
 
-### 2.2 Architectural Concerns
+### The Gate
+> Can a developer clone the repo, run `npm install`, `npm run build`, `npm test` — and have ALL THREE succeed with zero errors?
 
-| Issue | Location | Impact |
-|-------|----------|--------|
-| **NoopSubsystem fallbacks** | `src/core/index.js` | StreamPipeline, WebhookManager, PluginManager, RateLimiter silently degrade to no-ops. Features appear "Ready" in the feature matrix but aren't. |
-| **Singleton-heavy** | `ultraDex`, `agentOrchestrator`, `ppmManager`, `aiMetaLayer` | No DI framework. Hard to test in isolation, impossible to run multiple instances. |
-| **Mixed sync/async config** | `router-config.js` uses `loadRouterConfigSync()` | I/O errors during sync load crash the process. Should be async with graceful fallback. |
-| **Dashboard build coupling** | `apps/dashboard/package.json` | `"@ultra-dex/core": "file:../../src/core"` — local FS reference breaks npm publish. |
-| **Agent selection is keyword-based** | `orchestration/index.js` | `if (taskLower.includes('ui'))` — fragile, no semantic matching. |
-| **Governance audit in-memory only** | `governance-manager.js` | 50-entry ring buffer lost on restart. No persistent storage integration. |
-| **No wall-clock timeout on Ralph Loop** | `src/core/agents/ralph.js` | `maxIterations: 10` but no time bound per iteration. Can hang indefinitely. |
-| **MCP auto-start default** | `src/core/mcp/server-manager.js` | `autoStart !== false` means unreachable external servers block initialization. |
+Until this gate passes, nothing else matters.
 
-### 2.3 Module Map (Actual State)
+### Phase Breakdown
 
+| Phase | Focus | Windows | Agent Mix |
+|-------|-------|---------|-----------|
+| P0 | Unblock build: rollup, TS errors, ESLint | W1-W3 | Codex o1, Gemini |
+| P1 | Publish surface: SDK, tests, examples, version | W4-W7 | Codex o1, Gemini, Qwen |
+| P2 | CLI hygiene: audit, archive, prune | W8-W10 | Gemini, Claude Sonnet, Qwen |
+| P3 | Docs & MCP tools | W11-W13 | Claude Sonnet, Gemini |
+
+### Dependencies
 ```
-src/core/  (45 subsystems, 3.2MB)
-├── agents/        (39 files) — Ralph Loop, Swarm, personas, vision, meta-orchestrator
-├── orchestration/ (23 files) — Distributed coordinator, execution engine, planner
-├── memory/        (10 files) — Unified API, vector store, graph engine, tiered storage
-├── ai/            (18 files) — Meta-layer, router, provider registry
-├── mcp/           (11 files) — Server manager, memory integration
-├── governance/    (9 files)  — Policy engine, approval workflows
-├── system/        (15 files) — Health, observability, config
-├── reliability/   (5 files)  — Self-healing, circuit breakers
-├── utils/         (114 files) — ⚠️ Oversized catch-all
-└── templates/     (24 files) — TypeScript API endpoints
-
-apps/
-├── cli/           — Commander.js + Ink terminal UI (primary interface)
-├── dashboard/     — React 19 + Vite + Tailwind (web UI)
-├── cloud/         — Multi-tenant SaaS layer
-├── desktop/       — Electron wrapper
-├── core-api/      — Express REST backend
-├── website/       — Marketing site
-├── white-label/   — Customizable SaaS template
-└── docs-site/     — Documentation portal
-
-packages/
-├── sdk/           — @ultra-dex/sdk (TypeScript-first, publishable)
-├── extensions/    — VS Code, Cursor IDE extensions
-├── plugins/       — 54 cursor-rules directories
-├── compliance/    — Policy packages
-├── analytics/     — Telemetry
-├── mcp-server/    — Standalone MCP distribution
-└── mobile-sdk/    — React Native SDK
+W1 (build fix) ─┐
+W2 (TS errors) ─┤─→ P1 all windows can start
+W3 (ESLint)  ───┘
+                      W8 (CLI audit) → W9 (CLI prune) [sequential]
+                      W11-W13 (docs/MCP) can run anytime
 ```
 
 ---
 
-## 3. Code Quality
+## 3. Path to Diamond State — Deep Analysis
 
-### 3.1 Test Coverage: ~15-25%
+### 3.1 The Core Problem: Surface Area vs Depth
 
-**Tested:** Provider registry, governance basic flows, performance system (surface-level).
+Ultra-Dex has an enormous surface area — 15+ providers, 11 plugins, 150 CLI commands, 8 app workspaces, SDK, MCP, dashboard. But the depth on each is shallow. The README promises production readiness across all of them. Reality: only the core orchestration loop, provider routing, and governance layer are production-grade.
 
-**NOT tested (critical gaps):**
-- Orchestration engine (1,113 LOC distributed coordinator) — zero tests
-- Agent systems (39 modules) — minimal coverage
-- Memory subsystem (10 modules) — structure tests only
-- All AI provider adapters — registry tests only
-- 47+ utility modules — almost entirely untested
-- TypeScript API endpoints in templates — no tests
+**The diamond-state principle**: Narrow the surface. Go deep on 5 things rather than shallow on 50.
 
-**Test quality issues:**
-- Dashboard component tests use undefined `mountComponent()` — won't execute
-- Memory integration tests stub all dependencies (test mocks, not implementations)
-- Performance tests call methods without validating meaningful output
-- Multiple governance test files test the same thing redundantly
+### 3.2 What to Keep (The Diamond Core)
 
-### 3.2 Type Safety: ~5%
+These are genuinely production-quality and differentiated:
 
-- **12 of 296 source files** are TypeScript
-- `tsconfig.json` has `noImplicitAny: false` — type safety effectively disabled
-- `checkJs: false` — JS files not checked
-- Running `tsc --noEmit` produces **53 errors**
-- Type definitions (`src/types/index.d.ts`) use `any` for 9+ fields
+1. **Orchestration engine** (`src/core/orchestration/`) — Task dispatch, governance gates, self-healing, event-driven. This is the product.
 
-### 3.3 Linting: Effectively Disabled
+2. **Provider routing** (`src/core/ai/`) — Strategy-based selection across 15 providers with cost/latency/quality optimization. Real value prop.
 
-- ESLint only checks `apps/cli/lib` — excludes ~99% of codebase
-- All `.ts/.tsx` files excluded from linting
-- `tests/`, `examples/`, `apps/dashboard/`, `apps/mobile/` all excluded
-- Only 4 rules enabled, all at WARN level (not ERROR)
-- `no-console: OFF` — debug logging everywhere
+3. **Memory system** (`src/core/memory/`) — Tiered storage with SQLite + vector + graph. Unique capability most orchestrators lack.
 
-### 3.4 Dead Code
+4. **Governance** (`src/core/governance/`) — Policy enforcement with audit trail. Enterprise differentiator.
 
-- **6 duplicate files** with " 2.js" suffix (macOS copy artifacts): `server-manager 2.js`, `config-manager 2.js`, `ultra-dex-core 2.js`, etc. (~110KB waste)
-- **93 `.bak` files** across `src/core/` — incomplete refactoring
-- **`archive/` directory** — 3.6MB, 85 files of orphaned WIP code, zero references from active code
-- **Unreachable modules:** `chaos-engine.js`, `sandbox/shadow.js`, `agent-autopsy.js` (719 LOC, never called)
+5. **CLI core** (run, swarm, serve, deploy, config, doctor) — The primary interface. Clean, functional, good DX.
 
-### 3.5 Code Smells
+### 3.3 What to Prune or Demote
 
-- **God object:** `SystemMonitor.js` at 1,480 LOC with 40+ methods, 15+ instance variables, and a potential infinite recursion between `getSystemHealthSummary()` and `getSystemStatus()`
-- **Silent error swallowing:** 459+ catch blocks, many empty or log-only
-- **No input validation:** `governance-manager.js` `gate()` accepts unvalidated context objects
-- **Collision-prone IDs:** Audit records use `Math.random().toString(36).slice(2, 6)` — 4 chars = ~1.7M possible values
+These consume maintenance burden without proportional value:
 
-### 3.6 Build System: Partially Broken
+- **apps/cloud/, apps/web/, apps/desktop/, apps/white-label/, apps/website/** — 5 app workspaces that are scaffolding. Move to `future/` or delete. Ship the CLI and dashboard only.
+- **100+ abandoned CLI commands** — Archive in Cycle 2. Keep < 30.
+- **packages/mobile-sdk/** — Premature. No mobile use case validated.
+- **11 cloud SDK packages** (@aws-sdk/*, @azure/*, @google-cloud/*) — Only keep what's actually imported. The Cycle 1 scan should have pruned some already.
+- **examples/ai-saas/, examples/blockchain/, examples/microservices/** — Complex example apps that will rot. Keep only 3-5 simple, working examples.
 
-- `build:core` references non-existent `src/core/package.json` — **always silently fails** (`|| echo 'Core built'`)
-- `build:cli` output goes to `dist/ultra-dex.js` but `bin` field points to `apps/cli/bin/ultra-dex.js` — mismatch
-- `test:coverage` uses `--test-reporter=spec` without a coverage tool (c8, nyc) — no actual coverage data
-- `compliance:check` references `gitFail/compliance/` — unusual directory naming
+### 3.4 The 5 Cycles to Diamond State
+
+After Cycle 2 (stabilization), here's the path:
+
+#### Cycle 3: The Public API Contract
+- **Freeze the SDK interface** — Define the v1.0 API surface. Everything in `packages/sdk/types/index.d.ts` becomes a contract.
+- **Semantic versioning enforcement** — Any breaking change to the SDK = major version bump.
+- **API documentation** — Auto-generate from TypeScript types. No more manually maintained API.md.
+- **npm publish dry run** — Validate the package is installable and importable from a clean project.
+- **Gate**: `npm install @ultra-dex/sdk && node -e "import('@ultra-dex/sdk')"` works.
+
+#### Cycle 4: Observability & Production Ops
+- **Structured logging** — Replace scattered `console.log` and `winston` calls with a unified log schema: `{ timestamp, level, module, action, taskId, agentId, durationMs, error? }`.
+- **OpenTelemetry integration** — Trace every task from CLI input → orchestrator → agent → provider → response. Export to any backend (Jaeger, Datadog, etc.).
+- **Health endpoint** — Express endpoint that returns system health (providers reachable, memory connected, governance active).
+- **Cost dashboard** — Real-time token usage and cost tracking per provider, per task, per agent. The dashboard already has the UI; wire it to real data.
+- **Gate**: Every task execution produces a trace viewable in the dashboard.
+
+#### Cycle 5: Resilience Under Load
+- **Connection pooling** — Provider connections should be pooled, not created per-request.
+- **Backpressure** — When all providers are slow or rate-limited, the orchestrator should queue gracefully, not crash.
+- **Circuit breaker tuning** — The SDK has CircuitBreaker but it's not wired into the core orchestrator. Connect them.
+- **Chaos testing** — `chaos-engine.js` exists but is unreachable. Wire it up. Run: kill a provider mid-task → verify self-healing triggers → verify task completes via fallback.
+- **Gate**: System handles 100 concurrent tasks with 2 provider failures without data loss.
+
+#### Cycle 6: Multi-Tenancy & Isolation
+- **Workspace isolation** — Each project gets its own memory namespace, governance policies, and provider config.
+- **User/team model** — The `team.json` exists but isn't wired. Connect it to governance (team X can only use provider Y).
+- **Rate limiting per tenant** — `RateLimiter` is a NoopSubsystem. Implement it for real.
+- **Audit per tenant** — Governance audit already persists to SQLite. Add tenant_id column.
+- **Gate**: Two teams can run tasks simultaneously without interference or cost leakage.
+
+#### Cycle 7: Marketplace & Ecosystem
+- **Plugin validation** — 11 plugins exist. Add contract testing: every plugin must implement `install()`, `activate()`, `deactivate()`, `uninstall()`.
+- **Plugin marketplace API** — Expose the plugin registry as an HTTP API. Dashboard already has `Marketplace.tsx`.
+- **Provider marketplace** — Let users register custom providers via config, not code changes.
+- **Template marketplace** — The 24 templates in `src/core/templates/` should be discoverable and installable.
+- **Gate**: `npx ultra-dex plugin install @ultra-dex/slack` works end-to-end.
+
+### 3.5 What Diamond State Looks Like
+
+When Ultra-Dex reaches diamond state, this is the experience:
+
+```bash
+# Install
+npm install -g @ultra-dex/cli
+
+# Configure (30 seconds)
+ultra-dex config --wizard
+# → Detects available API keys
+# → Auto-selects cheapest provider for dev, best for prod
+# → Sets up memory and governance defaults
+
+# Run a task
+ultra-dex run "Build an auth module with JWT + refresh tokens"
+# → Governance check passes
+# → Planner agent decomposes into 4 subtasks
+# → Backend agent implements
+# → Reviewer agent validates
+# → All results stored in memory
+# → Cost: $0.12, latency: 45s, quality: 92/100
+
+# Check dashboard
+ultra-dex dashboard --web
+# → See task trace, cost breakdown, agent performance
+# → Memory graph shows knowledge accumulation
+# → Provider health: all green
+
+# Run a swarm
+ultra-dex swarm "Refactor this codebase for TypeScript strict mode"
+# → 5 agents work in parallel
+# → Self-healing on failures
+# → Governance blocks unauthorized file deletions
+# → Final PR submitted automatically
+```
+
+The gap between this vision and today is **5-7 cycles of focused work**. Not 30 cycles of broad scaffolding.
+
+### 3.6 The Meta-Recommendation
+
+Stop building horizontally. You have 8 app workspaces, 150 CLI commands, 11 plugins, 6 cloud SDKs. Most are scaffolding.
+
+**Narrow to this stack for v1.0:**
+- CLI (20-30 commands)
+- Core orchestration + providers + memory + governance
+- SDK (publishable npm package)
+- Dashboard (web UI)
+- MCP server (tool ecosystem)
+- 3-5 working examples
+
+**Archive everything else.** Bring it back when there's user demand for it.
+
+The fastest path to diamond state is subtraction, not addition.
 
 ---
 
-## 4. Security & DevOps
+## 4. Cycle 2 Dispatches
 
-### 4.1 Severity Summary
+See `.protocol/state/dispatches.md` for the full 13-window dispatch sheet.
 
-| Severity | Count | Key Issues |
-|----------|-------|------------|
-| CRITICAL | 1 | Exposed NVIDIA API keys in git |
-| HIGH | 3 | Default prod passwords, NEXTAUTH_SECRET placeholder, tar CVEs |
-| MEDIUM | 10 | No HTTPS in nginx, DB creds in ConfigMap, no SAST in CI, missing K8s RBAC/NetworkPolicies |
-| LOW | 3 | Dashboard Dockerfile no explicit non-root user, indirect dep vulns |
-
-### 4.2 Docker: Mostly Good
-
-Production Dockerfile properly implements non-root user (UID 1001), multi-stage build, health checks, and resource limits. Dashboard Dockerfile lacks explicit USER directive.
-
-### 4.3 CI/CD: Missing Security Gates
-
-- GitHub Actions properly use `${{ secrets.* }}` for tokens
-- **No SAST** (CodeQL, Semgrep, etc.) in pipeline
-- **No dependency scanning** (Snyk, Dependabot) configured
-- **No container image scanning**
-
-### 4.4 Kubernetes: Template-Grade
-
-- Secret references use `secretKeyRef` (good) but contain placeholder values (`<base64-encoded-key>`)
-- No RBAC (ServiceAccount/Role/RoleBinding) — uses default service account
-- No NetworkPolicy — unrestricted pod-to-pod traffic
-- Hardcoded domain `ultra-dex.yourdomain.com` in Ingress
-- DB connection string in ConfigMap instead of Secret
-
-### 4.5 Nginx
-
-- HTTP only (port 80), no TLS configuration
-- No HTTPS redirect
+See `.protocol/state/current-cycle.json` for cycle state and completion criteria.
 
 ---
 
-## 5. Dependencies
-
-- **200+ direct dependencies** — very large attack surface
-- **Vulnerable:** `tar` (arbitrary file read/write CVE), `esbuild` (dev server info disclosure), `fast-xml-parser` (entity expansion DoS)
-- **Heavy cloud SDKs:** Full AWS SDK client packages (@aws-sdk/client-*), Azure, GCP — even if only one cloud is used
-- **Native modules:** `node-pty`, `sharp`, `sqlite3` — complicate cross-platform builds
-- **`--legacy-peer-deps`** used throughout — masks dependency conflicts
-
----
-
-## 6. Prioritized Action Plan
-
-### P0 — This Week
-1. Revoke and rotate all exposed API keys
-2. Remove `.env` and `.env.local` from git history
-3. Add pre-commit hook blocking secrets
-4. Remove default passwords from docker-compose.prod.yml
-
-### P1 — Next 2 Weeks
-5. Delete 93 `.bak` files and 6 " 2.js" duplicates
-6. Fix `build:core` script (either create `src/core/package.json` or remove the broken redirect)
-7. Add `c8` coverage tooling and establish baseline
-8. Enable `noImplicitAny: true`, fix the 53 type errors
-9. Update `tar` dependency to >= 7.5.11
-
-### P2 — Next Month
-10. Add wall-clock timeouts to Ralph Loop and MCP auto-start
-11. Persist governance audit trail to SQLite
-12. Refactor SystemMonitor into focused classes (HealthChecker, AlertManager, MetricsReporter, etc.)
-13. Write tests for orchestration engine and agent systems (target 50% coverage)
-14. Add HTTPS to nginx config
-15. Configure SAST (CodeQL) in CI pipeline
-16. Move K8s DB credentials to Secrets, add RBAC and NetworkPolicies
-
-### P3 — Next Quarter
-17. Replace keyword-based agent selection with semantic routing
-18. Introduce dependency injection (replace singletons)
-19. Audit and tree-shake unused cloud SDK packages
-20. Fix dashboard `file:` dependency for publishable builds
-21. Expand ESLint scope to all source files with stricter rules
+*"Skeleton, not a cage" — but right now you have too many skeletons. Pick one. Flesh it out completely. That's the diamond.*

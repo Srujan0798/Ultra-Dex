@@ -22,7 +22,7 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install --force --ignore-scripts
 
       - name: Validate governance files exist
         run: |
