@@ -1,58 +1,76 @@
 # Ultra-Dex Documentation Index
 
-## 🚀 Start Here
-| Document | Description | Status |
-| :--- | :--- | :--- |
-| [System Architecture](architecture/CONSOLIDATED-ARCHITECTURE.md) | High-level system design and meta-layer overview | **CURRENT** |
-| [Quickstart Guide](../README.md) | Get up and running in less than 5 minutes | **RECENT** |
-| [API Reference](API.md) | Complete reference for SDK, CLI, and Core APIs | **CURRENT** |
-| [Contributor Guide](../CONTRIBUTING.md) | How to contribute to the Ultra-Dex ecosystem | **STALE** |
+Status labels: `CURRENT` = modified in the last 7 days, `RECENT` = modified in the last 30 days, `STALE` = older.
 
-## 🏗️ Architecture
-| Directory | Description | Main Link | Status |
-| :--- | :--- | :--- | :--- |
-| `architecture/` | Core structural patterns and design decisions | [Meta-Layer](architecture/META-LAYER.md) | **CURRENT** |
-| `specs/` | Technical specifications for neural and meta layers | [Neural-Dex](specs/NEURAL-DEX-SPEC.md) | **RECENT** |
-| `rfc/` | Request for Comments on new protocols | [Governance](rfc/002-governance-agent.md) | **STALE** |
+## Start Here
+| Document | Purpose | Status |
+| --- | --- | --- |
+| [docs/ARCHITECTURE.md](ARCHITECTURE.md) | Canonical system design and runtime boundaries | CURRENT |
+| [README.md](../README.md) | Repo quickstart and install surface | CURRENT |
+| [docs/API.md](API.md) | Top-level API reference | CURRENT |
+| [CONTRIBUTING.md](../CONTRIBUTING.md) | Contributor workflow and expectations | STALE |
 
-## 📖 Guides
-| Directory | Description | Main Link | Status |
-| :--- | :--- | :--- | :--- |
-| `guides/` | Comprehensive tutorials and setup instructions | [Quickstart](guides/QUICKSTART.md) | **CURRENT** |
-| `onboarding/` | Project manifest and AI agent onboarding | [Start Here](onboarding/START-HERE.md) | **RECENT** |
-| `examples/` | Real-world application blueprints and case studies | [SaaS-Kit](examples/SaaSKit-Complete.md) | **STALE** |
+## Architecture
+| Directory | Description | Key doc | Status |
+| --- | --- | --- | --- |
+| `AgPrompts/` | Prompt packs and phase-specific agent prompts | [PHASE6_PROMPTS.md](AgPrompts/phases/PHASE6_PROMPTS.md) | CURRENT |
+| `architecture/` | Architecture deep-dives and consolidated diagrams | [CONSOLIDATED-ARCHITECTURE.md](architecture/CONSOLIDATED-ARCHITECTURE.md) | CURRENT |
+| `core/` | Core subsystem references and changelog-style notes | [CHANGELOG.md](core/CHANGELOG.md) | STALE |
+| `meta/` | Methodology, protocols, and capability contracts | [03-METHODOLOGY.md](meta/03-METHODOLOGY.md) | STALE |
+| `rfc/` | Formal design proposals and governance RFCs | [002-governance-agent.md](rfc/002-governance-agent.md) | STALE |
+| `schemas/` | JSON schemas and machine-readable contracts | [ledger-schema.json](schemas/ledger-schema.json) | STALE |
+| `specs/` | Feature specs and technical product definitions | [NEURAL-DEX-SPEC.md](specs/NEURAL-DEX-SPEC.md) | STALE |
 
-## 🛠️ API Reference
-| Directory | Description | Main Link | Status |
-| :--- | :--- | :--- | :--- |
-| `api/` | CLI and Enterprise API documentation | [CLI Ref](api/cli-reference.md) | **CURRENT** |
-| `schemas/` | JSON schemas for ledger and quality configs | [Ledger](schemas/ledger-schema.json) | **STALE** |
-| `reference/` | Comparison guides and feature matrices | [Features](reference/FEATURES.md) | **STALE** |
+## Guides
+| Directory | Description | Key doc | Status |
+| --- | --- | --- | --- |
+| `agents/` | Agent catalog, usage patterns, and agent-facing docs | [AGENT_CUSTOMIZATION.md](agents/AGENT_CUSTOMIZATION.md) | CURRENT |
+| `ai-agents/` | Legacy AI agent notes and agent set references | [EXAMPLES.md](ai-agents/strategies/EXAMPLES.md) | STALE |
+| `community/` | Community-facing guides and collaboration docs | [CONTRIBUTING.md](community/CONTRIBUTING.md) | CURRENT |
+| `education/` | Educational material and training docs | [CURRICULUM.md](education/CURRICULUM.md) | STALE |
+| `examples/` | Example blueprints and sample project walkthroughs | [SaaSKit-Complete.md](examples/SaaSKit-Complete.md) | STALE |
+| `guides/` | Setup, workflow, and advanced usage guides | [QUICKSTART.md](guides/QUICKSTART.md) | CURRENT |
+| `onboarding/` | Repo onboarding and operator entry docs | [START-HERE.md](onboarding/START-HERE.md) | STALE |
+| `project/` | Project-level references and working agreements | [TODO-artifact-bug.md](project/TODO-artifact-bug.md) | CURRENT |
+| `templates/` | Reusable documentation and process templates | [01-CONTEXT-TEMPLATE.md](templates/01-CONTEXT-TEMPLATE.md) | STALE |
 
-## 🏢 Enterprise
-| Directory | Description | Main Link | Status |
-| :--- | :--- | :--- | :--- |
-| `enterprise/` | Security policies, runbooks, and deployment guides | [Enterprise](enterprise/ENTERPRISE_GUIDE.md) | **STALE** |
-| `compliance/` | Security and compliance frameworks | [Checklist](compliance/ENTERPRISE_COMPLIANCE_CHECKLIST.md) | **STALE** |
-| `legal/` | Code of conduct and security disclosures | [Security](legal/SECURITY.md) | **STALE** |
+## API Reference
+| Directory | Description | Key doc | Status |
+| --- | --- | --- | --- |
+| `api/` | CLI and generated API references | [cli-reference.md](api/cli-reference.md) | CURRENT |
+| `ecosystem/` | Ecosystem integrations and extension references | [EXAMPLE-STANDARDS.md](ecosystem/community/EXAMPLE-STANDARDS.md) | STALE |
+| `publishing/` | Package publishing and release surface docs | [NPM_TOKEN_SETUP.md](publishing/NPM_TOKEN_SETUP.md) | CURRENT |
+| `reference/` | Feature matrices and quick-reference material | [FEATURES.md](reference/FEATURES.md) | STALE |
+| `udcf/` | UDCF contracts and format references | [schema.json](udcf/schema.json) | CURRENT |
 
-## 🧪 Testing & Quality
-| Directory | Description | Main Link | Status |
-| :--- | :--- | :--- | :--- |
-| `testing/` | System health and integration test reports | [System Health](testing/SYSTEM_HEALTH_REPORT.json) | **RECENT** |
-| `quality/` | Quality standards and evaluation protocols | [Protocol-21](quality/PROTOCOL-21.md) | **STALE** |
-| `audit/` | Interface violation and error handling audits | [Errors](audit/ERROR_HANDLING.md) | **STALE** |
+## Enterprise
+| Directory | Description | Key doc | Status |
+| --- | --- | --- | --- |
+| `certification/` | Certification notes and readiness artifacts | [README.md](certification/README.md) | STALE |
+| `compliance/` | Compliance checklists and framework mappings | [ENTERPRISE_COMPLIANCE_CHECKLIST.md](compliance/ENTERPRISE_COMPLIANCE_CHECKLIST.md) | STALE |
+| `enterprise/` | Enterprise deployment, policy, and ops docs | [ENTERPRISE_GUIDE.md](enterprise/ENTERPRISE_GUIDE.md) | STALE |
+| `governance/` | Governance policy docs and enforcement notes | [README.md](governance/README.md) | STALE |
+| `investors/` | Investor and business narrative documents | [investor-outreach.md](investors/investor-outreach.md) | STALE |
+| `legal/` | Legal, disclosure, and policy files | [SECURITY.md](legal/SECURITY.md) | STALE |
+| `marketing/` | Marketing copy and outward-facing positioning docs | [DEMO-SCRIPT.md](marketing/DEMO-SCRIPT.md) | STALE |
+| `security/` | Security reviews, controls, and hardening notes | [SECURITY-GUIDE.md](security/SECURITY-GUIDE.md) | CURRENT |
 
-## 📅 Planning & Strategy
-| Directory | Description | Main Link | Status |
-| :--- | :--- | :--- | :--- |
-| `planning/` | Roadmap and detailed execution plans | [Execution](planning/EXECUTION_PLAN.md) | **STALE** |
-| `strategy/` | Product and technology strategy documents | [Roadmap](strategy/TECHNICAL_ROADMAP.md) | **STALE** |
-| `meta/` | Methodology and capability contracts | [Methodology](meta/03-METHODOLOGY.md) | **STALE** |
+## Testing
+| Directory | Description | Key doc | Status |
+| --- | --- | --- | --- |
+| `analysis/` | Deep audits and repo analysis outputs | [action-planning-framework.md](analysis/action-planning-framework.md) | CURRENT |
+| `audit/` | Audit findings and remediation reports | [ERROR_HANDLING.md](audit/ERROR_HANDLING.md) | CURRENT |
+| `quality/` | Quality gates, protocols, and scorecards | [PROTOCOL-21.md](quality/PROTOCOL-21.md) | STALE |
+| `reports/` | Generated reports and completion summaries | [PROJECT_SUMMARY.md](reports/PROJECT_SUMMARY.md) | CURRENT |
+| `testing/` | Test reports, baselines, and validation assets | [SYSTEM_HEALTH_REPORT.json](testing/SYSTEM_HEALTH_REPORT.json) | CURRENT |
+| `verification-logs/` | Verification trails and audit logs | [FINAL-AUDIT-REPORT.md](verification-logs/FINAL-AUDIT-REPORT.md) | STALE |
 
-## 📊 Reports
-| Directory | Description | Main Link | Status |
-| :--- | :--- | :--- | :--- |
-| `reports/` | Project summaries and completion certificates | [Summary](reports/PROJECT_SUMMARY.md) | **CURRENT** |
-| `verification-logs/` | Final audit reports and verification trails | [Audit](verification-logs/FINAL-AUDIT-REPORT.md) | **CURRENT** |
-| `internal/` | Implementation roadmap and checklist summaries | [Summary](internal/IMPROVEMENT_SUMMARY.md) | **CURRENT** |
+## Planning
+| Directory | Description | Key doc | Status |
+| --- | --- | --- | --- |
+| `internal/` | Internal plans and implementation summaries | [IMPROVEMENT_SUMMARY.md](internal/IMPROVEMENT_SUMMARY.md) | STALE |
+| `ops/` | Operational procedures and service runbooks | [DISASTER-RECOVERY.md](ops/DISASTER-RECOVERY.md) | STALE |
+| `planning/` | Roadmaps, execution plans, and dispatches | [EXECUTION_PLAN.md](planning/EXECUTION_PLAN.md) | STALE |
+| `process/` | Team process and execution protocol docs | [CHECKLIST.md](process/CHECKLIST.md) | STALE |
+| `scripts/` | Documentation-related maintenance scripts | [validate-docs.js](scripts/validate-docs.js) | CURRENT |
+| `strategy/` | Product and technical strategy docs | [TECHNICAL_ROADMAP.md](strategy/TECHNICAL_ROADMAP.md) | STALE |

@@ -15,7 +15,7 @@ import { marketplaceClient } from '../marketplace/client.js';
 import { authorizeAgentAccess, filterAgentsByAccess } from '../enterprise/agent-access.js';
 import { printError, printInfo, printWarning } from '../utils/output.js';
 import { logger } from '../utils/logger.js';
-import { registerAgentGenerator } from './agent-gen.js';
+import { registerAgentGenerator } from '../agents/agent-generator.js';
 
 export const AGENTS = [
   {

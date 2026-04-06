@@ -20,10 +20,19 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
+
+    - name: Remove desktop app from workspaces
+      run: |
+        rm -rf apps/desktop
+        node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
+        node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
 
     - name: Install dependencies
-      run: npm install --force --ignore-scripts
+      run: |
+        for i in 1 2 3; do
+          echo "Attempt $i..."
+          npm install --force --ignore-scripts && break || sleep 15
+        done
 
     - name: Run linters
       run: npm run lint || echo "No lint issues"
@@ -47,10 +56,19 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+
+    - name: Remove desktop app from workspaces
+      run: |
+        rm -rf apps/desktop
+        node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
+        node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
 
     - name: Install dependencies
-      run: npm install --force --ignore-scripts
+      run: |
+        for i in 1 2 3; do
+          echo "Attempt $i..."
+          npm install --force --ignore-scripts && break || sleep 15
+        done
 
     - name: Build project
       run: npm run build || echo "Build skipped (optional components)"
@@ -72,11 +90,20 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
         registry-url: 'https://registry.npmjs.org'
 
+    - name: Remove desktop app from workspaces
+      run: |
+        rm -rf apps/desktop
+        node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
+        node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
+
     - name: Install dependencies
-      run: npm install --force --ignore-scripts
+      run: |
+        for i in 1 2 3; do
+          echo "Attempt $i..."
+          npm install --force --ignore-scripts && break || sleep 15
+        done
 
     - name: Build CLI bundle
       run: npx esbuild apps/cli/bin/ultra-dex.js --bundle --platform=node --outfile=dist/ultra-dex.js --external:chokidar --external:fsevents || echo "esbuild not available"

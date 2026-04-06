@@ -1,179 +1,79 @@
-# CLI Command Audit Report
+# CLI Command Audit
 
-**Date:** 2026-04-06
-**Scope:** `apps/cli/lib/commands/*.js`
-**Entry Points:** `apps/cli/bin/ultra-dex.js`, `apps/cli/bin/ultra-dex-full.js`
+Date: 2026-04-06  
+Scope: `apps/cli/lib/commands/*.js`, `apps/cli/bin/ultra-dex.js`, `apps/cli/bin/ultra-dex-full.js`
 
-## Classification Criteria
-- **ACTIVE:** Registered in entry point and modified after Apr 3.
-- **STALE:** Not registered OR modified before Apr 3.
-- **BROKEN:** Imports missing (validated a sample) OR failed registration.
-- **DEPRECATED:** Registered but likely old or replaced (e.g., duplicated logic).
+## Final Counts
 
-## Audit Table
+- Active command files in `apps/cli/lib/commands`: `39`
+- Command registrations in `apps/cli/bin/ultra-dex-full.js`: `40`
+- Helper modules moved out of `apps/cli/lib/commands`: `4`
+- Newly archived command entry files this cycle: `7`
+- Deprecated commands left on the active surface: `0`
 
-| Command File | Registered | Imports Valid | Last Modified | Status |
-| :--- | :---: | :---: | :--- | :--- |
-| `advanced.js` | YES | YES | Apr 5 | ACTIVE |
-| `agent-gen.js` | YES | YES | Apr 2 | STALE |
-| `agents.js` | YES | YES | Apr 5 | ACTIVE |
-| `ai-advisor.js` | YES | YES | Apr 2 | STALE |
-| `api.js` | YES | YES | Apr 2 | STALE |
-| `architect.js` | YES | YES | Apr 2 | STALE |
-| `audit.js` | YES | YES | Apr 2 | STALE |
-| `auth-sso.js` | YES | YES | Apr 2 | STALE |
-| `auth.js` | YES | YES | Apr 2 | STALE |
-| `auto-implement.js` | YES | YES | Apr 5 | ACTIVE |
-| `autonomous.js` | YES | YES | Apr 5 | ACTIVE |
-| `background-agent.js` | YES | YES | Apr 2 | STALE |
-| `banner.js` | YES | YES | Apr 5 | ACTIVE |
-| `batch.js` | YES | YES | Apr 2 | STALE |
-| `benchmark.js` | YES | YES | Apr 2 | STALE |
-| `bot.js` | YES | YES | Apr 2 | STALE |
-| `brain.js` | YES | YES | Apr 5 | ACTIVE |
-| `browse.js` | YES | YES | Apr 2 | STALE |
-| `browser-auto.js` | YES | YES | Apr 5 | ACTIVE |
-| `browser.js` | YES | YES | Apr 2 | STALE |
-| `budget.js` | YES | YES | Apr 2 | STALE |
-| `build.js` | YES | YES | Apr 5 | ACTIVE |
-| `challenge.js` | YES | YES | Apr 2 | STALE |
-| `chat.js` | YES | YES | Apr 2 | STALE |
-| `check.js` | YES | YES | Apr 5 | ACTIVE |
-| `chrome-agent.js` | YES | YES | Apr 2 | STALE |
-| `ci-monitor.js` | YES | YES | Apr 2 | STALE |
-| `cicd.js` | YES | YES | Apr 2 | STALE |
-| `clean.js` | YES | YES | Apr 2 | STALE |
-| `cloud.js` | YES | YES | Apr 2 | STALE |
-| `code-gen.js` | YES | YES | Apr 5 | ACTIVE |
-| `commit.js` | YES | YES | Apr 2 | STALE |
-| `compare.js` | YES | YES | Apr 2 | STALE |
-| `config.js` | YES | YES | Apr 5 | ACTIVE |
-| `credentials.js` | YES | YES | Apr 2 | STALE |
-| `daemon.js` | YES | YES | Apr 2 | STALE |
-| `dashboard 2.js` | NO | YES | Apr 2 | BROKEN (Dupe) |
-| `dashboard-websocket-client.js` | YES | YES | Apr 2 | STALE |
-| `dashboard.js` | YES | YES | Apr 2 | STALE |
-| `db-advisor.js` | YES | YES | Apr 2 | STALE |
-| `demo.js` | YES | YES | Apr 2 | STALE |
-| `deploy.js` | YES | YES | Apr 5 | ACTIVE |
-| `diff.js` | YES | YES | Apr 2 | STALE |
-| `docker.js` | YES | YES | Apr 2 | STALE |
-| `docs.js` | YES | YES | Apr 2 | STALE |
-| `doctor.js` | YES | YES | Apr 5 | ACTIVE |
-| `dr-check.js` | NO | YES | Apr 2 | STALE (Not Reg) |
-| `enterprise.js` | YES | YES | Apr 3 | ACTIVE |
-| `env.js` | YES | YES | Apr 2 | STALE |
-| `estimate.js` | YES | YES | Apr 2 | STALE |
-| `examples.js` | YES | YES | Apr 2 | STALE |
-| `exec.js` | YES | YES | Apr 5 | ACTIVE |
-| `export.js` | YES | YES | Apr 5 | ACTIVE |
-| `fetch.js` | YES | YES | Apr 5 | ACTIVE |
-| `fix.js` | YES | YES | Apr 2 | STALE |
-| `forge.js` | YES | YES | Apr 5 | ACTIVE |
-| `gate.js` | YES | YES | Apr 2 | STALE |
-| `generate.js` | YES | YES | Apr 5 | ACTIVE |
-| `ghost.js` | YES | YES | Apr 2 | STALE |
-| `git.js` | YES | YES | Apr 2 | STALE |
-| `github.js` | YES | YES | Apr 5 | ACTIVE |
-| `governance.js` | YES | YES | Apr 2 | STALE |
-| `graph.js` | NO | YES | Apr 2 | STALE (Not Reg) |
-| `health.js` | YES | YES | Apr 3 | ACTIVE |
-| `help.js` | YES | YES | Apr 5 | ACTIVE |
-| `hooks.js` | YES | YES | Apr 2 | STALE |
-| `ide.js` | YES | YES | Apr 5 | ACTIVE |
-| `impact.js` | YES | YES | Apr 2 | STALE |
-| `import.js` | YES | YES | Apr 5 | ACTIVE |
-| `init.js` | YES | YES | Apr 5 | ACTIVE |
-| `install-completion.js` | YES | YES | Apr 2 | STALE |
-| `integrate.js` | YES | YES | Apr 5 | ACTIVE |
-| `jira.js` | YES | YES | Apr 2 | STALE |
-| `k8s.js` | YES | YES | Apr 2 | STALE |
-| `ledger.js` | YES | YES | Apr 2 | STALE |
-| `marketplace.js` | YES | YES | Apr 2 | STALE |
-| `mcp-host.js` | YES | YES | Apr 2 | STALE |
-| `mcp-remote.js` | YES | YES | Apr 5 | ACTIVE |
-| `mcp.js` | YES | YES | Apr 2 | STALE |
-| `memory.js` | YES | YES | Apr 2 | STALE |
-| `mobile.js` | YES | YES | Apr 2 | STALE |
-| `monitor.js` | YES | YES | Apr 2 | STALE |
-| `monitoring.js` | YES | YES | Apr 2 | STALE |
-| `neuro-plan.js` | YES | YES | Apr 2 | STALE |
-| `nexus.js` | YES | YES | Apr 2 | STALE |
-| `notion.js` | YES | YES | Apr 2 | STALE |
-| `onboard.js` | YES | YES | Apr 2 | STALE |
-| `perf.js` | YES | YES | Apr 2 | STALE |
-| `pipeline.js` | YES | YES | Apr 5 | ACTIVE |
-| `plan.js` | YES | YES | Apr 2 | STALE |
-| `playground.js` | YES | YES | Apr 5 | ACTIVE |
-| `plugin-scan.js` | YES | YES | Apr 2 | STALE |
-| `plugin.js` | YES | YES | Apr 2 | STALE |
-| `pre-commit.js` | YES | YES | Apr 2 | STALE |
-| `predict-debug.js` | YES | YES | Apr 2 | STALE |
-| `predict.js` | YES | YES | Apr 5 | ACTIVE |
-| `privacy.js` | YES | YES | Apr 2 | STALE |
-| `production-ready.js` | YES | YES | Apr 2 | STALE |
-| `profile.js` | YES | YES | Apr 2 | STALE |
-| `pty.js` | YES | YES | Apr 2 | STALE |
-| `quality-enhanced.js` | YES | YES | Apr 5 | ACTIVE |
-| `quality.js` | YES | YES | Apr 5 | ACTIVE |
-| `rag.js` | YES | YES | Apr 2 | STALE |
-| `ralph.js` | YES | YES | Apr 5 | ACTIVE |
-| `reality-check.js` | YES | YES | Apr 2 | STALE |
-| `review.js` | YES | YES | Apr 5 | ACTIVE |
-| `risk.js` | YES | YES | Apr 2 | STALE |
-| `rollback.js` | YES | YES | Apr 2 | STALE |
-| `route.js` | YES | YES | Apr 2 | STALE |
-| `router-cmd.js` | YES | YES | Apr 2 | STALE |
-| `rules.js` | YES | YES | Apr 2 | STALE |
-| `run-context.js` | YES | YES | Apr 2 | STALE |
-| `run.js` | YES | YES | Apr 5 | ACTIVE |
-| `scaffold-enhanced.js` | YES | YES | Apr 2 | STALE |
-| `scaffold-plan.js` | YES | YES | Apr 2 | STALE |
-| `scaffold.js` | YES | YES | Apr 5 | ACTIVE |
-| `search.js` | YES | YES | Apr 5 | ACTIVE |
-| `security.js` | YES | YES | Apr 2 | STALE |
-| `serve.js` | YES | YES | Apr 5 | ACTIVE |
-| `session.js` | YES | YES | Apr 2 | STALE |
-| `setup.js` | NO | YES | Apr 2 | STALE (Not Reg) |
-| `snap.js` | YES | YES | Apr 2 | STALE |
-| `sso.js` | YES | YES | Apr 2 | STALE |
-| `state.js` | YES | YES | Apr 5 | ACTIVE |
-| `status.js` | YES | YES | Apr 2 | STALE |
-| `suggest.js` | YES | YES | Apr 5 | ACTIVE |
-| `swarm-advanced.js` | YES | YES | Apr 2 | STALE |
-| `swarm-p2p.js` | YES | YES | Apr 2 | STALE |
-| `swarm.js` | YES | YES | Apr 5 | ACTIVE |
-| `sync-pm.js` | YES | YES | Apr 2 | STALE |
-| `sync.js` | YES | YES | Apr 5 | ACTIVE |
-| `team.js` | YES | YES | Apr 2 | STALE |
-| `telemetry.js` | YES | YES | Apr 2 | STALE |
-| `template.js` | YES | YES | Apr 2 | STALE |
-| `templates.js` | YES | YES | Apr 2 | STALE |
-| `test.js` | YES | YES | Apr 2 | STALE |
-| `think.js` | YES | YES | Apr 2 | STALE |
-| `trello.js` | YES | YES | Apr 2 | STALE |
-| `tutorial.js` | YES | YES | Apr 2 | STALE |
-| `tutorials.js` | YES | YES | Apr 2 | STALE |
-| `undo.js` | YES | YES | Apr 2 | STALE |
-| `upgrade.js` | YES | YES | Apr 5 | ACTIVE |
-| `validate.js` | YES | YES | Apr 2 | STALE |
-| `vault.js` | YES | YES | Apr 2 | STALE |
-| `vector-search.js` | YES | YES | Apr 5 | ACTIVE |
-| `verify.js` | YES | YES | Apr 5 | ACTIVE |
-| `version-check.js` | YES | YES | Apr 2 | STALE |
-| `vibe.js` | YES | YES | Apr 2 | STALE |
-| `vision.js` | YES | YES | Apr 2 | STALE |
-| `voice.js` | YES | YES | Apr 2 | STALE |
-| `watch.js` | YES | YES | Apr 2 | STALE |
-| `white-label.js` | YES | YES | Apr 2 | STALE |
-| `workflow.js` | YES | YES | Apr 2 | STALE |
-| `workflows.js` | YES | YES | Apr 2 | STALE |
-| `workspace.js` | YES | YES | Apr 2 | STALE |
+## Retained Command Surface
 
-## Recommended for Deletion
-The following files are either duplicates, not registered, or modified significantly before the April 3 refactor:
-1. `dashboard 2.js` (Broken/Duplicate)
-2. `dr-check.js` (Not registered)
-3. `graph.js` (Not registered)
-4. `setup.js` (Not registered)
-5. All commands marked **STALE** (Modified before Apr 3) should be reviewed for migration to the new architecture.
+| Command File | Registered | Role | Status |
+| --- | --- | --- | --- |
+| `agents.js` | YES | agent catalog and subcommands | ACTIVE |
+| `auto-implement.js` | YES | automated implementation workflow | ACTIVE |
+| `autonomous.js` | YES | autonomous mode runner | ACTIVE |
+| `brain.js` | YES | reasoning and brain orchestration entry | ACTIVE |
+| `build.js` | YES | build-oriented workflow command | ACTIVE |
+| `check.js` | YES | repo health checks | ACTIVE |
+| `config.js` | YES | runtime configuration | ACTIVE |
+| `deploy.js` | YES | deployment workflow | ACTIVE |
+| `doctor.js` | YES | diagnostics and repair | ACTIVE |
+| `enterprise.js` | YES | enterprise management surface | ACTIVE |
+| `exec.js` | YES | command execution helpers | ACTIVE |
+| `export.js` | YES | export workflow | ACTIVE |
+| `fetch.js` | YES | fetch/download helpers | ACTIVE |
+| `forge.js` | YES | forge workflow | ACTIVE |
+| `generate.js` | YES | plan/content generation | ACTIVE |
+| `github.js` | YES | GitHub integration | ACTIVE |
+| `health.js` | YES | health reporting | ACTIVE |
+| `help.js` | YES | help surface | ACTIVE |
+| `import.js` | YES | import workflow | ACTIVE |
+| `init.js` | YES | project bootstrap | ACTIVE |
+| `integrate.js` | YES | integration helpers | ACTIVE |
+| `mcp-remote.js` | YES | remote MCP control | ACTIVE |
+| `pipeline.js` | YES | pipeline runner | ACTIVE |
+| `plan.js` | NO | plan/state support module still used by tests and commands | ACTIVE |
+| `predict.js` | YES | predictive analysis command | ACTIVE |
+| `quality.js` | YES | quality workflow | ACTIVE |
+| `ralph.js` | YES | RALPH agent loop entry | ACTIVE |
+| `review.js` | YES | review workflow | ACTIVE |
+| `run.js` | YES | run, swarm, and distributed command bundle | ACTIVE |
+| `scaffold.js` | YES | scaffold workflow | ACTIVE |
+| `search.js` | YES | code and repo search | ACTIVE |
+| `serve.js` | YES | local service/runtime hosting | ACTIVE |
+| `state.js` | YES | state inspection and mutation | ACTIVE |
+| `suggest.js` | YES | suggestion workflow | ACTIVE |
+| `swarm.js` | YES | retained because tests and downstream modules import it directly | ACTIVE |
+| `sync.js` | YES | sync workflow | ACTIVE |
+| `upgrade.js` | YES | upgrade surface | ACTIVE |
+| `vector-search.js` | YES | vector retrieval command | ACTIVE |
+| `verify.js` | YES | verification workflow | ACTIVE |
+
+## Helper Modules Moved Out Of `lib/commands`
+
+| Previous Path | New Path | Reason |
+| --- | --- | --- |
+| `apps/cli/lib/commands/agent-gen.js` | `apps/cli/lib/agents/agent-generator.js` | helper for `agents.js`, not a top-level command |
+| `apps/cli/lib/commands/banner.js` | `apps/cli/lib/ui/banner.js` | UI helper, not a maintained CLI command |
+| `apps/cli/lib/commands/run-context.js` | `apps/cli/lib/run-context.js` | shared helper for `run.js` and tests |
+| `apps/cli/lib/commands/scaffold-plan.js` | `apps/cli/lib/scaffold/plan.js` | scaffold helper, not registered from the full entrypoint |
+
+## Newly Archived This Cycle
+
+| Archived File | Reason |
+| --- | --- |
+| `advanced.js` | full entrypoint expected `registerAdvancedCommand`, but the file only exposed sub-registrars |
+| `audit.js` | helper-only module after quality surface consolidation |
+| `browser-auto.js` | full entrypoint expected `registerBrowserAutoCommand`, but the file exported `registerBrowserCommand` |
+| `code-gen.js` | dormant generation command outside the tested surface |
+| `ide.js` | dormant IDE entry outside the tested surface |
+| `playground.js` | dormant playground entry outside the tested surface |
+| `quality-enhanced.js` | full entrypoint expected `registerQualityEnhancedCommand`, but the file exported `registerQualityCommand` |
+
+Archive note: the repository already contained a larger pre-existing `archive/cli-deprecated/` backlog before this pass. The seven files above are the command entries intentionally retired during this cycle.

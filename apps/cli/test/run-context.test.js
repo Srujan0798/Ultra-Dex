@@ -7,7 +7,7 @@ import {
   buildPromptContextSection,
   extractDecision,
   stripDecisionLine,
-} from '../lib/commands/run-context.js';
+} from '../lib/run-context.js';
 
 describe('run context helpers', () => {
   test('builds a prompt section from context, plan, state, graph, history, and memory', () => {

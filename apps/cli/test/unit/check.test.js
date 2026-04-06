@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { registerCheckCommand } from '../../lib/commands/advanced.js';
+import { registerCheckCommand } from '../../lib/commands/check.js';
 import { Command } from 'commander';
 
 describe('check command', () => {

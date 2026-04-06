@@ -2,7 +2,7 @@
 
 import { theme, ultraGradient } from './theme.js';
 import { VERSION } from '../utils/version.js';
-import { banner } from '../commands/banner.js';
+import { banner } from './banner.js';
 
 export function showHeader(title = '') {
   console.clear();

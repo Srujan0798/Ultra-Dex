@@ -164,6 +164,8 @@ class UltraDexCore extends EventEmitter {
         autoRestart: this.config.get('mcp.autoRestart', true),
         restartDelay: this.config.get('mcp.restartDelay', 5000),
         healthCheckInterval: this.config.get('mcp.healthCheckInterval', 30000),
+        memory: this.memory,
+        agentRegistry: this.agents,
       });
       await this.mcp.initialize();
 
@@ -178,6 +180,7 @@ class UltraDexCore extends EventEmitter {
         timeout: this.config.get('providers.timeout', 30000),
       });
       await this.router.initialize();
+      this.mcp.providerRouter = this.router;
 
       // Load default providers
       await this._loadDefaultProviders();

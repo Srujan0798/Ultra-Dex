@@ -142,7 +142,7 @@ async function detectStackFromPlan() {
   }
 }
 
-import { scaffoldFromPlan } from './scaffold-plan.js';
+import { scaffoldFromPlan } from '../scaffold/plan.js';
 
 export async function scaffoldCommand(templateName, options) {
   if (options.fromPlan) {
