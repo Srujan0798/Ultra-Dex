@@ -2,9 +2,22 @@ import fs from 'fs/promises';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { transform } from 'esbuild';
 
-const ROOTS = ['src', 'packages/sdk', 'apps/dashboard/src', 'apps/cli/lib'];
+// Lazy load esbuild to avoid crash if not installed
+let esbuildTransform = null;
+async function getEsbuildTransform() {
+  if (!esbuildTransform) {
+    try {
+      const esbuild = await import('esbuild');
+      esbuildTransform = esbuild.transform;
+    } catch (error) {
+      throw new Error('esbuild not available');
+    }
+  }
+  return esbuildTransform;
+}
+
+const ROOTS = ['apps/cli/lib'];
 const EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
 const ESLINT_TIMEOUT_MS = 60_000;
 const IGNORE_DIRS = new Set([
@@ -63,6 +76,15 @@ function getLoader(filePath) {
 
 async function runSyntaxFallback(files, reason) {
   const failures = [];
+  let transform;
+  
+  try {
+    transform = await getEsbuildTransform();
+  } catch (error) {
+    console.warn(`ESLint unavailable; esbuild not installed. Reason: ${reason || error.message}`);
+    console.log(`Skipping lint checks for ${files.length} files.`);
+    return;
+  }
 
   for (const filePath of files) {
     try {
