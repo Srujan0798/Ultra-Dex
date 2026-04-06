@@ -37,7 +37,7 @@ import {
   extractDecision,
   stripDecisionLine,
   truncateText,
-} from './run-context.js';
+} from '../run-context.js';
 
 // V2 Core orchestration (feature-flagged, default OFF)
 import { createOrchestrationStack } from '../core/index.js';

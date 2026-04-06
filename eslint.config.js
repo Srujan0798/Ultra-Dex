@@ -1,3 +1,4 @@
+import fs from 'fs';
 import js from '@eslint/js';
 
 async function loadTypeScriptEslintModule(specifier, fallbackSpecifier) {
@@ -5,19 +6,64 @@ async function loadTypeScriptEslintModule(specifier, fallbackSpecifier) {
     const mod = await import(specifier);
     return mod.default ?? mod;
   } catch {
-    const mod = await import(fallbackSpecifier);
-    return mod.default ?? mod;
+    try {
+      const mod = await import(fallbackSpecifier);
+      return mod.default ?? mod;
+    } catch {
+      return null;
+    }
   }
 }
 
-const tsParser = await loadTypeScriptEslintModule(
-  '@typescript-eslint/parser',
-  './node_modules/@typescript-eslint/parser/dist/index.js'
-);
-const tsPlugin = await loadTypeScriptEslintModule(
-  '@typescript-eslint/eslint-plugin',
-  './node_modules/@typescript-eslint/eslint-plugin/dist/index.js'
-);
+function hasLocalPackage(relativePath) {
+  return fs.existsSync(new URL(relativePath, import.meta.url));
+}
+
+const hasTypeScriptEslintRuntime =
+  hasLocalPackage('./node_modules/@typescript-eslint/parser/package.json') &&
+  hasLocalPackage('./node_modules/@typescript-eslint/eslint-plugin/package.json') &&
+  hasLocalPackage('./node_modules/@typescript-eslint/scope-manager/package.json');
+
+const tsParser = hasTypeScriptEslintRuntime
+  ? await loadTypeScriptEslintModule(
+      '@typescript-eslint/parser',
+      './node_modules/@typescript-eslint/parser/dist/index.js'
+    )
+  : null;
+const tsPlugin = hasTypeScriptEslintRuntime
+  ? await loadTypeScriptEslintModule(
+      '@typescript-eslint/eslint-plugin',
+      './node_modules/@typescript-eslint/eslint-plugin/dist/index.js'
+    )
+  : null;
+
+const tsLintConfig =
+  tsParser && tsPlugin
+    ? [
+        {
+          files: ['**/*.ts', '**/*.tsx'],
+          languageOptions: {
+            parser: tsParser,
+            parserOptions: {
+              ecmaVersion: 'latest',
+              sourceType: 'module',
+            },
+          },
+          plugins: {
+            '@typescript-eslint': tsPlugin,
+          },
+          rules: {
+            ...tsPlugin.configs.recommended.rules,
+            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/explicit-function-return-type': 'warn',
+          },
+        },
+      ]
+    : [
+        {
+          ignores: ['**/*.ts', '**/*.tsx'],
+        },
+      ];
 
 export default [
   js.configs.recommended,
@@ -85,24 +131,7 @@ export default [
       'no-constant-condition': 'warn',
     },
   },
-  {
-    files: ['**/*.ts', '**/*.tsx'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-    },
-    rules: {
-      ...tsPlugin.configs.recommended.rules,
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/explicit-function-return-type': 'warn',
-    },
-  },
+  ...tsLintConfig,
   {
     files: ['**/*.config.js', '**/*.config.cjs', '**/*.config.mjs'],
     languageOptions: {

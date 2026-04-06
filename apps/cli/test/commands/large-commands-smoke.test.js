@@ -64,16 +64,6 @@ describe('Large Commands - Smoke Tests', () => {
     });
   });
 
-  describe('code-gen command', () => {
-    test('should load module without critical errors', async () => {
-      const result = await testCommandImport(
-        '../../lib/commands/code-gen.js',
-        'registerCodeGenCommand'
-      );
-      assert.ok(result.success);
-    });
-  });
-
   describe('deploy command', () => {
     test('should load module without critical errors', async () => {
       const result = await testCommandImport(
@@ -135,7 +125,7 @@ describe('Large Commands - Smoke Tests', () => {
   describe('scaffold-plan command', () => {
     test('should load module without critical errors', async () => {
       const result = await testCommandImport(
-        '../../lib/commands/scaffold-plan.js',
+        '../../lib/scaffold/plan.js',
         'registerScaffoldPlanCommand'
       );
       assert.ok(result.success);

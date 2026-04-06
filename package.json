@@ -88,7 +88,7 @@
     "test:coverage": "NODE_ENV=test npx c8 --reporter=text --reporter=lcov node --test tests/core/*.test.js tests/integration/*.test.js tests/cli/*.test.js",
     "test:ci": "NODE_ENV=test node --test --test-reporter=spec tests/core/*.test.js tests/integration/*.test.js tests/cli/*.test.js",
     "coverage:report": "npx c8 report --reporter=html",
-    "lint": "eslint src packages/sdk apps/dashboard/src apps/cli/lib --no-error-on-unmatched-pattern",
+    "lint": "node scripts/run-lint.js",
     "lint:fix": "eslint apps/cli/lib --ext .js,.ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

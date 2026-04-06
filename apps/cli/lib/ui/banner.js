@@ -4,7 +4,6 @@ import boxen from '../utils/boxen.js';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
 import { VERSION } from '../utils/version.js';
-import { theme } from '../ui/theme.js';
 import { logger } from '../utils/logger.js';
 
 const asciiLogo = `
