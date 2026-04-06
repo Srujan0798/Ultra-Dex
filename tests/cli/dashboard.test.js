@@ -9,7 +9,7 @@ import {
   getSystemStatus,
   showInteractiveDashboard,
   startDashboardWebServer,
-} from '../../apps/cli/lib/commands/dashboard.js';
+} from '../../apps/cli/lib/dashboard/experience.js';
 
 async function createProject(rootDir, name, options = {}) {
   const projectDir = path.join(rootDir, name);

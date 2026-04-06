@@ -1,18 +1,17 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
 import fs from 'fs/promises';
+import os from 'os';
 import path from 'path';
 import { TeamManager } from '../../src/core/team/team-manager.js';
 
 describe('TeamManager Persistence', () => {
   let teamManager;
+  let testDir;
   const ownerId = 'user-123';
-  const testDir = path.resolve(process.cwd(), '.ultra-dex-test');
-  
+
   beforeEach(async () => {
-    // Create a temporary directory for the test
-    await fs.mkdir(testDir, { recursive: true });
-    // Initialize TeamManager with the test directory
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-team-persist-'));
     teamManager = new TeamManager(testDir);
   });
 
