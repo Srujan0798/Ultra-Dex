@@ -5,7 +5,7 @@ import { logger } from '../../utils/logging.js';
 import { ObservabilitySystem } from '../system/observability.js';
 import { SmartAIRouter } from '../ai/router.js';
 import { AgentRegistry } from './registry.js';
-import { ExecutionTrace } from '../../platform/cli/swarm/protocol.js';
+import { ExecutionTrace } from '../agents/protocol.js';
 import { PerformanceMetrics } from '../../benchmarks/performance-metrics.js';
 
 /**
@@ -555,111 +555,6 @@ export class ExecutionEngine {
       throw error;
     }
   }
-      if (trace) {
-        trace.start();
-        // Add all steps to pipeline
-        task.steps.forEach((step, i) => {
-          const stepId = step.id || `step_${i}`;
-          trace.addStep(stepId, task.agent, step.type, []);
-        });
-      }
-
-      logger.info('Starting task execution', { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
-      task.status = 'running';
-
-      for (let i = 0; i < task.steps.length; i++) {
-        const step = task.steps[i];
-        const stepId = step.id || `step_${i}`;
-
-        if (trace) {
-          try {
-            trace.startStep(stepId);
-          } catch (traceError) {
-            logger.warn('Failed to start step in trace', { taskId: task.id, stepId, error: traceError.message });
-          }
-        }
-
-        logger.info('Executing step', { taskId: task.id, stepId, type: step.type, agent: task.agent });
-        const startTime = Date.now();
-
-        try {
-          const result = await this.executeStep(step, task);
-          const duration = Date.now() - startTime;
-          task.results[stepId] = result;
-
-          if (trace) {
-            try {
-              trace.recordResult(task.agent, { stepId, result, duration }, true);
-            } catch (traceError) {
-              logger.warn('Failed to record step result in trace', { taskId: task.id, stepId, error: traceError.message });
-            }
-          }
-
-          logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
-        } catch (error) {
-          const duration = Date.now() - startTime;
-          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
-          task.errors.push({ stepId, error: error.message });
-
-          // Record step error metrics
-          if (this.performanceMetrics) {
-            this.performanceMetrics.recordMetric('execution.step_errors', 1, {
-              stepType: step.type,
-              error: error.message.substring(0, 100), // Truncate long error messages
-            });
-          }
-
-          if (trace) {
-            try {
-              trace.recordResult(task.agent, { stepId, error: error.message, duration }, false);
-            } catch (traceError) {
-              logger.warn('Failed to record step error in trace', { taskId: task.id, stepId, error: traceError.message });
-            }
-          }
-
-          // For now, fail fast on error. Could implement retry logic later
-          throw error;
-        }
-      }
-
-      task.status = 'completed';
-      logger.info('Task execution completed', { taskId: task.id, duration: trace?.getDurationFormatted() });
-
-      if (trace) {
-        trace.complete(true);
-      }
-
-      return {
-        status: 'completed',
-        results: task.results,
-        trace: trace ? trace.toJSON() : null,
-        run_id: trace?.taskId,
-        agents: trace ? trace.pipeline.map(s => s.agent) : [task.agent],
-        steps: task.steps.map((s, i) => s.id || `step_${i}`),
-        duration: trace?.getDuration()
-      };
-    } catch (error) {
-      task.status = 'failed';
-      logger.error('Task execution failed', { taskId: task.id, error: error.message, duration: trace?.getDurationFormatted() });
-
-      if (trace) {
-        try {
-          trace.complete(false);
-        } catch (traceError) {
-          logger.warn('Failed to complete trace on error', { taskId: task.id, error: traceError.message });
-        }
-      }
-
-      throw error;
-    }
-  }
-
-  /**
-   * Execute a single step
-   * @param {Object} step - The step to execute
-   * @param {ExecutionTask} task - The parent task
-   * @returns {*} Step result
-   */
   async executeStep(step, task, cancellationToken = null) {
     switch (step.type) {
       case 'generate':

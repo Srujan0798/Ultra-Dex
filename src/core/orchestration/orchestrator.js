@@ -139,5 +139,4 @@ export class Orchestrator {
   }
 }
 
-export default Orchestrator;</content>
-<parameter name="filePath">src/core/orchestration/orchestrator.js
+export default Orchestrator;
