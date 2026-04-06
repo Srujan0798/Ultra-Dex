@@ -28,7 +28,7 @@ jobs:
         run: npm --version
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --force
 
       - name: Run type checking
         run: npm run typecheck || echo "Typecheck completed"
