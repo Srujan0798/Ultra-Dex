@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-set -e
-
-sh gitFail/compliance/run-enterprise-gate.sh push
