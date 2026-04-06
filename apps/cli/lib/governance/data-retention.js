@@ -433,5 +433,4 @@ class DataRetentionManager {
 export const dataRetentionManager = new DataRetentionManager();
 
 // Initialize on import
-dataRetentionManager.initialize().catch(console.error);</content>
-<parameter name="filePath">/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/governance/data-retention.js
+dataRetentionManager.initialize().catch(console.error);

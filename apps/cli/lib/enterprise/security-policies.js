@@ -353,5 +353,4 @@ export class AgentSecurityPolicies {
 export const agentSecurityPolicies = new AgentSecurityPolicies();
 
 // Initialize on import
-agentSecurityPolicies.loadPolicies().catch(console.error);</content>
-<parameter name="filePath">/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/enterprise/security-policies.js
+agentSecurityPolicies.loadPolicies().catch(console.error);
