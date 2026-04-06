@@ -11,10 +11,10 @@ declare module 'ai' {
   }
 
   export interface CoreTool {
-    parameters: any;
+    parameters: Record<string, unknown>;
   }
 
-  export interface ToolCall<T = any> {
+  export interface ToolCall<T = unknown> {
     toolName: string;
     toolArguments: T;
   }
@@ -30,7 +30,7 @@ declare module 'ai' {
       state: 'result' | 'call';
       toolName: string;
       toolArguments: string;
-      result?: any;
+      result?: unknown;
     }>;
   }
 
@@ -88,8 +88,8 @@ export interface Agent {
 
 export interface MemoryEntry {
   id: string;
-  data: any;
-  context: Record<string, any>;
+  data: unknown;
+  context: Record<string, unknown>;
   metadata: {
     createdAt: string;
     updatedAt: string;
@@ -192,20 +192,20 @@ export interface Task {
   complexity: 'low' | 'medium' | 'high';
   deadline?: Date;
   priority: number; // 1-10 scale
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CoordinationContext {
   mainAgent: string;
   coordinatingAgents: string[];
-  task: any;
+  task: unknown;
   timestamp: number;
 }
 
 export interface Session {
   id: string;
   startTime: number;
-  task: any;
+  task: unknown;
   agentsUsed: string[];
   status: 'active' | 'completed' | 'failed';
   endTime?: number;
@@ -214,18 +214,18 @@ export interface Session {
 // Result types
 export interface AgentResult {
   success: boolean;
-  data: any;
+  data: unknown;
   error?: Error;
   responseTime: number;
   tokensUsed: number;
 }
 
 export interface CoordinationResult {
-  mainResult: any;
+  mainResult: unknown;
   coordinationResults: Array<{
     agent: string;
     success: boolean;
-    result: any;
+    result: unknown;
   }>;
   coordinationContext: CoordinationContext;
 }
@@ -234,8 +234,8 @@ export interface CoordinationResult {
 export interface UltraDexEvent {
   type: string;
   timestamp: Date;
-  data: any;
-  metadata?: Record<string, any>;
+  data: unknown;
+  metadata?: Record<string, unknown>;
 }
 
 // Configuration types
