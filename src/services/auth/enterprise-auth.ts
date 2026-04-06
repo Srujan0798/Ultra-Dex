@@ -6,18 +6,18 @@
  * @module services/auth/enterprise-auth
  */
 
-import { jwtService } from './jwt-service.js';
+import { jwtService, TokenPair } from './jwt-service.js';
 import { mfaService } from './mfa-service.js';
-import { userService } from './user-service.js';
-import { sessionService } from './session-service.js';
+import { userService, User } from './user-service.js';
+import { sessionService, Session } from './session-service.js';
 import { ssoService } from './sso-service.js';
 import { auditLogger } from '../audit/audit-logger.js';
 
 export interface AuthResult {
   success: boolean;
-  user?: any;
-  session?: any;
-  tokens?: any;
+  user?: User;
+  session?: Session;
+  tokens?: TokenPair;
   requiresMFA?: boolean;
   error?: string;
   redirectUrl?: string;
@@ -200,13 +200,13 @@ export class EnterpriseAuthSystem {
       }
 
       // Generate JWT tokens if not already done
-      if (!result.tokens && result.session) {
+      if (!result.tokens && result.session && result.user) {
         const user = result.user;
         const tokens = await jwtService.generateTokenPair(
           user.id,
           user.organizationId,
           [user.role || 'member'],
-          [], // Permissions would be fetched from user service
+          user.permissions,
           result.session.id
         );
         result.tokens = tokens;
@@ -222,7 +222,11 @@ export class EnterpriseAuthSystem {
   /**
    * Validate JWT token and get user context
    */
-  async validateToken(token: string, ipAddress?: string, userAgent?: string): Promise<any | null> {
+  async validateToken(
+    token: string,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<{ user: User; session: Session; permissions: string[]; roles: string[] } | null> {
     await this.initialize();
 
     const payload = await jwtService.validateAccessToken(token);
@@ -247,7 +251,7 @@ export class EnterpriseAuthSystem {
   /**
    * Refresh access token
    */
-  async refreshToken(refreshToken: string): Promise<any | null> {
+  async refreshToken(refreshToken: string): Promise<TokenPair | null> {
     await this.initialize();
 
     return await jwtService.refreshAccessToken(refreshToken);
@@ -290,7 +294,7 @@ export class EnterpriseAuthSystem {
     userId: string,
     type: 'totp' | 'sms' | 'email' = 'totp',
     contact?: string
-  ): Promise<any> {
+  ): Promise<{ success: boolean; error?: string; secret?: string; qrCodeUrl?: string }> {
     await this.initialize();
 
     if (type === 'totp') {
@@ -336,7 +340,14 @@ export class EnterpriseAuthSystem {
   /**
    * Create organization
    */
-  async createOrganization(name: string, settings?: any): Promise<any> {
+  async createOrganization(
+    name: string,
+    settings?: Partial<{
+      ssoEnabled: boolean;
+      mfaRequired: boolean;
+      defaultRole: string;
+    }>
+  ): Promise<import('./user-service.js').Organization> {
     await this.initialize();
 
     return await userService.createOrganization(name, undefined, undefined, settings);
@@ -351,7 +362,7 @@ export class EnterpriseAuthSystem {
     lastName: string,
     organizationId: string,
     password?: string
-  ): Promise<any> {
+  ): Promise<User> {
     await this.initialize();
 
     return await userService.createUser(email, firstName, lastName, organizationId, password);

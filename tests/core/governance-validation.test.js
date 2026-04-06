@@ -61,7 +61,7 @@ describe('Governance Validation', () => {
       resource: 'test-resource',
     });
 
-    const entries = governance.audit.query();
+    const entries = await governance.audit.query();
     assert.ok(entries.length >= 0);
   });
 
@@ -72,7 +72,7 @@ describe('Governance Validation', () => {
       resource: 'test',
     });
 
-    const entries = governance.audit.query({ action: 'specific-action' });
+    const entries = await governance.audit.query({ action: 'specific-action' });
     assert.ok(entries.length >= 0);
   });
 
@@ -82,7 +82,7 @@ describe('Governance Validation', () => {
       action: 'test',
     });
 
-    const entries = governance.audit.query({ agentId: 'specific-agent' });
+    const entries = await governance.audit.query({ agentId: 'specific-agent' });
     assert.ok(entries.length >= 0);
   });
 });

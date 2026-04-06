@@ -65,10 +65,10 @@ describe('Governance Integration', () => {
       action: 'action-2',
     });
 
-    const allEntries = governance.audit.query();
+    const allEntries = await governance.audit.query();
     assert.ok(allEntries.length >= 2);
 
-    const agent1Entries = governance.audit.query({ agentId: 'agent-1' });
+    const agent1Entries = await governance.audit.query({ agentId: 'agent-1' });
     assert.ok(agent1Entries.length >= 1);
   });
 });

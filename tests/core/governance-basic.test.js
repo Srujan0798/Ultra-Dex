@@ -5,10 +5,21 @@
 
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
+import fs from 'fs';
+import path from 'path';
 import { GovernanceManager } from '../../src/core/governance/governance-manager.js';
 import { GovernanceDeniedException } from '../../src/core/governance/governance-manager.js';
 
+const TEST_DB_PATH = path.join(process.cwd(), '.ultra-dex', 'audit', 'governance.db');
+
 describe('Governance Integration - executeTool Basic', () => {
+  beforeEach(() => {
+    // Clean up database before each test to ensure isolation
+    if (fs.existsSync(TEST_DB_PATH)) {
+      fs.unlinkSync(TEST_DB_PATH);
+    }
+  });
+
   it('GovernanceManager should block operations based on policy', async () => {
     // Arrange: Create a governance manager and add a block policy
     const governance = new GovernanceManager();
@@ -75,7 +86,7 @@ describe('Governance Integration - executeTool Basic', () => {
     await governance.gate(context);
 
     // Assert: Audit log should contain the record
-    const auditEntries = governance.audit.query({ action: 'test-action' });
+    const auditEntries = await governance.audit.query({ action: 'test-action' });
     assert.strictEqual(auditEntries.length, 1);
     assert.strictEqual(auditEntries[0].outcome, 'blocked');
   });

@@ -69,7 +69,7 @@ describe.skip('Governance Bypass Prevention (requires full system setup)', { tim
       await orchestrator.executeTool('delete_database', {});
     } catch (e) {}
 
-    const entries = orchestrator.governance.audit.query({ resource: 'delete_database' });
+    const entries = await orchestrator.governance.audit.query({ resource: 'delete_database' });
     assert.ok(entries.length > 0);
     assert.strictEqual(entries[0].outcome, 'blocked');
   });
@@ -77,7 +77,7 @@ describe.skip('Governance Bypass Prevention (requires full system setup)', { tim
   it('MUST log successful executions', async () => {
     await orchestrator.executeTool('read_file', {});
 
-    const entries = orchestrator.governance.audit.query({ resource: 'read_file' });
+    const entries = await orchestrator.governance.audit.query({ resource: 'read_file' });
     assert.ok(entries.length > 0);
   });
 });

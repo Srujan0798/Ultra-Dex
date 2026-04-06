@@ -149,10 +149,11 @@ export class JWTService {
    */
   async validateAccessToken(token: string): Promise<JWTPayload | null> {
     try {
-      const payload = jwt.verify(token, this.accessTokenSecret, {
+      const verified = jwt.verify(token, this.accessTokenSecret, {
         issuer: 'ultra-dex',
         audience: 'api',
-      }) as JWTPayload;
+      });
+      const payload = verified as unknown as JWTPayload;
 
       // Check if session is still valid
       if (!(await this.isSessionValid(payload.sessionId))) {

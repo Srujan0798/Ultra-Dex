@@ -12,9 +12,9 @@ import axios from 'axios';
 import { ppmManager } from '../../core/memory/manager.js';
 import { auditLogger } from '../audit/audit-logger.js';
 import { errorHandler } from '../../../apps/cli/lib/utils/error-handler.js';
-import { jwtService } from './jwt-service.js';
-import { userService } from './user-service.js';
-import { sessionService } from './session-service.js';
+import { jwtService, TokenPair } from './jwt-service.js';
+import { userService, User } from './user-service.js';
+import { sessionService, Session } from './session-service.js';
 import { mfaService } from './mfa-service.js';
 
 /**
@@ -128,14 +128,9 @@ export interface SSOSession {
  */
 export interface SSOAuthResult {
   success: boolean;
-  user?: {
-    id: string;
-    email: string;
-    firstName?: string;
-    lastName?: string;
-    groups?: string[];
-  };
-  session?: SSOSession;
+  user?: User;
+  session?: Session;
+  tokens?: TokenPair;
   error?: string;
   redirectUrl?: string;
 }
@@ -427,6 +422,25 @@ export class SSOService {
       // Create or update user
       const userId = await this.findOrCreateUser(user);
 
+      // Get full user object
+      let fullUser = await userService.getUser(userId);
+      if (!fullUser) {
+        // Create a basic user object if not found
+        fullUser = {
+          id: userId,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          organizationId: config.organizationId,
+          role: user.role || 'member',
+          permissions: [],
+          mfaEnabled: false,
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+
       // Check MFA requirement
       const org = await userService.getOrganization(config.organizationId);
       if (org?.settings.mfaRequired) {
@@ -452,8 +466,8 @@ export class SSOService {
       const tokenPair = await jwtService.generateTokenPair(
         userId,
         config.organizationId,
-        [user.role || 'member'],
-        (await userService.userHasPermission(userId, '')) ? [] : [], // Get permissions
+        [fullUser.role || 'member'],
+        fullUser.permissions,
         session.id
       );
 
@@ -472,8 +486,9 @@ export class SSOService {
 
       return {
         success: true,
-        user: { id: userId, ...user },
+        user: fullUser,
         session,
+        tokens: tokenPair,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'OIDC processing failed';
@@ -588,7 +603,7 @@ export class SSOService {
         return { success: false, error: 'Invalid state parameter' };
       }
 
-      const stateData = stateResult[0].metadata;
+      const stateData = stateResult[0].metadata as { state: string; configId: string; expiresAt: Date };
       if (new Date() > stateData.expiresAt) {
         return { success: false, error: 'State expired' };
       }
@@ -634,6 +649,25 @@ export class SSOService {
       // Create or update user
       const userId = await this.findOrCreateUser(user);
 
+      // Get full user object
+      let fullUser = await userService.getUser(userId);
+      if (!fullUser) {
+        // Create a basic user object if not found
+        fullUser = {
+          id: userId,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          organizationId: config.organizationId,
+          role: user.role || 'member',
+          permissions: [],
+          mfaEnabled: false,
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+
       // Check MFA requirement
       const org = await userService.getOrganization(config.organizationId);
       if (org?.settings.mfaRequired) {
@@ -659,8 +693,8 @@ export class SSOService {
       const tokenPair = await jwtService.generateTokenPair(
         userId,
         config.organizationId,
-        [user.role || 'member'],
-        (await userService.userHasPermission(userId, '')) ? [] : [], // Get permissions
+        [fullUser.role || 'member'],
+        fullUser.permissions,
         session.id
       );
 
@@ -679,8 +713,9 @@ export class SSOService {
 
       return {
         success: true,
-        user: { id: userId, ...user },
+        user: fullUser,
         session,
+        tokens: tokenPair,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'OAuth2 processing failed';
@@ -789,6 +824,25 @@ export class SSOService {
       // Create or update user
       const userId = await this.findOrCreateUser(user);
 
+      // Get full user object
+      let fullUser = await userService.getUser(userId);
+      if (!fullUser) {
+        // Create a basic user object if not found
+        fullUser = {
+          id: userId,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          organizationId: config.organizationId,
+          role: user.role || 'member',
+          permissions: [],
+          mfaEnabled: false,
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+
       // Check MFA requirement
       const org = await userService.getOrganization(config.organizationId);
       if (org?.settings.mfaRequired) {
@@ -815,8 +869,8 @@ export class SSOService {
       const tokenPair = await jwtService.generateTokenPair(
         userId,
         config.organizationId,
-        [user.role || 'member'],
-        (await userService.userHasPermission(userId, '')) ? [] : [], // Get permissions
+        [fullUser.role || 'member'],
+        fullUser.permissions,
         session.id
       );
 
@@ -835,8 +889,9 @@ export class SSOService {
 
       return {
         success: true,
-        user: { id: userId, ...user },
+        user: fullUser,
         session,
+        tokens: tokenPair,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'SAML processing failed';
@@ -863,7 +918,7 @@ export class SSOService {
   private extractUserFromSAML(
     samlResponse: string,
     mappings: AttributeMappings
-  ): { email: string; firstName?: string; lastName?: string; groups?: string[] } {
+  ): { email: string; firstName?: string; lastName?: string; groups?: string[]; role?: string } {
     // Simplified extraction - real implementation would use XML parsing
     const email = this.extractAttribute(samlResponse, mappings.email) || '';
     const firstName = mappings.firstName
@@ -905,7 +960,8 @@ export class SSOService {
     const existingUsers = await ppmManager.search(`user:email:${user.email}`);
 
     if (existingUsers && existingUsers.length > 0) {
-      return existingUsers[0].metadata?.userId || uuidv4();
+      const metadata = existingUsers[0].metadata as { userId?: string };
+      return metadata?.userId || uuidv4();
     }
 
     // Create new user
@@ -976,7 +1032,8 @@ export class SSOService {
       return false;
     }
 
-    const session = results[0].metadata?.session as SSOSession;
+    const metadata = results[0].metadata as { session?: SSOSession };
+    const session = metadata?.session;
     if (!session) return false;
 
     return new Date() < session.expiresAt;

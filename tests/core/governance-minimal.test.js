@@ -5,15 +5,23 @@
 
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
+import fs from 'fs';
+import path from 'path';
 
 // We'll test the governance logic directly without initializing the full orchestrator
 import { GovernanceManager } from '../../src/core/governance/governance-manager.js';
 import { GovernanceDeniedException } from '../../src/core/governance/governance-manager.js';
 
+const TEST_DB_PATH = path.join(process.cwd(), '.ultra-dex', 'audit', 'governance.db');
+
 describe('Governance Integration - Minimal executeTool Test', () => {
   let governance;
 
   beforeEach(() => {
+    // Clean up database before each test to ensure isolation
+    if (fs.existsSync(TEST_DB_PATH)) {
+      fs.unlinkSync(TEST_DB_PATH);
+    }
     governance = new GovernanceManager();
   });
 
@@ -95,11 +103,11 @@ describe('Governance Integration - Minimal executeTool Test', () => {
     await governance.gate(allowedContext);
 
     // Assert: Audit log should have both entries
-    const blockedAudit = governance.audit.query({ action: 'tool:test_tool' });
+    const blockedAudit = await governance.audit.query({ action: 'tool:test_tool' });
     assert.strictEqual(blockedAudit.length, 1);
     assert.strictEqual(blockedAudit[0].outcome, 'blocked');
 
-    const allowedAudit = governance.audit.query({ action: 'tool:other_tool' });
+    const allowedAudit = await governance.audit.query({ action: 'tool:other_tool' });
     assert.strictEqual(allowedAudit.length, 1);
     assert.strictEqual(allowedAudit[0].outcome, 'allowed');
   });

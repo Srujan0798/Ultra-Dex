@@ -62,7 +62,7 @@ export async function deletePost(id: string) {
  * Error handler for posts
  * @param {Error} error - Error to handle
  */
-function handlePostsError(error) {
+function handlePostsError(error: Error | unknown) {
   try {
     console.error('[posts]', error instanceof Error ? error.message : String(error));
   } catch (_) {
