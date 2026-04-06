@@ -122,6 +122,11 @@ const DEFAULT_ROUTER_CONFIG = {
       providerPriority: STRATEGY_PROVIDER_PRIORITIES.fallback,
       enableFailover: true,
     },
+    'task-aware': {
+      providerPriority: STRATEGY_PROVIDER_PRIORITIES.quality,
+      useTaskClassification: true,
+      description: 'Uses ModelRouter to classify tasks and route to optimal provider',
+    },
   },
   modelToProvider: MODEL_PROVIDER_MAP,
   costTable: PROVIDER_COST_TABLE,
