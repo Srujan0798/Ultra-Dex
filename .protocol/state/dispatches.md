@@ -1,519 +1,654 @@
-# Dispatch Sheet — Cycle 2: Ship-Grade Stabilization
-> Source: Cycle 1 post-mortem + deep publishable-surface audit (2026-04-06)
-> Gate: "Can a dev clone, build, test — all green?"
-> Thesis: No new features. Fix what's broken. Prune what's dead. Make it publishable.
+# Dispatch Sheet — Cycle 3: ETERNAL STATE
+> Source: Cycle 2 post-mortem + forensic archive analysis (2026-04-06)
+> Gate: `npm install && npm run build && npm test && npx tsc --noEmit` — ALL exit 0. Zero NoopSubsystems. Archive resolved.
+> Thesis: This is the FINAL cycle. Fix platform breaks. Integrate archive gold. Replace no-ops. Clean with surgical precision. Seal.
 
 ---
 
-## P0 — UNBLOCK BUILD PIPELINE (Parallel-Safe, Run First)
+## P0 — PLATFORM FIXES (Make Everything Green)
 
-The build, lint, and TS errors are all rooted in one cluster: the **dashboard app**.
-Fix the foundation first — everything else depends on these three passing.
+The 3 remaining breaks are all native module issues. Fix the foundation.
 
 ---
 
 [WINDOW 1] CODEX — o1
 Task ID: P0-W1
-Objective: Fix dashboard build — resolve Rollup native module failure and Vite build crash
-Target Files: apps/dashboard/package.json, apps/dashboard/vite.config.ts, root package-lock.json
-Why this lane: Requires diagnosing native module architecture mismatch — needs reasoning
-Power Tier: BALANCED
+Objective: Rebuild all native modules for current platform — fix sqlite3, better-sqlite3, rollup binaries
+Target Files: node_modules/ (rebuild), package.json (potential overrides)
+Why this lane: Native module debugging requires reasoning about platform architecture
+Power Tier: HIGH
 Command:
 ```bash
 codex --full-auto -m o1 exec \
-  "The dashboard build fails with: 'Cannot find module @rollup/rollup-linux-arm64-gnu'.
-   The module exists in node_modules but fails to load (native binary mismatch).
+  "Three native module failures block the project:
+   1) sqlite3 — ERR_DLOPEN_FAILED invalid ELF header (compiled for macOS, running on Linux ARM64)
+   2) better-sqlite3 — same issue
+   3) @rollup/rollup-linux-arm64-gnu — MODULE_NOT_FOUND
 
-   Fix steps:
-   1) cd apps/dashboard && cat package.json — check if rollup/vite versions are compatible
-   2) Run: npm rebuild rollup --build-from-source 2>&1
-   3) If that fails: pin rollup to a version with pre-built binaries for this arch
-      - In apps/dashboard/package.json, add: 'overrides': { 'rollup': '4.28.0' }
-      - Or in root package.json overrides
-   4) Also run: npm rebuild better-sqlite3 --build-from-source 2>&1
-      (This fixes the 11 governance test failures — same native module issue)
-   5) After rebuilds: run 'npm run build' from root — must exit 0
-   6) Run 'npm run test:unit 2>&1 | tail -30' — governance tests must pass now
-
-   If npm rebuild doesn't work, try: rm -rf node_modules/.cache && npm ci
-   Show ALL output at each step."
+   Fix sequence:
+   1) npm rebuild sqlite3 --build-from-source 2>&1
+   2) npm rebuild better-sqlite3 --build-from-source 2>&1
+   3) npm rebuild rollup 2>&1
+   4) If any rebuild fails with missing build tools:
+      - Try: npm install --force @rollup/rollup-linux-arm64-gnu
+      - For sqlite3: add override in package.json: 'better-sqlite3': 'latest'
+   5) If rebuilds still fail: Add graceful fallback in src/core/governance/audit-db.js:
+      try { db = require('better-sqlite3')(...) } catch { db = require('sqlite3')(...) }
+      OR use pure-JS fallback: sql.js (WebAssembly SQLite, no native deps)
+   6) After fixes:
+      - npm run build 2>&1 | tail -10 (must exit 0)
+      - npm run test:unit 2>&1 | grep '# fail' (must be 0)
+      - Show full output"
 ```
-Expected Output: `npm run build` exits 0, governance tests pass
-Validation: `npm run build 2>&1 | grep -i error | wc -l` → 0
-Fallback #1: codex -m gpt-4 exec "same — try npm ci --force instead of rebuild"
+Expected Output: All native modules load, build passes, governance tests pass
+Validation: `npm run build && npm run test:unit 2>&1 | grep "# fail 0"`
+Fallback #1: codex -m gpt-4 exec "Install sql.js as pure-JS SQLite fallback, replace better-sqlite3 in audit-db.js"
 Fallback #2: claude --model sonnet --effort high -p "same task"
-Fallback #3: gemini -y -p "Delete node_modules and package-lock.json. Run npm install. Then npm run build."
+Fallback #3: gemini -y -p "Add try/catch around all native module imports with graceful fallback"
 Cost Class: SUBSCRIPTION-INCLUDED
 
 ---
 
 [WINDOW 2] CODEX — o1
 Task ID: P0-W2
-Objective: Fix all 64 TypeScript errors — install missing dashboard type packages and fix Hologram.tsx
-Target Files: apps/dashboard/package.json, apps/dashboard/tsconfig.json, apps/dashboard/src/pages/Hologram.tsx, apps/dashboard/src/components/__tests__/*.tsx
-Why this lane: Multi-file type resolution requires judgment on correct type packages
+Objective: Fix ESLint crash — resolve esbuild platform mismatch and @typescript-eslint compatibility
+Target Files: scripts/run-lint.js, eslint.config.js, package.json
+Why this lane: Plugin compatibility requires version reasoning
 Power Tier: BALANCED
 Command:
 ```bash
 codex --full-auto -m o1 exec \
-  "Run 'npx tsc --noEmit 2>&1' and categorize all errors. There are ~64, mostly in apps/dashboard/.
+  "ESLint crashes with two issues:
+   1) 'Unknown system error -35: read' during ESLint initialization
+   2) esbuild platform mismatch: '@esbuild/aix-ppc64' present but needs '@esbuild/linux-arm64'
 
-   Fix in this order:
-   1) Install missing type packages in apps/dashboard/:
-      npm install --save-dev @types/three @react-three/fiber @react-three/drei
-      (Hologram.tsx needs these for JSX intrinsic elements: mesh, group, boxGeometry, etc.)
-
-   2) If @react-three/fiber ships its own types, add to apps/dashboard/tsconfig.json compilerOptions.types:
-      ['vite/client', 'vitest/globals', '@react-three/fiber']
-
-   3) For dashboard test errors (describe/it/expect not found):
-      Ensure apps/dashboard/tsconfig.json includes vitest/globals in types array
-      OR add /// <reference types='vitest/globals' /> at top of each test file
-
-   4) For missing react-router-dom types:
-      npm install --save-dev @types/react-router-dom (if not already typed)
-      OR check if react-router-dom v6+ ships its own types
-
-   5) For recharts types (TS7016 in Chart.tsx):
-      recharts ships its own types — ensure version >= 2.12.0
-
-   6) After all fixes: run 'npx tsc --noEmit 2>&1 | grep error | wc -l' → must be 0
-
-   Do NOT use 'as any' or @ts-ignore as workarounds."
+   Fix:
+   1) npm rebuild esbuild 2>&1 (fix platform binary)
+   2) If rebuild fails: npm install --force @esbuild/linux-arm64
+   3) Test ESLint directly: npx eslint --version 2>&1
+   4) If ESLint still crashes: check if eslint.config.js imports crash during load:
+      node -e \"import('./eslint.config.js').then(c => console.log('OK')).catch(e => console.error(e))\"
+   5) Ensure @typescript-eslint/parser v8+ is installed (required for ESLint 9):
+      npm ls @typescript-eslint/parser
+   6) After fixing: npm run lint 2>&1 | tail -20 (must not crash; warnings OK)
+   7) Remove the orphan file: rm 'apps/cli/test/nlp-router.test 2.js'"
 ```
-Expected Output: `npx tsc --noEmit` exits 0 with 0 errors
-Validation: `npx tsc --noEmit 2>&1 | grep "error TS" | wc -l` → 0
-Fallback #1: codex -m gpt-4 exec "same — focus on Hologram.tsx first (23 of 64 errors)"
-Fallback #2: claude --model sonnet --effort high -p "same task"
-Fallback #3: gemini -y -p "Install @types/three @react-three/fiber @react-three/drei in apps/dashboard"
+Expected Output: `npm run lint` runs without crashes, orphan file removed
+Validation: `npm run lint 2>&1 | grep -i "system error" | wc -l` → 0
+Fallback #1: codex -m gpt-4 exec "Update scripts/run-lint.js to catch esbuild load errors gracefully"
+Fallback #2: gemini -y -p "same task"
+Fallback #3: claude --model haiku -p "same task"
 Cost Class: SUBSCRIPTION-INCLUDED
 
 ---
 
-[WINDOW 3] GEMINI — gemini-2.5-flash
+[WINDOW 3] QWEN — qwen-turbo
 Task ID: P0-W3
-Objective: Fix ESLint crash and make lint pass (or at least run without system errors)
-Target Files: eslint.config.js, package.json (lint script)
-Why this lane: Config debugging — Gemini can iterate quickly at $0
-Power Tier: BALANCED
+Objective: Clean up remaining platform artifacts — remove orphan files, verify clean state
+Target Files: Various
+Why this lane: Mechanical cleanup — Qwen labor
+Power Tier: LOW
 Command:
 ```bash
-gemini -y -p \
-  "ESLint crashes with 'Unknown system error -35: read' when running 'npm run lint'.
-
-   Debug steps:
-   1) Read eslint.config.js carefully. Identify all glob patterns in 'files' and 'ignores'.
-   2) The crash is likely during config loading — a glob matches an unreadable file or broken symlink.
-   3) Test incrementally:
-      npx eslint --no-eslintrc --config eslint.config.js src/core/index.js 2>&1
-      If that works, expand scope gradually until the crash reproduces.
-   4) Common culprit: node_modules symlinks, .git directory, or binary files matched by globs.
-   5) Add to ignores section: '**/node_modules/**', '**/.git/**', '**/*.node', '**/dist/**', '**/.ultra-dex/**'
-   6) If the crash is from the @typescript-eslint parser loading:
-      Check if @typescript-eslint/parser and @typescript-eslint/eslint-plugin versions are compatible with eslint@9.
-      eslint@9 needs @typescript-eslint v8+. If v7 is installed, upgrade:
-      npm install --save-dev @typescript-eslint/eslint-plugin@^8.0.0 @typescript-eslint/parser@^8.0.0
-   7) After fixing: run 'npm run lint 2>&1 | tail -20' — must not crash (warnings/errors are ok, crashes are not)"
+qwen --auth-type qwen-oauth --approval-mode yolo \
+  "Final platform cleanup:
+   1) find . -name '* 2.*' -not -path '*/node_modules/*' -not -path '*/.archive/*' — list all orphan files in LIVE tree
+   2) Delete any found (they're macOS copy artifacts)
+   3) find . -name '.DS_Store' -not -path '*/node_modules/*' -delete
+   4) Verify: git status — show what changed
+   5) Run full test suite: npm test 2>&1 | grep -E '# (tests|pass|fail)'
+   Do NOT touch anything in .archive/ directory"
 ```
-Expected Output: `npm run lint` runs without crashing (may report violations — that's ok)
-Validation: `npm run lint 2>&1 | grep -i "system error" | wc -l` → 0
-Fallback #1: gemini -p "Just add massive ignores to eslint.config.js to eliminate filesystem traversal issues"
-Fallback #2: codex exec "same task"
-Fallback #3: claude --model haiku -p "Downgrade eslint to 8.x if 9.x is causing plugin compat issues"
+Expected Output: Zero orphan files in live tree, all .DS_Store removed
+Validation: `find . -name "* 2.*" -not -path "*/node_modules/*" -not -path "*/.archive/*" | wc -l` → 0
+Fallback #1: Manual find and delete
+Fallback #2: gemini -p "same task"
+Fallback #3: claude --model haiku -p "same task"
 Cost Class: FREE
 
 ---
 
-## P1 — PUBLISH SURFACE READINESS (After P0 Green)
+## P1 — ARCHIVE GOLD INTEGRATION (WIP Modules → Live Source)
 
-These make Ultra-Dex installable as a real npm package and SDK.
+The archive/wip-core-modules/ contains 1.1MB of production-grade code built over many days.
+Integrate the highest-value modules into the live source tree.
 
 ---
 
-[WINDOW 4] CODEX — o1
+[WINDOW 4] CLAUDE — claude-opus-4
 Task ID: P1-W4
-Objective: Fix SDK package for independent npm publish — package.json, version alignment, exports
-Target Files: packages/sdk/package.json, packages/sdk/src/, packages/sdk/types/
-Why this lane: Requires understanding of npm publish requirements and monorepo workspace links
+Objective: Integrate archive AI Router system — SmartAIRouter, model-router, MCTS engine into src/core/ai/
+Target Files: .archive/**/wip-core-modules/ai/ → src/core/ai/
+Why this lane: Architecture-critical integration — merging two router implementations requires Opus-level judgment
+Power Tier: HIGH
+Command:
+```bash
+claude --model opus --effort max \
+  "Two AI routing systems exist:
+   A) LIVE: src/core/ai/router.js, ai-meta-layer.js — current provider abstraction
+   B) ARCHIVE: .archive/**/wip-core-modules/ai/ — SmartAIRouter with cost tables, model-router with task-type routing, 9 provider implementations, MCTS reasoning engine
+
+   Merge B into A without breaking A:
+   1) Read both implementations thoroughly first
+   2) From archive ai/model-router.js: extract the task-type → model routing table (code-generation → gpt-4/claude-3-opus, quick-query → haiku/flash, etc.)
+      Integrate this into src/core/ai/router.js as a new routing strategy: 'task-aware'
+   3) From archive ai/router.js: extract the cost-table and latency metrics system
+      Merge into existing router if it doesn't already have this
+   4) From archive ai/mcts/: copy the MCTS engine to src/core/ai/mcts/
+      Keep it self-contained — don't wire it into the main flow yet, but make it importable
+   5) From archive ai/PROVIDER-SPEC.md: copy to docs/specs/PROVIDER-SPEC.md as reference
+   6) From the 9 provider implementations: check if any provide capabilities NOT in the live provider layer
+      If yes: integrate. If they're duplicates of what's in src/services/ai-providers/: skip.
+   7) After integration: run npm test — zero regressions
+   8) Write a brief summary of what was integrated vs skipped in docs/INTEGRATION-LOG.md"
+```
+Expected Output: Enhanced router with task-aware strategy, MCTS engine available, provider spec documented
+Validation: `npm test` passes. `grep 'task-aware' src/core/ai/router.js` → match
+Fallback #1: claude --model sonnet --effort high -p "same — start with model-router integration only"
+Fallback #2: codex -m o3 exec "same task"
+Fallback #3: gemini -y -p "same — just copy MCTS engine and provider spec without merge"
+Cost Class: API-KEY-USAGE
+
+---
+
+[WINDOW 5] CODEX — o1
+Task ID: P1-W5
+Objective: Integrate archive Performance system — token optimizer, db optimizer, caching into src/core/
+Target Files: .archive/**/wip-core-modules/performance/ → src/core/performance/ or src/core/optimization/
+Why this lane: Performance module needs understanding of existing optimization layer
 Power Tier: BALANCED
 Command:
 ```bash
 codex --full-auto -m o1 exec \
-  "Read packages/sdk/package.json. The SDK must be independently installable via npm.
+  "Archive has a complete performance stack in .archive/**/wip-core-modules/performance/:
+   - performance-optimizer.js (546 lines) — execution pipeline optimization
+   - token-optimizer.js (439 lines) — token compression, batching, efficient encoding
+   - db-optimizer.js (230 lines) — query optimization with caching
+   - cache.js (50 lines) — LRU cache implementation
+   - monitor.js (151 lines) — real-time performance monitoring
 
-   Fix:
-   1) Verify packages/sdk/package.json exists and has correct:
-      - name: '@ultra-dex/sdk'
-      - version: match root package.json (2.0.0), NOT 6.0.0
-      - type: 'module'
-      - main: './src/client.js'
-      - types: './types/index.d.ts'
-      - exports field with './client', './agent', './provider', './plugin' subpaths
-      - files: ['src/', 'types/', 'README.md']
-      - NO dependency on 'file:../../src/core' — SDK must be standalone
-
-   2) Verify all imports in packages/sdk/src/*.js resolve to files that exist within packages/sdk/ (not cross-package imports)
-
-   3) Run: cd packages/sdk && npm pack --dry-run 2>&1
-      This lists what would be published. Verify it includes src/ and types/.
-
-   4) Create packages/sdk/README.md if missing — 20-line quickstart showing:
-      npm install @ultra-dex/sdk
-      import { UltraDex } from '@ultra-dex/sdk'
-
-   5) Run the SDK tests: node --test packages/sdk/test/sdk.test.js"
+   Integration:
+   1) Check if src/core/performance/ exists. If yes, merge archive into it. If no, create it.
+   2) Copy token-optimizer.js → src/core/performance/token-optimizer.js
+      (skip the ' 2.js' duplicate — only take the main file)
+   3) Copy db-optimizer.js → src/core/performance/db-optimizer.js
+   4) Copy cache.js → src/core/performance/cache.js
+   5) From performance-optimizer.js: extract the execution pipeline hooks and integrate into
+      src/core/orchestration/index.js — add optional performance tracking before/after executeTask()
+   6) Update imports in copied files to use the live project's module paths
+   7) Write tests/core/performance-integration.test.js — test token optimizer compression and cache hit/miss
+   8) npm test — zero regressions"
 ```
-Expected Output: SDK package passes npm pack dry-run, tests pass, version aligned
-Validation: `cd packages/sdk && npm pack --dry-run 2>&1 | grep -c '.js'` → shows JS files listed
-Fallback #1: codex -m gpt-4 exec "same task"
+Expected Output: Performance modules in src/core/performance/, integrated into orchestration
+Validation: `ls src/core/performance/*.js | wc -l` → 3+. Tests pass.
+Fallback #1: codex -m gpt-4 exec "same — just copy files without orchestration hook"
+Fallback #2: claude --model sonnet --effort high -p "same task"
+Fallback #3: gemini -y -p "same — copy files and fix imports only"
+Cost Class: SUBSCRIPTION-INCLUDED
+
+---
+
+[WINDOW 6] CODEX — o1
+Task ID: P1-W6
+Objective: Integrate archive Reliability system — agent-autopsy, self-healing into agent lifecycle
+Target Files: .archive/**/wip-core-modules/reliability/ → src/core/reliability/
+Why this lane: Needs understanding of agent lifecycle to wire correctly
+Power Tier: BALANCED
+Command:
+```bash
+codex --full-auto -m o1 exec \
+  "Archive has reliability modules in .archive/**/wip-core-modules/reliability/:
+   - agent-autopsy.js — agent failure analysis with diagnostic reports
+   - self-healing.js — automatic recovery strategies (restart, retry, fallback)
+
+   Check if src/core/reliability/ already exists and has these files (Cycle 1 may have partially done this).
+   If files exist: compare archive vs live versions. Keep the more complete one.
+   If files don't exist: copy from archive.
+
+   Integration:
+   1) Wire self-healing into src/core/agents/ralph-loop.js:
+      - On iteration failure: call self-healing recovery strategy before throwing
+      - Emit 'agent.recovery' event with diagnostic info
+   2) Wire agent-autopsy into src/core/orchestration/index.js:
+      - When a task fails: generate autopsy report with failure context
+      - Store autopsy in governance audit trail (sqlite)
+   3) Write tests/core/reliability-integration.test.js
+   4) npm test — zero regressions"
+```
+Expected Output: Self-healing wired into agent loop, autopsy integrated into orchestration
+Validation: `grep 'self-healing\|autopsy' src/core/agents/ralph-loop.js` → matches. Tests pass.
+Fallback #1: codex -m gpt-4 exec "same — just copy files, skip wiring"
 Fallback #2: claude --model sonnet --effort high -p "same task"
 Fallback #3: gemini -y -p "same task"
 Cost Class: SUBSCRIPTION-INCLUDED
 
 ---
 
-[WINDOW 5] CODEX — o1
-Task ID: P1-W5
-Objective: Fix all 15 failing unit tests — native module rebuilds + test environment issues
-Target Files: tests/core/governance-*.test.js, tests/cli/run-*.test.js, tests related to TeamManager
-Why this lane: Multiple failure categories requiring different fixes
-Power Tier: BALANCED
-Command:
-```bash
-codex --full-auto -m o1 exec \
-  "15 unit tests fail. Three categories:
-
-   Category A — 11 governance tests crash with ERR_DLOPEN_FAILED on better-sqlite3:
-   Fix: npm rebuild better-sqlite3 --build-from-source
-   If that fails: the governance tests import audit-db.js which uses better-sqlite3.
-   Add graceful fallback: if better-sqlite3 fails to load, fall back to sqlite3 (already in deps).
-   OR: mock better-sqlite3 in test setup for CI environments where native builds fail.
-
-   Category B — 3 CLI tests expect AI provider output but no API key is set:
-   Fix: These tests should work in MOCK_AI=true mode. Update the tests to set MOCK_AI=true
-   in their test setup, OR skip with a clear message when no provider is configured:
-   test('...', { skip: !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY }, () => {...})
-
-   Category C — 3 TeamManager persistence tests fail with EPERM on file unlink:
-   Fix: In test teardown (after/afterEach), use fs.rmSync(path, { recursive: true, force: true })
-   instead of fs.unlinkSync(). The 'force' flag suppresses EPERM/ENOENT.
-
-   After all fixes: run 'npm run test:unit 2>&1 | tail -10' — must show 0 failures."
-```
-Expected Output: All 230+ tests pass with 0 failures
-Validation: `npm run test:unit 2>&1 | grep "# fail"` → `# fail 0`
-Fallback #1: codex -m gpt-4 exec "same — focus on Category A (governance) first"
-Fallback #2: claude --model sonnet --effort high -p "same task"
-Fallback #3: gemini -y -p "Add try/catch around better-sqlite3 import in audit-db.js with fallback to in-memory"
-Cost Class: SUBSCRIPTION-INCLUDED
-
----
-
-[WINDOW 6] GEMINI — gemini-2.5-pro
-Task ID: P1-W6
-Objective: Fix all example files — correct import paths so they run from repo clone
-Target Files: examples/*.js, examples/sdk.js
-Why this lane: Mechanical path fixes — Gemini parallel worker at $0
-Power Tier: BALANCED
-Command:
-```bash
-gemini -y -p \
-  "Read every .js file in examples/ directory (not subdirectories).
-
-   All imports use WRONG relative paths. They import from './src/core/...' but should import from '../src/core/...' (one directory up, since examples/ is a subdirectory of the repo root).
-
-   For each file:
-   1) Find all import statements
-   2) Fix relative paths:
-      './src/'  → '../src/'
-      './apps/' → '../apps/'
-      './packages/' → '../packages/'
-   3) Verify the target file exists at the corrected path
-
-   Also fix examples/sdk.js specifically — it has 11 broken imports.
-
-   After fixing: run 'node examples/sdk.js 2>&1 | head -20' to verify it at least starts (may fail on missing API key, but should NOT fail on import errors).
-
-   Do NOT change any logic — only fix import paths."
-```
-Expected Output: All example .js files have correct import paths
-Validation: `node -e "import('../examples/sdk.js')" 2>&1 | grep "Cannot find" | wc -l` → 0
-Fallback #1: gemini -p "same — just fix examples/sdk.js first"
-Fallback #2: qwen --approval-mode yolo "same task"
-Fallback #3: codex exec "same task"
-Cost Class: FREE
-
----
-
-[WINDOW 7] QWEN — qwen-turbo
+[WINDOW 7] GEMINI — gemini-2.5-pro
 Task ID: P1-W7
-Objective: Fix version string mismatch — doctor.js hardcodes v2.4.0 while package.json says 2.0.0
-Target Files: apps/cli/lib/commands/doctor.js, any other files with hardcoded version strings
-Why this lane: Simple grep-and-replace — Qwen labor
-Power Tier: LOW
-Command:
-```bash
-qwen --auth-type qwen-oauth --approval-mode yolo \
-  "1) grep -r '2\.4\.0' apps/cli/ src/ --include='*.js' --include='*.ts' -l
-     Find all files with hardcoded version '2.4.0'
-   2) In each file: replace the hardcoded version with a dynamic import from package.json:
-      import { createRequire } from 'module';
-      const require = createRequire(import.meta.url);
-      const { version } = require('../../package.json');
-      OR if the file already imports a config, pull version from there.
-   3) Also search for other stale versions: grep -rn '\"version\".*\"[0-9]' apps/cli/lib/ --include='*.js' | grep -v node_modules
-   4) Ensure 'npm start -- doctor' shows the correct version (2.0.0)"
-```
-Expected Output: No hardcoded version strings, doctor command shows 2.0.0
-Validation: `grep -r '2\.4\.0' apps/cli/ --include='*.js' | wc -l` → 0
-Fallback #1: gemini -p "same task"
-Fallback #2: claude --model haiku -p "same task"
-Fallback #3: Manual sed
-Cost Class: FREE
-
----
-
-## P2 — CLI HYGIENE & DEAD CODE PURGE
-
-The CLI has ~150 commands. Only ~20 are active. The rest are abandoned with broken imports.
-Prune ruthlessly.
-
----
-
-[WINDOW 8] GEMINI — gemini-2.5-pro
-Task ID: P2-W8
-Objective: Audit all CLI commands — identify which are active (imported and working) vs abandoned
-Target Files: apps/cli/lib/commands/*.js, apps/cli/bin/ultra-dex.js, apps/cli/bin/ultra-dex-full.js
-Why this lane: Full-repo scan + classification — Gemini excels at volume analysis at $0
-Power Tier: HIGH
-Command:
-```bash
-gemini -y -p \
-  "Comprehensive CLI command audit:
-
-   1) List ALL .js files in apps/cli/lib/commands/ with their file sizes and last-modified dates
-   2) Read apps/cli/bin/ultra-dex.js and apps/cli/bin/ultra-dex-full.js — identify which commands are actually registered with Commander.js
-   3) For each command file:
-      a) Is it imported/registered in the CLI entry point? (YES/NO)
-      b) Does it import modules that exist? (run a quick check on import paths)
-      c) Last modified date (anything older than Apr 3 is likely pre-refactor)
-   4) Create a classification table in docs/cli-command-audit.md:
-      | Command File | Registered | Imports Valid | Last Modified | Status |
-      With status = ACTIVE / STALE / BROKEN / DEPRECATED
-   5) List the commands recommended for deletion (STALE + BROKEN + not registered)
-
-   Do NOT delete anything yet — just produce the audit report."
-```
-Expected Output: docs/cli-command-audit.md with full classification
-Validation: File exists and contains table with all commands classified
-Fallback #1: gemini -p "same — just list registered vs unregistered commands"
-Fallback #2: claude --model sonnet --effort high -p "same task"
-Fallback #3: codex exec "same task"
-Cost Class: FREE
-
----
-
-[WINDOW 9] CLAUDE — claude-sonnet-4
-Task ID: P2-W9
-Objective: Archive abandoned CLI commands and clean up the command surface (AFTER W8 audit completes)
-Target Files: apps/cli/lib/commands/*.js → archive/cli-deprecated/
-Why this lane: Architectural judgment on what to keep — Premium lane
-Power Tier: HIGH
-Depends on: W8 (audit must complete first)
-Command:
-```bash
-claude --model sonnet --effort high \
-  "Read docs/cli-command-audit.md (produced by W8).
-
-   For every command marked STALE or BROKEN:
-   1) Move it to archive/cli-deprecated/ (preserve history, don't delete)
-   2) Remove its registration from ultra-dex.js / ultra-dex-full.js if present
-
-   For commands marked DEPRECATED:
-   1) Keep in place but add a deprecation notice at the top:
-      console.warn('[DEPRECATED] This command will be removed in v3.0. Use X instead.');
-
-   After pruning:
-   1) Run 'npm start -- --help 2>&1' — verify help shows only active commands
-   2) Run 'npm test 2>&1 | tail -10' — verify no tests broke
-   3) Update docs/cli-command-audit.md with final counts:
-      - Active commands: N
-      - Archived commands: M
-      - Deprecated commands: K
-
-   Target: < 40 active commands in the CLI."
-```
-Expected Output: Dead commands archived, CLI help shows only active commands, tests pass
-Validation: `ls apps/cli/lib/commands/*.js | wc -l` → < 40
-Fallback #1: claude --model opus --effort max -p "same task but be very conservative — only archive commands with broken imports"
-Fallback #2: codex --full-auto exec "same task"
-Fallback #3: gemini -y -p "same — just move files older than Apr 1 with no registration"
-Cost Class: SUBSCRIPTION-INCLUDED
-
----
-
-[WINDOW 10] QWEN — qwen-plus
-Task ID: P2-W10
-Objective: Remove archive/ bloat — compress old archive to .tar.gz and delete the directory
-Target Files: archive/ (3.6MB, 85 files)
-Why this lane: Mechanical file operations — Qwen labor
-Power Tier: LOW
-Command:
-```bash
-qwen --auth-type qwen-oauth --approval-mode yolo \
-  "1) Measure: du -sh archive/
-   2) Create a compressed archive: tar -czf archive-backup-2026-04-06.tar.gz archive/
-   3) Verify the tarball: tar -tzf archive-backup-2026-04-06.tar.gz | head -20
-   4) Remove the directory: rm -rf archive/
-   5) Move the tarball to a safe location: mkdir -p .archive && mv archive-backup-2026-04-06.tar.gz .archive/
-   6) Add '.archive/' to .gitignore if not already there
-   7) Run npm test to confirm nothing depended on archive/"
-```
-Expected Output: archive/ removed, .archive/archive-backup.tar.gz exists, tests pass
-Validation: `ls -la archive/ 2>&1` → "No such file or directory"
-Fallback #1: gemini -y -p "same task"
-Fallback #2: Just rm -rf archive/ directly
-Fallback #3: Keep archive/ but add to .gitignore
-Cost Class: FREE
-
----
-
-## P3 — DOCUMENTATION & EXAMPLES (After P0-P2 Green)
-
----
-
-[WINDOW 11] CLAUDE — claude-sonnet-4
-Task ID: P3-W11
-Objective: Create docs/ARCHITECTURE.md — the missing canonical architecture document
-Target Files: docs/ARCHITECTURE.md (new)
-Why this lane: Architecture documentation requires deep understanding — Premium lane
-Power Tier: HIGH
-Command:
-```bash
-claude --model sonnet --effort high \
-  "Create docs/ARCHITECTURE.md for Ultra-Dex v2.0.
-
-   This is the CANONICAL architecture reference. It's listed in package.json 'files' but doesn't exist.
-
-   Source material: Read src/core/index.js, src/core/orchestration/index.js, src/core/ai/ai-meta-layer.js, src/core/memory/unified-api.js, src/core/agents/ralph-loop.js, src/core/governance/governance-manager.js, src/core/mcp/server-manager.js, packages/sdk/src/client.js.
-
-   Structure:
-   1) System overview (Mermaid diagram — use the one from README.md as base)
-   2) Core execution flow: CLI → Command → Orchestrator → Governance → Agent → Provider
-   3) Module reference table: path, responsibility, key exports, dependencies
-   4) Data flow: how a task moves from CLI input to AI response to memory storage
-   5) Agent system: Ralph Loop lifecycle, Swarm pattern, agent registry
-   6) Memory architecture: tiered storage (hot/warm/cold), vector search, graph queries
-   7) Provider routing: strategy selection, fallback chains, cost tracking
-   8) Governance: policy enforcement points, audit trail, DeniedException flow
-   9) MCP integration: server lifecycle, tool registry, bidirectional mode
-   10) Extension points: how to add a provider, agent, or plugin
-
-   Keep it under 500 lines. Dense, technical, no marketing language."
-```
-Expected Output: docs/ARCHITECTURE.md — comprehensive, current, under 500 lines
-Validation: File exists, contains Mermaid diagram, references current file paths
-Fallback #1: claude --model opus --effort max -p "same — prioritize accuracy over completeness"
-Fallback #2: codex -m o3 exec "same task"
-Fallback #3: gemini -y -p "same — shorter version, 200 lines"
-Cost Class: SUBSCRIPTION-INCLUDED
-
----
-
-[WINDOW 12] GEMINI — gemini-2.5-flash
-Task ID: P3-W12
-Objective: Create documentation index — single entry point for all docs
-Target Files: docs/INDEX.md (new)
-Why this lane: Scanning + organizing — Gemini parallel worker
-Power Tier: LOW
-Command:
-```bash
-gemini -y -p \
-  "The docs/ directory has 50+ subdirectories and 100+ files but no index.
-
-   Create docs/INDEX.md that:
-   1) Lists every directory in docs/ with a 1-line description
-   2) Groups into sections: Architecture, Guides, API Reference, Enterprise, Testing, Planning, Reports
-   3) Links to the most important doc in each section
-   4) Marks docs as CURRENT (modified in last 7 days), RECENT (last 30 days), or STALE (older)
-   5) Adds a 'Start Here' section at top pointing to:
-      - docs/ARCHITECTURE.md (system design)
-      - README.md (quickstart)
-      - docs/API.md (API reference)
-      - CONTRIBUTING.md (contributor guide)
-
-   Keep it under 100 lines. Use markdown tables."
-```
-Expected Output: docs/INDEX.md with organized links to all documentation
-Validation: `wc -l docs/INDEX.md` → < 100
-Fallback #1: gemini -p "same — just list directories with descriptions"
-Fallback #2: qwen --approval-mode yolo "same task"
-Fallback #3: claude --model haiku -p "same task"
-Cost Class: FREE
-
----
-
-[WINDOW 13] GEMINI — gemini-2.5-flash
-Task ID: P3-W13
-Objective: Populate MCP tool registry with real tool definitions — expand from 4 stub files
-Target Files: src/core/mcp/ (new tool files), src/core/mcp/server-manager.js (register tools)
-Why this lane: Boilerplate generation — Gemini high-volume at $0
+Objective: Integrate archive Analytics + Webhooks modules
+Target Files: .archive/**/wip-core-modules/analytics/ → src/core/analytics/, .archive/**/wip-core-modules/webhooks/ → src/core/webhooks/
+Why this lane: Two modules, parallel integration — Gemini excels at volume
 Power Tier: BALANCED
 Command:
 ```bash
 gemini -y -p \
-  "Read src/core/mcp/server-manager.js and the existing tool files (graph.js, memory.js).
+  "Two archive modules need integration:
 
-   The MCP tool ecosystem is minimal — only 4 files with stubs. Add real tool implementations:
+   A) ANALYTICS (.archive/**/wip-core-modules/analytics/):
+   - Copy to src/core/analytics/ if it doesn't already exist
+   - Update imports to use live project paths
+   - Hook into orchestration layer: emit analytics events on task start/complete/fail
+   - This replaces/supplements the EngagementTracker from Cycle 1
 
-   1) src/core/mcp/tools/agent-status.js — tool that returns current agent states, active tasks, health
-      Input: { agentId?: string }
-      Output: { agents: [{ id, status, currentTask, healthScore }] }
+   B) WEBHOOKS (.archive/**/wip-core-modules/webhooks/):
+   - Copy to src/core/webhooks/ if it doesn't already exist
+   - Update imports
+   - This will replace the NoopSubsystem WebhookManager in src/core/index.js
 
-   2) src/core/mcp/tools/task-submit.js — tool that submits a task to the orchestrator
-      Input: { task: string, priority?: 'low'|'medium'|'high', agentPreference?: string }
-      Output: { taskId, status: 'queued', estimatedStart }
-
-   3) src/core/mcp/tools/memory-search.js — tool that queries the memory system
-      Input: { query: string, limit?: number, tier?: 'hot'|'warm'|'cold' }
-      Output: { results: [{ content, score, tier, timestamp }] }
-
-   4) src/core/mcp/tools/provider-info.js — tool that lists available AI providers and their status
-      Input: {}
-      Output: { providers: [{ name, status, latencyP50, costPer1kTokens, model }] }
-
-   Each tool should follow the MCP tool schema pattern from @modelcontextprotocol/sdk.
-   Register all tools in server-manager.js.
-   Write tests/core/mcp-tools.test.js with at least 2 tests per tool."
+   For both:
+   1) Read the archive files first to understand their API
+   2) Copy, fix imports
+   3) Write 3 tests each in tests/core/
+   4) npm test — zero regressions"
 ```
-Expected Output: 4 new MCP tool files, registered in server-manager, 8+ tests passing
-Validation: `ls src/core/mcp/tools/*.js | wc -l` → 4+. Tests pass.
-Fallback #1: gemini -p "same — just create agent-status.js and task-submit.js first"
+Expected Output: Analytics and webhooks modules integrated, tests passing
+Validation: `ls src/core/analytics/*.js src/core/webhooks/*.js 2>/dev/null | wc -l` → 2+
+Fallback #1: gemini -p "same — just analytics first"
 Fallback #2: codex --full-auto exec "same task"
 Fallback #3: claude --model sonnet --effort high -p "same task"
 Cost Class: FREE
 
 ---
 
-## Cycle 2 Completion Checklist
+[WINDOW 8] GEMINI — gemini-2.5-flash
+Task ID: P1-W8
+Objective: Copy archive reference docs to proper locations — templates, protocols, planning, provider spec
+Target Files: .archive/**/wip-core-modules/templates/ → docs/templates/, .archive/**/protocols/ → docs/protocols/, .archive/**/planning/ → docs/planning/
+Why this lane: Mechanical file movement — Gemini at $0
+Power Tier: LOW
+Command:
+```bash
+gemini -y -p \
+  "Move archive reference documentation to proper doc locations:
 
-Before closing Cycle 2, verify ALL:
+   1) .archive/**/wip-core-modules/templates/ → docs/templates/
+      (CI/CD templates, Docker templates, monitoring templates, SaaS project templates)
+   2) .archive/**/protocols/ → docs/protocols/
+      (Maya protocol, Vigilante protocol — agent coordination docs)
+   3) .archive/**/planning/ → docs/archive-planning/
+      (Historical planning docs — launch plans, implementation plans)
+   4) .archive/**/gap-planning/ → docs/archive-planning/gap-analysis/
+   5) If docs/specs/ doesn't exist, create it for PROVIDER-SPEC.md (from W4)
 
-- [ ] `npm run build` → exits 0 (dashboard included)
-- [ ] `npx tsc --noEmit` → 0 errors
-- [ ] `npm run lint` → runs without crashes
-- [ ] `npm run test:unit` → 0 failures
-- [ ] `npm run test:integration` → 0 failures
-- [ ] `cd packages/sdk && npm pack --dry-run` → lists src/ and types/
-- [ ] `node examples/sdk.js 2>&1 | grep "Cannot find module"` → 0 matches
-- [ ] `grep -r '2\.4\.0' apps/cli/ --include='*.js' | wc -l` → 0
-- [ ] `ls apps/cli/lib/commands/*.js | wc -l` → < 40
-- [ ] `ls archive/ 2>&1` → "No such file or directory"
-- [ ] `ls docs/ARCHITECTURE.md` → exists
-- [ ] `ls docs/INDEX.md` → exists
-- [ ] `ls src/core/mcp/tools/*.js | wc -l` → 4+
+   Use cp -r (copy, don't move — archive stays intact until P3 cleanup).
+   Verify: ls docs/templates/ docs/protocols/ docs/archive-planning/"
+```
+Expected Output: Reference docs properly organized under docs/
+Validation: `ls docs/templates/ docs/protocols/ docs/archive-planning/` → all exist with files
+Fallback #1: qwen --approval-mode yolo "same task"
+Fallback #2: Manual cp -r commands
+Fallback #3: claude --model haiku -p "same task"
+Cost Class: FREE
 
 ---
 
-*Dispatches generated from Cycle 1 post-mortem — 2026-04-06*
+## P2 — NOOPSUBSYSTEM REPLACEMENT (Real Implementations)
+
+Replace the 6 NoopSubsystem shims in src/core/index.js with real or archive-sourced implementations.
+
+---
+
+[WINDOW 9] CODEX — o3
+Task ID: P2-W9
+Objective: Replace RateLimiter, ProviderFallback, and QueueProcessor NoopSubsystems with real implementations
+Target Files: src/core/index.js, new files in src/core/infrastructure/
+Why this lane: Three interrelated subsystems requiring careful design — needs strong reasoning
+Power Tier: HIGH
+Command:
+```bash
+codex -m o3 --full-auto exec \
+  "src/core/index.js has 6 NoopSubsystem classes. Replace 3 of them:
+
+   1) RateLimiter (line 51):
+      Check .archive/**/wip-core-modules/ for existing rate-limiter implementation.
+      If found: integrate. If not: create src/core/infrastructure/rate-limiter.js:
+      - TokenBucket algorithm per provider (configurable tokens/sec)
+      - SlidingWindow for burst protection
+      - Hook into AIMetaLayer.call() — check rate limit before provider call
+      - Methods: acquire(providerName), release(), getStats()
+
+   2) ProviderFallback (line 60):
+      Create src/core/infrastructure/provider-fallback.js:
+      - CircuitBreaker pattern per provider (threshold: 3 failures, resetTimeout: 30s)
+      - On provider failure: try next provider in fallback chain
+      - Wire into SmartAIRouter
+
+   3) QueueProcessor (line 61):
+      Check .archive/**/wip-core-modules/ for existing queue implementation.
+      Create src/core/infrastructure/queue-processor.js:
+      - In-memory priority queue (no Redis dependency for now)
+      - Methods: enqueue(task, priority), dequeue(), process(), getStats()
+      - Hook into orchestration: tasks queue when all agents are busy
+
+   4) Update src/core/index.js: replace NoopSubsystem classes with real imports
+   5) Write tests for each: tests/core/rate-limiter.test.js, provider-fallback.test.js, queue-processor.test.js
+   6) npm test — zero regressions"
+```
+Expected Output: 3 NoopSubsystems replaced with real implementations, tests pass
+Validation: `grep 'NoopSubsystem' src/core/index.js | wc -l` → decreased by 3 (or replaced inline)
+Fallback #1: codex -m o1 exec "same — implement RateLimiter only first"
+Fallback #2: claude --model sonnet --effort high -p "same task"
+Fallback #3: gemini -y -p "same — simple implementations, no circuit breaker"
+Cost Class: SUBSCRIPTION-INCLUDED
+
+---
+
+[WINDOW 10] CODEX — o1
+Task ID: P2-W10
+Objective: Replace StreamPipeline and WebhookManager NoopSubsystems (WebhookManager from archive W7, StreamPipeline new)
+Target Files: src/core/index.js, src/core/infrastructure/
+Why this lane: StreamPipeline requires understanding of SSE/streaming patterns
+Power Tier: BALANCED
+Depends on: W7 (WebhookManager from archive should be integrated by then)
+Command:
+```bash
+codex --full-auto -m o1 exec \
+  "Two more NoopSubsystems to replace:
+
+   1) WebhookManager:
+      If W7 integrated src/core/webhooks/ successfully, wire it into src/core/index.js
+      replacing the NoopSubsystem WebhookManager.
+      If not: create minimal src/core/infrastructure/webhook-manager.js:
+      - Register webhook URLs for events (task.complete, agent.error, etc.)
+      - HTTP POST delivery with retry (3 attempts, exponential backoff)
+      - Methods: register(event, url), unregister(id), deliver(event, payload), getStats()
+
+   2) StreamPipeline:
+      Create src/core/infrastructure/stream-pipeline.js:
+      - Transform pipeline for streaming AI responses
+      - Supports: tokenization, filtering, buffering, aggregation stages
+      - ReadableStream-based (Web Streams API)
+      - Methods: addStage(transform), pipe(input), getStats()
+      - Wire into AIMetaLayer for streaming provider responses
+
+   3) Update src/core/index.js: import real implementations
+   4) Write tests: tests/core/stream-pipeline.test.js, tests/core/webhook-manager.test.js
+   5) npm test — zero regressions"
+```
+Expected Output: StreamPipeline and WebhookManager replaced, tests pass
+Validation: `grep 'class StreamPipeline extends NoopSubsystem' src/core/index.js` → NO match
+Fallback #1: codex -m gpt-4 exec "same — StreamPipeline only"
+Fallback #2: claude --model sonnet --effort high -p "same task"
+Fallback #3: gemini -y -p "same task — minimal implementations"
+Cost Class: SUBSCRIPTION-INCLUDED
+
+---
+
+[WINDOW 11] CLAUDE — claude-sonnet-4
+Task ID: P2-W11
+Objective: Replace PluginManager NoopSubsystem with real plugin lifecycle management
+Target Files: src/core/index.js, src/core/infrastructure/plugin-manager.js (new), packages/plugins/
+Why this lane: Plugin architecture requires careful API design — Premium lane
+Power Tier: HIGH
+Command:
+```bash
+claude --model sonnet --effort high \
+  "The last NoopSubsystem: PluginManager.
+
+   packages/plugins/ has 11 real plugin implementations. But src/core/index.js still uses a Noop.
+
+   Create src/core/infrastructure/plugin-manager.js:
+   1) Plugin lifecycle: install(pluginId) → activate() → deactivate() → uninstall()
+   2) Plugin registry: Map of pluginId → { module, status, config, activatedAt }
+   3) Auto-discovery: scan packages/plugins/ for valid plugins (check for index.js + package.json)
+   4) Plugin hooks: beforeTask, afterTask, onError — plugins can register callbacks
+   5) Methods: install(id), activate(id), deactivate(id), uninstall(id), list(), getStats()
+   6) Validation: verify plugin exports match expected interface before activation
+
+   Wire into src/core/index.js replacing the NoopSubsystem.
+
+   Write tests/core/plugin-manager.test.js:
+   - Test lifecycle (install → activate → deactivate)
+   - Test hook invocation (beforeTask fires on task execution)
+   - Test invalid plugin rejection
+
+   npm test — zero regressions. ALL NoopSubsystems should now be replaced."
+```
+Expected Output: PluginManager with real lifecycle, tests pass, ZERO NoopSubsystems remain
+Validation: `grep 'NoopSubsystem' src/core/index.js | wc -l` → 0 (or only the base class definition)
+Fallback #1: claude --model opus --effort max -p "same — just registry + lifecycle, skip hooks"
+Fallback #2: codex -m o3 exec "same task"
+Fallback #3: gemini -y -p "same — minimal implementation"
+Cost Class: SUBSCRIPTION-INCLUDED
+
+---
+
+## P3 — ARCHIVE CLEANUP (Surgical Classification & Disposal)
+
+CRITICAL: The user spent many days building these files. Only delete what is 100% confirmed waste.
+
+---
+
+[WINDOW 12] CLAUDE — claude-sonnet-4
+Task ID: P3-W12
+Objective: Execute surgical archive cleanup — delete ONLY confirmed waste, preserve everything else
+Target Files: .archive/
+Why this lane: Requires judgment on what's safe to delete — Premium lane, conservative approach
+Power Tier: HIGH
+Command:
+```bash
+claude --model sonnet --effort high \
+  "The .archive/ directory has been forensically classified. Execute cleanup:
+
+   STEP 1 — DELETE (100% confirmed waste, duplicates, or empty artifacts):
+   - .archive/dataless-quarantine/ (corrupted partial JSONL files, unrecoverable)
+   - .archive/**/debug-scripts/ (one-off debugging scripts, no reuse value)
+   - .archive/**/kimi-sessions/ (session logs from CLI runs, no code value)
+   - .archive/**/legacy-hidden/.qwen/ (Qwen session artifacts)
+   - .archive/**/wip-core-modules/performance/token-optimizer 2.js (macOS copy duplicate — the main file was already integrated in W5)
+   - .archive/**/cli-deprecated/dashboard 2.js (macOS copy duplicate)
+
+   STEP 2 — COMPRESS and keep (historical reference, audit value):
+   - .archive/**/upgrade/reports/ → compress to .archive/history/upgrade-reports.tar.gz
+   - .archive/**/session-docs/ → compress to .archive/history/session-docs.tar.gz
+   - .archive/**/git-incidents/ → compress to .archive/history/git-incidents.tar.gz
+   - .archive/**/legacy-hidden/.ultra-dex/audit/ → compress to .archive/history/audit-logs.tar.gz
+
+   STEP 3 — KEEP as-is (already copied to docs/ in W8, but keep archive originals):
+   - .archive/**/wip-core-modules/ (source of integrated modules — keep until Cycle 3 verified)
+   - .archive/**/upgrade/tasks/ (task definitions, reference value)
+
+   STEP 4 — After all operations:
+   - du -sh .archive/ (report new size)
+   - ls -la .archive/ (show final structure)
+   - npm test — verify nothing broke
+
+   DO NOT delete anything not in the STEP 1 list. When in doubt, keep."
+```
+Expected Output: Waste deleted, reference compressed, gold preserved. Archive smaller but intact.
+Validation: `du -sh .archive/` → significantly smaller than before. `npm test` passes.
+Fallback #1: claude --model opus --effort max -p "same — even more conservative, only delete dataless-quarantine"
+Fallback #2: Just compress everything: `tar -czf .archive-frozen.tar.gz .archive/ && rm -rf .archive/ && mkdir .archive && mv .archive-frozen.tar.gz .archive/`
+Fallback #3: Do nothing — keep archive as-is
+Cost Class: SUBSCRIPTION-INCLUDED
+
+---
+
+[WINDOW 13] QWEN — qwen-turbo
+Task ID: P3-W13
+Objective: Delete the cli-deprecated/ directory from archive (these are confirmed old CLI commands replaced by current 40-command surface)
+Target Files: .archive/**/cli-deprecated/
+Why this lane: Simple directory deletion — Qwen labor
+Power Tier: LOW
+Command:
+```bash
+qwen --auth-type qwen-oauth --approval-mode yolo \
+  "The .archive/**/cli-deprecated/ directory contains 36 old CLI command files that were explicitly
+   moved there during Cycle 2 cleanup. The current CLI in apps/cli/lib/commands/ has 40 active commands
+   that replace all of these.
+
+   1) List files: ls .archive/**/cli-deprecated/
+   2) Verify none are imported by live code: grep -r 'cli-deprecated' src/ apps/ tests/ --include='*.js'
+   3) If zero imports: rm -rf .archive/**/cli-deprecated/
+   4) Also remove .archive/**/legacy-hidden/ EXCEPT the .ultra-dex/audit/ subdirectory (keep audit logs)
+   5) Show final archive structure: find .archive/ -maxdepth 3 -type d"
+```
+Expected Output: cli-deprecated and most of legacy-hidden removed
+Validation: `find .archive/ -name "cli-deprecated" | wc -l` → 0
+Fallback #1: Manual rm -rf
+Fallback #2: Keep everything
+Fallback #3: gemini -p "same task"
+Cost Class: FREE
+
+---
+
+## P4 — FINAL SEAL (Verification + Version + Changelog)
+
+---
+
+[WINDOW 14] CLAUDE — claude-sonnet-4
+Task ID: P4-W14
+Objective: Update CHANGELOG.md with full Cycle 1-3 history and bump version to 2.1.0
+Target Files: CHANGELOG.md, package.json (version), packages/sdk/package.json (version)
+Why this lane: Changelog writing requires architectural understanding
+Power Tier: BALANCED
+Command:
+```bash
+claude --model sonnet --effort high \
+  "Create a comprehensive CHANGELOG.md documenting Cycles 1-3:
+
+   ## [2.1.0] - 2026-04-06
+
+   ### Cycle 3: Eternal State
+   #### Added
+   - AI Router: task-aware routing strategy with model-router cost tables
+   - MCTS reasoning engine for complex multi-step decision making
+   - Performance: token optimizer, db optimizer, LRU caching
+   - Reliability: agent autopsy, self-healing recovery strategies
+   - Real PluginManager with lifecycle management (install/activate/deactivate)
+   - Real RateLimiter with TokenBucket and SlidingWindow algorithms
+   - Real StreamPipeline with Web Streams API transform pipeline
+   - Real QueueProcessor with in-memory priority queue
+   - Real WebhookManager with retry delivery
+   - Real ProviderFallback with CircuitBreaker pattern
+   - Integrated analytics and webhooks from archive
+   - Reference documentation (templates, protocols, planning) organized under docs/
+
+   #### Removed
+   - All 6 NoopSubsystem shims replaced with real implementations
+   - Archive waste: debug scripts, session logs, corrupted data quarantine
+   - Orphaned ' 2.*' duplicate files
+
+   ### Cycle 2: Ship-Grade Stabilization
+   #### Fixed
+   - TypeScript strict mode: 0 errors (from 64)
+   - SDK version aligned to 2.0.0
+   - Example import paths corrected
+   - CLI pruned to 40 active commands
+   - docs/ARCHITECTURE.md created
+   - ESLint wrapper with syntax fallback
+
+   ### Cycle 1: Enterprise Hardening
+   #### Security
+   - Removed exposed API keys from repository
+   - Pre-commit hooks for secret scanning
+   - tar vulnerability patched (>=7.5.11)
+   - CodeQL security analysis workflow
+   - Default credentials removed from docker-compose.prod.yml
+
+   #### Architecture
+   - noImplicitAny: true with all strict flags
+   - SystemMonitor refactored (1,480 LOC → 197 LOC facade + 4 classes)
+   - Ralph Loop wall-clock timeout (5min default)
+   - MCP server graceful degradation
+   - Governance audit persisted to SQLite
+   - Semantic task routing (TF-IDF + cosine similarity)
+   - Kubernetes RBAC and NetworkPolicies
+
+   ---
+
+   Then bump version:
+   - package.json: version → '2.1.0'
+   - packages/sdk/package.json: version → '2.1.0'
+   - Do NOT use npm version (it creates a git tag — just edit the files)"
+```
+Expected Output: CHANGELOG.md with full history, version 2.1.0
+Validation: `grep '2.1.0' package.json packages/sdk/package.json` → matches in both
+Fallback #1: claude --model sonnet --effort high -p "shorter changelog, just Cycle 3"
+Fallback #2: codex exec "same task"
+Fallback #3: gemini -y -p "same task"
+Cost Class: SUBSCRIPTION-INCLUDED
+
+---
+
+[WINDOW 15] GEMINI — gemini-2.5-pro
+Task ID: P4-W15
+Objective: FINAL VERIFICATION — run every check, produce the eternal state report
+Target Files: None (read-only verification)
+Why this lane: Comprehensive validation — Gemini can run all checks at $0
+Power Tier: HIGH
+Command:
+```bash
+gemini -p \
+  "Run the COMPLETE verification suite for Ultra-Dex v2.1.0 eternal state.
+   Report each check as PASS or FAIL:
+
+   1) npm run build 2>&1 | tail -5
+   2) npx tsc --noEmit 2>&1 | grep 'error' | wc -l
+   3) npm run test:unit 2>&1 | grep '# fail'
+   4) npm run test:integration 2>&1 | grep '# fail'
+   5) npm run lint 2>&1 | tail -5
+   6) npm audit --audit-level high 2>&1 | tail -5
+   7) grep 'NoopSubsystem' src/core/index.js | wc -l
+   8) find . -name '* 2.*' -not -path '*/node_modules/*' -not -path '*/.archive/*' | wc -l
+   9) cat package.json | grep version
+   10) ls docs/ARCHITECTURE.md docs/CHANGELOG.md 2>&1
+   11) ls src/core/performance/ src/core/analytics/ src/core/webhooks/ src/core/infrastructure/ 2>&1
+   12) du -sh .archive/
+
+   Produce a summary table:
+   | Check | Result | Details |
+
+   If ALL pass: output 'ETERNAL STATE ACHIEVED ✓'
+   If any fail: output 'REMAINING ISSUES:' with details"
+```
+Expected Output: Full verification report
+Validation: All 12 checks pass
+Fallback #1: gemini -p "Run only checks 1-6 first"
+Fallback #2: Manual execution of each check
+Fallback #3: claude --model haiku -p "same verification"
+Cost Class: FREE
+
+---
+
+## Cycle 3 Completion Checklist (THE FINAL GATE)
+
+Before closing Cycle 3 — the Eternal State — verify ALL:
+
+- [ ] `npm run build` → exits 0 (dashboard included)
+- [ ] `npx tsc --noEmit` → 0 errors
+- [ ] `npm run test:unit` → 0 failures
+- [ ] `npm run test:integration` → 0 failures
+- [ ] `npm run lint` → no crashes
+- [ ] `npm audit --audit-level high` → 0 high/critical
+- [ ] `grep 'extends NoopSubsystem' src/core/index.js | wc -l` → 0
+- [ ] `ls src/core/performance/token-optimizer.js` → exists (from archive)
+- [ ] `ls src/core/ai/mcts/` → exists (from archive)
+- [ ] `ls src/core/infrastructure/rate-limiter.js` → exists (new)
+- [ ] `ls src/core/infrastructure/queue-processor.js` → exists (new)
+- [ ] `ls src/core/infrastructure/stream-pipeline.js` → exists (new)
+- [ ] `ls src/core/infrastructure/plugin-manager.js` → exists (new)
+- [ ] `grep '2.1.0' package.json` → match
+- [ ] `find .archive/ -name "dataless-quarantine" | wc -l` → 0 (waste deleted)
+- [ ] `find . -name "* 2.*" -not -path "*/node_modules/*" -not -path "*/.archive/*" | wc -l` → 0
+- [ ] `ls docs/ARCHITECTURE.md docs/templates/ docs/protocols/` → all exist
+- [ ] CHANGELOG.md documents Cycles 1-3
+
+When ALL checks pass: **Ultra-Dex has reached its Eternal State.**
+
+---
+
+*Cycle 3 dispatches generated from forensic archive analysis + post-Cycle 2 audit — 2026-04-06*
 *Protocol: .protocol/orchestration.md + execution.md*
+*"Skeleton, not a cage — but now the skeleton has real bones."*

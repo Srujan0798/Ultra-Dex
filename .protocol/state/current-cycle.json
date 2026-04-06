@@ -1,26 +1,31 @@
 {
-  "cycle": 2,
-  "title": "Ship-Grade Stabilization — Build, Publish Surface, CLI Hygiene",
+  "cycle": 3,
+  "title": "ETERNAL STATE \u2014 Final Integration, Archive Resolution, Diamond Perfection",
   "initiated": "2026-04-06",
-  "source": "Cycle 1 post-mortem + deep exploration of publishable surface",
-  "thesis": "Cycle 1 fixed security and architecture. Cycle 2 makes it BUILDABLE and PUBLISHABLE. No new features — only fix what's broken and prune what's dead.",
+  "source": "Cycle 2 post-mortem + forensic archive analysis + NoopSubsystem audit",
+  "thesis": "This is the FINAL cycle. Three objectives: (1) Fix the 3 remaining platform breaks (native modules, build, governance tests). (2) Integrate the gold from archive/wip-core-modules/ into live source. (3) Classify and clean archive with surgical precision \u2014 preserve what took days to build, delete only confirmed waste. After this cycle, Ultra-Dex is in its eternal state.",
   "phases": {
-    "P0": { "label": "Unblock Build Pipeline", "windows": ["W1", "W2", "W3"], "status": "ready" },
-    "P1": { "label": "Publish Surface Readiness", "windows": ["W4", "W5", "W6", "W7"], "status": "ready" },
-    "P2": { "label": "CLI Hygiene & Dead Code Purge", "windows": ["W8", "W9", "W10"], "status": "ready" },
-    "P3": { "label": "Documentation & Examples", "windows": ["W11", "W12", "W13"], "status": "queued" }
+    "P0": { "label": "Platform Fixes \u2014 Make Everything Green", "windows": ["W1", "W2", "W3"], "status": "ready" },
+    "P1": { "label": "Archive Gold Integration \u2014 WIP Modules \u2192 Live Source", "windows": ["W4", "W5", "W6", "W7", "W8"], "status": "ready" },
+    "P2": { "label": "NoopSubsystem Replacement \u2014 Real Implementations", "windows": ["W9", "W10", "W11"], "status": "ready" },
+    "P3": { "label": "Archive Cleanup \u2014 Surgical Classification & Disposal", "windows": ["W12", "W13"], "status": "ready" },
+    "P4": { "label": "Final Seal \u2014 Verification, Version Bump, Changelog", "windows": ["W14", "W15"], "status": "queued" }
   },
   "manual_actions_required": [],
-  "gate": "Can a developer clone the repo, run npm install, npm run build, npm test — and have ALL THREE succeed with zero errors?",
+  "gate": "npm install && npm run build && npm test && npx tsc --noEmit \u2014 ALL FOUR exit 0 with zero errors. No NoopSubsystems remain. Archive contains only classified reference material.",
   "completion_criteria": [
     "npm run build exits 0 (including dashboard)",
-    "npx tsc --noEmit exits 0 with 0 errors",
-    "npm run lint exits 0 (no crashes)",
-    "npm test: 0 failures (all 230+ pass)",
-    "npm audit --audit-level high: 0 findings",
-    "packages/sdk/ independently installable and importable",
-    "examples/*.js all run without import errors",
-    "CLI has < 40 active commands (dead code pruned)",
-    "docs/ARCHITECTURE.md exists and is current"
+    "npm test: 0 failures across ALL test suites",
+    "npx tsc --noEmit: 0 errors",
+    "npm run lint: runs without crashes",
+    "Zero NoopSubsystem classes in src/core/index.js",
+    "wip-core-modules/ AI router integrated into orchestration",
+    "wip-core-modules/ performance optimizer integrated",
+    "wip-core-modules/ reliability (self-healing) integrated into agents",
+    "wip-core-modules/ rate-limiter integrated into provider layer",
+    "Archive classified: WASTE deleted, REFERENCE compressed, GOLD integrated",
+    "No orphaned ' 2.*' files anywhere in live tree",
+    "CHANGELOG.md updated with full Cycle 1-3 history",
+    "Version bumped to 2.1.0 (minor: new integrations, no breaking changes)"
   ]
 }
