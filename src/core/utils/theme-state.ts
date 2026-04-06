@@ -28,7 +28,7 @@ export function isDoomsdayMode(): boolean {
  * @param {Error} error - The error to handle
  * @param {string} [context='theme-state'] - Error context
  */
-function handleModuleError(error, context = 'theme-state') {
+function handleModuleError(error: Error | unknown, context = 'theme-state') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);
