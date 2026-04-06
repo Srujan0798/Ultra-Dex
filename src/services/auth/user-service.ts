@@ -419,7 +419,9 @@ export class UserService {
       return null; // No password set
     }
 
-    const passwordHash = results[0].metadata.hash;
+    const metadata = results[0].metadata as { hash?: string };
+    const passwordHash = metadata.hash;
+    if (!passwordHash) return null;
     const isValid = await bcrypt.compare(password, passwordHash);
 
     if (isValid) {

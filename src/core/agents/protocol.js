@@ -257,4 +257,47 @@ export class Protocol extends EventEmitter {
   }
 }
 
+/**
+ * ExecutionTrace
+ * Traces execution of tasks across agents
+ */
+export class ExecutionTrace {
+  constructor(options = {}) {
+    this.id = options.id || `trace-${Date.now()}`;
+    this.taskId = options.taskId;
+    this.agentId = options.agentId;
+    this.startTime = Date.now();
+    this.endTime = null;
+    this.steps = [];
+    this.metadata = options.metadata || {};
+  }
+
+  addStep(step) {
+    this.steps.push({
+      timestamp: Date.now(),
+      ...step
+    });
+  }
+
+  complete(result) {
+    this.endTime = Date.now();
+    this.result = result;
+    this.duration = this.endTime - this.startTime;
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      taskId: this.taskId,
+      agentId: this.agentId,
+      startTime: this.startTime,
+      endTime: this.endTime,
+      duration: this.duration,
+      steps: this.steps,
+      result: this.result,
+      metadata: this.metadata
+    };
+  }
+}
+
 export default Protocol;

@@ -62,7 +62,7 @@ describe('Governance Integration - executeTool', () => {
       resource: 'test-resource',
     });
 
-    const entries = governance.audit.query({ agentId: 'test-agent' });
+    const entries = await governance.audit.query({ agentId: 'test-agent' });
     assert.ok(entries.length >= 0);
   });
 

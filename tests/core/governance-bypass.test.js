@@ -102,7 +102,7 @@ describe.skip('Governance Bypass Prevention (requires full system setup)', { tim
     }
 
     // Verify audit trail
-    const auditEntries = governance.audit.query({ resource: 'delete_database' });
+    const auditEntries = await governance.audit.query({ resource: 'delete_database' });
     assert.ok(auditEntries.length > 0, 'MUST log blocked attempt');
     assert.strictEqual(auditEntries[0].outcome, 'blocked', 'MUST show blocked status');
   });

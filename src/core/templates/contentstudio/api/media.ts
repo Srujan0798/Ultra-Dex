@@ -32,7 +32,7 @@ export async function removeMedia(ownerId: string, mediaId: string) {
  * Error handler for media
  * @param {Error} error - Error to handle
  */
-function handleMediaError(error) {
+function handleMediaError(error: Error | unknown) {
   try {
     console.error('[media]', error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -73,6 +73,7 @@ export class MFAService {
       });
 
       // Generate QR code
+      if (!secret.otpauth_url) throw new Error('Failed to generate TOTP secret');
       const qrCode = await qrcode.toDataURL(secret.otpauth_url);
 
       // Generate backup codes
@@ -372,8 +373,8 @@ export class MFAService {
     if (!results) return false;
 
     for (const result of results) {
-      const data = result.metadata;
-      if (data.code === code && new Date() < data.expiresAt) {
+      const data = result.metadata as { code?: string; expiresAt?: Date };
+      if (data.code === code && data.expiresAt && new Date() < data.expiresAt) {
         // Remove used code
         await ppmManager.remove(result.id);
         return true;

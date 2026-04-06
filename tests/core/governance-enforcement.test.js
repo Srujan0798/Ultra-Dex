@@ -158,7 +158,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
     await governance.gate(context);
 
     // VERIFY: Audit log contains denial
-    const auditEntries = governance.audit.query({ action: 'forbidden:action' });
+    const auditEntries = await governance.audit.query({ action: 'forbidden:action' });
     assert.ok(auditEntries.length > 0, 'MUST have audit entry');
     
     const entry = auditEntries[0];
@@ -175,7 +175,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
 
     await governance.gate(context);
 
-    const auditEntries = governance.audit.query({ action: 'allowed:action' });
+    const auditEntries = await governance.audit.query({ action: 'allowed:action' });
     assert.ok(auditEntries.length > 0, 'MUST have audit entry');
     assert.strictEqual(auditEntries[0].outcome, 'allowed', 'MUST show allowed status');
   });
@@ -192,11 +192,11 @@ describe('Governance Enforcement - Denial Scenarios', () => {
     await governance.gate({ agentId: 'user3', action: 'delete', resource: 'doc3' });
 
     // Query all actions for user1
-    const user1Actions = governance.audit.query({ agentId: 'user1' });
+    const user1Actions = await governance.audit.query({ agentId: 'user1' });
     assert.ok(user1Actions.length > 0, 'MUST track by user');
 
     // Query all actions on doc2
-    const doc2Actions = governance.audit.query({ resource: 'doc2' });
+    const doc2Actions = await governance.audit.query({ resource: 'doc2' });
     assert.ok(doc2Actions.length > 0, 'MUST track by resource');
   });
 

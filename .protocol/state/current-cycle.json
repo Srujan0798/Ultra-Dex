@@ -1,0 +1,24 @@
+{
+  "cycle": 1,
+  "title": "Post-Review Remediation Cycle",
+  "initiated": "2026-04-05",
+  "source": "Full project review — architecture, code quality, security, devops",
+  "phases": {
+    "P0": { "label": "Critical — This Week", "windows": ["W1", "W2", "W3", "W4"], "status": "ready" },
+    "P1": { "label": "High — Next 2 Weeks", "windows": ["W5", "W6", "W7", "W8", "W9"], "status": "ready" },
+    "P2": { "label": "Medium — Next Month", "windows": ["W10", "W11", "W12", "W13", "W14", "W15"], "status": "queued" },
+    "P3": { "label": "Low — Next Quarter", "windows": ["W16", "W17", "W18"], "status": "queued" }
+  },
+  "manual_actions_required": [
+    "Revoke NVIDIA API keys immediately at build.nvidia.com (keys are live — cannot be automated)",
+    "Run BFG Repo-Cleaner or git filter-repo to purge .env/.env.local from git history"
+  ],
+  "gate": "Can users ship with Ultra-Dex after this cycle?",
+  "completion_criteria": [
+    "No exposed secrets in repo or git history",
+    "Build scripts execute without silent failures",
+    "Test coverage >= 50% for src/core/orchestration and src/core/agents",
+    "noImplicitAny: true passing with zero type errors",
+    "npm audit returns zero HIGH or CRITICAL findings"
+  ]
+}

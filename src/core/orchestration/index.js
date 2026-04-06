@@ -9,6 +9,7 @@ import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentRegistry } from './registry.js';
 import { ExecutionContext, TaskGraph } from './execution-context.js';
 import { DistributedCoordinator } from './distributed-coordinator.js';
+import { TaskRouter } from './task-router.js';
 import chalk from '../../utils/chalk.js';
 import { ppmManager } from '../memory/index.js';
 import { EventEmitter } from 'events';
@@ -39,6 +40,8 @@ export class AgentOrchestrator extends EventEmitter {
     // NOTE: AgentScheduler removed in Milestone 1 (dead code).
     // Re-design scheduling in Milestone 4 if priority-based task routing is needed.
     this.governance = new GovernanceManager();
+    this.taskRouter = new TaskRouter({ similarityThreshold: 0.3 });
+    this.initializeTaskRouter();
     this.activeSessions = new Map();
     this.coordinationGraph = new Map();
 
@@ -295,6 +298,17 @@ export class AgentOrchestrator extends EventEmitter {
     }
   }
 
+  initializeTaskRouter() {
+    // Register agents with their capabilities for semantic routing
+    this.taskRouter.registerAgent('frontend', ['react', 'component', 'ui', 'css', 'styling', 'dom', 'html', 'javascript', 'typescript', 'jsx', 'tsx', 'frontend']);
+    this.taskRouter.registerAgent('backend', ['api', 'server', 'database', 'endpoint', 'middleware', 'controller', 'rest', 'graphql', 'backend', 'node', 'express']);
+    this.taskRouter.registerAgent('database', ['sql', 'schema', 'migration', 'query', 'table', 'index', 'postgresql', 'mysql', 'sqlite', 'nosql', 'mongodb']);
+    this.taskRouter.registerAgent('testing', ['jest', 'vitest', 'test', 'spec', 'coverage', 'mock', 'e2e', 'unit', 'integration']);
+    this.taskRouter.registerAgent('devops', ['docker', 'kubernetes', 'deploy', 'ci', 'cd', 'pipeline', 'infra', 'nginx', 'aws']);
+    this.taskRouter.registerAgent('security', ['auth', 'encrypt', 'hash', 'jwt', 'permission', 'governance', 'audit', 'security']);
+    this.taskRouter.registerAgent('orchestrator', ['coordinate', 'manage', 'orchestrate', 'workflow', 'multi-agent']);
+  }
+
   selectAgentForTask(task, options = {}) {
     if (!task || typeof task !== 'string') {
       return 'orchestrator';
@@ -304,17 +318,9 @@ export class AgentOrchestrator extends EventEmitter {
       if (candidates.length > 0) return candidates[0].id;
     }
 
-    // Default fallback agents based on keywords
-    const taskLower = task.toLowerCase();
-    if (taskLower.includes('ui') || taskLower.includes('css') || taskLower.includes('component'))
-      return 'frontend';
-    if (taskLower.includes('api') || taskLower.includes('route') || taskLower.includes('server'))
-      return 'backend';
-    if (taskLower.includes('db') || taskLower.includes('schema') || taskLower.includes('sql'))
-      return 'database';
-    if (taskLower.includes('test') || taskLower.includes('spec')) return 'testing';
-
-    return 'orchestrator';
+    // Use semantic routing via TaskRouter
+    const routing = this.taskRouter.route(task, options);
+    return routing.agentId;
   }
 
   async getTools() {

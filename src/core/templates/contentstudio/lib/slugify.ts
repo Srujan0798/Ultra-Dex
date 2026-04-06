@@ -17,7 +17,7 @@ export function slugify(text: string): string {
  * Error handler for slugify
  * @param {Error} error - Error to handle
  */
-function handleSlugifyError(error) {
+function handleSlugifyError(error: Error | unknown) {
   try {
     console.error('[slugify]', error instanceof Error ? error.message : String(error));
   } catch (_) {

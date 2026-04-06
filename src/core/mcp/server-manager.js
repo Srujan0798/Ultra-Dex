@@ -91,9 +91,36 @@ class MCPServerManager extends EventEmitter {
 
     this.emit('server:registered', { serverId });
 
-    // Auto-start if configured
+    // Auto-start if configured (with 5-second timeout)
     if (config.autoStart !== false) {
-      await this.startServer(serverId);
+      const startTimeoutMs = 5000;
+      let timeoutHandle;
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          reject(new Error(`Timeout after ${startTimeoutMs}ms`));
+        }, startTimeoutMs);
+      });
+
+      try {
+        await Promise.race([this.startServer(serverId), timeoutPromise]);
+        clearTimeout(timeoutHandle);
+      } catch (error) {
+        clearTimeout(timeoutHandle);
+        // Kill the process if it was spawned
+        if (server.process && !server.process.killed) {
+          try {
+            server.process.kill('SIGKILL');
+          } catch (e) {
+            // Process may already be dead
+          }
+        }
+        // Log warning and fail gracefully (do not throw)
+        console.warn(`MCP server ${serverId} unreachable at startup — skipping`);
+        server.status = 'unreachable';
+        server.lastError = error.message;
+        this.emit('server:startup-timeout', { serverId, error: error.message });
+      }
     }
 
     return { serverId, registered: true };
@@ -504,12 +531,14 @@ class MCPServerManager extends EventEmitter {
   async _waitForServerReady(serverId, timeout = 10000) {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
+        clearInterval(checkInterval);
         reject(new Error(`Server '${serverId}' failed to start within ${timeout}ms`));
       }, timeout);
 
       const checkInterval = setInterval(() => {
         const server = this.servers.get(serverId);
-        if (server && server.status === 'running') {
+        // Also resolve if server becomes unreachable (timeout handled externally)
+        if (server && (server.status === 'running' || server.status === 'unreachable')) {
           clearTimeout(timer);
           clearInterval(checkInterval);
           resolve();

@@ -47,7 +47,7 @@ describe.skip('Governance Task Blocking - Final (requires full system setup)', {
       await orchestrator.executeTask('any task', {});
     } catch (e) {}
 
-    const entries = orchestrator.governance.audit.query({ action: 'executeTask' });
+    const entries = await orchestrator.governance.audit.query({ action: 'executeTask' });
     assert.ok(entries.length > 0, 'MUST have audit entry');
     assert.strictEqual(entries[0].outcome, 'blocked', 'MUST show blocked');
   });

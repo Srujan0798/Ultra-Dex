@@ -4,6 +4,7 @@
  */
 
 import { prisma } from './prisma';
+import type { Content, ContentVersion } from './types';
 
 export async function createVersion(contentId: string) {
   const content = await prisma.content.findUnique({ where: { id: contentId } });
@@ -71,7 +72,7 @@ export function diff(before: string, after: string) {
  * Error handler for versioning
  * @param {Error} error - Error to handle
  */
-function handleVersioningError(error) {
+function handleVersioningError(error: Error | unknown) {
   try {
     console.error('[versioning]', error instanceof Error ? error.message : String(error));
   } catch (_) {

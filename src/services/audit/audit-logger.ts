@@ -7,7 +7,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { ppmManager } from '../../src/core/memory/manager.js';
+import { ppmManager } from '../../core/memory/manager.js';
 
 /**
  * Audit event types
@@ -18,6 +18,7 @@ export type AuditEventType =
   | 'user.created'
   | 'user.updated'
   | 'user.deleted'
+  | 'user.management'
   | 'team.created'
   | 'team.updated'
   | 'team.deleted'
@@ -32,7 +33,10 @@ export type AuditEventType =
   | 'tool.executed'
   | 'code.modified'
   | 'deployment.created'
+  | 'organization.management'
+  | 'organization.created'
   | 'security.alert'
+  | 'security.event'
   | 'permission.changed'
   | 'role.assigned'
   | 'role.revoked'
@@ -42,7 +46,7 @@ export type AuditEventType =
 /**
  * Audit event severity
  */
-export type AuditSeverity = 'info' | 'warning' | 'error' | 'critical';
+export type AuditSeverity = 'info' | 'low' | 'warning' | 'medium' | 'high' | 'error' | 'critical';
 
 /**
  * Audit event interface
@@ -60,8 +64,8 @@ export interface AuditEvent {
   userAgent?: string;
   action: string;
   resource: string;
-  resourceId: string;
-  details: Record<string, any>;
+  resourceId?: string;
+  details: Record<string, unknown>;
   metadata: {
     source: string;
     version: string;
@@ -322,8 +326,9 @@ export class AuditLogger {
     let events: AuditEvent[] = [];
 
     for (const result of results || []) {
-      if (result.metadata?.auditEvent) {
-        const event = result.metadata.auditEvent as AuditEvent;
+      const metadata = result.metadata as { auditEvent?: AuditEvent };
+      if (metadata?.auditEvent) {
+        const event = metadata.auditEvent;
 
         // Apply filters
         if (this.matchesFilter(event, filter)) {

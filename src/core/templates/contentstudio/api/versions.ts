@@ -31,7 +31,7 @@ export async function rollbackPost(contentId: string, versionNumber: number) {
  * Error handler for versions
  * @param {Error} error - Error to handle
  */
-function handleVersionsError(error) {
+function handleVersionsError(error: Error | unknown) {
   try {
     console.error('[versions]', error instanceof Error ? error.message : String(error));
   } catch (_) {

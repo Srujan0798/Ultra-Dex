@@ -20,7 +20,7 @@ import { TokenOptimizer } from '../performance/token-optimizer.js';
 class UltraDexCore extends EventEmitter {
   constructor(config = {}) {
     super();
-    this.config = {
+    this._config = {
       name: config.name || 'Ultra-Dex',
       version: config.version || '6.0.0',
       dataPath: config.dataPath || './data',
@@ -435,7 +435,7 @@ class UltraDexCore extends EventEmitter {
   getStatus() {
     return {
       status: this.status,
-      version: this.config.version,
+      version: this.config?.version || this._config.version,
       startedAt: this.startedAt,
       uptime: this.startedAt ? Date.now() - new Date(this.startedAt).getTime() : 0,
       components: {
