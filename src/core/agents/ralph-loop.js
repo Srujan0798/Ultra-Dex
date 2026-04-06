@@ -13,6 +13,7 @@ export class RALPHLoop extends EventEmitter {
     this.config = {
       maxIterations: options.maxIterations || 10,
       feedbackThreshold: options.feedbackThreshold || 0.7,
+      maxExecutionTimeMs: options.maxExecutionTimeMs || 300000, // 5 minutes default
       ...options
     };
     this.iterations = [];
@@ -21,7 +22,7 @@ export class RALPHLoop extends EventEmitter {
   }
 
   /**
-   * Execute RALPH loop
+   * Execute RALPH loop with timeout protection
    */
   async executeRALPHLoop(problem, context = {}) {
     this.state = 'executing';
@@ -30,69 +31,93 @@ export class RALPHLoop extends EventEmitter {
 
     this.emit('ralph-loop.started', { problem });
 
-    while (iteration < this.config.maxIterations) {
-      iteration++;
+    // Create timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        const timeoutError = new Error(`RALPHLoop timeout after ${this.config.maxExecutionTimeMs}ms`);
+        reject(timeoutError);
+      }, this.config.maxExecutionTimeMs);
+    });
 
-      const step = {
-        iteration,
-        timestamp: Date.now(),
-        results: {}
-      };
+    // Create the main loop promise
+    const loopPromise = (async () => {
+      while (iteration < this.config.maxIterations) {
+        iteration++;
 
-      try {
-        // R: Reasoning
-        const reasoning = await this.reason(problem, context, currentHypothesis);
-        step.results.reasoning = reasoning;
-        this.emit('ralph.reasoning', { iteration, reasoning });
+        const step = {
+          iteration,
+          timestamp: Date.now(),
+          results: {}
+        };
 
-        // A: Analysis
-        const analysis = await this.analyze(reasoning, context);
-        step.results.analysis = analysis;
-        this.emit('ralph.analysis', { iteration, analysis });
+        try {
+          // R: Reasoning
+          const reasoning = await this.reason(problem, context, currentHypothesis);
+          step.results.reasoning = reasoning;
+          this.emit('ralph.reasoning', { iteration, reasoning });
 
-        // P: Planning
-        const plan = await this.plan(analysis, context);
-        step.results.plan = plan;
-        this.emit('ralph.planning', { iteration, plan });
+          // A: Analysis
+          const analysis = await this.analyze(reasoning, context);
+          step.results.analysis = analysis;
+          this.emit('ralph.analysis', { iteration, analysis });
 
-        // H: Hypothesis
-        currentHypothesis = await this.formHypothesis(plan, context);
-        step.results.hypothesis = currentHypothesis;
-        this.emit('ralph.hypothesis', { iteration, hypothesis: currentHypothesis });
+          // P: Planning
+          const plan = await this.plan(analysis, context);
+          step.results.plan = plan;
+          this.emit('ralph.planning', { iteration, plan });
 
-        // L: Learning
-        const learning = await this.learn(step, context);
-        step.results.learning = learning;
-        this.emit('ralph.learning', { iteration, learning });
+          // H: Hypothesis
+          currentHypothesis = await this.formHypothesis(plan, context);
+          step.results.hypothesis = currentHypothesis;
+          this.emit('ralph.hypothesis', { iteration, hypothesis: currentHypothesis });
 
-        // Store iteration
-        this.iterations.push(step);
-        this.learnings.push(learning);
+          // L: Learning
+          const learning = await this.learn(step, context);
+          step.results.learning = learning;
+          this.emit('ralph.learning', { iteration, learning });
 
-        // Check for solution
-        if (currentHypothesis.confidence >= this.config.feedbackThreshold) {
-          this.emit('ralph-loop.solution-found', {
-            iteration,
-            hypothesis: currentHypothesis
-          });
+          // Store iteration
+          this.iterations.push(step);
+          this.learnings.push(learning);
+
+          // Check for solution
+          if (currentHypothesis.confidence >= this.config.feedbackThreshold) {
+            this.emit('ralph-loop.solution-found', {
+              iteration,
+              hypothesis: currentHypothesis
+            });
+            break;
+          }
+        } catch (error) {
+          step.error = error;
+          this.emit('ralph-loop.error', { iteration, error });
+          this.iterations.push(step);
           break;
         }
-      } catch (error) {
-        step.error = error;
-        this.emit('ralph-loop.error', { iteration, error });
-        this.iterations.push(step);
-        break;
       }
+
+      this.state = 'completed';
+      this.emit('ralph-loop.completed', { iterations: iteration });
+
+      return {
+        finalHypothesis: currentHypothesis,
+        iterations: this.iterations.length,
+        learnings: this.learnings
+      };
+    })();
+
+    // Race between loop and timeout
+    try {
+      return await Promise.race([loopPromise, timeoutPromise]);
+    } catch (error) {
+      if (error.message.includes('RALPHLoop timeout')) {
+        this.emit('ralph.timeout', { 
+          maxExecutionTimeMs: this.config.maxExecutionTimeMs,
+          iterationsCompleted: iteration 
+        });
+      }
+      throw error;
     }
-
-    this.state = 'completed';
-    this.emit('ralph-loop.completed', { iterations: iteration });
-
-    return {
-      finalHypothesis: currentHypothesis,
-      iterations: this.iterations.length,
-      learnings: this.learnings
-    };
   }
 
   /**

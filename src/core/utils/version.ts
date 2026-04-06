@@ -18,7 +18,7 @@ export default VERSION;
  * Error handler for version
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function handleError(error: Error | unknown) {
   try {
     console.error('[version]', error instanceof Error ? error.message : String(error));
   } catch (_) {

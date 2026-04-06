@@ -1,6 +1,8 @@
 // Copyright (c) 2026 Ultra-Dex
 
 import { GovernanceEngine } from '../../platform/cli/governance/index.js';
+import { AuditDatabase } from './audit-db.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class GovernanceDeniedException extends Error {
   constructor(message, context = {}) {
@@ -29,26 +31,37 @@ export class GovernanceManager {
         this._customPolicies.push(policy);
       },
     };
+
+    // Initialize audit database
+    const dbPath = options.auditDbPath || undefined;
+    this._auditDb = new AuditDatabase(dbPath);
+
     this.audit = {
-      _entries: [],
+      /**
+       * Record an audit entry to the database
+       * @param {Object} entry - Audit entry
+       */
       async record(entry = {}) {
-        this._entries.push({
+        const auditEntry = {
           ...entry,
           timestamp: Date.now(),
-          id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        });
-        return entry;
+          id: entry.id || `audit-${uuidv4()}`,
+        };
+        await this._db.insert(auditEntry);
+        return auditEntry;
       },
-      query(filter = {}) {
-        let results = [...this._entries];
-        if (filter.action) {
-          results = results.filter((e) => e.action === filter.action);
-        }
-        if (filter.agentId) {
-          results = results.filter((e) => e.agentId === filter.agentId);
-        }
-        return results.slice(-50);
+
+      /**
+       * Query audit entries from the database
+       * @param {Object} filter - Query filter
+       * @returns {Promise<Array>} Array of audit entries
+       */
+      async query(filter = {}) {
+        return this._db.query(filter);
       },
+
+      // Reference to the database instance for internal use
+      _db: this._auditDb,
     };
   }
 
@@ -61,7 +74,8 @@ export class GovernanceManager {
         await this.audit.record({
           agentId: context.agentId,
           action: context.action,
-          resource: context.resource,
+          task: context.resource,
+          result: 'blocked',
           outcome: 'blocked',
           details: { policyId: policy.id, reason: policy.name },
         });
@@ -73,7 +87,8 @@ export class GovernanceManager {
       await this.audit.record({
         agentId: context.agentId,
         action: context.action,
-        resource: context.resource,
+        task: context.resource,
+        result: 'allowed',
         outcome: 'allowed',
         details: context.details,
       });
@@ -83,12 +98,28 @@ export class GovernanceManager {
     await this.audit.record({
       agentId: context.agentId,
       action: context.action,
-      resource: context.resource,
+      task: context.resource,
+      result: 'allowed',
       outcome: 'allowed',
       details: context.details,
     });
 
     return { allowed: true };
+  }
+
+  /**
+   * Get the audit log (for backward compatibility)
+   * @returns {Promise<Array>} Array of audit entries
+   */
+  async getAuditLog() {
+    return this.audit.query({ limit: 50 });
+  }
+
+  /**
+   * Close the audit database connection
+   */
+  async close() {
+    await this._auditDb.close();
   }
 }
 

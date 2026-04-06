@@ -16,6 +16,28 @@ export const PERMISSIONS = {
   TEAM_MEMBERS: 'team.members',
 };
 
+/**
+ * @type {{ [key: string]: string[] }}
+ */
+export const ROLE_PERMISSIONS = {
+  admin: [
+    PERMISSIONS.PROJECT_READ,
+    PERMISSIONS.PROJECT_CREATE,
+    PERMISSIONS.PROJECT_UPDATE,
+    PERMISSIONS.PROJECT_DELETE,
+    PERMISSIONS.TEAM_SETTINGS,
+    PERMISSIONS.TEAM_MEMBERS,
+  ],
+  editor: [
+    PERMISSIONS.PROJECT_READ,
+    PERMISSIONS.PROJECT_CREATE,
+    PERMISSIONS.PROJECT_UPDATE,
+    PERMISSIONS.TEAM_SETTINGS,
+  ],
+  viewer: [PERMISSIONS.PROJECT_READ],
+  member: [PERMISSIONS.PROJECT_READ, PERMISSIONS.PROJECT_CREATE],
+};
+
 export class RBACManager {
   constructor() {
     this.roles = new Map();

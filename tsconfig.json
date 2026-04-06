@@ -7,7 +7,7 @@
     "types": ["vite/client", "node"],
     "jsx": "react-jsx",
     "strict": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
@@ -31,7 +31,10 @@
     "apps/cloud/ide/src/**/*.tsx",
     "apps/cli/lib/**/*.ts",
     "src/core/memory/**/*.ts",
-    "src/core/utils/**/*.ts"
+    "src/core/utils/**/*.ts",
+    "src/core/templates/**/*.ts",
+    "src/services/auth/**/*.ts",
+    "src/types/**/*.ts"
   ],
   "exclude": [
     "apps/cli/assets/**",
@@ -40,12 +43,10 @@
     "apps/cli/lib/utils/performance-optimizer.ts",
     "apps/mobile/**",
     "examples/**",
-    "src/services/**",
-    "src/types/**",
+    "src/types/enterprise.ts",
     "node_modules",
     "dist",
     "build",
-    "**/*.test.ts",
-    "**/*.d.ts"
+    "**/*.test.ts"
   ]
 }

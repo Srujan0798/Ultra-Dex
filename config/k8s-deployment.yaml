@@ -26,6 +26,83 @@ data:
   db-password: <base64-encoded-password>
 
 ---
+# Secret for database credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ultra-dex-db-secret
+  namespace: ultra-dex
+type: Opaque
+data:
+  # base64-encoded DATABASE_URL: postgresql://ultradex:<password>@ultra-dex-postgres:5432/ultradex
+  DATABASE_URL: <base64-encoded-database-url>
+
+---
+# ServiceAccount for Ultra-Dex
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ultra-dex-sa
+  namespace: ultra-dex
+
+---
+# Role with minimal permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ultra-dex-role
+  namespace: ultra-dex
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "list"]
+
+---
+# RoleBinding: bind ultra-dex-role to ultra-dex-sa
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ultra-dex-rolebinding
+  namespace: ultra-dex
+subjects:
+- kind: ServiceAccount
+  name: ultra-dex-sa
+  namespace: ultra-dex
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: ultra-dex-role
+
+---
+# NetworkPolicy: restrict pod-to-pod traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ultra-dex-netpol
+  namespace: ultra-dex
+spec:
+  podSelector:
+    matchLabels:
+      app: ultra-dex
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: ingress-nginx
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ultra-dex-postgres
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ultra-dex-redis
+
+---
 # ConfigMap for Ultra-Dex configuration
 apiVersion: v1
 kind: ConfigMap
@@ -49,9 +126,6 @@ data:
   SECURITY_AUDIT_ENABLED: "true"
   RATE_LIMIT_ENABLED: "true"
   LOG_LEVEL: "info"
-  
-  # Database Configuration
-  DATABASE_URL: "postgresql://ultradex:${DB_PASSWORD}@ultra-dex-postgres:5432/ultradex"
   
   # Redis Configuration
   REDIS_URL: "redis://ultra-dex-redis:6379"
@@ -80,6 +154,7 @@ spec:
       labels:
         app: ultra-dex
     spec:
+      serviceAccountName: ultra-dex-sa
       containers:
       - name: ultra-dex
         image: ultra-dex:latest
@@ -110,8 +185,8 @@ spec:
               key: anthropic-api-key
         - name: DATABASE_URL
           valueFrom:
-            configMapKeyRef:
-              name: ultra-dex-config
+            secretKeyRef:
+              name: ultra-dex-db-secret
               key: DATABASE_URL
         - name: REDIS_URL
           valueFrom:
@@ -191,10 +266,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - ultra-dex.yourdomain.com
+    - ${ULTRA_DEX_DOMAIN}
     secretName: ultra-dex-tls
   rules:
-  - host: ultra-dex.yourdomain.com
+  - host: ${ULTRA_DEX_DOMAIN}
     http:
       paths:
       - path: /

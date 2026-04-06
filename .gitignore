@@ -21,6 +21,9 @@ node_modules/
 
 # Environment
 .env
+.env.local
+.env.source
+.env.*.local
 .env.*
 !.env.example
 

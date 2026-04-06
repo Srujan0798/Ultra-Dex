@@ -63,7 +63,7 @@ export function assertValidPath(input: string, label: string): string {
  * @param {Error} error - The error to handle
  * @param {string} [context='validation'] - Error context
  */
-function handleModuleError(error, context = 'validation') {
+function handleModuleError(error: Error | unknown, context = 'validation') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

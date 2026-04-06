@@ -75,7 +75,7 @@ export async function listContent(authorId: string, status?: string) {
  * Error handler for content
  * @param {Error} error - Error to handle
  */
-function handleContentError(error) {
+function handleContentError(error: Error | unknown) {
   try {
     console.error('[content]', error instanceof Error ? error.message : String(error));
   } catch (_) {

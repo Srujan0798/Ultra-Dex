@@ -5,6 +5,7 @@
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/Srujan0798/Ultra-Dex)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue.svg)](tsconfig.json)
 
 Ultra-Dex is the **connective tissue between AI models, memory, and tools**. It serves as a "Meta-Layer" that coordinates agents, model providers, memory, and tool execution so teams can go from prompt to deployable output with stronger reliability than single-agent workflows.
 
@@ -18,6 +19,7 @@ Canonical references:
 - **Agent execution runtime**: planner/coder/reviewer-style workflows with governance and verification hooks.
 - **Memory-aware system**: tiered memory + retrieval components for longer-running tasks.
 - **Tool-connected platform**: CLI, MCP server, plugins, extensions, and app surfaces.
+- **Enterprise-grade security**: pre-commit hooks, secret scanning, strict TypeScript, sandboxed execution.
 
 ## One-Command Install
 
@@ -86,18 +88,20 @@ For the implementation details and usage notes, see [docs/INTERFACE.md](docs/INT
 
 ## Feature Matrix
 
-| Capability          | What it does                                                      | Status   |
-| ------------------- | ----------------------------------------------------------------- | -------- |
-| Agent Orchestration | Multi-agent execution with delegated tasks and sequencing         | Ready    |
-| AI Routing          | Strategy-based provider selection (cost/latency/quality/fallback) | Ready    |
-| Provider Layer      | Unified adapters for major hosted/local model providers           | Ready    |
-| Memory              | Tiered memory + retrieval utilities for persistent context        | Ready    |
-| MCP                 | MCP server mode with memory + agent status tools                  | Ready    |
-| CLI Runtime         | Large command surface for build/plan/review/ops workflows         | Ready    |
-| Dashboard & Apps    | Dashboard, cloud/web/desktop/docs app workspaces                  | Ready    |
-| SDK                 | Programmatic SDK for providers, agents, and plugins               | Ready    |
-| Performance         | Advanced caching, LRU eviction, and Redis integration             | Enhanced |
-| Resilience          | Timeout handling, fallback mechanisms, and error recovery         | Enhanced |
+| Capability | What it does | Status |
+|------------|--------------|--------|
+| Agent Orchestration | Multi-agent execution with delegated tasks and sequencing | ✅ Ready |
+| AI Routing | Strategy-based provider selection (cost/latency/quality/fallback) | ✅ Ready |
+| Provider Layer | Unified adapters for major hosted/local model providers | ✅ Ready |
+| Memory | Tiered memory + retrieval utilities for persistent context | ✅ Ready |
+| MCP | MCP server mode with memory + agent status tools | ✅ Ready |
+| CLI Runtime | Large command surface for build/plan/review/ops workflows | ✅ Ready |
+| Dashboard & Apps | Dashboard, cloud/web/desktop/docs app workspaces | ✅ Ready |
+| SDK | Programmatic SDK for providers, agents, and plugins | ✅ Ready |
+| Performance | Advanced caching, LRU eviction, and Redis integration | ✅ Enhanced |
+| Resilience | Timeout handling, fallback mechanisms, and error recovery | ✅ Enhanced |
+| Security | Pre-commit hooks, secret scanning, strict TypeScript | ✅ Enterprise |
+| Monitoring | AlertManager, HealthChecker, MetricsReporter | ✅ Enterprise |
 
 ## v2.0 Architecture Overview
 
@@ -117,6 +121,8 @@ flowchart TB
     MEMORY[Multi-Tier Memory]
     MCP[MCP Server Cluster]
     TEMPLATES[Template Engine]
+    ALERTS[AlertManager]
+    MONITOR[SystemMonitor]
   end
 
   subgraph "Execution Layer"
@@ -148,6 +154,8 @@ flowchart TB
   ORCH --> MEMORY
   ORCH --> MCP
   ORCH --> TEMPLATES
+  ORCH --> ALERTS
+  ORCH --> MONITOR
 
   ORCH --> AGENTS
   AGENTS --> WORKERS
@@ -169,13 +177,49 @@ flowchart TB
   style MEMORY fill:#fff3e0
   style MCP fill:#fce4ec
   style AGENTS fill:#f3e5f5
+  style ALERTS fill:#ffebee
+  style MONITOR fill:#e8eaf6
 ```
+
+## Cycle 1: Enterprise Hardening ✅
+
+**Completed:** Security, TypeScript strict mode, timeouts, monitoring, and comprehensive testing.
+
+### Security & Compliance
+- ✅ Pre-commit hooks for secret scanning (blocks API keys, tokens)
+- ✅ `.env` file protection in `.gitignore`
+- ✅ Removed default passwords from docker-compose files
+- ✅ tar >=7.5.11 vulnerability patched
+- ✅ CodeQL security analysis workflow
+
+### TypeScript Strict Mode
+- ✅ `noImplicitAny: true` enabled
+- ✅ 210+ files type-safe
+- ✅ All error handlers properly typed (`Error | unknown`)
+- ✅ Module declarations for all npm packages
+
+### Resilience & Timeouts
+- ✅ **RALPH Loop**: Configurable `maxExecutionTimeMs` (default 5min)
+- ✅ **MCP Auto-start**: 5-second timeout with graceful degradation
+- ✅ **Self-healing triggers**: Automatic failover on agent failures
+
+### Monitoring & Observability
+- ✅ **AlertManager**: Centralized alerting with severity levels
+- ✅ **HealthChecker**: System health monitoring
+- ✅ **MetricsReporter**: Performance metrics collection
+- ✅ **EngagementTracker**: Usage analytics
+
+### Testing
+- ✅ **40+ unit tests** across core modules
+- ✅ **21 integration tests** (orchestration, memory, AI routing)
+- ✅ **12 timeout-specific tests**
+- ✅ **c8 coverage** tooling integrated
 
 ## The 30-Cycle Roadmap
 
 Development follows a 30-cycle roadmap divided into three phases:
 
-- **Phase 1: Foundation** (Cycles 1-10) - Core infrastructure and basic functionality
+- **Phase 1: Foundation** (Cycles 1-10) - Core infrastructure and basic functionality ✅ Cycle 1 Complete
 - **Phase 2: Growth & Ecosystem** (Cycles 11-20) - SDK, dashboard, marketplace, workflows
 - **Phase 3: Enterprise & Scale** (Cycles 21-30) - Multi-tenancy, cloud IDE, fine-tuning, deployment
 
@@ -193,11 +237,14 @@ Most AI coding stacks are strong at short sessions and weak at sustained deliver
 
 - `apps/cli` - core command runtime
 - `src/core` - orchestration, AI routing, memory, MCP, templates
-- `src/services/ai-providers` - 10 unified provider adapters
+- `src/services/ai-providers` - 10+ unified provider adapters
+- `src/services/auth` - Enterprise authentication (SSO, MFA, JWT)
+- `src/monitoring` - AlertManager, HealthChecker, MetricsReporter
 - `apps/dashboard` - operator UI
 - `apps/cloud`, `apps/web`, `apps/desktop`, `apps/docs-site` - platform apps
 - `packages/sdk` - public JS/TS SDK
 - `packages/plugins`, `packages/extensions`, `packages/cursor-rules` - ecosystem
+- `config/` - Deployment configs (Docker, K8s, nginx)
 
 ## Project Organization
 
@@ -213,11 +260,14 @@ This repository follows a well-organized structure to separate concerns:
   - `docs/testing/` - Test reports and testing documentation
 - `config/` - Configuration files organized by type
   - `config/deploy/` - Deployment configurations (Dockerfile, docker-compose.yml)
+  - `config/k8s-deployment.yaml` - Kubernetes deployment manifests
+  - `config/runtime/` - Runtime configs (nginx, docker-compose.prod.yml)
   - `config/linting/` - Linting configurations (.markdownlint.json, etc.)
   - `config/testing/` - Testing configurations (vitest.config.js)
   - `config/project/` - Project-specific configurations (.ultra-dex.json, mcp-config.json)
 - `scripts/` - Utility scripts
-  - `scripts/temp/` - Temporary or auxiliary scripts
+  - `scripts/build-cli.sh` - CLI build script
+  - `scripts/coverage-report.js` - Coverage reporting
 - `business/` - Business-related operations and materials
   - `business/operations/` - Operations, strategy, team building, customer research, scaling, launch activities
   - `business/finance/` - Financial planning, fundraising, investment preparation
@@ -242,6 +292,14 @@ npx ultra-dex config --wizard
 npx ultra-dex agents create --template=coder
 npx ultra-dex agents create --template=writer
 npx ultra-dex agents create --template=researcher
+
+# Run tests
+npm test
+npm run test:coverage
+npm run test:integration
+
+# Build all components
+npm run build
 ```
 
 ## SDK Example
@@ -284,12 +342,29 @@ npm install
 npm test
 ```
 
-## Governance and Compliance
+## Testing
 
-- Code of conduct: `CODE_OF_CONDUCT.md`
-- Security reporting: `SECURITY.md`
-- Commit/PR legal and policy checks: `gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md`
-- Local compliance validation: `node gitFail/compliance/check-governance-files.js`
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Run integration tests only
+npm run test:integration
+
+# Run specific test file
+npm test -- tests/core/ralph-timeout.test.js
+```
+
+## Security & Governance
+
+- **Code of conduct**: `CODE_OF_CONDUCT.md`
+- **Security reporting**: `SECURITY.md`
+- **Secret scanning**: Pre-commit hooks block API keys and tokens
+- **Compliance checks**: `node gitFail/compliance/check-governance-files.js`
+- **TypeScript strict mode**: `noImplicitAny: true` prevents runtime type errors
 
 ## License
 
