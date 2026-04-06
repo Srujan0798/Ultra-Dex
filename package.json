@@ -46,6 +46,7 @@
     "src/services/ai-providers",
     "packages/sdk",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "docs/ARCHITECTURE.md",
     "docs/CHANGELOG.md"

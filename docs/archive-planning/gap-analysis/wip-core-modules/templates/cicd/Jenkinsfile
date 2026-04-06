@@ -1,0 +1,41 @@
+pipeline {
+  agent any
+  stages {
+    stage('Validate') {
+      steps {
+        sh 'npm ci'
+        sh 'npx ultra-dex doctor'
+        sh 'npx ultra-dex validate'
+      }
+    }
+    stage('Test') {
+      steps {
+        sh 'npm test'
+        sh 'npx ultra-dex verify'
+      }
+    }
+    stage('Build') {
+      steps {
+        sh 'npm run build'
+      }
+    }
+    stage('Deploy') {
+      when { branch 'main' }
+      steps {
+        script {
+          if (env.DEPLOY_COMMAND?.trim()) {
+            echo 'Running deploy command'
+            sh env.DEPLOY_COMMAND
+          } else {
+            echo 'Skipping deploy. Set DEPLOY_COMMAND to enable.'
+          }
+        }
+      }
+    }
+  }
+  post {
+    always {
+      archiveArtifacts artifacts: 'CONTEXT.md, .ultra-dex/**', allowEmptyArchive: true
+    }
+  }
+}

@@ -16,7 +16,9 @@ export class AgentOrchestrator extends EventEmitter {
     this.memory = options.memory || { init: async () => {}, search: async () => [], add: async () => {} };
     this.ai = options.ai || null;
     this.selfHealing = options.selfHealing || null;
+    this.autopsy = options.autopsy || null;
     this.performanceTracker = options.performanceTracker || null;
+    this.queueProcessor = options.queueProcessor || null;
     this.mcpServer = { toolsMap: new Map() };
     this.tasks = new TaskGraph();
     this.options = {
@@ -42,6 +44,8 @@ export class AgentOrchestrator extends EventEmitter {
     };
     this.activeSessions = new Map();
     this.coordinationGraph = new Map();
+    this.activeTaskCount = 0;
+    this.taskQueueInitialized = false;
 
     this.metrics = {
       totalSessions: 0,
@@ -87,11 +91,96 @@ export class AgentOrchestrator extends EventEmitter {
     return this.performanceTracker;
   }
 
+  async getSelfHealing() {
+    return this.selfHealing;
+  }
+
+  async getAutopsy() {
+    return this.autopsy;
+  }
+
+  setQueueProcessor(queueProcessor) {
+    this.queueProcessor = queueProcessor;
+
+    if (!queueProcessor?.registerHandler || this.taskQueueInitialized) {
+      if (queueProcessor?.start && !queueProcessor.running) {
+        queueProcessor.start();
+      }
+      return this.queueProcessor;
+    }
+
+    queueProcessor.registerHandler('orchestrator.executeTask', async (payload) => {
+      return await this.runTaskExecution(payload.task, {
+        ...payload.options,
+        skipQueue: true,
+      });
+    });
+
+    this.taskQueueInitialized = true;
+    if (queueProcessor.start && !queueProcessor.running) {
+      queueProcessor.start();
+    }
+
+    return this.queueProcessor;
+  }
+
   async executeTask(task, options = {}) {
+    if (
+      !options.skipQueue &&
+      this.queueProcessor &&
+      this.activeTaskCount >= this.options.maxConcurrentAgents
+    ) {
+      const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
+      const queuedJob = this.queueProcessor.enqueue(
+        {
+          type: 'orchestrator.executeTask',
+          payload: { task, options },
+          priority: options.priority || 5,
+          maxRetries: options.maxRetries || 1,
+        },
+        options.priority || 5
+      );
+
+      this.emit('task:queued', {
+        jobId: queuedJob.id,
+        task: normalizedTask,
+        priority: queuedJob.priority,
+      });
+
+      return await new Promise((resolve, reject) => {
+        const finalize = (job) => {
+          if (job.id !== queuedJob.id) {
+            return;
+          }
+
+          cleanup();
+          if (job.status === 'completed') {
+            resolve(job.result);
+            return;
+          }
+
+          reject(new Error(job.error || `Queued task ${job.id} failed`));
+        };
+
+        const cleanup = () => {
+          this.queueProcessor.off('job:completed', finalize);
+          this.queueProcessor.off('job:failed', finalize);
+        };
+
+        this.queueProcessor.on('job:completed', finalize);
+        this.queueProcessor.on('job:failed', finalize);
+      });
+    }
+
+    return await this.runTaskExecution(task, options);
+  }
+
+  async runTaskExecution(task, options = {}) {
     const sessionId = `session_${Date.now()}`;
     const startedAt = Date.now();
     const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
     this.metrics.totalSessions++;
+    this.activeTaskCount++;
 
     // Governance context
     const agentId = options.agentId || this.selectAgentForTask(normalizedTask, options);
@@ -176,32 +265,82 @@ export class AgentOrchestrator extends EventEmitter {
       this.emit('task:complete', { sessionId, agentId, output: output.substring(0, 500) });
       return { status: 'COMPLETE', output, agentId };
     } catch (error) {
+      this.metrics.failedSessions++;
+      const message = error instanceof Error ? error.message : String(error);
+      taskErrorMessage = message;
+      let autopsyReport = null;
+
+      try {
+        const autopsy = await this.getAutopsy();
+        if (autopsy) {
+          autopsyReport = await autopsy.performAutopsy(context.agentId, error, {
+            sessionId,
+            task: normalizedTask,
+            taskType: options.taskType || 'coding',
+            options,
+          });
+
+          await this.governance.audit.record({
+            action: 'task_autopsy',
+            task: normalizedTask,
+            result: 'recorded',
+            agentId: context.agentId,
+            details: {
+              sessionId,
+              taskType: options.taskType || 'coding',
+              autopsy: autopsyReport,
+            },
+          });
+
+          this.emit('task:autopsy', {
+            sessionId,
+            agentId: context.agentId,
+            task: normalizedTask,
+            autopsy: autopsyReport,
+          });
+        }
+      } catch (autopsyError) {
+        const autopsyMessage =
+          autopsyError instanceof Error ? autopsyError.message : String(autopsyError);
+        this.emit('task:autopsy:error', {
+          sessionId,
+          agentId: context.agentId,
+          task: normalizedTask,
+          error: autopsyMessage,
+        });
+      }
+
       // Audit failed execution
       await this.governance.audit.record({
         action: 'task_execution',
         task: normalizedTask,
         result: 'failure',
         agentId: context.agentId,
-        details: { options, error: error.message },
+        details: {
+          options,
+          error: message,
+          autopsyId: autopsyReport?.id || null,
+          autopsySummary: autopsyReport?.summary || null,
+        },
       });
 
-      this.metrics.failedSessions++;
-      const message = error instanceof Error ? error.message : String(error);
-      taskErrorMessage = message;
       console.error(`❌ Task execution failed (${sessionId}): ${message}\n`);
       this.emit('task:error', { sessionId, task: normalizedTask, error: message });
 
       // Report to Self-Healing
       if (this.getSelfHealing) {
-          const selfHealing = await this.getSelfHealing();
+        const selfHealing = await this.getSelfHealing();
+        if (selfHealing?.reportAgentError) {
           await selfHealing.reportAgentError(options.agentId || 'unknown', error, {
             sessionId,
             task: normalizedTask,
           });
+        }
       }
 
       throw error;
     } finally {
+      this.activeTaskCount = Math.max(0, this.activeTaskCount - 1);
       const elapsed = Date.now() - startedAt;
       this.metrics.lastTaskDurationMs = elapsed;
       const completedSessions = this.metrics.successfulSessions + this.metrics.failedSessions;

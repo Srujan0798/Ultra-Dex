@@ -1,0 +1,10 @@
+{
+  "name": "MyCompany Dev",
+  "command": "mydev",
+  "logo": "./assets/logo.png",
+  "colors": {
+    "primary": "#FF6B00",
+    "secondary": "#1A1A1A"
+  },
+  "footer": "Powered by MyCompany"
+}

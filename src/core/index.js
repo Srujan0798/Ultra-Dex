@@ -8,49 +8,27 @@
 
 // ── Original Core ───────────────────────────────────────────────────────
 import { aiMetaLayer } from './ai/ai-meta-layer.js';
+import { smartRouter } from './ai/router.js';
 import { agentOrchestrator } from './orchestration/index.js';
 import { ppmManager } from './memory/index.js';
 
 import { HealthService, HealthCheck } from './system/health-service.js';
 import { PluginManager, Plugin } from './infrastructure/plugin-manager.js';
-
-// ── Compatibility Fallbacks ─────────────────────────────────────────────
-// Legacy infrastructure modules without full implementations yet.
-// These are minimal no-op shims until the real modules are implemented.
-class NoopSubsystem {
-  constructor(config = {}) {
-    this.config = config;
-  }
-
-  getStats() {
-    return null;
-  }
-
-  getDashboard() {
-    return null;
-  }
-
-  async stop() {}
-}
-
-class StreamPipeline extends NoopSubsystem {}
-class StreamTransform {}
-class StreamBuffer {}
-class WebhookManager extends NoopSubsystem {}
-class WebhookEndpoint {}
-class WebhookDelivery {}
-class RateLimiter extends NoopSubsystem {}
-class SlidingWindow {}
-class TokenBucket {}
-class CircuitBreaker {}
-class CircuitBreakerRegistry {
-  getDashboard() {
-    return { breakers: 0 };
-  }
-}
-class ProviderFallback extends NoopSubsystem {}
-class QueueProcessor extends NoopSubsystem {}
-class Job {}
+import { StreamPipeline, StreamTransform, StreamBuffer } from './infrastructure/stream-pipeline.js';
+import { RateLimiter, SlidingWindow, TokenBucket } from './infrastructure/rate-limiter.js';
+import {
+  CircuitBreaker,
+  CircuitBreakerRegistry,
+  ProviderFallback,
+} from './infrastructure/provider-fallback.js';
+import { QueueProcessor, Job } from './infrastructure/queue-processor.js';
+import {
+  WebhookManager,
+  WebhookEndpoint,
+  WebhookDelivery,
+} from './infrastructure/webhook-manager.js';
+import { logger } from './utils/logging.js';
+import { enterpriseAnalytics } from './analytics/enterprise-analytics.js';
 
 // ── Ultra-Dex Meta-Layer ────────────────────────────────────────────────
 class UltraDexMetaLayer {
@@ -58,7 +36,7 @@ class UltraDexMetaLayer {
     this.brain = agentOrchestrator;
     this.memory = ppmManager;
     this.ai = aiMetaLayer;
-    this.version = '6.1.0';
+    this.version = '2.1.0';
 
     // Infrastructure singletons
     this.streaming = null;
@@ -69,10 +47,11 @@ class UltraDexMetaLayer {
     this.providerFallback = null;
     this.queue = null;
     this.health = new HealthService({ appName: 'ultra-dex', version: this.version });
+    this.eventSubscriptions = [];
   }
 
   async initialize(config = {}) {
-    logger.log(`🌌 Initializing Ultra-Dex Meta-Layer v${this.version}...`);
+    logger.info(`Initializing Ultra-Dex Meta-Layer v${this.version}...`);
 
     // Core systems
     await this.memory.init();
@@ -83,8 +62,17 @@ class UltraDexMetaLayer {
     this.webhooks = new WebhookManager(config.webhooks);
     this.plugins = new PluginManager(config.plugins);
     this.rateLimiter = new RateLimiter(config.rateLimiting);
-    this.providerFallback = new ProviderFallback(config.providerFallback);
     this.queue = new QueueProcessor(config.queue);
+    this.providerFallback = new ProviderFallback({
+      circuitBreakers: this.circuitBreakers,
+      ...(config.providerFallback || {}),
+    });
+    this.circuitBreakers = this.providerFallback.registry;
+    this.ai.setStreamPipeline?.(this.streaming);
+    this.ai.setRateLimiter?.(this.rateLimiter);
+    smartRouter.setProviderFallback?.(this.providerFallback);
+    this.brain.setQueueProcessor?.(this.queue);
+    await this.attachWebhookRelays();
 
     // Health checks
     this.health.addCheck({
@@ -100,7 +88,7 @@ class UltraDexMetaLayer {
 
     this.health.start();
 
-    logger.log('✅ Ultra-Dex Meta-Layer initialized');
+    logger.info('Ultra-Dex Meta-Layer initialized');
     return this;
   }
 
@@ -127,17 +115,66 @@ class UltraDexMetaLayer {
     };
   }
 
+  clearEventSubscriptions() {
+    for (const { emitter, eventName, handler } of this.eventSubscriptions) {
+      emitter.off?.(eventName, handler);
+    }
+
+    this.eventSubscriptions = [];
+  }
+
+  subscribeToWebhookEvent(emitter, eventName, targetEvent = null) {
+    if (!this.webhooks?.deliver || !emitter?.on) {
+      return;
+    }
+
+    const normalizedEvent = targetEvent || eventName.replace(/[:/]/g, '.').replace(/-+/g, '.');
+    const handler = (payload) => {
+      void this.webhooks.deliver(normalizedEvent, {
+        ...payload,
+        sourceEvent: eventName,
+      }).catch((error) => {
+        logger.warn('Webhook delivery relay failed', {
+          eventName: normalizedEvent,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    };
+
+    emitter.on(eventName, handler);
+    this.eventSubscriptions.push({ emitter, eventName, handler });
+  }
+
+  async attachWebhookRelays() {
+    this.clearEventSubscriptions();
+
+    this.subscribeToWebhookEvent(this.brain, 'task:start', 'task.start');
+    this.subscribeToWebhookEvent(this.brain, 'task:queued', 'task.queued');
+    this.subscribeToWebhookEvent(this.brain, 'task:complete', 'task.complete');
+    this.subscribeToWebhookEvent(this.brain, 'task:error', 'task.error');
+    this.subscribeToWebhookEvent(this.brain, 'task:autopsy', 'task.autopsy');
+    this.subscribeToWebhookEvent(this.brain, 'task:autopsy:error', 'task.autopsy.error');
+
+    const selfHealing = await this.brain.getSelfHealing?.();
+    if (selfHealing?.on) {
+      this.subscribeToWebhookEvent(selfHealing, 'agent-error', 'agent.error');
+      this.subscribeToWebhookEvent(selfHealing, 'agent-recovery', 'agent.recovery');
+    }
+  }
+
   async shutdown() {
-    logger.log('🛑 Shutting down Ultra-Dex...');
+    logger.info('Shutting down Ultra-Dex...');
     this.health.stop();
+    this.clearEventSubscriptions();
     if (this.streaming) this.streaming.stop?.();
+    if (this.webhooks) await this.webhooks.stop?.();
     if (this.queue) await this.queue.stop();
     if (this.plugins) {
       for (const name of this.plugins.plugins?.keys?.() || []) {
         await this.plugins.unload?.(name);
       }
     }
-    logger.log('👋 Ultra-Dex shut down complete');
+    logger.info('Ultra-Dex shut down complete');
   }
 }
 

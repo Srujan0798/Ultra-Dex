@@ -10,6 +10,7 @@ import { EventEmitter } from 'events';
 export class RALPHLoop extends EventEmitter {
   constructor(options = {}) {
     super();
+    this.selfHealing = options.selfHealing || null;
     this.config = {
       maxIterations: options.maxIterations || 10,
       feedbackThreshold: options.feedbackThreshold || 0.7,
@@ -43,6 +44,7 @@ export class RALPHLoop extends EventEmitter {
     const loopPromise = (async () => {
       while (iteration < this.config.maxIterations) {
         iteration++;
+        let activePhase = 'reasoning';
 
         const step = {
           iteration,
@@ -52,26 +54,31 @@ export class RALPHLoop extends EventEmitter {
 
         try {
           // R: Reasoning
+          activePhase = 'reasoning';
           const reasoning = await this.reason(problem, context, currentHypothesis);
           step.results.reasoning = reasoning;
           this.emit('ralph.reasoning', { iteration, reasoning });
 
           // A: Analysis
+          activePhase = 'analysis';
           const analysis = await this.analyze(reasoning, context);
           step.results.analysis = analysis;
           this.emit('ralph.analysis', { iteration, analysis });
 
           // P: Planning
+          activePhase = 'planning';
           const plan = await this.plan(analysis, context);
           step.results.plan = plan;
           this.emit('ralph.planning', { iteration, plan });
 
           // H: Hypothesis
+          activePhase = 'hypothesis';
           currentHypothesis = await this.formHypothesis(plan, context);
           step.results.hypothesis = currentHypothesis;
           this.emit('ralph.hypothesis', { iteration, hypothesis: currentHypothesis });
 
           // L: Learning
+          activePhase = 'learning';
           const learning = await this.learn(step, context);
           step.results.learning = learning;
           this.emit('ralph.learning', { iteration, learning });
@@ -90,7 +97,17 @@ export class RALPHLoop extends EventEmitter {
           }
         } catch (error) {
           step.error = error;
-          this.emit('ralph-loop.error', { iteration, error });
+          const recovery = await this.recoverIterationFailure(error, {
+            iteration,
+            phase: activePhase,
+            problem,
+            partialResults: Object.keys(step.results),
+          });
+          if (recovery) {
+            step.recovery = recovery;
+            this.emit('agent.recovery', { iteration, phase: activePhase, recovery, error });
+          }
+          this.emit('ralph-loop.error', { iteration, error, recovery });
           this.iterations.push(step);
           break;
         }
@@ -117,6 +134,49 @@ export class RALPHLoop extends EventEmitter {
         });
       }
       throw error;
+    }
+  }
+
+  async getSelfHealing() {
+    if (this.selfHealing) {
+      return this.selfHealing;
+    }
+
+    try {
+      const { SelfHealingOrchestrator } = await import('../reliability/self-healing.js');
+      this.selfHealing = new SelfHealingOrchestrator();
+      if (typeof this.selfHealing.initialize === 'function' && !this.selfHealing.initialized) {
+        await this.selfHealing.initialize();
+      }
+    } catch {
+      this.selfHealing = null;
+    }
+
+    return this.selfHealing;
+  }
+
+  async recoverIterationFailure(error, details = {}) {
+    const selfHealing = await this.getSelfHealing();
+    if (!selfHealing?.recoverAgentFailure) {
+      return null;
+    }
+
+    try {
+      return await selfHealing.recoverAgentFailure('ralph-loop', error, details);
+    } catch (recoveryError) {
+      return {
+        agentId: 'ralph-loop',
+        recovered: false,
+        strategy: 'unavailable',
+        timestamp: new Date().toISOString(),
+        diagnostics: {
+          ...details,
+          error: {
+            name: recoveryError?.name || 'Error',
+            message: recoveryError?.message || String(recoveryError),
+          },
+        },
+      };
     }
   }
 
@@ -209,6 +269,30 @@ export class RALPHLoop extends EventEmitter {
       ? this.iterations[this.iterations.length - 1].results.hypothesis
       : null;
   }
+}
+
+export async function runAutonomousTask(
+  objective,
+  options = {},
+  orchestrator = null,
+  executionContext = null
+) {
+  const loop = new RALPHLoop({
+    ...options,
+    selfHealing: options.selfHealing || orchestrator?.selfHealing || null,
+  });
+
+  const result = await loop.executeRALPHLoop(objective, {
+    ...options.context,
+    executionContext,
+    orchestrator,
+  });
+
+  return {
+    status: 'completed',
+    objective,
+    ...result,
+  };
 }
 
 export default RALPHLoop;

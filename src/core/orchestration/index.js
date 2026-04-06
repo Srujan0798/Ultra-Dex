@@ -14,6 +14,7 @@ import chalk from '../../utils/chalk.js';
 import { ppmManager } from '../memory/index.js';
 import { EventEmitter } from 'events';
 import { GovernanceManager, GovernanceDeniedException } from '../governance/governance-manager.js';
+import { enterpriseAnalytics } from '../analytics/enterprise-analytics.js';
 
 export class AgentOrchestrator extends EventEmitter {
   constructor(options = {}) {
@@ -21,7 +22,9 @@ export class AgentOrchestrator extends EventEmitter {
     this.memory = ppmManager;
     this.ai = options.ai || null;
     this.selfHealing = options.selfHealing || null;
+    this.autopsy = options.autopsy || null;
     this.performanceTracker = options.performanceTracker || null;
+    this.queueProcessor = options.queueProcessor || null;
     this.mcpServer = this.normalizeMcpServer(options.mcpServer);
     this.mcpServerFactory = options.mcpServerFactory;
     this.nexusExecutor = options.nexusExecutor;
@@ -45,6 +48,8 @@ export class AgentOrchestrator extends EventEmitter {
     this.initializeTaskRouter();
     this.activeSessions = new Map();
     this.coordinationGraph = new Map();
+    this.activeTaskCount = 0;
+    this.taskQueueInitialized = false;
 
     this.metrics = {
       totalSessions: 0,
@@ -166,6 +171,49 @@ export class AgentOrchestrator extends EventEmitter {
     return this.performanceTracker;
   }
 
+  async getAutopsy() {
+    if (this.autopsy) {
+      return this.autopsy;
+    }
+
+    try {
+      const { AgentAutopsy } = await import('../reliability/agent-autopsy.js');
+      this.autopsy = new AgentAutopsy();
+      if (typeof this.autopsy.initialize === 'function' && !this.autopsy.initialized) {
+        await this.autopsy.initialize();
+      }
+    } catch {
+      this.autopsy = null;
+    }
+
+    return this.autopsy;
+  }
+
+  setQueueProcessor(queueProcessor) {
+    this.queueProcessor = queueProcessor;
+
+    if (!queueProcessor?.registerHandler || this.taskQueueInitialized) {
+      if (queueProcessor?.start && !queueProcessor.running) {
+        queueProcessor.start();
+      }
+      return this.queueProcessor;
+    }
+
+    queueProcessor.registerHandler('orchestrator.executeTask', async (payload) => {
+      return await this.runTaskExecution(payload.task, {
+        ...payload.options,
+        skipQueue: true,
+      });
+    });
+
+    this.taskQueueInitialized = true;
+    if (queueProcessor.start && !queueProcessor.running) {
+      queueProcessor.start();
+    }
+
+    return this.queueProcessor;
+  }
+
   /**
    * Execute a high-level objective using the autonomous Nexus mode
    */
@@ -198,7 +246,9 @@ export class AgentOrchestrator extends EventEmitter {
 
       // Report failure to Self-Healing
       const selfHealing = await this.getSelfHealing();
-      await selfHealing.reportAgentError('nexus', error, { objective, options });
+      if (selfHealing?.reportAgentError) {
+        await selfHealing.reportAgentError('nexus', error, { objective, options });
+      }
 
       throw error;
     } finally {
@@ -214,10 +264,69 @@ export class AgentOrchestrator extends EventEmitter {
   }
 
   async executeTask(task, options = {}) {
+    if (
+      !options.skipQueue &&
+      this.queueProcessor &&
+      this.activeTaskCount >= this.options.maxConcurrentAgents
+    ) {
+      const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
+      const queuedJob = this.queueProcessor.enqueue(
+        {
+          type: 'orchestrator.executeTask',
+          payload: { task, options },
+          priority: options.priority || 5,
+          maxRetries: options.maxRetries || 1,
+        },
+        options.priority || 5
+      );
+
+      this.emit('task:queued', {
+        jobId: queuedJob.id,
+        task: normalizedTask,
+        priority: queuedJob.priority,
+      });
+
+      return await new Promise((resolve, reject) => {
+        const finalize = (job) => {
+          if (job.id !== queuedJob.id) {
+            return;
+          }
+
+          cleanup();
+          if (job.status === 'completed') {
+            resolve(job.result);
+            return;
+          }
+
+          reject(new Error(job.error || `Queued task ${job.id} failed`));
+        };
+
+        const cleanup = () => {
+          this.queueProcessor.off('job:completed', finalize);
+          this.queueProcessor.off('job:failed', finalize);
+        };
+
+        this.queueProcessor.on('job:completed', finalize);
+        this.queueProcessor.on('job:failed', finalize);
+      });
+    }
+
+    return await this.runTaskExecution(task, options);
+  }
+
+  async runTaskExecution(task, options = {}) {
     const sessionId = `session_${Date.now()}`;
     const startedAt = Date.now();
     const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
+    
+    // Analytics: Track task start
+    await enterpriseAnalytics.trackMetric('execution.tasks_started', 1, { 
+      sessionId, 
+      taskType: options.taskType || 'coding' 
+    });
+
     this.metrics.totalSessions++;
+    this.activeTaskCount++;
 
     // Governance context
     const agentId = options.agentId || this.selectAgentForTask(normalizedTask, options);
@@ -228,30 +337,30 @@ export class AgentOrchestrator extends EventEmitter {
       details: { task: normalizedTask, options },
     };
     const performanceTracker = await this.getPerformanceTracker();
-    const performanceStart =
-      typeof performanceTracker?.startTimer === 'function'
-        ? performanceTracker.startTimer()
-        : Date.now();
+    const performanceStart = 
+      typeof performanceTracker?.startTimer === 'function' 
+      ? performanceTracker.startTimer() 
+      : Date.now();
     let taskSucceeded = false;
     let taskErrorMessage = null;
 
     this.emit('task:start', { sessionId, task: normalizedTask, options });
     if (performanceTracker) {
-      this.emit('task:performance:start', {
-        sessionId,
-        agentId,
-        task: normalizedTask,
-        taskType: options.taskType || 'coding',
+      this.emit('task:performance:start', { 
+        sessionId, 
+        agentId, 
+        task: normalizedTask, 
+        taskType: options.taskType || 'coding', 
       });
     }
-    process.stdout.write(chalk.blue(`  - Executing Task: ${normalizedTask}\n`));
+    process.stdout.write(chalk.blue(` - Executing Task: ${normalizedTask}\n`));
     try {
       // Governance check FIRST (before loading AI or gathering context)
       const governanceResult = await this.governance.gate(context);
       if (!governanceResult.allowed) {
-        throw new GovernanceDeniedException(
-          `Task execution blocked by governance policy: ${governanceResult.reason}`,
-          context
+        throw new GovernanceDeniedException( 
+          `Task execution blocked by governance policy: ${governanceResult.reason}`, 
+          context 
         );
       }
 
@@ -262,40 +371,47 @@ export class AgentOrchestrator extends EventEmitter {
       const systemPrompt = await this.registry.getAgentPrompt(agentId);
 
       // 2. Call AI Meta-Layer
-      const response = await ai.call(
-        null,
-        [
-          { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: `Context: ${JSON.stringify(memoryContext)}\n\nTask: ${normalizedTask}`,
-          },
-        ],
-        {
-          metadata: {
-            taskType: options.taskType || 'coding',
-            complexity: options.complexity || 'medium',
-          },
-        }
+      const response = await ai.call( 
+        null, 
+        [ 
+          { role: 'system', content: systemPrompt }, 
+          { 
+            role: 'user', 
+            content: `Context: ${JSON.stringify(memoryContext)}\n\nTask: ${normalizedTask}`, 
+          }, 
+        ], 
+        { 
+          metadata: { 
+            taskType: options.taskType || 'coding', 
+            complexity: options.complexity || 'medium', 
+          }, 
+        } 
       );
 
       const output = response.text || response.content || JSON.stringify(response);
 
       // 3. Record Observation
-      await this.memory.add({
-        content: `Task Completed by @${agentId}: ${normalizedTask}\nOutput: ${output.substring(0, 200)}...`,
-        type: 'observation',
-        importance: 5,
-        metadata: { agentId, sessionId },
+      await this.memory.add({ 
+        content: `Task Completed by @${agentId}: ${normalizedTask}\nOutput: ${output.substring(0, 200)}...`, 
+        type: 'observation', 
+        importance: 5, 
+        metadata: { agentId, sessionId }, 
       });
 
       // Audit successful execution
-      await this.governance.audit.record({
-        action: 'task_execution',
-        task: normalizedTask,
-        result: 'success',
-        agentId: context.agentId,
-        details: { options },
+      await this.governance.audit.record({ 
+        action: 'task_execution', 
+        task: normalizedTask, 
+        result: 'success', 
+        agentId: context.agentId, 
+        details: { options }, 
+      });
+
+      // Analytics: Track task completion
+      await enterpriseAnalytics.trackMetric('execution.tasks_completed', 1, { 
+        sessionId, 
+        agentId, 
+        duration: Date.now() - startedAt 
       });
 
       this.metrics.successfulSessions++;
@@ -303,59 +419,116 @@ export class AgentOrchestrator extends EventEmitter {
       this.emit('task:complete', { sessionId, agentId, output: output.substring(0, 500) });
       return { status: 'COMPLETE', output, agentId };
     } catch (error) {
-      // Audit failed execution
-      await this.governance.audit.record({
-        action: 'task_execution',
-        task: normalizedTask,
-        result: 'failure',
-        agentId: context.agentId,
-        details: { options, error: error.message },
-      });
-
       this.metrics.failedSessions++;
       const message = error instanceof Error ? error.message : String(error);
       taskErrorMessage = message;
+
+      // Analytics: Track task failure
+      await enterpriseAnalytics.trackMetric('execution.tasks_failed', 1, { 
+        sessionId, 
+        error: message 
+      });
+
+      let autopsyReport = null;
+
+      try {
+        const autopsy = await this.getAutopsy();
+        if (autopsy) {
+          autopsyReport = await autopsy.performAutopsy(context.agentId, error, { 
+            sessionId, 
+            task: normalizedTask, 
+            taskType: options.taskType || 'coding', 
+            options, 
+          });
+
+          await this.governance.audit.record({ 
+            action: 'task_autopsy', 
+            task: normalizedTask, 
+            result: 'recorded', 
+            agentId: context.agentId, 
+            details: { 
+              sessionId, 
+              taskType: options.taskType || 'coding', 
+              autopsy: autopsyReport, 
+            }, 
+          });
+
+          this.emit('task:autopsy', { 
+            sessionId, 
+            agentId: context.agentId, 
+            task: normalizedTask, 
+            autopsy: autopsyReport, 
+          });
+        }
+      } catch (autopsyError) {
+        const autopsyMessage = 
+          autopsyError instanceof Error ? autopsyError.message : String(autopsyError);
+        this.emit('task:autopsy:error', { 
+          sessionId, 
+          agentId: context.agentId, 
+          task: normalizedTask, 
+          error: autopsyMessage, 
+        });
+      }
+
+      // Audit failed execution
+      await this.governance.audit.record({ 
+        action: 'task_execution', 
+        task: normalizedTask, 
+        result: 'failure', 
+        agentId: context.agentId, 
+        details: { 
+          options, 
+          error: message, 
+          autopsyId: autopsyReport?.id || null, 
+          autopsySummary: autopsyReport?.summary || null, 
+        }, 
+      });
+
       process.stderr.write(chalk.red(`❌ Task execution failed (${sessionId}): ${message}\n`));
       this.emit('task:error', { sessionId, task: normalizedTask, error: message });
 
       // Report to Self-Healing
       const selfHealing = await this.getSelfHealing();
-      await selfHealing.reportAgentError(options.agentId || 'unknown', error, {
-        sessionId,
-        task: normalizedTask,
-      });
+      if (selfHealing?.reportAgentError) {
+        await selfHealing.reportAgentError(options.agentId || 'unknown', error, { 
+          sessionId, 
+          task: normalizedTask, 
+        });
+      }
 
       throw error;
     } finally {
+      this.activeTaskCount = Math.max(0, this.activeTaskCount - 1);
       const elapsed = Date.now() - startedAt;
       this.metrics.lastTaskDurationMs = elapsed;
       const completedSessions = this.metrics.successfulSessions + this.metrics.failedSessions;
       if (completedSessions > 0) {
-        this.metrics.avgResponseTime =
+        this.metrics.avgResponseTime = 
           (this.metrics.avgResponseTime * (completedSessions - 1) + elapsed) / completedSessions;
       }
 
       if (performanceTracker) {
-        const requestInfo = {
-          endpoint: 'executeTask',
-          method: 'TASK',
-          statusCode: taskSucceeded ? 200 : 500,
-          agentId,
-          taskType: options.taskType || 'coding',
+        const requestInfo = { 
+          endpoint: 'executeTask', 
+          method: 'TASK', 
+          statusCode: taskSucceeded ? 200 : 500, 
+          agentId, 
+          taskType: options.taskType || 'coding', 
         };
-        const entry =
-          typeof performanceTracker.endTimer === 'function'
-            ? performanceTracker.endTimer(performanceStart, requestInfo)
-            : performanceTracker.trackRequest?.(requestInfo, elapsed);
-        this.emit('task:performance:end', {
-          sessionId,
-          agentId,
-          task: normalizedTask,
-          taskType: requestInfo.taskType,
-          durationMs: entry?.durationMs ?? elapsed,
-          success: taskSucceeded,
-          statusCode: requestInfo.statusCode,
-          error: taskErrorMessage,
+        const entry = 
+          typeof performanceTracker.endTimer === 'function' 
+          ? performanceTracker.endTimer(performanceStart, requestInfo) 
+          : performanceTracker.trackRequest?.(requestInfo, elapsed);
+        this.emit('task:performance:end', { 
+          sessionId, 
+          agentId, 
+          task: normalizedTask, 
+          taskType: requestInfo.taskType, 
+          durationMs: entry?.durationMs ?? elapsed, 
+          success: taskSucceeded, 
+          statusCode: requestInfo.statusCode, 
+          error: taskErrorMessage, 
         });
       }
     }
@@ -363,13 +536,85 @@ export class AgentOrchestrator extends EventEmitter {
 
   initializeTaskRouter() {
     // Register agents with their capabilities for semantic routing
-    this.taskRouter.registerAgent('frontend', ['react', 'component', 'ui', 'css', 'styling', 'dom', 'html', 'javascript', 'typescript', 'jsx', 'tsx', 'frontend']);
-    this.taskRouter.registerAgent('backend', ['api', 'server', 'database', 'endpoint', 'middleware', 'controller', 'rest', 'graphql', 'backend', 'node', 'express']);
-    this.taskRouter.registerAgent('database', ['sql', 'schema', 'migration', 'query', 'table', 'index', 'postgresql', 'mysql', 'sqlite', 'nosql', 'mongodb']);
-    this.taskRouter.registerAgent('testing', ['jest', 'vitest', 'test', 'spec', 'coverage', 'mock', 'e2e', 'unit', 'integration']);
-    this.taskRouter.registerAgent('devops', ['docker', 'kubernetes', 'deploy', 'ci', 'cd', 'pipeline', 'infra', 'nginx', 'aws']);
-    this.taskRouter.registerAgent('security', ['auth', 'encrypt', 'hash', 'jwt', 'permission', 'governance', 'audit', 'security']);
-    this.taskRouter.registerAgent('orchestrator', ['coordinate', 'manage', 'orchestrate', 'workflow', 'multi-agent']);
+    this.taskRouter.registerAgent('frontend', [
+      'react',
+      'component',
+      'ui',
+      'css',
+      'styling',
+      'dom',
+      'html',
+      'javascript',
+      'typescript',
+      'jsx',
+      'tsx',
+      'frontend',
+    ]);
+    this.taskRouter.registerAgent('backend', [
+      'api',
+      'server',
+      'database',
+      'endpoint',
+      'middleware',
+      'controller',
+      'rest',
+      'graphql',
+      'backend',
+      'node',
+      'express',
+    ]);
+    this.taskRouter.registerAgent('database', [
+      'sql',
+      'schema',
+      'migration',
+      'query',
+      'table',
+      'index',
+      'postgresql',
+      'mysql',
+      'sqlite',
+      'nosql',
+      'mongodb',
+    ]);
+    this.taskRouter.registerAgent('testing', [
+      'jest',
+      'vitest',
+      'test',
+      'spec',
+      'coverage',
+      'mock',
+      'e2e',
+      'unit',
+      'integration',
+    ]);
+    this.taskRouter.registerAgent('devops', [
+      'docker',
+      'kubernetes',
+      'deploy',
+      'ci',
+      'cd',
+      'pipeline',
+      'infra',
+      'nginx',
+      'aws',
+    ]);
+    this.taskRouter.registerAgent('security', [
+      'auth',
+      'encrypt',
+      'hash',
+      'jwt',
+      'permission',
+      'governance',
+      'audit',
+      'security',
+    ]);
+    this.taskRouter.registerAgent('orchestrator', [
+      'coordinate',
+      'manage',
+      'orchestrate',
+      'workflow',
+      'multi-agent',
+    ]);
   }
 
   selectAgentForTask(task, options = {}) {

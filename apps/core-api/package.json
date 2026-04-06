@@ -315,7 +315,7 @@
     "supertest": "^7.0.0",
     "sinon": "^19.0.2",
     "chai": "^5.1.2",
-    "mocha": "^11.1.0",
+    "mocha": "^11.7.5",
     "eslint": "^9.20.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.31.0",
