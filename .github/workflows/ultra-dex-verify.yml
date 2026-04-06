@@ -20,6 +20,9 @@ jobs:
         run: npm install --force --ignore-scripts
       - name: Install CLI dependencies
         run: cd apps/cli && npm install --force --ignore-scripts
+      - name: Rebuild native modules (sqlite3)
+        run: npm rebuild sqlite3
+        continue-on-error: true
       - name: Verify fast-path CLI commands
         run: |
           set -euo pipefail

@@ -83,8 +83,10 @@ export interface ChatOptions {
 export interface ChatResponse {
   content: string;
   usage: {
-    inputTokens: number;
-    outputTokens: number;
+    promptTokens?: number;
+    completionTokens?: number;
+    inputTokens?: number;
+    outputTokens?: number;
     totalTokens?: number;
     totalCost?: number;
   };
@@ -95,11 +97,12 @@ export interface ChatResponse {
 export interface StreamChunk {
   type: 'text' | 'tool_call' | 'done';
   content?: unknown;
+  delta?: string;
 }
 
 export interface EmbeddingResponse {
   embedding: number[];
-  dimensions: number;
+  dimensions?: number;
 }
 
 // ============================================================================
@@ -119,6 +122,8 @@ export class BaseProvider implements ProviderContract {
   stream(messages: ChatMessage[], opts?: ChatOptions): AsyncIterable<StreamChunk>;
   embed(text: string, opts?: Record<string, unknown>): Promise<EmbeddingResponse>;
 }
+
+export function assertProviderContract(name: string, provider: object): void;
 
 // ============================================================================
 // Router Types
@@ -147,7 +152,8 @@ export interface ProviderStatsSnapshot {
   errorRate: number;
 }
 
-export interface ProviderStats {
+export class ProviderStats {
+  constructor(windowSize?: number);
   recordLatency(ms: number): void;
   recordError(): void;
   recordCost(tokens: number, cost: number): void;
@@ -159,7 +165,8 @@ export interface ProviderStats {
   snapshot(): ProviderStatsSnapshot;
 }
 
-export interface CircuitBreaker {
+export class CircuitBreaker {
+  constructor(options?: { failureThreshold?: number; resetTimeoutMs?: number });
   failureThreshold: number;
   resetTimeoutMs: number;
   failures: number;
@@ -228,8 +235,10 @@ export type MiddlewareFunction = (
   next: () => Promise<void>
 ) => Promise<void>;
 
-export interface MiddlewarePipeline {
+export class MiddlewarePipeline {
+  constructor();
   use(name: string, fn: MiddlewareFunction): this;
+  use(fn: MiddlewareFunction): this;
   execute(context: MiddlewareContext): Promise<MiddlewareContext>;
   get length(): number;
   list(): string[];
@@ -313,6 +322,7 @@ export interface ExecuteOptions {
   timeout?: number;
   priority?: number;
   onProgress?: (progress: ExecutionProgress) => void;
+  cancellationToken?: AbortSignal;
 }
 
 export interface ExecutionProgress {
@@ -403,7 +413,12 @@ export class DistributedCoordinator {
   status: 'initializing' | 'active' | 'failed' | 'shutting_down' | 'shutdown';
   peers: Map<string, DistributedPeer>;
   initialize(): Promise<this>;
+  selectPeerForTask(task?: unknown): DistributedPeer | null;
   submitTask(task: unknown, options?: ExecuteOptions): Promise<DistributedTaskResult>;
+  executeTaskLocallyStream(
+    task: string,
+    options?: ExecuteOptions
+  ): AsyncIterable<ExecutionProgress>;
   addDistributedPeer(peerUrl: string): this;
   removeDistributedPeer(peerUrl: string): this;
   listDistributedPeers(): DistributedPeer[];
@@ -468,3 +483,5 @@ export class UltraDex {
   removeDistributedPeer(peerUrl: string): this;
   listDistributedPeers(): DistributedPeer[];
 }
+
+export default UltraDex;

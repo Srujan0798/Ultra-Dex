@@ -25,9 +25,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: |
-          npm install --force --ignore-scripts
-          cd apps/dashboard && npm install --force --ignore-scripts
+        run: npm install --force --ignore-scripts
 
       - name: Dashboard tests
         run: cd apps/dashboard && npm run test

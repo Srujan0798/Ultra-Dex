@@ -1,23 +1,35 @@
 {
   "name": "@ultra-dex/sdk",
-  "version": "6.0.0",
+  "version": "2.0.0",
   "description": "Official Ultra-Dex SDK for JavaScript and TypeScript",
   "type": "module",
   "main": "./src/client.js",
   "types": "./types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./src/client.js",
-      "types": "./types/index.d.ts"
+      "types": "./types/index.d.ts",
+      "import": "./src/client.js"
     },
-    "./client": "./src/client.js",
-    "./agent": "./src/agent.js",
-    "./provider": "./src/provider.js",
-    "./plugin": "./src/plugin.js"
+    "./client": {
+      "types": "./types/client.d.ts",
+      "import": "./src/client.js"
+    },
+    "./agent": {
+      "types": "./types/agent.d.ts",
+      "import": "./src/agent.js"
+    },
+    "./provider": {
+      "types": "./types/provider.d.ts",
+      "import": "./src/provider.js"
+    },
+    "./plugin": {
+      "types": "./types/plugin.d.ts",
+      "import": "./src/plugin.js"
+    }
   },
   "files": [
-    "src",
-    "types",
+    "src/",
+    "types/",
     "README.md"
   ],
   "scripts": {
