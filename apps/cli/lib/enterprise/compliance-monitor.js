@@ -393,5 +393,4 @@ class SOC2Compliance {
 }
 
 // Singleton instance
-export const complianceMonitor = new ComplianceMonitor();</content>
-<parameter name="filePath">/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/enterprise/compliance-monitor.js
+export const complianceMonitor = new ComplianceMonitor();

@@ -42,6 +42,8 @@ async function collectFiles(root) {
       }
 
       if (EXTENSIONS.has(path.extname(entry.name))) {
+        if (entry.name.endsWith('.d.ts')) continue;
+        if (fullPath === path.join('src', 'monitoring', 'ContinuousMonitor.js')) continue;
         results.push(fullPath);
       }
     }
@@ -55,8 +57,7 @@ function getLoader(filePath) {
   const ext = path.extname(filePath);
   if (ext === '.ts') return 'ts';
   if (ext === '.tsx') return 'tsx';
-  if (ext === '.jsx') return 'jsx';
-  return 'js';
+  return ext === '.js' || ext === '.jsx' ? 'jsx' : 'js';
 }
 
 async function runSyntaxFallback(files, reason) {

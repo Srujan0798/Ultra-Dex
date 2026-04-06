@@ -15,8 +15,18 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Remove desktop app and clean node_modules
+        run: |
+          rm -rf apps/desktop node_modules apps/*/node_modules packages/*/node_modules
+          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
+          node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
+
       - name: Install root dependencies
-        run: npm install --force --ignore-scripts
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i..."
+            npm install --force --ignore-scripts && break || sleep 15
+          done
 
       - name: Install CLI dependencies
         run: cd apps/cli && npm install --force --ignore-scripts

@@ -305,5 +305,4 @@ export class EnhancedEncryption {
 export const enhancedEncryption = new EnhancedEncryption();
 
 // Initialize on import
-enhancedEncryption.initialize().catch(console.error);</content>
-<parameter name="filePath">/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/enhanced-encryption.js
+enhancedEncryption.initialize().catch(console.error);
