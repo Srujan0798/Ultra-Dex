@@ -20,7 +20,7 @@ describe('Governance Integration - Minimal executeTool Test', () => {
   beforeEach(() => {
     // Clean up database before each test to ensure isolation
     if (fs.existsSync(TEST_DB_PATH)) {
-      fs.unlinkSync(TEST_DB_PATH);
+      fs.rmSync(TEST_DB_PATH, { force: true });
     }
     governance = new GovernanceManager();
   });

@@ -17,14 +17,14 @@ describe('Governance Audit Persistence', () => {
   beforeEach(async () => {
     // Clean up test database before each test
     if (fs.existsSync(TEST_DB_PATH)) {
-      fs.unlinkSync(TEST_DB_PATH);
+      fs.rmSync(TEST_DB_PATH, { force: true });
     }
   });
 
   afterEach(async () => {
     // Clean up test database after each test
     if (fs.existsSync(TEST_DB_PATH)) {
-      fs.unlinkSync(TEST_DB_PATH);
+      fs.rmSync(TEST_DB_PATH, { force: true });
     }
   });
 
@@ -228,13 +228,13 @@ describe('AuditDatabase direct tests', () => {
 
   beforeEach(async () => {
     if (fs.existsSync(directTestDbPath)) {
-      fs.unlinkSync(directTestDbPath);
+      fs.rmSync(directTestDbPath, { force: true });
     }
   });
 
   afterEach(async () => {
     if (fs.existsSync(directTestDbPath)) {
-      fs.unlinkSync(directTestDbPath);
+      fs.rmSync(directTestDbPath, { force: true });
     }
   });
 

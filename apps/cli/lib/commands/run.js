@@ -173,15 +173,11 @@ Available commands:
 async function readProjectContext() {
   const context = {};
 
-  // Fast path for mock mode - skip heavy operations
+  // Keep graph scans disabled in mock mode, but preserve lightweight file-based context.
   const isMockMode = process.env.MOCK_AI_PROVIDERS === 'true' || process.env.MOCK_AI === 'true';
 
-  const planPromise = isMockMode
-    ? Promise.resolve(null)
-    : fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => null);
-  const contextPromise = isMockMode
-    ? Promise.resolve(null)
-    : fs.readFile('CONTEXT.md', 'utf8').catch(() => null);
+  const planPromise = fs.readFile('IMPLEMENTATION-PLAN.md', 'utf8').catch(() => null);
+  const contextPromise = fs.readFile('CONTEXT.md', 'utf8').catch(() => null);
   const statePromise = (async () => {
     try {
       return JSON.parse(await fs.readFile('.ultra/state.json', 'utf8'));
@@ -1342,11 +1338,14 @@ export function registerRunCommand(program) {
       let finalOutput = '';
 
       try {
+        const isMockMode =
+          process.env.MOCK_AI_PROVIDERS === 'true' || process.env.MOCK_AI === 'true';
         const configured = checkConfiguredProviders();
         const selectedProviderId = options.provider || getDefaultProvider();
         const hasProvider =
           configured.some((p) => p.configured) ||
           Boolean(options.key) ||
+          isMockMode ||
           canUseProviderWithoutApiKey(selectedProviderId);
 
         if (!hasProvider) {
@@ -1361,6 +1360,7 @@ export function registerRunCommand(program) {
           printInfo('     export ULTRA_DEX_ENABLE_LOCAL_PROVIDERS=1');
           printInfo('     # Then ensure Ollama is running with a model installed');
           process.stdout.write('\n');
+          process.exitCode = 1;
           return;
         }
 

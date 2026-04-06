@@ -21,7 +21,7 @@ describe('CLI Command: run error paths', () => {
   });
 
   test('shows clear error when no AI provider configured', async () => {
-    const { stdout, stderr } = await execFileAsync(
+    const error = await execFileAsync(
       process.execPath,
       [CLI_PATH, 'run', 'planner', '-t', 'Test task'],
       {
@@ -44,11 +44,14 @@ describe('CLI Command: run error paths', () => {
         },
         maxBuffer: 4 * 1024 * 1024,
       }
+    ).then(
+      () => null,
+      (result) => result
     );
 
-    const output = stdout + stderr;
-    // Debug output to see what we're getting
-    // console.log('OUTPUT:', output);
+    assert.ok(error, 'CLI should reject when no provider is available');
+    assert.strictEqual(error.code, 1);
+    const output = `${error.stdout}${error.stderr}`;
     assert.match(output, /❌ No AI provider configured or available/);
     assert.match(output, /To fix this, either:/);
     assert.match(output, /export ANTHROPIC_API_KEY/);
@@ -59,7 +62,7 @@ describe('CLI Command: run error paths', () => {
   });
 
   test('shows clear error when provider specified but not configured', async () => {
-    const { stdout, stderr } = await execFileAsync(
+    const error = await execFileAsync(
       process.execPath,
       [CLI_PATH, 'run', 'planner', '-t', 'Test task', '--provider', 'openai'],
       {
@@ -78,16 +81,21 @@ describe('CLI Command: run error paths', () => {
         },
         maxBuffer: 4 * 1024 * 1024,
       }
+    ).then(
+      () => null,
+      (result) => result
     );
 
-    const output = stdout + stderr;
+    assert.ok(error, 'CLI should reject when the requested provider is unavailable');
+    assert.strictEqual(error.code, 1);
+    const output = `${error.stdout}${error.stderr}`;
     assert.match(output, /❌ No AI provider configured or available/);
     assert.match(output, /To fix this, either:/);
     assert.match(output, /export OPENAI_API_KEY/);
   });
 
   test('exits with code 1 when no provider available', async () => {
-    const { exitCode } = await execFileAsync(
+    const error = await execFileAsync(
       process.execPath,
       [CLI_PATH, 'run', 'planner', '-t', 'Test task'],
       {
@@ -105,8 +113,12 @@ describe('CLI Command: run error paths', () => {
           ULTRA_DEX_V2_ROUTING: '',
         },
       }
-    ).catch((result) => result);
+    ).then(
+      () => null,
+      (result) => result
+    );
 
-    assert.strictEqual(exitCode, 1);
+    assert.ok(error, 'CLI should reject when no provider is available');
+    assert.strictEqual(error.code, 1);
   });
 });

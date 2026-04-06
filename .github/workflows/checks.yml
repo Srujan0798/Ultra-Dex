@@ -27,6 +27,9 @@ jobs:
       - name: Check npm version
         run: npm --version
 
+      - name: Remove desktop app (electron postinstall issues)
+        run: rm -rf apps/desktop
+
       - name: Install dependencies
         run: |
           for i in 1 2 3; do
