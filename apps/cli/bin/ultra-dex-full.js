@@ -43,8 +43,8 @@ const commandRegistrars = [
   // autonomous.js excluded: top-level import of src/core/orchestration causes synchronous CJS deadlock via express
   { path: '../lib/commands/pipeline.js', register: 'registerPipelineCommand' },
   { path: '../lib/commands/ralph.js', register: 'registerRalphCommand' },
-  { path: '../lib/commands/search.js', register: 'registerSearchCommand' },
-  { path: '../lib/commands/vector-search.js', register: 'registerVectorSearchCommand' },
+  // search.js / vector-search.js excluded: missing langchain dep leaves shared graph.js in broken linking state
+
   { path: '../lib/commands/state.js', register: 'registerStateCommand' },
   { path: '../lib/commands/mcp-remote.js', register: 'registerMcpRemoteCommand' },
   { path: '../lib/commands/github.js', register: 'registerGithubCommand' },
