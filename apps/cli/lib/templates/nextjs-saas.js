@@ -7,7 +7,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
 
 class NextJSSaaSTemplate {

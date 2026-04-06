@@ -6,7 +6,8 @@
  */
 
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { MemoryEntry } from './schema.js';
+// import { MemoryEntry } from './schema.js'; // TODO: schema.js does not exist
+class MemoryEntry {}
 
 // Graph node types
 const NODE_TYPES = {

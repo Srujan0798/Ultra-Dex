@@ -14,7 +14,7 @@
  * - Sentiment analysis
  */
 
-import { UltraDex } from '../src/ultradex.js';
+import { UltraDex } from '@ultra-dex/sdk';
 
 class CustomerSupportAgent {
   constructor(config) {

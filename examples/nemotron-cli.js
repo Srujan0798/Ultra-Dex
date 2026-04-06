@@ -1,23 +1,21 @@
 #!/usr/bin/env node
 
 /**
- * Ultra-Dex Nemotron CLI
+ * Ultra-Dex Nemotron CLI Example
  * Use NVIDIA Nemotron-3-Super for free via their API
  * 
  * Usage:
- *   node nemotron-cli.js "Your prompt here"
- *   node nemotron-cli.js --stream "Your prompt here"
- *   node nemotron-cli.js --no-thinking "Quick question?"
+ *   node examples/nemotron-cli.js "Your prompt here"
+ *   node examples/nemotron-cli.js --stream "Your prompt here"
  */
 
-import { createNemotronClient, chatWithNemotron, streamWithNemotron } from '../src/services/ai-providers/nemotron.js';
 import dotenv from 'dotenv';
 import chalk from 'chalk';
-import { spawn } from 'child_process';
 
 dotenv.config();
 
 const API_KEY = process.env.NVIDIA_API_KEY;
+const MODEL = 'nvidia/nemotron-3-super-120b-a12b';
 
 function printBanner() {
   console.log(chalk.green.bold('\n🚀 Ultra-Dex Nemotron CLI'));
@@ -30,83 +28,71 @@ ${chalk.yellow('Usage:')}
   node nemotron-cli.js [options] "your prompt"
 
 ${chalk.yellow('Options:')}
-  --stream, -s      Stream the response in real-time
-  --no-thinking     Disable reasoning mode (faster, simpler responses)
-  --help, -h        Show this help message
+  --stream       Stream the response
+  --no-thinking  Disable thinking process output
+  --help         Show this help
 
 ${chalk.yellow('Examples:')}
   node nemotron-cli.js "Explain quantum computing"
-  node nemotron-cli.js --stream "Write a Python function to sort an array"
-  node nemotron-cli.js --no-thinking "What is 2+2?"
-
-${chalk.yellow('Setup:')}
-  1. Get free API key: https://build.nvidia.com/
-  2. Add to .env.local: NVIDIA_API_KEY=your-key-here
+  node nemotron-cli.js --stream "Write a Python function"
 `);
+}
+
+async function chatWithNemotron(prompt) {
+  const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1024,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`NVIDIA API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
 }
 
 async function main() {
   const args = process.argv.slice(2);
   
-  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
+  if (args.length === 0 || args.includes('--help')) {
     printBanner();
     printUsage();
     process.exit(0);
   }
 
   if (!API_KEY) {
-    console.error(chalk.red.bold('\n❌ Error: NVIDIA_API_KEY not found'));
-    console.error(chalk.yellow('\nSetup instructions:'));
-    console.error('  1. Get free API key: https://build.nvidia.com/');
-    console.error('  2. Create .env.local file');
-    console.error('  3. Add: NVIDIA_API_KEY=your-key-here\n');
-    process.exit(1);
-  }
-
-  const streamMode = args.includes('--stream') || args.includes('-s');
-  const noThinking = args.includes('--no-thinking');
-  const prompt = args.filter(a => !a.startsWith('--')).join(' ');
-
-  if (!prompt) {
-    console.error(chalk.red('Error: No prompt provided'));
-    printUsage();
+    console.error(chalk.red('❌ NVIDIA_API_KEY not found in environment'));
+    console.error('Get free key at: https://build.nvidia.com/');
     process.exit(1);
   }
 
   printBanner();
-  console.log(chalk.gray(`Prompt: ${chalk.white(prompt)}\n`));
-  console.log(chalk.gray('Thinking...') + '\n');
+  
+  const prompt = args.filter(a => !a.startsWith('--')).join(' ');
+  if (!prompt) {
+    console.error(chalk.red('❌ No prompt provided'));
+    printUsage();
+    process.exit(1);
+  }
 
-  const client = createNemotronClient(API_KEY);
-
+  console.log(chalk.cyan('Prompt:'), prompt, '\n');
+  
   try {
-    if (streamMode) {
-      console.log(chalk.green('Response (streaming):') + '\n');
-      const response = await streamWithNemotron({
-        client,
-        messages: [{ role: 'user', content: prompt }],
-        enableThinking: !noThinking,
-        onChunk: (chunk) => {
-          process.stdout.write(chunk);
-        },
-      });
-      console.log('\n');
-    } else {
-      console.log(chalk.green('Response:') + '\n');
-      const response = await chatWithNemotron({
-        client,
-        messages: [{ role: 'user', content: prompt }],
-        enableThinking: !noThinking,
-        maxTokens: 4096,
-      });
-      console.log(chalk.white(response) + '\n');
-    }
+    const response = await chatWithNemotron(prompt);
+    console.log(chalk.green('Response:'));
+    console.log(response);
   } catch (error) {
-    console.error(chalk.red.bold('\n❌ Error:'), error.message);
-    if (error.response) {
-      const data = await error.response.json?.();
-      console.error(chalk.gray('Details:', JSON.stringify(data, null, 2)));
-    }
+    console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

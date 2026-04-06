@@ -14,7 +14,7 @@
  * - Result aggregation and synthesis
  */
 
-import { UltraDex } from '../src/ultradex.js';
+import { UltraDex } from '@ultra-dex/sdk';
 
 class MultiAgentWorkflow {
   constructor(config) {

@@ -13,7 +13,7 @@
  * - Automated responses to common queries
  */
 
-import { UltraDex } from '../src/ultradex.js';
+import { UltraDex } from '@ultra-dex/sdk';
 import { Octokit } from '@octokit/rest';
 
 class GitHubBot {

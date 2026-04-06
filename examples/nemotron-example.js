@@ -1,10 +1,9 @@
 /**
- * Nemotron Example - Matching NVIDIA's Python API
+ * Nemotron Example - Using NVIDIA's API
  * 
- * Usage: node nemotron-example.js
+ * Usage: node examples/nemotron-example.js
  */
 
-import { createNemotronClient } from '../src/services/ai-providers/nemotron.js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -28,118 +27,42 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-// Create client (matches Python: client = OpenAI(...))
-const client = createNemotronClient(API_KEY);
-
-// Example 1: Basic chat (matches your Python example)
-async function example1() {
-  console.log('📝 Example 1: Write a haiku about GPUs\n');
-  
-  const response = await client.chat.completions.create({
-    model: MODEL,
-    messages: [{ role: 'user', content: 'Write a haiku about GPUs' }],
-    max_tokens: 16000,
-    temperature: 1.0,
-    top_p: 0.95,
-    extra_body: {
-      chat_template_kwargs: {
-        enable_thinking: true,
-      },
+// Example: Simple chat completion using fetch
+async function chatWithNemotron(prompt) {
+  const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${API_KEY}`,
     },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1024,
+    }),
   });
 
-  console.log(response.choices[0].message.content);
-  console.log('\n');
+  if (!response.ok) {
+    throw new Error(`NVIDIA API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
 }
 
-// Example 2: Reasoning disabled
-async function example2() {
-  console.log('📝 Example 2: Simple question (no thinking)\n');
-  
-  const response = await client.chat.completions.create({
-    model: MODEL,
-    messages: [{ role: 'user', content: 'What is the capital of Japan?' }],
-    max_tokens: 16000,
-    temperature: 1.0,
-    top_p: 0.95,
-    extra_body: {
-      chat_template_kwargs: {
-        enable_thinking: false,
-      },
-    },
-  });
-
-  console.log(response.choices[0].message.content);
-  console.log('\n');
-}
-
-// Example 3: Low-effort reasoning
-async function example3() {
-  console.log('📝 Example 3: Low-effort reasoning\n');
-  
-  const response = await client.chat.completions.create({
-    model: MODEL,
-    messages: [{ role: 'user', content: 'What is the capital of Japan?' }],
-    max_tokens: 16000,
-    temperature: 1.0,
-    top_p: 0.95,
-    extra_body: {
-      chat_template_kwargs: {
-        enable_thinking: true,
-        low_effort: true,
-      },
-    },
-  });
-
-  console.log(response.choices[0].message.content);
-  console.log('\n');
-}
-
-// Example 4: Coding
-async function example4() {
-  console.log('📝 Example 4: Code generation\n');
-  
-  const response = await client.chat.completions.create({
-    model: MODEL,
-    messages: [{ 
-      role: 'user', 
-      content: 'Write a JavaScript function to check if a number is prime' 
-    }],
-    max_tokens: 16000,
-    temperature: 1.0,
-    top_p: 0.95,
-    extra_body: {
-      chat_template_kwargs: {
-        enable_thinking: true,
-      },
-    },
-  });
-
-  console.log(response.choices[0].message.content);
-  console.log('\n');
-}
-
-// Run all examples
+// Run example
 async function main() {
-  console.log('🚀 NVIDIA Nemotron-3-Super Examples\n');
-  console.log('Model:', MODEL);
-  console.log('API: https://integrate.api.nvidia.com/v1\n');
-  console.log('─'.repeat(50) + '\n');
+  console.log('🚀 Nemotron Example\n');
+  
+  const prompt = 'Explain quantum computing in simple terms';
+  console.log(`Prompt: ${prompt}\n`);
   
   try {
-    await example1();
-    await example2();
-    await example3();
-    await example4();
-    
-    console.log('✅ All examples completed!');
+    const response = await chatWithNemotron(prompt);
+    console.log('Response:', response);
   } catch (error) {
-    console.error('❌ Error:', error.message);
-    if (error.response) {
-      const data = await error.response.json?.();
-      console.error('Details:', JSON.stringify(data, null, 2));
-    }
-    process.exit(1);
+    console.error('Error:', error.message);
   }
 }
 

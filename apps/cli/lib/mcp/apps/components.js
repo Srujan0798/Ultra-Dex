@@ -5,9 +5,9 @@
  * Provides UI components that can be rendered in MCP-compatible tools
  */
 
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
 import chalk from 'chalk';
-import { AppError } from '../utils/errors.js';
+import { AppError } from '../../utils/errors.js';
 import { Logger } from '../../utils/logger.js';
 
 const logger = new Logger({ prefix: 'Components' });

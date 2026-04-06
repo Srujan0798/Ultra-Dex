@@ -14,7 +14,7 @@
  * - Personality customization
  */
 
-import { UltraDex } from '../src/ultradex.js';
+import { UltraDex } from '@ultra-dex/sdk';
 
 class Chatbot {
   constructor(config) {
