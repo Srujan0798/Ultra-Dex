@@ -1,11 +1,12 @@
 // Copyright (c) 2026 Ultra-Dex
 /**
  * Governance Audit Database Module
- * Persists governance audit entries to SQLite
+ * Persists governance audit entries to SQLite with graceful fallback
+ * 
+ * NOTE: Uses graceful fallback - if sqlite3 native module fails,
+ * falls back to in-memory storage for compatibility.
  */
 
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -16,6 +17,58 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Default database path
 const DEFAULT_DB_PATH = path.join(process.cwd(), '.ultra-dex', 'audit', 'governance.db');
 
+// Graceful fallback for sqlite3 import
+let sqlite3 = null;
+let sqliteOpen = null;
+let useMemoryFallback = false;
+
+try {
+  const sqlite3Module = await import('sqlite3');
+  const sqliteModule = await import('sqlite');
+  sqlite3 = sqlite3Module.default;
+  sqliteOpen = sqliteModule.open;
+} catch (error) {
+  useMemoryFallback = true;
+  console.warn('[audit-db] sqlite3 native module not available, using memory fallback');
+}
+
+/**
+ * In-memory database fallback for when sqlite3 is not available
+ */
+class MemoryAuditDB {
+  constructor() {
+    this.records = [];
+    this.initialized = true;
+  }
+
+  async exec() {
+    // No-op for memory DB
+  }
+
+  async run(sql, params) {
+    // Simulate insert
+    this.records.push({
+      id: params[0],
+      action: params[1],
+      agentId: params[2],
+      task: params[3],
+      resource: params[3],
+      result: params[4],
+      outcome: params[4],
+      details: params[5],
+      timestamp: params[6],
+    });
+  }
+
+  async all(sql, params) {
+    // Simulate query - return all or filter by agentId
+    if (params && params[0]) {
+      return this.records.filter(r => r.agentId === params[0]);
+    }
+    return [...this.records];
+  }
+}
+
 /**
  * Audit Database class for persisting governance audit entries
  */
@@ -23,6 +76,7 @@ export class AuditDatabase {
   constructor(dbPath = DEFAULT_DB_PATH) {
     this.dbPath = dbPath;
     this.db = null;
+    this.memoryMode = useMemoryFallback;
   }
 
   /**
@@ -33,6 +87,12 @@ export class AuditDatabase {
       return this.db;
     }
 
+    if (this.memoryMode) {
+      // Use in-memory fallback
+      this.db = new MemoryAuditDB();
+      return this.db;
+    }
+
     // Ensure directory exists
     const dir = path.dirname(this.dbPath);
     if (!fs.existsSync(dir)) {
@@ -40,7 +100,7 @@ export class AuditDatabase {
     }
 
     // Open database
-    this.db = await open({
+    this.db = await sqliteOpen({
       filename: this.dbPath,
       driver: sqlite3.Database,
     });
@@ -111,77 +171,168 @@ export class AuditDatabase {
       ...entry,
       id,
       timestamp,
+      task: taskText,
+      resource: entry.resource || taskText,
+      result: resultText,
+      outcome: entry.outcome || resultText,
     };
   }
 
   /**
-   * Query audit entries
-   * @param {Object} options - Query options
-   * @param {string} options.action - Filter by action
-   * @param {string} options.agentId - Filter by agentId
-   * @param {number} options.limit - Maximum number of entries to return (default 50)
+   * Query audit entries with optional filters
+   * @param {Object} filters - Query filters
    * @returns {Promise<Array>} Array of audit entries
    */
-  async query(options = {}) {
+  async query(filters = {}) {
     await this.init();
 
-    const { action, agentId, limit = 50 } = options;
+    if (this.memoryMode) {
+      let rows = [...this.db.records];
+
+      if (filters.agentId) {
+        rows = rows.filter((row) => row.agentId === filters.agentId);
+      }
+
+      if (filters.action) {
+        rows = rows.filter((row) => row.action === filters.action);
+      }
+
+      if (filters.resource) {
+        rows = rows.filter((row) => row.task === filters.resource || row.resource === filters.resource);
+      }
+
+      if (filters.since) {
+        const since = Number(filters.since);
+        rows = rows.filter((row) => Number(row.timestamp) >= since);
+      }
+
+      rows.sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+
+      if (filters.limit) {
+        rows = rows.slice(0, filters.limit);
+      }
+
+      return rows.map((row) => ({
+        ...row,
+        task: row.task ?? row.resource ?? null,
+        resource: row.resource ?? row.task ?? null,
+        result: row.result ?? row.outcome ?? null,
+        outcome: row.outcome ?? row.result ?? null,
+        details:
+          typeof row.details === 'string' && row.details
+            ? JSON.parse(row.details)
+            : (row.details ?? null),
+        timestamp: Number(row.timestamp),
+      }));
+    }
 
     let sql = 'SELECT * FROM governance_audit WHERE 1=1';
     const params = [];
 
-    if (action) {
-      sql += ' AND action = ?';
-      params.push(action);
-    }
-
-    if (agentId) {
+    if (filters.agentId) {
       sql += ' AND agentId = ?';
-      params.push(agentId);
+      params.push(filters.agentId);
     }
 
-    sql += ' ORDER BY timestamp DESC LIMIT ?';
-    params.push(limit);
+    if (filters.action) {
+      sql += ' AND action = ?';
+      params.push(filters.action);
+    }
+
+    if (filters.resource) {
+      sql += ' AND task = ?';
+      params.push(filters.resource);
+    }
+
+    if (filters.since) {
+      sql += ' AND timestamp >= ?';
+      params.push(filters.since.toString());
+    }
+
+    sql += ' ORDER BY timestamp DESC';
+
+    if (filters.limit) {
+      sql += ' LIMIT ?';
+      params.push(filters.limit);
+    }
 
     const rows = await this.db.all(sql, params);
 
-    // Parse details JSON back to object
-    // Map 'result' column to 'outcome' property for backward compatibility
-    return rows.map((row) => ({
-      id: row.id,
-      action: row.action,
-      agentId: row.agentId,
-      task: row.task,
-      result: row.result,
-      outcome: row.result,
-      details: row.details ? JSON.parse(row.details) : null,
+    // Parse details JSON
+    return rows.map(row => ({
+      ...row,
+      task: row.task ?? row.resource ?? null,
+      resource: row.resource ?? row.task ?? null,
+      result: row.result ?? row.outcome ?? null,
+      outcome: row.outcome ?? row.result ?? null,
+      details:
+        typeof row.details === 'string' && row.details
+          ? JSON.parse(row.details)
+          : (row.details ?? null),
       timestamp: parseInt(row.timestamp, 10),
     }));
+  }
+
+  /**
+   * Get audit statistics
+   * @returns {Promise<Object>} Statistics object
+   */
+  async getStats() {
+    await this.init();
+
+    const total = this.memoryMode 
+      ? this.db.records.length 
+      : (await this.db.all('SELECT COUNT(*) as count FROM governance_audit'))[0].count;
+
+    return {
+      total,
+      mode: this.memoryMode ? 'memory' : 'sqlite',
+    };
   }
 
   /**
    * Close the database connection
    */
   async close() {
-    if (this.db) {
+    if (this.db && !this.memoryMode) {
       await this.db.close();
       this.db = null;
     }
   }
 }
 
-// Singleton instance for reuse
-let defaultInstance = null;
+// Singleton instance
+let auditDB = null;
 
 /**
- * Get the default audit database instance
- * @returns {AuditDatabase}
+ * Get the singleton audit database instance
+ * @returns {AuditDatabase} The audit database instance
  */
-export function getAuditDatabase(dbPath) {
-  if (!defaultInstance || (dbPath && defaultInstance.dbPath !== dbPath)) {
-    defaultInstance = new AuditDatabase(dbPath);
+export function getAuditDB() {
+  if (!auditDB) {
+    auditDB = new AuditDatabase();
   }
-  return defaultInstance;
+  return auditDB;
+}
+
+/**
+ * Record a governance audit entry
+ * @param {Object} entry - The audit entry to record
+ * @returns {Promise<Object>} The recorded entry
+ */
+export async function recordAudit(entry) {
+  const db = getAuditDB();
+  return db.insert(entry);
+}
+
+/**
+ * Query governance audit entries
+ * @param {Object} filters - Query filters
+ * @returns {Promise<Array>} Array of audit entries
+ */
+export async function queryAudit(filters = {}) {
+  const db = getAuditDB();
+  return db.query(filters);
 }
 
 export default AuditDatabase;
