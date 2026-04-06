@@ -15,7 +15,7 @@
  * - Performance tracking
  */
 
-import { UltraDex } from '../src/ultradex.js';
+import { UltraDex } from '@ultra-dex/sdk';
 
 class ContentCreator {
   constructor(config) {

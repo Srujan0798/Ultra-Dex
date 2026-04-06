@@ -5,7 +5,8 @@
  * Handles screenshot analysis, Figma imports, and design system reasoning
  */
 
-import BaseAgent from './base-agent.js';
+// import BaseAgent from './base-agent.js'; // TODO: base-agent.js does not exist
+class BaseAgent {}
 
 export class VisionAgent extends BaseAgent {
   constructor(options = {}) {

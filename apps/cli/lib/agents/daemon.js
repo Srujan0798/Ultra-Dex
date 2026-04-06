@@ -10,9 +10,9 @@ import path from 'path';
 import os from 'os';
 import { spawn } from 'child_process';
 import { EventEmitter } from 'events';
-import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
+import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
-import { AppError } from '../../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 
 // Directory for daemon processes
 const DAEMON_DIR = path.join(os.homedir(), '.ultra-dex', 'daemons');

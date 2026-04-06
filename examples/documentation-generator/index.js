@@ -14,7 +14,7 @@
  * - Tutorials and guides
  */
 
-import { UltraDex } from '../src/ultradex.js';
+import { UltraDex } from '@ultra-dex/sdk';
 import fs from 'fs/promises';
 import path from 'path';
 

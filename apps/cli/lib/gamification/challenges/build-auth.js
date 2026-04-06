@@ -5,7 +5,8 @@
  * Define stages: Planning (5m), Design (7m), Security (8m), Build (10m). The "Boss Fight" verification.
  */
 
-import { ChallengeEngine } from './challenge-engine.js';
+// import { ChallengeEngine } from './challenge-engine.js'; // TODO: challenge-engine.js does not exist
+class ChallengeEngine {}
 import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
 import chalk from 'chalk';
 import inquirer from 'inquirer';

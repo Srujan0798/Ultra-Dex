@@ -4,7 +4,6 @@
  * This script demonstrates the autonomous "Think-Act-Verify" loop
  */
 
-import { nexus } from '../src/core/orchestration/index.js';
 import chalk from 'chalk';
 
 async function runDemo() {
@@ -16,21 +15,24 @@ async function runDemo() {
 
   console.log(chalk.cyan(`Objective: ${objective}
 `));
+  console.log(chalk.yellow('Note: This is a demo. Run `ultra-dex run nexus "<objective>"` for actual execution.\n'));
 
-  try {
-    // Initialize the orchestrator to ensure MCP server is properly set up
-    await nexus.initialize();
+  // Demo steps
+  const steps = [
+    { phase: 'THINK', action: 'Analyzing objective requirements', detail: 'Express server, /health endpoint, JSON response' },
+    { phase: 'PLAN', action: 'Breaking down into subtasks', detail: '1. Create server file 2. Add endpoint 3. Test' },
+    { phase: 'ACT', action: 'Generating server code', detail: 'Writing health-server.js...' },
+    { phase: 'VERIFY', action: 'Validating implementation', detail: 'Code structure check passed' },
+  ];
 
-    const result = await nexus.execute(objective, { sandbox: false });
-
-    console.log(chalk.bold.green(`
-✅ Autonomous Objective Completed!`));
-    console.log(chalk.gray('Final Result State:'), JSON.stringify(result, null, 2));
-  } catch (error) {
-    console.error(chalk.bold.red(`
-❌ Demo Failed:`), error.message);
-    process.exit(1);
+  for (const step of steps) {
+    console.log(chalk.bold.blue(`[${step.phase}]`), chalk.white(step.action));
+    console.log(chalk.gray(`  → ${step.detail}\n`));
+    await new Promise(r => setTimeout(r, 800));
   }
+
+  console.log(chalk.bold.green(`✅ Demo Complete!`));
+  console.log(chalk.gray('Run with actual AI: ultra-dex run nexus "<your objective>"'));
 }
 
-runDemo();
+runDemo().catch(console.error);

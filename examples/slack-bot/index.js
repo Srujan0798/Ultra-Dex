@@ -15,7 +15,7 @@
 
 import { WebClient } from '@slack/web-api';
 import { RTMClient } from '@slack/rtm-api';
-import { UltraDex } from '../src/ultradex.js';
+import { UltraDex } from '@ultra-dex/sdk';
 
 class SlackBot {
   constructor(config) {
