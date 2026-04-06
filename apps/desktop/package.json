@@ -13,7 +13,7 @@
     "build:linux": "electron-builder --linux",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "postinstall": "electron-builder install-app-deps"
+    "_postinstall": "electron-builder install-app-deps (disabled for CI)"
   },
   "build": {
     "appId": "ai.ultra-dex.desktop",
