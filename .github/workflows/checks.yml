@@ -41,7 +41,7 @@ jobs:
         run: |
           for i in 1 2 3; do
             echo "Attempt $i..."
-            npm install --force --ignore-scripts && break || sleep 15
+            npm install --force --ignore-scripts --workspace=false && break || sleep 15
           done
 
       - name: Run type checking
