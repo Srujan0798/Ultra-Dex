@@ -46,7 +46,7 @@ export default function App() {
  * Error handler for App
  * @param {Error} error - Error to handle
  */
-function handleAppError(error) {
+function handleAppError(error: Error | unknown) {
   try {
     console.error('[App]', error instanceof Error ? error.message : String(error));
   } catch (_) {
