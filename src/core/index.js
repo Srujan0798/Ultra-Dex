@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 /**
- * Ultra-Dex Meta-Layer (v6.1.0)
+ * Ultra-Dex Meta-Layer (v6.2.0)
  * The unified entry point for autonomous AI orchestration.
  *
  * Exports ALL core infrastructure modules for use by agents, APIs, and dashboards.
@@ -12,11 +12,11 @@ import { agentOrchestrator } from './orchestration/index.js';
 import { ppmManager } from './memory/index.js';
 
 import { HealthService, HealthCheck } from './system/health-service.js';
+import { PluginManager, Plugin } from './infrastructure/plugin-manager.js';
 
 // ── Compatibility Fallbacks ─────────────────────────────────────────────
-// Several legacy infrastructure modules referenced by this entrypoint no longer
-// have JS implementations in src/core. Keep the public surface loadable with
-// minimal no-op shims until those modules are restored or intentionally removed.
+// Legacy infrastructure modules without full implementations yet.
+// These are minimal no-op shims until the real modules are implemented.
 class NoopSubsystem {
   constructor(config = {}) {
     this.config = config;
@@ -39,15 +39,6 @@ class StreamBuffer {}
 class WebhookManager extends NoopSubsystem {}
 class WebhookEndpoint {}
 class WebhookDelivery {}
-class PluginManager extends NoopSubsystem {
-  constructor(config = {}) {
-    super(config);
-    this.plugins = new Map();
-  }
-
-  async unload() {}
-}
-class Plugin {}
 class RateLimiter extends NoopSubsystem {}
 class SlidingWindow {}
 class TokenBucket {}

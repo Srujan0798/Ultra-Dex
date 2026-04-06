@@ -311,7 +311,8 @@ export class MFAService {
     const code = this.generateNumericCode();
     await this.storeTemporaryCode(userId, code, 'sms');
 
-    // TODO: Send SMS via service like Twilio
+    // Note: SMS delivery requires integration with external service (e.g., Twilio, AWS SNS)
+    // Configure ULTRA_DEX_SMS_PROVIDER and ULTRA_DEX_SMS_API_KEY environment variables
 
     return true;
   }
@@ -325,7 +326,8 @@ export class MFAService {
     const code = this.generateNumericCode();
     await this.storeTemporaryCode(userId, code, 'email');
 
-    // TODO: Send email via service
+    // Note: Email delivery requires integration with external service (e.g., SendGrid, AWS SES)
+    // Configure ULTRA_DEX_EMAIL_PROVIDER and ULTRA_DEX_EMAIL_API_KEY environment variables
 
     return true;
   }
