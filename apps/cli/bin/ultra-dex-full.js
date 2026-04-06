@@ -54,15 +54,23 @@ const commandRegistrars = [
   { path: '../lib/commands/enterprise.js', register: 'registerEnterpriseCommand' },
 ];
 
+const importWithTimeout = (modPath, ms = 4000) =>
+  Promise.race([
+    import(modPath),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`Import timeout after ${ms}ms`)), ms)
+    ),
+  ]);
+
 for (const { path: cmdPath, register: fnName } of commandRegistrars) {
   try {
-    const mod = await import(cmdPath);
+    const mod = await importWithTimeout(cmdPath);
     const fn = mod[fnName];
     if (typeof fn === 'function') {
       fn(program);
     }
   } catch (err) {
-    // Skip commands that fail to load (missing deps, etc.)
+    // Skip commands that fail to load (missing deps, timeout, etc.)
     if (process.env.ULTRA_DEX_DEBUG === '1') {
       console.error(chalk.yellow(`Warning: Failed to register command from ${cmdPath}: ${err.message}`));
     }

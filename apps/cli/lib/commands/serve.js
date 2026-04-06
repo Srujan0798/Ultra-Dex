@@ -83,7 +83,6 @@ async function getGitInfo() {
  */
 async function getDashboardHTML() {
   const { projectGraph } = await import('../mcp/graph.js');
-  const { generateDashboardHTML } = await import('./dashboard.js');
   const state = await loadState();
   const gitInfo = await getGitInfo();
   await projectGraph.scan();
@@ -92,6 +91,114 @@ async function getDashboardHTML() {
     nodes: summary.nodeCount,
     edges: summary.edgeCount,
   });
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function generateDashboardHTML(state, gitInfo, graphSummary) {
+  const markdown = generateMarkdown(state || {});
+  const stateJson = JSON.stringify(state || {}, null, 2);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ultra-Dex Dashboard</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08111f;
+        --panel: #0f1b2d;
+        --panel-border: #223552;
+        --accent: #4fd1c5;
+        --text: #e7edf7;
+        --muted: #9fb0c8;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        background: radial-gradient(circle at top, #123055, var(--bg));
+        color: var(--text);
+      }
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      h1 { margin-top: 0; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      .panel {
+        background: rgba(15, 27, 45, 0.92);
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
+      }
+      .label {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .value {
+        margin-top: 8px;
+        font-size: 20px;
+        color: var(--accent);
+      }
+      pre {
+        margin: 0;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Ultra-Dex Dashboard</h1>
+      <div class="grid">
+        <section class="panel">
+          <div class="label">Branch</div>
+          <div class="value">${escapeHtml(gitInfo.branch)}</div>
+        </section>
+        <section class="panel">
+          <div class="label">Last Commit</div>
+          <div class="value">${escapeHtml(gitInfo.lastCommit)}</div>
+        </section>
+        <section class="panel">
+          <div class="label">Changed Files</div>
+          <div class="value">${escapeHtml(gitInfo.changedFiles)}</div>
+        </section>
+        <section class="panel">
+          <div class="label">Graph</div>
+          <div class="value">${escapeHtml(graphSummary.nodes)} nodes / ${escapeHtml(graphSummary.edges)} edges</div>
+        </section>
+      </div>
+      <section class="panel" style="margin-bottom: 16px;">
+        <div class="label">Plan</div>
+        <pre>${escapeHtml(markdown)}</pre>
+      </section>
+      <section class="panel">
+        <div class="label">State</div>
+        <pre>${escapeHtml(stateJson)}</pre>
+      </section>
+    </main>
+  </body>
+</html>`;
 }
 
 /**
