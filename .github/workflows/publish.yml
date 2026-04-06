@@ -23,7 +23,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: npm install --force --ignore-scripts
+        run: npm install --force --legacy-peer-deps
 
       - name: Run tests
         run: npm test
@@ -41,7 +41,7 @@ jobs:
 
       - name: Install VS Code extension dependencies
         working-directory: packages/extensions/vscode
-        run: npm install --ignore-scripts
+        run: npm install --legacy-peer-deps
 
       - name: Package VS Code Extension
         working-directory: packages/extensions/vscode
