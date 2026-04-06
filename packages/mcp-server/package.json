@@ -22,8 +22,9 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3"
   },
-  "peerDependencies": {
-    "@ultra-dex/core": "workspace:*"
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@ultra-dex/core": "^2.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
