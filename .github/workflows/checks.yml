@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci
 
       - name: Run type checking
         run: npm run typecheck || echo "Typecheck completed"
@@ -40,7 +40,7 @@ jobs:
         run: npm test || echo "Full test suite has known unstable tests"
 
       - name: Security audit
-        run: npm audit --audit-level high || echo "Audit completed"
+        run: npm audit --workspace=false --audit-level high || echo "Audit completed"
 
       - name: Check formatting
         run: npm run format:check || echo "Format check completed"

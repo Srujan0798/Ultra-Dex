@@ -180,7 +180,37 @@ async function createLogger() {
   }
 }
 
-const logger = await createLogger();
+// Lazy logger initialization to avoid top-level await issues
+let loggerInstance = null;
+let loggerPromise = null;
 
-export { logger, createLogger };
+async function getLogger() {
+  if (loggerInstance) return loggerInstance;
+  if (loggerPromise) return loggerPromise;
+  
+  // Create with fallback first for immediate use
+  loggerInstance = createConsoleLogger();
+  
+  // Then try to upgrade to winston asynchronously
+  loggerPromise = createLogger().then(winstonLogger => {
+    loggerInstance = winstonLogger;
+    return winstonLogger;
+  }).catch(() => loggerInstance);
+  
+  return loggerInstance;
+}
+
+// Export a proxy object that delegates to the actual logger
+const logger = new Proxy({}, {
+  get(target, prop) {
+    if (loggerInstance) {
+      return loggerInstance[prop];
+    }
+    // Fallback during initialization
+    const fallback = createConsoleLogger();
+    return fallback[prop];
+  }
+});
+
+export { logger, createLogger, getLogger };
 export default logger;

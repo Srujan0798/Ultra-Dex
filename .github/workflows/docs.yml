@@ -31,11 +31,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          cd apps/docs-site
-          npm install --ignore-scripts --legacy-peer-deps
+        run: npm ci --ignore-scripts
 
-      - name: Build website
+      - name: Build docs
         run: |
           cd apps/docs-site
           npm run build
