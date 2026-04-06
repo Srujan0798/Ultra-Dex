@@ -10,6 +10,10 @@ import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
+import { createAgentStatusTool } from './tools/agent-status.js';
+import { createTaskSubmitTool } from './tools/task-submit.js';
+import { createMemorySearchTool } from './tools/memory-search.js';
+import { createProviderInfoTool } from './tools/provider-info.js';
 
 class MCPServerManager extends EventEmitter {
   constructor(config = {}) {
@@ -20,12 +24,19 @@ class MCPServerManager extends EventEmitter {
       autoRestart: config.autoRestart !== false,
       restartDelay: config.restartDelay || 5000,
       healthCheckInterval: config.healthCheckInterval || 30000,
+      loadBuiltInServers: config.loadBuiltInServers !== false,
       ...config,
     };
 
     this.servers = new Map();
     this.tools = new Map();
     this.resources = new Map();
+    this.taskQueue = [];
+    this.agentRegistry = config.agentRegistry || null;
+    this.orchestrator = config.orchestrator || null;
+    this.memory = config.memory || null;
+    this.providerRouter = config.providerRouter || null;
+    this.aiMetaLayer = config.aiMetaLayer || null;
     this.metrics = {
       serversStarted: 0,
       serversFailed: 0,
@@ -44,7 +55,11 @@ class MCPServerManager extends EventEmitter {
     await fs.mkdir(this.config.serversPath, { recursive: true });
 
     // Load built-in servers
-    await this._loadBuiltInServers();
+    if (this.config.loadBuiltInServers) {
+      await this._loadBuiltInServers();
+    }
+
+    this._registerCoreTools();
 
     // Start health check
     this._startHealthChecks();
@@ -208,6 +223,13 @@ class MCPServerManager extends EventEmitter {
     }
 
     try {
+      if (!server.process) {
+        server.status = 'stopped';
+        server.stoppedAt = new Date().toISOString();
+        this.emit('server:stopped', { serverId });
+        return { serverId, status: 'stopped' };
+      }
+
       // Graceful shutdown
       server.process.kill('SIGTERM');
 
@@ -255,6 +277,12 @@ class MCPServerManager extends EventEmitter {
     }
 
     try {
+      if (typeof tool.handler === 'function') {
+        this.metrics.toolCalls++;
+        this.emit('tool:called', { serverId, toolName });
+        return await tool.handler(params, { manager: this, serverId, toolName });
+      }
+
       const request = {
         jsonrpc: '2.0',
         id: this._generateRequestId(),
@@ -378,6 +406,45 @@ class MCPServerManager extends EventEmitter {
     };
   }
 
+  registerLocalTool(tool, serverId = 'ultra-dex-core') {
+    if (!tool?.name || typeof tool.handler !== 'function') {
+      throw new Error('Local MCP tools require a name and handler');
+    }
+
+    let server = this.servers.get(serverId);
+    if (!server) {
+      server = {
+        id: serverId,
+        name: 'Ultra-Dex Core MCP',
+        description: 'In-process Ultra-Dex MCP tools',
+        command: null,
+        args: [],
+        env: {},
+        tools: new Map(),
+        resources: new Map(),
+        process: null,
+        status: 'running',
+        lastError: null,
+        restartCount: 0,
+        startedAt: new Date().toISOString(),
+        config: { local: true, autoStart: true },
+      };
+      this.servers.set(serverId, server);
+    }
+
+    const normalizedTool = {
+      name: tool.name,
+      description: tool.description || '',
+      parameters: tool.inputSchema || {},
+      inputSchema: tool.inputSchema || {},
+      handler: tool.handler,
+    };
+
+    server.tools.set(tool.name, normalizedTool);
+    this.tools.set(tool.name, normalizedTool);
+    return normalizedTool;
+  }
+
   // Private methods
   _ensureInitialized() {
     if (!this.initialized) {
@@ -467,6 +534,19 @@ class MCPServerManager extends EventEmitter {
       } catch (error) {
         this.emit('server:registration_failed', { serverId: serverConfig.id, error });
       }
+    }
+  }
+
+  _registerCoreTools() {
+    const localTools = [
+      createAgentStatusTool({ manager: this }),
+      createTaskSubmitTool({ manager: this }),
+      createMemorySearchTool({ manager: this }),
+      createProviderInfoTool({ manager: this }),
+    ];
+
+    for (const tool of localTools) {
+      this.registerLocalTool(tool);
     }
   }
 
