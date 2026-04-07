@@ -15,7 +15,6 @@ import { ObservabilitySystem } from '../system/observability.js';
 import { SmartAIRouter } from '../ai/router.js';
 import { AgentRegistry } from './registry.js';
 import { ExecutionTrace } from '../agents/protocol.js';
-import { PerformanceMetrics } from '../../benchmarks/performance-metrics.js';
 let ExecutionTask = class {
   constructor(id, input, agent, steps = [], status = "pending") {
     this.id = id;
@@ -42,9 +41,7 @@ let ExecutionEngine = class {
     this.agentRegistry = options.agentRegistry || new AgentRegistry();
     this.observability = options.observability || new ObservabilitySystem();
     this.mcpServer = options.mcpServer;
-    if (this.options.enablePerformanceMetrics) {
-      this.performanceMetrics = options.performanceMetrics || new PerformanceMetrics();
-    }
+    this.performanceMetrics = options.performanceMetrics || null;
   }
   async initialize() {
     if (this.aiRouter && typeof this.aiRouter.initialize === "function") {
@@ -55,9 +52,6 @@ let ExecutionEngine = class {
     }
     if (this.observability && typeof this.observability.initialize === "function") {
       await this.observability.initialize();
-    }
-    if (this.performanceMetrics && typeof this.performanceMetrics.startCollection === "function") {
-      this.performanceMetrics.startCollection();
     }
     return this;
   }
@@ -79,10 +73,6 @@ let ExecutionEngine = class {
       }
       logger.info("Starting task execution", { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
       task.status = "running";
-      if (this.performanceMetrics) {
-        this.performanceMetrics.recordMetric("execution.tasks_started", 1);
-        this.performanceMetrics.recordMetric("execution.active_tasks", 1, { operation: "increment" });
-      }
       for (let i = 0; i < task.steps.length; i++) {
         const step = task.steps[i];
         const stepId = step.id || `step_${i}`;
@@ -213,13 +203,6 @@ let ExecutionEngine = class {
         try {
           const result = await this.executeStep(step, task);
           const duration = Date.now() - startTime;
-          if (this.performanceMetrics) {
-            this.performanceMetrics.recordLatency(`execution.step.${step.type}`, duration, {
-              taskId: task.id,
-              stepId,
-              agent: task.agent
-            });
-          }
           task.results[stepId] = result;
           if (trace) {
             try {

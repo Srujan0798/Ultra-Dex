@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
 import { AIMetaLayer, aiMetaLayer } from '../../src/core/ai/ai-meta-layer.js';

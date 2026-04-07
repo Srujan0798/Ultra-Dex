@@ -74,7 +74,7 @@ function normalizeQuery(query) {
 }
 
 function stripContentFields(metadata = {}) {
-  const { content, systemPrompt, _prompt, ...rest } = metadata;
+  const { content: _content, systemPrompt: _systemPrompt, _prompt, ...rest } = metadata;
   return rest;
 }
 

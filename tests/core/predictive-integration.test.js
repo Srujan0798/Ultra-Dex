@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { AgentOrchestrator } from '../../src/core/orchestration/index.js';

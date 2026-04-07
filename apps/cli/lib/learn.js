@@ -87,7 +87,7 @@ class InteractiveTutorial {
       // Capture output
       let _output = '';
       child.stdout.on('data', (data) => {
-        output += data.toString();
+        _output += data.toString();
         process.stdout.write(data);
       });
 

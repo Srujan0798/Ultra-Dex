@@ -14,7 +14,6 @@ import chalk from 'chalk';
 import ora from '../utils/ora.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
-import { AppError } from '../utils/errors.js';
 
 // Terraform templates
 const TERRAFORM_TEMPLATES = {

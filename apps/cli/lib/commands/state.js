@@ -16,7 +16,6 @@ import { VERSION } from '../utils/version.js';
 import { syncState } from '../utils/state-sync.js';
 import { reconciler } from '../utils/reconciler.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
 
 // State locking mechanism to prevent race conditions

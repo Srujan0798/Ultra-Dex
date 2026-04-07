@@ -1,0 +1,54 @@
+{
+  "server": {
+    "port": "${PORT:-3000}",
+    "host": "0.0.0.0",
+    "timeout": 30000
+  },
+  "redis": {
+    "url": "${REDIS_URL:-redis://localhost:6379}",
+    "retryDelayOnFailover": 100,
+    "enableReadyCheck": true,
+    "maxRetriesPerRequest": 3
+  },
+  "ai": {
+    "defaultProvider": "${AI_DEFAULT_PROVIDER:-openai}",
+    "timeout": 30000,
+    "maxRetries": 3,
+    "fallbackProviders": ["anthropic", "google", "groq"]
+  },
+  "mesh": {
+    "busType": "${BUS_TYPE:-memory}",
+    "nodeId": "${NODE_ID:-node-1}",
+    "region": "${REGION:-default}",
+    "heartbeatInterval": 30000
+  },
+  "logging": {
+    "level": "${LOG_LEVEL:-info}",
+    "format": "json",
+    "timestamp": true,
+    "colorize": false
+  },
+  "governance": {
+    "enabled": true,
+    "auditDb": "${AUDIT_DB_PATH:-./data/audit/governance.db}",
+    "policyCheckInterval": 60000,
+    "maxAuditRetentionDays": 90
+  },
+  "monitoring": {
+    "healthCheckInterval": 30000,
+    "metricsEnabled": true,
+    "metricsPort": "${METRICS_PORT:-9090}"
+  },
+  "memory": {
+    "vectorStorePath": "${VECTOR_STORE_PATH:-./data/vectors}",
+    "cacheSize": 1000,
+    "ttlSeconds": 3600
+  },
+  "security": {
+    "rateLimitEnabled": true,
+    "rateLimitRequests": 100,
+    "rateLimitWindow": 60000,
+    "corsOrigin": "${CORS_ORIGIN:-*}",
+    "requireAuth": false
+  }
+}

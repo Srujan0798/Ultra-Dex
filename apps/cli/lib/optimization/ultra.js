@@ -335,7 +335,6 @@ export class UltraCache extends EventEmitter {
 
   evictLRU() {
     let oldest = null;
-    let oldestTime = Infinity;
     let lowestPriority = Infinity;
 
     for (const [key, entry] of this.cache) {
@@ -348,7 +347,6 @@ export class UltraCache extends EventEmitter {
       if (score < lowestPriority) {
         lowestPriority = score;
         oldest = key;
-        _oldestTime = entry.timestamp;
       }
     }
 

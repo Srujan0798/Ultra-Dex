@@ -20,7 +20,7 @@ class MockMessage {
 class MockStateGraph {
   constructor() { this.nodes = new Map(); }
   addNode(name, fn) { this.nodes.set(name, fn); return this; }
-  addEdge(from, _to) { return this; }
+  addEdge(_from, _to) { return this; }
   setEntryPoint(_node) { return this; }
   setFinishPoint(_node) { return this; }
   compile(_options) { return { invoke: async () => ({ messages: [] }) }; }

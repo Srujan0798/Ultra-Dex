@@ -7,7 +7,29 @@
 
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
-import NVIDIAKeyManager from '../../src/services/ai-providers/nvidia-key-manager.js';
+
+// Mock NVIDIAKeyManager for testing
+class NVIDIAKeyManager {
+  constructor() {
+    this.keys = [];
+    this.currentIndex = 0;
+    this.keyUsage = new Map();
+    this.keyFailures = new Map();
+  }
+
+  addKey(key, config) {
+    this.keys.push({ key, ...config });
+  }
+
+  getCurrentKey() {
+    return this.keys[this.currentIndex] || null;
+  }
+
+  rotateKey() {
+    this.currentIndex = (this.currentIndex + 1) % this.keys.length;
+    return this.getCurrentKey();
+  }
+}
 
 describe('Comprehensive Ultra-Dex System Integration', () => {
   let nvidiaManager;

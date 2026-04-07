@@ -15,7 +15,7 @@ import { runAgentLoop } from './run.js';
 import { verifyCommand } from './verify.js';
 import { generateMarkdown } from './plan.js';
 import { AutomationPipeline } from '../automation/pipeline.js';
-import { printError, printInfo, printSuccess } from '../utils/output.js';
+import { printInfo, printSuccess } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
 export function registerAutoImplementCommand(program) {

@@ -114,7 +114,7 @@ export async function executeCommandWithPlugins(commandName, args, options) {
 }
 
 // Placeholder for original command execution
-async function executeOriginalCommand(commandName, args, _options) {
+async function executeOriginalCommand(commandName, _args, _options) {
   // This would normally call the actual command implementation
   // For now, returning a mock result
   return { success: true, command: commandName, executed: true };

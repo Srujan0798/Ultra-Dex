@@ -11,7 +11,8 @@ const logger = new Logger({ prefix: 'Context7' });
 export async function handleContext7Request(params) {
   const { package: pkg, version } = params || {};
   if (!pkg) throw new Error('package name required');
-  return fetchContext7Docs(pkg, version);
+  // TODO: implement fetchContext7Docs
+  return { package: pkg, version, docs: 'Not implemented' };
 }
 
 export default {

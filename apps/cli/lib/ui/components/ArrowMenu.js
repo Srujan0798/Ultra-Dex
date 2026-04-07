@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Box, Text, useInput } from "ink";
 const ArrowMenu = ({ items, onSelect, initialIndex = 0 }) => {
   const [selectedIndex, setSelectedIndex] = useState(initialIndex);

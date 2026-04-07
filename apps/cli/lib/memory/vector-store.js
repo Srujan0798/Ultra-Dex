@@ -16,10 +16,10 @@ const mockSqlite = {
 };
 
 // Mock for 'sqlite' package
-const mockOpen = async ({ filename, _driver }) => ({
+const mockOpen = async ({ filename: _filename, _driver }) => ({
   exec: async (_sql) => {},
-  run: async (sql, ..._params) => {},
-  all: async (sql, ..._params) => [],
+  run: async (_sql, ..._params) => {},
+  all: async (_sql, ..._params) => [],
   close: async () => {}
 });
 

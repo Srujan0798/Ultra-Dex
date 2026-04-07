@@ -7,7 +7,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printWarning } from '../utils/output.js';
 import chalk from 'chalk';
 
 // ADR compliance check function

@@ -20,7 +20,6 @@ import { projectGraph } from '../mcp/graph.js';
 import { copyDirectory } from '../utils/files.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
-import { AppError } from '../utils/errors.js';
 
 // Autonomous configuration
 const AUTONOMOUS_CONFIG = {
@@ -225,85 +224,6 @@ export class AutonomousEngine {
         output: error.stdout?.toString() || error.stderr?.toString() || error.message,
       };
     }
-
-    // Subcommand: autonomous checkpoint
-    autoCmd
-      .command('checkpoint')
-      .description('Manage autonomous checkpoints')
-      .option('--json', 'Output as JSON')
-      .option('--all', 'Show all checkpoint details');
-
-    // Subcommand: autonomous checkpoint list
-    autoCmd
-      .command('checkpoint list')
-      .description('List available checkpoints')
-      .option('--json', 'Output as JSON')
-      .action(async (options) => {
-        try {
-          const checkpoints = await AutonomousAgent.listCheckpoints();
-          if (options.json) {
-            printInfo(JSON.stringify(checkpoints, null, 2));
-          } else {
-            if (checkpoints.length === 0) {
-              printInfo('No checkpoints found');
-              return;
-            }
-            printInfo('Available checkpoints:');
-            checkpoints.forEach((cp) => {
-              printInfo(`  ${cp.id}`);
-              printInfo(`    Goal: ${cp.goal}`);
-              printInfo(`    Progress: ${cp.progress.completed}/${cp.progress.total} tasks`);
-              printInfo(`    Created: ${new Date(cp.createdAt).toLocaleString()}`);
-              printInfo('');
-            });
-          }
-        } catch (error) {
-          printError(`Error listing checkpoints: ${error.message}`);
-          process.exitCode = 1;
-        }
-      });
-
-    // Subcommand: autonomous checkpoint resume <id>
-    autoCmd
-      .command('checkpoint resume <id>')
-      .description('Resume from a checkpoint')
-      .option('--provider <provider>', 'AI provider to use')
-      .action(async (id, options) => {
-        try {
-          printInfo(`Resuming from checkpoint ${id}...`);
-          const agent = await AutonomousAgent.resumeFromCheckpoint(id, {
-            provider: options.provider,
-          });
-          printInfo(`Resumed session: ${agent.getCurrentSession().sessionId}`);
-          printInfo(`Goal: ${agent.getCurrentSession().goal}`);
-          // Continue execution - in a real implementation, this would continue the loop
-          printSuccess('Checkpoint resumed. Use autonomous run to continue execution.');
-        } catch (error) {
-          printError(`Error resuming from checkpoint: ${error.message}`);
-          process.exitCode = 1;
-        }
-      });
-
-    // Subcommand: autonomous checkpoint delete <id>
-    autoCmd
-      .command('checkpoint delete <id>')
-      .description('Delete a checkpoint')
-      .action(async (id) => {
-        try {
-          const checkpointDir = path.join(process.cwd(), '.ultra', 'checkpoints');
-          const checkpointPath = path.join(checkpointDir, `${id}.json`);
-
-          await fs.unlink(checkpointPath);
-          printSuccess(`Checkpoint ${id} deleted`);
-        } catch (error) {
-          if (error.code === 'ENOENT') {
-            printError(`Checkpoint ${id} not found`);
-          } else {
-            printError(`Error deleting checkpoint: ${error.message}`);
-          }
-          process.exitCode = 1;
-        }
-      });
   }
 
   async runLint() {

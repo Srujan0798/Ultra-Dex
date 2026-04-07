@@ -5,7 +5,7 @@
  * Discord Integration with Real API Implementation
  */
 
-import { printInfo, printSuccess, printError } from '../utils/output.js';
+import { printSuccess, printError } from '../utils/output.js';
 import { requireConfig, retryWithBackoff } from './utils.js';
 
 const DISCORD_API_BASE = 'https://discord.com/api/v10';

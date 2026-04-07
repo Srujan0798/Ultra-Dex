@@ -314,13 +314,11 @@ function filterSections(content, sectionNumbers, excludeNumbers = null) {
   const lines = content.split('\n');
   const filteredLines = [];
   let inTargetSection = false;
-  let currentSectionNumber = null;
 
   for (const line of lines) {
     const sectionMatch = line.match(/^##\s+(?:SECTION\s+)?(\d+)[:.]?\s*/i);
     if (sectionMatch) {
       const num = parseInt(sectionMatch[1]);
-      _currentSectionNumber = num;
       const included = sectionNumbers ? sectionNumbers.includes(num) : true;
       const excluded = excludeNumbers ? excludeNumbers.includes(num) : false;
       inTargetSection = included && !excluded;
