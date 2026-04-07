@@ -1,32 +1,55 @@
 {
-  "cycle": 3,
-  "title": "ETERNAL STATE \u2014 Final Integration, Archive Resolution, Diamond Perfection",
-  "initiated": "2026-04-06",
-  "source": "Cycle 2 post-mortem + forensic archive analysis + NoopSubsystem audit",
-  "thesis": "This is the FINAL cycle. Three objectives: (1) Fix the 3 remaining platform breaks (native modules, build, governance tests). (2) Integrate the gold from archive/wip-core-modules/ into live source. (3) Classify and clean archive with surgical precision \u2014 preserve what took days to build, delete only confirmed waste. After this cycle, Ultra-Dex is in its eternal state.",
+  "cycle": 4,
+  "title": "PRODUCTION LAUNCH — Fix Everything, Test Everything, Ship Everything",
+  "initiated": "2026-04-08",
+  "source": "Brutal audit of v3.0.0 Diamond State. 306 TS files compiled clean but 64/81 tests fail (import .js → .ts mismatch). 485 lint errors. Dashboard build broken. Zero production infra.",
+  "thesis": "This is the LAST cycle before production launch. No new features. Fix the TS migration test breakage (one root cause: .js imports in tests). ESLint zero. Dashboard build green. Production configs, Docker, docs. After this: startup-ready.",
   "phases": {
-    "P0": { "label": "Platform Fixes \u2014 Make Everything Green", "windows": ["W1", "W2", "W3"], "status": "complete" },
-    "P1": { "label": "Archive Gold Integration \u2014 WIP Modules \u2192 Live Source", "windows": ["W4", "W5", "W6", "W7", "W8"], "status": "complete" },
-    "P2": { "label": "NoopSubsystem Replacement \u2014 Real Implementations", "windows": ["W9", "W10", "W11"], "status": "complete" },
-    "P3": { "label": "Archive Cleanup \u2014 Surgical Classification & Disposal", "windows": ["W12", "W13"], "status": "complete" },
-    "P4": { "label": "Final Seal \u2014 Verification, Version Bump, Changelog", "windows": ["W14", "W15"], "status": "complete" }
+    "P0": {
+      "label": "TEST RESURRECTION — Fix .js→.ts import mismatch across all 64 failing tests",
+      "windows": ["W1", "W2"],
+      "status": "ready",
+      "note": "ONE root cause: tests import from .js but files are now .ts. Fix all imports OR configure ts-node/tsx loader."
+    },
+    "P1": {
+      "label": "ESLINT ZERO — Kill 485 errors across 270 files",
+      "windows": ["W3", "W4"],
+      "status": "ready"
+    },
+    "P2": {
+      "label": "BUILD GREEN — Fix dashboard vite build + npm audit",
+      "windows": ["W5", "W6"],
+      "status": "ready"
+    },
+    "P3": {
+      "label": "PRODUCTION INFRA — Docker, configs, deployment scripts, health checks",
+      "windows": ["W7", "W8", "W9"],
+      "status": "queued"
+    },
+    "P4": {
+      "label": "DOCS & SEAL — Deployment guide, operations guide, README, changelog, final verification",
+      "windows": ["W10", "W11", "W12"],
+      "status": "queued"
+    }
   },
   "manual_actions_required": [],
-  "completed": "2026-04-07",
-  "gate": "npm install && npm run build && npm test && npx tsc --noEmit \u2014 ALL FOUR exit 0 with zero errors. No NoopSubsystems remain. Archive contains only classified reference material.",
+  "gate": "npm run build → 0 errors (including dashboard). npm test → 0 failures, 100+ tests. npm run lint → 0 errors. npx tsc --noEmit → 0 errors. npm audit --audit-level high → 0 high/critical. Docker builds. Health checks pass.",
   "completion_criteria": [
-    "npm run build exits 0 (including dashboard)",
-    "npm test: 0 failures across ALL test suites",
-    "npx tsc --noEmit: 0 errors",
-    "npm run lint: runs without crashes",
-    "Zero NoopSubsystem classes in src/core/index.js",
-    "wip-core-modules/ AI router integrated into orchestration",
-    "wip-core-modules/ performance optimizer integrated",
-    "wip-core-modules/ reliability (self-healing) integrated into agents",
-    "wip-core-modules/ rate-limiter integrated into provider layer",
-    "Archive classified: WASTE deleted, REFERENCE compressed, GOLD integrated",
-    "No orphaned ' 2.*' files anywhere in live tree",
-    "CHANGELOG.md updated with full Cycle 1-3 history",
-    "Version bumped to 2.1.0 (minor: new integrations, no breaking changes)"
+    "npm run test:unit → 0 failures (fix all 64 ERR_MODULE_NOT_FOUND)",
+    "npm run test:integration → 0 failures",
+    "npm run test:cli → 0 failures",
+    "npm run lint → 0 errors (from 485)",
+    "npm run build → 0 errors (including dashboard)",
+    "npx tsc --noEmit → 0 errors",
+    "npm audit --audit-level high → 0 high/critical",
+    "Dockerfile.prod builds successfully",
+    "docker-compose.prod.yml validated",
+    "config/production.json exists with env-var references",
+    "Health check endpoints: /health, /health/ready, /health/deep",
+    "docs/DEPLOYMENT.md complete",
+    "docs/OPERATIONS.md complete",
+    "README.md polished for public",
+    "Version: 3.0.0 (already tagged)",
+    "CHANGELOG.md includes Cycle 4 production hardening"
   ]
 }
