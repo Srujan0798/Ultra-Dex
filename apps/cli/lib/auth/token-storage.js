@@ -172,7 +172,7 @@ export class SecureTokenStorage {
         .filter((f) => f.endsWith('.token'))
         .map((f) => ({ account: f.replace('.token', '') }));
       return { success: true, accounts };
-    } catch (error) {
+    } catch (_error) {
       return { success: true, accounts: [] };
     }
   }

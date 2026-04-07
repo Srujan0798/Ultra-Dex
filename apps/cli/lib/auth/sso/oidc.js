@@ -23,7 +23,7 @@ export default {
  * @param {string} [context='oidc'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'oidc') {
+async function _safeExecute(fn, context = 'oidc') {
   try {
     return await fn();
   } catch (error) {

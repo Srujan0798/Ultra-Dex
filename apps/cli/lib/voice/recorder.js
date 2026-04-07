@@ -11,7 +11,7 @@ import { EventEmitter } from 'events';
 let recorder;
 try {
     recorder = (await import('node-record-lpcm16')).default;
-} catch (e) {
+} catch (_e) {
     recorder = null;
     // console.warn('Optional dependency "node-record-lpcm16" not found. Voice recording disabled.');
 }

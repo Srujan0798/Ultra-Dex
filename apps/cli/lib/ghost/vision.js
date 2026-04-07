@@ -8,7 +8,7 @@ import { screenSystem } from './screen.js';
 let jimp;
 try {
     jimp = (await import('jimp')).default;
-} catch (e) {
+} catch (_e) {
     jimp = { read: async () => ({ scale: () => { }, getBufferAsync: async () => Buffer.from('') }), MIME_PNG: 'image/png' };
 }
 
@@ -58,7 +58,7 @@ export class VisionSystem {
             const displays = await screenSystem.listDisplays();
             this.displays = displays;
             return displays;
-        } catch (e) {
+        } catch (_e) {
             return [{ id: 'primary', name: 'Primary Display' }];
         }
     }

@@ -20,7 +20,7 @@ export default ledger;
  * Error handler for index
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[index]', error instanceof Error ? error.message : String(error));
   } catch (_) {

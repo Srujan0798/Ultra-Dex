@@ -19,7 +19,7 @@ export { ultraMemory } from '../../../../src/core/memory/manager.js';
  * Error handler for index
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     logger.error('[index]', error instanceof Error ? error.message : String(error));
   } catch (_) {

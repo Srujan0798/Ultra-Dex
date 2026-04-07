@@ -364,7 +364,7 @@ export function getProvider() {
   if (!id) return null;
   try {
     return createProvider(id);
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 }

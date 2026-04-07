@@ -103,7 +103,7 @@ export const AUTOMATED_STEPS = [
               try {
                 execSync('npm test --if-present 2>/dev/null', { stdio: 'pipe', timeout: 60000 });
                 return { passed: true, message: `${testFiles.length} test files found and passing` };
-              } catch (e) {
+              } catch (_e) {
                 return { passed: false, message: 'Tests exist but some are failing' };
               }
             }

@@ -13,7 +13,7 @@ async function loadChroma() {
   try {
     const mod = await import('chromadb');
     return mod.ChromaClient || mod.default;
-  } catch (error) {
+  } catch (_error) {
     throw new Error(
       'chromadb is required for DeepRAG. Install with `npm install chromadb`.'
     );
@@ -24,7 +24,7 @@ async function loadOpenAIEmbeddings() {
   try {
     const mod = await import('langchain/embeddings/openai');
     return mod.OpenAIEmbeddings || mod.default;
-  } catch (error) {
+  } catch (_error) {
     throw new Error(
       'langchain OpenAI embeddings are required for DeepRAG. Install with `npm install langchain`.'
     );

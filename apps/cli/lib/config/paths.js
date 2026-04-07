@@ -14,7 +14,7 @@ export const LIVE_TEMPLATES_ROOT = path.join(ASSETS_ROOT, 'live-templates');
  * Error handler for paths
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[paths]', error instanceof Error ? error.message : String(error));
   } catch (_) {

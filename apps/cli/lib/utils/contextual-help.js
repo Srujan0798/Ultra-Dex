@@ -258,7 +258,7 @@ export default {
  * @param {Error} error - The error to handle
  * @param {string} [context='contextual-help'] - Error context
  */
-function handleModuleError(error, context = 'contextual-help') {
+function _handleModuleError(error, context = 'contextual-help') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

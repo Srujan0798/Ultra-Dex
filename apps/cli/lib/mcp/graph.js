@@ -910,7 +910,7 @@ export class CodeGraph {
         } else {
           throw new Error('Not a JS/JSX file, using regex fallback');
         }
-      } catch (e) {
+      } catch (_e) {
         // Fallback to Regex
         const symbolRegex =
           /(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z0-9_]+)/g;

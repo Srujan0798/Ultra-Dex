@@ -108,7 +108,7 @@ class TemplateManager {
       for (const [name, data] of Object.entries(installed)) {
         this.installedTemplates.set(name, data);
       }
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist, initialize with empty map
       this.installedTemplates = new Map();
     }
@@ -328,7 +328,7 @@ class TemplateManager {
     try {
       const details = await this.fetchTemplateDetails(template);
       return { ...template, ...details };
-    } catch (error) {
+    } catch (_error) {
       // If GitHub API fails, return basic template info
       return template;
     }

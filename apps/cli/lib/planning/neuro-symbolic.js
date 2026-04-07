@@ -79,7 +79,7 @@ export default {
  * @param {string} [context='neuro-symbolic'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'neuro-symbolic') {
+async function _safeExecute(fn, context = 'neuro-symbolic') {
   try {
     return await fn();
   } catch (error) {

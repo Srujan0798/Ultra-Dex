@@ -225,7 +225,7 @@ async function handleSearchProjects() {
     } else {
       searchLogger.print(chalk.yellow('No projects found in ~/projects'));
     }
-  } catch (error) {
+  } catch (_error) {
     searchLogger.print(chalk.yellow('Could not access projects directory'));
   }
 }

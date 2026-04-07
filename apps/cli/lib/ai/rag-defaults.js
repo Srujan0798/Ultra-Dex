@@ -41,7 +41,7 @@ export function getRagProfile(env = 'mvp') {
  * @param {Error} error - The error to handle
  * @param {string} [context='rag-defaults'] - Error context
  */
-function handleModuleError(error, context = 'rag-defaults') {
+function _handleModuleError(error, context = 'rag-defaults') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

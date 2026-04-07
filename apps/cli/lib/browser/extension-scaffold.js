@@ -89,7 +89,7 @@ console.log('Ultra-Dex content script loaded');
  * @param {string} [context='extension-scaffold'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'extension-scaffold') {
+async function _safeExecute(fn, context = 'extension-scaffold') {
   try {
     return await fn();
   } catch (error) {

@@ -13,6 +13,7 @@ import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import inquirer from 'inquirer';
+import { logger } from '../utils/logger.js';
 
 const execFileAsync = promisify(execFile);
 

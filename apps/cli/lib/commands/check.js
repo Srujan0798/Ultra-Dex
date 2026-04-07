@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import Table from 'cli-table3';
+import { logger } from '../utils/logger.js';
 
 /**
  * Enhanced Check Command
@@ -69,7 +70,7 @@ export function registerCheckCommand(program) {
       try {
         const tiers = await fs.readdir(agentDir);
         logger.log(chalk.green(`✅ Agents: ${tiers.length} tiers found in .ultra-dex/agents`));
-      } catch (e) {
+      } catch (_e) {
         logger.log(chalk.red('❌ Agents: .ultra-dex/agents directory missing!'));
       }
 
@@ -537,11 +538,11 @@ async function validateTechStack(content) {
   try {
     const packageJsonContent = await fs.readFile('./package.json', 'utf8');
     pkg = JSON.parse(packageJsonContent);
-  } catch (err) {
+  } catch (_err) {
     try {
       const packageJsonContent = await fs.readFile('./cli/package.json', 'utf8');
       pkg = JSON.parse(packageJsonContent);
-    } catch (e) {
+    } catch (_e) {
       return { valid: false, issues: ['package.json not found to validate tech stack choices'] };
     }
   }

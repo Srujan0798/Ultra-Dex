@@ -908,7 +908,7 @@ Output only the code with no explanations unless specifically asked.`;
       if (image.processedPath && image.processedPath !== image.originalPath) {
         try {
           await fs.unlink(image.processedPath);
-        } catch (error) {
+        } catch (_error) {
           // File may have already been deleted
         }
       }

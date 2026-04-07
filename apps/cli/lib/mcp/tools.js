@@ -619,7 +619,7 @@ export function registerTools(server) {
           return {
             content: [{ type: 'text', text: content }],
           };
-        } catch (e) {
+        } catch (_e) {
           // continue
         }
       }

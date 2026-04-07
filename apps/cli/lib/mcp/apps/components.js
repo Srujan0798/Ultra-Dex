@@ -505,7 +505,7 @@ export default {
  * @param {string} [context='components'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'components') {
+async function _safeExecute(fn, context = 'components') {
   try {
     return await fn();
   } catch (error) {

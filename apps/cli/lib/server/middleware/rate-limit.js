@@ -229,7 +229,7 @@ export const rateLimiter = new RateLimiter();
  * @param {string} [context='rate-limit'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'rate-limit') {
+async function _safeExecute(fn, context = 'rate-limit') {
   try {
     return await fn();
   } catch (error) {

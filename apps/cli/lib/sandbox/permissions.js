@@ -62,7 +62,7 @@ export function assertSafePath(targetPath, cwd = process.cwd()) {
  * @param {Error} error - The error to handle
  * @param {string} [context='permissions'] - Error context
  */
-function handleModuleError(error, context = 'permissions') {
+function _handleModuleError(error, context = 'permissions') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

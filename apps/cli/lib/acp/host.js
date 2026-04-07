@@ -438,7 +438,7 @@ export class ACPHost {
     for (const t of terminals.values()) {
       try {
         t.process.kill();
-      } catch (_e) { // eslint-disable-line no-unused-vars
+      } catch (_e) {  
         // ignore error intentionally
       }
     }

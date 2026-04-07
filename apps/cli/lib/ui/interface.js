@@ -280,7 +280,7 @@ export default {
  * @param {Error} error - The error to handle
  * @param {string} [context='interface'] - Error context
  */
-function handleModuleError(error, context = 'interface') {
+function _handleModuleError(error, context = 'interface') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

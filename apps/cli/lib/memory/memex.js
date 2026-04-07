@@ -71,7 +71,7 @@ export const memex = new Memex();
  * @param {string} [context='memex'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'memex') {
+async function _safeExecute(fn, context = 'memex') {
   try {
     return await fn();
   } catch (error) {

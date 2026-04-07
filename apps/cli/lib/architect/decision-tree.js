@@ -70,7 +70,7 @@ export function recommendPattern({ teamSize, traffic }) {
  * @param {Error} error - The error to handle
  * @param {string} [context='decision-tree'] - Error context
  */
-function handleModuleError(error, context = 'decision-tree') {
+function _handleModuleError(error, context = 'decision-tree') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

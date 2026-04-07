@@ -29,7 +29,7 @@ async function getKeytar() {
   try {
     const mod = await import('keytar');
     return mod.default || mod;
-  } catch (error) {
+  } catch (_error) {
     throw new Error(
       'keytar is not installed. Add it as an optional dependency to use credential storage.'
     );

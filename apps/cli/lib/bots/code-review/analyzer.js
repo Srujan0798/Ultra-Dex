@@ -66,7 +66,7 @@ export function formatMarkdownReport(issues = []) {
  * @param {string} [context='analyzer'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'analyzer') {
+async function _safeExecute(fn, context = 'analyzer') {
   try {
     return await fn();
   } catch (error) {

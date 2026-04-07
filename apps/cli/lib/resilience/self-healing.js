@@ -347,7 +347,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
         breaker.lastFailureTime = breakerState.lastFailureTime;
         breaker.metrics = breakerState.metrics;
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore if file doesn't exist
     }
   }

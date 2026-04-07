@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import boxen from '../utils/boxen.js';
 import inquirer from 'inquirer';
 import { printInfo } from '../utils/output.js';
+import { logger } from '../utils/logger.js';
 
 const HELP_MAP = {
   deploy: 'ultra-dex cloud deploy',
@@ -100,7 +101,7 @@ export default {
  * @param {string} [context='help'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'help') {
+async function _safeExecute(fn, context = 'help') {
   try {
     return await fn();
   } catch (error) {

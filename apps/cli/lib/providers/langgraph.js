@@ -111,7 +111,7 @@ export default LangGraphExecutor;
  * @param {string} [context='langgraph'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'langgraph') {
+async function _safeExecute(fn, context = 'langgraph') {
   try {
     return await fn();
   } catch (error) {

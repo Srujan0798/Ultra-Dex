@@ -151,7 +151,7 @@ Use Quick 5 for bug fixes. Use Full 21 for new features.
  * Error handler for embedded
  * @param {Error} error - Error to handle
  */
-function handleEmbeddedError(error) {
+function _handleEmbeddedError(error) {
   try {
     console.error('[embedded]', error instanceof Error ? error.message : String(error));
   } catch (_) {

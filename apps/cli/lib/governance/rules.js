@@ -223,7 +223,7 @@ export const DESTRUCTIVE_COMMAND_PATTERNS = [
  * Error handler for rules
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[rules]', error instanceof Error ? error.message : String(error));
   } catch (_) {

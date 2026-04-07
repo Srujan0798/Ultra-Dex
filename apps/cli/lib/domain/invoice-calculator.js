@@ -19,7 +19,7 @@ export default { calculateInvoice };
  * @param {Error} error - The error to handle
  * @param {string} [context='invoice-calculator'] - Error context
  */
-function handleModuleError(error, context = 'invoice-calculator') {
+function _handleModuleError(error, context = 'invoice-calculator') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

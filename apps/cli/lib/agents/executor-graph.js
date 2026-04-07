@@ -30,7 +30,7 @@ export default { createExecutorGraph, runExecutorGraph };
  * @param {string} [context='executor-graph'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'executor-graph') {
+async function _safeExecute(fn, context = 'executor-graph') {
   try {
     return await fn();
   } catch (error) {

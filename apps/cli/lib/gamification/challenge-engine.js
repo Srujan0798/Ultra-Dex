@@ -328,7 +328,7 @@ class ChallengeEngine {
     try {
       const content = await fs.readFile(scoresFile, 'utf8');
       scores = JSON.parse(content);
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist, start with empty array
     }
 

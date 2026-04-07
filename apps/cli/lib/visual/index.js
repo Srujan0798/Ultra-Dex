@@ -42,7 +42,7 @@ export default {
  * @param {Error} error - The error to handle
  * @param {string} [context='index'] - Error context
  */
-function handleModuleError(error, context = 'index') {
+function _handleModuleError(error, context = 'index') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

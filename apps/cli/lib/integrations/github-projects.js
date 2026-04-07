@@ -88,7 +88,7 @@ export default integration;
  * @param {string} [context='github-projects'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'github-projects') {
+async function _safeExecute(fn, context = 'github-projects') {
   try {
     return await fn();
   } catch (error) {

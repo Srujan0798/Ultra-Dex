@@ -17,7 +17,7 @@ export default pythonRuntime;
  * Error handler for python
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[python]', error instanceof Error ? error.message : String(error));
   } catch (_) {

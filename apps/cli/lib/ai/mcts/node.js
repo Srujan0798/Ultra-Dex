@@ -74,7 +74,7 @@ export class MCTSNode {
  * Error handler for node
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[node]', error instanceof Error ? error.message : String(error));
   } catch (_) {

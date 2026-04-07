@@ -269,7 +269,7 @@ export async function startREPL(options = {}) {
           }
           replContext.context.lastResult = input;
         }
-      } catch (error) {
+      } catch (_error) {
         // If NLP fails, fall back to original behavior
         replContext.context.lastResult = input;
       }

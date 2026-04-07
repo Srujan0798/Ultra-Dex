@@ -46,7 +46,7 @@ export const ULTRA_TEMPLATE = `# ULTRA Context: {{PROJECT_NAME}}
  * Error handler for ultra
  * @param {Error} error - Error to handle
  */
-function handleUltraError(error) {
+function _handleUltraError(error) {
   try {
     console.error('[ultra]', error instanceof Error ? error.message : String(error));
   } catch (_) {

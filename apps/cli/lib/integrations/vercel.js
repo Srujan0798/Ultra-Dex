@@ -73,7 +73,7 @@ export default integration;
  * @param {string} [context='vercel'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'vercel') {
+async function _safeExecute(fn, context = 'vercel') {
   try {
     return await fn();
   } catch (error) {

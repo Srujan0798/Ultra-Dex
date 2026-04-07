@@ -81,7 +81,7 @@ async function verifyIntegrationTests(projectDir, fastMode) {
     try {
       execSync('npm run test:integration', { stdio: 'ignore', cwd: projectDir });
       return { status: 'PASS', message: 'Integration tests passed' };
-    } catch (error) {
+    } catch (_error) {
       return { status: 'FAIL', message: 'Integration tests failed' };
     }
   } catch {

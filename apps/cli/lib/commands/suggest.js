@@ -131,7 +131,7 @@ async function runContextAnalysis() {
     spinner.succeed('Environment analyzed');
     printInfo(chalk.gray(`  Stack: ${ctx.stack} | Branch: ${ctx.git.branch || 'none'}`));
     return ctx;
-  } catch (e) {
+  } catch (_e) {
     spinner.warn('Environment analysis partial fail');
     return { stack: 'unknown', git: { branch: 'unknown' }, files: [] };
   }
@@ -197,7 +197,7 @@ Output a JSON object:
       return true;
     }
     return false;
-  } catch (e) {
+  } catch (_e) {
     aiSpinner.fail('AI analysis failed, falling back to static logic.');
     return false;
   }

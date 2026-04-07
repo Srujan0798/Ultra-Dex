@@ -293,7 +293,7 @@ export default SemanticKnowledgeGraph;
  * @param {string} [context='semantic-graph'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'semantic-graph') {
+async function _safeExecute(fn, context = 'semantic-graph') {
   try {
     return await fn();
   } catch (error) {

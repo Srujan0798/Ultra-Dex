@@ -23,7 +23,7 @@ export async function evaluatePerformance() {
  * @param {string} [context='evaluator'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'evaluator') {
+async function _safeExecute(fn, context = 'evaluator') {
   try {
     return await fn();
   } catch (error) {

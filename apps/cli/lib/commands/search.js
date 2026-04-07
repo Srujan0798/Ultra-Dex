@@ -190,7 +190,7 @@ class UltraDexVectorStore {
       this.store.memoryVectors = data.vectors || [];
 
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }

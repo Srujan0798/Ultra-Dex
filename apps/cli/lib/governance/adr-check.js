@@ -43,7 +43,7 @@ export async function checkADRGovernance(taskName) {
           }
         }
         break; // Found ADRs, no need to check other paths
-      } catch (error) {
+      } catch (_error) {
         // Directory doesn't exist, continue to next path
         continue;
       }

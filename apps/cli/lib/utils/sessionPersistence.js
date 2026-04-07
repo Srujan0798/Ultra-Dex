@@ -357,7 +357,7 @@ function parsePersistedJsonField(value, fallbackValue, fieldName, recordId) {
  * @param {string} [context='sessionPersistence'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'sessionPersistence') {
+async function _safeExecute(fn, context = 'sessionPersistence') {
   try {
     return await fn();
   } catch (error) {

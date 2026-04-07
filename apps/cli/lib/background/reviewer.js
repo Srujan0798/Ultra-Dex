@@ -22,7 +22,7 @@ export function applyReviewFixes(ticket, review) {
  * @param {Error} error - The error to handle
  * @param {string} [context='reviewer'] - Error context
  */
-function handleModuleError(error, context = 'reviewer') {
+function _handleModuleError(error, context = 'reviewer') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

@@ -104,7 +104,7 @@ export default vault;
  * Error handler for quantum-vault
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[quantum-vault]', error instanceof Error ? error.message : String(error));
   } catch (_) {

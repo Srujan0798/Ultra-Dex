@@ -12,6 +12,7 @@ import { complianceMonitor } from '../enterprise/compliance-monitor.js';
 import { enhancedEncryption } from '../utils/enhanced-encryption.js';
 import { dataRetentionManager } from '../governance/data-retention.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
+import { logger } from '../utils/logger.js';
 
 export function registerEnterpriseCommand(program) {
   const enterpriseCommand = program

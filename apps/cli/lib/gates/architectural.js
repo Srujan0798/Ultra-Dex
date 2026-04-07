@@ -75,7 +75,7 @@ export async function runArchitecturalGates(projectDir = process.cwd()) {
  * @param {string} [context='architectural'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'architectural') {
+async function _safeExecute(fn, context = 'architectural') {
   try {
     return await fn();
   } catch (error) {

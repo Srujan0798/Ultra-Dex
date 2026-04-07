@@ -632,7 +632,7 @@ async function deployDocs(outputDir) {
   }
 }
 
-async function deployAgents(outputDir) {
+async function _deployAgents(outputDir) {
   const agentsDir = path.join(outputDir, '.agents');
   await fs.mkdir(agentsDir, { recursive: true });
 

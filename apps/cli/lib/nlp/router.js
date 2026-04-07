@@ -997,7 +997,7 @@ export function translateToCommand(input) {
  * @param {Error} error - The error to handle
  * @param {string} [context='router'] - Error context
  */
-function handleModuleError(error, context = 'router') {
+function _handleModuleError(error, context = 'router') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

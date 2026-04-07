@@ -65,7 +65,7 @@ export default {
  * @param {string} [context='retriever'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'retriever') {
+async function _safeExecute(fn, context = 'retriever') {
   try {
     return await fn();
   } catch (error) {

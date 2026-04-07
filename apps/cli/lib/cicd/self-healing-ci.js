@@ -89,7 +89,7 @@ class SelfHealingCI {
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
     }
     return reports;
   }
@@ -158,7 +158,7 @@ class SelfHealingCI {
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
       }
     }
     return reports;

@@ -165,7 +165,7 @@ export class PredictiveDebugger extends EventEmitter {
                         });
                     }
                 }
-            } catch (err) {
+            } catch (_err) {
                 // File may not exist or be readable
                 continue;
             }
@@ -204,7 +204,7 @@ export class PredictiveDebugger extends EventEmitter {
                         confidence: 0.7
                     });
                 }
-            } catch (err) {
+            } catch (_err) {
                 continue;
             }
         }

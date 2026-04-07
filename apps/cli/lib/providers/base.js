@@ -138,7 +138,7 @@ export default BaseProvider;
  * @param {string} [context='base'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'base') {
+async function _safeExecute(fn, context = 'base') {
   try {
     return await fn();
   } catch (error) {

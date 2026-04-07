@@ -287,7 +287,7 @@ export default VisionAgent;
  * @param {string} [context='vision'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'vision') {
+async function _safeExecute(fn, context = 'vision') {
   try {
     return await fn();
   } catch (error) {

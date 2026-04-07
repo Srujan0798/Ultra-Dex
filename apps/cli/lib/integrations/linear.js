@@ -147,7 +147,7 @@ export default integration;
  * @param {string} [context='linear'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'linear') {
+async function _safeExecute(fn, context = 'linear') {
   try {
     return await fn();
   } catch (error) {

@@ -216,7 +216,7 @@ export class EnterpriseFeatures {
       }
 
       printInfo('📋 Enterprise data loaded');
-    } catch (error) {
+    } catch (_error) {
       printWarning('⚠️  Could not load enterprise data, starting fresh');
     }
   }

@@ -20,7 +20,7 @@ export default CiHealer;
  * Error handler for healer
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[healer]', error instanceof Error ? error.message : String(error));
   } catch (_) {

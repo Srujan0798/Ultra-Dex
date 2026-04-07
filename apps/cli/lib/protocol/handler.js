@@ -176,7 +176,7 @@ async function handleProjectState(projectName) {
       const state = JSON.parse(await fs.readFile(statePath, 'utf8'));
       printSuccess(`✅ Project ${projectName} state loaded`);
       return state;
-    } catch (error) {
+    } catch (_error) {
       // Try next path
       continue;
     }
@@ -286,7 +286,7 @@ async function handleContextSearch(query) {
           });
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Skip if pattern doesn't match
     }
   }
@@ -369,7 +369,7 @@ async function getCurrentState() {
       const state = JSON.parse(await fs.readFile(statePath, 'utf8'));
       printSuccess(`✅ Current state loaded`);
       return state;
-    } catch (error) {
+    } catch (_error) {
       // Try next path
       continue;
     }

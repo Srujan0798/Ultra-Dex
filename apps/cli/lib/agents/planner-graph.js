@@ -30,7 +30,7 @@ export default { createPlannerGraph, runPlannerGraph };
  * @param {string} [context='planner-graph'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'planner-graph') {
+async function _safeExecute(fn, context = 'planner-graph') {
   try {
     return await fn();
   } catch (error) {

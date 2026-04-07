@@ -23,7 +23,7 @@ export function createClaudeAdapter() {
  * @param {Error} error - The error to handle
  * @param {string} [context='claude'] - Error context
  */
-function handleModuleError(error, context = 'claude') {
+function _handleModuleError(error, context = 'claude') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

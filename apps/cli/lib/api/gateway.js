@@ -28,7 +28,7 @@ async function readContextFiles() {
   for (const file of DEFAULT_CONTEXT_FILES) {
     try {
       context[file] = await fs.readFile(path.resolve(process.cwd(), file), 'utf8');
-    } catch (error) {
+    } catch (_error) {
       context[file] = null;
     }
   }

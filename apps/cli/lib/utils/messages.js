@@ -51,7 +51,7 @@ export function getRandomMessage(type) {
  * @param {Error} error - The error to handle
  * @param {string} [context='messages'] - Error context
  */
-function handleModuleError(error, context = 'messages') {
+function _handleModuleError(error, context = 'messages') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

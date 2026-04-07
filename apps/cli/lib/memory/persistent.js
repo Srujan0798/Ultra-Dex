@@ -23,7 +23,7 @@ export async function loadPersistent() {
  * @param {string} [context='persistent'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'persistent') {
+async function _safeExecute(fn, context = 'persistent') {
   try {
     return await fn();
   } catch (error) {

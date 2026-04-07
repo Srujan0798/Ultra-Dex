@@ -17,7 +17,7 @@ export async function runPreCommitHook() {
  * @param {string} [context='pre-commit'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'pre-commit') {
+async function _safeExecute(fn, context = 'pre-commit') {
   try {
     return await fn();
   } catch (error) {

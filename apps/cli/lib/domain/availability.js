@@ -38,7 +38,7 @@ export default { calculateAvailableSlots };
  * @param {Error} error - The error to handle
  * @param {string} [context='availability'] - Error context
  */
-function handleModuleError(error, context = 'availability') {
+function _handleModuleError(error, context = 'availability') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

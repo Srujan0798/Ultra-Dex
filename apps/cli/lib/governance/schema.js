@@ -30,7 +30,7 @@ export async function loadADRs() {
   try {
     const data = await fs.readFile(ADR_PATH, 'utf8');
     return ADRIndexSchema.parse(JSON.parse(data));
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }

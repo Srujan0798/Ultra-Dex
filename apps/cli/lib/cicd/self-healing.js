@@ -69,7 +69,7 @@ export class SelfHealingCICD {
         // Default healing rules
         this.setDefaultHealingRules();
       }
-    } catch (error) {
+    } catch (_error) {
       printWarning('⚠️  Could not load healing rules, using defaults');
       this.setDefaultHealingRules();
     }

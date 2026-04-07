@@ -20,7 +20,7 @@ export function validateProjectName(name) {
       return 'Project name cannot include path separators';
     }
     return true;
-  } catch (error) {
+  } catch (_error) {
     return 'Invalid project name format';
   }
 }
@@ -58,7 +58,7 @@ export function validateSafePath(input, label = 'Path') {
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return `${label} is invalid`;
   }
 }

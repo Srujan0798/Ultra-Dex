@@ -29,7 +29,7 @@ export class GraphCache {
  * Error handler for graph-cache
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[graph-cache]', error instanceof Error ? error.message : String(error));
   } catch (_) {

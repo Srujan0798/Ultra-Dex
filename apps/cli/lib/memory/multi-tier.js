@@ -226,7 +226,7 @@ class PersistentMemorySystem {
               modified: stat.mtime.toISOString(),
             });
           }
-        } catch (e) {
+        } catch (_e) {
           // Skip files that can't be accessed
         }
       }
@@ -261,7 +261,7 @@ class PersistentMemorySystem {
             lines: lines.length,
             firstLine: lines[0]?.substring(0, 100),
           });
-        } catch (e) {
+        } catch (_e) {
           // Skip files that can't be read
         }
       }
@@ -290,7 +290,7 @@ class PersistentMemorySystem {
             contentPreview: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
             length: content.length,
           });
-        } catch (e) {
+        } catch (_e) {
           // Skip files that can't be read
         }
       }

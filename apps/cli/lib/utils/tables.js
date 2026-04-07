@@ -196,7 +196,7 @@ export function showDataTable(data, title = 'Data Table') {
  * @param {Error} error - The error to handle
  * @param {string} [context='tables'] - Error context
  */
-function handleModuleError(error, context = 'tables') {
+function _handleModuleError(error, context = 'tables') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

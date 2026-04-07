@@ -17,7 +17,7 @@ export async function verifyTypeSafety(projectDir) {
     try {
       execSync('npx tsc --noEmit', { stdio: 'ignore', cwd: projectDir });
       return { status: 'PASS', message: 'Type safety verified via tsc' };
-    } catch (e) {
+    } catch (_e) {
       return { status: 'FAIL', message: 'TypeScript compilation failed' };
     }
   } catch {
@@ -33,7 +33,7 @@ export async function verifyUnitTests(projectDir) {
       try {
         execSync('npm test', { stdio: 'ignore', cwd: projectDir });
         return { status: 'PASS', message: 'All unit tests passed' };
-      } catch (e) {
+      } catch (_e) {
         return { status: 'FAIL', message: 'Unit tests failed' };
       }
     }
@@ -51,7 +51,7 @@ export async function verifyLinting(projectDir) {
       try {
         execSync('npm run lint', { stdio: 'ignore', cwd: projectDir });
         return { status: 'PASS', message: 'Linting and formatting passed' };
-      } catch (e) {
+      } catch (_e) {
         return { status: 'FAIL', message: 'Linting errors found' };
       }
     }

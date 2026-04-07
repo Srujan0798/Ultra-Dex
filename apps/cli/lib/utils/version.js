@@ -23,7 +23,7 @@ export default VERSION;
  * @param {Error} error - The error to handle
  * @param {string} [context='version'] - Error context
  */
-function handleModuleError(error, context = 'version') {
+function _handleModuleError(error, context = 'version') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

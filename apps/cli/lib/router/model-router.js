@@ -163,7 +163,7 @@ export const modelRouter = new SmartModelRouter();
  * @param {string} [context='model-router'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'model-router') {
+async function _safeExecute(fn, context = 'model-router') {
   try {
     return await fn();
   } catch (error) {

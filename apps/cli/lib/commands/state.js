@@ -17,6 +17,7 @@ import { syncState } from '../utils/state-sync.js';
 import { reconciler } from '../utils/reconciler.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import { AppError, ValidationError } from '../utils/errors.js';
+import { logger } from '../utils/logger.js';
 
 // State locking mechanism to prevent race conditions
 let stateLock = null;
@@ -81,7 +82,7 @@ export async function saveState(state) {
     await fs.writeFile(tempPath, JSON.stringify(state, null, 2));
     await fs.rename(tempPath, statePath);
     return true;
-  } catch (error) {
+  } catch (_error) {
     // Clean up temp file if it exists
     try {
       await fs.unlink(tempPath).catch(() => {});
@@ -183,7 +184,7 @@ export function registerAlignCommand(program) {
           const nodesPoints = Math.min(graph.nodes.length * 2, 20);
           const edgesPoints = Math.min(graph.edges.length * 2, 20);
           graphScore = nodesPoints + edgesPoints;
-        } catch (e) {
+        } catch (_e) {
           // Graph failed
         }
 

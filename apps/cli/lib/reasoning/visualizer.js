@@ -40,7 +40,7 @@ export default {
  * @param {string} [context='visualizer'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'visualizer') {
+async function _safeExecute(fn, context = 'visualizer') {
   try {
     return await fn();
   } catch (error) {

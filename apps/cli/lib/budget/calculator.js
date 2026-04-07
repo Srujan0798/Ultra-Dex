@@ -24,7 +24,7 @@ export function estimateCost(model, inputTokens, outputTokens) {
  * @param {Error} error - The error to handle
  * @param {string} [context='calculator'] - Error context
  */
-function handleModuleError(error, context = 'calculator') {
+function _handleModuleError(error, context = 'calculator') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import { spawn } from 'child_process';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { createCanvas, loadImage } from 'canvas';
@@ -27,14 +26,14 @@ export class ComputerUseAgent {
       enableBrowserAutomation: options.browserAutomation !== false,
       sandboxMode: options.sandboxMode || false,
       verbose: options.verbose || false,
-      ...options
+      ...options,
     };
 
     this.sessionId = uuidv4();
     this.activeProcesses = new Map();
     this.permissions = new Map();
     this.screenshots = [];
-    
+
     this.initializePermissions();
   }
 
@@ -62,7 +61,10 @@ export class ComputerUseAgent {
     }
 
     if (perm.requiresConfirmation && this.options.confirmationRequired) {
-      return { allowed: await this.requestConfirmation(operation, target), reason: 'User confirmed' };
+      return {
+        allowed: await this.requestConfirmation(operation, target),
+        reason: 'User confirmed',
+      };
     }
 
     return { allowed: true, reason: 'Permission granted' };
@@ -101,21 +103,24 @@ export class ComputerUseAgent {
       screenshotPath = path.join(os.tmpdir(), fileName);
 
       let command;
-      if (process.platform === 'darwin') { // macOS
+      if (process.platform === 'darwin') {
+        // macOS
         command = `screencapture -x "${screenshotPath}"`;
-      } else if (process.platform === 'win32') { // Windows
+      } else if (process.platform === 'win32') {
+        // Windows
         command = `powershell -Command "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $screen = [System.Windows.Forms.Screen]::PrimaryScreen; $bounds = $screen.Bounds; $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height; $graphics = [System.Drawing.Graphics]::FromImage($bitmap); $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size); $bitmap.Save('${screenshotPath}', [System.Drawing.Imaging.ImageFormat]::Png); $bitmap.Dispose(); $graphics.Dispose(); return"`;
-      } else { // Linux
+      } else {
+        // Linux
         command = `import -window root "${screenshotPath}"`;
       }
 
       await execAsync(command);
-      
+
       // Store screenshot reference
       this.screenshots.push({
         path: screenshotPath,
         timestamp,
-        sessionId: this.sessionId
+        sessionId: this.sessionId,
       });
 
       if (this.options.verbose) {
@@ -126,14 +131,14 @@ export class ComputerUseAgent {
         success: true,
         path: screenshotPath,
         timestamp,
-        message: `Screenshot captured successfully`
+        message: `Screenshot captured successfully`,
       };
     } catch (error) {
       printError(`Screenshot failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Screenshot failed: ${error.message}`
+        message: `Screenshot failed: ${error.message}`,
       };
     }
   }
@@ -141,7 +146,10 @@ export class ComputerUseAgent {
   /**
    * Analyze screenshot with vision agent
    */
-  async analyzeScreenshot(screenshotPath, prompt = "Analyze this UI and describe the elements and functionality") {
+  async analyzeScreenshot(
+    screenshotPath,
+    prompt = 'Analyze this UI and describe the elements and functionality'
+  ) {
     try {
       if (!this.options.enableAppControl) {
         throw new Error('Vision analysis is disabled');
@@ -150,23 +158,27 @@ export class ComputerUseAgent {
       // This would integrate with the vision agent
       // For now, we'll simulate
       printInfo(`👁️  Analyzing screenshot: ${screenshotPath}`);
-      
+
       // In a real implementation, this would call the vision agent
       // with GPT-4 Vision or similar to analyze the image
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
+
       return {
         success: true,
-        analysis: "Screenshot analysis completed (simulated). Contains UI elements that can be converted to code.",
-        suggestions: ["Consider converting this UI to React components", "Identify the main interactive elements"],
-        timestamp: new Date().toISOString()
+        analysis:
+          'Screenshot analysis completed (simulated). Contains UI elements that can be converted to code.',
+        suggestions: [
+          'Consider converting this UI to React components',
+          'Identify the main interactive elements',
+        ],
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       printError(`Screenshot analysis failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Analysis failed: ${error.message}`
+        message: `Analysis failed: ${error.message}`,
       };
     }
   }
@@ -193,7 +205,7 @@ export class ComputerUseAgent {
       }
 
       const content = await fs.readFile(fullPath, 'utf8');
-      
+
       if (this.options.verbose) {
         printSuccess(`📖 Read file: ${filePath} (${content.length} chars)`);
       }
@@ -203,14 +215,14 @@ export class ComputerUseAgent {
         content,
         path: fullPath,
         size: content.length,
-        message: `File read successfully`
+        message: `File read successfully`,
       };
     } catch (error) {
       printError(`Read file failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Read failed: ${error.message}`
+        message: `Read failed: ${error.message}`,
       };
     }
   }
@@ -238,28 +250,31 @@ export class ComputerUseAgent {
 
       // Ensure directory exists
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
-      
+
       await fs.writeFile(fullPath, content, 'utf8');
-      
+
       if (this.options.verbose) {
         printSuccess(`📝 Wrote file: ${filePath} (${content.length} chars)`);
       }
 
       // Update memory with file change
-      await ultraMemory.remember(`File ${filePath} was updated with ${content.length} characters`, ['file-operation', 'write']);
+      await ultraMemory.remember(`File ${filePath} was updated with ${content.length} characters`, [
+        'file-operation',
+        'write',
+      ]);
 
       return {
         success: true,
         path: fullPath,
         size: content.length,
-        message: `File written successfully`
+        message: `File written successfully`,
       };
     } catch (error) {
       printError(`Write file failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Write failed: ${error.message}`
+        message: `Write failed: ${error.message}`,
       };
     }
   }
@@ -285,7 +300,7 @@ export class ComputerUseAgent {
       }
 
       await fs.unlink(fullPath);
-      
+
       if (this.options.verbose) {
         printSuccess(`🗑️  Deleted file: ${filePath}`);
       }
@@ -296,14 +311,14 @@ export class ComputerUseAgent {
       return {
         success: true,
         path: fullPath,
-        message: `File deleted successfully`
+        message: `File deleted successfully`,
       };
     } catch (error) {
       printError(`Delete file failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Delete failed: ${error.message}`
+        message: `Delete failed: ${error.message}`,
       };
     }
   }
@@ -328,7 +343,7 @@ export class ComputerUseAgent {
         /reboot/,
         /poweroff/,
         /halt/,
-        /kill\s+-9\s+\d+/
+        /kill\s+-9\s+\d+/,
       ];
 
       for (const pattern of dangerousPatterns) {
@@ -343,7 +358,7 @@ export class ComputerUseAgent {
 
       const result = await execAsync(command, {
         timeout: options.timeout || 30000,
-        maxBuffer: options.maxBuffer || 1024 * 1024 // 1MB
+        maxBuffer: options.maxBuffer || 1024 * 1024, // 1MB
       });
 
       if (this.options.verbose) {
@@ -358,7 +373,7 @@ export class ComputerUseAgent {
         stdout: result.stdout,
         stderr: result.stderr,
         exitCode: result.code,
-        message: `Command executed successfully`
+        message: `Command executed successfully`,
       };
     } catch (error) {
       printError(`Command execution failed: ${error.message}`);
@@ -367,7 +382,7 @@ export class ComputerUseAgent {
         error: error.message,
         stdout: error.stdout,
         stderr: error.stderr,
-        message: `Command failed: ${error.message}`
+        message: `Command failed: ${error.message}`,
       };
     }
   }
@@ -385,11 +400,14 @@ export class ComputerUseAgent {
       let command;
       const appArgs = args.join(' ');
 
-      if (process.platform === 'darwin') { // macOS
+      if (process.platform === 'darwin') {
+        // macOS
         command = `open -a "${appName}" ${appArgs}`;
-      } else if (process.platform === 'win32') { // Windows
+      } else if (process.platform === 'win32') {
+        // Windows
         command = `start "" "${appName}" ${appArgs}`;
-      } else { // Linux
+      } else {
+        // Linux
         command = `xdg-open "${appName}" ${appArgs}`;
       }
 
@@ -398,7 +416,7 @@ export class ComputerUseAgent {
       }
 
       await execAsync(command);
-      
+
       if (this.options.verbose) {
         printSuccess(`✅ Application opened: ${appName}`);
       }
@@ -409,14 +427,14 @@ export class ComputerUseAgent {
       return {
         success: true,
         app: appName,
-        message: `Application opened successfully`
+        message: `Application opened successfully`,
       };
     } catch (error) {
       printError(`Open application failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Open failed: ${error.message}`
+        message: `Open failed: ${error.message}`,
       };
     }
   }
@@ -433,11 +451,14 @@ export class ComputerUseAgent {
 
       let command;
 
-      if (process.platform === 'darwin') { // macOS
+      if (process.platform === 'darwin') {
+        // macOS
         command = `osascript -e 'quit app "${appName}"'`;
-      } else if (process.platform === 'win32') { // Windows
+      } else if (process.platform === 'win32') {
+        // Windows
         command = `taskkill /f /im "${appName}.exe"`;
-      } else { // Linux
+      } else {
+        // Linux
         command = `pkill -f "${appName}"`;
       }
 
@@ -446,7 +467,7 @@ export class ComputerUseAgent {
       }
 
       await execAsync(command);
-      
+
       if (this.options.verbose) {
         printSuccess(`✅ Application closed: ${appName}`);
       }
@@ -454,14 +475,14 @@ export class ComputerUseAgent {
       return {
         success: true,
         app: appName,
-        message: `Application closed successfully`
+        message: `Application closed successfully`,
       };
     } catch (error) {
       printError(`Close application failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Close failed: ${error.message}`
+        message: `Close failed: ${error.message}`,
       };
     }
   }
@@ -472,7 +493,7 @@ export class ComputerUseAgent {
   async listProcesses() {
     try {
       let command;
-      
+
       if (process.platform === 'win32') {
         command = 'tasklist';
       } else {
@@ -480,7 +501,7 @@ export class ComputerUseAgent {
       }
 
       const result = await execAsync(command);
-      
+
       if (this.options.verbose) {
         printInfo(`📋 Listed ${result.stdout.split('\n').length - 1} processes`);
       }
@@ -489,14 +510,14 @@ export class ComputerUseAgent {
         success: true,
         processes: result.stdout,
         count: result.stdout.split('\n').length - 1,
-        message: `Processes listed successfully`
+        message: `Processes listed successfully`,
       };
     } catch (error) {
       printError(`List processes failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `List failed: ${error.message}`
+        message: `List failed: ${error.message}`,
       };
     }
   }
@@ -508,8 +529,12 @@ export class ComputerUseAgent {
     try {
       const osInfo = await execAsync('uname -a');
       const diskInfo = await execAsync('df -h');
-      const memoryInfo = await execAsync(process.platform === 'win32' ? 'wmic computersystem get TotalPhysicalMemory' : 'free -h');
-      const cpuInfo = await execAsync(process.platform === 'win32' ? 'wmic cpu get name' : 'lscpu | head -20');
+      const memoryInfo = await execAsync(
+        process.platform === 'win32' ? 'wmic computersystem get TotalPhysicalMemory' : 'free -h'
+      );
+      const cpuInfo = await execAsync(
+        process.platform === 'win32' ? 'wmic cpu get name' : 'lscpu | head -20'
+      );
 
       const systemInfo = {
         os: osInfo.stdout,
@@ -520,7 +545,7 @@ export class ComputerUseAgent {
         arch: process.arch,
         uptime: os.uptime(),
         freemem: os.freemem(),
-        totalmem: os.totalmem()
+        totalmem: os.totalmem(),
       };
 
       if (this.options.verbose) {
@@ -530,14 +555,14 @@ export class ComputerUseAgent {
       return {
         success: true,
         info: systemInfo,
-        message: `System info retrieved successfully`
+        message: `System info retrieved successfully`,
       };
     } catch (error) {
       printError(`Get system info failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `System info failed: ${error.message}`
+        message: `System info failed: ${error.message}`,
       };
     }
   }
@@ -563,7 +588,7 @@ export class ComputerUseAgent {
       }
 
       await fs.mkdir(fullPath, { recursive: true });
-      
+
       if (this.options.verbose) {
         printSuccess(`📁 Created directory: ${dirPath}`);
       }
@@ -571,14 +596,14 @@ export class ComputerUseAgent {
       return {
         success: true,
         path: fullPath,
-        message: `Directory created successfully`
+        message: `Directory created successfully`,
       };
     } catch (error) {
       printError(`Create directory failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Create directory failed: ${error.message}`
+        message: `Create directory failed: ${error.message}`,
       };
     }
   }
@@ -604,11 +629,11 @@ export class ComputerUseAgent {
       }
 
       const entries = await fs.readdir(fullPath, { withFileTypes: true });
-      const contents = entries.map(entry => ({
+      const contents = entries.map((entry) => ({
         name: entry.name,
         type: entry.isDirectory() ? 'directory' : 'file',
         size: entry.isFile() ? fs.statSync(path.join(fullPath, entry.name)).size : 0,
-        path: path.join(fullPath, entry.name)
+        path: path.join(fullPath, entry.name),
       }));
 
       if (this.options.verbose) {
@@ -620,14 +645,14 @@ export class ComputerUseAgent {
         contents,
         path: fullPath,
         count: contents.length,
-        message: `Directory listed successfully`
+        message: `Directory listed successfully`,
       };
     } catch (error) {
       printError(`List directory failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `List directory failed: ${error.message}`
+        message: `List directory failed: ${error.message}`,
       };
     }
   }
@@ -645,20 +670,27 @@ export class ComputerUseAgent {
       const normalizedSource = path.normalize(sourcePath);
       const normalizedDest = path.normalize(destPath);
 
-      if (normalizedSource.includes('../') || normalizedSource.includes('..\\') ||
-          normalizedDest.includes('../') || normalizedDest.includes('..\\')) {
+      if (
+        normalizedSource.includes('../') ||
+        normalizedSource.includes('..\\') ||
+        normalizedDest.includes('../') ||
+        normalizedDest.includes('..\\')
+      ) {
         throw new Error('Path traversal detected');
       }
 
       const sourceFullPath = path.resolve(process.cwd(), normalizedSource);
       const destFullPath = path.resolve(process.cwd(), normalizedDest);
 
-      if ((!sourceFullPath.startsWith(process.cwd()) || !destFullPath.startsWith(process.cwd())) && !this.options.sandboxMode) {
+      if (
+        (!sourceFullPath.startsWith(process.cwd()) || !destFullPath.startsWith(process.cwd())) &&
+        !this.options.sandboxMode
+      ) {
         throw new Error('Move operation outside project directory not allowed');
       }
 
       await fs.rename(sourceFullPath, destFullPath);
-      
+
       if (this.options.verbose) {
         printSuccess(`🔄 Moved file: ${sourcePath} -> ${destPath}`);
       }
@@ -667,14 +699,14 @@ export class ComputerUseAgent {
         success: true,
         source: sourceFullPath,
         destination: destFullPath,
-        message: `File moved successfully`
+        message: `File moved successfully`,
       };
     } catch (error) {
       printError(`Move file failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Move failed: ${error.message}`
+        message: `Move failed: ${error.message}`,
       };
     }
   }
@@ -692,20 +724,27 @@ export class ComputerUseAgent {
       const normalizedSource = path.normalize(sourcePath);
       const normalizedDest = path.normalize(destPath);
 
-      if (normalizedSource.includes('../') || normalizedSource.includes('..\\') ||
-          normalizedDest.includes('../') || normalizedDest.includes('..\\')) {
+      if (
+        normalizedSource.includes('../') ||
+        normalizedSource.includes('..\\') ||
+        normalizedDest.includes('../') ||
+        normalizedDest.includes('..\\')
+      ) {
         throw new Error('Path traversal detected');
       }
 
       const sourceFullPath = path.resolve(process.cwd(), normalizedSource);
       const destFullPath = path.resolve(process.cwd(), normalizedDest);
 
-      if ((!sourceFullPath.startsWith(process.cwd()) || !destFullPath.startsWith(process.cwd())) && !this.options.sandboxMode) {
+      if (
+        (!sourceFullPath.startsWith(process.cwd()) || !destFullPath.startsWith(process.cwd())) &&
+        !this.options.sandboxMode
+      ) {
         throw new Error('Copy operation outside project directory not allowed');
       }
 
       await fs.copyFile(sourceFullPath, destFullPath);
-      
+
       if (this.options.verbose) {
         printSuccess(`📋 Copied file: ${sourcePath} -> ${destPath}`);
       }
@@ -714,14 +753,14 @@ export class ComputerUseAgent {
         success: true,
         source: sourceFullPath,
         destination: destFullPath,
-        message: `File copied successfully`
+        message: `File copied successfully`,
       };
     } catch (error) {
       printError(`Copy file failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Copy failed: ${error.message}`
+        message: `Copy failed: ${error.message}`,
       };
     }
   }
@@ -732,14 +771,14 @@ export class ComputerUseAgent {
   async searchFiles(pattern, options = {}) {
     try {
       const { glob } = await import('glob');
-      
+
       const searchPath = options.path || process.cwd();
       const ignore = options.ignore || ['node_modules/**', '.git/**', 'dist/**', 'build/**'];
-      
+
       const files = await glob(pattern, {
         cwd: searchPath,
         ignore,
-        absolute: true
+        absolute: true,
       });
 
       if (this.options.verbose) {
@@ -751,14 +790,14 @@ export class ComputerUseAgent {
         files,
         pattern,
         count: files.length,
-        message: `Files searched successfully`
+        message: `Files searched successfully`,
       };
     } catch (error) {
       printError(`Search files failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Search failed: ${error.message}`
+        message: `Search failed: ${error.message}`,
       };
     }
   }
@@ -784,7 +823,7 @@ export class ComputerUseAgent {
       }
 
       const stats = await fs.stat(fullPath);
-      
+
       const fileStats = {
         size: stats.size,
         isFile: stats.isFile(),
@@ -795,7 +834,7 @@ export class ComputerUseAgent {
         ctime: stats.ctime,
         birthtime: stats.birthtime,
         mode: stats.mode,
-        path: fullPath
+        path: fullPath,
       };
 
       if (this.options.verbose) {
@@ -805,14 +844,14 @@ export class ComputerUseAgent {
       return {
         success: true,
         stats: fileStats,
-        message: `File stats retrieved successfully`
+        message: `File stats retrieved successfully`,
       };
     } catch (error) {
       printError(`Get file stats failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Stats failed: ${error.message}`
+        message: `Stats failed: ${error.message}`,
       };
     }
   }
@@ -823,10 +862,10 @@ export class ComputerUseAgent {
   async monitorFile(filePath, callback) {
     try {
       const { watch } = await import('chokidar');
-      
+
       const watcher = watch(filePath, {
         ignoreInitial: true,
-        awaitWriteFinish: true
+        awaitWriteFinish: true,
       });
 
       watcher.on('change', (changedPath) => {
@@ -863,14 +902,14 @@ export class ComputerUseAgent {
       return {
         success: true,
         watcher,
-        message: `File monitoring started`
+        message: `File monitoring started`,
       };
     } catch (error) {
       printError(`Monitor file failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Monitor failed: ${error.message}`
+        message: `Monitor failed: ${error.message}`,
       };
     }
   }
@@ -890,15 +929,15 @@ export class ComputerUseAgent {
       }
 
       const { chromium } = await import('playwright');
-      
+
       const browser = await chromium.launch({
         headless: options.headless !== false,
-        ...options.browserOptions
+        ...options.browserOptions,
       });
 
       const context = await browser.newContext({
         viewport: { width: 1280, height: 720 },
-        ...options.contextOptions
+        ...options.contextOptions,
       });
 
       const page = await context.newPage();
@@ -939,14 +978,14 @@ export class ComputerUseAgent {
       return {
         success: true,
         result,
-        message: `Browser automation completed successfully`
+        message: `Browser automation completed successfully`,
       };
     } catch (error) {
       printError(`Browser automation failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Browser automation failed: ${error.message}`
+        message: `Browser automation failed: ${error.message}`,
       };
     }
   }
@@ -961,7 +1000,7 @@ export class ComputerUseAgent {
       screenshotsTaken: this.screenshots.length,
       permissions: Object.fromEntries(this.permissions),
       options: this.options,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -973,7 +1012,7 @@ export class ComputerUseAgent {
     for (const [pid, process] of this.activeProcesses) {
       try {
         process.kill();
-      } catch (error) {
+      } catch (_error) {
         // Process may have already exited
       }
     }
@@ -983,7 +1022,7 @@ export class ComputerUseAgent {
     for (const screenshot of this.screenshots) {
       try {
         await fs.unlink(screenshot.path).catch(() => {});
-      } catch (error) {
+      } catch (_error) {
         // File may have already been deleted
       }
     }

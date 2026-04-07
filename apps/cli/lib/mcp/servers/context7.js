@@ -24,7 +24,7 @@ export default {
  * @param {string} [context='context7'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'context7') {
+async function _safeExecute(fn, context = 'context7') {
   try {
     return await fn();
   } catch (error) {

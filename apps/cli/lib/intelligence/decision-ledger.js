@@ -64,7 +64,7 @@ async function loadDecisions() {
     }
 
     return decisions;
-  } catch (error) {
+  } catch (_error) {
     // If file doesn't exist, return empty array
     return [];
   }

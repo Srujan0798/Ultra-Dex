@@ -15,7 +15,7 @@ export async function loadState() {
   try {
     const content = await fs.readFile(path.resolve(process.cwd(), '.ultra/state.json'), 'utf8');
     return JSON.parse(content);
-  } catch (error) {
+  } catch (_error) {
     return null; // Silent return for state existence check
   }
 }
@@ -122,7 +122,7 @@ export async function parsePlanFromMarkdown() {
     });
 
     return phases;
-  } catch (e) {
+  } catch (_e) {
     return [];
   }
 }

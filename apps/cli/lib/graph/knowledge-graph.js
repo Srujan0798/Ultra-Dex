@@ -17,7 +17,7 @@ export default repoGraph;
  * Error handler for knowledge-graph
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[knowledge-graph]', error instanceof Error ? error.message : String(error));
   } catch (_) {

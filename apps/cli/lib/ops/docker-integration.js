@@ -107,7 +107,7 @@ class DockerManager {
       await execAsync('docker ps');
       printSuccess(chalk.green('✅ Docker is installed and running'));
       return true;
-    } catch (error) {
+    } catch (_error) {
       printError(chalk.red('❌ Docker is not running or not installed'));
       return false;
     }
@@ -137,7 +137,7 @@ class DockerManager {
         printInfo(chalk.gray('Dockerfile generation cancelled.'));
         return dockerfilePath;
       }
-    } catch (error) {
+    } catch (_error) {
       // Dockerfile doesn't exist, that's fine
     }
     
@@ -174,7 +174,7 @@ class DockerManager {
         printInfo(chalk.gray('docker-compose.yml generation cancelled.'));
         return composePath;
       }
-    } catch (error) {
+    } catch (_error) {
       // docker-compose.yml doesn't exist, that's fine
     }
     
@@ -203,7 +203,7 @@ class DockerManager {
     // Check if Dockerfile exists
     try {
       await fs.access(dockerfilePath);
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow('Dockerfile not found. Generating default Dockerfile...'));
       await this.generateDockerfile();
     }
@@ -293,7 +293,7 @@ class DockerManager {
     // Check if docker-compose.yml exists
     try {
       await fs.access(composePath);
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow('docker-compose.yml not found. Generating default compose file...'));
       await this.generateComposeFile();
     }
@@ -620,7 +620,7 @@ class DockerManager {
     try {
       const { stdout } = await execAsync(`docker ps --filter "name=${containerName}" --format "{{.Names}}"`);
       return stdout.trim() === containerName;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

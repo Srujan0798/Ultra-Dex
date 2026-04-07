@@ -36,7 +36,7 @@ Setting up the implementation plan.
  * Error handler for context
  * @param {Error} error - Error to handle
  */
-function handleContextError(error) {
+function _handleContextError(error) {
   try {
     console.error('[context]', error instanceof Error ? error.message : String(error));
   } catch (_) {

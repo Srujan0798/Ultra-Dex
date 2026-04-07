@@ -122,7 +122,7 @@ function normalizeClaudeModel(model) {
  * @param {string} [context='streaming'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'streaming') {
+async function _safeExecute(fn, context = 'streaming') {
   try {
     return await fn();
   } catch (error) {

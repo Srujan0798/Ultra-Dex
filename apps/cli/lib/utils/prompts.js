@@ -265,7 +265,7 @@ export async function yesNoPrompt(message, yesLabel = 'Yes', noLabel = 'No') {
  * @param {string} [context='prompts'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'prompts') {
+async function _safeExecute(fn, context = 'prompts') {
   try {
     return await fn();
   } catch (error) {

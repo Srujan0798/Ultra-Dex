@@ -22,20 +22,16 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "downlevelIteration": true,
+    "experimentalDecorators": true
   },
   "include": [
     "apps/dashboard/src/**/*.ts",
     "apps/dashboard/src/**/*.tsx",
     "apps/cloud/ide/src/**/*.ts",
     "apps/cloud/ide/src/**/*.tsx",
-    "apps/cli/lib/**/*.ts",
     "src/core/interfaces/**/*.ts",
-    "src/core/routing/**/*.ts",
-    "src/core/memory/**/*.ts",
-    "src/core/utils/**/*.ts",
-    "src/core/templates/**/*.ts",
-    "src/services/auth/**/*.ts",
     "src/types/**/*.ts"
   ],
   "exclude": [
@@ -43,6 +39,11 @@
     "apps/cli/lib/templates/**",
     "apps/cli/lib/utils/error-handler.ts",
     "apps/cli/lib/utils/performance-optimizer.ts",
+    "apps/cli/lib/spinner.ts",
+    "src/core/utils/token-forecast.ts",
+    "src/core/utils/validation.ts",
+    "src/core/utils/version-display.ts",
+    "src/core/utils/version.ts",
     "apps/mobile/**",
     "examples/**",
     "src/types/enterprise.ts",

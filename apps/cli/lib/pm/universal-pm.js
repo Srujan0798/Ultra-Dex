@@ -648,7 +648,7 @@ class PackageManager {
     try {
       await fs.rm(nodeModulesPath, { recursive: true, force: true });
       printInfo(chalk.gray('Removed node_modules directory'));
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow('node_modules directory not found, continuing...'));
     }
 
@@ -657,14 +657,14 @@ class PackageManager {
       try {
         await execAsync('npm cache clean --force');
         printInfo(chalk.gray('Cleared npm cache'));
-      } catch (error) {
+      } catch (_error) {
         printWarning(chalk.yellow('Could not clear npm cache'));
       }
     } else if (this.detectedManager.name === 'yarn') {
       try {
         await execAsync('yarn cache clean');
         printInfo(chalk.gray('Cleared yarn cache'));
-      } catch (error) {
+      } catch (_error) {
         printWarning(chalk.yellow('Could not clear yarn cache'));
       }
     }
@@ -695,7 +695,7 @@ class PackageManager {
     try {
       await fs.unlink(lockFilePath);
       printInfo(chalk.gray(`Removed ${lockFile}`));
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow(`${lockFile} not found, continuing...`));
     }
 
@@ -704,7 +704,7 @@ class PackageManager {
     try {
       await fs.rm(nodeModulesPath, { recursive: true, force: true });
       printInfo(chalk.gray('Removed node_modules'));
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow('node_modules directory not found'));
     }
 

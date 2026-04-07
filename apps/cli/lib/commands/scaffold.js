@@ -128,7 +128,7 @@ async function copyDirectory(src, dest) {
   }
 }
 
-async function detectStackFromPlan() {
+async function _detectStackFromPlan() {
   try {
     const planPath = path.resolve(process.cwd(), 'IMPLEMENTATION-PLAN.md');
     const content = await fs.readFile(planPath, 'utf-8');

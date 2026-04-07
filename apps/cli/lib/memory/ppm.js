@@ -9,7 +9,7 @@ export default ppmManager;
  * Error handler for ppm
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[ppm]', error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -7,7 +7,9 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { ppmManager } from '../../core/memory/manager.js';
+import { ppmManager, MemoryManager } from '../../core/memory/manager.js';
+
+const memoryManager: MemoryManager = ppmManager;
 
 /**
  * Audit event types

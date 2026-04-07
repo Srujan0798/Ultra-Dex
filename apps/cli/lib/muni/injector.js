@@ -39,7 +39,7 @@ class ContextInjector {
         if (injected) {
           contextSection += `\n### ${name}\n${injected}\n`;
         }
-      } catch (error) {
+      } catch (_error) {
         // Skip failed template injections
       }
     }

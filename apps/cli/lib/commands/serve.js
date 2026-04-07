@@ -548,7 +548,7 @@ function handleApiRoutes(req, res, pathname, url, dependencies) {
         });
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
-      } catch (e) {
+      } catch (_e) {
         res.writeHead(400);
         res.end(JSON.stringify({ error: 'Invalid JSON' }));
       }

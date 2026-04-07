@@ -43,7 +43,7 @@ class ContextBus extends EventEmitter {
         timestamp: new Date().toISOString(),
         source: 'CONTEXT.md',
       });
-    } catch (error) {
+    } catch (_error) {
       // CONTEXT.md doesn't exist, that's OK
       this.context.set('project.context', {
         content: '# Project Context\n\nNo context defined yet.',
@@ -218,7 +218,7 @@ class ContextBus extends EventEmitter {
           sync: true,
         });
       }
-    } catch (error) {
+    } catch (_error) {
       // CONTEXT.md doesn't exist, that's OK
     }
   }
@@ -235,7 +235,7 @@ class ContextBus extends EventEmitter {
         source: 'IMPLEMENTATION-PLAN.md',
         sync: true,
       });
-    } catch (error) {
+    } catch (_error) {
       // IMPLEMENTATION-PLAN.md doesn't exist, that's OK
     }
   }
@@ -262,12 +262,12 @@ class ContextBus extends EventEmitter {
           });
 
           break; // Found and processed one
-        } catch (err) {
+        } catch (_err) {
           // Try next path
           continue;
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // No state file found, that's OK
     }
   }

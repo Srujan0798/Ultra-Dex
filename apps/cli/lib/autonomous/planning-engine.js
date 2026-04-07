@@ -227,7 +227,7 @@ RULES:
     let parsed;
     try {
       parsed = JSON.parse(cleaned);
-    } catch (e) {
+    } catch (_e) {
       // Try to extract JSON from response
       const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (jsonMatch) {

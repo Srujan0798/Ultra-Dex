@@ -25,7 +25,7 @@ export async function suggestOptimization() {
  * @param {string} [context='optimizer'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'optimizer') {
+async function _safeExecute(fn, context = 'optimizer') {
   try {
     return await fn();
   } catch (error) {

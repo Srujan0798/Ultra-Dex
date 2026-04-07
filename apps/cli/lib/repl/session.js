@@ -166,7 +166,7 @@ export class SessionManager {
             updatedAt: session.updatedAt,
             path: filePath,
           });
-        } catch (error) {
+        } catch (_error) {
           // Skip corrupted session files
           printWarning(chalk.yellow(`⚠️  Skipping corrupted session file: ${file}`));
         }

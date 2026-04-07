@@ -150,7 +150,7 @@ export default {
  * @param {string} [context='mock'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'mock') {
+async function _safeExecute(fn, context = 'mock') {
   try {
     return await fn();
   } catch (error) {

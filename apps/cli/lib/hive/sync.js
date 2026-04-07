@@ -32,7 +32,7 @@ export function createHiveSync() {
  * @param {Error} error - The error to handle
  * @param {string} [context='sync'] - Error context
  */
-function handleModuleError(error, context = 'sync') {
+function _handleModuleError(error, context = 'sync') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

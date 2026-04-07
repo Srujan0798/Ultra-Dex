@@ -120,7 +120,7 @@ export class MCTSEngine {
  * Error handler for engine
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[engine]', error instanceof Error ? error.message : String(error));
   } catch (_) {

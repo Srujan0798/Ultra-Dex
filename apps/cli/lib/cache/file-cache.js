@@ -27,7 +27,7 @@ export class FileCache {
  * @param {string} [context='file-cache'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'file-cache') {
+async function _safeExecute(fn, context = 'file-cache') {
   try {
     return await fn();
   } catch (error) {

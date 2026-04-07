@@ -1,40 +1,30 @@
-/**
- * @fileoverview Versions module
- * @module api/versions
- */
-
-import { prisma } from '../lib/prisma';
-import { createVersion } from '../lib/versioning';
-
-export async function getPostVersions(contentId: string) {
+import { prisma } from '../lib/prisma.js';
+import { createVersion } from '../lib/versioning.js';
+async function getPostVersions(contentId) {
   return prisma.contentVersion.findMany({
     where: { contentId },
-    orderBy: { versionNumber: 'desc' },
+    orderBy: { versionNumber: "desc" }
   });
 }
-
-export async function rollbackPost(contentId: string, versionNumber: number) {
+async function rollbackPost(contentId, versionNumber) {
   const version = await prisma.contentVersion.findUnique({
-    where: { contentId_versionNumber: { contentId, versionNumber } },
+    where: { contentId_versionNumber: { contentId, versionNumber } }
   });
-  if (!version) throw new Error('Version not found');
-
+  if (!version)
+    throw new Error("Version not found");
   await createVersion(contentId);
-
   return prisma.content.update({
     where: { id: contentId },
-    data: { body: version.content, status: 'draft' },
+    data: { body: version.content, status: "draft" }
   });
 }
-
-/**
- * Error handler for versions
- * @param {Error} error - Error to handle
- */
-function handleVersionsError(error: Error | unknown) {
+function handleVersionsError(error) {
   try {
-    console.error('[versions]', error instanceof Error ? error.message : String(error));
+    console.error("[versions]", error instanceof Error ? error.message : String(error));
   } catch (_) {
-    // Fail silently
   }
 }
+export {
+  getPostVersions,
+  rollbackPost
+};

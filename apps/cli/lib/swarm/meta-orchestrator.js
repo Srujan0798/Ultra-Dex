@@ -29,7 +29,7 @@ export default { orchestrate, selectAgents };
  * @param {string} [context='meta-orchestrator'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'meta-orchestrator') {
+async function _safeExecute(fn, context = 'meta-orchestrator') {
   try {
     return await fn();
   } catch (error) {

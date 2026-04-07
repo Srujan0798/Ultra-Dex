@@ -279,7 +279,7 @@ export default {
  * @param {string} [context='ai-tools'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'ai-tools') {
+async function _safeExecute(fn, context = 'ai-tools') {
   try {
     return await fn();
   } catch (error) {

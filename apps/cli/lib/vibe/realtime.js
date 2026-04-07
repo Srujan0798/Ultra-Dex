@@ -21,7 +21,7 @@ export function streamText(text, options = {}) {
  * @param {Error} error - The error to handle
  * @param {string} [context='realtime'] - Error context
  */
-function handleModuleError(error, context = 'realtime') {
+function _handleModuleError(error, context = 'realtime') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

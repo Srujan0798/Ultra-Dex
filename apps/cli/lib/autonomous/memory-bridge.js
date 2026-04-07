@@ -154,7 +154,7 @@ export class MemoryBridge extends EventEmitter {
         try {
           const data = await fs.readFile(indexPath, 'utf8');
           this._history = JSON.parse(data).slice(-this.options.maxHistoryItems);
-        } catch (e) {
+        } catch (_e) {
           this._history = [];
         }
       }

@@ -424,7 +424,7 @@ class EnterpriseFeatures {
   }
 }
 var enterprise_features_default = EnterpriseFeatures;
-async function safeExecute(fn, context = "enterprise-features") {
+async function _safeExecute(fn, context = "enterprise-features") {
   try {
     return await fn();
   } catch (error) {

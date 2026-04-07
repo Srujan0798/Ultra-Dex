@@ -60,7 +60,7 @@ export class AgentMarketplace {
         limit: options.limit || 20,
         throwOnError: true,
       });
-    } catch (error) {
+    } catch (_error) {
       printWarning('⚠️  Marketplace search failed, using local cache');
       return await this.searchLocalAgents(query, options);
     }
@@ -278,7 +278,7 @@ export class AgentMarketplace {
       try {
         await execAsync('npm install', { cwd: agentPath });
         printSuccess(`📦 Dependencies installed for agent: ${agentPath}`);
-      } catch (error) {
+      } catch (_error) {
         printWarning(`⚠️  Dependency installation failed for agent: ${agentPath}`);
       }
     }

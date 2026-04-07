@@ -7,7 +7,7 @@ export { formatGateTable, summarizeGateResults } from './report.js';
  * Error handler for gates
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[gates]', error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -54,7 +54,7 @@ export function parseCapabilityManifest(payload) {
  * @param {Error} error - The error to handle
  * @param {string} [context='capability-schema'] - Error context
  */
-function handleModuleError(error, context = 'capability-schema') {
+function _handleModuleError(error, context = 'capability-schema') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);
