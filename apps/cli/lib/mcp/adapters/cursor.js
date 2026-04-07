@@ -23,7 +23,7 @@ export function createCursorAdapter() {
  * @param {Error} error - The error to handle
  * @param {string} [context='cursor'] - Error context
  */
-function handleModuleError(error, context = 'cursor') {
+function _handleModuleError(error, context = 'cursor') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

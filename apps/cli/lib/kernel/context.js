@@ -51,7 +51,7 @@ export class ContextScanner {
 
       // Refine with TypeScript
       if (this.cache.dependencies['typescript']) this.cache.stack += ' (TypeScript)';
-    } catch (e) {
+    } catch (_e) {
       // Not a Node.js project? Check for other markers
       if (await this.exists('requirements.txt')) this.cache.stack = 'Python';
       else if (await this.exists('Cargo.toml')) this.cache.stack = 'Rust';
@@ -74,7 +74,7 @@ export class ContextScanner {
         isDirty: status.length > 0,
         modifiedFiles: status.split('\n').filter(Boolean).length,
       };
-    } catch (e) {
+    } catch (_e) {
       this.cache.git = { initialized: false };
     }
   }
@@ -89,7 +89,7 @@ export class ContextScanner {
     try {
       const files = await fs.readdir(this.projectRoot);
       this.cache.files = files.filter((f) => !['node_modules', '.git', '.next'].includes(f));
-    } catch (e) {
+    } catch (_e) {
       this.cache.files = [];
     }
   }

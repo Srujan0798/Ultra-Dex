@@ -113,7 +113,7 @@ export async function exportCommand(options) {
     const realCwd = fs.realpathSync(cwd);
     const realOutputDir = fs.realpathSync(dirname(resolvedOutput));
     isSafeOutput = realOutputDir.startsWith(realCwd);
-  } catch (error) {
+  } catch (_error) {
     isSafeOutput = false;
   }
 
@@ -185,7 +185,7 @@ export async function exportCommand(options) {
 
           await browser.close();
           wroteFile = true;
-        } catch (error) {
+        } catch (_error) {
           formatSpinner.warn('PDF generation failed (Puppeteer required)');
           printInfo(chalk.gray('  Falling back to HTML instead.'));
           actualFormat = 'html';

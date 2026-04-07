@@ -60,7 +60,7 @@ export class CheckpointManager {
     try {
       const content = await fs.readFile(filepath, 'utf8');
       return JSON.parse(content);
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Checkpoint not found: ${checkpointId}`);
     }
   }
@@ -91,7 +91,7 @@ export class CheckpointManager {
       return checkpoints.sort(
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   }
@@ -105,7 +105,7 @@ export class CheckpointManager {
     try {
       await fs.unlink(filepath);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

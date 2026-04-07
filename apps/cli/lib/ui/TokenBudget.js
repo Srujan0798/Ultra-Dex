@@ -57,7 +57,7 @@ export class TokenBudget {
           this.usage.lastReset = now.toISOString();
           await this.save();
         }
-      } catch (e) {
+      } catch (_e) {
         // No file, start fresh
         await this.save();
       }

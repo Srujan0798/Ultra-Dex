@@ -71,7 +71,7 @@ class LeaderboardSystem {
       const data = JSON.parse(content);
 
       this.entries = Array.isArray(data) ? data.map(LeaderboardEntry.fromJSON) : [];
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist, initialize with empty array
       this.entries = [];
       await this.saveScores();

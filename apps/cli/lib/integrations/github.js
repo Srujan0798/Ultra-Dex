@@ -254,7 +254,7 @@ export class GitHubClient {
           repo,
           path
         });
-      } catch (error) {
+      } catch (_error) {
         // File doesn't exist, that's fine
         existingFile = null;
       }

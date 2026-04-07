@@ -61,7 +61,7 @@ export default {
  * Error handler for review-code
  * @param {Error} error - Error to handle
  */
-function handleReviewcodeError(error) {
+function _handleReviewcodeError(error) {
   try {
     console.error('[review-code]', error instanceof Error ? error.message : String(error));
   } catch (_) {

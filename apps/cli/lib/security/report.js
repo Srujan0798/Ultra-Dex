@@ -50,7 +50,7 @@ export function formatSecurityReport(findings, format = 'markdown') {
  * @param {Error} error - The error to handle
  * @param {string} [context='report'] - Error context
  */
-function handleModuleError(error, context = 'report') {
+function _handleModuleError(error, context = 'report') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

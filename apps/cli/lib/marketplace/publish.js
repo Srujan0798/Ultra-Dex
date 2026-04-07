@@ -21,7 +21,7 @@ export async function publishAgent(agentPath) {
  * @param {string} [context='publish'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'publish') {
+async function _safeExecute(fn, context = 'publish') {
   try {
     return await fn();
   } catch (error) {

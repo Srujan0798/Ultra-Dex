@@ -614,7 +614,7 @@ export { ContextCompactor };
  * @param {string} [context='compactor'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'compactor') {
+async function _safeExecute(fn, context = 'compactor') {
   try {
     return await fn();
   } catch (error) {

@@ -216,7 +216,7 @@ export default UltraDexAPI;`;
  * @param {string} [context='core'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'core') {
+async function _safeExecute(fn, context = 'core') {
   try {
     return await fn();
   } catch (error) {

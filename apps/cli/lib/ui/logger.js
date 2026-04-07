@@ -244,7 +244,7 @@ export function printTable(data) {
  * Error handler for logger
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     process.stderr.write(`[logger] ${error instanceof Error ? error.message : String(error)}\n`);
   } catch (_) {

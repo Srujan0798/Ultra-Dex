@@ -106,7 +106,7 @@ export function listModes() {
  * @param {Error} error - The error to handle
  * @param {string} [context='interpreter'] - Error context
  */
-function handleModuleError(error, context = 'interpreter') {
+function _handleModuleError(error, context = 'interpreter') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

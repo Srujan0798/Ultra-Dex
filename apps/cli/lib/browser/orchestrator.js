@@ -24,7 +24,7 @@ export default BrowserOrchestrator;
  * @param {string} [context='orchestrator'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'orchestrator') {
+async function _safeExecute(fn, context = 'orchestrator') {
   try {
     return await fn();
   } catch (error) {

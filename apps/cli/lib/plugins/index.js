@@ -73,7 +73,7 @@ class PluginRegistry {
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Directory might not exist yet
       console.debug('Plugin directory does not exist yet');
     }

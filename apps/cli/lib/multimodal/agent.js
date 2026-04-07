@@ -38,7 +38,7 @@ export class MultimodalAgent {
  * @param {string} [context='agent'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'agent') {
+async function _safeExecute(fn, context = 'agent') {
   try {
     return await fn();
   } catch (error) {

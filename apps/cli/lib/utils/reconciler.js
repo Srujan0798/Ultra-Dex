@@ -111,7 +111,7 @@ export const reconciler = new Reconciler();
  * @param {string} [context='reconciler'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'reconciler') {
+async function _safeExecute(fn, context = 'reconciler') {
   try {
     return await fn();
   } catch (error) {

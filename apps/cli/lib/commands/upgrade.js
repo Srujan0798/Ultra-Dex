@@ -140,7 +140,7 @@ async function getLatestVersion() {
       } else {
         reject(new Error('Invalid version format from registry'));
       }
-    } catch (e) {
+    } catch (_e) {
       // Package might not be published yet
       reject(new Error('Package not found in npm registry (may not be published yet)'));
     }

@@ -9,7 +9,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printError, printSuccess, printWarning } from '../utils/output.js';
 import { validateSafePath } from '../utils/validation.js';
 
 const DOMAIN_CONFIG = {

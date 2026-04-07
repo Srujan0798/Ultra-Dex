@@ -160,7 +160,7 @@ ${graph.edges
   .map((e) => `- ${e.source} -> ${e.target}`)
   .join('\n')}
         `;
-        } catch (e) {
+        } catch (_e) {
           // Fallback if graph fails
         }
 

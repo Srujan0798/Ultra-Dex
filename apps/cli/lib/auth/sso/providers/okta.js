@@ -11,7 +11,7 @@ export default {
  * Error handler for okta
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[okta]', error instanceof Error ? error.message : String(error));
   } catch (_) {

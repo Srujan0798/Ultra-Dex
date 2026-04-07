@@ -83,7 +83,7 @@ export default integration;
  * @param {string} [context='segment'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'segment') {
+async function _safeExecute(fn, context = 'segment') {
   try {
     return await fn();
   } catch (error) {

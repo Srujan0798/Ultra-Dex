@@ -227,7 +227,7 @@ export async function offerAutoFix() {
     console.log(chalk.green('\n🚀 Initiating Autonomous Fix...\n'));
     try {
       execSync('npx ultra-dex autonomous --fix', { stdio: 'inherit' });
-    } catch (e) {
+    } catch (_e) {
       console.error(chalk.red('Self-healing failed to launch.'));
     }
   }

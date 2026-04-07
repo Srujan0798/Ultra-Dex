@@ -20,14 +20,14 @@ export async function syncState() {
   try {
     const stateStat = await fs.stat(statePath);
     stateMtime = stateStat.mtimeMs;
-  } catch (e) {
+  } catch (_e) {
     // state.json doesn't exist
   }
 
   try {
     const planStat = await fs.stat(planPath);
     planMtime = planStat.mtimeMs;
-  } catch (e) {
+  } catch (_e) {
     // IMPLEMENTATION-PLAN.md doesn't exist
   }
 

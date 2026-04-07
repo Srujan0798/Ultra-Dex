@@ -6,7 +6,7 @@
 let robot;
 try {
     robot = (await import('robotjs')).default;
-} catch (e) {
+} catch (_e) {
     // Mock robotjs if not found
     robot = {
         setMouseDelay: () => { },

@@ -13,7 +13,7 @@ export default { registerOmniBox };
  * @param {Error} error - The error to handle
  * @param {string} [context='omni-box'] - Error context
  */
-function handleModuleError(error, context = 'omni-box') {
+function _handleModuleError(error, context = 'omni-box') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

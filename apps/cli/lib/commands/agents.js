@@ -488,7 +488,7 @@ export function registerAgentsCommand(program) {
         let marketplaceResults = [];
         try {
           marketplaceResults = await marketplaceClient.searchAgents(query);
-        } catch (error) {
+        } catch (_error) {
           printWarning(chalk.yellow('Marketplace search failed. Showing built-in results only.'));
         }
 
@@ -842,7 +842,7 @@ async function listAgents({
       role = access.role;
       allowedAgents = access.allowedAgents;
       restrictedAgents = access.restrictedAgents;
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow('Role-based access checks failed. Showing all agents.'));
     }
 
@@ -956,7 +956,7 @@ async function showAgent(name) {
     logger.print(chalk.gray('─'.repeat(60)));
     logger.print(prompt);
     logger.print(chalk.gray('─'.repeat(60)));
-  } catch (err) {
+  } catch (_err) {
     logger.print(chalk.red(`\n❌ Could not read prompt for ${agent.name}`));
   }
 }
@@ -1025,7 +1025,7 @@ export function registerPackCommand(program) {
       try {
         const agentPrompt = await readAgentPrompt(agent);
         output += agentPrompt + '\n\n';
-      } catch (err) {
+      } catch (_err) {
         output += `# ${agent.name.toUpperCase()} Agent\n\n`;
       }
 
@@ -1033,7 +1033,7 @@ export function registerPackCommand(program) {
       try {
         const context = await fs.readFile('CONTEXT.md', 'utf-8');
         output += '# PROJECT CONTEXT\n\n' + context + '\n\n';
-      } catch (err) {
+      } catch (_err) {
         output += '# PROJECT CONTEXT\n\n*No CONTEXT.md found.*\n\n';
       }
 
@@ -1041,7 +1041,7 @@ export function registerPackCommand(program) {
       try {
         const plan = await fs.readFile('IMPLEMENTATION-PLAN.md', 'utf-8');
         output += '# IMPLEMENTATION PLAN\n\n' + plan + '\n';
-      } catch (err) {
+      } catch (_err) {
         output += '# IMPLEMENTATION PLAN\n\n*No IMPLEMENTATION-PLAN.md found.*\n';
       }
 
@@ -1052,7 +1052,7 @@ export function registerPackCommand(program) {
         try {
           await copyToClipboard(output);
           logger.print(chalk.green('\n✅ Copied to clipboard!\n'));
-        } catch (err) {
+        } catch (_err) {
           logger.print(
             chalk.yellow(
               '\n⚠️  Could not copy to clipboard. Ensure pbcopy, xclip, or xsel is installed.'

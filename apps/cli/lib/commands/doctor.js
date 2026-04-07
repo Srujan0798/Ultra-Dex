@@ -153,7 +153,7 @@ export function registerDoctorCommand(program) {
             status: 'ok',
             detail: `npm ${npmVersion} + package.json found`,
           });
-        } catch (e) {
+        } catch (_e) {
           npmSpinner.warn('npm or package.json missing');
           checks.push({
             name: 'npm',

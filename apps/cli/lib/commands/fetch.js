@@ -21,7 +21,7 @@ async function downloadFile(url, destPath) {
     await fs.mkdir(path.dirname(destPath), { recursive: true });
     await fs.writeFile(destPath, content);
     return true;
-  } catch (err) {
+  } catch (_err) {
     return false;
   }
 }

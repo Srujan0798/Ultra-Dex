@@ -56,7 +56,7 @@ export function listForbiddenPaths() {
  * @param {string} [context='validators'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'validators') {
+async function _safeExecute(fn, context = 'validators') {
   try {
     return await fn();
   } catch (error) {

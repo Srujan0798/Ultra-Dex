@@ -23,7 +23,7 @@ export default {
  * @param {string} [context='saml'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'saml') {
+async function _safeExecute(fn, context = 'saml') {
   try {
     return await fn();
   } catch (error) {

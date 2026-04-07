@@ -282,7 +282,7 @@ export default {
  * @param {string} [context='collaboration'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'collaboration') {
+async function _safeExecute(fn, context = 'collaboration') {
   try {
     return await fn();
   } catch (error) {

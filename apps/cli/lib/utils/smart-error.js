@@ -333,7 +333,7 @@ export function registerSmartErrorCommand(program) {
         if (options.context) {
           try {
             context = JSON.parse(options.context);
-          } catch (e) {
+          } catch (_e) {
             printWarning(chalk.yellow('Invalid JSON context provided'));
           }
         }

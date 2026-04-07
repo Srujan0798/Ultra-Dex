@@ -29,7 +29,7 @@ export function requestConsensus(options = {}) {
  * @param {Error} error - The error to handle
  * @param {string} [context='consensus'] - Error context
  */
-function handleModuleError(error, context = 'consensus') {
+function _handleModuleError(error, context = 'consensus') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

@@ -72,7 +72,7 @@ export { STATES };
  * @param {string} [context='ralph-loop'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'ralph-loop') {
+async function _safeExecute(fn, context = 'ralph-loop') {
   try {
     return await fn();
   } catch (error) {

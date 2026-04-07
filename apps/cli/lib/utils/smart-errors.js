@@ -14,7 +14,7 @@ export default SmartError;
  * Error handler for smart-errors
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[smart-errors]', error instanceof Error ? error.message : String(error));
   } catch (_) {

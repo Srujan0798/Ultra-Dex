@@ -52,7 +52,7 @@ export default {
  * @param {Error} error - The error to handle
  * @param {string} [context='invoice-state'] - Error context
  */
-function handleModuleError(error, context = 'invoice-state') {
+function _handleModuleError(error, context = 'invoice-state') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

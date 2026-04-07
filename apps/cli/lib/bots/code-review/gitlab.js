@@ -39,7 +39,7 @@ export default { fetchMergeRequestDiff };
  * @param {string} [context='gitlab'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'gitlab') {
+async function _safeExecute(fn, context = 'gitlab') {
   try {
     return await fn();
   } catch (error) {

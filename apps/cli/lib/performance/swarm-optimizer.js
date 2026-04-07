@@ -285,7 +285,7 @@ Provide your output for the next agent in the pipeline.
             prompt = await fs.readFile(filePath, 'utf-8');
             break;
           }
-        } catch (error) {
+        } catch (_error) {
           continue;
         }
       }

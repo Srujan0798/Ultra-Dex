@@ -37,7 +37,7 @@ class DecisionLedger {
     try {
       await fs.access(this.ledgerPath);
       printInfo(chalk.gray('📋 Decision ledger already exists'));
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist, create it
       const initialContent = `# Decision Ledger
 
@@ -241,7 +241,7 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
       });
       
       return decisions;
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow('No decision ledger found. Run `ultra-dex decision record` to create one.'));
       return [];
     }
@@ -287,7 +287,7 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
       });
       
       return matches;
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow('No decision ledger found to search.'));
       return [];
     }
@@ -377,7 +377,7 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
         byStatus: statusCounts,
         recent: decisions.slice(-5).reverse()
       };
-    } catch (error) {
+    } catch (_error) {
       printWarning(chalk.yellow('No decision ledger found to summarize.'));
       return { total: 0, byStatus: {}, recent: [] };
     }

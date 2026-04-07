@@ -1,36 +1,25 @@
-/**
- * @fileoverview Posts module
- * @module api/posts
- */
-
-import { prisma } from '../lib/prisma';
-import { slugify } from '../lib/slugify';
-import { createVersion } from '../lib/versioning';
-
-export async function createPost(authorId: string, title: string, body = '') {
+import { prisma } from '../lib/prisma.js';
+import { slugify } from '../lib/slugify.js';
+import { createVersion } from '../lib/versioning.js';
+async function createPost(authorId, title, body = "") {
   const slug = slugify(title);
   return prisma.content.create({
     data: {
       title,
       slug,
       body,
-      status: 'draft',
-      authorId,
-    },
+      status: "draft",
+      authorId
+    }
   });
 }
-
-export async function updatePost(
-  id: string,
-  data: { title?: string; body?: string; status?: string; categoryId?: string }
-) {
+async function updatePost(id, data) {
   const existing = await prisma.content.findUnique({ where: { id } });
-  if (!existing) throw new Error('Content not found');
-
+  if (!existing)
+    throw new Error("Content not found");
   if (data.body && data.body !== existing.body) {
     await createVersion(id);
   }
-
   return prisma.content.update({
     where: { id },
     data: {
@@ -39,33 +28,28 @@ export async function updatePost(
       body: data.body ?? existing.body,
       status: data.status ?? existing.status,
       categoryId: data.categoryId ?? existing.categoryId,
-      publishedAt:
-        data.status === 'published' && !existing.publishedAt
-          ? new Date()
-          : existing.publishedAt,
-    },
+      publishedAt: data.status === "published" && !existing.publishedAt ? /* @__PURE__ */ new Date() : existing.publishedAt
+    }
   });
 }
-
-export async function getPost(slug: string) {
+async function getPost(slug) {
   return prisma.content.findUnique({
     where: { slug },
-    include: { author: true, category: true, tags: true },
+    include: { author: true, category: true, tags: true }
   });
 }
-
-export async function deletePost(id: string) {
+async function deletePost(id) {
   return prisma.content.delete({ where: { id } });
 }
-
-/**
- * Error handler for posts
- * @param {Error} error - Error to handle
- */
-function handlePostsError(error: Error | unknown) {
+function handlePostsError(error) {
   try {
-    console.error('[posts]', error instanceof Error ? error.message : String(error));
+    console.error("[posts]", error instanceof Error ? error.message : String(error));
   } catch (_) {
-    // Fail silently
   }
 }
+export {
+  createPost,
+  deletePost,
+  getPost,
+  updatePost
+};

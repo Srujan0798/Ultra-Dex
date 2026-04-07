@@ -112,7 +112,7 @@ export function requireGateApproval(gateId, approvals = []) {
  * @param {Error} error - The error to handle
  * @param {string} [context='gates'] - Error context
  */
-function handleModuleError(error, context = 'gates') {
+function _handleModuleError(error, context = 'gates') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

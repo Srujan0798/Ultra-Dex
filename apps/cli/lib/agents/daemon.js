@@ -159,7 +159,7 @@ export class AgentDaemon {
       // Force kill if still running
       try {
         process.kill(daemon.pid, 'SIGKILL');
-      } catch (error) {
+      } catch (_error) {
         // Process already terminated
       }
 

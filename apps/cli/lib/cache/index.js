@@ -112,7 +112,7 @@ class UltraDexCache {
             };
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Skip corrupted cache files
         continue;
       }

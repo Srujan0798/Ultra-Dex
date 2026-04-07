@@ -319,7 +319,7 @@ export function scanContent(content) {
           message: rule.message,
         });
       }
-    } catch (err) {
+    } catch (_err) {
       // Ignore
     }
   }
@@ -369,7 +369,7 @@ export async function runQualityScan(dir) {
             };
             fileResults.push(issue);
           }
-        } catch (err) {
+        } catch (_err) {
           // Ignore check errors
         }
       }

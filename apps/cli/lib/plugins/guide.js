@@ -130,7 +130,7 @@ export default {
  * @param {string} [context='guide'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'guide') {
+async function _safeExecute(fn, context = 'guide') {
   try {
     return await fn();
   } catch (error) {

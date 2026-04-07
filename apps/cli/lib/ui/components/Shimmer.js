@@ -16,7 +16,7 @@ const Shimmer = ({ width = 20, height = 1, children, isActive = true }) => {
   return /* @__PURE__ */ React.createElement(Box, null, lines);
 };
 var Shimmer_default = Shimmer;
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error("[Shimmer]", error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -56,7 +56,7 @@ export class ToolBelt {
         output.split('\n').slice(0, 20).join('\n') +
         (output.split('\n').length > 20 ? '\n... (more matches)' : '')
       );
-    } catch (e) {
+    } catch (_e) {
       return `No matches found for "${query}"`;
     }
   }

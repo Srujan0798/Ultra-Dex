@@ -14,7 +14,7 @@ const ArrowMenu = ({ items, onSelect, initialIndex = 0 }) => {
   return /* @__PURE__ */ React.createElement(Box, { flexDirection: "column" }, items.map((item, index) => /* @__PURE__ */ React.createElement(Box, { key: index, flexDirection: "row" }, /* @__PURE__ */ React.createElement(Text, { color: index === selectedIndex ? "cyan" : "white" }, index === selectedIndex ? "> " : "  ", typeof item === "string" ? item : item.label || `Item ${index}`))));
 };
 var ArrowMenu_default = ArrowMenu;
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error("[ArrowMenu]", error instanceof Error ? error.message : String(error));
   } catch (_) {

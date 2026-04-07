@@ -200,7 +200,7 @@ async function readProjectContext() {
           const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 2000));
           const scan = projectGraph.scan().then(() => projectGraph.getSummary());
           return await Promise.race([scan, timeout]);
-        } catch (e) {
+        } catch (_e) {
           return null;
         }
       })()

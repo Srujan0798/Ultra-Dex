@@ -11,7 +11,7 @@ export { default } from './token-forecast.js';
  * Error handler for token-budget
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[token-budget]', error instanceof Error ? error.message : String(error));
   } catch (_) {

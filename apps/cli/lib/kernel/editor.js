@@ -33,7 +33,7 @@ export class FileEditor {
     try {
       originalContent = await fs.readFile(fullPath, 'utf8');
       fileExists = true;
-    } catch (e) {
+    } catch (_e) {
       // File doesn't exist, we are creating it
       renderer.box(`Creating new file: ${filePath}`, 'New File', 'info');
     }

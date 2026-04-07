@@ -13,7 +13,7 @@ export { default } from './voice-service.js';
  * Error handler for whisper-service
  * @param {Error} error - Error to handle
  */
-function handleWhisperserviceError(error) {
+function _handleWhisperserviceError(error) {
   try {
     console.error('[whisper-service]', error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -34,7 +34,7 @@ export default {
  * @param {Error} error - The error to handle
  * @param {string} [context='strategies'] - Error context
  */
-function handleModuleError(error, context = 'strategies') {
+function _handleModuleError(error, context = 'strategies') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

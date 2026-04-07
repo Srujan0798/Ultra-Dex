@@ -59,7 +59,7 @@ export async function runSimpleGraph(createGraph, input, options = {}) {
  * @param {string} [context='graph-utils'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'graph-utils') {
+async function _safeExecute(fn, context = 'graph-utils') {
   try {
     return await fn();
   } catch (error) {

@@ -8,7 +8,7 @@ const LoadingSpinner = ({ text = "Loading...", isActive = true }) => {
   return /* @__PURE__ */ React.createElement(Text, null, /* @__PURE__ */ React.createElement(Spinner, { type: "clock" }), " ", text);
 };
 var LoadingSpinner_default = LoadingSpinner;
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error("[LoadingSpinner]", error instanceof Error ? error.message : String(error));
   } catch (_) {

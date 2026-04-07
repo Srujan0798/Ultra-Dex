@@ -71,7 +71,7 @@ export function styled(type, text) {
  * @param {Error} error - The error to handle
  * @param {string} [context='theme'] - Error context
  */
-function handleModuleError(error, context = 'theme') {
+function _handleModuleError(error, context = 'theme') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

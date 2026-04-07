@@ -149,7 +149,7 @@ class UltraDexWebSocketServer {
           // Ensure socket is closed
           try {
             ws.terminate();
-          } catch (e) {
+          } catch (_e) {
             // Socket may already be closed
           }
         });
@@ -223,7 +223,7 @@ class UltraDexWebSocketServer {
             ) {
               client.terminate();
             }
-          } catch (e) {
+          } catch (_e) {
             // Ignore errors from already closed connections
           }
         }
@@ -356,7 +356,7 @@ class UltraDexWebSocketServer {
         } else if (client.readyState === WebSocket.CONNECTING) {
           client.terminate();
         }
-      } catch (e) {
+      } catch (_e) {
         // Ignore errors during cleanup
       }
     }

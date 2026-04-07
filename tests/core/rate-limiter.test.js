@@ -269,7 +269,7 @@ describe('Rate Limiter Tests', () => {
 
 describe('Infrastructure RateLimiter', () => {
   it('acquires and releases provider permits', async () => {
-    const limiter = new InfrastructureRateLimiter({
+    const limiter = new InfrastructureRateLimiter(null, {
       defaultTokensPerSecond: 5,
       defaultCapacity: 2,
       defaultBurstMaxRequests: 10,

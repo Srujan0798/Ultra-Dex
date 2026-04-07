@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import 'reflect-metadata';
 import { createRequire } from 'module';
 import path from 'path';
 import { fileURLToPath } from 'url';

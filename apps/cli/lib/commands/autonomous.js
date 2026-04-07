@@ -91,7 +91,7 @@ export class AutonomousEngine {
       }
       this.fixCount = history.length;
       return history;
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }

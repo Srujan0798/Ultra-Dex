@@ -38,7 +38,7 @@ export default { hasConflict, applyBusinessRules };
  * @param {Error} error - The error to handle
  * @param {string} [context='booking-conflict'] - Error context
  */
-function handleModuleError(error, context = 'booking-conflict') {
+function _handleModuleError(error, context = 'booking-conflict') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

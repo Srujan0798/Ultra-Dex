@@ -6,7 +6,7 @@ var icons_default = {
   ChevronRight,
   ChevronDown
 };
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error("[icons]", error instanceof Error ? error.message : String(error));
   } catch (_) {

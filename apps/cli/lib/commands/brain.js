@@ -36,7 +36,7 @@ export async function brainCommand(options) {
 
     try {
       contextContent = await fs.readFile(contextPath, 'utf8');
-    } catch (error) {
+    } catch (_error) {
       // If CONTEXT.md doesn't exist, create it
       contextContent = `# {{PROJECT_NAME}} - Context
 
@@ -177,7 +177,7 @@ export async function buildDiffSummary() {
       stdio: 'pipe',
     }).trim();
     return { range, stat, commits };
-  } catch (error) {
+  } catch (_error) {
     try {
       const stat = execSync('git diff --stat HEAD~1..HEAD', {
         encoding: 'utf8',

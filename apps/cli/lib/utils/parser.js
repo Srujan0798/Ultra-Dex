@@ -161,7 +161,7 @@ export default {
  * @param {Error} error - The error to handle
  * @param {string} [context='parser'] - Error context
  */
-function handleModuleError(error, context = 'parser') {
+function _handleModuleError(error, context = 'parser') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

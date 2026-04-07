@@ -174,7 +174,7 @@ class GitHookManager {
     try {
       const { stdout } = execAsync('git rev-parse --git-dir');
       return path.resolve(stdout.trim());
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Not a git repository. Run this command from inside a git repository.');
     }
   }
@@ -188,7 +188,7 @@ class GitHookManager {
     // Check if it's a git repository
     try {
       await fs.access(this.gitDir);
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Not a git repository. Run this command from inside a git repository.');
     }
 

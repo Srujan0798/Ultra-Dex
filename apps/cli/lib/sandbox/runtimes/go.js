@@ -17,7 +17,7 @@ export default goRuntime;
  * Error handler for go
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[go]', error instanceof Error ? error.message : String(error));
   } catch (_) {

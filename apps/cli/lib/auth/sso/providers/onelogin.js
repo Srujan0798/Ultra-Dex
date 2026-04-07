@@ -11,7 +11,7 @@ export default {
  * Error handler for onelogin
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[onelogin]', error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -20,7 +20,7 @@ export default {
  * @param {string} [context='theme'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'theme') {
+async function _safeExecute(fn, context = 'theme') {
   try {
     return await fn();
   } catch (error) {

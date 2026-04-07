@@ -9,7 +9,7 @@ export default evaluationLoop;
  * Error handler for eval-loop
  * @param {Error} error - Error to handle
  */
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error('[eval-loop]', error instanceof Error ? error.message : String(error));
   } catch (_) {

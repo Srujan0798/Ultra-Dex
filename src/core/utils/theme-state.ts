@@ -1,38 +1,20 @@
-// Copyright (c) 2026 Ultra-Dex
-
-/**
- * Theme state management for Ultra-Dex CLI
- * Controls doomsday/terminal theme mode
- */
-
-let isDoomsday: boolean = false;
-
-/**
- * Enable or disable doomsday mode
- * @param enabled - Whether to enable doomsday theme
- */
-export function setDoomsdayMode(enabled: boolean): void {
+import { logger } from './logging.js';
+let isDoomsday = false;
+function setDoomsdayMode(enabled) {
   isDoomsday = enabled;
 }
-
-/**
- * Check if doomsday mode is currently enabled
- * @returns true if doomsday mode is active
- */
-export function isDoomsdayMode(): boolean {
+function isDoomsdayMode() {
   return isDoomsday;
 }
-
-/**
- * Handle errors in theme-state module
- * @param {Error} error - The error to handle
- * @param {string} [context='theme-state'] - Error context
- */
-function handleModuleError(error: Error | unknown, context = 'theme-state') {
+function _handleModuleError(error, context = "theme-state") {
   try {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[${context}] Error: ${message}`);
+    logger.error(`[${context}] Error: ${message}`);
   } catch (_) {
-    // Fail silently
   }
 }
+export {
+  isDoomsday,
+  isDoomsdayMode,
+  setDoomsdayMode
+};

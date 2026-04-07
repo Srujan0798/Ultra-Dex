@@ -215,7 +215,7 @@ export default ImpactVisualizer;
  * @param {string} [context='impact-visualizer'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'impact-visualizer') {
+async function _safeExecute(fn, context = 'impact-visualizer') {
   try {
     return await fn();
   } catch (error) {

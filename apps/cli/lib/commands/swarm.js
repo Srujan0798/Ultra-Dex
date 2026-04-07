@@ -112,7 +112,7 @@ async function withStateLock(callback) {
  */
 const CHECKPOINT_FILE = join(process.cwd(), '.ultra-dex', 'swarm-checkpoint.json');
 
-async function saveCheckpoint(task, agentResults, previousOutput, completedAgents, options) {
+async function _saveCheckpoint(task, agentResults, previousOutput, completedAgents, options) {
   const checkpoint = {
     timestamp: new Date().toISOString(),
     task,
@@ -147,7 +147,7 @@ async function clearCheckpoint() {
     if (existsSync(CHECKPOINT_FILE)) {
       await fs.unlink(CHECKPOINT_FILE);
     }
-  } catch (error) {
+  } catch (_error) {
     // Ignore cleanup errors
   }
 }
@@ -247,7 +247,7 @@ export function showSwarmAssemble(activeAgents) {
 /**
  * Run a single agent with retry logic
  */
-async function runAgent(agent, task, context, previousOutput, provider) {
+async function _runAgent(agent, task, context, previousOutput, provider) {
   if (!provider) {
     throw new ValidationError(
       'No AI provider configured. Set ANTHROPIC_API_KEY, NVIDIA_API_KEY, OPENAI_API_KEY, GOOGLE_AI_KEY, or use --provider ollama.'
@@ -629,7 +629,7 @@ async function gatherSwarmContext() {
     const graphSummary = await projectGraph.scan();
     context += `\n\n## Codebase Graph Summary\n- Total Files: ${graphSummary.nodeCount}\n- Total Dependencies: ${graphSummary.edgeCount}\n`;
     renderer.succeed(`Codebase mapped: ${graphSummary.nodeCount} nodes`);
-  } catch (e) {
+  } catch (_e) {
     renderer.fail('Graph scan failed, using limited context.');
   }
 

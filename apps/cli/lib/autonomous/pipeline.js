@@ -39,7 +39,7 @@ export class AutonomousPipeline {
  * @param {string} [context='pipeline'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'pipeline') {
+async function _safeExecute(fn, context = 'pipeline') {
   try {
     return await fn();
   } catch (error) {

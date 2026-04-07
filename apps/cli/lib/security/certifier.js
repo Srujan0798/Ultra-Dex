@@ -42,7 +42,7 @@ export async function issueCertificate(findings) {
  * @param {string} [context='certifier'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'certifier') {
+async function _safeExecute(fn, context = 'certifier') {
   try {
     return await fn();
   } catch (error) {

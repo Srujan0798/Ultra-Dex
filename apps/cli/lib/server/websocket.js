@@ -64,7 +64,7 @@ export function stopWebSocketServer() {
  * @param {Error} error - The error to handle
  * @param {string} [context='websocket'] - Error context
  */
-function handleModuleError(error, context = 'websocket') {
+function _handleModuleError(error, context = 'websocket') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

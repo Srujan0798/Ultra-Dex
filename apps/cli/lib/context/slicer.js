@@ -28,7 +28,7 @@ export function selectRules(task, baseDir = '.cursor') {
  * @param {Error} error - The error to handle
  * @param {string} [context='slicer'] - Error context
  */
-function handleModuleError(error, context = 'slicer') {
+function _handleModuleError(error, context = 'slicer') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

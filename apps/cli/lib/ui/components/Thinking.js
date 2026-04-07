@@ -21,7 +21,7 @@ const Thinking = ({ text = "Thinking...", dotsCount = 3, isActive = true }) => {
   return /* @__PURE__ */ React.createElement(Box, { flexDirection: "row", alignItems: "center" }, /* @__PURE__ */ React.createElement(Spinner, { type: "clock" }), /* @__PURE__ */ React.createElement(Text, null, " ", text, dots));
 };
 var Thinking_default = Thinking;
-function handleError(error) {
+function _handleError(error) {
   try {
     console.error("[Thinking]", error instanceof Error ? error.message : String(error));
   } catch (_) {

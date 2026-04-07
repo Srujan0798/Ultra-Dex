@@ -49,7 +49,7 @@ export async function runPostToolUseHooks({
  * @param {string} [context='hooks'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'hooks') {
+async function _safeExecute(fn, context = 'hooks') {
   try {
     return await fn();
   } catch (error) {

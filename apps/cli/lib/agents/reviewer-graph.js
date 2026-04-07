@@ -30,7 +30,7 @@ export default { createReviewerGraph, runReviewerGraph };
  * @param {string} [context='reviewer-graph'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'reviewer-graph') {
+async function _safeExecute(fn, context = 'reviewer-graph') {
   try {
     return await fn();
   } catch (error) {

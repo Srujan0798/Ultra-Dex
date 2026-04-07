@@ -53,7 +53,7 @@ export const QUICK_START_TEMPLATE = `# {{PROJECT_NAME}} - Quick Start
  * Error handler for quick-start
  * @param {Error} error - Error to handle
  */
-function handleQuickstartError(error) {
+function _handleQuickstartError(error) {
   try {
     console.error('[quick-start]', error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -35,7 +35,7 @@ export function loadConfig() {
   if (fs.existsSync(configPath)) {
     try {
       return JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    } catch (e) {
+    } catch (_e) {
       return {};
     }
   }

@@ -56,7 +56,7 @@ export class Agent {
       if (providerType) {
         try {
           return createProvider(providerType, { model: modelId });
-        } catch (e) {
+        } catch (_e) {
           // Fallback to default if creation fails
           process.stderr.write(
             `⚠️ Failed to create provider for ${modelId}, falling back to default.\n`
@@ -80,7 +80,7 @@ export class Agent {
     let routing = { model: null, classification: { category: 'general' } };
     try {
       routing = await modelOrchestrator.router.routeTask(input);
-    } catch (e) {
+    } catch (_e) {
       // Router failure shouldn't stop execution
     }
 

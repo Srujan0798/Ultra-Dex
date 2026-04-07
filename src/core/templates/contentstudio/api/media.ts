@@ -1,41 +1,27 @@
-/**
- * @fileoverview Media module
- * @module api/media
- */
-
-import { createMedia, deleteMedia, listMedia, prepareUpload } from '../lib/media';
-
-export async function uploadMedia(
-  ownerId: string,
-  data: { fileName: string; mimeType: string; url?: string }
-) {
+import { createMedia, deleteMedia, listMedia, prepareUpload } from '../lib/media.js';
+async function uploadMedia(ownerId, data) {
   const { uploadUrl, publicUrl } = prepareUpload(data.fileName);
   const mediaUrl = data.url ?? publicUrl;
-
   const media = await createMedia(ownerId, { url: mediaUrl, type: data.mimeType });
-
   return {
     media,
-    uploadUrl,
+    uploadUrl
   };
 }
-
-export async function getMedia(ownerId: string) {
+async function getMedia(ownerId) {
   return listMedia(ownerId);
 }
-
-export async function removeMedia(ownerId: string, mediaId: string) {
+async function removeMedia(ownerId, mediaId) {
   return deleteMedia(mediaId, ownerId);
 }
-
-/**
- * Error handler for media
- * @param {Error} error - Error to handle
- */
-function handleMediaError(error: Error | unknown) {
+function handleMediaError(error) {
   try {
-    console.error('[media]', error instanceof Error ? error.message : String(error));
+    console.error("[media]", error instanceof Error ? error.message : String(error));
   } catch (_) {
-    // Fail silently
   }
 }
+export {
+  getMedia,
+  removeMedia,
+  uploadMedia
+};

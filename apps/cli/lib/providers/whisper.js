@@ -49,7 +49,7 @@ export default WhisperProvider;
  * @param {string} [context='whisper'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'whisper') {
+async function _safeExecute(fn, context = 'whisper') {
   try {
     return await fn();
   } catch (error) {

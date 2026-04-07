@@ -84,7 +84,7 @@ export async function buildGraph(useCache = true) {
       }
 
       graph.nodes.push(fileNode);
-    } catch (e) {
+    } catch (_e) {
       // Skip files that can't be read
     }
   });

@@ -39,7 +39,7 @@ export default TeamWorkspaceManager;
  * @param {string} [context='workspace'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'workspace') {
+async function _safeExecute(fn, context = 'workspace') {
   try {
     return await fn();
   } catch (error) {

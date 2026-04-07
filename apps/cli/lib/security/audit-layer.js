@@ -191,7 +191,7 @@ export default AuditLayer;
  * @param {string} [context='audit-layer'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'audit-layer') {
+async function _safeExecute(fn, context = 'audit-layer') {
   try {
     return await fn();
   } catch (error) {

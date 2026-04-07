@@ -19,7 +19,7 @@ function checkPrerequisites() {
   // Check for SoX or Rec (Linux/Mac)
   try {
     execSync('rec --version', { stdio: 'ignore' });
-  } catch (e) {
+  } catch (_e) {
     try {
       execSync('sox --version', { stdio: 'ignore' });
     } catch (e2) {

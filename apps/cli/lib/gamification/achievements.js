@@ -209,7 +209,7 @@ class AchievementsSystem {
           this.playerAchievements.set(id, Achievement.fromJSON(ach));
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist, initialize with empty map
       this.playerAchievements = new Map();
       await this.saveAchievements();

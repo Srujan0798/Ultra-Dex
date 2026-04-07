@@ -61,7 +61,7 @@ class RepoKnowledgeGraph {
       try {
         const content = await fs.readFile(filePath, 'utf8');
         await this.parseJSFile(filePath, content);
-      } catch (error) {
+      } catch (_error) {
         // Skip files that can't be read
       }
     }
@@ -81,7 +81,7 @@ class RepoKnowledgeGraph {
       try {
         const content = await fs.readFile(filePath, 'utf8');
         await this.parseTSFile(filePath, content);
-      } catch (error) {
+      } catch (_error) {
         // Skip files that can't be read
       }
     }
@@ -97,7 +97,7 @@ class RepoKnowledgeGraph {
       try {
         const content = await fs.readFile(filePath, 'utf8');
         await this.parseTSXFile(filePath, content);
-      } catch (error) {
+      } catch (_error) {
         // Skip files that can't be read
       }
     }
@@ -117,7 +117,7 @@ class RepoKnowledgeGraph {
       try {
         const content = await fs.readFile(filePath, 'utf8');
         await this.parsePyFile(filePath, content);
-      } catch (error) {
+      } catch (_error) {
         // Skip files that can't be read
       }
     }

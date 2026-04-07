@@ -15,6 +15,7 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 import { Document } from '@langchain/core/documents';
 import { validateSafePath } from '../utils/validation.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { logger } from '../utils/logger.js';
 
 const DEFAULT_INCLUDE = [
   '**/*.js',

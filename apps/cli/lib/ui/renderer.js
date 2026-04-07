@@ -242,7 +242,7 @@ export const renderer = new Renderer();
  * @param {string} [context='renderer'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'renderer') {
+async function _safeExecute(fn, context = 'renderer') {
   try {
     return await fn();
   } catch (error) {

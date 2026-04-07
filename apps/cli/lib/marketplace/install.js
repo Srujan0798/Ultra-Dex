@@ -25,7 +25,7 @@ export default {
  * @param {string} [context='install'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'install') {
+async function _safeExecute(fn, context = 'install') {
   try {
     return await fn();
   } catch (error) {

@@ -59,7 +59,7 @@ export function createCanvasSession(options = {}) {
  * @param {Error} error - The error to handle
  * @param {string} [context='editor'] - Error context
  */
-function handleModuleError(error, context = 'editor') {
+function _handleModuleError(error, context = 'editor') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);

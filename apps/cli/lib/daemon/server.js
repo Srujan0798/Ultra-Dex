@@ -59,7 +59,7 @@ export class DaemonServer extends EventEmitter {
  * @param {string} [context='server'] - Error context
  * @returns {Promise<*>} Result or null on error
  */
-async function safeExecute(fn, context = 'server') {
+async function _safeExecute(fn, context = 'server') {
   try {
     return await fn();
   } catch (error) {

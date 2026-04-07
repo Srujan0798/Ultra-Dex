@@ -94,7 +94,7 @@ export class SessionManager {
       if (result.compressed) {
         this.history = result.compressedContext;
       }
-    } catch (error) {
+    } catch (_error) {
       // Compaction should never break session tracking
     }
   }

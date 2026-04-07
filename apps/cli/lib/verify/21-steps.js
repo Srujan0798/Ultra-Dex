@@ -38,7 +38,7 @@ export function summarizeSteps() {
  * @param {Error} error - The error to handle
  * @param {string} [context='21-steps'] - Error context
  */
-function handleModuleError(error, context = '21-steps') {
+function _handleModuleError(error, context = '21-steps') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[${context}] Error: ${message}`);
