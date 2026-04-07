@@ -6,7 +6,7 @@
  */
 
 import crypto from 'crypto';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { requireConfig, retryWithBackoff } from './utils.js';
 import FormData from 'form-data';
 import fs from 'fs/promises';
@@ -684,7 +684,7 @@ export async function validateSlackConfig(config) {
     throw new Error('Slack configuration requires token');
   }
 
-  const client = new SlackClient(config.token);
+  const _client = new SlackClient(config.token);
   
   try {
     // Test by fetching auth information

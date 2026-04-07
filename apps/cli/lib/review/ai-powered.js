@@ -22,7 +22,7 @@ export class ReviewAgent extends EventEmitter {
     this.rules.push({ pattern, message, severity });
   }
 
-  async review(code, context = {}) {
+  async review(code, _context = {}) {
     const findings = [];
     const lines = code.split('\n');
 
@@ -51,7 +51,7 @@ export class ReviewAgent extends EventEmitter {
     };
   }
 
-  calculateScore(findings, totalLines) {
+  calculateScore(findings, _totalLines) {
     const baseScore = 100;
     const deduction = findings * 5;
     return Math.max(0, baseScore - deduction);

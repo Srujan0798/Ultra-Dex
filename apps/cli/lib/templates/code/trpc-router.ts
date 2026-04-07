@@ -10,7 +10,7 @@
 
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, publicProcedure, protectedProcedure, adminProcedure } from '../trpc';
+import { router, protectedProcedure, adminProcedure } from '../trpc';
 import { prisma } from '@/lib/prisma';
 
 // =============================================================================
@@ -266,7 +266,7 @@ export type AppRouter = typeof appRouter;
  * Error handler for trpc-router
  * @param {Error} error - Error to handle
  */
-function handleTrpcrouterError(error) {
+function _handleTrpcrouterError(error) {
   try {
     console.error('[trpc-router]', error instanceof Error ? error.message : String(error));
   } catch (_) {

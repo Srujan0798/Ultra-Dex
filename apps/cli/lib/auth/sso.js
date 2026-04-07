@@ -52,7 +52,7 @@ export class EnterpriseSSO {
     return [...new Set(ultraDexRoles)];
   }
 
-  mapPermissions(userInfo) {
+  mapPermissions(_userInfo) {
     // Map enterprise permissions
     return ['read', 'write', 'execute'];
   }

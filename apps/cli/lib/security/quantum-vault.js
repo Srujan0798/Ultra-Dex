@@ -3,8 +3,8 @@
 // Implements AES-256-GCM (Quantum Resistant Symmetric Encryption)
 
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
+
+
 
 export class QuantumVault {
     constructor(secretKey) {
@@ -24,7 +24,7 @@ export class QuantumVault {
      * @returns {string} - Combined IV + AuthTag + Encrypted Data (Hex)
      */
     encrypt(text) {
-        const iv = crypto.randomBytes(16); // 96-bit IV is standard for GCM, often implemented as 12 bytes, but node crypto handles 16 well or 12. 
+        const _iv = crypto.randomBytes(16); // 96-bit IV is standard for GCM, often implemented as 12 bytes, but node crypto handles 16 well or 12. 
         // Node.js crypto recommends 12 bytes for GCM usually, let's stick to standard 12 bytes (96 bits) for GCM if we want to be strict, but 16 is common for CBC. 
         // Let's use 16 bytes (128 bits) for IV to be safe/standard with general AES, but for GCM specifically 12 bytes is optimal.
         // However, to be "Quantum Safe" against Grover's algorithm, we rely on the 256-bit key.

@@ -20,7 +20,7 @@ const CHECKPOINT_DIR = path.join(os.homedir(), '.ultra-dex', 'checkpoints');
 const MAX_FULL_CHECKPOINTS = 5;
 
 // Maximum number of differential checkpoints to keep
-const MAX_DIFF_CHECKPOINTS = 10;
+const _MAX_DIFF_CHECKPOINTS = 10;
 
 export class CheckpointSystem {
   constructor() {
@@ -282,7 +282,7 @@ export class CheckpointSystem {
     try {
       const files = await fs.readdir(this.checkpointDir);
       const oldFiles = files.filter((file) => {
-        const filePath = path.join(this.checkpointDir, file);
+        const _filePath = path.join(this.checkpointDir, file);
         // In a real implementation, we'd check the actual file modification time
         // For now, we'll just use the timestamp in the filename if available
         return true; // Placeholder - implement proper date checking

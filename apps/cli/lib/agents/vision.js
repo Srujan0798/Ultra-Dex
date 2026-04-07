@@ -68,7 +68,7 @@ Output Format:
     const framework = options.framework || 'react';
     const styling = options.styling || 'tailwind';
 
-    const systemPrompt = `You are a Vision Agent that converts UI screenshots to code.
+    const _systemPrompt = `You are a Vision Agent that converts UI screenshots to code.
 Framework: ${framework}
 Styling: ${styling}
 
@@ -96,7 +96,7 @@ Generate production-ready code that:
   /**
    * Generate a single component
    */
-  generateComponent(component, framework, styling, colors) {
+  generateComponent(component, framework, _styling, _colors) {
     const name = component.type.charAt(0).toUpperCase() + component.type.slice(1);
 
     if (framework === 'react') {
@@ -146,7 +146,7 @@ export function ${name}({ children }: ${name}Props) {
   /**
    * Generate main file combining all components
    */
-  generateMainFile(components, framework) {
+  generateMainFile(components, _framework) {
     const imports = components
       .map((c) => `import { ${c.name} } from './components/${c.name}';`)
       .join('\n');

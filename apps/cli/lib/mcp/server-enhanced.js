@@ -7,13 +7,13 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import crypto from 'crypto';
+
 import { promisify } from 'util';
 import { deflate, inflate } from 'zlib';
 import { Logger } from '../utils/logger.js';
 
-const deflateAsync = promisify(deflate);
-const inflateAsync = promisify(inflate);
+const _deflateAsync = promisify(deflate);
+const _inflateAsync = promisify(inflate);
 const logger = new Logger({ prefix: 'MCP' });
 
 /**

@@ -241,7 +241,7 @@ export async function offerAutoFix() {
 function getSuggestions(errorMessage) {
   const suggestions = [];
 
-  for (const [key, handler] of Object.entries(ERROR_SOLUTIONS)) {
+  for (const [_key, handler] of Object.entries(ERROR_SOLUTIONS)) {
     if (handler.check(errorMessage)) {
       const newSuggestions = handler.suggest(errorMessage);
       suggestions.push(...newSuggestions);

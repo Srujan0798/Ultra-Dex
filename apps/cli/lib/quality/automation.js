@@ -106,7 +106,7 @@ export async function verifyContextLoaded(projectDir) {
   }
 }
 
-export async function verifyArchitectureAlignment(projectDir) {
+export async function verifyArchitectureAlignment(_projectDir) {
   await projectGraph.scan();
   const summary = projectGraph.getSummary();
 
@@ -217,7 +217,7 @@ export async function verifyApiDocumentation(projectDir) {
   return { status: 'FAIL', message: `API documentation is sparse (${percentage.toFixed(0)}%)` };
 }
 
-export async function verifyDatabaseSchema(projectDir) {
+export async function verifyDatabaseSchema(_projectDir) {
   const summary = await projectGraph.scan();
   const hasPrisma = summary.files.some((f) => f.endsWith('schema.prisma'));
   const hasDrizzle = summary.files.some((f) => f.includes('schema.ts') || f.includes('models.ts'));

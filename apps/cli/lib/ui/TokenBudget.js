@@ -8,7 +8,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import chalk from 'chalk';
+
 import boxen from '../utils/boxen.js';
 import { theme } from './theme.js';
 

@@ -320,7 +320,7 @@ export class UltraMemory {
 
     await this.init();
 
-    const normalizedQuery = query.toLowerCase().trim();
+    const _normalizedQuery = query.toLowerCase().trim();
 
     // First, get regular search results
     const baseResults = await this.search(query, limit * 2); // Get more results to filter

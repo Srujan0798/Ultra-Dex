@@ -10,7 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
 import chalk from 'chalk';
-import { AppError } from '../../utils/errors.js';
+
 
 /**
  * Remote MCP Client Class
@@ -100,7 +100,7 @@ export class RemoteMCPClient {
    * Handle incoming messages
    */
   handleMessage(message) {
-    const { type, data, timestamp } = message;
+    const { type, data, _timestamp } = message;
 
     printInfo(chalk.gray(`📥 Received: ${type}`));
 
@@ -147,7 +147,7 @@ export class RemoteMCPClient {
   /**
    * Handle context response
    */
-  handleContextResponse(data) {
+  handleContextResponse(_data) {
     printInfo(chalk.blue('📋 Context received from server'));
     // In a real implementation, this would update local context
   }
@@ -155,7 +155,7 @@ export class RemoteMCPClient {
   /**
    * Handle plan response
    */
-  handlePlanResponse(data) {
+  handlePlanResponse(_data) {
     printInfo(chalk.blue('📋 Plan received from server'));
     // In a real implementation, this would update local plan
   }
@@ -163,7 +163,7 @@ export class RemoteMCPClient {
   /**
    * Handle state response
    */
-  handleStateResponse(data) {
+  handleStateResponse(_data) {
     printInfo(chalk.blue('📊 State received from server'));
     // In a real implementation, this would update local state
   }

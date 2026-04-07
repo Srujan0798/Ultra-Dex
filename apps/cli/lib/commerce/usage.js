@@ -338,7 +338,7 @@ export class UsageTracker {
       });
     }
 
-    const agentRecords = this.usageLog.filter((record) => record.agent === agentName);
+    const _agentRecords = this.usageLog.filter((record) => record.agent === agentName);
 
     return this.getUsageStats({ agent: agentName });
   }

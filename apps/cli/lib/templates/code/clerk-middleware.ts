@@ -145,7 +145,7 @@ export async function GET() {
  * Error handler for clerk-middleware
  * @param {Error} error - Error to handle
  */
-function handleClerkmiddlewareError(error) {
+function _handleClerkmiddlewareError(error) {
   try {
     console.error('[clerk-middleware]', error instanceof Error ? error.message : String(error));
   } catch (_) {

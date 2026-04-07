@@ -5,7 +5,7 @@
  * Provides consistent, styled output across all commands
  */
 
-import chalk from 'chalk';
+
 import {
   formatSuccess,
   formatError,

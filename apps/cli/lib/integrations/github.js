@@ -7,7 +7,7 @@
 
 import sodium from 'libsodium-wrappers';
 import { Octokit } from 'octokit';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printSuccess, printWarning, printError } from '../utils/output.js';
 import { requireConfig } from './utils.js';
 import { throttling } from '@octokit/plugin-throttling';
 import { retry } from '@octokit/plugin-retry';
@@ -26,11 +26,11 @@ export class GitHubClient {
     this.octokit = new MyOctokit({
       auth: this.token,
       throttle: {
-        onRateLimit: (retryAfter, options) => {
+        onRateLimit: (retryAfter, _options) => {
           printWarning(`Rate limit exceeded. Retrying after ${retryAfter} seconds.`);
           return true; // Retry the request
         },
-        onSecondaryRateLimit: (retryAfter, options) => {
+        onSecondaryRateLimit: (retryAfter, _options) => {
           printWarning(`Secondary rate limit exceeded. Retrying after ${retryAfter} seconds.`);
           return true; // Retry the request
         }

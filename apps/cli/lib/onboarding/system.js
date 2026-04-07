@@ -8,8 +8,8 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import fs from 'fs/promises';
-import path from 'path';
-import { execSync } from 'child_process';
+
+
 import { logger } from '../utils/logger.js';
 
 export default class OnboardingSystem {

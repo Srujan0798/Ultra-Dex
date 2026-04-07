@@ -7,7 +7,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 import chalk from 'chalk';
 
 // ADR compliance check function
@@ -103,7 +103,7 @@ export async function checkADRGovernance(taskName) {
 function parseADR(content, fileName) {
   try {
     // Extract ADR metadata from frontmatter or content
-    const lines = content.split('\n');
+    const _lines = content.split('\n');
     
     // Look for ADR ID in filename or content
     const idMatch = fileName.match(/(ADR-\d{3}|adr-\d{3})/i) || content.match(/# ADR-(\d{3})/i) || content.match(/# (\d{3})/);

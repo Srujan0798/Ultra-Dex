@@ -3,11 +3,11 @@
 // Safe execution environment for WebAssembly plugins
 
 import fs from 'fs';
-import path from 'path';
+
 import { logger } from '../../lib/utils/logger.js';
 
 export class WasmPlugin {
-    constructor(options = {}) {
+    constructor(_options = {}) {
         this.memory = new WebAssembly.Memory({ initial: 256, maximum: 512 });
         this.instance = null;
         this.api = null; // Exported functions

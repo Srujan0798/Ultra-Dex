@@ -487,7 +487,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
       circuitBreakerName = 'default',
       retryStrategyName = 'default',
       operation: fn,
-      args = [],
+      _args = [],
     } = operation;
 
     const breaker = this.getCircuitBreaker(circuitBreakerName, context.circuitBreaker);

@@ -19,7 +19,7 @@ export const AUTOMATED_STEPS = [
     id: 'understand',
     title: 'Requirements Understanding',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       // Check if CONTEXT.md or requirements exist
       const files = ['CONTEXT.md', 'REQUIREMENTS.md', 'docs/requirements.md', 'IMPLEMENTATION-PLAN.md'];
       for (const file of files) {
@@ -35,7 +35,7 @@ export const AUTOMATED_STEPS = [
     id: 'analyze',
     title: 'Technical Analysis',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       // Check for architecture docs or design decisions
       const files = ['docs/ARCHITECTURE.md', 'docs/auth-architecture.md', '.ultra-dex/decisions.json'];
       for (const file of files) {
@@ -51,7 +51,7 @@ export const AUTOMATED_STEPS = [
     id: 'design',
     title: 'Design Review',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       // Check for Figma links, design docs, or UI components
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
@@ -69,7 +69,7 @@ export const AUTOMATED_STEPS = [
     id: 'implement',
     title: 'Implementation Complete',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       // Check if source files exist and have content
       const srcDirs = ['src', 'lib', 'app', 'pages', 'components'];
       for (const dir of srcDirs) {
@@ -90,7 +90,7 @@ export const AUTOMATED_STEPS = [
     id: 'unit-test',
     title: 'Unit Tests',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         // Check if test files exist
         const testDirs = ['test', 'tests', '__tests__', 'spec'];
@@ -119,9 +119,9 @@ export const AUTOMATED_STEPS = [
     id: 'integration-test',
     title: 'Integration Tests',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       // Check for e2e or integration test files
-      const patterns = ['**/*.e2e.ts', '**/*.integration.ts', '**/e2e/**', '**/integration/**'];
+      const _patterns = ['**/*.e2e.ts', '**/*.integration.ts', '**/e2e/**', '**/integration/**'];
       try {
         const files = await fs.readdir(path.join(process.cwd(), 'test'));
         const integrationFiles = files.filter(f => f.includes('integration') || f.includes('e2e'));
@@ -136,7 +136,7 @@ export const AUTOMATED_STEPS = [
     id: 'security',
     title: 'Security Review',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         // Run npm audit
         const result = execSync('npm audit --json 2>/dev/null || echo "{}"', { encoding: 'utf8' });
@@ -161,7 +161,7 @@ export const AUTOMATED_STEPS = [
     id: 'performance',
     title: 'Performance Check',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         // Check bundle size if build exists
         const distPath = path.join(process.cwd(), 'dist');
@@ -191,7 +191,7 @@ export const AUTOMATED_STEPS = [
     id: 'accessibility',
     title: 'Accessibility Check',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       // Check for a11y testing setup
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
@@ -209,7 +209,7 @@ export const AUTOMATED_STEPS = [
     id: 'compatibility',
     title: 'Cross-browser Compatibility',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       // Check for browserslist config
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
@@ -228,7 +228,7 @@ export const AUTOMATED_STEPS = [
     id: 'error-handling',
     title: 'Error Handling',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       // Search for try/catch patterns
       try {
         const result = execSync('grep -r "try {" src/ lib/ 2>/dev/null | wc -l || echo "0"', { encoding: 'utf8' });
@@ -246,7 +246,7 @@ export const AUTOMATED_STEPS = [
     id: 'logging',
     title: 'Logging & Monitoring',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
         const hasLogging = packageJson.dependencies?.['winston'] ||
@@ -264,7 +264,7 @@ export const AUTOMATED_STEPS = [
     id: 'documentation',
     title: 'Documentation Updated',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         const readme = await fs.readFile('README.md', 'utf8');
         if (readme.length > 500) {
@@ -280,7 +280,7 @@ export const AUTOMATED_STEPS = [
     id: 'code-review',
     title: 'Peer Code Review',
     automated: false,
-    execute: async (context) => {
+    execute: async (_context) => {
       return { passed: true, message: 'Code review: requires human verification', manual: true };
     }
   },
@@ -288,7 +288,7 @@ export const AUTOMATED_STEPS = [
     id: 'dependency-check',
     title: 'Dependency Security',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         execSync('npm audit --audit-level=high 2>/dev/null', { stdio: 'pipe' });
         return { passed: true, message: 'No high-severity dependency issues' };
@@ -301,7 +301,7 @@ export const AUTOMATED_STEPS = [
     id: 'backup',
     title: 'Backup Strategy',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         execSync('git status 2>/dev/null', { stdio: 'pipe' });
         return { passed: true, message: 'Git repository detected for version control' };
@@ -314,7 +314,7 @@ export const AUTOMATED_STEPS = [
     id: 'rollback',
     title: 'Rollback Plan',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         const result = execSync('git log --oneline -5 2>/dev/null', { encoding: 'utf8' });
         if (result.trim().split('\n').length >= 3) {
@@ -328,7 +328,7 @@ export const AUTOMATED_STEPS = [
     id: 'deployment',
     title: 'Deployment Ready',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       const deployConfigs = ['.github/workflows', 'vercel.json', 'netlify.toml', 'Dockerfile', 'fly.toml'];
       for (const config of deployConfigs) {
         try {
@@ -343,7 +343,7 @@ export const AUTOMATED_STEPS = [
     id: 'monitoring',
     title: 'Post-deployment Monitoring',
     automated: true,
-    execute: async (context) => {
+    execute: async (_context) => {
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
         const hasMonitoring = packageJson.dependencies?.['@sentry/node'] ||
@@ -360,7 +360,7 @@ export const AUTOMATED_STEPS = [
     id: 'user-testing',
     title: 'User Acceptance Testing',
     automated: false,
-    execute: async (context) => {
+    execute: async (_context) => {
       return { passed: true, message: 'UAT: requires human verification', manual: true };
     }
   },
@@ -368,7 +368,7 @@ export const AUTOMATED_STEPS = [
     id: 'sign-off',
     title: 'Final Sign-off',
     automated: false,
-    execute: async (context) => {
+    execute: async (_context) => {
       return { passed: true, message: 'Sign-off: requires stakeholder approval', manual: true };
     }
   }
@@ -378,7 +378,7 @@ export const AUTOMATED_STEPS = [
  * Run all 21 automated steps
  */
 export async function runAutomatedVerification(options = {}) {
-  const { verbose = false, failFast = false } = options;
+  const { _verbose = false, failFast = false } = options;
   const results = [];
 
   printInfo(chalk.cyan('\n🤖 Running 21-Step Automated Verification\n'));

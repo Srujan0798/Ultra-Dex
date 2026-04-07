@@ -1,6 +1,6 @@
 import gradient from 'gradient-string';
 import chalk from 'chalk';
-import { theme } from '../theme.js';
+
 export function createGradientBanner(text, gradientType = 'professional') {
   const gradients = {
     professional: gradient(['#8e2de2', '#4a00e0']),

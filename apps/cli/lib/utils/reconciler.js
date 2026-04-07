@@ -7,7 +7,7 @@
 
 import { projectGraph } from '../mcp/graph.js';
 import { loadState } from '../commands/plan.js';
-import chalk from 'chalk';
+
 
 export class Reconciler {
   async reconcile() {

@@ -5,8 +5,8 @@
  * Provides UI components that can be rendered in MCP-compatible tools
  */
 
-import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
-import chalk from 'chalk';
+import { printInfo, printSuccess, printWarning } from '../../utils/output.js';
+
 import { AppError } from '../../utils/errors.js';
 import { Logger } from '../../utils/logger.js';
 
@@ -57,7 +57,7 @@ class DashboardComponent {
   }
 
   renderHTML() {
-    const { project, status, score, agents, tasks, metrics } = this.props;
+    const { project, status, score, agents, tasks, _metrics } = this.props;
 
     let html = `<div class="dashboard">
       <h2>${this.props.title}</h2>
@@ -271,7 +271,7 @@ class ChartComponent {
   }
 
   renderHTML() {
-    const { title, type, data, labels } = this.props;
+    const { title, type, data, _labels } = this.props;
 
     // For now, return a simple representation - in a real implementation
     // this would render actual chart elements

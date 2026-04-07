@@ -6,9 +6,9 @@
  */
 
 import { WebSocketServer, WebSocket } from 'ws';
-import chalk from 'chalk';
+
 import http from 'http';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
 
 import { projectGraph } from './graph.js';
@@ -298,7 +298,7 @@ class UltraDexWebSocketServer {
   }
 
   async sendGraphUpdate(ws) {
-    const summary = projectGraph.getSummary();
+    const _summary = projectGraph.getSummary();
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(
         JSON.stringify({

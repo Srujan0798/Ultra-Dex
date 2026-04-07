@@ -6,7 +6,7 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 
-const execAsync = promisify(exec);
+const _execAsync = promisify(exec);
 
 export class MobileAppGenerator {
   constructor(options = {}) {

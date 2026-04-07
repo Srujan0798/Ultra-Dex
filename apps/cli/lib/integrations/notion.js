@@ -6,7 +6,7 @@
  */
 
 import { Client } from '@notionhq/client';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { retryWithBackoff } from './utils.js';
 
 export class NotionClient {
@@ -264,7 +264,7 @@ export async function validateNotionConfig(config) {
   
   try {
     // Test by trying to search for something
-    const response = await client.searchPages('test', { property: 'object', value: 'page' });
+    const _response = await client.searchPages('test', { property: 'object', value: 'page' });
     printSuccess('✅ Notion connection validated successfully');
     return true;
   } catch (error) {

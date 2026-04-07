@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import { printError, printWarning, printInfo, printSuccess } from '../utils/output.js';
+import { printError, printWarning, printInfo } from '../utils/output.js';
 
 // Error categories and their solutions
 const ERROR_CATEGORIES = {
@@ -193,7 +193,7 @@ export async function handleSmartError(error, context = {}) {
       if (confirm) {
         await errorCategory.interactiveFix();
       }
-    } catch (e) {
+    } catch (_e) {
       // If inquirer fails (e.g., in non-interactive environment), just continue
       printInfo(chalk.gray('\nContinuing without interactive fix...'));
     }
@@ -229,7 +229,7 @@ async function logError(error, context) {
     const logEntry = `[${errorLog.timestamp}] ${errorLog.message}\n${errorLog.stack}\n\n`;
 
     await fs.appendFile(logFile, logEntry);
-  } catch (logError) {
+  } catch (_logError) {
     // If logging fails, don't let it interrupt the main error handling
     printWarning(chalk.yellow('Could not write error to log file'));
   }

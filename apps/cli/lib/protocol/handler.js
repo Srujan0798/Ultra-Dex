@@ -8,7 +8,7 @@
 import { URL } from 'url';
 import fs from 'fs/promises';
 import path from 'path';
-import { spawn } from 'child_process';
+
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
 // Protocol schemes and their handlers
@@ -49,7 +49,7 @@ export async function handleUltraProtocol(protocolUrl) {
     printInfo(`🔗 Processing ultra:// request: ${path}`);
 
     // Find matching handler
-    for (const [scheme, config] of Object.entries(PROTOCOL_HANDLERS)) {
+    for (const [_scheme, config] of Object.entries(PROTOCOL_HANDLERS)) {
       const match = path.match(config.pattern);
       if (match) {
         return await config.handler(match[1], parsed);
@@ -67,7 +67,7 @@ export async function handleUltraProtocol(protocolUrl) {
 /**
  * Handle project-related requests
  */
-async function handleProjectRequest(subPath, urlObj) {
+async function handleProjectRequest(subPath, _urlObj) {
   const [projectName, ...rest] = subPath.split('/');
 
   switch (rest[0]) {
@@ -85,7 +85,7 @@ async function handleProjectRequest(subPath, urlObj) {
 /**
  * Handle context-related requests
  */
-async function handleContextRequest(subPath, urlObj) {
+async function handleContextRequest(subPath, _urlObj) {
   const [contextType, ...rest] = subPath.split('/');
 
   switch (contextType) {
@@ -339,7 +339,7 @@ async function handleMemoryRecall(memoryId) {
   return mockMemory;
 }
 
-async function handleMemoryStore(content, params) {
+async function handleMemoryStore(content, _params) {
   printInfo(`🧠 Storing memory: ${content.substring(0, 50)}...`);
 
   // Simulate storing memory
@@ -392,7 +392,7 @@ async function getStateHistory() {
   return { history };
 }
 
-async function updateState(newState, params) {
+async function updateState(newState, _params) {
   printInfo(`🔄 Updating state: ${newState}`);
 
   // Simulate state update
@@ -406,7 +406,7 @@ async function handleStateDefault(subPath) {
 }
 
 // Agent handlers
-async function executeAgent(task, params) {
+async function executeAgent(task, _params) {
   printInfo(`🤖 Executing agent task: ${task}`);
 
   // Simulate agent execution

@@ -597,7 +597,6 @@ export class MemoryBridge extends EventEmitter {
       // This is a simplified approach - in a real implementation, we'd use a proper embedding model
       this.emit('embedding:warning', {
         message: 'Provider does not support embeddings, using mock embedding',
-        error: error.message,
       });
       throw new Error('Provider does not support embeddings');
     } catch (error) {

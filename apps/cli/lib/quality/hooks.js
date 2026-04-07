@@ -16,7 +16,7 @@ function formatFailures(failures) {
 export async function runPostToolUseHooks({
   projectDir = process.cwd(),
   tool = 'unknown',
-  mutates = false,
+  _mutates = false,
   blockOnFailure = false,
   fast = true,
   context = {},

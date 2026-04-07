@@ -5,14 +5,14 @@ import { getDefaultProvider, createProvider } from '../providers/index.js';
 import { printInfo } from '../utils/output.js';
 import chalk from 'chalk';
 
-export async function buildPlan(goal, options = {}) {
+export async function buildPlan(goal, _options = {}) {
   printInfo(chalk.cyan(`🧠 Neuro-Plan: Deep reasoning for "${goal}"...`));
 
   // 1. Initial Plan via Planner Agent
   const providerId = getDefaultProvider();
   
   // We use a factory to compatible with runAgentLoop
-  const providerFactory = (agentId) => createProvider(providerId, {
+  const providerFactory = (_agentId) => createProvider(providerId, {
     maxTokens: 16000
   });
 

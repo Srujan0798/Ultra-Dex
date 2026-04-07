@@ -5,8 +5,8 @@
 import { inputController } from './input.js';
 import { visionSystem } from './vision.js';
 import OpenAI from 'openai';
-import fs from 'fs';
-import path from 'path';
+
+
 import inquirer from 'inquirer'; // For safety confirmation
 
 export class GhostAgent {

@@ -12,7 +12,7 @@ import { isDoomsdayMode } from '../utils/theme-state.js';
 import { showSwarmAssemble as showDoomsdaySwarm } from '../themes/doomsday.js';
 import { renderer } from '../ui/renderer.js';
 import { theme } from '../ui/theme.js';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError, NetworkError } from '../utils/errors.js';
 import { filterAgentsByAccess } from '../enterprise/agent-access.js';
@@ -51,7 +51,7 @@ async function atomicWrite(filePath, data) {
     // Clean up temp file if it exists
     try {
       await fs.unlink(tempPath).catch(() => {});
-    } catch (unlinkError) {
+    } catch (_unlinkError) {
       // Ignore cleanup errors
     }
     throw error;
@@ -447,7 +447,7 @@ export async function swarmCommand(task, options) {
   await renderer.text(`**🐝 Ultra-Dex Swarm Mode**
 Task: "${task}"`);
 
-  const startTime = Date.now();
+  const _startTime = Date.now();
   const stateMachine = await AgentStateMachine.load();
   stateMachine.setState('init', { task });
   await stateMachine.save();
@@ -505,9 +505,9 @@ Task: "${task}"`);
   });
 
   // Resume from checkpoint or start fresh
-  let previousOutput = checkpoint ? checkpoint.previousOutput : '';
+  let _previousOutput = checkpoint ? checkpoint.previousOutput : '';
   const agentResults = checkpoint ? [...checkpoint.agentResults] : [];
-  const agentTimings = {};
+  const _agentTimings = {};
 
   const { role, allowedAgents, restrictedAgents } = await filterAgentsByAccess(
     AGENT_PIPELINE.map((agent) => agent.name)

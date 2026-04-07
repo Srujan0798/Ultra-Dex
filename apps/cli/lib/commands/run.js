@@ -27,7 +27,7 @@ import { errorRecovery } from '../utils/error-recovery.js';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
 import { authorizeOperation } from '../governance/index.js';
 import { verifyLinting, verifyTypeSafety, verifySecurityPatterns } from '../quality/automation.js';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { authorizeAgentAccess } from '../enterprise/agent-access.js';
 import { estimateTokens } from '../utils/token-forecast.js';
 import { logger } from '../utils/logger.js';

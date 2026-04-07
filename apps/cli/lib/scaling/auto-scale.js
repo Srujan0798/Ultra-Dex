@@ -6,7 +6,7 @@
  */
 
 import EventEmitter from 'events';
-import os from 'os';
+
 
 /**
  * AutoScaler - Dynamic scaling of agents and resources

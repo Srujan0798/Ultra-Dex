@@ -6,7 +6,7 @@
  */
 
 import { pluginRegistry } from './index.js';
-import { printInfo, printSuccess, printError } from '../utils/output.js';
+import { printSuccess, printError } from '../utils/output.js';
 import chalk from 'chalk';
 
 /**
@@ -114,7 +114,7 @@ export async function executeCommandWithPlugins(commandName, args, options) {
 }
 
 // Placeholder for original command execution
-async function executeOriginalCommand(commandName, args, options) {
+async function executeOriginalCommand(commandName, args, _options) {
   // This would normally call the actual command implementation
   // For now, returning a mock result
   return { success: true, command: commandName, executed: true };

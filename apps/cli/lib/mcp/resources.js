@@ -161,7 +161,7 @@ export function registerResources(server) {
           },
         ],
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         contents: [
           {

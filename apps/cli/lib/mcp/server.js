@@ -2,7 +2,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+
 import { registerResources } from './resources.js';
 import { registerTools } from './tools.js';
 import { registerUltraProtocol } from './protocol-handler.js';

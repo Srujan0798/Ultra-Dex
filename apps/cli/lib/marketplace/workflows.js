@@ -13,7 +13,7 @@ import {
   parseWorkflowSpecifier,
   selectWorkflowVersion,
 } from './workflow-registry.js';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const WORKFLOW_DIR = path.resolve(process.cwd(), '.ultra-dex', 'workflows');
 

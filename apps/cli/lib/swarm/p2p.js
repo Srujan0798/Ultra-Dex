@@ -58,7 +58,7 @@ export class P2PNode extends EventEmitter {
     }
 
     // Disconnect all peers
-    for (const [peerId, peer] of this.peers) {
+    for (const [peerId, _peer] of this.peers) {
       this.disconnect(peerId);
     }
 
@@ -301,7 +301,7 @@ export class P2PNode extends EventEmitter {
   /**
    * Handle incoming heartbeat
    */
-  handleHeartbeat(peerId, data) {
+  handleHeartbeat(peerId, _data) {
     const peer = this.peers.get(peerId);
     if (peer) {
       peer.lastSeen = Date.now();
@@ -435,7 +435,7 @@ export class DecentralizedSwarm extends EventEmitter {
    */
   async broadcastTask(task, topic = 'tasks') {
     const promises = [];
-    for (const [agentId, node] of this.nodes) {
+    for (const [_agentId, node] of this.nodes) {
       promises.push(
         node.publish(topic, {
           type: 'task',
@@ -545,7 +545,7 @@ export class DecentralizedSwarm extends EventEmitter {
    */
   async shutdown() {
     const promises = [];
-    for (const [agentId, node] of this.nodes) {
+    for (const [agentId, _node] of this.nodes) {
       promises.push(this.removeAgent(agentId));
     }
     await Promise.all(promises);

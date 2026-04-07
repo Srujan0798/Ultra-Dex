@@ -16,7 +16,7 @@ import { VERSION } from '../utils/version.js';
 import { syncState } from '../utils/state-sync.js';
 import { reconciler } from '../utils/reconciler.js';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
 
 // State locking mechanism to prevent race conditions
@@ -86,7 +86,7 @@ export async function saveState(state) {
     // Clean up temp file if it exists
     try {
       await fs.unlink(tempPath).catch(() => {});
-    } catch (unlinkError) {
+    } catch (_unlinkError) {
       // Ignore unlink errors
     }
     return false;

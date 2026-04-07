@@ -1,5 +1,5 @@
-import { Command } from 'commander';
-import chalk from 'chalk';
+
+
 import { execFileSync } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';

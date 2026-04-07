@@ -1,5 +1,5 @@
-import { singleton, inject } from 'tsyringe';
-import { DI_TOKENS } from '../di/tokens.js';
+import { singleton } from 'tsyringe';
+
 import inquirer from 'inquirer';
 import { createSpinner, showSuccess, showInfo, showWarning, showError, withLoading, runTaskSuite } from './spinner.js';
 import { colors, gradients, formatMessage, formatTitle, formatSection, formatListItem } from './colors.js';

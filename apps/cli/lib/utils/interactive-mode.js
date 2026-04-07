@@ -12,6 +12,7 @@ import Table from 'cli-table3';
 import { logger } from './logger.js';
 import { configManager } from './config-manager.js';
 import { errorRecovery } from './error-recovery.js';
+import { monitoring } from './monitoring.js';
 
 class InteractiveMode {
   constructor() {

@@ -189,7 +189,7 @@ ${ROLLBACK_TRIGGERS.map((trigger) => `- **${trigger.severity.toUpperCase()} SEVE
  * @returns {Object} Rollback recommendation
  */
 export function checkRollbackNeeded(metrics = {}) {
-  const { errorRate, performanceDegradation, userImpactPercent, securityAlerts, availability } =
+  const { _errorRate, performanceDegradation, userImpactPercent, securityAlerts, availability } =
     metrics;
 
   const recommendations = [];

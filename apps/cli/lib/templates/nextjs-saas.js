@@ -7,7 +7,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import chalk from 'chalk';
 
 class NextJSSaaSTemplate {
@@ -19,7 +19,7 @@ class NextJSSaaSTemplate {
   /**
    * Generate the Next.js SaaS template
    */
-  async generate(projectName, options = {}) {
+  async generate(projectName, _options = {}) {
     const projectDir = path.join(process.cwd(), projectName);
 
     printInfo(chalk.cyan(`🚀 Generating Next.js SaaS Template: ${projectName}`));

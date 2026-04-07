@@ -103,7 +103,7 @@ export class MultiPassGenerator extends EventEmitter {
     ];
   }
 
-  async generate(prompt, options = {}) {
+  async generate(prompt, _options = {}) {
     const startTime = Date.now();
     let result = {
       code: '',
@@ -149,7 +149,7 @@ export class MultiPassGenerator extends EventEmitter {
 
   async generateStructure(prompt) {
     // Analyze prompt and generate basic structure
-    const patterns = this.context.getSimilarPatterns(prompt);
+    const _patterns = this.context.getSimilarPatterns(prompt);
 
     let structure = '';
 
@@ -497,7 +497,7 @@ export class SmartSuggester extends EventEmitter {
 
     // Context-aware suggestions
     const beforeCursor = code.substring(0, cursor);
-    const afterCursor = code.substring(cursor);
+    const _afterCursor = code.substring(cursor);
 
     // Suggest imports
     if (beforeCursor.includes('import') && !beforeCursor.includes('from')) {

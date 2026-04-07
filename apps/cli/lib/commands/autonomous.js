@@ -20,7 +20,7 @@ import { projectGraph } from '../mcp/graph.js';
 import { copyDirectory } from '../utils/files.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 
 // Autonomous configuration
 const AUTONOMOUS_CONFIG = {

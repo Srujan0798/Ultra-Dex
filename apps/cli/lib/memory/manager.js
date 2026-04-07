@@ -3,7 +3,7 @@
 import { sqliteProvider } from './sqlite.js';
 
 export class MemoryManager {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     this.provider = sqliteProvider;
     this.initialized = false;
   }

@@ -13,7 +13,7 @@ import { printInfo, printSuccess, printWarning, printError } from '../utils/outp
  * API Key Manager
  */
 export class APIKeyManager {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     this.keys = new Map(); // In-memory storage - should be persistent in production
     this.prefix = 'ud_';
     this.keyLength = 32;
@@ -142,7 +142,7 @@ export class APIKeyManager {
 
     // Simple rate limiting - in production use Redis or similar
     const now = Date.now();
-    const windowStart = now - 60000; // 1 minute window
+    const _windowStart = now - 60000; // 1 minute window
 
     // This is a simplified version - production would track timestamps
     if (keyData.usageCount > keyData.rateLimit) {

@@ -12,7 +12,7 @@ import { theme } from '../ui/theme.js';
 /**
  * Format command usage with styled presentation
  */
-export function formatUsage(commandName, options = []) {
+export function formatUsage(commandName, _options = []) {
   const usage = `ultra-dex ${commandName} ${theme.dim('[options]')}`;
 
   return boxen(usage, {

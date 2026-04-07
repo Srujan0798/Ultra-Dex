@@ -326,8 +326,8 @@ export class AgentTaskQueue {
     // In a real implementation, this would call the appropriate agent
     // For now, we'll simulate execution with a timeout
 
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(
+    return new Promise((resolve, _reject) => {
+      const _timeout = setTimeout(
         () => {
           // Simulate successful completion
           resolve({ success: true, result: `Task ${task.id} completed successfully` });

@@ -166,7 +166,7 @@ export async function writeRunArtifacts({
     try {
       await fs.access(traceFile);
       await fs.copyFile(traceFile, artifactPaths.trace);
-    } catch (accessError) {
+    } catch (_accessError) {
       // Source trace not yet available — create empty trace file to prevent downstream errors
       console.warn(`Trace file not yet available: ${traceFile}, creating empty trace`);
       await fs.writeFile(artifactPaths.trace, '', 'utf8');

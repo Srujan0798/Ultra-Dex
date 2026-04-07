@@ -5,7 +5,7 @@ import ora from '../utils/ora.js';
 import fs from 'fs';
 import { resolve, basename, join } from 'path';
 import yaml from 'js-yaml';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError } from '../utils/errors.js';
 

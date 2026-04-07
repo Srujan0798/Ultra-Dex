@@ -8,7 +8,7 @@ import {
 import { createOpenAIRunnable, createAnthropicRunnable, createGoogleRunnable } from "../providers/index.js";
 import { AppError } from "../utils/errors.js";
 import { printInfo, printSuccess, printError } from "../utils/output.js";
-const WorkflowState = Annotation.Root({
+const _WorkflowState = Annotation.Root({
   // Core workflow state
   task: Annotation,
   plan: Annotation,

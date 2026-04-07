@@ -11,7 +11,7 @@ import ora from './ora.js';
 import cliProgress from 'cli-progress';
 
 // MultiBar progress tracker
-let multiBar = null;
+let _multiBar = null;
 
 export function showProgress(tasks) {
    
@@ -311,7 +311,7 @@ export class MultiStepProgress {
     );
 
     // Create progress bars for each step
-    this.progressBars = this.steps.map((step, index) => {
+    this.progressBars = this.steps.map((step, _index) => {
       return multiBar.create(100, 0, {
         step: step.name,
         status: 'Pending',
@@ -369,7 +369,7 @@ export async function withProgress(taskFn, options = {}) {
   const { message = 'Processing...', total = 100, onProgress = null } = options;
 
   const progress = new ProgressBar();
-  const bar = progress.start(total, 0, message);
+  const _bar = progress.start(total, 0, message);
 
   try {
     // Call the task function with progress update capability
@@ -393,11 +393,11 @@ export class ProgressBarWithETA extends ProgressBar {}
 
 // Color-coded status indicators
 export const statusIndicators = {
-  success: (text) => chalk.bgGreen.black(' SUCCESS '),
-  warning: (text) => chalk.bgYellow.black(' WARNING '),
-  error: (text) => chalk.bgRed.white(' ERROR '),
-  info: (text) => chalk.bgBlue.white(' INFO '),
-  processing: (text) => chalk.bgMagenta.white(' PROCESSING '),
+  success: (_text) => chalk.bgGreen.black(' SUCCESS '),
+  warning: (_text) => chalk.bgYellow.black(' WARNING '),
+  error: (_text) => chalk.bgRed.white(' ERROR '),
+  info: (_text) => chalk.bgBlue.white(' INFO '),
+  processing: (_text) => chalk.bgMagenta.white(' PROCESSING '),
 };
 
 // Completion animation

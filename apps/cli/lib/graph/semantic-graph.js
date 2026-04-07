@@ -152,7 +152,7 @@ export class SemanticKnowledgeGraph {
     const limit = options.limit || 10;
     const results = [];
 
-    for (const [id, node] of this.nodes) {
+    for (const [_id, node] of this.nodes) {
       const matchScore = concepts.filter((c) => node.concepts.includes(c)).length / concepts.length;
 
       if (matchScore > 0) {

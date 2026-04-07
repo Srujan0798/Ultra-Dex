@@ -130,7 +130,7 @@ class GraphTraversalEngine {
     const results = [];
     const lowerQuery = query.toLowerCase();
 
-    for (const [nodeId, node] of this.nodes.entries()) {
+    for (const [_nodeId, node] of this.nodes.entries()) {
       if (node.content.toLowerCase().includes(lowerQuery)) {
         results.push(node);
       }
@@ -179,7 +179,7 @@ class GraphTraversalEngine {
     const {
       maxDepth = 3,
       edgeTypes = null, // null means any edge type
-      nodeTypes = null, // null means any node type
+      _nodeTypes = null, // null means any node type
       direction = 'both', // 'outgoing', 'incoming', 'both'
       maxResults = 50,
     } = options;
@@ -236,7 +236,7 @@ class GraphTraversalEngine {
 
     // Outgoing edges
     if (direction === 'outgoing' || direction === 'both') {
-      for (const [edgeId, edge] of this.edges.entries()) {
+      for (const [_edgeId, edge] of this.edges.entries()) {
         if (edge.from === nodeId) {
           if (!edgeTypes || edgeTypes.includes(edge.type)) {
             connections.push({
@@ -251,7 +251,7 @@ class GraphTraversalEngine {
 
     // Incoming edges
     if (direction === 'incoming' || direction === 'both') {
-      for (const [edgeId, edge] of this.edges.entries()) {
+      for (const [_edgeId, edge] of this.edges.entries()) {
         if (edge.to === nodeId) {
           if (!edgeTypes || edgeTypes.includes(edge.type)) {
             connections.push({
@@ -353,7 +353,7 @@ class GraphTraversalEngine {
   findTopicNodes(topic) {
     const results = [];
 
-    for (const [nodeId, node] of this.nodes.entries()) {
+    for (const [_nodeId, node] of this.nodes.entries()) {
       if (
         node.content.toLowerCase().includes(topic.toLowerCase()) ||
         node.tags.some((tag) => tag.toLowerCase().includes(topic.toLowerCase()))

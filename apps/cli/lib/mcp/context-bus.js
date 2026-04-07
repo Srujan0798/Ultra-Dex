@@ -10,7 +10,7 @@ import path from 'path';
 import { EventEmitter } from 'events';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
-import { glob } from 'glob';
+
 import { Logger } from '../utils/logger.js';
 
 const logger = new Logger({ prefix: 'ContextBus' });

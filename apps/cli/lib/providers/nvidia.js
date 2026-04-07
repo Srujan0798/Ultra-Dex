@@ -1,15 +1,29 @@
 // Copyright (c) 2026 Ultra-Dex
 
 /**
- * NVIDIA Nemotron Provider
- * Integration with NVIDIA's 220+ models via a single API key
+ * NVIDIA Provider (OpenAI-compatible API)
  */
 
-import {
-  initNVIDIAKeys,
-  createRotatingClient,
-  NEMOTRON_MODELS
-} from '../../../../src/services/ai-providers/nemotron.js';
+import { OpenAIProvider } from './openai.js';
+
+const MODELS = [
+  {
+    id: 'nvidia/llama-3.1-nemotron-ultra-253b-v1',
+    name: 'Nemotron Ultra 253B',
+    maxTokens: 16384,
+    default: true,
+  },
+  {
+    id: 'nvidia/nemotron-4-340b-instruct',
+    name: 'Nemotron 4 340B Instruct',
+    maxTokens: 8192,
+  },
+  {
+    id: 'meta/llama-3.1-70b-instruct',
+    name: 'Llama 3.1 70B Instruct',
+    maxTokens: 8192,
+  },
+];
 
 export class NVIDIAProvider {
   /**
@@ -17,12 +31,13 @@ export class NVIDIAProvider {
    * @param {Object} options - Provider options
    */
   constructor(apiKey, options = {}) {
-    this.apiKey = apiKey;
-    this.model = options.model || NEMOTRON_MODELS.primary.id;
-    this.options = options;
-    
-    // Initialize key manager (handles multiple keys from environment)
-    initNVIDIAKeys();
+    this.openAICompatible = new OpenAIProvider(apiKey, {
+      ...options,
+      model: options.model || this.getDefaultModel(),
+    });
+    this.openAICompatible.baseUrl = options.baseUrl || 'https://integrate.api.nvidia.com/v1';
+    this.openAICompatible.model = options.model || this.getDefaultModel();
+    this.model = this.openAICompatible.model;
   }
 
   /**
@@ -33,12 +48,20 @@ export class NVIDIAProvider {
     return 'nvidia';
   }
 
+  getDefaultModel() {
+    return MODELS.find((model) => model.default)?.id || MODELS[0].id;
+  }
+
+  getAvailableModels() {
+    return MODELS;
+  }
+
   /**
    * Get current model
    * @returns {string}
    */
   getModel() {
-    return this.model;
+    return this.openAICompatible.model;
   }
 
   /**
@@ -49,37 +72,7 @@ export class NVIDIAProvider {
    * @returns {Promise<Object>}
    */
   async generate(systemPrompt, userPrompt, options = {}) {
-    const { client } = createRotatingClient(this.model);
-    const model = options.model || this.model;
-
-    const messages = [];
-    if (systemPrompt) {
-      messages.push({ role: 'system', content: systemPrompt });
-    }
-    messages.push({ role: 'user', content: userPrompt });
-
-    try {
-      const res = await client.chat.completions.create({
-        model,
-        messages,
-        temperature: options.temperature || this.options.temperature || 0.7,
-        top_p: options.topP || this.options.topP || 0.95,
-        max_tokens: options.maxTokens || this.options.maxTokens || 1024,
-      });
-
-      return {
-        content: res.choices[0].message.content,
-        usage: {
-          inputTokens: res.usage?.prompt_tokens || 0,
-          outputTokens: res.usage?.completion_tokens || 0,
-          totalTokens: res.usage?.total_tokens || 0,
-        },
-        model: res.model || model,
-        finishReason: res.choices[0].finish_reason,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return this.openAICompatible.generate(systemPrompt, userPrompt, options);
   }
 
   /**
@@ -91,45 +84,6 @@ export class NVIDIAProvider {
    * @returns {Promise<Object>}
    */
   async generateStream(systemPrompt, userPrompt, onToken, options = {}) {
-    const { client } = createRotatingClient(this.model);
-    const model = options.model || this.model;
-
-    const messages = [];
-    if (systemPrompt) {
-      messages.push({ role: 'system', content: systemPrompt });
-    }
-    messages.push({ role: 'user', content: userPrompt });
-
-    try {
-      const stream = await client.chat.completions.create({
-        model,
-        messages,
-        temperature: options.temperature || this.options.temperature || 1.0,
-        top_p: options.topP || this.options.topP || 0.95,
-        max_tokens: options.maxTokens || this.options.maxTokens || 4096,
-        stream: true,
-        extra_body: {
-          chat_template_kwargs: {
-            enable_thinking: options.enableThinking ?? true,
-          },
-        },
-      });
-
-      let fullResponse = '';
-      for await (const chunk of stream) {
-        const delta = chunk.choices[0]?.delta?.content || '';
-        if (delta) {
-          fullResponse += delta;
-          if (onToken) onToken(delta);
-        }
-      }
-
-      return {
-        content: fullResponse,
-        model: model,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return this.openAICompatible.generateStream(systemPrompt, userPrompt, onToken, options);
   }
 }

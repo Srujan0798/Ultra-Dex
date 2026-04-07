@@ -98,7 +98,7 @@ export class DecentralizedSwarm extends EventEmitter {
     }
 
     // Close all connections
-    for (const [peerId, connection] of this.connections) {
+    for (const [_peerId, connection] of this.connections) {
       if (connection.close) {
         connection.close();
       }

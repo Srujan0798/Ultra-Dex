@@ -6,7 +6,7 @@ import inquirer from 'inquirer';
 import fs from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 

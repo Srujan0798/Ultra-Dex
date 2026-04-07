@@ -5,7 +5,7 @@
  * Defines additional commands for the Ultra-Dex REPL
  */
 
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';

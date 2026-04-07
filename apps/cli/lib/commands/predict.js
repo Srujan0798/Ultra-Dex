@@ -1,12 +1,12 @@
 // Copyright (c) 2026 Ultra-Dex
 // Predictive Debugging CLI Command
 
-import chalk from 'chalk';
+
 import ora from '../utils/ora.js';
 import path from 'path';
 import { glob } from 'glob';
 import { PredictiveDebugger } from '../predictive/debugger.js';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { logger } from '../utils/logger.js';
 
 /**

@@ -1,5 +1,5 @@
-import { singleton, inject } from 'tsyringe';
-import { DI_TOKENS } from '../di/tokens.js';
+import { singleton } from 'tsyringe';
+
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';

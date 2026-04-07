@@ -53,7 +53,7 @@ async function copyDirectory(src, dest) {
   }
 }
 
-export async function installTemplate(specifier, options = {}) {
+export async function installTemplate(specifier, _options = {}) {
   await ensureTemplateDir();
 
   const { name, version } = parseTemplateSpecifier(specifier);

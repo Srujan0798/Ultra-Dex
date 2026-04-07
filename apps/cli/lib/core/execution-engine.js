@@ -7,7 +7,7 @@
  */
 
 import { logger } from '../utils/logger.js';
-import { errorRecovery } from '../utils/error-recovery.js';
+
 
 const MAX_RETRIES = 3;
 const DEFAULT_TIMEOUT_MS = 300_000; // 5 minutes
@@ -155,7 +155,7 @@ export class ExecutionEngine {
    * Execute with retry logic
    * @private
    */
-  async _executeWithRetry(agent, task, { runId, trace }) {
+  async _executeWithRetry(agent, task, { runId, _trace }) {
     // Guard: agent must have a .run() method
     if (typeof agent?.run !== 'function') {
       const agentType = agent === null ? 'null' : typeof agent;

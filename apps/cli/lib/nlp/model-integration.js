@@ -207,16 +207,16 @@ export function enhanceInputForModel(input, intent, params) {
       if (p.projectName) enhancement += ` For project "${p.projectName}".`;
       return enhancement;
     },
-    refactoring: (p) => {
+    refactoring: (_p) => {
       return 'Refactor this code to improve readability, performance, and maintainability. Follow best practices.';
     },
-    documentation: (p) => {
+    documentation: (_p) => {
       return 'Generate clear, comprehensive documentation. Include examples and usage instructions.';
     },
-    analysis: (p) => {
+    analysis: (_p) => {
       return 'Analyze thoroughly and provide actionable insights. Identify potential issues and improvements.';
     },
-    reasoning: (p) => {
+    reasoning: (_p) => {
       return 'Think step-by-step. Consider edge cases and provide a well-reasoned solution.';
     },
   };

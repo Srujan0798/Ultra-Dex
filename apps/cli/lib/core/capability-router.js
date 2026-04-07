@@ -178,7 +178,7 @@ export class CapabilityRouter {
    * Fallback routing when no capability matches
    * @private
    */
-  _fallbackRoute(taskDescription) {
+  _fallbackRoute(_taskDescription) {
     // Default to planner for unknown tasks
     const planner = this.capabilities.get('planner');
     if (planner) {

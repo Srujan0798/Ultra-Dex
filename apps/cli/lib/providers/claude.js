@@ -9,7 +9,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
 import { AppError } from '../utils/errors.js';
-import { handleError } from '../utils/error-handler.js';
+
 
 // Claude Sonnet 5 model constant
 export const CLAUDE_SONNET_5 = 'claude-sonnet-5-20260201';

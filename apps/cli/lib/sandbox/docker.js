@@ -403,7 +403,7 @@ CMD ["sh"]
       const imageName = `${this.containerPrefix}-${runtime}-${execId}`;
       printInfo(chalk.blue(`🔨 Building sandbox image: ${imageName}`));
 
-      const buildResult = await execAsync(
+      const _buildResult = await execAsync(
         `docker build -f "${dockerfilePath}" -t ${imageName} "${execDir}"`
       );
 
@@ -464,7 +464,7 @@ CMD ["sh"]
         // Try to stop the container if it's still running
         try {
           await execAsync(`docker stop ${this.containerPrefix}-${execId}`);
-        } catch (stopError) {
+        } catch (_stopError) {
           // Ignore errors when stopping timed-out container
         }
         throw error;

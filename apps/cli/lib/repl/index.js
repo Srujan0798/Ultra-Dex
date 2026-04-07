@@ -190,7 +190,7 @@ export async function startREPL(options = {}) {
           getIntentConfidence, 
           needsClarification,
           getContextualSuggestions,
-          conversationHistory 
+          _conversationHistory 
         } = await import('../nlp/router.js');
         
         const intent = routeIntentWithContext(input);

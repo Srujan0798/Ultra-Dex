@@ -17,7 +17,7 @@ import {
 } from '../providers/index.js';
 import { showProgress } from '../utils/progress.js';
 import { getRandomMessage } from '../utils/messages.js';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 

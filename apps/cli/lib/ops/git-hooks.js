@@ -12,7 +12,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { validateSafePath } from '../utils/validation.js';
+
 
 const execAsync = promisify(exec);
 
@@ -257,7 +257,7 @@ class GitHookManager {
   /**
    * Create prepare-commit-msg hook
    */
-  createPrepareCommitMsgHook(options) {
+  createPrepareCommitMsgHook(_options) {
     return `#!/bin/sh
 # Ultra-Dex Prepare Commit Message Hook
 # AI-assists with commit message generation
@@ -289,7 +289,7 @@ exit 0
   /**
    * Create post-commit hook
    */
-  createPostCommitHook(options) {
+  createPostCommitHook(_options) {
     return `#!/bin/sh
 # Ultra-Dex Post-Commit Hook
 # Runs after successful commit
@@ -309,7 +309,7 @@ exit 0
   /**
    * Create post-checkout hook
    */
-  createPostCheckoutHook(options) {
+  createPostCheckoutHook(_options) {
     return `#!/bin/sh
 # Ultra-Dex Post-Checkout Hook
 # Runs after branch checkout
@@ -335,7 +335,7 @@ exit 0
   /**
    * Create post-merge hook
    */
-  createPostMergeHook(options) {
+  createPostMergeHook(_options) {
     return `#!/bin/sh
 # Ultra-Dex Post-Merge Hook
 # Runs after successful merge

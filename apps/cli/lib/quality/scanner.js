@@ -249,8 +249,8 @@ const RULES = [
     severity: 'error',
     pattern: /\.(ts|js)$/,
     check: (content) => {
-      const p1 = String.fromCharCode(109, 100, 53); // md5
-      const p2 = String.fromCharCode(115, 104, 97, 49); // sha1
+      const _p1 = String.fromCharCode(109, 100, 53); // md5
+      const _p2 = String.fromCharCode(115, 104, 97, 49); // sha1
       const regex = new RegExp(`\\b(\${p1}|\${p2})\\b`, 'i');
       return !regex.test(content);
     },

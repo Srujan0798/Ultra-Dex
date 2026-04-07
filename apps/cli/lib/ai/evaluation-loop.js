@@ -41,8 +41,8 @@ const QUALITY_GATES = {
 /**
  * Validate code output
  */
-async function validateCode(content, context = {}) {
-  const score = 0.5; // Placeholder - in real implementation, this would analyze the code
+async function validateCode(content, _context = {}) {
+  const _score = 0.5; // Placeholder - in real implementation, this would analyze the code
   let feedback = [];
 
   // Check for basic code structure
@@ -95,7 +95,7 @@ async function validateCode(content, context = {}) {
 /**
  * Validate documentation output
  */
-async function validateDocumentation(content, context = {}) {
+async function validateDocumentation(content, _context = {}) {
   if (typeof content !== 'string') {
     return { score: 0.1, feedback: ['Invalid content type'] };
   }
@@ -143,7 +143,7 @@ async function validateDocumentation(content, context = {}) {
 /**
  * Validate analysis output
  */
-async function validateAnalysis(content, context = {}) {
+async function validateAnalysis(content, _context = {}) {
   if (typeof content !== 'string') {
     return { score: 0.1, feedback: ['Invalid content type'] };
   }
@@ -196,7 +196,7 @@ async function validateAnalysis(content, context = {}) {
 /**
  * Validate refactoring output
  */
-async function validateRefactoring(content, context = {}) {
+async function validateRefactoring(content, _context = {}) {
   if (typeof content !== 'string') {
     return { score: 0.1, feedback: ['Invalid content type'] };
   }
@@ -238,7 +238,7 @@ async function validateRefactoring(content, context = {}) {
 /**
  * Default validation
  */
-async function validateDefault(content, context = {}) {
+async function validateDefault(content, _context = {}) {
   if (typeof content !== 'string') {
     return { score: 0.1, feedback: ['Invalid content type'] };
   }

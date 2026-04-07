@@ -14,7 +14,7 @@ import { validateProjectName, validateSafePath } from '../utils/validation.js';
 import { ASSETS_ROOT, ROOT_FALLBACK, LIVE_TEMPLATES_ROOT } from '../config/paths.js';
 import { copyWithFallback, listWithFallback, readWithFallback } from '../utils/fallback.js';
 import { copyDirectory, pathExists } from '../utils/files.js';
-import { getRandomMessage } from '../utils/messages.js';
+
 import { showBanner } from '../ui/banner.js';
 import { logger } from '../utils/logger.js';
 import { handleError } from '../utils/error-handler.js';

@@ -1,8 +1,8 @@
 import fs from 'fs';
-import path from 'path';
+
 import readline from 'readline';
 import { spawn } from 'child_process';
-import { logger } from './utils/logger.js';
+
 
 const tutorialData = JSON.parse(
   fs.readFileSync(new URL('./tutorial-data.json', import.meta.url), 'utf8')
@@ -85,7 +85,7 @@ class InteractiveTutorial {
       const child = spawn(cmd, args, { stdio: ['pipe', 'pipe', 'pipe'] });
 
       // Capture output
-      let output = '';
+      let _output = '';
       child.stdout.on('data', (data) => {
         output += data.toString();
         process.stdout.write(data);

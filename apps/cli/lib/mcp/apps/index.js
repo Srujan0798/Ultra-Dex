@@ -5,14 +5,14 @@
  * Provides interactive UI components for MCP-compatible tools
  */
 
-import { MCPAppRenderer, mcpAppRenderer, initializeMCPApps } from './renderer.js';
+import { mcpAppRenderer, initializeMCPApps } from './renderer.js';
 import {
-  renderComponent,
+  _renderComponent,
   registerComponent,
   getSupportedComponents,
   validateComponentProps,
 } from './components.js';
-import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
+import { printInfo, printSuccess, printError } from '../../utils/output.js';
 import chalk from 'chalk';
 
 /**
@@ -194,7 +194,7 @@ export class MCPAppProtocolHandler {
    * Handle MCP app update request
    */
   async handleAppUpdate(params) {
-    const { appId, updates } = params;
+    const { appId, _updates } = params;
 
     printInfo(chalk.blue(`🔄 Updating MCP App: ${appId}`));
 
@@ -211,7 +211,7 @@ export class MCPAppProtocolHandler {
    * Handle MCP app interaction
    */
   async handleAppInteract(params) {
-    const { appId, interaction, data } = params;
+    const { appId, interaction, _data } = params;
 
     printInfo(chalk.blue(`🖱️  MCP App Interaction: ${interaction} in ${appId}`));
 

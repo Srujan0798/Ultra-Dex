@@ -14,7 +14,7 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from '../utils/ora.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
-import { handleError } from '../utils/error-handler.js';
+
 
 // Integration configurations
 const INTEGRATIONS = {

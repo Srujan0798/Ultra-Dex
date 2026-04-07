@@ -72,7 +72,7 @@ export function generateMermaidDiagram(graph) {
   }
 
   // Add edges
-  for (const [edgeId, edge] of Object.entries(graph.edges || {})) {
+  for (const [_edgeId, edge] of Object.entries(graph.edges || {})) {
     const source = edge.source || edge.from;
     const target = edge.target || edge.to;
     const label = edge.label || '';
