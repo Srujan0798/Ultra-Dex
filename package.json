@@ -83,8 +83,8 @@
     "packages/sdk"
   ],
   "scripts": {
-    "start": "node dist/ultra-dex.js",
-    "ultra-dex": "node dist/ultra-dex.js",
+    "start": "node --import=tsx dist/ultra-dex.js",
+    "ultra-dex": "node --import=tsx dist/ultra-dex.js",
     "dev": "node --watch dist/ultra-dex.js",
     "nemotron": "node examples/nemotron-cli.js",
     "nemotron:example": "node examples/nemotron-example.js",
