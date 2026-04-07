@@ -1,0 +1,251 @@
+// Copyright (c) 2026 Ultra-Dex
+
+/**
+ * Performance profiling utility for Ultra-Dex CLI
+ * Helps identify slow operations and optimize command performance
+ */
+
+import { performance } from 'perf_hooks';
+import chalk from 'chalk';
+
+// Store performance metrics
+const metrics = new Map();
+const activeTimers = new Map();
+
+/**
+ * Start timing an operation
+ * @param {string} label - Unique label for the operation
+ */
+export function startTimer(label) {
+  activeTimers.set(label, performance.now());
+}
+
+/**
+ * End timing and record the duration
+ * @param {string} label - Label used in startTimer
+ * @returns {number} Duration in milliseconds
+ */
+export function endTimer(label) {
+  const startTime = activeTimers.get(label);
+  if (!startTime) {
+    logger.warn(chalk.yellow(`⚠️  No timer found for: ${label}`));
+    return 0;
+  }
+
+  const duration = performance.now() - startTime;
+  activeTimers.delete(label);
+
+  // Store metric
+  if (!metrics.has(label)) {
+    metrics.set(label, []);
+  }
+  metrics.get(label).push(duration);
+
+  return duration;
+}
+
+/**
+ * Time a function execution
+ * @param {string} label - Label for the operation
+ * @param {Function} fn - Function to time
+ * @returns {Promise<any>} Function result
+ */
+export async function timeAsync(label, fn) {
+  startTimer(label);
+  try {
+    const result = await fn();
+    const duration = endTimer(label);
+    logger.log(chalk.dim(`⏱️  ${label}: ${formatDuration(duration)}`));
+    return result;
+  } catch (error) {
+    endTimer(label);
+    throw error;
+  }
+}
+
+/**
+ * Time a synchronous function
+ * @param {string} label - Label for the operation
+ * @param {Function} fn - Function to time
+ * @returns {any} Function result
+ */
+export function timeSync(label, fn) {
+  startTimer(label);
+  try {
+    const result = fn();
+    const duration = endTimer(label);
+    logger.log(chalk.dim(`⏱️  ${label}: ${formatDuration(duration)}`));
+    return result;
+  } catch (error) {
+    endTimer(label);
+    throw error;
+  }
+}
+
+/**
+ * Format duration for display
+ * @param {number} ms - Duration in milliseconds
+ * @returns {string} Formatted duration
+ */
+function formatDuration(ms) {
+  if (ms < 1) {
+    return `${(ms * 1000).toFixed(2)}μs`;
+  } else if (ms < 1000) {
+    return `${ms.toFixed(2)}ms`;
+  } else {
+    return `${(ms / 1000).toFixed(2)}s`;
+  }
+}
+
+/**
+ * Get statistics for all recorded metrics
+ * @returns {Object} Statistics object
+ */
+export function getStatistics() {
+  const stats = {};
+
+  for (const [label, durations] of metrics) {
+    if (durations.length === 0) continue;
+
+    const sorted = [...durations].sort((a, b) => a - b);
+    const sum = sorted.reduce((a, b) => a + b, 0);
+
+    stats[label] = {
+      count: durations.length,
+      total: sum,
+      average: sum / durations.length,
+      min: sorted[0],
+      max: sorted[sorted.length - 1],
+      median: sorted[Math.floor(sorted.length / 2)],
+      p95: sorted[Math.floor(sorted.length * 0.95)] || sorted[sorted.length - 1],
+    };
+  }
+
+  return stats;
+}
+
+/**
+ * Display performance report
+ */
+export function showReport() {
+  const stats = getStatistics();
+  const labels = Object.keys(stats).sort((a, b) => stats[b].total - stats[a].total);
+
+  if (labels.length === 0) {
+    logger.log(chalk.yellow('\n⚠️  No performance data collected\n'));
+    return;
+  }
+
+  logger.log(chalk.bold('\n📊 Performance Report\n'));
+  logger.log(chalk.dim('─'.repeat(80)));
+
+  // Header
+  logger.log(
+    chalk.bold('Operation').padEnd(30),
+    chalk.bold('Count').padStart(6),
+    chalk.bold('Total').padStart(10),
+    chalk.bold('Avg').padStart(10),
+    chalk.bold('Min').padStart(10),
+    chalk.bold('Max').padStart(10)
+  );
+  logger.log(chalk.dim('─'.repeat(80)));
+
+  // Data rows
+  for (const label of labels) {
+    const s = stats[label];
+    logger.log(
+      label.substring(0, 29).padEnd(30),
+      String(s.count).padStart(6),
+      formatDuration(s.total).padStart(10),
+      formatDuration(s.average).padStart(10),
+      formatDuration(s.min).padStart(10),
+      formatDuration(s.max).padStart(10)
+    );
+  }
+
+  logger.log(chalk.dim('─'.repeat(80)));
+
+  // Summary
+  const grandTotal = Object.values(stats).reduce((sum, s) => sum + s.total, 0);
+  logger.log(chalk.bold(`\nTotal time: ${formatDuration(grandTotal)}`));
+  logger.log(chalk.dim(`Operations profiled: ${labels.length}\n`));
+}
+
+/**
+ * Clear all metrics
+ */
+export function clearMetrics() {
+  metrics.clear();
+  activeTimers.clear();
+}
+
+/**
+ * Profile a CLI command
+ * @param {string} commandName - Name of the command
+ * @param {Function} commandFn - Command function to profile
+ */
+export async function profileCommand(commandName, commandFn) {
+  logger.log(chalk.bold(`\n🔍 Profiling: ${commandName}\n`));
+
+  const startTime = performance.now();
+
+  try {
+    await commandFn();
+  } finally {
+    const totalTime = performance.now() - startTime;
+    logger.log(chalk.bold(`\n✅ Command completed in ${formatDuration(totalTime)}`));
+
+    // Show detailed report
+    showReport();
+
+    // Provide optimization suggestions
+    provideSuggestions();
+  }
+}
+
+/**
+ * Provide performance optimization suggestions
+ */
+function provideSuggestions() {
+  const stats = getStatistics();
+  const suggestions = [];
+
+  for (const [label, data] of Object.entries(stats)) {
+    // Suggest optimizations for slow operations
+    if (data.average > 1000) {
+      if (label.includes('file') || label.includes('read')) {
+        suggestions.push(`• ${label}: Consider caching file reads or using async batching`);
+      }
+      if (label.includes('scan') || label.includes('glob')) {
+        suggestions.push(
+          `• ${label}: Consider excluding directories or using incremental scanning`
+        );
+      }
+      if (label.includes('fetch') || label.includes('api')) {
+        suggestions.push(`• ${label}: Consider implementing request caching or parallelization`);
+      }
+    }
+
+    // Suggest for high-frequency operations
+    if (data.count > 10 && data.average > 100) {
+      suggestions.push(`• ${label}: Called ${data.count} times, consider batching or memoization`);
+    }
+  }
+
+  if (suggestions.length > 0) {
+    logger.log(chalk.cyan('\n💡 Optimization Suggestions:\n'));
+    suggestions.forEach((s) => logger.log(s));
+    logger.log();
+  }
+}
+
+export default {
+  startTimer,
+  endTimer,
+  timeAsync,
+  timeSync,
+  getStatistics,
+  showReport,
+  clearMetrics,
+  profileCommand,
+};
